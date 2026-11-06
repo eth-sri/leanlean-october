@@ -8,7 +8,6 @@ import Mathlib.MeasureTheory.Group.Arithmetic
 /-! # Passing the coefficient limit on a fixed compact inner cylinder -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov.Parabolic MeasureTheory Set Filter
 open scoped Topology ENNReal
@@ -77,10 +76,10 @@ theorem scalar_borel_smooth_inner_limit (lam Lam : ℝ) (hlam : 0 < lam) (_hLam 
     simp only [e,scalarBorelError,Hext,indicator_of_mem hP]
   obtain ⟨_,hmraw,htraw⟩ := scalar_borel_inner_error hlam a ha hb C hC hc K hK H hH
     (lt_of_lt_of_le zero_lt_one hp)
-  have hmK j : MemLp (e j) (ENNReal.ofReal p) (volume.restrict K) :=
+  have hmK j : MemLp (e j) _ (volume.restrict K) :=
     (hmraw j).ae_eq (heq j).symm
-  have hμ : volume.restrict Q ≤ volume.restrict K := Measure.restrict_mono_set volume hQK
-  have hme j : MemLp (e j) (ENNReal.ofReal p) (volume.restrict Q) := (hmK j).mono_measure hμ
+  have hμ  := Measure.restrict_mono_set volume hQK
+  have hme j : MemLp (e j) _ (volume.restrict Q) := (hmK j).mono_measure hμ
   have hte : Tendsto (fun j => (eLpNorm (e j) (ENNReal.ofReal p)
       (volume.restrict Q)).toReal) atTop (𝓝 0) := by
     have htK : Tendsto (fun j => (eLpNorm (e j) (ENNReal.ofReal p)
@@ -96,33 +95,31 @@ theorem scalar_borel_smooth_inner_limit (lam Lam : ℝ) (hlam : 0 < lam) (_hLam 
       (volume.restrict Q) := by
     apply (hLp.add (hme j)).of_le ((hf.add (hem j)).sup measurable_const).aestronglyMeasurable
     filter_upwards with P
-    change ‖max (f P + e j P) 0‖ ≤ ‖max (f P) 0 + e j P‖
+    change ‖max (f P + e j P) 0‖ ≤ ‖max _ 0 + e j P‖
     simp only [Real.norm_of_nonneg (le_max_right _ _),
       Real.norm_of_nonneg (add_nonneg (le_max_right _ _) (he0 j P))]
-    exact max_le (by linarith only [le_max_left (f P) 0])
-      (add_nonneg (le_max_right (f P) 0) (he0 j P))
-  have hGp j := borelSource_memLp hQ localised u (f + e j) hregQ.continuousOn (hpert j)
+    grind
+  have hGp j := borelSource_memLp hQ localised u _ hregQ.continuousOn (hpert j)
   have htG := borel_source_norm_tendsto hp F G e hFp hme
     (fun j => (hGp j).aestronglyMeasurable)
     (Filter.Eventually.of_forall (borelSource_nonneg localised u f))
-    (fun j => Filter.Eventually.of_forall (borelSource_nonneg localised u (f + e j)))
+    (fun j => Filter.Eventually.of_forall (borelSource_nonneg localised u _))
     (fun j => Filter.Eventually.of_forall (he0 j))
     (fun j => Filter.Eventually.of_forall fun P => borelSource_error_le localised u f P (he0 j P))
     hte
   have hineq j : ∀ P ∈ K, u P ≤ sSup ((fun P => max (u P) 0) '' kineticBoundary P₁ r) +
       C₀ * r ^ alpha * (eLpNorm (G j) (ENNReal.ofReal p) (volume.restrict Q)).toReal := by
-    apply hsmooth (C j) (hC j).1 (hC j).2
-      P₁ r hr u (f + e j) hcontK hregQ (hf.add (hem j)) (hpert j)
+    apply hsmooth _ (hC j).1 (hC j).2
+      P₁ r hr u _ hcontK hregQ (hf.add (hem j)) (hpert j)
     filter_upwards [hsub,ae_restrict_mem hQ.measurableSet] with P hsubP hP
     have heP : e j P = scalarBorelError (C j) a H P := by
       simp only [e,scalarBorelError,Hext,indicator_of_mem (hQK hP)]
     have hdiff := scalar_borel_operator_sub (C j) a u P
     have hab := neg_le_abs ((C j (P.position 0) (P.velocity 0) -
       a (P.position 0) (P.velocity 0)) * H P)
-    dsimp only [scalarBorelError, H] at heP
-    change autonomousScalarOperator (C j) u P ≤ f P + e j P
-    rw [heP]
-    linarith only [hdiff, hsubP, hab]
+    dsimp only [scalarBorelError] at heP
+    change autonomousScalarOperator _ u P ≤ f P + e j P
+    linarith
   intro P hP
   exact ge_of_tendsto
     (tendsto_const_nhds.add (tendsto_const_nhds.mul htG))

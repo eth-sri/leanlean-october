@@ -38,46 +38,45 @@ def timeReflectedScalar {d : ℕ} (f : TimeVelocity d → ℝ) : TimeVelocity d 
 def timeReflectedCoefficient {d : ℕ} (A : CoefficientField d) : CoefficientField d :=
   fun t v => A (1 - t) v
 
+variable {d : ℕ}
+
 /-- Evaluation of a reflected scalar field. -/
-@[simp] theorem timeReflectedScalar_apply {d : ℕ} (f : TimeVelocity d → ℝ)
+@[simp] theorem timeReflectedScalar_apply  (f : TimeVelocity d → ℝ)
     (z : TimeVelocity d) :
     timeReflectedScalar f z = f (timeReflection z) :=
   rfl
 
 /-- Evaluation of a reflected coefficient field at a time--velocity pair. -/
-@[simp] theorem coefficientAt_timeReflectedCoefficient {d : ℕ}
+@[simp] theorem coefficientAt_timeReflectedCoefficient 
     (A : CoefficientField d) (z : TimeVelocity d) :
     coefficientAt (timeReflectedCoefficient A) z =
       coefficientAt A (timeReflection z) :=
   rfl
 
 /-- Time reflection is an involution. -/
-@[simp] theorem timeReflection_involutive {d : ℕ} :
+@[simp] theorem timeReflection_involutive  :
     Function.Involutive (@timeReflection d) := by
   intro z
   ext <;> simp [timeReflection]
 
 /-- Time reflection is continuous. -/
-theorem continuous_timeReflection {d : ℕ} : Continuous (@timeReflection d) := by
-  exact (continuous_const.sub continuous_fst).prodMk continuous_snd
+theorem continuous_timeReflection  : Continuous (@timeReflection d) := (continuous_const.sub continuous_fst).prodMk continuous_snd
 
 /-- Coefficient pullback preserves continuity. -/
-theorem isContinuousCoefficient_timeReflected {d : ℕ} {A : CoefficientField d}
+theorem isContinuousCoefficient_timeReflected  {A : CoefficientField d}
     (hA : IsContinuousCoefficient A) :
-    IsContinuousCoefficient (timeReflectedCoefficient A) := by
-  change Continuous (coefficientAt A ∘ timeReflection)
-  exact hA.comp continuous_timeReflection
+    IsContinuousCoefficient (timeReflectedCoefficient A) := hA.comp continuous_timeReflection
 
 /-- Reflection preserves product Lebesgue volume. -/
-theorem timeReflection_measurePreserving {d : ℕ} :
+theorem timeReflection_measurePreserving  :
     MeasurePreserving (@timeReflection d) (volume : Measure (TimeVelocity d)) volume := by
   let htime : MeasurePreserving (fun t : ℝ => 1 - t)
-      (volume : Measure ℝ) volume := by
+      volume volume := by
     simpa only [sub_eq_add_neg, Function.comp_def] using
-      (measurePreserving_add_left (volume : Measure ℝ) 1).comp
-        (Measure.measurePreserving_neg (volume : Measure ℝ))
+      (measurePreserving_add_left _ 1).comp
+        (Measure.measurePreserving_neg _)
   have hprod := htime.prod (MeasurePreserving.id (volume : Measure (PDE.Vec d)))
-  rw [volume_timeVelocity_eq_prod d]
+  rw [volume_timeVelocity_eq_prod]
   change MeasurePreserving (fun p : ℝ × PDE.Vec d => (1 - p.1, p.2)) _ _
   simpa only [Prod.map_def, id_eq] using hprod
 

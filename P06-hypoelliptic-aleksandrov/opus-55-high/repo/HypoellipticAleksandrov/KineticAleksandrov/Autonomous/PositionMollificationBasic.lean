@@ -28,11 +28,12 @@ theorem positionConvolution_eq (eta : ℝ → ℝ) (Phi : (ℝ × ℝ) → ℝ) 
       ((fun X => Phi (X, q.2)) ⋆[ContinuousLinearMap.mul ℝ ℝ, volume] eta) q.1 := by
   unfold positionConvolution convolution
   congr 1
-  funext X
   exact mul_comm _ _
 
+variable {alpha : ℝ} {Phi : (ℝ × ℝ) → ℝ}
+
 /-- Smoothing in position gives C∞ position fibers even on the zero-velocity line. -/
-theorem barrier_position_convolution_smooth {alpha : ℝ} {Phi : (ℝ × ℝ) → ℝ}
+theorem barrier_position_convolution_smooth 
     (h : IsBellmanHomogeneous alpha Phi) (ha : 0 < alpha)
     (eta : ℝ → ℝ) (heta : IsNonnegativeUnitSmoothMollifier eta) (v : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞)
@@ -41,7 +42,7 @@ theorem barrier_position_convolution_smooth {alpha : ℝ} {Phi : (ℝ × ℝ) �
     ((h.origin_extension_continuous ha).comp
     (continuous_id.prodMk continuous_const)).locallyIntegrable
   simpa only [positionConvolution_eq] using
-    heta.2.1.contDiff_convolution_right (ContinuousLinearMap.mul ℝ ℝ) hf heta.1
+    heta.2.1.contDiff_convolution_right _ hf heta.1
 
 /-- Any locally integrable fiber can be tested against a translated compact smooth kernel. -/
 theorem position_kernel_integrable (eta f : ℝ → ℝ) (heta : Continuous eta)
@@ -51,7 +52,7 @@ theorem position_kernel_integrable (eta f : ℝ → ℝ) (heta : Continuous eta)
   simpa only [ConvolutionExistsAt, ContinuousLinearMap.mul_apply', mul_comm] using hh
 
 /-- All source velocity fibers are locally integrable, including at velocity zero. -/
-theorem barrier_velocity_fibers_locallyIntegrable {alpha : ℝ} {Phi : (ℝ × ℝ) → ℝ}
+theorem barrier_velocity_fibers_locallyIntegrable 
     (h : IsBellmanHomogeneous alpha Phi) (ha : 0 < alpha) (ha1 : alpha < 1) (v : ℝ) :
     LocallyIntegrable (fun X => bellmanDv Phi (X, v)) volume ∧
       LocallyIntegrable (fun X => bellmanDvv Phi (X, v)) volume := by
@@ -77,13 +78,13 @@ theorem barrier_weight_fiber_locallyIntegrable (alpha : ℝ) (ha : 0 < alpha)
   have hb := ((bellman_abs_rpow_locallyIntegrable ((alpha - 2) / 3)
     (by linarith)).integrableOn_isCompact hK)
   apply hb.mono' hm.aestronglyMeasurable.restrict
-  filter_upwards [ae_restrict_of_ae (volume.ae_ne (0 : ℝ))] with X hX
-  rw [Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg (bellmanGauge_nonneg _) _)]
+  filter_upwards [ae_restrict_of_ae (volume.ae_ne (0))] with X hX
+  rw [Real.norm_eq_abs]
   have hh := barrier_position_fiber_bound (alpha - 2) (by linarith)
-    (fun q => bellmanGauge q ^ (alpha - 2)) 1 zero_le_one
+    _ 1 zero_le_one
     (fun q _ => by rw [abs_of_nonneg (Real.rpow_nonneg (bellmanGauge_nonneg _) _), one_mul])
     X v hX
-  simpa only [one_mul, abs_of_nonneg (Real.rpow_nonneg (bellmanGauge_nonneg _) _)] using hh
+  grind
 
 /-- The coefficient is held at the evaluation point while integrating the source inequality.
 This is an inequality for the convolved actual source jets, without any derivative of `a`. -/
@@ -107,10 +108,10 @@ theorem barrier_convolved_jet_inequality {lam Lam alpha c : ℝ}
   have hh := integral_mono_ae (hiw.const_mul c)
     ((hiX.const_mul q.2).add (hivv.const_mul (A.a q.1 q.2))) ?_
   · simpa only [positionConvolution, Pi.add_apply, integral_add (hiX.const_mul q.2)
-      (hivv.const_mul (A.a q.1 q.2)), integral_const_mul] using hh
-  · filter_upwards [volume.ae_ne (0 : ℝ)] with X hX
+      (hivv.const_mul _), integral_const_mul] using hh
+  · filter_upwards [volume.ae_ne (0)] with X hX
     have hq : (X, q.2) ∈ bellmanPuncturedSet := fun he => hX (congrArg Prod.fst he)
-    have hb := hbound (X, q.2) hq (A.a q.1 q.2) (A.bounds q.1 q.2)
+    have hb := hbound _ hq _ (A.bounds q.1 q.2)
     have hi := mul_le_mul_of_nonneg_left hb (heta.2.2.1 (q.1 - Y - X))
     dsimp only [bellmanOperator] at hi
     simpa only [Pi.add_apply, mul_add, mul_left_comm, mul_assoc] using hi

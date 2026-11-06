@@ -12,7 +12,6 @@ upper bound.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 

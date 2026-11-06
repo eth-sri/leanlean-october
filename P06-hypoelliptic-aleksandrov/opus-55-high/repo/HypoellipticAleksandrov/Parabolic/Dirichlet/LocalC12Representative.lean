@@ -27,12 +27,14 @@ private def otime (d : ℕ) : TimeVelocityDerivativeIndex d 2 :=
     simp [TimeVelocityDerivativeIndex.zero, TimeVelocityMultiIndex.order,
       TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity,
       VelocityMultiIndex.order])
-private def ovel {d : ℕ} (j : Fin d) : TimeVelocityDerivativeIndex d 2 :=
+variable {d : ℕ} (i j : Fin d)
+
+private def ovel  (j : Fin d) : TimeVelocityDerivativeIndex d 2 :=
   TimeVelocityDerivativeIndex.velocitySucc (TimeVelocityDerivativeIndex.zero d 2) j (by
     simp [TimeVelocityDerivativeIndex.zero, TimeVelocityMultiIndex.order,
       TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity,
       VelocityMultiIndex.order])
-private def ohess {d : ℕ} (i j : Fin d) : TimeVelocityDerivativeIndex d 2 :=
+private def ohess  (i j : Fin d) : TimeVelocityDerivativeIndex d 2 :=
   TimeVelocityDerivativeIndex.velocitySucc (ovel j) i (by
     have ho : (ovel j).1.order = 1 := by
       unfold ovel TimeVelocityDerivativeIndex.velocitySucc
@@ -46,25 +48,23 @@ private theorem coe_otime (d : ℕ) : (otime d).1 = Pi.single (timeCoord d) 1 :=
   cases c <;> simp [otime, TimeVelocityDerivativeIndex.timeSucc,
     TimeVelocityDerivativeIndex.zero, TimeVelocityMultiIndex.ofTimeVelocity,
     TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity, timeCoord]
-private theorem coe_ovel {d : ℕ} (j : Fin d) :
+private theorem coe_ovel  (j : Fin d) :
     (ovel j).1 = Pi.single (velocityCoord j) 1 := by
   funext c
   cases c with
-  | inl q => simp [ovel, TimeVelocityDerivativeIndex.velocitySucc,
+  | inl q => simp [ovel,
       TimeVelocityDerivativeIndex.zero, TimeVelocityMultiIndex.ofTimeVelocity,
-      TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity, velocityCoord]
+      TimeVelocityMultiIndex.timeOrder, velocityCoord]
   | inr k =>
       by_cases h : k = j
       · subst k
-        simp [ovel, TimeVelocityDerivativeIndex.velocitySucc,
-          TimeVelocityDerivativeIndex.zero, TimeVelocityMultiIndex.ofTimeVelocity,
-          TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity,
+        simp [ovel,
+          TimeVelocityDerivativeIndex.zero, TimeVelocityMultiIndex.ofTimeVelocity, TimeVelocityMultiIndex.velocity,
           velocityCoord]
-      · simp [ovel, TimeVelocityDerivativeIndex.velocitySucc,
-          TimeVelocityDerivativeIndex.zero, TimeVelocityMultiIndex.ofTimeVelocity,
-          TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity,
+      · simp [ovel,
+          TimeVelocityDerivativeIndex.zero, TimeVelocityMultiIndex.ofTimeVelocity, TimeVelocityMultiIndex.velocity,
           velocityCoord, h]
-private theorem coe_ohess {d : ℕ} (i j : Fin d) :
+private theorem coe_ohess  :
     (ohess i j).1 = Pi.single (velocityCoord j) 1 + Pi.single (velocityCoord i) 1 := by
   funext c
   cases c with
@@ -78,7 +78,7 @@ private theorem coe_ohess {d : ℕ} (i j : Fin d) :
           TimeVelocityDerivativeIndex.zero, TimeVelocityMultiIndex.ofTimeVelocity,
           TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity, velocityCoord, *]
 
-private theorem velocityTwo_comm_local {d : ℕ} (i j : Fin d) :
+private theorem velocityTwo_comm_local  :
     ParabolicDerivativeIndex.velocityTwo i j =
       ParabolicDerivativeIndex.velocityTwo j i := by
   apply Subtype.ext
@@ -90,22 +90,13 @@ private theorem velocityTwo_comm_local {d : ℕ} (i j : Fin d) :
       · subst k
         by_cases hij : i = j
         · subst j; rfl
-        · simp [ParabolicDerivativeIndex.velocityTwo,
-            ParabolicDerivativeIndex.velocityOne, ParabolicDerivativeIndex.velocitySucc,
-            TimeVelocityMultiIndex.ofTimeVelocity, TimeVelocityMultiIndex.timeOrder,
-            TimeVelocityMultiIndex.velocity, velocityCoord, hij]
+        · simp [TimeVelocityMultiIndex.ofTimeVelocity, velocityCoord, hij]
       · by_cases hkj : k = j
         · subst k
-          simp [ParabolicDerivativeIndex.velocityTwo,
-            ParabolicDerivativeIndex.velocityOne, ParabolicDerivativeIndex.velocitySucc,
-            TimeVelocityMultiIndex.ofTimeVelocity, TimeVelocityMultiIndex.timeOrder,
-            TimeVelocityMultiIndex.velocity, velocityCoord, hki]
-        · simp [ParabolicDerivativeIndex.velocityTwo,
-            ParabolicDerivativeIndex.velocityOne, ParabolicDerivativeIndex.velocitySucc,
-            TimeVelocityMultiIndex.ofTimeVelocity, TimeVelocityMultiIndex.timeOrder,
-            TimeVelocityMultiIndex.velocity, velocityCoord, hki, hkj]
+          simp [TimeVelocityMultiIndex.ofTimeVelocity, velocityCoord, hki]
+        · simp [TimeVelocityMultiIndex.ofTimeVelocity, hki, hkj]
 private theorem coordinate_jet_ae_eq_strong_jet
-    {d : ℕ} {QJ QD S : Set (TimeVelocity d)}
+     {QJ QD S : Set (TimeVelocity d)}
     (hQJ : IsOpen QJ) (hSQJ : S ⊆ QJ)
     (J : ParabolicW12Function d QJ (2 : ℝ≥0∞))
     (Dcore : ParabolicWeakDerivativeFamily d (2 * (d + 4)) QD J.toFun)
@@ -124,7 +115,7 @@ private theorem coordinate_jet_ae_eq_strong_jet
     (∀ i j : Fin d, (fun z ↦ scalarSpatialHessian v z i j) =ᵐ[timeVelocityVolumeOn S]
       fun z ↦ J.velocityHessian z j i) := by
   have htimeRep : Dcore.ordinaryRepresentative
-        (TimeVelocityDerivativeIndex.castLE (by omega : 2 ≤ d + 4) (otime d)) =
+        (TimeVelocityDerivativeIndex.castLE (by omega) (otime d)) =
       J.timeDeriv := by
     rw [show Dcore.ordinaryRepresentative
         (TimeVelocityDerivativeIndex.castLE (by omega : 2 ≤ d + 4) (otime d)) =
@@ -180,7 +171,7 @@ private theorem coordinate_jet_ae_eq_strong_jet
     exact (by simpa [coe_ohess] using
       (hzJ.trans (congrFun hhessRep z)).trans hzswap)
 private theorem pointwise_scalarPDE_of_ae_jet
-    {d : ℕ} {Q S : Set (TimeVelocity d)}
+     {Q S : Set (TimeVelocity d)}
     (hS : IsOpen S) (v : TimeVelocity d → ℝ) (hC12 : IsScalarC12On v S)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F : ℝ → PDE.Vec d → ℝ)
@@ -208,13 +199,13 @@ private theorem pointwise_scalarPDE_of_ae_jet
             a z.1 z.2 i j * scalarSpatialHessian v z i j) +
         (∑ j : Fin d, b z.1 z.2 j * scalarSpatialGradient v z j) +
       c z.1 z.2 * v z = F z.1 z.2 := by
-  let lhs : TimeVelocity d → ℝ := fun z =>
+  let lhs  := fun z =>
     scalarTimeDerivative v z +
         (∑ i : Fin d, ∑ j : Fin d,
           a z.1 z.2 i j * scalarSpatialHessian v z i j) +
       (∑ j : Fin d, b z.1 z.2 j * scalarSpatialGradient v z j) +
     c z.1 z.2 * v z
-  let weakLhs : TimeVelocity d → ℝ := fun z =>
+  let weakLhs  := fun z =>
     J.timeDeriv z +
         (∑ i : Fin d, ∑ j : Fin d,
           a z.1 z.2 i j * J.velocityHessian z j i) +
@@ -231,10 +222,9 @@ private theorem pointwise_scalarPDE_of_ae_jet
       fun z => ∑ j : Fin d, b z.1 z.2 j * J.velocityGrad z j := by
     filter_upwards [ae_all_iff.mpr hg] with z hz
     simp_rw [hz]
-  have hlw : lhs =ᵐ[timeVelocityVolumeOn S] weakLhs := by
-    exact ((ht.add hhSum).add hgSum).add
+  have hlw : lhs =ᵐ[timeVelocityVolumeOn S] weakLhs := ((ht.add hhSum).add hgSum).add
       (Filter.EventuallyEq.mul Filter.EventuallyEq.rfl hv)
-  have hlae : lhs =ᵐ[timeVelocityVolumeOn S] fun z => F z.1 z.2 := hlw.trans hEq
+  have hlae  := hlw.trans hEq
   have hgrad : ∀ j : Fin d,
       ContinuousOn (fun z => scalarSpatialGradient v z j) S := by
     intro j
@@ -246,17 +236,14 @@ private theorem pointwise_scalarPDE_of_ae_jet
     exact (continuous_apply j).comp_continuousOn
       ((continuous_apply i).comp_continuousOn
         hC12.continuousOn_scalarSpatialHessian)
-  have hlhs : ContinuousOn lhs S := by
-    exact ((hC12.continuousOn_scalarTimeDerivative.add
+  have hlhs : ContinuousOn lhs S := ((hC12.continuousOn_scalarTimeDerivative.add
       (continuousOn_finset_sum Finset.univ fun i _ =>
         continuousOn_finset_sum Finset.univ fun j _ =>
           (ha i j).mul (hhess i j))).add
       (continuousOn_finset_sum Finset.univ fun j _ =>
         (hb j).mul (hgrad j))).add
       (hc.mul hC12.continuousOn)
-  have heq : EqOn lhs (fun z => F z.1 z.2) S := by
-    rw [timeVelocityVolumeOn] at hlae
-    exact Measure.eqOn_open_of_ae_eq hlae hS hlhs hF
+  have heq : EqOn lhs (fun z => F z.1 z.2) S := Measure.eqOn_open_of_ae_eq hlae hS hlhs hF
   intro z hz
   exact heq hz
 /-- A selected original-time value representative has a compatible scalar
@@ -264,7 +251,7 @@ private theorem pointwise_scalarPDE_of_ae_jet
 product box; its classical jet is the selected weak jet almost everywhere and
 it satisfies the original-time equation pointwise. -/
 theorem exists_localC12Representative_of_valueRepresentative
-    {d : ℕ} {Ω O₀ O : Set (PDE.Vec d)} (hd : 0 < d)
+     {Ω O₀ O : Set (PDE.Vec d)} (hd : 0 < d)
     (r₀ q₀ s₀ s₁ q₁ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hr₀q₀ : r₀ < q₀)
     (hq₀s₀ : q₀ < s₀) (hs₀s₁ : s₀ < s₁) (hs₁q₁ : s₁ < q₁)
     (hq₁r₁ : q₁ < r₁)
@@ -346,11 +333,10 @@ theorem exists_localC12Representative_of_valueRepresentative
       hB0, hB, hErep, hEnorm, hlow, hDnorm⟩ :=
     hrun F hFSmooth initial u g hdu hu w hwmem hwslice
   have hweight : 2 * d + 8 = 2 * (d + 4) := by omega
-  let Dcore : ParabolicWeakDerivativeFamily d (2 * (d + 4))
-      (Set.Ioo coreLeft coreRight ×ˢ Ocore) J.toFun := hweight ▸ DcoreRaw
+  let Dcore  := hweight ▸ DcoreRaw
   have hlow' : ∀ alpha : ParabolicDerivativeIndex d 2,
       Dcore.representative
-          (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ 2 * (d + 4)) alpha) =
+          (ParabolicDerivativeIndex.castLE (by omega) alpha) =
         (J.toWeakDerivativeFamily (isOpen_Ioo.prod hO₀open)).representative alpha := by
     simpa [Dcore] using hlow
   let Ctarget : Set (TimeVelocity d) := Set.Icc s₀ s₁ ×ˢ closure O
@@ -365,7 +351,7 @@ theorem exists_localC12Representative_of_valueRepresentative
   obtain ⟨rho, hrho, v, hSCore, hv, hC12, hvJ, hjet⟩ :=
     exists_finiteOrderSobolevC12Representative
       hCoreOpen hCtargetCompact hCtargetCore Dcore
-  let S : Set (TimeVelocity d) := Metric.thickening rho Ctarget
+  let S  := Metric.thickening rho Ctarget
   have hSOpen : IsOpen S := Metric.isOpen_thickening
   have hCoreQ₀ : Set.Ioo coreLeft coreRight ×ˢ Ocore ⊆
       Set.Ioo q₀ q₁ ×ˢ O₀ := by
@@ -374,13 +360,11 @@ theorem exists_localC12Representative_of_valueRepresentative
       hztime.2.trans hcoreRightq₁⟩,
       hOcoreO₀ (subset_closure hzspace)⟩
   have hSQ₀ : S ⊆ Set.Ioo q₀ q₁ ×ˢ O₀ := hSCore.trans hCoreQ₀
-  have hvw : v =ᵐ[timeVelocityVolumeOn S] w := by
-    exact hvJ.trans (hJw.filter_mono
+  have hvw : v =ᵐ[timeVelocityVolumeOn S] w := hvJ.trans (hJw.filter_mono
       (ae_mono (Measure.restrict_mono_set volume hSQ₀)))
   obtain ⟨ht, hg, hh⟩ :=
     coordinate_jet_ae_eq_strong_jet (isOpen_Ioo.prod hO₀open) hSQ₀
       J Dcore v hv hlow' hjet
-  have hq₀q₁ : q₀ < q₁ := hq₀s₀.trans (hs₀s₁.trans hs₁q₁)
   have hQ₀Cyl : Set.Ioo q₀ q₁ ×ˢ O₀ ⊆
       scalarParabolicClosedCylinder r₀ r₁ Ω := by
     rintro z ⟨hztime, hzspace⟩
@@ -393,7 +377,7 @@ theorem exists_localC12Representative_of_valueRepresentative
       ContinuousOn (fun z : TimeVelocity d => a z.1 z.2 i j) S := by
     obtain ⟨Ua, hUa, hCylUa, haUa⟩ := haSmooth
     intro i j
-    have hi := (contDiffOn_apply ℝ (Fin d → ℝ) i Set.univ).comp haUa
+    have hi := (contDiffOn_apply ℝ _ i Set.univ).comp haUa
       (fun _ _ => Set.mem_univ _)
     have hij := (contDiffOn_apply ℝ ℝ j Set.univ).comp hi
       (fun _ _ => Set.mem_univ _)
@@ -416,7 +400,6 @@ theorem exists_localC12Representative_of_valueRepresentative
   have hpoint := pointwise_scalarPDE_of_ae_jet hSOpen v hC12 a b c F
     haCont hbCont hcCont hFCont J hEqS hvJ ht hg hh
   refine ⟨J, rho, hrho, v, hJw, ?_⟩
-  dsimp only
   exact ⟨hSQ₀, hv, hC12, hvw, ht, hg, hh, hpoint⟩
 
 

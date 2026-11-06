@@ -20,24 +20,24 @@ def coveringGain (d : ℕ) : ℝ := ((8 : ℝ)^(4*d+2))⁻¹
 def coveringLeakage (d : ℕ) : ℝ :=
   (32+4*(5 : ℝ)^d+4*(d : ℝ))*(volume (unitCylinder d)).toReal
 
+variable (d : ℕ)
+
 /-- The gain is positive and no larger than one half. -/
-theorem coveringGain_bounds (d : ℕ) : 0 < coveringGain d ∧ coveringGain d ≤ 1/2 := by
+theorem coveringGain_bounds  : 0 < coveringGain d ∧ coveringGain d ≤ 1/2 := by
   have hB : 2 ≤ (8 : ℝ)^(4*d+2) := by
     rw [pow_add]
     have h := one_le_pow₀ (by norm_num : (1 : ℝ) ≤ 8) (n := 4*d)
-    norm_num
     nlinarith
   have hpos : 0 < coveringGain d := inv_pos.mpr (by positivity)
-  have heq : coveringGain d*(8 : ℝ)^(4*d+2) = 1 := inv_mul_cancel₀ (by positivity)
+  have heq : coveringGain d*(8)^(4*d+2) = 1 := inv_mul_cancel₀ (by positivity)
   exact ⟨hpos, by nlinarith⟩
 
 /-- The leakage constant is positive and at least 32 times unit volume. -/
-theorem coveringLeakage_bounds (d : ℕ) : 0 < coveringLeakage d ∧
+theorem coveringLeakage_bounds  : 0 < coveringLeakage d ∧
     32*(volume (unitCylinder d)).toReal ≤ coveringLeakage d := by
   have hV : 0 < (volume (unitCylinder d)).toReal := ENNReal.toReal_pos
     (volume_cylinder_pos_ne_top _ zero_lt_one).1.ne'
     (volume_cylinder_pos_ne_top _ zero_lt_one).2
-  have hn : 0 ≤ (d : ℝ) := Nat.cast_nonneg d
   have hk : 0 ≤ (5 : ℝ)^d := by positivity
   dsimp [coveringLeakage]
   constructor <;> nlinarith
@@ -45,11 +45,11 @@ theorem coveringLeakage_bounds (d : ℕ) : 0 < coveringLeakage d ∧
 /-- The delayed multiplier is at least one for every positive natural height. -/
 theorem delay_multiplier_ge_one {m : ℕ} (hm : 0 < m) :
     1 ≤ ((m : ℝ)+1)/(m : ℝ) := by
-  apply (le_div_iff₀ (by exact_mod_cast hm : (0 : ℝ) < m)).mpr
+  apply (le_div_iff₀ (by positivity)).mpr
   linarith
 
 /-- A positive threshold leaves at least half of the multiplicative density factor. -/
-theorem density_factor_bounds (d : ℕ) {eta : ℝ} (heta : 0 < eta) (heta1 : eta < 1) :
+theorem density_factor_bounds  {eta : ℝ} (heta : 0 < eta) (heta1 : eta < 1) :
     1/2 ≤ 1-coveringGain d*eta ∧ 1-coveringGain d*eta ≤ 1 := by
   obtain ⟨hc, hc1⟩ := coveringGain_bounds d
   constructor <;> nlinarith
@@ -69,7 +69,7 @@ theorem absorb_covering_errors {e f V k n a q h s : ℝ}
       _ ≤ (1/2)*(((32+4*k+4*n)*V-2*k*V)*h) := by
         nlinarith only [mul_le_mul_of_nonneg_right hcoeff hh]
       _ ≤ _ := mul_le_mul_of_nonneg_right hqa (mul_nonneg hcoef hh)
-  nlinarith only [he, herr]
+  linarith
 
 /-- When the error height is at least 1/16 the desired upper bound is already unit volume. -/
 theorem trivial_large_height {V f C q a h : ℝ} (hV : 0 ≤ V) (hf : 0 ≤ f)
@@ -78,10 +78,7 @@ theorem trivial_large_height {V f C q a h : ℝ} (hV : 0 ≤ V) (hf : 0 ≤ f)
   have hqa : 1/2 ≤ q*a := by nlinarith
   have hC0 : 0 ≤ C := by linarith
   have hCh : 2*V ≤ C*h := by
-    have h := mul_le_mul_of_nonneg_left hh hC0
     nlinarith
-  have hnon : 0 ≤ f+C*h := by nlinarith
-  have h := mul_le_mul_of_nonneg_right hqa hnon
   nlinarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.InkSpots

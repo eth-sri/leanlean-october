@@ -6,7 +6,6 @@ import Mathlib.MeasureTheory.Function.LpSeminorm.Indicator
 /-! # Vanishing compact residual norms for Borel homogeneous solutions -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic Filter
 open scoped Topology ENNReal Matrix.Norms.Elementwise
@@ -33,7 +32,7 @@ theorem borelCorrectorSource_norm_tendsto {d : ℕ} {lam Lam : ℝ}
       (ENNReal.ofReal p) volume).toReal) atTop (𝓝 0) := by
   let K := tsupport χ
   have hK : IsCompact K := hχc
-  have hhm : ContinuousOn (kineticVelocityHessian U) K :=
+  have hhm : ContinuousOn _ K :=
     hu.continuousOn_kineticVelocityHessian.mono hs
   obtain ⟨_, hErr, hErr0⟩ := borel_inner_error hlam hLam A hA hlo hhi
     B hB hconv K hK (kineticVelocityHessian U) hhm hp
@@ -47,7 +46,7 @@ theorem borelCorrectorSource_norm_tendsto {d : ℕ} {lam Lam : ℝ}
       simp only [borelCorrectorSource, hz, zero_mul])
   have hnorm j : eLpNorm (borelCorrectorSource χ (B j) U) (ENNReal.ofReal p) volume =
       eLpNorm (borelCorrectorSource χ (B j) U) (ENNReal.ofReal p) (volume.restrict K) := by
-    rw [← eLpNorm_indicator_eq_eLpNorm_restrict hK.measurableSet, hEq j]
+    rw [← eLpNorm_indicator_eq_eLpNorm_restrict hK.measurableSet, hEq]
   have hb j : ∀ᵐ P ∂volume.restrict K,
       ‖borelCorrectorSource χ (B j) U P‖ ≤ ‖borelCoefficientError (B j) A
         (kineticVelocityHessian U) P‖ := by
@@ -60,18 +59,18 @@ theorem borelCorrectorSource_norm_tendsto {d : ℕ} {lam Lam : ℝ}
   have hmem j : MemLp (borelCorrectorSource χ (B j) U) (ENNReal.ofReal p)
       (volume.restrict K) := by
     have hc := (borelCorrectorSource_continuous_compact hD χ hχ hχc hs
-      (B j) (hB j).1 U hu).1
+      _ (hB j).1 U hu).1
     exact (hErr j).of_le hc.measurable.aestronglyMeasurable.restrict (hb j)
   have hbound j : (eLpNorm (borelCorrectorSource χ (B j) U)
       (ENNReal.ofReal p) volume).toReal ≤
       (eLpNorm (borelCoefficientError (B j) A (kineticVelocityHessian U))
         (ENNReal.ofReal p) (volume.restrict K)).toReal := by
-    rw [hnorm j]
+    rw [hnorm]
     exact ENNReal.toReal_mono (hErr j).eLpNorm_ne_top
       (eLpNorm_mono_ae (hmem j).aestronglyMeasurable (hb j))
   refine ⟨fun j => ?_, ?_⟩
   · have hm := (memLp_indicator_iff_restrict hK.measurableSet).mpr (hmem j)
-    rwa [hEq j] at hm
+    grind
   · exact squeeze_zero (fun j => ENNReal.toReal_nonneg) hbound hErr0
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

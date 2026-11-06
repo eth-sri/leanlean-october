@@ -7,7 +7,6 @@ import Mathlib.Tactic
 /-! # Power lower bounds incompatible with the finite angular tail -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
@@ -20,13 +19,9 @@ theorem bellmanAngularTail_not_power_lower_bound (f : ℝ → ℝ) (β a c p : �
   have hap : 0 < a := by linarith
   have hi : IntegrableOn (fun y => f y * y ^ (β - 4)) (Ioi a) volume := by
     apply (htail.mono_set (show Ioi a ⊆ {y : ℝ | 2 < |y|} by
-      intro y hy; change a < y at hy
-      change 2 < |y|
-      rw [abs_of_pos (by linarith : 0 < y)]
-      linarith)).congr_fun _ measurableSet_Ioi
+      grind)).congr_fun _ measurableSet_Ioi
     intro y hy
-    change f y * |y| ^ (β - 4) = f y * y ^ (β - 4)
-    rw [abs_of_pos (hap.trans hy)]
+    grind
   have hpow : IntegrableOn (fun y : ℝ => c * y ^ p) (Ioi a) volume := by
     apply hi.mono' (by fun_prop)
     filter_upwards [hlower, ae_restrict_mem measurableSet_Ioi] with y hy hya
@@ -35,11 +30,9 @@ theorem bellmanAngularTail_not_power_lower_bound (f : ℝ → ℝ) (β a c p : �
     exact hy
   have hrpow : IntegrableOn (fun y : ℝ => y ^ p) (Ioi a) volume := by
     have hs : Integrable (fun y : ℝ => c⁻¹ * (c * y ^ p))
-        (volume.restrict (Ioi a)) := Integrable.const_mul hpow c⁻¹
-    change Integrable (fun y : ℝ => y ^ p) (volume.restrict (Ioi a))
-    convert! hs using 1
-    funext y
-    field_simp [hc.ne']
+        _ := Integrable.const_mul hpow _
+    change Integrable _ _
+    grind
   have he := (integrableOn_Ioi_rpow_iff hap).mp hrpow
   linarith
 

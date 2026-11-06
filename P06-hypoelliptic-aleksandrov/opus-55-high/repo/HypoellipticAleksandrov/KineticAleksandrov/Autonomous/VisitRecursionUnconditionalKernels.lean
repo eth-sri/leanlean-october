@@ -21,9 +21,7 @@ def visitPoleSet (H : FiniteIntervalUnion) (s T : ℝ) : Set Point :=
 
 /-- The visit pole carrier is measurable in physical coordinates. -/
 theorem measurableSet_visitPoleSet (H : FiniteIntervalUnion) (s T : ℝ) :
-    MeasurableSet (visitPoleSet H s T) := by
-  unfold visitPoleSet
-  exact (isOpen_lt continuous_const continuous_time).measurableSet.inter
+    MeasurableSet (visitPoleSet H s T) := (isOpen_lt continuous_const continuous_time).measurableSet.inter
     ((isOpen_lt continuous_time continuous_const).measurableSet.inter
       (H.isOpen_carrier.measurableSet.preimage
         ((continuous_apply 0).comp continuous_velocity).measurable))
@@ -71,41 +69,37 @@ instance visitUnionExitKernel_isFiniteKernel
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (s T : ℝ) :
     IsFiniteKernel (visitUnionExitKernel hH hLE hlam hLam A H s T) := by
-  refine ⟨1, by simp only [ENNReal.one_lt_top], ?_⟩
+  refine ⟨1, by simp, ?_⟩
   intro p
   change (if hp : p ∈ visitPoleSet H s T then
     finiteUnionExit hH hLE hlam hLam A H T
-      (visitPoleInclusion H s T ⟨p, hp⟩) else 0) univ ≤ 1
-  split
-  · simp only [measure_univ, le_refl]
-  · exact zero_le
+      _ else 0) univ ≤ 1
+  aesop
+
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
 
 /-- The actual union Green measure has the same finite-time mass bound as its component. -/
 theorem visitUnionGreen_mass_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ)
+     (H : FiniteIntervalUnion) (T : ℝ)
     (p : FiniteUnionPole H (T : WithTop ℝ)) :
     finiteUnionGreen hH hLE hlam hLam A H T p univ ≤ ENNReal.ofReal (T - p.1.time) :=
-  stripGreen_finite_time_mass hH hLE hlam hLam A _ T (finiteUnionComponentPole H T p)
+  stripGreen_finite_time_mass hH hLE hlam hLam A _ T _
 
 /-- Every physical Green-kernel mass is bounded by the common strip time length. -/
 theorem visitUnionGreenKernel_mass_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (s T : ℝ) (p : Point) :
+     (H : FiniteIntervalUnion) (s T : ℝ) (p : Point) :
     visitUnionGreenKernel hH hLE hlam hLam A H s T p univ ≤
       ENNReal.ofReal (T - s) := by
   change (if hp : p ∈ visitPoleSet H s T then
     finiteUnionGreen hH hLE hlam hLam A H T
-      (visitPoleInclusion H s T ⟨p, hp⟩) else 0) univ ≤ ENNReal.ofReal (T - s)
+      _ else 0) univ ≤ ENNReal.ofReal _
   split
   · rename_i hp
     apply (visitUnionGreen_mass_le hH hLE hlam hLam A H T
       (visitPoleInclusion H s T ⟨p, hp⟩)).trans
     apply ENNReal.ofReal_le_ofReal
     exact sub_le_sub_left hp.1.le T
-  · exact zero_le
+  positivity
 
 /-- The strict physical lower time gives a uniform finite bound on the Green kernel. -/
 instance visitUnionGreenKernel_isFiniteKernel

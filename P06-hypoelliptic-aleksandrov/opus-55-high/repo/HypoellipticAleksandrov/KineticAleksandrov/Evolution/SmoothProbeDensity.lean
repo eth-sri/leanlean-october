@@ -21,7 +21,6 @@ approximant as a `BoundedBorel` smooth compact terminal datum on the open state 
 
 @[expose] public section
 
-noncomputable section
 
 open Set Filter MeasureTheory Metric Function
   HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
@@ -49,14 +48,13 @@ theorem exists_smooth_compactSupport_close {U : Set E} (hU : IsOpen U) (f : C_c(
     (ε : ℝ) (hε : 0 < ε) :
     ∃ φ : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) φ ∧ HasCompactSupport φ ∧ tsupport φ ⊆ U ∧
       ∀ x : U, |φ x - f x| ≤ ε := by
-  set g : E → ℝ := Subtype.val.extend (f : U → ℝ) 0 with hg
+  set g : E → ℝ := Subtype.val.extend f 0 with hg
   obtain ⟨hgc, hgs⟩ := extendByZero_continuous_hasCompactSupport hU f
   have hgx : ∀ x : U, g x = f x := fun x => Subtype.val_injective.extend_apply _ _ x
-  set K : Set E := Subtype.val '' tsupport (f : U → ℝ) with hKdef
+  set K : Set E := Subtype.val '' tsupport f with hKdef
   have hKc : IsCompact K := f.hasCompactSupport.isCompact.image continuous_subtype_val
   have hKU : K ⊆ U := by
-    rintro _ ⟨x, -, rfl⟩
-    exact x.2
+    simp_all
   have hgK : tsupport g ⊆ K :=
     f.hasCompactSupport.tsupport_extend_zero_subset continuous_subtype_val
   obtain ⟨δ0, hδ0, hthick⟩ := hKc.exists_cthickening_subset_open hU hKU
@@ -71,10 +69,10 @@ theorem exists_smooth_compactSupport_close {U : Set E} (hU : IsOpen U) (f : C_c(
     φb.hasCompactSupport_normed.contDiff_convolution_left _ φb.contDiff_normed hgloc
   have hconv_supp : HasCompactSupport ((φb.normed μ) ⋆[ContinuousLinearMap.lsmul ℝ ℝ, μ] g) :=
     φb.hasCompactSupport_normed.convolution _ hgs
-  have hSc : IsCompact (closedBall (0 : E) r + K) :=
-    (isCompact_closedBall (0 : E) r).add hKc
+  have hSc  :=
+    (isCompact_closedBall (0) r).add hKc
   have hts : tsupport ((φb.normed μ) ⋆[ContinuousLinearMap.lsmul ℝ ℝ, μ] g) ⊆
-      closedBall (0 : E) r + K := by
+      closedBall (0) r + K := by
     refine closure_minimal ?_ hSc.isClosed
     refine (support_convolution_subset _).trans (add_subset_add ?_ ?_)
     · exact subset_tsupport _ |>.trans (φb.tsupport_normed_eq (μ := μ)).subset
@@ -83,16 +81,13 @@ theorem exists_smooth_compactSupport_close {U : Set E} (hU : IsOpen U) (f : C_c(
   · refine hts.trans ?_
     rintro _ ⟨a, ha, k, hk, rfl⟩
     refine hthick (mem_cthickening_of_dist_le (a + k) k δ0 K hk ?_)
-    have : dist (a + k) k = ‖a‖ := by simp [dist_eq_norm]
-    rw [this]
-    exact (mem_closedBall_zero_iff.mp ha).trans (min_le_left _ _)
+    simp_all
   · intro x
     rw [← hgx x]
     have := φb.dist_normed_convolution_le (μ := μ) (x₀ := (x : E)) (ε := ε)
       hgc.aestronglyMeasurable (fun y hy => (hδ1g (lt_of_lt_of_le (mem_ball.mp hy)
         (min_le_right _ _))).le)
-    rw [Real.dist_eq] at this
-    exact this
+    omega
 
 end General
 

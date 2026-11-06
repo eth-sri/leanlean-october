@@ -6,15 +6,14 @@ import Mathlib.Tactic
 /-! # Summing the enlarged-strip quadratic identities -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+
 /-- Entrance support gives an integrable quadratic with its exact source lower bound. -/
 theorem enlargedQuadratic_entrance_lower_integral
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
+     (c : Clock) (J : Interval) (s T : ℝ)
     (P : Point) (hs : s ≤ P.time) (hT : P.time < T) (n : ℕ) :
     5 * c.r ^ 2 / 16 *
       (enlargedVisitEntrance hH hLE hlam hLam A c J s T P n univ).toReal ≤
@@ -32,15 +31,13 @@ theorem enlargedQuadratic_entrance_lower_integral
       ((by positivity : 0 ≤ 5 * c.r ^ 2 / 16).trans
         (visitQuadratic_entrance_lower c hp.2.2))]
     exact visitQuadratic_le c _
-  have h := integral_mono_ae (integrable_const (5 * c.r ^ 2 / 16)) hi
+  have h := integral_mono_ae (integrable_const _) hi
     (hm.mono fun _ hp => visitQuadratic_entrance_lower c hp.2.2)
   simpa only [integral_const, smul_eq_mul, Measure.real, mul_comm] using h
 
 /-- Terminal mixtures at the observation horizon are finite for each finite entrance. -/
 theorem enlarged_terminalPiece_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
+     (c : Clock) (J : Interval) (s T : ℝ)
     (P : Point) (hs : s ≤ P.time) (hT : P.time < T) (n : ℕ) :
     IsFiniteMeasure ((enlargedVisitEntrance hH hLE hlam hLam A c J s T P n).bind
       (enlargedActiveTerminalFamily hH hLE hlam hLam A c J T)) := by
@@ -51,9 +48,7 @@ theorem enlarged_terminalPiece_isFiniteMeasure
 
 /-- The terminal contribution has the quadratic maximum times its actual terminal mass. -/
 theorem enlargedQuadratic_exit_integral_le_terminal_mass
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
+     (c : Clock) (J : Interval) (s T : ℝ)
     (P : Point) (hs : s ≤ P.time) (hT : P.time < T)
     (hJ : closure c.active ⊆ J.carrier) (n : ℕ) :
     (∫ q, visitQuadratic c (q.velocity 0)
@@ -66,21 +61,19 @@ theorem enlargedQuadratic_exit_integral_le_terminal_mass
   have ht := (enlargedVisitEntrance_ae_support hH hLE hlam hLam A c J s T P hs hT n).mono
     fun _ hp => hp.2.1
   have : IsFiniteMeasure (mu.bind
-      (enlargedActiveTerminalFamily hH hLE hlam hLam A c J T)) :=
+      _) :=
     enlarged_terminalPiece_isFiniteMeasure hH hLE hlam hLam A c J s T P hs hT n
   have hi := (enlargedQuadratic_integrable_exit hH hLE hlam hLam A c J T mu).restrict
     (s := {q | q.time = T})
   rw [← enlargedActiveTerminal_bind_eq_restrict hH hLE hlam hLam A c J T mu ht] at hi
   rw [enlargedQuadratic_exit_integral_eq_terminal hH hLE hlam hLam A c J T hJ mu ht]
-  have h := integral_mono_ae hi (integrable_const (9 * c.r ^ 2 / 16))
-    (Filter.Eventually.of_forall fun q => visitQuadratic_le c (q.velocity 0))
+  have h := integral_mono_ae hi (integrable_const _)
+    (Filter.Eventually.of_forall fun q => visitQuadratic_le c _)
   simpa only [integral_const, smul_eq_mul, Measure.real, mul_comm] using h
 
 /-- The exact quadratic count inequality for the canonical finite active pieces. -/
 theorem enlargedQuadratic_partial_mass_bound
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
+     (c : Clock) (J : Interval) (s T : ℝ)
     (P : Point) (hs : s ≤ P.time) (hT : P.time < T)
     (hJ : closure c.active ⊆ J.carrier) (N : ℕ) :
     5 * c.r ^ 2 / 16 *

@@ -94,13 +94,15 @@ def CounterProfileStatement (d : ℕ) (alpha : ℝ) : Prop :=
     (2 ≤ d → ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d))) ∧
     (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q)
 
+variable {d : ℕ} {alpha : ℝ}
+
 /-- The lam witness selected from the shared conditional profile statement. -/
-noncomputable def profileLowerEllipticity {d : ℕ} {alpha : ℝ}
+noncomputable def profileLowerEllipticity 
     (h : CounterProfileStatement d alpha) : ℝ :=
   h.choose
 
 /-- The remaining source conclusions for the selected lam witness. -/
-theorem profileLowerEllipticity_spec {d : ℕ} {alpha : ℝ}
+theorem profileLowerEllipticity_spec 
     (h : CounterProfileStatement d alpha) :
     let lam := profileLowerEllipticity h
     ∃ Lam : ℝ,
@@ -133,16 +135,15 @@ theorem profileLowerEllipticity_spec {d : ℕ} {alpha : ℝ}
       (∀ i, (∫ q, H q * dv test q i) = -(∫ q, gv q i * test q)) ∧
       (∀ i k, (∫ q, H q * dvv test q i k) = (∫ q, hess q i k * test q))) ∧
     (2 ≤ d → ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d))) ∧
-    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := by
-  exact h.choose_spec
+    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := h.choose_spec
 
 /-- The Lam witness selected from the shared conditional profile statement. -/
-noncomputable def profileUpperEllipticity {d : ℕ} {alpha : ℝ}
+noncomputable def profileUpperEllipticity 
     (h : CounterProfileStatement d alpha) : ℝ :=
   (profileLowerEllipticity_spec h).choose
 
 /-- The remaining source conclusions for the selected Lam witness. -/
-theorem profileUpperEllipticity_spec {d : ℕ} {alpha : ℝ}
+theorem profileUpperEllipticity_spec 
     (h : CounterProfileStatement d alpha) :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
@@ -175,16 +176,15 @@ theorem profileUpperEllipticity_spec {d : ℕ} {alpha : ℝ}
       (∀ i, (∫ q, H q * dv test q i) = -(∫ q, gv q i * test q)) ∧
       (∀ i k, (∫ q, H q * dvv test q i k) = (∫ q, hess q i k * test q))) ∧
     (2 ≤ d → ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d))) ∧
-    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := by
-  exact (profileLowerEllipticity_spec h).choose_spec
+    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := (profileLowerEllipticity_spec h).choose_spec
 
 /-- The c witness selected from the shared conditional profile statement. -/
-noncomputable def profileLowerComparison {d : ℕ} {alpha : ℝ}
+noncomputable def profileLowerComparison 
     (h : CounterProfileStatement d alpha) : ℝ :=
   (profileUpperEllipticity_spec h).choose
 
 /-- The remaining source conclusions for the selected c witness. -/
-theorem profileLowerComparison_spec {d : ℕ} {alpha : ℝ}
+theorem profileLowerComparison_spec 
     (h : CounterProfileStatement d alpha) :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
@@ -217,16 +217,15 @@ theorem profileLowerComparison_spec {d : ℕ} {alpha : ℝ}
       (∀ i, (∫ q, H q * dv test q i) = -(∫ q, gv q i * test q)) ∧
       (∀ i k, (∫ q, H q * dvv test q i k) = (∫ q, hess q i k * test q))) ∧
     (2 ≤ d → ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d))) ∧
-    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := by
-  exact (profileUpperEllipticity_spec h).choose_spec
+    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := (profileUpperEllipticity_spec h).choose_spec
 
 /-- The C witness selected from the shared conditional profile statement. -/
-noncomputable def profileUpperComparison {d : ℕ} {alpha : ℝ}
+noncomputable def profileUpperComparison 
     (h : CounterProfileStatement d alpha) : ℝ :=
   (profileLowerComparison_spec h).choose
 
 /-- The remaining source conclusions for the selected C witness. -/
-theorem profileUpperComparison_spec {d : ℕ} {alpha : ℝ}
+theorem profileUpperComparison_spec 
     (h : CounterProfileStatement d alpha) :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
@@ -259,16 +258,15 @@ theorem profileUpperComparison_spec {d : ℕ} {alpha : ℝ}
       (∀ i, (∫ q, H q * dv test q i) = -(∫ q, gv q i * test q)) ∧
       (∀ i k, (∫ q, H q * dvv test q i k) = (∫ q, hess q i k * test q))) ∧
     (2 ≤ d → ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d))) ∧
-    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := by
-  exact (profileLowerComparison_spec h).choose_spec
+    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := (profileLowerComparison_spec h).choose_spec
 
 /-- The A witness selected from the shared conditional profile statement. -/
-noncomputable def profileMatrix {d : ℕ} {alpha : ℝ}
+noncomputable def profileMatrix 
     (h : CounterProfileStatement d alpha) : XV d → PDE.Mat d :=
   (profileUpperComparison_spec h).choose
 
 /-- The remaining source conclusions for the selected A witness. -/
-theorem profileMatrix_spec {d : ℕ} {alpha : ℝ}
+theorem profileMatrix_spec 
     (h : CounterProfileStatement d alpha) :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
@@ -301,16 +299,15 @@ theorem profileMatrix_spec {d : ℕ} {alpha : ℝ}
       (∀ i, (∫ q, H q * dv test q i) = -(∫ q, gv q i * test q)) ∧
       (∀ i k, (∫ q, H q * dvv test q i k) = (∫ q, hess q i k * test q))) ∧
     (2 ≤ d → ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d))) ∧
-    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := by
-  exact (profileUpperComparison_spec h).choose_spec
+    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := (profileUpperComparison_spec h).choose_spec
 
 /-- The H witness selected from the shared conditional profile statement. -/
-noncomputable def profileFunction {d : ℕ} {alpha : ℝ}
+noncomputable def profileFunction 
     (h : CounterProfileStatement d alpha) : XV d → ℝ :=
   (profileMatrix_spec h).choose
 
 /-- The remaining source conclusions for the selected H witness. -/
-theorem profileFunction_spec {d : ℕ} {alpha : ℝ}
+theorem profileFunction_spec 
     (h : CounterProfileStatement d alpha) :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
@@ -343,16 +340,15 @@ theorem profileFunction_spec {d : ℕ} {alpha : ℝ}
       (∀ i, (∫ q, H q * dv test q i) = -(∫ q, gv q i * test q)) ∧
       (∀ i k, (∫ q, H q * dvv test q i k) = (∫ q, hess q i k * test q))) ∧
     (2 ≤ d → ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d))) ∧
-    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := by
-  exact (profileMatrix_spec h).choose_spec
+    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := (profileMatrix_spec h).choose_spec
 
 /-- The gx witness selected from the shared conditional profile statement. -/
-noncomputable def profilePositionJet {d : ℕ} {alpha : ℝ}
+noncomputable def profilePositionJet 
     (h : CounterProfileStatement d alpha) : XV d → PDE.Vec d :=
   (profileFunction_spec h).choose
 
 /-- The remaining source conclusions for the selected gx witness. -/
-theorem profilePositionJet_spec {d : ℕ} {alpha : ℝ}
+theorem profilePositionJet_spec 
     (h : CounterProfileStatement d alpha) :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
@@ -385,16 +381,15 @@ theorem profilePositionJet_spec {d : ℕ} {alpha : ℝ}
       (∀ i, (∫ q, H q * dv test q i) = -(∫ q, gv q i * test q)) ∧
       (∀ i k, (∫ q, H q * dvv test q i k) = (∫ q, hess q i k * test q))) ∧
     (2 ≤ d → ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d))) ∧
-    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := by
-  exact (profileFunction_spec h).choose_spec
+    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := (profileFunction_spec h).choose_spec
 
 /-- The gv witness selected from the shared conditional profile statement. -/
-noncomputable def profileVelocityJet {d : ℕ} {alpha : ℝ}
+noncomputable def profileVelocityJet 
     (h : CounterProfileStatement d alpha) : XV d → PDE.Vec d :=
   (profilePositionJet_spec h).choose
 
 /-- The remaining source conclusions for the selected gv witness. -/
-theorem profileVelocityJet_spec {d : ℕ} {alpha : ℝ}
+theorem profileVelocityJet_spec 
     (h : CounterProfileStatement d alpha) :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
@@ -427,16 +422,15 @@ theorem profileVelocityJet_spec {d : ℕ} {alpha : ℝ}
       (∀ i, (∫ q, H q * dv test q i) = -(∫ q, gv q i * test q)) ∧
       (∀ i k, (∫ q, H q * dvv test q i k) = (∫ q, hess q i k * test q))) ∧
     (2 ≤ d → ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d))) ∧
-    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := by
-  exact (profilePositionJet_spec h).choose_spec
+    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := (profilePositionJet_spec h).choose_spec
 
 /-- The hess witness selected from the shared conditional profile statement. -/
-noncomputable def profileHessian {d : ℕ} {alpha : ℝ}
+noncomputable def profileHessian 
     (h : CounterProfileStatement d alpha) : XV d → PDE.Mat d :=
   (profileVelocityJet_spec h).choose
 
 /-- The remaining source conclusions for the selected hess witness. -/
-theorem selectedProfile_spec {d : ℕ} {alpha : ℝ}
+theorem selectedProfile_spec 
     (h : CounterProfileStatement d alpha) :
     let lam := profileLowerEllipticity h
     let Lam := profileUpperEllipticity h
@@ -469,7 +463,6 @@ theorem selectedProfile_spec {d : ℕ} {alpha : ℝ}
       (∀ i, (∫ q, H q * dv test q i) = -(∫ q, gv q i * test q)) ∧
       (∀ i k, (∫ q, H q * dvv test q i k) = (∫ q, hess q i k * test q))) ∧
     (2 ≤ d → ContDiffOn ℝ (⊤ : ℕ∞) H ({0}ᶜ : Set (XV d))) ∧
-    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := by
-  exact (profileVelocityJet_spec h).choose_spec
+    (∀ᵐ q ∂volume, ContDiffAt ℝ 2 H q) := (profileVelocityJet_spec h).choose_spec
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

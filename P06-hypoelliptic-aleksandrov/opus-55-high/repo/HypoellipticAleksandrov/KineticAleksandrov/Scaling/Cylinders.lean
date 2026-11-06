@@ -12,7 +12,6 @@ of variables on kinetic points (resp. raw coordinates).
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Scaling
 
@@ -43,8 +42,7 @@ theorem time_inj {x y : ℝ} : Φ.time x = Φ.time y ↔ x = y := by
   constructor
   · intro h
     exact le_antisymm (Φ.time_le_iff.1 h.le) (Φ.time_le_iff.1 h.ge)
-  · intro h
-    rw [h]
+  simp_all
 
 variable {Ω Ω' : Set (PDE.Vec d)} {γ γ' : ℝ → PDE.Vec d}
 
@@ -65,7 +63,7 @@ theorem isOpen_evolutionPastInteriorRaw (hΩ : IsOpen Ω) (hγ : Continuous γ) 
       mem_movingDomain_iff]
   rw [h]
   refine (isOpen_lt continuous_fst continuous_const).inter (hΩ.preimage ?_)
-  exact (continuous_fst.comp continuous_snd).sub (hγ.comp continuous_fst)
+  fun_prop
 
 variable {Φ}
 

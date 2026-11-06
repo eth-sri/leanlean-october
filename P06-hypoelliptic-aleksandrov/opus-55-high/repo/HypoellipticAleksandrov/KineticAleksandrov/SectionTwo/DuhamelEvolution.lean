@@ -17,7 +17,7 @@ def duhamelSlice {d : ℕ} (g : BoundedBorel (KineticPoint d)) (r : ℝ) :
       (measurable_const.prodMk measurable_id)) using 1
     rfl
   · obtain ⟨C, hC, hg⟩ := g.exists_bound
-    exact ⟨C, hC, fun w => hg ⟨r, w.1, w.2⟩⟩
+    grind
 
 /-- Each source-time kernel integral equals the supplied terminal evolution action. -/
 theorem duhamelSourceIntegral_eq_evolution {d : ℕ} {Ω : Set (PDE.Vec d)}
@@ -29,9 +29,9 @@ theorem duhamelSourceIntegral_eq_evolution {d : ℕ} {Ω : Set (PDE.Vec d)}
     (p : EvolutionState Ω γ σ) :
     duhamelSourceIntegral K g (evolutionQueryOfState Ω γ σ r hσr p) =
       S σ r hσr (terminalStateDatum (duhamelSlice g r)) p := by
-  rw [hreal.2.1 σ r hσr p (terminalStateDatum (duhamelSlice g r))]
+  rw [hreal.2.1]
   unfold duhamelSourceIntegral
-  rw [← K.map_fiberKernel_eq_master hΩ σ r hσr p]
+  rw [← K.map_fiberKernel_eq_master hΩ]
   exact integral_map measurable_subtype_coe.aemeasurable
     (duhamelSlice g r).measurable.aestronglyMeasurable
 

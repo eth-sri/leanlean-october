@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitMeasureS
 /-! # A single exponential velocity-face estimate without coefficient derivatives -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo TheoremA Evolution
@@ -33,20 +32,17 @@ theorem reconstruction_early_face_exponential_bound
   have hc : 0 ≤ c := mul_nonneg hLam0.le (sq_nonneg k)
   have hp (p : Point) : phi p = Real.exp (c * (b - p.time) + beta * (p.velocity 0 - face)) := by
     dsimp only [phi, reconstructionExponentialPlane]
-    congr 1
     ring
-  have hpos (p : Point) : 0 < phi p := by rw [hp]; exact Real.exp_pos _
+  have hpos (p : Point) : 0 < phi p := by exact Real.exp_pos _
   have hop (p : Point) : forwardScalarOperator A.a phi p =
       (A.a (p.position 0) (p.velocity 0) - Lam) * k ^ 2 * phi p := by
     rw [reconstructionExponentialPlane_operator, hbeta]
-    dsimp only [c]
     ring
   have hpn (p : Point) (ht : e.1.time ≤ p.time) (hv : p.velocity 0 ∈ Icc H.lo H.hi) :
       phi p ≤ Real.exp (c * theta) := by
-    rw [hp]
     apply Real.exp_le_exp.mpr
-    have hf := hface (p.velocity 0) hv
-    have hh : b - p.time ≤ theta := by dsimp only [b]; linarith
+    have hf := hface _ hv
+    have hh : b - p.time ≤ theta := by linarith
     have hh' := mul_le_mul_of_nonneg_left hh hc
     linarith
   have hbound : ∃ M : ℝ, ∀ p, e.1.time ≤ p.time → p.time ≤ T →
@@ -55,7 +51,6 @@ theorem reconstruction_early_face_exponential_bound
     have hv' : p.velocity 0 ∈ Icc H.lo H.hi := ⟨hv.1.le, hv.2.le⟩
     have hpb := hpn p ht hv'
     have ha := A.bounds (p.position 0) (p.velocity 0)
-    have ha0 : 0 ≤ A.a (p.position 0) (p.velocity 0) := hlam.le.trans ha.1
     have hpb0 := (hpos p).le
     constructor
     · rw [abs_of_nonneg hpb0]
@@ -63,9 +58,7 @@ theorem reconstruction_early_face_exponential_bound
     · rw [hop, abs_mul, abs_mul, abs_of_nonpos (sub_nonpos.mpr ha.2),
         abs_of_nonneg (sq_nonneg k), abs_of_nonneg hpb0]
       have h1 : -(A.a (p.position 0) (p.velocity 0) - Lam) * k ^ 2 ≤ c := by
-        dsimp only [c]
         nlinarith [sq_nonneg k]
-      have hh := mul_le_mul h1 hpb hpb0 hc
       nlinarith [Real.exp_pos (c * theta)]
   have hB : MeasurableSet {p : Point | p.velocity 0 = face ∧ p.time ≤ b} :=
     (isClosed_eq ((continuous_apply 0).comp continuous_velocity)
@@ -84,11 +77,9 @@ theorem reconstruction_early_face_exponential_bound
       exact Real.one_le_exp_iff.mpr (mul_nonneg hc (sub_nonneg.mpr hp'.2)))
   apply hmass.trans
   apply ENNReal.ofReal_le_ofReal
-  rw [hp]
   apply Real.exp_le_exp.mpr
-  have ht : b - e.1.time ≤ theta := by dsimp only [b]; linarith
+  have ht : b - e.1.time ≤ theta := by linarith
   have hh := mul_le_mul_of_nonneg_left ht hc
-  dsimp only [c] at hh ⊢
   linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

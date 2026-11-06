@@ -58,7 +58,6 @@ theorem boundedSourceActionMeasure_compl_past (K : MovingFiberKernel Ω γ)
       (Filter.Eventually.of_forall fun _ => ae_restrict_mem measurableSet_Ioo)
   have hrη : ∀ᵐ q ∂η, q.1.2 ∈ Ioo a T := by
     have hmapped : ∀ᵐ q ∂Measure.map Subtype.val η, q.2 ∈ Ioo a T := by
-      dsimp only [η]
       rw [map_comap_subtype_coe hD]
       exact ae_restrict_of_ae hr
     exact ae_of_ae_map (p := fun q : KineticPoint d × ℝ => q.2 ∈ Ioo a T)
@@ -69,9 +68,9 @@ theorem boundedSourceActionMeasure_compl_past (K : MovingFiberKernel Ω γ)
     filter_upwards [hrη] with q hq
     have hstate : ∀ᵐ w ∂κ q,
         w ∈ evolutionStateSet Ω γ q.1.2 := by
-      change ∀ᵐ w ∂K.master (boundedSourcePairQuery q),
+      change ∀ᵐ w ∂K.master _,
         w ∈ evolutionStateSet Ω γ q.1.2
-      rw [← K.terminal_support (boundedSourcePairQuery q)]
+      rw [← K.terminal_support]
       exact ae_restrict_mem (measurableSet_evolutionStateSet hΩ _)
     filter_upwards [hstate] with w hw
     exact ⟨hq.2, hw.1⟩

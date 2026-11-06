@@ -14,7 +14,6 @@ The constant precedes the coefficient field, realization, kernel, and initial me
 -/
 
 @[expose] public section
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
@@ -75,24 +74,24 @@ theorem occupation_duality_of_whole_space_bound
   have hM : 0 ≤ M := ENNReal.toReal_nonneg
   have htest : ∀ F : TimeVelocity d → ℝ,
       ContDiff ℝ (⊤ : ℕ∞) F → HasCompactSupport F →
-      tsupport F ⊆ Ioo (0 : ℝ) 1 ×ˢ univ → (∀ q, 0 ≤ F q) →
+      tsupport F ⊆ Ioo (0) 1 ×ˢ univ → (∀ q, 0 ≤ F q) →
       (∫ q, F q ∂unitOccupationMeasure K ρ) ≤ (C₀ * M) *
         (eLpNorm F (ENNReal.ofReal
-          ((((d : ℝ) + 1) / d) / ((((d : ℝ) + 1) / d) - 1)))
-          (volume.restrict (Ioo (0 : ℝ) 1 ×ˢ univ))).toReal := by
+          (((d + 1) / d) / (((d + 1) / d) - 1)))
+          (volume.restrict (Ioo (0) 1 ×ˢ univ))).toReal := by
     intro F hFs hFc hFsupp hF0
     let W := parabolicDuhamelPotential K MeasurableSet.univ 1 F
     have hwhole := (hWhole B hB S K hreal hP F hF0 hFs hFc hFsupp).2
     have hpot := occupation_potential hH hB K hP F hF0 hFs hFc hFsupp
-    have hb (v : PDE.Vec d) : W (0, v) ≤ C₀ * parabolicLpNorm d F :=
+    have hb (v : PDE.Vec d) : W _ ≤ C₀ * parabolicLpNorm d F :=
       (le_csSup hpot.2.1 ⟨(0, v), ⟨⟨le_rfl, zero_le_one⟩, mem_univ _⟩, rfl⟩).trans hwhole
     have hn (v : PDE.Vec d) : ‖W (0, v)‖ ≤ C₀ * parabolicLpNorm d F := by
-      rw [Real.norm_of_nonneg (hpot.1 (0, v))]
+      rw [Real.norm_of_nonneg (hpot.1 _)]
       exact hb v
     rw [integral_unitOccupationMeasure_eq_potential K ρ F hFs hFc]
     have hi := norm_integral_le_of_norm_le_const (μ := ρ)
       (Filter.Eventually.of_forall hn)
-    have hle : (∫ v, W (0, v) ∂ρ) ≤ (C₀ * parabolicLpNorm d F) * M :=
+    have hle : (∫ v, W _ ∂ρ) ≤ (C₀ * parabolicLpNorm d F) * M :=
       (le_abs_self _).trans (by simpa only [Real.norm_eq_abs, measureReal_def] using hi)
     rw [parabolicLpNorm_eq_slab hd F hFsupp] at hle
     simpa only [mul_assoc, mul_left_comm, mul_comm] using hle
@@ -100,9 +99,9 @@ theorem occupation_duality_of_whole_space_bound
     exists_density_of_smooth_tests volume (unitOccupationMeasure K ρ)
       (isOpen_Ioo.prod isOpen_univ) (unitOccupationMeasure_compl_slab K ρ)
       (occupation_endpoint_gt_one hd) (mul_nonneg hC₀ hM) htest
-  have h1 : MemLp g 1 (volume.restrict (Ioo (0 : ℝ) 1 ×ˢ univ)) :=
+  have h1 : MemLp g 1 (volume.restrict (Ioo _ 1 ×ˢ univ)) :=
     memLp_one_iff_integrable.2 hgi
-  have hnormMass : (eLpNorm g 1 (volume.restrict (Ioo (0 : ℝ) 1 ×ˢ univ))).toReal =
+  have hnormMass : (eLpNorm g 1 (volume.restrict (Ioo (0) 1 ×ˢ univ))).toReal =
       (unitOccupationMeasure K ρ univ).toReal := by
     have he := PDE.toReal_eLpNorm_ofReal_rpow_eq_integral_rpow_norm
       (p := 1) zero_lt_one (by simpa using h1)
@@ -112,7 +111,7 @@ theorem occupation_duality_of_whole_space_bound
       exact Real.norm_of_nonneg (hg0 q)
     rw [heq, hgmass] at he
     exact he
-  have h1n : (eLpNorm g 1 (volume.restrict (Ioo (0 : ℝ) 1 ×ˢ univ))).toReal ≤ M := by
+  have h1n : (eLpNorm g 1 (volume.restrict (Ioo (0) 1 ×ˢ univ))).toReal ≤ M := by
     rw [hnormMass]
     exact ENNReal.toReal_mono (measure_ne_top ρ univ) (unitOccupationMeasure_mass_le K ρ)
   refine ⟨g, ⟨hgm, hg0, ?_⟩, ?_⟩

@@ -22,7 +22,6 @@ bounds, continuity, interior smoothness, the pointwise equation, and both traces
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -80,13 +79,10 @@ theorem isClassicalViscousFiniteSolution_innerBallDirichletLimit
     let x := (evolutionProdCLE n).symm q
     have hxp : evolutionHomeomorph n x = p := by
       apply (KineticPoint.equivProd n).injective
-      change (evolutionProdCLE n) ((evolutionProdCLE n).symm q) = q
-      exact (evolutionProdCLE n).apply_symm_apply q
+      aesop
     have hx : x ∈ evolutionHomeomorph n ⁻¹'
         boundedInnerOpenCylinder (r0 - δ) Γ α τ S := by
-      change evolutionHomeomorph n x ∈ boundedInnerOpenCylinder (r0 - δ) Γ α τ S
-      rw [hxp]
-      exact hp
+      simp_all
     have hV := (isOpen_boundedInnerOpenCylinder (r0 - δ) hΓ.1 α τ S).preimage
       (evolutionHomeomorph n).continuous
     have hc := ((hlocal δ S hδ hδr).1.contDiffAt (hV.mem_nhds hx)).comp q
@@ -96,22 +92,20 @@ theorem isClassicalViscousFiniteSolution_innerBallDirichletLimit
           innerBallDirichletLimit r0 Γ g u ⟨q.1, q.2.1, q.2.2⟩ := by
       funext q
       change innerBallDirichletLimit r0 Γ g u
-        (evolutionHomeomorph n ((evolutionProdCLE n).symm q)) =
-        innerBallDirichletLimit r0 Γ g u ⟨q.1, q.2.1, q.2.2⟩
-      apply congrArg (innerBallDirichletLimit r0 Γ g u)
+        _ =
+        innerBallDirichletLimit r0 Γ g u _
+      apply congrArg _
       apply (KineticPoint.equivProd n).injective
-      change (evolutionProdCLE n) ((evolutionProdCLE n).symm q) = q
-      exact (evolutionProdCLE n).apply_symm_apply q
+      aesop
     simpa only [hfun] using hc.contDiffWithinAt
   · intro p hp ha
     obtain ⟨δ, S, hδ, hδr, hpU⟩ := exists_boundedInnerOpenCylinder_mem hr0
       ⟨ha, hp.2.1⟩ hp.2.2
-    exact (hlocal δ S hδ hδr).2 p hpU
+    grind
   · intro p hp
     have hpc : p ∈ movingClosedSlab (PDE.euclideanBall 0 r0) Γ α τ :=
-      ⟨by rw [hp.1]; exact hατ.le, hp.1.le, by simpa only [hp.1] using hp.2⟩
+      ⟨by rw [hp.1]; linarith, hp.1.le, by simpa only [hp.1] using hp.2⟩
     exact htrace.2.1 p hpc hp.1
-  · intro p _ hp
-    exact htrace.2.2 p hp
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov

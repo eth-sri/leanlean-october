@@ -44,58 +44,36 @@ noncomputable def mulCutoff
     u.mulContDiffHasCompactSupport
       η.smooth η.hasCompactSupport
 
+variable (u : W1pFunction U p) (η : QuantitativeSmoothCutoff inner outer K) (hp : 1 ≤ p)
+
 @[simp]
 theorem mulCutoff_toFun
-    (u : W1pFunction U p)
-    (η : QuantitativeSmoothCutoff inner outer K)
-    (hp : 1 ≤ p) :
+     :
     (u.mulCutoff η hp).toFun =
       fun x => η.toFun x * u x := by
-  let : Fact (1 ≤ p) := ⟨hp⟩
-  change
-    (u.mulContDiffHasCompactSupport
-      η.smooth η.hasCompactSupport).toFun =
-        fun x => η.toFun x * u x
-  exact
-    u.mulContDiffHasCompactSupport_toFun
-      η.smooth η.hasCompactSupport
+  aesop
 
 @[simp]
 theorem mulCutoff_grad
-    (u : W1pFunction U p)
-    (η : QuantitativeSmoothCutoff inner outer K)
-    (hp : 1 ≤ p) :
+     :
     (u.mulCutoff η hp).grad =
       fun x =>
         η.toFun x • u.grad x +
           u x • classicalGradient η.toFun x := by
-  let : Fact (1 ≤ p) := ⟨hp⟩
-  change
-    (u.mulContDiffHasCompactSupport
-      η.smooth η.hasCompactSupport).grad =
-        fun x =>
-          η.toFun x • u.grad x +
-            u x • classicalGradient η.toFun x
-  exact
-    u.mulContDiffHasCompactSupport_grad
-      η.smooth η.hasCompactSupport
+  aesop
 
 /-- Multiplication by the square of a cutoff has the expected squared value
 representative. -/
 @[simp]
 theorem mulCutoff_sq_toFun
-    (u : W1pFunction U p)
-    (η : QuantitativeSmoothCutoff inner outer K)
-    (hp : 1 ≤ p) :
+     :
     (u.mulCutoff η.sq hp).toFun =
       fun x => η x ^ 2 * u x := by
-  rw [mulCutoff_toFun, QuantitativeSmoothCutoff.sq_toFun]
+  simp
 
 /-- Exact product-rule gradient for multiplication by a squared cutoff. -/
 theorem mulCutoff_sq_grad
-    (u : W1pFunction U p)
-    (η : QuantitativeSmoothCutoff inner outer K)
-    (hp : 1 ≤ p) :
+     :
     (u.mulCutoff η.sq hp).grad =
       fun x =>
         η x ^ 2 • u.grad x +
@@ -104,7 +82,7 @@ theorem mulCutoff_sq_grad
   funext x i
   rw [QuantitativeSmoothCutoff.sq_classicalGradient]
   simp only [QuantitativeSmoothCutoff.sq_apply, Pi.add_apply,
-    Pi.smul_apply, smul_eq_mul]
+    Pi.smul_apply]
   ring
 
 end W1pFunction

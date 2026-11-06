@@ -11,20 +11,21 @@ import Mathlib.Tactic
 /-! # Vanishing endpoints and the integrated Gaussian time equation away from the pole -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set Filter
 open scoped Topology
 
+variable (q : BellmanPuncturedPlane)
+
 /-- The scalar time chart vanishes at the initial endpoint away from the pole. -/
-theorem bellmanGaussianTimeChart_tendsto_zero (q : BellmanPuncturedPlane) :
+theorem bellmanGaussianTimeChart_tendsto_zero  :
     Tendsto (fun s => bellmanGaussianTimeChart s q.val) (𝓝[>] (0 : ℝ)) (𝓝 0) := by
   let a := q.val.1 ^ 2 + q.val.2 ^ 2
   let C := 360 * 8 ^ 6 * Real.sqrt 3 / (Real.pi * a ^ 6)
   have ha : 0 < a := bellmanPunctured_sq_pos q
   have hlim : Tendsto (fun s : ℝ => C * s ^ 4) (𝓝[>] 0) (𝓝 0) := by
     simpa using (tendsto_const_nhds.mul ((tendsto_id.mono_left inf_le_left).pow 4) :
-      Tendsto (fun s : ℝ => C * s ^ 4) (𝓝[>] 0) (𝓝 (C * 0 ^ 4)))
+      Tendsto (fun s : ℝ => C * s ^ 4) (𝓝[>] 0) _)
   refine tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds hlim ?_ ?_
   · filter_upwards [self_mem_nhdsWithin] with s hs
     exact (bellmanGaussianKernel_pos ⟨s, hs⟩ q.val).le
@@ -40,9 +41,9 @@ theorem bellmanGaussianTimeChart_tendsto_atTop (q : ℝ × ℝ) :
     simpa using tendsto_const_nhds.mul
       (tendsto_rpow_neg_atTop (by norm_num : (0 : ℝ) < 2))
   refine tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds hlim ?_ ?_
-  · filter_upwards [Ioi_mem_atTop (0 : ℝ)] with s hs
+  · filter_upwards [Ioi_mem_atTop (0)] with s hs
     exact (bellmanGaussianKernel_pos ⟨s, hs⟩ q).le
-  · filter_upwards [Ioi_mem_atTop (0 : ℝ)] with s hs
+  · filter_upwards [Ioi_mem_atTop (0)] with s hs
     have hspos : 0 < s := hs
     calc
       bellmanGaussianTimeChart s q = bellmanGaussianKernel ⟨s, hspos⟩ q := rfl
@@ -52,14 +53,14 @@ theorem bellmanGaussianTimeChart_tendsto_atTop (q : ℝ × ℝ) :
         ring
 
 /-- At the pole-free initial endpoint, the time chart is right-continuous. -/
-theorem bellmanGaussianTimeChart_continuousWithinAt_zero (q : BellmanPuncturedPlane) :
+theorem bellmanGaussianTimeChart_continuousWithinAt_zero  :
     ContinuousWithinAt (fun s => bellmanGaussianTimeChart s q.val) (Ici 0) 0 := by
   apply continuousWithinAt_Ioi_iff_Ici.mp
   simpa [ContinuousWithinAt, bellmanGaussianTimeChart] using
     bellmanGaussianTimeChart_tendsto_zero q
 
 /-- The time derivative is integrable for each punctured-plane point. -/
-theorem integrable_bellmanGaussianTimeDerivative (q : BellmanPuncturedPlane) :
+theorem integrable_bellmanGaussianTimeDerivative  :
     Integrable (fun t : BellmanPositiveTime =>
       bellmanGaussianTimeCoefficient t.val q.val * bellmanGaussianKernel t q.val)
       bellmanPositiveTimeVolume := by
@@ -73,11 +74,11 @@ theorem integrable_bellmanGaussianTimeDerivative (q : BellmanPuncturedPlane) :
     (bellmanPunctured_sq_pos q) q.val le_rfl t
 
 /-- The integrated time derivative of the Gaussian is zero away from its pole. -/
-theorem integral_bellmanGaussianTimeDerivative_eq_zero (q : BellmanPuncturedPlane) :
+theorem integral_bellmanGaussianTimeDerivative_eq_zero  :
     (∫ t : BellmanPositiveTime,
       bellmanGaussianTimeCoefficient t.val q.val * bellmanGaussianKernel t q.val
         ∂bellmanPositiveTimeVolume) = 0 := by
-  let f' : ℝ → ℝ := fun s =>
+  let f'  := fun s =>
     bellmanGaussianTimeCoefficient s q.val * bellmanGaussianTimeChart s q.val
   have he : MeasurableEmbedding (Subtype.val : BellmanPositiveTime → ℝ) :=
     MeasurableEmbedding.subtype_coe measurableSet_Ioi

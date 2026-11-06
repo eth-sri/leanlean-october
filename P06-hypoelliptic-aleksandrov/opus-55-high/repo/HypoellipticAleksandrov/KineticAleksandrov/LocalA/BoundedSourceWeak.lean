@@ -10,7 +10,6 @@ extends the identity to bounded Borel sources without pointwise smooth approxima
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 open Evolution Occupation
@@ -52,9 +51,7 @@ theorem duhamel_bounded_product_identity (hΩa : IsAdmissibleEvolutionDomain Ω)
     rw [hpreΨ]
     intro q hq
     have hp := hψs hq
-    change evolutionHomeomorph d (packQ d q) ∈ evolutionPastOpenCylinder Ω γ T at hp
-    rw [duhamel_homeomorph_packQ] at hp
-    exact hp
+    aesop
   have hΛU : tsupport Λ ⊆ boundedSourcePast Ω γ T := by
     rw [hpreΛ]
     intro q hq
@@ -73,8 +70,6 @@ theorem duhamel_bounded_product_identity (hΩa : IsAdmissibleEvolutionDomain Ω)
   have hΨnfin := sourcePositiveMeasure_isFinite (fun q => -Ψ q) hΨ.neg hΨc.neg
   let μ := boundedSourceActionMeasure K (sourcePositiveStartMeasure Λ) a T
   let μn := boundedSourceActionMeasure K (sourcePositiveStartMeasure (fun q => -Λ q)) a T
-  have hfin : IsFiniteMeasure μ := by dsimp only [μ]; infer_instance
-  have hnfin : IsFiniteMeasure μn := by dsimp only [μn]; infer_instance
   let f : ℝ × EvolutionAmbientState d → ℝ := fun q => g ⟨q.1, q.2.1, q.2.2⟩
   have hf : Measurable f := hg.comp (KineticPoint.measurable_equivProd_symm d)
   have hfb : ∀ q, |f q| ≤ M := fun q => hgb _
@@ -83,7 +78,7 @@ theorem duhamel_bounded_product_identity (hΩa : IsAdmissibleEvolutionDomain Ω)
   have hν := integrable_bounded_real (sourcePositiveMeasure Ψ) f hf M hfb
   have hνn := integrable_bounded_real (sourcePositiveMeasure (fun q => -Ψ q)) f hf M hfb
   have hint : (∫ q, f q ∂(μ + sourcePositiveMeasure Ψ)) =
-      ∫ q, f q ∂(μn + sourcePositiveMeasure (fun q => -Ψ q)) :=
+      ∫ q, f q ∂(μn + sourcePositiveMeasure _) :=
     congrArg (fun ν => ∫ q, f q ∂ν) heq
   rw [integral_add_measure hμ hν, integral_add_measure hμn hνn] at hint
   have hfloorN : ∀ q, -Λ q ≠ 0 → a ≤ q.1 := fun q hq => hfloor q (neg_ne_zero.mp hq)
@@ -93,8 +88,6 @@ theorem duhamel_bounded_product_identity (hΩa : IsAdmissibleEvolutionDomain Ω)
     (fun q => -Λ q) hΛ.neg hΛc.neg a T hfloorN g hg M hM hgb
   have hbase := integral_sourcePositiveMeasure Ψ hΨ.measurable f
   have hbasen := integral_sourcePositiveMeasure (fun q => -Ψ q) hΨ.neg.measurable f
-  change (∫ q, f q ∂μ) = _ at hact
-  change (∫ q, f q ∂μn) = _ at hactn
   rw [hact, hactn, hbase, hbasen] at hint
   let W : ℝ × EvolutionAmbientState d → ℝ :=
     fun q => duhamelPotential K T g ⟨q.1, q.2.1, q.2.2⟩
@@ -104,14 +97,13 @@ theorem duhamel_bounded_product_identity (hΩa : IsAdmissibleEvolutionDomain Ω)
   have hWb : ∀ q, Λ q ≠ 0 → |W q| ≤ (T - a) * M := by
     intro q hq
     have ht := (hΛU (subset_tsupport Λ hq)).1
-    exact (abs_duhamelPotential_le K g M hM hgb ⟨q.1, q.2.1, q.2.2⟩ T ht.le).trans
+    exact (abs_duhamelPotential_le K g M hM hgb _ T ht.le).trans
       (mul_le_mul_of_nonneg_right (sub_le_sub_left (hfloor q hq) T) hM)
   have hsub := integral_positive_negative_weight_sub Λ hΛ hΛc W hWm
-    ((T - a) * M) (mul_nonneg (sub_nonneg.mpr haT.le) hM) hWb
+    _ (mul_nonneg (sub_nonneg.mpr haT.le) hM) hWb
   have hsubbase := integral_positive_negative_weight_sub Ψ hΨ hΨc f hf M hM
     (fun q _ => hfb q)
-  change (∫ q, Λ q * W q) = -(∫ q, Ψ q * f q)
-  linarith only [hint, hsub, hsubbase]
+  linarith
 
 /-- The signed bounded Borel identity in the existing transported coordinates. -/
 theorem duhamel_bounded_weak_identity (hΩa : IsAdmissibleEvolutionDomain Ω)
@@ -152,7 +144,7 @@ theorem duhamel_bounded_isKineticWeakTransportedSolution
     (continuous_const.sub (continuous_time.comp
       (evolutionHomeomorph d).continuous)).abs.mul continuous_const
   have hloc := hbound.continuousOn.locallyIntegrableOn
-    (μ := (volume : Measure (EvolutionVec d))) hU.measurableSet
+    (μ := volume) hU.measurableSet
   have hmeas := (measurable_duhamelPotential K hΩ hγ T g hg).comp
     (evolutionHomeomorph d).continuous.measurable
   have hW := hloc.mono hmeas.aestronglyMeasurable
@@ -167,7 +159,7 @@ theorem duhamel_bounded_isKineticWeakTransportedSolution
   rw [setIntegral_eq_integral_of_forall_compl_eq_zero,
     setIntegral_eq_integral_of_forall_compl_eq_zero]
   · simp only [Function.comp_apply, neg_mul, integral_neg]
-    simpa only [mul_comm] using hfull
+    grind
   · intro x hx
     rw [image_eq_zero_of_notMem_tsupport (fun h => hx (hs h)), mul_zero]
   · intro x hx

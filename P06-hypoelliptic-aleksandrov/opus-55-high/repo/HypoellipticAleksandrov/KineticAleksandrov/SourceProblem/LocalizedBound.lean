@@ -15,7 +15,6 @@ the rest by continuity of `V`.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
@@ -49,13 +48,12 @@ theorem localizedBound_cylinder_direct
   obtain ⟨hInterior, hValue, hcoef, hsy, hbd, hpos, hle, hmem, hpde, -, hzero, hnorm, hnonneg⟩ :=
     localizedKrylov_admissible_direct hd hlam hLam hsymm hsmooth hlow hup hF0 hFs hFc hFsupp
       hα0 hα1 hR hRsq hV
-  set Qk := krylovCylinder (localHeight α R) (localHeight α R) (0 : PDE.Vec d) with hQk
-  set QV := scalarParabolicOpenCylinder α 1 (PDE.euclideanBall vStar R) with hQV
-  set M : ℝ := C * R ^ ((d : ℝ) / ((d : ℝ) + 1)) *
+  set QV := scalarParabolicOpenCylinder α 1 _ with hQV
+  set M : ℝ := C * R ^ (d / ((d : ℝ) + 1)) *
     parabolicLpNormOn d F QV with hM
   -- Krylov's estimate on the open cylinder
-  have hqk := hK (localHeight α R) (0 : PDE.Vec d) (localHeight α R) hpos hle
-    (localizedCoefficient R vStar B) (localizedSource R vStar F) (localizedScaled R vStar V)
+  have hqk := hK _ _ _ hpos hle
+    _ _ _
     hcoef hsy hbd hmem hInterior hValue
     (ae_restrict_of_forall_mem (isOpen_krylovCylinder _ _ _).measurableSet
       (fun z hz => (hpde z hz).le))
@@ -65,17 +63,17 @@ theorem localizedBound_cylinder_direct
     obtain ⟨z, hz, rfl⟩ := exists_mem_krylovCylinder hR hw
     have h1 := hqk z hz
     rw [hnorm] at h1
-    change V (reflectScale R vStar z) ≤ _ at h1
-    simpa only [hM, mul_assoc] using h1
+    change V _ ≤ _ at h1
+    linarith
   -- extension to the closed cylinder by continuity
   have hclosure : closure QV = scalarParabolicClosedCylinder α 1 (PDE.euclideanBall vStar R) := by
     rw [hQV, scalarParabolicOpenCylinder, closure_prod_eq, closure_Ioo hα1.ne]
     rfl
   intro z hz
   refine ⟨hnonneg z hz, ?_⟩
-  have hQK : QV ⊆ scalarParabolicClosedCylinder α 1 (PDE.euclideanBall vStar R) :=
+  have hQK : QV ⊆ scalarParabolicClosedCylinder α 1 _ :=
     subset_closure.trans hclosure.le
-  have hzc : z ∈ closure QV := by rw [hclosure]; exact hz
+  have hzc : z ∈ closure QV := by simp_all
   exact ContinuousWithinAt.closure_le hzc ((hV.1 z hz).mono hQK) continuousWithinAt_const hopen
 
 /-- The restricted `L^{d+1}` norm of a continuous compactly supported function is at most its
@@ -84,7 +82,7 @@ theorem parabolicLpNormOn_le_parabolicLpNorm_direct
     {F : TimeVelocity d → ℝ} (hF : Continuous F)
     (hFc : HasCompactSupport F) (S : Set (TimeVelocity d)) :
     parabolicLpNormOn d F S ≤ parabolicLpNorm d F := by
-  have hfin : eLpNorm F (parabolicExponent d) volume ≠ ⊤ :=
+  have hfin : eLpNorm F _ volume ≠ ⊤ :=
     (hF.memLp_of_hasCompactSupport (p := parabolicExponent d) (μ := volume) hFc).ne
   exact ENNReal.toReal_mono hfin (eLpNorm_mono_measure F Measure.restrict_le_self)
 

@@ -16,7 +16,6 @@ For a `z`-independent coefficient, the realized kernel is translation covariant 
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Green
 
@@ -35,26 +34,24 @@ theorem isTranslationCovariant_of_realizes {d : ℕ} (B : CoefficientField d)
   intro σ τ hστ h0 p
   let r1 : {r : ℝ // 0 < r} := ⟨1, one_pos⟩
   let Φ := KineticAffineScaling.ofRadius (d := d) 0 0 h0 (identityDrift d) r1
-  have hmaps : Φ.MapsDomain (wholeSpace d) (fun _ => (0 : PDE.Vec d)) (wholeSpace d)
-      (fun _ => (0 : PDE.Vec d)) := KineticAffineScaling.mapsDomain_wholeSpace Φ
+  have hmaps : Φ.MapsDomain (wholeSpace d) _ (wholeSpace d)
+      _ := KineticAffineScaling.mapsDomain_wholeSpace Φ
   have hB : scaledCoefficient B 0 0 r1 = B := by
     funext t Y
     simp [scaledCoefficient, r1]
-  have hreal' : RealizesTerminalEvolution (wholeSpace d) (fun _ => (0 : PDE.Vec d))
+  have hreal' : RealizesTerminalEvolution _ _
       (measurableSet_of_isAdmissibleEvolutionDomain (wholeSpace_admissible d))
       (Φ.coefficient (zIndependentCoefficient B)) (Φ.drift (identityDrift d)) S K := by
     rw [KineticAffineScaling.ofRadius_coefficient, KineticAffineScaling.ofRadius_drift,
       scaledDrift_identity, hB]
-    exact hreal
-  have hmaster : ∀ q' : EvolutionQuery (wholeSpace d) (fun _ => (0 : PDE.Vec d)),
-      K.master q' = (K.master (KineticAffineScaling.queryMap hmaps q')).map
-        (Φ.ambientEquiv q'.1.2.1).symm := fun q' =>
+    omega
+  have hmaster  := fun q' =>
     KineticAffineScaling.realizes_master_eq_map hmaps
       (wholeSpace_admissible d) (zeroCurve_piecewiseC1 d) (wholeSpace_admissible d) hreal hreal' q'
-  set q' := evolutionQueryOfState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ τ hστ p with hq'
+  set q' := evolutionQueryOfState _ _ σ τ hστ p with hq'
   have hqm : KineticAffineScaling.queryMap hmaps q' =
-      evolutionQueryOfState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ τ hστ
-        (evolutionStateShift (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ h0 p) := by
+      evolutionQueryOfState _ _ σ τ hστ
+        (evolutionStateShift _ _ σ h0 p) := by
     apply Subtype.ext
     simp [KineticAffineScaling.queryMap, KineticAffineScaling.rawQuery, KineticAffineScaling.time,
       KineticAffineScaling.position, KineticAffineScaling.transport, Φ,
@@ -62,23 +59,23 @@ theorem isTranslationCovariant_of_realizes {d : ℕ} (B : CoefficientField d)
       r1, hq', evolutionQueryOfState, evolutionStateShift, evolutionAmbientStateShift,
       identityDrift, add_comm]
   have hM : Measure.map (evolutionAmbientStateShift h0) (K.master q') =
-      K.master (evolutionQueryOfState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ τ hστ
-        (evolutionStateShift (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ h0 p)) := by
-    rw [hmaster q', hqm, Measure.map_map (measurable_evolutionAmbientStateShift h0)
+      K.master (evolutionQueryOfState _ _ σ τ hστ
+        (evolutionStateShift _ _ σ h0 p)) := by
+    rw [hmaster, Measure.map_map (measurable_evolutionAmbientStateShift h0)
       (Φ.ambientEquiv _).symm.measurable]
     have hid : evolutionAmbientStateShift h0 ∘ (Φ.ambientEquiv (q'.1.2.1)).symm = id := by
       funext x
       simp [evolutionAmbientStateShift, KineticAffineScaling.positionInv,
         KineticAffineScaling.transportInv, Φ, KineticAffineScaling.ofRadius, r1, identityDrift]
-    rw [hid, Measure.map_id]
+    simp_all
   have hU : MeasurableSet (wholeSpace d) := MeasurableSet.univ
   -- pass from master measures to fibre kernels
   have hemb := MeasurableEmbedding.subtype_coe
-    (measurableSet_evolutionStateSet (γ := fun _ => (0 : PDE.Vec d)) hU τ)
-  rw [← hemb.comap_map (Measure.map (evolutionStateShift (wholeSpace d) (fun _ => 0) τ h0)
+    (measurableSet_evolutionStateSet (γ := fun _ => (0)) hU τ)
+  rw [← hemb.comap_map (Measure.map _
       (K.fiberKernel hU σ τ hστ p)),
     ← hemb.comap_map (K.fiberKernel hU σ τ hστ
-      (evolutionStateShift (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ h0 p))]
+      (evolutionStateShift _ _ σ h0 p))]
   congr 1
   rw [Measure.map_map measurable_subtype_coe (measurable_evolutionStateShift _ _ _ _),
     K.map_fiberKernel_eq_master hU σ τ hστ _]

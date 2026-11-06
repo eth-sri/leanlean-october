@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.StripGreenHo
 /-! # Physical finite-speed Green support for every finite or infinite horizon -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo TheoremA Evolution
@@ -18,12 +17,11 @@ theorem reconstruction_green_infinite_zero_of_finite
     (hz : ∀ T : ℝ, ∀ hT : e.1.time < T,
       stripGreenOfKernel H E.2 T ⟨e.1, WithTop.coe_lt_coe.mpr hT, e.2.2⟩ B = 0) :
     stripGreenOfKernel H E.2 ⊤ e B = 0 := by
-  let t (n : ℕ) := e.1.time + (n : ℝ) + 1
+  let t (n : ℕ) := e.1.time + n + 1
   have ht (n : ℕ) : e.1.time < t n := by
-    dsimp only [t]
-    linarith [Nat.cast_nonneg (α := ℝ) n]
+    grind
   have hzero (n : ℕ) : stripGreenOfKernel H E.2 ⊤ e (B ∩ {p | p.time < t n}) = 0 := by
-    have hh := hz (t n) (ht n)
+    have hh := hz _ (ht n)
     rw [stripGreenOfKernel_horizonRestriction, Measure.restrict_apply hB] at hh
     exact hh
   have hcover : B = ⋃ n : ℕ, B ∩ {p | p.time < t n} := by
@@ -33,12 +31,8 @@ theorem reconstruction_green_infinite_zero_of_finite
       obtain ⟨n, hn⟩ := exists_nat_gt (p.time - e.1.time)
       apply mem_iUnion.mpr
       refine ⟨n, hp, ?_⟩
-      change p.time < t n
-      dsimp only [t]
-      linarith
-    · intro hp
-      rcases mem_iUnion.mp hp with ⟨n, hn⟩
-      exact hn.1
+      grind
+    simp_all
   rw [hcover]
   apply le_antisymm _ bot_le
   exact (measure_iUnion_le _).trans (by simp [hzero])

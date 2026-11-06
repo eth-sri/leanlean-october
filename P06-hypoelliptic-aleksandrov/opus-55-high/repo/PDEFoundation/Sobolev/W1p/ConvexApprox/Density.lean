@@ -57,11 +57,11 @@ noncomputable def convexApproxSmoothW1p
       hp u.memLp hr
       (unitConvexApproxScale_pos n)).of_le (by simp))
 
+variable (hU : IsOpenBoundedConvexDomain U) (hp : 1 ≤ p) (u : W1pFunction U p) (x0 : Vec d) {r : ℝ} (hr : 0 < r)
+
 @[simp]
 theorem convexApproxSmoothW1p_toFun
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (u : W1pFunction U p)
-    (x0 : Vec d) {r : ℝ} (hr : 0 < r)
+    
     (n : ℕ) :
     (convexApproxSmoothW1p hU hp u x0 hr n).toFun =
       convexApproxSmoothRepresentative U
@@ -71,9 +71,7 @@ theorem convexApproxSmoothW1p_toFun
 
 @[simp]
 theorem convexApproxSmoothW1p_grad
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (u : W1pFunction U p)
-    (x0 : Vec d) {r : ℝ} (hr : 0 < r)
+    
     (n : ℕ) :
     (convexApproxSmoothW1p hU hp u x0 hr n).grad =
       classicalGradient
@@ -84,9 +82,7 @@ theorem convexApproxSmoothW1p_grad
 
 @[simp]
 theorem convexApproxSmoothW1p_grad_apply
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (u : W1pFunction U p)
-    (x0 : Vec d) {r : ℝ} (hr : 0 < r)
+    
     (n : ℕ) (x : Vec d) (i : Fin d) :
     (convexApproxSmoothW1p hU hp u x0 hr n).grad x i =
       (fderiv ℝ
@@ -94,19 +90,15 @@ theorem convexApproxSmoothW1p_grad_apply
           (unitConvexApproxKernel (d := d))
           u.toFun x0 r (unitConvexApproxScale n)) x)
         (basisVec i) := by
-  rw [convexApproxSmoothW1p_grad,
-    classicalGradient_apply]
+  simp
 
 /-- Every member of the convex approximation sequence has a globally smooth
 value representative. -/
 theorem contDiff_convexApproxSmoothW1p_toFun
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (u : W1pFunction U p)
-    (x0 : Vec d) {r : ℝ} (hr : 0 < r)
+    
     (n : ℕ) :
     ContDiff ℝ (⊤ : ℕ∞)
       (convexApproxSmoothW1p hU hp u x0 hr n).toFun := by
-  rw [convexApproxSmoothW1p_toFun]
   exact
     contDiff_convexApproxSmoothRepresentative
       hU.measurableSet
@@ -117,8 +109,7 @@ theorem contDiff_convexApproxSmoothW1p_toFun
 /-- The values of the smooth convex approximants converge in
 `L^p(U)` for every finite `p ≥ 1`. -/
 theorem tendsto_convexApproxSmoothW1p_toFun_eLpNorm_sub
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (hpTop : p ≠ ∞)
+     (hpTop : p ≠ ∞)
     (u : W1pFunction U p)
     {x0 : Vec d} {r : ℝ}
     (hball : Metric.closedBall x0 r ⊆ U)
@@ -131,10 +122,10 @@ theorem tendsto_convexApproxSmoothW1p_toFun_eLpNorm_sub
               u.toFun x)
           p (volumeOn U))
       atTop (𝓝 0) := by
-  let ρ : Vec d → ℝ :=
+  let ρ  :=
     unitConvexApproxKernel (d := d)
   have hρ : IsConvexApproxKernel ρ := by
-    simpa only [ρ] using
+    simpa using
       isConvexApproxKernel_unitConvexApproxKernel
         (d := d)
   have hScaleOne :
@@ -175,14 +166,12 @@ theorem tendsto_convexApproxSmoothW1p_toFun_eLpNorm_sub
       convexApproxSmoothRepresentative_eq_convexApproxSmoothing_of_mem
         (u := u.toFun) hU hρ hx hball hr
         (unitConvexApproxScale_pos n) hScale]
-  simpa only [convexApproxSmoothW1p_toFun, ρ] using
-    hRepresentative
+  aesop
 
 /-- Every coordinate of the weak gradient of the smooth convex approximants
 converges in `L^p(U)`. -/
 theorem tendsto_convexApproxSmoothW1p_grad_coord_eLpNorm_sub
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (hpTop : p ≠ ∞)
+     (hpTop : p ≠ ∞)
     (u : W1pFunction U p)
     {x0 : Vec d} {r : ℝ}
     (hball : Metric.closedBall x0 r ⊆ U)
@@ -195,10 +184,10 @@ theorem tendsto_convexApproxSmoothW1p_grad_coord_eLpNorm_sub
               u.grad x i)
           p (volumeOn U))
       atTop (𝓝 0) := by
-  let ρ : Vec d → ℝ :=
+  let ρ  :=
     unitConvexApproxKernel (d := d)
   have hρ : IsConvexApproxKernel ρ := by
-    simpa only [ρ] using
+    simpa using
       isConvexApproxKernel_unitConvexApproxKernel
         (d := d)
   have hScaleOne :
@@ -254,16 +243,14 @@ theorem tendsto_convexApproxSmoothW1p_grad_coord_eLpNorm_sub
         (u := fun y => u.grad y i)
         hU hρ hxU hball hr
         (unitConvexApproxScale_pos n) hScale]
-  simpa only [convexApproxSmoothW1p_grad_apply, ρ] using
-    hRepresentative
+  aesop
 
 /-- The exact Euclidean magnitude of the gradient difference converges to
 zero in `L^p(U)`. The finite coordinate sum is used only inside the proof as a
 majorant. -/
 theorem
     tendsto_convexApproxSmoothW1p_grad_euclidean_eLpNorm_sub
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (hpTop : p ≠ ∞)
+     (hpTop : p ≠ ∞)
     (u : W1pFunction U p)
     {x0 : Vec d} {r : ℝ}
     (hball : Metric.closedBall x0 r ⊆ U)
@@ -297,8 +284,7 @@ The lift is internal; its norm is definitionally bridged back to
 `vecEuclideanNorm`. -/
 theorem
     tendsto_convexApproxSmoothW1p_grad_hilbert_eLpNorm_sub
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (hpTop : p ≠ ∞)
+     (hpTop : p ≠ ∞)
     (u : W1pFunction U p)
     {x0 : Vec d} {r : ℝ}
     (hball : Metric.closedBall x0 r ⊆ U)
@@ -315,8 +301,7 @@ theorem
   have hEq : ∀ n,
       eLpNorm
           (toHilbertVecField
-            (fun x =>
-              (convexApproxSmoothW1p hU hp u x0 hr n).grad x - u.grad x))
+            _)
           p (volumeOn U) =
         eLpNorm
           (fun x => vecEuclideanNorm
@@ -334,8 +319,6 @@ private theorem toHilbertVecField_sub
     (F G : Vec d → Vec d) :
     toHilbertVecField F - toHilbertVecField G =
       toHilbertVecField (fun x => F x - G x) := by
-  funext x
-  ext i
   rfl
 
 /-- The `L^p` norms of the Hilbert lifts of the gradients converge. This is
@@ -343,8 +326,7 @@ the normed-space bridge used to obtain exact Euclidean-gradient norm
 convergence. -/
 theorem
     tendsto_convexApproxSmoothW1p_grad_hilbert_eLpNorm
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (hpTop : p ≠ ∞)
+     (hpTop : p ≠ ∞)
     (u : W1pFunction U p)
     {x0 : Vec d} {r : ℝ}
     (hball : Metric.closedBall x0 r ⊆ U)
@@ -359,11 +341,11 @@ theorem
       (𝓝
         (eLpNorm (toHilbertVecField u.grad)
           p (volumeOn U))) := by
-  let ψ : ℕ → W1pFunction U p :=
+  let ψ  :=
     convexApproxSmoothW1p hU hp u x0 hr
-  let F : ℕ → Vec d → HilbertVec d :=
+  let F  :=
     fun n => toHilbertVecField (ψ n).grad
-  let f : Vec d → HilbertVec d :=
+  let f  :=
     toHilbertVecField u.grad
   have hFMem :
       ∀ n, MemLp (F n) p (volumeOn U) := by
@@ -372,7 +354,7 @@ theorem
       gradMemLpOn_iff_memLp_toHilbertVecField.mp
         (ψ n).gradMemLp
   have hfMem :
-      MemLp f p (volumeOn U) :=
+      MemLp f p _ :=
     gradMemLpOn_iff_memLp_toHilbertVecField.mp
       u.gradMemLp
   have hDifference :
@@ -383,19 +365,7 @@ theorem
     have hLifted :=
       tendsto_convexApproxSmoothW1p_grad_hilbert_eLpNorm_sub
         hU hp hpTop u hball hr
-    refine hLifted.congr' ?_
-    exact
-      Eventually.of_forall fun n => by
-        change
-          eLpNorm
-              (toHilbertVecField
-                (fun x => (ψ n).grad x - u.grad x))
-              p (volumeOn U) =
-            eLpNorm
-              (toHilbertVecField (ψ n).grad -
-                toHilbertVecField u.grad)
-              p (volumeOn U)
-        rw [toHilbertVecField_sub]
+    aesop
   have hNorm :=
     tendsto_eLpNorm_of_tendsto_sub
       hp
@@ -403,14 +373,13 @@ theorem
       hfMem.aestronglyMeasurable
       hfMem.eLpNorm_ne_top
       hDifference
-  simpa only [F, f, ψ] using hNorm
+  omega
 
 /-- The exact Euclidean-gradient `L^p` norms of the smooth approximants
 converge to that of the original Sobolev representative. -/
 theorem
     tendsto_convexApproxSmoothW1p_grad_euclidean_eLpNorm
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (hpTop : p ≠ ∞)
+     (hpTop : p ≠ ∞)
     (u : W1pFunction U p)
     {x0 : Vec d} {r : ℝ}
     (hball : Metric.closedBall x0 r ⊆ U)
@@ -440,8 +409,7 @@ uses the same explicit volume factor on both the approximating and limiting
 unnormalized norms. -/
 theorem
     tendsto_convexApproxSmoothW1p_grad_euclidean_eLpMeanNorm
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (hpTop : p ≠ ∞)
+     (hpTop : p ≠ ∞)
     (u : W1pFunction U p)
     {x0 : Vec d} {r : ℝ}
     (hball : Metric.closedBall x0 r ⊆ U)
@@ -457,14 +425,10 @@ theorem
       (𝓝
         (eLpMeanNormOn U p
           (fun x => vecEuclideanNorm (u.grad x)))) := by
-  let C : ℝ≥0∞ :=
+  let C  :=
     (volume U)⁻¹ ^ (1 / p).toReal
   have hCTop : C ≠ ∞ := by
-    dsimp only [C]
-    exact
-      (ENNReal.rpow_lt_top_of_nonneg
-        (by positivity)
-        (ENNReal.inv_ne_top.mpr hUPos.ne')).ne
+    aesop
   have hRaw :=
     tendsto_convexApproxSmoothW1p_grad_euclidean_eLpNorm
       hU hp hpTop u hball hr
@@ -478,8 +442,7 @@ theorem
 
 /-- Value convergence with respect to normalized volume. -/
 theorem tendsto_convexApproxSmoothW1p_toFun_eLpMeanNorm_sub
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (hpTop : p ≠ ∞)
+     (hpTop : p ≠ ∞)
     (u : W1pFunction U p)
     {x0 : Vec d} {r : ℝ}
     (hball : Metric.closedBall x0 r ⊆ U)
@@ -498,7 +461,7 @@ theorem tendsto_convexApproxSmoothW1p_toFun_eLpMeanNorm_sub
             ((convexApproxSmoothW1p hU hp u x0 hr n).toFun -
               u.toFun))
         atTop (𝓝 0) := by
-    simpa only [eLpNormOn, Pi.sub_apply] using!
+    simpa using!
       tendsto_convexApproxSmoothW1p_toFun_eLpNorm_sub
         hU hp hpTop u hball hr
   exact
@@ -509,8 +472,7 @@ theorem tendsto_convexApproxSmoothW1p_toFun_eLpMeanNorm_sub
 of the smooth convex approximants, including at `p = 1`. -/
 theorem
     tendsto_convexApproxSmoothW1p_centered_eLpMeanNorm_sub
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (hpTop : p ≠ ∞)
+     (hpTop : p ≠ ∞)
     (u : W1pFunction U p)
     {x0 : Vec d} {r : ℝ}
     (hball : Metric.closedBall x0 r ⊆ U)
@@ -525,11 +487,11 @@ theorem
                   (convexApproxSmoothW1p hU hp u x0 hr n).toFun) -
               (u.toFun x - integralAverage U u.toFun)))
       atTop (𝓝 0) := by
-  let ψ : ℕ → W1pFunction U p :=
+  let ψ  :=
     convexApproxSmoothW1p hU hp u x0 hr
-  let μ : Measure (Vec d) :=
+  let μ  :=
     normalizedVolumeOn U
-  let : IsFiniteMeasure (volumeOn U) :=
+  let  :=
     hU.isFiniteMeasure_volumeOn
   let : IsProbabilityMeasure μ :=
     isProbabilityMeasure_normalizedVolumeOn_of_pos_of_lt_top
@@ -539,7 +501,7 @@ theorem
     intro n
     simpa only [μ, normalizedVolumeOn] using
       (ψ n).memLp.aestronglyMeasurable.smul_measure
-        ((volume U)⁻¹)
+        _
   have huIntegrable :
       Integrable u.toFun μ := by
     simpa only [μ, normalizedVolumeOn] using
@@ -563,8 +525,7 @@ theorem
 /-- The normalized `L^p` norms of the centered smooth values converge to the
 normalized norm of the centered Sobolev value. -/
 theorem tendsto_convexApproxSmoothW1p_centered_eLpMeanNorm
-    (hU : IsOpenBoundedConvexDomain U)
-    (hp : 1 ≤ p) (hpTop : p ≠ ∞)
+     (hpTop : p ≠ ∞)
     (u : W1pFunction U p)
     {x0 : Vec d} {r : ℝ}
     (hball : Metric.closedBall x0 r ⊆ U)
@@ -582,15 +543,15 @@ theorem tendsto_convexApproxSmoothW1p_centered_eLpMeanNorm
         (eLpMeanNormOn U p
           (fun x =>
             u.toFun x - integralAverage U u.toFun))) := by
-  let ψ : ℕ → W1pFunction U p :=
+  let ψ  :=
     convexApproxSmoothW1p hU hp u x0 hr
-  let μ : Measure (Vec d) :=
+  let μ  :=
     normalizedVolumeOn U
-  let centered : ℕ → Vec d → ℝ :=
+  let centered  :=
     fun n x =>
       (ψ n).toFun x -
         integralAverage U (ψ n).toFun
-  let centeredLimit : Vec d → ℝ :=
+  let centeredLimit  :=
     fun x =>
       u.toFun x - integralAverage U u.toFun
   let : IsProbabilityMeasure μ :=
@@ -601,12 +562,10 @@ theorem tendsto_convexApproxSmoothW1p_centered_eLpMeanNorm
     intro n
     simpa only [μ, normalizedVolumeOn] using
       (ψ n).memLp.aestronglyMeasurable.smul_measure
-        ((volume U)⁻¹)
+        _
   have hCenteredMeas :
       ∀ n, AEStronglyMeasurable (centered n) μ := by
-    intro n
-    exact
-      (hψMeas n).sub aestronglyMeasurable_const
+    fun_prop
   have huMemNormalized :
       MemLp u.toFun p μ := by
     simpa only [μ, normalizedVolumeOn] using
@@ -634,8 +593,7 @@ theorem tendsto_convexApproxSmoothW1p_centered_eLpMeanNorm
       hCenteredLimitMem.aestronglyMeasurable
       hCenteredLimitMem.eLpNorm_ne_top
       hCenteredDifference
-  simpa only [ψ, μ, centered, centeredLimit,
-    eLpMeanNormOn] using hNorm
+  aesop
 
 end W1pFunction
 

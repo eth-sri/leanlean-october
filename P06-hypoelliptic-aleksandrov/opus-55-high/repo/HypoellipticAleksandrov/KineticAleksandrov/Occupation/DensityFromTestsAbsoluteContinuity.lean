@@ -34,7 +34,7 @@ theorem absolutelyContinuous_of_smooth_tests (ν μ : Measure E)
       tsupport f ⊆ U → (∀ x, 0 ≤ f x) →
       (∫ x, f x ∂μ) ≤ C * (eLpNorm f p (ν.restrict U)).toReal) :
     μ ≪ ν.restrict U := by
-  have : IsFiniteMeasureOnCompacts (ν + μ) := finiteOnCompacts_add ν μ
+  have  := finiteOnCompacts_add ν μ
   have hcompact : ∀ K : Set E, IsCompact K → K ⊆ U → ν K = 0 → μ K = 0 := by
     intro K hK hKU hνK
     let f : E → ℝ := K.indicator (fun _ => 1)
@@ -42,7 +42,7 @@ theorem absolutelyContinuous_of_smooth_tests (ν μ : Measure E)
     have hsupport : Function.support f ⊆ K := Set.support_indicator_subset
     have hb : ∀ x, |f x| ≤ 1 := by
       intro x
-      by_cases hx : x ∈ K <;> simp [f, hx]
+      by_cases hx : x ∈ K <;> aesop
     have hfp := memLp_of_bounded_compact_support (ν + μ) hf hK hsupport hb p
     have hn : eLpNorm f p (ν.restrict U) = 0 := by
       have hnull : (ν.restrict U) K = 0 := by
@@ -52,16 +52,16 @@ theorem absolutelyContinuous_of_smooth_tests (ν μ : Measure E)
       · simp
       · have hx0 : ∀ᵐ x ∂ν.restrict U, x ∉ K := by
           rw [ae_iff]
-          simpa only [not_not, Set.ofPred_mem_eq] using hnull
+          simp_all
         filter_upwards [hx0] with x hx
-        simp [f, hx]
+        aesop
     have hi := abs_integral_le_of_smooth_tests_compact ν μ hU hp hpt hC htest
       hfp hK hKU hsupport
     rw [hn, ENNReal.toReal_zero, mul_zero] at hi
     have hreal : (μ K).toReal = 0 := by
       simpa [f, integral_indicator hK.measurableSet, measureReal_def] using
         le_antisymm hi (abs_nonneg _)
-    exact ((ENNReal.toReal_eq_zero_iff (μ K)).mp hreal).resolve_right
+    exact ((ENNReal.toReal_eq_zero_iff _).mp hreal).resolve_right
       (measure_ne_top μ K)
   intro A hA
   let A' := toMeasurable (ν.restrict U) A
@@ -70,13 +70,13 @@ theorem absolutelyContinuous_of_smooth_tests (ν μ : Measure E)
     rw [← Measure.restrict_apply hA', measure_toMeasurable]
     exact hA
   have hμA' : μ (A' ∩ U) = 0 := by
-    rw [(hA'.inter hU.measurableSet).measure_eq_iSup_isCompact μ]
+    rw [(hA'.inter hU.measurableSet).measure_eq_iSup_isCompact]
     apply le_antisymm _ (bot_le)
     refine iSup_le fun K => iSup_le fun hKsub => iSup_le fun hK => ?_
     exact (hcompact K hK (hKsub.trans inter_subset_right)
       (measure_mono_null hKsub hνA')).le
   have hμA0 : μ A' = 0 := by
-    rwa [measure_inter_conull hμU] at hμA'
+    rwa [measure_inter_conull] at hμA'
   exact measure_mono_null (subset_toMeasurable _ _) hμA0
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

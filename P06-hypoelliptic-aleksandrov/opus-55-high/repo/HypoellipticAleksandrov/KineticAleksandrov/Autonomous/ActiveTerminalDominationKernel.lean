@@ -19,7 +19,7 @@ theorem enlarged_terminal_family_measurable
   let E := enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) b
   have hS : MeasurableSet {q : Point | q.time = b} :=
     (isClosed_eq continuous_time continuous_const).measurableSet
-  have hm : Measurable (fun p => (E p).restrict {q | q.time = b}) :=
+  have hm : Measurable (fun p => (E p).restrict _) :=
     Measure.measurable_of_measurable_coe _ fun B hB => by
       simp_rw [Measure.restrict_apply hB]
       exact E.measurable_coe (hB.inter hS)

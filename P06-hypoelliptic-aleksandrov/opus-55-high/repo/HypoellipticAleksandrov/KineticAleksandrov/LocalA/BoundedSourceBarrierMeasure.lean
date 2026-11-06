@@ -9,7 +9,6 @@ Smooth source bounds control the total mass of the literal source-action measure
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Evolution
 open scoped ENNReal
@@ -28,21 +27,21 @@ theorem boundedSource_measure_mass_le
     obtain ⟨φ, hφ, hφc, hφU, hφb, hφone⟩ := exists_smooth_cutoff hK hU hKU
     have htest := ht φ hφ hφc hφU hφb
     have hKi : Integrable (K.indicator (1 : E → ℝ)) μ :=
-      (integrable_const (1 : ℝ)).indicator hK.measurableSet
+      (integrable_const _).indicator hK.measurableSet
     have hφi : Integrable φ μ := hφ.continuous.integrable_of_hasCompactSupport hφc
     have hKreal : μ.real K ≤ C := by
       rw [← integral_indicator_one hK.measurableSet]
       refine (integral_mono hKi hφi (fun x => ?_)).trans htest
       by_cases hx : x ∈ K
-      · simp only [indicator_of_mem hx, Pi.one_apply, hφone x hx, le_refl]
-      · simpa only [indicator_of_notMem hx] using (hφb x).1
+      · simp_all
+      simp_all
     have hKbound : μ K ≤ ENNReal.ofReal C := by
       apply (ENNReal.toReal_le_toReal (measure_ne_top μ K) ENNReal.ofReal_ne_top).mp
-      simpa only [Measure.real, ENNReal.toReal_ofReal hC] using hKreal
-    exact hrK.trans_le hKbound
+      aesop
+    grind
   have heq : μ U = μ univ := by
     have h := measure_add_measure_compl hU.measurableSet (μ := μ)
-    simpa only [hμ, add_zero] using h
+    simp_all
   rw [heq] at hbound
   exact (ENNReal.toReal_mono ENNReal.ofReal_ne_top hbound).trans_eq
     (ENNReal.toReal_ofReal hC)
@@ -72,17 +71,17 @@ theorem boundedSourceActionMeasure_dirac_mass_le_quadratic
   have hμ := boundedSourceActionMeasure_compl_past K hΩm hγ (Measure.dirac p) p.time T
   have hQn : 0 ≤ boundedSourceQuadratic c R lam p := by
     apply boundedSourceQuadratic_nonneg hlam c R
-    simpa only [boundedSource_stationary_domain] using hp.2
+    simpa using hp.2
   apply boundedSource_measure_mass_le μ hU hμ _ hQn
   intro φ hφ hφc hφU hφb
   let g := φ ∘ KineticPoint.equivProd d
   have hg : Continuous g := hφ.continuous.comp (KineticPoint.homeomorphProd d).continuous
   have hgc : HasCompactSupport g := hφc.comp_homeomorph (KineticPoint.homeomorphProd d)
-  have hgs : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × EvolutionAmbientState d =>
+  have hgs : ContDiff ℝ _ (fun q : ℝ × EvolutionAmbientState d =>
       g ⟨q.1, q.2.1, q.2.2⟩) := hφ
   have hgn : ∀ q, 0 ≤ g q := fun q => (hφb _).1
   have hgb : ∀ q, g q ≤ 1 := fun q => (hφb _).2
-  have hga : ∀ q, |g q| ≤ 1 := fun q => by rw [abs_of_nonneg (hgn q)]; exact hgb q
+  have hga : ∀ q, |g q| ≤ 1 := fun q => by grind
   have hgU : tsupport g ⊆
       evolutionPastOpenCylinder (PDE.euclideanBall c R) (fun _ => 0) T := by
     rw [boundedSourceTest_support]
@@ -120,13 +119,11 @@ theorem abs_duhamelPotential_le_boundedSourceQuadratic
   have hγ : Continuous (fun _ : ℝ => (0 : PDE.Vec d)) := continuous_const
   have hi := integral_boundedSourceActionMeasure K hΩm hγ (Measure.dirac p) p.time T
     g hg M hM hgb
-  change (∫ q, g ⟨q.1, q.2.1, q.2.2⟩ ∂μ) =
-    ∫ q, (∫ r in Ioo p.time T, duhamelIntegrand K g q r) ∂Measure.dirac p at hi
   rw [integral_dirac, ← duhamelPotential_eq_integral_window K g p le_rfl] at hi
   have hnorm := norm_integral_le_of_norm_le_const (μ := μ)
     (f := fun q => g ⟨q.1, q.2.1, q.2.2⟩) (C := M)
-    (Filter.Eventually.of_forall fun q => by rw [Real.norm_eq_abs]; exact hgb _)
-  rw [Real.norm_eq_abs, hi] at hnorm
+    (Filter.Eventually.of_forall fun q => by simp_all)
+  rw [hi] at hnorm
   have hmass := boundedSourceActionMeasure_dirac_mass_le_quadratic hH hd hR hlam hm
     B hB hBs hell b hb hbounds S K hreal T p hp
   exact hnorm.trans ((mul_le_mul_of_nonneg_left hmass hM).trans_eq (mul_comm _ _))

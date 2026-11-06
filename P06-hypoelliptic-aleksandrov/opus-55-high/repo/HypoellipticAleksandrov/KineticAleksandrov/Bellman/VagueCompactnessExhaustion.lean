@@ -8,7 +8,6 @@ import Mathlib.Tactic
 /-! # Compact exhaustion and simultaneous Radon reconstruction -/
 
 @[expose] public section
-noncomputable section
 open Set MeasureTheory Filter Topology
 open scoped ENNReal NNReal CompactlySupported
 namespace HypoellipticAleksandrov.KineticAleksandrov
@@ -21,7 +20,7 @@ omit [LocallyCompactSpace X] [SecondCountableTopology X] in
 theorem bellman_compact_comap_mass (K : Set X) (hK : IsCompact K) (mu : Measure X) :
     (Measure.comap (Subtype.val : K → X) mu) univ = mu K := by
   rw [(MeasurableEmbedding.subtype_coe hK.measurableSet).comap_apply]
-  simp only [image_univ, Subtype.range_coe]
+  simp
 
 omit [LocallyCompactSpace X] [SecondCountableTopology X] in
 /-- A test supported in a compact set has the same integral on its compact carrier. -/
@@ -46,28 +45,28 @@ theorem bellman_radon_family_subsequence {iota : Type*} [Countable iota]
   let (w : iota × ℕ) : CompactSpace (Y w) :=
     isCompact_iff_compactSpace.mp (K.isCompact w.2)
   let m (n : ℕ) (w : iota × ℕ) : Measure (Y w) := Measure.comap Subtype.val (mu w.1 n)
-  have hm (n : ℕ) (w : iota × ℕ) : m n w univ = mu w.1 n (K w.2) :=
+  have hm (n : ℕ) (w : iota × ℕ) : m n w univ = mu w.1 n _ :=
     bellman_compact_comap_mass _ (K.isCompact _) _
   let (n : ℕ) (w : iota × ℕ) : IsFiniteMeasure (m n w) :=
     ⟨by rw [hm]; exact (K.isCompact w.2).measure_lt_top⟩
-  have hbound (w : iota × ℕ) := hb w.1 (K w.2) (K.isCompact w.2)
+  have hbound (w : iota × ℕ) := hb w.1 _ (K.isCompact w.2)
   choose C hC using hbound
-  have hmreal (n : ℕ) (w : iota × ℕ) : (m n w).real univ ≤ (C w : ℝ) := by
+  have hmreal (n : ℕ) (w : iota × ℕ) : (m n w).real univ ≤ (C w) := by
     rw [measureReal_def, hm]
-    have h := ENNReal.toReal_mono (by simp : (C w : ℝ≥0∞) ≠ ∞) (hC w n)
-    simpa only [ENNReal.coe_toReal] using h
+    have h := ENNReal.toReal_mono (by simp) (hC w n)
+    simp_all
   obtain ⟨k, hk, ht⟩ := bellman_compact_functionals_subsequence Y m
-    (fun w => (C w : ℝ)) (fun w => (C w).property) hmreal
+    _ (fun w => (C w).property) hmreal
   refine ⟨k, hk, ?_⟩
   intro i
-  apply bellman_riesz_of_test_limits (fun n => mu i (k n))
+  apply bellman_riesz_of_test_limits _
   intro f
   obtain ⟨j, hj⟩ := K.exists_superset_of_isCompact f.hasCompactSupport
   obtain ⟨ell, hell⟩ := ht (i, j)
   let fc : C(Y (i, j), ℝ) := ⟨fun x => f x.val, f.continuous.comp continuous_subtype_val⟩
   refine ⟨ell fc, ?_⟩
-  have he (n : ℕ) : (∫ x, fc x ∂m (k n) (i, j)) = ∫ x, f x ∂mu i (k n) :=
+  have he (n : ℕ) : (∫ x, fc x ∂m _ _) = ∫ x, f x ∂mu i (k n) :=
     bellman_compact_test_integral _ (K.isCompact j) _ f hj
-  simpa only [he] using hell fc
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov

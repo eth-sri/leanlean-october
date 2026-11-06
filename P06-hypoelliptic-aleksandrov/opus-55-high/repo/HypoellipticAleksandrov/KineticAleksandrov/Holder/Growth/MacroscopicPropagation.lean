@@ -10,7 +10,6 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth
 
@@ -35,42 +34,38 @@ theorem exists_macroscopic_cap_constant (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ)
         ∀ P ∈ backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1,
           c * ell ≤ u (kineticAffine P0 scale P) := by
   let M := (m : ℝ) + 3
-  have hM : 0 < M := by dsimp only [M]; positivity
+  have hM : 0 < M := by positivity
   have hm : 0 ≤ (m : ℝ) := Nat.cast_nonneg m
   have hr02 : r0 ^ 2 ≤ 1 := by nlinarith only [hr0, hr01]
-  have hr03 : r0 ^ 3 ≤ 1 := by
-    exact (pow_le_pow_left₀ hr0.le hr01.le 3).trans_eq (by norm_num)
+  have hr03 : r0 ^ 3 ≤ 1 := (pow_le_pow_left₀ hr0.le hr01.le 3).trans_eq (by norm_num)
   obtain ⟨c, hc, hc1, hprop⟩ := propagation_dimensionless d hd lam Lam
     (r0 ^ 2 / (32 * M)) (macroscopicAcceleration m * Real.sqrt M)
     (r0 ^ 3 / (1024 * M ^ (3 / 2 : ℝ))) (r0 / (16 * Real.sqrt M))
     hlam hLam (by positivity) (by
-      apply (div_le_one (by positivity : 0 < 32 * M)).mpr
-      dsimp only [M]
-      linarith only [hr02, hm])
+      apply (div_le_one (by positivity)).mpr
+      linarith)
     (by unfold macroscopicAcceleration; positivity) (by positivity) (by positivity)
   refine ⟨c, hc, hc1, ?_⟩
   intro p C_A hp A hA P0 scale hscale O hO hregion u hnonneg hu Q r ell hr hQ hell hcap
     P hP
   have hrp : 0 < r := hr0.trans_le hr
   let S : KineticPoint d := ⟨stackStartTime Q r, stackStartPosition Q r, Q.velocity⟩
-  have hS : S ∈ closure (samplingCylinder d m) := sampling_cap_center_mem m Q hrp hQ
+  have hS : S ∈ closure _ := sampling_cap_center_mem m Q hrp hQ
   obtain ⟨x, v, _, _, _, hxP, hvP, hleft, hvc, hxd, hLip, hcorr⟩ :=
     exists_reference_corridor m S P hS hP
   obtain ⟨hTlo, hThi, _, _⟩ := reference_endpoint_bounds m S P hS hP
   let tminus := (kineticAffine P0 scale S).time
   let TP := scale ^ 2 * (P.time - S.time)
   have ht : (kineticAffine P0 scale P).time - tminus = TP := by
-    dsimp only [kineticAffine, tminus, TP]
+    dsimp only [kineticAffine, tminus]
     ring
   have htminus : tminus = P0.time + scale ^ 2 * S.time := rfl
   have hTPlo : (r0 ^ 2 / 32) * scale ^ 2 ≤ TP := by
     have he := mul_le_mul_of_nonneg_left hTlo (sq_nonneg scale)
-    dsimp only [TP]
-    have hn : r0 ^ 2 / 32 ≤ (m : ℝ) + 1 := by linarith only [hr02, hm]
+    have hn : r0 ^ 2 / 32 ≤ m + 1 := by linarith
     exact (mul_le_mul_of_nonneg_right hn (sq_nonneg scale)).trans (by
-      simpa only [mul_comm] using he)
-  have hTPhi : TP ≤ M * scale ^ 2 := by
-    exact (mul_le_mul_of_nonneg_left hThi (sq_nonneg scale)).trans_eq (mul_comm _ _)
+      linarith)
+  have hTPhi : TP ≤ M * scale ^ 2 := (mul_le_mul_of_nonneg_left hThi (sq_nonneg scale)).trans_eq (mul_comm _ _)
   obtain ⟨hscT, hscH, hscX, hscV⟩ := macroscopic_propagation_scaling m r0 hscale
   let xp := physicalPathPosition P0 scale S.time x
   let vp := physicalPathVelocity P0 scale v
@@ -81,22 +76,21 @@ theorem exists_macroscopic_cap_constant (d : ℕ) (hd : 1 ≤ d) (lam Lam : ℝ)
       ((r0 ^ 3 / 1024) * scale ^ 3) ((r0 / 16) * scale) xp vp ⊆ O := by
     apply Subset.trans _ (fun Z hZ => hregion (subset_closure hZ))
     apply Subset.trans _ (physical_corridor_subset_image P0 hscale S.time
-      (P.time - S.time) x v _ hcorr)
-    rw [htminus]
+      _ x v _ hcorr)
     apply corridor_mono
     · nlinarith only [mul_le_mul_of_nonneg_right hr02 (sq_nonneg scale), sq_nonneg scale]
-    · exact le_rfl
+    · linarith
     · nlinarith only [mul_le_mul_of_nonneg_right hr03 (pow_nonneg hscale.le 3),
         pow_nonneg hscale.le 3]
     · nlinarith only [mul_le_mul_of_nonneg_right hr01.le hscale.le, hscale]
-  have hPO : kineticAffine P0 scale P ∈ O :=
+  have hPO  :=
     hregion (subset_closure ⟨P, unitCylinder_subset_reference d m hP, rfl⟩)
   have hcapInitial := macroscopic_initial_subset_cap P0 Q hscale hr0 hr x v hleft
-  have hfinal := hprop (M * scale ^ 2) (mul_pos hM (sq_pos_of_pos hscale))
-    p C_A hp A hA O hO tminus (kineticAffine P0 scale P) hPO
+  have hfinal := hprop _ (mul_pos hM (sq_pos_of_pos hscale))
+    p C_A hp A hA O hO tminus _ hPO
   rw [ht, neg_mul, hscT, hscH, hscX, hscV] at hfinal
   apply hfinal hTPlo hTPhi xp vp
-    (by simpa only [macroscopicAcceleration] using hsk) hxend hvend hcphys
+    (by aesop) hxend hvend hcphys
     ell hell u hnonneg hu
   intro Z hZ htZ
   apply hcap Z

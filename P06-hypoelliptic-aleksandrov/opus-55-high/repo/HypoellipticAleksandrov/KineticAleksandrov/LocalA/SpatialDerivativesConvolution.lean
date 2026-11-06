@@ -5,7 +5,6 @@ public import Mathlib.Analysis.Calculus.ContDiff.Convolution
 /-! # All-order bounds for convolution with a compact smooth Banach-valued density -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open MeasureTheory
 open scoped Convolution
@@ -28,8 +27,8 @@ theorem convolution_iteratedFDeriv_bound
   | zero =>
     simp only [norm_iteratedFDeriv_zero]
     calc
-      ‖(f ⋆[L, μ] g) x‖ ≤ ∫ y, ‖L (f y) (g (x - y))‖ ∂μ := norm_integral_le_integral_norm _
-      _ ≤ ∫ y, (‖L‖ * M) * ‖g (x - y)‖ ∂μ := by
+      ‖(f ⋆[L, μ] g) x‖ ≤ ∫ y, ‖L _ _‖ ∂μ := norm_integral_le_integral_norm _
+      _ ≤ ∫ y, (‖L‖ * M) * ‖g _‖ ∂μ := by
         apply integral_mono
         · exact (hc.convolutionExists_right L hf hg.continuous x).norm
         · exact ((hg.continuous.integrable_of_hasCompactSupport hc).norm.comp_sub_left x)

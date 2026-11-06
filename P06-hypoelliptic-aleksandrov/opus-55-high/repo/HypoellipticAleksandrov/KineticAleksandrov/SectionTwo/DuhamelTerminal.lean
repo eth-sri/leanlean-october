@@ -8,7 +8,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.HormanderBrid
 /-! # Terminal source limits for full kinetic Duhamel slices -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Filter
 open Evolution Occupation
@@ -22,8 +21,7 @@ theorem isOpen_duhamelCylinder (hΩ : IsOpen Ω) (hγ : Continuous γ) (T : ℝ)
     continuous_position.sub (hγ.comp continuous_time)
   convert (isOpen_lt continuous_time (continuous_const (y := T))).inter (hΩ.preimage hc) using 1
   ext p
-  simp only [evolutionPastOpenCylinder, mem_ofPred_eq, mem_inter_iff]
-  change (_ ∧ _ ∈ PDE.translateSet (γ p.time) Ω) ↔ _
+  change (_ ∧ _ ∈ PDE.translateSet _ Ω) ↔ _
   rw [PDE.mem_translateSet_iff_sub_mem]
   rfl
 
@@ -52,12 +50,10 @@ theorem duhamelSlice_leftLimit (hΩa : IsAdmissibleEvolutionDomain Ω)
     have hn := hmapc.continuousAt.eventually (hopen.mem_nhds hw)
     filter_upwards [hn.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with t ht ht2
     exact ⟨le_of_lt ht2, subset_closure ht.2⟩
-  have hmap : Tendsto (fun t => (KineticPoint.mk t w.1 w.2)) (𝓝[<] r)
-      (𝓝[evolutionPastClosedCylinder Ω γ r] (KineticPoint.mk r w.1 w.2)) :=
+  have hmap  :=
     tendsto_nhdsWithin_iff.2 ⟨(hmapc.tendsto r).mono_left nhdsWithin_le_nhds, hev⟩
   have h1 := (hV.2.1 _ hcl).tendsto.comp hmap
-  have ht := hV.2.2.2.2.1 ⟨r, w.1, w.2⟩ ⟨rfl, hcl.2⟩
-  change V ⟨r, w.1, w.2⟩ = g ⟨r, w.1, w.2⟩ at ht
+  have ht := hV.2.2.2.2.1 _ ⟨rfl, hcl.2⟩
   rw [ht] at h1
   refine h1.congr' ?_
   filter_upwards [hev] with t ht

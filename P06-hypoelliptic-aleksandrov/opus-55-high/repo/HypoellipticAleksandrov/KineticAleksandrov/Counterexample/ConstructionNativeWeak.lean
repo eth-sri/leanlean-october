@@ -5,13 +5,14 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.MollifyW
 /-! # Native-coordinate compact-test identities for the construction -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory
 
+variable {d : ℕ}
+
 /-- A packed weak directional derivative transfers back to the native spatial carrier.
 The measure-preserving chart introduces no Jacobian factor. -/
-theorem construction_weak_directional_native {d : ℕ}
+theorem construction_weak_directional_native 
     (u g : PDE.Vec (d + d) → ℝ) (z : PDE.Vec (d + d))
     (hweak : ∀ test : PDE.Vec (d + d) → ℝ, ContDiff ℝ (⊤ : ℕ∞) test →
       HasCompactSupport test →
@@ -23,7 +24,7 @@ theorem construction_weak_directional_native {d : ℕ}
       -(∫ q, g ((spatialCoordinateCLE d).symm q) * test q) := by
   let e := spatialCoordinateCLE d
   let psi := test ∘ e
-  have hp : ContDiff ℝ (⊤ : ℕ∞) psi := ht.comp e.contDiff
+  have hp : ContDiff ℝ _ psi := ht.comp e.contDiff
   have hc : HasCompactSupport psi := hs.comp_homeomorph e.toHomeomorph
   have hd : ∀ x, fderiv ℝ psi x z = fderiv ℝ test (e x) (e z) := by
     intro x
@@ -41,10 +42,10 @@ theorem construction_weak_directional_native {d : ℕ}
   have hRn : (∫ x, g x * psi x) = ∫ q, g (e.symm q) * test q := by
     simpa only [spatialCoordinateMeasurableEquiv_apply,
       psi, Function.comp_apply, e, ContinuousLinearEquiv.symm_apply_apply] using! hR
-  exact hLn.symm.trans ((hweak psi hp hc).trans (congrArg Neg.neg hRn))
+  grind
 
 /-- Local integrability transfers to the native carrier through the same chart. -/
-theorem construction_locallyIntegrable_native {d : ℕ} (f : PDE.Vec (d + d) → ℝ)
+theorem construction_locallyIntegrable_native  (f : PDE.Vec (d + d) → ℝ)
     (hf : LocallyIntegrable f volume) :
     LocallyIntegrable (fun q => f ((spatialCoordinateCLE d).symm q)) volume := by
   apply locallyIntegrable_iff.mpr
@@ -56,10 +57,10 @@ theorem construction_locallyIntegrable_native {d : ℕ} (f : PDE.Vec (d + d) →
   have hm := (measurePreserving_spatialCoordinate d).symm.restrict_image_emb
     e.symm.measurableEmbedding K
   have he := hm.integrable_comp_of_integrable hi
-  simpa only [Function.comp_def, e] using! he
+  aesop
 
 /-- Almost-everywhere statements transfer to the native carrier without exceptional mass. -/
-theorem construction_ae_native {d : ℕ} (prop : PDE.Vec (d + d) → Prop)
+theorem construction_ae_native  (prop : PDE.Vec (d + d) → Prop)
     (hp : ∀ᵐ x ∂volume, prop x) :
     ∀ᵐ q ∂volume, prop ((spatialCoordinateCLE d).symm q) :=
   (measurePreserving_spatialCoordinate d).symm.quasiMeasurePreserving.ae hp

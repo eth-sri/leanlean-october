@@ -13,7 +13,6 @@ decay from Borel elliptic coefficient data.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -41,9 +40,9 @@ theorem tendsto_eLpNorm_weakEquationMollificationResidual_on_compact
     Tendsto (fun n => eLpNorm
       (weakEquationMollificationResidual Aext g n)
       (parabolicExponent d) (volume.restrict K)) atTop (nhds 0) := by
-  simpa only [weakEquationMollificationResidual_eq_parabolicConvolutionCommutator] using
+  simpa using
     tendsto_eLpNorm_parabolicConvolutionCommutator_on_compact
-      Aext g.velocityHessian K hK (3 * (|lam| + |Lam|))
+      Aext g.velocityHessian K hK _
       (mul_nonneg (by norm_num) (add_nonneg (abs_nonneg _) (abs_nonneg _)))
       (fun i j =>
         (measurable_pi_iff.mp (measurable_pi_iff.mp hExtBorel i) j).aestronglyMeasurable)
@@ -55,8 +54,8 @@ theorem tendsto_eLpNorm_weakEquationMollificationResidual_on_compact
           (hExtLower z.1 z.2) (hExtUpper z.1 z.2) i j)
       (fun i j => by
         have h := g.velocityHessian_memLp i j
-        change MemLp (fun z => g.velocityHessian z i j) (parabolicExponent d)
-          ((volume : Measure (TimeVelocity d)).restrict Set.univ) at h
-        simpa only [Measure.restrict_univ] using h)
+        change MemLp _ _
+          (volume.restrict Set.univ) at h
+        simp_all)
 
 end HypoellipticAleksandrov.Parabolic

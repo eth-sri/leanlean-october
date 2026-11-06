@@ -36,8 +36,7 @@ theorem boundary_physical_smooth_to_native {D : Set (KineticPoint d)}
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ (KineticPoint.equivProd d).symm)
       ((KineticPoint.equivProd d) '' D)) :
     ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ evolutionHomeomorph d)
-      (evolutionHomeomorph d ⁻¹' D) := by
-  exact hu.comp (evolutionProdCLE d).contDiff.contDiffOn
+      (evolutionHomeomorph d ⁻¹' D) := hu.comp (evolutionProdCLE d).contDiff.contDiffOn
     (fun x hx => ⟨evolutionHomeomorph d x, hx, rfl⟩)
 
 /-- The source-planned smoothness, homogeneous equation, continuity and exact traces. -/
@@ -85,13 +84,13 @@ theorem ballBoundarySolution_smooth_traces
       funext x
       exact congrArg Neg.neg (boundary_probe_operator_native B φ hφ x)
     rw [heq]
-    exact hsm.neg
+    fun_prop
   obtain ⟨hWsm, hWop⟩ := boundary_continuous_weak_smooth hH B hB D' hD'
-    (W ∘ sectionTwoPoint) (fun Q => -F (sectionTwoPoint Q)) hWsc hweak hsource
+    _ _ hWsc hweak hsource
   have hWp := boundary_native_smooth_to_physical D W hWsm
-  have hEsm : ContDiffOn ℝ (⊤ : ℕ∞)
+  have hEsm : ContDiffOn ℝ _
       ((ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR a T φ) ∘
-        (KineticPoint.equivProd d).symm) ((KineticPoint.equivProd d) '' D) :=
+        (KineticPoint.equivProd d).symm) _ :=
     hφ.contDiffOn.add hWp
   refine ⟨hEsm, ?_, (boundary_probe_continuous φ hφ).continuousOn.add hWc, ?_⟩
   · have hφr := isKineticC112On_of_contDiffOn hD
@@ -102,24 +101,17 @@ theorem ballBoundarySolution_smooth_traces
     rw [comparison_forwardOperator_add hφr hWr _ hP]
     let x := (evolutionHomeomorph d).symm (sectionTwoPoint P)
     have hx : x ∈ evolutionHomeomorph d ⁻¹' D' := by
-      change evolutionHomeomorph d x ∈ D'
-      rw [Homeomorph.apply_symm_apply]
-      exact ⟨P, hP, rfl⟩
+      aesop
     have h := hWop x hx
     have hs : ContDiffAt ℝ 2 ((W ∘ sectionTwoPoint) ∘ evolutionHomeomorph d) x :=
       (hWsm.contDiffAt
       ((hD'.preimage (evolutionHomeomorph d).continuous).mem_nhds hx)).of_le (by simp)
-    rw [transportedOperator_comp hs] at h
-    dsimp only [x] at h
-    rw [Homeomorph.apply_symm_apply] at h
+    rw [transportedOperator_comp hs, Homeomorph.apply_symm_apply] at h
     change transportedForwardOperator (zIndependentCoefficient B) (identityDrift d)
       (W ∘ sectionTwoPoint) (sectionTwoPoint P) = -F P at h
     rw [forwardKineticOperator_eq_lop_identity B W]
-    change F P + transportedForwardOperator (zIndependentCoefficient B) (identityDrift d)
-      (W ∘ sectionTwoPoint) (sectionTwoPoint P) = 0
-    rw [h, add_neg_cancel]
+    aesop
   · intro P hP
-    change φ P + W P = φ P
-    exact congrArg (fun x => φ P + x) (hWtr P hP) |>.trans (add_zero _)
+    exact congrArg _ (hWtr P hP) |>.trans (add_zero _)
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

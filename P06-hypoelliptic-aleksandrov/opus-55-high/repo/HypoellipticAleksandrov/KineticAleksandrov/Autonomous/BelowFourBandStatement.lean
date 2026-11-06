@@ -25,7 +25,7 @@ def BelowFourBandStatement : Prop :=
     (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (alpha q : ℝ),
     (bellmanAdjointExponent (Lam / lam) ((le_div_iff₀ hlam).2
-      (by simpa only [one_mul] using hLam)) - 2 < alpha ∧ alpha < 1) →
+      (by simp_all)) - 2 < alpha ∧ alpha < 1) →
     (1 < q ∧ q < 3 / 2) →
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock)
       (Z₀ : Point) (R : ℝ) (hR : 0 < R) (P : Point)

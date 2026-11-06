@@ -6,7 +6,6 @@ import Mathlib.MeasureTheory.Integral.Prod
 /-! # Minkowski for actual subprobability restart measures with canonical joint densities -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory Filter
 open scoped ENNReal
@@ -46,9 +45,9 @@ theorem belowFour_density_subprobability_mixture {X : Type*} [MeasurableSpace X]
     ∃ G : Point → ℝ, Measurable G ∧ (∀ z, 0 ≤ G z) ∧
       k ∘ₘ nu = volume.withDensity (fun z => ENNReal.ofReal (G z)) ∧
       MemLp G (ENNReal.ofReal q) volume ∧ (eLpNorm G (ENNReal.ofReal q) volume).toReal ≤ K := by
-  have : SigmaFinite (volume : Measure Point) := density_volume_sigmaFinite
-  let F := positionKernelDensity k (volume : Measure Point)
-  have hF := measurable_positionKernelDensity k (volume : Measure Point)
+  have  := density_volume_sigmaFinite
+  let F := positionKernelDensity k volume
+  have hF := measurable_positionKernelDensity k volume
   have hd : ∀ᵐ x ∂nu, volume.withDensity (F x) = k x := by
     filter_upwards [hbound] with x hx
     obtain ⟨G, _, _, hGd, _, _⟩ := hx
@@ -60,25 +59,24 @@ theorem belowFour_density_subprobability_mixture {X : Type*} [MeasurableSpace X]
     obtain ⟨G, hG, hG0, hGd, hGp, hGn⟩ := hx
     have h := positionPositiveNorm_of_density_le volume (F x)
       (hF.comp (measurable_const.prodMk measurable_id)) univ univ MeasurableSet.univ
-      G hG hG0 (by simpa only [Measure.restrict_univ] using hdx.trans hGd)
-      q K (by linarith) hK (by simpa only [Measure.restrict_univ] using hGp)
-      (by simpa only [Measure.restrict_univ] using hGn)
-    simpa only [Measure.restrict_univ] using h
+      G hG hG0 (by simp_all)
+      q K (by linarith) hK (by simp_all)
+      (by simp_all)
+    simp_all
   let M := fun z => ∫⁻ x, F x z ∂nu
   have hM : Measurable M := hF.lintegral_prod_left'
   have hm : volume.withDensity M = k ∘ₘ nu := by
     ext B hB
     rw [withDensity_apply _ hB, Measure.bind_apply hB k.aemeasurable]
-    change (∫⁻ z in B, ∫⁻ x, F x z ∂nu ∂volume) = ∫⁻ x, k x B ∂nu
     rw [← lintegral_lintegral_swap (μ := nu) (ν := volume.restrict B)
       (f := F) hF.aemeasurable]
     apply lintegral_congr_ae
     filter_upwards [hd] with x hx
     rw [← withDensity_apply _ hB, hx]
-  have hn := positionPositiveNorm_mixture_le nu volume F hF q hq (ENNReal.ofReal K) hp
+  have hn := positionPositiveNorm_mixture_le nu volume F hF q hq _ hp
   have hn' : positionPositiveNorm volume q M ≤ ENNReal.ofReal K :=
     hn.trans ((mul_le_mul_left hnu _).trans_eq (one_mul _))
-  exact belowFour_real_density_of_positive_bound volume (k ∘ₘ nu) M hM hm q K
+  exact belowFour_real_density_of_positive_bound volume _ M hM hm q K
     (by linarith) hK hn'
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

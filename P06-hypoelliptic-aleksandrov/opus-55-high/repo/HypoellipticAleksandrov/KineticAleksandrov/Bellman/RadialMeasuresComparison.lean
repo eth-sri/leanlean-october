@@ -6,7 +6,6 @@ import Mathlib.Tactic
 /-! # Elliptic comparison of the literal radial measure pair -/
 
 @[expose] public section
-noncomputable section
 open MeasureTheory Set
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -30,6 +29,6 @@ theorem radial_bellman_measures_comparison {lam Lam : ℝ} (alpha : ℝ)
   have hl := Measure.map_mono hlo hf
   have hh := Measure.map_mono hhi hf
   rw [Measure.map_smul _ hf.aemeasurable] at hl hh
-  exact ⟨hl, hh⟩
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov

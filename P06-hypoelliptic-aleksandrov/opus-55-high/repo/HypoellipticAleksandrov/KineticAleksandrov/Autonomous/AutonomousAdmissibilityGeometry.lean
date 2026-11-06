@@ -11,13 +11,14 @@ import Mathlib.Tactic
 /-! # The autonomous lift and smooth-near test regularity -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic Holder Set MeasureTheory Evolution TheoremA
 open scoped MatrixOrder
 
+variable {a : ℝ → ℝ → ℝ}
+
 /-- The scalar autonomous lift is Borel on the literal kinetic carrier. -/
-theorem autonomous_lift_measurable {a : ℝ → ℝ → ℝ}
+theorem autonomous_lift_measurable 
     (ha : Measurable (Function.uncurry a)) :
     Measurable (fullKineticCoefficientAt (autonomousCoefficient a)) := by
   apply Measurable.of_eval
@@ -30,25 +31,20 @@ theorem autonomous_lift_measurable {a : ℝ → ℝ → ℝ}
 /-- The one-dimensional lift is symmetric at every point. -/
 theorem autonomous_lift_symm (a : ℝ → ℝ → ℝ) (P : Point) :
     (fullKineticCoefficientAt (autonomousCoefficient a) P).IsSymm := by
-  ext i j
-  rfl
+  aesop
 
 /-- The scalar range gives pointwise matrix ellipticity without an exceptional set. -/
-theorem autonomous_lift_elliptic {a : ℝ → ℝ → ℝ} {lam Lam : ℝ}
+theorem autonomous_lift_elliptic  {lam Lam : ℝ}
     (hb : ∀ x v, lam ≤ a x v ∧ a x v ≤ Lam) (P : Point) :
     lam • (1 : PDE.Mat 1) ≤ fullKineticCoefficientAt (autonomousCoefficient a) P ∧
       fullKineticCoefficientAt (autonomousCoefficient a) P ≤ Lam • (1 : PDE.Mat 1) := by
   have he : fullKineticCoefficientAt (autonomousCoefficient a) P =
-      a (P.position 0) (P.velocity 0) • (1 : PDE.Mat 1) := by
+      a (P.position 0) (P.velocity 0) • (1) := by
     ext i j
     fin_cases i
     fin_cases j
-    simp [fullKineticCoefficientAt, autonomousCoefficient]
-  rw [he]
-  have hI : (0 : PDE.Mat 1) ≤ 1 :=
-    Matrix.nonneg_iff_posSemidef.mpr Matrix.PosSemidef.one
-  exact ⟨smul_le_smul_of_nonneg_right (hb _ _).1 hI,
-    smul_le_smul_of_nonneg_right (hb _ _).2 hI⟩
+    aesop
+  simp_all
 
 /-- Source-near smooth tests have the existing anisotropic classical regularity. -/
 theorem smoothNear_regular {psi : Point → ℝ} {E : Set Point}
@@ -58,7 +54,7 @@ theorem smoothNear_regular {psi : Point → ℝ} {E : Set Point}
   refine ⟨U, hU, hEU, isKineticC112On_of_contDiffOn hU ?_⟩
   have h := hs.comp (evolutionProdCLE 1).contDiff.contDiffOn (by
     intro x hx
-    exact ⟨evolutionHomeomorph 1 x, hx, rfl⟩)
+    aesop)
   exact h
 
 /-- The full backward operator is additive on the existing C112 class. -/
@@ -88,11 +84,9 @@ theorem autonomous_operator_const_mul {u : Point → ℝ} {D : Set Point}
     show kineticPositionGradient (fun Q => c * u Q) P = c • kineticPositionGradient u P from
       classicalGradient_const_mul c
         ((hu.positionSlice_contDiffAt hP).differentiableAt (by norm_num))]
-  have hh : kineticVelocityHessian (fun Q => c * u Q) P = c • kineticVelocityHessian u P := by
-    simp only [kineticVelocityHessian_eq_sliceHessian]
-    exact sliceHessian_const_mul c (hu.velocitySlice_contDiffAt hP)
+  have hh : kineticVelocityHessian (fun Q => c * u Q) P = c • kineticVelocityHessian u P := sliceHessian_const_mul c (hu.velocitySlice_contDiffAt hP)
   rw [hh]
-  simp only [autonomousScalarOperator_apply, Pi.smul_apply, Matrix.smul_apply, smul_eq_mul]
+  simp only [autonomousScalarOperator_apply, Pi.smul_apply, Matrix.smul_apply]
   ring
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

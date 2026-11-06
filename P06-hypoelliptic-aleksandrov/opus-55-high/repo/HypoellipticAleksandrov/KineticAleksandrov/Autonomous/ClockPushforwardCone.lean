@@ -41,14 +41,12 @@ theorem clock_forward_cone_finite
     ∀ᵐ p ∂stripGreen hH hLE hlam hLam A c.activeInterval T e,
       p.time - e.1.time ≤ 2 * c.r ^ 2 * (c.map e.1 p).time := by
   have hh := reconstruction_transport_cone_ae hH hlam hLam A c.activeInterval
-    (stripEvolution hH hLE hlam hLam A c.activeInterval)
+    _
     (stripEvolution_spec hH hLE hlam hLam A c.activeInterval) T e
     1 (-2 / c.vbar) (2 * e.1.position 0 / c.vbar - e.1.time)
     (by dsimp only [reconstructionConeCoordinate]; ring) (fun v hv => by
       have hr := c.active_ratio_lower hv
-      have he : v * (-2 / c.vbar) = -2 * (v / c.vbar) := by ring
-      rw [he]
-      linarith)
+      grind)
   have hb (p : Point)
       (hp : reconstructionConeCoordinate 1 (-2 / c.vbar)
         (2 * e.1.position 0 / c.vbar - e.1.time) p ≤ 0) :
@@ -57,7 +55,6 @@ theorem clock_forward_cone_finite
         2 * (p.position 0 - e.1.position 0) / c.vbar := by
       dsimp [Clock.map]
       field_simp [c.nonzero, ne_of_gt c.positive]
-    rw [he]
     have hp' : p.time - e.1.time -
         2 * (p.position 0 - e.1.position 0) / c.vbar ≤ 0 := by
       convert hp using 1

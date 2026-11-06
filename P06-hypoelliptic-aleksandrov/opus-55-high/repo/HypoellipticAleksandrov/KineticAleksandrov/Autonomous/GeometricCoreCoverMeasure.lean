@@ -7,7 +7,6 @@ import Mathlib.Tactic
 /-! # Gluing local density bounds through a countable measurable cover -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory Filter
 open scoped ENNReal
@@ -45,7 +44,7 @@ theorem density_local_norm_le {X : Type*} [MeasurableSpace X]
       hgm.ennreal_ofReal.aemeasurable.restrict
     intro E hE _
     have h := Measure.le_iff.1 hle' E hE
-    rwa [withDensity_apply _ hE, withDensity_apply _ hE] at h
+    simp_all
   have hn : ∀ᵐ x ∂m.restrict S, ‖g x‖ ≤ ‖f x‖ := by
     filter_upwards [hgf] with x hx
     simpa only [Real.norm_eq_abs, abs_of_nonneg (hg0 x), abs_of_nonneg (hf0 x)]
@@ -59,7 +58,7 @@ theorem density_power_integral_le {X : Type*} [MeasurableSpace X]
     (hf : MemLp f (ENNReal.ofReal q) m)
     (hn : (eLpNorm f (ENNReal.ofReal q) m).toReal ≤ K ^ (1 / q)) :
     ∫⁻ x, ‖f x‖ₑ ^ q ∂m ≤ ENNReal.ofReal K := by
-  have hnorm : eLpNorm f (ENNReal.ofReal q) m ≤ ENNReal.ofReal (K ^ (1 / q)) :=
+  have hnorm  :=
     (ENNReal.le_ofReal_iff_toReal_le hf.ne (Real.rpow_nonneg hK _)).2 hn
   have he : ∫⁻ x, ‖f x‖ₑ ^ q ∂m = eLpNorm f (ENNReal.ofReal q) m ^ q := by
     rw [eLpNorm_eq_eLpNorm' (by positivity) ENNReal.ofReal_ne_top
@@ -67,7 +66,7 @@ theorem density_power_integral_le {X : Type*} [MeasurableSpace X]
     exact lintegral_rpow_enorm_eq_rpow_eLpNorm' hq
   rw [he]
   calc
-    _ ≤ ENNReal.ofReal (K ^ (1 / q)) ^ q := ENNReal.rpow_le_rpow hnorm hq.le
+    _ ≤ ENNReal.ofReal _ ^ q := ENNReal.rpow_le_rpow hnorm hq.le
     _ = ENNReal.ofReal K := by
       rw [ENNReal.ofReal_rpow_of_nonneg (Real.rpow_nonneg hK _) hq.le,
         ← Real.rpow_mul hK, one_div_mul_cancel hq.ne', Real.rpow_one]
@@ -89,16 +88,13 @@ theorem density_of_countable_cover {X ι : Type*} [MeasurableSpace X] [Countable
       intro i
       have hi := (hle i).absolutelyContinuous.trans (withDensity_absolutelyContinuous _ _)
       have hi0 := hi hE
-      simpa only [Measure.restrict_apply' (hS i)] using hi0
+      simp_all
     have hu : ν (E ∩ ⋃ i, S i) = 0 := by
       rw [inter_iUnion]
-      exact measure_iUnion_null hz
+      simp_all
     apply measure_mono_null (t := (E ∩ ⋃ i, S i) ∪ (⋃ i, S i)ᶜ)
-    · intro x hx
-      by_cases hs : x ∈ ⋃ i, S i
-      · exact Or.inl ⟨hx, hs⟩
-      · exact Or.inr hs
-    · exact measure_union_null hu hcover
+    · grind
+    simp_all
   obtain ⟨g, hgm, hg0, hgd⟩ := density_of_absolutelyContinuous m ν hac
   have hout : ∀ᵐ x ∂m.restrict (⋃ i, S i)ᶜ, g x = 0 := by
     have hz : ∫⁻ x in (⋃ i, S i)ᶜ, ENNReal.ofReal (g x) ∂m = 0 := by
@@ -110,7 +106,7 @@ theorem density_of_countable_cover {X ι : Type*} [MeasurableSpace X] [Countable
     rw [← lintegral_zero (μ := m.restrict (⋃ i, S i)ᶜ)]
     apply lintegral_congr_ae
     filter_upwards [hout] with x hx
-    simp only [hx, enorm_zero, ENNReal.zero_rpow_of_pos hq]
+    simp_all
   refine ⟨g, hgm, hg0, hgd, ?_⟩
   have hint : ∫⁻ x, ‖g x‖ₑ ^ q ∂m = ∫⁻ x in ⋃ i, S i, ‖g x‖ₑ ^ q ∂m := by
     rw [← lintegral_add_compl _ (MeasurableSet.iUnion hS), hpout, add_zero]
@@ -118,8 +114,8 @@ theorem density_of_countable_cover {X ι : Type*} [MeasurableSpace X] [Countable
   apply (lintegral_iUnion_le S _).trans
   apply ENNReal.tsum_le_tsum
   intro i
-  have hn := density_local_norm_le m g (f i) hgm hg0 (hfm i) (hf0 i)
-    (S i) (hS i) (ENNReal.ofReal q) (hgd ▸ hle i)
+  have hn := density_local_norm_le m g _ hgm hg0 (hfm i) (hf0 i)
+    _ (hS i) (ENNReal.ofReal q) (hgd ▸ hle i)
   have hgme := hgm.aestronglyMeasurable (μ := m.restrict (S i))
   have hfme := (hfm i).aestronglyMeasurable (μ := m)
   rw [lintegral_rpow_enorm_eq_rpow_eLpNorm' hq,
@@ -128,7 +124,7 @@ theorem density_of_countable_cover {X ι : Type*} [MeasurableSpace X] [Countable
       eLpNorm u (ENNReal.ofReal q) μ = eLpNorm' u q μ := by
     rw [eLpNorm_eq_eLpNorm' (by positivity) ENNReal.ofReal_ne_top hu,
       ENNReal.toReal_ofReal hq.le]
-  rw [he g _ hgme, he (f i) _ hfme] at hn
+  rw [he g _ hgme, he _ _ hfme] at hn
   exact ENNReal.rpow_le_rpow hn hq.le
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

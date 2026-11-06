@@ -6,7 +6,6 @@ import Mathlib.Tactic
 /-! # Elliptic comparison survives vague convergence -/
 
 @[expose] public section
-noncomputable section
 open Set MeasureTheory Filter Topology
 open scoped CompactlySupported
 namespace HypoellipticAleksandrov.KineticAleksandrov
@@ -29,9 +28,7 @@ theorem bellman_vague_limit_le (mu eta : ℕ → Measure BellmanPuncturedPlane)
   let : LocallyCompactSpace BellmanPuncturedPlane :=
     isOpen_compl_singleton.locallyCompactSpace
   let := hmInf.1
-  let := hmInf.2
   let := heInf.1
-  let (n : ℕ) : IsFiniteMeasureOnCompacts (eta n) := he n
   apply bellman_measure_le_of_positive_tests
   intro f hf
   exact le_of_tendsto_of_tendsto' (hmv f f.continuous f.hasCompactSupport)

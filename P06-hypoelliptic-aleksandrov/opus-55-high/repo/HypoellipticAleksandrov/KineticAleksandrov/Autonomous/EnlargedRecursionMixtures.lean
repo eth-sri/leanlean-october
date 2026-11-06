@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecu
 /-! # Physical nested-strip identities for the actual visit kernels -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
@@ -17,7 +16,7 @@ theorem enlargedUnionPoleMeasure_ae_time_ge (H : FiniteIntervalUnion) (s T : ℝ
     ∀ᵐ e ∂visitUnionPoleMeasure H T mu, s ≤ e.1.time := by
   have ht : ∀ᵐ p ∂(visitUnionPoleMeasure H T mu).map Subtype.val, s ≤ p.time := by
     rw [enlargedUnionPoleMeasure_map H T mu hmu]
-    exact htime
+    omega
   exact ((MeasurableEmbedding.subtype_coe (measurableSet_finiteUnionPole H T)).ae_map_iff).mp ht
 
 /-- Actual physical Green and exit kernels satisfy the nested-strip decomposition. -/
@@ -53,11 +52,10 @@ theorem enlargedUnion_nested
   have htau : finiteUnionRestartPoleMeasure hH hLE hlam hLam A H1 H2 s T nu =
       visitUnionPoleMeasure H2 T rho := by
     unfold finiteUnionRestartPoleMeasure visitUnionPoleMeasure
-    rw [hrestart]
+    simp_all
   have h := enlarged_strip_nested hH hLE hlam hLam A H1 H2 hsub s T hT nu
     (enlargedUnionPoleMeasure_ae_time_ge H1 s T mu hmu htime)
   dsimp only at h
-  change _ ∧ _
   rw [enlargedUnionPoleMeasure_nested_eq H1 H2 hsub T mu hmu, htau] at h
   rw [← enlargedGreenKernel_comp_poles hH hLE hlam hLam A H2 T mu hlarge,
     ← enlargedGreenKernel_comp_poles hH hLE hlam hLam A H1 T mu hmu,

@@ -11,7 +11,6 @@ spatial Hessian entries.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open MeasureTheory
 open scoped BigOperators
@@ -27,7 +26,6 @@ theorem squaredL2Norm_classical_seed_le {d : ℕ} {U : Set (TimeVelocity d)}
       (timeVelocityVolumeOn U)).toReal ^ 2 ≤ B) :
     (J.toWeakDerivativeFamily hU).squaredL2Norm ≤
       (Fintype.card (ParabolicDerivativeIndex d 2) : ℝ) * B := by
-  unfold ParabolicWeakDerivativeFamily.squaredL2Norm
   calc
     _ ≤ ∑ _beta : ParabolicDerivativeIndex d 2, B := by
       apply Finset.sum_le_sum
@@ -38,12 +36,8 @@ theorem squaredL2Norm_classical_seed_le {d : ℕ} {U : Set (TimeVelocity d)}
           | .time => J.timeDeriv
           | .velocity i => fun z => J.velocityGrad z i
           | .velocity₂ i j _ => fun z => J.velocityHessian z i j)
-        2 (timeVelocityVolumeOn U)).toReal ^ 2 ≤ B
-      cases ParabolicDerivativeIndex.equivLowOrderClass d beta with
-      | zero => exact hq
-      | time => exact ht
-      | velocity i => exact hg i
-      | velocity₂ i j _ => exact hh i j
-    _ = _ := by simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
+        2 _).toReal ^ 2 ≤ B
+      aesop
+    _ = _ := by simp
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

@@ -9,7 +9,6 @@ import Mathlib.Topology.TietzeExtension
 /-! # Uniformly bounded smooth approximation on compact position portions of the trace -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic Topology
 open scoped CompactlySupported
@@ -26,14 +25,14 @@ theorem exists_mass_trace_probe {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) {R : �
   let D := localClosedStrip a T v₀ R
   let f : BoundedContinuousFunction D ℝ := BoundedContinuousFunction.ofNormedAddCommGroup
     (fun P => u P.1) (continuousOn_iff_continuous_domRestrict.mp hc) M
-      (fun P => by rw [Real.norm_eq_abs]; exact hb P.1 P.2)
+      (fun P => by aesop)
   let H := KineticPoint.homeomorphProd d
   let j : D → ℝ × PDE.Vec d × PDE.Vec d := fun P => H P.1
   have hj : IsClosedEmbedding j := H.isClosedEmbedding.comp
     (isClosed_localClosedStrip a T v₀ R).isClosedEmbedding_subtypeVal
   obtain ⟨G, hGb, hG⟩ :=
     BoundedContinuousFunction.exists_extension_forall_mem_Icc_of_isClosedEmbedding f
-      (fun P => abs_le.mp (hb P.1 P.2)) (by linarith only [hM]) hj
+      (fun P => abs_le.mp (hb P.1 P.2)) (by simp_all) hj
   let K := Icc a T ×ˢ (Metric.closedBall (0 : PDE.Vec d) L ×ˢ PDE.euclideanClosedBall v₀ R)
   have hK : IsCompact K := isCompact_Icc.prod
     ((ProperSpace.isCompact_closedBall 0 L).prod (PDE.isCompact_euclideanClosedBall v₀ hR.le))
@@ -58,13 +57,11 @@ theorem exists_mass_trace_probe {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) {R : �
       (closure_minimal (PDE.euclideanBall_subset_euclideanClosedBall v₀ R)
         (PDE.isClosed_euclideanClosedBall v₀ R)) hP.2.2
     have hpK : H P ∈ K := ⟨⟨hP.1, hP.2.1⟩,
-      (by simpa only [Metric.mem_closedBall, dist_zero_right] using! hL), hv⟩
+      (by aesop), hv⟩
     have hGj : G (H P) = u P := congrFun hG ⟨P, hP⟩
     have hgp : g (H P) = u P := by
-      change χ (H P) * G (H P) = u P
-      rw [hone _ hpK, one_mul, hGj]
+      aesop
     have hh := hclose (H P)
-    rw [hgp] at hh
-    exact hh
+    aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

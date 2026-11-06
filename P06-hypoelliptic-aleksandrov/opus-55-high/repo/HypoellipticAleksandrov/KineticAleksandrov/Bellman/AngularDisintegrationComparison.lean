@@ -6,18 +6,19 @@ import Mathlib.Tactic
 /-! # Comparison of the actual angular measures -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
+variable (β : ℝ) {μ η : Measure BellmanPuncturedPlane}
+
 /-- Pulling back through the angular embedding preserves measure comparison. -/
-theorem bellmanAngularPullback_mono {μ η : Measure BellmanPuncturedPlane} (h : μ ≤ η) :
+theorem bellmanAngularPullback_mono  (h : μ ≤ η) :
     bellmanAngularPullback μ ≤ bellmanAngularPullback η := by
   apply Measure.le_iff.mpr
   intro E hE
   rw [bellmanAngularPullback, bellmanAngularPullback,
-    isOpenEmbedding_bellmanAngularPoint.measurableEmbedding.comap_apply μ E,
-    isOpenEmbedding_bellmanAngularPoint.measurableEmbedding.comap_apply η E]
+    isOpenEmbedding_bellmanAngularPoint.measurableEmbedding.comap_apply,
+    isOpenEmbedding_bellmanAngularPoint.measurableEmbedding.comap_apply]
   exact h _
 
 /-- Weighting both compared measures by the same nonnegative density preserves comparison. -/
@@ -30,19 +31,17 @@ theorem bellman_withDensity_mono_measure {A : Type*} [MeasurableSpace A]
   exact lintegral_mono' (Measure.restrict_mono Subset.rfl h) le_rfl
 
 /-- The canonical angular section preserves comparison of the original measures. -/
-theorem bellmanAngularMeasure_mono (β : ℝ)
-    {μ η : Measure BellmanPuncturedPlane} (h : μ ≤ η) :
+theorem bellmanAngularMeasure_mono  (h : μ ≤ η) :
     bellmanAngularMeasure β μ ≤ bellmanAngularMeasure β η := by
   have hp := bellman_withDensity_mono_measure (bellmanAngularPullback_mono h)
     (bellmanRadialDegreeWeight β)
   have hl := Measure.map_mono hp bellmanLogAngularHomeomorph.measurable
   have hs := Measure.map_mono
-    (Measure.restrict_mono (s := Ioc (0 : ℝ) 1 ×ˢ univ) Subset.rfl hl) measurable_snd
-  unfold bellmanAngularMeasure bellmanUnitSection bellmanLogAngularMeasure
+    (Measure.restrict_mono (s := Ioc (0) 1 ×ˢ univ) Subset.rfl hl) measurable_snd
   exact smul_le_smul_left _ hs
 
 /-- Angular extraction commutes with multiplying the original measure by a scalar. -/
-theorem bellmanAngularMeasure_smul (β : ℝ) (c : ENNReal)
+theorem bellmanAngularMeasure_smul  (c : ENNReal)
     (μ : Measure BellmanPuncturedPlane) :
     bellmanAngularMeasure β (c • μ) = c • bellmanAngularMeasure β μ := by
   unfold bellmanAngularMeasure bellmanUnitSection bellmanLogAngularMeasure

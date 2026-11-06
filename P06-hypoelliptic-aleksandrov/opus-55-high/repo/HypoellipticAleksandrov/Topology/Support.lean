@@ -47,13 +47,12 @@ theorem continuous_hasCompactSupport_norm_le_cutoff_mul
   · rw [Real.norm_eq_abs, abs_mul]
     calc
       |b x| * |q x| ≤ 1 * C :=
-        mul_le_mul (by simpa only [Real.norm_eq_abs] using hbunit x)
-          (by simpa only [Real.norm_eq_abs] using hqbound x hx)
-          (by simpa only [Real.norm_eq_abs] using (norm_nonneg (q x))) zero_le_one
+        mul_le_mul (by simp_all)
+          (by simp_all)
+          (by positivity) zero_le_one
       _ = C := one_mul C
       _ ≤ max C 0 := le_max_left _ _
   · rw [image_eq_zero_of_notMem_tsupport hx]
-    simp only [zero_mul, norm_zero]
-    exact le_max_right _ _
+    simp
 
 end HypoellipticAleksandrov

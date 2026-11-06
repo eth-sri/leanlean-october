@@ -22,7 +22,7 @@ abbrev ScalarGamma := {gamma : ℝ // 0 < gamma ∧ gamma < 1 / 3}
 
 /-- The negative Kummer parameter belonging to a source scalar exponent. -/
 def ScalarGamma.negative (gamma : ScalarGamma) : Kummer.NegThird :=
-  ⟨-gamma.1, by constructor <;> linarith only [gamma.2.1, gamma.2.2]⟩
+  ⟨-gamma.1, by grind⟩
 
 /-- The positive-s source piece; only its values at positive `s` are consumed. -/
 def Fplus (gamma : ScalarGamma) (Lam s : ℝ) : ℝ :=
@@ -39,19 +39,21 @@ def F (gamma : ScalarGamma) (Lam s : ℝ) : ℝ :=
   if 0 < s then Fplus gamma Lam s
   else if s < 0 then Fminus gamma Lam s else gammaA gamma.1
 
+variable (gamma : ScalarGamma) (Lam : ℝ)
+
 /-- The value at the joining point is the literal connection constant. -/
-@[simp] theorem F_zero (gamma : ScalarGamma) (Lam : ℝ) :
+@[simp] theorem F_zero  :
     F gamma Lam 0 = gammaA gamma.1 := by
   simp only [F, lt_self_iff_false, ↓reduceIte]
 
 /-- The entire negative piece already has the correct value at zero. -/
-@[simp] theorem Fminus_zero (gamma : ScalarGamma) (Lam : ℝ) :
+@[simp] theorem Fminus_zero  :
     Fminus gamma Lam 0 = gammaA gamma.1 := by
   simp only [Fminus, zero_pow (by decide : 3 ≠ 0), zero_div, Kummer.M_zero,
     mul_one, mul_zero, add_zero]
 
 /-- The positive piece is strictly positive on its consumed half-line. -/
-theorem Fplus_pos (gamma : ScalarGamma) (Lam s : ℝ) (hLam : 0 < Lam) (hs : 0 < s) :
+theorem Fplus_pos  (Lam s : ℝ) (hLam : 0 < Lam) (hs : 0 < s) :
     0 < Fplus gamma Lam s :=
   Kummer.UNr_pos gamma.negative _ (div_pos (pow_pos hs 3) (mul_pos (by norm_num) hLam))
 

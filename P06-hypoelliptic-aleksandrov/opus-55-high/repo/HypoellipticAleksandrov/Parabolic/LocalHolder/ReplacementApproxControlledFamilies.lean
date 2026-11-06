@@ -13,7 +13,6 @@ retained. The norm bound is independent of the sequence index.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 open scoped BigOperators MatrixOrder Matrix.Norms.Elementwise
@@ -47,18 +46,14 @@ theorem exists_controlled_homogeneous_higher_families {d : ℕ}
     r₀ q₀ s₀ s₁ q₁ r₁ hr₀q₀ hq₀s₀ hs₀s₁ hs₁q₁ hq₁r₁
     hΩopen hO₀open hO₀compact hO₀Ω hOopen hOne hOcompact hOO₀
     lam Lam hlam hlamLam A hA (fun z _ => hlo z.1 z.2) (fun z _ => hhi z.1 z.2)
-  have hex (n : ℕ) : ∃ D : ParabolicWeakDerivativeFamily d (2 * (d + 4))
+  have hex (n : ℕ) : ∃ D : ParabolicWeakDerivativeFamily d _
       (Ioo s₀ s₁ ×ˢ O) (J n).toFun,
       (∀ alpha : ParabolicDerivativeIndex d 2, D.representative
         (ParabolicDerivativeIndex.castLE (by omega : 2 ≤ 2 * (d + 4)) alpha) =
         ((J n).toWeakDerivativeFamily (isOpen_Ioo.prod hO₀open)).representative alpha) ∧
       D.squaredL2Norm ≤ Ci * ((J n).toWeakDerivativeFamily
         (isOpen_Ioo.prod hO₀open)).squaredL2Norm := by
-    obtain ⟨G, hGlow, hGnorm⟩ := hrun (J n) (hEq n)
-    refine ⟨G.truncate (by omega : 2 * (d + 4) ≤ 2 * d + 8), ?_, ?_⟩
-    · intro alpha
-      exact hGlow alpha
-    · exact (G.squaredL2Norm_truncate_le _).trans hGnorm
+    aesop
   choose D hlow hnorm using hex
   refine ⟨Ci * N + 1, D, by positivity, ?_, ?_⟩
   · intro n
@@ -70,8 +65,7 @@ theorem exists_controlled_homogeneous_higher_families {d : ℕ}
         (∑ i, ∑ j, A z.1 z.2 i j * (J n).velocityHessian z j i) +
         (∑ j, (0 : PDE.Vec d) j * (J n).velocityGrad z j) +
         0 * (J n).toFun z) =ᵐ[timeVelocityVolumeOn (Ioo q₀ q₁ ×ˢ O₀)] 0 := by
-      filter_upwards [hEq n] with z hz
-      simpa using hz
+      aesop
     have hcanon := (J n).toWeakDerivativeFamily_originalTimeEquation
       (isOpen_Ioo.prod hO₀open) A (fun _ _ => 0) (fun _ _ => 0) (fun _ _ => 0) hEqfull
     have hsub : Ioo s₀ s₁ ×ˢ O ⊆ Ioo q₀ q₁ ×ˢ O₀ := by
@@ -79,7 +73,7 @@ theorem exists_controlled_homogeneous_higher_families {d : ℕ}
       exact ⟨⟨hq₀s₀.trans hz.1.1, hz.1.2.trans hs₁q₁⟩, hOO₀ (subset_closure hz.2)⟩
     filter_upwards [hcanon.filter_mono (ae_mono (Measure.restrict_mono_set volume hsub))]
       with z hz
-    simp only [homogeneousWeakFamilyResidual, hlow n] at ⊢
-    simpa only [Pi.zero_apply, zero_mul, Finset.sum_const_zero, add_zero] using hz
+    simp only [homogeneousWeakFamilyResidual, hlow] at ⊢
+    simp_all
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

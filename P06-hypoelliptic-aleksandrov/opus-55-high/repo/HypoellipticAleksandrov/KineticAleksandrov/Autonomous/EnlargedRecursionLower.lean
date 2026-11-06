@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedVisi
 /-! # Independence of the named lower observation time below the initial pole -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
@@ -30,6 +29,6 @@ theorem enlargedBoundary_restrict_lower_eq (I J : Interval) (s L T : ℝ) (hs : 
   apply Measure.restrict_congr_set
   filter_upwards [hmu] with p hp
   have hsp := hs.trans_lt hp
-  simp only [visitBoundary, mem_ofPred_eq, hsp, hp, true_and]
+  simp only [visitBoundary, mem_ofPred_eq, hsp, hp]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

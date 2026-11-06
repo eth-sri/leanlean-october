@@ -20,15 +20,15 @@ instance clockNativeGreen_isFiniteMeasure
     IsFiniteMeasure (clockNativeGreen hH hLE hlam hLam A c e he) := by
   obtain ⟨C, -, hc⟩ := Interval.interval_green_finite_mass hH hLE
     (3 * lam / 5) (3 * Lam) (9 / 25) 9 (3 / 2) (by positivity) (by norm_num)
-  have hh := @hc (-3 / 4) (3 / 4) (by norm_num)
-    (c.extendedCoefficient lam A.a e) c.extendedVectorDrift
+  have hh := @hc _ _ (by norm_num)
+    _ c.extendedVectorDrift
     (c.extended_sourceSetting hlam hLam A e)
-    (intervalDomain_measurable clockNormalizedInterval)
-    (clockEvolution hH hLE hlam hLam A c e).1
-    (clockEvolution hH hLE hlam hLam A c e).2
+    _
+    _
+    _
     (clockEvolution_spec hH hLE hlam hLam A c e) (by norm_num) 0
-    (Measure.dirac (clockInitialState c e he)) isFiniteMeasure_dirac
-    (clockNativeGreen hH hLE hlam hLam A c e he)
+    _ isFiniteMeasure_dirac
+    _
     (clockNativeGreen_spec hH hLE hlam hLam A c e he)
   exact ⟨hh.2⟩
 
@@ -58,7 +58,7 @@ instance clockWeightedGreen_isFiniteMeasure
   apply lt_of_le_of_lt
     (lintegral_mono_ae (g := fun _ => ENNReal.ofReal (3 * |c.vbar| / 2)) ?_) ?_
   · filter_upwards [stripGreen_infinite_ae_future_carrier hH hLE hlam hLam A c.activeInterval
-      ⟨e, WithTop.coe_lt_top _, he⟩] with p hp
+      _] with p hp
     exact ENNReal.ofReal_le_ofReal (c.active_abs_bounds hp.2).2
   · rw [lintegral_const]
     exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top (measure_lt_top _ _)

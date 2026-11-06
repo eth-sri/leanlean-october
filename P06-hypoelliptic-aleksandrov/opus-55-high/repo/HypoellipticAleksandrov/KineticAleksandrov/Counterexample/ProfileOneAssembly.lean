@@ -21,8 +21,10 @@ theorem scalar_identity_le {d : ℕ} (a b : ℝ) (hab : a ≤ b) :
   simpa only [sub_smul] using
     (Matrix.PosSemidef.one (n := Fin d) (R := ℝ)).smul (sub_nonneg.mpr hab)
 
+variable (Lam : ℝ)
+
 /-- The literal scalar coefficient is entrywise measurable. -/
-theorem measurable_scalarProfileCoefficient (Lam : ℝ) (i k : Fin 1) :
+theorem measurable_scalarProfileCoefficient  (i k : Fin 1) :
     Measurable (fun q => scalarProfileCoefficient Lam q i k) := by
   have hm : Measurable (fun q : XV 1 => q.1 0 * q.2 0) :=
     ((measurable_pi_apply 0).comp measurable_fst).mul
@@ -32,7 +34,7 @@ theorem measurable_scalarProfileCoefficient (Lam : ℝ) (i k : Fin 1) :
   exact (measurable_const.ite hs measurable_const).mul measurable_const
 
 /-- The scalar coefficient has the source's uniform ellipticity bounds everywhere. -/
-theorem scalarProfileCoefficient_order (Lam : ℝ) (hLam : 1 < Lam) (q : XV 1) :
+theorem scalarProfileCoefficient_order  (hLam : 1 < Lam) (q : XV 1) :
     (1 : ℝ) • (1 : PDE.Mat 1) ≤ scalarProfileCoefficient Lam q ∧
       scalarProfileCoefficient Lam q ≤ Lam • (1 : PDE.Mat 1) := by
   unfold scalarProfileCoefficient
@@ -48,28 +50,23 @@ theorem counterProfile_one (alpha : ℝ) (ha : 0 < alpha) (ha1 : alpha < 1)
   have hx (i : Fin 1) : LocallyIntegrable (fun q => gx q i) volume := by
     apply homogeneous_component_locallyIntegrable 1 (by omega) (fun q => gx q i)
       ((measurable_pi_apply i).comp hmx) (alpha - 3) (by linarith) (by linarith)
-    · intro r hr q
-      simpa only [Pi.smul_apply, smul_eq_mul] using congrArg (fun w => w i) (hjhom r hr q).1
+    · simp_all
     · intro K hK hz
       obtain ⟨M, hM⟩ := hb K hK hz
-      exact ⟨M, fun q hq => (by simpa only [Real.norm_eq_abs] using
-        (norm_le_pi_norm (gx q) i).trans (hM q hq).1)⟩
+      exact ⟨M, fun q hq => (by simpa using
+        (norm_le_pi_norm _ i).trans (hM q hq).1)⟩
   have hv (i : Fin 1) : LocallyIntegrable (fun q => gv q i) volume := by
     apply homogeneous_component_locallyIntegrable 1 (by omega) (fun q => gv q i)
       ((measurable_pi_apply i).comp hmv) (alpha - 1) (by linarith) (by linarith)
-    · intro r hr q
-      simpa only [Pi.smul_apply, smul_eq_mul] using
-        congrArg (fun w => w i) (hjhom r hr q).2.1
+    · simp_all
     · intro K hK hz
       obtain ⟨M, hM⟩ := hb K hK hz
-      exact ⟨M, fun q hq => (by simpa only [Real.norm_eq_abs] using
-        (norm_le_pi_norm (gv q) i).trans (hM q hq).2.1)⟩
+      exact ⟨M, fun q hq => (by simpa using
+        (norm_le_pi_norm _ i).trans (hM q hq).2.1)⟩
   have hh (i k : Fin 1) : LocallyIntegrable (fun q => hess q i k) volume := by
-    apply homogeneous_component_locallyIntegrable 1 (by omega) (fun q => hess q i k)
+    apply homogeneous_component_locallyIntegrable 1 (by omega) _
       (hmh i k) (alpha - 2) (by linarith) (by linarith)
-    · intro r hr q
-      simpa only [Matrix.smul_apply, smul_eq_mul] using
-        congrArg (fun w => w i k) (hjhom r hr q).2.2
+    · simp_all
     · intro K hK hz
       obtain ⟨M, hM⟩ := hb K hK hz
       exact ⟨M, fun q hq => (hM q hq).2.2 i k⟩
@@ -85,7 +82,7 @@ theorem counterProfile_one (alpha : ℝ) (ha : 0 < alpha) (ha1 : alpha < 1)
     apply hq.1
     ext i
     have hi : i = 0 := Subsingleton.elim _ _
-    simpa only [hi, Pi.zero_apply] using hz
+    simp_all
   exact hsmooth.contDiffAt
     ((isOpen_ne.preimage ((continuous_apply 0).comp continuous_fst)).mem_nhds hq0)
 

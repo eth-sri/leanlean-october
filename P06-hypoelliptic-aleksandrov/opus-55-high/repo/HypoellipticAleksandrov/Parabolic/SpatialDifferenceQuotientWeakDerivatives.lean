@@ -12,7 +12,6 @@ restriction, and weak-derivative algebra on arbitrary time--velocity sets.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 

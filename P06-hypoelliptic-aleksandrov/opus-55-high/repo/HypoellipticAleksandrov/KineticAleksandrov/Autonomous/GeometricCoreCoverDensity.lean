@@ -8,7 +8,6 @@ import Mathlib.Tactic
 /-! # Improved density in cylinders whose velocities meet the region near zero -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open scoped ENNReal
@@ -18,7 +17,7 @@ theorem below_four_near_velocity_density (hband : BelowFourBandStatement)
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (alpha q : ℝ)
     (ha : bellmanAdjointExponent (Lam / lam) ((le_div_iff₀ hlam).2
-      (by simpa only [one_mul] using hLam)) - 2 < alpha ∧ alpha < 1)
+      (by simp_all)) - 2 < alpha ∧ alpha < 1)
     (hq : 1 < q ∧ q < (4 - (1 - alpha)) / (3 - (1 - alpha))) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam)
       (Z₀ : Point) (R : ℝ) (hR : 0 < R) (P : Point)
@@ -44,7 +43,7 @@ theorem below_four_near_velocity_density (hband : BelowFourBandStatement)
   intro A Z₀ R hR P hP hnear
   let Q := forwardCylinder Z₀ R hR
   let D := densityObservationStrip Z₀ R hR
-  let ν := stripGreen hH hLE hlam hLam A (capacityCylinderInterval Z₀ R hR)
+  let ν := stripGreen hH hLE hlam hLam A _
     (Z₀.time + R ^ 2) (capacityCylinderPole Z₀ P R hR hP)
   let S : Bool × ℕ → Set Point := fun i =>
     {z | z.velocity 0 ∈ (geometricCoreClock R hR i.2 i.1).core}
@@ -58,22 +57,21 @@ theorem below_four_near_velocity_density (hband : BelowFourBandStatement)
       MemLp f (ENNReal.ofReal q) (volume.restrict D) ∧
       (eLpNorm f (ENNReal.ofReal q) (volume.restrict D)).toReal ≤
         (C * R ^ (6 - 4 * q) * geometricBandPower delta i.2) ^ (1 / q) := by
-    have hb := hc A (geometricCoreClock R hR i.2 i.1) Z₀ R hR P hP
+    have hb := hc A _ Z₀ R hR P hP
       (geometricCoreClock_center R hR i.2 i.1)
       (geometricCoreClock_radius R hR i.2 i.1)
-    have hr : (geometricCoreClock R hR i.2 i.1).r / R = 4 * (7 / 8 : ℝ) ^ i.2 := by
+    have hr : (geometricCoreClock R hR i.2 i.1).r / R = 4 * (7 / 8) ^ i.2 := by
       dsimp [geometricCoreClock, geometricCoreScale]
-      field_simp [ne_of_gt hR]
-      ring
-    simpa only [hr, geometricBandPower] using hb
+      grind
+    aesop
   choose f hfm hf0 hfd hfp hfn using hlocal
   have hle (i : Bool × ℕ) : (ν.restrict Q).restrict (S i) ≤
       (volume.restrict Q).withDensity (fun z => ENNReal.ofReal (f i z)) := by
     have he : (ν.restrict Q).restrict (S i) =
         (volume.restrict Q).withDensity (fun z => ENNReal.ofReal (f i z)) := by
-      rw [Measure.restrict_comm (hS i), hfd i, restrict_withDensity hQ,
+      rw [Measure.restrict_comm (hS i), hfd, restrict_withDensity hQ,
         Measure.restrict_restrict hQ, inter_eq_left.mpr hQD]
-    exact he.le
+    simp_all
   have hcover : (ν.restrict Q) (⋃ i, S i)ᶜ = 0 := by
     rw [Measure.restrict_apply (MeasurableSet.iUnion hS).compl]
     apply measure_mono_null (t := {z | z.velocity 0 = 0})
@@ -84,14 +82,13 @@ theorem below_four_near_velocity_density (hband : BelowFourBandStatement)
         have h := abs_le.mp hnear
         change Z₀.velocity 0 - R < z.velocity 0 ∧
           z.velocity 0 < Z₀.velocity 0 + R at hvQ
-        apply abs_le.mpr
-        constructor <;> linarith [h.1, h.2, hvQ.1, hvQ.2]
+        grind
       obtain ⟨j, s, hs⟩ := geometricCoreClock_covers R (z.velocity 0) hR hv hab
       exact hz.1 (mem_iUnion.mpr ⟨(s, j), hs⟩)
     · exact cylinder_strip_velocity_slice_zero hH hLE hlam hLam A Z₀ P R hR hP 0
   have : IsFiniteMeasure ν := stripGreen_isFiniteMeasure hH hLE hlam hLam A
-    (capacityCylinderInterval Z₀ R hR) (Z₀.time + R ^ 2)
-    (capacityCylinderPole Z₀ P R hR hP)
+    _ _
+    _
   have := density_volume_sigmaFinite
   obtain ⟨g, hgm, hg0, hgd, hgi⟩ := density_of_countable_cover
     (volume.restrict Q) (ν.restrict Q) S hS hcover f hfm hf0 q hq0 hle
@@ -101,16 +98,16 @@ theorem below_four_near_velocity_density (hband : BelowFourBandStatement)
     calc
       (∑' i, ∫⁻ z, ‖f i z‖ₑ ^ q ∂volume.restrict Q) ≤
           ∑' i : Bool × ℕ,
-            ENNReal.ofReal (C * R ^ (6 - 4 * q) * geometricBandPower delta i.2) := by
+            ENNReal.ofReal _ := by
         apply ENNReal.tsum_le_tsum
         intro i
         exact (lintegral_mono' hmeasure le_rfl).trans
-          (density_power_integral_le (volume.restrict D) (f i) q
-            (C * R ^ (6 - 4 * q) * geometricBandPower delta i.2) hq0
+          (density_power_integral_le _ _ q
+            _ hq0
             (by unfold geometricBandPower; positivity) (hfp i) (hfn i))
-      _ = _ := geometricBandPower_sum C R delta (6 - 4 * q) hC.le hR hd
-  obtain ⟨hgp, hgn⟩ := density_norm_of_power_bound (volume.restrict Q) g hgm q
-    (2 * C * total * R ^ (6 - 4 * q)) hq0 (by positivity) hi
+      _ = _ := geometricBandPower_sum C R delta _ hC.le hR hd
+  obtain ⟨hgp, hgn⟩ := density_norm_of_power_bound _ g hgm q
+    _ hq0 (by positivity) hi
   refine ⟨g, hgm, hg0, hgd, hgp, ?_⟩
   exact hgn.trans_eq (geometricBandPower_root C R delta q hC.le hR hd hq0)
 

@@ -20,7 +20,6 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic MeasureTheory Set
 
-
 /-- A measurable countable family of functions can be evaluated at a measurable mesh index
 and at the actual query point. -/
 theorem measurable_mesh_query_lookup {n : ℕ} {Ω : Set (PDE.Vec n)}
@@ -34,14 +33,13 @@ theorem measurable_mesh_query_lookup {n : ℕ} {Ω : Set (PDE.Vec n)}
     (measurable_fst.comp (measurable_snd.comp measurable_subtype_coe))).prodMk
     continuous_evolutionQueryPoint.measurable)
 
-
 /-- Evaluating a countable measurable family at a measurable index is measurable. -/
 theorem measurable_countable_lookup {X : Type*} [MeasurableSpace X]
     (I : X → ℤ) (v : ℤ → X → ℝ) (hv : ∀ k, Measurable (v k)) (hI : Measurable I) :
     Measurable (fun x => v (I x) x) := by
   have hLookup : Measurable (fun z : ℤ × X => v z.1 z.2) :=
     measurable_from_prod_countable_right hv
-  exact hLookup.comp (hI.prodMk measurable_id)
+  fun_prop
 
 section EvolutionData
 
@@ -91,7 +89,7 @@ theorem measurable_extendedTerminalProbe
       (isClosed_le continuous_time continuous_const).inter
         (isClosed_setOf_mem_closure_movingDomain hγ.1)
     exact hu.2.1.measurable_piecewise continuousOn_const hs.measurableSet
-  · exact measurable_const
+  fun_prop
 
 /-- On a valid earlier source the extension is exactly the terminal integral operator. -/
 theorem extendedTerminalProbe_eq_operator
@@ -111,12 +109,11 @@ theorem measurable_upper_terminal_probe
     (j : ℕ) (F : BoundedBorel (EvolutionAmbientState n)) :
     Measurable (fun q : EvolutionQuery Ω γ =>
       extendedTerminalProbe n Ω γ B b hEx
-        (terminalTimeMesh j q.1.2.1) F (evolutionQueryPoint q)) := by
-  exact measurable_mesh_query_lookup j
-    (fun k => extendedTerminalProbe n Ω γ B b hEx ((k : ℝ) / ((j : ℝ) + 1)) F)
+        (terminalTimeMesh j q.1.2.1) F (evolutionQueryPoint q)) := measurable_mesh_query_lookup j
+    _
     (fun k => measurable_extendedTerminalProbe n hn lam Lam m L_b
       hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
-      hb_smooth hb_lipschitz hb_coercive hEx ((k : ℝ) / ((j : ℝ) + 1)) F)
+      hb_smooth hb_lipschitz hb_coercive hEx (k / (j + 1)) F)
 
 end EvolutionData
 

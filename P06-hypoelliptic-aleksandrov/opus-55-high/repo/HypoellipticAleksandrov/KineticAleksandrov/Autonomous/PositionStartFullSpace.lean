@@ -6,16 +6,15 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionCell
 /-! # The literal source box actions of full-space terminal and occupation measures -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 open scoped Classical ENNReal
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+
 /-- Full-space terminal mass in the physical source box is its elapsed box probability. -/
 theorem positionStartFullSpaceTerminal_box
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (P : Point) (Y b : ℝ) :
+     (c : Clock) (P : Point) (Y b : ℝ) :
     enlargedFullSpaceTerminal hH hLE hlam hLam A P (P.time + b) (positionStartBox c Y) =
       kernelXV (fullSpaceEvolution hH hLE hlam hLam A) (Real.toNNReal b)
         (P.position 0, P.velocity 0) (box 4 c.r Y) := by
@@ -26,9 +25,7 @@ theorem positionStartFullSpaceTerminal_box
 
 /-- The full-space occupation mass in a physical slab is the source iterated box action. -/
 theorem positionStartFullSpaceOccupation_box_slab
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (P : Point) (Y a b T : ℝ)
+     (c : Clock) (P : Point) (Y a b T : ℝ)
     (ha : 0 ≤ a) (hb : b ≤ T) :
     enlargedFullSpaceOccupation hH hLE hlam hLam A P T
       ({q : Point | P.time + a < q.time ∧ q.time ≤ P.time + b} ∩ positionStartBox c Y) =
@@ -42,9 +39,7 @@ theorem positionStartFullSpaceOccupation_box_slab
   have hW := measurableSet_positionStartBox c Y
   let F : Point → ℝ≥0∞ := (S ∩ W).indicator 1
   have hF : Measurable F := measurable_one.indicator (hS.inter hW)
-  rw [← lintegral_indicator_one (hS.inter hW)]
-  change (∫⁻ p, F p ∂enlargedFullSpaceOccupation hH hLE hlam hLam A P T) = _
-  rw [enlargedFullSpaceOccupation_lintegral hH hLE hlam hLam A P T F hF]
+  rw [← lintegral_indicator_one (hS.inter hW), enlargedFullSpaceOccupation_lintegral hH hLE hlam hLam A P T F hF]
   have he (t : ℝ) : (∫⁻ z, F (enlargedTerminalPoint (P.time + t) z)
       ∂kernelXV (fullSpaceEvolution hH hLE hlam hLam A) (Real.toNNReal t)
         (P.position 0, P.velocity 0)) =
@@ -57,21 +52,18 @@ theorem positionStartFullSpaceOccupation_box_slab
       have heq : enlargedTerminalPoint (P.time + t) z ∈ S ∩ W ↔ z ∈ box 4 c.r Y := by
         change ((P.time + a < P.time + t ∧ P.time + t ≤ P.time + b) ∧
           z ∈ box 4 c.r Y) ↔ z ∈ box 4 c.r Y
-        have hs : P.time + a < P.time + t ∧ P.time + t ≤ P.time + b := by
-          constructor <;> linarith only [ht.1, ht.2]
-        exact and_iff_right hs
+        simp_all
       simp only [F, Set.indicator, heq, Pi.one_apply]
-    · rw [indicator_of_notMem ht]
-      have hz : (fun z : Z => F (enlargedTerminalPoint (P.time + t) z)) =
+    · have hz : (fun z : Z => F (enlargedTerminalPoint (P.time + t) z)) =
           fun _ => (0 : ℝ≥0∞) := by
         funext z
         have hn : enlargedTerminalPoint (P.time + t) z ∉ S ∩ W := by
           intro hz
           apply ht
           have hs : P.time + a < P.time + t ∧ P.time + t ≤ P.time + b := hz.1
-          constructor <;> linarith only [hs.1, hs.2]
-        exact indicator_of_notMem hn _
-      rw [hz, lintegral_zero]
+          simp_all
+        aesop
+      simp_all
   simp_rw [he]
   rw [lintegral_indicator measurableSet_Ioc,
     Measure.restrict_restrict measurableSet_Ioc]
@@ -90,6 +82,6 @@ theorem positionStartBox_slab_ofReal_integral (E : FullSpaceEvolution) (z : Z)
   apply lintegral_congr
   intro t
   exact ENNReal.ofReal_toReal ((measure_mono (subset_univ _)).trans_lt
-    ((kernelXV_mass_le_one E (Real.toNNReal t) z).trans_lt ENNReal.one_lt_top)).ne
+    ((kernelXV_mass_le_one E _ z).trans_lt ENNReal.one_lt_top)).ne
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -22,6 +22,6 @@ theorem ballExit_combine_exponentials {A a B b x y : ℝ}
     (hA.trans (le_max_left A B))
   have h2 := mul_le_mul (le_max_right A B) hb (Real.exp_pos _).le
     (hB.trans (le_max_right A B))
-  exact (add_le_add h1 h2).trans_eq (mul_add _ _ _).symm
+  linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.MassRepresentati
 /-! # Symmetric weighted trace comparison for actual homogeneous solutions -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Parabolic
 
@@ -49,14 +48,7 @@ theorem mass_homogeneous_abs_weighted {d : ℕ} {lam Lam : ℝ}
     (hv.sub hu) hg (hcv.sub hcu)
     ⟨N + M, fun P hP => (abs_sub _ _).trans (add_le_add (hN P hP) (hM P hP))⟩
     ε hε (fun P hP => by
-      have hh := htr P hP
-      rw [abs_sub_comm] at hh
-      exact (le_abs_self _).trans hh)
-  intro P hP
-  apply abs_le.mpr
-  constructor
-  · have hh := h₂ P hP
-    linarith only [hh]
-  · exact h₁ P hP
+      grind)
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

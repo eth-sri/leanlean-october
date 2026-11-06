@@ -42,17 +42,17 @@ noncomputable def flatProfileHessian {d : ℕ} {alpha : ℝ}
       deriv (deriv flatteningPsi) (profileFunction h q / Real.rpow r alpha) *
       profileVelocityJet h q i * profileVelocityJet h q k
 
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha) (r : ℝ)
+
 /-- The selected literal flattened profile is continuous. -/
-theorem continuous_selectedFlatProfile {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) :
+theorem continuous_selectedFlatProfile  :
     Continuous (selectedFlatProfile h r) := by
   have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
-  unfold selectedFlatProfile flatProfile
   exact continuous_const.sub (continuous_const.mul
     (contDiff_flatteningPsi.continuous.comp (hH.div_const _)))
 
 /-- The ordinary first chain rule at a differentiability point of the unflattened profile. -/
-theorem fderiv_flatProfile {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
+theorem fderiv_flatProfile  (H : XV d → ℝ) (alpha r : ℝ)
     (hr : 0 < r) (q : XV d) (hH : DifferentiableAt ℝ H q) :
     fderiv ℝ (flatProfile H flatteningPsi flatteningOffset alpha r) q =
       (-deriv flatteningPsi (H q / Real.rpow r alpha)) • fderiv ℝ H q := by
@@ -69,12 +69,10 @@ theorem fderiv_flatProfile {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ)
   rw [he]
   simp only [smul_smul]
   rw [← neg_smul]
-  congr 1
-  dsimp [a] at ha ⊢
-  field_simp
+  grind
 
 /-- Entrywise contraction expands the rank-one term of the flattening chain rule. -/
-theorem contraction_flattening_identity {d : ℕ} (A B : PDE.Mat d)
+theorem contraction_flattening_identity  (A B : PDE.Mat d)
     (w : PDE.Vec d) (s t : ℝ) :
     matrixContraction A (fun i k => -s * B i k - t * w i * w k) =
       -s * matrixContraction A B - t * PDE.vecDot (A.mulVec w) w := by
@@ -84,14 +82,11 @@ theorem contraction_flattening_identity {d : ℕ} (A B : PDE.Mat d)
   apply Finset.sum_congr rfl
   intro i hi
   rw [← Finset.sum_sub_distrib]
-  apply Finset.sum_congr rfl
-  intro k hk
-  ring
+  grind
 
 /-- The explicit weak representatives satisfy the source equation algebraically almost everywhere.
 This conclusion alone does not establish that they are derivatives of the flattened profile. -/
-theorem flatProfile_representatives_source {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) :
+theorem flatProfile_representatives_source  :
     ∀ᵐ q ∂volume,
       PDE.vecDot q.2 (flatProfilePositionJet h r q) -
         matrixContraction (profileMatrix h q) (flatProfileHessian h r q) =
@@ -108,15 +103,11 @@ theorem flatProfile_representatives_source {d : ℕ} {alpha : ℝ}
         -s * PDE.vecDot q.2 (profilePositionJet h q) := by
     unfold PDE.vecDot
     rw [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro i hi
-    ring
-  rw [hdot]
-  ring
+    grind
+  simp_all
 
 /-- All explicit flattened derivative representatives are measurable. -/
-theorem measurable_flatProfile_jets {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) :
+theorem measurable_flatProfile_jets  :
     Measurable (flatProfilePositionJet h r) ∧ Measurable (flatProfileVelocityJet h r) ∧
       (∀ i k, Measurable (fun q => flatProfileHessian h r q i k)) := by
   have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
@@ -132,7 +123,7 @@ theorem measurable_flatProfile_jets {d : ℕ} {alpha : ℝ}
   have harg := hH.measurable.div_const (Real.rpow r alpha)
   have hs := (hpsi.measurable.comp harg).neg
   have ht : Measurable (fun q : XV d => Real.rpow r (-alpha) *
-      deriv (deriv flatteningPsi) (profileFunction h q / Real.rpow r alpha)) :=
+      deriv _ (profileFunction h q / Real.rpow r alpha)) :=
     measurable_const.mul (hpsi2.measurable.comp harg)
   refine ⟨?_, ?_, ?_⟩
   · apply Measurable.of_eval

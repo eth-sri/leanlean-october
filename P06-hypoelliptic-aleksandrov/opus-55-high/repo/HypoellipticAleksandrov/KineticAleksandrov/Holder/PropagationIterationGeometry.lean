@@ -8,7 +8,6 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -38,17 +37,14 @@ theorem mem_closure_backwardCylinder_of_strict_spatial {d : ℕ}
     continuousAt_const.add continuousAt_id
   have hlow : ∀ᶠ r in 𝓝[<] (0 : ℝ), P₀.time - R ^ 2 < P.time + r :=
     hcont.eventually
-      (lt_mem_nhds (by simpa only [add_zero] using htlo)) |>.filter_mono inf_le_left
+      (lt_mem_nhds (by simp_all)) |>.filter_mono inf_le_left
   filter_upwards [hlow, self_mem_nhdsWithin] with r hr hneg
   refine ⟨hr, ?_, hv, ?_⟩
-  · change P.time + r < P₀.time
-    rw [heq]
-    change r < 0 at hneg
-    linarith only [hneg]
+  · grind
   · have hrel : relativePosition P₀ (f r) = relativePosition P₀ P := by
       ext i
-      simp only [relativePosition, f, Pi.sub_apply, Pi.add_apply, Pi.smul_apply, smul_eq_mul]
+      simp only [relativePosition, f, Pi.sub_apply, Pi.add_apply, Pi.smul_apply]
       ring
-    simpa only [hrel] using hx
+    simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

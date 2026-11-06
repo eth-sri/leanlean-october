@@ -48,13 +48,12 @@ theorem borelCorrectedFunction_smooth_homogeneous
   have hM0 : 0 ≤ max M 0 := le_max_right _ _
   have hFb : ∀ P, |F P| ≤ max M 0 := fun P => (hM P).trans (le_max_left _ _)
   obtain ⟨hfull, hsym, hell⟩ := sectionTwoCoefficient_fullBounds lam Lam B hB
-  have hFd : tsupport F ⊆ D := by
-    exact (tsupport_mul_subset_left).trans hχD
+  have hFd : tsupport F ⊆ D := (tsupport_mul_subset_left).trans hχD
   have hFpast : ∀ Q, KineticPoint.equivProd d Q ∉
-      boundedSourcePast (wholeSpace d) (fun _ => (0 : PDE.Vec d)) T →
+      boundedSourcePast (wholeSpace d) (fun _ => (0)) T →
       (F ∘ sectionTwoPoint) Q = 0 := by
     intro Q hQ
-    change F (sectionTwoPoint Q) = 0
+    change F _ = 0
     apply image_eq_zero_of_notMem_tsupport
     intro hs
     apply hQ
@@ -62,29 +61,26 @@ theorem borelCorrectedFunction_smooth_homogeneous
     refine ⟨ht, ?_⟩
     simp only [movingDomain_wholeSpace, mem_univ]
   have hWcont := continuousOn_duhamelPotential_bounded_signed hH (wholeSpace_admissible d)
-    MeasurableSet.univ continuous_const (zIndependentCoefficient B) (identityDrift d)
+    MeasurableSet.univ continuous_const _ _
     S K hreal hfull hsym (identityDrift_smooth d) lam Lam 1 hB.1 zero_lt_one hell
     (identityDrift_bounds d).2 T (F ∘ sectionTwoPoint)
-    (hFc.measurable.comp (continuous_sectionTwoPoint d).measurable) (max M 0) hM0
+    (hFc.measurable.comp (continuous_sectionTwoPoint d).measurable) _ hM0
     (fun Q => hFb _) hFpast
-  have hsub : O' ⊆ evolutionPastOpenCylinder (wholeSpace d) (fun _ => (0 : PDE.Vec d)) T := by
+  have hsub : O' ⊆ evolutionPastOpenCylinder (wholeSpace d) (fun _ => (0)) T := by
     rintro Q ⟨P, hP, rfl⟩
     refine ⟨hDt P (hOD hP), ?_⟩
     simp only [movingDomain_wholeSpace, mem_univ]
   have hWweak := borelCorrectorPotential_weak B hB S K hreal T F hFc.measurable
-    (max M 0) hM0 hFb
-  have hw := boundedSource_weak_restrict hsub (zIndependentCoefficient B) (identityDrift d)
-    (W ∘ sectionTwoPoint) (fun Q => -F (sectionTwoPoint Q)) hWweak
+    _ hM0 hFb
+  have hw := boundedSource_weak_restrict hsub _ _
+    (W ∘ sectionTwoPoint) _ hWweak
   have heqV : V = evolutionHomeomorph d ⁻¹' O' := by
     ext x
     constructor
-    · intro hx
-      exact ⟨massPhysicalPoint x, hx, rfl⟩
+    · aesop
     · rintro ⟨P, hP, hEq⟩
       have hp : massPhysicalPoint x = P := congrArg sectionTwoPoint hEq.symm
-      change massPhysicalPoint x ∈ O
-      rw [hp]
-      exact hP
+      grind
   have hwNative := (isWeakTransportedSolution_comp_iff _ _ _ _ _).2 hw
   rw [← heqV] at hwNative
   have hwResidual : IsWeakTransportedSolution (zIndependentCoefficient B) (identityDrift d)
@@ -106,11 +102,11 @@ theorem borelCorrectedFunction_smooth_homogeneous
       hu.continuousOn_kineticVelocityGradient.mono hOD,
       hu.continuousOn_kineticVelocityHessian.mono hOD⟩
   have huNative := borelCorrector_classical_weak B hB hO U huO
-  have hjWeak : IsWeakTransportedSolution (zIndependentCoefficient B) (identityDrift d)
-      V (J ∘ massPhysicalPoint) (fun _ => 0) :=
+  have hjWeak : IsWeakTransportedSolution _ _
+      V (J ∘ massPhysicalPoint) _ :=
     borelCorrector_weak_cancel _ _ hfull (identityDrift_smooth d) V
-      (U ∘ massPhysicalPoint) (W ∘ massPhysicalPoint)
-      (forwardKineticOperator (ofTimeVelocityCoefficient B) U ∘ massPhysicalPoint)
+      _ _
+      _
       huNative hwResidual
   have hWc : ContinuousOn W O :=
     hWcont.comp (continuous_sectionTwoPoint d).continuousOn
@@ -129,26 +125,18 @@ theorem borelCorrectedFunction_smooth_homogeneous
   have hjPhysical : ContDiffOn ℝ (⊤ : ℕ∞) (J ∘ (KineticPoint.equivProd d).symm)
       ((KineticPoint.equivProd d) '' O) := by
     apply boundary_native_smooth_to_physical O J
-    rw [← heqV]
-    exact hjSmooth
+    aesop
   refine ⟨hjPhysical, ?_⟩
   intro P hP
   let x := (evolutionHomeomorph d).symm (sectionTwoPoint P)
   have hx : x ∈ V := by
-    rw [heqV]
-    change evolutionHomeomorph d x ∈ O'
-    rw [Homeomorph.apply_symm_apply]
-    exact ⟨P, hP, rfl⟩
+    aesop
   have he := hjOp x hx
   have hsm : ContDiffAt ℝ 2 ((J ∘ sectionTwoPoint) ∘ evolutionHomeomorph d) x :=
     (hjSmooth.contDiffAt (hV.mem_nhds hx)).of_le (by simp)
   have hNativeEq : J ∘ massPhysicalPoint =
       (J ∘ sectionTwoPoint) ∘ evolutionHomeomorph d := rfl
-  change transportedOperator (zIndependentCoefficient B) (identityDrift d)
-    (J ∘ massPhysicalPoint) x = 0 at he
-  rw [hNativeEq, transportedOperator_comp hsm] at he
-  dsimp only [x] at he
-  rw [Homeomorph.apply_symm_apply] at he
+  rw [hNativeEq, transportedOperator_comp hsm, Homeomorph.apply_symm_apply] at he
   rw [forwardKineticOperator_eq_lop_identity B J]
   exact he
 

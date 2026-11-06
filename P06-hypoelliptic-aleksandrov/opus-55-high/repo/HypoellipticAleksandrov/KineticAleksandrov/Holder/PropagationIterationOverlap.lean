@@ -9,7 +9,6 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -40,36 +39,30 @@ theorem gaussianBarrier_overlap_compare {d : ℕ} (hd : 1 ≤ d)
   have hell' : 0 ≤ barrierGamma L * ell := mul_nonneg hgamma.le hell
   have hbudget := propagation_step_damping hd hlam hLam hH hT0 hT1 hh hhstar
   obtain ⟨hs, hq⟩ := gaussianBarrier_pos_quadratic hlam hh Lam H L
-    (barrierGamma L * ell) tminus sblock hLam hell' hbudget x v P hp
+    _ tminus sblock hLam hell' hbudget x v P hp
   obtain ⟨hvball, hxball⟩ := gaussianBarrier_initial_previous_spatial hd hlam hLam
     hH hT0 hT1 hh hhstar hell' tminus sblock hv hkin hLip P ht hp
   have hW := two_le_barrierW (d := d) (lam := lam) (Lam := Lam) (T1 := T1) hH
-  have hR : 0 < W * Real.sqrt h := mul_pos (by linarith only [hW])
+  have hR : 0 < W * Real.sqrt h := mul_pos (by positivity)
     (Real.sqrt_pos.mpr hh)
   constructor
   · apply mem_closure_backwardCylinder_of_strict_spatial _ P hR _ _ hvball hxball
     · rw [propagation_block_radius_sq hh.le]
-      change tminus + sblock - W ^ 2 * h < P.time
       have he : 4 * h ≤ W ^ 2 * h :=
         mul_le_mul_of_nonneg_right (by nlinarith only [hW]) hh.le
-      linarith only [hs, he, hh]
-    · change P.time ≤ tminus + sblock
-      linarith only [ht]
+      linarith
+    linarith
   · have hqover := qform_overlap hlam hh hs.le ht
       (P.position - x (P.time - tminus)) (P.velocity - v (P.time - tminus))
     have hqhalf : qform lam h (sigma + h)
         (P.position - x (P.time - tminus)) (P.velocity - v (P.time - tminus)) ≤ L ^ 2 / 2 := by
       have he := mul_le_mul_of_nonneg_left hq.le (by norm_num : (0 : ℝ) ≤ 13 / 50)
       nlinarith only [hqover, he, sq_nonneg L]
-    have hs' : 0 ≤ P.time - tminus - (sblock - h) := by linarith only [hs, hh]
-    have ht' : P.time - tminus - (sblock - h) ≤ h := by linarith only [ht]
+    have hs' : 0 ≤ P.time - tminus - (sblock - h) := by linarith
+    have ht' : P.time - tminus - (sblock - h) ≤ h := by simp_all
     have hq' : qform lam h (P.time - tminus - (sblock - h))
         (P.position - x (P.time - tminus)) (P.velocity - v (P.time - tminus)) ≤ L ^ 2 / 2 := by
-      have he : P.time - tminus - (sblock - h) = sigma + h := by
-        dsimp only [sigma]
-        ring
-      rw [he]
-      exact hqhalf
+      grind
     have hlower := gaussianBarrier_terminal_lower hh Lam H L ell tminus (sblock - h)
       hell (Xi_nonneg d (H := H) hlam hLam hh) hbudget x v P hs' ht' hq'
     have hupper := gaussianBarrier_initial_upper hlam hh Lam H L (barrierGamma L * ell)
@@ -79,11 +72,8 @@ theorem gaussianBarrier_overlap_compare {d : ℕ} (hd : 1 ≤ d)
       have hexp : Real.exp (-L ^ 2 / 512) * Real.exp (L ^ 2 / 512) = 1 := by
         rw [← Real.exp_add]
         have he : -L ^ 2 / 512 + L ^ 2 / 512 = 0 := by ring
-        rw [he, Real.exp_zero]
-      calc
-        _ = ell * barrierCb L *
-          (Real.exp (-L ^ 2 / 512) * Real.exp (L ^ 2 / 512)) := by ring
-        _ = _ := by rw [hexp, mul_one]
-    exact (hupper.trans_eq heq).trans hlower
+        simp_all
+      grind
+    linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

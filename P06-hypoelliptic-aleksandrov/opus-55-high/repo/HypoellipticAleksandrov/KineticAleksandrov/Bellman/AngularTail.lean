@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.AngularEquation
 /-! # Compatible angular representations, densities and tail estimates -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
@@ -29,8 +28,8 @@ theorem exists_angular_densities_tail (R β : ℝ) (hR : 1 ≤ R) (hβ : 3 ≤ �
       IntegrableOn (fun y => f y * |y| ^ (β - 4)) {y : ℝ | 2 < |y|} volume := by
   obtain ⟨F, H, hrep, hang⟩ := exists_angular_adjoint R β hR hβ μ η hp
   obtain ⟨f, h, J, hd⟩ := angular_has_densities R β hR F H hang
-  let : IsFiniteMeasureOnCompacts μ := hp.1.1
-  let : IsFiniteMeasureOnCompacts F := hang.1
+  let  := hp.1.1
+  let  := hang.1
   exact ⟨F, H, f, h, J, hrep, hd,
     bellmanAngularDensity_tail β μ F hrep.1 f hd.1 hd.2.2.1 hd.2.2.2.1⟩
 

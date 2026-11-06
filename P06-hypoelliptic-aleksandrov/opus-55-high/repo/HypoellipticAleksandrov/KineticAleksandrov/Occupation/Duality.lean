@@ -13,7 +13,6 @@ and classical Dirichlet solvability (Lieberman, Theorem 5.14).
 -/
 
 @[expose] public section
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
@@ -40,8 +39,7 @@ theorem occupation_duality
           ∀ γ, 1 ≤ γ → γ ≤ ((d : ℝ) + 1) / d →
             MemLp g (ENNReal.ofReal γ)
               (volume.restrict (Ioo (0 : ℝ) 1 ×ˢ univ)) ∧
-            occupationLpNorm 1 γ g ≤ C γ * (ρ univ).toReal := by
-  exact occupation_duality_of_whole_space_bound hH hd lam Lam hlam hLam
+            occupationLpNorm 1 γ g ≤ C γ * (ρ univ).toReal := occupation_duality_of_whole_space_bound hH hd lam Lam hlam hLam
     (occupation_whole_space_bound hH hd lam Lam hlam hLam)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

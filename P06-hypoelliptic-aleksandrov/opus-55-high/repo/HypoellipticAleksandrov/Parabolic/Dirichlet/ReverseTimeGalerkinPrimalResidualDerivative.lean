@@ -17,16 +17,15 @@ derivative of the common reverse-time Galerkin limit.
 open Filter MeasureTheory Set Topology
 open scoped ENNReal Matrix Matrix.Norms.Elementwise MatrixOrder RealInnerProductSpace
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-local instance instResidualDerivativeReverseTimeL2VStarModule
+noncomputable local instance instResidualDerivativeReverseTimeL2VStarModule
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) :
     Module ℝ (ReverseTimeL2VStar hΩ T) :=
   MeasureTheory.Lp.instModule
 
-private theorem reverseTimeDualPairingRightCLM_sub
+theorem reverseTimeDualPairingRightCLM_sub
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
     (z : ReverseTimeL2V hΩ T) (g₁ g₂ : ReverseTimeL2VStar hΩ T) :
     reverseTimeDualPairingRightCLM hΩ T z (g₁ - g₂) =
@@ -62,8 +61,7 @@ private theorem reverseTimeDualPairingRightCLM_reverseTimeFormResidual
       reverseTimeDualPairingRightCLM hΩ (r₁ - r₀) z
         (reverseTimeSpatialFormBochnerAction r₀ r₁ h₀₁ hΩ hΩbounded a b c
           haSmooth hbSmooth hcSmooth u) := by
-  rw [reverseTimeFormResidual]
-  exact reverseTimeDualPairingRightCLM_sub hΩ (r₁ - r₀) z _ _
+  exact reverseTimeDualPairingRightCLM_sub hΩ _ z _ _
 
 private theorem residual_pairing_algebra {m s a q : ℝ}
     (hm : m = -s + a) (hq : q = s - a) : m = -q := by
@@ -123,7 +121,7 @@ theorem exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal_residual_derivat
     haSmooth hbSmooth hcSmooth F hFSmooth U
   let z := reverseTimeSeparatedVTest hΩ eta v
   let G := reverseTimeGelfandCLM hΩ T U
-  have hEtaDeriv : MemLp eta.deriv (∞ : ℝ≥0∞) (reverseTimeVolume T) :=
+  have hEtaDeriv : MemLp eta.deriv _ (reverseTimeVolume T) :=
     eta.memLp_deriv ∞
   refine ⟨integrable_reverseTimeWeakDerivative_left hΩ T U v eta,
     integrable_reverseTimeWeakDerivative_right hΩ T g v eta, ?_⟩
@@ -147,11 +145,11 @@ theorem exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal_residual_derivat
     filter_upwards [ae_reverseTimeSeparatedVTest hΩ eta v] with tau hz
     rw [hz, ContinuousLinearMap.map_smul]
     exact mul_comm _ _
-  let m : ℝ := reverseTimeDualPairingRightCLM hΩ T
+  let m  := reverseTimeDualPairingRightCLM hΩ T
     (reverseTimeSeparatedVTestOfMemLp hΩ eta.deriv hEtaDeriv v) G
-  let s : ℝ := reverseTimeDualPairingRightCLM hΩ T z S
-  let f : ℝ := reverseTimeDualPairingRightCLM hΩ T z A
-  let q : ℝ := reverseTimeDualPairingRightCLM hΩ T z g
+  let s  := reverseTimeDualPairingRightCLM hΩ T z S
+  let f  := reverseTimeDualPairingRightCLM hΩ T z A
+  let q  := reverseTimeDualPairingRightCLM hΩ T z g
   have hid : m = -s + f := by
     simpa only [m, s, f, T, S, A, z, G,
       reverseTimeGalerkinPrimal_arbitrary_test_identity_prop] using hidentity v eta
@@ -159,23 +157,21 @@ theorem exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal_residual_derivat
     r₀ r₁ h₀₁ hΩ hΩbounded a b c F
     haSmooth hbSmooth hcSmooth hFSmooth U z
   have hq : q = s - f := by
-    dsimp only [q, s, f, g]
     exact hres
-  have hpairScalar : m = -q := residual_pairing_algebra hid hq
+  have hpairScalar  := residual_pairing_algebra hid hq
   have hpair :
       reverseTimeDualPairingRightCLM hΩ T
           (reverseTimeSeparatedVTestOfMemLp hΩ eta.deriv hEtaDeriv v) G =
         -reverseTimeDualPairingRightCLM hΩ T z g := by
-    change m = -q
     exact hpairScalar
   calc
-    (∫ tau, inner ℝ (valueCLM hΩ v)
-        (reverseTimeValueCLM hΩ T U tau) * eta.deriv tau
+    (∫ tau, inner ℝ _
+        _ * eta.deriv tau
         ∂reverseTimeVolume T) =
-        ∫ tau, inner ℝ (valueCLM hΩ v) (valueCLM hΩ (U tau)) * eta.deriv tau
+        ∫ tau, inner ℝ _ _ * eta.deriv tau
           ∂reverseTimeVolume T := hleft
     _ = reverseTimeDualPairingRightCLM hΩ T
-          (reverseTimeSeparatedVTestOfMemLp hΩ eta.deriv hEtaDeriv v) G := hmass.symm
+          _ G := hmass.symm
     _ = -reverseTimeDualPairingRightCLM hΩ T z g := hpair
     _ = -(∫ tau, (g tau) v * eta tau ∂reverseTimeVolume T) := congrArg Neg.neg hright
 

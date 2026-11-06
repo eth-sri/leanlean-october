@@ -18,7 +18,6 @@ no extra hypotheses.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov MeasureTheory Set
 open scoped ENNReal
@@ -27,7 +26,7 @@ open scoped ENNReal
 theorem kinetic_aleksandrov_autonomous_localised
     (lam Lam p : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (hp : 1 + bellmanAdjointExponent (Lam / lam)
-      ((le_div_iff₀ hlam).2 (by simpa only [one_mul] using hLam)) < p) :
+      ((le_div_iff₀ hlam).2 (by simp_all)) < p) :
     ∃ C : ℝ, 0 ≤ C ∧
       ∀ (P₀ : KineticPoint 1) (R : ℝ), 0 < R →
       ∀ (a : ℝ → ℝ → ℝ),
@@ -45,8 +44,7 @@ theorem kinetic_aleksandrov_autonomous_localised
           u P ≤ sSup ((fun P => max (u P) 0) '' kineticBoundary P₀ R) +
             C * R ^ (2 - 6 / p) *
               (eLpNorm ({P | 0 < u P}.indicator (fun P => max (f P) 0)) (ENNReal.ofReal p)
-                (volume.restrict (backwardCylinder P₀ R))).toReal := by
-  exact HypoellipticAleksandrov.KineticAleksandrov.kinetic_aleksandrov_autonomous_localised_proof
+                (volume.restrict (backwardCylinder P₀ R))).toReal := HypoellipticAleksandrov.KineticAleksandrov.kinetic_aleksandrov_autonomous_localised_proof
     lam Lam p hlam hLam hp
 
 end HypoellipticAleksandrov.KineticAleksandrov

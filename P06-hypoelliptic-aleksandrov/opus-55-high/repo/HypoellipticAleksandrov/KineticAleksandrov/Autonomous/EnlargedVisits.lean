@@ -53,14 +53,12 @@ instance enlargedVisitExitKernel_isFiniteKernel
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ) :
     IsFiniteKernel (enlargedVisitExitKernel hH hLE hlam hLam A H T) := by
-  refine ⟨1, by simp only [ENNReal.one_lt_top], ?_⟩
+  refine ⟨1, by simp, ?_⟩
   intro p
   change (if hp : p ∈ enlargedVisitPoleSet H T then
-    finiteUnionExit hH hLE hlam hLam A H T (enlargedVisitPole H T ⟨p, hp⟩)
+    finiteUnionExit hH hLE hlam hLam A H T _
     else 0) univ ≤ 1
-  split
-  · simp only [measure_univ, le_refl]
-  · exact zero_le
+  aesop
 
 /-- Entrance number `n+1` in the literal enlarged-strip alternating recursion. -/
 def enlargedVisitEntrance

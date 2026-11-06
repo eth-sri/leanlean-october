@@ -11,7 +11,6 @@ Thus the common cylinder has no physical lateral face and only the growth error 
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -40,7 +39,7 @@ theorem abs_sub_le_growth_ball_solutions {n : ℕ} {lam Lam Lb : ℝ}
   let cg := growthConstant n Lam (PDE.vecEuclideanNorm (b 0)) Lb
   let Φ := growthBarrier (n := n) cg τ
   let k := 2 * C / (1 + S ^ 2)
-  have hk : 0 ≤ k := by dsimp [k]; positivity
+  have hk : 0 ≤ k := by positivity
   have hcg : 0 ≤ cg := by
     dsimp [cg, growthConstant]
     have := PDE.vecEuclideanNorm_nonneg (b 0)
@@ -55,25 +54,24 @@ theorem abs_sub_le_growth_ball_solutions {n : ℕ} {lam Lam Lb : ℝ}
     apply (mem_movingBall_iff_norm_lt (hS.trans_lt (hr i))).mpr
     simpa only [sub_zero] using hn.trans_lt (hr i)
   have hclosed (i : Fin 2) (p : KineticPoint n) (hp : p ∈ K) :
-      p ∈ evolutionPastClosedCylinder (PDE.euclideanBall 0 (r i)) (fun _ => 0) τ :=
+      p ∈ evolutionPastClosedCylinder _ _ τ :=
     ⟨hp.1.2.1, subset_closure (hmem i p hp)⟩
-  have hvc (i : Fin 2) : ContinuousOn (v i) K := (hv i).2.1.mono (hclosed i)
+  have hvc (i : Fin 2)  := (hv i).2.1.mono (hclosed i)
   have hAK : A ⊆ K := fun p hp =>
     ⟨⟨hp.1.1, hp.1.2.1.le, subset_closure hp.1.2.2⟩,
       (show radialSq p < S ^ 2 from hp.2).le⟩
   have hopen (i : Fin 2) (p : KineticPoint n) (hp : p ∈ A) :
-      p ∈ evolutionPastOpenCylinder (PDE.euclideanBall 0 (r i)) (fun _ => 0) τ :=
+      p ∈ evolutionPastOpenCylinder _ _ τ :=
     ⟨hp.1.2.1, hmem i p (hAK hp)⟩
-  have hreg (i : Fin 2) (p : KineticPoint n) (hp : p ∈ A) : IsSliceRegularAt (v i) p :=
-    (hv i).isSliceRegularAt (PDE.isOpen_euclideanBall 0 (r i)) continuous_const
+  have hreg (i : Fin 2) (p : KineticPoint n) (hp : p ∈ A)  :=
+    (hv i).isSliceRegularAt (PDE.isOpen_euclideanBall 0 _) continuous_const
       (hopen i p hp)
-  have hop (i : Fin 2) (p : KineticPoint n) (hp : p ∈ A) :
-      viscousTransportedOperator B b ε (v i) p = 0 := (hv i).2.2.2.1 p (hopen i p hp)
-  have hbound (i : Fin 2) (p : KineticPoint n) (hp : p ∈ K) : |v i p| ≤ C :=
-    classical_abs_le_const (PDE.isOpen_euclideanBall 0 (r i)) continuous_const
+  have hop (i : Fin 2) (p : KineticPoint n) (hp : p ∈ A)  := (hv i).2.2.2.1 p (hopen i p hp)
+  have hbound (i : Fin 2) (p : KineticPoint n) (hp : p ∈ K)  :=
+    classical_abs_le_const (PDE.isOpen_euclideanBall 0 _) continuous_const
       hlam hB hb hε hε1 (hv i) hFC p (hclosed i p hp)
   have hterm (i : Fin 2) (p : KineticPoint n) (hp : p ∈ K) (ht : p.time = τ) :
-      v i p = F (p.position, p.velocity) :=
+      v i p = F _ :=
     (hv i).2.2.2.2.1 p ⟨ht, by simpa only [ht] using (hclosed i p hp).2⟩
   have hΦreg (p : KineticPoint n) := isSliceRegularAt_growthBarrier cg τ p
   have hΦop (p : KineticPoint n) : viscousTransportedOperator B b ε Φ p ≤ -Φ p :=
@@ -82,7 +80,7 @@ theorem abs_sub_le_growth_ball_solutions {n : ℕ} {lam Lam Lb : ℝ}
   have hwhole (t : ℝ) : movingDomain Set.univ (fun _ : ℝ => (0 : PDE.Vec n)) t = univ := by
     ext y
     rw [mem_movingDomain_iff]
-    simp only [mem_univ]
+    simp
   have side (s : ℝ) (hs : s = 1 ∨ s = -1) : ∀ p ∈ K,
       s * (v 0 p - v 1 p) ≤ k * Φ p := by
     have hmax := bounded_comparison (b := b) isOpen_univ continuous_const hlam hB hε
@@ -91,9 +89,7 @@ theorem abs_sub_le_growth_ball_solutions {n : ℕ} {lam Lam Lb : ℝ}
       ((((hvc 0).sub (hvc 1)).const_smul s).sub
         ((continuous_const.mul (continuous_growthBarrier cg τ)).continuousOn))
       ?_ ?_ ?_ ?_ ?_
-    · intro p hp
-      have := hmax p hp
-      linarith
+    · grind
     · intro p hp
       exact (((hreg 0 p hp).sub (hreg 1 p hp)).const_mul s).sub ((hΦreg p).const_mul k)
     · intro p hp
@@ -103,29 +99,22 @@ theorem abs_sub_le_growth_ball_solutions {n : ℕ} {lam Lam Lb : ℝ}
         viscousTransportedOperator_sub (hreg 0 p hp) (hreg 1 p hp), hop 0 p hp, hop 1 p hp,
         viscousTransportedOperator_const_mul k (hΦreg p)]
       have hn := mul_nonpos_of_nonneg_of_nonpos hk
-        ((hΦop p).trans (by linarith [hΦpos p]))
+        ((hΦop p).trans (by grind))
       linarith
-    · intro p hp ht
-      rw [hterm 0 p hp ht, hterm 1 p hp ht, sub_self, mul_zero]
-      simpa only [zero_sub] using neg_nonpos.mpr (mul_nonneg hk (hΦpos p).le)
-    · intro p _ hfr
-      rw [hwhole, frontier_univ] at hfr
-      exact hfr.elim
+    · aesop
+    · simp_all
     · intro p hp he
       have h0 := abs_le.mp (hbound 0 p hp)
       have h1 := abs_le.mp (hbound 1 p hp)
       have hdom := one_add_radialSq_le_growthBarrier hcg hp.1.2.1
       rw [he] at hdom
       have hb' : 2 * C ≤ k * Φ p := by
-        dsimp only [k]
         rw [div_mul_eq_mul_div, le_div_iff₀ (by positivity)]
         exact mul_le_mul_of_nonneg_left hdom (by positivity)
       rcases hs with rfl | rfl <;> linarith
   intro p hp
   have h0 := side 1 (Or.inl rfl) p hp
-  have h1 := side (-1) (Or.inr rfl) p hp
-  have he : k * Φ p = 2 * C * (Φ p / (1 + S ^ 2)) := by dsimp [k]; ring
-  rw [he] at h0 h1
-  exact abs_le.mpr ⟨by linarith, by simpa only [one_mul] using h0⟩
+  have h1 := side _ (Or.inr rfl) p hp
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov

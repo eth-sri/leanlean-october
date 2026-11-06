@@ -13,80 +13,79 @@ time and velocity weak-derivative predicates.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
 open Filter MeasureTheory
 open scoped ENNReal Topology
 
-private theorem integrable_restrict_mul_of_locallyIntegrableOn
-    {d : ℕ} {U : Set (TimeVelocity d)} {f g : TimeVelocity d → ℝ}
+variable {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d}
+
+theorem integrable_restrict_mul_of_locallyIntegrableOn
+     {U : Set (TimeVelocity d)} {f g : TimeVelocity d → ℝ}
     (hf : LocallyIntegrableOn f U volume) (hg : Continuous g)
     (hgCompact : HasCompactSupport g) (hgSub : tsupport g ⊆ U) :
     Integrable (fun z => f z * g z) (timeVelocityVolumeOn U) := by
-  have hfK : IntegrableOn f (tsupport g) volume :=
+  have hfK  :=
     hf.integrableOn_compact_subset hgSub hgCompact.isCompact
   have hfgK : IntegrableOn (fun z => f z * g z) (tsupport g) volume := by
-    simpa only [smul_eq_mul] using
+    simpa using
       hfK.smul_continuousOn hg.continuousOn hgCompact.isCompact
   have hsupport : Function.support (fun z => f z * g z) ⊆ tsupport g := by
     intro z hz
     exact tsupport_mul_subset_right (subset_closure hz)
   exact (integrableOn_iff_integrable_of_support_subset hsupport).mp hfgK |>.restrict
 
-private theorem timeDerivative_continuous {d : ℕ} {f : TimeVelocity d → ℝ}
+theorem timeDerivative_continuous 
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) : Continuous (timeDerivative f) := by
   unfold timeDerivative
   simpa using (hf.continuous_fderiv (by simp)).clm_apply continuous_const
 
-private theorem timeDerivative_compact {d : ℕ} {f : TimeVelocity d → ℝ}
+theorem timeDerivative_compact 
     (hf : HasCompactSupport f) : HasCompactSupport (timeDerivative f) := by
   unfold timeDerivative
-  simpa using hf.fderiv_apply (𝕜 := ℝ) ((1, 0) : TimeVelocity d)
+  simpa using hf.fderiv_apply (𝕜 := ℝ) _
 
-private theorem timeDerivative_tsupport {d : ℕ} (f : TimeVelocity d → ℝ) :
+theorem timeDerivative_tsupport  (f : TimeVelocity d → ℝ) :
     tsupport (timeDerivative f) ⊆ tsupport f := by
   unfold timeDerivative
-  change closure (Function.support (fun z => fderiv ℝ f z (1, 0))) ⊆ tsupport f
   refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
   intro z hz
-  rw [Function.mem_support] at hz ⊢
   intro hzero
   apply hz
   simp [hzero]
 
-private theorem velocityGradient_continuous {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d}
+theorem velocityGradient_continuous 
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) : Continuous (fun z => velocityGradient f z i) := by
   unfold velocityGradient
   simpa using (hf.continuous_fderiv (by simp)).clm_apply continuous_const
 
-private theorem velocityGradient_compact {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d}
+theorem velocityGradient_compact 
     (hf : HasCompactSupport f) : HasCompactSupport (fun z => velocityGradient f z i) := by
   unfold velocityGradient
-  simpa using hf.fderiv_apply (𝕜 := ℝ) ((0, Pi.single i 1) : TimeVelocity d)
+  simpa using hf.fderiv_apply (𝕜 := ℝ) _
 
-private theorem velocityGradient_tsupport {d : ℕ} {i : Fin d} (f : TimeVelocity d → ℝ) :
+theorem velocityGradient_tsupport  (f : TimeVelocity d → ℝ) :
     tsupport (fun z => velocityGradient f z i) ⊆ tsupport f := by
   unfold velocityGradient
-  change closure (Function.support (fun z => fderiv ℝ f z (0, Pi.single i 1))) ⊆ tsupport f
   refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
   intro z hz
-  rw [Function.mem_support] at hz ⊢
   intro hzero
   apply hz
   simp [hzero]
 
 namespace HasWeakTimeDerivOn
 
+variable {d : ℕ} {U : Set (TimeVelocity d)}
+
 /-- Zero has zero weak time derivative. -/
-theorem zero {d : ℕ} {U : Set (TimeVelocity d)} :
+theorem zero  :
     HasWeakTimeDerivOn U (0 : TimeVelocity d → ℝ) 0 := by
   intro φ hφ hφCompact hφSub
-  simp only [Pi.zero_apply, zero_mul, integral_zero, neg_zero]
+  simp
 
 /-- Weak time differentiation commutes with constant scalar multiplication. -/
-theorem smul {d : ℕ} {U : Set (TimeVelocity d)}
+theorem smul 
     {u du : TimeVelocity d → ℝ}
     (hu : HasWeakTimeDerivOn U u du) (c : ℝ) :
     HasWeakTimeDerivOn U (c • u) (c • du) := by
@@ -96,7 +95,6 @@ theorem smul {d : ℕ} {U : Set (TimeVelocity d)}
         c * ∫ z in U, u z * timeDerivative φ z ∂volume := by
       rw [show (fun z => (c • u) z * timeDerivative φ z) =
           fun z => c * (u z * timeDerivative φ z) by
-        funext z
         simp only [Pi.smul_apply, smul_eq_mul]
         ring,
         integral_const_mul]
@@ -104,7 +102,6 @@ theorem smul {d : ℕ} {U : Set (TimeVelocity d)}
       rw [hu φ hφ hφCompact hφSub]
     _ = -∫ z in U, (c • du) z * φ z ∂volume := by
       rw [show (fun z => (c • du) z * φ z) = fun z => c * (du z * φ z) by
-        funext z
         simp only [Pi.smul_apply, smul_eq_mul]
         ring,
         integral_const_mul]
@@ -112,7 +109,7 @@ theorem smul {d : ℕ} {U : Set (TimeVelocity d)}
 
 /-- Raw weak time derivatives are additive when all representatives are
 locally integrable. -/
-theorem add {d : ℕ} {U : Set (TimeVelocity d)}
+theorem add 
     {u du v dv : TimeVelocity d → ℝ}
     (hu : HasWeakTimeDerivOn U u du)
     (hv : HasWeakTimeDerivOn U v dv)
@@ -122,26 +119,24 @@ theorem add {d : ℕ} {U : Set (TimeVelocity d)}
     (hdvLoc : LocallyIntegrableOn dv U volume) :
     HasWeakTimeDerivOn U (fun z => u z + v z) (fun z => du z + dv z) := by
   intro φ hφ hφCompact hφSub
-  let μU : Measure (TimeVelocity d) := timeVelocityVolumeOn U
-  let dφ : TimeVelocity d → ℝ := timeDerivative φ
+  let μU  := timeVelocityVolumeOn U
+  let dφ  := timeDerivative φ
   have hφCont : Continuous φ := hφ.continuous
   have hdφCont : Continuous dφ := timeDerivative_continuous hφ
   have hdφCompact : HasCompactSupport dφ := timeDerivative_compact hφCompact
   have hdφSub : tsupport dφ ⊆ U := timeDerivative_tsupport φ |>.trans hφSub
   have huPair : Integrable (fun z => u z * dφ z) μU := by
-    simpa only [μU] using
+    simpa using
       integrable_restrict_mul_of_locallyIntegrableOn huLoc hdφCont hdφCompact hdφSub
   have hvPair : Integrable (fun z => v z * dφ z) μU := by
-    simpa only [μU] using
+    simpa using
       integrable_restrict_mul_of_locallyIntegrableOn hvLoc hdφCont hdφCompact hdφSub
   have hduPair : Integrable (fun z => du z * φ z) μU := by
-    simpa only [μU] using
+    simpa using
       integrable_restrict_mul_of_locallyIntegrableOn hduLoc hφCont hφCompact hφSub
   have hdvPair : Integrable (fun z => dv z * φ z) μU := by
-    simpa only [μU] using
+    simpa using
       integrable_restrict_mul_of_locallyIntegrableOn hdvLoc hφCont hφCompact hφSub
-  change (∫ z, (u z + v z) * dφ z ∂μU) =
-    -∫ z, (du z + dv z) * φ z ∂μU
   calc
     (∫ z, (u z + v z) * dφ z ∂μU) =
         (∫ z, u z * dφ z ∂μU) + ∫ z, v z * dφ z ∂μU := by
@@ -150,9 +145,9 @@ theorem add {d : ℕ} {U : Set (TimeVelocity d)}
       exact Filter.Eventually.of_forall fun z => by ring
     _ = -∫ z, du z * φ z ∂μU + -∫ z, dv z * φ z ∂μU := by
       rw [show (∫ z, u z * dφ z ∂μU) = -∫ z, du z * φ z ∂μU by
-        simpa only [μU, dφ] using hu φ hφ hφCompact hφSub,
+        simpa using hu φ hφ hφCompact hφSub,
         show (∫ z, v z * dφ z ∂μU) = -∫ z, dv z * φ z ∂μU by
-        simpa only [μU, dφ] using hv φ hφ hφCompact hφSub]
+        simpa using hv φ hφ hφCompact hφSub]
     _ = -(∫ z, du z * φ z ∂μU + ∫ z, dv z * φ z ∂μU) := by ring
     _ = -∫ z, (du z + dv z) * φ z ∂μU := by
       rw [← integral_add hduPair hdvPair]
@@ -171,7 +166,7 @@ theorem fin_sum
     HasWeakTimeDerivOn U
       (fun z => ∑ j, u j z) (fun z => ∑ j, du j z) := by
   classical
-  have huSumLoc : ∀ s : Finset (Fin n),
+  have huSumLoc : ∀ s : Finset _,
       LocallyIntegrableOn (fun z => ∑ j ∈ s, u j z) U volume := by
     intro s
     induction s using Finset.induction_on with
@@ -180,7 +175,7 @@ theorem fin_sum
           (μ := volume) (ε'' := ℝ))
     | @insert j s hj ih =>
         simpa [Finset.sum_insert hj, Pi.add_def] using (huLoc j).add ih
-  have hduSumLoc : ∀ s : Finset (Fin n),
+  have hduSumLoc : ∀ s : Finset _,
       LocallyIntegrableOn (fun z => ∑ j ∈ s, du j z) U volume := by
     intro s
     induction s using Finset.induction_on with
@@ -189,7 +184,7 @@ theorem fin_sum
           (μ := volume) (ε'' := ℝ))
     | @insert j s hj ih =>
         simpa [Finset.sum_insert hj, Pi.add_def] using (hduLoc j).add ih
-  have hweak : ∀ s : Finset (Fin n),
+  have hweak : ∀ s : Finset _,
       HasWeakTimeDerivOn U
         (fun z => ∑ j ∈ s, u j z) (fun z => ∑ j ∈ s, du j z) := by
     intro s
@@ -206,14 +201,16 @@ end HasWeakTimeDerivOn
 
 namespace HasWeakVelocityPartialDerivOn
 
+variable {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d} {u du v dv : TimeVelocity d → ℝ}
+
 /-- Zero has zero weak velocity derivative. -/
-theorem zero {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d} :
+theorem zero  :
     HasWeakVelocityPartialDerivOn U i (0 : TimeVelocity d → ℝ) 0 := by
   intro φ hφ hφCompact hφSub
-  simp only [Pi.zero_apply, zero_mul, integral_zero, neg_zero]
+  simp
 
 /-- Weak velocity differentiation commutes with constant scalar multiplication. -/
-theorem smul {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
+theorem smul 
     {u dui : TimeVelocity d → ℝ}
     (hu : HasWeakVelocityPartialDerivOn U i u dui) (c : ℝ) :
     HasWeakVelocityPartialDerivOn U i (c • u) (c • dui) := by
@@ -223,7 +220,6 @@ theorem smul {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
         c * ∫ z in U, u z * velocityGradient φ z i ∂volume := by
       rw [show (fun z => (c • u) z * velocityGradient φ z i) =
           fun z => c * (u z * velocityGradient φ z i) by
-        funext z
         simp only [Pi.smul_apply, smul_eq_mul]
         ring,
         integral_const_mul]
@@ -231,7 +227,6 @@ theorem smul {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
       rw [hu φ hφ hφCompact hφSub]
     _ = -∫ z in U, (c • dui) z * φ z ∂volume := by
       rw [show (fun z => (c • dui) z * φ z) = fun z => c * (dui z * φ z) by
-        funext z
         simp only [Pi.smul_apply, smul_eq_mul]
         ring,
         integral_const_mul]
@@ -239,8 +234,7 @@ theorem smul {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
 
 /-- Raw weak velocity derivatives are additive when all representatives are
 locally integrable. -/
-theorem add {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
-    {u du v dv : TimeVelocity d → ℝ}
+theorem add 
     (hu : HasWeakVelocityPartialDerivOn U i u du)
     (hv : HasWeakVelocityPartialDerivOn U i v dv)
     (huLoc : LocallyIntegrableOn u U volume)
@@ -249,26 +243,24 @@ theorem add {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
     (hdvLoc : LocallyIntegrableOn dv U volume) :
     HasWeakVelocityPartialDerivOn U i (fun z => u z + v z) (fun z => du z + dv z) := by
   intro φ hφ hφCompact hφSub
-  let μU : Measure (TimeVelocity d) := timeVelocityVolumeOn U
-  let dφ : TimeVelocity d → ℝ := fun z => velocityGradient φ z i
+  let μU  := timeVelocityVolumeOn U
+  let dφ  := fun z => velocityGradient φ z i
   have hφCont : Continuous φ := hφ.continuous
   have hdφCont : Continuous dφ := velocityGradient_continuous hφ
   have hdφCompact : HasCompactSupport dφ := velocityGradient_compact hφCompact
   have hdφSub : tsupport dφ ⊆ U := velocityGradient_tsupport φ |>.trans hφSub
   have huPair : Integrable (fun z => u z * dφ z) μU := by
-    simpa only [μU] using
+    simpa using
       integrable_restrict_mul_of_locallyIntegrableOn huLoc hdφCont hdφCompact hdφSub
   have hvPair : Integrable (fun z => v z * dφ z) μU := by
-    simpa only [μU] using
+    simpa using
       integrable_restrict_mul_of_locallyIntegrableOn hvLoc hdφCont hdφCompact hdφSub
   have hduPair : Integrable (fun z => du z * φ z) μU := by
-    simpa only [μU] using
+    simpa using
       integrable_restrict_mul_of_locallyIntegrableOn hduLoc hφCont hφCompact hφSub
   have hdvPair : Integrable (fun z => dv z * φ z) μU := by
-    simpa only [μU] using
+    simpa using
       integrable_restrict_mul_of_locallyIntegrableOn hdvLoc hφCont hφCompact hφSub
-  change (∫ z, (u z + v z) * dφ z ∂μU) =
-    -∫ z, (du z + dv z) * φ z ∂μU
   calc
     (∫ z, (u z + v z) * dφ z ∂μU) =
         (∫ z, u z * dφ z ∂μU) + ∫ z, v z * dφ z ∂μU := by
@@ -277,9 +269,9 @@ theorem add {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
       exact Filter.Eventually.of_forall fun z => by ring
     _ = -∫ z, du z * φ z ∂μU + -∫ z, dv z * φ z ∂μU := by
       rw [show (∫ z, u z * dφ z ∂μU) = -∫ z, du z * φ z ∂μU by
-        simpa only [μU, dφ] using hu φ hφ hφCompact hφSub,
+        simpa using hu φ hφ hφCompact hφSub,
         show (∫ z, v z * dφ z ∂μU) = -∫ z, dv z * φ z ∂μU by
-        simpa only [μU, dφ] using hv φ hφ hφCompact hφSub]
+        simpa using hv φ hφ hφCompact hφSub]
     _ = -(∫ z, du z * φ z ∂μU + ∫ z, dv z * φ z ∂μU) := by ring
     _ = -∫ z, (du z + dv z) * φ z ∂μU := by
       rw [← integral_add hduPair hdvPair]
@@ -289,8 +281,7 @@ theorem add {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
 
 /-- Raw weak velocity derivatives commute with subtraction when all
 representatives are locally integrable. -/
-theorem sub {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
-    {u du v dv : TimeVelocity d → ℝ}
+theorem sub 
     (hu : HasWeakVelocityPartialDerivOn U i u du)
     (hv : HasWeakVelocityPartialDerivOn U i v dv)
     (huLoc : LocallyIntegrableOn u U volume)
@@ -300,26 +291,24 @@ theorem sub {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
     HasWeakVelocityPartialDerivOn U i
       (fun z => u z - v z) (fun z => du z - dv z) := by
   intro φ hφ hφCompact hφSub
-  let μU : Measure (TimeVelocity d) := timeVelocityVolumeOn U
-  let dφ : TimeVelocity d → ℝ := fun z => velocityGradient φ z i
+  let μU  := timeVelocityVolumeOn U
+  let dφ  := fun z => velocityGradient φ z i
   have hφCont : Continuous φ := hφ.continuous
   have hdφCont : Continuous dφ := velocityGradient_continuous hφ
   have hdφCompact : HasCompactSupport dφ := velocityGradient_compact hφCompact
   have hdφSub : tsupport dφ ⊆ U := velocityGradient_tsupport φ |>.trans hφSub
   have huPair : Integrable (fun z => u z * dφ z) μU := by
-    simpa only [μU] using
+    simpa using
       integrable_restrict_mul_of_locallyIntegrableOn huLoc hdφCont hdφCompact hdφSub
   have hvPair : Integrable (fun z => v z * dφ z) μU := by
-    simpa only [μU] using
+    simpa using
       integrable_restrict_mul_of_locallyIntegrableOn hvLoc hdφCont hdφCompact hdφSub
   have hduPair : Integrable (fun z => du z * φ z) μU := by
-    simpa only [μU] using
+    simpa using
       integrable_restrict_mul_of_locallyIntegrableOn hduLoc hφCont hφCompact hφSub
   have hdvPair : Integrable (fun z => dv z * φ z) μU := by
-    simpa only [μU] using
+    simpa using
       integrable_restrict_mul_of_locallyIntegrableOn hdvLoc hφCont hφCompact hφSub
-  change (∫ z, (u z - v z) * dφ z ∂μU) =
-    -∫ z, (du z - dv z) * φ z ∂μU
   calc
     (∫ z, (u z - v z) * dφ z ∂μU) =
         (∫ z, u z * dφ z ∂μU) - ∫ z, v z * dφ z ∂μU := by
@@ -328,9 +317,9 @@ theorem sub {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
       exact Filter.Eventually.of_forall fun z => by ring
     _ = -∫ z, du z * φ z ∂μU - -∫ z, dv z * φ z ∂μU := by
       rw [show (∫ z, u z * dφ z ∂μU) = -∫ z, du z * φ z ∂μU by
-        simpa only [μU, dφ] using hu φ hφ hφCompact hφSub,
+        simpa using hu φ hφ hφCompact hφSub,
         show (∫ z, v z * dφ z ∂μU) = -∫ z, dv z * φ z ∂μU by
-        simpa only [μU, dφ] using hv φ hφ hφCompact hφSub]
+        simpa using hv φ hφ hφCompact hφSub]
     _ = -(∫ z, du z * φ z ∂μU - ∫ z, dv z * φ z ∂μU) := by ring
     _ = -∫ z, (du z - dv z) * φ z ∂μU := by
       rw [← integral_sub hduPair hdvPair]
@@ -349,7 +338,7 @@ theorem fin_sum
     HasWeakVelocityPartialDerivOn U i
       (fun z => ∑ j, u j z) (fun z => ∑ j, du j z) := by
   classical
-  have huSumLoc : ∀ s : Finset (Fin n),
+  have huSumLoc : ∀ s : Finset _,
       LocallyIntegrableOn (fun z => ∑ j ∈ s, u j z) U volume := by
     intro s
     induction s using Finset.induction_on with
@@ -357,7 +346,7 @@ theorem fin_sum
         (locallyIntegrableOn_zero (X := TimeVelocity d) (s := U) (μ := volume) (ε'' := ℝ))
     | @insert j s hj ih =>
         simpa [Finset.sum_insert hj, Pi.add_def] using (huLoc j).add ih
-  have hduSumLoc : ∀ s : Finset (Fin n),
+  have hduSumLoc : ∀ s : Finset _,
       LocallyIntegrableOn (fun z => ∑ j ∈ s, du j z) U volume := by
     intro s
     induction s using Finset.induction_on with
@@ -365,7 +354,7 @@ theorem fin_sum
         (locallyIntegrableOn_zero (X := TimeVelocity d) (s := U) (μ := volume) (ε'' := ℝ))
     | @insert j s hj ih =>
         simpa [Finset.sum_insert hj, Pi.add_def] using (hduLoc j).add ih
-  have hweak : ∀ s : Finset (Fin n),
+  have hweak : ∀ s : Finset _,
       HasWeakVelocityPartialDerivOn U i
         (fun z => ∑ j ∈ s, u j z) (fun z => ∑ j ∈ s, du j z) := by
     intro s

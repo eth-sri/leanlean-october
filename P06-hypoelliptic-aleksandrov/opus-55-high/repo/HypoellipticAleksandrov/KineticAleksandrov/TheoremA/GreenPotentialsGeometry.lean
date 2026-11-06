@@ -23,17 +23,18 @@ def sectionTwoHomeomorph (d : ℕ) : KineticPoint d ≃ₜ KineticPoint d where
   continuous_toFun := continuous_sectionTwoPoint d
   continuous_invFun := continuous_sectionTwoPoint d
 
+variable {d : ℕ} {g : KineticPoint d → ℝ}
+
 /-- Swapping position and velocity preserves compact support. -/
-theorem hasCompactSupport_sectionTwoPoint {d : ℕ} {g : KineticPoint d → ℝ}
+theorem hasCompactSupport_sectionTwoPoint 
     (hg : HasCompactSupport g) : HasCompactSupport (g ∘ sectionTwoPoint) :=
   hg.comp_homeomorph (sectionTwoHomeomorph d)
 
 /-- A smooth test source remains smooth after the Section 2 permutation. -/
-theorem contDiff_sectionTwoPoint_source {d : ℕ} {g : KineticPoint d → ℝ}
+theorem contDiff_sectionTwoPoint_source 
     (hg : ContDiff ℝ (⊤ : ℕ∞)
       (fun z => g ((KineticPoint.equivProd d).symm z))) :
     ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × EvolutionAmbientState d =>
-      (g ∘ sectionTwoPoint) ⟨q.1, q.2.1, q.2.2⟩) := by
-  exact hg.comp (contDiff_fst.prodMk (contDiff_snd.snd.prodMk contDiff_snd.fst))
+      (g ∘ sectionTwoPoint) ⟨q.1, q.2.1, q.2.2⟩) := hg.comp (contDiff_fst.prodMk (contDiff_snd.snd.prodMk contDiff_snd.fst))
 
 end HypoellipticAleksandrov.KineticAleksandrov.TheoremA

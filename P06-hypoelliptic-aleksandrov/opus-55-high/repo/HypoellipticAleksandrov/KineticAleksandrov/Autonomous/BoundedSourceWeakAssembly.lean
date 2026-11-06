@@ -21,7 +21,7 @@ open scoped Topology
 def nativeStripSource (g : BoundedBorel Point) : BoundedBorel Point :=
   ⟨g ∘ sectionTwoPoint, g.measurable.comp (continuous_sectionTwoPoint 1).measurable, by
     obtain ⟨C, hC, hg⟩ := g.exists_bound
-    exact ⟨C, hC, fun p => hg _⟩⟩
+    grind⟩
 
 /-- The physical source potential is the actual Duhamel potential in native coordinates. -/
 def stripSourcePotential (H : Interval)
@@ -41,7 +41,7 @@ theorem stripSourcePotential_eq_green (H : Interval)
     (greenMeasure_spec K _ _ _ _)
   rw [stripPotentialOfKernel, stripGreenOfKernel,
     integral_map (measurable_elapsedPhysicalPoint _ _).aemeasurable
-      (show AEStronglyMeasurable (fun p : Point => g p) _ from
+      (show AEStronglyMeasurable _ _ from
         g.measurable.aestronglyMeasurable)]
   exact hh
 
@@ -52,14 +52,6 @@ theorem stripSourcePotential_weak {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
     IsKineticWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1)
       (evolutionPastOpenCylinder (intervalDomain H) (fun _ => 0) T)
       (stripSourcePotential H E.2 T g ∘ sectionTwoPoint)
-      (fun p => -nativeStripSource g p) := by
-  have heq : (stripSourcePotential H E.2 T g ∘ sectionTwoPoint) =
-      duhamelPotential E.2 T (nativeStripSource g) := by
-    funext p
-    change duhamelPotential E.2 T (nativeStripSource g)
-      (sectionTwoPoint (sectionTwoPoint p)) = _
-    rw [sectionTwoPoint_involutive p]
-  rw [heq]
-  exact strip_duhamel_weak A H E hE T (nativeStripSource g)
+      (fun p => -nativeStripSource g p) := strip_duhamel_weak A H E hE T _
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

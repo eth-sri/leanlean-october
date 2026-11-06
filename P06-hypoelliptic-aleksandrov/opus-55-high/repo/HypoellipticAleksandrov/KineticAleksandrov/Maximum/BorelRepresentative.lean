@@ -34,7 +34,7 @@ theorem borelEllipticRepresentative_spec {d : ℕ} (lam Lam : ℝ)
   let : SecondCountableTopology (PDE.Mat d) :=
     inferInstanceAs (SecondCountableTopology (Fin d → Fin d → ℝ))
   change Measurable (coefficientAt A) at hBorel
-  have hscalar : lam • (1 : PDE.Mat d) ≤ Lam • (1 : PDE.Mat d) := by
+  have hscalar : lam • (1) ≤ Lam • (1 : PDE.Mat d) := by
     rw [Matrix.le_iff,← sub_smul]
     exact Matrix.PosSemidef.one.smul (sub_nonneg.mpr hLam)
   refine ⟨?_,?_,?_,?_,?_⟩
@@ -43,19 +43,13 @@ theorem borelEllipticRepresentative_spec {d : ℕ} (lam Lam : ℝ)
         (measurableSet_le hBorel measurable_const)) measurable_const
   · intro t v
     unfold borelEllipticRepresentative
-    split_ifs
-    · exact hsymm t v
-    · exact Matrix.isSymm_one.smul lam
+    aesop
   · intro t v
     unfold borelEllipticRepresentative
-    split_ifs with h
-    · exact h.1
-    · exact le_rfl
+    grind
   · intro t v
     unfold borelEllipticRepresentative
-    split_ifs with h
-    · exact h.2
-    · exact hscalar
+    grind
   · filter_upwards [hlo,hhi] with z hl hh
     exact ite_eq_left ⟨hl,hh⟩
 
@@ -72,8 +66,6 @@ theorem borel_coefficient_locallyIntegrable {d : ℕ} {lam Lam : ℝ}
     (hBorel : IsBorelCoefficient A)
     (hlo : HasLowerEllipticity lam A) (hhi : HasUpperEllipticity Lam A) :
     LocallyIntegrable (coefficientAt A) volume := by
-  let : ContinuousENorm (PDE.Mat d) :=
-    inferInstanceAs (ContinuousENorm (Fin d → Fin d → ℝ))
   let : TopologicalSpace.PseudoMetrizableSpace (PDE.Mat d) :=
     inferInstanceAs (TopologicalSpace.PseudoMetrizableSpace (Fin d → Fin d → ℝ))
   let : SecondCountableTopology (PDE.Mat d) :=

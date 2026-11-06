@@ -33,13 +33,15 @@ def radialProfile {d : ℕ} (alpha : ℝ) (y : PDE.Vec d) : ℝ :=
 def cutoffProfile {d : ℕ} (alpha C₀ sigma R : ℝ) (y e : PDE.Vec d) : ℝ :=
   radialProfile alpha y + radialCutoff R y * (seed alpha C₀ sigma y e - radialProfile alpha y)
 
+variable {d : ℕ} (alpha C₀ sigma R : ℝ)
+
 /-- The radial cutoff takes values between zero and one. -/
-theorem radialCutoff_mem_Icc {d : ℕ} (R : ℝ) (y : PDE.Vec d) :
+theorem radialCutoff_mem_Icc  (R : ℝ) (y : PDE.Vec d) :
     radialCutoff R y ∈ Set.Icc (0 : ℝ) 1 :=
   ⟨squaredRadiusBump.nonneg, squaredRadiusBump.le_one⟩
 
 /-- The cutoff is one on the closed Euclidean ball of radius R. -/
-theorem radialCutoff_eq_one {d : ℕ} (R : ℝ) (hR : 0 < R) (y : PDE.Vec d)
+theorem radialCutoff_eq_one  (R : ℝ) (hR : 0 < R) (y : PDE.Vec d)
     (hy : PDE.vecEuclideanNorm y ≤ R) : radialCutoff R y = 1 := by
   apply squaredRadiusBump.one_of_mem_closedBall
   have hsq : PDE.vecNormSq y ≤ R ^ 2 := by
@@ -52,7 +54,7 @@ theorem radialCutoff_eq_one {d : ℕ} (R : ℝ) (hR : 0 < R) (y : PDE.Vec d)
     squaredRadiusBump] using hle
 
 /-- The cutoff is zero outside the open Euclidean ball of radius 2R. -/
-theorem radialCutoff_eq_zero {d : ℕ} (R : ℝ) (hR : 0 < R) (y : PDE.Vec d)
+theorem radialCutoff_eq_zero  (R : ℝ) (hR : 0 < R) (y : PDE.Vec d)
     (hy : 2 * R ≤ PDE.vecEuclideanNorm y) : radialCutoff R y = 0 := by
   apply squaredRadiusBump.zero_of_le_dist
   have hsq : 4 * R ^ 2 ≤ PDE.vecNormSq y := by
@@ -64,7 +66,7 @@ theorem radialCutoff_eq_zero {d : ℕ} (R : ℝ) (hR : 0 < R) (y : PDE.Vec d)
   simpa only [Real.dist_eq, sub_zero, abs_of_nonneg hn, squaredRadiusBump] using hle
 
 /-- The cutoff profile equals the seed on the closed inner ball. -/
-theorem cutoffProfile_eq_seed {d : ℕ} (alpha C₀ sigma R : ℝ) (hR : 0 < R)
+theorem cutoffProfile_eq_seed  (hR : 0 < R)
     (y e : PDE.Vec d) (hy : PDE.vecEuclideanNorm y ≤ R) :
     cutoffProfile alpha C₀ sigma R y e = seed alpha C₀ sigma y e := by
   unfold cutoffProfile
@@ -72,7 +74,7 @@ theorem cutoffProfile_eq_seed {d : ℕ} (alpha C₀ sigma R : ℝ) (hR : 0 < R)
   ring
 
 /-- The cutoff profile equals the radial profile on the closed outer region. -/
-theorem cutoffProfile_eq_radial {d : ℕ} (alpha C₀ sigma R : ℝ) (hR : 0 < R)
+theorem cutoffProfile_eq_radial  (hR : 0 < R)
     (y e : PDE.Vec d) (hy : 2 * R ≤ PDE.vecEuclideanNorm y) :
     cutoffProfile alpha C₀ sigma R y e = radialProfile alpha y := by
   unfold cutoffProfile
@@ -80,21 +82,20 @@ theorem cutoffProfile_eq_radial {d : ℕ} (alpha C₀ sigma R : ℝ) (hR : 0 < R
   ring
 
 /-- The cutoff is smooth on the entire native velocity space. -/
-theorem contDiff_radialCutoff {d : ℕ} (R : ℝ) :
+theorem contDiff_radialCutoff  (R : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (radialCutoff (d := d) R) := by
-  unfold radialCutoff
   apply squaredRadiusBump.contDiff.comp
   unfold PDE.vecNormSq PDE.vecDot
   fun_prop
 
 /-- The radial profile is positive away from the velocity origin. -/
-theorem radialProfile_pos {d : ℕ} (alpha : ℝ) (y : PDE.Vec d) (hy : y ≠ 0) :
+theorem radialProfile_pos  (alpha : ℝ) (y : PDE.Vec d) (hy : y ≠ 0) :
     0 < radialProfile alpha y := by
   apply Real.rpow_pos_of_pos
   exact (PDE.vecNormSq_nonneg y).lt_of_ne' (PDE.vecNormSq_eq_zero_iff.not.mpr hy)
 
 /-- The interpolation is strictly positive, including at velocity zero. -/
-theorem cutoffProfile_pos {d : ℕ} (alpha C₀ sigma R : ℝ) (hC₀ : 0 ≤ C₀)
+theorem cutoffProfile_pos  (hC₀ : 0 ≤ C₀)
     (hsigma : 0 < sigma) (hR : 0 < R) (y e : PDE.Vec d) :
     0 < cutoffProfile alpha C₀ sigma R y e := by
   by_cases hy : y = 0
@@ -106,14 +107,12 @@ theorem cutoffProfile_pos {d : ℕ} (alpha C₀ sigma R : ℝ) (hC₀ : 0 ≤ C�
     obtain ⟨hchi0, hchi1⟩ := radialCutoff_mem_Icc R y
     unfold cutoffProfile
     by_cases hc : radialCutoff R y = 0
-    · simp [hc, hrad]
+    · simp_all
     · have hchi : 0 < radialCutoff R y := lt_of_le_of_ne hchi0 (Ne.symm hc)
-      have hh := mul_pos hchi hseed
-      have hr := mul_nonneg (sub_nonneg.mpr hchi1) hrad.le
       nlinarith
 
 /-- The interpolation is smooth jointly, including where its radial summands are singular. -/
-theorem contDiff_cutoffProfile {d : ℕ} (alpha C₀ sigma R : ℝ)
+theorem contDiff_cutoffProfile 
     (hsigma : 0 < sigma) (hR : 0 < R) :
     ContDiff ℝ (⊤ : ℕ∞)
       (fun q : PDE.Vec d × PDE.Vec d => cutoffProfile alpha C₀ sigma R q.1 q.2) := by
@@ -132,8 +131,7 @@ theorem contDiff_cutoffProfile {d : ℕ} (alpha C₀ sigma R : ℝ)
       simpa [hzero, PDE.vecEuclideanNorm, PDE.vecNormSq, PDE.vecDot] using hR
     have hbase : PDE.vecNormSq q.1 ≠ 0 := PDE.vecNormSq_eq_zero_iff.not.mpr hnonzero
     have hr : ContDiffAt ℝ (⊤ : ℕ∞)
-        (fun z : PDE.Vec d × PDE.Vec d => radialProfile alpha z.1) q := by
-      exact (PDE.contDiff_vecNormSq.comp contDiff_fst).contDiffAt.rpow_const_of_ne hbase
+        (fun z : PDE.Vec d × PDE.Vec d => radialProfile alpha z.1) q := (PDE.contDiff_vecNormSq.comp contDiff_fst).contDiffAt.rpow_const_of_ne hbase
     have hc : ContDiffAt ℝ (⊤ : ℕ∞)
         (fun z : PDE.Vec d × PDE.Vec d => radialCutoff R z.1) q :=
       ((contDiff_radialCutoff R).comp contDiff_fst).contDiffAt

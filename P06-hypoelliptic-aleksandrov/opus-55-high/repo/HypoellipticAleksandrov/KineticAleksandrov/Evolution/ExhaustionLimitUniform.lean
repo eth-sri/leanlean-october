@@ -13,17 +13,18 @@ limit is the same function on all inner cylinders, irrespective of their sizes.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set Filter
 open scoped Topology MatrixOrder
 
+variable {n : ℕ} {lam Lam Lb : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+
 /-- The actual finite Dirichlet sequence converges uniformly on every bounded inner
 cylinder to its pointwise limit. -/
 theorem tendstoUniformlyOn_innerBall_dirichlet
-    {n : ℕ} {lam Lam Lb : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    
     (hlam : 0 < lam) (hB : HasEverywhereLoewnerBounds lam Lam B)
     (hBs : IsSmoothFullKineticCoefficient B) (hbs : IsSmoothDrift b)
     (hb : HasEuclideanLipschitzDrift Lb b)
@@ -57,7 +58,7 @@ theorem tendstoUniformlyOn_innerBall_dirichlet
 /-- The actual exhaustion limit is continuous and has the original uniform bound on
 every bounded inner cylinder. -/
 theorem continuousOn_bounded_innerBall_dirichlet_limit
-    {n : ℕ} {lam Lam Lb : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    
     (hlam : 0 < lam) (hB : HasEverywhereLoewnerBounds lam Lam B)
     (hBs : IsSmoothFullKineticCoefficient B) (hbs : IsSmoothDrift b)
     (hb : HasEuclideanLipschitzDrift Lb b)
@@ -94,8 +95,8 @@ theorem continuousOn_bounded_innerBall_dirichlet_limit
   have hmem := eventually_innerCylinder_mem_straightenedEllipsoid (S := S0)
     hδ0 hδr β R hβlim hRlim g hclose
   have hclosed (k : ℕ) (hk : 0 < r0 - β k ∧ 0 < R k ∧
-      ∀ p ∈ K, (straightenedPoint (g k) p).2 ∈
-        openEllipsoid (straightenedEllipsoidMatrix n (r0 - β k) (R k))) :
+      ∀ p ∈ K, (straightenedPoint _ p).2 ∈
+        openEllipsoid _) :
       MapsTo (straightenedPoint (g k)) K
         (scalarParabolicClosedCylinder a τ
           (openEllipsoid (straightenedEllipsoidMatrix n (r0 - β k) (R k)))) :=
@@ -106,7 +107,7 @@ theorem continuousOn_bounded_innerBall_dirichlet_limit
         (hclosed k hk)).frequently
   · apply le_of_tendsto (hU.tendsto_at hp |>.abs)
     exact hmem.mono fun k hk => abs_le_straightened_dirichlet
-      hlam hB hBs hbs (haα.trans hατ) hk.1 hk.2.1 (hg k) hε F (u k) (hu k)
+      hlam hB hBs hbs (haα.trans hατ) hk.1 hk.2.1 (hg k) hε F _ (hu k)
       hC hFC _ (hclosed k hk hp)
 
 end HypoellipticAleksandrov.KineticAleksandrov

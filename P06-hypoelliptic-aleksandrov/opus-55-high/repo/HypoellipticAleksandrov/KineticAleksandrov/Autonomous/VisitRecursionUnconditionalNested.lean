@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStrip
 /-! # Physical nested-strip identities for the actual visit kernels -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
@@ -41,11 +40,10 @@ theorem visitUnion_nested
   have htau : finiteUnionRestartPoleMeasure hH hLE hlam hLam A H1 H2 s T nu =
       visitUnionPoleMeasure H2 T rho := by
     unfold finiteUnionRestartPoleMeasure visitUnionPoleMeasure
-    rw [hrestart]
+    simp_all
   have h := strip_nested hH hLE hlam hLam A H1 H2 hsub s T hT nu
     (visitUnionPoleMeasure_ae_time_gt H1 s T mu hmu)
   dsimp only at h
-  change _ ∧ _
   rw [visitUnionPoleMeasure_nested_eq H1 H2 hsub s T mu hmu, htau] at h
   rw [← visitUnionGreenKernel_comp_poles hH hLE hlam hLam A H2 s T mu hlarge,
     ← visitUnionGreenKernel_comp_poles hH hLE hlam hLam A H1 s T mu hmu,

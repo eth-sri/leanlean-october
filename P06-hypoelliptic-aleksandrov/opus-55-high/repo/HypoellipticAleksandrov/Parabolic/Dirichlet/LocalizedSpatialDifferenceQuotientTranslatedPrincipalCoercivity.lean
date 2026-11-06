@@ -13,14 +13,15 @@ principal commutator term.
 
 @[expose] public section
 
-noncomputable section
 
 open Filter MeasureTheory
 open scoped BigOperators ENNReal MatrixOrder Matrix.Norms.Elementwise
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private theorem vecDot_add_mulVec_sub_expand {d : ℕ} (A : PDE.Mat d)
+variable {d : ℕ}
+
+private theorem vecDot_add_mulVec_sub_expand  (A : PDE.Mat d)
     (G W : PDE.Vec d) :
     PDE.vecDot (G + W) (Matrix.mulVec A (G - W)) =
       ∑ i : Fin d, ∑ j : Fin d, A i j * (G j - W j) * (G i + W i) := by
@@ -32,7 +33,7 @@ private theorem vecDot_add_mulVec_sub_expand {d : ℕ} (A : PDE.Mat d)
   intro j _
   ring
 
-private theorem weighted_vecDot_add_mulVec_sub_expand {d : ℕ} (c χ : ℝ)
+private theorem weighted_vecDot_add_mulVec_sub_expand  (c χ : ℝ)
     (A : PDE.Mat d) (G W E H : PDE.Vec d)
     (hE : E = G - W) (hH : H = G + W)
     (hχH : ∀ i : Fin d, χ * H i = H i) :
@@ -51,19 +52,19 @@ private theorem weighted_vecDot_add_mulVec_sub_expand {d : ℕ} (c χ : ℝ)
         (c * A i j * (G j - W j)) * (G i + W i) := by ring
     _ = (c * A i j * (G j - W j)) * (χ * (G i + W i)) := by
       have hχHi : χ * (G i + W i) = G i + W i := by
-        simpa only [Pi.add_apply] using hχH i
+        simpa using hχH i
       rw [hχHi]
     _ = (c * χ * A i j) * (G j - W j) * (G i + W i) := by ring
 
-private theorem vecNormSq_zero {d : ℕ} : PDE.vecNormSq (0 : PDE.Vec d) = 0 := by
+private theorem vecNormSq_zero  : PDE.vecNormSq (0 : PDE.Vec d) = 0 := by
   unfold PDE.vecNormSq PDE.vecDot
   simp only [Pi.zero_apply, mul_zero, Finset.sum_const_zero]
 
-private theorem hilbertVec_vecNormSq_eq_norm_sq {d : ℕ} (v : PDE.HilbertVec d) :
+private theorem hilbertVec_vecNormSq_eq_norm_sq  (v : PDE.HilbertVec d) :
     PDE.vecNormSq v.toVec = ‖v‖ ^ 2 := by
   rw [PDE.HilbertVec.norm_eq_vecEuclideanNorm, PDE.vecEuclideanNorm_sq]
 
-private theorem integral_coercivity_of_ae {d : ℕ} {Ω : Set (PDE.Vec d)}
+private theorem integral_coercivity_of_ae  {Ω : Set (PDE.Vec d)}
     (c lam Lam : ℝ) (G W : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞))
     (F : Fin d → Fin d → PDE.Vec d → ℝ)
     (hterm : ∀ i j : Fin d, Integrable (F i j) (PDE.volumeOn Ω))
@@ -79,18 +80,18 @@ private theorem integral_coercivity_of_ae {d : ℕ} {Ω : Set (PDE.Vec d)}
     intro j _
     exact hterm i j
   have hGint : Integrable (fun y : PDE.Vec d => ‖G y‖ ^ 2) (PDE.volumeOn Ω) := by
-    simpa only [real_inner_self_eq_norm_sq] using L2.integrable_inner (𝕜 := ℝ) G G
+    simpa using L2.integrable_inner (𝕜 := ℝ) G G
   have hWint : Integrable (fun y : PDE.Vec d => ‖W y‖ ^ 2) (PDE.volumeOn Ω) := by
-    simpa only [real_inner_self_eq_norm_sq] using L2.integrable_inner (𝕜 := ℝ) W W
+    simpa using L2.integrable_inner (𝕜 := ℝ) W W
   have hleftint : Integrable (fun y : PDE.Vec d =>
-      c * (lam * ‖G y‖ ^ 2 - Lam * ‖W y‖ ^ 2)) (PDE.volumeOn Ω) :=
+      c * (lam * ‖G y‖ ^ 2 - Lam * ‖W y‖ ^ 2)) _ :=
     ((hGint.const_mul lam).sub (hWint.const_mul Lam)).const_mul c
   have hmono := integral_mono_ae hleftint hsum hpoint
-  have hGenergy : (∫ y, ‖G y‖ ^ 2 ∂PDE.volumeOn Ω) = ‖G‖ ^ 2 :=
-    PDE.integral_norm_sq_eq_sq_norm_of_ae_eq_hilbert G (fun y => ‖G y‖)
+  have hGenergy  :=
+    PDE.integral_norm_sq_eq_sq_norm_of_ae_eq_hilbert G _
       (Filter.Eventually.of_forall fun _ => rfl)
-  have hWenergy : (∫ y, ‖W y‖ ^ 2 ∂PDE.volumeOn Ω) = ‖W‖ ^ 2 :=
-    PDE.integral_norm_sq_eq_sq_norm_of_ae_eq_hilbert W (fun y => ‖W y‖)
+  have hWenergy  :=
+    PDE.integral_norm_sq_eq_sq_norm_of_ae_eq_hilbert W _
       (Filter.Eventually.of_forall fun _ => rfl)
   have hleftEq : (∫ y, c * (lam * ‖G y‖ ^ 2 - Lam * ‖W y‖ ^ 2)
       ∂PDE.volumeOn Ω) = c * (lam * ‖G‖ ^ 2 - Lam * ‖W‖ ^ 2) := by
@@ -103,8 +104,7 @@ private theorem integral_coercivity_of_ae {d : ℕ} {Ω : Set (PDE.Vec d)}
     _ = ∑ i : Fin d, ∑ j : Fin d, ∫ y in Ω, F i j y ∂volume := by
       calc
         (∫ y, ∑ i : Fin d, ∑ j : Fin d, F i j y ∂PDE.volumeOn Ω) =
-            ∑ i : Fin d, ∫ y, ∑ j : Fin d, F i j y ∂PDE.volumeOn Ω := by
-          exact integral_finset_sum Finset.univ (fun i _ => by
+            ∑ i : Fin d, ∫ y, ∑ j : Fin d, F i j y ∂PDE.volumeOn Ω := integral_finset_sum Finset.univ (fun i _ => by
             apply integrable_finset_sum
             intro j _
             exact hterm i j)
@@ -116,7 +116,7 @@ private theorem integral_coercivity_of_ae {d : ℕ} {Ω : Set (PDE.Vec d)}
 /-- The one-cutoff translated principal term controls the sharp localized
 difference-quotient gradient-minus-commutator norm expression. -/
 theorem localizedSpatialDifferenceQuotient_translatedPrincipal_lower_of_loewner
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+     {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
     (r₀ r₁ lam Lam : ℝ) (hΩ : IsOpen Ω)
     (a : CoefficientField d)
     (haSmooth : IsSmoothOnNeighborhood
@@ -167,24 +167,21 @@ theorem localizedSpatialDifferenceQuotient_translatedPrincipal_lower_of_loewner
         (ζ τ * χ y * spatialTranslate k h (α i j) (τ, y)) *
             PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j Ev y *
             PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Hv y ∂volume := by
-  dsimp only
   let hηχ : tsupport η.toFun ⊆ tsupport χ.toFun := by
     intro y hy
     apply subset_tsupport
     change χ y ≠ 0
     rw [χ.eq_one_on_inner y hy]
     exact one_ne_zero
-  let hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω := hχshift.mono_left hηχ
-  let Gv : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) := gradientCLM hΩ
+  let hηshift  := hχshift.mono_left hηχ
+  let Gv  := gradientCLM hΩ
     (localizedSpatialDifferenceQuotientH10CLM hΩ η k h η.tsupport_subset hηshift u)
-  let Wv : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) :=
+  let Wv  :=
     cutoffGradientSpatialDifferenceQuotientH10CLM hΩ η k h u
-  let Ev : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) :=
+  let Ev  :=
     localizedSpatialDifferenceQuotientPrincipalFieldCLM
       hΩ η k h η.tsupport_subset hηshift u
-  let Hv : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) :=
+  let Hv  :=
     localizedSpatialDifferenceQuotientCompanionFieldCLM
       hΩ η k h η.tsupport_subset hηshift u
   let α : Fin d → Fin d → TimeVelocity d → ℝ :=
@@ -197,14 +194,13 @@ theorem localizedSpatialDifferenceQuotient_translatedPrincipal_lower_of_loewner
     let m : PDE.Vec d → TimeVelocity d := fun y => (r₁ - τ, y + h • PDE.basisVec k)
     have hmcont : Continuous m :=
       continuous_const.prodMk (continuous_id.add continuous_const)
-    have hVm : IsOpen (m ⁻¹' V) := hmcont.isOpen_preimage V hVopen
+    have hVm  := hmcont.isOpen_preimage V hVopen
     have hsupp : tsupport χ.toFun ⊆ m ⁻¹' V := by
       intro y hy
       apply hCylV
       rw [mem_scalarParabolicClosedCylinder_iff]
       refine ⟨htime.1, htime.2, subset_closure (hχshift hy)⟩
-    have hentry : ContinuousOn (fun z : TimeVelocity d => a z.1 z.2 i j) V := by
-      exact (continuous_apply_apply i j).comp_continuousOn hV.continuousOn
+    have hentry : ContinuousOn (fun z : TimeVelocity d => a z.1 z.2 i j) V := (continuous_apply_apply i j).comp_continuousOn hV.continuousOn
     have hq : ContinuousOn (fun y : PDE.Vec d => spatialTranslate k h (α i j) (τ, y))
         (m ⁻¹' V) := by
       simpa only [spatialTranslate_apply, spatialShift_apply, α,
@@ -215,15 +211,11 @@ theorem localizedSpatialDifferenceQuotient_translatedPrincipal_lower_of_loewner
   have hcoefCompact (i j : Fin d) : HasCompactSupport
       (fun y : PDE.Vec d => χ y * spatialTranslate k h (α i j) (τ, y)) :=
     χ.hasCompactSupport.mul_right
-  have hcoord (X : PDE.HilbertVectorLp Ω (2 : ℝ≥0∞)) (i : Fin d) :
-      MemLp (fun y : PDE.Vec d => (X y).toVec i) (2 : ℝ≥0∞) (PDE.volumeOn Ω) := by
-    exact MeasureTheory.MemLp.ae_eq
-      (PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i X) (Lp.memLp _)
   have hterm (i j : Fin d) : Integrable (fun y : PDE.Vec d =>
       (ζ τ * χ y * spatialTranslate k h (α i j) (τ, y)) *
-        PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j Ev y *
-        PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Hv y) (PDE.volumeOn Ω) := by
-    let q : PDE.Vec d → ℝ := fun y => ζ τ * χ y * spatialTranslate k h (α i j) (τ, y)
+        PDE.hilbertVectorLpCoord Ω _ j Ev y *
+        PDE.hilbertVectorLpCoord Ω _ i Hv y) (PDE.volumeOn Ω) := by
+    let q  := fun y => ζ τ * χ y * spatialTranslate k h (α i j) (τ, y)
     have hqcont : Continuous q := by
       dsimp only [q]
       have hbase := (continuous_const : Continuous (fun _ : PDE.Vec d => ζ τ)).mul
@@ -232,99 +224,83 @@ theorem localizedSpatialDifferenceQuotient_translatedPrincipal_lower_of_loewner
     have hqcompact : HasCompactSupport q := by
       dsimp only [q]
       simpa only [Pi.mul_def, mul_assoc] using
-        ((hcoefCompact i j).mul_left : HasCompactSupport
-          ((fun _ : PDE.Vec d => ζ τ) * fun y => χ y * spatialTranslate k h (α i j) (τ, y)))
-    have hqtopVolume : MemLp q ∞ (volume : Measure (PDE.Vec d)) :=
+        ((hcoefCompact i j).mul_left)
+    have hqtopVolume : MemLp q ∞ volume :=
       hqcont.memLp_of_hasCompactSupport hqcompact
     have hqtop : MemLp q ∞ (PDE.volumeOn Ω) := by
       simpa only [PDE.volumeOn] using hqtopVolume.restrict Ω
-    have hE : MemLp (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j Ev) (2 : ℝ≥0∞)
-        (PDE.volumeOn Ω) := Lp.memLp _
-    have hH : MemLp (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Hv) (2 : ℝ≥0∞)
-        (PDE.volumeOn Ω) := Lp.memLp _
+    have hE : MemLp (PDE.hilbertVectorLpCoord Ω _ j Ev) _
+        _ := Lp.memLp _
+    have hH : MemLp (PDE.hilbertVectorLpCoord Ω _ i Hv) _
+        _ := Lp.memLp _
     have hEH := hE.integrable_mul hH
     have hweighted := hEH.mul_of_top_right hqtop
     convert hweighted using 1
     ext y
     simp only [Pi.mul_apply]
-    dsimp only [q]
     ring
   have hEraw (i : Fin d) : ∀ᵐ y ∂PDE.volumeOn Ω,
       (Ev y).toVec i = (Gv y).toVec i - (Wv y).toVec i := by
-    have hEq : PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Ev =
-      PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Gv -
-        PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Wv := by
+    have hEq : PDE.hilbertVectorLpCoord Ω _ i Ev =
+      PDE.hilbertVectorLpCoord Ω _ i Gv -
+        PDE.hilbertVectorLpCoord Ω _ i Wv := by
       calc
-        _ = PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
-            (gradientCLM hΩ (localizedSpatialDifferenceQuotientH10CLM
-              hΩ η k h η.tsupport_subset hηshift u)) -
+        _ = PDE.hilbertVectorLpCoord Ω _ i
+            _ -
             cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h
-              (valueCLM hΩ u) := by
-          exact hilbertVectorLpCoord_localizedSpatialDifferenceQuotientPrincipalFieldCLM
+              _ := hilbertVectorLpCoord_localizedSpatialDifferenceQuotientPrincipalFieldCLM
             hΩ η i k h η.tsupport_subset hηshift u
         _ = _ := by
-          rw [show Gv = gradientCLM hΩ (localizedSpatialDifferenceQuotientH10CLM
-              hΩ η k h η.tsupport_subset hηshift u) by rfl,
-            show Wv = cutoffGradientSpatialDifferenceQuotientH10CLM hΩ η k h u by rfl,
-            hilbertVectorLpCoord_cutoffGradientSpatialDifferenceQuotientH10CLM]
+          rw [hilbertVectorLpCoord_cutoffGradientSpatialDifferenceQuotientH10CLM]
     filter_upwards [MeasureTheory.Lp.coeFn_sub
-      (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Gv)
-      (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Wv),
-      PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Ev,
-      PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Gv,
-      PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Wv] with y hsub hE hG hW
+      (PDE.hilbertVectorLpCoord Ω _ i Gv)
+      (PDE.hilbertVectorLpCoord Ω _ i Wv),
+      PDE.coeFn_hilbertVectorLpCoord Ω _ i Ev,
+      PDE.coeFn_hilbertVectorLpCoord Ω _ i Gv,
+      PDE.coeFn_hilbertVectorLpCoord Ω _ i Wv] with y hsub hE hG hW
     rw [hEq, hsub] at hE
     simp only [Pi.sub_apply] at hE
     rw [hG, hW] at hE
     simpa only [PDE.HilbertVec.toVec_apply] using hE.symm
   have hHraw (i : Fin d) : ∀ᵐ y ∂PDE.volumeOn Ω,
       (Hv y).toVec i = (Gv y).toVec i + (Wv y).toVec i := by
-    have hEq : PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Hv =
-      PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Gv +
-        PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Wv := by
+    have hEq : PDE.hilbertVectorLpCoord Ω _ i Hv =
+      PDE.hilbertVectorLpCoord Ω _ i Gv +
+        PDE.hilbertVectorLpCoord Ω _ i Wv := by
       calc
-        _ = PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
-            (gradientCLM hΩ (localizedSpatialDifferenceQuotientH10CLM
-              hΩ η k h η.tsupport_subset hηshift u)) +
+        _ = PDE.hilbertVectorLpCoord Ω _ i
+            _ +
             cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h
-              (valueCLM hΩ u) := by
-          exact hilbertVectorLpCoord_localizedSpatialDifferenceQuotientCompanionFieldCLM
+              _ := hilbertVectorLpCoord_localizedSpatialDifferenceQuotientCompanionFieldCLM
             hΩ η i k h η.tsupport_subset hηshift u
         _ = _ := by
-          rw [show Gv = gradientCLM hΩ (localizedSpatialDifferenceQuotientH10CLM
-              hΩ η k h η.tsupport_subset hηshift u) by rfl,
-            show Wv = cutoffGradientSpatialDifferenceQuotientH10CLM hΩ η k h u by rfl,
-            hilbertVectorLpCoord_cutoffGradientSpatialDifferenceQuotientH10CLM]
+          rw [hilbertVectorLpCoord_cutoffGradientSpatialDifferenceQuotientH10CLM]
     filter_upwards [MeasureTheory.Lp.coeFn_add
-      (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Gv)
-      (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Wv),
-      PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Hv,
-      PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Gv,
-      PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Wv] with y hadd hH hG hW
+      (PDE.hilbertVectorLpCoord Ω _ i Gv)
+      (PDE.hilbertVectorLpCoord Ω _ i Wv),
+      PDE.coeFn_hilbertVectorLpCoord Ω _ i Hv,
+      PDE.coeFn_hilbertVectorLpCoord Ω _ i Gv,
+      PDE.coeFn_hilbertVectorLpCoord Ω _ i Wv] with y hadd hH hG hW
     rw [hEq, hadd] at hH
     simp only [Pi.add_apply] at hH
     rw [hG, hW] at hH
     simpa only [PDE.HilbertVec.toVec_apply] using hH.symm
   have hEplateau (i : Fin d) : ∀ᵐ y ∂PDE.volumeOn Ω,
       χ y * (Ev y).toVec i = (Ev y).toVec i := by
-    let Ecoord := PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Ev
-    have hfix : cutoffL2Multiplier (Ω := Ω) χ Ecoord = Ecoord := by
-      dsimp only [Ecoord, Ev]
-      exact cutoffL2Multiplier_apply_principalFieldCoord hΩ η χ (fun _ hy => hy) i k h
+    let Ecoord := PDE.hilbertVectorLpCoord Ω _ i Ev
+    have hfix : cutoffL2Multiplier (Ω := Ω) χ Ecoord = Ecoord := cutoffL2Multiplier_apply_principalFieldCoord hΩ η χ (fun _ hy => hy) i k h
         η.tsupport_subset hηshift u
     filter_upwards [cutoffL2Multiplier_apply_ae χ Ecoord,
-      PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Ev] with y hmul hE
+      PDE.coeFn_hilbertVectorLpCoord Ω _ i Ev] with y hmul hE
     rw [hfix, hE] at hmul
     exact hmul.symm
   have hHplateau (i : Fin d) : ∀ᵐ y ∂PDE.volumeOn Ω,
       χ y * (Hv y).toVec i = (Hv y).toVec i := by
-    let Hcoord := PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Hv
-    have hfix : cutoffL2Multiplier (Ω := Ω) χ Hcoord = Hcoord := by
-      dsimp only [Hcoord, Hv]
-      exact cutoffL2Multiplier_apply_companionFieldCoord hΩ η χ (fun _ hy => hy) i k h
+    let Hcoord := PDE.hilbertVectorLpCoord Ω _ i Hv
+    have hfix : cutoffL2Multiplier (Ω := Ω) χ Hcoord = Hcoord := cutoffL2Multiplier_apply_companionFieldCoord hΩ η χ (fun _ hy => hy) i k h
         η.tsupport_subset hηshift u
     filter_upwards [cutoffL2Multiplier_apply_ae χ Hcoord,
-      PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Hv] with y hmul hH
+      PDE.coeFn_hilbertVectorLpCoord Ω _ i Hv] with y hmul hH
     rw [hfix, hH] at hmul
     exact hmul.symm
   have hraw : ∀ᵐ y ∂PDE.volumeOn Ω,
@@ -332,22 +308,22 @@ theorem localizedSpatialDifferenceQuotient_translatedPrincipal_lower_of_loewner
       (∀ i : Fin d, (Hv y).toVec i = (Gv y).toVec i + (Wv y).toVec i) ∧
       (∀ i : Fin d, χ y * (Ev y).toVec i = (Ev y).toVec i) ∧
       (∀ i : Fin d, χ y * (Hv y).toVec i = (Hv y).toVec i) ∧
-      (∀ i : Fin d, PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Ev y = (Ev y).toVec i) ∧
-      (∀ i : Fin d, PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Hv y = (Hv y).toVec i) := by
+      (∀ i : Fin d, PDE.hilbertVectorLpCoord Ω _ i Ev y = (Ev y).toVec i) ∧
+      (∀ i : Fin d, PDE.hilbertVectorLpCoord Ω _ i Hv y = (Hv y).toVec i) := by
     filter_upwards [MeasureTheory.ae_all_iff.mpr hEraw,
       MeasureTheory.ae_all_iff.mpr hHraw,
       MeasureTheory.ae_all_iff.mpr hEplateau,
       MeasureTheory.ae_all_iff.mpr hHplateau,
-      MeasureTheory.ae_all_iff.mpr (fun i => PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Ev),
-      MeasureTheory.ae_all_iff.mpr (fun i => PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Hv)]
+      MeasureTheory.ae_all_iff.mpr (fun i => PDE.coeFn_hilbertVectorLpCoord Ω _ i Ev),
+      MeasureTheory.ae_all_iff.mpr (fun i => PDE.coeFn_hilbertVectorLpCoord Ω _ i Hv)]
       with y hE hH hχE hχH hEcoor hHcoor
     exact ⟨hE, hH, hχE, hχH, hEcoor, hHcoor⟩
   have hpoint : ∀ᵐ y ∂PDE.volumeOn Ω,
       ζ τ * (lam * ‖Gv y‖ ^ 2 - Lam * ‖Wv y‖ ^ 2) ≤
         ∑ i : Fin d, ∑ j : Fin d,
           (ζ τ * χ y * spatialTranslate k h (α i j) (τ, y)) *
-            PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j Ev y *
-            PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Hv y := by
+            PDE.hilbertVectorLpCoord Ω _ j Ev y *
+            PDE.hilbertVectorLpCoord Ω _ i Hv y := by
     filter_upwards [ae_restrict_mem hΩ.measurableSet, hraw] with y hy hraw
     rcases hraw with ⟨hE, hH, hχE, hχH, hEcoor, hHcoor⟩
     have hcoordsE : (Ev y).toVec = (Gv y).toVec - (Wv y).toVec := funext hE
@@ -359,13 +335,11 @@ theorem localizedSpatialDifferenceQuotient_translatedPrincipal_lower_of_loewner
     by_cases hχzero : χ y = 0
     · have hEzero : (Ev y).toVec = 0 := by
         ext i
-        change (Ev y).toVec i = 0
         have hi := hχE i
         rw [hχzero] at hi
         simpa using hi.symm
       have hHzero : (Hv y).toVec = 0 := by
         ext i
-        change (Hv y).toVec i = 0
         have hi := hχH i
         rw [hχzero] at hi
         simpa using hi.symm
@@ -385,7 +359,6 @@ theorem localizedSpatialDifferenceQuotient_translatedPrincipal_lower_of_loewner
         have hHi := hH i
         have he0 := congrFun hEzero i
         have hh0 := congrFun hHzero i
-        simp only [Pi.zero_apply] at he0 hh0
         linarith [hEi, hHi, he0, hh0]
       rw [← hilbertVec_vecNormSq_eq_norm_sq (Gv y),
         ← hilbertVec_vecNormSq_eq_norm_sq (Wv y), hGzero, hWzero,
@@ -410,30 +383,25 @@ theorem localizedSpatialDifferenceQuotient_translatedPrincipal_lower_of_loewner
         hilbertVec_vecNormSq_eq_norm_sq (Wv y)] at hscaled
       calc
         ζ τ * (lam * ‖Gv y‖ ^ 2 - Lam * ‖Wv y‖ ^ 2) ≤
-            ζ τ * PDE.vecDot ((Gv y).toVec + (Wv y).toVec)
-            (Matrix.mulVec (a (r₁ - τ) (y + h • PDE.basisVec k))
-              ((Gv y).toVec - (Wv y).toVec)) := hscaled
+            ζ τ * PDE.vecDot _
+            _ := hscaled
         _ = ∑ i : Fin d, ∑ j : Fin d,
-            (ζ τ * χ y * a (r₁ - τ) (y + h • PDE.basisVec k) i j) *
-              (Ev y).toVec j * (Hv y).toVec i := by
-          exact weighted_vecDot_add_mulVec_sub_expand (ζ τ) (χ y)
-            (a (r₁ - τ) (y + h • PDE.basisVec k))
-            (Gv y).toVec (Wv y).toVec (Ev y).toVec (Hv y).toVec
+            (ζ τ * χ y * a _ _ i j) *
+              (Ev y).toVec j * (Hv y).toVec i := weighted_vecDot_add_mulVec_sub_expand _ _
+            _
+            _ _ _ _
             hcoordsE hcoordsH hχH
         _ = ∑ i : Fin d, ∑ j : Fin d,
-            (ζ τ * χ y * spatialTranslate k h (α i j) (τ, y)) *
-              PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j Ev y *
-              PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Hv y := by
+            (ζ τ * χ y * spatialTranslate k h _ _) *
+              PDE.hilbertVectorLpCoord Ω _ j Ev y *
+              PDE.hilbertVectorLpCoord Ω _ i Hv y := by
           apply Finset.sum_congr rfl
           intro i _
           apply Finset.sum_congr rfl
           intro j _
-          rw [htarget i j, hEcoor j, hHcoor i]
-  exact integral_coercivity_of_ae (ζ τ) lam Lam Gv Wv
-    (fun i j y =>
-      (ζ τ * χ y * spatialTranslate k h (α i j) (τ, y)) *
-        PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j Ev y *
-        PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i Hv y)
+          rw [htarget, hEcoor, hHcoor]
+  exact integral_coercivity_of_ae _ lam Lam Gv Wv
+    _
     hterm hpoint
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

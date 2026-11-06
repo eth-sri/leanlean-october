@@ -8,7 +8,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.OccupationDe
 /-! # Occupation assembly and the exact slab consumer -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic SectionTwo MeasureTheory Set
 open scoped ENNReal
@@ -50,9 +49,7 @@ theorem occupation_of_duality (lam Lam : ℝ) (hDuality :
   refine ⟨C, hC0, ?_⟩
   intro B hB S K hreal hP ρ _ σ₀ T hT
   obtain ⟨g, gt, hg, -, -, hb⟩ := hscale B hB S K hreal hP ρ σ₀ T hT
-  refine ⟨g, hg, ?_⟩
-  intro γ hγ0 hγ1
-  exact ⟨(hb γ hγ0 hγ1).1, (hb γ hγ0 hγ1).2.2.2⟩
+  grind
 
 /-- The whole-space occupation theorem with all its original premises. -/
 theorem occupation
@@ -73,8 +70,7 @@ theorem occupation
             MemLp g (ENNReal.ofReal γ)
               (volume.restrict (Ioo (0 : ℝ) T ×ˢ univ)) ∧
             occupationLpNorm T γ g ≤
-              C γ * (ρ univ).toReal * T ^ occupationBeta d γ := by
-  exact occupation_of_duality lam Lam (occupation_duality hH hd lam Lam hlam hLam)
+              C γ * (ρ univ).toReal * T ^ occupationBeta d γ := occupation_of_duality lam Lam (occupation_duality hH hd lam Lam hlam hLam)
 
 /-- The occupation family, relative to the terminal evolution statement and Hörmander's theorem. -/
 theorem parabolicOccupationFamily_holds (hEvol : TerminalEvolutionStatement)
@@ -87,9 +83,6 @@ theorem parabolicOccupationFamily_holds (hEvol : TerminalEvolutionStatement)
   refine ⟨hC0, ?_⟩
   intro ρ _ σ₀ T hT
   have hP := wholeSpace_marginalBundle_of_evolution hEvol hd hB S K hreal
-  obtain ⟨g, hg, hb⟩ := hocc B hB S K hreal hP ρ σ₀ T hT
-  refine ⟨g, (isOccupationDensity_iff_slabOccupationDensity K σ₀ T ρ g).mp hg, ?_⟩
-  intro γ hγ0 hγ1
-  exact hb γ hγ0 hγ1
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

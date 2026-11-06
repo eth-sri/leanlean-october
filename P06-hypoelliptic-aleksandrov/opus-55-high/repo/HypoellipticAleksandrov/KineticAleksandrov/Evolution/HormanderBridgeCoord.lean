@@ -27,7 +27,6 @@ structure, so the bridge is:
 @[expose] public section
 
 noncomputable section
-set_option autoImplicit false
 
 open MeasureTheory
 open HypoellipticAleksandrov

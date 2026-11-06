@@ -6,7 +6,6 @@ public import Mathlib.MeasureTheory.Function.LpSpace.Indicator
 /-! # Full and localized source norms on an open cylinder -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.TheoremA
 open Set MeasureTheory
 open scoped ENNReal

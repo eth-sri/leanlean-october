@@ -12,7 +12,6 @@ error and curve. All support and radius premises of the finite-domain core are d
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 

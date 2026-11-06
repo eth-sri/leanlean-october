@@ -7,7 +7,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecu
 /-! # Active-band terminal bound for starts in a time slab -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
 
@@ -36,17 +35,17 @@ theorem entranceSlab_partial_terminal_mass_le
     calc
       _ ≤ ∑ n ∈ Finset.range N, (gamma n).bind F :=
         Finset.sum_le_sum fun n _ => entranceSlabTerminal_restrict_bind_le
-          hH hLE hlam hLam A c J (P.time + b) (gamma n) D
+          hH hLE hlam hLam A c J _ _ D
       _ ≤ _ := enlarged_active_terminal_le_fullspace hH hLE hlam hLam A c J
-        P.time (P.time + T) P le_rfl (by linarith) hJ N (P.time + b)
+        P.time _ P le_rfl (by linarith) hJ N _
           (by linarith) (by linarith)
   have hr := ENNReal.toReal_mono
-    (measure_ne_top (enlargedFullSpaceTerminal hH hLE hlam hLam A P (P.time + b)) B)
+    (measure_ne_top _ B)
     (hm B)
   rw [visit_partial_real_mass tm N B hB] at hr
   have he := entranceSlab_fullSpaceTerminal_active hH hLE hlam hLam A c P b
   rw [he] at hr
   exact hr.trans_eq (activeVelocityDatum_action_eq hH hLE hlam hLam A c b hb
-    (P.position 0, P.velocity 0)).symm
+    _).symm
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

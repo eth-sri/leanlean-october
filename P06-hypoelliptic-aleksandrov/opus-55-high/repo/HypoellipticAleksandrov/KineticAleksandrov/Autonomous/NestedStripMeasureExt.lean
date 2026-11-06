@@ -7,7 +7,6 @@ import Mathlib.Topology.Algebra.Support
 /-! # Physical finite measures determined by compact interior nonnegative tests -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open Evolution
@@ -28,8 +27,8 @@ theorem nested_physical_measure_eq {μ ν : Measure Point} [IsFiniteMeasure μ] 
     apply Measure.restrict_eq_self_of_ae_mem
     apply e.symm.measurableEmbedding.ae_map_iff.mpr
     filter_upwards [hρ] with p hp
-    change e (e.symm p) ∈ D
-    rwa [e.apply_symm_apply]
+    change e _ ∈ D
+    simp_all
   have htest (f : EvolutionVec 1 → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f)
       (hc : HasCompactSupport f) (hs : tsupport f ⊆ U) (hn : ∀ x, 0 ≤ f x) :
       (∫ x, f x ∂a) = ∫ x, f x ∂b := by
@@ -39,26 +38,22 @@ theorem nested_physical_measure_eq {μ ν : Measure Point} [IsFiniteMeasure μ] 
       intro p hp
       have h := hs hp
       change e (e.symm p) ∈ D at h
-      simpa only [e.apply_symm_apply] using h
+      simp_all
     have hi := hprobe F hFs (fun p => hn _)
     have hmap (ρ : Measure Point) : (∫ x, f x ∂ρ.map e.symm) =
         ∫ p, exitProbePhysical F p ∂ρ :=
       integral_map e.symm.continuous.measurable.aemeasurable
         hf.continuous.measurable.aestronglyMeasurable
-    exact (hmap μ).trans (hi.trans (hmap ν).symm)
+    grind
   have heq : a = b := by
     apply le_antisymm
     · apply measure_le_of_smooth_integral_le hU (hsupport μ hμ)
-      intro f hf hc hs hn
-      exact (htest f hf hc hs hn).le
+      grind
     · apply measure_le_of_smooth_integral_le hU (hsupport ν hν)
-      intro f hf hc hs hn
-      exact (htest f hf hc hs hn).symm.le
+      grind
   have hback (ρ : Measure Point) : (ρ.map e.symm).map e = ρ := by
     rw [Measure.map_map e.continuous.measurable e.symm.continuous.measurable]
-    have hid : e ∘ e.symm = (id : Point → Point) := funext e.apply_symm_apply
-    rw [hid, Measure.map_id]
-  exact (hback μ).symm.trans
-    ((congrArg (fun ρ : Measure (EvolutionVec 1) => ρ.map e) heq).trans (hback ν))
+    simp
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

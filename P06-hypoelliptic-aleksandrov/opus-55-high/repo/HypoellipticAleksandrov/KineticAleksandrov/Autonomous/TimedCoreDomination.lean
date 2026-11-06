@@ -7,7 +7,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.CoreDominati
 /-! # Core occupation exhausted and dominated by the canonical enlarged visits -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
@@ -28,7 +27,6 @@ theorem coreDominationStatement_holds : CoreDominationStatement := by
     rw [dite_eq_left (show P ∈ enlargedVisitPoleSet J.toFiniteUnion T from
       ⟨hP.1, by simpa only [Interval.toFiniteUnion_carrier] using hP.2⟩)]
     rfl
-  rw [he] at hi hd
-  exact ⟨hi, hd⟩
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

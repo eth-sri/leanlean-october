@@ -12,7 +12,6 @@ public import HypoellipticAleksandrov.Parabolic.ScalarDirichletGeometry
 /-! # Ellipsoid source bounds assembled from exact upstream theorem surfaces -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Lieberman
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.Parabolic.Dirichlet HypoellipticAleksandrov.Parabolic.LocalHolder
@@ -151,7 +150,7 @@ theorem exists_signed_source_ellipsoidInterior_with_bounds_of_upstream
     hInterior hd hΩ hΩb a T haT lam Lam hlam hLam A b hb hA hlo hhi F hF
   have htime := hTime hΩ hΩb a T lam haT hlam A b hb hA hlo F hF
     M hM hFM u g hdu hu w hw.continuousOn hs
-  let G : TimeVelocity d → ℝ := scalarParabolicZeroOrderOperator A b (fun _ _ => 0)
+  let G  := scalarParabolicZeroOrderOperator A b (fun _ _ => 0)
     (fun p => q.toH1Function.toFun p.2)
   have hG : ContDiff ℝ (⊤ : ℕ∞) G := by
     have h := (contDiff_terminal_lift_source A b q.toH1Function.toFun hA hb hq).neg
@@ -162,11 +161,11 @@ theorem exists_signed_source_ellipsoidInterior_with_bounds_of_upstream
     rw [closure_prod_eq, closure_Ioo haT.ne]
   have hGM : ∀ z ∈ scalarParabolicClosedCylinder a T (openEllipsoid Q), G z ≤ -M := by
     intro z hz
-    apply le_on_closure (s := scalarParabolicOpenCylinder a T (openEllipsoid Q))
+    apply le_on_closure (s := scalarParabolicOpenCylinder a T _)
       (fun p hp => hqop p ⟨⟨hp.1.1.le, hp.1.2.le⟩, hp.2⟩)
       hG.continuous.continuousOn continuous_const.continuousOn
     rwa [hcl]
-  have hGF : ∀ z ∈ scalarParabolicClosedCylinder a T (openEllipsoid Q), G z ≤ -|F z| :=
+  have hGF : ∀ z ∈ scalarParabolicClosedCylinder a T _, G z ≤ -|F z| :=
     fun z hz => (hGM z hz).trans (neg_le_neg (hFM z hz))
   have henergy := hCompare hΩ hΩb a T haT lam hlam A b hb hA hlo F G hF hG q
     (hq.of_le (by simp)) (fun y hy => hqn y (subset_closure hy))
@@ -228,8 +227,7 @@ theorem exists_signed_source_ellipsoidInterior_with_bounds_of_geometry_barrier
     (∀ z ∈ scalarParabolicOpenCylinder a T (openEllipsoid Q),
       |w z| ≤ M * (T - z.1)) ∧
     ∀ z ∈ scalarParabolicOpenCylinder a T (openEllipsoid Q),
-      |w z| ≤ q.toH1Function.toFun z.2 := by
-  exact exists_signed_source_ellipsoidInterior_with_bounds_of_upstream hOpen hGeom hDrift
+      |w z| ≤ q.toH1Function.toFun z.2 := exists_signed_source_ellipsoidInterior_with_bounds_of_upstream hOpen hGeom hDrift
     hBarrier (@exists_signed_source_classicalInterior_withDrift)
     (@classical_abs_le_source_time_withDrift) (@variational_abs_le_stationary_withDrift)
 
@@ -253,8 +251,7 @@ theorem exists_signed_source_ellipsoidInterior_with_bounds :
     (∀ z ∈ scalarParabolicOpenCylinder a T (openEllipsoid Q),
       |w z| ≤ M * (T - z.1)) ∧
     ∀ z ∈ scalarParabolicOpenCylinder a T (openEllipsoid Q),
-      |w z| ≤ q.toH1Function.toFun z.2 := by
-  exact exists_signed_source_ellipsoidInterior_with_bounds_of_geometry_barrier
+      |w z| ≤ q.toH1Function.toFun z.2 := exists_signed_source_ellipsoidInterior_with_bounds_of_geometry_barrier
     (@isOpen_openEllipsoid) (@openEllipsoid_geometry)
     (@exists_closedCylinder_drift_bound) (@exists_h10_ellipsoid_drift_barrier)
 

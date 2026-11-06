@@ -15,8 +15,6 @@ This module also records the block-spanning lemmas shared with the `ε = 0` brac
 
 @[expose] public section
 
-noncomputable section
-set_option autoImplicit false
 
 open scoped MatrixOrder
 
@@ -36,11 +34,11 @@ theorem eq_top_of_blocks {W : Submodule ℝ (EvolutionVec n)}
     exact packPoint_eq_add _ _ _
   have hs : packPoint (timeCoord n y) 0 0 ∈ W := by
     have := W.smul_mem (timeCoord n y) ht
-    have e : (timeCoord n y) • packPoint (1 : ℝ) (0 : PDE.Vec n) (0 : PDE.Vec n) =
+    have e : (timeCoord n y) • packPoint (1) (0) (0 : PDE.Vec n) =
         packPoint (timeCoord n y) 0 0 := by
       rw [← packPoint_smul]
       simp
-    rwa [e] at this
+    grind
   rw [h]
   exact W.add_mem (W.add_mem hs (hv _)) (hz _)
 
@@ -67,11 +65,11 @@ theorem packPoint_diffused_mem {B : FullKineticCoefficient n} {x : EvolutionVec 
   obtain ⟨a, ha⟩ := exists_row_combination hβ u
   have e : packPoint 0 u 0 = ∑ i, a i • diffusionField B i x := by
     refine ext_coords ?_ ?_ ?_
-    · simp [diffusionField, map_sum]
-    · simp only [diffusionField, map_sum, map_smul, diffusedCoord_packPoint]
+    · simp [diffusionField]
+    · simp only [diffusionField]
       ext j
-      simp [Finset.sum_apply, ha j]
-    · simp [diffusionField, map_sum]
+      simp [ha]
+    · simp [diffusionField]
   rw [e]
   exact W.sum_mem fun i _ => W.smul_mem _ (hX i)
 
@@ -79,14 +77,13 @@ theorem packPoint_diffused_mem {B : FullKineticCoefficient n} {x : EvolutionVec 
 theorem packPoint_transported_mem_of_regularizing {ε : ℝ} (hε : 0 < ε) {x : EvolutionVec n}
     {W : Submodule ℝ (EvolutionVec n)} (hY : ∀ l, regularizingField ε l x ∈ W)
     (w : PDE.Vec n) : packPoint 0 0 w ∈ W := by
-  have hs : Real.sqrt ε ≠ 0 := (Real.sqrt_pos.2 hε).ne'
   have e : packPoint 0 0 w = ∑ l, (w l / Real.sqrt ε) • regularizingField ε l x := by
     refine ext_coords ?_ ?_ ?_
-    · simp [regularizingField, map_sum]
-    · simp [regularizingField, map_sum]
-    · simp only [regularizingField, map_sum, map_smul, transportedCoord_packPoint]
+    · simp [regularizingField]
+    · simp [regularizingField]
+    · simp only [regularizingField, map_sum, transportedCoord_packPoint]
       funext j
-      simp [Finset.sum_apply, Pi.single_apply]
+      simp [Pi.single_apply]
       field_simp
   rw [e]
   exact W.sum_mem fun l _ => W.smul_mem _ (hY l)
@@ -99,7 +96,7 @@ theorem lieAlgebraSpansOn_regularizedFields {lam Lam ε : ℝ} {B : FullKineticC
     LieAlgebraSpansOn (Set.univ : Set (EvolutionVec n)) (regularizedFields B b ε) := by
   intro x _
   set W := Submodule.span ℝ
-    (Set.range (fun w : LieWord (n + n) => LieWord.eval (regularizedFields B b ε) w x)) with hW
+    (Set.range (fun w : LieWord _ => LieWord.eval _ w x)) with hW
   have hgen : ∀ i, regularizedFields B b ε i x ∈ W := fun i =>
     Submodule.subset_span ⟨LieWord.generator i, rfl⟩
   have hX : ∀ i, diffusionField B i x ∈ W := fun i => by

@@ -27,8 +27,6 @@ coercivity); the standing hypotheses of the evolution problem therefore speciali
 
 @[expose] public section
 
-noncomputable section
-set_option autoImplicit false
 
 open MeasureTheory Set
 open HypoellipticAleksandrov
@@ -56,7 +54,7 @@ theorem exists_smooth_viscous_kinetic_representative
     hormander_hypotheses_regularizedFields hlam hB_smooth hB_ell hb_smooth hε
       (evolutionHomeomorph n ⁻¹' U)
   have hEq := hasWeakHormanderEquation_comp_regularizedFields hε.le hlam hB_smooth hB_ell
-    hb_smooth hu (contDiffOn_const (c := (0 : ℝ)))
+    hb_smooth hu (contDiffOn_const (c := (0)))
   exact exists_kinetic_representative
     (hH ((evolutionHomeomorph n).continuous.isOpen_preimage U hU) _ _ _ _ hX hspan
       contDiffOn_const hEq)
@@ -81,7 +79,7 @@ theorem exists_smooth_kinetic_representative
     hormander_hypotheses_transportedFields hlam hB_smooth hB_ell hb_smooth hm hb_coercive
       (evolutionHomeomorph n ⁻¹' U)
   have hEq := hasWeakHormanderEquation_comp_transportedFields hlam hB_smooth hB_ell
-    hb_smooth hu (contDiffOn_const (c := (0 : ℝ)))
+    hb_smooth hu (contDiffOn_const (c := (0)))
   exact exists_kinetic_representative
     (hH ((evolutionHomeomorph n).continuous.isOpen_preimage U hU) _ _ _ _ hX hspan
       contDiffOn_const hEq)
@@ -97,7 +95,7 @@ theorem eqOn_of_ae_eq_of_continuousOn_kinetic {U : Set (KineticPoint n)} (hU : I
   have h := Measure.eqOn_open_of_ae_eq (ae_eq_comp_evolutionHomeomorph_iff.2 hae)
     ((evolutionHomeomorph n).continuous.isOpen_preimage U hU) hv hw
   intro x hx
-  have := h (show (evolutionHomeomorph n).symm x ∈ evolutionHomeomorph n ⁻¹' U by simpa using hx)
-  simpa using this
+  have := h (show (evolutionHomeomorph n).symm x ∈ evolutionHomeomorph n ⁻¹' U by simp_all)
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Evolution

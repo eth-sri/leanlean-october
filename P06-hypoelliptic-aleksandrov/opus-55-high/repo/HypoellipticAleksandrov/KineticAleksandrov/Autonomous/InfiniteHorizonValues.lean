@@ -13,7 +13,9 @@ open Set MeasureTheory HypoellipticAleksandrov Parabolic
 open SectionTwo TheoremA Evolution
 open scoped CompactlySupported Topology
 
-private theorem infinite_probe_operator_add {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+
+private theorem infinite_probe_operator_add 
     (f g : exitProbeSubmodule) :
     forwardScalarOperator A.a (exitProbePhysical (f + g)) =
       fun p => forwardScalarOperator A.a (exitProbePhysical f) p +
@@ -25,7 +27,7 @@ private theorem infinite_probe_operator_add {lam Lam : ℝ} (A : SmoothAutonomou
   simp only [forwardOperator_autonomous] at h
   exact h
 
-private theorem infinite_probe_operator_smul {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+private theorem infinite_probe_operator_smul 
     (c : ℝ) (f : exitProbeSubmodule) :
     forwardScalarOperator A.a (exitProbePhysical (c • f)) =
       fun p => c * forwardScalarOperator A.a (exitProbePhysical f) p := by
@@ -55,11 +57,11 @@ def infiniteExitProbeValueLinear
   map_add' f g := by
     unfold infiniteExitProbeValue
     rw [infinite_probe_operator_add]
-    have hf : Integrable (forwardScalarOperator A.a (exitProbePhysical f))
-        (stripGreen hH hLE hlam hLam A H ⊤ e) :=
+    have hf : Integrable (forwardScalarOperator A.a _)
+        _ :=
       stripGreen_integrable hH hLE hlam hLam A H ⊤ e (exitProbeOperatorDatum A f)
-    have hg : Integrable (forwardScalarOperator A.a (exitProbePhysical g))
-        (stripGreen hH hLE hlam hLam A H ⊤ e) :=
+    have hg : Integrable (forwardScalarOperator A.a _)
+        _ :=
       stripGreen_integrable hH hLE hlam hLam A H ⊤ e (exitProbeOperatorDatum A g)
     rw [integral_add hf hg]
     change exitProbePhysical f e.1 + exitProbePhysical g e.1 + _ = _
@@ -74,41 +76,36 @@ def infiniteExitProbeValueLinear
 theorem infinite_probe_later_horizon (e : Point) (f : exitProbeSubmodule) :
     ∃ T : ℝ, e.time < T ∧ tsupport f.1 ⊆ {x | Evolution.timeCoord 1 x < T} := by
   obtain ⟨M, hM⟩ := f.2.2.isCompact.bddAbove_image (Evolution.timeCoord 1).continuous.continuousOn
-  refine ⟨max M e.time + 1, by linarith [le_max_right M e.time], ?_⟩
+  refine ⟨max M e.time + 1, by grind, ?_⟩
   intro x hx
   have hh : Evolution.timeCoord 1 x ≤ M := hM ⟨x, hx, rfl⟩
-  exact lt_of_le_of_lt hh (by linarith [le_max_left M e.time])
+  grind
+
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
 
 /-- The infinite probe value is exactly the finite value at any later supporting horizon. -/
 theorem infiniteExitProbeValue_eq_finite
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
+     (H : Interval) (e : StripPole H ⊤)
     (f : exitProbeSubmodule) (T : ℝ) (ht : e.1.time < T)
     (hs : tsupport f.1 ⊆ {x | Evolution.timeCoord 1 x < T}) :
     infiniteExitProbeValueLinear hH hLE hlam hLam A H e f =
       exitProbeValueLinear A H (stripEvolution hH hLE hlam hLam A H) T
-        (stripPoleFinite H e T ht) f := by
-  change exitProbePhysical f e.1 + _ = exitProbePhysical f e.1 + _
-  exact congrArg (fun z => exitProbePhysical f e.1 + z)
+        (stripPoleFinite H e T ht) f := congrArg _
     (infinite_probe_source_integral hH hLE hlam hLam A H e T ht T le_rfl f hs).symm
 
 /-- A compact early probe is zero on its later terminal plane. -/
 theorem infinite_probe_zero_terminal (f : exitProbeSubmodule) (T : ℝ)
     (hs : tsupport f.1 ⊆ {x | Evolution.timeCoord 1 x < T}) (p : Point) (ht : p.time = T) :
     exitProbePhysical f p = 0 := by
-  change f.1 (reconstructionPhysicalHomeomorph.symm p) = 0
+  change f.1 _ = 0
   apply image_eq_zero_of_notMem_tsupport
   intro hx
   have hp := hs hx
-  change p.time < T at hp
-  exact (ne_of_lt hp) ht
+  simp_all
 
 /-- Face bounds control the actual infinite Green probe value by contraction one. -/
 theorem infiniteExitProbeValueLinear_bound
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
+     (H : Interval) (e : StripPole H ⊤)
     (f : exitProbeSubmodule) (c : ℝ) (hc : 0 ≤ c)
     (hbd : ∀ p, |infiniteExitProbeCcLinear H f p| ≤ c) :
     |infiniteExitProbeValueLinear hH hLE hlam hLam A H e f| ≤ c := by
@@ -125,9 +122,7 @@ theorem infiniteExitProbeValueLinear_bound
 
 /-- Nonnegative compact face data have nonnegative actual infinite Green probe values. -/
 theorem infiniteExitProbeValueLinear_nonneg
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
+     (H : Interval) (e : StripPole H ⊤)
     (f : exitProbeSubmodule) (hbd : ∀ p, 0 ≤ infiniteExitProbeCcLinear H f p) :
     0 ≤ infiniteExitProbeValueLinear hH hLE hlam hLam A H e f := by
   obtain ⟨T, ht, hs⟩ := infinite_probe_later_horizon e.1 f

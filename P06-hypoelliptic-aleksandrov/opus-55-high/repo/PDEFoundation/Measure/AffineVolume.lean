@@ -22,22 +22,21 @@ namespace PDE
 
 open MeasureTheory
 
-theorem measurePreserving_addRight_restrict_translateSet {d : ℕ}
-    (z : Vec d) (U : Set (Vec d)) :
+variable {d : ℕ} (z : Vec d) (U : Set (Vec d))
+
+theorem measurePreserving_addRight_restrict_translateSet  :
     MeasurePreserving (fun x : Vec d => x + z)
       (volumeOn U) (volumeOn (translateSet z U)) := by
-  let hμ :
-      MeasurePreserving (fun x : Vec d => x + z)
-        (volume : Measure (Vec d)) volume :=
+  let hμ  :=
     measurePreserving_add_right
-      (volume : Measure (Vec d)) z
-  simpa [volumeOn, preimage_addNeg_eq_translateSet (z := z) U,
-    image_addRight_eq_translateSet (z := z) U, sub_eq_add_neg] using
+      volume z
+  simpa [volumeOn, preimage_addNeg_eq_translateSet,
+    image_addRight_eq_translateSet, sub_eq_add_neg] using
     MeasurePreserving.restrict_image_emb hμ
       (Homeomorph.addRight z).measurableEmbedding U
 
 theorem setIntegral_comp_addRight_translateSet
-    {d : ℕ} {E : Type*}
+     {E : Type*}
     [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     (z : Vec d) (U : Set (Vec d)) (f : Vec d → E) :
     ∫ y in U, f (y + z) ∂volume =
@@ -46,18 +45,17 @@ theorem setIntegral_comp_addRight_translateSet
     (measurePreserving_addRight_restrict_translateSet z U).integral_comp
       (Homeomorph.addRight z).measurableEmbedding f
 
-theorem volume_translateSet_eq {d : ℕ}
-    (z : Vec d) (U : Set (Vec d)) :
+theorem volume_translateSet_eq  :
     volume (translateSet z U) = volume U := by
   have h :=
     MeasurePreserving.measure_preimage_emb
       (measurePreserving_add_right
-        (volume : Measure (Vec d)) z)
+        volume z)
       (Homeomorph.addRight z).measurableEmbedding
       (translateSet z U)
   simpa [preimage_addRight_translateSet_eq] using h.symm
 
-theorem volume_smul_set_of_nonneg {d : ℕ}
+theorem volume_smul_set_of_nonneg 
     {r : ℝ} (hr : 0 ≤ r) (U : Set (Vec d)) :
     volume (r • U) =
       ENNReal.ofReal (r ^ d) * volume U := by
@@ -66,7 +64,7 @@ theorem volume_smul_set_of_nonneg {d : ℕ}
       (μ := volume) (E := Vec d) hr U)
 
 theorem setIntegral_comp_smul_of_pos
-    {d : ℕ} {E : Type*}
+     {E : Type*}
     [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     {r : ℝ} (hr : 0 < r) (U : Set (Vec d))
     (f : Vec d → E) :

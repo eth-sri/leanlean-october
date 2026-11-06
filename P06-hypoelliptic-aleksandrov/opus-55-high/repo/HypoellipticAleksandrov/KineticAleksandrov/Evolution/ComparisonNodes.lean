@@ -20,18 +20,19 @@ the straightened formulation.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set Matrix
 open scoped Topology MatrixOrder
 
+variable {n : ℕ} {Ω : Set (PDE.Vec n)}
+
 /-- Proposition 2.1.  Maximum principle for `L_ε`, `ε ≥ 0`, on the bounded
 truncation `{a ≤ σ ≤ T, y ∈ closure (γ(σ) + Ω), |y|² + |z|² ≤ R²}` of the moving cylinder:
 a subsolution that is nonpositive on the terminal face, the lateral frontier and the
 artificial boundary `|y|² + |z|² = R²` is nonpositive. -/
-theorem bounded_comparison {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem bounded_comparison  (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
     {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
     {b : PDE.Vec n → PDE.Vec n} {ε : ℝ} (hε : 0 ≤ ε) {a T R : ℝ} {u : KineticPoint n → ℝ}
@@ -53,15 +54,15 @@ theorem bounded_comparison {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
     (fun p _ => posSemidef_of_hasEverywhereLoewnerBounds hlam.le hB _ _ _) hsub ?_
   intro p hp hnot
   rcases mem_boundary_of_truncated hΩ hp hnot with h | h | h
-  · exact hterm p hp h
-  · exact hlat p hp h
-  · exact hart p hp h
+  · simp_all
+  · simp_all
+  simp_all
 
 /-- Proposition 2.1, Lyapunov part.  With the explicit constant
 `C = 2 d (|Λ| + 1) + |b 0| + |L_b| + 1`, which depends only on `d`, `Λ`, `b 0` and `L_b`,
 the function `Φ = exp (C (T - σ)) (1 + |y|² + |z|²)` satisfies `L_ε Φ ≤ -Φ` for every
 `0 ≤ ε ≤ 1` and every terminal time `T`. -/
-theorem exists_growthConstant {n : ℕ} {Lam Lb : ℝ} {B : FullKineticCoefficient n}
+theorem exists_growthConstant  {Lam Lb : ℝ} {B : FullKineticCoefficient n}
     {b : PDE.Vec n → PDE.Vec n} (hLam : ∀ σ y z, B σ y z ≤ Lam • (1 : PDE.Mat n))
     (hb : HasEuclideanLipschitzDrift Lb b) :
     ∃ C : ℝ, 0 ≤ C ∧ ∀ ε : ℝ, 0 ≤ ε → ε ≤ 1 → ∀ (T : ℝ) (p : KineticPoint n),
@@ -69,7 +70,6 @@ theorem exists_growthConstant {n : ℕ} {Lam Lb : ℝ} {B : FullKineticCoefficie
   refine ⟨growthConstant n Lam (PDE.vecEuclideanNorm (b 0)) Lb, ?_, ?_⟩
   · unfold growthConstant
     have : 0 ≤ PDE.vecEuclideanNorm (b 0) := PDE.vecEuclideanNorm_nonneg _
-    have : (0 : ℝ) ≤ n := Nat.cast_nonneg n
     positivity
   · intro ε _ hε1 T p
     exact viscousTransportedOperator_growthBarrier_le hε1 hLam hb T p
@@ -78,7 +78,7 @@ theorem exists_growthConstant {n : ℕ} {Lam Lb : ℝ} {B : FullKineticCoefficie
 `{a ≤ σ ≤ T, y ∈ closure (γ(σ) + Ω)}` (all `z`), a function that is bounded (above),
 continuous, slice regular and a subsolution of `L_ε` (`0 ≤ ε ≤ 1`) in the interior, and
 nonpositive on the terminal face and the lateral frontier, is nonpositive. -/
-theorem growth_comparison {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem growth_comparison  (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
     {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
     {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)
@@ -99,12 +99,12 @@ theorem growth_comparison {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
     (fun p _ => posSemidef_of_hasEverywhereLoewnerBounds hlam.le hB _ _ _) hsub ?_
   intro p hp hnot
   rcases mem_boundary_of_movingClosedSlab hΩ hp hnot with h | h
-  · exact hterm p hp h
-  · exact hlat p hp h
+  · simp_all
+  simp_all
 
 /-- Comparison of viscous classical terminal solutions: ordered terminal data give ordered
 solutions on the whole past closed cylinder. -/
-theorem classical_comparison {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem classical_comparison  (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
     {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
     {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)
@@ -126,11 +126,7 @@ theorem classical_comparison {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
     hB hb hε0 hε1 ?_ ?_ ?_ ?_ ?_ ?_ p₀ hp₀slab
   · linarith
   · refine ⟨C₁ + C₂, fun p hp => ?_⟩
-    have h1 := hC₁ p (hslab _ hp)
-    have h2 := hC₂ p (hslab _ hp)
-    have := le_abs_self (u₁ p)
-    have := neg_abs_le (u₂ p)
-    linarith
+    grind
   · exact (h₁.2.1.mono (hslab _)).sub (h₂.2.1.mono (hslab _))
   · intro p hp
     exact (h₁.isSliceRegularAt hΩ hγ (hact _ hp)).sub (h₂.isSliceRegularAt hΩ hγ (hact _ hp))
@@ -145,16 +141,14 @@ theorem classical_comparison {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
     have := hF p.position p.velocity hterm.2
     have e1 := h₁.2.2.2.2.1 p hterm
     have e2 := h₂.2.2.2.2.1 p hterm
-    show u₁ p - u₂ p ≤ 0
     linarith
   · intro p hp hfr
     have hlat : p ∈ evolutionLateralFrontier Ω γ τ := ⟨hp.2.1, hfr⟩
-    show u₁ p - u₂ p ≤ 0
     rw [h₁.2.2.2.2.2 p hlat, h₂.2.2.2.2.2 p hlat]
     simp
 
 /-- Uniqueness of viscous classical terminal solutions for equal terminal data. -/
-theorem classical_unique {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem classical_unique  (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
     {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
     {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)

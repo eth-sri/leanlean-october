@@ -16,7 +16,6 @@ explicit hypothesis `hH`.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
@@ -57,14 +56,14 @@ theorem parabolic_duhamel (hH : HormanderHypoellipticityStatement)
         parabolicDuhamelPotential K (measurableSet_of_isAdmissibleEvolutionDomain hΩ) T g p =
           0) := by
   have hΩm := measurableSet_of_isAdmissibleEvolutionDomain hΩ
-  have hγc : Continuous γ := hγ.1
+  have hγc  := hγ.1
   obtain ⟨hsmooth, heq⟩ := duhamel_smooth_equation K hH hΩ hγc hB hP g hg0 hgs hgc T hgU
   have hg : ∀ r, Measurable (fun v : PDE.Vec d => g (r, v)) := fun r =>
     hgs.continuous.measurable.comp (measurable_const.prodMk measurable_id)
   obtain ⟨C, hC⟩ := hgs.continuous.bounded_above_of_compact_support hgc
   have hbdd : BddAbove (range g) := ⟨C, by
     rintro _ ⟨p, rfl⟩
-    exact (le_abs_self _).trans (by simpa using hC p)⟩
+    exact (le_abs_self _).trans (by simp_all)⟩
   have hgb : ∀ p, g p ≤ ⨆ q, g q := fun p => le_ciSup hbdd p
   refine ⟨hsmooth, fun p hp => ⟨parabolicDuhamelPotential_nonneg K hΩm T g hg hg0 p,
     parabolicDuhamelPotential_le K hΩm T g hg hg0 _ hgb p hp.1.le⟩, heq,
@@ -72,6 +71,6 @@ theorem parabolic_duhamel (hH : HormanderHypoellipticityStatement)
     fun p hp => parabolicDuhamelPotential_eq_zero_of_terminal_le K hΩm T g p hp.ge,
     fun p hp => parabolicDuhamelPotential_eq_zero_of_not_mem K hΩm T g p ?_⟩
   rw [(isOpen_movingDomain_of_isAdmissibleEvolutionDomain γ hΩ p.1).frontier_eq] at hp
-  exact hp.2
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

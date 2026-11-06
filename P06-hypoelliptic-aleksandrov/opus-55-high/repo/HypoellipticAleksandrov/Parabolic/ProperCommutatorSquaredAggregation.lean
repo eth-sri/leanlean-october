@@ -30,15 +30,17 @@ private abbrev ProperAtom {d M : ℕ} (beta : ParabolicDerivativeIndex d M) :=
   Unit ⊕ ((Fin d × Fin d × ProperSplit beta) ⊕
     ((Fin d × ProperSplit beta) ⊕ ProperSplit beta))
 
-private theorem properAtom_card {d M : ℕ} (beta : ParabolicDerivativeIndex d M) :
+variable {d M : ℕ} (beta : ParabolicDerivativeIndex d M)
+
+private theorem properAtom_card  :
     Fintype.card (ProperAtom beta) =
       1 + (d ^ 2 + d + 1) * properSplitCard beta := by
-  simp only [ProperAtom, properSplitCard, Fintype.card_sum, Fintype.card_unit,
+  simp only [properSplitCard, Fintype.card_sum, Fintype.card_unit,
     Fintype.card_prod, Fintype.card_fin]
   ring
 
 private theorem sum_dite_eq_sum_proper
-    {d M : ℕ} (beta : ParabolicDerivativeIndex d M)
+    
     (f : (gamma : TimeVelocityMultiIndex.Split beta.1) → gamma.left ≠ 0 → ℝ) :
     (∑ gamma : TimeVelocityMultiIndex.Split beta.1,
       if hproper : gamma.left ≠ 0 then f gamma hproper else 0) =
@@ -51,8 +53,8 @@ private theorem sum_dite_eq_sum_proper
             ¬ gamma.left ≠ 0},
           if hproper : gamma.1.left ≠ 0 then f gamma.1 hproper else 0 :=
       (Fintype.sum_subtype_add_sum_subtype
-        (fun gamma : TimeVelocityMultiIndex.Split beta.1 => gamma.left ≠ 0)
-        (fun gamma => if hproper : gamma.left ≠ 0 then f gamma hproper else 0)).symm
+        _
+        _).symm
     _ = _ := by
       have hzero :
           (∑ gamma : {gamma : TimeVelocityMultiIndex.Split beta.1 //
@@ -64,31 +66,10 @@ private theorem sum_dite_eq_sum_proper
       intro gamma hgamma
       exact dif_pos gamma.2
 
-private theorem properAtom_nonneg
-    {d M : ℕ} {beta : ParabolicDerivativeIndex d M}
-    (E0 : ℝ)
-    (A : Fin d → Fin d → ProperSplit beta → ℝ)
-    (B : Fin d → ProperSplit beta → ℝ)
-    (C : ProperSplit beta → ℝ)
-    (hE0 : 0 ≤ E0) (hA : ∀ i j gamma, 0 ≤ A i j gamma)
-    (hB : ∀ j gamma, 0 ≤ B j gamma) (hC : ∀ gamma, 0 ≤ C gamma) :
-    ∀ atom : ProperAtom beta,
-      0 ≤ Sum.elim (fun _ : Unit => E0)
-        (Sum.elim (fun p => A p.1 p.2.1 p.2.2)
-          (Sum.elim (fun p => B p.1 p.2) C)) atom := by
-  intro atom
-  rcases atom with (_ | atom)
-  · exact hE0
-  · rcases atom with (p | atom)
-    · exact hA p.1 p.2.1 p.2.2
-    · rcases atom with (p | gamma)
-      · exact hB p.1 p.2
-      · exact hC gamma
-
 /-- Summed squared `L²` control of all proper commutator residuals, retaining
 the exact number of active atoms at each derivative index. -/
 theorem properDifferentiatedScalarCommutatorResidual_memLp_and_sum_sq_le
-    {d M : ℕ} (U : Set (TimeVelocity d)) (hU : IsOpen U)
+     (U : Set (TimeVelocity d)) (hU : IsOpen U)
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
@@ -171,24 +152,24 @@ theorem properDifferentiatedScalarCommutatorResidual_memLp_and_sum_sq_le
   refine ⟨fun beta => (hcomponent beta).1, ?_⟩
   apply Finset.sum_le_sum
   intro beta hbeta
-  let E0 : ℝ := ENNReal.toReal
+  let E0  := ENNReal.toReal
     (eLpNorm (E.representative beta) 2 (timeVelocityVolumeOn U))
   let A : Fin d → Fin d → ProperSplit beta → ℝ := fun i j gamma =>
-    (beta.1.choose gamma.1.left : ℝ) *
+    (beta.1.choose gamma.1.left) *
       Ba i j (ParabolicDerivativeIndex.splitLeft beta gamma.1) *
       ENNReal.toReal (eLpNorm
         (D.representative
           (ParabolicDerivativeIndex.properSplitRightVelocityTwo
             beta gamma.1 gamma.2 j i)) 2 (timeVelocityVolumeOn U))
   let B : Fin d → ProperSplit beta → ℝ := fun j gamma =>
-    (beta.1.choose gamma.1.left : ℝ) *
+    (beta.1.choose gamma.1.left) *
       Bb j (ParabolicDerivativeIndex.splitLeft beta gamma.1) *
       ENNReal.toReal (eLpNorm
         (D.representative
           (ParabolicDerivativeIndex.properSplitRightVelocity
             beta gamma.1 gamma.2 j)) 2 (timeVelocityVolumeOn U))
   let C : ProperSplit beta → ℝ := fun gamma =>
-    (beta.1.choose gamma.1.left : ℝ) *
+    (beta.1.choose gamma.1.left) *
       Bc (ParabolicDerivativeIndex.splitLeft beta gamma.1) *
       ENNReal.toReal (eLpNorm
         (D.representative
@@ -198,21 +179,6 @@ theorem properDifferentiatedScalarCommutatorResidual_memLp_and_sum_sq_le
     Sum.elim (fun _ : Unit => E0)
       (Sum.elim (fun p => A p.1 p.2.1 p.2.2)
         (Sum.elim (fun p => B p.1 p.2) C))
-  have hA_nonneg : ∀ i j gamma, 0 ≤ A i j gamma := by
-    intro i j gamma
-    exact mul_nonneg (mul_nonneg (Nat.cast_nonneg _) (hBa _ _ _))
-      ENNReal.toReal_nonneg
-  have hB_nonneg : ∀ j gamma, 0 ≤ B j gamma := by
-    intro j gamma
-    exact mul_nonneg (mul_nonneg (Nat.cast_nonneg _) (hBb _ _))
-      ENNReal.toReal_nonneg
-  have hC_nonneg : ∀ gamma, 0 ≤ C gamma := by
-    intro gamma
-    exact mul_nonneg (mul_nonneg (Nat.cast_nonneg _) (hBc _))
-      ENNReal.toReal_nonneg
-  have hatom_nonneg : ∀ atom, 0 ≤ atomValue atom :=
-    properAtom_nonneg E0 A B C ENNReal.toReal_nonneg
-      hA_nonneg hB_nonneg hC_nonneg
   have hcomponent' :
       ENNReal.toReal (eLpNorm
         (properDifferentiatedScalarCommutatorResidual a b c D E beta)
@@ -224,25 +190,21 @@ theorem properDifferentiatedScalarCommutatorResidual_memLp_and_sum_sq_le
           ∑ gamma : ProperSplit beta, C gamma := by
         simpa only [E0, A, B, C, sum_dite_eq_sum_proper] using (hcomponent beta).2
       _ = ∑ atom, atomValue atom := by
-        simp [atomValue, ProperAtom, Fintype.sum_prod_type]
+        simp [atomValue, Fintype.sum_prod_type]
         ring
-  have hsum_nonneg : 0 ≤ ∑ atom, atomValue atom :=
-    Finset.sum_nonneg fun atom _ => hatom_nonneg atom
   calc
-    (ENNReal.toReal (eLpNorm
-        (properDifferentiatedScalarCommutatorResidual a b c D E beta)
-        2 (timeVelocityVolumeOn U))) ^ 2 ≤ (∑ atom, atomValue atom) ^ 2 := by
+    (ENNReal.toReal _) ^ 2 ≤ (∑ atom, atomValue atom) ^ 2 := by
       nlinarith [ENNReal.toReal_nonneg (a := eLpNorm
         (properDifferentiatedScalarCommutatorResidual a b c D E beta)
         2 (timeVelocityVolumeOn U))]
-    _ ≤ (Fintype.card (ProperAtom beta) : ℝ) *
+    _ ≤ (Fintype.card (ProperAtom beta)) *
         ∑ atom, (atomValue atom) ^ 2 := by
       simpa using (sq_sum_le_card_mul_sum_sq
         (s := Finset.univ) (f := atomValue))
     _ = _ := by
       rw [properAtom_card]
       congr 1
-      simp [atomValue, ProperAtom, E0, A, B, C, Fintype.sum_prod_type]
+      simp [atomValue, Fintype.sum_prod_type]
       ring
 
 end HypoellipticAleksandrov.Parabolic

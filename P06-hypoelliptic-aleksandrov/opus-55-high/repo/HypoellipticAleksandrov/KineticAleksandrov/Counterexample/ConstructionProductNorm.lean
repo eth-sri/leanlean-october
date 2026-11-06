@@ -6,7 +6,6 @@ public import Mathlib.MeasureTheory.Measure.Prod
 /-! # Exact time factors for stationary source norms -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory
 open scoped ENNReal
@@ -23,7 +22,7 @@ theorem construction_eLpNorm_snd {X Y : Type*} [MeasurableSpace X] [MeasurableSp
   rw [lintegral_prod _ (hm.enorm.pow_const p.toReal).aemeasurable]
   simp only [lintegral_const]
   rw [ENNReal.mul_rpow_of_nonneg]
-  · rw [mul_comm]
-  · exact (one_div_pos.mpr (ENNReal.toReal_pos hp0 hpTop)).le
+  · ring
+  positivity
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

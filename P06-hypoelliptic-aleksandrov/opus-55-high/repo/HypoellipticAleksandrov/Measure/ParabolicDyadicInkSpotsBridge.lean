@@ -32,53 +32,46 @@ def parabolicDyadicSourceBox {d n : Nat}
     -1 + 2 * (parabolicDyadicVelocityCode n index coordinate : ℝ) /
       (2 : ℝ) ^ n + ((2 : ℝ) ^ n)⁻¹
 
-private theorem parabolicDyadicSourceBox_radius_sq {d n : Nat}
-    (index : ParabolicDyadicIndex d n) :
+variable {d n : Nat} (index : ParabolicDyadicIndex d n) (coordinate : Fin d)
+
+private theorem parabolicDyadicSourceBox_radius_sq  :
     (parabolicDyadicSourceBox index).radius ^ 2 = ((4 : ℝ) ^ n)⁻¹ := by
-  change ((2 : ℝ) ^ n)⁻¹ ^ 2 = ((4 : ℝ) ^ n)⁻¹
+  change ((2 : ℝ) ^ n)⁻¹ ^ 2 = ((4) ^ n)⁻¹
   rw [inv_pow, ← pow_mul, Nat.mul_comm, pow_mul]
   norm_num
 
-private theorem parabolicDyadicSourceBox_time_upper {d n : Nat}
-    (index : ParabolicDyadicIndex d n) :
+private theorem parabolicDyadicSourceBox_time_upper  :
     (parabolicDyadicSourceBox index).baseTime +
         (parabolicDyadicSourceBox index).radius ^ 2 =
       (parabolicDyadicTimeCode n index + 1 : ℝ) / (4 : ℝ) ^ n := by
   rw [parabolicDyadicSourceBox_radius_sq]
-  change (parabolicDyadicTimeCode n index : ℝ) / (4 : ℝ) ^ n +
+  change (parabolicDyadicTimeCode n index) / (4) ^ n +
       ((4 : ℝ) ^ n)⁻¹ = _
   field_simp
 
-private theorem parabolicDyadicSourceBox_center_sub_radius {d n : Nat}
-    (index : ParabolicDyadicIndex d n) (coordinate : Fin d) :
+private theorem parabolicDyadicSourceBox_center_sub_radius  :
     (parabolicDyadicSourceBox index).center coordinate -
         (parabolicDyadicSourceBox index).radius =
       -1 + 2 * (parabolicDyadicVelocityCode n index coordinate : ℝ) /
         (2 : ℝ) ^ n := by
-  change -1 + 2 * (parabolicDyadicVelocityCode n index coordinate : ℝ) /
-      (2 : ℝ) ^ n + ((2 : ℝ) ^ n)⁻¹ - ((2 : ℝ) ^ n)⁻¹ = _
+  change -1 + 2 * (parabolicDyadicVelocityCode n index coordinate) /
+      (2) ^ n + ((2 : ℝ) ^ n)⁻¹ - ((2 : ℝ) ^ n)⁻¹ = _
   ring
 
-private theorem parabolicDyadicSourceBox_center_add_radius {d n : Nat}
-    (index : ParabolicDyadicIndex d n) (coordinate : Fin d) :
+private theorem parabolicDyadicSourceBox_center_add_radius  :
     (parabolicDyadicSourceBox index).center coordinate +
         (parabolicDyadicSourceBox index).radius =
       -1 + 2 * (parabolicDyadicVelocityCode n index coordinate + 1 : ℝ) /
         (2 : ℝ) ^ n := by
-  change -1 + 2 * (parabolicDyadicVelocityCode n index coordinate : ℝ) /
-      (2 : ℝ) ^ n + ((2 : ℝ) ^ n)⁻¹ + ((2 : ℝ) ^ n)⁻¹ = _
-  field_simp
+  change -1 + 2 * (parabolicDyadicVelocityCode n index coordinate) /
+      (2) ^ n + ((2 : ℝ) ^ n)⁻¹ + ((2 : ℝ) ^ n)⁻¹ = _
   ring
 
 /-- The source open box is exactly the addressed open dyadic cell. -/
-theorem inkSpotsSourceBox_parabolicDyadicSourceBox {d n : Nat}
-    (index : ParabolicDyadicIndex d n) :
+theorem inkSpotsSourceBox_parabolicDyadicSourceBox  :
     inkSpotsSourceBox (parabolicDyadicSourceBox index) = parabolicDyadicOpenCell index := by
   ext z
-  rcases z with ⟨time, velocity⟩
-  rw [mem_inkSpotsSourceBox_iff, mem_parabolicDyadicOpenCell_iff,
-    mem_velocityCube_iff]
-  rw [parabolicDyadicSourceBox_time_upper]
+  rw [mem_inkSpotsSourceBox_iff, mem_parabolicDyadicOpenCell_iff, parabolicDyadicSourceBox_time_upper]
   constructor
   · rintro ⟨htlower, htupper, hvelocity⟩
     refine ⟨htlower, htupper, fun coordinate => ?_⟩
@@ -86,36 +79,28 @@ theorem inkSpotsSourceBox_parabolicDyadicSourceBox {d n : Nat}
     rw [abs_lt] at hcoordinate
     have hlow := parabolicDyadicSourceBox_center_sub_radius index coordinate
     have hupp := parabolicDyadicSourceBox_center_add_radius index coordinate
-    constructor
-    · nlinarith [hcoordinate.1, hlow]
-    · nlinarith [hcoordinate.2, hupp]
+    grind
   · rintro ⟨htlower, htupper, hvelocity⟩
     refine ⟨htlower, htupper, fun coordinate => ?_⟩
     rw [abs_lt]
     have hcoordinate := hvelocity coordinate
     have hlow := parabolicDyadicSourceBox_center_sub_radius index coordinate
     have hupp := parabolicDyadicSourceBox_center_add_radius index coordinate
-    constructor
-    · nlinarith [hcoordinate.1, hlow]
-    · nlinarith [hcoordinate.2, hupp]
+    grind
 
 /-- Every dyadic source box has positive radius. -/
-theorem parabolicDyadicSourceBox_radius_pos {d n : Nat}
-    (index : ParabolicDyadicIndex d n) :
+theorem parabolicDyadicSourceBox_radius_pos  :
     0 < (parabolicDyadicSourceBox index).radius := by
   change 0 < ((2 : ℝ) ^ n)⁻¹
   positivity
 
-private theorem parabolicDyadicOpenCell_subset_unit {d n : Nat}
-    (index : ParabolicDyadicIndex d n) :
+private theorem parabolicDyadicOpenCell_subset_unit  :
     parabolicDyadicOpenCell index ⊆ inkSpotsUnitBox d := by
   rintro ⟨time, velocity⟩ hcell
   rw [mem_parabolicDyadicOpenCell_iff] at hcell
   rw [inkSpotsUnitBox, mem_parabolicBox_iff]
   have hfour : 0 < (4 : ℝ) ^ n := pow_pos (by norm_num) _
   have htwo : 0 < (2 : ℝ) ^ n := pow_pos (by norm_num) _
-  have htimeCode : (parabolicDyadicTimeCode n index : ℝ) < (4 : ℝ) ^ n := by
-    exact_mod_cast parabolicDyadicTimeCode_lt_pow index
   refine ⟨?_, ?_, ?_⟩
   · have : 0 ≤ (parabolicDyadicTimeCode n index : ℝ) := by positivity
     nlinarith [div_nonneg this hfour.le]
@@ -123,45 +108,36 @@ private theorem parabolicDyadicOpenCell_subset_unit {d n : Nat}
         (parabolicDyadicTimeCode n index + 1 : ℝ) / (4 : ℝ) ^ n ≤ 1 := by
       have hcodeNat : parabolicDyadicTimeCode n index + 1 ≤ 4 ^ n :=
         Nat.succ_le_iff.mpr (parabolicDyadicTimeCode_lt_pow index)
-      have hcodeReal : (parabolicDyadicTimeCode n index + 1 : ℝ) ≤
+      have hcodeReal : (parabolicDyadicTimeCode n index + 1) ≤
           (4 : ℝ) ^ n := by exact_mod_cast hcodeNat
       exact (div_le_one hfour).mpr hcodeReal
     nlinarith
   · intro coordinate
-    have hvelocityCode :
-        (parabolicDyadicVelocityCode n index coordinate : ℝ) < (2 : ℝ) ^ n := by
-      exact_mod_cast parabolicDyadicVelocityCode_lt_pow index coordinate
-    simp only [Pi.zero_apply, sub_zero]
+    simp only [Pi.zero_apply]
     have hlower : -1 < velocity coordinate := by
       have : -1 ≤ -1 + 2 *
-          (parabolicDyadicVelocityCode n index coordinate : ℝ) / (2 : ℝ) ^ n := by
-        have : 0 ≤ 2 * (parabolicDyadicVelocityCode n index coordinate : ℝ) /
+          (parabolicDyadicVelocityCode n index coordinate) / (2 : ℝ) ^ n := by
+        have : 0 ≤ 2 * (parabolicDyadicVelocityCode n index coordinate) /
             (2 : ℝ) ^ n := by positivity
         linarith
-      exact lt_of_le_of_lt this (hcell.2.2 coordinate).1
+      grind
     have hupper : velocity coordinate < 1 := by
-      have hcode : (parabolicDyadicVelocityCode n index coordinate + 1 : ℝ) ≤
+      have hcode : (parabolicDyadicVelocityCode n index coordinate + 1) ≤
           (2 : ℝ) ^ n := by
         have hcodeNat : parabolicDyadicVelocityCode n index coordinate + 1 ≤ 2 ^ n :=
           Nat.succ_le_iff.mpr (parabolicDyadicVelocityCode_lt_pow index coordinate)
         exact_mod_cast hcodeNat
       have hbound : -1 + 2 *
-          (parabolicDyadicVelocityCode n index coordinate + 1 : ℝ) /
+          (parabolicDyadicVelocityCode n index coordinate + 1) /
             (2 : ℝ) ^ n ≤ 1 := by
-        have hfrac : (parabolicDyadicVelocityCode n index coordinate + 1 : ℝ) /
+        have hfrac : (parabolicDyadicVelocityCode n index coordinate + 1) /
             (2 : ℝ) ^ n ≤ 1 := (div_le_one htwo).mpr hcode
-        calc
-          -1 + 2 * (parabolicDyadicVelocityCode n index coordinate + 1 : ℝ) /
-              (2 : ℝ) ^ n =
-              -1 + 2 * ((parabolicDyadicVelocityCode n index coordinate + 1 : ℝ) /
-                (2 : ℝ) ^ n) := by ring
-          _ ≤ 1 := by linarith
-      exact lt_of_lt_of_le (hcell.2.2 coordinate).2 hbound
-    exact abs_lt.mpr (by constructor <;> linarith)
+        grind
+      grind
+    grind
 
 /-- The source box of an addressed cell lies in the open unit source box. -/
-theorem inkSpotsSourceBox_parabolicDyadicSourceBox_subset_unit {d n : Nat}
-    (index : ParabolicDyadicIndex d n) :
+theorem inkSpotsSourceBox_parabolicDyadicSourceBox_subset_unit  :
     inkSpotsSourceBox (parabolicDyadicSourceBox index) ⊆ inkSpotsUnitBox d := by
   rw [inkSpotsSourceBox_parabolicDyadicSourceBox]
   exact parabolicDyadicOpenCell_subset_unit index
@@ -169,37 +145,33 @@ theorem inkSpotsSourceBox_parabolicDyadicSourceBox_subset_unit {d n : Nat}
 /-- The first enlargement of a child source box contains the entire open
 parent cell.  The time computation uses the four child digits and the
 velocity computation uses the two digits in each coordinate. -/
-theorem parabolicDyadicOpenCell_parent_subset_inkSpotsQ1 {d n : Nat}
+theorem parabolicDyadicOpenCell_parent_subset_inkSpotsQ1 
     (index : ParabolicDyadicIndex d (n + 1)) :
     parabolicDyadicOpenCell (parabolicDyadicParent index) ⊆
       inkSpotsQ1 (parabolicDyadicSourceBox index) := by
   rintro ⟨time, velocity⟩ hz
   rw [mem_parabolicDyadicOpenCell_iff] at hz
   rw [mem_inkSpotsQ1_iff]
-  have htimeCode : parabolicDyadicTimeCode (n + 1) index =
+  have htimeCode : parabolicDyadicTimeCode _ index =
       4 * parabolicDyadicTimeCode n (parabolicDyadicParent index) +
         (index (Fin.last n)).1.val := by
-    simp only [parabolicDyadicTimeCode]
+    aesop
   have htimeBase : (parabolicDyadicSourceBox index).baseTime =
-      (parabolicDyadicTimeCode n (parabolicDyadicParent index) : ℝ) / (4 : ℝ) ^ n +
-        (index (Fin.last n)).1.val * (((4 : ℝ) ^ n)⁻¹ / 4) := by
-    change (parabolicDyadicTimeCode (n + 1) index : ℝ) / (4 : ℝ) ^ (n + 1) = _
+      (parabolicDyadicTimeCode n (parabolicDyadicParent index)) / (4) ^ n +
+        (index (Fin.last n)).1.val * (((4) ^ n)⁻¹ / 4) := by
+    change (parabolicDyadicTimeCode _ index) / (4 : ℝ) ^ (n + 1) = _
     rw [htimeCode]
-    push_cast
-    rw [pow_succ]
-    field_simp
+    grind
   have hradiusSq : (parabolicDyadicSourceBox index).radius ^ 2 =
-      ((4 : ℝ) ^ n)⁻¹ / 4 := by
+      ((4) ^ n)⁻¹ / 4 := by
     rw [parabolicDyadicSourceBox_radius_sq]
-    rw [pow_succ]
-    field_simp
-  have htimeDigitLower : 0 ≤ (index (Fin.last n)).1.val := Nat.zero_le _
+    ring
   have htimeDigitUpper : (index (Fin.last n)).1.val ≤ 3 := by
-    exact Nat.le_pred_of_lt (index (Fin.last n)).1.isLt
+    omega
   have hfour : 0 < (4 : ℝ) ^ n := pow_pos (by norm_num) _
   have hinv : 0 < ((4 : ℝ) ^ n)⁻¹ := inv_pos.mpr hfour
   have hzUnit : (time, velocity) ∈ inkSpotsUnitBox d :=
-    parabolicDyadicOpenCell_subset_unit (parabolicDyadicParent index)
+    parabolicDyadicOpenCell_subset_unit _
       (mem_parabolicDyadicOpenCell_iff.mpr hz)
   refine ⟨?_, ?_, ?_, hzUnit⟩
   · have hstart :
@@ -207,13 +179,8 @@ theorem parabolicDyadicOpenCell_parent_subset_inkSpotsQ1 {d n : Nat}
             3 * (parabolicDyadicSourceBox index).radius ^ 2 ≤
           (parabolicDyadicTimeCode n (parabolicDyadicParent index) : ℝ) /
             (4 : ℝ) ^ n := by
-      rw [htimeBase, hradiusSq]
-      simp only [div_eq_mul_inv]
-      have hdigit : ((index (Fin.last n)).1.val : ℝ) ≤ 3 := by
-        exact_mod_cast htimeDigitUpper
-      have hmul := mul_le_mul_of_nonneg_right hdigit hinv.le
-      nlinarith
-    exact lt_of_le_of_lt hstart hz.1
+      simp_all
+    linarith
   · have hupp :
         (parabolicDyadicTimeCode n (parabolicDyadicParent index) + 1 : ℝ) /
             (4 : ℝ) ^ n ≤
@@ -222,51 +189,38 @@ theorem parabolicDyadicOpenCell_parent_subset_inkSpotsQ1 {d n : Nat}
             (7 / 9 : ℝ) * (3 * (parabolicDyadicSourceBox index).radius) ^ 2 := by
       rw [htimeBase]
       simp only [div_eq_mul_inv]
-      have hdigit : 0 ≤ ((index (Fin.last n)).1.val : ℝ) := by positivity
-      have hmul : 0 ≤ ((index (Fin.last n)).1.val : ℝ) * ((4 : ℝ) ^ n)⁻¹ :=
-        mul_nonneg hdigit hinv.le
       have hradiusSq' := hradiusSq
-      simp only [div_eq_mul_inv] at hradiusSq'
       nlinarith [hradiusSq']
-    exact lt_of_lt_of_le hz.2.1 hupp
-  · rw [mem_velocityCube_iff]
-    intro coordinate
+    linarith
+  · intro coordinate
     have hvelocityCode : parabolicDyadicVelocityCode (n + 1) index coordinate =
         2 * parabolicDyadicVelocityCode n (parabolicDyadicParent index) coordinate +
           ((index (Fin.last n)).2 coordinate).val := by
-      simp only [parabolicDyadicVelocityCode]
+      aesop
     have hcenterLower : (parabolicDyadicSourceBox index).center coordinate -
         3 * (parabolicDyadicSourceBox index).radius =
       -1 + 2 * (parabolicDyadicVelocityCode n (parabolicDyadicParent index) coordinate : ℝ) /
           (2 : ℝ) ^ n +
         (((index (Fin.last n)).2 coordinate).val - 1) / (2 : ℝ) ^ n := by
-      change -1 + 2 * (parabolicDyadicVelocityCode (n + 1) index coordinate : ℝ) /
-          (2 : ℝ) ^ (n + 1) + ((2 : ℝ) ^ (n + 1))⁻¹ -
+      change -1 + 2 * (parabolicDyadicVelocityCode _ index coordinate) /
+          (2) ^ (n + 1) + ((2 : ℝ) ^ (n + 1))⁻¹ -
           3 * ((2 : ℝ) ^ (n + 1))⁻¹ = _
       rw [hvelocityCode]
-      push_cast
-      rw [pow_succ]
-      field_simp
-      ring
+      grind
     have hcenterUpper : (parabolicDyadicSourceBox index).center coordinate +
         3 * (parabolicDyadicSourceBox index).radius =
       -1 + 2 * (parabolicDyadicVelocityCode n (parabolicDyadicParent index) coordinate : ℝ) /
           (2 : ℝ) ^ n +
         (((index (Fin.last n)).2 coordinate).val + 2) / (2 : ℝ) ^ n := by
-      change -1 + 2 * (parabolicDyadicVelocityCode (n + 1) index coordinate : ℝ) /
-          (2 : ℝ) ^ (n + 1) + ((2 : ℝ) ^ (n + 1))⁻¹ +
+      change -1 + 2 * (parabolicDyadicVelocityCode _ index coordinate) /
+          (2) ^ (n + 1) + ((2 : ℝ) ^ (n + 1))⁻¹ +
           3 * ((2 : ℝ) ^ (n + 1))⁻¹ = _
       rw [hvelocityCode]
-      push_cast
-      rw [pow_succ]
-      field_simp
-      ring
+      grind
     rw [abs_lt]
-    have hvelocityDigitLower : 0 ≤ ((index (Fin.last n)).2 coordinate).val := Nat.zero_le _
     have hvelocityDigitUpper : ((index (Fin.last n)).2 coordinate).val ≤ 1 := by
-      exact Nat.le_pred_of_lt ((index (Fin.last n)).2 coordinate).isLt
+      omega
     have hdenom : 0 < (2 : ℝ) ^ n := pow_pos (by norm_num) _
-    have hinv : 0 < ((2 : ℝ) ^ n)⁻¹ := inv_pos.mpr hdenom
     have hparent := hz.2.2 coordinate
     have hlower :
         (parabolicDyadicSourceBox index).center coordinate -
@@ -274,9 +228,8 @@ theorem parabolicDyadicOpenCell_parent_subset_inkSpotsQ1 {d n : Nat}
           -1 + 2 *
             (parabolicDyadicVelocityCode n (parabolicDyadicParent index) coordinate : ℝ) /
               (2 : ℝ) ^ n := by
-      rw [hcenterLower]
       have hdigit : (((index (Fin.last n)).2 coordinate).val : ℝ) ≤ 1 := by
-        exact_mod_cast hvelocityDigitUpper
+        simp_all
       have hdelta := div_nonpos_of_nonpos_of_nonneg (sub_nonpos.mpr hdigit) hdenom.le
       linarith
     have hupper :
@@ -286,26 +239,24 @@ theorem parabolicDyadicOpenCell_parent_subset_inkSpotsQ1 {d n : Nat}
           (parabolicDyadicSourceBox index).center coordinate +
             3 * (parabolicDyadicSourceBox index).radius := by
       have hdigit : 0 ≤ (((index (Fin.last n)).2 coordinate).val : ℝ) := by positivity
-      have hfrac : 2 / (2 : ℝ) ^ n ≤
-          ((((index (Fin.last n)).2 coordinate).val : ℝ) + 2) / (2 : ℝ) ^ n :=
+      have hfrac : 2 / (2) ^ n ≤
+          ((((index _).2 coordinate).val) + 2) / (2 : ℝ) ^ n :=
         (div_le_div_iff_of_pos_right hdenom).mpr (by linarith)
       calc
         -1 + 2 *
-            (parabolicDyadicVelocityCode n (parabolicDyadicParent index) coordinate + 1 : ℝ) /
-              (2 : ℝ) ^ n =
+            (parabolicDyadicVelocityCode n _ coordinate + 1) /
+              (2) ^ n =
             -1 + 2 *
-                (parabolicDyadicVelocityCode n (parabolicDyadicParent index) coordinate : ℝ) /
-                  (2 : ℝ) ^ n + 2 / (2 : ℝ) ^ n := by ring
+                (parabolicDyadicVelocityCode n _ coordinate) /
+                  (2) ^ n + 2 / (2 : ℝ) ^ n := by ring
         _ ≤ -1 + 2 *
-                (parabolicDyadicVelocityCode n (parabolicDyadicParent index) coordinate : ℝ) /
-                  (2 : ℝ) ^ n +
-              ((((index (Fin.last n)).2 coordinate).val : ℝ) + 2) / (2 : ℝ) ^ n := by
+                (parabolicDyadicVelocityCode n _ coordinate) /
+                  (2) ^ n +
+              ((((index _).2 coordinate).val) + 2) / (2) ^ n := by
             linarith
         _ = (parabolicDyadicSourceBox index).center coordinate +
               3 * (parabolicDyadicSourceBox index).radius := hcenterUpper.symm
-    constructor
-    · nlinarith [hparent.1, hlower]
-    · nlinarith [hparent.2, hupper]
+    grind
 
 /-- Subtype reference measure of an ambient measurable preimage is ambient
 volume intersected with the reference cell. -/
@@ -315,7 +266,6 @@ theorem parabolicDyadicReferenceMeasure_preimage_eq_volume_inter_reference
       volume (s ∩ parabolicDyadicReferenceCell d) := by
   rw [parabolicDyadicReferenceMeasure, comap_subtype_coe_apply
     (measurableSet_parabolicDyadicReferenceCell d)]
-  change volume (Subtype.val '' (Subtype.val ⁻¹' s)) = _
   rw [Subtype.image_preimage_coe, inter_comm]
 
 /-- On a set inside the reference cell, subtype reference measure is ambient volume. -/
@@ -330,17 +280,19 @@ private def parabolicDyadicAllBoundary (d : Nat) : Set (TimeVelocity d) :=
   ⋃ address : ParabolicDyadicAddress d,
     parabolicDyadicHalfOpenCell address.2 \ parabolicDyadicOpenCell address.2
 
-private theorem volume_parabolicDyadicAllBoundary_eq_zero (d : Nat) :
+variable (d : Nat)
+
+private theorem volume_parabolicDyadicAllBoundary_eq_zero  :
     volume (parabolicDyadicAllBoundary d) = 0 := by
   apply measure_iUnion_null
   intro address
   apply ae_le_set.mp
   exact (parabolicDyadicOpenCell_ae_eq_halfOpenCell address.2).symm.le
 
-private theorem ae_not_mem_parabolicDyadicAllBoundary (d : Nat) :
+private theorem ae_not_mem_parabolicDyadicAllBoundary  :
     ∀ᵐ z ∂volume, z ∉ parabolicDyadicAllBoundary d := by
   rw [ae_iff]
-  simpa only [Set.setOf_mem_eq, not_not] using
+  simpa using
     volume_parabolicDyadicAllBoundary_eq_zero d
 
 /-- A strict dyadic density on a restricted half-open cell gives a strict
@@ -356,7 +308,6 @@ theorem inkSpotsStrictDense_of_restrictedCell_density_gt {d n : Nat}
   have hrestrictedInter :
       parabolicDyadicRestrictedCell index ∩ Subtype.val ⁻¹' Gamma =
         Subtype.val ⁻¹' (parabolicDyadicHalfOpenCell index ∩ Gamma) := by
-    ext z
     rfl
   have hhalf : xi * (volume (parabolicDyadicHalfOpenCell index)).toReal <
       (volume (parabolicDyadicHalfOpenCell index ∩ Gamma)).toReal := by
@@ -365,24 +316,17 @@ theorem inkSpotsStrictDense_of_restrictedCell_density_gt {d n : Nat}
       parabolicDyadicReferenceMeasure_preimage_eq_volume
         _ ((measurableSet_parabolicDyadicHalfOpenCell index).inter hGamma)
         (inter_subset_left.trans (parabolicDyadicHalfOpenCell_subset_reference index))] using h
-  have hcellAE : parabolicDyadicOpenCell index =ᵐ[volume]
-      parabolicDyadicHalfOpenCell index :=
+  have hcellAE  :=
     parabolicDyadicOpenCell_ae_eq_halfOpenCell index
-  have hinterAE : (parabolicDyadicOpenCell index ∩ Gamma : Set (TimeVelocity d)) =ᵐ[volume]
-      (parabolicDyadicHalfOpenCell index ∩ Gamma : Set (TimeVelocity d)) :=
+  have hinterAE : (parabolicDyadicOpenCell index ∩ Gamma) =ᵐ[volume]
+      (parabolicDyadicHalfOpenCell index ∩ Gamma) :=
     ae_eq_set_inter hcellAE (EventuallyEq.rfl)
-  have hvolume : volume (parabolicDyadicOpenCell index) =
-      volume (parabolicDyadicHalfOpenCell index) := measure_congr hcellAE
-  have hvolumeInter : volume (parabolicDyadicOpenCell index ∩ Gamma) =
-      volume (parabolicDyadicHalfOpenCell index ∩ Gamma) := measure_congr hinterAE
+  have hvolume  := measure_congr hcellAE
+  have hvolumeInter  := measure_congr hinterAE
   refine ⟨parabolicDyadicSourceBox_radius_pos index,
     inkSpotsSourceBox_parabolicDyadicSourceBox_subset_unit index, ?_⟩
   rw [inkSpotsSourceBox_parabolicDyadicSourceBox]
-  calc
-    xi * (volume (parabolicDyadicOpenCell index)).toReal =
-        xi * (volume (parabolicDyadicHalfOpenCell index)).toReal := by rw [hvolume]
-    _ < (volume (parabolicDyadicHalfOpenCell index ∩ Gamma)).toReal := hhalf
-    _ = (volume (parabolicDyadicOpenCell index ∩ Gamma)).toReal := by rw [hvolumeInter]
+  simp_all
 
 /-- A strict ambient density on a child open dyadic cell puts its parent open
 cell in the actual first ink-spots enlargement union. -/
@@ -396,27 +340,26 @@ theorem parabolicDyadicOpenCell_parent_subset_inkSpotsD1_of_density_gt
     refine ⟨parabolicDyadicSourceBox_radius_pos index,
       inkSpotsSourceBox_parabolicDyadicSourceBox_subset_unit index, ?_⟩
     rw [inkSpotsSourceBox_parabolicDyadicSourceBox]
-    simpa only [inter_comm] using h
+    grind
   intro z hz
   refine Set.mem_iUnion.mpr ⟨parabolicDyadicSourceBox index, ?_⟩
   refine Set.mem_iUnion.mpr ⟨hstrict, ?_⟩
   exact parabolicDyadicOpenCell_parent_subset_inkSpotsQ1 index hz
 
-private theorem inkSpotsUnitBox_subset_parabolicDyadicReferenceCell (d : Nat) :
+private theorem inkSpotsUnitBox_subset_parabolicDyadicReferenceCell  :
     inkSpotsUnitBox d ⊆ parabolicDyadicReferenceCell d := by
   rintro ⟨time, velocity⟩ hz
   rw [inkSpotsUnitBox, mem_parabolicBox_iff] at hz
   simp only [zero_add, one_mul, one_pow] at hz
-  rw [parabolicDyadicReferenceCell]
   refine ⟨⟨hz.1, hz.2.1.le⟩, fun coordinate _ => ?_⟩
   have hcoordinate := hz.2.2 coordinate
-  rw [abs_lt, Pi.zero_apply, sub_zero] at hcoordinate
-  exact ⟨hcoordinate.1, hcoordinate.2.le⟩
+  rw [Pi.zero_apply] at hcoordinate
+  grind
 
 /-- Almost every point of a measurable set in the unit source box belongs to
 the first ink-spots enlargement union. -/
 theorem ae_le_inkSpotsD1_of_parabolicDyadicDensity
-    (d : Nat) (Gamma : Set (TimeVelocity d)) (xi : Real)
+     (Gamma : Set (TimeVelocity d)) (xi : Real)
     (hGamma : MeasurableSet Gamma) (hGammaUnit : Gamma ⊆ inkSpotsUnitBox d)
     (hxi : xi ∈ Set.Ioo (0 : Real) 1) :
     Gamma ≤ᵐ[volume] inkSpotsD1 Gamma xi := by
@@ -434,8 +377,7 @@ theorem ae_le_inkSpotsD1_of_parabolicDyadicDensity
             (parabolicDyadicReferenceMeasure d).real
               (parabolicDyadicRestrictedCell index ∩ Subtype.val ⁻¹' Gamma) := by
     rw [ae_restrict_iff_subtype (measurableSet_parabolicDyadicReferenceCell d)]
-    simpa only [GammaRef, parabolicDyadicReferenceMeasure,
-      parabolicDyadicRestrictedCell, Set.mem_preimage] using hsubtype
+    aesop
   have hambient : ∀ᵐ z ∂volume,
       z ∈ parabolicDyadicReferenceCell d → z ∈ Gamma →
         ∃ n, ∃ index : ParabolicDyadicIndex d n,
@@ -443,8 +385,7 @@ theorem ae_le_inkSpotsD1_of_parabolicDyadicDensity
             xi * (parabolicDyadicReferenceMeasure d).real
                 (parabolicDyadicRestrictedCell index) <
               (parabolicDyadicReferenceMeasure d).real
-                (parabolicDyadicRestrictedCell index ∩ Subtype.val ⁻¹' Gamma) := by
-    exact (ae_restrict_iff' (measurableSet_parabolicDyadicReferenceCell d)).mp hrestrict
+                (parabolicDyadicRestrictedCell index ∩ Subtype.val ⁻¹' Gamma) := (ae_restrict_iff' (measurableSet_parabolicDyadicReferenceCell d)).mp hrestrict
   filter_upwards [hambient, ae_not_mem_parabolicDyadicAllBoundary d] with z hz hzBoundary
   intro hzGamma
   obtain ⟨n, index, hzHalf, hdensity⟩ := hz (hGammaReference hzGamma) hzGamma
@@ -452,12 +393,12 @@ theorem ae_le_inkSpotsD1_of_parabolicDyadicDensity
     by_contra hzOpen
     apply hzBoundary
     refine Set.mem_iUnion.mpr ⟨⟨n, index⟩, ?_⟩
-    exact ⟨hzHalf, hzOpen⟩
+    simp_all
   have hstrict := inkSpotsStrictDense_of_restrictedCell_density_gt
     Gamma hGamma xi index hdensity
   have hzSource : z ∈ inkSpotsSourceBox (parabolicDyadicSourceBox index) := by
     rw [inkSpotsSourceBox_parabolicDyadicSourceBox]
-    exact hzOpen
+    omega
   have hzQ1 := inkSpotsSourceBox_subset_Q1_of_strictDense hstrict hzSource
   exact Set.mem_iUnion.mpr ⟨parabolicDyadicSourceBox index,
     Set.mem_iUnion.mpr ⟨hstrict, hzQ1⟩⟩

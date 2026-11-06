@@ -7,7 +7,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripC
 /-! # Full-space classical potentials in physical coordinates -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Parabolic
 open SectionTwo TheoremA Evolution
@@ -29,55 +28,50 @@ theorem enlarged_exists_fullspace_potential
         (fullSpaceEvolution hH hLE hlam hLam A).2.master
           (wholeSpaceQuery p.time b hp p.velocity p.position)) := by
   obtain ⟨v, hv, hr⟩ := fullspace_bounded_smooth_solution hH hlam hLam A
-    (fullSpaceEvolution hH hLE hlam hLam A)
+    _
     (fullSpaceEvolution_spec hH hLE hlam hLam A) b F hF
-  have hwhole (t : ℝ) : movingDomain autonomousWholeDomain (fun _ => 0) t = univ :=
+  have hwhole (t : ℝ) : movingDomain autonomousWholeDomain _ t = univ :=
     movingDomain_wholeSpace 1 t
   let u := v ∘ sectionTwoPoint
   have hm (p : Point) (hp : p.time ≤ b) : sectionTwoPoint p ∈
       evolutionPastClosedCylinder autonomousWholeDomain (fun _ => 0) b := by
     refine ⟨hp, ?_⟩
-    rw [hwhole, closure_univ]
-    trivial
+    simp_all
   have hc : ContinuousOn u {p | p.time ≤ b} := hv.2.1.comp
     (continuous_sectionTwoPoint 1).continuousOn (fun p hp => hm p hp)
   have hs : IsKineticC112On u {p | p.time < b} := by
     apply nested_raw_isKineticC112On (isOpen_lt continuous_time continuous_const)
     let g : ℝ × (PDE.Vec 1 × PDE.Vec 1) → ℝ × (PDE.Vec 1 × PDE.Vec 1) :=
       fun q => (q.1, q.2.2, q.2.1)
-    have hg : ContDiff ℝ (⊤ : ℕ∞) g := by unfold g; fun_prop
+    have hg : ContDiff ℝ (⊤ : ℕ∞) g := by fun_prop
     have hmaps : MapsTo g ((KineticPoint.equivProd 1) '' {p : Point | p.time < b})
         (evolutionPastInteriorRaw autonomousWholeDomain (fun _ => 0) b) := by
       rintro q ⟨p, hp, rfl⟩
       refine ⟨hp, ?_⟩
-      rw [hwhole]
-      trivial
+      simp_all
     exact hv.2.2.1.comp hg.contDiffOn hmaps
   have hrep (p : Point) (hp : p.time ≤ b) : u p = ∫ z, F z ∂
       (fullSpaceEvolution hH hLE hlam hLam A).2.master
-        (wholeSpaceQuery p.time b hp p.velocity p.position) :=
+        _ :=
     hr (wholeSpaceQuery p.time b hp p.velocity p.position) rfl
   refine ⟨u, hs, hc, ?_, ?_, ?_, ?_, hrep⟩
   · obtain ⟨M, hM, hb⟩ := hv.1
-    exact ⟨M, hM, fun p hp => hb _ (hm p hp)⟩
+    grind
   · intro p hp
     have hmem : sectionTwoPoint p ∈ evolutionPastOpenCylinder
         autonomousWholeDomain (fun _ => 0) b := by
       refine ⟨hp, ?_⟩
-      rw [hwhole]
-      trivial
+      simp_all
     have ho := hv.2.2.2.1 (sectionTwoPoint p) hmem
     have he : v = u ∘ sectionTwoPoint := by
-      funext q
-      exact congrArg v (sectionTwoPoint_involutive q).symm
-    rw [he, reconstruction_scalar_operator_swap, sectionTwoPoint_involutive p] at ho
+      aesop
+    rw [he, reconstruction_scalar_operator_swap] at ho
     exact ho
   · intro p hp
     rw [hrep p hp]
     exact integral_nonneg hF0
   · intro p hp
-    exact hv.2.2.2.2.1 (sectionTwoPoint p) ⟨hp, by
-      rw [hwhole, closure_univ]
-      trivial⟩
+    exact hv.2.2.2.2.1 _ ⟨hp, by
+      simp_all⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

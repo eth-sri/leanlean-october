@@ -10,7 +10,6 @@ The inset avoids any regularity requirement at the original initial time.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
 open scoped Topology
@@ -48,25 +47,24 @@ theorem nonpos_on_inset_maximumClosedTube_of_strict {d : ℕ}
     · right
       intro M
       obtain ⟨R, hR, hb⟩ := hn M
-      exact ⟨R, hR, fun p hp => hb p (hsub hp)⟩
+      grind
   intro q hq
   by_contra hnot
   obtain ⟨p, hp, hpos, hmax⟩ := exists_positive_isMaxOn_maximumClosedTube hcΩ
     (hγ.mono htSub) (hu.mono hsub) hcontrol' hq (lt_of_not_ge hnot)
   have hpFull := hsub hp
   have hpt : p.time < b := lt_of_le_of_ne hp.1.2 (by
-    intro heq
-    exact (not_le_of_gt hpos) (hterminal p hpFull heq))
+    grind)
   have hpv : p.position ∈ movingDomain Ω γ p.time := by
     by_contra hv
     have hfront : p.position ∈ frontier (movingDomain Ω γ p.time) := by
       rw [(isOpen_movingDomain hΩ p.time).frontier_eq]
       exact ⟨hp.2, hv⟩
-    exact (not_le_of_gt hpos) (hlateral p hpFull hfront)
+    grind
   have hpOpen : p ∈ maximumOpenTube Ω γ a b :=
     ⟨⟨haα.trans_le hp.1.1, hpt⟩, hpv⟩
   obtain ⟨hut, huv, huz⟩ := hreg p hpOpen
-  have hγp : ContinuousAt γ p.time :=
+  have hγp  :=
     (hγ p.time hpFull.1).continuousAt (Icc_mem_nhds hpOpen.1.1 hpOpen.1.2)
   exact (not_le_of_gt (hstrict p hpOpen))
     (transportedForwardOperator_nonpos_at_tube_max hΩ hγp ⟨hp.1.1, hpt⟩ hpv

@@ -26,7 +26,7 @@ instance kineticPoint_locallyCompactSpace (n : ℕ) : LocallyCompactSpace (Kinet
 instance kineticVolume_isFiniteMeasureOnCompacts (n : ℕ) :
     IsFiniteMeasureOnCompacts (volume : Measure (KineticPoint n)) where
   lt_top_of_isCompact K hK := by
-    change Measure.map (KineticPoint.equivProd n).symm volume K < ⊤
+    change Measure.map _ volume K < ⊤
     rw [Measure.map_apply (KineticPoint.measurable_equivProd_symm n) hK.measurableSet]
     exact ((KineticPoint.homeomorphProd n).symm.isCompact_preimage.mpr hK).measure_lt_top
 

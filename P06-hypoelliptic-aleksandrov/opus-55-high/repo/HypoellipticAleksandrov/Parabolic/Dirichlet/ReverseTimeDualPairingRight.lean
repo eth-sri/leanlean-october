@@ -16,7 +16,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- The reverse-time dual pairing evaluated at a fixed primal test on the right. -/
-noncomputable def reverseTimeDualPairingRightCLM
+def reverseTimeDualPairingRightCLM
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
     (z : ReverseTimeL2V hΩ T) : ReverseTimeL2VStar hΩ T →L[ℝ] ℝ :=
   (ContinuousLinearMap.apply ℝ ℝ z).comp (reverseTimeDualPairingCLM hΩ T)

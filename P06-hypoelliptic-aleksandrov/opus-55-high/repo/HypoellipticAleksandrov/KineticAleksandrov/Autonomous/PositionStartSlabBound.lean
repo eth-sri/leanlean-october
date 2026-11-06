@@ -11,7 +11,6 @@ conclusion. Occupation domination, finiteness and the localized identity are int
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
@@ -49,7 +48,7 @@ theorem positionStartSlabBound_holds
   let mu := visitsFromZero hH hLE hlam hLam A c J T P
   have : IsFiniteMeasure mu :=
     visitsFromZero_isFiniteMeasure hH hLE hlam hLam A c J T P hc hJ hT hv
-  let Y := ((k : ℝ) + 1 / 2) * c.r ^ 3
+  let Y := (k + 1 / 2) * c.r ^ 3
   let S := {q : Point | P.time + a < q.time ∧ q.time ≤ P.time + b}
   let W := positionStartBox c Y
   let B := positionStartTerminalKernel hH hLE hlam hLam A c J (P.time + b) ∘ₘ mu
@@ -60,39 +59,38 @@ theorem positionStartSlabBound_holds
     (kernelXV E (Real.toNNReal t) (P.position 0, P.velocity 0) (box 4 c.r Y)).toReal
   have hI : 0 ≤ I := setIntegral_nonneg measurableSet_Ioc fun _ _ => ENNReal.toReal_nonneg
   have hs := enlargedVisitStarts_ae_support hH hLE hlam hLam A c J P.time (P.time + T)
-    P le_rfl (by linarith only [hT])
+    P le_rfl (by simp_all)
   have hmu : ∀ᵐ p ∂mu, p.velocity 0 ∈ closure c.entrance := hs.mono fun _ hp => hp.2.2
   have hB : B ≤ enlargedFullSpaceTerminal hH hLE hlam hLam A P (P.time + b) := by
     change (Measure.sum
-      (enlargedVisitEntrance hH hLE hlam hLam A c J P.time (P.time + T) P)).bind
-        (positionStartTerminalKernel hH hLE hlam hLam A c J (P.time + b)) ≤ _
+      (enlargedVisitEntrance hH hLE hlam hLam A c J P.time _ P)).bind
+        _ ≤ _
     rw [Measure.bind_sum _ _ (Kernel.aemeasurable _)]
     apply positionStart_sum_le_of_partial_le
     intro N
-    exact hTerminal hH hLE lam Lam hlam hLam A c J T P hc hT hJ hv N (P.time + b)
-      (by linarith only [ha, hab]) (by linarith only [hb])
+    exact hTerminal hH hLE lam Lam hlam hLam A c J T P hc hT hJ hv N _
+      (by linarith) (by simp_all)
   have hBF : (B W).toReal ≤ F := by
     have hm := (hB W).trans_eq
       (positionStartFullSpaceTerminal_box hH hLE hlam hLam A c P Y b)
     exact ENNReal.toReal_mono
       ((measure_mono (subset_univ _)).trans_lt
-        ((kernelXV_mass_le_one E (Real.toNNReal b) (P.position 0, P.velocity 0)).trans_lt
+        ((kernelXV_mass_le_one E _ _).trans_lt
           ENNReal.one_lt_top)).ne hm
   have hW := measurableSet_positionStartBox c Y
   have he := positionStartGreenMixture_slab_eq_finite hH hLE hlam hLam A c J
-    (P.time + a) (P.time + b) (P.time + T) hJ mu
+    (P.time + a) (P.time + b) _ hJ mu
       (hs.mono fun _ hp => ⟨enlarged_closedEntrance_subset_active c hp.2.2, hp.2.1⟩)
-        (by linarith only [hb])
+        (by simp_all)
   have hGE : G (S ∩ W) ≤ ENNReal.ofReal I := by
     have hh := congrArg (fun rho : Measure Point => rho W) he
     rw [Measure.restrict_apply hW, Measure.restrict_apply hW, inter_comm W] at hh
-    change G (S ∩ W) = _ at hh
     rw [hh]
     apply (positionStart_all_occupation_le_fullspace hH hLE hlam hLam A c J T P hT
       (hJ (subset_closure (enlarged_closedEntrance_subset_active c hv))) (S ∩ W)).trans_eq
     exact (positionStartFullSpaceOccupation_box_slab
       hH hLE hlam hLam A c P Y a b T ha hb).trans
-        (positionStartBox_slab_ofReal_integral E (P.position 0, P.velocity 0) c.r Y a b).symm
+        (positionStartBox_slab_ofReal_integral E _ c.r Y a b).symm
   have hGI := ENNReal.toReal_mono ENNReal.ofReal_ne_top hGE
   rw [ENNReal.toReal_ofReal hI] at hGI
   have hn := hbound hH hLE A c J P.time 0 a b k mu hc hJ hab.le hmu

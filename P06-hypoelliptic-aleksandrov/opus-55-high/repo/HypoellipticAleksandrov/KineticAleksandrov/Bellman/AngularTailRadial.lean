@@ -6,7 +6,6 @@ import Mathlib.Tactic
 /-! # Radial scaling used in the angular tail estimate -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
@@ -26,15 +25,12 @@ theorem bellmanRadialWeight_map_scale (β r : ℝ) (hr : 0 < r) :
       ENNReal.ofReal_mul (Real.rpow_nonneg (inv_nonneg.mpr hr.le) _)]
     have hp : (r⁻¹) ^ (3 - β) = r ^ (β - 3) := by
       rw [← Real.rpow_neg_eq_inv_rpow]
-      congr 1
       ring
-    rw [hp]
-    rfl
+    simp_all
   rw [he, withDensity_smul _ (by fun_prop), smul_smul,
     ← ENNReal.ofReal_mul (inv_nonneg.mpr hr.le)]
   have hp : r⁻¹ * r ^ (β - 3) = r ^ (β - 4) := by
     rw [← Real.rpow_neg_one, ← Real.rpow_add hr]
-    congr 1
     ring
   rw [hp]
 
@@ -48,8 +44,7 @@ theorem bellmanRadialWeight_velocity_strip (β y : ℝ) (hy : 0 < y) :
     measurability
   have he := congrArg (fun μ : Measure BellmanPositiveTime =>
       μ {s | 1 ≤ s.val ∧ s.val ≤ 2}) (bellmanRadialWeight_map_scale β y hy)
-  rw [Measure.map_apply (bellmanRadialScale y hy).measurable hm,
-    Measure.smul_apply, smul_eq_mul] at he
+  rw [Measure.map_apply (bellmanRadialScale y hy).measurable hm] at he
   exact he
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -39,9 +39,9 @@ theorem integral_regularizedAdjoint_of_jets
   let β i (x : EvolutionVec n) := b (diffusedCoord n x) i
   let D (v : EvolutionVec n) (φ : EvolutionVec n → ℝ) (x : EvolutionVec n) :=
     fderiv ℝ φ x v
-  have hA : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (A i j) := fun i j =>
+  have hA : ∀ i j, ContDiff ℝ _ (A i j) := fun i j =>
     (hB i j).comp (evolutionProdCLE n).contDiff
-  have hβ : ∀ i, ContDiff ℝ (⊤ : ℕ∞) (β i) := fun i =>
+  have hβ : ∀ i, ContDiff ℝ _ (β i) := fun i =>
     (contDiff_pi.mp hb i).comp (diffusedCoord n).contDiff
   have hD : ∀ v φ, ContDiff ℝ (⊤ : ℕ∞) φ → ContDiff ℝ (⊤ : ℕ∞) (D v φ) :=
     fun v φ hφ => (hφ.fderiv_right (by simp)).clm_apply contDiff_const
@@ -56,12 +56,9 @@ theorem integral_regularizedAdjoint_of_jets
         ∫ x in U, (A i j x * H i j x) * ψ x := by
     intro i j
     have h := setIntegral_mul_evolution_second_test hu (hV i) (hH i j)
-      (basisV i) (basisV j) (hdV i) (hdH i j) ((hA i j).mul hψ)
+      _ _ (hdV i) (hdH i j) ((hA i j).mul hψ)
       hc.mul_left (tsupport_mul_subset_right.trans hs)
-    convert h using 1
-    congr 1
-    funext x
-    ring
+    grind
   have eqZ : ∀ i, (∫ x in U, u x * (β i x * D (basisZ i) ψ x)) =
       -∫ x in U, (β i x * Z i x) * ψ x := by
     intro i
@@ -72,23 +69,18 @@ theorem integral_regularizedAdjoint_of_jets
       rw [fderiv_fun_mul ((hβ i).differentiable (by simp) x)
         (hψ.differentiable (by simp) x)]
       simp only [add_apply, smul_apply, smul_eq_mul]
-      change β i x * fderiv ℝ ψ x (basisZ i) +
-        ψ x * fderiv ℝ (fun y => b (diffusedCoord n y) i) x (basisZ i) = _
       rw [fderiv_drift_transported_zero hb, mul_zero, add_zero]
 
-    have h := setIntegral_mul_evolution_directional_test hu (hZ i) (basisZ i)
+    have h := setIntegral_mul_evolution_directional_test hu (hZ i) _
       (hdZ i) ((hβ i).mul hψ) hc.mul_left (tsupport_mul_subset_right.trans hs)
-    change (∫ z in U, u z * D (basisZ i) (fun y => β i y * ψ y) z) = _ at h
+    change (∫ z in U, u z * D _ (fun y => β i y * ψ y) z) = _ at h
     rw [he] at h
-    convert h using 1
-    congr 2
-    funext x
-    ring
-  have eqK : ∀ i, (∫ x in U, u x * D (basisZ i) (D (basisZ i) ψ) x) =
+    grind
+  have eqK : ∀ i, (∫ x in U, u x * D _ (D _ ψ) x) =
       ∫ x in U, K i x * ψ x := fun i =>
     setIntegral_mul_evolution_second_test hu (hZ i) (hK i) (basisZ i) (basisZ i)
       (hdZ i) (hdK i) hψ hc hs
-  have iT : IntegrableOn (fun x => u x * D basisT ψ x) U volume :=
+  have iT : IntegrableOn _ U volume :=
     (integrable_evolution_mul_test hu (hD basisT ψ hψ).continuous
       (hDc basisT ψ hc) ((hDs basisT ψ).trans hs)).integrableOn
   have iH : ∀ i j, IntegrableOn (fun x =>
@@ -105,7 +97,7 @@ theorem integral_regularizedAdjoint_of_jets
   have iK : ∀ i, IntegrableOn (fun x => u x * D (basisZ i) (D (basisZ i) ψ) x) U volume :=
     fun i => (integrable_evolution_mul_test hu (hD _ _ (hD _ _ hψ)).continuous
       (hDc _ _ (hDc _ _ hc)) ((hDs _ _).trans ((hDs _ _).trans hs))).integrableOn
-  have jT : IntegrableOn (fun x => T x * ψ x) U volume :=
+  have jT : IntegrableOn _ U volume :=
     (integrable_evolution_mul_test hT hψ.continuous hc hs).integrableOn
   have jH : ∀ i j, IntegrableOn (fun x => (A i j x * H i j x) * ψ x) U volume :=
     fun i j => (integrable_evolution_mul_test ((hA i j).continuous.continuousOn.mul (hH i j))
@@ -113,15 +105,15 @@ theorem integral_regularizedAdjoint_of_jets
   have jZ : ∀ i, IntegrableOn (fun x => (β i x * Z i x) * ψ x) U volume :=
     fun i => (integrable_evolution_mul_test ((hβ i).continuous.continuousOn.mul (hZ i))
       hψ.continuous hc hs).integrableOn
-  have jK : ∀ i, IntegrableOn (fun x => K i x * ψ x) U volume :=
+  have jK : ∀ i, IntegrableOn _ U volume :=
     fun i => (integrable_evolution_mul_test (hK i) hψ.continuous hc hs).integrableOn
   have sumInt {ι : Type} [Fintype ι] (f : ι → EvolutionVec n → ℝ)
-      (hf : ∀ i, IntegrableOn (f i) U volume) :
+      (hf : ∀ i, IntegrableOn _ U volume) :
       IntegrableOn (fun x => ∑ i, f i x) U volume :=
     integrable_finsetSum _ (fun i _ => hf i)
   change (∫ x in U, u x * (-D basisT ψ x +
-    (∑ i, ∑ j, D (basisV i) (D (basisV j) (fun y => A i j y * ψ y)) x) -
-    (∑ i, β i x * D (basisZ i) ψ x) + ε * ∑ i, D (basisZ i) (D (basisZ i) ψ) x)) =
+    (∑ i, ∑ j, D _ (D _ (fun y => A i j y * ψ y)) x) -
+    (∑ i, β i x * D _ ψ x) + ε * ∑ i, D _ (D _ ψ) x)) =
     ∫ x in U, (T x + (∑ i, ∑ j, A i j x * H i j x) +
       (∑ i, β i x * Z i x) + ε * ∑ i, K i x) * ψ x
   have hleft : (fun x => u x * (-D basisT ψ x +
@@ -131,10 +123,8 @@ theorem integral_regularizedAdjoint_of_jets
         (∑ i, ∑ j, u x * D (basisV i) (D (basisV j) (fun y => A i j y * ψ y)) x) -
         (∑ i, u x * (β i x * D (basisZ i) ψ x)) +
         ε * ∑ i, u x * D (basisZ i) (D (basisZ i) ψ) x := by
-    funext x
     simp only [mul_add, mul_sub, mul_neg, Finset.mul_sum]
-    congr 1
-    simp only [mul_left_comm]
+    grind
   rw [hleft]
   erw [integral_add ((iT.neg.add (sumInt _ (fun i => sumInt _ (iH i)))).sub
     (sumInt _ iZ)) ((sumInt _ iK).const_mul ε),
@@ -151,8 +141,7 @@ theorem integral_regularizedAdjoint_of_jets
       (∑ i, β i x * Z i x) + ε * ∑ i, K i x) * ψ x) =
       fun x => T x * ψ x + (∑ i, ∑ j, (A i j x * H i j x) * ψ x) +
         (∑ i, (β i x * Z i x) * ψ x) + ε * ∑ i, K i x * ψ x := by
-    funext x
-    simp only [add_mul, Finset.sum_mul, mul_assoc, Finset.mul_sum]
+    simp only [add_mul, Finset.sum_mul, mul_assoc]
   rw [hright]
   erw [integral_add ((jT.add (sumInt _ (fun i => sumInt _ (jH i)))).add
     (sumInt _ jZ)) ((sumInt _ jK).const_mul ε),

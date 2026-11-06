@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockGreenTe
 /-! # Literal operator vanishing on a late zero half-space -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Parabolic
 open SectionTwo TheoremA Evolution
@@ -19,30 +18,27 @@ theorem clock_transport_operator_zero_after
   have ht : kineticTimeDerivative u p = 0 := by
     have hn : ∀ᶠ t in 𝓝 p.time, R < t := isOpen_Ioi.mem_nhds hp
     have heq : (fun t => u ⟨t, p.position, p.velocity⟩) =ᶠ[𝓝 p.time]
-        (fun _ => (0 : ℝ)) := hn.mono (fun t ht => hz _ ht.le)
-    change deriv (fun t => u ⟨t, p.position, p.velocity⟩) p.time = 0
+        (fun _ => (0)) := hn.mono (fun t ht => hz _ ht.le)
+    change deriv _ p.time = 0
     rw [heq.deriv_eq]
-    exact deriv_const _ _
+    simp
   have hgrad : (fun y : PDE.Vec 1 => kineticPositionGradient u ⟨p.time, y, p.velocity⟩) =
       fun _ => 0 := by
     funext y
     ext i
-    have hi : i = 0 := Fin.eq_zero i
+    have hi  := Fin.eq_zero i
     subst i
     rw [kineticPositionGradient_scalar]
     have heq : (fun v : ℝ => u ⟨p.time, fun _ => v, p.velocity⟩) = fun _ => 0 :=
       funext (fun _ => hz _ hp.le)
-    rw [heq]
-    exact deriv_const _ _
+    simp_all
   have hv : diffusedHessian u p 0 0 = 0 := by
-    rw [diffusedHessian, hgrad, fderiv_const_apply]
-    rfl
+    simp_all
   have hx : kineticVelocityGradient u p 0 = 0 := by
     rw [kineticVelocityGradient_scalar]
     have heq : (fun z : ℝ => u ⟨p.time, p.position, fun _ => z⟩) = fun _ => 0 :=
       funext (fun _ => hz _ hp.le)
-    rw [heq]
-    exact deriv_const _ _
+    simp_all
   simp only [transportedForwardOperator_apply, matrixContraction, Fin.sum_univ_one,
     PDE.vecDot, ht, hv, hx, mul_zero, add_zero]
 

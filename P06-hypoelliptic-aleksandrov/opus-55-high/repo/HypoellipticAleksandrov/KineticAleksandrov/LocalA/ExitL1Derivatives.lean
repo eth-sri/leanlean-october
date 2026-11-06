@@ -6,7 +6,6 @@ public import Mathlib.Analysis.Normed.Module.Multilinear.Basic
 /-! # All derivatives of the same exit-marginal inverse Fourier function -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic SectionTwo
 
@@ -28,23 +27,18 @@ theorem ballExitL1Inversion_iteratedFDeriv
         (exitInversePairing d).toLinearMap₁₂
         (fun ξ => VectorFourier.fourierPowSMulRight
           (exitInversePairing d) (exitL1Fourier ν) ξ j) y := by
-  dsimp only
   let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
   have hm (n : ℕ) (_hn : (n : ℕ∞) ≤ ⊤) :
       Integrable (fun ξ => ‖ξ‖ ^ n * ‖exitL1Fourier ν ξ‖) :=
     ballExitL1Fourier_integrable_moments hH hLE hd hlam hLam B hB v₀ hR P T hv hT n
   have hs := VectorFourier.contDiff_fourierIntegral (exitInversePairing d) hm
-  change iteratedFDeriv ℝ j
-    (fun y => ((2 * Real.pi) ^ d)⁻¹ •
-      VectorFourier.fourierIntegral Real.fourierChar volume
-        (exitInversePairing d).toLinearMap₁₂ (exitL1Fourier ν) y) y = _
   have hscalar := iteratedFDeriv_const_smul_apply' (𝕜 := ℝ)
-    (a := (((2 * Real.pi) ^ d)⁻¹ : ℝ))
+    (a := (((2 * Real.pi) ^ d)⁻¹))
     (hf := (hs.of_le (by simp : (j : WithTop ℕ∞) ≤ (⊤ : ℕ∞))).contDiffAt (x := y))
   refine hscalar.trans ?_
   congr 1
-  exact congrFun (VectorFourier.iteratedFDeriv_fourierIntegral (exitInversePairing d)
+  exact congrFun (VectorFourier.iteratedFDeriv_fourierIntegral _
     hm (continuous_exitL1Fourier ν).aestronglyMeasurable
-    (n := j) (by simp : (j : ℕ∞) ≤ ⊤)) y
+    (n := j) (by simp)) y
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

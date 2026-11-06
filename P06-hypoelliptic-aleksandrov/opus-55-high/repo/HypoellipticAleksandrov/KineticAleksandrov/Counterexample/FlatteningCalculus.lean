@@ -31,7 +31,7 @@ theorem dvv_flatProfile_of_contDiffAt {d : ℕ} (H : XV d → ℝ) (alpha r : �
     ((hH.fderiv_right (m := 1) (by norm_num)).clm_apply
       contDiffAt_const).differentiableAt (by norm_num)
   have he := hout.neg.mul hv.hasFDerivAt
-  change HasFDerivAt (fun z => -deriv flatteningPsi (H z / a) * dv H z k) _ q at he
+  change HasFDerivAt (fun z => -deriv flatteningPsi _ * dv H z k) _ q at he
   have hnear := hH.eventually (by norm_num)
   have hloc : (fun z => dv (flatProfile H flatteningPsi flatteningOffset alpha r) z k) =ᶠ[nhds q]
       (fun z => -deriv flatteningPsi (H z / a) * dv H z k) := by
@@ -41,14 +41,13 @@ theorem dvv_flatProfile_of_contDiffAt {d : ℕ} (H : XV d → ℝ) (alpha r : �
     rfl
   unfold dvv
   rw [hloc.fderiv_eq, he.fderiv]
-  simp only [add_apply, smul_apply, neg_apply, smul_eq_mul]
   change -deriv flatteningPsi (H q / a) * dvv H q i k +
-    dv H q k * -(deriv (deriv flatteningPsi) (H q / a) * (a⁻¹ * dv H q i)) = _
+    dv H q k * -(deriv _ (H q / a) * (a⁻¹ * dv H q i)) = _
   have ha : a⁻¹ = Real.rpow r (-alpha) := by
     dsimp [a]
     rw [Real.rpow_neg hr.le]
   rw [ha]
-  dsimp only [a, dvv]
+  dsimp only [dvv]
   ring
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

@@ -23,7 +23,6 @@ Interior regularity and value continuity replace derivative boundary extensions.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
@@ -79,11 +78,11 @@ theorem localizedKrylov_admissible_of_one_le_direct :
           parabolicLpNormOn d F
             (scalarParabolicOpenCylinder α 1 (PDE.euclideanBall vStar R)) ∧
       (∀ z ∈ scalarParabolicClosedCylinder α 1 (PDE.euclideanBall vStar R), 0 ≤ V z) := by
-  have hQV : IsOpen (scalarParabolicOpenCylinder α 1 (PDE.euclideanBall vStar R)) :=
+  have hQV : IsOpen (scalarParabolicOpenCylinder α 1 _) :=
     isOpen_Ioo.prod (PDE.isOpen_euclideanBall vStar R)
-  have hQ : krylovCylinder (localHeight α R) (localHeight α R) (0 : PDE.Vec d) ⊆
+  have hQ : krylovCylinder _ _ _ ⊆
       reflectScale R vStar ⁻¹'
-        scalarParabolicOpenCylinder α 1 (PDE.euclideanBall vStar R) :=
+        scalarParabolicOpenCylinder α 1 _ :=
     fun z hz => (mem_krylovCylinder_iff_reflectScale hR z).1 hz
   have hFcont : Continuous F := hFs.continuous
   have hKsub := krylovClosedCylinder_subset_preimage (α := α) (vStar := vStar) (d := d) hR
@@ -99,10 +98,8 @@ theorem localizedKrylov_admissible_of_one_le_direct :
       hc.continuousOn_scalarSpatialHessian.mono hQ⟩
   · exact hV.1.comp (continuous_reflectScale R vStar).continuousOn hKsub
   · exact (hsmooth.continuous.comp (continuous_reflectScale R vStar)).continuousOn
-  · intro z _
-    exact hsymm _ _
-  · intro z _
-    exact ⟨hlow _ _, hup _ _⟩
+  · aesop
+  · aesop
   · exact memLp_localizedSource hR hFcont (hFcont.memLp_of_hasCompactSupport hFc)
   · intro z hz
     have hz' := hQ hz
@@ -112,7 +109,6 @@ theorem localizedKrylov_admissible_of_one_le_direct :
         R ^ 2 * F (reflectScale R vStar z)
     rw [scaled_operator_eq hQV hV.2.1 hR vStar B hz']
     have hp := hV.2.2.1 _ hz'
-    simp only [scalarParabolicZeroOrderOperator_apply] at hp
     have hv0 : PDE.vecDot (0 : PDE.Vec d)
         (scalarSpatialGradient V (reflectScale R vStar z)) = 0 := by
       simp [PDE.vecDot]
@@ -120,9 +116,8 @@ theorem localizedKrylov_admissible_of_one_le_direct :
         matrixContraction (coefficientAt B (reflectScale R vStar z))
           (scalarSpatialHessian V (reflectScale R vStar z)) =
         -F (reflectScale R vStar z) := by
-      simpa [hv0, coefficientAt] using hp
-    rw [hsum]
-    ring
+      aesop
+    simp_all
   · intro z
     exact mul_nonneg (sq_nonneg R) (hF0 _)
   · intro z hz
@@ -133,8 +128,7 @@ theorem localizedKrylov_admissible_of_one_le_direct :
     generalize reflectScale R vStar z = w at hmem
     rcases w with ⟨r, y⟩
     rcases hmem with ht | hl
-    · rw [mem_scalarParabolicTerminalFace_iff] at ht
-      obtain ⟨rfl, hy⟩ := ht
+    · obtain ⟨rfl, hy⟩ := ht
       exact hV.2.2.2.1 y hy
     · exact hV.2.2.2.2 _ hl
   · exact parabolicLpNormOn_localizedSource hR hFcont
@@ -184,10 +178,10 @@ theorem localizedKrylov_admissible_direct
             (scalarParabolicOpenCylinder α 1 (PDE.euclideanBall vStar R)) ∧
       (∀ z ∈ scalarParabolicClosedCylinder α 1 (PDE.euclideanBall vStar R), 0 ≤ V z) := by
   have hR1 : 1 ≤ R := by
-    have h1 : (1 : ℝ) ≤ R ^ 2 := by rw [hRsq]; exact le_max_left _ _
+    have h1 : (1) ≤ R ^ 2 := by simp_all
     rcases lt_or_ge R 1 with h | h
     · nlinarith
-    · exact h
+    omega
   exact localizedKrylov_admissible_of_one_le_direct hlam hsymm hsmooth hlow hup hF0 hFs hFc
     hα0 hα1 hR hR1 hV
 

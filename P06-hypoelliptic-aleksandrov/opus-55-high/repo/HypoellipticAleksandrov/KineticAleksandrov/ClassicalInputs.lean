@@ -20,7 +20,6 @@ corresponding theorem.
 @[expose] public section
 
 noncomputable section
-set_option autoImplicit false
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 

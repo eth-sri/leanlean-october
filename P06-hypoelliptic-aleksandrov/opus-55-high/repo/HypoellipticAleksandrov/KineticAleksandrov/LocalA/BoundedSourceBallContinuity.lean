@@ -7,7 +7,6 @@ import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ClassicalTerminalWea
 /-! # Full bounded-source continuity and traces on the physical closed strip -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Evolution TheoremA
 
@@ -36,13 +35,12 @@ theorem boundedBallSourcePotential_continuousOn
     · have hpast : KineticPoint.equivProd d Q ∈
           boundedSourcePast (PDE.euclideanBall v₀ R) (fun _ => 0) T := by
         refine ⟨hm.2.1, ?_⟩
-        rw [boundedSource_stationary_domain]
-        exact hm.2.2
-      exact False.elim (hQ hpast)
-    · exact indicator_of_notMem hm F
+        aesop
+      simp_all
+    aesop
   have hi := continuousOn_duhamelPotential_bounded_signed hH (localBall_admissible v₀ hR)
-    (PDE.isOpen_euclideanBall v₀ R).measurableSet continuous_const
-    (zIndependentCoefficient B) (identityDrift d) S K hreal hBs hBsym
+    _ continuous_const
+    _ _ S K hreal hBs hBsym
     (identityDrift_smooth d) lam Lam 1 hB.1 zero_lt_one hell (identityDrift_bounds d).2
     T g hgm M hM hgb hgz
   intro P hP
@@ -56,12 +54,11 @@ theorem boundedBallSourcePotential_continuousOn
     by_contra hn
     apply hv
     rw [(PDE.isOpen_euclideanBall v₀ R).frontier_eq]
-    exact ⟨hP.2.2, hn⟩
+    simp_all
   have hpast : sectionTwoPoint P ∈
       evolutionPastOpenCylinder (PDE.euclideanBall v₀ R) (fun _ => 0) T := by
     refine ⟨lt_of_le_of_ne hP.2.1 ht, ?_⟩
-    rw [boundedSource_stationary_domain]
-    exact hball
+    aesop
   have hc := hi.continuousAt
     ((isOpen_evolutionPastOpenCylinder (PDE.isOpen_euclideanBall v₀ R)
       continuous_const T).mem_nhds hpast)

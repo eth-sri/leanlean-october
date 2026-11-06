@@ -22,7 +22,6 @@ of the right-hand side `g` on `Ω` that the carrier records.
 @[expose] public section
 
 noncomputable section
-set_option autoImplicit false
 
 open MeasureTheory Set
 
@@ -62,16 +61,16 @@ theorem hasWeakHormanderEquation_transportedFields_iff (hlam : 0 < lam)
     (hb : IsSmoothDrift b) (Ω : Set (EvolutionVec n)) (u g : EvolutionVec n → ℝ) :
     HasWeakHormanderEquation Ω (transportedFields B b) (fun _ => 0) g u ↔
       IsWeakTransportedSolution B b Ω u g ∧ ContDiffOn ℝ (⊤ : ℕ∞) g Ω := by
-  have key : ∀ ψ : EvolutionVec n → ℝ, ContDiff ℝ (⊤ : ℕ∞) ψ →
-      hormanderAdjointTest (transportedFields B b) (fun _ => 0) ψ = transportedAdjoint B b ψ :=
+  have key : ∀ ψ : EvolutionVec n → ℝ, ContDiff ℝ _ ψ →
+      hormanderAdjointTest _ _ ψ = transportedAdjoint B b ψ :=
     fun ψ hψ => funext (hormanderAdjointTest_transportedFields hlam hB hell hb hψ)
   constructor
   · rintro ⟨hu, hg, h⟩
     refine ⟨⟨hu, fun ψ hψ hc hs => ?_⟩, hg⟩
-    simpa only [key ψ hψ] using h ψ hψ hc hs
+    simp_all
   · rintro ⟨⟨hu, h⟩, hg⟩
     refine ⟨hu, hg, fun ψ hψ hc hs => ?_⟩
-    simpa only [key ψ hψ] using h ψ hψ hc hs
+    simp_all
 
 /-- **Weak-form bridge for `Lop`.**  A distributional solution of `Lop u = g` (with `g` smooth on
 `Ω`) satisfies the Hörmander weak equation for `transportedFields B b`, `c = 0`. -/
@@ -82,29 +81,31 @@ theorem hasWeakHormanderEquation_transportedFields (hlam : 0 < lam)
     HasWeakHormanderEquation Ω (transportedFields B b) (fun _ => 0) g u :=
   (hasWeakHormanderEquation_transportedFields_iff hlam hB hell hb Ω u g).2 ⟨hu, hg⟩
 
+variable {ε : ℝ}
+
 /-- For the fields of `L_ε` (`ε ≥ 0`), the Hörmander weak equation with `c = 0` is the
 distributional equation `L_ε u = g` together with smoothness of `g` on `Ω`. -/
-theorem hasWeakHormanderEquation_regularizedFields_iff {ε : ℝ} (hε : 0 ≤ ε) (hlam : 0 < lam)
+theorem hasWeakHormanderEquation_regularizedFields_iff  (hε : 0 ≤ ε) (hlam : 0 < lam)
     (hB : IsSmoothFullKineticCoefficient B) (hell : HasEverywhereLoewnerBounds lam Lam B)
     (hb : IsSmoothDrift b) (Ω : Set (EvolutionVec n)) (u g : EvolutionVec n → ℝ) :
     HasWeakHormanderEquation Ω (regularizedFields B b ε) (fun _ => 0) g u ↔
       IsWeakRegularizedSolution B b ε Ω u g ∧ ContDiffOn ℝ (⊤ : ℕ∞) g Ω := by
-  have key : ∀ ψ : EvolutionVec n → ℝ, ContDiff ℝ (⊤ : ℕ∞) ψ →
-      hormanderAdjointTest (regularizedFields B b ε) (fun _ => 0) ψ =
+  have key : ∀ ψ : EvolutionVec n → ℝ, ContDiff ℝ _ ψ →
+      hormanderAdjointTest _ _ ψ =
         regularizedAdjoint B b ε ψ :=
     fun ψ hψ => funext (hormanderAdjointTest_regularizedFields hε hlam hB hell hb hψ)
   constructor
   · rintro ⟨hu, hg, h⟩
     refine ⟨⟨hu, fun ψ hψ hc hs => ?_⟩, hg⟩
-    simpa only [key ψ hψ] using h ψ hψ hc hs
+    simp_all
   · rintro ⟨⟨hu, h⟩, hg⟩
     refine ⟨hu, hg, fun ψ hψ hc hs => ?_⟩
-    simpa only [key ψ hψ] using h ψ hψ hc hs
+    simp_all
 
 /-- **Weak-form bridge for `L_ε`** (Proposition 2.1).  A distributional
 solution of `L_ε u = g` (`∫ u (Lop^* ψ + ε Δ_z ψ) = ∫ g ψ`, `g` smooth on `Ω`) satisfies the
 Hörmander weak equation for `regularizedFields B b ε`, `c = 0`. -/
-theorem hasWeakHormanderEquation_regularizedFields {ε : ℝ} (hε : 0 ≤ ε) (hlam : 0 < lam)
+theorem hasWeakHormanderEquation_regularizedFields  (hε : 0 ≤ ε) (hlam : 0 < lam)
     (hB : IsSmoothFullKineticCoefficient B) (hell : HasEverywhereLoewnerBounds lam Lam B)
     (hb : IsSmoothDrift b) {Ω : Set (EvolutionVec n)} {u g : EvolutionVec n → ℝ}
     (hu : IsWeakRegularizedSolution B b ε Ω u g) (hg : ContDiffOn ℝ (⊤ : ℕ∞) g Ω) :

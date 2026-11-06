@@ -60,9 +60,7 @@ theorem sphereRadialPoint_gauge {lam Lam : ℝ}
 
 /-- The radial weight is a measurable function on strictly positive radii. -/
 theorem measurable_bellmanRadiusWeight (alpha : ℝ) :
-    Measurable (bellmanRadiusWeight alpha) := by
-  unfold bellmanRadiusWeight
-  exact (ENNReal.continuous_ofReal.comp
+    Measurable (bellmanRadiusWeight alpha) := (ENNReal.continuous_ofReal.comp
     (continuous_subtype_val.rpow_const (fun r => Or.inl r.property.ne'))).measurable
 
 /-- Continuous radial weights are finite on every compact subset of positive radii. -/

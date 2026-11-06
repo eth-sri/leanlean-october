@@ -10,7 +10,6 @@ lemmas. The only hypotheses are the explicit analytic inputs.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open Set MeasureTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
@@ -18,12 +17,14 @@ open HypoellipticAleksandrov.KineticAleksandrov.Decay
 open HypoellipticAleksandrov.KineticAleksandrov.Green
 open scoped ENNReal NNReal
 
+variable (γ : ℝ)
+
 /-- The scalar slab exponent is the literal exponent in case I. -/
-theorem interval_slab_beta (γ : ℝ) : slabBeta 1 γ = 3 / (2 * γ) - 1 / 2 := by
+theorem interval_slab_beta  : slabBeta 1 γ = 3 / (2 * γ) - 1 / 2 := by
   norm_num [slabBeta]
 
 /-- Integrating frequencies gives the scalar slab height exponent. -/
-theorem interval_slab_height_exponent (γ : ℝ) :
+theorem interval_slab_height_exponent  :
     slabBeta 1 γ - 3 * (1 : ℝ) / 2 = 3 / (2 * γ) - 2 := by
   rw [interval_slab_beta]
   ring
@@ -69,7 +70,7 @@ theorem interval_slab_fourier
   intro a c hac B b hs hJ S K hr hlen σ T hT μ _ Γ hΓ
   let Kw := intervalExtension hJ K
   let μw := μ.map (intervalStateInclusion σ)
-  have hc : IsTranslationCovariantEvolution (wholeSpace 1) (fun _ => (0 : PDE.Vec 1))
+  have hc : IsTranslationCovariantEvolution (wholeSpace 1) _
       MeasurableSet.univ Kw := intervalExtension_covariance hJ K
     (interval_evolution_clauses hH hLE hac B b hs hJ S K hr).2.2
   have hcomp : Kw.HasComposition MeasurableSet.univ :=
@@ -79,15 +80,14 @@ theorem interval_slab_fourier
     (by norm_num) Kw hc hcomp Co (hoc m Lb hm hmLb a c hac B b hs hJ S K hr)
     Cd kd hCd hkd (hdec a c hac B b hs hJ S K hr hlen) σ μw Γ hΓw hT
   have hM : μw univ = μ univ := by
-    dsimp only [μw]
     rw [Measure.map_apply (measurable_intervalStateInclusion σ) MeasurableSet.univ,
       preimage_univ]
   refine ⟨g, hgm, hgE, ?_, f, hfm, hfE, ?_⟩
   · intro γ hγ1 hγ2
-    have h := hgb γ hγ1 (by norm_num [slabGamma0]; exact hγ2)
+    have h := hgb γ hγ1 (by norm_num [slabGamma0]; omega)
     simpa only [hM, interval_slab_beta] using h
   · intro γ hγ1 hγ2
-    obtain ⟨hf, hfreq⟩ := hfb γ hγ1 (by norm_num [slabGamma0]; exact hγ2)
+    obtain ⟨hf, hfreq⟩ := hfb γ hγ1 (by norm_num [slabGamma0]; omega)
     constructor
     · intro ξ
       have h := hf ξ

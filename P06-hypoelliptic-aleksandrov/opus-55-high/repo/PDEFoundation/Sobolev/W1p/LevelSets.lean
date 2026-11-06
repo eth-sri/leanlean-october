@@ -36,28 +36,23 @@ theorem grad_ae_zero_on_level_set
     (hp : 1 ≤ p) (hpTop : p ≠ ∞)
     (u : W1pFunction U p) (c : ℝ) :
     ∀ᵐ x ∂(volumeOn U), u.toFun x = c → u.grad x = 0 := by
-  let : Fact (1 ≤ p) := ⟨hp⟩
-  let : IsFiniteMeasure (volumeOn U) :=
+  let : Fact _ := ⟨hp⟩
+  let  :=
     hU.isSobolevRegularDomain.isFiniteMeasure_volumeOn
-  let v₁ : W1pFunction U p :=
+  let v₁  :=
     u.positivePartSubConst hU hp hpTop c
-  let v₂ : W1pFunction U p :=
+  let v₂  :=
     (-u).positivePartSubConst hU hp hpTop (-c)
-  let v : W1pFunction U p := v₁ - v₂
-  let w : W1pFunction U p := u.addConst (-c)
+  let v  := v₁ - v₂
+  let w  := u.addConst (-c)
   have htoFun_eq : v.toFun = w.toFun := by
     funext x
     have hneg : (-u).toFun x - -c = c - u.toFun x := by
       simp only [neg_toFun]
       ring
-    change max (u.toFun x - c) 0 - max ((-u).toFun x - -c) 0 =
+    change max _ 0 - max _ 0 =
       u.toFun x + -c
-    rw [hneg]
-    rcases le_total (u.toFun x - c) 0 with h | h
-    · rw [max_eq_right h, max_eq_left (by linarith)]
-      ring
-    · rw [max_eq_left h, max_eq_right (by linarith)]
-      ring
+    grind
   have hgrad_ae : ∀ᵐ x ∂(volumeOn U), v.grad x = w.grad x := by
     have hcoord : ∀ i : Fin d,
         (fun x => v.grad x i) =ᵐ[volumeOn U] (fun x => w.grad x i) := by
@@ -72,24 +67,9 @@ theorem grad_ae_zero_on_level_set
       exact w.hasWeakGradient i
     have hall : ∀ᵐ x ∂(volumeOn U), ∀ i, v.grad x i = w.grad x i :=
       ae_all_iff.mpr hcoord
-    filter_upwards [hall] with x hx
-    funext i
-    exact hx i
+    grind
   filter_upwards [hgrad_ae] with x hx hxc
-  have hvgrad : v.grad x = v₁.grad x - v₂.grad x := by
-    rfl
-  have hwgrad : w.grad x = u.grad x := by
-    simp only [w, addConst_grad]
-  have hv₁zero : v₁.grad x = 0 := by
-    change {y | c < u.toFun y}.indicator u.grad x = 0
-    rw [Set.indicator_of_notMem (by
-      simp only [Set.mem_ofPred_eq, not_lt, hxc, le_refl])]
-  have hv₂zero : v₂.grad x = 0 := by
-    change {y | -c < (-u).toFun y}.indicator (-u).grad x = 0
-    rw [Set.indicator_of_notMem (by
-      simp only [Set.mem_ofPred_eq, neg_toFun, not_lt, hxc]
-      exact le_rfl)]
-  rw [← hwgrad, ← hx, hvgrad, hv₁zero, hv₂zero, sub_zero]
+  aesop
 
 end W1pFunction
 

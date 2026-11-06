@@ -51,8 +51,8 @@ theorem isOpen_duhamelFiber (hΩ : IsOpen Ω) (hγ : Continuous γ) (T : ℝ) :
   have h2 : IsOpen {p : TimeVelocity d | p.1 < T} := isOpen_lt continuous_fst continuous_const
   convert h2.inter h1 using 1
   ext p
-  simp only [duhamelFiber, mem_ofPred_eq, mem_inter_iff]
-  change (_ ∧ _ ∈ PDE.translateSet (γ p.1) Ω) ↔ _
+  simp only [mem_ofPred_eq, mem_inter_iff]
+  change (_ ∧ _ ∈ PDE.translateSet _ Ω) ↔ _
   rw [PDE.mem_translateSet_iff_sub_mem]
 
 /-- `U₀` lies in the closed region. -/
@@ -67,14 +67,16 @@ def sliceBorel (g : TimeVelocity d → ℝ) (hg : Continuous g) (hc : HasCompact
   ⟨fun v => g (r, v), (hg.comp (continuous_const.prodMk continuous_id)).measurable, by
     obtain ⟨C, hC⟩ := hg.bounded_above_of_compact_support hc
     refine ⟨max C 0, le_max_right _ _, fun v => ?_⟩
-    simpa only [Real.norm_eq_abs] using (hC (r, v)).trans (le_max_left _ _)⟩
+    simp_all⟩
 
-@[simp] theorem sliceBorel_apply (g : TimeVelocity d → ℝ) (hg : Continuous g)
+variable (g : TimeVelocity d → ℝ)
+
+@[simp] theorem sliceBorel_apply  (hg : Continuous g)
     (hc : HasCompactSupport g) (r : ℝ) (v : PDE.Vec d) : sliceBorel g hg hc r v = g (r, v) :=
   rfl
 
 /-- Slices of a smooth compactly supported source in `U₀` are smooth compact terminal data. -/
-theorem isSmoothCompactScalarTerminalDatum_slice (g : TimeVelocity d → ℝ)
+theorem isSmoothCompactScalarTerminalDatum_slice 
     (hgs : ContDiff ℝ (⊤ : ℕ∞) g) (hgc : HasCompactSupport g) (T : ℝ)
     (hgU : tsupport g ⊆ duhamelFiber Ω γ T) (r : ℝ) :
     ParabolicProbe.IsSmoothCompactScalarTerminalDatum Ω γ r
@@ -91,10 +93,8 @@ theorem isSmoothCompactScalarTerminalDatum_slice (g : TimeVelocity d → ℝ)
       continuous_snd).of_isClosed_subset (isClosed_tsupport _) hsub
   · intro v hv
     obtain ⟨p, ⟨hp1, hp2⟩, rfl⟩ := hsub hv
-    have : p = (r, p.2) := Prod.ext hp2 rfl
     have h := (hgU hp1).2
-    rw [hp2] at h
-    exact h
+    simp_all
 
 variable (K : MovingFiberKernel Ω γ)
 
@@ -111,10 +111,8 @@ theorem exists_slice_solution {B : CoefficientField d}
       ∀ (s : ℝ) (hsr : s ≤ r) (y : EvolutionPosition Ω γ s),
         V (s, y.1) = parabolicSourceIntegral K hΩ g s r hsr y := by
   obtain ⟨Q, -, -, -, -, -, h6, -, -, -, h10⟩ := hP (fun σ y z z' => rfl)
-  obtain ⟨V, hV, hVQ, -⟩ := h10 r (sliceBorel g hgs.continuous hgc r)
+  obtain ⟨V, hV, hVQ, -⟩ := h10 r _
     (isSmoothCompactScalarTerminalDatum_slice g hgs hgc T hgU r)
-  refine ⟨V, hV, fun s hsr y => ?_⟩
-  rw [hVQ s hsr y, h6 s r hsr y (terminalPositionDatum (sliceBorel g hgs.continuous hgc r))]
-  rfl
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

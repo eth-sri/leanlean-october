@@ -6,17 +6,16 @@ import Mathlib.Analysis.Calculus.MeanValue
 /-! # Uniform reference-scale increments of the actual Bellman extension -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BarrierRegularization
 open HypoellipticAleksandrov Set MeasureTheory
 
 /-- Gauge below one implies product norm at most one, using both kinetic weights. -/
 theorem barrier_small_gauge_norm {q : ℝ × ℝ} (hq : bellmanGauge q < 1) : ‖q‖ ≤ 1 := by
   obtain ⟨hX, hv⟩ := bellmanGauge_coordinate_bounds q
-  rw [Prod.norm_def, max_le_iff, Real.norm_eq_abs, Real.norm_eq_abs]
+  rw [Prod.norm_def, Real.norm_eq_abs, Real.norm_eq_abs]
   have hpow : bellmanGauge q ^ 3 ≤ 1 := by
     simpa only [one_pow] using pow_le_pow_left₀ (bellmanGauge_nonneg q) hq.le 3
-  exact ⟨hX.trans hpow, hv.trans hq.le⟩
+  grind
 
 /-- A reference-scale axis increment is controlled either by distant jets or a compact ball. -/
 theorem barrier_reference_axis_increment (Phi : (ℝ × ℝ) → ℝ)
@@ -32,10 +31,9 @@ theorem barrier_reference_axis_increment (Phi : (ℝ × ℝ) → ℝ)
     have hh := Convex.norm_image_sub_le_of_norm_deriv_le
       (fun t ht => (hd t ht).choose_spec.1.differentiableAt)
       (fun t ht => by
-        rw [(hd t ht).choose_spec.1.deriv, Real.norm_eq_abs]
+        rw [(hd t ht).choose_spec.1.deriv]
         exact (hd t ht).choose_spec.2)
       (convex_uIcc x y) (left_mem_uIcc) (right_mem_uIcc)
-    rw [Real.norm_eq_abs, Real.norm_eq_abs] at hh
     exact (hh.trans (mul_le_mul_of_nonneg_left hxy hD)).trans
       (by simpa only [mul_one] using le_add_of_nonneg_right (mul_nonneg (by norm_num) hB))
   · push Not at hfar

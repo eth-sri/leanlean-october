@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.HomogeneousR
 /-! # Comparison of smooth homogeneous solutions against a genuine spatial tail barrier -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set HypoellipticAleksandrov Parabolic
 open SectionTwo TheoremA Evolution
@@ -47,9 +46,9 @@ theorem reconstruction_homogeneous_gap_le_barrier
     change a ≤ p.time ∧ p.time ≤ T ∧ p.position 0 ∈ Icc H.lo H.hi
     exact ⟨hp.1, hp.2.1, intervalDomain_closure_bounds H (by
       simpa only [mem_closure_movingDomain_iff, sub_zero] using hp.2.2)⟩
-  have hur (p : Point) (hp : p ∈ movingActiveSlab (intervalDomain H) (fun _ => 0) a T) :=
+  have hur (p : Point) (hp : p ∈ movingActiveSlab _ _ a T) :=
     reconstruction_physical_slice_regular H lower T u hu p (hact p hp)
-  have hvr (p : Point) (hp : p ∈ movingActiveSlab (intervalDomain H) (fun _ => 0) a T) :=
+  have hvr (p : Point) (hp : p ∈ movingActiveSlab _ _ a T) :=
     reconstruction_physical_slice_regular H lower T v hv p (hact p hp)
   have huc' := huc.comp (continuous_sectionTwoPoint 1).continuousOn
     (reconstruction_closedSlab_mapsTo H he)
@@ -59,17 +58,13 @@ theorem reconstruction_homogeneous_gap_le_barrier
     (isOpen_of_isAdmissibleEvolutionDomain (intervalDomain_admissible H)) continuous_const
     hlam (evolutionCoefficient_bounds A) (identityDrift_bounds 1).1
     (le_refl 0) zero_le_one (a := a) (T := T)
-    (u := fun p => (u (sectionTwoPoint p) - v (sectionTwoPoint p) - eps) - q p)
+    (u := fun p => (u _ - v _ - eps) - q p)
     ⟨Mu + Mv + |eps|, fun p hp => by
-      have h1 := (le_abs_self _).trans (hub _ (hslab p hp))
-      have h2 := (neg_le_abs _).trans (hvb _ (hslab p hp))
-      have h3 := neg_le_abs eps
-      have h4 := hqn p
-      linarith⟩
+      grind⟩
     (((huc'.sub hvc').sub continuousOn_const).sub hqc.continuousOn)
     (fun p hp => ((hur p hp).sub (hvr p hp) |>.sub (IsSliceRegularAt.const eps p)).sub (hqr p))
     (fun p hp => by
-      change 0 ≤ viscousTransportedOperator (evolutionCoefficient A.a) (identityDrift 1) 0
+      change 0 ≤ viscousTransportedOperator _ _ 0
         (fun y => ((u ∘ sectionTwoPoint) y - (v ∘ sectionTwoPoint) y -
           (fun _ : Point => eps) y) - q y) p
       rw [viscousTransportedOperator_sub
@@ -86,7 +81,6 @@ theorem reconstruction_homogeneous_gap_le_barrier
       have hvel := intervalDomain_closure_bounds H (by
         simpa only [mem_closure_movingDomain_iff, sub_zero] using hp.2.2)
       have hh := hbd (sectionTwoPoint p) (Or.inl ⟨hpt, hvel⟩) hp.1
-      change (u (sectionTwoPoint p) - v (sectionTwoPoint p) - eps) - q p ≤ 0
       rw [sectionTwoPoint_involutive] at hh
       linarith)
     (fun p hp hpf => by
@@ -95,7 +89,7 @@ theorem reconstruction_homogeneous_gap_le_barrier
       have hh := hbd (sectionTwoPoint p) (Or.inr ⟨hp.2.1, hvel⟩) hp.1
       rw [sectionTwoPoint_involutive] at hh
       linarith)
-  have hp : sectionTwoPoint e.1 ∈ movingClosedSlab (intervalDomain H) (fun _ => 0) a T :=
+  have hp : sectionTwoPoint e.1 ∈ movingClosedSlab _ _ a T :=
     ⟨le_rfl, (WithTop.coe_lt_coe.mp e.2.1).le, subset_closure (stripPoleState H T e).2.1⟩
   have hh := hmax _ hp
   rw [sectionTwoPoint_involutive] at hh

@@ -12,7 +12,6 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.HessianCoefficientCanc
 open Filter MeasureTheory Set Topology
 open scoped ENNReal BigOperators Matrix.Norms.Elementwise MatrixOrder
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -80,32 +79,32 @@ theorem reverseTime_separated_hessian_coefficient_cancellation
   intro eta psi
   let S : Set (TimeVelocity d) := Set.Ioo τ₁ τ₂ ×ˢ O
   let globalS : Set (TimeVelocity d) := reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω
-  let μ : Measure (TimeVelocity d) := timeVelocityVolumeOn S
-  let mass : TimeVelocity d → ℝ := fun z => U z * (eta.deriv z.1 * psi z.2)
-  let grouped : Fin d → Fin d → TimeVelocity d → ℝ := fun i j z =>
+  let μ  := timeVelocityVolumeOn S
+  let mass  := fun z => U z * (eta.deriv z.1 * psi z.2)
+  let grouped  := fun i j z =>
     G j z * (reverseTimeCoefficient r₁ a z.1 z.2 i j *
         (eta z.1 * psi.partialDeriv i z.2) +
       (eta z.1 * psi z.2) *
         (fderiv ℝ (fun y : PDE.Vec d =>
           reverseTimeCoefficient r₁ a z.1 y i j) z.2) (PDE.basisVec i))
-  let hessian : Fin d → Fin d → TimeVelocity d → ℝ := fun i j z =>
+  let hessian  := fun i j z =>
     H z j i * (reverseTimeCoefficient r₁ a z.1 z.2 i j * (eta z.1 * psi z.2))
-  let drift : Fin d → TimeVelocity d → ℝ := fun j z =>
+  let drift  := fun j z =>
     reverseTimeVectorCoefficient r₁ b z.1 z.2 j * G j z * (eta z.1 * psi z.2)
-  let scalar : TimeVelocity d → ℝ := fun z =>
+  let scalar  := fun z =>
     reverseTimeScalarCoefficient r₁ c z.1 z.2 * U z * (eta z.1 * psi z.2)
   let source : TimeVelocity d → ℝ := fun z =>
     reverseTimeScalarCoefficient r₁ F z.1 z.2 * (eta z.1 * psi z.2)
   have hSglobal : S ⊆ globalS := Set.prod_mono htime hOΩ
   have hGlocal (j : Fin d) : LocallyIntegrableOn (G j) S volume := by
-    have hj : ParabolicMemLpOn S (2 : ℝ≥0∞) (G j) :=
+    have hj : ParabolicMemLpOn S _ _ :=
       (hG j).mono_measure (Measure.restrict_mono_set volume hSglobal)
     exact hj.locallyIntegrableOn (by norm_num)
-  have hHlocal (j i : Fin d) : LocallyIntegrableOn (fun z => H z j i) S volume :=
+  have hHlocal (j i : Fin d) : LocallyIntegrableOn _ S volume :=
     (hHmem j i).locallyIntegrableOn (by norm_num)
   have hweighted (i j : Fin d) :=
     reverseTime_coefficient_weighted_weak_identity r₀ r₁ hO hOΩ τ₁ τ₂ htime a
-      haSmooth (G j) (fun z => H z j i) (hGlocal j) (hHlocal j i) i j
+      haSmooth _ _ (hGlocal j) (hHlocal j i) i j
       (hHweak j i) eta psi
   have hgrouped : ∀ i j : Fin d, Integrable (grouped i j) μ := by
     intro i j
@@ -122,21 +121,20 @@ theorem reverseTime_separated_hessian_coefficient_cancellation
   obtain ⟨hmassGlobal, hprincipalGlobal, hdriftDivGlobal, hscalarGlobal, hsourceGlobal⟩ :=
     raw_reverseTime_separated_product_families_integrable r₀ r₁ hΩ hΩbounded
       a b c F haSmooth hbSmooth hcSmooth hFSmooth U hU G hG etaGlobal psiGlobal
-  have hμle : μ ≤ timeVelocityVolumeOn globalS := by
-    exact Measure.restrict_mono hSglobal le_rfl
+  have hμle : μ ≤ timeVelocityVolumeOn globalS := Measure.restrict_mono hSglobal le_rfl
   have hmass : Integrable mass μ := by
     refine (hmassGlobal.mono_measure hμle).congr (ae_of_all _ fun z => ?_)
-    simp only [mass, etaGlobal, psiGlobal, reverseTimeScalarTestOfLocal_deriv,
+    simp only [etaGlobal, psiGlobal, reverseTimeScalarTestOfLocal_deriv,
       PDE.WeakTestFunction.mono_apply]
     ring
   have hscalar : Integrable scalar μ := by
     refine (hscalarGlobal.mono_measure hμle).congr (ae_of_all _ fun z => ?_)
-    simp only [scalar, etaGlobal, psiGlobal, reverseTimeScalarTestOfLocal_apply,
+    simp only [etaGlobal, psiGlobal, reverseTimeScalarTestOfLocal_apply,
       PDE.WeakTestFunction.mono_apply]
     ring
   have hsource : Integrable source μ := by
     refine (hsourceGlobal.mono_measure hμle).congr (ae_of_all _ fun z => ?_)
-    simp only [source, etaGlobal, psiGlobal, reverseTimeScalarTestOfLocal_apply,
+    simp only [etaGlobal, psiGlobal, reverseTimeScalarTestOfLocal_apply,
       PDE.WeakTestFunction.mono_apply]
     ring
   have hdrift : ∀ j : Fin d, Integrable (drift j) μ := by
@@ -152,10 +150,10 @@ theorem reverseTime_separated_hessian_coefficient_cancellation
     have hdiv := (hdriftDivGlobal j).mono_measure hμle
     apply (hsumGrouped.sub hsumPrincipal |>.sub hdiv).congr
     filter_upwards [ae_restrict_mem ((isOpen_Ioo.prod hO).measurableSet)] with z hz
-    simp only [drift, grouped, etaGlobal, psiGlobal,
+    simp only [grouped, etaGlobal, psiGlobal,
       reverseTimeScalarTestOfLocal_apply, PDE.WeakTestFunction.mono_apply,
       reverseTimeDivergenceDrift,
-      scalarSpatialCoefficientDivergence, reverseTimeVectorCoefficient_apply, Pi.sub_apply]
+      scalarSpatialCoefficientDivergence, Pi.sub_apply]
     have hd : G j z * eta z.1 * psi z.2 *
           (∑ i : Fin d, (fderiv ℝ (fun y =>
             reverseTimeCoefficient r₁ a z.1 y i j) z.2) (PDE.basisVec i)) =
@@ -164,8 +162,7 @@ theorem reverseTime_separated_hessian_coefficient_cancellation
             (PDE.basisVec i) := by
       rw [Finset.mul_sum]
     ring_nf at hd ⊢
-    rw [Finset.sum_add_distrib]
-    rw [hd]
+    rw [Finset.sum_add_distrib, hd]
     ring
   have hrawAccepted :=
     reverseTime_separated_product_distribution_of_reverseTimeVariationalEnergy
@@ -194,9 +191,7 @@ theorem reverseTime_separated_hessian_coefficient_cancellation
               reverseTimeCoefficient r₁ a z.1 y i j) z.2) (PDE.basisVec i)) * G j z) =
           ∑ j : Fin d, ∑ i : Fin d, psi z.2 * eta z.1 * G j z *
             (fderiv ℝ (fun y => reverseTimeCoefficient r₁ a z.1 y i j) z.2)
-              (PDE.basisVec i) := by
-      exact Finset.sum_congr rfl (fun j _ => hd j)
-    ring_nf at hdsum
+              (PDE.basisVec i) := Finset.sum_congr rfl (fun j _ => hd j)
     rw [Finset.sum_comm] at hdsum
     have hd2 (j : Fin d) : eta z.1 *
           (∑ i : Fin d, psi z.2 *
@@ -205,7 +200,7 @@ theorem reverseTime_separated_hessian_coefficient_cancellation
         psi z.2 * eta z.1 *
           (∑ i : Fin d, (fderiv ℝ (fun y =>
             reverseTimeCoefficient r₁ a z.1 y i j) z.2) (PDE.basisVec i)) * G j z := by
-      rw [Finset.mul_sum, hd j]
+      rw [Finset.mul_sum, hd]
       apply Finset.sum_congr rfl
       intro i _
       ring
@@ -216,8 +211,7 @@ theorem reverseTime_separated_hessian_coefficient_cancellation
                 (PDE.basisVec i) * G j z)) =
           ∑ j : Fin d, psi z.2 * eta z.1 *
             (∑ i : Fin d, (fderiv ℝ (fun y =>
-              reverseTimeCoefficient r₁ a z.1 y i j) z.2) (PDE.basisVec i)) * G j z := by
-      exact Finset.sum_congr rfl (fun j _ => hd2 j)
+              reverseTimeCoefficient r₁ a z.1 y i j) z.2) (PDE.basisVec i)) * G j z := Finset.sum_congr rfl (fun j _ => hd2 j)
     have hp :
         (∑ i : Fin d, ∑ j : Fin d, eta z.1 * G j z *
             reverseTimeCoefficient r₁ a z.1 z.2 i j * psi.partialDeriv i z.2) =
@@ -247,19 +241,17 @@ theorem reverseTime_separated_hessian_coefficient_cancellation
             ∑ j : Fin d, psi z.2 * eta z.1 * G j z * b (r₁ - z.1) z.2 j := by
       calc
         _ = ∑ j : Fin d, (eta z.1 * (∑ i : Fin d, psi z.2 *
-              (fderiv ℝ (fun y => reverseTimeCoefficient r₁ a z.1 y i j) z.2)
-                (PDE.basisVec i) * G j z) -
-            psi z.2 * eta z.1 * G j z * b (r₁ - z.1) z.2 j) := by
+              (fderiv ℝ _ z.2)
+                _ * G j z) -
+            psi z.2 * eta z.1 * G j z * b _ z.2 j) := by
               apply Finset.sum_congr rfl
               intro j _
               ring
         _ = _ := by rw [Finset.sum_sub_distrib]
     simp_rw [Finset.sum_add_distrib]
     simp_rw [Finset.mul_sum, Finset.sum_mul]
-    rw [hrhs]
-    rw [← hdsum]
-    rw [← houter]
-    rw [hp, hbraw]
+    rw [hrhs, ← hdsum]
+    rw [← houter, hp, hbraw]
     ring
   have halgebra :=
     integral_mass_eq_neg_integral_hessian_add_drift_add_scalar_sub_source
@@ -271,7 +263,7 @@ theorem reverseTime_separated_hessian_coefficient_cancellation
     _ = _ := by
       congr 2
       funext z
-      simp only [hessian, drift, scalar, source]
+      simp only [hessian, drift]
       have hh : (eta z.1 * psi z.2) *
             (∑ i : Fin d, ∑ j : Fin d,
               reverseTimeCoefficient r₁ a z.1 z.2 i j * H z j i) =

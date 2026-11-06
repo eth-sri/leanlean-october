@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripU
 /-! # The literal nested finite-union Green and exit decomposition for finite sources -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
@@ -27,13 +26,13 @@ theorem strip_nested
       (finiteUnionExitMixture hH hLE hlam hLam A H1 T nu).restrict
         (finiteUnionExitSet H2 sMinus T) +
         finiteUnionExitMixture hH hLE hlam hLam A H2 T tau := by
-  let inc := finiteUnionNestedPoleInclusion H1 H2 hsub (T : WithTop ℝ)
+  let inc := finiteUnionNestedPoleInclusion H1 H2 hsub T
   let k := finiteUnionPointRestartPoles hH hLE hlam hLam A H1 H2 sMinus T
   have hinc : Measurable inc := measurable_finiteUnionNestedPoleInclusion H1 H2 hsub T
   have hk : Measurable k := finiteUnionPointRestartPoles_measurable
     hH hLE hlam hLam A H1 H2 sMinus T
-  have hG1 := finiteUnionGreen_measurable hH hLE hlam hLam A H1 (T : WithTop ℝ)
-  have hG2 := finiteUnionGreen_measurable hH hLE hlam hLam A H2 (T : WithTop ℝ)
+  have hG1 := finiteUnionGreen_measurable hH hLE hlam hLam A H1 T
+  have hG2 := finiteUnionGreen_measurable hH hLE hlam hLam A H2 T
   have hO1 := finiteUnionExit_measurable hH hLE hlam hLam A H1 T
   have hO2 := finiteUnionExit_measurable hH hLE hlam hLam A H2 T
   have hτ := finiteUnionRestartPoleMeasure_disintegration
@@ -56,7 +55,7 @@ theorem strip_nested
       (m := nu)
     have hlast := congrArg (fun τ => τ.bind (finiteUnionGreen hH hLE hlam hLam A H2 T)) hτ
     exact hmap.trans (hp.trans (hadd.trans
-      (congrArg₂ (· + ·) rfl (hassoc.symm.trans hlast.symm))))
+      (congrArg₂ _ rfl (hassoc.symm.trans hlast.symm))))
   · have hmap := nested_bind_map nu inc hinc _ hO2
     have hp := Measure.bind_congr_right (hpoint.mono (fun _ hp => hp.2))
     have hrestrict := nested_bind_restrict nu _ hO1 (finiteUnionExitSet H2 sMinus T)
@@ -67,6 +66,6 @@ theorem strip_nested
     have hassoc := Measure.bind_bind hk.aemeasurable hO2.aemeasurable (m := nu)
     have hlast := congrArg (fun τ => τ.bind (finiteUnionExit hH hLE hlam hLam A H2 T)) hτ
     exact hmap.trans (hp.trans (hadd.trans
-      (congrArg₂ (· + ·) hrestrict.symm (hassoc.symm.trans hlast.symm))))
+      (congrArg₂ _ hrestrict.symm (hassoc.symm.trans hlast.symm))))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

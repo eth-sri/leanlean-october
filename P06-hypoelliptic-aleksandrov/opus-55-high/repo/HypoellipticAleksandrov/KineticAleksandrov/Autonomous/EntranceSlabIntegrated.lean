@@ -5,26 +5,23 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EntranceSlab
 /-! # Integrated quadratic counting for starts in a closed-right time slab -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+
 /-- A lower time bound makes the clipped active occupation of any finite start measure finite. -/
 theorem entranceSlabGreen_isFiniteMeasure
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (a b : ℝ)
+     (c : Clock) (J : Interval) (a b : ℝ)
     (mu : Measure Point) [IsFiniteMeasure mu] (ha : ∀ᵐ p ∂mu, a ≤ p.time) :
     IsFiniteMeasure
       (enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) b ∘ₘ mu) := by
-  rw [enlargedVisitGreen_comp_eq_clipped hH hLE hlam hLam A (visitActiveUnion c J) a b mu ha]
+  rw [enlargedVisitGreen_comp_eq_clipped hH hLE hlam hLam A _ a b mu ha]
   infer_instance
 
 /-- Finite mixtures of starts up to `b` obey the exact actual terminal/occupation identity. -/
 theorem entranceSlabQuadratic_integrated_identity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (a b : ℝ)
+     (c : Clock) (J : Interval) (a b : ℝ)
     (hJ : closure c.active ⊆ J.carrier) (mu : Measure Point) [IsFiniteMeasure mu]
     (hmu : ∀ᵐ p ∂mu, a ≤ p.time ∧ p.time ≤ b ∧
       p.velocity 0 ∈ (visitActiveUnion c J).carrier) :
@@ -59,9 +56,7 @@ theorem entranceSlabQuadratic_integrated_identity
 
 /-- The exact source quadratic bounds starts by their actual terminal and clipped occupation. -/
 theorem entranceSlabQuadratic_mass_bound
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (a b : ℝ)
+     (c : Clock) (J : Interval) (a b : ℝ)
     (hJ : closure c.active ⊆ J.carrier) (mu : Measure Point) [IsFiniteMeasure mu]
     (hmu : ∀ᵐ p ∂mu, a ≤ p.time ∧ p.time ≤ b ∧ p.velocity 0 ∈ closure c.entrance) :
     5 * c.r ^ 2 / 16 * (mu univ).toReal ≤
@@ -71,8 +66,7 @@ theorem entranceSlabQuadratic_mass_bound
       2 * Lam *
         ((enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) b ∘ₘ mu)
           univ).toReal := by
-  have : IsFiniteMeasure
-      (enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) b ∘ₘ mu) :=
+  have  :=
     entranceSlabGreen_isFiniteMeasure hH hLE hlam hLam A c J a b mu
       (hmu.mono fun _ hp => hp.1)
   have hi := entranceSlabQuadratic_integrated_identity hH hLE hlam hLam A c J a b hJ mu
@@ -83,7 +77,7 @@ theorem entranceSlabQuadratic_mass_bound
   have hm := entranceSlabQuadratic_mass_lower c mu (hmu.mono fun _ hp => hp.2.2)
   rw [hi] at hm
   have ht' := entranceSlabQuadratic_integral_le_active c
-    (mu.bind (enlargedActiveTerminalFamily hH hLE hlam hLam A c J b))
+    _
     (entranceSlabTerminal_quadratic_integrable hH hLE hlam hLam A c J b mu)
   exact hm.trans (add_le_add ht' (visitCoefficient_integral_le hlam A _))
 
@@ -103,7 +97,6 @@ theorem entranceSlabQuadratic_partial_mass_bound
       2 * Lam * (∑ n ∈ Finset.range N,
         ((enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) b ∘ₘ mu n)
           univ).toReal) := by
-  dsimp only
   let mu := fun n => (enlargedVisitEntrance hH hLE hlam hLam A c J s T P n).restrict
     {p | p.time ∈ Ioc a b}
   have hm (n : ℕ) : ∀ᵐ p ∂mu n,
@@ -115,9 +108,9 @@ theorem entranceSlabQuadratic_partial_mass_bound
     have ht : ∀ᵐ p ∂mu n, p.time ∈ Ioc a b :=
       ae_restrict_mem (measurableSet_Ioc.preimage continuous_time.measurable)
     filter_upwards [ht, hv] with p hp hvel
-    exact ⟨hp.1.le, hp.2, hvel⟩
+    grind
   have h := Finset.sum_le_sum (s := Finset.range N) (fun n _ =>
-    entranceSlabQuadratic_mass_bound hH hLE hlam hLam A c J a b hJ (mu n) (hm n))
+    entranceSlabQuadratic_mass_bound hH hLE hlam hLam A c J a b hJ _ (hm n))
   simpa only [Finset.mul_sum, Finset.sum_add_distrib] using h
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

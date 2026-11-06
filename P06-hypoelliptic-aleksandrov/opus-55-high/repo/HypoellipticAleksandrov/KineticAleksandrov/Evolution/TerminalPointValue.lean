@@ -59,11 +59,11 @@ theorem IsClassicalTerminalSolution.add (hΩ : IsOpen Ω) (hγ : Continuous γ)
     IsClassicalTerminalSolution Ω γ B b τ (F + G) (fun q => u q + v q) := by
   have hu' := (isClassicalViscousTerminalSolution_zero_iff Ω γ B b τ F u).2 hu
   have hv' := (isClassicalViscousTerminalSolution_zero_iff Ω γ B b τ G v).2 hv
-  refine ((isClassicalViscousTerminalSolution_zero_iff Ω γ B b τ (F + G) _).1 ?_)
+  refine ((isClassicalViscousTerminalSolution_zero_iff Ω γ B b τ _ _).1 ?_)
   obtain ⟨⟨C₁, hC₁0, hC₁⟩, hc₁, hs₁, hop₁, ht₁, hl₁⟩ := hu'
   obtain ⟨⟨C₂, hC₂0, hC₂⟩, hc₂, hs₂, hop₂, ht₂, hl₂⟩ := hv'
   refine ⟨⟨C₁ + C₂, add_nonneg hC₁0 hC₂0, fun p hp => ?_⟩, hc₁.add hc₂, hs₁.add hs₂, ?_, ?_, ?_⟩
-  · exact (abs_add_le _ _).trans (add_le_add (hC₁ p hp) (hC₂ p hp))
+  · grind
   · intro p hp
     have h1 := IsClassicalViscousTerminalSolution.isSliceRegularAt hΩ hγ
       ⟨⟨C₁, hC₁0, hC₁⟩, hc₁, hs₁, hop₁, ht₁, hl₁⟩ hp
@@ -71,13 +71,8 @@ theorem IsClassicalTerminalSolution.add (hΩ : IsOpen Ω) (hγ : Continuous γ)
       ⟨⟨C₂, hC₂0, hC₂⟩, hc₂, hs₂, hop₂, ht₂, hl₂⟩ hp
     rw [viscousTransportedOperator_add h1 h2, hop₁ p hp, hop₂ p hp]
     simp
-  · intro p hp
-    simp only [BoundedBorel.add_apply]
-    rw [ht₁ p hp, ht₂ p hp]
-  · intro p hp
-    show u p + v p = 0
-    rw [hl₁ p hp, hl₂ p hp]
-    simp
+  · simp_all
+  simp_all
 
 /-- Real multiples of classical terminal solutions solve the problem for the scaled data. -/
 theorem IsClassicalTerminalSolution.smul (hΩ : IsOpen Ω) (hγ : Continuous γ) (c : ℝ)
@@ -85,7 +80,7 @@ theorem IsClassicalTerminalSolution.smul (hΩ : IsOpen Ω) (hγ : Continuous γ)
     (hu : IsClassicalTerminalSolution Ω γ B b τ F u) :
     IsClassicalTerminalSolution Ω γ B b τ (c • F) (fun q => c * u q) := by
   have hu' := (isClassicalViscousTerminalSolution_zero_iff Ω γ B b τ F u).2 hu
-  refine ((isClassicalViscousTerminalSolution_zero_iff Ω γ B b τ (c • F) _).1 ?_)
+  refine ((isClassicalViscousTerminalSolution_zero_iff Ω γ B b τ _ _).1 ?_)
   obtain ⟨⟨C, hC0, hC⟩, hc, hs, hop, ht, hl⟩ := hu'
   refine ⟨⟨|c| * C, mul_nonneg (abs_nonneg c) hC0, fun p hp => ?_⟩,
     continuousOn_const.mul hc, contDiffOn_const.mul hs, ?_, ?_, ?_⟩
@@ -96,13 +91,8 @@ theorem IsClassicalTerminalSolution.smul (hΩ : IsOpen Ω) (hγ : Continuous γ)
       ⟨⟨C, hC0, hC⟩, hc, hs, hop, ht, hl⟩ hp
     rw [viscousTransportedOperator_const_mul c h1, hop p hp]
     simp
-  · intro p hp
-    simp only [BoundedBorel.smul_apply, smul_eq_mul]
-    rw [ht p hp]
-  · intro p hp
-    show c * u p = 0
-    rw [hl p hp]
-    simp
+  · simp_all
+  simp_all
 
 /-- Two classical terminal solutions with the same datum agree on the past closed cylinder. -/
 theorem IsClassicalTerminalSolution.eqOn_of_lam {lam Lam : ℝ} (hΩ : IsOpen Ω)
@@ -154,7 +144,7 @@ theorem exists_unique_terminalValue
       IsClassicalTerminalSolution Ω γ B b τ F u ∧
       u ⟨σ, p.1.1, p.1.2⟩ = x := by
   obtain ⟨u, hu, -, -⟩ := hEx τ F hF
-  refine ⟨u ⟨σ, p.1.1, p.1.2⟩, ⟨u, hu, rfl⟩, ?_⟩
+  refine ⟨u _, ⟨u, hu, rfl⟩, ?_⟩
   rintro x ⟨v, hv, rfl⟩
   exact IsClassicalTerminalSolution.eqOn_of_lam
     (isOpen_of_isAdmissibleEvolutionDomain hΩ) hγ.1 hlam hB_ell hb_lipschitz hv hu

@@ -85,45 +85,43 @@ def TimeVelocityMultiIndex.parabolicWeight
       ((0, PDE.basisVec i) : TimeVelocity d) :=
   rfl
 
+variable (beta : TimeVelocityMultiIndex d) (q : ℕ) (alpha : VelocityMultiIndex d)
+
 @[simp] theorem TimeVelocityMultiIndex.timeOrder_ofTimeVelocity
-    (q : ℕ) (alpha : VelocityMultiIndex d) :
+     :
     (ofTimeVelocity q alpha).timeOrder = q :=
   rfl
 
 @[simp] theorem TimeVelocityMultiIndex.velocity_ofTimeVelocity
-    (q : ℕ) (alpha : VelocityMultiIndex d) :
+     :
     (ofTimeVelocity q alpha).velocity = alpha :=
   rfl
 
 @[simp] theorem
     TimeVelocityMultiIndex.ofTimeVelocity_timeOrder_velocity
-    (beta : TimeVelocityMultiIndex d) :
+     :
     ofTimeVelocity beta.timeOrder beta.velocity = beta := by
-  funext i
-  cases i <;> rfl
+  aesop
 
 @[simp] theorem TimeVelocityMultiIndex.order_ofTimeVelocity
-    (q : ℕ) (alpha : VelocityMultiIndex d) :
+     :
     (ofTimeVelocity q alpha).order = q + alpha.order :=
   rfl
 
 @[simp] theorem TimeVelocityMultiIndex.parabolicWeight_ofTimeVelocity
-    (q : ℕ) (alpha : VelocityMultiIndex d) :
+     :
     (ofTimeVelocity q alpha).parabolicWeight = alpha.parabolicWeight q :=
   rfl
 
 theorem VelocityMultiIndex.parabolicWeight_le_two_mul_order
-    (q : ℕ) (alpha : VelocityMultiIndex d) :
+     :
     alpha.parabolicWeight q ≤ 2 * (q + alpha.order) := by
-  unfold VelocityMultiIndex.parabolicWeight
-  rw [Nat.mul_add]
-  rw [two_mul alpha.order]
-  exact Nat.add_le_add_left (Nat.le_add_left alpha.order alpha.order) (2 * q)
+  rw [Nat.mul_add, two_mul alpha.order]
+  exact Nat.add_le_add_left (Nat.le_add_left alpha.order alpha.order) _
 
 theorem TimeVelocityMultiIndex.parabolicWeight_le_two_mul_order
-    (beta : TimeVelocityMultiIndex d) :
-    beta.parabolicWeight ≤ 2 * beta.order := by
-  exact VelocityMultiIndex.parabolicWeight_le_two_mul_order
+     :
+    beta.parabolicWeight ≤ 2 * beta.order := VelocityMultiIndex.parabolicWeight_le_two_mul_order
     beta.timeOrder beta.velocity
 
 theorem TimeVelocityMultiIndex.parabolicWeight_le_two_mul

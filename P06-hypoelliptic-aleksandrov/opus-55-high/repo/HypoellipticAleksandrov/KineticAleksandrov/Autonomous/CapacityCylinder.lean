@@ -21,7 +21,7 @@ def capacityCylinderPole (Z0 P : Point) (R : ℝ) (hR : 0 < R)
     StripPole (capacityCylinderInterval Z0 R hR) (↑(Z0.time + R ^ 2) : WithTop ℝ) := by
   refine ⟨P, WithTop.coe_lt_coe.mpr hP.2.1, ?_⟩
   have hn := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hR).mp hP.2.2.1
-  have hc := (PDE.abs_apply_le_vecEuclideanNorm (P.velocity - Z0.velocity) 0).trans_lt hn
+  have hc := (PDE.abs_apply_le_vecEuclideanNorm _ 0).trans_lt hn
   simp only [Pi.sub_apply] at hc
   obtain ⟨hl, hu⟩ := abs_lt.mp hc
   change Z0.velocity 0 - R < P.velocity 0 ∧ P.velocity 0 < Z0.velocity 0 + R
@@ -35,7 +35,7 @@ theorem cylinder_strip_velocity_slice_zero
     (hP : P ∈ forwardCylinder Z0 R hR) (v : ℝ) :
     stripGreen hH hLE hlam hLam A (capacityCylinderInterval Z0 R hR)
       (Z0.time + R ^ 2) (capacityCylinderPole Z0 P R hR hP) {p | p.velocity 0 = v} = 0 :=
-  stripGreen_velocity_slice_zero hH hLE hlam hLam A (capacityCylinderInterval Z0 R hR)
-    (Z0.time + R ^ 2) (capacityCylinderPole Z0 P R hR hP) v
+  stripGreen_velocity_slice_zero hH hLE hlam hLam A _
+    _ _ v
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

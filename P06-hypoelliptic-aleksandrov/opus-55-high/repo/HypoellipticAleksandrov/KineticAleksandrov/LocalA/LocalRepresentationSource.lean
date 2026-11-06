@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.MassRepresentati
 /-! # Correction of bounded classical residuals by the actual signed source potential -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic SectionTwo Evolution TheoremA
 
@@ -23,13 +22,10 @@ theorem localRepresentation_native_domain (D : Set (KineticPoint d)) :
     massPhysicalPoint ⁻¹' D = evolutionHomeomorph d ⁻¹' (sectionTwoPoint '' D) := by
   ext x
   constructor
-  · intro hx
-    exact ⟨massPhysicalPoint x, hx, rfl⟩
+  · aesop
   · rintro ⟨P, hP, hEq⟩
     have hp : massPhysicalPoint x = P := congrArg sectionTwoPoint hEq.symm
-    change massPhysicalPoint x ∈ D
-    rw [hp]
-    exact hP
+    simp_all
 
 /-- A bounded classical residual is canceled by its literal signed source potential. -/
 theorem localRepresentation_source_correction
@@ -47,7 +43,6 @@ theorem localRepresentation_source_correction
       forwardKineticOperator (ofTimeVelocityCoefficient B) E P = 0) ∧
     ContinuousOn E (localClosedStrip a T v₀ R) ∧
     EqOn E u (localTrace a T v₀ R) := by
-  dsimp only
   let D := localStrip a T v₀ R
   let D' := sectionTwoPoint '' D
   let W := ballSourcePotential hH hLE hd hlam hLam B hB v₀ hR a T F
@@ -60,9 +55,6 @@ theorem localRepresentation_source_correction
     F hF ⟨M, hb⟩
   have hwn := (isWeakTransportedSolution_comp_iff _ _ _ _ _).2 hw
   rw [← localRepresentation_native_domain D] at hwn
-  change IsWeakTransportedSolution (zIndependentCoefficient B) (identityDrift d)
-    (massPhysicalPoint ⁻¹' D) (W ∘ massPhysicalPoint)
-    (fun x => -F (massPhysicalPoint x)) at hwn
   have hun := localRepresentation_classical_weak B hB hD u hu
   have hun' : IsWeakTransportedSolution (zIndependentCoefficient B) (identityDrift d)
       (massPhysicalPoint ⁻¹' D) (u ∘ massPhysicalPoint) (F ∘ massPhysicalPoint) := by
@@ -70,43 +62,38 @@ theorem localRepresentation_source_correction
     intro ψ hψ hcompact hs
     exact (hun.2 ψ hψ hcompact hs).trans
       (setIntegral_congr_fun (hD.preimage continuous_massPhysicalPoint).measurableSet
-        (fun x hx => by simp only [Function.comp_apply, he _ hx]))
-  have hcancel := localRepresentation_weak_cancel (zIndependentCoefficient B)
-    (identityDrift d) (sectionTwoCoefficient_fullBounds lam Lam B hB).1
-    (identityDrift_smooth d) (massPhysicalPoint ⁻¹' D)
-    (u ∘ massPhysicalPoint) (W ∘ massPhysicalPoint) (F ∘ massPhysicalPoint) hun' hwn
-  rw [localRepresentation_native_domain D] at hcancel
-  have hEk : IsKineticWeakTransportedSolution (zIndependentCoefficient B) (identityDrift d)
+        (fun x hx => by grind))
+  have hcancel := localRepresentation_weak_cancel _
+    _ (sectionTwoCoefficient_fullBounds lam Lam B hB).1
+    (identityDrift_smooth d) _
+    _ _ _ hun' hwn
+  rw [localRepresentation_native_domain] at hcancel
+  have hEk : IsKineticWeakTransportedSolution _ _
       D' (E ∘ sectionTwoPoint) (fun _ => 0) :=
     (isWeakTransportedSolution_comp_iff _ _ _ _ _).1 hcancel
-  have hEc : ContinuousOn E (localClosedStrip a T v₀ R) := hc.add hWc
-  have hEsc : ContinuousOn (E ∘ sectionTwoPoint) D' :=
+  have hEc : ContinuousOn E _ := hc.add hWc
+  have hEsc : ContinuousOn _ D' :=
     (hEc.mono (localStrip_subset_closed a T v₀ R)).comp
       (continuous_sectionTwoPoint d).continuousOn (by
         rintro Q ⟨P, hP, rfl⟩
         exact hP)
   obtain ⟨hEsn, hEon⟩ := boundary_continuous_weak_smooth hH B hB D' hD'
-    (E ∘ sectionTwoPoint) (fun _ => 0) hEsc hEk contDiffOn_const
+    _ _ hEsc hEk contDiffOn_const
   have hEsp := boundary_native_smooth_to_physical D E hEsn
   refine ⟨hEsp, ?_, hEc, ?_⟩
   · intro P hP
     let x := (evolutionHomeomorph d).symm (sectionTwoPoint P)
     have hx : x ∈ evolutionHomeomorph d ⁻¹' D' := by
-      change evolutionHomeomorph d x ∈ D'
-      rw [Homeomorph.apply_symm_apply]
-      exact ⟨P, hP, rfl⟩
+      aesop
     have h := hEon x hx
     have hs : ContDiffAt ℝ 2 ((E ∘ sectionTwoPoint) ∘ evolutionHomeomorph d) x :=
       (hEsn.contDiffAt
         ((hD'.preimage (evolutionHomeomorph d).continuous).mem_nhds hx)).of_le (by simp)
-    rw [transportedOperator_comp hs] at h
-    dsimp only [x] at h
-    rw [Homeomorph.apply_symm_apply] at h
+    rw [transportedOperator_comp hs, Homeomorph.apply_symm_apply] at h
     rw [forwardKineticOperator_eq_lop_identity B E]
     exact h
   · intro P hP
-    change u P + W P = u P
-    exact congrArg (fun t => u P + t) (hWtr P hP) |>.trans (add_zero _)
+    simp_all
 
 /-- The exit formula for bounded classical solutions with a bounded measurable residual. -/
 theorem localRepresentation_bounded_source_formula
@@ -136,19 +123,19 @@ theorem localRepresentation_bounded_source_formula
       exact (hWb Q hQ).trans (mul_le_mul_of_nonneg_left
         ((min_le_left _ _).trans (sub_le_sub_left hQ.1.le T.1)) hM)
     have hcl := le_on_closure hopen
-      (by rw [closure_localStrip T.2]; exact hWc.abs) continuousOn_const
+      (by rw [closure_localStrip T.2]; fun_prop) continuousOn_const
     intro Q hQ
     exact hcl (by rwa [closure_localStrip T.2])
   obtain ⟨L, hL⟩ := hub
   have hEb : ∃ L' : ℝ, ∀ Q ∈ localClosedStrip P.1.time T.1 v₀ R, |E Q| ≤ L' := by
     refine ⟨L + M * (T.1 - P.1.time), fun Q hQ => ?_⟩
-    exact (abs_add_le (u Q) (W Q)).trans (add_le_add (hL Q hQ) (hWbound Q hQ))
-  have hEr : IsKineticC112On E (localStrip P.1.time T.1 v₀ R) :=
+    grind
+  have hEr : IsKineticC112On E _ :=
     isKineticC112On_of_contDiffOn (isOpen_localStrip P.1.time T.1 v₀ R)
       (boundary_physical_smooth_to_native hEs)
   have hid := ballExit_represents hH hLE hd hlam hLam B hB v₀ hR P T E hEc hEr hEb hEe
   refine hid.trans (integral_congr_ae ?_)
   filter_upwards [ballExitRaw_ae_trace hH hLE hd hlam hLam B hB v₀ hR P T] with Q hQ
-  exact hEtr hQ
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

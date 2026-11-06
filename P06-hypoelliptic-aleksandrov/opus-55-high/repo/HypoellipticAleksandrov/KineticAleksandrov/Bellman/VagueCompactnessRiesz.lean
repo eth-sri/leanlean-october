@@ -7,7 +7,6 @@ import Mathlib.Tactic
 /-! # Riesz reconstruction from limits of all compactly supported tests -/
 
 @[expose] public section
-noncomputable section
 open Set MeasureTheory Filter Topology
 open scoped CompactlySupported
 namespace HypoellipticAleksandrov.KineticAleksandrov
@@ -43,8 +42,6 @@ theorem bellman_riesz_of_test_limits (mu : ℕ → Measure X)
   let nu := RealRMK.rieszMeasure ell
   refine ⟨nu, inferInstance, ?_, ?_⟩
   · infer_instance
-  · intro f
-    rw [RealRMK.integral_rieszMeasure ell f]
-    exact hL f
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov

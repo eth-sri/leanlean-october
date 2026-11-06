@@ -67,8 +67,7 @@ theorem terminalValue_congr
     {F G : BoundedBorel (EvolutionAmbientState n)} (h : F = G)
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) (hG : IsSmoothCompactTerminalDatum Ω γ τ G) :
     S σ τ hστ p F hF = S σ τ hστ p G hG := by
-  subst h
-  rfl
+  simp_all
 
 /-- The terminal point value as a linear functional on smooth compactly supported probes. -/
 def terminalProbeValue (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
@@ -85,8 +84,8 @@ def terminalProbeValue (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω 
   map_smul' c F := by
     refine (terminalValue_congr n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p
-      (F := terminalProbeDatum (c • F)) (G := c • terminalProbeDatum F)
-      (BoundedBorel.ext fun _ => rfl) (terminalProbeDatum_isSmoothCompact (c • F))
+      (F := terminalProbeDatum _) (G := c • terminalProbeDatum F)
+      (BoundedBorel.ext fun _ => rfl) _
       ((terminalProbeDatum_isSmoothCompact F).smul c)).trans ?_
     exact S_smul σ τ hστ p c _ (terminalProbeDatum_isSmoothCompact F)
 
@@ -118,20 +117,15 @@ theorem exists_unique_terminalFunctional
     intro F hF f hf
     have hfeq : f = terminalProbeCcLinear (terminalProbeOfDatum F hF) :=
       CompactlySupportedContinuousMap.ext fun x => hf x
-    rw [hfeq, hℓ]
-    exact terminalValue_congr n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p
-      (terminalProbeDatum_ofDatum F hF) (terminalProbeDatum_isSmoothCompact _) hF
+    aesop
   refine ⟨ℓ, ⟨hbd, hprobe⟩, ?_⟩
   rintro ℓ' ⟨hbd', hprobe'⟩
   have hlin : ℓ'.toLinearMap = ℓ.toLinearMap := by
-    refine eq_of_bounded_of_dense (terminalProbeCcLinear (Ω := Ω) (γ := γ) (τ := τ))
+    refine eq_of_bounded_of_dense _
       ℓ'.toLinearMap ℓ.toLinearMap hbd' hbd (fun F => ?_)
       (fun f ε hε => exists_terminalProbe_close hΩo f ε hε)
-    have h1 := hprobe' (terminalProbeDatum F) F.2 (terminalProbeCcLinear F) (fun q => rfl)
-    have h2 := hprobe (terminalProbeDatum F) F.2 (terminalProbeCcLinear F) (fun q => rfl)
-    exact h1.trans h2.symm
-  exact PositiveLinearMap.ext fun f => LinearMap.congr_fun hlin f
+    aesop
+  simp_all
 
 /-- The unique positive terminal functional at the source state `p`, chosen from the
 `∃!` statement `exists_unique_terminalFunctional`. -/

@@ -11,7 +11,6 @@ times by continuity. No derivative of the boundary curve is required.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set
 open scoped Topology
@@ -33,14 +32,12 @@ theorem transportedForwardOperator_nonpos_at_tube_max {d : ℕ}
   have hvmax : IsLocalMax (fun y => u ⟨p.time, y, p.velocity⟩) p.position := by
     filter_upwards [(isOpen_movingDomain hΩ p.time).mem_nhds hv] with y hy
     exact hmax ⟨⟨ht.1, ht.2.le⟩, subset_closure hy⟩
-  have hzmax : IsLocalMax (fun z => u ⟨p.time, p.position, z⟩) p.velocity := by
-    exact Filter.Eventually.of_forall (fun z =>
+  have hzmax : IsLocalMax (fun z => u ⟨p.time, p.position, z⟩) p.velocity := Filter.Eventually.of_forall (fun z =>
       hmax ⟨⟨ht.1, ht.2.le⟩, subset_closure hv⟩)
   have hmove : ∀ᶠ t in 𝓝 p.time, p.position ∈ movingDomain Ω γ t := by
-    have hsub : p.position - γ p.time ∈ Ω :=
+    have hsub  :=
       (PDE.mem_translateSet_iff_sub_mem).mp hv
     have hevent := (continuousAt_const.sub hγ) (hΩ.mem_nhds hsub)
-    simp only [Filter.mem_map] at hevent
     filter_upwards [hevent] with t ht
     exact PDE.mem_translateSet_iff_sub_mem.mpr ht
   have htmax : IsLocalMaxOn (fun t => u ⟨t, p.position, p.velocity⟩)
@@ -56,8 +53,7 @@ theorem transportedForwardOperator_nonpos_at_tube_max {d : ℕ}
   have htprod := htmax.hasFDerivWithinAt_nonpos hut.hasDerivAt.hasFDerivAt.hasFDerivWithinAt hdir
   have htime : kineticTimeDerivative u p ≤ 0 := by
     have hproduct : (b - p.time) * kineticTimeDerivative u p ≤ 0 := by
-      simpa only [kineticTimeDerivative, ContinuousLinearMap.toSpanSingleton_apply,
-        smul_eq_mul] using htprod
+      aesop
     exact nonpos_of_mul_nonpos_right hproduct (sub_pos.mpr ht.2)
   exact transportedForwardOperator_nonpos_of_slice_localMax htime huv huz hvmax hzmax hB
 

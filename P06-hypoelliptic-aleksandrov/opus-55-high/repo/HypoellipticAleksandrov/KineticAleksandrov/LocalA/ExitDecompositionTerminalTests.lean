@@ -8,7 +8,6 @@ import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierCollar
 /-! # Identifying genuine terminal probes in the actual local boundary measure -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Parabolic TheoremA
 
@@ -34,7 +33,7 @@ theorem ballExit_terminal_probe_identity
   obtain ⟨u, hu, hval, _⟩ := hreal.1 T.1 F hF
   have hur := exit_terminal_physical_regular (a := P.1.time) B F u hu
   have hi := ballExit_represents hH hLE hd hlam hLam B hB v₀ hR P T
-    (u ∘ sectionTwoPoint) hur.2.1
+    _ hur.2.1
     (isKineticC112On_of_contDiffOn (isOpen_localStrip _ _ _ _)
       (boundary_physical_smooth_to_native hur.1)) hur.2.2.1 hur.2.2.2
   have hside : MeasurableSet {Q : KineticPoint d | Q.velocity ∈ PDE.euclideanBall v₀ R} :=
@@ -48,7 +47,7 @@ theorem ballExit_terminal_probe_identity
     · rw [indicator_of_mem (show Q ∈ {Q | Q.velocity ∈ PDE.euclideanBall v₀ R} from hv)]
       rcases hQ with hQ | hQ
       · exact hu.2.2.2.2.1 _ ⟨hQ.1, by
-          simpa only [sectionTwoPoint, movingDomain_ball_zero] using hQ.2⟩
+          aesop⟩
       · exact False.elim ((mem_interior_iff_notMem_frontier hv).mp
           ((PDE.isOpen_euclideanBall v₀ R).interior_eq.symm ▸ hv) hQ.2.2)
     · rw [indicator_of_notMem
@@ -57,13 +56,12 @@ theorem ballExit_terminal_probe_identity
         rcases hQ with hQ | hQ
         · exact ⟨hQ.2, by
             simpa only [(PDE.isOpen_euclideanBall v₀ R).interior_eq] using hv⟩
-        · exact hQ.2.2
+        simp_all
       have ht : Q.time ≤ T.1 := by rcases hQ with hQ | hQ <;> grind
       exact hu.2.2.2.2.2 _ ⟨ht, by
-        simpa only [sectionTwoPoint, movingDomain_ball_zero] using hl⟩
-  rw [← integral_indicator hside]
-  rw [← integral_congr_ae heq, ← hi]
-  exact (hval P.1.time T.2.le (ballStartState P)).trans
-    (hreal.2.1 P.1.time T.1 T.2.le (ballStartState P) (terminalStateDatum F))
+        aesop⟩
+  rw [← integral_indicator hside, ← integral_congr_ae heq, ← hi]
+  exact (hval P.1.time T.2.le _).trans
+    (hreal.2.1 P.1.time T.1 T.2.le (ballStartState P) _)
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

@@ -54,14 +54,14 @@ def truncate
     (ParabolicDerivativeIndex.castLE hML beta)
   memLp beta := F.memLp (ParabolicDerivativeIndex.castLE hML beta)
   zero_ae := by
-    simpa only [ParabolicDerivativeIndex.castLE_zero] using F.zero_ae
+    simpa using F.zero_ae
   hasWeakTimeSucc beta h := by
-    simpa only [ParabolicDerivativeIndex.castLE_timeSucc] using
-      F.hasWeakTimeSucc (ParabolicDerivativeIndex.castLE hML beta) (h.trans hML)
+    simpa using
+      F.hasWeakTimeSucc _ _
   hasWeakVelocitySucc beta i h := by
-    simpa only [ParabolicDerivativeIndex.castLE_velocitySucc] using
+    simpa using
       F.hasWeakVelocitySucc
-        (ParabolicDerivativeIndex.castLE hML beta) i (h.trans hML)
+        _ i _
 
 /-- Bound truncation selects the representative at the corresponding
 enlarged-bound index literally. -/

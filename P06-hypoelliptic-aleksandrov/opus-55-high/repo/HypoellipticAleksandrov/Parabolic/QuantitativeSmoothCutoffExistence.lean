@@ -27,14 +27,10 @@ theorem exists_quantitativeSmoothCutoff_tsupport_subset
   obtain ⟨f, hfSmooth, hfRange, hfSupport, hfOne⟩ :=
     exists_contMDiff_support_eq_eq_one_iff (n := ⊤) (𝓘(ℝ, PDE.Vec d)) hVopen hE.isClosed hEV
   have hfCompact : HasCompactSupport f := by
-    change IsCompact (closure (Function.support f))
-    rw [hfSupport]
-    exact hclosureVcompact
-  have hgradientContinuous : Continuous (PDE.classicalGradient f) :=
+    aesop
+  have hgradientContinuous : Continuous _ :=
     PDE.ContDiff.continuous_classicalGradient (hfSmooth.contDiff.of_le (by simp))
   have hgradientCompact : HasCompactSupport (PDE.classicalGradient f) := by
-    change HasCompactSupport
-      (fun x i => (fderiv ℝ f x) (PDE.basisVec i))
     exact
       (hfCompact.fderiv (𝕜 := ℝ)).comp_left
         (g := fun L : PDE.Vec d →L[ℝ] ℝ => fun i => L (PDE.basisVec i)) (by rfl)
@@ -50,18 +46,15 @@ theorem exists_quantitativeSmoothCutoff_tsupport_subset
       le_one := ?_
       eq_one_on_inner := ?_
       gradient_bound := ?_ }
-  · change closure (Function.support f) ⊆ Ω
-    rw [hfSupport]
-    exact hclosureVΩ
+  · aesop
   · intro x
     exact (hfRange ⟨x, rfl⟩).1
   · intro x
     exact (hfRange ⟨x, rfl⟩).2
-  · intro x hx
-    exact (hfOne x).mp hx
+  · simp_all
   · intro x
     calc
-      PDE.vecEuclideanNorm (PDE.classicalGradient f x) ≤
+      PDE.vecEuclideanNorm _ ≤
           Real.sqrt d * ‖PDE.classicalGradient f x‖ :=
         PDE.vecEuclideanNorm_le_sqrt_natCast_mul_norm _
       _ ≤ Real.sqrt d * C :=

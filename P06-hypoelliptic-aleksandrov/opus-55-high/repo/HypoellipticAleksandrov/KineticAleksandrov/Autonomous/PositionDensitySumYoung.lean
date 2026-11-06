@@ -11,7 +11,6 @@ kernel. The counting measure proof retains infinite sums throughout.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 open scoped ENNReal
@@ -36,18 +35,17 @@ theorem position_two_index_young {ι : Type*} [AddCommGroup ι] [Countable ι]
     (∑' g, (∑' h, w h * a (g - h)) ^ q) ≤
       (∑' h, w h) ^ q * ∑' g, a g ^ q := by
   calc
-    _ ≤ ∑' g, (∑' h, w h) ^ (q - 1) * ∑' h, w h * a (g - h) ^ q :=
+    _ ≤ ∑' g, (∑' h, w h) ^ (q - 1) * ∑' h, w h * a _ ^ q :=
       ENNReal.tsum_le_tsum (fun g => position_weighted_tsum_rpow_le w
-        (fun h => a (g - h)) q hq)
-    _ = (∑' h, w h) ^ (q - 1) * ∑' h, w h * ∑' g, a (g - h) ^ q := by
+        _ q hq)
+    _ = (∑' h, w h) ^ (q - 1) * ∑' h, w h * ∑' g, a _ ^ q := by
       rw [ENNReal.tsum_mul_left, ENNReal.tsum_comm]
       congr 1
       apply tsum_congr
       intro h
       exact ENNReal.tsum_mul_left
     _ = (∑' h, w h) ^ (q - 1) * ((∑' h, w h) * ∑' g, a g ^ q) := by
-      have hshift (h : ι) : (∑' g, a (g - h) ^ q) = ∑' g, a g ^ q := by
-        exact (Equiv.subRight h).tsum_eq (fun g => a g ^ q)
+      have hshift (h : ι) : (∑' g, a (g - h) ^ q) = ∑' g, a g ^ q := (Equiv.subRight h).tsum_eq (fun g => a g ^ q)
       simp_rw [hshift]
       rw [ENNReal.tsum_mul_right]
     _ = (∑' h, w h) ^ q * ∑' g, a g ^ q := by

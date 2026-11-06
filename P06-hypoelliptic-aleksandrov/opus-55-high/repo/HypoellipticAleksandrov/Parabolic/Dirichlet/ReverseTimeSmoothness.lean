@@ -1,6 +1,7 @@
 module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTime
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.LocalizedReverseTimeSourceSpatialDifferenceQuotient
 
 /-!
 # Reverse-time smoothness infrastructure
@@ -16,10 +17,8 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 open scoped BigOperators Matrix.Norms.Elementwise
 
-/-- The reverse-time map is smooth. -/
-theorem contDiff_reverseTimeMap {d : ℕ} (r₁ : ℝ) :
-    ContDiff ℝ ⊤ (reverseTimeMap r₁ : TimeVelocity d → TimeVelocity d) := by
-  exact (contDiff_const.sub contDiff_fst).prodMk contDiff_snd
+variable {d : ℕ} {K : Set (TimeVelocity d)} (a : CoefficientField d)
+
 
 /-- A function smooth on a neighborhood of a set is differentiable at each
 point of the set. -/
@@ -34,7 +33,7 @@ theorem IsSmoothOnNeighborhood.differentiableAt
 
 /-- Reverse-time pullback preserves smoothness on corresponding neighborhoods. -/
 theorem IsSmoothOnNeighborhood.reverseTime
-    {d : ℕ} {S K : Set (TimeVelocity d)} (r₁ : ℝ)
+     {S K : Set (TimeVelocity d)} (r₁ : ℝ)
     {f : TimeVelocity d → ℝ}
     (hSK : reverseTimeMap r₁ '' S ⊆ K)
     (hf : IsSmoothOnNeighborhood f K) :
@@ -42,28 +41,25 @@ theorem IsSmoothOnNeighborhood.reverseTime
   rcases hf with ⟨V, hVopen, hKV, hV⟩
   refine ⟨reverseTimeMap r₁ ⁻¹' V,
     (contDiff_reverseTimeMap r₁).continuous.isOpen_preimage V hVopen, ?_, ?_⟩
-  · intro z hz
-    exact hKV (hSK ⟨z, hz, rfl⟩)
+  · grind
   · exact hV.comp
-      ((contDiff_reverseTimeMap r₁).of_le (by exact_mod_cast le_top)).contDiffOn
+      ((contDiff_reverseTimeMap r₁).of_le (by simp)).contDiffOn
       fun _ hz => hz
 
 /-- Matrix-valued coefficient smoothness gives smoothness of each entry. -/
 theorem IsSmoothOnNeighborhood.coefficientEntry
-    {d : ℕ} {K : Set (TimeVelocity d)} (a : CoefficientField d)
+    
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2) K)
     (i j : Fin d) :
     IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2 i j) K := by
   rcases ha with ⟨V, hVopen, hKV, hV⟩
   refine ⟨V, hVopen, hKV, ?_⟩
-  have hrow : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i) V := by
-    exact (contDiffOn_apply ℝ (Fin d → ℝ) i Set.univ).comp hV fun _ _ => Set.mem_univ _
-  exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hrow fun _ _ => Set.mem_univ _
+  fun_prop
 
 /-- The spatial slice derivative is the full derivative applied to a purely
 spatial tangent vector. -/
 theorem fderiv_spatialSlice_apply
-    {d : ℕ} (a : CoefficientField d) (r : ℝ)
+     (r : ℝ)
     (y v : PDE.Vec d) (i j : Fin d)
     (ha : DifferentiableAt ℝ
       (fun z : TimeVelocity d => a z.1 z.2 i j) (r, y)) :
@@ -79,8 +75,7 @@ theorem fderiv_spatialSlice_apply
 
 /-- Smooth matrix and drift fields give a smooth divergence-form drift entry. -/
 theorem IsSmoothOnNeighborhood.divergenceDriftEntry
-    {d : ℕ} {K : Set (TimeVelocity d)}
-    (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
+     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2) K)
     (hb : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2) K)
     (j : Fin d) :
@@ -91,9 +86,7 @@ theorem IsSmoothOnNeighborhood.divergenceDriftEntry
   refine ⟨Va ∩ Vb, hVaopen.inter hVbopen, fun z hz => ⟨hKVa hz, hKVb hz⟩, ?_⟩
   have hentry (i : Fin d) : ContDiffOn ℝ (⊤ : ℕ∞)
       (fun z : TimeVelocity d => a z.1 z.2 i j) Va := by
-    exact (contDiffOn_apply ℝ ℝ j Set.univ).comp
-      ((contDiffOn_apply ℝ (Fin d → ℝ) i Set.univ).comp hVa fun _ _ => Set.mem_univ _)
-      fun _ _ => Set.mem_univ _
+    fun_prop
   have hdiv : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d =>
       scalarSpatialCoefficientDivergence a z j) Va := by
     have hsum : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d =>
@@ -107,13 +100,12 @@ theorem IsSmoothOnNeighborhood.divergenceDriftEntry
     refine hsum.congr ?_
     intro z hz
     rcases z with ⟨r, y⟩
-    simp only [scalarSpatialCoefficientDivergence]
     apply Finset.sum_congr rfl
     intro i _
-    exact fderiv_spatialSlice_apply a r y (PDE.basisVec i) i j
+    exact fderiv_spatialSlice_apply a r y _ i j
       (((hentry i).contDiffAt (hVaopen.mem_nhds hz)).differentiableAt (by simp))
   have hbentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2 j) Vb := by
-    exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hVb fun _ _ => Set.mem_univ _
+    fun_prop
   exact (hdiv.mono Set.inter_subset_left).sub (hbentry.mono Set.inter_subset_right)
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

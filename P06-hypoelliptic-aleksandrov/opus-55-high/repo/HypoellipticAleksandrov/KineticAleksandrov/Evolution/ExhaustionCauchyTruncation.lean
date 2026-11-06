@@ -13,7 +13,6 @@ supplied classical Dirichlet solution. No full-domain solution is used.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -40,11 +39,10 @@ theorem abs_le_straightened_dirichlet {n : ℕ} {lam Lam : ℝ}
       (openEllipsoid (straightenedEllipsoidMatrix n r R)), |u q| ≤ C := by
   apply abs_le_of_classicalBackwardDirichlet_zero
     (isOpen_straightenedEllipsoid n hr hR) (isBounded_straightenedEllipsoid n hr hR)
-    haτ (straightenedCoefficient B g ε) (straightenedDrift b g)
+    haτ _ _
     (isSmoothCoefficient_straightenedCoefficient hBs hg ε).continuous
     (contDiff_straightenedDrift hbs hg).continuous
     (fun s x => ?_) _ u hu hC (fun x _ => hFC _)
-  rw [straightenedCoefficient_apply]
   exact viscousBlockMatrix_posSemidef
     (posSemidef_of_hasEverywhereLoewnerBounds hlam.le hB _ _ _) hε
 

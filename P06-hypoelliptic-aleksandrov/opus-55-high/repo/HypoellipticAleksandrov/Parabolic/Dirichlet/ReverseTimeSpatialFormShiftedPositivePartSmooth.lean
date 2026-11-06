@@ -16,7 +16,6 @@ spatial domain.
 open Filter MeasureTheory Set
 open scoped ENNReal NNReal RealInnerProductSpace
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -43,8 +42,7 @@ theorem reverseTimeSpatialForm_apply_shiftedPositivePart_ge_of_smoothOnNeighborh
   obtain ⟨C, hC, hCbound⟩ :=
     exists_reverseTimeScalarCoefficient_bound_of_smoothOnNeighborhood
       r₀ r₁ hΩbounded c hcSmooth
-  have hqMeas : AEStronglyMeasurable q (PDE.volumeOn Ω) := by
-    exact (continuousOn_reverseTimeScalarCoefficient_slice_of_smoothOnNeighborhood
+  have hqMeas : AEStronglyMeasurable q (PDE.volumeOn Ω) := (continuousOn_reverseTimeScalarCoefficient_slice_of_smoothOnNeighborhood
       r₀ r₁ τ c hcSmooth hτ).aestronglyMeasurable hΩ.measurableSet
   have hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ C := by
     filter_upwards [ae_restrict_mem hΩ.measurableSet] with y hy

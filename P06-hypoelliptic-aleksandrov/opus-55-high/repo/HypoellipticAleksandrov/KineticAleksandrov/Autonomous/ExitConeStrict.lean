@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitConeCalc
 /-! # Vanishing of both actual measures beyond every strict transport cone -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Filter
 open SectionTwo TheoremA Evolution
@@ -32,7 +31,7 @@ theorem reconstruction_strict_transport_cone_ae
   have hC : 0 ≤ C := add_nonneg (abs_nonneg _) (mul_nonneg hV (abs_nonneg _))
   have hv (v : ℝ) (hv : v ∈ H.carrier) : |v| ≤ V := by
     apply abs_le.mpr
-    exact ⟨((neg_le_neg (le_max_left |H.lo| |H.hi|)).trans (neg_abs_le H.lo)).trans hv.1.le,
+    exact ⟨((neg_le_neg (le_max_left _ _)).trans (neg_abs_le H.lo)).trans hv.1.le,
       hv.2.le.trans ((le_abs_self H.hi).trans (le_max_right _ _))⟩
   have hop (p : Point) : forwardScalarOperator A.a phi p =
       (alpha + p.velocity 0 * beta) * deriv expNegInvGlue (rho p) :=
@@ -52,10 +51,10 @@ theorem reconstruction_strict_transport_cone_ae
       · change |expNegInvGlue (rho p)| ≤ _
         rw [abs_of_nonneg (expNegInvGlue.nonneg _)]
         exact (reconstructionConeTransition_bound _).2.trans (le_max_left _ _)
-      · exact (hbd p hp).trans (le_max_right _ _))
+      simp_all)
   have hpn : ∀ p, 0 ≤ phi p := fun p => expNegInvGlue.nonneg _
   have hint : Integrable phi Ω := by
-    apply Integrable.mono' (integrable_const (1 : ℝ))
+    apply Integrable.mono' (integrable_const (1))
       ((reconstruction_smooth_physical_continuous phi
         (reconstructionConeProbe_smooth _ _ _)).measurable.aestronglyMeasurable)
     exact Filter.Eventually.of_forall (fun p => by
@@ -70,10 +69,7 @@ theorem reconstruction_strict_transport_cone_ae
   have hneg := integral_nonpos_of_ae hkn
   have hzero : phi e.1 = 0 := by
     change expNegInvGlue (reconstructionConeCoordinate alpha beta gamma e.1) = 0
-    rw [he]
-    exact expNegInvGlue.zero
-  change phi e.1 = (∫ p, phi p ∂Ω) - (∫ p, forwardScalarOperator A.a phi p ∂Γ) at hi
-  rw [hzero] at hi
+    simp_all
   have hφint : (∫ p, phi p ∂Ω) = 0 := by linarith
   have hkint : (∫ p, forwardScalarOperator A.a phi p ∂Γ) = 0 := by linarith
   constructor
@@ -87,7 +83,7 @@ theorem reconstruction_strict_transport_cone_ae
         (continuous_const.mul ((continuous_apply 0).comp continuous_position))).add continuous_const
     have hmeas : AEStronglyMeasurable (forwardScalarOperator A.a phi) Γ := by
       have hc : Continuous (fun p : Point => (alpha + p.velocity 0 * beta) *
-          deriv expNegInvGlue (rho p)) := (((continuous_const.add
+          deriv expNegInvGlue _) := (((continuous_const.add
         (((continuous_apply 0).comp continuous_velocity).mul continuous_const)).mul
           (hdc.comp hrho)))
       exact hc.measurable.aestronglyMeasurable.congr
@@ -95,7 +91,6 @@ theorem reconstruction_strict_transport_cone_ae
     have hkintg : Integrable (forwardScalarOperator A.a phi) Γ := by
       apply Integrable.mono' (integrable_const (C * 2)) hmeas
       filter_upwards [stripGreenOfKernel_ae_mem_stripPast H E.2 T e] with p hp
-      rw [Real.norm_eq_abs]
       exact hbd p hp.2
     have hz := (integral_eq_zero_iff_of_nonneg_ae (by
       filter_upwards [hkn] with p hp; exact neg_nonneg.mpr hp) hkintg.neg).mp

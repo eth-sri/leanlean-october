@@ -44,27 +44,24 @@ theorem visitQuadratic_entrance_green_identity
   have hp : f =ᵐ[mu] fun p => (∫ q, f q ∂E p) + ∫ q, g q ∂G p := by
     filter_upwards [visitEntrancePiece_ae_activePole hH hLE hlam hLam A c J s T P hP n]
       with p hp
-    let ep := visitPoleInclusion (visitActiveUnion c J) s T ⟨p, hp⟩
-    have he : E p = finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) T ep := by
-      change (if ht : p ∈ visitPoleSet (visitActiveUnion c J) s T then
-        finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) T
-          (visitPoleInclusion _ s T ⟨p, ht⟩) else 0) = _
-      rw [dite_eq_left hp]
-    have hg : G p = finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) T ep := by
-      change (if ht : p ∈ visitPoleSet (visitActiveUnion c J) s T then
-        finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) T
-          (visitPoleInclusion _ s T ⟨p, ht⟩) else 0) = _
-      rw [dite_eq_left hp]
+    let ep := visitPoleInclusion _ s T ⟨p, hp⟩
+    have he : E p = finiteUnionExit hH hLE hlam hLam A _ T ep := by
+      change (if ht : p ∈ visitPoleSet _ s T then
+        finiteUnionExit hH hLE hlam hLam A _ T
+          _ else 0) = _
+      grind
+    have hg : G p = finiteUnionGreen hH hLE hlam hLam A _ T ep := by
+      change (if ht : p ∈ visitPoleSet _ s T then
+        finiteUnionGreen hH hLE hlam hLam A _ T
+          _ else 0) = _
+      grind
     have hh := visitQuadratic_active_identity hH hLE hlam hLam A c J T ep
     have hn : (fun q : Point => -2 * A.a (q.position 0) (q.velocity 0)) = -g := by
-      funext q
-      dsimp [g]
-      ring
+      aesop
     rw [← he, ← hg, hn] at hh
     change f p = (∫ q, f q ∂E p) - ∫ q, -g q ∂G p at hh
     rw [integral_neg, sub_neg_eq_add] at hh
     exact hh
-  change (∫ p, f p ∂mu) = (∫ p, f p ∂E ∘ₘ mu) + ∫ p, g p ∂G ∘ₘ mu
   rw [integral_congr_ae hp, integral_add hiE hiG]
   rw [nested_integral_bind mu E E.measurable f hE,
     nested_integral_bind mu G G.measurable g hG]
@@ -82,27 +79,25 @@ theorem visitQuadratic_entrance_mass_bound
     5 * c.r ^ 2 / 16 * (mu univ).toReal ≤
       9 * c.r ^ 2 / 16 * (((E ∘ₘ mu).restrict Bᶜ) univ).toReal +
         2 * Lam * ((G ∘ₘ mu) univ).toReal := by
-  dsimp only
   let mu := visitEntrancePiece hH hLE hlam hLam A c J s T P n
   let E := visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T
-  let G := visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T
   let B := visitBoundary s T (visitActiveInterval c) J
   have hiE := visitQuadratic_integrable_activeExitMixture hH hLE hlam hLam A c J s T mu
   have hi := integral_mono_ae
     (hiE.restrict (s := Bᶜ))
-    (integrable_const (9 * c.r ^ 2 / 16))
-    (Filter.Eventually.of_forall (fun p => visitQuadratic_le c (p.velocity 0)))
+    (integrable_const _)
+    (Filter.Eventually.of_forall (fun p => visitQuadratic_le c _))
   have hx : (∫ p, visitQuadratic c (p.velocity 0) ∂(E ∘ₘ mu).restrict Bᶜ) ≤
       9 * c.r ^ 2 / 16 * (((E ∘ₘ mu).restrict Bᶜ) univ).toReal := by
     simpa only [integral_const, smul_eq_mul, Measure.real, mul_comm] using hi
-  have hz : (∫ p, visitQuadratic c (p.velocity 0) ∂(E ∘ₘ mu).restrict B) = 0 :=
+  have hz : (∫ p, visitQuadratic c _ ∂(E ∘ₘ mu).restrict B) = 0 :=
     visitQuadratic_outgoing_integral_zero hH hLE hlam hLam A c J s T P n
   have hs := integral_add_compl (measurableSet_visitBoundary s T (visitActiveInterval c) J) hiE
   rw [hz, zero_add] at hs
   have hxfull := hs.symm.le.trans hx
   exact (visitQuadratic_entrance_integral_lower hH hLE hlam hLam A c J s T P n).trans
     ((visitQuadratic_entrance_green_identity hH hLE hlam hLam A c J s T P hP n).le.trans
-      (add_le_add hxfull (visitCoefficient_integral_le hlam A (G ∘ₘ mu))))
+      (add_le_add hxfull (visitCoefficient_integral_le hlam A _)))
 
 /-- Summing actual entrance estimates gives the finite quadratic counting inequality. -/
 theorem visitQuadratic_partial_mass_bound
@@ -120,7 +115,6 @@ theorem visitQuadratic_partial_mass_bound
       2 * Lam * (∑ n ∈ Finset.range N, ((G ∘ₘ mu n) univ).toReal) := by
   have h := Finset.sum_le_sum (s := Finset.range N)
     (fun n _ => visitQuadratic_entrance_mass_bound hH hLE hlam hLam A c J s T P hP n)
-  dsimp only at h ⊢
   simpa only [Finset.mul_sum, Finset.sum_add_distrib] using h
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

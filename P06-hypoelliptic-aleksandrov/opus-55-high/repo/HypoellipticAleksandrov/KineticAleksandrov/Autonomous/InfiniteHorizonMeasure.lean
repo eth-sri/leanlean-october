@@ -20,7 +20,7 @@ theorem existsUnique_infinite_exit
     ∃! μ : Measure (stripInfiniteFace H), μ univ ≤ 1 ∧
       ∀ f : C_c(stripInfiniteFace H, ℝ), ∫ p, f p ∂μ =
         infiniteBoundaryFunctional hH hLE hlam hLam A H e f :=
-  existsUnique_boundaryFunctional_measure (infiniteBoundaryFunctional hH hLE hlam hLam A H e)
+  existsUnique_boundaryFunctional_measure _
     (infiniteBoundaryFunctional_spec hH hLE hlam hLam A H e).1
 
 /-- The exit measure is chosen only from the proved unique full compact-test characterization. -/
@@ -66,22 +66,19 @@ instance stripInfiniteExit_isFiniteMeasure
   unfold stripInfiniteExit
   infer_instance
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+
 /-- The physical exit measure has mass at most one. -/
 theorem stripInfiniteExit_mass_le_one
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤) :
+     (H : Interval) (e : StripPole H ⊤) :
     stripInfiniteExit hH hLE hlam hLam A H e univ ≤ 1 := by
   unfold stripInfiniteExit
-  rw [Measure.map_apply measurable_subtype_coe MeasurableSet.univ,
-    preimage_univ]
+  rw [Measure.map_apply measurable_subtype_coe MeasurableSet.univ]
   exact (infiniteExitMeasureOnFace_spec hH hLE hlam hLam A H e).1
 
 /-- Actual homogeneous probe values are exactly the physical exit integrals. -/
 theorem stripInfiniteExit_probe_integral
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (e : StripPole H ⊤)
+     (H : Interval) (e : StripPole H ⊤)
     (f : exitProbeSubmodule) :
     ∫ p, exitProbePhysical f p ∂stripInfiniteExit hH hLE hlam hLam A H e =
       infiniteExitProbeValue hH hLE hlam hLam A H e f := by

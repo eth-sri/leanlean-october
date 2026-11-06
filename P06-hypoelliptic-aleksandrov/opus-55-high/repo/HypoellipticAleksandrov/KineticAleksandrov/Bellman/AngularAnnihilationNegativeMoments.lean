@@ -6,7 +6,6 @@ import Mathlib.Tactic
 /-! # Backward monotonicity and lower bounds for negative angular moments -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
@@ -16,7 +15,7 @@ theorem bellmanAngularFirstMoment_negative_mono {f : ℝ → ℝ}
     (y a : ℝ) (hya : y ≤ a) (ha : a ≤ 0) :
     bellmanAngularFirstMoment f a ≤ bellmanAngularFirstMoment f y := by
   have hi (u v : ℝ) : IntervalIntegrable (fun z => z * f z) volume u v := by
-    simpa only [pow_one] using bellmanAngularMoment_intervalIntegrable hf u v 1
+    simpa using bellmanAngularMoment_intervalIntegrable hf u v 1
   have he := intervalIntegral.integral_add_adjacent_intervals (hi y a) (hi a 0)
   have hnon : (∫ z in y..a, z * f z) ≤ 0 := by
     rw [intervalIntegral.integral_of_le hya]
@@ -24,8 +23,8 @@ theorem bellmanAngularFirstMoment_negative_mono {f : ℝ → ℝ}
     filter_upwards [ae_restrict_mem measurableSet_Ioc, ae_restrict_of_ae hn] with z hz hfz
     exact mul_nonpos_of_nonpos_of_nonneg (hz.2.trans ha) hfz
   rw [bellmanAngularFirstMoment, bellmanAngularFirstMoment,
-    intervalIntegral.integral_symm (a := a) (b := 0),
-    intervalIntegral.integral_symm (a := y) (b := 0)]
+    intervalIntegral.integral_symm,
+    intervalIntegral.integral_symm (a := y)]
   linarith
 
 /-- The integrated angular identity gives the source negative linear lower bound. -/
@@ -37,9 +36,7 @@ theorem bellmanAngularDensity_negative_lower (β : ℝ) (f h J : ℝ → ℝ)
     (y : ℝ) (hy : y ≤ 0) :
     (-y / 3) * bellmanAngularFirstMoment f y ≤ h y := by
   have hb := bellmanAngularSecondMoment_negative_bound hf hn hy
-  have hd : 0 ≤ (β - 3) / 3 := by linarith
-  have hm := mul_le_mul_of_nonneg_left hb hd
-  rw [he y, h0, hj0]
+  rw [he]
   nlinarith
 
 end HypoellipticAleksandrov.KineticAleksandrov

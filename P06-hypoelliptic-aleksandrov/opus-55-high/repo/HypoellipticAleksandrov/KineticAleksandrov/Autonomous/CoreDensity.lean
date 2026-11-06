@@ -7,7 +7,6 @@ import Mathlib.Tactic
 /-! # Preliminary core density from the literal entrance estimate -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 

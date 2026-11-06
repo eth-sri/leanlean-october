@@ -6,7 +6,6 @@ public import Mathlib.Probability.Kernel.Composition.MeasureComp
 /-! # Bochner integration of measurable measure families -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory
 open scoped ENNReal
@@ -18,12 +17,10 @@ theorem nested_integral_bind {X Y : Type*} [MeasurableSpace X] [MeasurableSpace 
     (∫ y, f y ∂nu.bind k) = ∫ x, ∫ y, f y ∂k x ∂nu := by
   let K : Kernel X Y := ⟨k, hk⟩
   have heq : (K ∘ₖ Kernel.const Unit nu) () = nu.bind k := by
-    rw [Kernel.comp_apply, Kernel.const_apply]
-    rfl
-  have hi : Integrable f ((K ∘ₖ Kernel.const Unit nu) ()) := heq.symm ▸ hf
+    aesop
+  have hi  := heq.symm ▸ hf
   have h := Kernel.integral_comp hi
-  rw [heq] at h
-  exact h
+  aesop
 
 /-- Mapping starting points before an actual measurable mixture equals precomposing its family. -/
 theorem nested_bind_map {X Y Z : Type*} [MeasurableSpace X] [MeasurableSpace Y]
@@ -41,7 +38,7 @@ theorem nested_measurable_family_restrict {X Y : Type*} [MeasurableSpace X] [Mea
     Measurable (fun x => (k x).restrict S) := by
   apply Measure.measurable_measure.mpr
   intro B hB
-  have heq : (fun x => (k x).restrict S B) = fun x => k x (B ∩ S) :=
+  have heq : (fun x => (k x).restrict S B) = fun x => k x _ :=
     funext (fun x => Measure.restrict_apply hB)
   rw [heq]
   exact (Measure.measurable_coe (hB.inter hS)).comp hk
@@ -54,8 +51,7 @@ theorem nested_bind_restrict {X Y : Type*} [MeasurableSpace X] [MeasurableSpace 
   ext B hB
   rw [Measure.restrict_apply hB, Measure.bind_apply (hB.inter hS) hk.aemeasurable,
     Measure.bind_apply hB (nested_measurable_family_restrict k hk S hS).aemeasurable]
-  exact lintegral_congr_ae (Filter.Eventually.of_forall
-    (fun x => (Measure.restrict_apply hB).symm))
+  simp_all
 
 /-- Subtype pullback of a measurable physical family remains measurable on a Borel carrier. -/
 theorem nested_measurable_family_comap {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y]
@@ -63,9 +59,9 @@ theorem nested_measurable_family_comap {X Y : Type*} [MeasurableSpace X] [Measur
     Measurable (fun x => (k x).comap (Subtype.val : S → Y)) := by
   apply Measure.measurable_measure.mpr
   intro B hB
-  have heq : (fun x => (k x).comap (Subtype.val : S → Y) B) =
-      fun x => k x (Subtype.val '' B) := funext (fun x =>
-        (MeasurableEmbedding.subtype_coe hS).comap_apply (k x) B)
+  have heq : (fun x => (k x).comap _ B) =
+      fun x => k x _ := funext (fun x =>
+        (MeasurableEmbedding.subtype_coe hS).comap_apply _ B)
   rw [heq]
   exact (Measure.measurable_coe
     ((MeasurableEmbedding.subtype_coe hS).measurableSet_image.mpr hB)).comp hk
@@ -82,18 +78,13 @@ theorem nested_comap_bind {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y]
     hk.aemeasurable, Measure.bind_apply hB
       (nested_measurable_family_comap k hk S hS).aemeasurable]
   exact lintegral_congr_ae (Filter.Eventually.of_forall (fun x =>
-    ((MeasurableEmbedding.subtype_coe hS).comap_apply (k x) B).symm))
+    ((MeasurableEmbedding.subtype_coe hS).comap_apply _ B).symm))
 
 /-- Sums of actual measurable measure families are measurable. -/
 theorem nested_measurable_family_add {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y]
     (k l : X → Measure Y) (hk : Measurable k) (hl : Measurable l) :
     Measurable (fun x => k x + l x) := by
-  apply Measure.measurable_measure.mpr
-  intro B hB
-  have heq : (fun x => (k x + l x) B) = fun x => k x B + l x B :=
-    funext (fun x => Measure.add_apply _ _ _)
-  rw [heq]
-  exact ((Measure.measurable_coe hB).comp hk).add ((Measure.measurable_coe hB).comp hl)
+  fun_prop
 
 /-- Actual measure mixtures distribute over sums of measurable measure families. -/
 theorem nested_bind_add {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y]
@@ -103,7 +94,6 @@ theorem nested_bind_add {X Y : Type*} [MeasurableSpace X] [MeasurableSpace Y]
   rw [Measure.bind_apply hB (nested_measurable_family_add k l hk hl).aemeasurable,
     Measure.add_apply, Measure.bind_apply hB hk.aemeasurable,
     Measure.bind_apply hB hl.aemeasurable]
-  simp only [Measure.add_apply]
   exact lintegral_add_left ((Measure.measurable_coe hB).comp hk) _
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -9,7 +9,6 @@ import Mathlib.Tactic.Linarith
 /-! # Interior unit-block cancellation at phase error one quarter -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open Set MeasureTheory
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
@@ -17,15 +16,14 @@ open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 /-- Pi-separated phase factors are exact opposites. -/
 theorem phaseFactor_add_eq_zero_of_sub_eq_pi {Φ1 Φ2 : ℝ}
     (hΦ : Φ2 - Φ1 = Real.pi) : phaseFactor Φ1 + phaseFactor Φ2 = 0 := by
-  have he : Φ2 = Φ1 + Real.pi := by linarith only [hΦ]
+  have he : Φ2 = Φ1 + Real.pi := by linarith
   rw [he]
   unfold phaseFactor
-  have hc : -Complex.I * ((Φ1 + Real.pi : ℝ) : ℂ) =
-      -Complex.I * (Φ1 : ℂ) - Real.pi * Complex.I := by
+  have hc : -Complex.I * ((Φ1 + Real.pi : ℝ)) =
+      -Complex.I * Φ1 - Real.pi * Complex.I := by
     push_cast
     ring
-  rw [hc, Complex.exp_sub_pi_mul_I]
-  exact add_neg_cancel _
+  simp_all
 
 /-- The source interior cancellation estimate, with the retained mass floor discharged. -/
 theorem block_interior_cancellation {d : ℕ}
@@ -45,9 +43,8 @@ theorem block_interior_cancellation {d : ℕ}
     unfold phaseCoordinate PDE.vecDot
     fun_prop
   have he := totalVariation_toReal_le_of_cancellation hψ hF hΘ1 hΘ2
-    (by norm_num : (0 : ℝ) ≤ 1 / 4) (by norm_num : (1 / 4 : ℝ) < 1)
+    (by norm_num) (by norm_num)
     (phaseFactor_add_eq_zero_of_sub_eq_pi hΦ) hs1 hs2 hν
-  change TV ν ≤ _ at he
-  constructor <;> linarith only [he, hM, hmass]
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

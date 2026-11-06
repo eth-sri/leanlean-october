@@ -68,9 +68,9 @@ theorem borel_inner_joint_estimates
       backwardOperatorOfTimeVelocityCoefficient (B j) (w j) P = 0 := by
     filter_upwards [ae_restrict_mem (isOpen_backwardCylinder P₁ r hr).measurableSet]
       with P hP
-    exact hew j P (hEO hP)
-  have hestj j := hest (B j) (hB j).1 (hB j).2.1 (hB j).2.2.1 (hB j).2.2.2
-    P₁ r hr (w j) ((hw j).continuousOn.mono hKO)
+    grind
+  have hestj j := hest _ (hB j).1 (hB j).2.1 (hB j).2.2.1 (hB j).2.2.2
+    P₁ r hr _ ((hw j).continuousOn.mono hKO)
     (comparison_regular_mono (hw j) hEO)
     (heQ j)
   have hne : E.Nonempty := backwardCylinder_nonempty P₁ hr
@@ -103,14 +103,14 @@ theorem borel_inner_joint_estimates
         ‖iteratedFDeriv ℝ m (physicalPositionSlice (w j) P) x‖ ≤
           b m * Holder.oscillationOn (w j) E := by
       intro j m hm x hx
-      have hh := (hestj j).2.1 m hm (s x) (hball hx)
+      have hh := (hestj j).2.1 m hm _ (hball hx)
       have hp : 0 < r ^ (3 * m) := pow_pos hr _
       change r ^ (3 * m) * ‖iteratedFDeriv ℝ m
-        (physicalPositionSlice (w j) P) x‖ ≤ C_m m * Holder.oscillationOn (w j) E at hh
-      have hh' : ‖iteratedFDeriv ℝ m (physicalPositionSlice (w j) P) x‖ ≤
-          (C_m m * Holder.oscillationOn (w j) E) / r ^ (3 * m) :=
-        (le_div_iff₀ hp).mpr (by simpa only [mul_comm] using hh)
-      convert hh' using 1; dsimp only [b]; ring
+        (physicalPositionSlice _ P) x‖ ≤ C_m m * Holder.oscillationOn _ E at hh
+      have hh' : ‖iteratedFDeriv ℝ m _ x‖ ≤
+          (C_m m * Holder.oscillationOn _ E) / r ^ (3 * m) :=
+        (le_div_iff₀ hp).mpr (by linarith)
+      grind
     obtain ⟨hsp, hbd⟩ := corrector_derivative_estimates
       (fun j => physicalPositionSlice (w j) P) (physicalPositionSlice u P)
       P.position ρ hρ hfs hconv hcont b hb
@@ -120,10 +120,8 @@ theorem borel_inner_joint_estimates
     have hp : 0 < r ^ (3 * m) := pow_pos hr _
     have hh' := mul_le_mul_of_nonneg_left hh hp.le
     convert hh' using 1
-    dsimp only [b, E]
-    field_simp
+    grind
   · apply corrector_holder_limit ((ht.mono subset_closure).mono h12) hos P₁
-    intro j P hP Q hQ
-    exact (hestj j).2.2 P hP Q hQ
+    grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

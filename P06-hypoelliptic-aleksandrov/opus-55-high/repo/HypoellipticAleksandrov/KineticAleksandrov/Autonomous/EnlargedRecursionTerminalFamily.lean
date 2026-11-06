@@ -20,14 +20,12 @@ theorem enlarged_terminal_family_mass_le_one
     enlargedActiveTerminalFamily hH hLE hlam hLam A c J b p univ ≤ 1 := by
   unfold enlargedActiveTerminalFamily
   split
-  · simp only [Measure.dirac_apply_of_mem (mem_univ p), le_refl]
+  · simp
   · apply (Measure.restrict_le_self univ).trans
     change (if hp : p ∈ enlargedVisitPoleSet (visitActiveUnion c J) b then
       finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) b
         (enlargedVisitPole _ _ ⟨p, hp⟩) else 0) univ ≤ 1
-    split
-    · simp only [measure_univ, le_refl]
-    · exact zero_le
+    aesop
 
 /-- Every actual terminal fiber is finite. -/
 instance enlarged_terminal_family_isFiniteMeasure
@@ -53,15 +51,14 @@ theorem enlarged_terminal_and_early_exit_le
   have hp : p ∈ enlargedVisitPoleSet H b :=
     ⟨hb, by
       rw [show H.carrier = c.activeInterval.carrier from Interval.toFiniteUnion_carrier _]
-      exact (densityClockPole c p hv).2.2⟩
+      aesop⟩
   have hpT : p ∈ enlargedVisitPoleSet H T := ⟨hb.trans_le hBT, hp.2⟩
   let ep : StripPole c.activeInterval ⊤ := ⟨p, WithTop.coe_lt_top _, (densityClockPole c p hv).2.2⟩
   unfold enlargedActiveTerminalFamily
-  rw [enlarged_activeUnion_eq c J hJ]
-  rw [ite_eq_right (fun h => (ne_of_lt hb) h.1)]
+  rw [enlarged_activeUnion_eq c J hJ, ite_eq_right (fun h => (ne_of_lt hb) h.1)]
   change (if h : p ∈ enlargedVisitPoleSet H b then
     finiteUnionExit hH hLE hlam hLam A H b (enlargedVisitPole H b ⟨p, h⟩)
-      else 0).restrict {q | q.time = b} +
+      else 0).restrict _ +
     (if h : p ∈ enlargedVisitPoleSet H T then
       finiteUnionExit hH hLE hlam hLam A H T (enlargedVisitPole H T ⟨p, h⟩)
         else 0).restrict B ≤

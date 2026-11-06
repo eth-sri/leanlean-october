@@ -57,10 +57,10 @@ theorem autonomous_fullspace_instance
 theorem fullSpaceEvolution_unique {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
     (E E' : FullSpaceEvolution)
     (hE : IsFullSpaceEvolution A E) (hE' : IsFullSpaceEvolution A E') : E = E' := by
-  obtain ⟨hS, hK⟩ := terminalEvolution_unique autonomousWholeDomain (fun _ => 0)
-    autonomousWholeDomain_admissible (evolutionCoefficient A.a) (identityDrift 1)
+  obtain ⟨hS, hK⟩ := terminalEvolution_unique autonomousWholeDomain _
+    autonomousWholeDomain_admissible _ _
     E.1 E'.1 E.2 E'.2 hE hE'
-  exact Prod.ext hS hK
+  grind
 
 /-- Existence and uniqueness precede the definition of a canonical full-space family. -/
 theorem existsUnique_fullSpaceEvolution

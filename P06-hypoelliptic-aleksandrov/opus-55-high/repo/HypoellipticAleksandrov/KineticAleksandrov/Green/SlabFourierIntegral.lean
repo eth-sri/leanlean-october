@@ -28,18 +28,15 @@ def decayProfile (d : ℕ) (c : ℝ) (ζ : PDE.Vec d) : ℝ≥0∞ :=
 /-- The decay profile is Lebesgue integrable: `∫ exp(-c |ζ|^{2/3}) dζ < ∞`. -/
 theorem lintegral_decayProfile_lt_top {d : ℕ} (hd : 0 < d) {c : ℝ} (hc : 0 < c) :
     ∫⁻ ζ, decayProfile d c ζ < ⊤ := by
-  have : Nontrivial (PDE.Vec d) := by
-    unfold PDE.Vec
-    exact ⟨⟨0, 1, fun h => by simpa using congrFun h ⟨0, hd⟩⟩⟩
+  have : Nontrivial (PDE.Vec d) := ⟨⟨0, 1, fun h => by simpa using congrFun h ⟨0, hd⟩⟩⟩
   have hint : Integrable (fun ζ : PDE.Vec d => Real.exp (-(c * ‖ζ‖ ^ ((2 : ℝ) / 3)))) := by
-    refine (integrable_fun_norm_addHaar (volume : Measure (PDE.Vec d))
-      (f := fun y : ℝ => Real.exp (-(c * y ^ ((2 : ℝ) / 3))))).2 ?_
-    have h1 := integrableOn_rpow_mul_exp_neg_mul_rpow (p := (2 : ℝ) / 3) (s := (d : ℝ) - 1)
-      (b := c) (by have : (1 : ℝ) ≤ d := by exact_mod_cast hd
-                   linarith) (by norm_num) hc
+    refine (integrable_fun_norm_addHaar _
+      (f := fun y : ℝ => Real.exp (-(c * y ^ ((2) / 3))))).2 ?_
+    have h1 := integrableOn_rpow_mul_exp_neg_mul_rpow (p := (2) / 3) (s := d - 1)
+      (b := c) (by simp_all) (by norm_num) hc
     refine h1.congr_fun (fun y hy => ?_) measurableSet_Ioi
-    simp only [Module.finrank_fin_fun, smul_eq_mul]
-    rw [neg_mul, ← Real.rpow_natCast, Nat.cast_sub hd]
+    simp only [Module.finrank_fin_fun]
+    rw [← Real.rpow_natCast, Nat.cast_sub hd]
     simp
   have hle : ∀ ζ : PDE.Vec d, decayProfile d c ζ ≤
       ENNReal.ofReal (Real.exp (-(c * ‖ζ‖ ^ ((2 : ℝ) / 3)))) := by
@@ -52,16 +49,17 @@ theorem lintegral_decayProfile_lt_top {d : ℕ} (hd : 0 < d) {c : ℝ} (hc : 0 <
   exact (lintegral_mono hle).trans_lt hint.lintegral_lt_top
 
 
-lemma measurable_decayProfile (d : ℕ) (c : ℝ) : Measurable (decayProfile d c) := by
+variable (d : ℕ)
+
+lemma measurable_decayProfile  (c : ℝ) : Measurable (decayProfile d c) := by
   have h : Measurable (fun ζ : PDE.Vec d => PDE.vecEuclideanNorm ζ) := by
     unfold PDE.vecEuclideanNorm PDE.vecNormSq PDE.vecDot
     fun_prop
   unfold decayProfile
-  exact ENNReal.measurable_ofReal.comp (Real.measurable_exp.comp
-    (((measurable_const.mul (h.pow_const _))).neg))
+  fun_prop
 
 /-- **Scaling `ζ = T^{3/2} ξ`.** -/
-theorem lintegral_decayProfile_scaling (d : ℕ) (c T : ℝ) (hT : 0 < T) :
+theorem lintegral_decayProfile_scaling  (c T : ℝ) (hT : 0 < T) :
     ∫⁻ ξ : PDE.Vec d,
         ENNReal.ofReal (Real.exp (-(c * T * PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3)))) =
       ENNReal.ofReal (T ^ (-(3 * (d : ℝ) / 2))) * ∫⁻ ζ, decayProfile d c ζ := by
@@ -73,18 +71,15 @@ theorem lintegral_decayProfile_scaling (d : ℕ) (c T : ℝ) (hT : 0 < T) :
     intro ξ
     unfold decayProfile
     rw [PDE.vecEuclideanNorm_smul, abs_of_pos ha0, Real.mul_rpow ha0.le
-      (PDE.vecEuclideanNorm_nonneg ξ), ha, ← Real.rpow_mul hT.le]
+      (PDE.vecEuclideanNorm_nonneg ξ), ← Real.rpow_mul hT.le]
     norm_num
     ring_nf
   simp_rw [hfun]
   have hmap := Measure.map_addHaar_smul (volume : Measure (PDE.Vec d)) ha0.ne'
   have hm : Measurable (fun ξ : PDE.Vec d => a • ξ) := measurable_const_smul a
   rw [← lintegral_map (measurable_decayProfile d c) hm, hmap, lintegral_smul_measure]
-  congr 1
   simp only [Module.finrank_fin_fun, abs_inv, abs_pow, abs_of_pos ha0]
-  congr 1
-  rw [ha, ← Real.rpow_natCast, ← Real.rpow_mul hT.le, ← Real.rpow_neg hT.le]
-  congr 1
+  rw [← Real.rpow_natCast, ← Real.rpow_mul hT.le, ← Real.rpow_neg hT.le]
   ring
 
 end HypoellipticAleksandrov.KineticAleksandrov.Green

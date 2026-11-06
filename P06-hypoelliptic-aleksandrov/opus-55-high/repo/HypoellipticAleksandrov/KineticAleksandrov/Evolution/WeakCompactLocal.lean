@@ -28,15 +28,12 @@ theorem exists_hilbert_weak_subsequence
   let f : ℕ → WeakDual ℝ H := fun j =>
     StrongDual.toWeakDual ((InnerProductSpace.toDual ℝ H) (v j))
   have hf : ∀ j, f j ∈ WeakDual.toStrongDual ⁻¹' Metric.closedBall 0 R := by
-    intro j
-    change dist ((InnerProductSpace.toDual ℝ H) (v j)) 0 ≤ R
-    simpa only [dist_zero_right, LinearIsometryEquiv.norm_map] using hv j
+    aesop
   obtain ⟨g, _, ν, hν, hg⟩ := (WeakDual.isSeqCompact_closedBall
     (𝕜 := ℝ) (E := H) 0 R) hf
   refine ⟨(InnerProductSpace.toDual ℝ H).symm (WeakDual.toStrongDual g), ν, hν, ?_⟩
   intro w
   have hw := (WeakDual.eval_continuous w).continuousAt.tendsto.comp hg
-  simpa only [Function.comp_def, f, InnerProductSpace.toDual_apply_apply,
-    InnerProductSpace.toDual_symm_apply] using! hw
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov

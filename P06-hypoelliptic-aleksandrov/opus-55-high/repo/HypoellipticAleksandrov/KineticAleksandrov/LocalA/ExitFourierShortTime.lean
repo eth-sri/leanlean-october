@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitFourierSplit
 /-! # Uniform two-exponential bound for the actual full exit Fourier measure -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Parabolic
 
@@ -18,7 +17,7 @@ theorem exitFourier_add_positive_bounds {A B X Y : ℝ} (hA : 0 ≤ A) (hY : 0 �
 theorem exitFourier_exp_rate {a c x : ℝ} (hca : c ≤ a) (hx : 0 ≤ x) :
     Real.exp (-a * x) ≤ Real.exp (-c * x) :=
   Real.exp_le_exp.mpr (by
-    simpa only [neg_mul] using neg_le_neg (mul_le_mul_of_nonneg_right hca hx))
+    simpa using neg_le_neg (mul_le_mul_of_nonneg_right hca hx))
 
 /-- The actual exit Fourier measure has both short-time exponentials, uniformly over all data. -/
 theorem ballExit_fourier_two_exponentials
@@ -48,12 +47,11 @@ theorem ballExit_fourier_two_exponentials
   have hx : 0 ≤ x := div_nonneg (sq_nonneg R) hh.le
   have hy : 0 ≤ y := mul_nonneg hh.le (Real.rpow_nonneg (PDE.vecEuclideanNorm_nonneg _) _)
   have hs := hloss B hB v₀ R hR P ⟨H.1, H.2.1⟩ hv hsmall
-  have hk := hkilled B hB v₀ R hR P ⟨H.1, H.2.1⟩ hv hsmall ξ
+  have hk := hkilled B hB v₀ R hR P _ hv hsmall ξ
     (ballEvolutionQuery P ⟨H.1, H.2.1⟩) rfl
-  have es : -cs * R ^ 2 / (H.1 - P.1.time) = -cs * x := by dsimp only [x]; ring
-  have ek : -ck * R ^ 2 / (H.1 - P.1.time) = -ck * x := by dsimp only [x]; ring
+  have es : -cs * R ^ 2 / (H.1 - P.1.time) = -cs * x := by ring
+  have ek : -ck * R ^ 2 / (H.1 - P.1.time) = -ck * x := by ring
   have ey : -ck * (H.1 - P.1.time) * PDE.vecEuclideanNorm ξ ^ (2 / 3 : ℝ) = -ck * y := by
-    dsimp only [y]
     ring
   rw [es] at hs
   rw [ek, ey] at hk
@@ -66,11 +64,6 @@ theorem ballExit_fourier_two_exponentials
     P T H ξ).trans (add_le_add hs' hk')
   have he := exitFourier_add_positive_bounds (B := Ck) (X := Real.exp (-c * x))
     hCs.le (Real.exp_pos (-c * y)).le
-  have ee : -c * R ^ 2 / (H.1 - P.1.time) = -c * x := by dsimp only [x]; ring
-  have ef : -c * (H.1 - P.1.time) * PDE.vecEuclideanNorm ξ ^ (2 / 3 : ℝ) = -c * y := by
-    dsimp only [y]
-    ring
-  rw [ee, ef]
-  exact hb.trans he
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

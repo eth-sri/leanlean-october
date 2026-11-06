@@ -7,7 +7,6 @@ import Mathlib.Analysis.Normed.Operator.Bilinear
 /-! # Smooth integration when a continuous compact parameter enters a smooth formula -/
 
 @[expose] public section
-noncomputable section
 universe u v
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Set MeasureTheory
@@ -43,8 +42,8 @@ theorem compact_parameter_contDiff_nat {E Y : Type u} {A : Type v}
     have hd : ∀ q : E, ∀ a : A,
         HasFDerivAt (fun x => f (x, radius a)) (g (q, radius a)) q := by
       intro q a
-      exact (hf.differentiable (by simp) (q, radius a)).hasFDerivAt.comp q
-        ((hasFDerivAt_id q).prodMk (hasFDerivAt_const (radius a) q))
+      exact (hf.differentiable (by simp) _).hasFDerivAt.comp q
+        ((hasFDerivAt_id q).prodMk (hasFDerivAt_const _ q))
     apply contDiff_succ_iff_hasFDerivAt.mpr
     refine ⟨fun q => ∫ a, g (q, radius a) ∂mu, ih g hg, ?_⟩
     intro q
@@ -53,8 +52,7 @@ theorem compact_parameter_contDiff_nat {E Y : Type u} {A : Type v}
         (hr.comp continuous_snd))).continuousOn
     · exact (hg.continuous.comp (continuous_fst.prodMk
         (hr.comp continuous_snd))).continuousOn
-    · intro x _ a
-      exact hd x a
+    simp_all
 
 /-- A globally smooth formula integrated against a continuous compact parameter is
 smooth of all finite orders. -/

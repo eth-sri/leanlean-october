@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.InnerCylinderRe
 /-! # Uniform convergence of the affine inner maps on fixed compact closures -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open Set Filter
 
@@ -33,7 +32,7 @@ theorem innerRetraction_uniformly_to_identity {d : ℕ}
       Real.continuous_sqrt.comp (continuous_const.sub
         ((continuous_const.mul continuous_fst).div_const _))
     have hs : Continuous (fun q : ℝ × KineticPoint d => Z₀.time + q.1 +
-        (Real.sqrt (1 - 2 * q.1 / R^2))^2 * (q.2.time - Z₀.time)) :=
+        (Real.sqrt _)^2 * (q.2.time - Z₀.time)) :=
       (continuous_const.add continuous_fst).add
       ((hρ.pow 2).mul (ht.sub continuous_const))
     exact KineticPoint.continuous_mk hs
@@ -46,15 +45,14 @@ theorem innerRetraction_uniformly_to_identity {d : ℕ}
     ext i <;> simp [f, relativePosition, relativeVelocity] <;> ring
   intro ε hε
   obtain ⟨v,hv,he⟩ := (isCompact_closure_forwardCylinder Z₀ R hR).mem_uniformity_of_prod
-    (s := univ) (q := (0 : ℝ)) hc.continuousOn (mem_univ 0)
+    (s := univ) (q := (0)) hc.continuousOn (mem_univ 0)
     (Metric.dist_mem_uniformity hε)
-  have hv' : v ∈ nhds (0 : ℝ) := by simpa only [nhdsWithin_univ] using hv
+  have hv' : v ∈ nhds (0) := by simpa using hv
   obtain ⟨η,hη,hηv⟩ := Metric.mem_nhds_iff.mp hv'
   refine ⟨η,hη,?_⟩
   intro δ hδ0 hδlt hδη P hP
   have hdv := hηv (show δ ∈ Metric.ball 0 η by simpa [Real.dist_eq,abs_of_pos hδ0])
   have he' := he δ hdv P hP
-  change dist (f δ P) (f 0 P) < ε at he'
   rw [h0] at he'
   exact he'
 

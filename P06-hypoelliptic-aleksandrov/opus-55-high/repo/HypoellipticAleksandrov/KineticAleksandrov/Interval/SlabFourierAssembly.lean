@@ -10,7 +10,6 @@ The evolved initial mass supplies the extra exponential factor in both estimates
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open MeasureTheory Set
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
@@ -60,55 +59,49 @@ theorem killed_slab_fourier_of_bounds {d : ℕ} (hd : 0 < d)
     exact (green_slab_le K σ₀ μ Γ hΓ hT).trans_lt
       (ENNReal.mul_lt_top (measure_lt_top _ _) ENNReal.ofReal_lt_top)
   obtain ⟨kf, hkm, hkf⟩ := exists_measurable_fourier_family hd hT Γ g hgE
-  have hk : ∀ (ξ : PDE.Vec d) (γ : ℝ), 1 ≤ γ → γ ≤ slabGamma0 d →
-      eLpNorm (kf ξ) (ENNReal.ofReal γ) (slabBase d T) ≤
-        ENNReal.ofReal (Cocc γ * Cdec * (2 : ℝ) ^ slabBeta d γ) * μ univ *
-          ENNReal.ofReal (T ^ slabBeta d γ) *
-          ENNReal.ofReal (Real.exp
-            (-((cdec / 2) * T * (1 + PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3))))) :=
+  have hk  :=
     fun ξ => killed_slab_fourier_density_bound K hd hcov hcomp Cocc hocc
-      Cdec cdec hCdec σ₀ μ Γ hΓ hT ξ (kf ξ) (hkf ξ).1 (hkf ξ).2
+      Cdec cdec hCdec σ₀ μ Γ hΓ hT ξ _ (hkf ξ).1 (hkf ξ).2
       (killed_halfMeasure_mass_le K hcov Cdec cdec hdec σ₀ μ hT ξ)
   have hCγ : ∀ γ : ℝ, 1 ≤ γ → γ ≤ slabGamma0 d →
-      (slabConstant' d Cocc Cdec cdec γ : ℝ≥0∞) = ENNReal.ofReal (Cocc γ * slabK1 d Cdec cdec γ) :=
+      (slabConstant' d Cocc Cdec cdec γ) = ENNReal.ofReal _ :=
     fun _ _ _ => rfl
   have hfin : ∫⁻ ζ, decayProfile d (cdec / 2) ζ < ⊤ :=
     lintegral_decayProfile_lt_top hd (by linarith)
-  have hAeq : ∫⁻ ζ, decayProfile d (cdec / 2) ζ = ENNReal.ofReal (slabFreqConstant d (cdec / 2)) :=
+  have hAeq : ∫⁻ ζ, decayProfile d _ ζ = ENNReal.ofReal (slabFreqConstant d _) :=
     (ENNReal.ofReal_toReal hfin.ne).symm
   have hA0 : 0 ≤ slabFreqConstant d (cdec / 2) := ENNReal.toReal_nonneg
   set M : ℝ := (μ univ).toReal with hMdef
   have hM : μ univ = ENNReal.ofReal M := (ENNReal.ofReal_toReal (measure_ne_top _ _)).symm
   have hM0 : 0 ≤ M := ENNReal.toReal_nonneg
-  have hq0 : (0 : ℝ) ≤ ((2 * Real.pi) ^ d)⁻¹ := by positivity
+  have hq0 : (0) ≤ ((2 * Real.pi) ^ d)⁻¹ := by positivity
   have hF1 := one_le_slabK1_factor (d := d) hCdec cdec
   have hF2 : Cdec ≤ (1 + Cdec) * (1 + ((2 * Real.pi) ^ d)⁻¹ * slabFreqConstant d (cdec / 2)) := by
     nlinarith [mul_nonneg hq0 hA0]
   have hK1 : ∀ γ : ℝ, slabK1 d Cdec cdec γ =
-      (2 : ℝ) ^ slabBeta d γ * ((1 + Cdec) *
+      (2) ^ slabBeta d γ * ((1 + Cdec) *
         (1 + ((2 * Real.pi) ^ d)⁻¹ * slabFreqConstant d (cdec / 2))) := fun γ => by
     unfold slabK1; ring
   have hfam :
       (∀ ξ, Integrable (kf ξ) (slabBase d T) ∧
-        ∀ E : Set (SlabBase d), MeasurableSet E →
+        ∀ E : Set _, MeasurableSet E →
           ∫ y in E, kf ξ y ∂slabBase d T =
             ∫ p in {p : GreenCarrier d | (p.1, p.2.1) ∈ E ∧ T < p.1.1 ∧ p.1.1 < 2 * T},
-              Complex.exp (-((PDE.vecDot ξ p.2.2 : ℝ) * Complex.I)) ∂Γ) ∧
+              Complex.exp (-((PDE.vecDot ξ p.2.2) * Complex.I)) ∂Γ) ∧
       ∀ γ : ℝ, 1 ≤ γ → γ ≤ slabGamma0 d →
         (∀ ξ, eLpNorm (kf ξ) (ENNReal.ofReal γ) (slabBase d T) ≤
-          (slabConstant' d Cocc Cdec cdec γ : ℝ≥0∞) * μ univ *
+          (slabConstant' d Cocc Cdec cdec γ) * μ univ *
             ENNReal.ofReal (T ^ slabBeta d γ) * ENNReal.ofReal (Real.exp
               (-((cdec / 2) * T * (1 + PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3)))))) ∧
         ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹) *
             ∫⁻ ξ, eLpNorm (kf ξ) (ENNReal.ofReal γ) (slabBase d T) ≤
-          (slabConstant' d Cocc Cdec cdec γ : ℝ≥0∞) * μ univ *
-            ENNReal.ofReal (T ^ (slabBeta d γ - 3 * (d : ℝ) / 2)) *
+          (slabConstant' d Cocc Cdec cdec γ) * μ univ *
+            ENNReal.ofReal (T ^ (slabBeta d γ - 3 * d / 2)) *
             ENNReal.ofReal (Real.exp (-((cdec / 2) * T))) := by
     refine ⟨fun ξ => ⟨(hkf ξ).1, (hkf ξ).2⟩, fun γ h1 h2 => ⟨fun ξ => ?_, ?_⟩⟩
     · have hC0 : 0 ≤ Cocc γ := hocc.1 γ h1 h2
       have h2b := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (slabBeta d γ)
       refine (hk ξ γ h1 h2).trans ?_
-      rw [hCγ γ h1 h2]
       have hle : ENNReal.ofReal (Cocc γ * Cdec * (2 : ℝ) ^ slabBeta d γ) ≤
           ENNReal.ofReal (Cocc γ * slabK1 d Cdec cdec γ) := by
         refine ENNReal.ofReal_le_ofReal ?_
@@ -129,42 +122,38 @@ theorem killed_slab_fourier_of_bounds {d : ℕ} (hd : 0 < d)
             by ring, Real.exp_add, ENNReal.ofReal_mul (Real.exp_pos _).le]
       set D : ℝ≥0∞ := ENNReal.ofReal (Cocc γ * Cdec * (2 : ℝ) ^ slabBeta d γ) * μ univ *
         ENNReal.ofReal (T ^ slabBeta d γ) * Q with hD
-      have hDtop : D ≠ ⊤ := by
-        rw [hD]
-        exact ENNReal.mul_ne_top
+      have hDtop : D ≠ ⊤ := ENNReal.mul_ne_top
           (ENNReal.mul_ne_top (ENNReal.mul_ne_top ENNReal.ofReal_ne_top
             (measure_ne_top _ _)) ENNReal.ofReal_ne_top) ENNReal.ofReal_ne_top
       have hscale := lintegral_decayProfile_scaling d (cdec / 2) T hT
-      calc ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹) *
-            ∫⁻ ξ, eLpNorm (kf ξ) (ENNReal.ofReal γ) (slabBase d T)
-          ≤ ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹) *
+      calc ENNReal.ofReal _ *
+            ∫⁻ ξ, eLpNorm _ _ _
+          ≤ ENNReal.ofReal _ *
             ∫⁻ ξ : PDE.Vec d, D * ENNReal.ofReal (Real.exp
               (-((cdec / 2) * T * PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3)))) :=
             mul_le_mul' le_rfl (lintegral_mono (fun ξ => by
               have h := hk ξ γ h1 h2
-              rw [hsplit ξ] at h
+              rw [hsplit] at h
               simpa only [hD, mul_assoc] using h))
-        _ = ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹) *
-            (D * (ENNReal.ofReal (T ^ (-(3 * (d : ℝ) / 2))) *
-              ENNReal.ofReal (slabFreqConstant d (cdec / 2)))) := by
+        _ = ENNReal.ofReal _ *
+            (D * (ENNReal.ofReal _ *
+              ENNReal.ofReal _)) := by
             rw [lintegral_const_mul' D _ hDtop, hscale, hAeq]
         _ ≤ _ := by
             rw [hCγ γ h1 h2, hD, hM]
-            have hrp : T ^ (slabBeta d γ - 3 * (d : ℝ) / 2) =
+            have hrp : T ^ (slabBeta d γ - 3 * d / 2) =
                 T ^ slabBeta d γ * T ^ (-(3 * (d : ℝ) / 2)) := by
               rw [← Real.rpow_add hT, sub_eq_add_neg]
             rw [hrp]
-            convert mul_le_mul' (freq_ennreal (Cocc γ) Cdec ((2 : ℝ) ^ slabBeta d γ) M (T ^
-              slabBeta d γ)
-              (T ^ (-(3 * (d : ℝ) / 2))) (slabFreqConstant d (cdec / 2)) (((2 * Real.pi) ^ d)⁻¹)
+            convert mul_le_mul' (freq_ennreal _ Cdec _ M _
+              _ _ _
               (slabK1 d Cdec cdec γ) _ hC0 hCdec.le h2b hM0 ht1 ht2 hA0 hq0
-              (by unfold slabK1; ring) rfl) (le_rfl : Q ≤ Q) using 1; ring
+              (by grind) rfl) (le_rfl : Q ≤ Q) using 1; ring
   refine ⟨g, hgm, slabMeasure_fst T Γ g hgE, fun γ h1 h2 => ?_, kf, hkm, hfam⟩
-  · have hC0 : 0 ≤ Cocc γ := hocc.1 γ h1 h2
+  · have hC0  := hocc.1 γ h1 h2
     have h2b := Real.rpow_nonneg (by norm_num : (0 : ℝ) ≤ 2) (slabBeta d γ)
     refine (hgnorm γ h1 h2).trans ?_
-    rw [hCγ γ h1 h2]
-    have hle : ENNReal.ofReal (Cocc γ * (2 : ℝ) ^ slabBeta d γ) ≤
+    have hle : ENNReal.ofReal (Cocc γ * (2) ^ slabBeta d γ) ≤
         ENNReal.ofReal (Cocc γ * slabK1 d Cdec cdec γ) := by
       refine ENNReal.ofReal_le_ofReal ?_
       rw [hK1]

@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedVisi
 /-! # The finite enlarged terminal mass at its observation horizon -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
@@ -28,7 +27,7 @@ theorem enlarged_active_terminal_mass_le_one
       ((enlargedVisitEntrance_ae_support hH hLE hlam hLam A c J s T P hP.1 hP.2.1 n).mono
         fun _ hp => hp.2.1)]
     apply Measure.restrict_mono_ae
-    filter_upwards [enlargedActiveExitMixture_ae_velocity hH hLE hlam hLam A c J T (gamma n)]
+    filter_upwards [enlargedActiveExitMixture_ae_velocity hH hLE hlam hLam A c J T _]
       with q hq
     intro ht
     apply Or.inl

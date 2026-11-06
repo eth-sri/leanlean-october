@@ -7,14 +7,15 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 
 open Set MeasureTheory
 
+variable {d : ℕ}
+
 /-- Near-full density on a finite superset transfers after accounting for its volume ratio. -/
-theorem density_transfer_subset {d : ℕ} {E A B : Set (KineticPoint d)}
+theorem density_transfer_subset  {E A B : Set (KineticPoint d)}
     (hE : NullMeasurableSet E volume) (hAB : A ⊆ B) (hB : volume B ≠ ⊤)
     {eta k : ℝ} (hk : 0 < k)
     (hvol : (volume B).toReal = k*(volume A).toReal)
@@ -27,16 +28,15 @@ theorem density_transfer_subset {d : ℕ} {E A B : Set (KineticPoint d)}
   have hIB : volume (B ∩ E) ≠ ⊤ := ne_top_of_le_ne_top hB (measure_mono inter_subset_left)
   have ha := congrArg ENNReal.toReal (measure_inter_add_sdiff₀ (μ := volume) A hE)
   have hb := congrArg ENNReal.toReal (measure_inter_add_sdiff₀ (μ := volume) B hE)
-  rw [ENNReal.toReal_add hIA hDA, inter_comm A E] at ha
-  rw [ENNReal.toReal_add hIB hDB, inter_comm B E] at hb
+  rw [ENNReal.toReal_add hIA hDA, inter_comm] at ha
+  rw [ENNReal.toReal_add hIB hDB, inter_comm] at hb
   have hd := ENNReal.toReal_mono hDB (measure_mono (sdiff_subset_sdiff_left hAB))
   have heq : (eta/k)*(volume B).toReal = eta*(volume A).toReal := by
-    rw [hvol]
-    field_simp
-  nlinarith only [ha, hb, hd, hdensity, heq]
+    grind
+  linarith
 
 /-- Path cylinders have density arbitrarily close to one at almost every point of E in Q. -/
-theorem ae_saturationCylinder_density {d : ℕ} {E : Set (KineticPoint d)}
+theorem ae_saturationCylinder_density  {E : Set (KineticPoint d)}
     (hE : NullMeasurableSet E volume) (hbounded : Bornology.IsBounded E)
     (hEQ : E ⊆ unitCylinder d) :
     ∀ᵐ X ∂(volume.restrict E), ∀ eta : ℝ, 0 < eta →
@@ -52,13 +52,13 @@ theorem ae_saturationCylinder_density {d : ℕ} {E : Set (KineticPoint d)}
   refine ⟨s/2, half_pos hs, ?_⟩
   intro r hr hrr
   apply density_transfer_subset hE (saturationCylinder_subset_centered (hEQ hXE) hr)
-    (volume_cylinder_pos_ne_top (centeredTop X (2*r)) (by positivity)).2 hk
+    (volume_cylinder_pos_ne_top _ (by positivity)).2 hk
   · unfold centeredCylinder
     rw [volume_cylinder_eq_unit _ (by positivity : 0 < 2*r),
       volume_cylinder_eq_unit _ hr, ENNReal.toReal_mul, ENNReal.toReal_mul,
       ENNReal.toReal_ofReal (by positivity : 0 ≤ (2*r)^(4*d+2)),
-      ENNReal.toReal_ofReal (by positivity : 0 ≤ r^(4*d+2)), mul_pow]
+      ENNReal.toReal_ofReal (by positivity : 0 ≤ r^(4*d+2))]
     ring
-  · exact hsmall (2*r) (by positivity) (by linarith)
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering

@@ -19,15 +19,14 @@ open scoped Pointwise
 
 namespace PDE
 
-theorem Bornology.IsBounded.isBoundedDomain {d : ℕ}
-    {U : Set (Vec d)} (hU : Bornology.IsBounded U) :
+variable {d : ℕ} {U : Set (Vec d)}
+
+theorem Bornology.IsBounded.isBoundedDomain  (hU : Bornology.IsBounded U) :
     IsBoundedDomain U := by
   classical
   by_cases hd : d = 0
   · refine ⟨1, zero_lt_one, ?_⟩
-    subst hd
-    intro x hx i
-    exact Fin.elim0 i
+    simp_all
   · have : NeZero d := ⟨hd⟩
     have hcoord :
         ∀ i : Fin d, Bornology.IsBounded (Function.eval i '' U) :=
@@ -40,34 +39,21 @@ theorem Bornology.IsBounded.isBoundedDomain {d : ℕ}
         ⟨R, hR⟩
       refine
         ⟨max R 1, zero_lt_one.trans_le (le_max_right _ _), ?_⟩
-      intro y hy
-      exact (hR y hy).trans (le_max_left _ _)
+      simp_all
     choose R hRpos hR using hcoordBound
     let Rmax : ℝ := Finset.univ.sup' Finset.univ_nonempty R
     have hRmaxPos : 0 < Rmax := by
-      let i₀ : Fin d := 0
-      have hi₀ : i₀ ∈ (Finset.univ : Finset (Fin d)) := by
-        simp
-      have hle : R i₀ ≤ Rmax := by
-        exact Finset.le_sup' (s := Finset.univ) (f := R) hi₀
-      exact lt_of_lt_of_le (hRpos i₀) hle
+      aesop
     refine ⟨Rmax, hRmaxPos, ?_⟩
-    intro x hx i
-    have hxi : ‖x i‖ ≤ R i :=
-      hR i (x i) ⟨x, hx, rfl⟩
-    have hRi : R i ≤ Rmax := by
-      exact Finset.le_sup' (s := Finset.univ) (f := R) (Finset.mem_univ i)
-    simpa [Real.norm_eq_abs] using! hxi.trans hRi
+    aesop
 
-theorem IsBoundedDomain.isBounded {d : ℕ}
-    {U : Set (Vec d)} (hU : IsBoundedDomain U) :
+theorem IsBoundedDomain.isBounded  (hU : IsBoundedDomain U) :
     Bornology.IsBounded U := by
   rcases hU with ⟨R, hRpos, hR⟩
   refine isBounded_iff_forall_norm_le.2 ⟨R, ?_⟩
   intro x hx
   refine (pi_norm_le_iff_of_nonneg hRpos.le).2 ?_
-  intro i
-  simpa [Real.norm_eq_abs] using hR x hx i
+  simp_all
 
 /-- Bounded open convex sets in the native ambient space.
 
@@ -80,32 +66,34 @@ def IsOpenBoundedConvexDomain {d : ℕ}
 
 namespace IsOpenBoundedConvexDomain
 
-theorem isOpen {d : ℕ} {U : Set (Vec d)}
+variable {d : ℕ} {U : Set (Vec d)}
+
+theorem isOpen 
     (hU : IsOpenBoundedConvexDomain U) :
     IsOpen U :=
   hU.1
 
-theorem isBoundedDomain {d : ℕ} {U : Set (Vec d)}
+theorem isBoundedDomain 
     (hU : IsOpenBoundedConvexDomain U) :
     IsBoundedDomain U :=
   hU.2.1
 
-theorem convex {d : ℕ} {U : Set (Vec d)}
+theorem convex 
     (hU : IsOpenBoundedConvexDomain U) :
     Convex ℝ U :=
   hU.2.2
 
-theorem measurableSet {d : ℕ} {U : Set (Vec d)}
+theorem measurableSet 
     (hU : IsOpenBoundedConvexDomain U) :
     MeasurableSet U :=
   hU.isOpen.measurableSet
 
-theorem isSobolevRegularDomain {d : ℕ} {U : Set (Vec d)}
+theorem isSobolevRegularDomain 
     (hU : IsOpenBoundedConvexDomain U) :
     IsSobolevRegularDomain U :=
   ⟨hU.measurableSet, hU.isBoundedDomain⟩
 
-theorem translateSet {d : ℕ} {U : Set (Vec d)}
+theorem translateSet 
     (hU : IsOpenBoundedConvexDomain U) (z : Vec d) :
     IsOpenBoundedConvexDomain (PDE.translateSet z U) := by
   refine ⟨?_, ?_, ?_⟩
@@ -115,7 +103,7 @@ theorem translateSet {d : ℕ} {U : Set (Vec d)}
     simpa [preimage_subRight_eq_translateSet] using hopen
   · rcases hU.isBoundedDomain with ⟨R, hRpos, hR⟩
     refine ⟨R + ‖z‖ + 1, ?_, ?_⟩
-    · linarith [norm_nonneg z]
+    · positivity
     · intro x hx i
       have hxpre :
           x - z ∈ U :=
@@ -126,20 +114,14 @@ theorem translateSet {d : ℕ} {U : Set (Vec d)}
         simpa [Real.norm_eq_abs] using norm_le_pi_norm z i
       have hxi : x i = (x - z) i + z i := by
         simp
-      calc
-        |x i| = |(x - z) i + z i| := by
-          rw [hxi]
-        _ ≤ |(x - z) i| + |z i| := abs_add_le _ _
-        _ ≤ R + ‖z‖ := add_le_add hcoord hzcoord
-        _ ≤ R + ‖z‖ + 1 := by
-          linarith
+      grind
   · have hconv :
         Convex ℝ ((fun x : Vec d => x + -z) ⁻¹' U) := by
-      simpa using hU.convex.translate_preimage_left (-z)
+      simpa using hU.convex.translate_preimage_left _
     simpa [preimage_addNeg_eq_translateSet] using hconv
 
 /-- Positive scalar dilation preserves bounded open convex domains. -/
-theorem smul_of_pos {d : ℕ} {U : Set (Vec d)}
+theorem smul_of_pos 
     (hU : IsOpenBoundedConvexDomain U) {r : ℝ} (hr : 0 < r) :
     IsOpenBoundedConvexDomain (r • U) := by
   refine ⟨hU.isOpen.smul₀ hr.ne', ?_, hU.convex.smul r⟩

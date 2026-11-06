@@ -10,7 +10,6 @@ preserves the homogeneous equation. No regularity theorem is used.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 open scoped Topology
@@ -35,9 +34,9 @@ theorem scalarC12_homogeneous_of_strongL2_limit {d : ℕ}
     U u D hu v hv hstrong C hC hb
   have hv12 := scalarC12On_of_continuousOn_higher_weak_family hU hvcont E
   have hEq := homogeneousWeakFamilyResidual_ae_eq_zero_of_testing_limit
-    U hU (by omega : 2 ≤ 2 * (d + 4)) A hA M hAb
-    (fun n => u (σ n)) (fun n => D (σ n)) v E (fun n => hzero (σ n)) htest
+    U hU (by omega) A hA M hAb
+    _ _ v E (fun n => hzero _) htest
   exact ⟨hv12, classical_homogeneous_equation_of_weak_family hU
-    (by omega : 2 ≤ 2 * (d + 4)) v hv12 A hA E hEq⟩
+    _ v hv12 A hA E hEq⟩
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

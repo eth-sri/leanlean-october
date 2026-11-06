@@ -15,17 +15,18 @@ back to the original-time cylinder.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 open Filter MeasureTheory Set IsReverseTimeVariationalEnergySolution
 open scoped BigOperators ENNReal MatrixOrder Matrix.Norms.Elementwise
 
+variable {d : ℕ}
+
 /-- A supplied global original-time value representative admits a local
 anisotropic `L²` weak jet satisfying the literal original-time equation. -/
 theorem exists_originalTimeLocalL2StrongJet_of_valueRepresentative
-    {d : ℕ} {Ω O : Set (PDE.Vec d)}
+     {Ω O : Set (PDE.Vec d)}
     (hd : 0 < d)
     (r₀ s₀ s₁ r₁ : ℝ)
     (h₀₁ : r₀ < r₁)
@@ -109,7 +110,7 @@ theorem exists_originalTimeLocalL2StrongJet_of_valueRepresentative
     hrun a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hUpper hcNonpos
       hA hB hBD hq hqD hfD initial u g hdu hu
   let Q : Set (TimeVelocity d) := Set.Ioo (r₁ - s₁) (r₁ - s₀) ×ˢ O
-  let W : TimeVelocity d → ℝ := fun z =>
+  let W  := fun z =>
     (∑ i : Fin d, ∑ j : Fin d,
       reverseTimeCoefficient r₁ a z.1 z.2 i j * H z j i) +
     (∑ j : Fin d, reverseTimeVectorCoefficient r₁ b z.1 z.2 j * G j z) +
@@ -121,13 +122,13 @@ theorem exists_originalTimeLocalL2StrongJet_of_valueRepresentative
     exact ⟨hτ₀.trans (hτ₀τ₁.trans hτ.1),
       hτ.2.trans (hτ₂τ₃.trans hτ₃)⟩
   have hOΩ' : O ⊆ Ω := subset_closure.trans hOΩ
-  have hQglobal : Q ⊆ reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω :=
+  have hQglobal : Q ⊆ reverseTimeOpenInterval _ ×ˢ Ω :=
     Set.prod_mono htime hOΩ'
-  have hUlocal : ParabolicMemLpOn Q (2 : ℝ≥0∞) U :=
+  have hUlocal : ParabolicMemLpOn Q _ U :=
     hU.mono_measure (Measure.restrict_mono_set volume hQglobal)
-  have hGlocal : ∀ j, ParabolicMemLpOn Q (2 : ℝ≥0∞) (G j) := fun j =>
+  have hGlocal : ∀ j, ParabolicMemLpOn Q _ _ := fun j =>
     (hG j).mono_measure (Measure.restrict_mono_set volume hQglobal)
-  let Jrev : ParabolicW12Function d Q (2 : ℝ≥0∞) :=
+  let Jrev : ParabolicW12Function d Q _ :=
     { toFun := U
       timeDeriv := W
       velocityGrad := fun z j => G j z
@@ -143,11 +144,11 @@ theorem exists_originalTimeLocalL2StrongJet_of_valueRepresentative
   have hQreflect : reverseTimeMap r₁ ⁻¹' Q = Set.Ioo s₀ s₁ ×ˢ O := by
     simpa only [Q] using reverseTimeMap_preimage_originalTimeInteriorCylinder r₁ s₀ s₁ O
   let Jreflected := Jrev.timeReflect r₁ hQmeas
-  let J : ParabolicW12Function d (Set.Ioo s₀ s₁ ×ˢ O) (2 : ℝ≥0∞) :=
-    { toFun := fun z => U (reverseTimeMap r₁ z)
-      timeDeriv := fun z => -W (reverseTimeMap r₁ z)
-      velocityGrad := fun z j => G j (reverseTimeMap r₁ z)
-      velocityHessian := fun z => H (reverseTimeMap r₁ z)
+  let J : ParabolicW12Function d _ _ :=
+    { toFun := fun z => U _
+      timeDeriv := fun z => -W _
+      velocityGrad := fun z j => G j _
+      velocityHessian := fun z => H _
       memLp := by
         simpa only [Jreflected, ParabolicW12Function.timeReflect, Jrev, hQreflect]
           using Jreflected.memLp
@@ -189,17 +190,17 @@ theorem exists_originalTimeLocalL2StrongJet_of_valueRepresentative
         (fun y => U (reverseTimeMap r₁ (r, y))) =ᵐ[PDE.volumeOn Ω]
           fun y => valueCLM hΩ (u (r₁ - r)) y := by
       have hreflection : MeasurePreserving (fun r : ℝ => r₁ - r)
-          (volume : Measure ℝ) volume := by
+          volume volume := by
         simpa only [Function.comp_def, sub_eq_add_neg] using
-          (measurePreserving_add_left (volume : Measure ℝ) r₁).comp
-            (Measure.measurePreserving_neg (volume : Measure ℝ))
+          (measurePreserving_add_left _ r₁).comp
+            (Measure.measurePreserving_neg _)
       have hpreimage : (fun r : ℝ => r₁ - r) ⁻¹' Set.Ioo 0 (r₁ - r₀) =
           Set.Ioo r₀ r₁ := by
         rw [preimage_const_sub_Ioo]
         congr 1 <;> ring
       have htimeReflect : MeasurePreserving (fun r : ℝ => r₁ - r)
           (volume.restrict (Set.Ioo r₀ r₁)) (reverseTimeVolume (r₁ - r₀)) := by
-        rw [reverseTimeVolume, reverseTimeOpenInterval, ← hpreimage]
+        rw [← hpreimage]
         exact hreflection.restrict_preimage isOpen_Ioo.measurableSet
       filter_upwards [htimeReflect.quasiMeasurePreserving.ae hUslice] with r hr
       simpa only [reverseTimeMap_apply] using hr.1
@@ -211,8 +212,6 @@ theorem exists_originalTimeLocalL2StrongJet_of_valueRepresentative
       hUw.filter_mono (ae_mono (Measure.restrict_mono_set volume (by
         exact Set.prod_mono
           (Set.Ioo_subset_Ioo hr₀s₀.le hs₁r₁.le) hOΩ')))
-    change (fun z => U (reverseTimeMap r₁ z)) =ᵐ[
-      timeVelocityVolumeOn (Set.Ioo s₀ s₁ ×ˢ O)] w
     exact hlocal
   · filter_upwards [] with z
     change -W (reverseTimeMap r₁ z) +
@@ -220,13 +219,13 @@ theorem exists_originalTimeLocalL2StrongJet_of_valueRepresentative
         (∑ j : Fin d, b z.1 z.2 j * G j (reverseTimeMap r₁ z)) +
       c z.1 z.2 * U (reverseTimeMap r₁ z) = F z.1 z.2
     simp only [W, reverseTimeMap_apply, reverseTimeCoefficient,
-      reverseTimeVectorCoefficient, reverseTimeScalarCoefficient, sub_sub_cancel]
+      reverseTimeVectorCoefficient, reverseTimeScalarCoefficient]
     ring
 
 /-- A supplied reverse-time variational solution has one global original-time
 value representative admitting compatible local anisotropic `L²` weak jets. -/
 theorem exists_originalTimeValueRepresentative_localL2StrongJets
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+     {Ω : Set (PDE.Vec d)}
     (hd : 0 < d)
     (r₀ r₁ : ℝ)
     (h₀₁ : r₀ < r₁)

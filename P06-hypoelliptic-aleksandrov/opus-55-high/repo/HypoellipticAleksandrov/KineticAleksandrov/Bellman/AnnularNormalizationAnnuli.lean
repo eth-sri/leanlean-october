@@ -33,7 +33,7 @@ theorem bellman_shell_punctured_isCompact (a b : ℝ) (ha : 0 < a) :
   have hn := hq.1
   rw [he] at hn
   norm_num [bellmanGauge, bellmanGaugePower] at hn
-  linarith only [hn, ha]
+  linarith
 
 /-- The closed unit annulus is compact. -/
 theorem bellmanUnitAnnulus_isCompact : IsCompact bellmanUnitAnnulus :=
@@ -56,10 +56,8 @@ theorem mem_bellmanDyadicAnnulus_iff (j : ℤ) (q : BellmanPuncturedPlane) :
     refine ⟨T.symm q, ?_, T.apply_symm_apply q⟩
     have he : bellmanGauge q.val = r * bellmanGauge (T.symm q).val := by
       have h := bellmanGauge_dilation r hr (T.symm q).val
-      change bellmanGauge (T (T.symm q)).val = _ at h
-      rw [T.apply_symm_apply] at h
-      exact h
-    change 1 ≤ bellmanGauge (T.symm q).val ∧ bellmanGauge (T.symm q).val ≤ 2
+      change bellmanGauge (T _).val = _ at h
+      simp_all
     constructor <;> nlinarith only [hq.1, hq.2, he, hr]
 
 /-- Every punctured point belongs to some dyadic annulus. -/
@@ -83,7 +81,7 @@ theorem bellmanUnitAnnulus_measure_ne_zero (beta : ℝ) (mu : Measure BellmanPun
       hd _ _ _ bellmanUnitAnnulus_isCompact.measurableSet, hzero, mul_zero]
   have hz : mu univ = 0 := by
     rw [← bellmanDyadicAnnulus_iUnion]
-    exact measure_iUnion_null hj
-  exact hmu (Measure.measure_univ_eq_zero.mp hz)
+    simp_all
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -23,7 +23,7 @@ theorem bellman_locallyAC_oriented {g : ℝ → ℝ}
     (hg : ∀ a b : ℝ, a ≤ b → AbsolutelyContinuousOnInterval g a b) (a b : ℝ) :
     AbsolutelyContinuousOnInterval g a b := by
   rcases le_total a b with h | h
-  · exact hg a b h
+  · simp_all
   · exact (hg b a h).symm
 
 /-- Locally integrable angular densities have integrable polynomial moments on every interval. -/
@@ -34,8 +34,10 @@ theorem bellmanAngularMoment_intervalIntegrable {f : ℝ → ℝ}
   exact (hf.integrableOn_isCompact isCompact_uIcc).continuousOn_mul
     (by fun_prop) isCompact_uIcc
 
+variable (β : ℝ)
+
 /-- Integrating the flux derivative gives its first-moment formula. -/
-theorem bellmanAngularFlux_integrated (β : ℝ) (f J : ℝ → ℝ)
+theorem bellmanAngularFlux_integrated  (f J : ℝ → ℝ)
     (hJ : ∀ a b : ℝ, a ≤ b → AbsolutelyContinuousOnInterval J a b)
     (hdJ : ∀ᵐ y ∂volume, deriv J y = -(β - 2) / 3 * y * f y) (y : ℝ) :
     J y = J 0 - ((β - 2) / 3) * bellmanAngularFirstMoment f y := by
@@ -46,15 +48,12 @@ theorem bellmanAngularFlux_integrated (β : ℝ) (f J : ℝ → ℝ)
       _ = ∫ z in 0..y, -((β - 2) / 3) * (z * f z) := by
         apply intervalIntegral.integral_congr_ae
         filter_upwards [hdJ] with z hz
-        intro _
-        rw [hz]
-        ring
-      _ = _ := by rw [intervalIntegral.integral_const_mul]; rfl
-  rw [hc] at he
+        grind
+      _ = _ := by aesop
   linarith
 
 /-- Two source interval integrations yield the exact angular identity. -/
-theorem bellmanAngularDensity_integrated (β : ℝ) (f h J : ℝ → ℝ)
+theorem bellmanAngularDensity_integrated  (f h J : ℝ → ℝ)
     (hf : LocallyIntegrable f volume)
     (hh : ∀ a b : ℝ, a ≤ b → AbsolutelyContinuousOnInterval h a b)
     (hJ : ∀ a b : ℝ, a ≤ b → AbsolutelyContinuousOnInterval J a b)
@@ -66,20 +65,18 @@ theorem bellmanAngularDensity_integrated (β : ℝ) (f h J : ℝ → ℝ)
   have hJa := bellman_locallyAC_oriented hJ 0 y
   have hha := bellman_locallyAC_oriented hh 0 y
   have hid : AbsolutelyContinuousOnInterval (fun z : ℝ => z) 0 y :=
-    (contDiff_id : ContDiff ℝ 1 (fun z : ℝ => z)).contDiffOn.absolutelyContinuousOnInterval
+    contDiff_id.contDiffOn.absolutelyContinuousOnInterval
   have hip := hJa.integral_mul_deriv_eq_deriv_mul hid
-  simp only [deriv_id'', mul_one, mul_zero, sub_zero] at hip
+  simp only [deriv_id'', mul_one] at hip
   have hm : (∫ z in 0..y, deriv J z * z) =
       -((β - 2) / 3) * bellmanAngularSecondMoment f y := by
     calc
       _ = ∫ z in 0..y, -((β - 2) / 3) * (z ^ 2 * f z) := by
         apply intervalIntegral.integral_congr_ae
         filter_upwards [hdJ] with z hz
-        intro _
-        rw [hz]
-        ring
-      _ = _ := by rw [intervalIntegral.integral_const_mul]; rfl
-  rw [hm, bellmanAngularFlux_integrated β f J hJ hdJ y] at hip
+        grind
+      _ = _ := by aesop
+  rw [hm, bellmanAngularFlux_integrated β f J hJ hdJ] at hip
   have hjInt : IntervalIntegrable J volume 0 y := hJa.continuousOn.intervalIntegrable
   have hmInt := bellmanAngularMoment_intervalIntegrable hf 0 y 2
   have hhe := hha.integral_deriv_eq_sub
@@ -89,13 +86,9 @@ theorem bellmanAngularDensity_integrated (β : ℝ) (f h J : ℝ → ℝ)
       _ = ∫ z in 0..y, J z - (z ^ 2 * f z) / 3 := by
         apply intervalIntegral.integral_congr_ae
         filter_upwards [hdh] with z hz
-        intro _
-        exact hz
+        simp_all
       _ = _ := by
-        rw [intervalIntegral.integral_sub hjInt (hmInt.div_const 3),
-          intervalIntegral.integral_div]
-        rfl
-  rw [hhInt, hip] at hhe
-  linear_combination -hhe
+        aesop
+  linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov

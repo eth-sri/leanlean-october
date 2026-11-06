@@ -18,7 +18,7 @@ def farVelocityClock (Z₀ : Point) (R : ℝ) (hR : 0 < R)
     (hfar : 8 * R < |Z₀.velocity 0|) : Clock where
   vbar := Z₀.velocity 0
   r := 4 * R
-  nonzero := by intro h; rw [h, abs_zero] at hfar; linarith
+  nonzero := by grind
   positive := by positivity
   radius := by linarith
 
@@ -31,7 +31,7 @@ theorem farVelocityClock_contains (Z₀ : Point) (R : ℝ) (hR : 0 < R)
   change Z₀.velocity 0 - R < v ∧ v < Z₀.velocity 0 + R at hv
   change Z₀.velocity 0 - 3 * (4 * R) / 4 < v ∧
     v < Z₀.velocity 0 + 3 * (4 * R) / 4
-  constructor <;> linarith [hv.1, hv.2]
+  grind
 
 /-- The source far-velocity density estimate, conditional only on p:pushforward. -/
 theorem cylinder_density_far (hpush : PushforwardStatement)
@@ -52,7 +52,7 @@ theorem cylinder_density_far (hpush : PushforwardStatement)
         (eLpNorm G (ENNReal.ofReal q)
           (volume.restrict (forwardCylinder Z₀ R hR))).toReal ≤ C * R ^ (6 / q - 4) := by
   obtain ⟨C, hC, hc⟩ := (hpush hH hLE lam Lam hlam hLam).2 q hq
-  refine ⟨C * (4 : ℝ) ^ (6 / q - 4), by positivity, ?_⟩
+  refine ⟨C * (4) ^ (6 / q - 4), by positivity, ?_⟩
   intro A Z₀ R hR P hP hfar
   let c := farVelocityClock Z₀ R hR hfar
   have hsub := farVelocityClock_contains Z₀ R hR hfar
@@ -60,9 +60,9 @@ theorem cylinder_density_far (hpush : PushforwardStatement)
   have he : P.velocity 0 ∈ c.active := hsub e.2.2
   obtain ⟨f, hfm, hf0, hfd, hfp, hfn⟩ := hc A c P he
   have hm := stripGreen_mono hH hLE hlam hLam A
-    (capacityCylinderInterval Z₀ R hR) c.activeInterval hsub
+    _ c.activeInterval hsub
     (Z₀.time + R ^ 2) ⊤ le_top e
-  have hep : stripEnlargePole (capacityCylinderInterval Z₀ R hR) c.activeInterval hsub
+  have hep : stripEnlargePole _ c.activeInterval hsub
       (Z₀.time + R ^ 2) ⊤ le_top e = densityClockPole c P he := Subtype.ext rfl
   rw [hep, hfd] at hm
   have hD : MeasurableSet (densityClockStrip c P) :=
@@ -76,9 +76,9 @@ theorem cylinder_density_far (hpush : PushforwardStatement)
     (ENNReal.ofReal q) hfp hm
   refine ⟨g, hgm, hg0, hgd, hgp, ?_⟩
   have hn := (ENNReal.toReal_mono hfp.ne hgn).trans hfn
-  have hr : c.r ^ (6 / q - 4) = (4 : ℝ) ^ (6 / q - 4) * R ^ (6 / q - 4) :=
+  have hr : c.r ^ (6 / q - 4) = (4) ^ (6 / q - 4) * R ^ (6 / q - 4) :=
     Real.mul_rpow (by norm_num) hR.le
   rw [hr] at hn
-  simpa only [mul_assoc] using hn
+  linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

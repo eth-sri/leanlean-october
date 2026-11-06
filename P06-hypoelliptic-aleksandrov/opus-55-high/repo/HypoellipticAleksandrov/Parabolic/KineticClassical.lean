@@ -59,12 +59,12 @@ def kineticProductTerminalLateralBoundary {d : ℕ} (r₀ r₁ : ℝ)
     kineticProductSpatialLateralFace r₀ r₁ Ωx Ωv) ∪
       kineticProductVelocityLateralFace r₀ r₁ Ωx Ωv
 
+variable {d : ℕ} {r₀ r₁ : ℝ} {Ωx Ωv : Set (PDE.Vec d)} {z : KineticPoint d}
+
 /-- Membership in an open kinetic product cylinder. -/
-@[simp] theorem mem_kineticProductOpenCylinder_iff {d : ℕ} {r₀ r₁ : ℝ}
-    {Ωx Ωv : Set (PDE.Vec d)} {z : KineticPoint d} :
+@[simp] theorem mem_kineticProductOpenCylinder_iff  :
     z ∈ kineticProductOpenCylinder r₀ r₁ Ωx Ωv ↔
       r₀ < z.time ∧ z.time < r₁ ∧ z.position ∈ Ωx ∧ z.velocity ∈ Ωv := by
-  change (z.time, (z.position, z.velocity)) ∈ Set.Ioo r₀ r₁ ×ˢ (Ωx ×ˢ Ωv) ↔ _
   constructor
   · rintro ⟨⟨hr₀, hr₁⟩, hx, hv⟩
     exact ⟨hr₀, hr₁, hx, hv⟩
@@ -72,12 +72,9 @@ def kineticProductTerminalLateralBoundary {d : ℕ} (r₀ r₁ : ℝ)
     exact ⟨⟨hr₀, hr₁⟩, hx, hv⟩
 
 /-- Membership in a closed kinetic product cylinder. -/
-@[simp] theorem mem_kineticProductClosedCylinder_iff {d : ℕ} {r₀ r₁ : ℝ}
-    {Ωx Ωv : Set (PDE.Vec d)} {z : KineticPoint d} :
+@[simp] theorem mem_kineticProductClosedCylinder_iff  :
     z ∈ kineticProductClosedCylinder r₀ r₁ Ωx Ωv ↔
       r₀ ≤ z.time ∧ z.time ≤ r₁ ∧ z.position ∈ closure Ωx ∧ z.velocity ∈ closure Ωv := by
-  change (z.time, (z.position, z.velocity)) ∈
-    Set.Icc r₀ r₁ ×ˢ (closure Ωx ×ˢ closure Ωv) ↔ _
   constructor
   · rintro ⟨⟨hr₀, hr₁⟩, hx, hv⟩
     exact ⟨hr₀, hr₁, hx, hv⟩
@@ -85,21 +82,16 @@ def kineticProductTerminalLateralBoundary {d : ℕ} (r₀ r₁ : ℝ)
     exact ⟨⟨hr₀, hr₁⟩, hx, hv⟩
 
 /-- Membership in the terminal face of a kinetic product cylinder. -/
-@[simp] theorem mem_kineticProductTerminalFace_iff {d : ℕ} {r₁ : ℝ}
+@[simp] theorem mem_kineticProductTerminalFace_iff  {r₁ : ℝ}
     {Ωx Ωv : Set (PDE.Vec d)} {z : KineticPoint d} :
     z ∈ kineticProductTerminalFace r₁ Ωx Ωv ↔
       z.time = r₁ ∧ z.position ∈ closure Ωx ∧ z.velocity ∈ closure Ωv := by
-  change (z.time, (z.position, z.velocity)) ∈
-    ({r₁} : Set ℝ) ×ˢ (closure Ωx ×ˢ closure Ωv) ↔ _
   rfl
 
 /-- Membership in the spatial lateral face of a kinetic product cylinder. -/
-@[simp] theorem mem_kineticProductSpatialLateralFace_iff {d : ℕ} {r₀ r₁ : ℝ}
-    {Ωx Ωv : Set (PDE.Vec d)} {z : KineticPoint d} :
+@[simp] theorem mem_kineticProductSpatialLateralFace_iff  :
     z ∈ kineticProductSpatialLateralFace r₀ r₁ Ωx Ωv ↔
       r₀ ≤ z.time ∧ z.time ≤ r₁ ∧ z.position ∈ frontier Ωx ∧ z.velocity ∈ closure Ωv := by
-  change (z.time, (z.position, z.velocity)) ∈
-    Set.Icc r₀ r₁ ×ˢ (frontier Ωx ×ˢ closure Ωv) ↔ _
   constructor
   · rintro ⟨⟨hr₀, hr₁⟩, hx, hv⟩
     exact ⟨hr₀, hr₁, hx, hv⟩
@@ -107,12 +99,9 @@ def kineticProductTerminalLateralBoundary {d : ℕ} (r₀ r₁ : ℝ)
     exact ⟨⟨hr₀, hr₁⟩, hx, hv⟩
 
 /-- Membership in the velocity lateral face of a kinetic product cylinder. -/
-@[simp] theorem mem_kineticProductVelocityLateralFace_iff {d : ℕ} {r₀ r₁ : ℝ}
-    {Ωx Ωv : Set (PDE.Vec d)} {z : KineticPoint d} :
+@[simp] theorem mem_kineticProductVelocityLateralFace_iff  :
     z ∈ kineticProductVelocityLateralFace r₀ r₁ Ωx Ωv ↔
       r₀ ≤ z.time ∧ z.time ≤ r₁ ∧ z.position ∈ closure Ωx ∧ z.velocity ∈ frontier Ωv := by
-  change (z.time, (z.position, z.velocity)) ∈
-    Set.Icc r₀ r₁ ×ˢ (closure Ωx ×ˢ frontier Ωv) ↔ _
   constructor
   · rintro ⟨⟨hr₀, hr₁⟩, hx, hv⟩
     exact ⟨hr₀, hr₁, hx, hv⟩
@@ -120,8 +109,7 @@ def kineticProductTerminalLateralBoundary {d : ℕ} (r₀ r₁ : ℝ)
     exact ⟨⟨hr₀, hr₁⟩, hx, hv⟩
 
 /-- Membership in the terminal and lateral boundary of a kinetic product cylinder. -/
-@[simp] theorem mem_kineticProductTerminalLateralBoundary_iff {d : ℕ} {r₀ r₁ : ℝ}
-    {Ωx Ωv : Set (PDE.Vec d)} {z : KineticPoint d} :
+@[simp] theorem mem_kineticProductTerminalLateralBoundary_iff  :
     z ∈ kineticProductTerminalLateralBoundary r₀ r₁ Ωx Ωv ↔
       (z.time = r₁ ∧ z.position ∈ closure Ωx ∧ z.velocity ∈ closure Ωv) ∨
         (r₀ ≤ z.time ∧ z.time ≤ r₁ ∧ z.position ∈ frontier Ωx ∧
@@ -170,63 +158,56 @@ def IsKineticC112On {d : ℕ} (u : KineticPoint d → ℝ) (D : Set (KineticPoin
 
 namespace IsKineticC112On
 
+variable {d : ℕ} {u : KineticPoint d → ℝ} {D : Set (KineticPoint d)}
+
 /-- The function itself is continuous on the specified set. -/
-theorem continuousOn {d : ℕ} {u : KineticPoint d → ℝ} {D : Set (KineticPoint d)}
+theorem continuousOn 
     (h : IsKineticC112On u D) : ContinuousOn u D :=
   h.1
 
 /-- Each fixed-position-and-velocity time slice is differentiable on the set. -/
-theorem timeSlice_differentiableAt {d : ℕ} {u : KineticPoint d → ℝ}
-    {D : Set (KineticPoint d)} (h : IsKineticC112On u D) {z : KineticPoint d}
+theorem timeSlice_differentiableAt  (h : IsKineticC112On u D) {z : KineticPoint d}
     (hz : z ∈ D) :
     DifferentiableAt ℝ (fun r => u ⟨r, z.position, z.velocity⟩) z.time :=
   h.2.1 z hz
 
 /-- Each fixed-time-and-velocity position slice is `C¹` on the set. -/
-theorem positionSlice_contDiffAt {d : ℕ} {u : KineticPoint d → ℝ}
-    {D : Set (KineticPoint d)} (h : IsKineticC112On u D) {z : KineticPoint d}
+theorem positionSlice_contDiffAt  (h : IsKineticC112On u D) {z : KineticPoint d}
     (hz : z ∈ D) :
     ContDiffAt ℝ 1 (fun x => u ⟨z.time, x, z.velocity⟩) z.position :=
   h.2.2.1 z hz
 
 /-- Each fixed-time-and-position velocity slice is `C²` on the set. -/
-theorem velocitySlice_contDiffAt {d : ℕ} {u : KineticPoint d → ℝ}
-    {D : Set (KineticPoint d)} (h : IsKineticC112On u D) {z : KineticPoint d}
+theorem velocitySlice_contDiffAt  (h : IsKineticC112On u D) {z : KineticPoint d}
     (hz : z ∈ D) :
     ContDiffAt ℝ 2 (fun v => u ⟨z.time, z.position, v⟩) z.velocity :=
   h.2.2.2.1 z hz
 
 /-- The kinetic time derivative is continuous on the specified set. -/
-theorem continuousOn_kineticTimeDerivative {d : ℕ} {u : KineticPoint d → ℝ}
-    {D : Set (KineticPoint d)} (h : IsKineticC112On u D) :
+theorem continuousOn_kineticTimeDerivative  (h : IsKineticC112On u D) :
     ContinuousOn (kineticTimeDerivative u) D :=
   h.2.2.2.2.1
 
 /-- The kinetic position gradient is continuous on the specified set. -/
-theorem continuousOn_kineticPositionGradient {d : ℕ} {u : KineticPoint d → ℝ}
-    {D : Set (KineticPoint d)} (h : IsKineticC112On u D) :
+theorem continuousOn_kineticPositionGradient  (h : IsKineticC112On u D) :
     ContinuousOn (kineticPositionGradient u) D :=
   h.2.2.2.2.2.1
 
 /-- The kinetic velocity gradient is continuous on the specified set. -/
-theorem continuousOn_kineticVelocityGradient {d : ℕ} {u : KineticPoint d → ℝ}
-    {D : Set (KineticPoint d)} (h : IsKineticC112On u D) :
+theorem continuousOn_kineticVelocityGradient  (h : IsKineticC112On u D) :
     ContinuousOn (kineticVelocityGradient u) D :=
   h.2.2.2.2.2.2.1
 
 /-- The kinetic velocity Hessian is continuous on the specified set. -/
-theorem continuousOn_kineticVelocityHessian {d : ℕ} {u : KineticPoint d → ℝ}
-    {D : Set (KineticPoint d)} (h : IsKineticC112On u D) :
+theorem continuousOn_kineticVelocityHessian  (h : IsKineticC112On u D) :
     ContinuousOn (kineticVelocityHessian u) D :=
   h.2.2.2.2.2.2.2
 
 /-- The fixed-position-and-velocity time slice has its kinetic time derivative. -/
-theorem timeSlice_hasDerivAt {d : ℕ} {u : KineticPoint d → ℝ}
-    {D : Set (KineticPoint d)} (h : IsKineticC112On u D) {z : KineticPoint d}
+theorem timeSlice_hasDerivAt  (h : IsKineticC112On u D) {z : KineticPoint d}
     (hz : z ∈ D) :
     HasDerivAt (fun r => u ⟨r, z.position, z.velocity⟩) (kineticTimeDerivative u z)
-      z.time := by
-  exact (h.timeSlice_differentiableAt hz).hasDerivAt
+      z.time := (h.timeSlice_differentiableAt hz).hasDerivAt
 
 end IsKineticC112On
 

@@ -93,24 +93,14 @@ theorem exists_higherOrderNestedProductBoxChain
         hVO₀.trans (subset_closure.trans hO₀Ω)
       have hOΩ : closure O ⊆ Ω := hOO₀.trans (subset_closure.trans hO₀Ω)
       refine ⟨rfl, rfl, rfl, rfl, rfl, rfl, ?_, ?_⟩
-      · intro k hk
-        interval_cases k <;>
-          simp only [left, right, spatial] <;>
-          constructor
-        · exact hO₀open
-        · exact ⟨hO₀ne, hO₀compact, hO₀Ω, by linarith⟩
-        · exact hVopen
-        · exact ⟨hVne, hVcompact, hVΩ, by linarith⟩
-        · exact hOopen
-        · exact ⟨hOne, hOcompact, hOΩ, hs₀s₁⟩
+      · grind
       · intro k hk
         interval_cases k <;> simp only [left, right, spatial]
-        · exact ⟨by linarith, by linarith, by linarith, hVO₀⟩
-        · exact ⟨by linarith, hs₀s₁, by linarith, hOV⟩
+        · grind
+        grind
   | succ N ih =>
       obtain ⟨V, hVopen, hOV, hVO₀, hVcompact⟩ :=
         exists_open_between_and_isCompact_closure hOcompact hO₀open hOO₀
-      have hVne : V.Nonempty := hOne.mono ((subset_closure : O ⊆ closure O).trans hOV)
       have hVΩ : closure V ⊆ Ω :=
         hVO₀.trans (subset_closure.trans hO₀Ω)
       obtain ⟨left', right', spatial', hchain⟩ := ih
@@ -135,26 +125,11 @@ theorem exists_higherOrderNestedProductBoxChain
       have hO₀ne : O₀.Nonempty :=
         hOne.mono ((subset_closure : O ⊆ closure O).trans hOO₀)
       refine ⟨rfl, rfl, rfl, ?_, ?_, ?_, ?_, ?_⟩
-      · simpa only [left, Nat.succ_add] using hleftEnd
-      · simpa only [right, Nat.succ_add] using hrightEnd
-      · simpa only [spatial, Nat.succ_add] using hspatialEnd
-      · intro k hk
-        cases k with
-        | zero =>
-            exact ⟨hO₀open, hO₀ne, hO₀compact, hO₀Ω, by
-              simp only [left, right]
-              linarith⟩
-        | succ k =>
-            simpa only [left, right, spatial] using hboxes k (by omega)
-      · intro k hk
-        cases k with
-        | zero =>
-            simp only [left, right, spatial]
-            rw [hleft0, hright0, hspatial0]
-            exact ⟨by linarith, by linarith, by linarith, hVO₀⟩
-        | succ k =>
-            simpa only [left, right, spatial, Nat.succ_eq_add_one,
-              Nat.add_assoc] using hsteps k (by omega)
+      · omega
+      · omega
+      · omega
+      · grind
+      grind
 
 /-- Extract the complete geometric input for one adjacent step of a
 higher-order nested product-box chain. -/
@@ -175,11 +150,6 @@ theorem IsHigherOrderNestedProductBoxChain.step
     IsCompact (closure (spatial (k + 1))) ∧
     closure (spatial (k + 1)) ⊆ spatial k := by
   rcases h with ⟨_, _, _, _, _, _, hboxes, hsteps⟩
-  rcases hsteps k hk with ⟨hleft, hmiddle, hright, hclosure⟩
-  have hk_le : k ≤ N + 2 := by omega
-  have hk1_le : k + 1 ≤ N + 2 := by omega
-  rcases hboxes k hk_le with ⟨hkOpen, _, _, _, _⟩
-  rcases hboxes (k + 1) hk1_le with ⟨hk1Open, hk1ne, hk1compact, _, _⟩
-  exact ⟨hleft, hmiddle, hright, hkOpen, hk1Open, hk1ne, hk1compact, hclosure⟩
+  grind
 
 end HypoellipticAleksandrov.Parabolic

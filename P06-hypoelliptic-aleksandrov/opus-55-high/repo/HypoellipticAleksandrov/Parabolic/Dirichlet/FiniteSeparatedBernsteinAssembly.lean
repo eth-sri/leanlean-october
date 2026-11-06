@@ -51,7 +51,7 @@ theorem exists_finiteSeparatedSpacetimeTest_cutoffPiBernstein
             tsupport ((q.spatialFactor m : PDE.WeakTestFunction O) : PDE.Vec d → ℝ) ⊆
           (spacetimeTestTimeSupportCompact φ : Set ℝ) ×ˢ tsupport χ := by
   let ι := Fin d → Fin (n + 1)
-  let e : ι ≃ Fin (Fintype.card ι) := Fintype.equivFin ι
+  let e  := Fintype.equivFin ι
   let η : ι → OriginalTimeScalarTest τ₁ τ₂ := fun k =>
     (exists_sampledTimeFactor φ (centeredPiBernsteinGrid R k)).choose
   have hη (k : ι) :=
@@ -67,23 +67,14 @@ theorem exists_finiteSeparatedSpacetimeTest_cutoffPiBernstein
   refine ⟨q, ?_, ?_, ?_⟩
   · funext z
     unfold FiniteSeparatedSpacetimeTest.toFun cutoffPiBernsteinApproximation
-    change (∑ m : Fin (Fintype.card ι),
-      η (e.symm m) z.1 * ψ (e.symm m) z.2) = _
     rw [Finset.mul_sum]
     refine Fintype.sum_equiv e.symm _ _ ?_
-    intro m
-    rw [(hη (e.symm m)).1, (hψ (e.symm m)).1]
-    ring
+    grind
   · funext z
     unfold FiniteSeparatedSpacetimeTest.timeDeriv cutoffPiBernsteinApproximation
-    change (∑ m : Fin (Fintype.card ι),
-      (η (e.symm m)).deriv z.1 * ψ (e.symm m) z.2) = _
     rw [Finset.mul_sum]
     refine Fintype.sum_equiv e.symm _ _ ?_
-    intro m
-    rw [(hη (e.symm m)).2.1, (hψ (e.symm m)).1]
-    ring
-  · intro m z hz
-    exact ⟨(hη (e.symm m)).2.2 hz.1, (hψ (e.symm m)).2 hz.2⟩
+    grind
+  grind
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

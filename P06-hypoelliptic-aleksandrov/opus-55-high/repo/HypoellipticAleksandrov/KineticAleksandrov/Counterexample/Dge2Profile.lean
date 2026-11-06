@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Dge2Prof
 
 @[expose] public section
 
-noncomputable section
 
 open scoped MatrixOrder
 
@@ -55,12 +54,10 @@ theorem profile_ge_two (d : ℕ) (hd : 2 ≤ d)
     geometricProfile_smooth_off_origin alpha C₀ sigma R hsigma hR, ?_, ?_, ?_, ?_⟩
   · exact fun r hr q => geometricProfile_homogeneous alpha C₀ sigma R r hr q
   · intro q
-    change c * Real.rpow (rho q) alpha ≤ H q ∧ H q ≤ C * Real.rpow (rho q) alpha
     refine ⟨(hcompare q).1, (hcompare q).2.trans ?_⟩
     exact mul_le_mul_of_nonneg_right (le_max_left _ _) (Real.rpow_nonneg (rho_nonneg q) _)
-  · exact hsolve
+  · aesop
   · intro q hq
-    change PDE.vecEuclideanNorm (dv H q) ≤ C * Real.rpow (rho q) (alpha - 1)
     exact (hgrad q hq).trans (mul_le_mul_of_nonneg_right (le_max_right _ _)
       (Real.rpow_nonneg (rho_nonneg q) _))
 

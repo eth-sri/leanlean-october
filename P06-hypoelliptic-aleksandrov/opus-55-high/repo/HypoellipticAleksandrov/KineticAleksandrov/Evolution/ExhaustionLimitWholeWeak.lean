@@ -12,7 +12,6 @@ public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -57,26 +56,25 @@ theorem weakRegularized_wholeSpace_ball_limit :
     apply regularizedAdjoint_eq_zero_of_notMem_tsupport
     intro hx
     exact hp (by simpa using hs hx)
-  have hzeroK (p : KineticPoint n) (hp : p ∉ K) : φ p = 0 :=
+  have hzeroK (p : KineticPoint n) (hp : p ∉ K)  :=
     hzeroU p (fun h => hp (hUK h))
   have hInt := tendsto_setIntegral_mul_wholeSpace_ball_solutions (α := α) (S0 := S0)
     hlam hB hb hε.le hε1 hC F hFC r hrlim v hv φ hφ
   have hnear : ∀ᶠ j : ℕ in atTop, |S0| < r j :=
-    hrlim.eventually (eventually_gt_atTop |S0|)
+    hrlim.eventually (eventually_gt_atTop _)
   have hIz : ∀ᶠ j : ℕ in atTop, (∫ p in K, v j p * φ p) = 0 := by
     filter_upwards [hnear] with j hj
     let V := evolutionHomeomorph n ⁻¹' U
     have hV : IsOpen V := hU.preimage (evolutionHomeomorph n).continuous
     have hball (p : KineticPoint n) (hp : p ∈ U) :
-        p.position ∈ movingDomain (PDE.euclideanBall 0 (r j)) (fun _ => 0) p.time :=
+        p.position ∈ movingDomain _ _ p.time :=
       mem_movingBall_of_radialSq_le (abs_nonneg S0) hj
-        (by simpa only [sq_abs] using (show radialSq p < S0 ^ 2 from hp.2.2).le)
-    have hsm : ContDiffOn ℝ (⊤ : ℕ∞) (v j ∘ evolutionHomeomorph n) V := by
-      exact (hv j).2.2.1.comp (evolutionProdCLE n).contDiff.contDiffOn
+        (by aesop)
+    have hsm : ContDiffOn ℝ (⊤ : ℕ∞) (v j ∘ evolutionHomeomorph n) V := (hv j).2.2.1.comp (evolutionProdCLE n).contDiff.contDiffOn
         (fun x hx => ⟨hx.2.1, hball _ hx⟩)
     have hop : ∀ x ∈ V, regularizedOperator B b ε (v j ∘ evolutionHomeomorph n) x = 0 := by
       intro x hx
-      have hc2 : ContDiffAt ℝ 2 (v j ∘ evolutionHomeomorph n) x :=
+      have hc2 : ContDiffAt ℝ 2 _ x :=
         (hsm.contDiffAt (hV.mem_nhds hx)).of_le (by norm_num)
       rw [regularizedOperator_comp ε hc2]
       exact (hv j).2.2.2.1 _ ⟨hx.2.1, hball _ hx⟩
@@ -86,28 +84,27 @@ theorem weakRegularized_wholeSpace_ball_limit :
         regularizedAdjoint B b ε ψ x) = 0
       rw [integral_regularizedAdjoint_contDiffOn hV hBs hBsym hbs ε hsm ψ hψ hc hs]
       have he : (∫ x in V, regularizedOperator B b ε
-          (v j ∘ evolutionHomeomorph n) x * ψ x) = ∫ x in V, (0 : ℝ) :=
+          _ x * ψ x) = ∫ x in V, (0) :=
         setIntegral_congr_fun hV.measurableSet
         (fun x hx => by rw [hop x hx, zero_mul])
-      exact he.trans (by simp only [integral_zero])
+      simp_all
     have heU : (∫ p in U, v j p * φ p) = 0 := by
       have ht := setIntegral_comp_evolutionHomeomorph (fun p => v j p * φ p) U
-      simp only [φ, Homeomorph.symm_apply_apply] at ht
-      exact ht.symm.trans hePack
+      aesop
     rw [setIntegral_eq_integral_of_forall_compl_eq_zero
-      (fun p hp => by rw [hzeroK p hp, mul_zero])]
+      (fun p hp => by simp_all)]
     rw [setIntegral_eq_integral_of_forall_compl_eq_zero
-      (fun p hp => by rw [hzeroU p hp, mul_zero])] at heU
+      (fun p hp => by simp_all)] at heU
     exact heU
-  have heLim : (∫ p in K, limUnder atTop (fun j => v j p) * φ p) = 0 :=
+  have heLim : (∫ p in K, limUnder atTop _ * φ p) = 0 :=
     tendsto_nhds_unique hInt (tendsto_const_nhds.congr' (hIz.mono fun j hj => hj.symm))
   rw [setIntegral_eq_integral_of_forall_compl_eq_zero
-    (fun p hp => by rw [hzeroK p hp, mul_zero])] at heLim
+    (fun p hp => by simp_all)] at heLim
   simp only [zero_mul, integral_zero]
-  change (∫ p in U, limUnder atTop (fun j => v j p) * φ p) = 0
+  change (∫ p in U, limUnder atTop _ * φ p) = 0
   rw [setIntegral_eq_integral_of_forall_compl_eq_zero
-    (fun p hp => by rw [hzeroU p hp, mul_zero])]
-  exact heLim
+    (fun p hp => by simp_all)]
+  omega
 
 end Data
 

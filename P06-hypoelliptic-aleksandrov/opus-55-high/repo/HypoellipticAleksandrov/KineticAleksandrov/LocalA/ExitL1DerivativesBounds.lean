@@ -8,7 +8,6 @@ import all Mathlib.Basic.Complex.Basic
 /-! # Uniform raw supremum estimates for derivatives of the single inverse -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic SectionTwo
 
@@ -33,11 +32,11 @@ theorem exitL1Fourier_moment_bound {d : ℕ} (hd : 1 ≤ d)
         (mul_le_mul_of_nonneg_left (PDE.norm_le_vecEuclideanNorm ξ)
           (pow_nonneg hR.le _)) (by norm_num)
     have hb := (hdecay ξ).trans (mul_le_mul_of_nonneg_left hexp hC)
-    simpa only [mul_assoc, mul_left_comm C] using
+    simpa only [mul_assoc, mul_left_comm] using
       mul_le_mul_of_nonneg_left hb (pow_nonneg (norm_nonneg ξ) j)
   have h := integral_mono hi hi' hb
   rw [integral_const_mul, exitFrequencyMoment_scaling c j hR] at h
-  exact h.trans_eq (by ring)
+  linarith
 
 /-- A derivative of the actual inverse is controlled by the corresponding raw Fourier moment. -/
 theorem ballExitL1Inversion_derivative_le_moment
@@ -57,12 +56,12 @@ theorem ballExitL1Inversion_derivative_le_moment
   let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
   let L := exitInversePairing d
   let F : PDE.Vec d → ContinuousMultilinearMap ℝ (fun _ : Fin j => PDE.Vec d)
-      (Lp ℂ 1 (exitMarginal ν)) :=
+      (Lp ℂ 1 _) :=
     fun ξ => VectorFourier.fourierPowSMulRight L (exitL1Fourier ν) ξ j
   have hm (n : ℕ) (_hn : (n : ℕ∞) ≤ ⊤) :
       Integrable (fun ξ => ‖ξ‖ ^ n * ‖exitL1Fourier ν ξ‖) :=
     ballExitL1Fourier_integrable_moments hH hLE hd hlam hLam B hB v₀ hR P T hv hT n
-  have hi : AEStronglyMeasurable (exitL1Fourier ν) volume :=
+  have hi : AEStronglyMeasurable _ volume :=
     (continuous_exitL1Fourier ν).aestronglyMeasurable
   have hmul := VectorFourier.integrable_fourierPowSMulRight L (hm j (by simp)) hi
   have hnon : 0 ≤ ((2 * Real.pi) ^ d)⁻¹ := by positivity
@@ -78,7 +77,7 @@ theorem ballExitL1Inversion_derivative_le_moment
       apply integral_mono_ae hmul.norm ((hm j (by simp)).const_mul _)
       apply Filter.Eventually.of_forall
       intro ξ
-      convert! VectorFourier.norm_fourierPowSMulRight_le L (exitL1Fourier ν) ξ j using 1
+      convert! VectorFourier.norm_fourierPowSMulRight_le L _ ξ j using 1
       ring
     _ = _ := by rw [integral_const_mul]
 
@@ -102,7 +101,7 @@ theorem ballExitL1Inversion_uniform_derivative_bound
   let A (j : ℕ) := ((2 * Real.pi) ^ d)⁻¹ *
     (2 * Real.pi * ‖exitInversePairing d‖) ^ j
   let D (j : ℕ) := A j * C * exitFrequencyMoment (d := d) c j
-  have hA (j : ℕ) : 0 ≤ A j := by dsimp only [A]; positivity
+  have hA (j : ℕ) : 0 ≤ A j := by positivity
   refine ⟨D, fun j => mul_nonneg (mul_nonneg (hA j) hC.le)
     (exitFrequencyMoment_nonneg c j), ?_⟩
   intro B hB v₀ R hR P T hv hT j y
@@ -113,17 +112,12 @@ theorem ballExitL1Inversion_uniform_derivative_bound
     (hdecay B hB v₀ R hR P T hv hT) j hi
   have hdv := ballExitL1Inversion_derivative_le_moment hH hLE hd hlam hLam B hB v₀ hR
     P T hv hT j y
-  have hp : ((R ^ 3) ^ (d + j))⁻¹ = R ^ (-3 * ((d : ℝ) + (j : ℝ))) := by
+  have hp : ((R ^ 3) ^ (d + j))⁻¹ = R ^ (-3 * (d + (j : ℝ))) := by
     rw [neg_mul, Real.rpow_neg hR.le]
-    congr 1
-    rw [← Real.rpow_natCast R 3, ← Real.rpow_natCast _ (d + j),
+    rw [← Real.rpow_natCast R, ← Real.rpow_natCast,
       ← Real.rpow_mul hR.le]
-    congr 1
-    push_cast
-    ring
+    simp
   refine hdv.trans ((mul_le_mul_of_nonneg_left hb (hA j)).trans_eq ?_)
-  rw [hp]
-  dsimp only [D, A]
-  ring
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

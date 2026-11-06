@@ -7,7 +7,6 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -43,11 +42,6 @@ theorem kinetic_growth_lemma_aux
                 ∀ P ∈ backwardCylinder P₀ (theta * R), kappa_beta ≤ u P  := by
   obtain ⟨theta, ht, ht1, S, r, hr, hS, hbeta⟩ :=
     exists_growth_parameters d hd lam Lam p C_A hlam hLam hp
-  refine ⟨theta, ht, ht1, S, r, hr, hS, ?_⟩
-  intro beta hb hb1
-  obtain ⟨kappa, hk, hbound⟩ := hbeta beta hb hb1
-  refine ⟨kappa, hk, ?_⟩
-  intro A hmeas hsym hlo hhi
-  exact hbound A ⟨hmeas, hsym, hlo, hhi⟩
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov

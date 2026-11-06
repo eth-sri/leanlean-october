@@ -41,15 +41,15 @@ instance {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞} :
     CoeFun (W1pFunction U p) (fun _ => Vec d → ℝ) where
   coe u := u.toFun
 
-theorem memLpOn_mono {d : ℕ}
-    {U V : Set (Vec d)} {p : ℝ≥0∞} {u : Vec d → ℝ}
+variable {d : ℕ} {U V : Set (Vec d)} {p : ℝ≥0∞}
+
+theorem memLpOn_mono  {u : Vec d → ℝ}
     (hVU : V ⊆ U) (hu : MemLpOn U p u) :
     MemLpOn V p u :=
   hu.mono_measure (MeasureTheory.Measure.restrict_mono_set
     MeasureTheory.volume hVU)
 
-theorem gradMemLpOn_mono {d : ℕ}
-    {U V : Set (Vec d)} {p : ℝ≥0∞} {Du : Vec d → Vec d}
+theorem gradMemLpOn_mono  {Du : Vec d → Vec d}
     (hVU : V ⊆ U) (hDu : GradMemLpOn U p Du) :
     GradMemLpOn V p Du := by
   intro i
@@ -57,26 +57,21 @@ theorem gradMemLpOn_mono {d : ℕ}
 
 namespace W1pFunction
 
+variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞} (u : W1pFunction U p) (i : Fin d)
+
 @[ext]
-theorem ext {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
+theorem ext 
     {u v : W1pFunction U p}
     (htoFun : u.toFun = v.toFun) (hgrad : u.grad = v.grad) :
     u = v := by
   cases u
-  cases v
-  cases htoFun
-  cases hgrad
-  rfl
+  simp_all
 
-theorem hasWeakPartialDerivOn {d : ℕ}
-    {U : Set (Vec d)} {p : ℝ≥0∞}
-    (u : W1pFunction U p) (i : Fin d) :
+theorem hasWeakPartialDerivOn  :
     HasWeakPartialDerivOn U i u.toFun (fun x => u.grad x i) :=
   u.hasWeakGradient i
 
-theorem grad_memLp {d : ℕ}
-    {U : Set (Vec d)} {p : ℝ≥0∞}
-    (u : W1pFunction U p) (i : Fin d) :
+theorem grad_memLp  :
     MemLpOn U p (fun x => u.grad x i) :=
   u.gradMemLp i
 
@@ -107,11 +102,10 @@ noncomputable def ofContDiff {d : ℕ}
     intro i
     have hderivCont :
         Continuous (fun x => (fderiv ℝ f x) (basisVec i)) := by
-      simpa using
-        (hf.continuous_fderiv (by simp)).clm_apply continuous_const
+      fun_prop
     have hderivSupport :
         HasCompactSupport (fun x => (fderiv ℝ f x) (basisVec i)) := by
-      simpa using hfSupport.fderiv_apply (𝕜 := ℝ) (basisVec i)
+      simpa using hfSupport.fderiv_apply (𝕜 := ℝ) _
     exact (hderivCont.memLp_of_hasCompactSupport hderivSupport).restrict U
   hasWeakGradient := HasWeakGradientOn.of_contDiff hf
 

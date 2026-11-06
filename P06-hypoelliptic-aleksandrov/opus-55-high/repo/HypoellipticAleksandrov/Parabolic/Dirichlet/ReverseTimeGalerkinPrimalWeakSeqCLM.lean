@@ -16,7 +16,6 @@ It makes no strong convergence, equation-passage, trace, or weak-solution assert
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -59,7 +58,7 @@ theorem exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal
               haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos (φ n) initial))
           atTop
           (𝓝 (ell U)) := by
-  letI : TopologicalSpace.SeparableSpace (H10HilbertGraph hΩ) :=
+  letI  :=
     instSeparableSpaceH10HilbertGraph hΩ
   letI : MeasureTheory.SFinite (reverseTimeVolume (r₁ - r₀)) := by
     dsimp only [reverseTimeVolume]
@@ -67,16 +66,14 @@ theorem exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal
   letI : MeasurableSpace.CountablyGenerated ℝ := by infer_instance
   letI : MeasureTheory.IsSeparable (reverseTimeVolume (r₁ - r₀)) := by infer_instance
   letI : Fact (1 ≤ (2 : ℝ≥0∞)) := ⟨by norm_num⟩
-  letI : Fact ((2 : ℝ≥0∞) ≠ ∞) := ⟨by norm_num⟩
+  letI : Fact ((2) ≠ ∞) := ⟨by norm_num⟩
   letI : SecondCountableTopology (ReverseTimeL2V hΩ (r₁ - r₀)) :=
     MeasureTheory.Lp.SecondCountableTopology
   letI : TopologicalSpace.SeparableSpace (ReverseTimeL2V hΩ (r₁ - r₀)) :=
     TopologicalSpace.SecondCountableTopology.to_separableSpace
   exact exists_strictMono_tendsto_clm_of_norm_le
-    (fun N => reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial)
-    (reverseTimeGalerkinPrimalRadius r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial)
+    _
+    _
     (fun N => norm_reverseTimeGalerkinPrimal_le_radius
       r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial N)

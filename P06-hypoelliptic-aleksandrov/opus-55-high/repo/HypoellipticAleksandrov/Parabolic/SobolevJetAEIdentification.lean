@@ -23,9 +23,9 @@ private theorem ordinaryRepresentative_memLp_volume
     MemLp (G.ordinaryRepresentative beta) (2 : ℝ≥0∞)
       (volume : Measure (TimeVelocity d)) := by
   have h := G.ordinaryRepresentative_memLp beta
-  change MemLp (G.ordinaryRepresentative beta) (2 : ℝ≥0∞)
-    ((volume : Measure (TimeVelocity d)).restrict Set.univ) at h
-  simpa only [Measure.restrict_univ] using h
+  change MemLp _ _
+    (volume.restrict Set.univ) at h
+  simp_all
 
 /-- A uniform coordinate-jet limit agrees almost everywhere with the selected
 ambient weak representative. -/
@@ -47,49 +47,34 @@ theorem coordinateJet_aeEq_ordinaryRepresentative_of_uniformLimit
         G.ordinaryRepresentative
           (TimeVelocityDerivativeIndex.castLE (by omega : 2 ≤ d + 4) alpha) := by
   intro alpha
-  let beta : TimeVelocityDerivativeIndex d (d + 4) :=
+  let beta : TimeVelocityDerivativeIndex d _ :=
     TimeVelocityDerivativeIndex.castLE (by omega : 2 ≤ d + 4) alpha
-  let f : ℕ → TimeVelocity d → ℝ := fun n =>
+  let f  := fun n =>
     SpacetimeMollifier.spacetimeMollification (shrinkingRadius rho n)
       (G.ordinaryRepresentative beta)
   have hf_eq : ∀ n,
       TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
           (SpacetimeMollifier.spacetimeMollification (shrinkingRadius rho n)
             (G.ordinaryRepresentative
-              (TimeVelocityDerivativeIndex.zero d (d + 4)))) = f n := by
+              (TimeVelocityDerivativeIndex.zero d _))) = f n := by
     intro n
     exact G.coordinateIteratedFDeriv_spacetimeMollification_ordinaryRepresentative
-      (shrinkingRadius rho n) (shrinkingRadius_pos rho hrho n) beta
+      _ (shrinkingRadius_pos rho hrho n) beta
   have hLp : Tendsto (fun n => eLpNorm
-      (f n - G.ordinaryRepresentative beta) (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d))) atTop (nhds 0) := by
-    exact (G.tendsto_eLpNorm_spacetimeMollification_ordinaryRepresentative_sub beta).comp
+      (f n - G.ordinaryRepresentative beta) (2)
+      volume) atTop (nhds 0) := (G.tendsto_eLpNorm_spacetimeMollification_ordinaryRepresentative_sub beta).comp
       (tendsto_shrinkingRadius_nhdsWithin rho hrho)
-  have hbetaMem := ordinaryRepresentative_memLp_volume G beta
-  have hfMeas : ∀ n, AEStronglyMeasurable (f n)
-      (volume : Measure (TimeVelocity d)) := by
-    intro n
-    exact (SpacetimeMollifier.contDiff_spacetimeMollification
-      (shrinkingRadius_pos rho hrho n) _
-      (hbetaMem.locallyIntegrable (by norm_num))).continuous.aestronglyMeasurable
-  have hmeasure : TendstoInMeasure (volume : Measure (TimeVelocity d)) f atTop
-      (G.ordinaryRepresentative beta) :=
+  have hmeasure : TendstoInMeasure _ f atTop
+      _ :=
     tendstoInMeasure_of_tendsto_eLpNorm (by norm_num) hLp
   obtain ⟨ns, hns, hnae⟩ := hmeasure.exists_seq_tendsto_ae
   filter_upwards [hnae] with z hz
-  have huPoint : Tendsto (fun n =>
-      TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
-        (SpacetimeMollifier.spacetimeMollification (shrinkingRadius rho n)
-          (G.ordinaryRepresentative
-            (TimeVelocityDerivativeIndex.zero d (d + 4)))) z) atTop
-      (nhds (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 v z)) :=
+  have huPoint  :=
     (huniform alpha).tendsto_at z
   have huSub := huPoint.comp hns.tendsto_atTop
   have huSub' : Tendsto (fun i => f (ns i) z) atTop
       (nhds (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 v z)) := by
-    convert huSub using 1
-    funext i
-    exact (congrFun (hf_eq (ns i)) z).symm
+    aesop
   exact tendsto_nhds_unique huSub' hz
 
 end

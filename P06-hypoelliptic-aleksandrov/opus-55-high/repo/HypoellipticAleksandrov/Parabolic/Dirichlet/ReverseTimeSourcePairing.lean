@@ -15,7 +15,6 @@ source against a separated test as its literal raw-source integral.
 open Filter MeasureTheory Set Topology
 open scoped ENNReal
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -40,25 +39,23 @@ theorem reverseTimeNegativeSource_pairing_eq_integral_raw
         ∂reverseTimeVolume (r₁ - r₀) := by
   let S := reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth
   let z := reverseTimeSeparatedVTest hΩ eta v
-  change reverseTimeDualPairingRightCLM hΩ (r₁ - r₀) z S = _
   have hSeval : ∀ᵐ tau ∂reverseTimeVolume (r₁ - r₀),
       S tau = reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth tau := by
     exact
       (memLp_reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth).coeFn_toLp
   calc
-    reverseTimeDualPairingRightCLM hΩ (r₁ - r₀) z S =
-        reverseTimeDualPairingCLM hΩ (r₁ - r₀) S z :=
-      reverseTimeDualPairingRightCLM_apply hΩ (r₁ - r₀) z S
-    _ = ∫ tau, S tau (z tau) ∂reverseTimeVolume (r₁ - r₀) :=
-      reverseTimeDualPairingCLM_apply hΩ (r₁ - r₀) S z
+    reverseTimeDualPairingRightCLM hΩ _ z S =
+        reverseTimeDualPairingCLM hΩ _ S z :=
+      reverseTimeDualPairingRightCLM_apply hΩ _ z S
+    _ = ∫ tau, S tau _ ∂reverseTimeVolume _ :=
+      reverseTimeDualPairingCLM_apply hΩ _ S z
     _ = _ := by
       apply integral_congr_ae
       filter_upwards [hSeval, ae_reverseTimeSeparatedVTest hΩ eta v] with tau hS hz
       calc
-        S tau (z tau) = S tau (eta tau • v) := congrArg (S tau) hz
+        S tau _ = S tau _ := congrArg _ hz
         _ = eta tau * S tau v := by
-          rw [ContinuousLinearMap.map_smul]
-          rfl
+          simp
         _ = eta tau *
             reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth tau v :=
           congrArg (fun g => eta tau * g v) hS

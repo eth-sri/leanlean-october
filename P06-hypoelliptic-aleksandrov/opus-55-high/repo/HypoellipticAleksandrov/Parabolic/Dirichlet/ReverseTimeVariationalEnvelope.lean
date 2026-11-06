@@ -57,19 +57,19 @@ theorem IsReverseTimeVariationalEnergySolution.abs_reverseTimeHilbertRepresentat
             u g hdu ⟨τ, hτ⟩ y| ≤ Minit + τ * MF := by
   have hinitialUpper : ∀ᵐ y ∂PDE.volumeOn Ω, initial y ≤ Minit := by
     filter_upwards [hinitial] with y hy
-    exact (le_abs_self (initial y)).trans hy
+    exact (le_abs_self _).trans hy
   have hupper := hu.reverseTimeHilbertRepresentative_le_affine
     r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F haSmooth hbSmooth hcSmooth hFSmooth
       hLower hcNonpos Minit MF hMinit hMF hFbound initial hinitialUpper u g hdu
-  let Fneg : ℝ → PDE.Vec d → ℝ := fun r y => -F r y
-  let initialNeg : PDE.ScalarLp Ω (2 : ℝ≥0∞) := -initial
-  let uneg : ReverseTimeL2V hΩ (r₁ - r₀) := (-1 : ℝ) • u
-  let gneg : ReverseTimeL2VStar hΩ (r₁ - r₀) := (-1 : ℝ) • g
+  let Fneg  := fun r y => -F r y
+  let initialNeg  := -initial
+  let uneg  := (-1 : ℝ) • u
+  let gneg  := (-1 : ℝ) • g
   let hduneg : HasGelfandWeakTimeDerivative hΩ (r₁ - r₀)
-      (sub_pos.mpr h₀₁) uneg gneg := hdu.smul (-1)
+      _ uneg gneg := hdu.smul _
   have hFnegSmooth : IsSmoothOnNeighborhood
       (fun z : TimeVelocity d => Fneg z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω) :=
+      _ :=
     IsSmoothOnNeighborhood.neg hFSmooth
   have hFnegBound : ∀ z : TimeVelocity d,
       z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω → |Fneg z.1 z.2| ≤ MF := by
@@ -78,7 +78,7 @@ theorem IsReverseTimeVariationalEnergySolution.abs_reverseTimeHilbertRepresentat
   have hinitialNeg : ∀ᵐ y ∂PDE.volumeOn Ω, initialNeg y ≤ Minit := by
     filter_upwards [hinitial, Lp.coeFn_neg initial] with y hy hneg
     rw [hneg]
-    exact (neg_le_abs (initial y)).trans hy
+    exact (neg_le_abs _).trans hy
   have huneg : IsReverseTimeVariationalEnergySolution r₀ r₁ h₀₁ hΩ hΩbounded
       a b c Fneg hFnegSmooth initialNeg uneg gneg hduneg := by
     exact hu.neg r₀ r₁ h₀₁ hΩ hΩbounded a b c F hFSmooth initial u g hdu
@@ -88,30 +88,30 @@ theorem IsReverseTimeVariationalEnergySolution.abs_reverseTimeHilbertRepresentat
         uneg gneg hduneg
   intro τ hτ
   have hrep := reverseTimeHilbertRepresentative_neg_eq hΩ (r₁ - r₀)
-    (sub_pos.mpr h₀₁) u g hdu
+    _ u g hdu
   have hrepτ := congrArg
-    (fun Q : C(Set.Icc 0 (r₁ - r₀), PDE.ScalarLp Ω (2 : ℝ≥0∞)) => Q ⟨τ, hτ⟩) hrep
+    (fun Q : C(Set.Icc 0 _, PDE.ScalarLp Ω _) => Q ⟨τ, hτ⟩) hrep
   have hrepτ' :
-      reverseTimeHilbertRepresentative hΩ (r₁ - r₀) (sub_pos.mpr h₀₁)
+      reverseTimeHilbertRepresentative hΩ (r₁ - r₀) _
           uneg gneg hduneg ⟨τ, hτ⟩ =
-        -reverseTimeHilbertRepresentative hΩ (r₁ - r₀) (sub_pos.mpr h₀₁)
+        -reverseTimeHilbertRepresentative hΩ (r₁ - r₀) _
           u g hdu ⟨τ, hτ⟩ := by
     simpa only [uneg, gneg, hduneg, ContinuousMap.neg_apply] using hrepτ
   filter_upwards [hupper τ hτ, hnegUpper τ hτ, Lp.ext_iff.mp hrepτ',
     Lp.coeFn_neg
-      (reverseTimeHilbertRepresentative hΩ (r₁ - r₀) (sub_pos.mpr h₀₁)
+      (reverseTimeHilbertRepresentative hΩ (r₁ - r₀) _
         u g hdu ⟨τ, hτ⟩)] with y hyUpper hyNeg hrepY hcoeNeg
   have hyLower : -(Minit + τ * MF) ≤
-      reverseTimeHilbertRepresentative hΩ (r₁ - r₀) (sub_pos.mpr h₀₁)
+      reverseTimeHilbertRepresentative hΩ (r₁ - r₀) _
         u g hdu ⟨τ, hτ⟩ y := by
     have hrepScalar :
-        reverseTimeHilbertRepresentative hΩ (r₁ - r₀) (sub_pos.mpr h₀₁)
+        reverseTimeHilbertRepresentative hΩ (r₁ - r₀) _
             uneg gneg hduneg ⟨τ, hτ⟩ y =
-          -reverseTimeHilbertRepresentative hΩ (r₁ - r₀) (sub_pos.mpr h₀₁)
+          -reverseTimeHilbertRepresentative hΩ (r₁ - r₀) _
             u g hdu ⟨τ, hτ⟩ y := by
       calc
-        _ = (-reverseTimeHilbertRepresentative hΩ (r₁ - r₀) (sub_pos.mpr h₀₁)
-              u g hdu ⟨τ, hτ⟩) y := hrepY
+        _ = (-reverseTimeHilbertRepresentative hΩ _ _
+              u g hdu _) y := hrepY
         _ = _ := by simp only [hcoeNeg, Pi.neg_apply]
     rw [hrepScalar] at hyNeg
     exact neg_le.mp hyNeg

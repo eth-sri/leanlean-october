@@ -11,7 +11,6 @@ spacetime mollification.
 
 @[expose] public section
 
-noncomputable section
 
 open Function MeasureTheory Set
 open scoped Convolution Pointwise Topology
@@ -29,13 +28,12 @@ theorem tsupport_spacetimeMollification_subset_cthickening
       Metric.thickening ε (tsupport f) := by
     intro z hz
     have hzsum := support_convolution_subset
-      (ContinuousLinearMap.lsmul ℝ ℝ) hz
+      _ hz
     rcases hzsum with ⟨x, hx, y, hy, rfl⟩
     apply Metric.mem_thickening_iff.mpr
     refine ⟨y, subset_tsupport f hy, ?_⟩
-    rw [dist_eq_norm]
     simpa [spacetimeMollifier_support hε] using hx
   exact (closure_mono hsupp).trans
-    (Metric.closure_thickening_subset_cthickening ε (tsupport f))
+    (Metric.closure_thickening_subset_cthickening ε _)
 
 end HypoellipticAleksandrov.Parabolic.SpacetimeMollifier

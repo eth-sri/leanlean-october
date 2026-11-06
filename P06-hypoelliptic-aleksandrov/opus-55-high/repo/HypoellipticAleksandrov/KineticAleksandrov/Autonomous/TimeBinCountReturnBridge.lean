@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ReturnGeomet
 /-! # Scalar-to-ambient bridge for the full source return-time conclusion -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov
 
@@ -36,7 +35,7 @@ theorem return_time_ambient_of_scalar
     have hw : (fun _ => w.1 0, fun _ => w.2 0) = w := by
       apply Prod.ext <;> funext i <;> fin_cases i <;> rfl
     rw [hw]
-  have hh := h A G (fun w => hF (physicalState w)) t s z.1 z.2 ht hs hs1 hv
+  have hh := h A G (fun w => hF _) t s z.1 z.2 ht hs hs1 hv
   simpa only [S, he, point] using hh
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

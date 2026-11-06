@@ -6,26 +6,23 @@ import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.CaseW
 /-! # Restriction of genuine terminal solutions to physical local strips -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Parabolic TheoremA
 
+variable {d : ℕ} {a T R : ℝ} {v₀ : PDE.Vec d} {Q : KineticPoint d}
+
 /-- Swapping physical coordinates maps the local closed strip into the past closed cylinder. -/
-theorem exit_closed_into_past {d : ℕ} {a T R : ℝ} {v₀ : PDE.Vec d}
-    {Q : KineticPoint d} (hQ : Q ∈ localClosedStrip a T v₀ R) :
+theorem exit_closed_into_past  (hQ : Q ∈ localClosedStrip a T v₀ R) :
     sectionTwoPoint Q ∈ evolutionPastClosedCylinder (PDE.euclideanBall v₀ R)
-      (fun _ => 0) T := by
-  exact ⟨hQ.2.1, by simpa only [sectionTwoPoint, movingDomain_ball_zero] using hQ.2.2⟩
+      (fun _ => 0) T := ⟨hQ.2.1, by aesop⟩
 
 /-- Swapping physical coordinates maps the open strip into the genuine past interior. -/
-theorem exit_open_into_past {d : ℕ} {a T R : ℝ} {v₀ : PDE.Vec d}
-    {Q : KineticPoint d} (hQ : Q ∈ localStrip a T v₀ R) :
+theorem exit_open_into_past  (hQ : Q ∈ localStrip a T v₀ R) :
     sectionTwoPoint Q ∈ evolutionPastOpenCylinder (PDE.euclideanBall v₀ R)
-      (fun _ => 0) T := by
-  exact ⟨hQ.2.1, by simpa only [sectionTwoPoint, movingDomain_ball_zero] using hQ.2.2⟩
+      (fun _ => 0) T := ⟨hQ.2.1, by aesop⟩
 
 /-- A genuine classical terminal solution retains all local physical regularity and bounds. -/
-theorem exit_terminal_physical_regular {d : ℕ} (B : CoefficientField d)
+theorem exit_terminal_physical_regular  (B : CoefficientField d)
     {a T R : ℝ} {v₀ : PDE.Vec d}
     (F : BoundedBorel (EvolutionAmbientState d)) (u : KineticPoint d → ℝ)
     (hu : IsClassicalTerminalSolution (PDE.euclideanBall v₀ R) (fun _ => 0)
@@ -44,9 +41,9 @@ theorem exit_terminal_physical_regular {d : ℕ} (B : CoefficientField d)
       ((KineticPoint.equivProd d) '' localStrip a T v₀ R)
       (evolutionPastInteriorRaw (PDE.euclideanBall v₀ R) (fun _ => 0) T) := by
     rintro q ⟨Q, hQ, rfl⟩
-    change Q.time < T ∧ Q.velocity ∈ movingDomain (PDE.euclideanBall v₀ R)
-      (fun _ => 0) Q.time
-    exact ⟨hQ.2.1, by simpa only [movingDomain_ball_zero] using hQ.2.2⟩
+    change Q.time < T ∧ Q.velocity ∈ movingDomain _
+      _ Q.time
+    simp_all
   refine ⟨hu.2.2.1.comp hswap.contDiffOn hm, ?_, ?_, ?_⟩
   · exact hu.2.1.comp (continuous_sectionTwoPoint d).continuousOn
       (fun Q hQ => exit_closed_into_past hQ)
@@ -54,12 +51,6 @@ theorem exit_terminal_physical_regular {d : ℕ} (B : CoefficientField d)
     exact ⟨M, fun Q hQ => hM _ (exit_closed_into_past hQ)⟩
   · intro Q hQ
     rw [forwardKineticOperator_eq_lop_identity]
-    change transportedForwardOperator (zIndependentCoefficient B) (identityDrift d)
-      ((u ∘ sectionTwoPoint) ∘ sectionTwoPoint) (sectionTwoPoint Q) = 0
-    have heq : (u ∘ sectionTwoPoint) ∘ sectionTwoPoint = u := by
-      funext p
-      rfl
-    rw [heq]
     exact hu.2.2.2.1 _ (exit_open_into_past hQ)
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

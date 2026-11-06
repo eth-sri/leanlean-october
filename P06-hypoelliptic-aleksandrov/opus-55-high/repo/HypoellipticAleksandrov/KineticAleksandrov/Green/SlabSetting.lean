@@ -97,11 +97,7 @@ def slabMeasure (d : ℕ) (T : ℝ) (Γ : Measure (GreenCarrier d)) :
     Measure (SlabBase d × PDE.Vec d) :=
   (Γ.restrict (slabSet T)).map (slabRegroup d)
 
-lemma measurableSet_slabTimeSet (T : ℝ) : MeasurableSet (slabTimeSet T) := by
-  have h : slabTimeSet T = (Subtype.val : ElapsedTime ⊤ → ℝ) ⁻¹' Set.Ioo T (2 * T) := by
-    ext τ; simp [slabTimeSet]
-  rw [h]
-  exact measurable_subtype_coe measurableSet_Ioo
+lemma measurableSet_slabTimeSet (T : ℝ) : MeasurableSet (slabTimeSet T) := measurable_subtype_coe measurableSet_Ioo
 
 lemma measurableSet_slabSet {d : ℕ} (T : ℝ) : MeasurableSet (slabSet (d := d) T) :=
   measurable_fst (measurableSet_slabTimeSet T)
@@ -110,15 +106,13 @@ lemma measurableSet_slabSet {d : ℕ} (T : ℝ) : MeasurableSet (slabSet (d := d
 lemma elapsedVolume_slabTimeSet {T : ℝ} (hT : 0 < T) :
     elapsedVolume ⊤ (slabTimeSet T) = ENNReal.ofReal T := by
   rw [elapsedVolume_apply _ _ (measurableSet_slabTimeSet T)]
-  have : (Subtype.val : ElapsedTime ⊤ → ℝ) '' slabTimeSet T = Set.Ioo T (2 * T) := by
+  have : Subtype.val '' slabTimeSet T = Set.Ioo T (2 * T) := by
     ext t
     constructor
-    · rintro ⟨τ, hτ, rfl⟩
-      exact hτ
+    · aesop
     · intro ht
-      exact ⟨⟨t, by linarith [ht.1], ENNReal.ofReal_lt_top⟩, ht, rfl⟩
+      exact ⟨⟨t, by grind, ENNReal.ofReal_lt_top⟩, ht, rfl⟩
   rw [this, Real.volume_Ioo]
-  congr 1
   ring
 
 instance slabBase_sigmaFinite (d : ℕ) (T : ℝ) : SigmaFinite (slabBase d T) := by
@@ -130,8 +124,8 @@ lemma green_slab_le {d : ℕ} {γ : ℝ → PDE.Vec d} {Ω : Set (PDE.Vec d)}
     [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d))
     (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ) {T : ℝ} (hT : 0 < T) :
     Γ (slabSet T) ≤ μ univ * ENNReal.ofReal T := by
-  have := greenMeasure_timeMarginal_le K σ₀ ⊤ μ Γ hΓ (slabTimeSet T)
+  have := greenMeasure_timeMarginal_le K σ₀ ⊤ μ Γ hΓ _
     (measurableSet_slabTimeSet T)
-  rwa [elapsedVolume_slabTimeSet hT] at this
+  rwa [elapsedVolume_slabTimeSet] at this
 
 end HypoellipticAleksandrov.KineticAleksandrov.Green

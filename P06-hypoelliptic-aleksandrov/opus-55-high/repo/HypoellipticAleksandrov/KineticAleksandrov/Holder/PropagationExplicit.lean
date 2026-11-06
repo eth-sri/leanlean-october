@@ -9,7 +9,6 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -39,28 +38,28 @@ theorem propagation_explicit (d : ℕ) (hd : 1 ≤ d) (lam Lam H T0 T1 kx kv : �
   have hhs : 0 < hs := stepSize_pos hH.le hT0 hkx hkv
   have hhsTP : hs ≤ TP := by
     have he := (propagation_step_time hH.le hhs (le_refl hs)).2
-    linarith only [he, hTP0, hhs]
+    linarith
   obtain ⟨hn, hh, hhstar, hhalf, hnstar, hnTP⟩ :=
     propagation_ceiling_steps hhs hhsTP hTP1
   let n := Nat.ceil (TP / hs)
-  let h := TP / (n : ℝ)
+  let h := TP / n
   have hL : 0 < L := barrierL_pos hd hlam hLam (hT0.le.trans hT1)
   have hC : 0 < C := div_pos (mul_pos hL (Real.sqrt_pos.mpr hlam)) (by norm_num)
   let eps := min (kx / 2) (min (kv / 2)
     (min (C * (hs / 2) ^ (3 / 2 : ℝ)) (C * Real.sqrt (hs / 2))))
-  have heps : 0 < eps := by dsimp only [eps]; positivity
+  have heps : 0 < eps := by positivity
   obtain ⟨y, w, hy, hw, hkin, hLip, hclose⟩ :=
-    smooth_skeleton_approx x v H (-T0) TP (by linarith only [hT0, hTP0])
+    smooth_skeleton_approx x v H (-T0) TP (by linarith)
       hH.le hsk eps heps
   have hepsx : eps ≤ kx / 2 := min_le_left _ _
   have hepsv : eps ≤ kv / 2 := (min_le_right _ _).trans (min_le_left _ _)
   have hepspx : eps ≤ C * (hs / 2) ^ (3 / 2 : ℝ) :=
     (min_le_right _ _).trans ((min_le_right _ _).trans (min_le_left _ _))
-  have hepspv : eps ≤ C * Real.sqrt (hs / 2) :=
+  have hepspv : eps ≤ C * Real.sqrt _ :=
     (min_le_right _ _).trans ((min_le_right _ _).trans (min_le_right _ _))
-  have hcontain := corridor_half_subset_of_approximation tminus (-T0) TP kx kv eps
+  have hcontain := corridor_half_subset_of_approximation tminus _ TP kx kv eps
     x v y w hepsx hepsv hclose
-  have hfinal := hclose TP ⟨by linarith only [hTP0, hT0], le_rfl⟩
+  have hfinal := hclose TP ⟨by linarith, le_rfl⟩
   have hposition : PDE.vecEuclideanNorm (P.position - y TP) ≤ C * h ^ (3 / 2 : ℝ) := by
     rw [PDE.vecEuclideanNorm_sub_comm, ← hxP]
     apply hfinal.1.le.trans (hepspx.trans ?_)
@@ -73,7 +72,7 @@ theorem propagation_explicit (d : ℕ) (hd : 1 ≤ d) (lam Lam H T0 T1 kx kv : �
   have hendpoint := propagation_smooth_endpoint hd hlam hLam hH.le hT0 hT1 hkx hkv
     hh hhstar hell n hn hnTP A hA O tminus hy hw hkin hLip (hcontain.trans htube)
     u hnonneg hu (fun Q hQ ht => hinitial Q (hcontain hQ) ht) P
-    (by dsimp only [TP]; ring) hposition hvelocity
+    (by ring) hposition hvelocity
   have hg := barrierGamma_bounds hL
   have hpow := pow_le_pow_of_le_one hg.1.le hg.2.le hnstar
   exact (mul_le_mul_of_nonneg_right hpow hell).trans hendpoint

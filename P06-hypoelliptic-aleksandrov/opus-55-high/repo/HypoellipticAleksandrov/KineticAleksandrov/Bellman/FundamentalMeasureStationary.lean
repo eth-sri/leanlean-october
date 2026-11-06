@@ -9,7 +9,6 @@ import Mathlib.Tactic
 /-! # The degree-two stationary adjoint witness from the explicit Kolmogorov Gaussian -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
@@ -17,25 +16,23 @@ open MeasureTheory Set
 theorem bellmanFundamentalMeasure_stationary :
     IsBellmanStationaryAdjointPair bellmanFundamentalMeasure bellmanFundamentalMeasure := by
   intro φ hφ hc hs
-  let fx : ℝ × ℝ → ℝ := fun q => q.2 * fderiv ℝ φ q (1, 0)
-  let fv : ℝ × ℝ → ℝ := fun q =>
+  let fx  := fun q => q.2 * fderiv ℝ φ q (1, 0)
+  let fv  := fun q =>
     fderiv ℝ (fun z => fderiv ℝ φ z (0, 1)) q (0, 1)
-  have hcx : HasCompactSupport fx := (hc.fderiv_apply ℝ (1, 0)).mul_left
+  have hcx : HasCompactSupport fx := (hc.fderiv_apply ℝ _).mul_left
   have hcv : HasCompactSupport fv :=
-    (hc.fderiv_apply ℝ (0, 1)).fderiv_apply ℝ (0, 1)
+    (hc.fderiv_apply ℝ _).fderiv_apply ℝ _
   have hx : Continuous fx := continuous_snd.mul
-    (bellman_contDiff_direction hφ (1, 0)).continuous
+    (bellman_contDiff_direction hφ _).continuous
   have hv : Continuous fv :=
-    (bellman_contDiff_direction (bellman_contDiff_direction hφ (0, 1)) (0, 1)).continuous
+    (bellman_contDiff_direction (bellman_contDiff_direction hφ _) _).continuous
   have hsx : tsupport fx ⊆ {q | q ≠ (0, 0)} :=
-    tsupport_mul_subset_right.trans ((tsupport_fderiv_apply_subset ℝ (1, 0)).trans hs)
+    tsupport_mul_subset_right.trans ((tsupport_fderiv_apply_subset ℝ _).trans hs)
   have hsv : tsupport fv ⊆ {q | q ≠ (0, 0)} :=
-    (tsupport_fderiv_apply_subset ℝ (0, 1)).trans
-      ((tsupport_fderiv_apply_subset ℝ (0, 1)).trans hs)
+    (tsupport_fderiv_apply_subset ℝ _).trans
+      ((tsupport_fderiv_apply_subset ℝ _).trans hs)
   have hiX := bellman_integrable_fundamental_test hx hcx hsx
   have hiV := bellman_integrable_fundamental_test hv hcv hsv
-  change (∫ q, fx q.val ∂bellmanFundamentalMeasure) +
-    (∫ q, fv q.val ∂bellmanFundamentalMeasure) = 0
   rw [← integral_add hiX hiV]
   rw [bellmanFundamentalMeasure_integral_test (f := fun q => fx q + fv q) (hx.add hv) (hcx.add hcv)
     ((tsupport_add fx fv).trans (union_subset hsx hsv))]
@@ -45,11 +42,10 @@ theorem bellmanFundamentalMeasure_stationary :
       bellmanGaussianTimeCoefficient t.val q * bellmanGaussianKernel t q := by
     rw [bellmanGaussianKernel_fderiv_position, bellmanGaussianKernel_fderiv_velocity_twice]
     dsimp [bellmanGaussianTimeCoefficient]
-    field_simp [ne_of_gt t.property]
     ring
   change (∫ t : BellmanPositiveTime, (∫ q : ℝ × ℝ, bellmanGaussianKernel t q *
-    (q.2 * fderiv ℝ φ q (1, 0) +
-      fderiv ℝ (fun z => fderiv ℝ φ z (0, 1)) q (0, 1)))
+    (q.2 * fderiv ℝ φ q _ +
+      fderiv ℝ _ q _))
     ∂bellmanPositiveTimeVolume) = 0
   simp_rw [bellmanGaussianKernel_integral_generator _ φ hφ hc, heq]
   exact bellmanGaussianTimeDerivative_integral_test_eq_zero hφ.continuous hc hs
@@ -68,6 +64,6 @@ theorem two_mem_bellmanAdmissibleDegrees (R : ℝ) (hR : 1 ≤ R) :
       bellmanFundamentalMeasure = (1 : ENNReal) • bellmanFundamentalMeasure := by simp
       _ ≤ ENNReal.ofReal R • bellmanFundamentalMeasure := by
         gcongr
-        simpa using ENNReal.ofReal_le_ofReal hR
+        simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov

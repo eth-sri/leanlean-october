@@ -8,7 +8,6 @@ import Mathlib.Tactic
 /-! # The local Holder modulus relative to the larger return-box supremum -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic Set MeasureTheory Holder
 
@@ -35,7 +34,7 @@ theorem return_holder_modulus (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ L
   obtain ⟨alpha, C, halpha, halpha1, hholder⟩ :=
     kinetic_holder_of_aleksandrov_aux 1 (by omega) lam Lam 6 C_A
       hlam hLam (by norm_num)
-  let D := max C 1 * (4 : ℝ) ^ alpha
+  let D := max C 1 * (4) ^ alpha
   have hCpos : 0 < max C 1 := lt_of_lt_of_le zero_lt_one (le_max_right _ _)
   refine ⟨alpha, D, halpha, halpha1, mul_pos hCpos (by positivity), ?_⟩
   intro A u hu a b v ha hab hb hv z p ell hz hell hellh hp
@@ -44,27 +43,24 @@ theorem return_holder_modulus (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ L
   let O := returnBox v b
   let K : Set Point := {z, p}
   let E := holderNeighbourhood h K
-  have hh : 0 < h := by dsimp [h]; positivity
-  have hamid : a < mid := by dsimp [mid]; linarith
-  have hmidb : mid < b := by dsimp [mid]; linarith
+  have hh : 0 < h := by positivity
+  have hamid : a < mid := by grind
+  have hmidb : mid < b := by grind
   have hpcl : p ∈ closure (backwardCylinder z (2 * h)) :=
-    closure_mono (backwardCylinder_radius_mono z hell (by dsimp [h]; linarith)) hp
+    closure_mono (backwardCylinder_radius_mono z hell (by grind)) hp
   have hinner : closure (backwardCylinder z (2 * h)) ⊆ returnBox v mid := by
-    have he : 2 * h = 2 * ((mid - a) / 4096) := by dsimp [h, mid]; ring
+    have he : 2 * h = 2 * ((mid - a) / 4096) := by ring
     rw [he]
-    exact returnBox_cylinder_subset v a mid hv ha hamid (by dsimp [mid]; linarith) z hz
-  have hzmid : z ∈ returnBox v mid := returnBox_mono v hamid.le hz
+    exact returnBox_cylinder_subset v a mid hv ha hamid (by linarith) z hz
+  have hzmid  := returnBox_mono v hamid.le hz
   have hpmid : p ∈ returnBox v mid := hinner hpcl
   have hKmid : K ⊆ returnBox v mid := by
-    intro q hq
-    rcases hq with hq | hq <;> subst q
-    · exact hzmid
-    · exact hpmid
+    grind
   have hQ : ∀ q ∈ K, closure (backwardCylinder q (2 * h)) ⊆ O := by
     intro q hq
-    have he : 2 * h = 2 * ((b - mid) / 4096) := by dsimp [h, mid]; ring
+    have he : 2 * h = 2 * ((b - mid) / 4096) := by ring
     rw [he]
-    exact returnBox_cylinder_subset v mid b hv (by dsimp [mid]; linarith)
+    exact returnBox_cylinder_subset v mid b hv (by linarith)
       hmidb hb q (hKmid hq)
   have hKO : K ⊆ O := hKmid.trans (returnBox_mono v hmidb.le)
   have hOpos : O ⊆ {q | 0 < q.time} := by
@@ -78,11 +74,11 @@ theorem return_holder_modulus (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ L
     exact ⟨hc.mono hOpos, fun q hq => ht q (hOpos hq), fun q hq => hx q (hOpos hq),
       fun q hq => hv q (hOpos hq), hct.mono hOpos, hcx.mono hOpos,
       hcv.mono hOpos, hcvv.mono hOpos⟩
-  have hadmiss : IsAdmissibleSolution (autonomousCoefficient A.a) O 6 C_A u :=
+  have hadmiss : IsAdmissibleSolution _ O 6 C_A u :=
     hadm A O hO u hreg
       (ae_restrict_of_forall_mem hO.measurableSet (fun q hq => hu.2.2.2 q (hOpos hq)))
   obtain ⟨M, hM⟩ := hu.1
-  have hbounded : ∀ q ∈ O, |u q| ≤ M := fun q hq => hM q (hOpos hq)
+  have hbounded  := fun q hq => hM q (hOpos hq)
   have hEll := autonomous_fullElliptic A
   have hmod := hholder _ hEll.1 hEll.2.1 hEll.2.2.1 hEll.2.2.2 O hO u
     ⟨M, hbounded⟩ hadmiss K hKO (isCompact_singleton.insert z) h hh hQ
@@ -102,9 +98,9 @@ theorem return_holder_modulus (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ L
   have hbbE : BddBelow (u '' E) := ⟨0, by
     rintro _ ⟨q, hq, rfl⟩
     exact hu.2.1 q (hOpos (hEO hq))⟩
-  have hosc0 : 0 ≤ oscillationOn u E := oscillationOn_nonneg hEne habE hbbE
+  have hosc0  := oscillationOn_nonneg hEne habE hbbE
   have hosc : oscillationOn u E ≤ sSup (u '' O) := by
-    have hs : sSup (u '' E) ≤ sSup (u '' O) :=
+    have hs : sSup _ ≤ sSup (u '' O) :=
       csSup_le (hEne.image u) (fun _ hx => le_csSup habO (image_mono hEO hx))
     have hi : 0 ≤ sInf (u '' E) := le_csInf (hEne.image u) (by
       rintro _ ⟨q, hq, rfl⟩
@@ -113,10 +109,9 @@ theorem return_holder_modulus (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ L
     linarith
   have hdist := returnCylinder_distance z p ell hell hp
   have hd0 := quasiDistance_nonneg z p
-  have hratio : quasiDistance z p / h ≤ 4 * (ell / h) := by
-    exact (div_le_div_of_nonneg_right hdist hh.le).trans_eq (by ring)
+  have hratio : quasiDistance z p / h ≤ 4 * (ell / h) := (div_le_div_of_nonneg_right hdist hh.le).trans_eq (by ring)
   have hrpow := Real.rpow_le_rpow (div_nonneg hd0 hh.le) hratio halpha.le
-  rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 4) (div_nonneg hell.le hh.le)] at hrpow
+  rw [Real.mul_rpow (by norm_num) (div_nonneg hell.le hh.le)] at hrpow
   have h₁ := mul_le_mul_of_nonneg_right
     (mul_le_mul_of_nonneg_right (le_max_left C 1) hosc0)
     (Real.rpow_nonneg (div_nonneg hd0 hh.le) alpha)
@@ -125,6 +120,6 @@ theorem return_holder_modulus (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ L
     (Real.rpow_nonneg (div_nonneg hd0 hh.le) alpha)
   have hMb0 : 0 ≤ sSup (u '' O) := hosc0.trans hosc
   have h₃ := mul_le_mul_of_nonneg_left hrpow (mul_nonneg hCpos.le hMb0)
-  exact (hmod.trans (h₁.trans (h₂.trans h₃))).trans_eq (by dsimp [D, h, O]; ring)
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

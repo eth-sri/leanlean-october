@@ -7,7 +7,6 @@ import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelSmo
 /-! # Hörmander regularity for the full kinetic Duhamel source potential -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Filter
 open Evolution Occupation
@@ -30,7 +29,7 @@ theorem duhamel_isKineticWeakTransportedSolution (hΩa : IsAdmissibleEvolutionDo
       (duhamelPotential K T g) (fun p => -g p) := by
   have hU₀ := isOpen_duhamelCylinder (isOpen_of_isAdmissibleEvolutionDomain hΩa) hγ T
   have hU := hU₀.preimage (evolutionHomeomorph d).continuous
-  have hWc : ContinuousOn (duhamelPotential K T g) (evolutionPastOpenCylinder Ω γ T) :=
+  have hWc : ContinuousOn _ (evolutionPastOpenCylinder Ω γ T) :=
     (continuousOn_duhamelPotential hΩa hΩ hγ B b S K hreal g hgn hg hgc hgs T hgU
       ).mono (fun p hp => ⟨hp.1.le, subset_closure hp.2⟩)
   have hWQ := hWc.comp (evolutionHomeomorph d).continuous.continuousOn (fun x hx => hx)
@@ -41,7 +40,7 @@ theorem duhamel_isKineticWeakTransportedSolution (hΩa : IsAdmissibleEvolutionDo
   rw [setIntegral_eq_integral_of_forall_compl_eq_zero,
     setIntegral_eq_integral_of_forall_compl_eq_zero]
   · simp only [Function.comp_apply, neg_mul, integral_neg]
-    exact hfull
+    omega
   · intro x hx
     rw [image_eq_zero_of_notMem_tsupport (fun h => hx (hs h)), mul_zero]
   · intro x hx
@@ -67,14 +66,14 @@ theorem duhamelPotential_contDiffOn (hH : HormanderHypoellipticityStatement)
       (evolutionHomeomorph d ⁻¹' evolutionPastOpenCylinder Ω γ T) := by
   have hU₀ := isOpen_duhamelCylinder (isOpen_of_isAdmissibleEvolutionDomain hΩa) hγ T
   have hU := hU₀.preimage (evolutionHomeomorph d).continuous
-  have hWc : ContinuousOn (duhamelPotential K T g) (evolutionPastOpenCylinder Ω γ T) :=
+  have hWc : ContinuousOn _ (evolutionPastOpenCylinder Ω γ T) :=
     (continuousOn_duhamelPotential hΩa hΩ hγ B b S K hreal g hgn hg hgc hgs T hgU
       ).mono (fun p hp => ⟨hp.1.le, subset_closure hp.2⟩)
   have hWQ := hWc.comp (evolutionHomeomorph d).continuous.continuousOn (fun x hx => hx)
   have hweak := (isWeakTransportedSolution_comp_iff B b _ _ _).2
     (duhamel_isKineticWeakTransportedSolution hΩa hΩ hγ B b S K hreal hB hBs hb
       g hgn hg hgc hgs T hgU)
-  have hg' : ContDiffOn ℝ (⊤ : ℕ∞) ((fun p => -g p) ∘ evolutionHomeomorph d)
+  have hg' : ContDiffOn ℝ _ ((fun p => -g p) ∘ evolutionHomeomorph d)
       (evolutionHomeomorph d ⁻¹' evolutionPastOpenCylinder Ω γ T) :=
     ((hgs.comp (evolutionProdCLE d).contDiff).neg).contDiffOn
   obtain ⟨f, hf, hae⟩ := exists_smooth_representative_transported_source hH hlam hB hell hb

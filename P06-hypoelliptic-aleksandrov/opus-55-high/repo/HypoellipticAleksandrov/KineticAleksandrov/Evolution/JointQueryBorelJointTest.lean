@@ -7,7 +7,6 @@ import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -67,7 +66,7 @@ theorem measurable_joint_terminal_probe
   apply measurable_of_tendsto_metrizable hA
   apply tendsto_pi_nhds.mpr
   intro q
-  have : IsFiniteMeasure (μT q) := ⟨(terminalMeasure_spec n hn lam Lam m L_b
+  have : IsFiniteMeasure _ := ⟨(terminalMeasure_spec n hn lam Lam m L_b
     hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
     hb_smooth hb_lipschitz hb_coercive hEx q).1.trans_lt ENNReal.one_lt_top⟩
   obtain ⟨C, _, hC⟩ := Φ.exists_bound
@@ -77,7 +76,7 @@ theorem measurable_joint_terminal_probe
     (fun j => (Φ.measurable.comp (measurable_const.prodMk measurable_id)).aestronglyMeasurable)
     (integrable_const C)
     (fun j => Eventually.of_forall fun x => by
-      simpa only [Real.norm_eq_abs] using hC (terminalTimeMesh j q.1.2.1, x))
+      simp_all)
     (Eventually.of_forall fun x => hΦ.continuous.continuousAt.tendsto.comp
       ((tendsto_terminalTimeMesh q.1.2.1).prodMk_nhds tendsto_const_nhds))
   have hnear := (tendsto_terminalTimeMesh q.1.2.1).eventually

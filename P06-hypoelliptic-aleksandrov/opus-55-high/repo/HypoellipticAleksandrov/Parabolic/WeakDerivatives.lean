@@ -20,7 +20,7 @@ open MeasureTheory
 open scoped ENNReal Topology
 
 /-- Product Lebesgue volume restricted to a time--velocity set. -/
-noncomputable abbrev timeVelocityVolumeOn {d : Nat} (U : Set (TimeVelocity d)) :
+abbrev timeVelocityVolumeOn {d : Nat} (U : Set (TimeVelocity d)) :
     Measure (TimeVelocity d) :=
   (volume : Measure (TimeVelocity d)).restrict U
 

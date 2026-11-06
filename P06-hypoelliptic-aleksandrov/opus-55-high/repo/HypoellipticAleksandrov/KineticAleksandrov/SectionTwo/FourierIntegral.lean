@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DensityInteg
 /-! # Fourier integral bridges on real and complex bounded Borel data -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 open scoped ENNReal

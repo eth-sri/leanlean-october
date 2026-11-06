@@ -17,9 +17,11 @@ def enlargedPositionSlabMass (nu : Measure Point) (c : Clock) (s x a b : ℝ) (k
     p.position 0 ∈ enlargedPositionCell c.r x k ∧
       p.velocity 0 ∈ closure c.entrance}).toReal
 
+variable (nu : Measure Point)
+
 /-- A noninitial cell is precisely its slab truncated at the observation horizon. -/
 theorem enlargedPositionVisitMass_eq_truncated_slab
-    (nu : Measure Point) (c : Clock) (s x T : ℝ) (j : ℕ) (k : ℤ)
+     (c : Clock) (s x T : ℝ) (j : ℕ) (k : ℤ)
     (hj : j ≠ 0) (hs : ∀ᵐ p ∂nu, p.time < s + T) :
     enlargedPositionVisitMass nu c s x j k =
       enlargedPositionSlabMass nu c s x ((j : ℝ) * c.r ^ 2)
@@ -29,16 +31,11 @@ theorem enlargedPositionVisitMass_eq_truncated_slab
   apply measure_congr
   filter_upwards [hs] with p hp
   apply propext
-  simp only [mem_inter_iff, enlargedStartCell, enlargedTimeBin, hj, ite_false,
-    mem_ofPred_eq, mem_Ioc]
-  have he : s + min (((j : ℝ) + 1) * c.r ^ 2) T =
-      min (s + ((j : ℝ) + 1) * c.r ^ 2) (s + T) := (min_add_add_left s _ _).symm
-  rw [he, le_min_iff]
-  have hple := hp.le
-  tauto
+  simp only [enlargedStartCell, enlargedTimeBin]
+  grind
 
 /-- Each cell mass is bounded by its time-bin count for any finite measure. -/
-theorem enlargedPositionVisitMass_le_timeVisitMass (nu : Measure Point) [IsFiniteMeasure nu]
+theorem enlargedPositionVisitMass_le_timeVisitMass  [IsFiniteMeasure nu]
     (c : Clock) (s x : ℝ) (j : ℕ) (k : ℤ) :
     enlargedPositionVisitMass nu c s x j k ≤ enlargedTimeVisitMass nu c s j := by
   apply ENNReal.toReal_mono (measure_ne_top nu _)

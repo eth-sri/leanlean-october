@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.OccupationSc
 /-! # Direct transport of the shared parabolic marginal bundle -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 open HypoellipticAleksandrov SectionTwo Scaling MeasureTheory ProbabilityTheory Set
 open scoped ProbabilityTheory
@@ -54,7 +53,7 @@ theorem occupation_scaled_marginalBundle {d : ℕ} (σ₀ : ℝ)
     have hc := occupation_parabolicKernel_conjugate Φ K hP σ σ le_rfl
     have hident := congrArg (kernelConj (occupation_positionEquiv Φ σ)
       (occupation_positionEquiv Φ σ)) (h8 (Φ.time σ))
-    exact hc.trans (hident.trans (kernelConj_id (occupation_positionEquiv Φ σ)))
+    exact hc.trans (hident.trans (kernelConj_id _))
   · intro σ s τ hσs hsτ
     have hc := occupation_parabolicKernel_conjugate Φ K hP σ τ (hσs.trans hsτ)
     have hcs := occupation_parabolicKernel_conjugate Φ K hP σ s hσs
@@ -70,7 +69,7 @@ theorem occupation_scaled_marginalBundle {d : ℕ} (σ₀ : ℝ)
       (parabolicMarginalKernel K MeasurableSet.univ (Φ.time s) (Φ.time τ)
         (Φ.time_le_iff.mpr hsτ))
     exact hc.trans (hold.trans (hcomp.trans
-      (congrArg₂ (fun A B => A ∘ₖ B) hct.symm hcs.symm)))
+      (congrArg₂ _ hct.symm hcs.symm)))
   · exact occupation_scalarTerminalClause_scale σ₀ r B Q h10
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

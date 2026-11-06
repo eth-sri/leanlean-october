@@ -9,7 +9,6 @@ import HypoellipticAleksandrov.KineticAleksandrov.Maximum.ComparisonGeometry
 /-! # The whole-space Green source potentials for Theorem A -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.TheoremA
 open Set MeasureTheory SectionTwo Evolution Parabolic
 open scoped Topology
@@ -42,13 +41,7 @@ theorem green_potentials (hH : HormanderHypoellipticityStatement)
   let W := duhamelPotential K T g₂
   let V := W ∘ sectionTwoPoint
   let F := fun P => ∫ z, g z ∂cylinderGreenMeasure K Z₀ R hR P
-  have hg : Continuous g := by
-    have heq : (fun P => g ((KineticPoint.equivProd d).symm
-        ((KineticPoint.homeomorphProd d) P))) = g := by
-      funext P
-      rfl
-    rw [← heq]
-    exact hgs.continuous.comp (KineticPoint.homeomorphProd d).continuous
+  have hg : Continuous g := hgs.continuous.comp (KineticPoint.homeomorphProd d).continuous
   have hg₂ : Continuous g₂ := hg.comp (continuous_sectionTwoPoint d)
   have hgc₂ : HasCompactSupport g₂ := hasCompactSupport_sectionTwoPoint hgc
   have hgs₂ := contDiff_sectionTwoPoint_source hgs
@@ -62,22 +55,21 @@ theorem green_potentials (hH : HormanderHypoellipticityStatement)
     ⟨hlam, hLam, isSmoothFullKineticCoefficient_zIndependent hB, hBs, hlo, hhi⟩
   obtain ⟨hfull, hsym, hell⟩ := sectionTwoCoefficient_fullBounds lam Lam B hcoeff
   have hW := duhamelPotential_contDiffOn hH (wholeSpace_admissible d)
-    MeasurableSet.univ continuous_const (zIndependentCoefficient B) (identityDrift d)
+    MeasurableSet.univ continuous_const _ _
     S K hreal hfull hsym (identityDrift_smooth d) g₂ hg₂0 hg₂ hgc₂ hgs₂ T hgU
-    hlam (by norm_num : (0 : ℝ) < 1) hell (identityDrift_bounds d).2
+    hlam (by norm_num) hell (identityDrift_bounds d).2
   have hEQ := duhamelPotential_source_equation hH (wholeSpace_admissible d)
-    MeasurableSet.univ continuous_const (zIndependentCoefficient B) (identityDrift d)
+    MeasurableSet.univ continuous_const _ _
     S K hreal hfull hsym (identityDrift_smooth d) g₂ hg₂0 hg₂ hgc₂ hgs₂ T hgU
-    hlam (by norm_num : (0 : ℝ) < 1) hell (identityDrift_bounds d).2
+    hlam (by norm_num) hell (identityDrift_bounds d).2
   have heq : ∀ P, P.time < T → F P = V P :=
     fun P hP => integral_cylinderGreenMeasure K Z₀ R hR g hg0 hg hgc hgQ P hP
   have hQ := isOpen_forwardCylinder Z₀ R hR
   have hQt : ∀ P ∈ forwardCylinder Z₀ R hR, P.time < T :=
     fun P hP => ((mem_forwardCylinder_iff _ _ _ hR).1 hP).2.1
-  let swap : EvolutionVec d → EvolutionVec d := fun x =>
+  let swap  := fun x =>
     packPoint (timeCoord d x) (transportedCoord d x) (diffusedCoord d x)
-  have hswap : ContDiff ℝ (⊤ : ℕ∞) swap := by
-    exact (evolutionProdCLE d).symm.contDiff.comp
+  have hswap : ContDiff ℝ (⊤ : ℕ∞) swap := (evolutionProdCLE d).symm.contDiff.comp
       ((Evolution.timeCoord d).contDiff.prodMk
         ((transportedCoord d).contDiff.prodMk (diffusedCoord d).contDiff))
   have hmap : MapsTo swap (evolutionHomeomorph d ⁻¹' forwardCylinder Z₀ R hR)
@@ -90,8 +82,7 @@ theorem green_potentials (hH : HormanderHypoellipticityStatement)
     have hv := hW.comp hswap.contDiffOn hmap
     convert hv using 1
     funext x
-    simp only [V, W, swap, Function.comp_apply, evolutionHomeomorph_apply,
-      timeCoord_packPoint, diffusedCoord_packPoint, transportedCoord_packPoint]
+    simp only [swap, Function.comp_apply, evolutionHomeomorph_apply, diffusedCoord_packPoint, transportedCoord_packPoint]
     rfl
   have hF := hV.congr (fun x hx => heq _ (hQt _ hx))
   refine ⟨isKineticC112On_of_contDiffOn hQ hF, ?_, ?_⟩
@@ -101,13 +92,9 @@ theorem green_potentials (hH : HormanderHypoellipticityStatement)
     have hn : F =ᶠ[𝓝 P] V := by
       filter_upwards [((isOpen_lt continuous_time continuous_const).mem_nhds (hQt P hP))]
         with z hz
-      exact heq z hz
+      simp_all
     rw [forwardKineticOperator_eq_of_eventuallyEq _ hn,
       forwardKineticOperator_eq_lop_identity]
-    have hw : V ∘ sectionTwoPoint = W := by
-      funext q
-      rfl
-    rw [hw]
     exact hEQ _ ⟨hQt P hP, by simp [movingDomain_wholeSpace]⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.TheoremA

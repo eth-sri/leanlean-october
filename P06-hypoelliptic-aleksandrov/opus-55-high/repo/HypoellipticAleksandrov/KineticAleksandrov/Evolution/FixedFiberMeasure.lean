@@ -73,29 +73,28 @@ theorem measurable_terminalFiberMeasure
       (evolutionQueryOfState Ω γ σ τ hστ p)
   rw [hfun]
   have := locallyCompactSpace_evolutionState (γ := γ) (τ := τ) hΩo
-  have hfin : ∀ p, IsFiniteMeasure (ν_ σ τ hστ p) := fun p =>
+  have hfin  := fun p =>
     isFiniteMeasure_terminalFiberRieszMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p
-  have hmass : ∀ p, ν_ σ τ hστ p univ ≤ 1 := fun p =>
+  have hmass  := fun p =>
     terminalFiberRieszMeasure_univ_le_one n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p
-  refine measurable_of_integral_measurable (fun p => ν_ σ τ hστ p) ?_
+  refine measurable_of_integral_measurable _ ?_
   refine measurable_integral_of_dense (terminalProbeCcLinear (Ω := Ω) (γ := γ) (τ := τ))
-    (fun p => ν_ σ τ hστ p) hmass
+    _ hmass
     (fun f ε hε => exists_terminalProbe_close hΩo f ε hε) (fun F => ?_)
   have hint : (fun p : EvolutionState Ω γ σ => ∫ x, terminalProbeCcLinear F x ∂(ν_ σ τ hστ p)) =
       fun p => S σ τ hστ p (terminalProbeDatum F) (terminalProbeDatum_isSmoothCompact F) := by
     funext p
-    rw [integral_terminalFiberRieszMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p]
+    rw [integral_terminalFiberRieszMeasure]
     exact (terminalFunctional_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p).2
-      (terminalProbeDatum F) (terminalProbeDatum_isSmoothCompact F)
-      (terminalProbeCcLinear F) fun x => rfl
+      _ _
+      _ fun x => rfl
   rw [hint]
   exact (continuous_terminalValue_source n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ
-    (terminalProbeDatum F) (terminalProbeDatum_isSmoothCompact F)).measurable
+    _ _).measurable
 
 /-- The fixed-time fiber kernel `κ σ τ hστ`, defined literally as the measurable
 fiber-measure function of `measurable_terminalFiberMeasure`. -/
@@ -122,12 +121,11 @@ theorem terminalFiberKernel_univ_le_one (σ τ : ℝ) (hστ : σ ≤ τ) (p : E
     κ σ τ hστ p univ ≤ 1 := by
   have hU := measurableSet_evolutionStateSet_of_isOpen (γ := γ) (τ := τ)
     (isOpen_of_isAdmissibleEvolutionDomain hΩ)
-  rw [terminalFiberKernel_apply, (MeasurableEmbedding.subtype_coe hU).comap_apply,
-    image_univ, Subtype.range_coe]
+  rw [terminalFiberKernel_apply, (MeasurableEmbedding.subtype_coe hU).comap_apply]
   exact (measure_mono (subset_univ _)).trans
     (terminalMeasure_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
-      (evolutionQueryOfState Ω γ σ τ hστ p)).1
+      _).1
 
 /-- The fiber kernel is a finite kernel. -/
 theorem isFiniteKernel_terminalFiberKernel (σ τ : ℝ) (hστ : σ ≤ τ) :

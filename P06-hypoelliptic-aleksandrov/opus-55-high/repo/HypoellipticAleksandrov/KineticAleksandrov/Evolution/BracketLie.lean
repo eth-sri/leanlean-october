@@ -14,8 +14,6 @@ directions by the drift coercivity `ξ · Db(v) ξ ≥ m |ξ|²`, `m > 0`, and m
 
 @[expose] public section
 
-noncomputable section
-set_option autoImplicit false
 
 open scoped MatrixOrder
 
@@ -41,7 +39,7 @@ theorem coord_fderiv_const {F : Type*} [NormedAddCommGroup F] [NormedSpace ℝ F
     (L : EvolutionVec n →L[ℝ] F) {W : EvolutionVec n → EvolutionVec n} {x : EvolutionVec n}
     (hW : DifferentiableAt ℝ W x) (c : F) (h : ∀ y, L (W y) = c) (w : EvolutionVec n) :
     L (fderiv ℝ W x w) = 0 := by
-  rw [coord_fderiv_comp L hW (g := fun _ => c) h w]
+  rw [coord_fderiv_comp L hW (g := fun _ => c) h]
   simp
 
 /-- A drift with `m ≤ ξ · Db(v) ξ` for unit `ξ`, `m > 0`, has surjective derivative. -/
@@ -62,14 +60,13 @@ theorem fderiv_surjective_of_coercive {m : ℝ} {b : PDE.Vec n → PDE.Vec n} (h
   have hunit : PDE.vecEuclideanNorm (c⁻¹ • ξ) = 1 := by
     have : PDE.vecNormSq (c⁻¹ • ξ) = 1 := by
       have e : PDE.vecNormSq (c⁻¹ • ξ) = (c⁻¹) ^ 2 * PDE.vecNormSq ξ := by
-        simp only [PDE.vecNormSq, PDE.vecDot, Pi.smul_apply, smul_eq_mul, Finset.mul_sum]
+        simp only [PDE.vecNormSq, PDE.vecDot, Pi.smul_apply, Finset.mul_sum]
         refine Finset.sum_congr rfl fun i _ => by ring
-      rw [e, ← hcsq]
-      field_simp
+      grind
     simp [PDE.vecEuclideanNorm, this]
-  have h := hcoerc y (c⁻¹ • ξ) hunit
+  have h := hcoerc y _ hunit
   have hz : (fderiv ℝ b y) (c⁻¹ • ξ) = 0 := by
-    rw [map_smul, hξ, smul_zero]
+    simp_all
   rw [hz] at h
   simp [PDE.vecDot] at h
   linarith
@@ -101,17 +98,17 @@ theorem transportedCoord_lieBracket
   rw [map_sub]
   have h1 : transportedCoord n (fderiv ℝ (driftField B b) x (diffusionField B i x)) =
       fderiv ℝ b (diffusedCoord n x) (fun j => sqrtCoeffAt B x i j) := by
-    rw [coord_fderiv_comp (transportedCoord n) (differentiableAt_driftField hβ hb x)
+    rw [coord_fderiv_comp _ (differentiableAt_driftField hβ hb x)
       (g := fun y => b (diffusedCoord n y)) (fun y => by simp [driftField])]
-    have hd : HasFDerivAt (fun y => b (diffusedCoord n y))
+    have hd : HasFDerivAt (fun y => b _)
         ((fderiv ℝ b (diffusedCoord n x)).comp (diffusedCoord n)) x :=
       (hb.differentiable (by simp) _).hasFDerivAt.comp x (diffusedCoord n).hasFDerivAt
     rw [hd.fderiv]
     simp [diffusionField]
-  have h2 : transportedCoord n (fderiv ℝ (diffusionField B i) x (driftField B b x)) = 0 :=
-    coord_fderiv_const (transportedCoord n) (differentiableAt_diffusionField hβ i x) 0
+  have h2 : transportedCoord n (fderiv ℝ _ x (driftField B b x)) = 0 :=
+    coord_fderiv_const _ (differentiableAt_diffusionField hβ i x) 0
       (fun y => by simp [diffusionField]) _
-  rw [h1, h2, sub_zero]
+  simp_all
 
 /-- The time component of the bracket `[X_i, X_0]` vanishes. -/
 theorem timeCoord_lieBracket
@@ -120,13 +117,13 @@ theorem timeCoord_lieBracket
     timeCoord n (VectorField.lieBracket ℝ (diffusionField B i) (driftField B b) x) = 0 := by
   unfold VectorField.lieBracket
   rw [map_sub]
-  have h1 : timeCoord n (fderiv ℝ (driftField B b) x (diffusionField B i x)) = 0 :=
-    coord_fderiv_const (timeCoord n) (differentiableAt_driftField hβ hb x) 1
-      (fun y => by simp [driftField]) _
-  have h2 : timeCoord n (fderiv ℝ (diffusionField B i) x (driftField B b x)) = 0 :=
-    coord_fderiv_const (timeCoord n) (differentiableAt_diffusionField hβ i x) 0
-      (fun y => by simp [diffusionField]) _
-  rw [h1, h2, sub_zero]
+  have h1 : timeCoord n (fderiv ℝ _ x (diffusionField B i x)) = 0 :=
+    coord_fderiv_const _ (differentiableAt_driftField hβ hb x) 1
+      (fun y => by aesop) _
+  have h2 : timeCoord n (fderiv ℝ _ x (driftField B b x)) = 0 :=
+    coord_fderiv_const _ (differentiableAt_diffusionField hβ i x) 0
+      (fun y => by aesop) _
+  simp_all
 
 /-- **Bracket (Lie-algebra spanning) condition for `Lop`.**  Under the standing hypotheses
 (`B` smooth with `lam • 1 ≤ B`, `0 < lam`; `b` smooth with `ξ · Db(v) ξ ≥ m` for unit `ξ`,
@@ -139,7 +136,7 @@ theorem lieAlgebraSpansOn_transportedFields {lam Lam m : ℝ} (hlam : 0 < lam)
   intro x _
   have hβ := contDiff_sqrtCoeffAt_entry hlam hB hell
   set W := Submodule.span ℝ
-    (Set.range (fun w : LieWord n => LieWord.eval (transportedFields B b) w x)) with hW
+    (Set.range (fun w : LieWord n => LieWord.eval _ w x)) with hW
   have hX : ∀ i, diffusionField B i x ∈ W := fun i =>
     Submodule.subset_span ⟨LieWord.generator i.succ, by simp [LieWord.eval, transportedFields]⟩
   have h0 : driftField B b x ∈ W :=
@@ -161,13 +158,12 @@ theorem lieAlgebraSpansOn_transportedFields {lam Lam m : ℝ} (hlam : 0 < lam)
       · simp only [hS, map_sub, map_sum, map_smul, timeCoord_lieBracket hβ hb,
           timeCoord_packPoint, smul_zero, Finset.sum_const_zero, sub_zero]
       · simp
-      · simp only [hS, map_sub, map_sum, map_smul, transportedCoord_lieBracket hβ hb,
-          transportedCoord_packPoint, sub_zero, transportedCoord_packPoint]
+      · simp only [hS, map_sub, map_sum, map_smul, transportedCoord_lieBracket hβ hb]
         rw [← hξ]
         have hξ' : ξ = ∑ i, a i • (fun j => sqrtCoeffAt B x i j) := by
           funext j
-          simp [Finset.sum_apply, ha j]
-        rw [hξ', map_sum]
+          simp [ha]
+        rw [hξ']
         simp [map_smul]
     rw [e]
     exact W.sub_mem hSW (hv _)

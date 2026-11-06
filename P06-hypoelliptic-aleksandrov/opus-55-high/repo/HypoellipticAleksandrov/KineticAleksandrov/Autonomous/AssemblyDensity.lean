@@ -14,7 +14,6 @@ still depends on precisely the four source steps in the remaining frontier.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 
 /-- Preliminary exponent-six admissibility, relative only to the three classical inputs. -/

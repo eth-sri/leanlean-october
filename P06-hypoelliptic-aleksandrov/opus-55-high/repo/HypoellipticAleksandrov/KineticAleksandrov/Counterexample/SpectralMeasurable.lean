@@ -55,9 +55,9 @@ theorem positiveSpectralRamp_eventually (t : ℝ) :
   by_cases ht : 0 < t
   · obtain ⟨N, hN⟩ := exists_nat_ge (1 / t)
     filter_upwards [eventually_ge_atTop N] with n hn
-    have hNt : 1 ≤ (N : ℝ) * t := (div_le_iff₀ ht).mp hN
+    have hNt : 1 ≤ N * t := (div_le_iff₀ ht).mp hN
     have hnN : (N : ℝ) ≤ n := Nat.cast_le.mpr hn
-    have hnt : 1 ≤ (n : ℝ) * t := hNt.trans (mul_le_mul_of_nonneg_right hnN ht.le)
+    have hnt : 1 ≤ n * t := hNt.trans (mul_le_mul_of_nonneg_right hnN ht.le)
     simp [positiveSpectralRamp, positiveSpectralIndicator, ht, min_eq_left hnt]
   · apply Eventually.of_forall
     intro n
@@ -69,22 +69,19 @@ theorem positiveSpectralRamp_eventually (t : ℝ) :
 /-- At a Hermitian matrix the ramp calculus eventually equals the positive projection. -/
 theorem spectralRamp_eventually {d : ℕ} (M : PDE.Mat d) (hM : M.IsHermitian) :
     ∀ᶠ n : ℕ in atTop, cfc (positiveSpectralRamp n) M = positiveSpectralProjection M := by
-  have hh : ∀ᶠ n : ℕ in atTop, ∀ i : Fin d,
-      positiveSpectralRamp n (hM.eigenvalues i) =
-        positiveSpectralIndicator (hM.eigenvalues i) :=
+  have hh  :=
     eventually_all.mpr fun i => positiveSpectralRamp_eventually (hM.eigenvalues i)
   filter_upwards [hh] with n hn
   apply cfc_congr
   intro t ht
   rw [hM.spectrum_real_eq_range_eigenvalues] at ht
-  obtain ⟨i, rfl⟩ := ht
-  exact hn i
+  grind
 
 /-- Continuous matrix fields have continuous ramp functional calculi. -/
 theorem continuous_spectralRamp {X : Type*} [TopologicalSpace X] {d : ℕ}
     (M : X → PDE.Mat d) (hM : Continuous M) (hherm : ∀ x, (M x).IsHermitian)
     (n : ℕ) : Continuous (fun x => cfc (positiveSpectralRamp n) (M x)) := by
-  apply Continuous.cfc_of_mem_nhdsSet (s := Set.univ) (positiveSpectralRamp n)
+  apply Continuous.cfc_of_mem_nhdsSet (s := Set.univ) _
     (by simp) hM hherm (continuous_positiveSpectralRamp n).continuousOn
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

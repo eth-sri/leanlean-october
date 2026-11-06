@@ -35,19 +35,17 @@ instance nestedIntervalRestartPoles_isFiniteMeasure
 theorem measurableSet_nestedIntervalPole (H : Interval) (T : ℝ) :
     MeasurableSet {p : Point | (p.time : WithTop ℝ) < T ∧ p.velocity 0 ∈ H.carrier} := by
   convert (isOpen_stripPast H T).measurableSet using 1
-  ext p
-  exact and_congr WithTop.coe_lt_coe Iff.rfl
+  aesop
+
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
 
 /-- The restart poles recover precisely the actual smaller exit restricted to the internal face. -/
 theorem nestedIntervalRestartPoles_map
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H1 H2 : Interval) (sMinus T : ℝ)
+     (H1 H2 : Interval) (sMinus T : ℝ)
     (e : StripPole H1 (T : WithTop ℝ)) :
     (nestedIntervalRestartPoles hH hLE hlam hLam A H1 H2 sMinus T e).map Subtype.val =
       (stripExit hH hLE hlam hLam A H1 T e).restrict
         (nestedIntervalInternalExit H1 H2 sMinus T) := by
-  unfold nestedIntervalRestartPoles
   refine (map_comap_subtype_coe (measurableSet_nestedIntervalPole H2 T) _).trans ?_
   apply Measure.restrict_eq_self_of_ae_mem
   filter_upwards [ae_restrict_mem
@@ -56,9 +54,7 @@ theorem nestedIntervalRestartPoles_map
 
 /-- Genuine restart poles retain the strict lower-time support of the internal face. -/
 theorem nestedIntervalRestartPoles_ae_time_gt
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H1 H2 : Interval) (sMinus T : ℝ)
+     (H1 H2 : Interval) (sMinus T : ℝ)
     (e : StripPole H1 (T : WithTop ℝ)) :
     ∀ᵐ ep ∂nestedIntervalRestartPoles hH hLE hlam hLam A H1 H2 sMinus T e,
       sMinus < ep.1.time := by
@@ -67,7 +63,7 @@ theorem nestedIntervalRestartPoles_ae_time_gt
     filter_upwards [ae_restrict_mem
       (measurableSet_nestedIntervalInternalExit H1 H2 sMinus T)] with p hp
     exact hp.1
-  rw [← nestedIntervalRestartPoles_map hH hLE hlam hLam A H1 H2 sMinus T e] at ht
+  rw [← nestedIntervalRestartPoles_map] at ht
   exact ((MeasurableEmbedding.subtype_coe (measurableSet_nestedIntervalPole H2 T)).ae_map_iff).mp ht
 
 /-- The larger Green mixture of internal restart poles is the actual measurable measure bind. -/
@@ -88,14 +84,12 @@ instance nestedIntervalRestartGreen_isFiniteMeasure
     IsFiniteMeasure (nestedIntervalRestartGreen hH hLE hlam hLam A H1 H2 sMinus T e) := by
   let τ := nestedIntervalRestartPoles hH hLE hlam hLam A H1 H2 sMinus T e
   let C := finiteUnionGreenMassBound lam H2.toFiniteUnion
-  have hb (ep : StripPole H2 (T : WithTop ℝ)) :
+  have hb (ep : StripPole H2 _) :
       stripGreen hH hLE hlam hLam A H2 T ep univ ≤ C := by
     let i : Fin H2.toFiniteUnion.count := ⟨0, by change 0 < 1; omega⟩
     have h := finiteUnionGreen_mass_le hH hLE hlam hLam A H2.toFiniteUnion T
       (componentPoleInclusion H2.toFiniteUnion i T ep)
-    have hc := congrArg (fun ρ : Measure Point => ρ univ)
-      (finiteUnionGreen_component hH hLE hlam hLam A H2.toFiniteUnion i T ep)
-    exact hc ▸ h
+    aesop
   constructor
   change τ.bind (stripGreen hH hLE hlam hLam A H2 T) univ < ⊤
   rw [Measure.bind_apply MeasurableSet.univ]

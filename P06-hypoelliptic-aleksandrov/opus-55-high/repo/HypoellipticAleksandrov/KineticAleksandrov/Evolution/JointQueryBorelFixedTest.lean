@@ -17,7 +17,6 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic MeasureTheory Set Filter
 open scoped Topology
 
-
 /-- The integral of a fixed probe at admissible terminal times, and zero at the other times. -/
 def validTerminalProbeIntegral (n : ℕ) (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
     (μ : EvolutionQuery Ω γ → Measure (EvolutionAmbientState n))
@@ -68,45 +67,43 @@ theorem tendsto_upper_terminal_probe
   obtain ⟨M, hM0, herr⟩ := terminalOperators_terminal_time_error n hn lam Lam m L_b
     hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
     hb_smooth hb_lipschitz hb_coercive hEx τ F hF
-  have hnear : ∀ᶠ j in atTop, dist (terminalTimeMesh j τ) τ < δ :=
+  have hnear  :=
     (tendsto_terminalTimeMesh τ).eventually (Metric.ball_mem_nhds τ hδ)
   have hevent : ∀ᶠ j in atTop,
       |extendedTerminalProbe n Ω γ B b hEx (terminalTimeMesh j τ) F (evolutionQueryPoint q) -
         P₀ σ τ q.2.1 (terminalStateDatum F) p| ≤ (terminalTimeMesh j τ - τ) * M := by
     filter_upwards [hnear] with j hj
     have hτj := le_terminalTimeMesh j τ
-    have hFj := hwindow (terminalTimeMesh j τ) hj
+    have hFj := hwindow _ hj
     have hs : ∀ t ∈ Icc τ (terminalTimeMesh j τ),
         tsupport F ⊆ evolutionStateSet Ω γ t := by
       intro t ht
       have hd : dist t τ ≤ dist (terminalTimeMesh j τ) τ := by
         rw [Real.dist_eq, Real.dist_eq, abs_of_nonneg (sub_nonneg.mpr ht.1),
           abs_of_nonneg (sub_nonneg.mpr hτj)]
-        exact sub_le_sub_right ht.2 τ
+        simp_all
       exact (hwindow t (hd.trans_lt hj)).2.2
-    have hh := herr (terminalTimeMesh j τ) hτj hFj
+    have hh := herr _ hτj hFj
       (terminalDatum_zero_lateral_of_support (isOpen_of_isAdmissibleEvolutionDomain hΩ) hs)
       σ q.2.1 p
     change |extendedTerminalProbe n Ω γ B b hEx (terminalTimeMesh j τ) F
       ⟨σ, p.1.1, p.1.2⟩ - P₀ σ τ q.2.1 (terminalStateDatum F) p| ≤ _
     rw [extendedTerminalProbe_eq_operator n hn lam Lam m L_b
       hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
-      hb_smooth hb_lipschitz hb_coercive hEx σ (terminalTimeMesh j τ)
+      hb_smooth hb_lipschitz hb_coercive hEx σ _
       (q.2.1.trans hτj) p F hFj]
     exact hh
   have hlim : Tendsto (fun j => extendedTerminalProbe n Ω γ B b hEx
       (terminalTimeMesh j τ) F (evolutionQueryPoint q)) atTop
       (𝓝 (P₀ σ τ q.2.1 (terminalStateDatum F) p)) := by
     apply tendsto_iff_norm_sub_tendsto_zero.mpr
-    simp only [Real.norm_eq_abs]
     apply squeeze_zero' (Eventually.of_forall fun j => abs_nonneg _) hevent
-    simpa only [sub_self, zero_mul] using ((tendsto_terminalTimeMesh τ).sub_const τ).mul_const M
+    simpa using ((tendsto_terminalTimeMesh τ).sub_const τ).mul_const M
   have heq : P₀ σ τ q.2.1 (terminalStateDatum F) p = ∫ x, F x ∂(μT q) := by
     rw [terminalOperators_apply_smooth]
     exact ((terminalMeasure_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx q).2.2 F hF).symm
-  rw [heq] at hlim
-  exact hlim
+  grind
 
 /-- Fixed compact smooth test integrals are jointly measurable on the subtype of queries
 where the test datum is supported in the terminal fiber. -/
@@ -146,15 +143,12 @@ theorem measurable_valid_terminal_probe
   · convert measurable_terminal_probe_on_admissible_queries n hn lam Lam m L_b
       hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
       hb_smooth hb_lipschitz hb_coercive hEx F using 1
-    funext q
-    exact ite_eq_left q.2
+    grind
   · have hf : Dᶜ.domRestrict (fun q : EvolutionQuery Ω γ =>
         if IsSmoothCompactTerminalDatum Ω γ q.1.2.1 F then ∫ x, F x ∂(μT q) else 0) =
         (fun _ : ↥(Dᶜ) => (0 : ℝ)) := by
-      funext q
-      exact ite_eq_right q.2
-    rw [hf]
-    exact measurable_const
+      grind
+    simp_all
 
 end EvolutionData
 

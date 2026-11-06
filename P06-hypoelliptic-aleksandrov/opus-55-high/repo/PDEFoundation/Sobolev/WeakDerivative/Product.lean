@@ -44,54 +44,33 @@ theorem mul_contDiff {d : ℕ} {U : Set (Vec d)} {i : Fin d}
         φ x * gi x + u x * (fderiv ℝ φ x) (basisVec i)) := by
   intro ψ hψSmooth hψCompact hψSubset
   let μU : MeasureTheory.Measure (Vec d) := volumeOn U
-  let ei : Vec d := basisVec i
-  let dφ : Vec d → ℝ := fun x => (fderiv ℝ φ x) ei
-  let dψ : Vec d → ℝ := fun x => (fderiv ℝ ψ x) ei
-  let ψφ : Vec d → ℝ := fun x => φ x * ψ x
-  change
-    (∫ x, (φ x * u x) * dψ x ∂μU) =
-      -∫ x, (φ x * gi x + u x * dφ x) * ψ x ∂μU
+  let ei  := basisVec i
+  let dφ  := fun x => (fderiv ℝ φ x) ei
+  let dψ  := fun x => (fderiv ℝ ψ x) ei
+  let ψφ  := fun x => φ x * ψ x
   have hφCont : Continuous φ := hφ.continuous
   have hψCont : Continuous ψ := hψSmooth.continuous
   have hdφCont : Continuous dφ := by
-    simpa only [dφ, ei] using
+    simpa using
       (hφ.continuous_fderiv (by simp)).clm_apply continuous_const
-  have hdψCont : Continuous dψ := by
-    simpa only [dψ, ei] using
-      (hψSmooth.continuous_fderiv (by simp)).clm_apply continuous_const
-  have hdψCompact : HasCompactSupport dψ := by
-    simpa only [dψ, ei] using
-      hψCompact.fderiv_apply (𝕜 := ℝ) ei
-  have hψφSmooth : ContDiff ℝ (⊤ : ℕ∞) ψφ :=
+  have hψφSmooth : ContDiff ℝ _ ψφ :=
     hφ.mul hψSmooth
   have hψφCompact : HasCompactSupport ψφ := by
-    simpa only [ψφ] using! hψCompact.mul_left (f := φ)
+    simpa using! hψCompact.mul_left (f := φ)
   have hdψφCont :
       Continuous (fun x => (fderiv ℝ ψφ x) ei) := by
-    simpa only [ei] using
+    simpa using
       (hψφSmooth.continuous_fderiv (by simp)).clm_apply continuous_const
   have hdψφCompact :
       HasCompactSupport (fun x => (fderiv ℝ ψφ x) ei) := by
-    simpa only [ei] using
+    simpa using
       hψφCompact.fderiv_apply (𝕜 := ℝ) ei
   have hψφSubset : tsupport ψφ ⊆ U :=
     (tsupport_mul_subset_right (f := φ) (g := ψ)).trans hψSubset
   have huWeak :
       (∫ x, u x * (fderiv ℝ ψφ x) ei ∂μU) =
         -∫ x, gi x * ψφ x ∂μU := by
-    simpa only [μU] using
-      h ψφ hψφSmooth hψφCompact hψφSubset
-  have hφdψCont : Continuous (fun x => φ x * dψ x) :=
-    hφCont.mul hdψCont
-  have hφdψCompact :
-      HasCompactSupport (fun x => φ x * dψ x) := by
-    simpa only using! hdψCompact.mul_left (f := φ)
-  have huφdψIntegrable :
-      MeasureTheory.Integrable
-        (fun x => u x * (φ x * dψ x)) μU := by
-    simpa only [smul_eq_mul, mul_assoc] using
-      huLoc.integrable_smul_right_of_hasCompactSupport
-        hφdψCont hφdψCompact
+    aesop
   have hψdφCont : Continuous (fun x => ψ x * dφ x) :=
     hψCont.mul hdφCont
   have hψdφCompact :
@@ -100,27 +79,25 @@ theorem mul_contDiff {d : ℕ} {U : Set (Vec d)} {i : Fin d}
   have huψdφIntegrable :
       MeasureTheory.Integrable
         (fun x => u x * (ψ x * dφ x)) μU := by
-    simpa only [smul_eq_mul, mul_assoc] using
+    simpa using
       huLoc.integrable_smul_right_of_hasCompactSupport
         hψdφCont hψdφCompact
   have huDψφIntegrable :
       MeasureTheory.Integrable
         (fun x => u x * (fderiv ℝ ψφ x) ei) μU := by
-    simpa only [smul_eq_mul] using
+    simpa using
       huLoc.integrable_smul_right_of_hasCompactSupport
         hdψφCont hdψφCompact
   have hgiφψIntegrable :
       MeasureTheory.Integrable
         (fun x => gi x * (φ x * ψ x)) μU := by
-    simpa only [smul_eq_mul, mul_assoc] using!
+    simpa using!
       hgiLoc.integrable_smul_right_of_hasCompactSupport
         (hφCont.mul hψCont) hψφCompact
   have hudφψIntegrable :
       MeasureTheory.Integrable
         (fun x => (u x * dφ x) * ψ x) μU := by
-    simpa only [smul_eq_mul, mul_assoc, mul_left_comm, mul_comm] using
-      huLoc.integrable_smul_right_of_hasCompactSupport
-        hψdφCont hψdφCompact
+    grind
   have hproductDeriv :
       ∀ x, (fderiv ℝ ψφ x) ei =
         φ x * dψ x + ψ x * dφ x := by
@@ -130,13 +107,11 @@ theorem mul_contDiff {d : ℕ} {U : Set (Vec d)} {i : Fin d}
     have hψDiff : DifferentiableAt ℝ ψ x :=
       hψSmooth.contDiffAt.differentiableAt (by simp)
     rw [show ψφ = φ * ψ by rfl, fderiv_mul hφDiff hψDiff]
-    simp only [dφ, dψ, ei, add_apply,
-      smul_apply, smul_eq_mul]
+    aesop
   have hleft :
       (∫ x, (φ x * u x) * dψ x ∂μU) =
         ∫ x, u x * (φ x * dψ x) ∂μU := by
-    apply MeasureTheory.integral_congr_ae
-    exact Filter.Eventually.of_forall fun x => by ring
+    grind
   have hsplit :
       (∫ x, u x * (φ x * dψ x) ∂μU) =
         (∫ x, u x * (fderiv ℝ ψφ x) ei ∂μU) -
@@ -145,14 +120,7 @@ theorem mul_contDiff {d : ℕ} {U : Set (Vec d)} {i : Fin d}
       (∫ x, u x * (φ x * dψ x) ∂μU) =
           ∫ x, u x * (fderiv ℝ ψφ x) ei -
             u x * (ψ x * dφ x) ∂μU := by
-              apply MeasureTheory.integral_congr_ae
-              exact Filter.Eventually.of_forall fun x => by
-                change
-                  u x * (φ x * dψ x) =
-                    u x * (fderiv ℝ ψφ x) ei -
-                      u x * (ψ x * dφ x)
-                rw [hproductDeriv x]
-                ring
+              grind
       _ = (∫ x, u x * (fderiv ℝ ψφ x) ei ∂μU) -
             ∫ x, u x * (ψ x * dφ x) ∂μU := by
               rw [MeasureTheory.integral_sub
@@ -164,14 +132,11 @@ theorem mul_contDiff {d : ℕ} {U : Set (Vec d)} {i : Fin d}
     have hgiTerm :
         (∫ x, gi x * ψφ x ∂μU) =
           ∫ x, gi x * (φ x * ψ x) ∂μU := by
-      apply MeasureTheory.integral_congr_ae
-      exact Filter.Eventually.of_forall fun x => by
-        simp only [ψφ]
+      linarith
     have huTerm :
         (∫ x, u x * (ψ x * dφ x) ∂μU) =
           ∫ x, (u x * dφ x) * ψ x ∂μU := by
-      apply MeasureTheory.integral_congr_ae
-      exact Filter.Eventually.of_forall fun x => by ring
+      grind
     have hsum :
         (∫ x, (φ x * gi x + u x * dφ x) * ψ x ∂μU) =
           (∫ x, gi x * (φ x * ψ x) ∂μU) +
@@ -180,24 +145,13 @@ theorem mul_contDiff {d : ℕ} {U : Set (Vec d)} {i : Fin d}
         (∫ x, (φ x * gi x + u x * dφ x) * ψ x ∂μU) =
             ∫ x, gi x * (φ x * ψ x) +
               (u x * dφ x) * ψ x ∂μU := by
-                apply MeasureTheory.integral_congr_ae
-                exact Filter.Eventually.of_forall fun x => by ring
+                grind
         _ = (∫ x, gi x * (φ x * ψ x) ∂μU) +
               ∫ x, (u x * dφ x) * ψ x ∂μU := by
                 rw [MeasureTheory.integral_add
                   hgiφψIntegrable hudφψIntegrable]
-    rw [hgiTerm, huTerm, hsum]
-    ring
-  calc
-    (∫ x, (φ x * u x) * dψ x ∂μU) =
-        ∫ x, u x * (φ x * dψ x) ∂μU := hleft
-    _ = (∫ x, u x * (fderiv ℝ ψφ x) ei ∂μU) -
-          ∫ x, u x * (ψ x * dφ x) ∂μU := hsplit
-    _ = -(∫ x, gi x * ψφ x ∂μU) -
-          ∫ x, u x * (ψ x * dφ x) ∂μU := by
-            rw [huWeak]
-    _ = -∫ x, (φ x * gi x + u x * dφ x) * ψ x ∂μU :=
-      hright
+    linarith
+  linarith
 
 end HasWeakPartialDerivOn
 

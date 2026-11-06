@@ -11,7 +11,6 @@ zero zeroth-order coefficient, and zero source.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open MeasureTheory Set
 open scoped BigOperators MatrixOrder
@@ -53,10 +52,10 @@ theorem exists_local_homogeneous_hessian_constant {d : ℕ}
         (∑ j, (0 : PDE.Vec d) j * J.velocityGrad z j) + 0 * J.toFun z = 0 := by
     filter_upwards [heq] with z hz
     simpa using hz
-  have hb := hbound a T O hO A (fun _ => 0) (fun _ => 0)
+  have hb := hbound a T O hO A _ _
     J.toFun J.timeDeriv (fun _ => 0) J.velocityGrad J.velocityHessian hAm
     aestronglyMeasurable_const aestronglyMeasurable_const hAs hlo hhi hDA
-    (fun _ _ _ => by simpa using hM) (fun _ _ => by simpa using hM)
+    (fun _ _ _ => by simpa using hM) (fun _ _ => by grind)
     J.memLp J.timeDeriv_memLp J.velocityGrad_memLp J.velocityHessian_memLp
     MemLp.zero' J.hasWeakTimeDeriv J.hasWeakVelocityPartialDeriv
     J.hasWeakVelocitySecondPartialDeriv hpde η hη hcη hsη hη0 hη1 hdη

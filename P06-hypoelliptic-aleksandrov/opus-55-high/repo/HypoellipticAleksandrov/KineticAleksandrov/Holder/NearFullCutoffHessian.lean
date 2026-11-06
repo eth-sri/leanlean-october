@@ -20,16 +20,16 @@ def unitCutoffVelocitySlice {d : ℕ}
     (f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ) (Q : KineticPoint d) : PDE.Vec d → ℝ :=
   fun w => f (Q.time, (Q.position, w))
 
+variable {d : ℕ} {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
+
 /-- A source-smooth product cutoff has smooth velocity slices. -/
-theorem contDiff_unitCutoffVelocitySlice {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
+theorem contDiff_unitCutoffVelocitySlice 
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (Q : KineticPoint d) :
     ContDiff ℝ (⊤ : ℕ∞) (unitCutoffVelocitySlice f Q) :=
   hf.comp (contDiff_const.prodMk (contDiff_const.prodMk contDiff_id))
 
 /-- The physical velocity Hessian scales by level times inverse-square radius. -/
-theorem scaledUnitCutoff_velocityHessian {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
+theorem scaledUnitCutoff_velocityHessian 
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (P₀ P : KineticPoint d) (R ell : ℝ) :
     kineticVelocityHessian (scaledUnitCutoff f P₀ R ell) P =
       (ell * (R ^ 2)⁻¹) • sliceHessian
@@ -58,7 +58,7 @@ theorem scaledUnitCutoff_velocityHessian {d : ℕ}
     simp [w₀, Q, kineticAffineInverse, relativeVelocity]
     ring
   have hgmap : ContDiff ℝ 2 (fun w => g (w₀ + R⁻¹ • w)) := by
-    simpa only [Function.comp_def] using hg.comp hmap
+    fun_prop
   rw [kineticVelocityHessian_eq_sliceHessian, heq,
     sliceHessian_const_mul ell hgmap.contDiffAt,
     sliceHessian_affine (g := g) (y₀ := w₀) (c := R⁻¹) hg.contDiffAt, hbase]
@@ -66,8 +66,7 @@ theorem scaledUnitCutoff_velocityHessian {d : ℕ}
   rfl
 
 /-- The physical backward operator is the exact inverse-square unit jet expression. -/
-theorem scaledUnitCutoff_backwardOperator {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
+theorem scaledUnitCutoff_backwardOperator 
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (A : FullKineticCoefficient d)
     (P₀ P : KineticPoint d) (R ell : ℝ) :
     backwardOperator A (scaledUnitCutoff f P₀ R ell) P =

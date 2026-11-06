@@ -88,9 +88,7 @@ theorem integrable_bounded_real {E : Type*} [MeasurableSpace E]
     (μ : Measure E) [IsFiniteMeasure μ] (f : E → ℝ) (hf : Measurable f)
     (M : ℝ) (hb : ∀ x, |f x| ≤ M) : Integrable f μ := by
   refine ⟨hf.aestronglyMeasurable, HasFiniteIntegral.of_bounded (C := M) ?_⟩
-  exact Filter.Eventually.of_forall fun x => by
-    rw [Real.norm_eq_abs]
-    exact hb x
+  simp_all
 
 /-- The source-action measure reproduces the jointly measurable Duhamel integral. -/
 theorem integral_boundedSourceActionMeasure (K : MovingFiberKernel Ω γ)
@@ -113,7 +111,7 @@ theorem integral_boundedSourceActionMeasure (K : MovingFiberKernel Ω γ)
   have hF : Integrable (f ∘ boundedSourceOutput) (η.compProd κ) :=
     integrable_bounded_real _ _ (hf.comp measurable_boundedSourceOutput) M (fun q => hb _)
   have hm := measurable_duhamelIntegrand K hΩ hγ g hg
-  have hi : Integrable (fun q : KineticPoint d × ℝ => duhamelIntegrand K g q.1 q.2) ρ :=
+  have hi : Integrable _ ρ :=
     integrable_bounded_real _ _ hm M
       (fun q => abs_duhamelIntegrand_le K g M hM hb q.1 q.2)
   have hD := measurableSet_boundedSourcePairSet hΩ hγ
@@ -121,23 +119,20 @@ theorem integral_boundedSourceActionMeasure (K : MovingFiberKernel Ω γ)
       ∫ w, f (boundedSourceOutput (q,w)) ∂κ q) =
       fun q => duhamelIntegrand K g q.1.1 q.1.2 := by
     funext q
-    dsimp only [κ, boundedSourcePairKernel, ProbabilityTheory.Kernel.comap_apply,
-      f, boundedSourceOutput, boundedSourcePairQuery]
     unfold duhamelIntegrand
     have hq : q.1.1.time ≤ q.1.2 ∧
         q.1.1.position ∈ movingDomain Ω γ q.1.1.time := q.2
-    rw [dite_eq_left hq]
-    rfl
+    aesop
   have hind : (boundedSourcePairSet Ω γ).indicator
       (fun q : KineticPoint d × ℝ => duhamelIntegrand K g q.1 q.2) =
       fun q => duhamelIntegrand K g q.1 q.2 := by
     funext q
     by_cases hq : q ∈ boundedSourcePairSet Ω γ
-    · exact indicator_of_mem hq _
+    · simp_all
     · rw [indicator_of_notMem hq]
       unfold duhamelIntegrand
       change ¬(q.1.time ≤ q.2 ∧ q.1.position ∈ movingDomain Ω γ q.1.time) at hq
-      rw [dite_eq_right hq]
+      simp_all
   change (∫ q, f q ∂(η.compProd κ).map boundedSourceOutput) = _
   rw [integral_map measurable_boundedSourceOutput.aemeasurable hf.aestronglyMeasurable]
   change (∫ q, (f ∘ boundedSourceOutput) q ∂η.compProd κ) = _

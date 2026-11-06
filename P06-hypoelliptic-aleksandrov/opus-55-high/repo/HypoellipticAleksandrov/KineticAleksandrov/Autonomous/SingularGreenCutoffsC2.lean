@@ -7,7 +7,6 @@ import HypoellipticAleksandrov.KineticAleksandrov.Occupation.ParabolicDuhamelSli
 /-! # Integration by parts for twice continuously differentiable compact tests -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov MeasureTheory Set SectionTwo Evolution Occupation
 variable {d : ℕ}
@@ -26,7 +25,7 @@ theorem integral_transportedAdjoint_contDiffOn_two {U : Set (EvolutionVec d)} (h
     fderiv ℝ f x v
   have hd : ∀ v, ContDiffOn ℝ 1 (D v u) U :=
     fun v => (hu.fderiv_of_isOpen hU (by norm_num)).clm_apply contDiffOn_const
-  have hdd : ∀ v w, ContDiffOn ℝ 0 (D w (D v u)) U :=
+  have hdd : ∀ v w, ContDiffOn ℝ 0 (D w _) U :=
     fun v w => ((hd v).fderiv_of_isOpen hU (by norm_num)).clm_apply contDiffOn_const
   have hline : ∀ v x, x ∈ U → HasLineDerivAt ℝ u (D v u x) x v := by
     intro v x hx
@@ -37,21 +36,20 @@ theorem integral_transportedAdjoint_contDiffOn_two {U : Set (EvolutionVec d)} (h
     intro v w x hx
     exact (((hd v).contDiffAt (hU.mem_nhds hx)).differentiableAt (by norm_num)
       ).hasFDerivAt.hasLineDerivAt w
-  have key := integral_regularizedAdjoint_of_jets B b 0 hB hb u (D basisT u)
-    (fun i => D (basisV i) u) (fun i => D (basisZ i) u)
-    (fun i j => D (basisV j) (D (basisV i) u))
-    (fun i => D (basisZ i) (D (basisZ i) u))
+  have key := integral_regularizedAdjoint_of_jets B b 0 hB hb u _
+    _ _
+    _
+    _
     hu.continuousOn (hd basisT).continuousOn
-    (fun i => (hd (basisV i)).continuousOn) (fun i => (hd (basisZ i)).continuousOn)
-    (fun i j => (hdd (basisV i) (basisV j)).continuousOn)
-    (fun i => (hdd (basisZ i) (basisZ i)).continuousOn)
-    (hline basisT) (fun i => hline (basisV i)) (fun i => hline (basisZ i))
-    (fun i j => hline2 (basisV i) (basisV j))
-    (fun i => hline2 (basisZ i) (basisZ i)) ψ hψ hc hs
+    (fun i => (hd _).continuousOn) (fun i => (hd _).continuousOn)
+    (fun i j => (hdd _ _).continuousOn)
+    (fun i => (hdd _ _).continuousOn)
+    (hline basisT) (fun i => hline _) (fun i => hline _)
+    (fun i j => hline2 _ _)
+    (fun i => hline2 _ _) ψ hψ hc hs
   simp only [regularizedAdjoint, zero_mul, add_zero] at key
   refine key.trans (setIntegral_congr_fun hU.measurableSet fun x _ => ?_)
   congr 1
-  dsimp only [D, transportedOperator]
   congr 1
   rw [Finset.sum_comm]
   congr 1
@@ -60,12 +58,13 @@ theorem integral_transportedAdjoint_contDiffOn_two {U : Set (EvolutionVec d)} (h
   apply Finset.sum_congr rfl
   intro j _
   congr 1
-  exact congrFun (congrFun (hBs (timeCoord d x) (diffusedCoord d x)
-    (transportedCoord d x)) i) j
+  exact congrFun (congrFun (hBs _ _
+    _) i) j
+
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) {f : EvolutionVec 1 → ℝ}
 
 /-- The literal scalar kinetic operator of a C² function is continuous. -/
-theorem continuous_transportedOperator_c2 {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
-    {f : EvolutionVec 1 → ℝ} (hf : ContDiff ℝ 2 f) :
+theorem continuous_transportedOperator_c2  (hf : ContDiff ℝ 2 f) :
     Continuous (transportedOperator (evolutionCoefficient A.a) (identityDrift 1) f) := by
   have hd (v : EvolutionVec 1) : ContDiff ℝ 1 (fun x => fderiv ℝ f x v) :=
     contDiffOn_univ.mp
@@ -75,32 +74,31 @@ theorem continuous_transportedOperator_c2 {lam Lam : ℝ} (A : SmoothAutonomous 
     (contDiffOn_univ.mp
       (((hd v).contDiffOn.fderiv_of_isOpen isOpen_univ (by norm_num)).clm_apply
         contDiffOn_const) : ContDiff ℝ 0 _).continuous
-  unfold transportedOperator
   refine ((hd basisT).continuous.add ?_).add ?_
   · apply continuous_finsetSum
     intro i _
     apply continuous_finsetSum
     intro j _
     exact (((evolutionCoefficient_smooth A) i j).comp
-      (evolutionProdCLE 1).contDiff).continuous.mul (hdd (basisV j) (basisV i))
+      (evolutionProdCLE 1).contDiff).continuous.mul (hdd _ _)
   · apply continuous_finsetSum
     intro i _
     exact (((contDiff_pi.mp (identityDrift_smooth 1)) i).comp
-      (diffusedCoord 1).contDiff).continuous.mul (hd (basisZ i)).continuous
+      (diffusedCoord 1).contDiff).continuous.mul (hd _).continuous
 
 /-- Outside a test's closed support all terms of its actual operator vanish. -/
-theorem transportedOperator_eq_zero_of_notMem_tsupport {f : EvolutionVec 1 → ℝ}
+theorem transportedOperator_eq_zero_of_notMem_tsupport 
     {x : EvolutionVec 1} (hx : x ∉ tsupport f) (B : FullKineticCoefficient 1)
     (b : PDE.Vec 1 → PDE.Vec 1) : transportedOperator B b f x = 0 := by
   have h0 := fderiv_of_notMem_tsupport ℝ hx
-  have hn : x ∉ tsupport (fun y => fderiv ℝ f y (basisV (0 : Fin 1))) :=
+  have hn : x ∉ tsupport (fun y => fderiv ℝ f y _) :=
     fun h => hx (tsupport_fderiv_apply_subset ℝ (basisV 0) h)
   have h1 := fderiv_of_notMem_tsupport ℝ hn
   simp only [transportedOperator, Fin.sum_univ_one, h0, h1,
     zero_apply, mul_zero, add_zero]
 
 /-- A C² test satisfies the weak equation for its actual kinetic operator. -/
-theorem c2_isWeakTransportedSolution {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+theorem c2_isWeakTransportedSolution 
     {U : Set (EvolutionVec 1)} (hU : IsOpen U) {u : EvolutionVec 1 → ℝ}
     (hu : ContDiffOn ℝ 2 u U) :
     IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) U u

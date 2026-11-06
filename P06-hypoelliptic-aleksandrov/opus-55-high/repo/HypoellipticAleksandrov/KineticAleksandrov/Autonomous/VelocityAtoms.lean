@@ -6,7 +6,6 @@ import Mathlib.Tactic
 /-! # No velocity atoms in the actual killed Green measure -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
@@ -20,11 +19,11 @@ theorem stripGreen_velocity_slice_zero
   let Γ := stripGreen hH hLE hlam hLam A H T e
   have hfin : IsFiniteMeasure Γ := by dsimp only [Γ, stripGreen]; infer_instance
   let S : Set Point := {p | p.velocity 0 = v}
-  let C : ℝ := (H.hi - H.lo) / lam
+  let C  := (H.hi - H.lo) / lam
   have hC : 0 < C := div_pos (sub_pos.mpr H.ordered) hlam
   by_contra hz
   have hm : 0 < (Γ S).toReal :=
-    ENNReal.toReal_pos (by simpa only [Γ, S, ne_eq] using hz) (measure_ne_top Γ S)
+    ENNReal.toReal_pos (by omega) (measure_ne_top Γ S)
   let d := (Γ S).toReal / (4 * C)
   have hd : 0 < d := div_pos hm (by positivity)
   let E : Interval := ⟨v - d, v + d, by linarith⟩
@@ -32,19 +31,13 @@ theorem stripGreen_velocity_slice_zero
     intro p hp
     change p.velocity 0 = v at hp
     change v - d < p.velocity 0 ∧ p.velocity 0 < v + d
-    rw [hp]
-    constructor <;> linarith
+    simp_all
   have hcap := (measure_mono hsub).trans (strip_capacity hH hLE hlam hLam A H T e E)
   have hr := ENNReal.toReal_mono ENNReal.ofReal_ne_top hcap
   rw [ENNReal.toReal_ofReal (by
-    change 0 ≤ C * ((v + d) - (v - d))
     exact mul_nonneg hC.le (by linarith))] at hr
-  change (Γ S).toReal ≤ C * ((v + d) - (v - d)) at hr
   have he : C * ((v + d) - (v - d)) = (Γ S).toReal / 2 := by
-    dsimp only [d]
-    field_simp
-    ring
-  rw [he] at hr
+    grind
   linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

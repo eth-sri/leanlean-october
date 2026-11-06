@@ -12,7 +12,6 @@ For a test `ψ` supported in `{(σ,v,z) : σ < T, v ∈ Ω_σ}`, the left limit 
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
@@ -24,8 +23,10 @@ open scoped Topology
 variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 variable (K : MovingFiberKernel Ω γ)
 
+variable {B : CoefficientField d} (hΩa : IsAdmissibleEvolutionDomain Ω)
+
 /-- The slice integrand has the terminal value `g(r,v)` as a left limit at interior points. -/
-theorem slice_leftLimit {B : CoefficientField d} (hΩa : IsAdmissibleEvolutionDomain Ω)
+theorem slice_leftLimit 
     (hγ : Continuous γ)
     (hP : SectionTwo.HasParabolicMarginalBundle Ω γ
       (measurableSet_of_isAdmissibleEvolutionDomain hΩa) (zIndependentCoefficient B) K)
@@ -43,7 +44,7 @@ theorem slice_leftLimit {B : CoefficientField d} (hΩa : IsAdmissibleEvolutionDo
       (continuous_id.prodMk continuous_const).continuousAt.eventually (hU.mem_nhds hv)
     filter_upwards [hn.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with t ht ht2
     exact ⟨le_of_lt ht2, subset_closure ht.2⟩
-  have hcw : ContinuousWithinAt V (sliceClosedCylinder Ω γ r) (r, v) := hVc _ hcl
+  have hcw  := hVc _ hcl
   have hmap : Tendsto (fun t : ℝ => (t, v)) (𝓝[<] r) (𝓝[sliceClosedCylinder Ω γ r] (r, v)) := by
     refine tendsto_nhdsWithin_iff.2 ⟨?_, hev⟩
     exact ((continuous_id.prodMk continuous_const).tendsto r).mono_left nhdsWithin_le_nhds
@@ -51,10 +52,10 @@ theorem slice_leftLimit {B : CoefficientField d} (hΩa : IsAdmissibleEvolutionDo
   rw [hterm v (hcl.2)] at h1
   refine h1.congr' ?_
   filter_upwards [hev] with t ht
-  exact (hVeq (t, v) ht).symm
+  simp_all
 
 /-- The left limit of `u_r ψ` at `σ = r` is `g(r,v) ψ(r,v,z)`. -/
-theorem slice_terminal_limit {B : CoefficientField d} (hΩa : IsAdmissibleEvolutionDomain Ω)
+theorem slice_terminal_limit 
     (hγ : Continuous γ)
     (hP : SectionTwo.HasParabolicMarginalBundle Ω γ
       (measurableSet_of_isAdmissibleEvolutionDomain hΩa) (zIndependentCoefficient B) K)
@@ -75,14 +76,14 @@ theorem slice_terminal_limit {B : CoefficientField d} (hΩa : IsAdmissibleEvolut
   · rw [h0, mul_zero]
     have hb : Tendsto (fun t : ℝ => C * |ψ (packQ d (t, w))|) (𝓝[<] r) (𝓝 0) := by
       have := (hψt.abs).const_mul C
-      simpa [h0] using this
+      simp_all
     refine squeeze_zero_norm (fun t => ?_) hb
     rw [Real.norm_eq_abs, abs_mul]
     exact mul_le_mul_of_nonneg_right (hub _ _) (abs_nonneg _)
   · have hsupp : packQ d (r, w) ∈ tsupport ψ := subset_closure h0
     have hfib := hψs hsupp
     have hv : (r, w.1) ∈ duhamelFiber Ω γ T := by
-      simpa only [mem_preimage, evolutionToTimeVelocity_packQ] using hfib
+      aesop
     exact (slice_leftLimit K hΩa hγ hP g hgs hgc T hgU r w.1 hv).mul hψt
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

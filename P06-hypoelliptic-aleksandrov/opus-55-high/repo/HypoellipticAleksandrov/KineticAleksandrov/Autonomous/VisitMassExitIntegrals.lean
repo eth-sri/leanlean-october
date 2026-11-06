@@ -9,33 +9,31 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitMeasureF
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+
 /-- Actual union exits remain in the closure of the physical union velocity carrier. -/
 theorem visitUnionExit_ae_velocity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : ℝ)
+     (H : FiniteIntervalUnion) (T : ℝ)
     (p : FiniteUnionPole H (T : WithTop ℝ)) :
     ∀ᵐ q ∂finiteUnionExit hH hLE hlam hLam A H T p,
       q.velocity 0 ∈ closure H.carrier := by
   let I := H.component (finiteUnionPoleIndex H T p)
   filter_upwards [stripExitOfRealization_ae_closed_future hH hlam hLam A I
-    (stripEvolution hH hLE hlam hLam A I)
-    (stripEvolution_spec hH hLE hlam hLam A I) T (finiteUnionComponentPole H T p)] with q hq
+    _
+    _ T _] with q hq
   apply closure_mono (H.component_subset (finiteUnionPoleIndex H T p))
   change q.velocity 0 ∈ closure I.carrier
   simpa only [Interval.carrier, closure_Ioo I.ordered.ne] using hq.2.2
 
 /-- Every active exit kernel is concentrated on the closed active interval. -/
 theorem visitActiveExitKernel_ae_velocity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (p : Point) :
+     (c : Clock) (J : Interval) (s T : ℝ) (p : Point) :
     ∀ᵐ q ∂visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T p,
       q.velocity 0 ∈ closure c.active := by
   classical
-  change ∀ᵐ q ∂(if hp : p ∈ visitPoleSet (visitActiveUnion c J) s T then
-    finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) T
-      (visitPoleInclusion _ s T ⟨p, hp⟩) else 0), q.velocity 0 ∈ closure c.active
+  change ∀ᵐ q ∂(if hp : p ∈ visitPoleSet _ s T then
+    finiteUnionExit hH hLE hlam hLam A _ T
+      _ else 0), q.velocity 0 ∈ closure c.active
   split
   · rename_i hp
     apply (visitUnionExit_ae_velocity hH hLE hlam hLam A (visitActiveUnion c J) T
@@ -43,14 +41,12 @@ theorem visitActiveExitKernel_ae_velocity
     intro q hq
     apply closure_mono _ hq
     rw [visitActiveUnion_carrier]
-    exact inter_subset_left
+    simp
   · simp
 
 /-- Integrating the active exit family preserves its closed physical velocity support. -/
 theorem visitActiveExitMixture_ae_velocity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
+     (c : Clock) (J : Interval) (s T : ℝ)
     (mu : Measure Point) :
     ∀ᵐ q ∂(visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ mu),
       q.velocity 0 ∈ closure c.active := by
@@ -62,9 +58,7 @@ theorem visitActiveExitMixture_ae_velocity
 
 /-- The source quadratic is integrable against each finite actual active exit mixture. -/
 theorem visitQuadratic_integrable_activeExitMixture
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
+     (c : Clock) (J : Interval) (s T : ℝ)
     (mu : Measure Point) [IsFiniteMeasure mu] :
     Integrable (fun q => visitQuadratic c (q.velocity 0))
       (visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ mu) := by

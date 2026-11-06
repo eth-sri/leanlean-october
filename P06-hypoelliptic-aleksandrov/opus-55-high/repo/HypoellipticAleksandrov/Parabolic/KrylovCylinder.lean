@@ -39,27 +39,27 @@ def IsScalarC12UpTo {N : ℕ} (u : TimeVelocity N → ℝ)
       Set.EqOn dv (scalarSpatialGradient u) Q ∧
       Set.EqOn dvv (scalarSpatialHessian u) Q
 
+variable {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N) {u : TimeVelocity N → ℝ} {Q K : Set (TimeVelocity N)}
+
 /-- The Krylov cylinder is open in the ambient time–velocity space. -/
-theorem isOpen_krylovCylinder {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N) :
+theorem isOpen_krylovCylinder  :
     IsOpen (krylovCylinder t₀ h v₀) :=
   isOpen_Ioo.prod (PDE.isOpen_euclideanBall v₀ 1)
 
 /-- Membership uses the literal time interval and round unit ball. -/
-@[simp] theorem mem_krylovCylinder_iff {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N)
+@[simp] theorem mem_krylovCylinder_iff 
     (z : TimeVelocity N) :
     z ∈ krylovCylinder t₀ h v₀ ↔
       t₀ - h < z.1 ∧ z.1 < t₀ ∧ z.2 ∈ PDE.euclideanBall v₀ 1 := by
   simp only [krylovCylinder, Set.mem_prod, Set.mem_Ioo, and_assoc]
 
 /-- Up-to-boundary regularity includes precisely the interior classical predicate. -/
-theorem IsScalarC12UpTo.isScalarC12On {N : ℕ} {u : TimeVelocity N → ℝ}
-    {Q K : Set (TimeVelocity N)} (hu : IsScalarC12UpTo u Q K) :
+theorem IsScalarC12UpTo.isScalarC12On  (hu : IsScalarC12UpTo u Q K) :
     IsScalarC12On u Q :=
   hu.1
 
 /-- Up-to-boundary regularity includes continuity of the value on the closed set. -/
-theorem IsScalarC12UpTo.continuousOn {N : ℕ} {u : TimeVelocity N → ℝ}
-    {Q K : Set (TimeVelocity N)} (hu : IsScalarC12UpTo u Q K) :
+theorem IsScalarC12UpTo.continuousOn  (hu : IsScalarC12UpTo u Q K) :
     ContinuousOn u K :=
   hu.2.1
 

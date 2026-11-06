@@ -15,7 +15,6 @@ energy estimate.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -43,7 +42,7 @@ private theorem chainBox_subset_zero
 private theorem matrix_isSymm_of_lower_bound
     {d : ℕ} {lam : ℝ} {A : PDE.Mat d}
     (hlower : lam • (1 : PDE.Mat d) ≤ A) : A.IsSymm := by
-  have hgap : (A - lam • (1 : PDE.Mat d)).PosSemidef := Matrix.le_iff.mp hlower
+  have hgap : (A - lam • (1)).PosSemidef := Matrix.le_iff.mp hlower
   refine Matrix.IsSymm.ext ?_
   intro i j
   by_cases hij : i = j
@@ -147,15 +146,15 @@ theorem exists_iterated_genericPrelift_weakDerivativeFamily_estimate
         ∀ (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
           (c F : ℝ → PDE.Vec d → ℝ) (u : TimeVelocity d → ℝ)
           (D : ParabolicWeakDerivativeFamily d (k + 2)
-            (Set.Ioo (left k) (right k) ×ˢ spatial k) u)
-          (E : ParabolicWeakDerivativeFamily d (k + 1)
+            _ u)
+          (E : ParabolicWeakDerivativeFamily d _
             (Set.Ioo (left k) (right k) ×ˢ spatial k)
             (fun z : TimeVelocity d => F z.1 z.2)),
           (∀ z ∈ Set.Ioo (left k) (right k) ×ˢ spatial k,
             (a z.1 z.2).IsSymm) →
           (∀ z ∈ Set.Ioo (left k) (right k) ×ˢ spatial k,
-            lam • (1 : PDE.Mat d) ≤ a z.1 z.2 ∧
-              a z.1 z.2 ≤ Lam • (1 : PDE.Mat d)) →
+            lam • (1) ≤ a z.1 z.2 ∧
+              a z.1 z.2 ≤ Lam • (1)) →
           (∀ i j, ContDiffOn ℝ (k + 2)
             (fun z : TimeVelocity d => a z.1 z.2 i j)
             (Set.Ioo (left k) (right k) ×ˢ spatial k)) →
@@ -193,12 +192,12 @@ theorem exists_iterated_genericPrelift_weakDerivativeFamily_estimate
     rcases hchain.step (by omega : k < N + 2) with
       ⟨hl, hm, hr, hOopen, hO'open, hO'ne, hO'compact, hO'sub⟩
     exact exists_genericPrelift_addTwo_weakDerivativeFamily_estimate
-      d (k + 1) (by omega) (left k) (left (k + 1)) (right (k + 1))
-      (right k) hl hm hr (spatial k) (spatial (k + 1)) hOopen hO'open
-      hO'ne hO'compact hO'sub lam Lam hlam hlamLam (Ba k hk) (Bb k hk) (Bc k hk)
+      d _ (by omega) _ _ _
+      _ hl hm hr _ _ hOopen hO'open
+      hO'ne hO'compact hO'sub lam Lam hlam hlamLam _ _ _
       (fun i j alpha => hBaMax i j _) (fun j alpha => hBbMax j _)
       (fun alpha => hBcMax _)
-  let Cstep : ℕ → ℝ := fun k => if hk : k < N then Classical.choose (hstepConstant k hk) else 0
+  let Cstep  := fun k => if hk : k < N then Classical.choose (hstepConstant k hk) else 0
   have hCstep (k : ℕ) (hk : k < N) : 0 ≤ Cstep k := by
     simp only [Cstep, dif_pos hk]
     exact (Classical.choose_spec (hstepConstant k hk)).1
@@ -293,7 +292,7 @@ theorem exists_iterated_genericPrelift_weakDerivativeFamily_estimate
                 Ba k hkN i j alpha := by
           intro i j alpha z hz
           simpa only [Ba] using! haBound i j
-            (ParabolicDerivativeIndex.castLE (by omega) alpha) z (hsub hz)
+            (ParabolicDerivativeIndex.castLE _ alpha) z (hsub hz)
         have hbBoundStep : ∀ j
             (alpha : ParabolicDerivativeIndex d (k + 1)) z, z ∈ Q k →
             |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
@@ -301,7 +300,7 @@ theorem exists_iterated_genericPrelift_weakDerivativeFamily_estimate
                 Bb k hkN j alpha := by
           intro j alpha z hz
           simpa only [Bb] using! hbBound j
-            (ParabolicDerivativeIndex.castLE (by omega) alpha) z (hsub hz)
+            (ParabolicDerivativeIndex.castLE _ alpha) z (hsub hz)
         have hcBoundStep : ∀ (alpha : ParabolicDerivativeIndex d (k + 1)) z,
             z ∈ Q k →
             |TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1
@@ -309,7 +308,7 @@ theorem exists_iterated_genericPrelift_weakDerivativeFamily_estimate
                 Bc k hkN alpha := by
           intro alpha z hz
           simpa only [Bc] using! hcBound
-            (ParabolicDerivativeIndex.castLE (by omega) alpha) z (hsub hz)
+            (ParabolicDerivativeIndex.castLE _ alpha) z (hsub hz)
         have hcall := (Classical.choose_spec (hstepConstant k hkN)).2
         have hcall' := hcall a b c F u D E
           hSymmStep hEllStep haStep hbStep hcStep
@@ -321,7 +320,7 @@ theorem exists_iterated_genericPrelift_weakDerivativeFamily_estimate
         rcases hcall' with ⟨H, Dnext, hDold, _, _, hDnextNorm⟩
         refine ⟨Dnext, ?_, ?_⟩
         · intro alpha
-          exact (hDold (ParabolicDerivativeIndex.castLE (by omega) alpha)).trans
+          exact (hDold _).trans
             (hDseed alpha)
         · calc
             ParabolicWeakDerivativeFamily.squaredL2Norm Dnext ≤
@@ -330,21 +329,17 @@ theorem exists_iterated_genericPrelift_weakDerivativeFamily_estimate
             _ ≤ Cstep k * (K k *
                   (ParabolicWeakDerivativeFamily.squaredL2Norm Dseed +
                     ParabolicWeakDerivativeFamily.squaredL2Norm Emax) +
-                  ParabolicWeakDerivativeFamily.squaredL2Norm Emax) := by
-                exact mul_le_mul_of_nonneg_left (add_le_add hDnorm hEnorm) (hCstep k hkN)
+                  ParabolicWeakDerivativeFamily.squaredL2Norm Emax) := mul_le_mul_of_nonneg_left (add_le_add hDnorm hEnorm) (hCstep k hkN)
             _ ≤ Cstep k * ((K k + 1) *
                   (ParabolicWeakDerivativeFamily.squaredL2Norm Dseed +
                     ParabolicWeakDerivativeFamily.squaredL2Norm Emax)) := by
                 apply mul_le_mul_of_nonneg_left _ (hCstep k hkN)
                 have hseed := ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg Dseed
-                ring_nf
                 nlinarith [hK k,
                   ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg Emax]
             _ = K (k + 1) *
                   (ParabolicWeakDerivativeFamily.squaredL2Norm Dseed +
                     ParabolicWeakDerivativeFamily.squaredL2Norm Emax) := by
-                change Cstep k * ((K k + 1) * _) =
-                  (Cstep k * (K k + 1)) * _
                 ring
   simpa only [Q] using hiterate N le_rfl
 

@@ -26,7 +26,7 @@ theorem fullSpaceAction_eq_zeroTime {lam Lam : ℝ} (A : SmoothAutonomous lam La
     (F : BoundedBorel (EvolutionAmbientState 1)) (p : Point) (hp : 0 ≤ p.time) :
     fullSpaceAction E F p = ∫ x, F (x.2, x.1) ∂E.2.master
       (wholeSpaceQuery 0 p.time hp p.velocity p.position) := by
-  rw [fullSpaceAction, dite_eq_left hp]
+  rw [fullSpaceAction]
   have hk := fullspace_kernel_timeShift A E hE p.time
     (wholeSpaceQuery (-p.time) 0 (neg_nonpos.mpr hp) p.velocity p.position)
   have hq : autonomousQueryShift p.time
@@ -34,8 +34,7 @@ theorem fullSpaceAction_eq_zeroTime {lam Lam : ℝ} (A : SmoothAutonomous lam La
       wholeSpaceQuery 0 p.time hp p.velocity p.position := by
     apply Subtype.ext
     dsimp only [autonomousQueryShift, wholeSpaceQuery]
-    congr 1 <;> ring
-  rw [hq] at hk
-  exact congrArg (fun μ => ∫ x, F (x.2, x.1) ∂μ) hk.symm
+    simp
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -9,7 +9,6 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -17,15 +16,10 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 theorem gramian_inv_velocity_scaling {lam h s : ℝ} (hlam : 0 < lam) (hh : 0 < h)
     (hs : -(h / 128) ≤ s) :
     (gramian lam h s)⁻¹ 1 1 = (ghat lam (s / h))⁻¹ 1 1 / h := by
-  have hstrip : -(1 / 128 : ℝ) ≤ s / h := by
-    apply (le_div_iff₀ hh).mpr
-    linarith
-  have hd := (posDef_ghat hlam hstrip).det_pos.ne'
   have hscale : covarianceDet lam h s = h ^ 4 * (ghat lam (s / h)).det := by
     rw [det_ghat]
     unfold covarianceDet covarianceXX covarianceVV covarianceXV
-    field_simp
-    ring
+    grind
   have ha : covarianceXX lam h s =
       h ^ 3 * (lam / 64 * (1 + (s / h) ^ 2) + lam * (s / h) ^ 3 / 3) := by
     unfold covarianceXX
@@ -44,9 +38,9 @@ theorem gramian_velocity_trace_le (d : ℕ) {lam h s : ℝ}
   have ht1 : s / h ≤ 1 := (div_le_one hh).mpr hs1
   have hs : -(h / 128) ≤ s := by linarith
   rw [gramian_inv_velocity_scaling hlam hh hs, Matrix.trace_smul, Matrix.trace_one]
-  simp only [Fintype.card_fin, smul_eq_mul]
+  simp only [Fintype.card_fin]
   have hi := div_le_div_of_nonneg_right (ghat_inv_velocity_le hlam ht0 ht1) hh.le
-  have hm := mul_le_mul_of_nonneg_right hi (Nat.cast_nonneg d : (0 : ℝ) ≤ d)
+  have hm := mul_le_mul_of_nonneg_right hi (Nat.cast_nonneg d)
   convert hm using 1
   ring
 

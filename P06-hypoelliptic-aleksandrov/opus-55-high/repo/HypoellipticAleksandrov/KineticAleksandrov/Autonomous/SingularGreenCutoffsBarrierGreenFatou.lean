@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGree
 /-! # Actual quantitative cutoff removal for regularized singular barriers -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov MeasureTheory Filter Set
 open scoped Topology ENNReal
@@ -30,34 +29,33 @@ theorem barrier_green_cutoff_removal
   obtain ⟨C, hC, hb⟩ := barrier_cutoff_green_bounds hH hlam hLam A E hE f hf alpha D Bv
     ha ha1 hD hBv hm hbv c hc w hw hwn hbound Y z T hT
   let F := fun n : ℕ => fun q : Z =>
-    ENNReal.ofReal (c * (barrierRectCutoff Y ((n : ℝ) + 1) q * w q))
-  let b := fun n : ℕ => (∫ q, barrierRectCutoff Y ((n : ℝ) + 1) q * f q ∂kernelXV E T z) -
-    barrierRectCutoff Y ((n : ℝ) + 1) z * f z + C * (T : ℝ) / ((n : ℝ) + 1)
+    ENNReal.ofReal (c * (barrierRectCutoff Y (n + 1) q * w q))
+  let b := fun n : ℕ => (∫ q, barrierRectCutoff Y (n + 1) q * f q ∂kernelXV E T z) -
+    barrierRectCutoff Y (n + 1) z * f z + C * T / (n + 1)
   have hmF (n : ℕ) : Measurable (F n) :=
     (((barrierRectCutoff_continuous _ _).measurable.mul hw).const_mul c).ennreal_ofReal
   have hpF (q : Z) : Tendsto (fun n => F n q) atTop (𝓝 (ENNReal.ofReal (c * w q))) := by
     apply Tendsto.congr' ?_ tendsto_const_nhds
     filter_upwards [barrierRectCutoff_eventually_one Y q] with n hn
-    simp only [F, hn, one_mul]
-  have hcut0 : Tendsto (fun n : ℕ => barrierRectCutoff Y ((n : ℝ) + 1) z * f z)
+    grind
+  have hcut0 : Tendsto (fun n : ℕ => barrierRectCutoff Y (n + 1) z * f z)
       atTop (𝓝 (f z)) := by
     apply Tendsto.congr' ?_ tendsto_const_nhds
     filter_upwards [barrierRectCutoff_eventually_one Y z] with n hn
-    simp only [hn, one_mul]
-  have herr : Tendsto (fun n : ℕ => C * (T : ℝ) / ((n : ℝ) + 1)) atTop (𝓝 0) := by
+    simp_all
+  have herr : Tendsto (fun n : ℕ => C * T / (n + 1)) atTop (𝓝 0) := by
     simpa only [mul_zero, mul_one_div] using
-      (tendsto_const_nhds (x := C * (T : ℝ))).mul
+      (tendsto_const_nhds (x := C * T)).mul
         (tendsto_one_div_add_atTop_nhds_zero_nat (𝕜 := ℝ))
   have hbt : Tendsto b atTop (𝓝 ((∫ q, f q ∂kernelXV E T z) - f z)) := by
-    have hi := barrierRectCutoff_integral_tendsto (kernelXV E T z) f
+    have hi := barrierRectCutoff_integral_tendsto _ f
       hf.continuous.measurable hfi Y
     simpa only [add_zero] using (hi.sub hcut0).add herr
   have hboundF (n : ℕ) : (∫⁻ q, F n q ∂physicalOccupationMeasure E z T) ≤ ENNReal.ofReal (b n) :=
-    hb ((n : ℝ) + 1) (by
-      have hn : (0 : ℝ) ≤ n := by positivity
-      linarith only [hn])
-  have hh := singular_fatou_of_real_bounds (physicalOccupationMeasure E z T) F
-    (fun q => ENNReal.ofReal (c * w q)) hmF hpF b _ hbt hboundF
+    hb _ (by
+      simp)
+  have hh := singular_fatou_of_real_bounds _ F
+    _ hmF hpF b _ hbt hboundF
   simpa only [ENNReal.ofReal_mul hc.le,
     lintegral_const_mul' _ _ ENNReal.ofReal_lt_top.ne] using hh
 

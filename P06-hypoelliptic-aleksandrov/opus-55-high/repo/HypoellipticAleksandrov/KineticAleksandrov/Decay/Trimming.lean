@@ -43,20 +43,20 @@ theorem exists_trimming_of_le_map_fst {d : ℕ}
       Θ = (E.map Prod.fst).withDensity g ∧
       (E.withDensity (g ∘ Prod.fst)).map Prod.fst = Θ ∧
       E.withDensity (g ∘ Prod.fst) ≤ E := by
-  have : IsFiniteMeasure Θ := isFiniteMeasure_of_le _ hΘ
-  have hac : Θ ≪ E.map Prod.fst := Measure.absolutelyContinuous_of_le hΘ
+  have  := isFiniteMeasure_of_le _ hΘ
+  have hac  := Measure.absolutelyContinuous_of_le hΘ
   have hle : ∀ᵐ w ∂E.map Prod.fst, Θ.rnDeriv (E.map Prod.fst) w ≤ 1 := by
     filter_upwards [Measure.rnDeriv_le_one_of_le hΘ] with w hw using hw
-  have hΘeq : Θ = (E.map Prod.fst).withDensity (Θ.rnDeriv (E.map Prod.fst)) :=
+  have hΘeq  :=
     (Measure.withDensity_rnDeriv_eq _ _ hac).symm
   have hmeas : Measurable (Θ.rnDeriv (E.map Prod.fst)) := Measure.measurable_rnDeriv _ _
-  refine ⟨Θ.rnDeriv (E.map Prod.fst), hmeas, hle, hΘeq, ?_, ?_⟩
+  refine ⟨Θ.rnDeriv _, hmeas, hle, hΘeq, ?_, ?_⟩
   · rw [map_fst_withDensity_comp_fst E _ hmeas]
-    exact hΘeq.symm
+    grind
   · have hae : ∀ᵐ x ∂E, (Θ.rnDeriv (E.map Prod.fst) ∘ Prod.fst) x ≤ 1 :=
       ae_of_ae_map measurable_fst.aemeasurable hle
-    calc E.withDensity (Θ.rnDeriv (E.map Prod.fst) ∘ Prod.fst)
-        ≤ E.withDensity (fun _ => 1) := withDensity_mono hae
+    calc E.withDensity _
+        ≤ E.withDensity _ := withDensity_mono hae
       _ = E := withDensity_one
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

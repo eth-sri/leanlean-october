@@ -76,67 +76,57 @@ def HasLowerEllipticityAE {d : ℕ} (lam : ℝ) (A : CoefficientField d) : Prop 
 def HasUpperEllipticityAE {d : ℕ} (Lam : ℝ) (A : CoefficientField d) : Prop :=
   ∀ᵐ z ∂(volume : Measure (ℝ × PDE.Vec d)), coefficientAt A z ≤ Lam • (1 : PDE.Mat d)
 
+variable {d : ℕ} {lam : ℝ} {A : PDE.Mat d}
+
 /-- The PDE coordinate dot product is Mathlib's finite dot product. -/
-theorem vecDot_eq_dotProduct {d : ℕ} (x y : PDE.Vec d) : PDE.vecDot x y = x ⬝ᵥ y :=
+theorem vecDot_eq_dotProduct  (x y : PDE.Vec d) : PDE.vecDot x y = x ⬝ᵥ y :=
   rfl
 
 /-- A Loewner lower bound, with no sign condition on `lam`, gives the
 corresponding coordinate quadratic lower bound. -/
 theorem vecDot_mulVec_lower_of_loewner
-    {d : ℕ} {lam : ℝ} {A : PDE.Mat d}
+    
     (hlo : lam • (1 : PDE.Mat d) ≤ A) (x : PDE.Vec d) :
     lam * PDE.vecNormSq x ≤ PDE.vecDot x (A *ᵥ x) := by
-  have hgap : (A - lam • (1 : PDE.Mat d)).PosSemidef := Matrix.le_iff.mp hlo
+  have hgap : (A - lam • (1)).PosSemidef := Matrix.le_iff.mp hlo
   have hquad := hgap.dotProduct_mulVec_nonneg x
-  simp only [star_trivial, Matrix.sub_mulVec, Matrix.smul_mulVec,
-    Matrix.one_mulVec, dotProduct_sub, dotProduct_smul, smul_eq_mul] at hquad
-  simpa only [PDE.vecNormSq, PDE.vecDot, dotProduct, mul_comm] using sub_nonneg.mp hquad
+  simp only [Matrix.sub_mulVec, Matrix.smul_mulVec] at hquad
+  aesop
 
-private theorem isHermitian_of_isSymm {d : ℕ} {A : PDE.Mat d} (hA : A.IsSymm) :
+private theorem isHermitian_of_isSymm  (hA : A.IsSymm) :
     A.IsHermitian := by
-  apply Matrix.IsHermitian.ext
-  intro i j
-  simpa using hA.apply i j
+  simp_all
 
 /-- A symmetric coordinate quadratic lower bound implies the corresponding Loewner bound. -/
-theorem loewner_lower_of_quadraticForm {d : ℕ} {lam : ℝ} {A : PDE.Mat d}
+theorem loewner_lower_of_quadraticForm 
     (hA : A.IsSymm)
     (hquad : ∀ x, lam * PDE.vecNormSq x ≤ PDE.vecDot x (A *ᵥ x)) :
     lam • (1 : PDE.Mat d) ≤ A := by
-  rw [Matrix.le_iff]
   apply Matrix.PosSemidef.of_dotProduct_mulVec_nonneg
-  · exact (isHermitian_of_isSymm hA).sub (by
-      apply Matrix.IsHermitian.ext
-      intro i j
-      by_cases hij : i = j
-      · subst j
-        simp
-      · have hji : j ≠ i := Ne.symm hij
-        simp [hij, hji])
+  · simp_all
   · intro x
     have hquad' : lam * (x ⬝ᵥ x) ≤ x ⬝ᵥ (A *ᵥ x) := by
-      simpa [PDE.vecNormSq, vecDot_eq_dotProduct] using hquad x
+      aesop
     rw [Matrix.sub_mulVec, Matrix.smul_mulVec, Matrix.one_mulVec,
       dotProduct_sub, dotProduct_smul]
-    simpa [sub_eq_add_neg,
-      mul_comm, mul_left_comm, mul_assoc] using sub_nonneg.mpr hquad'
+    positivity
 
 /-- A positive lower Loewner bound makes a real matrix positive definite. -/
-theorem posDef_of_loewner_lower {d : ℕ} {lam : ℝ} {A : PDE.Mat d}
+theorem posDef_of_loewner_lower 
     (hlam : 0 < lam) (hA : lam • (1 : PDE.Mat d) ≤ A) : A.PosDef := by
-  have hP : (A - lam • (1 : PDE.Mat d)).PosSemidef := Matrix.le_iff.mp hA
+  have hP : (A - lam • (1)).PosSemidef := Matrix.le_iff.mp hA
   have hlamI : (lam • (1 : PDE.Mat d)).PosDef := Matrix.PosDef.one.smul hlam
-  have hsplit : A = lam • (1 : PDE.Mat d) + (A - lam • (1 : PDE.Mat d)) := by
+  have hsplit : A = lam • (1) + (A - lam • (1)) := by
     abel
   rw [hsplit]
   exact hlamI.add_posSemidef hP
 
 /-- A positive lower Loewner bound gives the sharp determinant lower bound. -/
-theorem det_lower_of_loewner {d : ℕ} {lam : ℝ} {A : PDE.Mat d}
+theorem det_lower_of_loewner 
     (hlam : 0 < lam) (hlo : lam • (1 : PDE.Mat d) ≤ A) : lam ^ d ≤ A.det := by
   classical
-  have hP : (A - lam • (1 : PDE.Mat d)).PosSemidef := Matrix.le_iff.mp hlo
-  have hA : A.PosDef := posDef_of_loewner_lower hlam hlo
+  have hP : (A - lam • (1)).PosSemidef := Matrix.le_iff.mp hlo
+  have hA  := posDef_of_loewner_lower hlam hlo
   have heigen : ∀ i : Fin d, lam ≤ hA.isHermitian.eigenvalues i := by
     intro i
     have hnonneg := hP.dotProduct_mulVec_nonneg (⇑(hA.isHermitian.eigenvectorBasis i))
@@ -144,12 +134,9 @@ theorem det_lower_of_loewner {d : ℕ} {lam : ℝ} {A : PDE.Mat d}
     have hsub : 0 ≤ hA.isHermitian.eigenvalues i - lam := by
       simp only [Matrix.sub_mulVec, Matrix.smul_mulVec, Matrix.one_mulVec,
         hA.isHermitian.mulVec_eigenvectorBasis, sub_dotProduct, smul_dotProduct,
-        ← EuclideanSpace.inner_eq_star_dotProduct,
-        inner_self_eq_norm_sq_to_K, hA.isHermitian.eigenvectorBasis.orthonormal.1 i,
-        smul_eq_mul] at hnonneg
-      norm_num at hnonneg
-      exact sub_nonneg.mpr hnonneg
-    exact sub_nonneg.mp hsub
+        ← EuclideanSpace.inner_eq_star_dotProduct] at hnonneg
+      simp_all
+    simp_all
   calc
     lam ^ d = ∏ _i : Fin d, lam := by simp
     _ ≤ ∏ i : Fin d, hA.isHermitian.eigenvalues i :=

@@ -24,8 +24,10 @@ def maximalCylinderUnion {d : ℕ} (E : Set (KineticPoint d)) (tau : ENNReal) :
     tau * volume (backwardCylinder z.1 z.2) ≤ volume (E ∩ backwardCylinder z.1 z.2)},
     backwardCylinder z.1 z.2
 
+variable {d : ℕ}
+
 /-- A density-threshold cylinder family satisfies the homogeneous weak measure estimate. -/
-theorem cylinder_family_weak_type {d : ℕ} {ι : Type*}
+theorem cylinder_family_weak_type  {ι : Type*}
     (P : ι → KineticPoint d) (r : ι → ℝ) (t : Set ι) (R : ℝ)
     (hr : ∀ i ∈ t, 0 < r i) (hR : ∀ i ∈ t, r i ≤ R)
     (E : Set (KineticPoint d)) (tau : ENNReal)
@@ -35,27 +37,25 @@ theorem cylinder_family_weak_type {d : ℕ} {ι : Type*}
       ENNReal.ofReal ((8 : ℝ) ^ (4*d+2)) * volume E := by
   obtain ⟨u, hut, _, _, hcover, hcharge⟩ :=
     exists_disjoint_selection_measure_bounds P r t R hr hR E
-  let C := ENNReal.ofReal ((8 : ℝ) ^ (4*d+2))
+  let C := ENNReal.ofReal ((8) ^ (4*d+2))
   calc
-    tau * volume (⋃ i ∈ t, backwardCylinder (P i) (r i)) ≤
-        tau * ∑' i : u, volume (inflatedCylinder (P i) (r i) 8) :=
+    tau * volume _ ≤
+        tau * ∑' i : u, volume _ :=
       mul_le_mul_right hcover tau
-    _ = C * ∑' i : u, tau * volume (backwardCylinder (P i) (r i)) := by
-      simp_rw [volume_inflatedCylinder (P _) (hr _ (hut (Subtype.prop _)))]
+    _ = C * ∑' i : u, tau * volume _ := by
+      simp_rw [volume_inflatedCylinder _ (hr _ (hut (Subtype.prop _)))]
       rw [ENNReal.tsum_mul_left, ENNReal.tsum_mul_left]
-      exact mul_left_comm _ _ _
-    _ ≤ C * ∑' i : u, volume (E ∩ backwardCylinder (P i) (r i)) := by
+      ring
+    _ ≤ C * ∑' i : u, volume _ := by
       apply mul_le_mul_right
       exact ENNReal.tsum_le_tsum fun i => hdensity i (hut i.2)
     _ ≤ C * volume E := mul_le_mul_right hcharge C
 
 /-- The literal kinetic maximal set satisfies a weak (1,1) estimate for indicators. -/
-theorem maximalCylinderUnion_weak_type {d : ℕ} (E : Set (KineticPoint d)) (tau : ENNReal) :
+theorem maximalCylinderUnion_weak_type  (E : Set (KineticPoint d)) (tau : ENNReal) :
     tau * volume (maximalCylinderUnion E tau) ≤
-      ENNReal.ofReal ((8 : ℝ) ^ (4*d+2)) * volume E := by
-  exact cylinder_family_weak_type Prod.fst Prod.snd
-    {z : KineticPoint d × ℝ | 0 < z.2 ∧ z.2 ≤ 1 ∧
-      tau * volume (backwardCylinder z.1 z.2) ≤ volume (E ∩ backwardCylinder z.1 z.2)}
+      ENNReal.ofReal ((8 : ℝ) ^ (4*d+2)) * volume E := cylinder_family_weak_type Prod.fst Prod.snd
+    _
     1 (fun _ hz => hz.1) (fun _ hz => hz.2.1) E tau (fun _ hz => hz.2.2)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering

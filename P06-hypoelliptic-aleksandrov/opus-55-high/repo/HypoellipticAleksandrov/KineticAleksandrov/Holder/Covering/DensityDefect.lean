@@ -12,8 +12,10 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 
 open Set MeasureTheory
 
+variable {d : ℕ}
+
 /-- A uniformly sub-full cylinder family leaves a definite fraction of its union outside E. -/
-theorem cylinder_union_density_defect {d : ℕ} {ι : Type*}
+theorem cylinder_union_density_defect  {ι : Type*}
     (P : ι → KineticPoint d) (r : ι → ℝ) (t : Set ι) (R : ℝ)
     (hr : ∀ i ∈ t, 0 < r i) (hR : ∀ i ∈ t, r i ≤ R)
     (E : Set (KineticPoint d)) (hE : NullMeasurableSet E volume)
@@ -24,19 +26,18 @@ theorem cylinder_union_density_defect {d : ℕ} {ι : Type*}
       ENNReal.ofReal ((8 : ℝ)^(4*d+2)) *
         volume ((⋃ i ∈ t, backwardCylinder (P i) (r i)) \ E) := by
   let H := ⋃ i ∈ t, backwardCylinder (P i) (r i)
-  apply cylinder_family_weak_type P r t R hr hR (H \ E) (ENNReal.ofReal eta)
+  apply cylinder_family_weak_type P r t R hr hR (H \ E) _
   intro i hi
-  have hsub : backwardCylinder (P i) (r i) ⊆ H := subset_iUnion₂_of_subset i hi subset_rfl
+  have hsub : backwardCylinder _ _ ⊆ H := subset_iUnion₂_of_subset i hi subset_rfl
   have heq : (H \ E) ∩ backwardCylinder (P i) (r i) =
       backwardCylinder (P i) (r i) \ E := by
-    ext X
-    exact ⟨fun h => ⟨h.2, h.1.2⟩, fun h => ⟨⟨hsub h.1, h.2⟩, h.1⟩⟩
+    grind
   rw [heq]
-  exact measure_density_defect hE (volume_cylinder_pos_ne_top (P i) (hr i hi)).2
+  exact measure_density_defect hE (volume_cylinder_pos_ne_top _ (hr i hi)).2
     heta (hdensity i hi)
 
 /-- Real-valued form of the strict density reduction inside a finite critical union. -/
-theorem cylinder_union_density_reduction {d : ℕ} {ι : Type*}
+theorem cylinder_union_density_reduction  {ι : Type*}
     (P : ι → KineticPoint d) (r : ι → ℝ) (t : Set ι) (R : ℝ)
     (hr : ∀ i ∈ t, 0 < r i) (hR : ∀ i ∈ t, r i ≤ R)
     (E : Set (KineticPoint d)) (hE : NullMeasurableSet E volume)
@@ -55,11 +56,11 @@ theorem cylinder_union_density_reduction {d : ℕ} {ι : Type*}
   have hreal := ENNReal.toReal_mono
     (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hD) hineq
   rw [ENNReal.toReal_mul, ENNReal.toReal_mul, ENNReal.toReal_ofReal heta,
-    ENNReal.toReal_ofReal (by positivity : 0 ≤ (8 : ℝ)^(4*d+2))] at hreal
+    ENNReal.toReal_ofReal (by positivity)] at hreal
   have hsum := congrArg ENNReal.toReal (measure_inter_add_sdiff₀ (μ := volume) H hE)
-  rw [ENNReal.toReal_add hI hD, inter_comm H E] at hsum
+  rw [ENNReal.toReal_add hI hD, inter_comm] at hsum
   have hB : 0 < (8 : ℝ)^(4*d+2) := by positivity
-  have hdiv : eta*(volume H).toReal/((8 : ℝ)^(4*d+2)) ≤ (volume (H \ E)).toReal :=
+  have hdiv : eta*(volume H).toReal/((8)^(4*d+2)) ≤ (volume _).toReal :=
     (div_le_iff₀ hB).mpr (by simpa only [mul_comm] using hreal)
   rw [mul_div_right_comm] at hdiv
   nlinarith only [hsum, hdiv]

@@ -125,21 +125,18 @@ theorem ae_eq {d : ℕ} {U : Set (Vec d)} (hU : IsOpen U)
           ∫ x in U, hi x * φ x ∂MeasureTheory.volume := by
       have hgi' := hgi φ hφSmooth hφCompact hφSub
       have hhi' := hhi φ hφSmooth hφCompact hφSub
-      apply neg_injective
-      rw [← hgi', ← hhi']
+      simp_all
     have hsetZero :
         ∫ x in U, φ x * (gi x - hi x) ∂MeasureTheory.volume = 0 := by
       calc
         ∫ x in U, φ x * (gi x - hi x) ∂MeasureTheory.volume =
             ∫ x in U, (gi x * φ x - hi x * φ x)
               ∂MeasureTheory.volume := by
-                apply MeasureTheory.setIntegral_congr_fun hU.measurableSet
-                intro x hx
-                ring
+                grind
         _ = ∫ x in U, gi x * φ x ∂MeasureTheory.volume -
               ∫ x in U, hi x * φ x ∂MeasureTheory.volume := by
                 rw [MeasureTheory.integral_sub hgiInt hhiInt]
-        _ = 0 := by rw [hsetEq, sub_self]
+        _ = 0 := by simp_all
     have hzeroOut :
         ∀ x, x ∉ U → φ x * (gi x - hi x) = 0 := by
       intro x hx
@@ -148,19 +145,19 @@ theorem ae_eq {d : ℕ} {U : Set (Vec d)} (hU : IsOpen U)
     calc
       ∫ x, φ x • (gi x - hi x) ∂MeasureTheory.volume =
           ∫ x, φ x * (gi x - hi x) ∂MeasureTheory.volume := by
-            simp [smul_eq_mul]
+            simp
       _ = ∫ x in U, φ x * (gi x - hi x) ∂MeasureTheory.volume := by
             rw [MeasureTheory.setIntegral_eq_integral_of_forall_compl_eq_zero
               hzeroOut]
       _ = 0 := hsetZero
   rw [Filter.EventuallyEq, MeasureTheory.ae_restrict_iff' hU.measurableSet]
-  filter_upwards [hdiffZero] with x hx hxu
-  exact sub_eq_zero.mp (hx hxu)
+  grind
 
 end HasWeakPartialDerivOn
 
-theorem HasWeakPartialDerivOn.restrict {d : ℕ}
-    {U V : Set (Vec d)} (_hVOpen : IsOpen V) (hVU : V ⊆ U)
+variable {d : ℕ} {U V : Set (Vec d)}
+
+theorem HasWeakPartialDerivOn.restrict  (_hVOpen : IsOpen V) (hVU : V ⊆ U)
     {i : Fin d} {u gi : Vec d → ℝ}
     (h : HasWeakPartialDerivOn U i u gi) :
     HasWeakPartialDerivOn V i u gi := by
@@ -182,7 +179,7 @@ theorem HasWeakPartialDerivOn.restrict {d : ℕ}
     simp [image_eq_zero_of_notMem_tsupport
       (fun hx' => hx (hφSupport hx'))]
   have hValueZeroU :
-      ∀ x, x ∉ U → u x * (fderiv ℝ φ x) (basisVec i) = 0 :=
+      ∀ x, x ∉ U → u x * (fderiv ℝ φ x) _ = 0 :=
     fun x hx => hValueZero x (fun hx' => hx (hVU hx'))
   have hGradZeroU :
       ∀ x, x ∉ U → gi x * φ x = 0 :=
@@ -196,34 +193,32 @@ theorem HasWeakPartialDerivOn.restrict {d : ℕ}
         hGradZeroU,
     hWeak]
 
-theorem HasWeakGradientOn.restrict {d : ℕ}
-    {U V : Set (Vec d)} (hVOpen : IsOpen V) (hVU : V ⊆ U)
+theorem HasWeakGradientOn.restrict  (hVOpen : IsOpen V) (hVU : V ⊆ U)
     {u : Vec d → ℝ} {Du : Vec d → Vec d}
     (h : HasWeakGradientOn U u Du) :
     HasWeakGradientOn V u Du := by
   intro i
   exact (h i).restrict hVOpen hVU
 
-theorem HasWeakPartialDerivOn.of_contDiff {d : ℕ}
+theorem HasWeakPartialDerivOn.of_contDiff 
     {U : Set (Vec d)} {i : Fin d} {f : Vec d → ℝ}
     (hf : ContDiff ℝ 1 f) :
     HasWeakPartialDerivOn U i f
       (fun x => (fderiv ℝ f x) (basisVec i)) := by
   intro φ hφSmooth hφSupport hφSubset
-  let ei : Vec d := basisVec i
+  let ei  := basisVec i
   have hfDiff : Differentiable ℝ f := hf.differentiable (by simp)
   have hφDiff : Differentiable ℝ φ :=
     hφSmooth.differentiable (by simp)
-  have hfCont : Continuous f := hfDiff.continuous
-  have hφCont : Continuous φ := hφDiff.continuous
+  have hfCont  := hfDiff.continuous
+  have hφCont  := hφDiff.continuous
   have hfderivφCont :
       Continuous (fun x => (fderiv ℝ φ x) ei) := by
     simpa [ei] using
       (hφSmooth.continuous_fderiv (by simp)).clm_apply continuous_const
   have hfderivfCont :
       Continuous (fun x => (fderiv ℝ f x) ei) := by
-    simpa [ei] using
-      (hf.continuous_fderiv (by simp)).clm_apply continuous_const
+    fun_prop
   have hφFderivSupport :
       HasCompactSupport (fun x => (fderiv ℝ φ x) ei) := by
     simpa [ei] using hφSupport.fderiv_apply (𝕜 := ℝ) ei
@@ -249,7 +244,7 @@ theorem HasWeakPartialDerivOn.of_contDiff {d : ℕ}
     rw [Filter.EventuallyEq.fderiv_eq hφEq]
     simp
 
-theorem HasWeakGradientOn.of_contDiff {d : ℕ}
+theorem HasWeakGradientOn.of_contDiff 
     {U : Set (Vec d)} {f : Vec d → ℝ}
     (hf : ContDiff ℝ 1 f) :
     HasWeakGradientOn U f

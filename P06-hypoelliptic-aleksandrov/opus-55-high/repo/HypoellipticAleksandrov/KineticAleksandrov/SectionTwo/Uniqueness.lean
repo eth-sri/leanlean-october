@@ -27,11 +27,12 @@ variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 def smoothTestDatum (φ : EvolutionAmbientState d → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
     (hr : ∀ x, 0 ≤ φ x ∧ φ x ≤ 1) : BoundedBorel (EvolutionAmbientState d) :=
   ⟨φ, hφ.continuous.measurable, 1, zero_le_one, fun x => by
-    rw [abs_of_nonneg (hr x).1]; exact (hr x).2⟩
+    grind⟩
+
+variable {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE.Vec d} {S S' : TerminalOperatorFamily Ω γ} {K K' : MovingFiberKernel Ω γ} (hΩo : IsOpen Ω)
 
 /-- Two realizations give the same operator value on every smooth compact datum. -/
-theorem realizes_fiber_integral_eq {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE.Vec d}
-    {S S' : TerminalOperatorFamily Ω γ} {K K' : MovingFiberKernel Ω γ}
+theorem realizes_fiber_integral_eq 
     (hΩ : MeasurableSet Ω)
     (h : RealizesTerminalEvolution Ω γ hΩ B b S K)
     (h' : RealizesTerminalEvolution Ω γ hΩ B b S' K')
@@ -40,15 +41,15 @@ theorem realizes_fiber_integral_eq {B : FullKineticCoefficient d} {b : PDE.Vec d
     ∫ q, F q.1 ∂K.fiberKernel hΩ σ τ hστ p = ∫ q, F q.1 ∂K'.fiberKernel hΩ σ τ hστ p := by
   obtain ⟨u, hu, hup, huniq⟩ := h.1 τ F hF
   obtain ⟨u', hu', hup', -⟩ := h'.1 τ F hF
-  have hmem : (⟨σ, p.1.1, p.1.2⟩ : KineticPoint d) ∈ evolutionPastClosedCylinder Ω γ τ :=
+  have hmem : ⟨σ, p.1.1, p.1.2⟩ ∈ evolutionPastClosedCylinder Ω γ τ :=
     ⟨hστ, subset_closure p.2.1⟩
   have hEq := huniq u' hu' hmem
   calc ∫ q, F q.1 ∂K.fiberKernel hΩ σ τ hστ p
-      = S σ τ hστ (terminalStateDatum F) p := (h.2.1 σ τ hστ p (terminalStateDatum F)).symm
-    _ = u ⟨σ, p.1.1, p.1.2⟩ := (hup σ hστ p).symm
-    _ = u' ⟨σ, p.1.1, p.1.2⟩ := hEq.symm
-    _ = S' σ τ hστ (terminalStateDatum F) p := hup' σ hστ p
-    _ = ∫ q, F q.1 ∂K'.fiberKernel hΩ σ τ hστ p := h'.2.1 σ τ hστ p (terminalStateDatum F)
+      = S σ τ hστ _ p := (h.2.1 σ τ hστ p (terminalStateDatum F)).symm
+    _ = u _ := (hup σ hστ p).symm
+    _ = u' _ := hEq.symm
+    _ = S' σ τ hστ _ p := hup' σ hστ p
+    _ = ∫ q, F q.1 ∂K'.fiberKernel hΩ σ τ hστ p := h'.2.1 σ τ hστ p _
 
 /-- The ambient master integral of a measurable function is the fiber integral of its
 restriction. -/
@@ -57,13 +58,11 @@ theorem integral_master_eq_fiber (K : MovingFiberKernel Ω γ) (hΩ : Measurable
     (hF : Measurable F) :
     ∫ x, F x ∂K.master (evolutionQueryOfState Ω γ σ τ hστ p) =
       ∫ q, F q.1 ∂K.fiberKernel hΩ σ τ hστ p := by
-  rw [← K.map_fiberKernel_eq_master hΩ σ τ hστ p,
+  rw [← K.map_fiberKernel_eq_master,
     integral_map measurable_subtype_coe.aemeasurable hF.aestronglyMeasurable]
 
 /-- Master kernels of two realizations of the same data agree. -/
-theorem realizes_master_eq {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE.Vec d}
-    {S S' : TerminalOperatorFamily Ω γ} {K K' : MovingFiberKernel Ω γ}
-    (hΩo : IsOpen Ω)
+theorem realizes_master_eq 
     (h : RealizesTerminalEvolution Ω γ hΩo.measurableSet B b S K)
     (h' : RealizesTerminalEvolution Ω γ hΩo.measurableSet B b S' K') :
     K.master = K'.master := by
@@ -75,7 +74,7 @@ theorem realizes_master_eq {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE
     simpa using K.mass_le_one q⟩
   have : ProbabilityTheory.IsFiniteKernel K'.master := ⟨1, ENNReal.one_lt_top, fun q => by
     simpa using K'.mass_le_one q⟩
-  have hz : ∀ m : Measure (EvolutionAmbientState d),
+  have hz : ∀ m : Measure _,
       m.restrict (evolutionStateSet Ω γ q.1.2.1) = m → m (evolutionStateSet Ω γ q.1.2.1)ᶜ = 0 := by
     intro m hm
     rw [← hm, Measure.restrict_apply hU.measurableSet.compl, compl_inter_self, measure_empty]
@@ -92,16 +91,12 @@ theorem realizes_master_eq {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE
   exact key
 
 /-- Terminal evolution for open base domain: the kernel is unique. -/
-theorem realizes_kernel_unique {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE.Vec d}
-    {S S' : TerminalOperatorFamily Ω γ} {K K' : MovingFiberKernel Ω γ}
-    (hΩo : IsOpen Ω)
+theorem realizes_kernel_unique 
     (h : RealizesTerminalEvolution Ω γ hΩo.measurableSet B b S K)
     (h' : RealizesTerminalEvolution Ω γ hΩo.measurableSet B b S' K') : K = K' := by
   have hm := realizes_master_eq hΩo h h'
   obtain ⟨m, hs, hl⟩ := K
-  obtain ⟨m', hs', hl'⟩ := K'
-  cases hm
-  rfl
+  simp_all
 
 /-- Source uniqueness extends from compact smooth data to kernels and all Borel data. -/
 theorem terminalEvolution_unique {d : ℕ} (Ω : Set (PDE.Vec d))
@@ -122,6 +117,6 @@ theorem terminalEvolution_unique {d : ℕ} (Ω : Set (PDE.Vec d))
   intro f
   apply BoundedBorel.ext
   intro p
-  rw [h.2.1 σ τ hστ p f, h'.2.1 σ τ hστ p f]
+  rw [h.2.1, h'.2.1]
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

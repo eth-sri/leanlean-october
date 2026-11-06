@@ -12,7 +12,6 @@ the temporal and Euclidean spatial estimates, for sources reaching the boundary.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set Dirichlet KineticAleksandrov
 open scoped ENNReal MatrixOrder Matrix.Norms.Elementwise
@@ -44,21 +43,21 @@ theorem exists_signed_source_ballInterior_with_bounds {d : ℕ} (hd : 0 < d)
     hlam A hA hlo F hF M hM hFM u g hdu hu w hw.continuousOn hs
   obtain ⟨q, hq, hqe, hqo⟩ := exists_h10_sourceBallBarrier v₀ r lam M hr hlam hM A
   let G := sourceBallBarrierForcing lam M A
-  have hG : ContDiff ℝ (⊤ : ℕ∞) G := contDiff_sourceBallBarrierForcing lam M A hA
+  have hG : ContDiff ℝ _ G := contDiff_sourceBallBarrierForcing lam M A hA
   have hqn : ∀ y ∈ Ω, 0 ≤ q.toH1Function.toFun y := by
     intro y hy
     rw [hqe (subset_closure hy)]
     exact sourceBallBarrier_nonneg v₀ r lam M hlam hM (subset_closure hy)
   have hqeq : ∀ z ∈ Icc a T ×ˢ Ω,
-      scalarParabolicZeroOrderOperator A (fun _ _ => 0) (fun _ _ => 0)
-        (fun z => q.toH1Function.toFun z.2) z = G z := fun z hz => hqo z hz.2
+      scalarParabolicZeroOrderOperator A _ _
+        _ z = G z := fun z hz => hqo z hz.2
   have hGF : ∀ z ∈ scalarParabolicClosedCylinder a T Ω, G z ≤ -|F z| := by
     intro z hz
     have hGle : G z ≤ -M := by
       change sourceBallBarrierForcing lam M A z ≤ -M
       rw [show sourceBallBarrierForcing lam M A z =
-        scalarParabolicZeroOrderOperator A (fun _ _ => 0) (fun _ _ => 0)
-          (fun z => sourceBallBarrier v₀ r lam M z.2) z from
+        scalarParabolicZeroOrderOperator A _ _
+          _ z from
             (scalarOperator_sourceBallBarrier v₀ r lam M A z).symm]
       exact scalarOperator_sourceBallBarrier_le hd v₀ r lam M hlam hM A hlo z
     exact hGle.trans (neg_le_neg (hFM z hz))

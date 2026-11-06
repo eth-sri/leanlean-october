@@ -8,7 +8,6 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -46,14 +45,14 @@ theorem propagation_dimensionless
     pow_le_one₀ hg.1.le hg.2.le, ?_⟩
   intro T1 hT1 p C_A hp A hA O hO tminus P hPO hTP0 hTP1 x v hsk hxP hvP htube
     ell hell u hnonneg hu hinitial
-  have hsqrt : 0 < Real.sqrt T1 := Real.sqrt_pos.mpr hT1
+  have hsqrt  := Real.sqrt_pos.mpr hT1
   have hkx : 0 < cx * T1 ^ (3 / 2 : ℝ) :=
     mul_pos hcx (Real.rpow_pos_of_pos hT1 _)
   have hkv : 0 < cv * Real.sqrt T1 := mul_pos hcv hsqrt
   have hH : 0 < b0 / Real.sqrt T1 := div_pos hb0 hsqrt
   have hT0 : 0 < a0 * T1 := mul_pos ha0 hT1
   have hT01 : a0 * T1 ≤ T1 := by
-    simpa only [one_mul] using mul_le_mul_of_nonneg_right ha01 hT1.le
+    simp_all
   have hbarrier := (propagation_barrier_scaling d lam Lam b0 hT1).1
   have hstep := propagation_step_scaling d lam Lam a0 b0 cx cv hb0.le hcx.le hT1
   have hratio : T1 / (T1 * hs) = 1 / hs := by
@@ -63,14 +62,13 @@ theorem propagation_dimensionless
         Nat.ceil (T1 / stepSize d lam Lam (b0 / Real.sqrt T1) (a0 * T1) T1
           (cx * T1 ^ (3 / 2 : ℝ)) (cv * Real.sqrt T1)) =
       (barrierGamma L) ^ Nat.ceil (1 / hs) := by
-    rw [hbarrier, hstep, hratio]
-  have hresult := propagation_explicit d hd lam Lam (b0 / Real.sqrt T1) (a0 * T1) T1
-    (cx * T1 ^ (3 / 2 : ℝ)) (cv * Real.sqrt T1) hlam hLam hH hkx hkv hT0 hT01
+    grind
+  have hresult := propagation_explicit d hd lam Lam _ _ T1
+    _ _ hlam hLam hH hkx hkv hT0 hT01
     p C_A hp A hA O hO tminus P hPO hTP0 hTP1 x v
-    (by simpa only [neg_mul] using hsk) hxP hvP
-    (by simpa only [neg_mul] using htube) ell hell u hnonneg hu
-    (by simpa only [neg_mul] using hinitial)
-  rw [hconstant] at hresult
-  exact hresult
+    (by simp_all) hxP hvP
+    (by simp_all) ell hell u hnonneg hu
+    (by simp_all)
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

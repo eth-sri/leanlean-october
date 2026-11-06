@@ -20,20 +20,20 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
+
 private theorem continuousOn_reverseTimeCoefficientEntry_slice
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (r₀ r₁ τ : ℝ) (a : CoefficientField d) (i j : Fin d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
     (hτ : τ ∈ Set.Icc 0 (r₁ - r₀)) :
     ContinuousOn (fun y : PDE.Vec d => a (r₁ - τ) y i j) Ω := by
   rcases ha with ⟨V, hVopen, hKV, hV⟩
-  have hrow : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i) V := by
-    exact (contDiffOn_apply ℝ (Fin d → ℝ) i Set.univ).comp hV (by
+  have hrow : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i) V := (contDiffOn_apply ℝ _ i Set.univ).comp hV (by
       intro z hz
       exact Set.mem_univ _)
-  have hentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i j) V := by
-    exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hrow (by
+  have hentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i j) V := (contDiffOn_apply ℝ ℝ j Set.univ).comp hrow (by
       intro z hz
       exact Set.mem_univ _)
   have htime : r₀ ≤ r₁ - τ ∧ r₁ - τ ≤ r₁ := by
@@ -46,7 +46,7 @@ private theorem continuousOn_reverseTimeCoefficientEntry_slice
     (Continuous.prodMk_right _).continuousOn hmap
 
 private theorem continuousOn_reverseTimeDivergenceDriftEntry_slice
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (r₀ r₁ τ : ℝ) (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (j : Fin d)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -71,10 +71,9 @@ private theorem continuousOn_reverseTimeDivergenceDriftEntry_slice
     have heval : ContinuousOn (fun x : PDE.Vec d => x j) Set.univ :=
       (continuous_apply j).continuousOn
     simpa only [Function.comp_def, scalarSpatialCoefficientDivergence_reverseTimeCoefficient,
-      reverseTimeMap_apply] using heval.comp hvec (by intro y hy; simp)
+      reverseTimeMap_apply] using heval.comp hvec (by simp)
   rcases hb with ⟨V, hVopen, hKV, hV⟩
-  have hentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2 j) V := by
-    exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hV (by
+  have hentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2 j) V := (contDiffOn_apply ℝ ℝ j Set.univ).comp hV (by
       intro z hz
       exact Set.mem_univ _)
   have hbcont : ContinuousOn (fun y : PDE.Vec d => b (r₁ - τ) y j) Ω := by
@@ -85,8 +84,7 @@ private theorem continuousOn_reverseTimeDivergenceDriftEntry_slice
 
 /-- Smooth coefficients have nonnegative, time-uniform bounds for the slice multipliers. -/
 theorem exists_sliceMultiplierBounds_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -116,15 +114,14 @@ theorem exists_sliceMultiplierBounds_of_smoothOnNeighborhood
   have haCont (i j : Fin d) : ContinuousOn (fun z : TimeVelocity d => a z.1 z.2 i j)
       (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
     rcases haSmooth with ⟨V, hVopen, hKV, hV⟩
-    have hrow : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i) V := by
-      exact (contDiffOn_apply ℝ (Fin d → ℝ) i Set.univ).comp hV
+    have hrow : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i) V := (contDiffOn_apply ℝ _ i Set.univ).comp hV
         (by intro z hz; exact Set.mem_univ _)
     exact ((contDiffOn_apply ℝ ℝ j Set.univ).comp hrow
       (by intro z hz; exact Set.mem_univ _)).continuousOn.mono hKV
   choose ca hca using fun i j =>
     (isCompact_scalarParabolicClosedCylinder r₀ r₁ hΩbounded).exists_bound_of_continuousOn
       (haCont i j)
-  let Ca : Fin d → Fin d → ℝ := fun i j => max (ca i j) 0
+  let Ca  := fun i j => max (ca i j) 0
   have hCa (i j : Fin d) : 0 ≤ Ca i j := le_max_right _ _
   have hCaBound (τ : Set.Icc 0 (r₁ - r₀)) (i j : Fin d) :
       ∀ᵐ y ∂PDE.volumeOn Ω, ‖a (r₁ - τ.1) y i j‖ ≤ Ca i j := by
@@ -140,13 +137,12 @@ theorem exists_sliceMultiplierBounds_of_smoothOnNeighborhood
     have heval : ContinuousOn (fun x : PDE.Vec d => x j) Set.univ :=
       (continuous_apply j).continuousOn
     rcases hbSmooth with ⟨V, hVopen, hKV, hV⟩
-    have hbj : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2 j) V := by
-      exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hV (by intro z hz; exact Set.mem_univ _)
+    have hbj : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2 j) V := (contDiffOn_apply ℝ ℝ j Set.univ).comp hV (by intro z hz; exact Set.mem_univ _)
     exact heval.comp hdiv (by intro z hz; exact Set.mem_univ _) |>.sub (hbj.continuousOn.mono hKV)
   choose cd hcd using fun j =>
     (isCompact_scalarParabolicClosedCylinder r₀ r₁ hΩbounded).exists_bound_of_continuousOn
       (hCdCont j)
-  let Cd : Fin d → ℝ := fun j => max (cd j) 0
+  let Cd  := fun j => max (cd j) 0
   have hCd (j : Fin d) : 0 ≤ Cd j := le_max_right _ _
   have hCdBound (τ : Set.Icc 0 (r₁ - r₀)) (j : Fin d) :
       ∀ᵐ y ∂PDE.volumeOn Ω,
@@ -173,13 +169,11 @@ theorem exists_sliceMultiplierBounds_of_smoothOnNeighborhood
       hcSmooth τ.2).aestronglyMeasurable hΩ.measurableSet
   · intro τ
     filter_upwards [ae_restrict_mem hΩ.measurableSet] with y hy
-    simpa only [Real.norm_eq_abs] using hCcBound τ.1 τ.2 y hy
+    simpa using hCcBound τ.1 τ.2 y hy
 
 /-- Multiplier inner-product expression for the reverse-time spatial form. -/
-noncomputable def reverseTimeSpatialFormMultiplierExpression
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
+def reverseTimeSpatialFormMultiplierExpression
+     (c : ℝ → PDE.Vec d → ℝ)
     (Ca : Fin d → Fin d → ℝ) (hCa : ∀ i j, 0 ≤ Ca i j)
     (hAMeas : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ i j,
       AEStronglyMeasurable (fun y => a (r₁ - τ.1) y i j) (PDE.volumeOn Ω))
@@ -216,9 +210,7 @@ noncomputable def reverseTimeSpatialFormMultiplierExpression
       (valueCLM hΩ v)
 
 private theorem reverseTimeSpatialForm_eq_multiplierExpression
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
+     (c : ℝ → PDE.Vec d → ℝ)
     (Ca : Fin d → Fin d → ℝ) (hCa : ∀ i j, 0 ≤ Ca i j)
     (hAMeas : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ i j,
       AEStronglyMeasurable (fun y => a (r₁ - τ.1) y i j) (PDE.volumeOn Ω))
@@ -239,16 +231,13 @@ private theorem reverseTimeSpatialForm_eq_multiplierExpression
     (τ : Set.Icc 0 (r₁ - r₀)) (u v : H10HilbertGraph hΩ) :
     reverseTimeSpatialForm hΩ r₁ τ.1 a b c u v =
       reverseTimeSpatialFormMultiplierExpression hΩ r₀ r₁ a b c Ca hCa hAMeas hABound Cd hCd
-        hDriftMeas hDriftBound Cc hCc hScalarMeas hScalarBound τ u v := by
-  exact reverseTimeSpatialForm_eq_multiplierInner_of_sliceEvidence hΩ r₁ τ.1 a b c u v
-    Ca hCa (hAMeas τ) (hABound τ) Cd hCd (hDriftMeas τ) (hDriftBound τ) Cc hCc
-    (hScalarMeas τ) (hScalarBound τ)
+        hDriftMeas hDriftBound Cc hCc hScalarMeas hScalarBound τ u v := reverseTimeSpatialForm_eq_multiplierInner_of_sliceEvidence hΩ r₁ τ.1 a b c u v
+    Ca hCa _ _ Cd hCd _ _ Cc hCc
+    _ _
 
 /-- The reverse-time spatial form as a bounded bilinear map. -/
-noncomputable def reverseTimeSpatialFormBilinear
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (r₀ r₁ : ℝ) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
+def reverseTimeSpatialFormBilinear
+     (c : ℝ → PDE.Vec d → ℝ)
     (Ca : Fin d → Fin d → ℝ) (hCa : ∀ i j, 0 ≤ Ca i j)
     (hAMeas : ∀ τ : Set.Icc 0 (r₁ - r₀), ∀ i j,
       AEStronglyMeasurable (fun y => a (r₁ - τ.1) y i j) (PDE.volumeOn Ω))
@@ -279,7 +268,7 @@ noncomputable def reverseTimeSpatialFormBilinear
     (by
       intro q u v
       simp only [reverseTimeSpatialFormMultiplierExpression, map_smul, inner_smul_left,
-        starRingEnd_apply, star_trivial, smul_eq_mul]
+        starRingEnd_apply, star_trivial]
       simp_rw [← Finset.mul_sum]
       ring)
     (by
@@ -289,15 +278,13 @@ noncomputable def reverseTimeSpatialFormBilinear
       ring)
     (by
       intro q u v
-      simp only [reverseTimeSpatialFormMultiplierExpression, map_smul, inner_smul_right,
-        smul_eq_mul]
+      simp only [reverseTimeSpatialFormMultiplierExpression, map_smul, inner_smul_right]
       simp_rw [← Finset.mul_sum]
       ring)
 
 /-- The reverse-time spatial form as a continuous operator at a local time. -/
-noncomputable def reverseTimeSpatialFormOperator
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
+def reverseTimeSpatialFormOperator
+     (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
@@ -338,15 +325,12 @@ noncomputable def reverseTimeSpatialFormOperator
       change ‖reverseTimeSpatialFormMultiplierExpression hΩ r₀ r₁ a b c Ca hCa hAMeas hABound
         Cd hCd hDriftMeas hDriftBound Cc hCc hScalarMeas hScalarBound τ u v‖ ≤
           C * ‖u‖ * ‖v‖
-      rw [← reverseTimeSpatialForm_eq_multiplierExpression hΩ r₀ r₁ a b c Ca hCa hAMeas hABound
-        Cd hCd hDriftMeas hDriftBound Cc hCc hScalarMeas hScalarBound τ u v,
-        Real.norm_eq_abs]
+      rw [← reverseTimeSpatialForm_eq_multiplierExpression]
       exact hCData.2 τ.1 τ.2 u v)
 
 /-- The local operator evaluates to the literal reverse-time spatial form. -/
 theorem reverseTimeSpatialFormOperator_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
+    
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
@@ -359,22 +343,16 @@ theorem reverseTimeSpatialFormOperator_apply
     (τ : Set.Icc 0 (r₁ - r₀)) (u v : H10HilbertGraph hΩ) :
     reverseTimeSpatialFormOperator r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth τ u v =
       reverseTimeSpatialForm hΩ r₁ τ.1 a b c u v := by
-  unfold reverseTimeSpatialFormOperator
   obtain ⟨Ca, Cd, Cc, hCa, hCd, hCc, hAMeas, hABound, hDriftMeas, hDriftBound,
     hScalarMeas, hScalarBound⟩ :=
     exists_sliceMultiplierBounds_of_smoothOnNeighborhood r₀ r₁ hΩ hΩbounded a b c
       haSmooth hbSmooth hcSmooth
-  obtain ⟨C, hC, hForm⟩ :=
-    reverseTimeSpatialForm_bounded_of_smoothOnNeighborhood r₀ r₁ h₀₁ hΩ hΩbounded a b c
-      haSmooth hbSmooth hcSmooth
-  rw [LinearMap.mkContinuous₂_apply]
   exact (reverseTimeSpatialForm_eq_multiplierExpression hΩ r₀ r₁ a b c Ca hCa hAMeas hABound Cd hCd
     hDriftMeas hDriftBound Cc hCc hScalarMeas hScalarBound τ u v).symm
 
 /-- The local operator curve has one time-uniform application bound. -/
 theorem exists_reverseTimeSpatialFormOperator_bound
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
+    
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
@@ -395,7 +373,7 @@ theorem exists_reverseTimeSpatialFormOperator_bound
   intro τ u
   apply ContinuousLinearMap.opNorm_le_bound _ (mul_nonneg hC (norm_nonneg _))
   intro v
-  rw [Real.norm_eq_abs, reverseTimeSpatialFormOperator_apply]
+  rw [reverseTimeSpatialFormOperator_apply]
   exact hForm τ.1 τ.2 u v
 
 

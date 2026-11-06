@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitL1Derivative
 /-! # Uniform integral bounds for the canonical real exit density -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic SectionTwo
 
@@ -13,12 +12,12 @@ open Set MeasureTheory Parabolic SectionTwo
 theorem spatialDensity_hasCompactSupport {d : ℕ} {E : Type} [NormedAddCommGroup E]
     (G : PDE.Vec d → E) (r : ℝ) (hz : ∀ y, r < ‖y‖ → G y = 0) :
     HasCompactSupport G := by
-  apply (isCompact_closedBall (0 : PDE.Vec d) r).of_isClosed_subset (isClosed_tsupport G)
+  apply (isCompact_closedBall (0) r).of_isClosed_subset (isClosed_tsupport G)
   apply closure_minimal _ Metric.isClosed_closedBall
   intro y hy
   rw [Metric.mem_closedBall, dist_zero_right]
   by_contra h
-  exact hy (hz y (lt_of_not_ge h))
+  simp_all
 
 /-- Structural constants bound every derivative integral of the canonical exit density. -/
 theorem spatialDensity_uniform_integral_bound
@@ -36,27 +35,25 @@ theorem spatialDensity_uniform_integral_bound
         C j * R ^ (-3 * (j : ℝ)) := by
   obtain ⟨D, hD, hb⟩ :=
     ballExitL1Inversion_uniform_derivative_bound hH hLE d hd lam Lam hlam hLam
-  refine ⟨fun j => (2 : ℝ) ^ d * D j, fun j => mul_nonneg (by positivity) (hD j), ?_⟩
+  refine ⟨fun j => (2) ^ d * D j, fun j => mul_nonneg (by positivity) (hD j), ?_⟩
   intro B hB v₀ R hR P T hv hT j
   let G := exitL1Density (ballExit hH hLE hd hlam hLam B hB v₀ hR P T)
   have hbound (y : PDE.Vec d) : ‖iteratedFDeriv ℝ j G y‖ ≤
-      D j * R ^ (-3 * ((d : ℝ) + (j : ℝ))) :=
+      D j * R ^ (-3 * (d + (j : ℝ))) :=
     (ballExitL1Density_derivative_le hH hLE hd hlam hLam B hB v₀ hR P T hv hT j y).trans
       (hb B hB v₀ R hR P T hv hT j y)
   have hi := exitDerivative_integral_le_volume G hR
     (ballExitL1Density_zero_outside hH hLE hd hlam hLam B hB v₀ hR P T hv hT) j
     (mul_nonneg (hD j) (Real.rpow_nonneg hR.le _)) hbound
-  have hp : R ^ (3 * d) * R ^ (-3 * ((d : ℝ) + (j : ℝ))) =
+  have hp : R ^ (3 * d) * R ^ (-3 * (d + (j : ℝ))) =
       R ^ (-3 * (j : ℝ)) := by
-    rw [← Real.rpow_natCast R (3 * d), ← Real.rpow_add hR]
-    congr 1
-    push_cast
-    ring
+    rw [← Real.rpow_natCast, ← Real.rpow_add hR]
+    grind
   calc
-    _ ≤ ((2 : ℝ) ^ d * R ^ (3 * d)) *
-        (D j * R ^ (-3 * ((d : ℝ) + (j : ℝ)))) := hi
-    _ = ((2 : ℝ) ^ d * D j) *
-        (R ^ (3 * d) * R ^ (-3 * ((d : ℝ) + (j : ℝ)))) := by ring
+    _ ≤ ((2) ^ d * R ^ (3 * d)) *
+        (D j * R ^ (-3 * (d + (j : ℝ)))) := hi
+    _ = ((2) ^ d * D j) *
+        (R ^ (3 * d) * R ^ (-3 * (d + (j : ℝ)))) := by ring
     _ = _ := by rw [hp]
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

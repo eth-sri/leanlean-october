@@ -25,7 +25,6 @@ theorem exitProbeValueLinear_bound
     (fun p hp => (le_abs_self _).trans (hbd ⟨p, hp⟩))
   have hn := exitProbeValue_le_of_boundary hH hlam hLam A H E hE T e (-f) c
     (fun p hp => by
-      change -exitProbePhysical f p ≤ c
       exact (neg_le_abs _).trans (hbd ⟨p, hp⟩))
   have heq := (exitProbeValueLinear A H E T e).map_neg f
   change exitProbeValue A H E T e (-f) = -exitProbeValue A H E T e f at heq
@@ -43,11 +42,10 @@ theorem exitProbeValueLinear_nonneg
   have hn := exitProbeValue_le_of_boundary hH hlam hLam A H E hE T e (-f) 0
     (fun p hp => by
       change -exitProbePhysical f p ≤ 0
-      exact neg_nonpos.mpr (hbd ⟨p, hp⟩))
+      aesop)
   have heq := (exitProbeValueLinear A H E T e).map_neg f
   change exitProbeValue A H E T e (-f) = -exitProbeValue A H E T e f at heq
-  rw [heq] at hn
-  exact neg_nonpos.mp hn
+  aesop
 
 /-- The actual homogeneous values extend to exactly one positive contraction functional
 on all compactly supported continuous exit data. -/
@@ -60,8 +58,8 @@ theorem existsUnique_stripBoundaryFunctional
       (∀ (f : C_c(stripClosedExit H T, ℝ)) (c : ℝ), 0 ≤ c →
         (∀ p, |f p| ≤ c) → |ℓ f| ≤ c) ∧
       ∀ f : exitProbeSubmodule, ℓ (exitProbeCcLinear H T f) = exitProbeValueLinear A H E T e f := by
-  obtain ⟨ℓ, hbd, hagree⟩ := exists_positive_extension_of_dense (exitProbeCcLinear H T)
-    (exitProbeValueLinear A H E T e)
+  obtain ⟨ℓ, hbd, hagree⟩ := exists_positive_extension_of_dense _
+    _
     (exitProbeValueLinear_bound hH hlam hLam A H E hE T e)
     (exitProbeValueLinear_nonneg hH hlam hLam A H E hE T e)
     (exitProbeCc_sq H T) (exitProbeCc_dense H T)
@@ -69,7 +67,7 @@ theorem existsUnique_stripBoundaryFunctional
   have hlin : k.toLinearMap = ℓ.toLinearMap :=
     eq_of_bounded_of_dense (exitProbeCcLinear H T) k.toLinearMap ℓ.toLinearMap
       hk.1 hbd (fun f => (hk.2 f).trans (hagree f).symm) (exitProbeCc_dense H T)
-  exact PositiveLinearMap.ext (fun f => LinearMap.congr_fun hlin f)
+  simp_all
 
 /-- The strip boundary functional is chosen only from its proved unique characterization. -/
 def stripBoundaryFunctional

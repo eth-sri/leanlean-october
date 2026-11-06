@@ -10,7 +10,6 @@ lemmas. The only hypotheses are the explicit analytic inputs.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open Set MeasureTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
@@ -43,25 +42,24 @@ theorem interval_slab_density
           ENNReal.ofReal (T ^ (3 - 2 * q) * Real.exp (-k * T)) := by
   obtain ⟨C, k, hk, hfourier⟩ := interval_slab_fourier hH hLE
     lam Lam m Lb length hlam hlamLam hm hmLb hlength
-  refine ⟨(slabConstant 1 q C : ℝ) + 1, k * (q - 1),
+  refine ⟨(slabConstant 1 q C) + 1, k * (q - 1),
     by positivity, mul_pos hk (by linarith), ?_⟩
   intro a c hac B b hs hJ S K hr hlen σ T hT μ _ Γ hΓ
   obtain ⟨g, hgm, hgE, hgb, f, _hfm, hf, hfb⟩ :=
     hfourier a c hac B b hs hJ S K hr hlen σ T hT μ Γ hΓ
-  have hqd : q < 1 + 1 / ((1 : ℕ) : ℝ) := by norm_num; exact hq2
+  have hqd : q < 1 + 1 / ((1 : ℕ)) := by linarith
   have hγ1 := (slab_gamma_one_lt (d := 1) hq hqd).le
   have hγ2 : slabGamma 1 q ≤ 2 := by
     have := (slab_q_lt_gamma (d := 1) hq hqd).2.le
     norm_num [slabGamma0] at this
-    exact this
+    omega
   obtain ⟨G, hGm, hGE, hbd⟩ := killed_slab_reconstruction C k K σ μ Γ hΓ hq hq2 hT
     g hgm hgE (fun r h1 h2 => by
       have h2' : r ≤ 2 := by norm_num [slabGamma0] at h2; exact h2
       simpa only [interval_slab_beta] using hgb r h1 h2') f hf (by
       have he : slabBeta 1 (slabGamma 1 q) - 3 / 2 =
           3 / (2 * slabGamma 1 q) - 2 := by rw [interval_slab_beta]; ring
-      simpa only [he] using
-        (hfb (slabGamma 1 q) hγ1 hγ2).2)
+      simp_all)
   refine ⟨G, hGm, hGE, hbd.trans ?_⟩
   apply mul_le_mul' (mul_le_mul' ?_ le_rfl) le_rfl
   rw [← ENNReal.ofReal_coe_nnreal]

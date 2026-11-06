@@ -20,14 +20,14 @@ open scoped CompactlySupported ENNReal
 /-- The actual closed physical trace is locally compact. -/
 instance localTrace_locallyCompactSpace {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ) :
     LocallyCompactSpace (localTrace a T v₀ R) := by
-  let : LocallyCompactSpace (KineticPoint d) :=
+  let  :=
     (KineticPoint.homeomorphProd d).isClosedEmbedding.locallyCompactSpace
   exact (isClosed_localTrace a T v₀ R).locallyCompactSpace
 
 /-- The trace carrier has a countable topological basis. -/
 instance localTrace_secondCountableTopology {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ) :
     SecondCountableTopology (localTrace a T v₀ R) := by
-  let : SecondCountableTopology (KineticPoint d) :=
+  let  :=
     (KineticPoint.homeomorphProd d).secondCountableTopology
   infer_instance
 
@@ -52,18 +52,12 @@ theorem existsUnique_ballExitMeasure
   obtain ⟨ℓ, hℓ, -⟩ := existsUnique_ballBoundaryFunctional hH hLE hd hlam hLam B hB v₀ hR P T
   obtain ⟨ν, hν, -⟩ := existsUnique_boundaryFunctional_measure ℓ hℓ.1
   let : IsFiniteMeasure ν := ⟨hν.1.trans_lt (by simp)⟩
-  let μ := ν.map (Subtype.val : localTrace P.1.time T.1 v₀ R → KineticPoint d)
-  have hμ : IsFiniteMeasure μ := by dsimp [μ]; infer_instance
+  let μ := ν.map Subtype.val
+  have hμ : IsFiniteMeasure μ := by infer_instance
   have hsupport : μ (localTrace P.1.time T.1 v₀ R)ᶜ = 0 := by
-    dsimp only [μ]
     rw [Measure.map_apply measurable_subtype_coe
       (measurableSet_localTrace P.1.time T.1 v₀ R).compl]
-    have heq : (Subtype.val : localTrace P.1.time T.1 v₀ R → KineticPoint d) ⁻¹'
-        (localTrace P.1.time T.1 v₀ R)ᶜ = ∅ := by
-      ext Q
-      simp only [mem_preimage, mem_compl_iff, mem_empty_iff_false, iff_false]
-      exact not_not.mpr Q.2
-    rw [heq, measure_empty]
+    simp
   have htests : ∀ φ : KineticPoint d → ℝ,
       ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm) →
       HasCompactSupport φ → (∫ Q, φ Q ∂μ) =
@@ -71,21 +65,13 @@ theorem existsUnique_ballExitMeasure
     intro φ hφ hc
     let f : boundaryProbeSubmodule d := ⟨φ ∘ (KineticPoint.equivProd d).symm,
       hφ, hc.comp_homeomorph (KineticPoint.homeomorphProd d).symm⟩
-    have heq : boundaryProbePhysical f = φ := by
-      funext Q
-      exact congrArg φ ((KineticPoint.equivProd d).symm_apply_apply Q)
-    dsimp only [μ]
     rw [integral_map measurable_subtype_coe.aemeasurable
       (boundary_probe_continuous φ hφ).measurable.aestronglyMeasurable]
-    have h := (hν.2 (boundaryProbeCcLinear P.1.time T.1 v₀ R f)).trans (hℓ.2 f)
-    change (∫ Q, boundaryProbePhysical f Q.1 ∂ν) =
-      ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR P.1.time T.1
-        (boundaryProbePhysical f) P.1 at h
-    rw [heq] at h
+    have h := (hν.2 _).trans (hℓ.2 f)
     exact h
   refine ⟨μ, ⟨hμ, hsupport, htests⟩, ?_⟩
   intro μ' hμ'
-  let : IsFiniteMeasure μ' := hμ'.1
+  let  := hμ'.1
   exact boundary_measure_ext μ' μ (fun φ hφ hc =>
     (hμ'.2.2 φ hφ hc).trans (htests φ hφ hc).symm)
 

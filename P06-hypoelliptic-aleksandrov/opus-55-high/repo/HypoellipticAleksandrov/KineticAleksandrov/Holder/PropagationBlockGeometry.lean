@@ -9,7 +9,6 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -22,9 +21,7 @@ theorem closure_backwardCylinder_bounds {d : ℕ} (P₀ : KineticPoint d) {R : �
       {P | P₀.time - R ^ 2 ≤ P.time ∧ P.time ≤ P₀.time ∧
         PDE.vecEuclideanNorm (P.velocity - P₀.velocity) ≤ R ∧
         PDE.vecEuclideanNorm (relativePosition P₀ P) ≤ R ^ 3} := by
-  have hx : Continuous (relativePosition P₀) := by
-    unfold relativePosition
-    exact (continuous_position.sub continuous_const).sub
+  have hx : Continuous (relativePosition P₀) := (continuous_position.sub continuous_const).sub
       ((continuous_time.sub continuous_const).smul continuous_const)
   have hv : Continuous (fun P : KineticPoint d => P.velocity - P₀.velocity) :=
     continuous_velocity.sub continuous_const
@@ -33,20 +30,22 @@ theorem closure_backwardCylinder_bounds {d : ℕ} (P₀ : KineticPoint d) {R : �
     refine ⟨hP.1.le, hP.2.1.le, ?_, ?_⟩
     · exact ((PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hR).mp hP.2.2.1).le
     · have he := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (pow_pos hR 3)).mp hP.2.2.2
-      simpa only [sub_zero] using he.le
+      simpa using he.le
   · exact (isClosed_le continuous_const continuous_time).inter
       ((isClosed_le continuous_time continuous_const).inter
         ((isClosed_le (PDE.continuous_vecEuclideanNorm.comp hv) continuous_const).inter
           (isClosed_le (PDE.continuous_vecEuclideanNorm.comp hx) continuous_const)))
 
+variable {h W : ℝ}
+
 /-- The block radius has its literal source time scale. -/
-theorem propagation_block_radius_sq {h W : ℝ} (hh : 0 ≤ h) :
-    (W * Real.sqrt h) ^ 2 = W ^ 2 * h := by rw [mul_pow, Real.sq_sqrt hh]
+theorem propagation_block_radius_sq  (hh : 0 ≤ h) :
+    (W * Real.sqrt h) ^ 2 = W ^ 2 * h := by grind
 
 /-- The block radius has its literal source position scale. -/
-theorem propagation_block_radius_cube {h W : ℝ} (hh : 0 ≤ h) :
+theorem propagation_block_radius_cube  (hh : 0 ≤ h) :
     (W * Real.sqrt h) ^ 3 = W ^ 3 * h ^ (3 / 2 : ℝ) := by
-  rw [mul_pow, Real.sqrt_eq_rpow, ← Real.rpow_natCast (h ^ (1 / 2 : ℝ)) 3,
+  rw [mul_pow, Real.sqrt_eq_rpow, ← Real.rpow_natCast (h ^ (1 / 2)),
     ← Real.rpow_mul hh]
   norm_num
 

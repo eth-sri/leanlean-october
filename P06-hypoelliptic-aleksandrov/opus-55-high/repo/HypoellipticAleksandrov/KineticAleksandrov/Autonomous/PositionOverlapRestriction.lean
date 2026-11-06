@@ -16,7 +16,6 @@ theorem positionPositiveNorm_restrict_le {X : Type*} [MeasurableSpace X]
     (E T : Set X) (hE : MeasurableSet E) (hT : MeasurableSet T)
     (hs : ∀ᵐ x ∂m, x ∈ E → F x ≠ 0 → x ∈ T) :
     positionPositiveNorm (m.restrict E) q F ≤ positionPositiveNorm (m.restrict T) q F := by
-  unfold positionPositiveNorm
   apply ENNReal.rpow_le_rpow _ (one_div_nonneg.mpr hq.le)
   rw [← lintegral_indicator hE, ← lintegral_indicator hT]
   apply lintegral_mono_ae
@@ -24,11 +23,9 @@ theorem positionPositiveNorm_restrict_le {X : Type*} [MeasurableSpace X]
   by_cases he : x ∈ E
   · rw [indicator_of_mem he]
     by_cases hf : F x = 0
-    · rw [hf, ENNReal.zero_rpow_of_pos hq]
-      exact zero_le
-    · rw [indicator_of_mem (hx he hf)]
-  · rw [indicator_of_notMem he]
-    exact zero_le
+    · simp_all
+    simp_all
+  simp_all
 
 /-- The elapsed tail used on output bin `i` after source bin `j`. -/
 def positionOverlapDelay (i j : ℕ) : ℝ := max ((i : ℝ) - (j : ℝ) - 1) 0
@@ -43,9 +40,9 @@ theorem positionOverlapDelay_le (c : Clock) (s x : ℝ) (j i : ℕ) (k ell : ℤ
   · rw [max_eq_left h]
     have heup := (enlargedTimeBin_bounds c.r s e.time j he.1).2
     have hzlo := (enlargedTimeBin_bounds c.r s z.time i hz.1).1
-    nlinarith only [heup, hzlo]
+    linarith
   · rw [max_eq_right (le_of_not_ge h), zero_mul, add_zero]
-    exact ht.le
+    linarith
 
 /-- A source pole obeys the restarted-tail norm bound on any output cell. -/
 theorem positionActiveDensity_output_tail (hpush : PushforwardStatement)

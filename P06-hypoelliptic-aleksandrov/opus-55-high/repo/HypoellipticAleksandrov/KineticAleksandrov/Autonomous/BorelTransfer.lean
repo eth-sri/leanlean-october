@@ -7,7 +7,6 @@ import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.SmoothEstimateSource
 /-! # Class-(b) Borel transfer of the conditional autonomous estimate -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Parabolic
 
@@ -21,7 +20,7 @@ theorem autonomous_localised_norm_le (P₀ : Point) (R p : ℝ) (hR : 0 < R)
     (eLpNorm (fun P => max (f P) 0) (ENNReal.ofReal p)
       (volume.restrict (backwardCylinder P₀ R))).toReal :=
   TheoremA.localized_positive_source_norm_le volume (isOpen_backwardCylinder P₀ R hR)
-    u f hu (ENNReal.ofReal p) hLp
+    u f hu _ hLp
 
 /-- The scalar Borel passage applies with the coefficient-uniform smooth constant. -/
 theorem autonomous_borel_of_below_four_density
@@ -73,7 +72,7 @@ theorem autonomous_borel_of_below_four_density
       (mul_nonneg hC.le (Real.rpow_nonneg hR.le _))
   refine ⟨C, hC, ?_⟩
   intro a ha hb P₀ R hR u f hcont hreg hf hLp hsub
-  exact autonomous_abp_smooth_to_borel lam Lam hlam hLam p hp1 (2 - 6 / p) C false
+  exact autonomous_abp_smooth_to_borel lam Lam hlam hLam p hp1 _ C false
     hsmooth a ha hb P₀ R hR u f hcont hreg hf hLp hsub
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

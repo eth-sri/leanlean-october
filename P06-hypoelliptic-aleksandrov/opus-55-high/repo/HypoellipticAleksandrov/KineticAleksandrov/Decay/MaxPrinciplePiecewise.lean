@@ -10,7 +10,6 @@ closed initial slices supply its terminal inequality, including each junction.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
 
@@ -64,7 +63,7 @@ theorem nonpos_on_piecewise_maximumClosedTube {d : ℕ}
       · right
         intro M
         obtain ⟨R, hR, hb⟩ := hn M
-        exact ⟨R, hR, fun p hp => hb p (htail hp)⟩
+        grind
     have htailResult := ih s hs
       (hγ.mono (Icc_subset_Icc (hr.monotone (Fin.zero_le _)) le_rfl))
       (hu.mono htail) hcTail
@@ -81,7 +80,7 @@ theorem nonpos_on_piecewise_maximumClosedTube {d : ℕ}
       · right
         intro M
         obtain ⟨R, hR, hb⟩ := hn M
-        exact ⟨R, hR, fun p hp => hb p (hhead hp)⟩
+        grind
     have hheadResult := nonpos_on_maximumClosedTube
       (hr (show (0 : Fin (n + 3)) < (0 : Fin (n + 2)).succ by simp)) hΩ hcΩ
       (hγ.mono (Icc_subset_Icc le_rfl (hr.monotone (Fin.le_last _))))

@@ -27,14 +27,16 @@ private def reverseTimeTestPrimitive {T : ℝ} (psi : ReverseTimeScalarTest T) :
 private theorem integral_reverseTime_eq_integral_of_tsupport_subset
     {T : ℝ} {g : ℝ → ℝ} (hg : tsupport g ⊆ reverseTimeOpenInterval T) :
     (∫ t, g t ∂reverseTimeVolume T) = ∫ t, g t := by
-  change (∫ t in Ioo (0 : ℝ) T, g t) = ∫ t, g t
+  change (∫ t in Ioo _ T, g t) = ∫ t, g t
   rw [setIntegral_eq_integral_of_forall_compl_eq_zero]
   intro t ht
   apply image_eq_zero_of_notMem_tsupport
   exact fun htg => ht (hg htg)
 
+variable (T : ℝ)
+
 private theorem exists_normalized_reverseTimeScalarTest
-    (T : ℝ) (hT : 0 < T) :
+     (hT : 0 < T) :
     ∃ rho : ReverseTimeScalarTest T,
       (∫ tau, rho tau ∂reverseTimeVolume T) = 1 := by
   let raw : ContDiffBump (T / 2) :=
@@ -49,8 +51,6 @@ private theorem exists_normalized_reverseTimeScalarTest
       tsupport_subset' := by
         rw [raw.tsupport_normed_eq]
         intro t ht
-        rw [Metric.mem_closedBall] at ht
-        rw [Real.dist_eq] at ht
         change |t - T / 2| ≤ T / 4 at ht
         constructor <;> linarith [abs_le.mp ht] }
   refine ⟨rho, ?_⟩
@@ -58,7 +58,7 @@ private theorem exists_normalized_reverseTimeScalarTest
   exact raw.integral_normed
 
 private theorem exists_primitive_reverseTimeScalarTest_of_integral_eq_zero
-    (T : ℝ) (psi : ReverseTimeScalarTest T)
+     (psi : ReverseTimeScalarTest T)
     (hpsi : (∫ t, psi t ∂reverseTimeVolume T) = 0) :
     ∃ eta : ReverseTimeScalarTest T, eta.deriv = (psi : ℝ → ℝ) := by
   by_cases hsupport : (tsupport (psi : ℝ → ℝ)).Nonempty
@@ -78,7 +78,6 @@ private theorem exists_primitive_reverseTimeScalarTest_of_integral_eq_zero
         apply neg_eq_zero.mpr
         apply integral_eq_zero_of_ae
         filter_upwards [ae_restrict_mem measurableSet_Ioc] with x hx
-        change psi x = 0
         apply image_eq_zero_of_notMem_tsupport
         intro hxSupport
         have hxIoo := psi.tsupport_subset hxSupport
@@ -87,7 +86,6 @@ private theorem exists_primitive_reverseTimeScalarTest_of_integral_eq_zero
         rw [reverseTimeTestPrimitive, intervalIntegral.integral_of_le ht0.le]
         apply integral_eq_zero_of_ae
         filter_upwards [ae_restrict_mem measurableSet_Ioc] with x hx
-        change psi x = 0
         apply image_eq_zero_of_notMem_tsupport
         intro hxSupport
         have hax : a ≤ x := haMin hxSupport
@@ -98,8 +96,8 @@ private theorem exists_primitive_reverseTimeScalarTest_of_integral_eq_zero
         intervalIntegral.integral_eq_integral_of_support_subset]
       · exact hmeanAmbient
       · intro x hxSupport
-        have hxTsupport : x ∈ tsupport (psi : ℝ → ℝ) :=
-          (subset_tsupport (psi : ℝ → ℝ)) hxSupport
+        have hxTsupport  :=
+          (subset_tsupport psi) hxSupport
         have hxIoo := psi.tsupport_subset hxTsupport
         have hxb : x ≤ b := hbMax hxTsupport
         exact ⟨hxIoo.1, le_of_lt (hxb.trans_lt hbt)⟩
@@ -112,9 +110,7 @@ private theorem exists_primitive_reverseTimeScalarTest_of_integral_eq_zero
           apply lt_of_not_ge
           exact fun htb => htIcc ⟨hta, htb⟩
         exact ht (hright hbt)
-    have hprimitiveTsupport : tsupport (reverseTimeTestPrimitive psi) ⊆ Icc a b := by
-      rw [tsupport]
-      exact closure_minimal hprimitiveSupport isClosed_Icc
+    have hprimitiveTsupport : tsupport (reverseTimeTestPrimitive psi) ⊆ Icc a b := closure_minimal hprimitiveSupport isClosed_Icc
     let eta : ReverseTimeScalarTest T :=
       { toFun := reverseTimeTestPrimitive psi
         contDiff' := by
@@ -125,12 +121,9 @@ private theorem exists_primitive_reverseTimeScalarTest_of_integral_eq_zero
             exact hderiv.hasDerivAt.differentiableAt
           · rw [show _root_.deriv (reverseTimeTestPrimitive psi) = (psi : ℝ → ℝ) by
                 funext t
-                change _root_.deriv (fun u => ∫ x in (0 : ℝ)..u, psi x) t = psi t
                 exact psi.contDiff.continuous.deriv_integral _ 0 t]
             exact psi.contDiff
-        hasCompactSupport' := by
-          change IsCompact (tsupport (reverseTimeTestPrimitive psi))
-          exact isCompact_Icc.of_isClosed_subset (isClosed_tsupport _)
+        hasCompactSupport' := isCompact_Icc.of_isClosed_subset (isClosed_tsupport _)
             hprimitiveTsupport
         tsupport_subset' := by
           intro t ht
@@ -140,7 +133,6 @@ private theorem exists_primitive_reverseTimeScalarTest_of_integral_eq_zero
           · exact lt_of_le_of_lt htIcc.2 hbIoo.2 }
     refine ⟨eta, ?_⟩
     funext t
-    change _root_.deriv (fun u => ∫ x in (0 : ℝ)..u, psi x) t = psi t
     exact psi.contDiff.continuous.deriv_integral _ 0 t
   · have hpsiZero : (psi : ℝ → ℝ) = 0 := by
       funext t
@@ -165,33 +157,31 @@ private theorem integrable_mul_reverseTimeScalarTest
 /-- An integrable scalar function on the reverse-time interval with zero
 pairing against every test derivative is almost everywhere constant. -/
 theorem exists_ae_eq_const_of_integral_deriv_eq_zero
-    (T : ℝ) (hT : 0 < T) {f : ℝ → ℝ}
+     (hT : 0 < T) {f : ℝ → ℝ}
     (hf : MeasureTheory.Integrable f (reverseTimeVolume T))
     (hzero : ∀ eta : ReverseTimeScalarTest T,
       (∫ tau, f tau * eta.deriv tau ∂reverseTimeVolume T) = 0) :
     ∃ c : ℝ, f =ᵐ[reverseTimeVolume T] fun _ => c := by
   obtain ⟨rho, hrho⟩ := exists_normalized_reverseTimeScalarTest T hT
-  let c : ℝ := ∫ t, f t * rho t ∂reverseTimeVolume T
+  let c  := ∫ t, f t * rho t ∂reverseTimeVolume T
   have hpairing : ∀ phi : ReverseTimeScalarTest T,
       (∫ t, f t * phi t ∂reverseTimeVolume T) = c * (∫ t, phi t ∂reverseTimeVolume T) := by
     intro phi
-    let a : ℝ := ∫ t, phi t ∂reverseTimeVolume T
-    let psi : ReverseTimeScalarTest T := phi - a • rho
+    let a  := ∫ t, phi t ∂reverseTimeVolume T
+    let psi  := phi - a • rho
     have hpsiMean : (∫ t, psi t ∂reverseTimeVolume T) = 0 := by
       change (∫ t, phi t - a * rho t ∂reverseTimeVolume T) = 0
-      rw [integral_sub phi.integrable (rho.integrable.const_mul a)]
-      rw [integral_const_mul, hrho]
-      simp only [a]
+      rw [integral_sub phi.integrable (rho.integrable.const_mul a), integral_const_mul, hrho]
       ring
     obtain ⟨eta, heta⟩ :=
       exists_primitive_reverseTimeScalarTest_of_integral_eq_zero T psi hpsiMean
     have hzeroEta := hzero eta
     rw [heta] at hzeroEta
-    have hfp : Integrable (fun t => f t * phi t) (reverseTimeVolume T) :=
+    have hfp  :=
       integrable_mul_reverseTimeScalarTest hf phi
-    have hfr : Integrable (fun t => f t * rho t) (reverseTimeVolume T) :=
+    have hfr  :=
       integrable_mul_reverseTimeScalarTest hf rho
-    have hfar : Integrable (fun t => a * (f t * rho t)) (reverseTimeVolume T) :=
+    have hfar : Integrable (fun t => a * (f t * rho t)) _ :=
       hfr.const_mul a
     have hzeroExpanded :
         (∫ t, f t * phi t ∂reverseTimeVolume T) -
@@ -208,23 +198,21 @@ theorem exists_ae_eq_const_of_integral_deriv_eq_zero
                 f t * (phi t - a * rho t)
               ring
         _ = 0 := hzeroEta
-    change (∫ t, f t * phi t ∂reverseTimeVolume T) = c * a
-    dsimp only [c]
     calc
       (∫ t, f t * phi t ∂reverseTimeVolume T) =
           a * (∫ t, f t * rho t ∂reverseTimeVolume T) := by
             linarith
       _ = (∫ t, f t * rho t ∂reverseTimeVolume T) * a := mul_comm _ _
   letI : IsFiniteMeasure (reverseTimeVolume T) := by
-    change IsFiniteMeasure (volume.restrict (Ioo (0 : ℝ) T))
+    change IsFiniteMeasure (volume.restrict (Ioo _ T))
     infer_instance
   have hconst : Integrable (fun _ : ℝ => c) (reverseTimeVolume T) := integrable_const _
   have hzeroSub : ∀ phi : ReverseTimeScalarTest T,
       (∫ t, (f t - c) * phi t ∂reverseTimeVolume T) = 0 := by
     intro phi
-    have hfp : Integrable (fun t => f t * phi t) (reverseTimeVolume T) :=
+    have hfp  :=
       integrable_mul_reverseTimeScalarTest hf phi
-    have hcp : Integrable (fun t => c * phi t) (reverseTimeVolume T) :=
+    have hcp : Integrable (fun t => c * phi t) _ :=
       phi.integrable.const_mul c
     calc
       (∫ t, (f t - c) * phi t ∂reverseTimeVolume T) =
@@ -237,7 +225,7 @@ theorem exists_ae_eq_const_of_integral_deriv_eq_zero
       _ = (∫ t, f t * phi t ∂reverseTimeVolume T) -
             c * (∫ t, phi t ∂reverseTimeVolume T) := by
               rw [integral_const_mul]
-      _ = 0 := by rw [hpairing phi]; ring
+      _ = 0 := by rw [hpairing]; ring
   have hzeroAE := ae_eq_zero_of_integral_reverseTimeScalarTest T (hf.sub hconst) hzeroSub
   refine ⟨c, ?_⟩
   filter_upwards [hzeroAE] with t ht

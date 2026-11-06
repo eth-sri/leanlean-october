@@ -19,7 +19,6 @@ a classical viscous evolution result relative to those hypotheses.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 

@@ -15,14 +15,14 @@ error row. Its constants do not involve derivatives of the solution or its bound
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 open scoped BigOperators MatrixOrder Matrix.Norms.Elementwise
 
+variable {d : ℕ} (a T : ℝ) (O : Set (PDE.Vec d))
+
 /-- Localized gradient energy is bounded by value energy for a homogeneous classical solution. -/
-theorem integral_local_gradient_energy_le {d : ℕ}
-    (a T : ℝ) (O : Set (PDE.Vec d)) (hO : IsOpen O)
+theorem integral_local_gradient_energy_le  (hO : IsOpen O)
     (u ρ : TimeVelocity d → ℝ) (hu : IsScalarC12On u (Ioo a T ×ˢ O))
     (hρ : ContDiff ℝ (⊤ : ℕ∞) ρ) (hc : HasCompactSupport ρ)
     (hsub : tsupport ρ ⊆ Ioo a T ×ˢ O)
@@ -55,12 +55,10 @@ theorem integral_local_gradient_energy_le {d : ℕ}
     intro j _
     have hcoeff : Continuous (fun z : TimeVelocity d => A z.1 z.2 i j) :=
       (continuous_apply j).comp ((continuous_apply i).comp hA.continuous)
-    exact (hcoeff.continuousOn.mul (hG j)).mul (hG i)
+    fun_prop
   have hB : Continuous B := continuous_localValueEnergyErrorRow A hA ρ hρ
   have hBG : ContinuousOn (fun z => ∑ j, B z j * G z j) U := by
-    apply continuousOn_finsetSum
-    intro j _
-    exact ((continuous_apply j).comp hB).continuousOn.mul (hG j)
+    fun_prop
   have hEi : IntegrableOn E U := by
     have hcont : ContinuousOn (fun z => ρ z * P z + u z * ∑ j, B z j * G z j) U :=
       (hρ.continuous.continuousOn.mul hP).add (hu.continuousOn.mul hBG)
@@ -68,12 +66,10 @@ theorem integral_local_gradient_energy_le {d : ℕ}
       (fun z => ρ z * P z + u z * ∑ j, B z j * G z j) ρ
       hcont hρ.continuous hc hsub).restrict (s := U)
     apply hi.congr
-    exact Eventually.of_forall (fun z => by dsimp [E]; ring)
+    exact Eventually.of_forall (fun z => by ring)
   have hgrad : IntegrableOn (fun z => ρ z ^ 2 * ∑ j, G z j ^ 2) U := by
     have hcont : ContinuousOn (fun z => ∑ j, G z j ^ 2) U := by
-      apply continuousOn_finsetSum
-      intro j _
-      exact (hG j).pow 2
+      fun_prop
     have hi := (integrable_local_cutoff_square_mul hU
       (fun z => ∑ j, G z j ^ 2) ρ hcont hρ.continuous hc hsub).restrict (s := U)
     apply hi.congr
@@ -101,29 +97,25 @@ theorem integral_local_gradient_energy_le {d : ℕ}
       (G z) (scalarSpatialGradient ρ z)).symm
   rw [hEeq] at hb
   have htime := integral_local_time_energy_le hU u ρ hu hρ hc hsub Kt hq ht
-  dsimp only [G, c] at hb
-  linarith only [hb, htime]
+  linarith
 
 /-- The smooth compact cutoff has a finite bound on the time derivative of its square. -/
-theorem exists_local_cutoff_square_timeDerivative_bound {d : ℕ}
+theorem exists_local_cutoff_square_timeDerivative_bound 
     (ρ : TimeVelocity d → ℝ) (hρ : ContDiff ℝ (⊤ : ℕ∞) ρ)
     (hc : HasCompactSupport ρ) :
     ∃ K : ℝ, 0 ≤ K ∧ ∀ z, |timeDerivative (fun y => ρ y ^ 2) z| ≤ K := by
-  have hs : ContDiff ℝ (⊤ : ℕ∞) (fun z => ρ z ^ 2) := hρ.pow 2
-  have hsc : HasCompactSupport (fun z => ρ z ^ 2) := by
-    rw [show (fun z => ρ z ^ 2) = ρ * ρ by funext z; exact pow_two _]
-    exact HasCompactSupport.mul_left hc
-  have hdc : Continuous (timeDerivative (fun z => ρ z ^ 2)) :=
+  have hs : ContDiff ℝ _ (fun z => ρ z ^ 2) := hρ.pow 2
+  have hsc : HasCompactSupport (fun z => ρ z ^ 2) := HasCompactSupport.mul_left hc
+  have hdc : Continuous (timeDerivative _) :=
     (hs.continuous_fderiv (by simp)).clm_apply continuous_const
-  have hds : HasCompactSupport (timeDerivative (fun z => ρ z ^ 2)) :=
-    hsc.fderiv_apply (𝕜 := ℝ) (1, 0)
+  have hds : HasCompactSupport (timeDerivative _) :=
+    hsc.fderiv_apply (𝕜 := ℝ) _
   obtain ⟨K, hK⟩ := hdc.bounded_above_of_compact_support hds
   exact ⟨max K 0, le_max_right _ _, fun z =>
     (Real.norm_eq_abs _).symm.le.trans ((hK z).trans (le_max_left _ _))⟩
 
 /-- One cutoff-dependent constant bounds every homogeneous solution's gradient energy. -/
-theorem exists_local_gradient_energy_constant {d : ℕ}
-    (a T : ℝ) (O : Set (PDE.Vec d)) (hO : IsOpen O)
+theorem exists_local_gradient_energy_constant  (hO : IsOpen O)
     (ρ : TimeVelocity d → ℝ) (hρ : ContDiff ℝ (⊤ : ℕ∞) ρ)
     (hc : HasCompactSupport ρ) (hsub : tsupport ρ ⊆ Ioo a T ×ˢ O)
     (A : CoefficientField d) (hA : IsSmoothCoefficient A)
@@ -139,7 +131,7 @@ theorem exists_local_gradient_energy_constant {d : ℕ}
         C * ∫ z in Ioo a T ×ˢ O, u z ^ 2 := by
   obtain ⟨K, hK, hrow⟩ := exists_localValueEnergyErrorRow_bound A hA ρ hρ hc
   obtain ⟨Kt, hKt, ht⟩ := exists_local_cutoff_square_timeDerivative_bound ρ hρ hc
-  refine ⟨Kt / 2 + (d : ℝ) * K ^ 2 / (2 * lam), by positivity, ?_⟩
+  refine ⟨Kt / 2 + d * K ^ 2 / (2 * lam), by positivity, ?_⟩
   intro u hu hq heq
   exact integral_local_gradient_energy_le a T O hO u ρ hu hρ hc hsub A hA
     lam K Kt hlam hK hell (fun z _ j => hrow z j) (fun z _ => ht z) hq heq

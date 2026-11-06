@@ -15,7 +15,6 @@ order is reversed by the minus sign in the reverse-time source functional.
 open Filter MeasureTheory
 open scoped ENNReal RealInnerProductSpace
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -34,18 +33,14 @@ theorem reverseTimeSourceFunctional_sub_nonpos_of_ae_le
         0 ≤ valueCLM hΩ (h10PositivePart hΩ u) y := by
     rw [valueCLM_h10PositivePart]
     filter_upwards [Lp.coeFn_posPart (valueCLM hΩ u)] with y hy
-    rw [hy]
-    exact le_max_right _ _
+    simp_all
   have hinner :
       inner ℝ (valueCLM hΩ (h10PositivePart hΩ u)) f₂ ≤
         inner ℝ (valueCLM hΩ (h10PositivePart hΩ u)) f₁ := by
-    rw [L2.inner_def, L2.inner_def]
     apply integral_mono_ae (L2.integrable_inner _ _) (L2.integrable_inner _ _)
     filter_upwards [hf, hvalueNonneg] with y hyf hyv
-    simp only [RCLike.inner_apply, conj_trivial]
     exact mul_le_mul_of_nonneg_right hyf hyv
-  rw [reverseTimeSourceFunctional_apply, reverseTimeSourceFunctional_apply,
-    neg_sub_neg]
-  exact sub_nonpos.mpr hinner
+  rw [reverseTimeSourceFunctional_apply, reverseTimeSourceFunctional_apply]
+  simp_all
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

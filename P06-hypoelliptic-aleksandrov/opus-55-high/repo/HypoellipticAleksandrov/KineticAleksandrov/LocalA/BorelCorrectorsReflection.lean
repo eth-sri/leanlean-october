@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.ReflectionCalcu
 /-! # Backward homogeneous correctors in the source geometry -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic SectionTwo TheoremA Filter
 open scoped Topology Matrix.Norms.Elementwise
@@ -36,7 +35,7 @@ theorem exists_backward_homogeneous_correctors
   have hmap : MapsTo (kineticReflection (d := d)) D (backwardCylinder P₀ R) := by
     intro P hP
     have hi := kineticReflection_image_backwardCylinder P₀ R hR
-    dsimp only [D, Z] at hP
+    dsimp only [D] at hP
     rw [← hi] at hP
     rcases hP with ⟨Q, hQ, rfl⟩
     simpa only [kineticReflection_involutive Q] using hQ
@@ -48,9 +47,9 @@ theorem exists_backward_homogeneous_correctors
     filter_upwards [hμ.ae he] with P hP
     rw [reflectedKineticOperator_reflection, hP, neg_zero]
   have hKL : kineticReflection '' L ⊆ D := by
-    dsimp only [D, Z]
-    rw [← kineticReflection_image_backwardCylinder P₀ R hR]
-    exact image_mono hLD
+    dsimp only [D]
+    rw [← kineticReflection_image_backwardCylinder]
+    grind
   obtain ⟨B, W, V, hV, hKV, _, hB, hW, heW, ht⟩ :=
     exists_borel_homogeneous_correctors hH hLE hd lam Lam hlam hLam
       (kineticReflectedCoefficient A) (isBorelCoefficient_kineticReflectedCoefficient A hA)
@@ -69,7 +68,7 @@ theorem exists_backward_homogeneous_correctors
     apply contDiff_pi.mpr
     intro k
     exact (hB j).2.2.1 i k |>.comp
-      (contDiff_fst.prodMk (contDiff_snd.prodMk (contDiff_const (c := (0 : PDE.Vec d)))))
+      (contDiff_fst.prodMk (contDiff_snd.prodMk (contDiff_const (c := (0)))))
   refine ⟨fun j => kineticReflectedCoefficient (B j), fun j => W j ∘ kineticReflection,
     O, hO, fun P hP => hKV (mem_image_of_mem _ hP), ?_, ?_, ?_, ?_⟩
   · intro j

@@ -22,9 +22,9 @@ theorem visitTimeQuadratic_zero_off_window (c : Clock) (b : ℝ) (a : ℝ → �
     by_contra hn
     exact ht (visitTimeCutoff_deriv_tsupport b c.r c.positive (subset_closure hn))
   constructor
-  · rw [he, zero_mul]
+  · simp_all
   · rw [visitTimeQuadratic_operator c _
       (visitTimeCutoff_properties b c.r c.positive).1, he, hd]
-    simp only [zero_mul, mul_zero, sub_zero]
+    simp
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

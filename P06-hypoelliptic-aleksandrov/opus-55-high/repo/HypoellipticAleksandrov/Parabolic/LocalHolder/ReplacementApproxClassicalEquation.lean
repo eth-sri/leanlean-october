@@ -12,7 +12,6 @@ classical jet. Continuous residuals then vanish pointwise on open collars.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 open scoped BigOperators Matrix.Norms.Elementwise
@@ -46,8 +45,7 @@ theorem classical_homogeneous_equation_of_weak_family {d L : ℕ}
     filter_upwards [hall, hEqV] with y hy hEy
     have hDy : homogeneousWeakFamilyResidual (le_refl 2) A D y = 0 := hEy
     simp only [homogeneousWeakFamilyResidual] at hDy ⊢
-    simp_rw [hy] at hDy
-    exact hDy
+    aesop
   let R (y : TimeVelocity d) := J.timeDeriv y +
     ∑ i, ∑ j, A y.1 y.2 i j * J.velocityHessian y j i
   have hRJ : (fun y => J.timeDeriv y +
@@ -74,7 +72,7 @@ theorem classical_homogeneous_equation_of_weak_family {d L : ℕ}
     simp only [Q, R, J, classicalLocalW12Jet, matrixContraction, coefficientAt, hentry]
   have hQzero : Q =ᵐ[timeVelocityVolumeOn V] 0 := by
     filter_upwards [hRzero, ae_restrict_mem hV.measurableSet] with y hy hyV
-    exact (hQR hyV).trans hy
+    grind
   have hQc : ContinuousOn Q V := by
     apply (hu.continuousOn_scalarTimeDerivative.mono hsub).add
     apply continuousOn_finsetSum

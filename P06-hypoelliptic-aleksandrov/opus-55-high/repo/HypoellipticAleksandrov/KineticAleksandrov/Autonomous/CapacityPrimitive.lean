@@ -9,25 +9,25 @@ import Mathlib.Tactic
 /-! # Smooth primitives for the capacity test -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 
+variable {f : ℝ → ℝ}
+
 /-- A smooth real function has a smooth integral primitive. -/
-theorem capacity_primitive_smooth {f : ℝ → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
+theorem capacity_primitive_smooth  (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (a : ℝ) : ContDiff ℝ (⊤ : ℕ∞) (fun v => ∫ x in a..v, f x) := by
-  have hd (v : ℝ) : HasDerivAt (fun v => ∫ x in a..v, f x) (f v) v :=
+  have hd (v : ℝ) : HasDerivAt _ (f v) v :=
     intervalIntegral.integral_hasDerivAt_right (hf.continuous.intervalIntegrable a v)
       hf.continuous.aestronglyMeasurable.stronglyMeasurableAtFilter hf.continuous.continuousAt
   apply contDiff_infty_iff_deriv.mpr
   refine ⟨fun v => (hd v).differentiableAt, ?_⟩
-  have he : deriv (fun v => ∫ x in a..v, f x) = f := funext fun v => (hd v).deriv
-  rw [he]
-  exact hf
+  have he : deriv _ = f := funext fun v => (hd v).deriv
+  simp_all
 
 /-- The cumulative integral of a nonnegative compactly supported function is bounded
 by its total integral when its support lies to the right of the starting point. -/
-theorem capacity_cumulative_bounds {f : ℝ → ℝ} {a : ℝ}
+theorem capacity_cumulative_bounds  {a : ℝ}
     (hi : Integrable f volume) (hn : ∀ v, 0 ≤ f v)
     (hs : tsupport f ⊆ Ioi a) (v : ℝ) :
     0 ≤ (∫ x in a..v, f x) ∧ (∫ x in a..v, f x) ≤ ∫ x, f x := by

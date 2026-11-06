@@ -7,27 +7,28 @@ import Mathlib.Tactic
 /-! # Tangent-extended Hermite paths with uniform stack bounds -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth
 open Set
 
+variable {d : ℕ}
+
 /-- Increasing the acceleration bound preserves a skeleton. -/
-theorem skeleton_mono_bound {d : ℕ} {x v : ℝ → PDE.Vec d} {H K a b : ℝ}
+theorem skeleton_mono_bound  {x v : ℝ → PDE.Vec d} {H K a b : ℝ}
     (hx : IsSkeleton x v H a b) (hHK : H ≤ K) : IsSkeleton x v K a b :=
   ⟨hx.1, hx.2.1, fun s hs t ht => (hx.2.2 s hs t ht).trans
     (mul_le_mul_of_nonneg_right hHK (abs_nonneg _))⟩
 
 /-- The cap-center free-transport displacement equals the path displacement. -/
-theorem stack_relative_path {d : ℕ} (P0 : KineticPoint d) (r s : ℝ)
+theorem stack_relative_path  (P0 : KineticPoint d) (r s : ℝ)
     (z : PDE.Vec d) :
     z-P0.position-(stackStartTime P0 r+s-P0.time) • P0.velocity =
       z-stackStartPosition P0 r-s • P0.velocity := by
   ext i
-  simp only [stackStartTime, stackStartPosition, Pi.sub_apply, Pi.smul_apply, smul_eq_mul]
+  simp only [stackStartTime, stackStartPosition, Pi.sub_apply, Pi.smul_apply]
   ring
 
 /-- A stack endpoint admits a tangent-extended skeleton with uniform path bounds. -/
-theorem exists_stack_path {d : ℕ} (P0 P : KineticPoint d) {r : ℝ} (hr : 0 < r)
+theorem exists_stack_path  (P0 P : KineticPoint d) {r : ℝ} (hr : 0 < r)
     (m : ℕ) (hP : P ∈ forwardStack P0 r m) :
     ∃ x v : ℝ → PDE.Vec d,
       IsSkeleton x v (stackAcceleration m/r) (-(r^2/32)) (stackTravelTime P0 P r) ∧
@@ -52,7 +53,6 @@ theorem exists_stack_path {d : ℕ} (P0 P : KineticPoint d) {r : ℝ} (hr : 0 < 
     have hn₁ := PDE.vecEuclideanNorm_nonneg
       (P.position-stackStartPosition P0 r-T • P0.velocity)
     have hn₂ := PDE.vecEuclideanNorm_nonneg (P.velocity-P0.velocity)
-    dsimp [H]
     positivity
   let x := extendPosition xh vh 0 T hT.le
   let v := extendVelocity vh 0 T hT.le
@@ -68,7 +68,7 @@ theorem exists_stack_path {d : ℕ} (P0 P : KineticPoint d) {r : ℝ} (hr : 0 < 
   refine ⟨x, v, skeleton_mono_bound
     (extendPosition_isSkeleton hT.le hH hsk _ _)
     (stack_hermite_acceleration hr m hlo _ _ _ _ hpos hvel),
-    (by simpa using (hleft 0 le_rfl).1), (hleft 0 le_rfl).2, ?_, ?_, hleft, ?_⟩
+    (by simp_all), (hleft 0 le_rfl).2, ?_, ?_, hleft, ?_⟩
   · dsimp [x]
     rw [extendPosition_eq hT.le hsk (right_mem_Icc.mpr hT.le)]
     exact hermitePosition_end hT.ne' _ _ _ _

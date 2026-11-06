@@ -19,12 +19,10 @@ def reconstructionExponentialPlane (alpha beta gamma : ℝ) (p : Point) : ℝ :=
 theorem reconstructionExponentialPlane_smooth (alpha beta gamma : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞)
       (reconstructionExponentialPlane alpha beta gamma ∘ reconstructionPhysicalHomeomorph) := by
-  change ContDiff ℝ (⊤ : ℕ∞)
-    (fun x => Real.exp (alpha * Evolution.timeCoord 1 x + beta * diffusedCoord 1 x 0 + gamma))
   have ht : ContDiff ℝ (⊤ : ℕ∞) (Evolution.timeCoord 1) :=
     (Evolution.timeCoord 1).contDiff
   exact ((contDiff_const.mul ht).add
-    (contDiff_const.mul ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp
+    (contDiff_const.mul ((contDiff_apply ℝ ℝ _).comp
       (diffusedCoord 1).contDiff)) |>.add contDiff_const).exp
 
 private theorem exponentialPlane_second_deriv (c beta : ℝ) (v : ℝ) :
@@ -32,9 +30,9 @@ private theorem exponentialPlane_second_deriv (c beta : ℝ) (v : ℝ) :
       beta ^ 2 * Real.exp (c + beta * v) := by
   have hd (w : ℝ) : HasDerivAt (fun w => Real.exp (c + beta * w))
       (Real.exp (c + beta * w) * beta) w :=
-    by simpa only [id_eq, mul_one] using
+    by simpa using
       (((hasDerivAt_id w).const_mul beta).const_add c).exp
-  have heq : deriv (fun w => Real.exp (c + beta * w)) =
+  have heq : deriv _ =
       fun w => Real.exp (c + beta * w) * beta := funext (fun w => (hd w).deriv)
   rw [heq, (hd v |>.mul_const beta).deriv]
   ring
@@ -50,28 +48,24 @@ theorem reconstructionExponentialPlane_operator (a : ℝ → ℝ → ℝ)
     change deriv (fun t => Real.exp (alpha * t + beta * p.velocity 0 + gamma)) p.time = _
     simpa only [id_eq, mul_one, reconstructionExponentialPlane, mul_comm] using
       ((((hasDerivAt_id p.time).const_mul alpha).add_const
-        (beta * p.velocity 0)).add_const gamma).exp.deriv
+        _).add_const gamma).exp.deriv
   have hx : kineticPositionGradient (reconstructionExponentialPlane alpha beta gamma) p 0 = 0 := by
     rw [kineticPositionGradient_scalar]
     change deriv (fun _ : ℝ => Real.exp (alpha * p.time + beta * p.velocity 0 + gamma))
-      (p.position 0) = 0
-    exact deriv_const _ _
+      _ = 0
+    simp
   have hv : kineticVelocityHessian (reconstructionExponentialPlane alpha beta gamma) p 0 0 =
       beta ^ 2 * reconstructionExponentialPlane alpha beta gamma p := by
     rw [kineticVelocityHessian_scalar]
     have heq : (fun v => reconstructionExponentialPlane alpha beta gamma
         ⟨p.time, p.position, fun _ => v⟩) =
         fun v => Real.exp ((alpha * p.time + gamma) + beta * v) := by
-      funext v
       dsimp only [reconstructionExponentialPlane]
-      congr 1
       ring
     rw [heq, exponentialPlane_second_deriv]
     dsimp only [reconstructionExponentialPlane]
-    congr 2
     ring
   unfold forwardScalarOperator
-  rw [ht, hx, hv]
-  ring
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

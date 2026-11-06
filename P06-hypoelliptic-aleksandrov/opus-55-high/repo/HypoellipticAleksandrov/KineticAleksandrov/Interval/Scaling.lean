@@ -10,7 +10,6 @@ Transport and ellipticity constants are unchanged; position scales by `r³`.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open Set MeasureTheory HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
@@ -22,10 +21,10 @@ theorem scaledDomain_interval (a c : ℝ) (v₀ : PDE.Vec 1) (r : {r : ℝ // 0 
     scaledDomain (PDE.oneDimensionalAxisBox a c) v₀ r =
       PDE.oneDimensionalAxisBox ((a - v₀ 0) / r.1) ((c - v₀ 0) / r.1) := by
   ext Y
-  simp only [scaledDomain, mem_ofPred_eq, PDE.mem_oneDimensionalAxisBox_iff,
+  simp only [scaledDomain, PDE.mem_oneDimensionalAxisBox_iff,
     PDE.vecOneCoordinate, mem_Ioo, Pi.add_apply, Pi.smul_apply, smul_eq_mul]
   rw [div_lt_iff₀ r.2, lt_div_iff₀ r.2]
-  constructor <;> intro h <;> constructor <;> linarith only [h.1, h.2]
+  grind
 
 /-- Rescaled endpoints remain strictly ordered. -/
 theorem scaled_interval_endpoints {a c : ℝ} (hac : a < c)
@@ -53,8 +52,10 @@ theorem scaled_interval_setting (lam Lam m Lb a c σ₀ : ℝ) (hac : a < c)
     (scaledDrift_smooth b v₀ r hs.2.1) hs.2.2.1 hs.2.2.2.1
     (scaledDrift_transportBounds b v₀ r hs.2.2.2.2.1)
 
+variable (a c σ₀ : ℝ)
+
 /-- The source kinetic affine map carries the rescaled stationary interval to the original. -/
-theorem mapsDomain_interval (a c σ₀ : ℝ) (v₀ z₀ : PDE.Vec 1)
+theorem mapsDomain_interval  (v₀ z₀ : PDE.Vec 1)
     (b : PDE.Vec 1 → PDE.Vec 1) (r : {r : ℝ // 0 < r}) :
     (KineticAffineScaling.ofRadius σ₀ v₀ z₀ b r).MapsDomain
       (PDE.oneDimensionalAxisBox a c) stationary
@@ -62,7 +63,7 @@ theorem mapsDomain_interval (a c σ₀ : ℝ) (v₀ z₀ : PDE.Vec 1)
   intro τ
   ext Y
   simp only [movingDomain, stationary, PDE.mem_translateSet_iff_sub_mem,
-    sub_zero, mem_preimage, scaledDomain, mem_ofPred_eq]
+    sub_zero, mem_preimage]
   rfl
 
 /-- The rescaled interval realization is the affine pushforward of the original realization. -/
@@ -90,7 +91,7 @@ theorem realizes_ofRadius_interval (a c σ₀ : ℝ) (hac : a < c)
   exact h
 
 /-- Fourier affine image and exact total-variation equality on the rescaled interval. -/
-theorem realizes_ofRadius_interval_fourier_tv (a c σ₀ : ℝ) (hac : a < c)
+theorem realizes_ofRadius_interval_fourier_tv  (hac : a < c)
     (v₀ z₀ : PDE.Vec 1) (b : PDE.Vec 1 → PDE.Vec 1) (r : {r : ℝ // 0 < r})
     {B : CoefficientField 1}
     {S : TerminalOperatorFamily (PDE.oneDimensionalAxisBox a c) stationary}
@@ -115,13 +116,13 @@ theorem realizes_ofRadius_interval_fourier_tv (a c σ₀ : ℝ) (hac : a < c)
         ((r.1 ^ 2 * (q'.1.2.1 - q'.1.1) * PDE.vecDot ξ (b v₀) : ℝ) : ℂ)) *
         ν' ((fun Y : PDE.Vec 1 => v₀ + r.1 • Y) ⁻¹' E)) ∧
       totalVariationNorm ν = totalVariationNorm ν' := by
-  have hreal'' : RealizesTerminalEvolution (scaledDomain (PDE.oneDimensionalAxisBox a c) v₀ r)
+  have hreal'' : RealizesTerminalEvolution _
       stationary (measurableSet_of_isAdmissibleEvolutionDomain
         (scaled_interval_admissible hac v₀ r))
       ((KineticAffineScaling.ofRadius σ₀ v₀ z₀ b r).coefficient (zIndependentCoefficient B))
       ((KineticAffineScaling.ofRadius σ₀ v₀ z₀ b r).drift b) S' K' := by
     rw [KineticAffineScaling.ofRadius_coefficient, KineticAffineScaling.ofRadius_drift]
-    exact hreal'
+    omega
   exact KineticAffineScaling.realizes_fourier_tv _ (interval_admissible hac)
     (zeroCurve_piecewiseC1 1) (scaled_interval_admissible hac v₀ r)
     hreal hreal'' q' ξ ν ν' hν hν'

@@ -28,8 +28,6 @@ theorem bellmanPositionEquiv_ne_zero (s : ℝ) (hs : 0 < s) (q : BellmanPuncture
   apply q.property
   have hx := congrArg Prod.fst h
   have hv := congrArg Prod.snd h
-  change s * q.val.1 = 0 at hx
-  change q.val.2 = 0 at hv
   exact Prod.ext ((mul_eq_zero.mp hx).resolve_left hs.ne') hv
 
 /-- The position rescaling is a homeomorphism of the literal punctured carrier. -/
@@ -41,16 +39,15 @@ def bellmanPositionHomeomorph (s : ℝ) (hs : 0 < s) :
   left_inv q := by
     apply Subtype.ext
     change (s⁻¹ * (s * q.val.1), q.val.2) = q.val
-    simp [hs.ne']
+    grind
   right_inv q := by
     apply Subtype.ext
     change (s * (s⁻¹ * q.val.1), q.val.2) = q.val
-    simp [hs.ne']
+    grind
   continuous_toFun := by
-    exact ((bellmanPositionEquiv s hs).continuous.comp continuous_subtype_val).subtype_mk _
+    fun_prop
   continuous_invFun := by
-    exact ((bellmanPositionEquiv s⁻¹ (inv_pos.mpr hs)).continuous.comp
-      continuous_subtype_val).subtype_mk _
+    fun_prop
 
 /-- Position rescaling commutes with every kinetic dilation. -/
 theorem bellmanPositionHomeomorph_dilation (s : ℝ) (hs : 0 < s)
@@ -60,6 +57,6 @@ theorem bellmanPositionHomeomorph_dilation (s : ℝ) (hs : 0 < s)
   apply Subtype.ext
   change (s * (r ^ 3 * q.val.1), r * q.val.2) =
     (r ^ 3 * (s * q.val.1), r * q.val.2)
-  ext <;> ring
+  ring
 
 end HypoellipticAleksandrov.KineticAleksandrov

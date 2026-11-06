@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitDecompositio
 /-! # Finite propagation of the actual killed terminal transition -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Parabolic
 
@@ -23,7 +22,7 @@ theorem ballTransition_cone
   let S : Set (KineticPoint d) := {Q | Q.velocity ∈ PDE.euclideanBall v₀ R}
   have hS : MeasurableSet S :=
     (PDE.isOpen_euclideanBall v₀ R).measurableSet.preimage continuous_velocity.measurable
-  rw [← ballExit_terminal_interior_map hH hLE hd hlam hLam B hB v₀ hR P T]
+  rw [← ballExit_terminal_interior_map]
   apply (ae_map_iff continuous_exitStateCoordinates.measurable.aemeasurable
     (isClosed_le (PDE.continuous_vecEuclideanNorm.comp
       ((continuous_snd.sub continuous_const).sub continuous_const))
@@ -32,14 +31,11 @@ theorem ballTransition_cone
     ae_restrict_of_ae (ballExitRaw_cone hH hLE hd hlam hLam B hB v₀ hR P T),
     ae_restrict_of_ae (ballExitRaw_ae_trace hH hLE hd hlam hLam B hB v₀ hR P T)]
     with Q hv hcone hQ
-  change Q.velocity ∈ PDE.euclideanBall v₀ R at hv
   have ht : Q.time = T.1 := by
     rcases hQ with hQ | hQ
-    · exact hQ.1
+    · grind
     · exact False.elim ((mem_interior_iff_notMem_frontier hv).mp
         ((PDE.isOpen_euclideanBall v₀ R).interior_eq.symm ▸ hv) hQ.2.2)
-  change PDE.vecEuclideanNorm (Q.position - P.1.position - (T.1 - P.1.time) • v₀) ≤
-    R * (T.1 - P.1.time)
-  simpa only [ht] using hcone.2.2
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

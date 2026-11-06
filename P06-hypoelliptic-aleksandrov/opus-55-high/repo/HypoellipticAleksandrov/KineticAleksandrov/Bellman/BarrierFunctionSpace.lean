@@ -41,24 +41,21 @@ def bellmanOperator (b : ℝ) (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) : �
 theorem bellmanPuncturedSet_isOpen : IsOpen bellmanPuncturedSet := isOpen_ne_fun
   continuous_id continuous_const
 
+variable {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
+
 /-- C² homogeneity gives a C¹ directional derivative on the punctured plane. -/
-theorem IsBellmanHomogeneous.directional_contDiffOn {alpha : ℝ}
-    {phi : (ℝ × ℝ) → ℝ} (h : IsBellmanHomogeneous alpha phi) (e : ℝ × ℝ) :
-    ContDiffOn ℝ 1 (fun q => fderiv ℝ phi q e) bellmanPuncturedSet := by
-  exact (h.1.fderiv_of_isOpen bellmanPuncturedSet_isOpen (by norm_num)).clm_apply
+theorem IsBellmanHomogeneous.directional_contDiffOn  (h : IsBellmanHomogeneous alpha phi) (e : ℝ × ℝ) :
+    ContDiffOn ℝ 1 (fun q => fderiv ℝ phi q e) bellmanPuncturedSet := (h.1.fderiv_of_isOpen bellmanPuncturedSet_isOpen (by norm_num)).clm_apply
     contDiffOn_const
 
 /-- Each first jet is continuous on the source carrier. -/
-theorem IsBellmanHomogeneous.dx_continuousOn {alpha : ℝ}
-    {phi : (ℝ × ℝ) → ℝ} (h : IsBellmanHomogeneous alpha phi) :
+theorem IsBellmanHomogeneous.dx_continuousOn  (h : IsBellmanHomogeneous alpha phi) :
     ContinuousOn (bellmanDx phi) bellmanPuncturedSet :=
-  (h.directional_contDiffOn (1, 0)).continuousOn
+  (h.directional_contDiffOn _).continuousOn
 
 /-- The second velocity jet is continuous on the source carrier. -/
-theorem IsBellmanHomogeneous.dvv_continuousOn {alpha : ℝ}
-    {phi : (ℝ × ℝ) → ℝ} (h : IsBellmanHomogeneous alpha phi) :
-    ContinuousOn (bellmanDvv phi) bellmanPuncturedSet := by
-  exact ((h.directional_contDiffOn (0, 1)).fderiv_of_isOpen
+theorem IsBellmanHomogeneous.dvv_continuousOn  (h : IsBellmanHomogeneous alpha phi) :
+    ContinuousOn (bellmanDvv phi) bellmanPuncturedSet := ((h.directional_contDiffOn _).fderiv_of_isOpen
     bellmanPuncturedSet_isOpen (m := 0) (by norm_num)).continuousOn.clm_apply
     continuousOn_const
 
@@ -86,8 +83,7 @@ def bellmanHomogeneousSpace (alpha : ℝ) : Submodule ℝ ((ℝ × ℝ) → ℝ)
   carrier := {phi | IsBellmanHomogeneous alpha phi}
   zero_mem' := by
     refine ⟨contDiffOn_const, ?_⟩
-    intro r hr q hq
-    simp only [Pi.zero_apply, mul_zero]
+    simp
   add_mem' := by
     intro phi psi hphi hpsi
     refine ⟨hphi.1.add hpsi.1, ?_⟩
@@ -97,7 +93,7 @@ def bellmanHomogeneousSpace (alpha : ℝ) : Submodule ℝ ((ℝ × ℝ) → ℝ)
     intro c phi hphi
     refine ⟨contDiffOn_const.smul hphi.1, ?_⟩
     intro r hr q hq
-    simp only [Pi.smul_apply, smul_eq_mul, hphi.2 r hr q hq]
+    simp only [Pi.smul_apply, hphi.2 r hr q hq]
     ring
 
 end HypoellipticAleksandrov.KineticAleksandrov

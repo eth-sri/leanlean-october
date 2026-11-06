@@ -12,7 +12,6 @@ Strong root convergence then gives both classical regularity and the literal equ
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 open scoped BigOperators Topology MatrixOrder Matrix.Norms.Elementwise
@@ -49,7 +48,7 @@ theorem scalarC12_homogeneous_local_sequence_limit {d : ℕ}
   have hPD := hPQ.trans (subset_closure.trans hQD)
   have hPS : p₀ < p₁ := hp₀s₀.trans (hs₀s₁.trans hs₁p₁)
   have hO₁Ω := hO₁O₀.trans (subset_closure.trans hO₀Ω)
-  let J (n : ℕ) := classicalLocalW12Jet (u n) (hu n) (isOpen_Ioo.prod hO₁)
+  let J (n : ℕ) := classicalLocalW12Jet _ (hu n) (isOpen_Ioo.prod hO₁)
     (isCompact_closure_local_product p₀ p₁ hO₁c) hPD
   obtain ⟨Cs, hCs, hseedrun⟩ := exists_uniform_classical_seed_constant
     a T q₀ p₀ p₁ q₁ hq₀p₀ hPS.le hp₁q₁ Ω O₀ O₁ hΩ
@@ -57,17 +56,17 @@ theorem scalarC12_homogeneous_local_sequence_limit {d : ℕ}
     (isCompact_closure_local_product q₀ q₁ hO₀c) hQD hO₁ hO₁c hO₁O₀
     (isCompact_closure_local_product p₀ p₁ hO₁c) hPQ A hA lam Lam hlam hlamLam hlo hhi
   have hseed (n : ℕ) : ((J n).toWeakDerivativeFamily
-      (isOpen_Ioo.prod hO₁)).squaredL2Norm ≤ Cs * N :=
-    (hseedrun (u n) (hu n) (hq n) (hEq n)).trans
+      _).squaredL2Norm ≤ Cs * N :=
+    (hseedrun _ _ (hq n) (hEq n)).trans
       (mul_le_mul_of_nonneg_left (hb n) hCs)
   have hJEq (n : ℕ) := classicalLocalW12Jet_homogeneous_equation
-    (u n) (hu n) (isOpen_Ioo.prod hO₁)
+    _ (hu n) (isOpen_Ioo.prod hO₁)
     (isCompact_closure_local_product p₀ p₁ hO₁c) hPD A (hEq n)
   obtain ⟨C, D, hC, hDb, hDzero⟩ := exists_controlled_homogeneous_higher_families
     a p₀ s₀ s₁ p₁ T (haq₀.trans hq₀p₀) hp₀s₀ hs₀s₁ hs₁p₁ (hp₁q₁.trans hq₁T)
     hΩ hO₁ hO₁c hO₁Ω hO₂ hO₂ne hO₂c hO₂O₁
     lam Lam hlam hlamLam A hA hlo hhi J hJEq (Cs * N) (mul_nonneg hCs hN) hseed
-  exact scalarC12_homogeneous_of_strongL2_limit (Ioo s₀ s₁ ×ˢ O₂)
+  exact scalarC12_homogeneous_of_strongL2_limit _
     (isOpen_Ioo.prod hO₂) A hA Lam
     (fun z _ i j => abs_apply_le_of_loewner hlam (hlo z.1 z.2) (hhi z.1 z.2) i j)
     u D hun v hv hvcont hstrong C hC hDb hDzero

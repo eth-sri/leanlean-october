@@ -29,13 +29,12 @@ def cutoffAnnulus (d : ℕ) : Set (PDE.Vec d × PDE.Vec d) :=
 
 /-- The fixed annulus is compact in the native product topology. -/
 theorem isCompact_cutoffAnnulus (d : ℕ) : IsCompact (cutoffAnnulus d) := by
-  have hclosed : IsClosed (cutoffAnnulus d) := by
-    exact (isClosed_eq (PDE.continuous_vecNormSq.comp continuous_fst) continuous_const).inter
+  have hclosed : IsClosed (cutoffAnnulus d) := (isClosed_eq (PDE.continuous_vecNormSq.comp continuous_fst) continuous_const).inter
       ((isClosed_le continuous_const (PDE.continuous_vecEuclideanNorm.comp continuous_snd)).inter
         (isClosed_le (PDE.continuous_vecEuclideanNorm.comp continuous_snd) continuous_const))
-  apply (isCompact_closedBall (0 : PDE.Vec d × PDE.Vec d) 2).of_isClosed_subset hclosed
+  apply (isCompact_closedBall (0) 2).of_isClosed_subset hclosed
   intro q hq
-  rw [Metric.mem_closedBall, dist_zero_right, Prod.norm_def]
+  rw [Metric.mem_closedBall, dist_zero_right]
   have he : PDE.vecEuclideanNorm q.1 = 1 := by
     unfold PDE.vecEuclideanNorm
     rw [hq.1]
@@ -50,8 +49,10 @@ def rescaledSignRegion (d : ℕ) (alpha sigma : ℝ) :
     (∃ w, 0 < rescaledHessian alpha sigma q.2.1 q.2.2 q.1.1 q.1.2 w) ∧
     (∃ w, rescaledHessian alpha sigma q.2.1 q.2.2 q.1.1 q.1.2 w < 0)}
 
+variable (d : ℕ)
+
 /-- Both strict Hessian signs persist locally in the regular parameter region. -/
-theorem isOpen_rescaledSignRegion (d : ℕ) (alpha sigma : ℝ) :
+theorem isOpen_rescaledSignRegion  (alpha sigma : ℝ) :
     IsOpen (rescaledSignRegion d alpha sigma) := by
   apply isOpen_iff_mem_nhds.mpr
   intro q hq
@@ -59,9 +60,9 @@ theorem isOpen_rescaledSignRegion (d : ℕ) (alpha sigma : ℝ) :
   have hc : Continuous (fun p : (PDE.Vec d × PDE.Vec d) × (ℝ × ℝ) =>
       ((p.2.1, p.2.2, p.1.1), p.1.2)) := by fun_prop
   have hpos := (continuousAt_rescaledCutoff_hessian alpha sigma
-    ((q.2.1, q.2.2, q.1.1), q.1.2) hz hb wp wp).comp_of_eq hc.continuousAt rfl
+    _ hz hb wp wp).comp_of_eq hc.continuousAt rfl
   have hneg := (continuousAt_rescaledCutoff_hessian alpha sigma
-    ((q.2.1, q.2.2, q.1.1), q.1.2) hz hb wn wn).comp_of_eq hc.continuousAt rfl
+    _ hz hb wn wn).comp_of_eq hc.continuousAt rfl
   have hbase : Continuous (fun p : (PDE.Vec d × PDE.Vec d) × (ℝ × ℝ) =>
       seedBase (p.2.2 * sigma) p.1.2 (p.2.2 • p.1.1)) := by
     unfold seedBase PDE.vecNormSq PDE.vecDot
@@ -73,7 +74,7 @@ theorem isOpen_rescaledSignRegion (d : ℕ) (alpha sigma : ℝ) :
   exact ⟨hpz, hpb, ⟨wp, hpp⟩, ⟨wn, hpn⟩⟩
 
 /-- At zero parameters the actual interpolation has the two radial Hessian signs. -/
-theorem cutoffAnnulus_zero_signs (d : ℕ) (hd : 2 ≤ d) (alpha sigma : ℝ)
+theorem cutoffAnnulus_zero_signs  (hd : 2 ≤ d) (alpha sigma : ℝ)
     (ha : 0 < alpha) (ha1 : alpha < 1) :
     cutoffAnnulus d ×ˢ ({(0, 0)} : Set (ℝ × ℝ)) ⊆ rescaledSignRegion d alpha sigma := by
   rintro ⟨⟨e, z⟩, p⟩ ⟨hz, hp⟩
@@ -83,7 +84,7 @@ theorem cutoffAnnulus_zero_signs (d : ℕ) (hd : 2 ≤ d) (alpha sigma : ℝ)
     intro hzero
     have hh := hz.2.1
     simp [hzero, PDE.vecEuclideanNorm, PDE.vecNormSq, PDE.vecDot] at hh
-    norm_num at hh
+    linarith
   have hbase : seedBase (0 * sigma) z ((0 : ℝ) • e) ≠ 0 := by
     simpa [seedBase] using PDE.vecNormSq_eq_zero_iff.not.mpr hz0
   have heq : rescaledCutoff alpha sigma 0 0 e = radialProfile alpha := by
@@ -94,15 +95,13 @@ theorem cutoffAnnulus_zero_signs (d : ℕ) (hd : 2 ≤ d) (alpha sigma : ℝ)
     unfold rescaledHessian
     rw [heq, radialProfile_hessian alpha z w w hz0]
   obtain ⟨w, hw⟩ := radialHessian_positive_direction d hd alpha ha z hz0
-  change z ≠ 0 ∧ seedBase (0 * sigma) z ((0 : ℝ) • e) ≠ 0 ∧ _
   refine ⟨hz0, hbase, ⟨w, ?_⟩, ⟨z, ?_⟩⟩
-  · rw [hh]
-    exact hw
+  · simp_all
   · rw [hh]
     exact radialHessian_radial_neg alpha ha ha1 z hz0
 
 /-- One open parameter neighborhood preserves both signs uniformly on the fixed annulus. -/
-theorem exists_rescaled_sign_neighborhood (d : ℕ) (hd : 2 ≤ d) (alpha sigma : ℝ)
+theorem exists_rescaled_sign_neighborhood  (hd : 2 ≤ d) (alpha sigma : ℝ)
     (ha : 0 < alpha) (ha1 : alpha < 1) :
     ∃ U : Set (ℝ × ℝ), IsOpen U ∧ (0, 0) ∈ U ∧
       ∀ e z, (e, z) ∈ cutoffAnnulus d → ∀ p ∈ U,
@@ -117,7 +116,7 @@ theorem exists_rescaled_sign_neighborhood (d : ℕ) (hd : 2 ≤ d) (alpha sigma 
   exact (hsub (a := ((e, z), p)) ⟨hK hz, hp⟩).2.2
 
 /-- The source parameters enter the uniform sign neighborhood for every sufficiently large R. -/
-theorem eventually_rescaled_annulus_signs (d : ℕ) (hd : 2 ≤ d) (alpha C₀ sigma : ℝ)
+theorem eventually_rescaled_annulus_signs  (hd : 2 ≤ d) (alpha C₀ sigma : ℝ)
     (ha : 0 < alpha) (ha1 : alpha < 1) :
     ∀ᶠ R : ℝ in Filter.atTop, ∀ e z, (e, z) ∈ cutoffAnnulus d →
       (∃ w, 0 < rescaledHessian alpha sigma (C₀ / Real.rpow R alpha) R⁻¹ e z w) ∧
@@ -130,11 +129,11 @@ theorem eventually_rescaled_annulus_signs (d : ℕ) (hd : 2 ≤ d) (alpha C₀ s
     have hh := (tendsto_rpow_neg_atTop ha).const_mul C₀
     simp only [mul_zero] at hh
     apply hh.congr'
-    filter_upwards [Filter.eventually_ge_atTop (0 : ℝ)] with R hR
+    filter_upwards [Filter.eventually_ge_atTop (0)] with R hR
     simp only [Real.rpow_eq_pow, Real.rpow_neg hR, div_eq_mul_inv]
   have hp := hs.prodMk_nhds ht
   filter_upwards [hp.eventually (hU.mem_nhds hzero)] with R hR
   intro e z hz
-  exact hsign e z hz (C₀ / Real.rpow R alpha, R⁻¹) hR
+  exact hsign e z hz _ hR
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

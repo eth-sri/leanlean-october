@@ -5,13 +5,13 @@ public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.ScalarAffine
 /-! # Euclidean geometry of the oscillation cylinders -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Set
 
+variable {N : ℕ} (T : ℝ) (v : PDE.Vec N) {r : ℝ}
+
 /-- Unit points map into the physical backward cylinder of radius `r`. -/
-theorem parabolicAffine_mapsTo_backward_ball {N : ℕ} (T : ℝ) (v : PDE.Vec N)
-    {r : ℝ} (hr : 0 < r) :
+theorem parabolicAffine_mapsTo_backward_ball  (hr : 0 < r) :
     MapsTo (parabolicAffine (T - r ^ 2) v r)
       (Ioo (0 : ℝ) 1 ×ˢ PDE.euclideanBall 0 1)
       (scalarParabolicOpenCylinder (T - r ^ 2) T (PDE.euclideanBall v r)) := by
@@ -27,20 +27,18 @@ theorem parabolicAffine_mapsTo_backward_ball {N : ℕ} (T : ℝ) (v : PDE.Vec N)
     nlinarith only [hr, hn]
 
 /-- Inverse coordinates of a physical point recover the point exactly. -/
-theorem parabolicAffine_inverse_apply {N : ℕ} (T : ℝ) (v : PDE.Vec N)
-    {r : ℝ} (hr : 0 < r) (z : TimeVelocity N) :
+theorem parabolicAffine_inverse_apply  (hr : 0 < r) (z : TimeVelocity N) :
     parabolicAffine (T - r ^ 2) v r
       ((z.1 - (T - r ^ 2)) / r ^ 2, r⁻¹ • (z.2 - v)) = z := by
   apply Prod.ext
   · change T - r ^ 2 + r ^ 2 * ((z.1 - (T - r ^ 2)) / r ^ 2) = z.1
-    field_simp [hr.ne']
+    field_simp
     ring
   · change v + r • (r⁻¹ • (z.2 - v)) = z.2
     rw [smul_smul, mul_inv_cancel₀ hr.ne', one_smul, add_sub_cancel]
 
 /-- The half-radius backward cylinder corresponds to the later Harnack slab. -/
-theorem backward_half_ball_inverse_mem {N : ℕ} (T : ℝ) (v : PDE.Vec N)
-    {r : ℝ} (hr : 0 < r) {z : TimeVelocity N}
+theorem backward_half_ball_inverse_mem  (hr : 0 < r) {z : TimeVelocity N}
     (hz : z ∈ scalarParabolicOpenCylinder (T - (r / 2) ^ 2) T
       (PDE.euclideanBall v (r / 2))) :
     ((z.1 - (T - r ^ 2)) / r ^ 2, r⁻¹ • (z.2 - v)) ∈
@@ -54,7 +52,7 @@ theorem backward_half_ball_inverse_mem {N : ℕ} (T : ℝ) (v : PDE.Vec N)
   · rw [PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (by norm_num)]
     rw [sub_zero, PDE.vecEuclideanNorm_smul, abs_of_pos (inv_pos.mpr hr)]
     have hn := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (half_pos hr)).mp hz.2
-    calc r⁻¹ * PDE.vecEuclideanNorm (z.2 - v) < r⁻¹ * (r / 2) :=
+    calc r⁻¹ * PDE.vecEuclideanNorm _ < r⁻¹ * (r / 2) :=
         mul_lt_mul_of_pos_left hn (inv_pos.mpr hr)
       _ = 1 / 2 := by field_simp
 

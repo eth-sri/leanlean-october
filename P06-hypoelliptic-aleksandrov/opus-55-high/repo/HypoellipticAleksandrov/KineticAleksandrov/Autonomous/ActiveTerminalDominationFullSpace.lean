@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecu
 /-! # Full-space terminal actions in native and physical coordinates -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
@@ -28,23 +27,19 @@ theorem enlargedFullSpace_native_terminal_integral
       wholeQuery (Real.toNNReal (b - P.time)) (P.position 0, P.velocity 0) := by
     apply Subtype.ext
     dsimp [autonomousQueryShift, q, wholeQuery, wholeSpaceQuery]
-    rw [max_eq_left (sub_nonneg.mpr hb)]
     have hx : (fun _ : Fin 1 => P.position 0) = P.position := by
       funext i
       exact congrArg P.position (Subsingleton.elim 0 i)
     have hv : (fun _ : Fin 1 => P.velocity 0) = P.velocity := by
       funext i
       exact congrArg P.velocity (Subsingleton.elim 0 i)
-    rw [hx, hv]
-    congr 1
-    ring
+    grind
   have hk := fullspace_kernel_timeShift A E
     (fullSpaceEvolution_spec hH hLE hlam hLam A) (-P.time) q
   rw [hq] at hk
-  change (∫ w, F ⟨b, w.2, w.1⟩ ∂E.2.master q) =
-    ∫ z, F (enlargedTerminalPoint b z)
-      ∂(E.2.master (wholeQuery (Real.toNNReal (b - P.time))
-        (P.position 0, P.velocity 0))).map nativeToXV
+  change (∫ w, F _ ∂E.2.master q) =
+    ∫ z, F _
+      ∂(E.2.master _).map nativeToXV
   have hm := integral_map nativeToXV_measurable.aemeasurable
     (hF.comp (enlargedTerminalPoint_measurable b)).aestronglyMeasurable
       (μ := E.2.master (wholeQuery (Real.toNNReal (b - P.time)) (P.position 0, P.velocity 0)))
@@ -53,7 +48,7 @@ theorem enlargedFullSpace_native_terminal_integral
   apply integral_congr_ae
   apply Filter.Eventually.of_forall
   intro w
-  change F ⟨b, w.2, w.1⟩ = F (enlargedTerminalPoint b (nativeToXV w))
+  change F _ = F _
   congr 1
   apply KineticPoint.ext
   · rfl

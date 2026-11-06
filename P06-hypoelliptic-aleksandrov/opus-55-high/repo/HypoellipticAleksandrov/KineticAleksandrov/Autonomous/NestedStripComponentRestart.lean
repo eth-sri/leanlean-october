@@ -7,7 +7,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripE
 /-! # Component independence of the genuine internal-exit restart measure -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
@@ -31,28 +30,25 @@ theorem finiteUnionPointRestartPoles_component
   apply MeasurableEmbedding.map_injective (MeasurableEmbedding.subtype_coe
     (measurableSet_finiteUnionPole H2 T))
   have hback : ((nestedIntervalRestartPoles hH hLE hlam hLam A
-      (H1.component i) (H2.component j) sMinus T e).map
+      _ _ sMinus T e).map
         (componentPoleInclusion H2 j T)).map Subtype.val =
-      (stripExit hH hLE hlam hLam A (H1.component i) T e).restrict
+      (stripExit hH hLE hlam hLam A _ T e).restrict
         (nestedIntervalInternalExit (H1.component i) (H2.component j) sMinus T) := by
     rw [Measure.map_map measurable_subtype_coe (measurable_componentPoleInclusion H2 j T)]
     exact nestedIntervalRestartPoles_map hH hLE hlam hLam A
-      (H1.component i) (H2.component j) sMinus T e
+      _ _ sMinus T e
   have hΩ := finiteUnionExit_component hH hLE hlam hLam A H1 i T e
-  have hrestrict : (stripExit hH hLE hlam hLam A (H1.component i) T e).restrict
+  have hrestrict : (stripExit hH hLE hlam hLam A _ T e).restrict
       (finiteUnionInternalExit H1 H2 sMinus T) =
-      (stripExit hH hLE hlam hLam A (H1.component i) T e).restrict
+      (stripExit hH hLE hlam hLam A _ T e).restrict
         (nestedIntervalInternalExit (H1.component i) (H2.component j) sMinus T) := by
     apply Measure.restrict_congr_set
-    have hp : ∀ᵐ p ∂stripExit hH hLE hlam hLam A (H1.component i) T e,
-        p ∈ reconstructionExit (H1.component i) sMinus T := by
-      rw [ae_iff]
-      exact (strip_exit_probability hH hLE hlam hLam A (H1.component i) sMinus T e he.le).2.1
+    have hp : ∀ᵐ p ∂stripExit hH hLE hlam hLam A _ T e,
+        p ∈ reconstructionExit (H1.component i) sMinus T := (strip_exit_probability hH hLE hlam hLam A _ sMinus T e he.le).2.1
     filter_upwards [hp] with p hp
     exact propext (finiteUnionInternalExit_on_component_exit H1 H2 i j hsub sMinus T p hp)
   exact (finiteUnionPointRestartPoles_map hH hLE hlam hLam A H1 H2 sMinus T
-    (componentPoleInclusion H1 i T e)).trans
-      ((congrArg (fun μ : Measure Point => μ.restrict
-        (finiteUnionInternalExit H1 H2 sMinus T)) hΩ).trans (hrestrict.trans hback.symm))
+    _).trans
+      ((congrArg _ hΩ).trans (hrestrict.trans hback.symm))
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -11,7 +11,6 @@ and the clock-pushforward proposition, with only the hypotheses hH/hLE.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory Filter
 open scoped ENNReal
@@ -34,7 +33,7 @@ theorem below_four_band_of_predecessors (hpush : PushforwardStatement)
   have hK : 0 ≤ K := Real.rpow_nonneg
     (mul_nonneg (mul_nonneg hC.le (Real.rpow_nonneg hR.le _))
       (Real.rpow_nonneg (div_pos c.positive hR).le _)) _
-  have hstart (ep : StripPole H (T : WithTop ℝ)) (hs : Z₀.time ≤ ep.1.time)
+  have hstart (ep : StripPole H T) (hs : Z₀.time ≤ ep.1.time)
       (hv : ep.1.velocity 0 ∈ closure c.entrance) := hd A c H Z₀.time R hR ep hs hv hc hr
   obtain ⟨G, hG, hG0, hGd, hGp, hGn⟩ := belowFour_first_arrival hH hLE hlam hLam A c H
     Z₀.time T q K hq.1 hK hstart e hP.1
@@ -52,12 +51,12 @@ theorem below_four_band_of_predecessors (hpush : PushforwardStatement)
   have hmu : ∀ᵐ z ∂mu, z ∈ D := by
     filter_upwards [ae_restrict_of_ae hpast, ae_restrict_of_ae hfuture] with z hz ht
     exact ⟨hP.1.trans ht.1, hz.1, hz.2⟩
-  have hm : mu.restrict D = mu := Measure.restrict_eq_self_of_ae_mem hmu
+  have hm  := Measure.restrict_eq_self_of_ae_mem hmu
   have hdensity : mu = (volume.restrict D).withDensity (fun z => ENNReal.ofReal (G z)) := by
     rw [← hm]
     dsimp only [mu]
     rw [hGd, restrict_withDensity hD]
   refine ⟨G, hG, hG0, hdensity, hGp.restrict D, ?_⟩
-  exact (ENNReal.toReal_mono hGp.ne (eLpNorm_restrict_le G (ENNReal.ofReal q) volume D)).trans hGn
+  exact (ENNReal.toReal_mono hGp.ne (eLpNorm_restrict_le G _ volume D)).trans hGn
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

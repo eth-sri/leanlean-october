@@ -17,8 +17,7 @@ instance bellmanRadialWeight_finiteOnCompacts (β : ℝ) :
     IsFiniteMeasureOnCompacts (bellmanRadialWeight β) := by
   apply bellman_withDensity_finiteOnCompacts
   apply Continuous.rpow_const continuous_subtype_val
-  intro s
-  exact Or.inl s.property.ne'
+  grind
 
 /-- The literal radial weight is sigma finite. -/
 instance bellmanRadialWeight_sigmaFinite (β : ℝ) : SigmaFinite (bellmanRadialWeight β) := by
@@ -32,12 +31,11 @@ instance bellmanPositiveTimeVolume_isOpenPosMeasure :
   intro U hU hUne
   have he : Topology.IsOpenEmbedding (Subtype.val : BellmanPositiveTime → ℝ) :=
     isOpen_Ioi.isOpenEmbedding_subtypeVal
-  have ho : IsOpen (Subtype.val '' U : Set ℝ) := he.isOpen_iff_image_isOpen.mp hU
+  have ho  := he.isOpen_iff_image_isOpen.mp hU
   rw [bellmanPositiveTimeVolume, he.measurableEmbedding.comap_apply,
     Measure.restrict_apply ho.measurableSet]
-  have hs : (Subtype.val '' U : Set ℝ) ⊆ Ioi (0 : ℝ) := by
-    rintro s ⟨t, _, rfl⟩
-    exact t.property
+  have hs : (Subtype.val '' U) ⊆ Ioi (0) := by
+    grind
   rw [inter_eq_left.mpr hs]
   exact (ho.measure_pos volume (hUne.image Subtype.val)).ne'
 

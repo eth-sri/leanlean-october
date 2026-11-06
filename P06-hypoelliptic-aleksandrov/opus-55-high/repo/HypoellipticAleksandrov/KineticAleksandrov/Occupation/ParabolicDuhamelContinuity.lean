@@ -14,7 +14,6 @@ and lateral traces, without any barrier estimate.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
@@ -35,16 +34,18 @@ theorem integrand_eq_slice_solution (hΩa : IsAdmissibleEvolutionDomain Ω)
     parabolicDuhamelIntegrand K hΩ g p r = V p := by
   by_cases hmem : p.2 ∈ movingDomain Ω γ p.1
   · rw [parabolicDuhamelIntegrand_of_valid K hΩ g p r ⟨hp.1, hmem⟩]
-    exact (hV p.1 hp.1 ⟨p.2, hmem⟩).symm
+    grind
   · rw [parabolicDuhamelIntegrand_of_not_valid K hΩ g p r (fun h => hmem h.2)]
     have hfr : p.2 ∈ frontier (movingDomain Ω γ p.1) := by
       rw [(isOpen_movingDomain_of_isAdmissibleEvolutionDomain γ hΩa p.1).frontier_eq]
       exact ⟨hp.2, hmem⟩
     exact (hlat p ⟨hp.1, hfr⟩).symm
 
+variable {B : CoefficientField d} (hΩa : IsAdmissibleEvolutionDomain Ω)
+
 /-- The slice integrand is continuous on the closed cylinder, and equals the classical
 solution there, which is smooth in the open cylinder and has the stated trace data. -/
-theorem slice_regularity {B : CoefficientField d} (hΩa : IsAdmissibleEvolutionDomain Ω)
+theorem slice_regularity 
     (hP : SectionTwo.HasParabolicMarginalBundle Ω γ
       (measurableSet_of_isAdmissibleEvolutionDomain hΩa) (zIndependentCoefficient B) K)
     (g : TimeVelocity d → ℝ) (hgs : ContDiff ℝ (⊤ : ℕ∞) g) (hgc : HasCompactSupport g) (T : ℝ)
@@ -64,7 +65,7 @@ theorem slice_regularity {B : CoefficientField d} (hΩa : IsAdmissibleEvolutionD
       hgU r
   refine ⟨V, hbd, hcont, hsm, heq, fun v hv => ?_,
     integrand_eq_slice_solution K hΩa _ g r V hlat hVs⟩
-  exact hterm (r, v) ⟨rfl, hv⟩
+  exact hterm _ ⟨rfl, hv⟩
 
 /-- A compactly supported source vanishes at all times outside a bounded interval. -/
 theorem exists_time_range (g : TimeVelocity d → ℝ) (hgc : HasCompactSupport g) :
@@ -79,8 +80,7 @@ theorem exists_time_range (g : TimeVelocity d → ℝ) (hgc : HasCompactSupport 
 
 /-- **Continuity of the Duhamel potential** on the closed region
 `{s ≤ T, v ∈ closure Ω_s}`, by dominated convergence in the source time. -/
-theorem continuousWithinAt_duhamelPotential {B : CoefficientField d}
-    (hΩa : IsAdmissibleEvolutionDomain Ω) (hγ : Continuous γ)
+theorem continuousWithinAt_duhamelPotential  (hγ : Continuous γ)
     (hP : SectionTwo.HasParabolicMarginalBundle Ω γ
       (measurableSet_of_isAdmissibleEvolutionDomain hΩa) (zIndependentCoefficient B) K)
     (g : TimeVelocity d → ℝ) (hgn : ∀ p, 0 ≤ g p) (hgs : ContDiff ℝ (⊤ : ℕ∞) g)
@@ -92,13 +92,13 @@ theorem continuousWithinAt_duhamelPotential {B : CoefficientField d}
   have hΩ := measurableSet_of_isAdmissibleEvolutionDomain hΩa
   obtain ⟨a, b, hab⟩ := exists_time_range g hgc
   obtain ⟨C, hC⟩ := hgs.continuous.bounded_above_of_compact_support hgc
-  have hgb : ∀ p, g p ≤ C := fun p => (le_abs_self _).trans (by simpa using hC p)
+  have hgb : ∀ p, g p ≤ C := fun p => (le_abs_self _).trans (by simp_all)
   have hC0 : 0 ≤ C := (hgn (0, 0)).trans (hgb _)
-  have hgm : Measurable g := hgs.continuous.measurable
+  have hgm  := hgs.continuous.measurable
   have hg : ∀ r, Measurable (fun v : PDE.Vec d => g (r, v)) := fun r =>
     hgm.comp (measurable_const.prodMk measurable_id)
   have hmeas := measurable_parabolicDuhamelIntegrand K hΩ hγ g hgm
-  let F : TimeVelocity d → ℝ → ℝ := fun p r =>
+  let F  := fun p r =>
     (Ioc p.1 T).indicator (parabolicDuhamelIntegrand K hΩ g p) r
   have hW : parabolicDuhamelPotential K hΩ T g = fun p => ∫ r, F p r :=
     funext fun p => (integral_indicator measurableSet_Ioc).symm
@@ -109,25 +109,23 @@ theorem continuousWithinAt_duhamelPotential {B : CoefficientField d}
     by_cases h : r ∈ Ioc p.1 T
     · exact (indicator_of_mem h _).trans
         (parabolicDuhamelIntegrand_eq_zero_of_slice K hΩ g hg p r (hab r hr))
-    · exact indicator_of_notMem h _
+    aesop
   have hbd : ∀ p r, ‖F p r‖ ≤ (Icc a b).indicator (fun _ => C) r := by
     intro p r
     by_cases hr : r ∈ Icc a b
-    · rw [indicator_of_mem hr, Real.norm_eq_abs]
+    · rw [indicator_of_mem hr]
       by_cases h : r ∈ Ioc p.1 T
       · change |(Ioc p.1 T).indicator (parabolicDuhamelIntegrand K hΩ g p) r| ≤ C
         rw [indicator_of_mem h,
           abs_of_nonneg (parabolicDuhamelIntegrand_nonneg K hΩ g hg hgn p r)]
         exact parabolicDuhamelIntegrand_le K hΩ g hg hgn C hgb p r
-      · change |(Ioc p.1 T).indicator (parabolicDuhamelIntegrand K hΩ g p) r| ≤ C
-        rw [indicator_of_notMem h, abs_zero]
-        exact hC0
-    · rw [indicator_of_notMem hr, hF0 p r hr, norm_zero]
+      aesop
+    simp_all
   have hint : Integrable ((Icc a b).indicator (fun _ => C)) :=
     (integrable_indicator_iff measurableSet_Icc).2 (integrableOn_const (by simp))
-  have hne : ∀ᵐ r ∂(volume : Measure ℝ), r ∉ ({p₀.1} : Set ℝ) :=
+  have hne : ∀ᵐ r ∂volume, r ∉ ({p₀.1}) :=
     measure_eq_zero_iff_ae_notMem.1 (measure_singleton _)
-  have hcont : ∀ᵐ r ∂(volume : Measure ℝ),
+  have hcont : ∀ᵐ r ∂volume,
       ContinuousWithinAt (fun p => F p r) (duhamelClosedFiber Ω γ T) p₀ := by
     filter_upwards [hne] with r hr
     rcases lt_trichotomy r p₀.1 with h | h | h
@@ -138,7 +136,7 @@ theorem continuousWithinAt_duhamelPotential {B : CoefficientField d}
         exact indicator_of_notMem (fun hh => absurd hh.1 (not_lt.2 hp.le)) _
       have h0 : F p₀ r = 0 := indicator_of_notMem (fun hh => absurd hh.1 (not_lt.2 h.le)) _
       exact continuousWithinAt_const.congr_of_eventuallyEq hev h0
-    · exact absurd h (by simpa using hr)
+    · simp_all
     · by_cases hrT : r ≤ T
       · obtain ⟨V, -, hVc, -, -, -, hVeq⟩ := slice_regularity K hΩa hP g hgs hgc T hgU r
         have hc1 : ContinuousOn (fun p => parabolicDuhamelIntegrand K hΩ g p r)
@@ -153,20 +151,19 @@ theorem continuousWithinAt_duhamelPotential {B : CoefficientField d}
           have hopen : {p : TimeVelocity d | p.1 < r} ∈ 𝓝 p₀ :=
             (isOpen_lt continuous_fst continuous_const).mem_nhds h
           filter_upwards [mem_nhdsWithin_of_mem_nhds hopen] with p hp
-          exact indicator_of_mem (show r ∈ Ioc p.1 T from ⟨hp, hrT⟩) _
+          aesop
         exact hc2.congr_of_eventuallyEq hev (indicator_of_mem (show r ∈ Ioc p₀.1 T from ⟨h, hrT⟩) _)
       · have hz : ∀ p, F p r = 0 := fun p =>
           indicator_of_notMem (fun hh => hrT hh.2) _
         simp only [hz]
-        exact continuousWithinAt_const
+        fun_prop
   rw [hW]
   exact continuousWithinAt_of_dominated
     (Eventually.of_forall fun p => (hFm p).aestronglyMeasurable)
     (Eventually.of_forall fun p => Eventually.of_forall fun r => hbd p r) hint hcont
 
 /-- Continuity of the Duhamel potential on the closed region. -/
-theorem continuousOn_duhamelPotential {B : CoefficientField d}
-    (hΩa : IsAdmissibleEvolutionDomain Ω) (hγ : Continuous γ)
+theorem continuousOn_duhamelPotential  (hγ : Continuous γ)
     (hP : SectionTwo.HasParabolicMarginalBundle Ω γ
       (measurableSet_of_isAdmissibleEvolutionDomain hΩa) (zIndependentCoefficient B) K)
     (g : TimeVelocity d → ℝ) (hgn : ∀ p, 0 ≤ g p) (hgs : ContDiff ℝ (⊤ : ℕ∞) g)

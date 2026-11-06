@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitConeLimi
 /-! # Finite speed for the actual finite-horizon Green and exit measures -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Filter
 open SectionTwo TheoremA Evolution
@@ -31,7 +30,7 @@ theorem strip_cone_ae_of_realization
     (-V) (-1) (V * e.1.time + e.1.position 0)
     (by dsimp only [reconstructionConeCoordinate]; ring)
     (fun v hv => by
-      have hh : -V ≤ v := ((neg_le_neg (le_max_left |H.lo| |H.hi|)).trans
+      have hh : -V ≤ v := ((neg_le_neg (le_max_left _ _)).trans
         (neg_abs_le H.lo)).trans hv.1.le
       linarith)
   have hbound (p : Point)
@@ -39,13 +38,12 @@ theorem strip_cone_ae_of_realization
       (hl : reconstructionConeCoordinate (-V) (-1) (V * e.1.time + e.1.position 0) p ≤ 0) :
       |p.position 0 - e.1.position 0| ≤ V * (p.time - e.1.time) := by
     dsimp only [reconstructionConeCoordinate] at hr hl
-    apply abs_le.mpr
-    constructor <;> nlinarith
+    grind
   constructor
   · filter_upwards [hr.1, hl.1] with p hp hq
-    exact hbound p hp hq
+    grind
   · filter_upwards [hr.2, hl.2] with p hp hq
-    exact hbound p hp hq
+    grind
 
 /-- The finite-horizon Green measure gives zero mass to violations of the physical cone. -/
 theorem strip_cone_finite_of_realization
@@ -57,6 +55,6 @@ theorem strip_cone_finite_of_realization
       {p | |p.position 0 - e.1.position 0| > max |H.lo| |H.hi| * (p.time - e.1.time)} = 0 := by
   have hh := (strip_cone_ae_of_realization hH hlam hLam A H E hE T e).2
   rw [ae_iff] at hh
-  simpa only [not_le] using hh
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

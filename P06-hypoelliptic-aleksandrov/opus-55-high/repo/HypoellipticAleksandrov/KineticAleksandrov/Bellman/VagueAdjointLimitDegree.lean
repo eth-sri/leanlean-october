@@ -8,7 +8,6 @@ import Mathlib.Tactic
 /-! # Homogeneity passes through a common vague limit -/
 
 @[expose] public section
-noncomputable section
 open Set MeasureTheory Filter Topology
 open scoped CompactlySupported
 namespace HypoellipticAleksandrov.KineticAleksandrov
@@ -21,16 +20,16 @@ theorem bellman_degree_of_map_dilation (beta : ℝ) (mu : Measure BellmanPunctur
   intro r hr E hE
   let D := bellmanDilationHomeomorph r hr
   have h := congrArg (fun nu : Measure BellmanPuncturedPlane => nu (D '' E)) (hm r hr)
-  change (Measure.map D mu) (D '' E) = _ at h
+  change (Measure.map D mu) _ = _ at h
   rw [Measure.map_apply D.measurable (D.measurableEmbedding.measurableSet_image.mpr hE),
     D.injective.preimage_image, Measure.smul_apply, smul_eq_mul] at h
   have hc : ENNReal.ofReal (r ^ (4 - beta)) * ENNReal.ofReal (r ^ (beta - 4)) = 1 := by
     rw [mul_comm]
     exact bellmanRadial_degreeFactors_cancel beta r hr
-  calc mu (bellmanDilation r hr '' E) = 1 * mu (D '' E) := (one_mul _).symm
-    _ = ENNReal.ofReal (r ^ (4 - beta)) *
-        (ENNReal.ofReal (r ^ (beta - 4)) * mu (D '' E)) := by rw [← mul_assoc, hc]
-    _ = ENNReal.ofReal (r ^ (4 - beta)) * mu E := by rw [← h]
+  calc mu _ = 1 * mu (D '' E) := (one_mul _).symm
+    _ = ENNReal.ofReal _ *
+        (ENNReal.ofReal _ * mu _) := by rw [← mul_assoc, hc]
+    _ = ENNReal.ofReal _ * mu E := by grind
 
 /-- Vague limits of boundedly homogeneous measures retain the limiting density degree. -/
 theorem bellman_vague_limit_degree (beta : ℕ → ℝ) (betaInf : ℝ)
@@ -53,19 +52,19 @@ theorem bellman_vague_limit_degree (beta : ℕ → ℝ) (betaInf : ℝ)
   apply Measure.ext_of_integral_eq_on_compactlySupported
   intro f
   rw [D.measurableEmbedding.integral_map, integral_smul_measure]
-  have hleft := hv (fun q => f (D q)) (f.continuous.comp D.continuous)
+  have hleft := hv (fun q => f _) (f.continuous.comp D.continuous)
     (f.hasCompactSupport.comp_homeomorph D)
-  have hcoef : Tendsto (fun n => r ^ (beta n - 4)) atTop (𝓝 (r ^ (betaInf - 4))) :=
+  have hcoef : Tendsto (fun n => r ^ (beta n - 4)) atTop _ :=
     (Real.continuous_const_rpow hr.ne').continuousAt.tendsto.comp
       (hbeta.sub_const 4)
   have hright := hcoef.mul (hv f f.continuous f.hasCompactSupport)
   have he (n : ℕ) : (∫ q, f (D q) ∂mu n) = r ^ (beta n - 4) * ∫ q, f q ∂mu n := by
     have hm := (hd n).map_dilation r hr
-    change Measure.map D (mu n) = ENNReal.ofReal (r ^ (beta n - 4)) • mu n at hm
+    change Measure.map D _ = ENNReal.ofReal _ • mu n at hm
     rw [← D.measurableEmbedding.integral_map, hm, integral_smul_measure,
       ENNReal.toReal_ofReal (Real.rpow_nonneg hr.le _), smul_eq_mul]
   rw [show c.toReal = r ^ (betaInf - 4) from
     ENNReal.toReal_ofReal (Real.rpow_nonneg hr.le _), smul_eq_mul]
-  exact tendsto_nhds_unique hleft (by simpa only [he] using hright)
+  exact tendsto_nhds_unique hleft (by simp_all)
 
 end HypoellipticAleksandrov.KineticAleksandrov

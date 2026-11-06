@@ -42,6 +42,6 @@ theorem construction_smoothed_operator_tendsto_ae {d : ℕ} (hd : 1 ≤ d)
   have he := (hqt.add hx).sub hh
   simp_rw [construction_smoothed_operator_eq hd ha ha1 h r mu R m hr hmu hR hm
     hscale hmargin]
-  simpa only [constructionExtendedSource, PDE.vecDot, matrixContraction] using! he
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

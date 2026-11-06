@@ -27,15 +27,17 @@ def maximumOpenTube {d : ℕ} (Ω : Set (PDE.Vec d)) (γ : ℝ → PDE.Vec d)
     (a b : ℝ) : Set (KineticPoint d) :=
   {p | p.time ∈ Ioo a b ∧ p.position ∈ movingDomain Ω γ p.time}
 
+variable {d : ℕ}
+
 /-- Closure membership is expressed in the fixed translated-back domain. -/
-theorem mem_closure_movingDomain_iff {d : ℕ} (Ω : Set (PDE.Vec d))
+theorem mem_closure_movingDomain_iff  (Ω : Set (PDE.Vec d))
     (γ : ℝ → PDE.Vec d) (t : ℝ) (v : PDE.Vec d) :
     v ∈ closure (movingDomain Ω γ t) ↔ v - γ t ∈ closure Ω := by
   rw [movingDomain, ← PDE.preimage_subRight_eq_translateSet]
-  exact (Set.ext_iff.mp ((Homeomorph.subRight (γ t)).preimage_closure Ω).symm) v
+  exact (Set.ext_iff.mp ((Homeomorph.subRight _).preimage_closure Ω).symm) v
 
 /-- A closed moving tube truncated in the transported coordinate is compact. -/
-theorem isCompact_maximumClosedTube_truncated {d : ℕ}
+theorem isCompact_maximumClosedTube_truncated 
     {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d} {a b R : ℝ}
     (hΩ : IsCompact (closure Ω)) (hγ : ContinuousOn γ (Icc a b)) (hR : 0 ≤ R) :
     IsCompact {p ∈ maximumClosedTube Ω γ a b |
@@ -50,7 +52,7 @@ theorem isCompact_maximumClosedTube_truncated {d : ℕ}
     apply ContinuousOn.prodMk continuousOn_fst
     apply ContinuousOn.prodMk
     · exact continuousOn_snd.fst.add (hγ.comp continuousOn_fst (fun q hq => hq.1))
-    · exact continuousOn_snd.snd
+    fun_prop
   have heq : f '' (Icc a b ×ˢ (closure Ω ×ˢ PDE.euclideanClosedBall 0 R)) =
       {p ∈ maximumClosedTube Ω γ a b |
         p.velocity ∈ PDE.euclideanClosedBall 0 R} := by
@@ -59,11 +61,11 @@ theorem isCompact_maximumClosedTube_truncated {d : ℕ}
     · rintro ⟨q, ⟨ht, hv, hz⟩, rfl⟩
       refine ⟨⟨ht, ?_⟩, hz⟩
       rw [mem_closure_movingDomain_iff]
-      simpa only [f, add_sub_cancel_right] using hv
+      aesop
     · rintro ⟨⟨ht, hv⟩, hz⟩
       refine ⟨(p.time, (p.position - γ p.time, p.velocity)), ⟨ht, ?_, hz⟩, ?_⟩
       · exact (mem_closure_movingDomain_iff Ω γ p.time p.position).mp hv
-      · simp only [f, sub_add_cancel]
+      aesop
   rw [← heq]
   exact (isCompact_Icc.prod
     (hΩ.prod (PDE.isCompact_euclideanClosedBall 0 hR))).image_of_continuousOn hf

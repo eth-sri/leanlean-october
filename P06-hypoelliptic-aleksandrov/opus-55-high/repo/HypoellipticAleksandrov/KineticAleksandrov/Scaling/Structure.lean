@@ -12,7 +12,6 @@ bounds `HasTransportBounds m L_b` and smoothness pass from `b` to `b_r` with the
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Scaling
 
@@ -22,14 +21,16 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo (scaledDrift HasTrans
 
 variable {d : ℕ} (b : PDE.Vec d → PDE.Vec d) (v₀ : PDE.Vec d) (r : {r : ℝ // 0 < r})
 
-theorem scaledDrift_apply (Y : PDE.Vec d) :
+variable (Y : PDE.Vec d)
+
+theorem scaledDrift_apply  :
     scaledDrift b v₀ r Y = r.1⁻¹ • (b (v₀ + r.1 • Y) - b v₀) := rfl
 
 /-- The Euclidean Lipschitz constant of the drift is unchanged. -/
 theorem scaledDrift_lipschitz {L_b : ℝ} (h : HasEuclideanLipschitzDrift L_b b) :
     HasEuclideanLipschitzDrift L_b (scaledDrift b v₀ r) := by
   intro Y Y'
-  have hr : r.1 ≠ 0 := r.2.ne'
+  have hr  := r.2.ne'
   have hsub : scaledDrift b v₀ r Y - scaledDrift b v₀ r Y' =
       r.1⁻¹ • (b (v₀ + r.1 • Y) - b (v₀ + r.1 • Y')) := by
     rw [scaledDrift_apply, scaledDrift_apply]
@@ -38,16 +39,16 @@ theorem scaledDrift_lipschitz {L_b : ℝ} (h : HasEuclideanLipschitzDrift L_b b)
   rw [hsub, PDE.vecEuclideanNorm_smul, abs_of_pos (inv_pos.2 r.2)]
   have h1 := h (v₀ + r.1 • Y) (v₀ + r.1 • Y')
   rw [harg, PDE.vecEuclideanNorm_smul, abs_of_pos r.2] at h1
-  calc r.1⁻¹ * PDE.vecEuclideanNorm (b (v₀ + r.1 • Y) - b (v₀ + r.1 • Y'))
-      ≤ r.1⁻¹ * (L_b * (r.1 * PDE.vecEuclideanNorm (Y - Y'))) := by
+  calc r.1⁻¹ * PDE.vecEuclideanNorm _
+      ≤ r.1⁻¹ * (L_b * (r.1 * PDE.vecEuclideanNorm _)) := by
         gcongr
         exact inv_nonneg.2 r.2.le
-    _ = L_b * PDE.vecEuclideanNorm (Y - Y') := by field_simp
+    _ = L_b * PDE.vecEuclideanNorm _ := by field_simp
 
 /-- The affine rescaling of the drift has the shifted derivative. -/
-theorem fderiv_scaledDrift (Y : PDE.Vec d) :
+theorem fderiv_scaledDrift  :
     fderiv ℝ (scaledDrift b v₀ r) Y = fderiv ℝ b (v₀ + r.1 • Y) := by
-  have hr : r.1 ≠ 0 := r.2.ne'
+  have hr  := r.2.ne'
   by_cases hb : DifferentiableAt ℝ b (v₀ + r.1 • Y)
   · have hA : HasFDerivAt (fun y : PDE.Vec d => v₀ + r.1 • y)
         (r.1 • ContinuousLinearMap.id ℝ (PDE.Vec d)) Y :=
@@ -55,8 +56,7 @@ theorem fderiv_scaledDrift (Y : PDE.Vec d) :
     have h1 := ((hb.hasFDerivAt.comp Y hA).sub_const (b v₀)).const_smul r.1⁻¹
     have h2 : (r.1⁻¹ • ((fderiv ℝ b (v₀ + r.1 • Y)).comp
         (r.1 • ContinuousLinearMap.id ℝ (PDE.Vec d)))) = fderiv ℝ b (v₀ + r.1 • Y) := by
-      ext v : 1
-      simp [smul_smul, hr]
+      simp_all
     rw [h2] at h1
     exact h1.fderiv
   · have hnd : ¬ DifferentiableAt ℝ (scaledDrift b v₀ r) Y := by
@@ -72,8 +72,7 @@ theorem fderiv_scaledDrift (Y : PDE.Vec d) :
       have hcomp := ((hd'.comp (v₀ + r.1 • Y) hA).const_smul r.1).add_const (b v₀)
       have hfun : b = fun y => r.1 • ((scaledDrift b v₀ r ∘ fun y => r.1⁻¹ • (y - v₀)) y) +
           b v₀ := by
-        funext y
-        simp only [Function.comp_apply, scaledDrift_apply, smul_smul, smul_sub,
+        simp only [Function.comp_apply, scaledDrift_apply, smul_smul,
           mul_inv_cancel₀ hr, one_smul, add_sub_cancel, sub_add_cancel]
       convert hcomp using 1
     rw [fderiv_zero_of_not_differentiableAt hnd, fderiv_zero_of_not_differentiableAt hb]
@@ -94,6 +93,6 @@ theorem scaledDrift_transportBounds {m L_b : ℝ} (h : HasTransportBounds m L_b 
 theorem scaledDrift_smooth (h : IsSmoothDrift b) : IsSmoothDrift (scaledDrift b v₀ r) := by
   have hA : ContDiff ℝ (⊤ : ℕ∞) (fun y : PDE.Vec d => v₀ + r.1 • y) := by fun_prop
   have h1 := (h.comp hA).sub (contDiff_const (c := b v₀))
-  exact h1.const_smul r.1⁻¹
+  exact h1.const_smul _
 
 end HypoellipticAleksandrov.KineticAleksandrov.Scaling

@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecu
 /-! # One actual active piece spends its stopped potential only once -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Parabolic
 open SectionTwo TheoremA Evolution
@@ -37,21 +36,19 @@ theorem enlarged_active_stopped_step_earlier
   have he : enlargedVisitExitKernel hH hLE hlam hLam A (visitActiveUnion c J) b p = E := by
     rw [enlarged_activeUnion_eq c J hJ]
     have hp' : p ∈ enlargedVisitPoleSet c.activeInterval.toFiniteUnion b :=
-      ⟨hb, by rw [Interval.toFiniteUnion_carrier]; exact ep.2.2⟩
+      ⟨hb, by rw [Interval.toFiniteUnion_carrier]; aesop⟩
     change (if ht : p ∈ enlargedVisitPoleSet c.activeInterval.toFiniteUnion b then
-      finiteUnionExit hH hLE hlam hLam A _ b (enlargedVisitPole _ _ ⟨p, ht⟩) else 0) = E
-    rw [dite_eq_left hp']
-    rfl
+      finiteUnionExit hH hLE hlam hLam A _ b _ else 0) = E
+    aesop
   have hs : ∀ᵐ q ∂E, q.time ≤ b :=
     (stripExitOfRealization_ae_closed_future hH hlam hLam A c.activeInterval
-      (stripEvolution hH hLE hlam hLam A c.activeInterval)
-      (stripEvolution_spec hH hLE hlam hLam A c.activeInterval) b
-      (stripPoleFinite c.activeInterval ep b hb)).mono fun _ hq => hq.2.1
+      _
+      _ b
+      _).mono fun _ hq => hq.2.1
   have hiE := enlargedStoppedPotential_integrable b u hc M hM hbound E
   have hnn : 0 ≤ᵐ[E] V := hs.mono fun q hq => by
     change 0 ≤ (if q.time ≤ b then u q else 0)
-    rw [ite_eq_left hq]
-    exact hn q hq
+    simp_all
   have hd := enlarged_terminal_and_early_exit_le hH hLE hlam hLam A c J b T hJ p hv hb
     hBT B hB hsub
   rw [he] at hd

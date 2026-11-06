@@ -26,9 +26,10 @@ variable (hH : HormanderHypoellipticityStatement)
   (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
   (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
 
+variable (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
+
 /-- The terminal interior part of the actual exit measure is precisely the killed transition. -/
-theorem ballExit_terminal_interior_map (P : LocalBallStart v₀ R)
-    (T : {t : ℝ // P.1.time < t}) :
+theorem ballExit_terminal_interior_map  :
     Measure.map exitStateCoordinates
       ((ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T).restrict
         {Q | Q.velocity ∈ PDE.euclideanBall v₀ R}) =
@@ -39,7 +40,7 @@ theorem ballExit_terminal_interior_map (P : LocalBallStart v₀ R)
   let ν := (μ.restrict S).map exitStateCoordinates
   let K := localBallKernel hH hLE hd hlam hLam B hB v₀ hR
   let ρ := ballTransition hH hLE hd hlam hLam B hB v₀ hR P T
-  have : IsFiniteMeasure ρ := ⟨(K.mass_le_one (ballEvolutionQuery P T)).trans_lt
+  have : IsFiniteMeasure ρ := ⟨(K.mass_le_one _).trans_lt
     ENNReal.one_lt_top⟩
   have hSm : MeasurableSet S :=
     (PDE.isOpen_euclideanBall v₀ R).measurableSet.preimage continuous_velocity.measurable
@@ -51,18 +52,18 @@ theorem ballExit_terminal_interior_map (P : LocalBallStart v₀ R)
     apply (ae_map_iff continuous_exitStateCoordinates.measurable.aemeasurable
       hU.measurableSet).mpr
     filter_upwards [ae_restrict_mem hSm] with Q hQ
-    exact ⟨by simpa only [movingDomain_ball_zero, exitStateCoordinates, S, mem_ofPred_eq] using hQ,
+    exact ⟨by aesop,
       mem_univ _⟩
-  have hρ : ρ.restrict U = ρ := K.terminal_support (ballEvolutionQuery P T)
+  have hρ : ρ.restrict U = ρ := K.terminal_support _
   have heq (f : EvolutionAmbientState d → ℝ) (hfs : ContDiff ℝ (⊤ : ℕ∞) f)
       (hfc : HasCompactSupport f) (hfU : tsupport f ⊆ U) :
       (∫ x, f x ∂ν) = ∫ x, f x ∂ρ := by
     obtain ⟨C, hC⟩ := hfc.exists_bound_of_continuous hfs.continuous
-    let F : BoundedBorel (EvolutionAmbientState d) :=
+    let F : BoundedBorel _ :=
       ⟨f, hfs.continuous.measurable,
         ⟨max C 0, le_max_right _ _, fun x => (hC x).trans (le_max_left _ _)⟩⟩
-    have hF : IsSmoothCompactTerminalDatum (PDE.euclideanBall v₀ R)
-        (fun _ => 0) T.1 F := ⟨hfs, hfc, hfU⟩
+    have hF : IsSmoothCompactTerminalDatum _
+        _ T.1 F := ⟨hfs, hfc, hfU⟩
     have hi := ballExit_terminal_probe_identity hH hLE hd hlam hLam B hB v₀ hR P T F hF
     have hmn := integral_map (μ := μ.restrict S) (f := f)
       continuous_exitStateCoordinates.measurable.aemeasurable
@@ -71,16 +72,14 @@ theorem ballExit_terminal_interior_map (P : LocalBallStart v₀ R)
       (PDE.isOpen_euclideanBall v₀ R).measurableSet P.1.time T.1 T.2.le
       (ballStartState P)) (f := f) measurable_subtype_coe.aemeasurable
       hfs.continuous.measurable.aestronglyMeasurable
-    rw [K.map_fiberKernel_eq_master (PDE.isOpen_euclideanBall v₀ R).measurableSet
-      P.1.time T.1 T.2.le (ballStartState P)] at hmr
+    rw [K.map_fiberKernel_eq_master] at hmr
     exact hmn.trans (hi.trans hmr.symm)
   exact le_antisymm
     (measure_le_of_smooth_integral_le hU hν (fun f hs hc hf _ => (heq f hs hc hf).le))
     (measure_le_of_smooth_integral_le hU hρ (fun f hs hc hf _ => (heq f hs hc hf).symm.le))
 
 /-- The physical terminal interior measure is the map of the actual valid terminal fiber. -/
-theorem ballExit_terminal_interior_eq_map (P : LocalBallStart v₀ R)
-    (T : {t : ℝ // P.1.time < t}) :
+theorem ballExit_terminal_interior_eq_map  :
     (ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T).restrict
       {Q | Q.velocity ∈ PDE.euclideanBall v₀ R} =
     Measure.map (fun w : EvolutionState (PDE.euclideanBall v₀ R) (fun _ => 0) T.1 =>
@@ -101,16 +100,13 @@ theorem ballExit_terminal_interior_eq_map (P : LocalBallStart v₀ R)
       with Q hv hQ
     change Q.velocity ∈ PDE.euclideanBall v₀ R at hv
     rcases hQ with hQ | hQ
-    · exact hQ.1
+    · grind
     · exact False.elim ((mem_interior_iff_notMem_frontier hv).mp
         ((PDE.isOpen_euclideanBall v₀ R).interior_eq.symm ▸ hv) hQ.2.2)
   have hmap : (μ.restrict S).map (j ∘ exitStateCoordinates) = μ.restrict S := by
     have heq : j ∘ exitStateCoordinates =ᵐ[μ.restrict S] id := by
       filter_upwards [ht] with Q hQ
-      apply KineticPoint.ext
-      · exact hQ.symm
-      · rfl
-      · rfl
+      aesop
     rw [Measure.map_congr heq, Measure.map_id]
   have hid := congrArg (Measure.map j)
     (ballExit_terminal_interior_map hH hLE hd hlam hLam B hB v₀ hR P T)
@@ -118,8 +114,7 @@ theorem ballExit_terminal_interior_eq_map (P : LocalBallStart v₀ R)
   dsimp only [ballTransition, ballEvolutionQuery] at hid
   rw [← MovingFiberKernel.map_fiberKernel_eq_master
     (localBallKernel hH hLE hd hlam hLam B hB v₀ hR)
-    (PDE.isOpen_euclideanBall v₀ R).measurableSet P.1.time T.1 T.2.le
-    (ballStartState P), Measure.map_map hj measurable_subtype_coe] at hid
+    (PDE.isOpen_euclideanBall v₀ R).measurableSet P.1.time T.1 T.2.le, Measure.map_map hj measurable_subtype_coe] at hid
   exact hid
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

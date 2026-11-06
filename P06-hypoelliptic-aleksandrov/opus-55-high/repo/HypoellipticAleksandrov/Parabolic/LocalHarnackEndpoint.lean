@@ -28,22 +28,21 @@ theorem ContinuousOn.tendsto_localHarnackTerminalApprox
       (_root_.nhds (q (8, v))) := by
   let K : Set (TimeVelocity d) := parabolicClosedBox 2 2 0 0
   let zj : ℕ → TimeVelocity d := fun j => (localHarnackTerminalApprox j, v)
-  have hzj : Tendsto zj atTop (_root_.nhds (8, v)) := by
-    exact HypoellipticAleksandrov.Parabolic.tendsto_localHarnackTerminalApprox.prodMk_nhds
-      (tendsto_const_nhds : Tendsto (fun _ : ℕ => v) atTop (_root_.nhds v))
+  have hzj : Tendsto zj atTop (_root_.nhds (8, v)) := HypoellipticAleksandrov.Parabolic.tendsto_localHarnackTerminalApprox.prodMk_nhds
+      tendsto_const_nhds
   have hzjMem : ∀ j : ℕ, zj j ∈ K := by
     intro j
     have hj := localHarnackTerminalApprox_mem_normalizedOpenBox (v := v) j hv
     rw [mem_parabolicBox_iff] at hj
     rw [mem_parabolicClosedBox_iff]
     exact ⟨hj.1.le, hj.2.1.le, fun i => (hj.2.2 i).le⟩
-  have hzjWithin : Tendsto zj atTop (_root_.nhdsWithin (8, v) K) :=
+  have hzjWithin  :=
     tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within zj hzj
       (Eventually.of_forall hzjMem)
   have hterminal : (8, v) ∈ K :=
     normalized_terminal_target_mem_normalizedClosedBox hv
   simpa only [Function.comp_def, zj] using
-    (hq (8, v) hterminal).tendsto.comp hzjWithin
+    (hq _ hterminal).tendsto.comp hzjWithin
 
 end
 

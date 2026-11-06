@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Construc
 /-! # Uniform bounds for the time representative on compact time intervals -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Set HypoellipticAleksandrov.Parabolic
 

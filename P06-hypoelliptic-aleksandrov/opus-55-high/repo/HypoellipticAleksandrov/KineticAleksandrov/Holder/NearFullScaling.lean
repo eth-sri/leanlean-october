@@ -26,14 +26,12 @@ theorem volume_backwardCylinder_toReal {d : ℕ} (P₀ : KineticPoint d)
 theorem near_full_radius_cancellation (d : ℕ) {R : ℝ} (hR : 0 < R) (p : ℝ) :
     R ^ (2 - (4 * (d : ℝ) + 2) / p) * (R ^ 2)⁻¹ *
       (R ^ (4 * d + 2)) ^ (1 / p : ℝ) = 1 := by
-  rw [← Real.rpow_natCast R 2, ← Real.rpow_neg hR.le,
-    ← Real.rpow_natCast R (4 * d + 2), ← Real.rpow_mul hR.le,
+  rw [← Real.rpow_natCast, ← Real.rpow_neg hR.le,
+    ← Real.rpow_natCast, ← Real.rpow_mul hR.le,
     ← Real.rpow_add hR, ← Real.rpow_add hR]
-  have heq : (2 - (4 * (d : ℝ) + 2) / p) + -(2 : ℝ) +
-      ((4 * d + 2 : ℕ) : ℝ) * (1 / p) = 0 := by
-    push_cast
-    ring
-  norm_num only [Nat.cast_ofNat]
-  rw [heq, Real.rpow_zero]
+  have heq : (2 - (4 * d + 2) / p) + -(2) +
+      ((4 * d + 2 : ℕ)) * (1 / p) = 0 := by
+    grind
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

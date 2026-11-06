@@ -17,7 +17,6 @@ are obtained from that one master kernel by `Kernel.comap` and
 
 @[expose] public section
 
-set_option autoImplicit false
 
 open Set MeasureTheory
 open scoped ENNReal ProbabilityTheory
@@ -57,25 +56,23 @@ abbrev EvolutionQuery {n : ℕ} (Ω : Set (PDE.Vec n))
   {q : RawEvolutionQuery n //
     q.1 ≤ q.2.1 ∧ q.2.2 ∈ evolutionStateSet Ω γ q.1}
 
+variable {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+
 /-- Measurability of the translated moving spatial domain. -/
-theorem measurableSet_movingDomain {n : ℕ} {Ω : Set (PDE.Vec n)}
-    {γ : ℝ → PDE.Vec n} (hΩ : MeasurableSet Ω) (σ : ℝ) :
+theorem measurableSet_movingDomain  (hΩ : MeasurableSet Ω) (σ : ℝ) :
     MeasurableSet (movingDomain Ω γ σ) := by
   rw [movingDomain, ← PDE.preimage_subRight_eq_translateSet]
   exact hΩ.preimage (measurable_id.sub measurable_const)
 
 /-- Openness of the translated moving spatial domain. -/
-theorem isOpen_movingDomain {n : ℕ} {Ω : Set (PDE.Vec n)}
-    {γ : ℝ → PDE.Vec n} (hΩ : IsOpen Ω) (σ : ℝ) :
+theorem isOpen_movingDomain  (hΩ : IsOpen Ω) (σ : ℝ) :
     IsOpen (movingDomain Ω γ σ) := by
   rw [movingDomain, ← PDE.preimage_subRight_eq_translateSet]
   exact hΩ.preimage (continuous_id.sub continuous_const)
 
 /-- Measurability of the ambient moving state fiber. -/
-theorem measurableSet_evolutionStateSet {n : ℕ} {Ω : Set (PDE.Vec n)}
-    {γ : ℝ → PDE.Vec n} (hΩ : MeasurableSet Ω) (σ : ℝ) :
-    MeasurableSet (evolutionStateSet Ω γ σ) := by
-  exact (measurableSet_movingDomain hΩ σ).prod MeasurableSet.univ
+theorem measurableSet_evolutionStateSet  (hΩ : MeasurableSet Ω) (σ : ℝ) :
+    MeasurableSet (evolutionStateSet Ω γ σ) := (measurableSet_movingDomain hΩ σ).prod MeasurableSet.univ
 
 /-- The canonical valid query associated with a fixed-time source state. -/
 def evolutionQueryOfState {n : ℕ} (Ω : Set (PDE.Vec n))
@@ -108,8 +105,7 @@ theorem jointlyMeasurable_apply {n : ℕ}
     {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
     (K : MovingFiberKernel Ω γ) (E : Set (EvolutionAmbientState n))
     (hE : MeasurableSet E) :
-    Measurable (fun q : EvolutionQuery Ω γ => K.master q E) := by
-  exact K.master.measurable_coe hE
+    Measurable (fun q : EvolutionQuery Ω γ => K.master q E) := K.master.measurable_coe hE
 
 /-- Derive the fixed-time kernel from the one ambient master kernel. -/
 noncomputable def fiberKernel {n : ℕ}
@@ -125,68 +121,49 @@ noncomputable def fiberKernel {n : ℕ}
     (MeasurableEmbedding.subtype_coe
       (measurableSet_evolutionStateSet hΩ τ))
 
+variable {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n} (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω) (σ τ : ℝ)
+
 /-- The derived fiber is the right-measure comap of the master output. -/
-theorem fiberKernel_apply {n : ℕ}
-    {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
-    (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+theorem fiberKernel_apply  (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
     K.fiberKernel hΩ σ τ hστ p =
       Measure.comap ((↑) : EvolutionState Ω γ τ → EvolutionAmbientState n)
         (K.master (evolutionQueryOfState Ω γ σ τ hστ p)) := by
   rfl
 
 /-- Mapping a derived fiber measure back to the ambient state recovers master. -/
-theorem map_fiberKernel_eq_master {n : ℕ}
-    {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
-    (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+theorem map_fiberKernel_eq_master  (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
     Measure.map
         ((↑) : EvolutionState Ω γ τ → EvolutionAmbientState n)
         (K.fiberKernel hΩ σ τ hστ p) =
       K.master (evolutionQueryOfState Ω γ σ τ hστ p) := by
-  rw [MovingFiberKernel.fiberKernel_apply]
   have hmap :
       Measure.map
-          ((↑) : {x : EvolutionAmbientState n //
-            x ∈ evolutionStateSet Ω γ τ} → EvolutionAmbientState n)
+          ((↑))
           (Measure.comap
             ((↑) : {x : EvolutionAmbientState n //
               x ∈ evolutionStateSet Ω γ τ} → EvolutionAmbientState n)
             (K.master (evolutionQueryOfState Ω γ σ τ hστ p))) =
         (K.master (evolutionQueryOfState Ω γ σ τ hστ p)).restrict
           (evolutionStateSet Ω γ τ) := by
-    simpa only [Subtype.range_coe] using
+    simpa using
       (MeasurableEmbedding.subtype_coe
         (measurableSet_evolutionStateSet hΩ τ)).map_comap
-        (K.master (evolutionQueryOfState Ω γ σ τ hστ p))
-  change Measure.map
-      ((↑) : {x : EvolutionAmbientState n //
-        x ∈ evolutionStateSet Ω γ τ} → EvolutionAmbientState n)
-      (Measure.comap
-        ((↑) : {x : EvolutionAmbientState n //
-          x ∈ evolutionStateSet Ω γ τ} → EvolutionAmbientState n)
-        (K.master (evolutionQueryOfState Ω γ σ τ hστ p))) =
-    K.master (evolutionQueryOfState Ω γ σ τ hστ p)
+        _
   exact hmap.trans
-    (K.terminal_support (evolutionQueryOfState Ω γ σ τ hστ p))
+    (K.terminal_support _)
 
 /-- Every derived fiber measure is sub-Markov. -/
-theorem fiberKernel_mass_le_one {n : ℕ}
-    {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
-    (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
-    (σ τ : ℝ) (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
+theorem fiberKernel_mass_le_one  (hστ : σ ≤ τ) (p : EvolutionState Ω γ σ) :
     K.fiberKernel hΩ σ τ hστ p Set.univ ≤ 1 := by
-  rw [MovingFiberKernel.fiberKernel_apply]
   calc
-    Measure.comap ((↑) : EvolutionState Ω γ τ → EvolutionAmbientState n)
-        (K.master (evolutionQueryOfState Ω γ σ τ hστ p)) Set.univ =
-        K.master (evolutionQueryOfState Ω γ σ τ hστ p)
-          (((↑) : EvolutionState Ω γ τ → EvolutionAmbientState n) '' Set.univ) := by
-            exact (MeasurableEmbedding.subtype_coe
+    Measure.comap _
+        _ Set.univ =
+        K.master _
+          _ := (MeasurableEmbedding.subtype_coe
               (measurableSet_evolutionStateSet hΩ τ)).comap_apply _ _
-    _ ≤ K.master (evolutionQueryOfState Ω γ σ τ hστ p) Set.univ :=
+    _ ≤ K.master _ Set.univ :=
       measure_mono (Set.subset_univ _)
-    _ ≤ 1 := K.mass_le_one (evolutionQueryOfState Ω γ σ τ hστ p)
+    _ ≤ 1 := K.mass_le_one _
 
 /-- The first coordinate of a terminal ambient state, with its domain proof. -/
 def firstPosition {n : ℕ} (Ω : Set (PDE.Vec n)) (γ : ℝ → PDE.Vec n)
@@ -212,8 +189,7 @@ theorem firstMarginal_apply {n : ℕ}
     {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
     (K : MovingFiberKernel Ω γ) (q : EvolutionQuery Ω γ)
     (E : Set (PDE.Vec n)) (hE : MeasurableSet E) :
-    K.firstMarginal q E = K.master q {p | p.1 ∈ E} := by
-  exact ProbabilityTheory.Kernel.fst_apply' K.master q hE
+    K.firstMarginal q E = K.master q {p | p.1 ∈ E} := ProbabilityTheory.Kernel.fst_apply' K.master q hE
 
 /-- The fixed-time first marginal derived from the same fiber kernel. -/
 noncomputable def fiberFirstMarginal {n : ℕ}
@@ -236,22 +212,20 @@ theorem map_fiberFirstMarginal_eq_firstMarginal {n : ℕ}
       K.firstMarginal (evolutionQueryOfState Ω γ σ τ hστ p) := by
   rw [MovingFiberKernel.fiberFirstMarginal,
     ProbabilityTheory.Kernel.map_apply _
-      (measurable_firstPosition Ω γ τ) p]
+      (measurable_firstPosition Ω γ τ)]
   calc
     Measure.map Subtype.val
-        (Measure.map (firstPosition Ω γ τ)
-          (K.fiberKernel hΩ σ τ hστ p)) =
+        _ =
         Measure.map Prod.fst
-          (Measure.map ((↑) : EvolutionState Ω γ τ →
-            EvolutionAmbientState n) (K.fiberKernel hΩ σ τ hστ p)) := by
+          (Measure.map _ (K.fiberKernel hΩ σ τ hστ p)) := by
       rw [Measure.map_map measurable_subtype_coe
         (measurable_firstPosition Ω γ τ),
         Measure.map_map measurable_fst measurable_subtype_coe]
       rfl
     _ = Measure.map Prod.fst
-          (K.master (evolutionQueryOfState Ω γ σ τ hστ p)) := by
-      rw [MovingFiberKernel.map_fiberKernel_eq_master K hΩ σ τ hστ p]
-    _ = K.firstMarginal (evolutionQueryOfState Ω γ σ τ hστ p) := by
+          _ := by
+      rw [MovingFiberKernel.map_fiberKernel_eq_master]
+    _ = K.firstMarginal _ := by
       rw [MovingFiberKernel.firstMarginal, ProbabilityTheory.Kernel.fst_apply]
 
 /-- Endpoint identity for the derived fixed-time kernel. -/

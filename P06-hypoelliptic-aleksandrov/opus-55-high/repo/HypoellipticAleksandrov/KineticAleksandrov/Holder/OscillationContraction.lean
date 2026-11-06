@@ -8,7 +8,6 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -27,8 +26,8 @@ theorem oscillation_contraction (d : ℕ) (hd : 1 ≤ d)
           q * oscillationOn u (backwardCylinder P0 R) := by
   obtain ⟨theta, S, r, kappa, ht, ht1, _hr, hk, hk1, _hS, hupper⟩ :=
     exists_growth_half_upper_bound d hd lam Lam p C_A hlam hLam hp
-  refine ⟨theta, 1 - kappa / 2, ht, ht1, by linarith only [hk1],
-    by linarith only [hk], ?_⟩
+  refine ⟨theta, 1 - kappa / 2, ht, ht1, by linarith,
+    by simp_all, ?_⟩
   intro A hA O hO P0 R hR hQ u hu
   let Q := backwardCylinder P0 R
   let Qsmall := backwardCylinder P0 (theta * R)
@@ -46,8 +45,7 @@ theorem oscillation_contraction (d : ℕ) (hd : 1 ≤ d)
     (backwardCylinder_nonempty P0 hR) hab hbb
   by_cases hz : oscillationOn u Q = 0
   · have hm := oscillationOn_mono hne hsub hab hbb
-    change oscillationOn u Qsmall ≤ (1 - kappa / 2) * oscillationOn u Q
-    simpa only [hz, mul_zero] using hm
+    aesop
   have hpos : 0 < oscillationOn u Q := lt_of_le_of_ne hosc (Ne.symm hz)
   let M := sSup (u '' Q)
   let m := sInf (u '' Q)
@@ -58,32 +56,25 @@ theorem oscillation_contraction (d : ℕ) (hd : 1 ≤ d)
   have hm (P : KineticPoint d) (hP : P ∈ closure Q) : m ≤ u P :=
     inf_le_closure_values huc hbb hP
   have hmid : M - half = m + half := by
-    dsimp only [half, oscillationOn, M, m]
+    dsimp only [half, oscillationOn]
     ring
   rcases half_density_alternative u Sigma (M - half) with hlo | hhi
   · have himproved := hupper A hA O hO P0 R hR hQ u hu.2 M half hhalf hM hlo
     have hb := oscillationOn_le hne
       (fun P hP => hm P (subset_closure (hsub hP))) himproved
-    apply hb.trans_eq
-    dsimp only [half, oscillationOn, M, m]
-    ring
+    grind
   · have hneg : IsAdmissibleSupersolution A O p C_A (fun P => -(-u P)) := by
-      simpa only [neg_neg] using hu.1
+      simpa using hu.1
     have hupperneg (P : KineticPoint d) (hP : P ∈ closure Q) : -u P ≤ -m :=
       neg_le_neg (hm P hP)
     have hlevels : {P | M - half ≤ u P} = {P | -u P ≤ -m - half} := by
-      ext P
-      simp only [mem_ofPred_eq]
-      rw [hmid]
-      constructor <;> intro h <;> linarith only [h]
+      simp_all
     rw [hlevels] at hhi
     have himproved := hupper A hA O hO P0 R hR hQ (fun P => -u P)
       hneg (-m) half hhalf hupperneg hhi
     have hb := oscillationOn_le (a := m + kappa * half) (b := M) hne
-      (fun P hP => by have hh := himproved P hP; linarith only [hh])
+      (fun P hP => by simp_all)
       (fun P hP => hM P (subset_closure (hsub hP)))
-    apply hb.trans_eq
-    dsimp only [half, oscillationOn, M, m]
-    ring
+    grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

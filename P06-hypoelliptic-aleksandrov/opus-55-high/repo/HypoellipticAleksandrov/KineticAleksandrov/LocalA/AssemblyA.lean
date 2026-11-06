@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.Assembly
 /-! # Time–velocity Hölder assembly from the smooth joint local statement -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open Set MeasureTheory Holder LocalA
 open scoped MatrixOrder
@@ -32,8 +31,7 @@ theorem kinetic_holder_timeVelocity_relative_of_smooth
         (∀ P ∈ K, closure (backwardCylinder P (2 * R₀)) ⊆ Omega) →
       ∀ P ∈ K, ∀ P' ∈ K,
         |u P - u P'| ≤ C * oscillationOn u (holderNeighbourhood R₀ K) *
-          (quasiDistance P P' / R₀) ^ alpha := by
-  exact kinetic_holder_timeVelocity_relative_of_local
+          (quasiDistance P P' / R₀) ^ alpha := kinetic_holder_timeVelocity_relative_of_local
     (localTimeVelocityRegularity_of_smooth h) hH hLE d hd lam Lam hlam hLam
 
 end HypoellipticAleksandrov.KineticAleksandrov

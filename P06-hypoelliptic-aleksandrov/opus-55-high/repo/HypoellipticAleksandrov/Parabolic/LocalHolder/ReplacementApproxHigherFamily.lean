@@ -9,13 +9,14 @@ family on the same target collar, with one constant chosen before the solution.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open MeasureTheory Set
 open scoped BigOperators MatrixOrder Matrix.Norms.Elementwise
 
+variable {d : ℕ}
+
 /-- The actual zero function has zero coordinate derivative of every multi-index order. -/
-theorem coordinateIteratedFDeriv_zero_function {d : ℕ}
+theorem coordinateIteratedFDeriv_zero_function 
     (beta : TimeVelocityMultiIndex d) :
     TimeVelocityMultiIndex.coordinateIteratedFDeriv beta
       (fun _ : TimeVelocity d => (0 : ℝ)) = 0 := by
@@ -24,7 +25,7 @@ theorem coordinateIteratedFDeriv_zero_function {d : ℕ}
     Pi.zero_apply, zero_apply]
 
 /-- Homogeneous jets have uniformly controlled higher families on a common smaller collar. -/
-theorem exists_homogeneous_higher_family_constant {d : ℕ}
+theorem exists_homogeneous_higher_family_constant 
     {Ω O₀ O : Set (PDE.Vec d)}
     (r₀ q₀ s₀ s₁ q₁ r₁ : ℝ)
     (hr₀q₀ : r₀ < q₀) (hq₀s₀ : q₀ < s₀) (hs₀s₁ : s₀ < s₁)
@@ -69,23 +70,20 @@ theorem exists_homogeneous_higher_family_constant {d : ℕ}
   have hpde : ∀ᵐ z ∂timeVelocityVolumeOn (Ioo q₀ q₁ ×ˢ O₀),
       J.timeDeriv z + (∑ i, ∑ j, A z.1 z.2 i j * J.velocityHessian z j i) +
         (∑ j, (0 : PDE.Vec d) j * J.velocityGrad z j) + 0 * J.toFun z = 0 := by
-    filter_upwards [heq] with z hz
-    simpa using hz
+    simp_all
   obtain ⟨l, r, Oc, B, E, D, hql, hls, hsr, hrq, hOc, hOcne, hOcc,
     hOOc, hOcO₀, hB, hFB, hErep, hEnorm, hDlow, hDnorm⟩ :=
     hrun (fun _ _ => 0) hcs J hpde
   have hEZ : E.squaredL2Norm = 0 := by
-    unfold ParabolicWeakDerivativeFamily.squaredL2Norm
     apply Finset.sum_eq_zero
     intro beta _
-    rw [hErep beta, coordinateIteratedFDeriv_zero_function]
+    rw [hErep, coordinateIteratedFDeriv_zero_function]
     simp
   have hsub : Ioo s₀ s₁ ×ˢ O ⊆ Ioo l r ×ˢ Oc := by
     intro z hz
     exact ⟨⟨hls.trans hz.1.1, hz.1.2.trans hsr⟩, hOOc (subset_closure hz.2)⟩
   refine ⟨D.restrict hsub, ?_, ?_⟩
-  · intro alpha
-    exact hDlow alpha
+  · simp_all
   · apply (D.squaredL2Norm_restrict_le hsub).trans
     simpa only [hEZ, add_zero] using hDnorm
 

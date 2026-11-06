@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourcePos
 /-! # Interior continuity of literal signed bounded source potentials -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Evolution
 variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
@@ -35,31 +34,25 @@ theorem continuousOn_duhamelPotential_bounded_signed
   have hgb (p : KineticPoint d) : 0 ≤ g p ∧ g p ≤ M :=
     ⟨le_max_right _ _, max_le ((neg_le_abs _).trans (hFb p)) hM⟩
   have hfz : ∀ p, KineticPoint.equivProd d p ∉ boundedSourcePast Ω γ T → f p = 0 := by
-    intro p hp
-    simp only [f, hFz p hp, max_self]
+    grind
   have hgz : ∀ p, KineticPoint.equivProd d p ∉ boundedSourcePast Ω γ T → g p = 0 := by
-    intro p hp
-    simp only [g, hFz p hp, neg_zero, max_self]
+    grind
   have hfc := continuousOn_duhamelPotential_bounded_nonneg hH hΩa hΩ hγ B b S K hreal
     hB hBs hb lam Lam m hlam hm hell hcoerc T f hfm M hM hfb hfz
   have hgc := continuousOn_duhamelPotential_bounded_nonneg hH hΩa hΩ hγ B b S K hreal
     hB hBs hb lam Lam m hlam hm hell hcoerc T g hgm M hM hgb hgz
   have hsplit : F = (fun p => f p + -g p) := by
-    funext p
-    change F p = max (F p) 0 + -max (-F p) 0
-    by_cases hp : 0 ≤ F p
-    · rw [max_eq_left hp, max_eq_right (neg_nonpos.mpr hp), neg_zero, add_zero]
-    · rw [max_eq_right (le_of_not_ge hp), max_eq_left (by linarith), neg_neg, zero_add]
+    grind
   have heq : duhamelPotential K T F =
       (fun p => duhamelPotential K T f p - duhamelPotential K T g p) := by
     funext p
     conv_lhs => rw [hsplit]
     rw [duhamelPotential_add_bounded K hΩ hγ f (fun p => -g p) hfm hgm.neg M M hM hM
-      (fun p => by rw [abs_of_nonneg (hfb p).1]; exact (hfb p).2)
-      (fun p => by rw [abs_neg, abs_of_nonneg (hgb p).1]; exact (hgb p).2),
+      (fun p => by grind)
+      (fun p => by grind),
       duhamelPotential_neg]
     rfl
   rw [heq]
-  exact hfc.sub hgc
+  fun_prop
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

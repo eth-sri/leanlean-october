@@ -11,7 +11,6 @@ constant is fixed before choosing the classical solution.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 open scoped BigOperators MatrixOrder Topology
@@ -36,7 +35,7 @@ theorem exists_local_gradient_collar_constant {d : ℕ}
   let U := Ioo a T ×ˢ O
   have hU : IsOpen U := isOpen_Ioo.prod hO
   obtain ⟨ρ, hρ, hρone, hρsub⟩ := exists_smooth_cutoff_tsupport_subset hVc hU hVU
-  have hc : HasCompactSupport ρ :=
+  have hc  :=
     hasCompactSupport_of_tsupport_subset_of_isCompact_closure hρsub hUc
   obtain ⟨C, hC, hbound⟩ := exists_local_gradient_energy_constant
     a T O hO ρ hρ hc hρsub A hA lam hlam hell
@@ -53,7 +52,7 @@ theorem exists_local_gradient_collar_constant {d : ℕ}
       hρ.continuous hc hρsub).restrict (s := U)).congr
     exact Eventually.of_forall (fun z => mul_comm _ _)
   have hmono := setIntegral_mono_set hfi
-    (Eventually.of_forall (fun z => mul_nonneg (sq_nonneg (ρ z))
+    (Eventually.of_forall (fun z => mul_nonneg (sq_nonneg _)
       (Finset.sum_nonneg (fun j _ => sq_nonneg _))))
     (Eventually.of_forall (fun z hz => hVU (subset_closure hz)))
   have hsame : (∫ z in V, ρ z ^ 2 * f z) = ∫ z in V, f z := by
@@ -65,9 +64,8 @@ theorem exists_local_gradient_collar_constant {d : ℕ}
   rw [hsame] at hmono
   have hb := hbound u hu hq heq
   have hmul := mul_le_mul_of_nonneg_left hmono (show 0 ≤ lam / 2 by positivity)
-  dsimp only [f] at hmul
   rw [div_mul_eq_mul_div]
   apply (le_div_iff₀ hlam).mpr
-  nlinarith only [hmul, hb]
+  linarith
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

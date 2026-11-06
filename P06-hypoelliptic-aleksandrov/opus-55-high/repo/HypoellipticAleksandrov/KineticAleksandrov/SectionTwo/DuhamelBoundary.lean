@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelSlice
 /-! # Continuous zero traces for the kinetic Duhamel potential -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Filter
 open scoped Topology
@@ -27,11 +26,11 @@ theorem continuousWithinAt_duhamelPotential (hΩa : IsAdmissibleEvolutionDomain 
       (evolutionPastClosedCylinder Ω γ T) p₀ := by
   obtain ⟨a, btime, -, hab⟩ := exists_time_window_of_hasCompactSupport g hgc
   obtain ⟨C, hC⟩ := hg.bounded_above_of_compact_support hgc
-  have hgb : ∀ p, g p ≤ C := fun p => (le_abs_self _).trans (by simpa using hC p)
+  have hgb : ∀ p, g p ≤ C := fun p => (le_abs_self _).trans (by simp_all)
   have hC0 : 0 ≤ C := (hgn ⟨0, 0, 0⟩).trans (hgb _)
-  have hgm : Measurable g := hg.measurable
+  have hgm  := hg.measurable
   have hmeas := measurable_duhamelIntegrand K hΩ hγ g hgm
-  let F : KineticPoint d → ℝ → ℝ := fun p r =>
+  let F  := fun p r =>
     (Ioc p.time T).indicator (duhamelIntegrand K g p) r
   have hW : duhamelPotential K T g = fun p => ∫ r, F p r :=
     funext fun p => (integral_indicator measurableSet_Ioc).symm
@@ -42,25 +41,23 @@ theorem continuousWithinAt_duhamelPotential (hΩa : IsAdmissibleEvolutionDomain 
     by_cases h : r ∈ Ioc p.time T
     · exact (indicator_of_mem h _).trans
         (duhamelIntegrand_eq_zero_of_time_not_mem K g a btime hab p r hr)
-    · exact indicator_of_notMem h _
+    aesop
   have hbd : ∀ p r, ‖F p r‖ ≤ (Icc a btime).indicator (fun _ => C) r := by
     intro p r
     by_cases hr : r ∈ Icc a btime
-    · rw [indicator_of_mem hr, Real.norm_eq_abs]
+    · rw [indicator_of_mem hr]
       by_cases h : r ∈ Ioc p.time T
       · change |(Ioc p.time T).indicator (duhamelIntegrand K g p) r| ≤ C
         rw [indicator_of_mem h,
           abs_of_nonneg (duhamelIntegrand_nonneg K g hgn p r)]
         exact duhamelIntegrand_le K g hgn C hC0 hgb p r
-      · change |(Ioc p.time T).indicator (duhamelIntegrand K g p) r| ≤ C
-        rw [indicator_of_notMem h, abs_zero]
-        exact hC0
-    · rw [indicator_of_notMem hr, hF0 p r hr, norm_zero]
+      aesop
+    simp_all
   have hint : Integrable ((Icc a btime).indicator (fun _ => C)) :=
     (integrable_indicator_iff measurableSet_Icc).2 (integrableOn_const (by simp))
-  have hne : ∀ᵐ r ∂(volume : Measure ℝ), r ∉ ({p₀.time} : Set ℝ) :=
+  have hne : ∀ᵐ r ∂volume, r ∉ ({p₀.time} : Set ℝ) :=
     measure_eq_zero_iff_ae_notMem.1 (measure_singleton _)
-  have hcont : ∀ᵐ r ∂(volume : Measure ℝ),
+  have hcont : ∀ᵐ r ∂volume,
       ContinuousWithinAt (fun p => F p r) (evolutionPastClosedCylinder Ω γ T) p₀ := by
     filter_upwards [hne] with r hr
     rcases lt_trichotomy r p₀.time with h | h | h
@@ -71,7 +68,7 @@ theorem continuousWithinAt_duhamelPotential (hΩa : IsAdmissibleEvolutionDomain 
         exact indicator_of_notMem (fun hh => absurd hh.1 (not_lt.2 hp.le)) _
       have h0 : F p₀ r = 0 := indicator_of_notMem (fun hh => absurd hh.1 (not_lt.2 h.le)) _
       exact continuousWithinAt_const.congr_of_eventuallyEq hev h0
-    · exact absurd h (by simpa using hr)
+    · simp_all
     · by_cases hrT : r ≤ T
       · have hc1 := continuousOn_duhamelIntegrand hΩa hΩ B b S K hreal
           g hg hgc hgs T hgU r
@@ -85,13 +82,13 @@ theorem continuousWithinAt_duhamelPotential (hΩa : IsAdmissibleEvolutionDomain 
           have hopen : {p : KineticPoint d | p.time < r} ∈ 𝓝 p₀ :=
             (isOpen_lt continuous_time continuous_const).mem_nhds h
           filter_upwards [mem_nhdsWithin_of_mem_nhds hopen] with p hp
-          exact indicator_of_mem (show r ∈ Ioc p.time T from ⟨hp, hrT⟩) _
+          aesop
         exact hc2.congr_of_eventuallyEq hev
           (indicator_of_mem (show r ∈ Ioc p₀.time T from ⟨h, hrT⟩) _)
       · have hz : ∀ p, F p r = 0 := fun p =>
           indicator_of_notMem (fun hh => hrT hh.2) _
         simp only [hz]
-        exact continuousWithinAt_const
+        fun_prop
   rw [hW]
   exact continuousWithinAt_of_dominated
     (Eventually.of_forall fun p => (hFm p).aestronglyMeasurable)

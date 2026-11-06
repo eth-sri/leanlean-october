@@ -40,17 +40,13 @@ theorem nestedSourcePotential_zero_outer
     nestedSourcePotential H2 E T f p = 0 := by
   have hz := nestedSourcePotential_continuous_zero_exit hH hlam hLam A H2 E hE T f hfn hs
   rcases hp with hp | hp
-  · exact hz.2.1 p hp.1
+  · simp_all
   · have hv : p.velocity 0 ∉ H2.carrier := fun hv => hn ⟨hp.1, hp.2.1, hp.2.2, hv⟩
     have hc := (nested_strip_union_exit_subset_closed H1 H2 hsub sMinus T
       (Or.inr (Or.inr hp))).2
     apply hz.2.2 p
     change ¬ (H2.lo < p.velocity 0 ∧ p.velocity 0 < H2.hi) at hv
-    by_cases hl : p.velocity 0 = H2.lo
-    · exact Or.inl hl
-    · exact Or.inr (le_antisymm hc.2 (by
-        by_contra hn
-        exact hv ⟨lt_of_le_of_ne hc.1 (Ne.symm hl), lt_of_not_ge hn⟩))
+    grind
 
 /-- The larger Green source integral is the smaller integral plus its true internal restart.
 The restart measure is the smaller exit measure restricted to the literal internal boundary. -/
@@ -70,20 +66,17 @@ theorem nestedSourcePotential_restart_identity
           (nestedIntervalInternalExit H1 H2 sMinus T) := by
   let u := nestedSourcePotential H2 (stripEvolution hH hLE hlam hLam A H2) T f
   have hp : ∀ᵐ p ∂stripExit hH hLE hlam hLam A H1 T e,
-      p ∈ reconstructionExit H1 sMinus T := by
-    rw [ae_iff]
-    exact (strip_exit_probability hH hLE hlam hLam A H1 sMinus T e he.le).2.1
+      p ∈ reconstructionExit H1 sMinus T := (strip_exit_probability hH hLE hlam hLam A H1 sMinus T e he.le).2.1
   have heq : u =ᵐ[stripExit hH hLE hlam hLam A H1 T e]
       (nestedIntervalInternalExit H1 H2 sMinus T).indicator u := by
     filter_upwards [hp] with p hp
     by_cases hm : p ∈ nestedIntervalInternalExit H1 H2 sMinus T
-    · rw [indicator_of_mem hm]
+    · simp_all
     · rw [indicator_of_notMem hm]
       exact nestedSourcePotential_zero_outer hH hlam hLam A H1 H2 hsub _
         (stripEvolution_spec hH hLE hlam hLam A H2) sMinus T f hfn hs p hp hm
   have hid := nestedSourcePotential_small_identity hH hLE hlam hLam A H1 H2 hsub
     sMinus T e he f hfn hs
-  change _ = _ + ∫ p, u p ∂stripExit hH hLE hlam hLam A H1 T e at hid
   rw [integral_congr_ae heq,
     integral_indicator (measurableSet_nestedIntervalInternalExit H1 H2 sMinus T)] at hid
   exact hid

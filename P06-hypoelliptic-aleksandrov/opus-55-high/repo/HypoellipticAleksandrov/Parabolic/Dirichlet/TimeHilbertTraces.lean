@@ -29,9 +29,9 @@ theorem ReverseTimeHilbertRepresentativeAgrees.unique
     (hT : 0 < T)
     (hVbar : ReverseTimeHilbertRepresentativeAgrees hΩ T u Vbar) :
     Ubar = Vbar := by
-  let Uext : ℝ → PDE.ScalarLp Ω (2 : ℝ≥0∞) := fun t =>
+  let Uext  := fun t =>
     if ht : t ∈ Icc 0 T then Ubar ⟨t, ht⟩ else 0
-  let Vext : ℝ → PDE.ScalarLp Ω (2 : ℝ≥0∞) := fun t =>
+  let Vext  := fun t =>
     if ht : t ∈ Icc 0 T then Vbar ⟨t, ht⟩ else 0
   have hUextCont : ContinuousOn Uext (Icc 0 T) := by
     rw [continuousOn_iff_continuous_restrict]
@@ -39,14 +39,14 @@ theorem ReverseTimeHilbertRepresentativeAgrees.unique
       funext t
       simp only [Set.domRestrict_apply, Uext, dif_pos t.2]
     rw [hEq]
-    exact Ubar.continuous
+    fun_prop
   have hVextCont : ContinuousOn Vext (Icc 0 T) := by
     rw [continuousOn_iff_continuous_restrict]
     have hEq : (Icc 0 T).domRestrict Vext = Vbar := by
       funext t
       simp only [Set.domRestrict_apply, Vext, dif_pos t.2]
     rw [hEq]
-    exact Vbar.continuous
+    fun_prop
   have hIoo : ∀ᵐ t ∂volume.restrict (Icc 0 T), t ∈ Ioo 0 T := by
     rw [← restrict_Ioo_eq_restrict_Icc]
     exact ae_restrict_mem measurableSet_Ioo
@@ -62,12 +62,7 @@ theorem ReverseTimeHilbertRepresentativeAgrees.unique
       reverseTimeOpenInterval, restrict_Ioo_eq_restrict_Icc] using hVbar
   have hUVAE : Uext =ᵐ[volume.restrict (Icc 0 T)] Vext := by
     filter_upwards [hIoo, hUbarIcc, hVbarIcc] with t ht hUbar hVbar
-    have htIcc : t ∈ Icc 0 T := ⟨le_of_lt ht.1, le_of_lt ht.2⟩
-    calc
-      Uext t = Ubar ⟨t, htIcc⟩ := by simp only [Uext, dif_pos htIcc]
-      _ = valueCLM hΩ (u t) := hUbar ht
-      _ = Vbar ⟨t, htIcc⟩ := (hVbar ht).symm
-      _ = Vext t := by simp only [Vext, dif_pos htIcc]
+    aesop
   have hEqOn : EqOn Uext Vext (Icc 0 T) :=
     Measure.eqOn_Icc_of_ae_eq volume hT.ne hUVAE hUextCont hVextCont
   apply ContinuousMap.ext
@@ -76,7 +71,7 @@ theorem ReverseTimeHilbertRepresentativeAgrees.unique
 
 /-- The canonical continuous spatial-`L²` representative supplied by the
 reverse-time Hilbert-representative theorem. -/
-noncomputable def reverseTimeHilbertRepresentative
+def reverseTimeHilbertRepresentative
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
@@ -105,7 +100,7 @@ theorem reverseTimeHilbertRepresentative_spec
 
 /-- The reverse-time initial spatial-`L²` trace, defined at `tau = 0` from
 the canonical continuous representative and not from the raw Bochner curve. -/
-noncomputable def reverseTimeInitialTrace
+def reverseTimeInitialTrace
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)

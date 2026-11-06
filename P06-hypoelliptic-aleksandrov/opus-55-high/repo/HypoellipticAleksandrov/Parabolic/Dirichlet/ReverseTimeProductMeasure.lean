@@ -13,7 +13,6 @@ the restricted time--velocity volume on a product set.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -26,7 +25,7 @@ theorem reverseTimeVolume_prod_volumeOn_eq_timeVelocityVolumeOn
     (reverseTimeVolume T).prod (PDE.volumeOn Ω) =
       timeVelocityVolumeOn (reverseTimeOpenInterval T ×ˢ Ω) := by
   rw [reverseTimeVolume, timeVelocityVolumeOn, volume_timeVelocity_eq_prod]
-  simpa using Measure.prod_restrict (μ := (volume : Measure ℝ))
-    (ν := (volume : Measure (PDE.Vec d))) (reverseTimeOpenInterval T) Ω
+  simpa using Measure.prod_restrict (μ := volume)
+    (ν := volume) _ Ω
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

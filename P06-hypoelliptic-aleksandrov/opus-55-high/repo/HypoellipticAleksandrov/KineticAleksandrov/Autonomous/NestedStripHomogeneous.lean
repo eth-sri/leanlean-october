@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.GreenTestExt
 /-! # Genuine bounded homogeneous potentials of compact exit probes -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Parabolic
 
@@ -32,7 +31,7 @@ theorem exists_nested_homogeneous_potential
   obtain ⟨M, hM⟩ := exitProbePhysical_bounded_source A f
   have hb : ∃ M : ℝ, ∀ p ∈ reconstructionStrip H (sMinus - 1) T,
       |exitProbePhysical f p| ≤ M ∧
-        |forwardScalarOperator A.a (exitProbePhysical f) p| ≤ M := ⟨M, fun p _ => hM p⟩
+        |forwardScalarOperator A.a _ p| ≤ M := ⟨M, fun p _ => hM p⟩
   obtain ⟨u, hform, hu, hop, hc, htrace⟩ := strip_bounded_source_reconstruction
     hH hlam hLam A H E hE (sMinus - 1) T (exitProbePhysical f) hphi
       (exitProbePhysical_continuous_compact f).1.continuousOn hb
@@ -40,10 +39,10 @@ theorem exists_nested_homogeneous_potential
   have hv : p.velocity 0 ∈ H.carrier := by
     change H.lo < (H.lo + H.hi) / 2 ∧ (H.lo + H.hi) / 2 < H.hi
     constructor <;> linarith [H.ordered]
-  let e : StripPole H (T : WithTop ℝ) := ⟨p, WithTop.coe_lt_coe.mpr hT, hv⟩
-  have he : sMinus - 1 < e.1.time := by change sMinus - 1 < sMinus; linarith
-  have hbound := reconstruction_uniform_bound H E A (sMinus - 1) T e he
-    (exitProbePhysical f) u hphi hb hform hc
+  let e : StripPole H _ := ⟨p, WithTop.coe_lt_coe.mpr hT, hv⟩
+  have he : sMinus - 1 < e.1.time := by linarith
+  have hbound := reconstruction_uniform_bound H E A _ T e he
+    _ u hphi hb hform hc
   refine ⟨u, nested_raw_isKineticC112On (isOpen_reconstructionStrip H _ T) hu,
     hop, hc.mono (reconstructionClosedSlab_subset_strip_union_exit H he),
     hbound, htrace, ?_⟩
@@ -53,7 +52,7 @@ theorem exists_nested_homogeneous_potential
   have hformula := hform ep hepl
   rw [integral_neg] at hformula
   change (∫ p, exitProbePhysical f p ∂stripExit hH hLE hlam hLam A H T ep) =
-    exitProbePhysical f ep.1 + ∫ p, forwardScalarOperator A.a (exitProbePhysical f) p
+    exitProbePhysical f ep.1 + ∫ p, forwardScalarOperator A.a _ p
       ∂stripGreenOfKernel H E.2 T ep at hvalue
   linarith
 

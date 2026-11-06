@@ -10,7 +10,6 @@ at most `M r²`. Its contracted range therefore yields a genuine forced recurren
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Set
 
@@ -46,29 +45,26 @@ theorem exists_forced_range_contraction
       (hz : z ∈ scalarParabolicOpenCylinder (T - r ^ 2) T (PDE.euclideanBall v₀ r)) :
       |w z - v z| ≤ M * r ^ 2 := by
     have h := herr z ⟨⟨hz.1.1.le, hz.1.2.le⟩, subset_closure hz.2⟩
-    simpa only [sub_sub_cancel] using h
+    simp_all
   have hvb : ∀ z ∈ scalarParabolicOpenCylinder (T - r ^ 2) T (PDE.euclideanBall v₀ r),
       l - M * r ^ 2 ≤ v z ∧ v z ≤ b + M * r ^ 2 := by
-    intro z hz
-    have hd := abs_le.mp (herr' z hz)
-    constructor <;> linarith only [hd.1, hd.2, (hb z hz).1, (hb z hz).2]
+    grind
   obtain ⟨l', b', hwidth, hbounds⟩ := hc A hA hs hlo hhi T v₀ r hr v hv he
-    (l - M * r ^ 2) (b + M * r ^ 2) hvb
+    _ _ hvb
   refine ⟨l' - M * r ^ 2, b' + M * r ^ 2, ?_, ?_⟩
   · have hh : 0 ≤ (1 - θ) * (M * r ^ 2) :=
       mul_nonneg (sub_nonneg.mpr hθ1.le) (mul_nonneg hM (sq_nonneg r))
-    linarith only [hwidth, hh]
+    linarith
   · intro z hz
     have hzU : z ∈ scalarParabolicOpenCylinder (T - r ^ 2) T
         (PDE.euclideanBall v₀ r) := by
       constructor
       · constructor
         · nlinarith only [hz.1.1, sq_pos_of_pos hr]
-        · exact hz.1.2
+        aesop
       · rw [PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hr]
         have hn := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (half_pos hr)).mp hz.2
-        exact hn.trans (half_lt_self hr)
-    have hd := abs_le.mp (herr' z hzU)
-    constructor <;> linarith only [hd.1, hd.2, (hbounds z hz).1, (hbounds z hz).2]
+        linarith
+    grind
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

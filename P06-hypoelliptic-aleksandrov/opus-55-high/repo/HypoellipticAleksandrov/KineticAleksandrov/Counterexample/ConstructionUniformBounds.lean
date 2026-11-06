@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.BarrierP
 /-! # Uniform bounds on raw selected jets over compact time intervals -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Set
 
@@ -39,27 +38,25 @@ theorem construction_scalar_bound_mul {X : Type*} (K : Set X) (f g : X → ℝ)
   rw [abs_mul]
   exact mul_le_mul (hf x hx) (hg x hx) (abs_nonneg _) hC
 
+variable (d : ℕ) (mu R : ℝ)
+
 /-- The packed barrier gradient depends continuously on time and space together. -/
-theorem construction_barrier_gradient_joint_continuous (d : ℕ) (mu R : ℝ)
+theorem construction_barrier_gradient_joint_continuous 
     (i : Fin (d + d)) : Continuous (fun z : ℝ × PDE.Vec (d + d) =>
       PDE.classicalGradient (spatialPackedBarrier d mu R z.1) z.2 i) := by
   refine Fin.addCases (fun j => ?_) (fun j => ?_) i
   · simp only [spatialPackedBarrier_positionGradient]
-    exact continuous_const
+    fun_prop
   · simp only [spatialPackedBarrier_velocityGradient]
-    exact (((continuous_const.mul (continuous_const.mul continuous_fst).rexp).div_const
-      (R ^ 2)).neg).mul
-      ((continuous_apply j).comp ((spatialCoordinateCLE d).continuous.comp
-        continuous_snd).snd)
+    fun_prop
 
 /-- The packed barrier Hessian is jointly continuous. -/
-theorem construction_barrier_hessian_joint_continuous (d : ℕ) (mu R : ℝ)
+theorem construction_barrier_hessian_joint_continuous 
     (i k : Fin d) : Continuous (fun z : ℝ × PDE.Vec (d + d) =>
       PDE.classicalGradient (fun y => PDE.classicalGradient
         (spatialPackedBarrier d mu R z.1) y (Fin.natAdd d k)) z.2 (Fin.natAdd d i)) := by
   simp only [spatialPackedBarrier_velocityHessian]
-  exact (((continuous_const.mul (continuous_const.mul continuous_fst).rexp).div_const
-    (R ^ 2)).neg).mul continuous_const
+  fun_prop
 
 /-- First raw representatives have bounds uniform over both compact time and compact space. -/
 theorem construction_rawGradient_uniform_bound {d : ℕ} {alpha : ℝ}
@@ -71,8 +68,8 @@ theorem construction_rawGradient_uniform_bound {d : ℕ} {alpha : ℝ}
   have hD : IsCompact D := isCompact_Icc.prod hK
   obtain ⟨C, hC, hb⟩ := construction_packedGradient_compact_bound h r hr i K hK
   have hf : ∃ C : ℝ, 0 ≤ C ∧ ∀ z ∈ D,
-      |spatialPackedGradient (flatProfilePositionJet h r)
-        (flatProfileVelocityJet h r) z.2 i| ≤ C :=
+      |spatialPackedGradient _
+        _ z.2 i| ≤ C :=
     ⟨C, hC, fun z hz => hb z.2 hz.2⟩
   have hg := construction_compact_scalar_bound D hD _
     (construction_barrier_gradient_joint_continuous d mu R i)
@@ -82,7 +79,7 @@ theorem construction_rawGradient_uniform_bound {d : ℕ} {alpha : ℝ}
     (selectedFlatProfile h r (spatialCoordinateCLE d x) - spatialPackedBarrier d mu R t x)
   rw [spatialPackedCutoffGradient, abs_mul, abs_of_nonneg htheta.1]
   exact (mul_le_mul_of_nonneg_right htheta.2 (abs_nonneg _)).trans
-    (by simpa only [one_mul] using hbN (t, x) ⟨ht, hx⟩)
+    (by aesop)
 
 /-- Second raw representatives have bounds uniform over compact time and compact space. -/
 theorem construction_rawHessian_uniform_bound {d : ℕ} {alpha : ℝ}
@@ -93,7 +90,7 @@ theorem construction_rawHessian_uniform_bound {d : ℕ} {alpha : ℝ}
   let D := Icc a b ×ˢ K
   have hD : IsCompact D := isCompact_Icc.prod hK
   obtain ⟨M, hM, hbM⟩ := flatProfile_jets_compact_bound_of_profile h r hr
-    ((spatialCoordinateCLE d) '' K) (hK.image (spatialCoordinateCLE d).continuous)
+    _ (hK.image (spatialCoordinateCLE d).continuous)
   have hh : ∃ C : ℝ, 0 ≤ C ∧ ∀ z ∈ D,
       |flatProfileHessian h r (spatialCoordinateCLE d z.2) i k| ≤ C :=
     ⟨M, hM, fun z hz => (hbM _ ⟨z.2, hz.2, rfl⟩).2.2 i k⟩
@@ -104,11 +101,11 @@ theorem construction_rawHessian_uniform_bound {d : ℕ} {alpha : ℝ}
     have hf : ∃ C : ℝ, 0 ≤ C ∧ ∀ z ∈ D,
         |flatProfileVelocityJet h r (spatialCoordinateCLE d z.2) j| ≤ C :=
       ⟨M, hM, fun z hz => by
-        simpa only [Real.norm_eq_abs] using
+        simpa using
           (norm_le_pi_norm _ j).trans (hbM _ ⟨z.2, hz.2, rfl⟩).2.1⟩
     exact construction_scalar_bound_sub D _ _ hf
       (construction_compact_scalar_bound D hD _
-        (construction_barrier_gradient_joint_continuous d mu R (Fin.natAdd d j)))
+        (construction_barrier_gradient_joint_continuous d mu R _))
   obtain ⟨N, hN, hbN⟩ := construction_scalar_bound_sub D _ _ hh
     (construction_compact_scalar_bound D hD _
       (construction_barrier_hessian_joint_continuous d mu R i k))
@@ -117,12 +114,11 @@ theorem construction_rawHessian_uniform_bound {d : ℕ} {alpha : ℝ}
   refine ⟨N + L * C, add_nonneg hN (mul_nonneg hL.le hC), fun t ht x hx => ?_⟩
   have htheta := timeCutoffTheta_deriv_bounds
     (selectedFlatProfile h r (spatialCoordinateCLE d x) - spatialPackedBarrier d mu R t x)
-  unfold spatialPackedCutoffVelocityHessian
   apply (abs_add_le _ _).trans
   apply add_le_add
   · rw [abs_mul, abs_of_nonneg htheta.1]
     exact (mul_le_mul_of_nonneg_right htheta.2 (abs_nonneg _)).trans
-      (by simpa only [one_mul] using hbN (t, x) ⟨ht, hx⟩)
+      (by aesop)
   · rw [mul_assoc, abs_mul]
     exact mul_le_mul (hbL _) (hbC (t, x) ⟨ht, hx⟩) (abs_nonneg _) hL.le
 

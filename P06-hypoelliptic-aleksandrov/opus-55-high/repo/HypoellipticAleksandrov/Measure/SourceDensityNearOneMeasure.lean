@@ -17,7 +17,6 @@ literal local parabolic norm.  It contains no PDE, ABP, or density argument.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -33,11 +32,11 @@ private theorem memLp_restrict_of_continuousOn_unit_collar
     (hs :
       s ⊆ parabolicClosedBox 1 1 0 (0 : PDE.Vec d)) :
     MemLp f (parabolicExponent d) (volume.restrict s) := by
-  let K : Set (TimeVelocity d) :=
+  let K  :=
     parabolicClosedBox 1 1 0 (0 : PDE.Vec d)
   have hKcompact : IsCompact K :=
-    isCompact_parabolicClosedBox 1 1 0 (0 : PDE.Vec d)
-  have hKmeas : MeasurableSet K := hKcompact.measurableSet
+    isCompact_parabolicClosedBox 1 1 0 _
+  have hKmeas  := hKcompact.measurableSet
   have hfK : ContinuousOn f K := hf.mono hclosed
   letI : IsFiniteMeasure (volume.restrict K) :=
     ⟨by
@@ -48,7 +47,7 @@ private theorem memLp_restrict_of_continuousOn_unit_collar
       MemLp f (parabolicExponent d) (volume.restrict K) := by
     refine MemLp.of_bound (hfK.aestronglyMeasurable hKmeas) M ?_
     filter_upwards [ae_restrict_mem hKmeas] with z hz
-    exact hM z hz
+    simp_all
   exact hfKmem.mono_measure (Measure.restrict_mono_set volume hs)
 
 /-- The exponentially weighted local norm of the supplied source plus the
@@ -81,17 +80,17 @@ theorem
             (parabolicBox 1 1 0 (0 : PDE.Vec d) ∩
               {z | u z < 1})).toReal
           (1 / ((d : Real) + 1)) := by
-  let Q : Set (TimeVelocity d) :=
+  let Q  :=
     parabolicBox 1 1 0 (0 : PDE.Vec d)
-  let K : Set (TimeVelocity d) :=
+  let K  :=
     parabolicClosedBox 1 1 0 (0 : PDE.Vec d)
-  let L : Set (TimeVelocity d) := localABPInterior v0
-  let E : Set (TimeVelocity d) := Q ∩ {z | u z < 1}
+  let L  := localABPInterior v0
+  let E  := Q ∩ {z | u z < 1}
   let W : TimeVelocity d → Real :=
     fun z ↦ Real.exp (rho * (z.1 - 3 / 4))
-  let S : TimeVelocity d → Real := fun z ↦ W z * Fsrc z
-  let D : TimeVelocity d → Real := fun z ↦ W z * (rho * max (1 - u z) 0)
-  let T : TimeVelocity d → Real :=
+  let S  := fun z ↦ W z * Fsrc z
+  let D  := fun z ↦ W z * (rho * max (1 - u z) 0)
+  let T  :=
     fun z ↦ W z * (Fsrc z + rho * max (1 - u z) 0)
   have hQK : Q ⊆ K := by
     rintro ⟨t, v⟩ ⟨⟨ht0, ht1⟩, hv⟩
@@ -104,23 +103,19 @@ theorem
   have hLmeas : MeasurableSet L := by
     simpa only [L] using measurableSet_localABPInterior v0
   have hW : Continuous W := by
-    dsimp only [W]
     fun_prop
   have hScont : ContinuousOn S U := by
-    dsimp only [S]
-    exact hW.continuousOn.mul hFsrc
+    fun_prop
   have hdefCont : ContinuousOn (fun z ↦ rho * max (1 - u z) 0) U :=
     continuousOn_const.mul
       ((continuousOn_const.sub hu.continuousOn).sup continuousOn_const)
   have hDcont : ContinuousOn D U := by
-    dsimp only [D]
-    exact hW.continuousOn.mul hdefCont
-  have hFQmem :
-      MemLp Fsrc (parabolicExponent d) (volume.restrict Q) :=
+    fun_prop
+  have hFQmem  :=
     memLp_restrict_of_continuousOn_unit_collar hclosed hFsrc hQK
-  have hSmem : MemLp S (parabolicExponent d) (volume.restrict L) :=
+  have hSmem  :=
     memLp_restrict_of_continuousOn_unit_collar hclosed hScont hLK
-  have hDmem : MemLp D (parabolicExponent d) (volume.restrict L) :=
+  have hDmem  :=
     memLp_restrict_of_continuousOn_unit_collar hclosed hDcont hLK
   have hFQtop : parabolicELpNormOn d Fsrc Q ≠ ⊤ := by
     simpa only [parabolicELpNormOn] using hFQmem.eLpNorm_ne_top
@@ -128,85 +123,76 @@ theorem
     simpa only [parabolicELpNormOn] using hSmem.eLpNorm_ne_top
   have hDtop : parabolicELpNormOn d D L ≠ ⊤ := by
     simpa only [parabolicELpNormOn] using hDmem.eLpNorm_ne_top
-  have hdENN : (1 : ENNReal) ≤ (d : ENNReal) := by
-    exact_mod_cast hd
-  have hp : (1 : ENNReal) ≤ parabolicExponent d := by
+  have hdENN : (1) ≤ (d : ENNReal) := by
+    aesop
+  have hp : (1) ≤ parabolicExponent d := by
     calc
-      (1 : ENNReal) ≤ (d : ENNReal) := hdENN
-      _ ≤ (d : ENNReal) + 1 := le_add_of_nonneg_right bot_le
+      (1) ≤ (d : ENNReal) := hdENN
+      _ ≤ d + 1 := le_add_of_nonneg_right bot_le
       _ = parabolicExponent d := rfl
   have hT : T = S + D := by
     funext z
-    dsimp only [T, S, D, W, Pi.add_apply]
+    dsimp only [Pi.add_apply]
     ring
   have htriENN :
       parabolicELpNormOn d T L ≤
         parabolicELpNormOn d S L + parabolicELpNormOn d D L := by
-    unfold parabolicELpNormOn
     rw [hT]
     exact eLpNorm_add_le hp
-  have hsumTop :
-      parabolicELpNormOn d S L + parabolicELpNormOn d D L ≠ ⊤ :=
+  have hsumTop  :=
     ENNReal.add_ne_top.mpr ⟨hStop, hDtop⟩
   have htriRealRaw := ENNReal.toReal_mono hsumTop htriENN
   have htriReal :
       parabolicLpNormOn d T L ≤
         parabolicLpNormOn d S L + parabolicLpNormOn d D L := by
-    unfold parabolicLpNormOn
     rw [ENNReal.toReal_add hStop hDtop] at htriRealRaw
-    exact htriRealRaw
+    aesop
   have hsourcePointwise :
       ∀ z ∈ L, ‖S z‖ ≤ ‖Real.exp (rho / 4) * Fsrc z‖ := by
     intro z hz
-    have hzQ : z ∈ Q := hLQ hz
+    have hzQ  := hLQ hz
     have htime : rho * (z.1 - 3 / 4) ≤ rho / 4 := by
       have hbase : z.1 - 3 / 4 ≤ 1 / 4 := by
         linarith [hzQ.1.2]
-      have hmul := mul_le_mul_of_nonneg_left hbase hrho
       nlinarith
-    have hweight :
-        Real.exp (rho * (z.1 - 3 / 4)) ≤ Real.exp (rho / 4) :=
+    have hweight  :=
       Real.exp_le_exp.mpr htime
-    have hFz : 0 ≤ Fsrc z := hFsrc_nonneg z hzQ
+    have hFz  := hFsrc_nonneg z hzQ
     have hleft : 0 ≤ Real.exp (rho * (z.1 - 3 / 4)) * Fsrc z :=
       mul_nonneg (Real.exp_pos _).le hFz
     have hright : 0 ≤ Real.exp (rho / 4) * Fsrc z :=
       mul_nonneg (Real.exp_pos _).le hFz
-    change ‖Real.exp (rho * (z.1 - 3 / 4)) * Fsrc z‖ ≤
-      ‖Real.exp (rho / 4) * Fsrc z‖
     calc
-      ‖Real.exp (rho * (z.1 - 3 / 4)) * Fsrc z‖ =
-          Real.exp (rho * (z.1 - 3 / 4)) * Fsrc z := by
-        rw [Real.norm_eq_abs, abs_of_nonneg hleft]
-      _ ≤ Real.exp (rho / 4) * Fsrc z :=
+      ‖Real.exp _ * Fsrc z‖ =
+          Real.exp _ * Fsrc z := by
+        simp_all
+      _ ≤ Real.exp _ * Fsrc z :=
         mul_le_mul_of_nonneg_right hweight hFz
-      _ = ‖Real.exp (rho / 4) * Fsrc z‖ := by
+      _ = ‖Real.exp _ * Fsrc z‖ := by
         rw [Real.norm_eq_abs, abs_of_nonneg hright]
   have hSmono :
       parabolicELpNormOn d S L ≤
         eLpNorm (fun z ↦ Real.exp (rho / 4) * Fsrc z)
-          (parabolicExponent d) (volume.restrict L) := by
-    exact eLpNorm_mono_ae hSmem.aestronglyMeasurable
+          (parabolicExponent d) (volume.restrict L) := eLpNorm_mono_ae hSmem.aestronglyMeasurable
       (ae_restrict_of_forall_mem hLmeas hsourcePointwise)
   have hFLQ :
-      parabolicELpNormOn d Fsrc L ≤ parabolicELpNormOn d Fsrc Q := by
-    exact eLpNorm_mono_measure Fsrc (Measure.restrict_mono_set volume hLQ)
+      parabolicELpNormOn d Fsrc L ≤ parabolicELpNormOn d Fsrc Q := eLpNorm_mono_measure Fsrc (Measure.restrict_mono_set volume hLQ)
   have hsourceENN :
       parabolicELpNormOn d S L ≤
         ENNReal.ofReal (Real.exp (rho / 4)) * parabolicELpNormOn d Fsrc Q := by
     calc
       parabolicELpNormOn d S L ≤
-          eLpNorm (fun z ↦ Real.exp (rho / 4) * Fsrc z)
-            (parabolicExponent d) (volume.restrict L) := hSmono
-      _ = ENNReal.ofReal (Real.exp (rho / 4)) *
+          eLpNorm _
+            _ _ := hSmono
+      _ = ENNReal.ofReal _ *
           parabolicELpNormOn d Fsrc L := by
-        change eLpNorm ((Real.exp (rho / 4)) • Fsrc)
-          (parabolicExponent d) (volume.restrict L) =
-          ENNReal.ofReal (Real.exp (rho / 4)) *
-            eLpNorm Fsrc (parabolicExponent d) (volume.restrict L)
+        change eLpNorm ((Real.exp _) • Fsrc)
+          _ _ =
+          ENNReal.ofReal _ *
+            eLpNorm Fsrc _ _
         rw [eLpNorm_const_smul,
           Real.enorm_of_nonneg (Real.exp_pos _).le]
-      _ ≤ ENNReal.ofReal (Real.exp (rho / 4)) *
+      _ ≤ ENNReal.ofReal _ *
           parabolicELpNormOn d Fsrc Q :=
         mul_le_mul_right hFLQ _
   have hsourceRightTop :
@@ -216,44 +202,43 @@ theorem
   have hsourceReal :
       parabolicLpNormOn d S L ≤
         Real.exp (rho / 4) * parabolicLpNormOn d Fsrc Q := by
-    unfold parabolicLpNormOn at hsourceRealRaw
+    
     rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal (Real.exp_pos _).le]
       at hsourceRealRaw
-    exact hsourceRealRaw
+    aesop
   have hcancel : Real.exp (-rho / 4) * Real.exp (rho / 4) = 1 := by
     calc
-      Real.exp (-rho / 4) * Real.exp (rho / 4) =
-          Real.exp ((-rho / 4) + rho / 4) := (Real.exp_add _ _).symm
+      Real.exp _ * Real.exp _ =
+          Real.exp _ := (Real.exp_add _ _).symm
       _ = Real.exp 0 := by
-        congr 1
         ring
       _ = 1 := Real.exp_zero
   have hsourceCancelled :
       Real.exp (-rho / 4) * parabolicLpNormOn d S L ≤
         parabolicLpNormOn d Fsrc Q := by
     calc
-      Real.exp (-rho / 4) * parabolicLpNormOn d S L ≤
-          Real.exp (-rho / 4) *
-            (Real.exp (rho / 4) * parabolicLpNormOn d Fsrc Q) :=
+      Real.exp _ * parabolicLpNormOn d S L ≤
+          Real.exp _ *
+            (Real.exp _ * parabolicLpNormOn d Fsrc Q) :=
         mul_le_mul_of_nonneg_left hsourceReal (Real.exp_pos _).le
       _ = parabolicLpNormOn d Fsrc Q := by
-        rw [← mul_assoc, hcancel, one_mul]
+        grind
   have hdeficit :=
     exp_neg_quarter_mul_parabolicLpNormOn_localABP_weighted_one_sub_le
       d rho hrho U u hQU hu hu_nonneg v0 hv0
   have hdeficit' :
       Real.exp (-rho / 4) * parabolicLpNormOn d D L ≤
-        rho * Real.rpow (volume E).toReal (1 / ((d : Real) + 1)) := by
-    simpa only [D, W, L, E, Q] using hdeficit
+        rho * Real.rpow (volume E).toReal (1 / (d + 1)) := by
+    omega
   calc
-    Real.exp (-rho / 4) * parabolicLpNormOn d T L ≤
-        Real.exp (-rho / 4) *
+    Real.exp _ * parabolicLpNormOn d T L ≤
+        Real.exp _ *
           (parabolicLpNormOn d S L + parabolicLpNormOn d D L) :=
       mul_le_mul_of_nonneg_left htriReal (Real.exp_pos _).le
-    _ = Real.exp (-rho / 4) * parabolicLpNormOn d S L +
-        Real.exp (-rho / 4) * parabolicLpNormOn d D L := by ring
+    _ = Real.exp _ * parabolicLpNormOn d S L +
+        Real.exp _ * parabolicLpNormOn d D L := by ring
     _ ≤ parabolicLpNormOn d Fsrc Q +
-        rho * Real.rpow (volume E).toReal (1 / ((d : Real) + 1)) :=
+        rho * Real.rpow _ _ :=
       add_le_add hsourceCancelled hdeficit'
     _ = _ := by rfl
 

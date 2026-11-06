@@ -10,7 +10,6 @@ Constants depend only on the structural parameters, interval length and exponent
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open Set MeasureTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
@@ -54,16 +53,12 @@ theorem interval_green_infinite_norm
       ∫⁻ p in slabSet T, G p ^ q ∂greenLebesgue 1 ≤
         ENNReal.ofReal A * μ univ ^ q *
           ENNReal.ofReal (T ^ (3 - 2 * q) * Real.exp (-k * T)) := by
-    intro T
-    by_cases hT : 0 < T
-    · obtain ⟨G, hG⟩ := hslab a c hac B b hs hJ S K hr hlen σ T hT μ Γ hΓ
-      exact ⟨G, fun _ => hG⟩
-    · exact ⟨0, fun h => absurd h hT⟩
+    grind
   choose Gl hGl using hloc
   obtain ⟨G, hGm, hGE, hGae⟩ := exists_global_density K σ μ Γ hΓ Gl
     (fun T hT => (hGl T hT).1) (fun T hT => (hGl T hT).2.1)
   refine ⟨G, hGm, hGE, ?_⟩
-  have hbd := killed_green_norm_bound G hGm A (3 - 2 * q) k q (μ univ) hq0 (by
+  have hbd := killed_green_norm_bound G hGm A _ k q _ hq0 (by
     intro T hT
     calc ∫⁻ p in slabSet T, G p ^ q ∂greenLebesgue 1
         = ∫⁻ p in slabSet T, Gl T p ^ q ∂greenLebesgue 1 := by
@@ -74,6 +69,6 @@ theorem interval_green_infinite_norm
   apply hbd.trans
   apply mul_le_mul' ?_ le_rfl
   calc N = ENNReal.ofReal N.toReal := (ENNReal.ofReal_toReal hN).symm
-    _ ≤ ENNReal.ofReal (N.toReal + 1) := ENNReal.ofReal_le_ofReal (by linarith)
+    _ ≤ ENNReal.ofReal _ := ENNReal.ofReal_le_ofReal (by linarith)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

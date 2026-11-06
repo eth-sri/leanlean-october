@@ -9,23 +9,21 @@ interval killing and frequency decay apply on the full ambient starting carrier.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open Set MeasureTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 open scoped ENNReal
 
+variable {a c : ℝ} (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c)) (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary) (σ τ : ℝ) (hστ : σ ≤ τ)
+
 /-- Interior Fourier measures of the carrier adapter are exactly the interval Fourier measures. -/
-theorem intervalExtension_fourier_inside {a c : ℝ}
-    (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
-    (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
-    (σ τ : ℝ) (hστ : σ ≤ τ) (ξ : PDE.Vec 1) (v : PDE.oneDimensionalAxisBox a c) :
+theorem intervalExtension_fourier_inside  (ξ : PDE.Vec 1) (v : PDE.oneDimensionalAxisBox a c) :
     fourierKernel (intervalExtension hJ K) σ τ hστ ξ v.1 =
       intervalFourierKernel K σ τ hστ ξ v := by
   have he : (intervalExtension hJ K).master (wholeSpaceQuery σ τ hστ v.1 0) =
       K.master (movingQuery σ τ hστ v.1 0
-        (by simpa only [movingDomain_stationary] using v.2)) := by
+        (by simp)) := by
     change intervalExtensionMaster hJ K (intervalQueryInclusion
       (movingQuery σ τ hστ v.1 0
         (by simpa only [movingDomain_stationary] using v.2))) = _
@@ -37,10 +35,7 @@ theorem intervalExtension_fourier_inside {a c : ℝ}
   rfl
 
 /-- Exterior Fourier measures of the carrier adapter vanish. -/
-theorem intervalExtension_fourier_outside {a c : ℝ}
-    (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
-    (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
-    (σ τ : ℝ) (hστ : σ ≤ τ) (ξ v : PDE.Vec 1)
+theorem intervalExtension_fourier_outside  (ξ v : PDE.Vec 1)
     (hv : v ∉ PDE.oneDimensionalAxisBox a c) :
     fourierKernel (intervalExtension hJ K) σ τ hστ ξ v = 0 := by
   have he : (intervalExtension hJ K).master (wholeSpaceQuery σ τ hστ v 0) = 0 :=
@@ -48,7 +43,7 @@ theorem intervalExtension_fourier_outside {a c : ℝ}
   apply VectorMeasure.ext
   intro E hE
   rw [fourierKernel_spec _ _ _ _ _ _ E hE, he]
-  simp only [Measure.restrict_zero, integral_zero_measure, zero_apply]
+  simp
 
 /-- The uniform interval killing and frequency decay also hold for the carrier adapter. -/
 theorem intervalExtension_fourier_decay
@@ -75,7 +70,7 @@ theorem intervalExtension_fourier_decay
   by_cases hv : v ∈ PDE.oneDimensionalAxisBox a c
   · rw [intervalExtension_fourier_inside hJ K σ τ hστ ξ ⟨v, hv⟩]
     have h := hdec a c hac B b hs hJ S K hr hlen σ τ hστ v ξ
-      (by simpa only [movingDomain_stationary] using hv) _
+      (by simp_all) _
       (intervalFourierKernel_spec K σ τ hστ ξ ⟨v, hv⟩)
     rw [← ENNReal.ofReal_toReal
       (show totalVariationNorm (intervalFourierKernel K σ τ hστ ξ ⟨v, hv⟩) ≠ ⊤ from

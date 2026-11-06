@@ -38,7 +38,7 @@ theorem exists_smooth_cutoff {U K : Set E} (hU : IsOpen U) (hK : IsCompact K) (h
       ∃ χ : E → ℝ, ContDiff ℝ (⊤ : ℕ∞) χ ∧ (∀ z, 0 ≤ χ z ∧ χ z ≤ 1) ∧
         (∀ z ∈ K, χ z = 1) ∧ ∀ z, z ∉ cthickening ε₀ K → χ z = 0 := by
   obtain ⟨δ, hδ, hδU⟩ := hK.exists_cthickening_subset_open hU hKU
-  refine ⟨δ / 2, half_pos hδ, by rwa [mul_div_cancel₀ _ two_ne_zero], ?_⟩
+  refine ⟨δ / 2, half_pos hδ, by grind, ?_⟩
   have hs : IsClosed (thickening (δ / 2) K)ᶜ := isOpen_thickening.isClosed_compl
   have hd : Disjoint (thickening (δ / 2) K)ᶜ K :=
     disjoint_compl_left_iff.2 (self_subset_thickening (half_pos hδ) K)
@@ -67,15 +67,13 @@ theorem exists_smooth_uniform_approx (μ : Measure E) [μ.IsAddHaarMeasure]
   · exact φ.hasCompactSupport_normed.contDiff_convolution_left _ φ.contDiff_normed
       hH.locallyIntegrable
   · intro z
-    rw [convolution_def]
     refine integral_nonneg fun t => ?_
-    simp only [ContinuousLinearMap.lsmul_apply, smul_eq_mul]
     exact mul_nonneg (φ.nonneg_normed t) (hnn _)
   · intro z
     have := φ.dist_normed_convolution_le (μ := μ) (x₀ := z) (ε := η)
       hH.aestronglyMeasurable (fun x hx => (hu (lt_of_lt_of_le (mem_ball.1 hx)
         (min_le_right _ _))).le)
-    simpa only [Real.dist_eq] using this
+    omega
   · intro z hz
     by_contra hne
     have hmem := support_convolution_subset (ContinuousLinearMap.lsmul ℝ ℝ) (μ := μ)
@@ -84,10 +82,10 @@ theorem exists_smooth_uniform_approx (μ : Measure E) [μ.IsAddHaarMeasure]
     rw [φ.support_normed_eq] at ha
     have hbS : b ∈ S := by
       by_contra hbS
-      exact hb (hS b hbS)
+      simp_all
     refine hz (mem_cthickening_of_dist_le _ b r S hbS ?_)
-    have : ‖a‖ < rad := by simpa using ha
-    rw [dist_add_self_left, ← dist_zero_right] at *
-    exact (this.trans_le (min_le_left _ _)).le
+    have : ‖a‖ < rad := by aesop
+    rw [dist_add_self_left] at *
+    grind
 
 end HypoellipticAleksandrov.KineticAleksandrov

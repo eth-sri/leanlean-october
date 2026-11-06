@@ -23,115 +23,18 @@ private theorem continuous_mul_of_tsupport_subset
   refine (hb.mul hq).continuous_of_tsupport_subset hU ?_
   exact (tsupport_mul_subset_left (f := b) (g := q)).trans hbsupp
 
-private theorem reverseTimeMap_image_closedCylinder_subset
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) :
-    reverseTimeMap r₁ '' (Set.Icc 0 (r₁ - r₀) ×ˢ closure Ω) ⊆
-      scalarParabolicClosedCylinder r₀ r₁ Ω := by
-  rintro w ⟨z, hz, rfl⟩
-  rcases hz with ⟨hτ, hy⟩
-  rw [mem_scalarParabolicClosedCylinder_iff]
-  refine ⟨?_, ?_, hy⟩
-  · simp only [reverseTimeMap_apply]
-    linarith [hτ.2]
-  · simp only [reverseTimeMap_apply]
-    linarith [hτ.1]
 
-private theorem reverseTime_coefficient_smoothOn_closedCylinder
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) (a : CoefficientField d)
-    (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω)) (i j : Fin d) :
-    IsSmoothOnNeighborhood (fun z : TimeVelocity d => reverseTimeCoefficient r₁ a z.1 z.2 i j)
-      (Set.Icc 0 (r₁ - r₀) ×ˢ closure Ω) := by
-  change IsSmoothOnNeighborhood ((fun z : TimeVelocity d => a z.1 z.2 i j) ∘ reverseTimeMap r₁) _
-  exact IsSmoothOnNeighborhood.reverseTime r₁
-    (reverseTimeMap_image_closedCylinder_subset r₀ r₁)
-    (IsSmoothOnNeighborhood.coefficientEntry a ha i j)
 
-private theorem reverseTime_drift_smoothOn_closedCylinder
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d)
-    (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (hb : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω)) (j : Fin d) :
-    IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => reverseTimeDivergenceDrift r₁ a b z.1 z.2 j)
-      (Set.Icc 0 (r₁ - r₀) ×ˢ closure Ω) := by
-  change IsSmoothOnNeighborhood ((fun z : TimeVelocity d =>
-    scalarSpatialCoefficientDivergence a z j - b z.1 z.2 j) ∘ reverseTimeMap r₁) _
-  exact IsSmoothOnNeighborhood.reverseTime r₁
-    (reverseTimeMap_image_closedCylinder_subset r₀ r₁)
-    (IsSmoothOnNeighborhood.divergenceDriftEntry a b ha hb j)
 
-private theorem reverseTime_scalar_smoothOn_closedCylinder
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) (c : ℝ → PDE.Vec d → ℝ)
-    (hc : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω)) :
-    IsSmoothOnNeighborhood (fun z : TimeVelocity d => reverseTimeScalarCoefficient r₁ c z.1 z.2)
-      (Set.Icc 0 (r₁ - r₀) ×ˢ closure Ω) := by
-  change IsSmoothOnNeighborhood ((fun z : TimeVelocity d => c z.1 z.2) ∘ reverseTimeMap r₁) _
-  exact IsSmoothOnNeighborhood.reverseTime r₁
-    (reverseTimeMap_image_closedCylinder_subset r₀ r₁) hc
 
-private theorem continuous_cutoff_spatialDifferenceQuotient_slice
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {K : ℝ}
-    (r₀ r₁ τ : ℝ) (β : PDE.QuantitativeSmoothCutoff inner Ω K) (k : Fin d) (h : ℝ)
-    (f : TimeVelocity d → ℝ)
-    (hf : IsSmoothOnNeighborhood f (Set.Icc 0 (r₁ - r₀) ×ˢ closure Ω))
-    (hτ : τ ∈ Set.Icc 0 (r₁ - r₀))
-    (hβshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport β.toFun) Ω) :
-    Continuous (fun y => β y * spatialDifferenceQuotient k h f (τ, y)) := by
-  rcases hf with ⟨V, hVopen, hSV, hV⟩
-  let g₀ : PDE.Vec d → TimeVelocity d := fun y => (τ, y)
-  let g₁ : PDE.Vec d → TimeVelocity d := fun y => (τ, y + h • PDE.basisVec k)
-  let U : Set (PDE.Vec d) := g₀ ⁻¹' V ∩ g₁ ⁻¹' V
-  have hg₀ : Continuous g₀ := continuous_const.prodMk continuous_id
-  have hg₁ : Continuous g₁ := continuous_const.prodMk (continuous_id.add continuous_const)
-  have hU : IsOpen U := (hg₀.isOpen_preimage V hVopen).inter (hg₁.isOpen_preimage V hVopen)
-  have hβU : tsupport β.toFun ⊆ U := by
-    intro y hy
-    exact ⟨hSV ⟨hτ, subset_closure (β.tsupport_subset hy)⟩,
-      hSV ⟨hτ, subset_closure (hβshift hy)⟩⟩
-  have hf₀ : ContinuousOn (fun y => f (τ, y)) U :=
-    hV.continuousOn.comp hg₀.continuousOn fun y hy => hy.1
-  have hf₁ : ContinuousOn (fun y => f (τ, y + h • PDE.basisVec k)) U :=
-    hV.continuousOn.comp hg₁.continuousOn fun y hy => hy.2
-  have hdq : ContinuousOn (fun y => spatialDifferenceQuotient k h f (τ, y)) U := by
-    simpa only [spatialDifferenceQuotient_apply, spatialTranslate_apply, spatialShift_apply,
-      Pi.sub_def]
-      using (hf₁.sub hf₀).div_const h
-  exact continuous_mul_of_tsupport_subset hU β.smooth.continuous.continuousOn hβU hdq
 
-private theorem continuous_cutoff_spatialTranslate_slice
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {K : ℝ}
-    (r₀ r₁ τ : ℝ) (β : PDE.QuantitativeSmoothCutoff inner Ω K) (k : Fin d) (h : ℝ)
-    (f : TimeVelocity d → ℝ)
-    (hf : IsSmoothOnNeighborhood f (Set.Icc 0 (r₁ - r₀) ×ˢ closure Ω))
-    (hτ : τ ∈ Set.Icc 0 (r₁ - r₀))
-    (hβshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport β.toFun) Ω) :
-    Continuous (fun y => β y * spatialTranslate k h f (τ, y)) := by
-  rcases hf with ⟨V, hVopen, hSV, hV⟩
-  let g : PDE.Vec d → TimeVelocity d := fun y => (τ, y + h • PDE.basisVec k)
-  let U : Set (PDE.Vec d) := g ⁻¹' V
-  have hg : Continuous g := continuous_const.prodMk (continuous_id.add continuous_const)
-  have hU : IsOpen U := hg.isOpen_preimage V hVopen
-  have hβU : tsupport β.toFun ⊆ U := by
-    intro y hy
-    exact hSV ⟨hτ, subset_closure (hβshift hy)⟩
-  have htranslate : ContinuousOn (fun y => spatialTranslate k h f (τ, y)) U := by
-    simpa only [spatialTranslate_apply, spatialShift_apply, Function.comp_def, g, U,
-      Set.preimage] using!
-      hV.continuousOn.comp hg.continuousOn (fun y hy => hy)
-  exact continuous_mul_of_tsupport_subset hU β.smooth.continuous.continuousOn hβU htranslate
 
 private theorem integrable_weighted_scalarLp_pair
     {d : ℕ} {Ω : Set (PDE.Vec d)} (q : PDE.Vec d → ℝ) (hq : Continuous q)
     (hcompact : HasCompactSupport q) (f g : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     Integrable (fun y => q y * f y * g y) (PDE.volumeOn Ω) := by
-  have hqVolume : MemLp q ∞ (volume : Measure (PDE.Vec d)) := hq.memLp_of_hasCompactSupport hcompact
-  have hqTop : MemLp q ∞ (PDE.volumeOn Ω) := by simpa only [PDE.volumeOn] using hqVolume.restrict Ω
+  have hqVolume : MemLp q ∞ volume := hq.memLp_of_hasCompactSupport hcompact
+  have hqTop : MemLp q ∞ (PDE.volumeOn Ω) := by simpa using hqVolume.restrict Ω
   have hfg := (Lp.memLp f).integrable_mul (Lp.memLp g)
   have hweighted := hfg.mul_of_top_right hqTop
   convert hweighted using 1
@@ -147,7 +50,7 @@ private theorem integrable_weighted_scalarLp_pair_raw
     Integrable (fun y => (q y * p y) * r y) (PDE.volumeOn Ω) := by
   apply (integrable_weighted_scalarLp_pair q hq hcompact f g).congr
   filter_upwards [hf, hg] with y hyf hyg
-  rw [hyf, hyg]
+  simp_all
 
 private theorem h10_E_coord_ae
     {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη : ℝ} (hΩ : IsOpen Ω)
@@ -165,13 +68,12 @@ private theorem h10_E_coord_ae
         cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h
           (valueCLM hΩ u) y := by
   filter_upwards [MeasureTheory.Lp.coeFn_sub
-    (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
+    (PDE.hilbertVectorLpCoord Ω _ i
       (gradientCLM hΩ (localizedSpatialDifferenceQuotientH10CLM
         hΩ η k h η.tsupport_subset hηshift u)))
     (cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h
       (valueCLM hΩ u))] with y hy
-  rw [hy]
-  rfl
+  omega
 
 private theorem h10_H_coord_ae
     {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη : ℝ} (hΩ : IsOpen Ω)
@@ -189,13 +91,12 @@ private theorem h10_H_coord_ae
         cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h
           (valueCLM hΩ u) y := by
   filter_upwards [MeasureTheory.Lp.coeFn_add
-    (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
+    (PDE.hilbertVectorLpCoord Ω _ i
       (gradientCLM hΩ (localizedSpatialDifferenceQuotientH10CLM
         hΩ η k h η.tsupport_subset hηshift u)))
     (cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h
       (valueCLM hΩ u))] with y hy
-  rw [hy]
-  rfl
+  omega
 
 private theorem h10_U_coord_ae
     {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη : ℝ} (hΩ : IsOpen Ω)
@@ -205,11 +106,8 @@ private theorem h10_U_coord_ae
         rw [Real.norm_eq_abs, abs_of_nonneg (η.nonneg y)]
         exact η.le_one y)
       (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u))) =ᵐ[PDE.volumeOn Ω]
-      fun y => η y * PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u) y := by
-  exact scalarL2Multiplier_apply_ae η.toFun (η.smooth.continuous.aestronglyMeasurable)
-    1 zero_le_one (Filter.Eventually.of_forall fun y => by
-      rw [Real.norm_eq_abs, abs_of_nonneg (η.nonneg y)]
-      exact η.le_one y) _
+      fun y => η y * PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u) y := scalarL2Multiplier_apply_ae η.toFun _
+    1 zero_le_one _ _
 
 private theorem h10_U0_ae
     {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη : ℝ} (hΩ : IsOpen Ω)
@@ -218,11 +116,8 @@ private theorem h10_U0_ae
       1 zero_le_one (Filter.Eventually.of_forall fun y => by
         rw [Real.norm_eq_abs, abs_of_nonneg (η.nonneg y)]
         exact η.le_one y) (valueCLM hΩ u)) =ᵐ[PDE.volumeOn Ω]
-      fun y => η y * valueCLM hΩ u y := by
-  exact scalarL2Multiplier_apply_ae η.toFun (η.smooth.continuous.aestronglyMeasurable)
-    1 zero_le_one (Filter.Eventually.of_forall fun y => by
-      rw [Real.norm_eq_abs, abs_of_nonneg (η.nonneg y)]
-      exact η.le_one y) _
+      fun y => η y * valueCLM hΩ u y := scalarL2Multiplier_apply_ae η.toFun _
+    1 zero_le_one _ _
 
 private theorem integral_pair_add_const_mul
     {d : ℕ} {Ω : Set (PDE.Vec d)} (z : ℝ) (f g : PDE.Vec d → ℝ)
@@ -244,13 +139,8 @@ private theorem finset_sum_sum_const_mul
     _ = ∑ i, z * ∑ j, f i j := by
       apply Finset.sum_congr rfl
       intro i _
-      exact finset_sum_const_mul z (f i)
-    _ = _ := finset_sum_const_mul z fun i => ∑ j, f i j
-
-private theorem raw_split_eight_real_ring
-    (z s p ad dt dd gt gd : ℝ) :
-    -z * s - (z * p + z * ad) - (z * dt + z * dd) + (z * gt + z * gd) =
-      -(z * p) + z * (-s - ad - dt - dd + gt + gd) := by ring
+      exact finset_sum_const_mul z _
+    _ = _ := finset_sum_const_mul z _
 
 section
 
@@ -291,35 +181,27 @@ private theorem integrable_aT_E_H (i j : Fin d) :
       (PDE.volumeOn Ω) := by
   let A := localizedSpatialDifferenceQuotientH10CLM
     hΩ η k h η.tsupport_subset hηshift
-  let E : PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
-    PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ (A u)) -
+  let E  :=
+    PDE.hilbertVectorLpCoord Ω _ j (gradientCLM hΩ (A u)) -
       cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η j k h
         (valueCLM hΩ u)
-  let H : PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
-    PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ (A u)) +
+  let H  :=
+    PDE.hilbertVectorLpCoord Ω _ i (gradientCLM hΩ (A u)) +
       cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h
         (valueCLM hΩ u)
-  let q : PDE.Vec d → ℝ := fun y => χ y * spatialTranslate k h
+  let q  := fun y => χ y * spatialTranslate k h
     (fun z => reverseTimeCoefficient r₁ a z.1 z.2 i j) (τ, y)
-  have hq : Continuous q := by
-    dsimp only [q]
-    exact continuous_cutoff_spatialTranslate_slice r₀ r₁ τ χ k h _
+  have hq : Continuous q := continuous_cutoff_spatialTranslate_slice r₀ r₁ τ χ k h _
       (reverseTime_coefficient_smoothOn_closedCylinder r₀ r₁ a ha i j) hτ hχshift
-  have hcompact : HasCompactSupport q := by
-    dsimp only [q]
-    exact χ.hasCompactSupport.mul_right
+  have hcompact : HasCompactSupport q := χ.hasCompactSupport.mul_right
   have hE : ⇑E =ᵐ[PDE.volumeOn Ω] fun y =>
-      PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ (A u)) y -
+      PDE.hilbertVectorLpCoord Ω _ j (gradientCLM hΩ (A u)) y -
         cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η j k h
-          (valueCLM hΩ u) y := by
-    dsimp only [E, A]
-    exact h10_E_coord_ae hΩ η k h hηshift u j
+          (valueCLM hΩ u) y := h10_E_coord_ae hΩ η k h hηshift u j
   have hH : ⇑H =ᵐ[PDE.volumeOn Ω] fun y =>
-      PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ (A u)) y +
+      PDE.hilbertVectorLpCoord Ω _ i (gradientCLM hΩ (A u)) y +
         cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h
-          (valueCLM hΩ u) y := by
-    dsimp only [H, A]
-    exact h10_H_coord_ae hΩ η k h hηshift u i
+          (valueCLM hΩ u) y := h10_H_coord_ae hΩ η k h hηshift u i
   simpa only [q, A] using
     (integrable_weighted_scalarLp_pair_raw q hq hcompact E H _ _ hE hH)
 
@@ -337,37 +219,29 @@ private theorem integrable_aD_U_H (i j : Fin d) :
       (PDE.volumeOn Ω) := by
   let A := localizedSpatialDifferenceQuotientH10CLM
     hΩ η k h η.tsupport_subset hηshift
-  let H : PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
-    PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ (A u)) +
+  let H  :=
+    PDE.hilbertVectorLpCoord Ω _ i (gradientCLM hΩ (A u)) +
       cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h
         (valueCLM hΩ u)
   let ηMeas := η.smooth.continuous.aestronglyMeasurable (μ := PDE.volumeOn Ω)
-  let ηBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖η y‖ ≤ (1 : ℝ) :=
+  let ηBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖η y‖ ≤ (1) :=
     Filter.Eventually.of_forall fun y => by
       rw [Real.norm_eq_abs, abs_of_nonneg (η.nonneg y)]
       exact η.le_one y
-  let U : PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
+  let U  :=
     scalarL2Multiplier η.toFun ηMeas 1 zero_le_one ηBound
-      (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u))
-  let q : PDE.Vec d → ℝ := fun y => χ y * spatialDifferenceQuotient k h
+      (PDE.hilbertVectorLpCoord Ω _ j (gradientCLM hΩ u))
+  let q  := fun y => χ y * spatialDifferenceQuotient k h
     (fun z => reverseTimeCoefficient r₁ a z.1 z.2 i j) (τ, y)
-  have hq : Continuous q := by
-    dsimp only [q]
-    exact continuous_cutoff_spatialDifferenceQuotient_slice r₀ r₁ τ χ k h _
+  have hq : Continuous q := continuous_cutoff_spatialDifferenceQuotient_slice r₀ r₁ τ χ k h _
       (reverseTime_coefficient_smoothOn_closedCylinder r₀ r₁ a ha i j) hτ hχshift
-  have hcompact : HasCompactSupport q := by
-    dsimp only [q]
-    exact χ.hasCompactSupport.mul_right
+  have hcompact : HasCompactSupport q := χ.hasCompactSupport.mul_right
   have hU : ⇑U =ᵐ[PDE.volumeOn Ω] fun y =>
-      η y * PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u) y := by
-    dsimp only [U]
-    exact h10_U_coord_ae hΩ η u j
+      η y * PDE.hilbertVectorLpCoord Ω _ j (gradientCLM hΩ u) y := h10_U_coord_ae hΩ η u j
   have hH : ⇑H =ᵐ[PDE.volumeOn Ω] fun y =>
-      PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ (A u)) y +
+      PDE.hilbertVectorLpCoord Ω _ i (gradientCLM hΩ (A u)) y +
         cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h
-          (valueCLM hΩ u) y := by
-    dsimp only [H, A]
-    exact h10_H_coord_ae hΩ η k h hηshift u i
+          (valueCLM hΩ u) y := h10_H_coord_ae hΩ η k h hηshift u i
   simpa only [q, A] using
     (integrable_weighted_scalarLp_pair_raw q hq hcompact U H _ _ hU hH)
 
@@ -390,26 +264,20 @@ private theorem integrable_driftT_E_V (j : Fin d) :
       (PDE.volumeOn Ω) := by
   let A := localizedSpatialDifferenceQuotientH10CLM
     hΩ η k h η.tsupport_subset hηshift
-  let E : PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
-    PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ (A u)) -
+  let E  :=
+    PDE.hilbertVectorLpCoord Ω _ j (gradientCLM hΩ (A u)) -
       cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η j k h
         (valueCLM hΩ u)
-  let V : PDE.ScalarLp Ω (2 : ℝ≥0∞) := valueCLM hΩ (A u)
-  let q : PDE.Vec d → ℝ := fun y => χ y * spatialTranslate k h
+  let V  := valueCLM hΩ (A u)
+  let q  := fun y => χ y * spatialTranslate k h
     (fun z => reverseTimeDivergenceDrift r₁ a b z.1 z.2 j) (τ, y)
-  have hq : Continuous q := by
-    dsimp only [q]
-    exact continuous_cutoff_spatialTranslate_slice r₀ r₁ τ χ k h _
+  have hq : Continuous q := continuous_cutoff_spatialTranslate_slice r₀ r₁ τ χ k h _
       (reverseTime_drift_smoothOn_closedCylinder r₀ r₁ a b ha hb j) hτ hχshift
-  have hcompact : HasCompactSupport q := by
-    dsimp only [q]
-    exact χ.hasCompactSupport.mul_right
+  have hcompact : HasCompactSupport q := χ.hasCompactSupport.mul_right
   have hE : ⇑E =ᵐ[PDE.volumeOn Ω] fun y =>
-      PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ (A u)) y -
+      PDE.hilbertVectorLpCoord Ω _ j (gradientCLM hΩ (A u)) y -
         cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η j k h
-          (valueCLM hΩ u) y := by
-    dsimp only [E, A]
-    exact h10_E_coord_ae hΩ η k h hηshift u j
+          (valueCLM hΩ u) y := h10_E_coord_ae hΩ η k h hηshift u j
   have hV : ⇑V =ᵐ[PDE.volumeOn Ω] fun y => V y :=
     Filter.Eventually.of_forall fun _ => rfl
   simpa only [q, A, V] using
@@ -427,28 +295,22 @@ private theorem integrable_driftD_U_V (j : Fin d) :
       (PDE.volumeOn Ω) := by
   let A := localizedSpatialDifferenceQuotientH10CLM
     hΩ η k h η.tsupport_subset hηshift
-  let V : PDE.ScalarLp Ω (2 : ℝ≥0∞) := valueCLM hΩ (A u)
+  let V  := valueCLM hΩ (A u)
   let ηMeas := η.smooth.continuous.aestronglyMeasurable (μ := PDE.volumeOn Ω)
-  let ηBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖η y‖ ≤ (1 : ℝ) :=
+  let ηBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖η y‖ ≤ (1) :=
     Filter.Eventually.of_forall fun y => by
       rw [Real.norm_eq_abs, abs_of_nonneg (η.nonneg y)]
       exact η.le_one y
-  let U : PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
+  let U  :=
     scalarL2Multiplier η.toFun ηMeas 1 zero_le_one ηBound
-      (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u))
-  let q : PDE.Vec d → ℝ := fun y => χ y * spatialDifferenceQuotient k h
+      (PDE.hilbertVectorLpCoord Ω _ j (gradientCLM hΩ u))
+  let q  := fun y => χ y * spatialDifferenceQuotient k h
     (fun z => reverseTimeDivergenceDrift r₁ a b z.1 z.2 j) (τ, y)
-  have hq : Continuous q := by
-    dsimp only [q]
-    exact continuous_cutoff_spatialDifferenceQuotient_slice r₀ r₁ τ χ k h _
+  have hq : Continuous q := continuous_cutoff_spatialDifferenceQuotient_slice r₀ r₁ τ χ k h _
       (reverseTime_drift_smoothOn_closedCylinder r₀ r₁ a b ha hb j) hτ hχshift
-  have hcompact : HasCompactSupport q := by
-    dsimp only [q]
-    exact χ.hasCompactSupport.mul_right
+  have hcompact : HasCompactSupport q := χ.hasCompactSupport.mul_right
   have hU : ⇑U =ᵐ[PDE.volumeOn Ω] fun y =>
-      η y * PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u) y := by
-    dsimp only [U]
-    exact h10_U_coord_ae hΩ η u j
+      η y * PDE.hilbertVectorLpCoord Ω _ j (gradientCLM hΩ u) y := h10_U_coord_ae hΩ η u j
   have hV : ⇑V =ᵐ[PDE.volumeOn Ω] fun y => V y :=
     Filter.Eventually.of_forall fun _ => rfl
   simpa only [q, A, V] using
@@ -471,16 +333,12 @@ private theorem integrable_gammaT_V_V :
       (PDE.volumeOn Ω) := by
   let A := localizedSpatialDifferenceQuotientH10CLM
     hΩ η k h η.tsupport_subset hηshift
-  let V : PDE.ScalarLp Ω (2 : ℝ≥0∞) := valueCLM hΩ (A u)
-  let q : PDE.Vec d → ℝ := fun y => χ y * spatialTranslate k h
+  let V  := valueCLM hΩ (A u)
+  let q  := fun y => χ y * spatialTranslate k h
     (fun z => reverseTimeScalarCoefficient r₁ c z.1 z.2) (τ, y)
-  have hq : Continuous q := by
-    dsimp only [q]
-    exact continuous_cutoff_spatialTranslate_slice r₀ r₁ τ χ k h _
+  have hq : Continuous q := continuous_cutoff_spatialTranslate_slice r₀ r₁ τ χ k h _
       (reverseTime_scalar_smoothOn_closedCylinder r₀ r₁ c hc) hτ hχshift
-  have hcompact : HasCompactSupport q := by
-    dsimp only [q]
-    exact χ.hasCompactSupport.mul_right
+  have hcompact : HasCompactSupport q := χ.hasCompactSupport.mul_right
   have hV : ⇑V =ᵐ[PDE.volumeOn Ω] fun y => V y :=
     Filter.Eventually.of_forall fun _ => rfl
   simpa only [q, A, V] using
@@ -497,26 +355,20 @@ private theorem integrable_gammaD_U0_V :
       (PDE.volumeOn Ω) := by
   let A := localizedSpatialDifferenceQuotientH10CLM
     hΩ η k h η.tsupport_subset hηshift
-  let V : PDE.ScalarLp Ω (2 : ℝ≥0∞) := valueCLM hΩ (A u)
+  let V  := valueCLM hΩ (A u)
   let ηMeas := η.smooth.continuous.aestronglyMeasurable (μ := PDE.volumeOn Ω)
-  let ηBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖η y‖ ≤ (1 : ℝ) :=
+  let ηBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖η y‖ ≤ (1) :=
     Filter.Eventually.of_forall fun y => by
       rw [Real.norm_eq_abs, abs_of_nonneg (η.nonneg y)]
       exact η.le_one y
-  let U₀ : PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
+  let U₀  :=
     scalarL2Multiplier η.toFun ηMeas 1 zero_le_one ηBound (valueCLM hΩ u)
-  let q : PDE.Vec d → ℝ := fun y => χ y * spatialDifferenceQuotient k h
+  let q  := fun y => χ y * spatialDifferenceQuotient k h
     (fun z => reverseTimeScalarCoefficient r₁ c z.1 z.2) (τ, y)
-  have hq : Continuous q := by
-    dsimp only [q]
-    exact continuous_cutoff_spatialDifferenceQuotient_slice r₀ r₁ τ χ k h _
+  have hq : Continuous q := continuous_cutoff_spatialDifferenceQuotient_slice r₀ r₁ τ χ k h _
       (reverseTime_scalar_smoothOn_closedCylinder r₀ r₁ c hc) hτ hχshift
-  have hcompact : HasCompactSupport q := by
-    dsimp only [q]
-    exact χ.hasCompactSupport.mul_right
-  have hU₀ : ⇑U₀ =ᵐ[PDE.volumeOn Ω] fun y => η y * valueCLM hΩ u y := by
-    dsimp only [U₀]
-    exact h10_U0_ae hΩ η u
+  have hcompact : HasCompactSupport q := χ.hasCompactSupport.mul_right
+  have hU₀ : ⇑U₀ =ᵐ[PDE.volumeOn Ω] fun y => η y * valueCLM hΩ u y := h10_U0_ae hΩ η u
   have hV : ⇑V =ᵐ[PDE.volumeOn Ω] fun y => V y :=
     Filter.Eventually.of_forall fun _ => rfl
   simpa only [q, A, V] using
@@ -536,8 +388,7 @@ private theorem integral_pair_mul_const
         ∫ y in Ω, (q₂ y * p₂ y) * g y ∂volume) := by
   rw [show (fun y => ((z * q₁ y) * p₁ y + (z * q₂ y) * p₂ y) * g y) =
       fun y => z * ((q₁ y * p₁ y) * g y) + z * ((q₂ y * p₂ y) * g y) by
-        funext y
-        ring]
+        grind]
   exact integral_pair_add_const_mul z _ _ h₁ h₂
 
 private theorem raw_six_term_split
@@ -574,27 +425,22 @@ private theorem raw_six_term_split
                 (driftD j y * U j y) * V y ∂volume) +
               (∫ y in Ω, (gammaT y * V y) * V y ∂volume) +
               ∫ y in Ω, (gammaD y * U₀ y) * V y ∂volume) := by
-  let S : ℝ := ∫ y in Ω, source y * V y ∂volume
-  let P : ℝ := ∑ i : Fin d, ∑ j : Fin d, ∫ y in Ω,
+  let S  := ∫ y in Ω, source y * V y ∂volume
+  let P  := ∑ i : Fin d, ∑ j : Fin d, ∫ y in Ω,
     (aT i j y * E j y) * H i y ∂volume
-  let AD : ℝ := ∑ i : Fin d, ∑ j : Fin d, ∫ y in Ω,
+  let AD  := ∑ i : Fin d, ∑ j : Fin d, ∫ y in Ω,
     (aD i j y * U j y) * H i y ∂volume
-  let DT : ℝ := ∑ j : Fin d, ∫ y in Ω,
+  let DT  := ∑ j : Fin d, ∫ y in Ω,
     (driftT j y * E j y) * V y ∂volume
-  let DD : ℝ := ∑ j : Fin d, ∫ y in Ω,
+  let DD  := ∑ j : Fin d, ∫ y in Ω,
     (driftD j y * U j y) * V y ∂volume
-  let GT : ℝ := ∫ y in Ω, (gammaT y * V y) * V y ∂volume
-  let GD : ℝ := ∫ y in Ω, (gammaD y * U₀ y) * V y ∂volume
+  let GT  := ∫ y in Ω, (gammaT y * V y) * V y ∂volume
+  let GD  := ∫ y in Ω, (gammaD y * U₀ y) * V y ∂volume
   have hsource : (∫ y in Ω, (z * source y) * V y ∂volume) = z * S := by
-    dsimp only [S]
     rw [show (fun y => (z * source y) * V y) =
-        fun y => z * (source y * V y) by funext y; ring, integral_const_mul]
-  have hprincipal (i j : Fin d) :
-      (∫ y in Ω,
-        ((z * aT i j y) * E j y + (z * aD i j y) * U j y) * H i y ∂volume) =
-        z * ((∫ y in Ω, (aT i j y * E j y) * H i y ∂volume) +
-          ∫ y in Ω, (aD i j y * U j y) * H i y ∂volume) :=
-    integral_pair_mul_const z (aT i j) (E j) (aD i j) (U j) (H i) (haT i j) (haD i j)
+        fun y => z * (source y * V y) by ring, integral_const_mul]
+  have hprincipal (i j : Fin d)  :=
+    integral_pair_mul_const z _ _ _ _ _ (haT i j) (haD i j)
   have hprincipalSum :
       (∑ i : Fin d, ∑ j : Fin d, ∫ y in Ω,
         ((z * aT i j y) * E j y + (z * aD i j y) * U j y) * H i y ∂volume) =
@@ -604,11 +450,7 @@ private theorem raw_six_term_split
         ∑ i : Fin d, ∑ j : Fin d, z *
           ((∫ y in Ω, (aT i j y * E j y) * H i y ∂volume) +
             ∫ y in Ω, (aD i j y * U j y) * H i y ∂volume) by
-          apply Finset.sum_congr rfl
-          intro i _
-          apply Finset.sum_congr rfl
-          intro j _
-          exact hprincipal i j]
+          simp_all]
     rw [finset_sum_sum_const_mul]
     dsimp only [P, AD]
     simp_rw [Finset.sum_add_distrib]
@@ -624,15 +466,11 @@ private theorem raw_six_term_split
           apply Finset.sum_congr rfl
           intro j _
           rw [show (fun y => (z * aT i j y) * E j y * H i y) =
-              fun y => z * ((aT i j y * E j y) * H i y) by funext y; ring,
+              fun y => z * ((aT i j y * E j y) * H i y) by ring,
             integral_const_mul]]
     rw [finset_sum_sum_const_mul]
-  have hdrift (j : Fin d) :
-      (∫ y in Ω,
-        ((z * driftT j y) * E j y + (z * driftD j y) * U j y) * V y ∂volume) =
-        z * ((∫ y in Ω, (driftT j y * E j y) * V y ∂volume) +
-          ∫ y in Ω, (driftD j y * U j y) * V y ∂volume) :=
-    integral_pair_mul_const z (driftT j) (E j) (driftD j) (U j) V (hdt j) (hdd j)
+  have hdrift (j : Fin d)  :=
+    integral_pair_mul_const z _ _ _ _ V (hdt j) (hdd j)
   have hdriftSum :
       (∑ j : Fin d, ∫ y in Ω,
         ((z * driftT j y) * E j y + (z * driftD j y) * U j y) * V y ∂volume) =
@@ -642,19 +480,14 @@ private theorem raw_six_term_split
         ∑ j : Fin d, z *
           ((∫ y in Ω, (driftT j y * E j y) * V y ∂volume) +
             ∫ y in Ω, (driftD j y * U j y) * V y ∂volume) by
-          apply Finset.sum_congr rfl
-          intro j _
-          exact hdrift j]
+          simp_all]
     rw [finset_sum_const_mul]
     dsimp only [DT, DD]
     simp_rw [Finset.sum_add_distrib]
   have hscalar :
       (∫ y in Ω, ((z * gammaT y) * V y + (z * gammaD y) * U₀ y) * V y ∂volume) =
-        z * (GT + GD) := by
-    dsimp only [GT, GD]
-    exact integral_pair_mul_const z gammaT V gammaD U₀ V hgt hgd
-  rw [hsource, hprincipalSum, hdriftSum, hscalar, hprincipalWeighted]
-  convert raw_split_eight_real_ring z S P AD DT DD GT GD using 1; ring
+        z * (GT + GD) := integral_pair_mul_const z gammaT V gammaD U₀ V hgt hgd
+  linarith
 
 private def commutatorRaw
     {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
@@ -747,64 +580,58 @@ private theorem commutatorRaw_eq_split
         localizedSpatialDifferenceQuotientH10NonprincipalRemainder
           r₁ hΩ a b c F η χ k h τ hηshift u := by
   let A := localizedSpatialDifferenceQuotientH10CLM hΩ η k h η.tsupport_subset hηshift
-  let V : PDE.Vec d → ℝ := fun y => valueCLM hΩ (A u) y
-  let G : Fin d → PDE.Vec d → ℝ := fun i y =>
-    PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ (A u)) y
-  let W : Fin d → PDE.Vec d → ℝ := fun i y =>
+  let V  := fun y => valueCLM hΩ (A u) y
+  let G  := fun i y =>
+    PDE.hilbertVectorLpCoord Ω _ i (gradientCLM hΩ (A u)) y
+  let W  := fun i y =>
     cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h (valueCLM hΩ u) y
-  let E : Fin d → PDE.Vec d → ℝ := fun i y => G i y - W i y
-  let H : Fin d → PDE.Vec d → ℝ := fun i y => G i y + W i y
-  let U : Fin d → PDE.Vec d → ℝ := fun j y =>
-    η y * PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u) y
-  let U₀ : PDE.Vec d → ℝ := fun y => η y * valueCLM hΩ u y
+  let E  := fun i y => G i y - W i y
+  let H  := fun i y => G i y + W i y
+  let U  := fun j y =>
+    η y * PDE.hilbertVectorLpCoord Ω _ j (gradientCLM hΩ u) y
+  let U₀  := fun y => η y * valueCLM hΩ u y
   let source : TimeVelocity d → ℝ := fun z => F (r₁ - z.1) z.2
-  let sourceD : PDE.Vec d → ℝ := fun y =>
+  let sourceD  := fun y =>
     η y * spatialDifferenceQuotient k h source (τ, y)
   let α : Fin d → Fin d → TimeVelocity d → ℝ :=
     fun i j z => reverseTimeCoefficient r₁ a z.1 z.2 i j
   let drift : Fin d → TimeVelocity d → ℝ :=
     fun j z => reverseTimeDivergenceDrift r₁ a b z.1 z.2 j
   let γ : TimeVelocity d → ℝ := fun z => reverseTimeScalarCoefficient r₁ c z.1 z.2
-  let aT : Fin d → Fin d → PDE.Vec d → ℝ := fun i j y =>
+  let aT  := fun i j y =>
     χ y * spatialTranslate k h (α i j) (τ, y)
-  let aD : Fin d → Fin d → PDE.Vec d → ℝ := fun i j y =>
+  let aD  := fun i j y =>
     χ y * spatialDifferenceQuotient k h (α i j) (τ, y)
-  let driftT : Fin d → PDE.Vec d → ℝ := fun j y =>
+  let driftT  := fun j y =>
     χ y * spatialTranslate k h (drift j) (τ, y)
-  let driftD : Fin d → PDE.Vec d → ℝ := fun j y =>
+  let driftD  := fun j y =>
     χ y * spatialDifferenceQuotient k h (drift j) (τ, y)
-  let γT : PDE.Vec d → ℝ := fun y => χ y * spatialTranslate k h γ (τ, y)
-  let γD : PDE.Vec d → ℝ := fun y =>
+  let γT  := fun y => χ y * spatialTranslate k h γ (τ, y)
+  let γD  := fun y =>
     χ y * spatialDifferenceQuotient k h γ (τ, y)
   have hsplit := raw_six_term_split (z := ζ τ) sourceD V U₀ aT aD E H U driftT driftD
     γT γD
     (fun i j => by
-      dsimp only [aT, E, H, G, W, A]
       exact integrable_aT_E_H (r₀ := r₀) (r₁ := r₁) (hΩ := hΩ) (a := a) (ha := ha)
         (η := η) (χ := χ) (k := k) (h := h) (τ := τ) (hχshift := hχshift)
         (hηshift := hηshift) (hτ := hτ) (u := u) i j)
     (fun i j => by
-      dsimp only [aD, U, H, G, W, A]
       exact integrable_aD_U_H (r₀ := r₀) (r₁ := r₁) (hΩ := hΩ) (a := a) (ha := ha)
         (η := η) (χ := χ) (k := k) (h := h) (τ := τ) (hχshift := hχshift)
         (hηshift := hηshift) (hτ := hτ) (u := u) i j)
     (fun j => by
-      dsimp only [driftT, E, V, G, W, A]
       exact integrable_driftT_E_V (r₀ := r₀) (r₁ := r₁) (hΩ := hΩ) (a := a) (b := b)
         (ha := ha) (hb := hb) (η := η) (χ := χ) (k := k) (h := h) (τ := τ)
         (hχshift := hχshift) (hηshift := hηshift) (hτ := hτ) (u := u) j)
     (fun j => by
-      dsimp only [driftD, U, V, G, W, A]
       exact integrable_driftD_U_V (r₀ := r₀) (r₁ := r₁) (hΩ := hΩ) (a := a) (b := b)
         (ha := ha) (hb := hb) (η := η) (χ := χ) (k := k) (h := h) (τ := τ)
         (hχshift := hχshift) (hηshift := hηshift) (hτ := hτ) (u := u) j)
     (by
-      dsimp only [γT, V, γ, A]
       exact integrable_gammaT_V_V (r₀ := r₀) (r₁ := r₁) (hΩ := hΩ) (c := c)
         (hc := hc) (η := η) (χ := χ) (k := k) (h := h) (τ := τ)
         (hχshift := hχshift) (hηshift := hηshift) (hτ := hτ) (u := u))
     (by
-      dsimp only [γD, U₀, V, γ, A]
       exact integrable_gammaD_U0_V (r₀ := r₀) (r₁ := r₁) (hΩ := hΩ) (c := c)
         (hc := hc) (η := η) (χ := χ) (k := k) (h := h) (τ := τ)
         (hχshift := hχshift) (hηshift := hηshift) (hτ := hτ) (u := u))
@@ -884,8 +711,6 @@ private theorem compactCommutatorOutput_of_accepted
   obtain ⟨hχshift, hfixed⟩ := hrest k h hh
   refine ⟨hχshift, ?_⟩
   intro τ hτ u
-  change commutatorLhs r₀ r₁ h₀₁ hΩ hΩbounded a b c F hFSmooth ζ η k h τ _ u =
-    commutatorRaw r₀ r₁ hΩ a b c F ζ η χ k h τ _ u
   simpa only [commutatorLhs, commutatorRaw] using hfixed τ hτ u
 
 private def compactSplitOutput
@@ -1013,10 +838,7 @@ theorem
         let R : ℝ :=
           localizedSpatialDifferenceQuotientH10NonprincipalRemainder
             r₁ hΩ a b c F η χ k h τ hηshift u
-        Q = -P + ζ τ * R := by
-  change compactSplitOutput r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth
-    F hFSmooth ζ hζunit η χ
-  exact compactSplitOutput_of_compact
+        Q = -P + ζ τ * R := compactSplitOutput_of_compact
     r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth F hFSmooth ζ hζunit η χ
 
 /-- The fixed supplied-collar commutator is minus its translated-principal part
@@ -1098,8 +920,7 @@ theorem h10Commutator_eq_neg_translatedPrincipal_add_nonprincipalRemainder_of_ma
     let R : ℝ := localizedSpatialDifferenceQuotientH10NonprincipalRemainder
       r₁ hΩ a b c F η χ k h τ hηshift u
     Q = -P + ζ τ * R := by
-  let hχshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k) (tsupport χ.toFun) Ω :=
+  let hχshift  :=
     mapsTo_add_smul_basisVec_of_spatialCoordinateShiftCarrier_subset hcarrier k hh
   let hηχ : tsupport η.toFun ⊆ tsupport χ.toFun := by
     intro y hy
@@ -1107,8 +928,7 @@ theorem h10Commutator_eq_neg_translatedPrincipal_add_nonprincipalRemainder_of_ma
     change χ y ≠ 0
     rw [χ.eq_one_on_inner y hy]
     exact one_ne_zero
-  let hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k) (tsupport η.toFun) Ω :=
+  let hηshift  :=
     hχshift.mono_left hηχ
   have hcomm :=
     reverseTimeSource_sub_reverseTimeSpatialForm_energyTest_eq_commutator_of_majorants

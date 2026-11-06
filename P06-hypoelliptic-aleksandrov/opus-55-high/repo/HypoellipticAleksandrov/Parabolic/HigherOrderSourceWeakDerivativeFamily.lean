@@ -18,7 +18,6 @@ that is smooth on a neighborhood of a compact carrier.
 open Set MeasureTheory
 open scoped ENNReal MatrixOrder Matrix.Norms.Elementwise
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -52,30 +51,28 @@ theorem exists_higherOrderSourceWeakDerivativeFamily
   let f : TimeVelocity d → ℝ := fun z ↦ F z.1 z.2
   have hfU : ContDiffOn ℝ (2 * d + 6) f U :=
     hFsmoothU.of_le (by
-      norm_cast
       exact WithTop.coe_le_coe.mpr le_top)
   obtain ⟨V, B, hVopen, hQV, hVU, hVcompact, hBnonneg, hBbound⟩ :=
     exists_precompactOpen_coordinateIteratedFDeriv_majorants
       hUopen hQcompact (hQK.trans hKU) (fun _ : Unit ↦ f) (fun _ ↦ hfU)
-  have hQfinite : (volume : Measure (TimeVelocity d)) Q < ∞ :=
+  have hQfinite : volume Q < ∞ :=
     lt_of_le_of_lt (measure_mono subset_closure) hQcompact.measure_lt_top
-  have hfQ : ContDiffOn ℝ (2 * d + 6) f Q :=
+  have hfQ  :=
     hfU.mono (subset_closure.trans
       (hQV.trans (subset_closure.trans hVU)))
   have hboundQ : ∀ (beta : ParabolicDerivativeIndex d (2 * d + 6))
       (z : TimeVelocity d), z ∈ Q →
       |TimeVelocityMultiIndex.coordinateIteratedFDeriv beta.1 f z| ≤ B () beta := by
     intro beta z hz
-    exact hBbound () beta z (subset_closure (hQV (subset_closure hz)))
-  let Emax : ParabolicWeakDerivativeFamily d (2 * d + 6) Q f :=
+    exact hBbound _ beta z (subset_closure (hQV (subset_closure hz)))
+  let Emax  :=
     ParabolicWeakDerivativeFamily.ofContDiffOnBounded
-      d (2 * d + 6) Q hQopen hQfinite (B ()) f hfQ hboundQ
-  refine ⟨B (), Emax, hBnonneg (), ?_, ?_, ?_⟩
+      d (2 * d + 6) Q hQopen hQfinite _ f hfQ hboundQ
+  refine ⟨B _, Emax, hBnonneg (), ?_, ?_, ?_⟩
   · intro beta z hz
-    exact hBbound () beta z (subset_closure (hQV hz))
-  · intro beta
-    rfl
+    exact hBbound _ beta z (subset_closure (hQV hz))
+  · aesop
   · exact ParabolicWeakDerivativeFamily.squaredL2Norm_ofContDiffOnBounded_le
-      d (2 * d + 6) Q hQopen hQfinite (B ()) f hfQ hboundQ
+      d _ Q hQopen hQfinite _ f hfQ hboundQ
 
 end HypoellipticAleksandrov.Parabolic

@@ -14,7 +14,6 @@ statement used by consumers of Lemma 2.5.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Scaling
 
@@ -26,11 +25,12 @@ namespace KineticAffineScaling
 variable {d : ℕ} {Φ : KineticAffineScaling d} {Ω Ω' : Set (PDE.Vec d)}
   {γ γ' : ℝ → PDE.Vec d}
 
+variable (h : Φ.MapsDomain Ω γ Ω' γ') (hΩ : IsAdmissibleEvolutionDomain Ω)
+
 /-- **Kernel transport.**  If `(S, K)` realizes the terminal evolution for `(Ω, γ, B, b)`
 and `(S', K')` realizes it for the rescaled data `(Ω', γ', Φ.coefficient B, Φ.drift b)`, then
 `K'` is the pushforward of `K` and `S'` is integration against it. -/
-theorem realizes_unique_pushKernel (h : Φ.MapsDomain Ω γ Ω' γ')
-    (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
+theorem realizes_unique_pushKernel  (hγ : IsContinuousPiecewiseC1 γ)
     (hΩ' : IsAdmissibleEvolutionDomain Ω')
     {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE.Vec d}
     {S : TerminalOperatorFamily Ω γ} {K : MovingFiberKernel Ω γ}
@@ -43,14 +43,13 @@ theorem realizes_unique_pushKernel (h : Φ.MapsDomain Ω γ Ω' γ')
       S' = fiberOperator (pushKernel h K) (measurableSet_of_isAdmissibleEvolutionDomain hΩ') := by
   have hpush := realizes_pushKernel h (isOpen_of_isAdmissibleEvolutionDomain hΩ) hγ.1
     (measurableSet_of_isAdmissibleEvolutionDomain hΩ') hreal
-  obtain ⟨hS, hK⟩ := SectionTwo.terminalEvolution_unique Ω' γ' hΩ' (Φ.coefficient B)
-    (Φ.drift b) S' _ K' _ hreal' hpush
-  exact ⟨hK, hS⟩
+  obtain ⟨hS, hK⟩ := SectionTwo.terminalEvolution_unique Ω' γ' hΩ' _
+    _ S' _ K' _ hreal' hpush
+  simp_all
 
 /-- The master kernel of any realization of the rescaled problem, in the pushforward form
 `K̂'.master q' = (K.master (Φ q')).map (Φ_{τ'})⁻¹`. -/
-theorem realizes_master_eq_map (h : Φ.MapsDomain Ω γ Ω' γ')
-    (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
+theorem realizes_master_eq_map  (hγ : IsContinuousPiecewiseC1 γ)
     (hΩ' : IsAdmissibleEvolutionDomain Ω')
     {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE.Vec d}
     {S : TerminalOperatorFamily Ω γ} {K : MovingFiberKernel Ω γ}
@@ -72,8 +71,8 @@ end KineticAffineScaling
 theorem KineticAffineScaling.mapsDomain_wholeSpace {d : ℕ} (Φ : KineticAffineScaling d) :
     Φ.MapsDomain (Set.univ : Set (PDE.Vec d)) (fun _ => 0) Set.univ (fun _ => 0) := by
   intro τ
-  have h : ∀ σ : ℝ, movingDomain (Set.univ : Set (PDE.Vec d)) (fun _ => (0 : PDE.Vec d)) σ =
+  have h : ∀ σ : ℝ, movingDomain Set.univ _ σ =
       Set.univ := SectionTwo.movingDomain_wholeSpace d
-  rw [h, h, preimage_univ]
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Scaling

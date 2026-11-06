@@ -14,7 +14,6 @@ canonical initial trace and inherited uniform Bochner radius.
 
 open scoped ENNReal Matrix.Norms.Elementwise MatrixOrder
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -64,6 +63,6 @@ theorem exists_reverseTimeGalerkinPrimal_initialTrace_norm_le_radius
       r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos
       initial U phi hphi hclm hdu
-  exact ⟨U, hdu, hTrace, hNorm⟩
+  aesop
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

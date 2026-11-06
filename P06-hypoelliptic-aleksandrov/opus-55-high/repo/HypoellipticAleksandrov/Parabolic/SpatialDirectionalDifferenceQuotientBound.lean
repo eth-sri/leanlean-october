@@ -31,8 +31,7 @@ theorem abs_spatialDifferenceQuotient_le_of_segment_spatialFDeriv_bound
     have hMnonneg : 0 ≤ M :=
       (abs_nonneg ((fderiv ℝ f z) (0, PDE.basisVec k))).trans
         (hdir z (left_mem_segment ℝ z (spatialShift k 0 z)))
-    simpa only [spatialDifferenceQuotient_apply, spatialTranslate_apply,
-      spatialShift_zero, id_eq, sub_self, zero_div, abs_zero] using hMnonneg
+    simp_all
   · obtain ⟨w, hw, hMVT⟩ :=
       domain_mvt (s := [z -[ℝ] spatialShift k h z]) (f := f) (f' := fderiv ℝ f)
         (fun w hw => (hdiff w hw).hasFDerivAt.hasFDerivWithinAt)
@@ -40,16 +39,12 @@ theorem abs_spatialDifferenceQuotient_le_of_segment_spatialFDeriv_bound
         (left_mem_segment ℝ z (spatialShift k h z))
         (right_mem_segment ℝ z (spatialShift k h z))
     have hshift_sub : spatialShift k h z - z = h • (0, PDE.basisVec k) := by
-      simp only [spatialShift, add_sub_cancel_left, Prod.smul_mk, smul_zero]
+      aesop
     have hMVT' : f (spatialShift k h z) - f z =
         h * (fderiv ℝ f w) (0, PDE.basisVec k) := by
       rw [hMVT, hshift_sub]
       simp only [map_smul, smul_eq_mul]
     rw [spatialDifferenceQuotient_apply, spatialTranslate_apply, abs_div, hMVT', abs_mul]
-    calc
-      (|h| * |(fderiv ℝ f w) (0, PDE.basisVec k)|) / |h| =
-          |(fderiv ℝ f w) (0, PDE.basisVec k)| :=
-        mul_div_cancel_left₀ _ (abs_ne_zero.mpr hzero)
-      _ ≤ M := hdir w hw
+    simp_all
 
 end HypoellipticAleksandrov.Parabolic

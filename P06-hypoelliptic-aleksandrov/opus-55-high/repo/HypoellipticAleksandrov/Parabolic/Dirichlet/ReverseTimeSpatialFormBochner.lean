@@ -41,13 +41,13 @@ private theorem AEStronglyMeasurable.clm_apply
     [NormedAddCommGroup F] [NormedSpace ℝ F] {μ : Measure α}
     (K : α → E →L[ℝ] F) (u : α → E)
     (hK : AEStronglyMeasurable K μ) (hu : AEStronglyMeasurable u μ) :
-    AEStronglyMeasurable (fun x => K x (u x)) μ := by
-  exact ((ContinuousLinearMap.apply ℝ F).flip).aestronglyMeasurable_comp₂ hK hu
+    AEStronglyMeasurable (fun x => K x (u x)) μ := ((ContinuousLinearMap.apply ℝ F).flip).aestronglyMeasurable_comp₂ hK hu
+
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
 
 /-- Pointwise representative of the Bochner spatial-form action. -/
-noncomputable def reverseTimeSpatialFormBochnerRaw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+def reverseTimeSpatialFormBochnerRaw
+     (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -60,8 +60,7 @@ noncomputable def reverseTimeSpatialFormBochnerRaw
     haSmooth hbSmooth hcSmooth τ (u τ)
 
 private theorem aestronglyMeasurable_reverseTimeSpatialFormBochnerRaw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+    
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -77,21 +76,15 @@ private theorem aestronglyMeasurable_reverseTimeSpatialFormBochnerRaw
   letI : SecondCountableTopologyEither ℝ
       (H10HilbertGraph hΩ →L[ℝ] H10HilbertGraphDual hΩ) :=
     { out := Or.inl (by infer_instance) }
-  change AEStronglyMeasurable
-    (fun τ => reverseTimeSpatialFormOperatorClamp r₀ r₁ h₀₁ hΩ hΩbounded a b c
-      haSmooth hbSmooth hcSmooth τ (u τ))
-    (reverseTimeVolume (r₁ - r₀))
   exact AEStronglyMeasurable.clm_apply
-    (reverseTimeSpatialFormOperatorClamp r₀ r₁ h₀₁ hΩ hΩbounded a b c
-      haSmooth hbSmooth hcSmooth)
+    _
     u
     (continuous_reverseTimeSpatialFormOperatorClamp r₀ r₁ h₀₁ hΩ hΩbounded a b c
       haSmooth hbSmooth hcSmooth).aestronglyMeasurable
     (Lp.memLp u).aestronglyMeasurable
 
 private theorem norm_reverseTimeSpatialFormBochnerRaw_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+    
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -109,12 +102,11 @@ private theorem norm_reverseTimeSpatialFormBochnerRaw_le
   change ‖reverseTimeSpatialFormOperatorClamp r₀ r₁ h₀₁ hΩ hΩbounded a b c
     haSmooth hbSmooth hcSmooth τ (u τ)‖ ≤ C * ‖u τ‖
   simpa only [reverseTimeSpatialFormOperatorClamp] using
-    hC (Set.projIcc 0 (r₁ - r₀) (sub_nonneg.mpr h₀₁.le) τ) (u τ)
+    hC _ _
 
 /-- The pointwise spatial-form action belongs to reverse-time L². -/
 theorem memLp_reverseTimeSpatialFormBochnerRaw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+    
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -137,9 +129,8 @@ theorem memLp_reverseTimeSpatialFormBochnerRaw
       haSmooth hbSmooth hcSmooth C hC u)
 
 /-- The spatial form acting on a reverse-time Bochner curve. -/
-noncomputable def reverseTimeSpatialFormBochnerRawAction
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+def reverseTimeSpatialFormBochnerRawAction
+    
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -158,8 +149,7 @@ noncomputable def reverseTimeSpatialFormBochnerRawAction
 
 /-- The Bochner spatial-form action preserves addition. -/
 theorem reverseTimeSpatialFormBochnerRawAction_map_add
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+    
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -194,14 +184,14 @@ theorem reverseTimeSpatialFormBochnerRawAction_map_add
           haSmooth hbSmooth hcSmooth C hC w)] with τ hsum hu hw huv hout
     calc
       reverseTimeSpatialFormBochnerRawAction r₀ r₁ h₀₁ hΩ hΩbounded a b c
-          haSmooth hbSmooth hcSmooth C hC (u + w) τ =
+          haSmooth hbSmooth hcSmooth C hC _ τ =
           reverseTimeSpatialFormBochnerRaw r₀ r₁ h₀₁ hΩ hΩbounded a b c
-            haSmooth hbSmooth hcSmooth (u + w) τ := hsum
+            haSmooth hbSmooth hcSmooth _ τ := hsum
       _ = reverseTimeSpatialFormBochnerRaw r₀ r₁ h₀₁ hΩ hΩbounded a b c
           haSmooth hbSmooth hcSmooth u τ +
           reverseTimeSpatialFormBochnerRaw r₀ r₁ h₀₁ hΩ hΩbounded a b c
             haSmooth hbSmooth hcSmooth w τ := by
-        simp only [reverseTimeSpatialFormBochnerRaw, huv, Pi.add_apply]
+        simp only [reverseTimeSpatialFormBochnerRaw, huv]
         exact (reverseTimeSpatialFormOperatorClamp r₀ r₁ h₀₁ hΩ hΩbounded a b c
           haSmooth hbSmooth hcSmooth τ).map_add _ _
       _ = reverseTimeSpatialFormBochnerRawAction r₀ r₁ h₀₁ hΩ hΩbounded a b c
@@ -211,12 +201,10 @@ theorem reverseTimeSpatialFormBochnerRawAction_map_add
         change _ =
           (memLp_reverseTimeSpatialFormBochnerRaw r₀ r₁ h₀₁ hΩ hΩbounded a b c
             haSmooth hbSmooth hcSmooth C hC u).toLp
-              (reverseTimeSpatialFormBochnerRaw r₀ r₁ h₀₁ hΩ hΩbounded a b c
-                haSmooth hbSmooth hcSmooth u) τ +
+              _ τ +
             (memLp_reverseTimeSpatialFormBochnerRaw r₀ r₁ h₀₁ hΩ hΩbounded a b c
               haSmooth hbSmooth hcSmooth C hC w).toLp
-              (reverseTimeSpatialFormBochnerRaw r₀ r₁ h₀₁ hΩ hΩbounded a b c
-                haSmooth hbSmooth hcSmooth w) τ
+              _ τ
         rw [← hu, ← hw]
       _ = (reverseTimeSpatialFormBochnerRawAction r₀ r₁ h₀₁ hΩ hΩbounded a b c
           haSmooth hbSmooth hcSmooth C hC u +
@@ -225,8 +213,7 @@ theorem reverseTimeSpatialFormBochnerRawAction_map_add
 
 /-- The Bochner spatial-form action preserves scalar multiplication. -/
 theorem reverseTimeSpatialFormBochnerRawAction_map_smul
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+    
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -254,30 +241,28 @@ theorem reverseTimeSpatialFormBochnerRawAction_map_smul
         (reverseTimeSpatialFormBochnerRawAction r₀ r₁ h₀₁ hΩ hΩbounded a b c
           haSmooth hbSmooth hcSmooth C hC u)] with τ hqu hu hquv hout
     change (memLp_reverseTimeSpatialFormBochnerRaw r₀ r₁ h₀₁ hΩ hΩbounded a b c
-      haSmooth hbSmooth hcSmooth C hC (q • u)).toLp
-        (reverseTimeSpatialFormBochnerRaw r₀ r₁ h₀₁ hΩ hΩbounded a b c
-          haSmooth hbSmooth hcSmooth (q • u)) τ = _
+      haSmooth hbSmooth hcSmooth C hC _).toLp
+        _ τ = _
     rw [hqu]
     calc
       reverseTimeSpatialFormBochnerRaw r₀ r₁ h₀₁ hΩ hΩbounded a b c
-          haSmooth hbSmooth hcSmooth (q • u) τ =
+          haSmooth hbSmooth hcSmooth _ τ =
           q • reverseTimeSpatialFormBochnerRaw r₀ r₁ h₀₁ hΩ hΩbounded a b c
             haSmooth hbSmooth hcSmooth u τ := by
-        simp only [reverseTimeSpatialFormBochnerRaw, hquv, Pi.smul_apply]
+        simp only [reverseTimeSpatialFormBochnerRaw, hquv]
         exact (reverseTimeSpatialFormOperatorClamp r₀ r₁ h₀₁ hΩ hΩbounded a b c
           haSmooth hbSmooth hcSmooth τ).map_smul q _
       _ = q • reverseTimeSpatialFormBochnerRawAction r₀ r₁ h₀₁ hΩ hΩbounded a b c
           haSmooth hbSmooth hcSmooth C hC u τ := by
         change _ = q • (memLp_reverseTimeSpatialFormBochnerRaw r₀ r₁ h₀₁ hΩ hΩbounded a b c
           haSmooth hbSmooth hcSmooth C hC u).toLp
-            (reverseTimeSpatialFormBochnerRaw r₀ r₁ h₀₁ hΩ hΩbounded a b c
-              haSmooth hbSmooth hcSmooth u) τ
+            _ τ
         rw [← hu]
       _ = (q • reverseTimeSpatialFormBochnerRawAction r₀ r₁ h₀₁ hΩ hΩbounded a b c
           haSmooth hbSmooth hcSmooth C hC u) τ := hout.symm
 
 /-- The reverse-time Bochner spatial form as a linear map. -/
-noncomputable def reverseTimeSpatialFormBochnerRawLinearMap
+def reverseTimeSpatialFormBochnerRawLinearMap
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
@@ -300,8 +285,7 @@ noncomputable def reverseTimeSpatialFormBochnerRawLinearMap
     haSmooth hbSmooth hcSmooth C hC
 
 private theorem norm_reverseTimeSpatialFormBochnerRawAction_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+    
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -322,16 +306,14 @@ private theorem norm_reverseTimeSpatialFormBochnerRawAction_le
       haSmooth hbSmooth hcSmooth C hC u).coeFn_toLp] with τ hτ
   change ‖(memLp_reverseTimeSpatialFormBochnerRaw r₀ r₁ h₀₁ hΩ hΩbounded a b c
     haSmooth hbSmooth hcSmooth C hC u).toLp
-      (reverseTimeSpatialFormBochnerRaw r₀ r₁ h₀₁ hΩ hΩbounded a b c
-        haSmooth hbSmooth hcSmooth u) τ‖ ≤ C * ‖u τ‖
+      _ τ‖ ≤ C * ‖u τ‖
   rw [hτ]
   exact norm_reverseTimeSpatialFormBochnerRaw_le r₀ r₁ h₀₁ hΩ hΩbounded a b c
     haSmooth hbSmooth hcSmooth C hC u τ
 
 /-- The bounded linear Bochner action of the clamped reverse-time spatial form. -/
-noncomputable def reverseTimeSpatialFormBochnerAction
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+def reverseTimeSpatialFormBochnerAction
+     (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -355,8 +337,7 @@ noncomputable def reverseTimeSpatialFormBochnerAction
 
 /-- One event represents the action simultaneously for all spatial tests. -/
 theorem ae_reverseTimeSpatialFormBochnerAction_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+    
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
       (scalarParabolicClosedCylinder r₀ r₁ Ω))
@@ -370,20 +351,16 @@ theorem ae_reverseTimeSpatialFormBochnerAction_apply
         haSmooth hbSmooth hcSmooth u τ v = reverseTimeSpatialForm hΩ r₁ τ a b c (u τ) v := by
   obtain ⟨C, hC, hBound⟩ := exists_reverseTimeSpatialFormOperator_bound r₀ r₁ h₀₁ hΩ hΩbounded
     a b c haSmooth hbSmooth hcSmooth
-  unfold reverseTimeSpatialFormBochnerAction
   filter_upwards [
     (memLp_reverseTimeSpatialFormBochnerRaw r₀ r₁ h₀₁ hΩ hΩbounded a b c
       haSmooth hbSmooth hcSmooth C hBound u).coeFn_toLp,
     ae_reverseTimeSpatialFormOperatorClamp_apply r₀ r₁ h₀₁ hΩ hΩbounded a b c
       haSmooth hbSmooth hcSmooth] with τ hRaw hClamp
   intro v
-  change reverseTimeSpatialFormBochnerRawAction r₀ r₁ h₀₁ hΩ hΩbounded a b c
-    haSmooth hbSmooth hcSmooth C hBound u τ v = _
   change ((memLp_reverseTimeSpatialFormBochnerRaw r₀ r₁ h₀₁ hΩ hΩbounded a b c
     haSmooth hbSmooth hcSmooth C hBound u).toLp
-      (reverseTimeSpatialFormBochnerRaw r₀ r₁ h₀₁ hΩ hΩbounded a b c
-        haSmooth hbSmooth hcSmooth u) τ) v = _
+      _ τ) v = _
   rw [hRaw]
-  exact hClamp (u τ) v
+  exact hClamp _ v
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

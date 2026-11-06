@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.AngularPositive
 /-! # The positive-tail limit for actual angular densities -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set Filter
 open scoped Topology

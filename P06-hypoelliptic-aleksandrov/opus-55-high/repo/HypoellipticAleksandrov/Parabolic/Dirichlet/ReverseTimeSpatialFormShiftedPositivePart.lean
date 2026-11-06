@@ -16,45 +16,44 @@ the literal total integrals in the form.
 open Filter MeasureTheory Set
 open scoped ENNReal NNReal
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (r₁ τ : ℝ) (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (u : H10HilbertGraph hΩ)
+
 private theorem h10ShiftedPositivePart_gradientCoord
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (u : H10HilbertGraph hΩ) (k : ℝ≥0) (i : Fin d) : ∀ᵐ y ∂PDE.volumeOn Ω,
+     (k : ℝ≥0) (i : Fin d) : ∀ᵐ y ∂PDE.volumeOn Ω,
     (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
       (gradientCLM hΩ (h10ShiftedPositivePart hΩ u k))) y =
       {z | (k : ℝ) < valueCLM hΩ u z}.indicator
         (fun z => (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
           (gradientCLM hΩ u)) z) y := by
   filter_upwards [gradientCLM_h10ShiftedPositivePart hΩ u k,
-    PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ u),
-    PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
+    PDE.coeFn_hilbertVectorLpCoord Ω _ i (gradientCLM hΩ u),
+    PDE.coeFn_hilbertVectorLpCoord Ω _ i
       (gradientCLM hΩ (h10ShiftedPositivePart hΩ u k))] with y hg hu hw
   by_cases hy : (k : ℝ) < valueCLM hΩ u y
   · calc
-      _ = (gradientCLM hΩ (h10ShiftedPositivePart hΩ u k) y).ofLp i := hw
+      _ = (gradientCLM hΩ _ y).ofLp i := hw
       _ = (gradientCLM hΩ u y).ofLp i := congrArg (fun q => q.ofLp i)
         (hg.trans (Set.indicator_of_mem
-          (s := {z : PDE.Vec d | (k : ℝ) < valueCLM hΩ u z}) hy
-          (gradientCLM hΩ u)))
+          (s := {z : PDE.Vec d | k < valueCLM hΩ u z}) hy
+          _))
       _ = _ := hu.symm
       _ = _ := (Set.indicator_of_mem
-        (s := {z : PDE.Vec d | (k : ℝ) < valueCLM hΩ u z}) hy _).symm
+        (s := {z : PDE.Vec d | k < valueCLM hΩ u z}) hy _).symm
   · calc
-      _ = (gradientCLM hΩ (h10ShiftedPositivePart hΩ u k) y).ofLp i := hw
+      _ = (gradientCLM hΩ _ y).ofLp i := hw
       _ = (0 : PDE.HilbertVec d).ofLp i := congrArg (fun q => q.ofLp i)
         (hg.trans (Set.indicator_of_notMem
-          (s := {z : PDE.Vec d | (k : ℝ) < valueCLM hΩ u z}) hy
-          (gradientCLM hΩ u)))
+          (s := {z : PDE.Vec d | k < valueCLM hΩ u z}) hy
+          _))
       _ = 0 := rfl
       _ = _ := (Set.indicator_of_notMem
-        (s := {z : PDE.Vec d | (k : ℝ) < valueCLM hΩ u z}) hy _).symm
+        (s := {z : PDE.Vec d | k < valueCLM hΩ u z}) hy _).symm
 
 private theorem reverseTimePrincipal_shiftedPositivePart_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (r₁ τ : ℝ) (a : CoefficientField d) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
+     (k : ℝ≥0) :
       (∑ i : Fin d, ∑ j : Fin d, ∫ y in Ω,
         a (r₁ - τ) y i j *
           (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u)) y *
@@ -78,18 +77,16 @@ private theorem reverseTimePrincipal_shiftedPositivePart_eq
       (s := {z : PDE.Vec d | (k : ℝ) < valueCLM hΩ u z}) hy _)
     have hi' := hi.trans (Set.indicator_of_mem
       (s := {z : PDE.Vec d | (k : ℝ) < valueCLM hΩ u z}) hy _)
-    rw [hj', hi']
+    rw [hj']
   · have hj' := hj.trans (Set.indicator_of_notMem
       (s := {z : PDE.Vec d | (k : ℝ) < valueCLM hΩ u z}) hy _)
     have hi' := hi.trans (Set.indicator_of_notMem
       (s := {z : PDE.Vec d | (k : ℝ) < valueCLM hΩ u z}) hy _)
-    rw [hj', hi']
+    rw [hi']
     ring
 
 private theorem reverseTimeDrift_shiftedPositivePart_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (r₁ τ : ℝ) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (u : H10HilbertGraph hΩ) (k : ℝ≥0) :
+     (k : ℝ≥0) :
       (∑ j : Fin d, ∫ y in Ω,
         reverseTimeDivergenceDrift r₁ a b τ y j *
           (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ u)) y *
@@ -113,12 +110,11 @@ private theorem reverseTimeDrift_shiftedPositivePart_eq
     have hw0 : valueCLM hΩ (h10ShiftedPositivePart hΩ u k) y = 0 := by
       rw [hw, max_eq_right]
       exact sub_nonpos.mpr (le_of_not_gt hy)
-    rw [hj', hw0]
+    rw [hw0]
     ring
 
 private theorem reverseTimeScalar_shiftedPositivePart_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (r₁ τ : ℝ) (c : ℝ → PDE.Vec d → ℝ)
+     (c : ℝ → PDE.Vec d → ℝ)
     (u : H10HilbertGraph hΩ) (k : ℝ≥0)
     (hScalarNonpos : ∀ᵐ y ∂PDE.volumeOn Ω,
       reverseTimeScalarCoefficient r₁ c τ y ≤ 0)
@@ -139,10 +135,10 @@ private theorem reverseTimeScalar_shiftedPositivePart_le
   let q := fun y : PDE.Vec d => reverseTimeScalarCoefficient r₁ c τ y
   let w := fun y : PDE.Vec d => valueCLM hΩ (h10ShiftedPositivePart hΩ u k) y
   have hvalue := coeFn_valueCLM_h10ShiftedPositivePart hΩ u k
-  have hremainder : Integrable (fun y => q y * (k : ℝ) * w y) (PDE.volumeOn Ω) := by
+  have hremainder : Integrable (fun y => q y * k * w y) (PDE.volumeOn Ω) := by
     apply (hScalarCross.sub hScalarSquare).congr
     filter_upwards [hvalue] with y hw
-    dsimp only [q, w] at *
+    dsimp only [w] at *
     by_cases hy : (k : ℝ) < valueCLM hΩ u y
     · have hwu : w y = valueCLM hΩ u y - (k : ℝ) := by
         simpa only [w, max_eq_left (sub_nonneg.mpr (le_of_lt hy))] using hw
@@ -156,23 +152,23 @@ private theorem reverseTimeScalar_shiftedPositivePart_le
       change valueCLM hΩ (h10ShiftedPositivePart hΩ u k) y = 0 at hw0
       simp only [Pi.sub_apply, hw0, mul_zero]
       exact sub_self 0
-  have hremainderNonpos : (∫ y, q y * (k : ℝ) * w y ∂PDE.volumeOn Ω) ≤ 0 := by
+  have hremainderNonpos : (∫ y, q y * k * w y ∂PDE.volumeOn Ω) ≤ 0 := by
     rw [← integral_zero]
     apply integral_mono_ae hremainder (integrable_zero _ _ _)
     filter_upwards [hScalarNonpos, hvalue] with y hq hw
     have hwNonneg : 0 ≤ w y := by
-      simpa only [w, hw] using le_max_right (valueCLM hΩ u y - (k : ℝ)) 0
+      simpa only [w, hw] using le_max_right _ 0
     exact mul_nonpos_of_nonpos_of_nonneg (mul_nonpos_of_nonpos_of_nonneg hq k.2) hwNonneg
   have hscalar :
       (∫ y, q y * valueCLM hΩ u y * w y ∂PDE.volumeOn Ω) ≤
         ∫ y, q y * w y * w y ∂PDE.volumeOn Ω := by
     have hadd : (∫ y, q y * valueCLM hΩ u y * w y ∂PDE.volumeOn Ω) =
         (∫ y, q y * w y * w y ∂PDE.volumeOn Ω) +
-          ∫ y, q y * (k : ℝ) * w y ∂PDE.volumeOn Ω := by
+          ∫ y, q y * k * w y ∂PDE.volumeOn Ω := by
       rw [← integral_add hScalarSquare hremainder]
       apply integral_congr_ae
       filter_upwards [hvalue] with y hw
-      dsimp only [q, w] at *
+      dsimp only [w] at *
       by_cases hy : (k : ℝ) < valueCLM hΩ u y
       · have hwu : w y = valueCLM hΩ u y - (k : ℝ) := by
           simpa only [w, max_eq_left (sub_nonneg.mpr (le_of_lt hy))] using hw
@@ -185,15 +181,11 @@ private theorem reverseTimeScalar_shiftedPositivePart_le
         change valueCLM hΩ (h10ShiftedPositivePart hΩ u k) y = 0 at hw0
         rw [hw0]
         ring
-    rw [hadd]
     linarith
-  dsimp only [q, w] at hscalar
   exact hscalar
 
 private theorem reverseTimeSpatialForm_apply_shiftedPositivePart_ge_of_scalar_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (r₁ τ : ℝ) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
+     (c : ℝ → PDE.Vec d → ℝ)
     (u : H10HilbertGraph hΩ) (k : ℝ≥0)
     (hscalar :
       (∫ y, reverseTimeScalarCoefficient r₁ c τ y * valueCLM hΩ u y *
@@ -204,19 +196,15 @@ private theorem reverseTimeSpatialForm_apply_shiftedPositivePart_ge_of_scalar_le
     reverseTimeSpatialForm hΩ r₁ τ a b c u (h10ShiftedPositivePart hΩ u k) ≥
       reverseTimeSpatialForm hΩ r₁ τ a b c
         (h10ShiftedPositivePart hΩ u k) (h10ShiftedPositivePart hΩ u k) := by
-  rw [reverseTimeSpatialForm_apply]
-  rw [reverseTimePrincipal_shiftedPositivePart_eq hΩ r₁ τ a u k]
-  rw [reverseTimeDrift_shiftedPositivePart_eq hΩ r₁ τ a b u k]
-  rw [reverseTimeSpatialForm_apply]
+  rw [reverseTimeSpatialForm_apply, reverseTimePrincipal_shiftedPositivePart_eq]
+  rw [reverseTimeDrift_shiftedPositivePart_eq]
   exact sub_le_sub_left hscalar _
 
 /-- Testing the reverse-time spatial form against `(u - k)₊` dominates the
 form with `(u - k)₊` in both slots when the reverse-time scalar coefficient is
 nonpositive. -/
 theorem reverseTimeSpatialForm_apply_shiftedPositivePart_ge
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (r₁ τ : ℝ) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
+     (c : ℝ → PDE.Vec d → ℝ)
     (u : H10HilbertGraph hΩ) (k : ℝ≥0)
     (hScalarNonpos : ∀ᵐ y ∂PDE.volumeOn Ω,
       reverseTimeScalarCoefficient r₁ c τ y ≤ 0)

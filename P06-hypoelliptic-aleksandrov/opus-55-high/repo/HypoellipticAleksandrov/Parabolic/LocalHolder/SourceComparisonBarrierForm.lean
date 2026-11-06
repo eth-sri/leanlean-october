@@ -10,7 +10,6 @@ This identifies each quotient-valued pairing with the classical representative i
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open MeasureTheory Dirichlet
 open scoped ENNReal
@@ -44,7 +43,7 @@ theorem reverseTimeSpatialForm_smooth_barrier_test {d : ℕ} {Ω : Set (PDE.Vec 
         (gradientCLM hΩ (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ ψ)),
       ae_gradientCoordCLM_smoothCompactlySupportedH1HilbertGraph hΩ ψ i]
       with y hqj hpi hψi
-    rw [hqj, hpi, hψi]
+    simp_all
   have hb (j : Fin d) :
       (∫ y in Ω, reverseTimeDivergenceDrift T A b τ y j *
         PDE.hilbertVectorLpCoord Ω 2 j
@@ -55,7 +54,7 @@ theorem reverseTimeSpatialForm_smooth_barrier_test {d : ℕ} {Ω : Set (PDE.Vec 
     apply integral_congr_ae
     filter_upwards [gradientCoord_h10HilbertGraph_ae_classical hΩ q hq j,
       ae_valueCLM_smoothCompactlySupportedH1HilbertGraph hΩ ψ] with y hqj hψ
-    rw [hqj, hψ]
+    simp_all
   have hc :
       (∫ y in Ω, reverseTimeScalarCoefficient T c τ y *
         valueCLM hΩ (h10HilbertGraphOfH10Function hΩ q) y *
@@ -64,7 +63,7 @@ theorem reverseTimeSpatialForm_smooth_barrier_test {d : ℕ} {Ω : Set (PDE.Vec 
     apply integral_congr_ae
     filter_upwards [valueCLM_h10HilbertGraphOfH10Function hΩ q,
       ae_valueCLM_smoothCompactlySupportedH1HilbertGraph hΩ ψ] with y hqv hψ
-    rw [hqv, hψ]
-  simp_rw [hp, hb, hc]
+    simp_all
+  simp_all
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

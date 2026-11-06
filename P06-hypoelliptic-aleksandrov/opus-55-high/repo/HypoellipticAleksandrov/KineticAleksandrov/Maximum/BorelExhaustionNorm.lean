@@ -20,12 +20,12 @@ theorem borel_indicator_norm_tendsto {E : Type*} [MeasurableSpace E] {μ : Measu
     Tendsto (fun j => (eLpNorm ((S j).indicator F) (ENNReal.ofReal p) μ).toReal)
       atTop (𝓝 (eLpNorm F (ENNReal.ofReal p) μ).toReal) := by
   let G := fun j => (S j).indicator F
-  have hG j : MemLp (G j) (ENNReal.ofReal p) μ := hF.indicator (hS j)
+  have hG j : MemLp (G j) _ μ := hF.indicator (hS j)
   have hGn j : ∀ᵐ z ∂μ, 0 ≤ G j z := by
     filter_upwards [hnn] with z hz
     by_cases hs : z ∈ S j
-    · simpa only [G,indicator_of_mem hs] using hz
-    · simp only [G,indicator_of_notMem hs,le_refl]
+    · aesop
+    aesop
   have hmeas j : AEStronglyMeasurable (fun z => ‖G j z‖ ^ p) μ :=
     (Real.continuous_rpow_const hp.le).comp_aestronglyMeasurable (hG j).aestronglyMeasurable.norm
   have hi : Integrable (fun z => ‖F z‖ ^ p) μ := by
@@ -36,14 +36,14 @@ theorem borel_indicator_norm_tendsto {E : Type*} [MeasurableSpace E] {μ : Measu
     rw [Real.norm_of_nonneg (Real.rpow_nonneg (norm_nonneg _) _)]
     apply Real.rpow_le_rpow (norm_nonneg _) _ hp.le
     by_cases hs : z ∈ S j
-    · simp only [G,indicator_of_mem hs,le_refl]
-    · simp only [G,indicator_of_notMem hs,norm_zero,norm_nonneg]
+    · aesop
+    aesop
   have hc : ∀ᵐ z ∂μ, Tendsto (fun j => ‖G j z‖ ^ p) atTop (𝓝 (‖F z‖ ^ p)) := by
     filter_upwards [hcover] with z hz
     apply tendsto_const_nhds.congr'
     filter_upwards [hz] with j hj
-    simp only [G,indicator_of_mem hj]
-  have ht := tendsto_integral_of_dominated_convergence (fun z => ‖F z‖ ^ p)
+    aesop
+  have ht := tendsto_integral_of_dominated_convergence _
     hmeas hi hb hc
   have hroot := (Real.continuous_rpow_const (by positivity : 0 ≤ 1 / p)).continuousAt.tendsto.comp
     ht
@@ -61,6 +61,6 @@ theorem borel_indicator_norm_tendsto {E : Type*} [MeasurableSpace E] {μ : Measu
     apply integral_congr_ae
     filter_upwards [hnn] with z hz
     rw [Real.norm_of_nonneg hz]
-  simpa only [Function.comp_def,← heq,← heqF,G] using hroot
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov

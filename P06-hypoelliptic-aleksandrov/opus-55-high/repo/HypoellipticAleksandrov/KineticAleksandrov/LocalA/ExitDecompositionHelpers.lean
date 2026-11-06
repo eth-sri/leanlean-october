@@ -17,9 +17,10 @@ variable (hH : HormanderHypoellipticityStatement)
   (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
   (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
 
+variable (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.time < t})
+
 /-- Continuous bounded closed-strip data are integrable for the actual exit measure. -/
-theorem ballExit_integrable_closed (P : LocalBallStart v₀ R)
-    (T : {t : ℝ // P.1.time < t}) (u : KineticPoint d → ℝ)
+theorem ballExit_integrable_closed  (u : KineticPoint d → ℝ)
     (hc : ContinuousOn u (localClosedStrip P.1.time T.1 v₀ R))
     (hb : ∃ M : ℝ, ∀ Q ∈ localClosedStrip P.1.time T.1 v₀ R, |u Q| ≤ M) :
     Integrable u (ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T) := by
@@ -33,12 +34,11 @@ theorem ballExit_integrable_closed (P : LocalBallStart v₀ R)
   obtain ⟨M, hM⟩ := hb
   apply Integrable.of_bound hm M
   filter_upwards [hclosed] with Q hQ
-  simpa only [Real.norm_eq_abs] using hM Q hQ
+  simp_all
 
 /-- The complement of the open terminal velocities is exactly the lateral measure,
 including the terminal velocity corner. -/
-theorem ballExit_lateral_restrict (P : LocalBallStart v₀ R)
-    (T : {t : ℝ // P.1.time < t}) :
+theorem ballExit_lateral_restrict  :
     (ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T).restrict
       {Q | Q.velocity ∈ PDE.euclideanBall v₀ R}ᶜ =
     (ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T).restrict
@@ -46,14 +46,12 @@ theorem ballExit_lateral_restrict (P : LocalBallStart v₀ R)
   apply Measure.restrict_congr_set
   filter_upwards [ballExitRaw_ae_trace hH hLE hd hlam hLam B hB v₀ hR P T] with Q hQ
   apply propext
-  change (Q.velocity ∉ PDE.euclideanBall v₀ R) ↔
-    Q.velocity ∈ frontier (PDE.euclideanBall v₀ R)
   have hcl : Q.velocity ∈ closure (PDE.euclideanBall v₀ R) := by
     rcases hQ with hQ | hQ
-    · exact hQ.2
+    · grind
     · exact frontier_subset_closure hQ.2.2
-  rw [frontier, mem_sdiff, (PDE.isOpen_euclideanBall v₀ R).interior_eq]
-  exact ⟨fun h => ⟨hcl, h⟩, fun h => h.2⟩
+  rw [frontier, (PDE.isOpen_euclideanBall v₀ R).interior_eq]
+  simp_all
 
 /-- The terminal valid-state transition is finite, as established by the face identity. -/
 instance ballExit_fiber_isFinite (P : LocalBallStart v₀ R)
@@ -63,7 +61,7 @@ instance ballExit_fiber_isFinite (P : LocalBallStart v₀ R)
       (ballStartState P)) := by
   let κ := (localBallKernel hH hLE hd hlam hLam B hB v₀ hR).fiberKernel
     (PDE.isOpen_euclideanBall v₀ R).measurableSet P.1.time T.1 T.2.le (ballStartState P)
-  have h := congrArg (fun μ : Measure (KineticPoint d) => μ univ)
+  have h := congrArg (fun μ : Measure _ => μ univ)
     (ballExit_terminal_interior_eq_map hH hLE hd hlam hLam B hB v₀ hR P T)
   rw [Measure.map_apply (continuous_ballStatePoint T.1 v₀ R).measurable
     MeasurableSet.univ, preimage_univ] at h

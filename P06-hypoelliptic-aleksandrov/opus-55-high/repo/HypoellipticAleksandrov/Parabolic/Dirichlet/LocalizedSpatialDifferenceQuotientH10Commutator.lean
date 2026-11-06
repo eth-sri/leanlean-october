@@ -29,34 +29,35 @@ open scoped BigOperators ENNReal RealInnerProductSpace Matrix.Norms.Elementwise
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
+variable {d : ℕ} (q : TimeVelocity d → ℝ) {Ω : Set (PDE.Vec d)}
+
 private theorem continuous_timeVelocity_slice
-    {d : ℕ} (q : TimeVelocity d → ℝ) (hq : Continuous q) (τ : ℝ) :
+     (hq : Continuous q) (τ : ℝ) :
     Continuous (fun y : PDE.Vec d => q (τ, y)) := hq.comp (continuous_const.prodMk continuous_id)
 
 private theorem hasCompactSupport_timeVelocity_slice
-    {d : ℕ} (q : TimeVelocity d → ℝ) (hqcompact : HasCompactSupport q) (τ : ℝ) :
+     (hqcompact : HasCompactSupport q) (τ : ℝ) :
     HasCompactSupport (fun y : PDE.Vec d => q (τ, y)) := by
   apply HasCompactSupport.of_support_subset_isCompact
     (hqcompact.image continuous_snd)
   intro y hy
   exact ⟨(τ, y), subset_tsupport q hy, rfl⟩
 
-private theorem norm_timeVelocity_slice_le {d : ℕ} (q : TimeVelocity d → ℝ) (C : ℝ)
+private theorem norm_timeVelocity_slice_le  (C : ℝ)
     (hqBound : ∀ z, ‖q z‖ ≤ C) (τ : ℝ) : ∀ y : PDE.Vec d, ‖q (τ, y)‖ ≤ C :=
   fun y => hqBound (τ, y)
 
-private theorem inner_scalarLp_eq_setIntegral_of_ae_eq {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem inner_scalarLp_eq_setIntegral_of_ae_eq 
     (f g : PDE.ScalarLp Ω (2 : ℝ≥0∞)) (p q : PDE.Vec d → ℝ)
     (hf : ⇑f =ᵐ[PDE.volumeOn Ω] p) (hg : ⇑g =ᵐ[PDE.volumeOn Ω] q) :
     inner ℝ f g = ∫ y in Ω, p y * q y ∂volume := by
-  rw [L2.inner_def]
   apply integral_congr_ae
   filter_upwards [hf, hg] with y hyf hyg
   rw [hyf, hyg]
   simp only [RCLike.inner_apply, conj_trivial]
   ring
 
-private theorem inner_add_scalarL2Multiplier_eq_setIntegral {d : ℕ} {Ω : Set (PDE.Vec d)}
+private theorem inner_add_scalarL2Multiplier_eq_setIntegral 
     (p q : PDE.Vec d → ℝ)
     (hp : AEStronglyMeasurable p (PDE.volumeOn Ω))
     (hq : AEStronglyMeasurable q (PDE.volumeOn Ω)) (Cp Cq : ℝ) (hCp : 0 ≤ Cp) (hCq : 0 ≤ Cq)
@@ -65,7 +66,6 @@ private theorem inner_add_scalarL2Multiplier_eq_setIntegral {d : ℕ} {Ω : Set 
         (scalarL2Multiplier p hp Cp hCp hpBound f +
           scalarL2Multiplier q hq Cq hCq hqBound g) r =
       ∫ y in Ω, (p y * f y + q y * g y) * r y ∂volume := by
-  rw [L2.inner_def]
   apply integral_congr_ae
   have hadd := MeasureTheory.Lp.coeFn_add
     (scalarL2Multiplier p hp Cp hCp hpBound f)
@@ -78,7 +78,7 @@ private theorem inner_add_scalarL2Multiplier_eq_setIntegral {d : ℕ} {Ω : Set 
   simp only [RCLike.inner_apply, conj_trivial]
   ring
 
-private theorem continuous_reverseTimeSpatialForm_apply_energyTest {d : ℕ} {Ω : Set (PDE.Vec d)}
+private theorem continuous_reverseTimeSpatialForm_apply_energyTest 
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (ha : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -91,11 +91,11 @@ private theorem continuous_reverseTimeSpatialForm_apply_energyTest {d : ℕ} {Ω
     Continuous (fun u => reverseTimeSpatialForm hΩ r₁ τ a b c u (B u)) := by
   let O := reverseTimeSpatialFormOperator
     r₀ r₁ h₀₁ hΩ hΩbounded a b c ha hb hc ⟨τ, hτ⟩
-  have hO : Continuous (fun u => O u (B u)) := O.continuous.clm_apply B.continuous
+  have hO : Continuous (fun u => O u _) := O.continuous.clm_apply B.continuous
   convert hO using 1
   funext u
   exact (reverseTimeSpatialFormOperator_apply
-    r₀ r₁ h₀₁ hΩ hΩbounded a b c ha hb hc ⟨τ, hτ⟩ u (B u)).symm
+    r₀ r₁ h₀₁ hΩ hΩbounded a b c ha hb hc ⟨τ, hτ⟩ u _).symm
 
 private abbrev continuousCompactBoundedField {d : ℕ} (C : ℝ) (q : TimeVelocity d → ℝ) : Prop :=
   Continuous q ∧ HasCompactSupport q ∧ ∀ z, ‖q z‖ ≤ C
@@ -119,12 +119,11 @@ private theorem continuousCompactBoundedField_reverseTimeSource_of_fixedStepRawA
     continuousCompactBoundedField M (fun z : TimeVelocity d =>
       ζ z.1 * η z.2 * spatialDifferenceQuotient k h
         (fun w : TimeVelocity d => F (r₁ - w.1) w.2) z) := by
-  let S : Set (TimeVelocity d) := tsupport (ζ : ℝ → ℝ) ×ˢ tsupport η.toFun
+  let S : Set (TimeVelocity d) := tsupport ζ ×ˢ tsupport η.toFun
   let β : TimeVelocity d → ℝ := fun z => ζ z.1 * η z.2
   have hS : IsCompact S :=
     ζ.hasCompactSupport.prod η.hasCompactSupport
-  have hβcont : Continuous β := by
-    exact (ζ.contDiff.continuous.comp continuous_fst).mul
+  have hβcont : Continuous β := (ζ.contDiff.continuous.comp continuous_fst).mul
       (η.smooth.continuous.comp continuous_snd)
   have hβS : tsupport β ⊆ S := by
     apply closure_minimal
@@ -151,72 +150,60 @@ private theorem continuousCompactBoundedField_reverseTimeSource_of_fixedStepRawA
         mul_le_mul (hζunit z.1) hηunit (norm_nonneg _) (by norm_num)
       _ = 1 := one_mul 1
   rcases hFSmooth with ⟨V, hVopen, hCV, hV⟩
-  let U : Set (TimeVelocity d) := reverseTimeMap r₁ ⁻¹' V
-  let W : Set (TimeVelocity d) := U ∩ (spatialShift k h) ⁻¹' U
+  let U  := reverseTimeMap r₁ ⁻¹' V
+  let W  := U ∩ (spatialShift k h) ⁻¹' U
   have hU : IsOpen U :=
     (contDiff_reverseTimeMap r₁).continuous.isOpen_preimage V hVopen
   have hshiftcont : Continuous (spatialShift k h) := by
-    simpa only [spatialShift] using!
-      (Homeomorph.addRight ((0, h • PDE.basisVec k) : TimeVelocity d)).continuous
+    simpa using!
+      (Homeomorph.addRight _).continuous
   have hW : IsOpen W := hU.inter (hshiftcont.isOpen_preimage U hU)
   have hβW : tsupport β ⊆ W := by
     intro z hz
-    have hzS : z ∈ S := hβS hz
-    have hztime : z.1 ∈ Set.Ioo 0 (r₁ - r₀) := ζ.tsupport_subset hzS.1
-    have hzΩ : z.2 ∈ Ω := η.tsupport_subset hzS.2
+    have hzS  := hβS hz
+    have hztime  := ζ.tsupport_subset hzS.1
+    have hzΩ  := η.tsupport_subset hzS.2
     refine ⟨?_, ?_⟩
-    · change reverseTimeMap r₁ z ∈ V
-      apply hCV
+    · apply hCV
       exact (mem_scalarParabolicClosedCylinder_iff).2
-        ⟨by simpa only [reverseTimeMap_apply] using
+        ⟨by simpa using
             (show r₀ ≤ r₁ - z.1 from by linarith [hztime.2]),
-          by simpa only [reverseTimeMap_apply] using
+          by simpa using
             (show r₁ - z.1 ≤ r₁ from by linarith [hztime.1]),
-          by simpa only [reverseTimeMap_apply] using subset_closure hzΩ⟩
-    · change reverseTimeMap r₁ (spatialShift k h z) ∈ V
-      apply hCV
+          by simpa using subset_closure hzΩ⟩
+    · apply hCV
       exact (mem_scalarParabolicClosedCylinder_iff).2
         ⟨by
             have hshift_time : (spatialShift k h z).1 = z.1 := by
               rcases z with ⟨τ, y⟩
               simp only [spatialShift_apply]
-            rw [hshift_time]
             linarith [hztime.2],
           by
             have hshift_time : (spatialShift k h z).1 = z.1 := by
               rcases z with ⟨τ, y⟩
               simp only [spatialShift_apply]
-            rw [hshift_time]
             linarith [hztime.1],
-          by simpa only [reverseTimeMap_apply, spatialShift] using!
+          by simpa using!
             subset_closure (hηshift hzS.2)⟩
-  have hq : ContDiffOn ℝ 1
-      (fun z : TimeVelocity d => F (r₁ - z.1) z.2) U := by
-    have hVone : ContDiffOn ℝ 1 (fun z : TimeVelocity d => F z.1 z.2) V :=
+  have hq  := by
+    have hVone : ContDiffOn ℝ 1 _ V :=
       hV.of_le (by simp)
-    have hreverse : ContDiffOn ℝ 1 (reverseTimeMap r₁ : TimeVelocity d → TimeVelocity d) U :=
+    have hreverse : ContDiffOn ℝ 1 _ U :=
       (contDiff_reverseTimeMap r₁).of_le (by simp) |>.contDiffOn
-    simpa only [Function.comp_def, reverseTimeMap_apply] using
+    simpa using
       hVone.comp hreverse (fun z hz => hz)
-  have hqU : ContinuousOn (fun z : TimeVelocity d => F (r₁ - z.1) z.2) U :=
+  have hqU : ContinuousOn (fun z : TimeVelocity d => F _ z.2) U :=
     hq.continuousOn
   have htranslateW : ContinuousOn
-      (spatialTranslate k h (fun z : TimeVelocity d => F (r₁ - z.1) z.2)) W := by
-    change ContinuousOn (fun z => F (r₁ - (spatialShift k h z).1) (spatialShift k h z).2) W
-    exact hqU.comp' hshiftcont.continuousOn fun z hz => hz.2
-  have hqW : ContinuousOn (fun z : TimeVelocity d => F (r₁ - z.1) z.2) W :=
+      (spatialTranslate k h (fun z : TimeVelocity d => F (r₁ - z.1) z.2)) W := hqU.comp' hshiftcont.continuousOn fun z hz => hz.2
+  have hqW : ContinuousOn _ W :=
     hqU.mono fun z hz => hz.1
   have hdqW : ContinuousOn
-      (spatialDifferenceQuotient k h (fun z : TimeVelocity d => F (r₁ - z.1) z.2)) W := by
-    rw [show spatialDifferenceQuotient k h (fun z : TimeVelocity d => F (r₁ - z.1) z.2) =
-      fun z => (spatialTranslate k h (fun w : TimeVelocity d => F (r₁ - w.1) w.2) z -
-        F (r₁ - z.1) z.2) / h from rfl]
-    exact (htranslateW.sub hqW).div_const h
+      (spatialDifferenceQuotient k h (fun z : TimeVelocity d => F (r₁ - z.1) z.2)) W := (htranslateW.sub hqW).div_const h
   have hdqbound : ∀ z ∈ tsupport β,
       ‖spatialDifferenceQuotient k h
         (fun w : TimeVelocity d => F (r₁ - w.1) w.2) z‖ ≤ M := by
     rintro ⟨τ, y⟩ hz
-    rw [Real.norm_eq_abs]
     apply hsourceDQ τ y
     · exact ⟨le_of_lt (ζ.tsupport_subset (hβS hz).1).1,
         le_of_lt (ζ.tsupport_subset (hβS hz).1).2⟩
@@ -242,22 +229,19 @@ private theorem exists_common_norm_bound_of_finite_continuousOn
     intro t
     induction t using Finset.induction_on with
     | empty =>
-        refine ⟨0, ?_⟩
-        intro i hi
-        exact (Finset.notMem_empty i hi).elim
+        simp
     | insert i t hit ih =>
         obtain ⟨Ci, hCi⟩ := hS.exists_bound_of_continuousOn (hq i)
         obtain ⟨Ct, hCt⟩ := ih
         refine ⟨max Ci Ct, ?_⟩
-        intro j hj z hz
-        rcases Finset.mem_insert.mp hj with rfl | hj
-        · exact (hCi z hz).trans (le_max_left _ _)
-        · exact (hCt j hj z hz).trans (le_max_right _ _)
+        simp_all
   obtain ⟨C, hC⟩ := hfold Finset.univ
-  exact ⟨C, fun i z hz => hC i (Finset.mem_univ _) z hz⟩
+  aesop
+
+variable {d : ℕ}
 
 private theorem twoSpatialFields_of_smoothOnNeighborhood_of_fixedStep_bounds
-    {d : ℕ} {S : Set (TimeVelocity d)}
+     {S : Set (TimeVelocity d)}
     (C : ℝ) (β q : TimeVelocity d → ℝ) (k : Fin d) (h : ℝ)
     (hC : 0 ≤ C)
     (hβcont : Continuous β) (hβcompact : HasCompactSupport β)
@@ -269,23 +253,20 @@ private theorem twoSpatialFields_of_smoothOnNeighborhood_of_fixedStep_bounds
     (hdq : ∀ z ∈ tsupport β, ‖spatialDifferenceQuotient k h q z‖ ≤ C) :
     twoSpatialFields C β q k h := by
   rcases hqsmooth with ⟨V, hVopen, hSV, hV⟩
-  let W : Set (TimeVelocity d) := V ∩ (spatialShift k h) ⁻¹' V
+  let W  := V ∩ (spatialShift k h) ⁻¹' V
   have hshiftcont : Continuous (spatialShift k h) := by
     simpa only [spatialShift] using!
-      (Homeomorph.addRight ((0, h • PDE.basisVec k) : TimeVelocity d)).continuous
+      (Homeomorph.addRight _).continuous
   have hW : IsOpen W := hVopen.inter (hshiftcont.isOpen_preimage V hVopen)
   have hβW : tsupport β ⊆ W := by
-    intro z hz
-    exact ⟨hSV (hβS hz), hSV (hβshiftS z hz)⟩
+    grind
   have hqW : ContinuousOn q W :=
     hV.continuousOn.mono fun z hz => hz.1
-  have htranslateW : ContinuousOn (spatialTranslate k h q) W := by
-    change ContinuousOn (fun z => q (spatialShift k h z)) W
-    exact hV.continuousOn.comp' hshiftcont.continuousOn fun z hz => hz.2
+  have htranslateW : ContinuousOn (spatialTranslate k h q) W := hV.continuousOn.comp' hshiftcont.continuousOn fun z hz => hz.2
   have hdqW : ContinuousOn (spatialDifferenceQuotient k h q) W := by
     rw [show spatialDifferenceQuotient k h q =
       fun z => (spatialTranslate k h q z - q z) / h from rfl]
-    exact (htranslateW.sub hqW).div_const h
+    fun_prop
   constructor
   · simpa only [max_eq_left hC] using
       (HypoellipticAleksandrov.continuous_hasCompactSupport_norm_le_cutoff_mul hW
@@ -295,7 +276,7 @@ private theorem twoSpatialFields_of_smoothOnNeighborhood_of_fixedStep_bounds
         hβcont.continuousOn hβcompact hβW hβunit hdqW hdq)
 
 private theorem exists_fixedStep_reverseTimeCoefficientFields_of_majorants
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kχ : ℝ}
+     {Ω inner : Set (PDE.Vec d)} {Kχ : ℝ}
     (r₀ r₁ : ℝ)
     (χ : PDE.QuantitativeSmoothCutoff inner Ω Kχ)
     (ζ : ReverseTimeScalarTest (r₁ - r₀))
@@ -343,14 +324,13 @@ private theorem exists_fixedStep_reverseTimeCoefficientFields_of_majorants
         (fun z => reverseTimeScalarCoefficient r₁ c z.1 z.2) k h := by
   let Kδ : Set (PDE.Vec d) := spatialCoordinateShiftCarrier (tsupport χ.toFun) δ
   let Sstar : Set (TimeVelocity d) :=
-    tsupport (ζ : ℝ → ℝ) ×ˢ (tsupport χ.toFun ∪ Kδ)
+    tsupport ζ ×ˢ (tsupport χ.toFun ∪ Kδ)
   let β : TimeVelocity d → ℝ := fun z => ζ z.1 * χ z.2
   have hKδ : IsCompact Kδ :=
     IsCompact.spatialCoordinateShiftCarrier χ.hasCompactSupport.isCompact δ
   have hSstar : IsCompact Sstar :=
     ζ.hasCompactSupport.prod (χ.hasCompactSupport.isCompact.union hKδ)
-  have hβcont : Continuous β := by
-    exact (ζ.contDiff.continuous.comp continuous_fst).mul
+  have hβcont : Continuous β := (ζ.contDiff.continuous.comp continuous_fst).mul
       (χ.smooth.continuous.comp continuous_snd)
   have hβS : tsupport β ⊆ Sstar := by
     apply closure_minimal
@@ -364,21 +344,21 @@ private theorem exists_fixedStep_reverseTimeCoefficientFields_of_majorants
         intro hzero
         exact hmul (by simp [hzero])
     · exact hSstar.isClosed
-  have hβtime : ∀ z ∈ tsupport β, z.1 ∈ tsupport (ζ : ℝ → ℝ) := by
-    have hmul : tsupport β ⊆ tsupport (fun z : TimeVelocity d => ζ z.1) := by
-      simpa only [β] using
+  have hβtime : ∀ z ∈ tsupport β, z.1 ∈ tsupport ζ := by
+    have hmul  := by
+      simpa using
         (tsupport_mul_subset_left (f := fun z : TimeVelocity d => ζ z.1)
           (g := fun z : TimeVelocity d => χ z.2))
     have hpre : tsupport (fun z : TimeVelocity d => ζ z.1) ⊆
-        (fun z : TimeVelocity d => z.1) ⁻¹' tsupport (ζ : ℝ → ℝ) := by
+        (fun z : TimeVelocity d => z.1) ⁻¹' tsupport ζ := by
       apply closure_minimal
       · intro z hz
         exact subset_tsupport _ hz
       · exact (isClosed_tsupport _).preimage continuous_fst
     exact fun z hz => hpre (hmul hz)
   have hβχ : ∀ z ∈ tsupport β, z.2 ∈ tsupport χ.toFun := by
-    have hmul : tsupport β ⊆ tsupport (fun z : TimeVelocity d => χ z.2) := by
-      simpa only [β] using
+    have hmul  := by
+      simpa using
         (tsupport_mul_subset_right (f := fun z : TimeVelocity d => ζ z.1)
           (g := fun z : TimeVelocity d => χ z.2))
     have hpre : tsupport (fun z : TimeVelocity d => χ z.2) ⊆
@@ -408,13 +388,12 @@ private theorem exists_fixedStep_reverseTimeCoefficientFields_of_majorants
         simp only [spatialShift_apply]
       rw [htime]
       exact hβtime z hz
-    · change z.2 + h • PDE.basisVec k ∈ Kδ
-      exact mem_spatialCoordinateShiftCarrier_of_mem_of_abs_le (hβχ z hz) hh
+    · exact mem_spatialCoordinateShiftCarrier_of_mem_of_abs_le (hβχ z hz) hh
   have hreverseSstar : reverseTimeMap r₁ '' Sstar ⊆
       scalarParabolicClosedCylinder r₀ r₁ Ω := by
     rintro w ⟨z, hz, rfl⟩
     rcases hz with ⟨hτ, hy⟩
-    have hτinterval : z.1 ∈ Set.Ioo 0 (r₁ - r₀) := ζ.tsupport_subset hτ
+    have hτinterval  := ζ.tsupport_subset hτ
     rw [mem_scalarParabolicClosedCylinder_iff]
     refine ⟨?_, ?_, subset_closure ?_⟩
     · simp only [reverseTimeMap_apply]
@@ -425,23 +404,13 @@ private theorem exists_fixedStep_reverseTimeCoefficientFields_of_majorants
       · exact χ.tsupport_subset hy
       · exact hcarrier hy
   have hmatrixsmooth (i j : Fin d) : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => reverseTimeCoefficient r₁ a z.1 z.2 i j) Sstar := by
-    change IsSmoothOnNeighborhood
-      ((fun z : TimeVelocity d => a z.1 z.2 i j) ∘ reverseTimeMap r₁) Sstar
-    exact IsSmoothOnNeighborhood.reverseTime r₁ hreverseSstar
+      (fun z : TimeVelocity d => reverseTimeCoefficient r₁ a z.1 z.2 i j) Sstar := IsSmoothOnNeighborhood.reverseTime r₁ hreverseSstar
       (IsSmoothOnNeighborhood.coefficientEntry a ha i j)
   have hdriftsmooth (j : Fin d) : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => reverseTimeDivergenceDrift r₁ a b z.1 z.2 j) Sstar := by
-    change IsSmoothOnNeighborhood
-      ((fun z : TimeVelocity d =>
-        scalarSpatialCoefficientDivergence a z j - b z.1 z.2 j) ∘ reverseTimeMap r₁) Sstar
-    exact IsSmoothOnNeighborhood.reverseTime r₁ hreverseSstar
+      (fun z : TimeVelocity d => reverseTimeDivergenceDrift r₁ a b z.1 z.2 j) Sstar := IsSmoothOnNeighborhood.reverseTime r₁ hreverseSstar
       (IsSmoothOnNeighborhood.divergenceDriftEntry a b ha hb j)
   have hscalarsmooth : IsSmoothOnNeighborhood
-      (fun z : TimeVelocity d => reverseTimeScalarCoefficient r₁ c z.1 z.2) Sstar := by
-    change IsSmoothOnNeighborhood
-      ((fun z : TimeVelocity d => c z.1 z.2) ∘ reverseTimeMap r₁) Sstar
-    exact IsSmoothOnNeighborhood.reverseTime r₁ hreverseSstar hc
+      (fun z : TimeVelocity d => reverseTimeScalarCoefficient r₁ c z.1 z.2) Sstar := IsSmoothOnNeighborhood.reverseTime r₁ hreverseSstar hc
   have hmatrixcont (i j : Fin d) : ContinuousOn
       (fun z : TimeVelocity d => reverseTimeCoefficient r₁ a z.1 z.2 i j) Sstar := by
     rcases hmatrixsmooth i j with ⟨V, hVopen, hSV, hV⟩
@@ -450,7 +419,7 @@ private theorem exists_fixedStep_reverseTimeCoefficientFields_of_majorants
     (fun ij : Fin d × Fin d => fun z =>
       reverseTimeCoefficient r₁ a z.1 z.2 ij.1 ij.2)
     (fun ij => hmatrixcont ij.1 ij.2)
-  let CA : ℝ := max (max CA₀ 0) M
+  let CA  := max (max CA₀ 0) M
   have hCA : 0 ≤ CA := hM.trans (le_max_right _ _)
   refine ⟨CA, hCA, ?_, ?_, ?_⟩
   · intro i j
@@ -458,47 +427,40 @@ private theorem exists_fixedStep_reverseTimeCoefficientFields_of_majorants
       (fun z => reverseTimeCoefficient r₁ a z.1 z.2 i j) k h hCA hβcont hβcompact
       hβunit (hmatrixsmooth i j) hβS hβshiftS
     · intro z hz
-      change ‖reverseTimeCoefficient r₁ a (spatialShift k h z).1
-        (spatialShift k h z).2 i j‖ ≤ CA
-      exact (hCA₀ (i, j) (spatialShift k h z) (hβshiftS z hz)).trans
+      exact (hCA₀ (i, j) _ (hβshiftS z hz)).trans
         (le_trans (le_max_left _ _) (le_max_left _ _))
     · rintro ⟨τ, y⟩ hz
-      rw [Real.norm_eq_abs]
       exact (hADQ i j τ y
         ⟨le_of_lt (ζ.tsupport_subset (hβS hz).1).1,
           le_of_lt (ζ.tsupport_subset (hβS hz).1).2⟩
-        (hβχ (τ, y) hz)).trans (le_max_right _ _)
+        (hβχ _ hz)).trans (le_max_right _ _)
   · intro j
     apply twoSpatialFields_of_smoothOnNeighborhood_of_fixedStep_bounds CA β
       (fun z => reverseTimeDivergenceDrift r₁ a b z.1 z.2 j) k h hCA hβcont hβcompact
       hβunit (hdriftsmooth j) hβS hβshiftS
     · rintro ⟨τ, y⟩ hz
-      rw [Real.norm_eq_abs]
       exact (hBT j τ y
         ⟨le_of_lt (ζ.tsupport_subset (hβS hz).1).1,
           le_of_lt (ζ.tsupport_subset (hβS hz).1).2⟩
-        (hβχ (τ, y) hz)).trans (le_max_right _ _)
+        (hβχ _ hz)).trans (le_max_right _ _)
     · rintro ⟨τ, y⟩ hz
-      rw [Real.norm_eq_abs]
       exact (hBDQ j τ y
         ⟨le_of_lt (ζ.tsupport_subset (hβS hz).1).1,
           le_of_lt (ζ.tsupport_subset (hβS hz).1).2⟩
-        (hβχ (τ, y) hz)).trans (le_max_right _ _)
+        (hβχ _ hz)).trans (le_max_right _ _)
   · apply twoSpatialFields_of_smoothOnNeighborhood_of_fixedStep_bounds CA β
       (fun z => reverseTimeScalarCoefficient r₁ c z.1 z.2) k h hCA hβcont hβcompact
       hβunit hscalarsmooth hβS hβshiftS
     · rintro ⟨τ, y⟩ hz
-      rw [Real.norm_eq_abs]
       exact (hcT τ y
         ⟨le_of_lt (ζ.tsupport_subset (hβS hz).1).1,
           le_of_lt (ζ.tsupport_subset (hβS hz).1).2⟩
-        (hβχ (τ, y) hz)).trans (le_max_right _ _)
+        (hβχ _ hz)).trans (le_max_right _ _)
     · rintro ⟨τ, y⟩ hz
-      rw [Real.norm_eq_abs]
       exact (hcDQ τ y
         ⟨le_of_lt (ζ.tsupport_subset (hβS hz).1).1,
           le_of_lt (ζ.tsupport_subset (hβS hz).1).2⟩
-        (hβχ (τ, y) hz)).trans (le_max_right _ _)
+        (hβχ _ hz)).trans (le_max_right _ _)
 
 private def h10CommutatorLhsLocal
     {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
@@ -617,10 +579,10 @@ private def h10CommutatorFixedStepOutputLocal
     h10CommutatorRawRhsLocal r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth
       hcSmooth F hFSmooth ζ η χ k h τ hηshift u
 
+variable {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ} (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
+
 private theorem h10CommutatorFixedStepOutputLocal_of_smoothCore
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+     (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -645,10 +607,10 @@ private theorem h10CommutatorFixedStepOutputLocal_of_smoothCore
       ζ η χ k h τ hτ hηshift
       (smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ) := by
   change h10CommutatorLhsLocal r₀ r₁ h₀₁ hΩ hΩbounded a b c F hFSmooth ζ η χ k h τ
-      hηshift (smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ) =
+      hηshift _ =
     h10CommutatorRawRhsLocal r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth
       F hFSmooth ζ η χ k h τ hηshift
-        (smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ)
+        _
   simpa only [h10CommutatorFixedStepOutput, h10CommutatorLhsLocal,
     h10CommutatorRawRhsLocal, h10CommutatorRawLeafLocal] using
     (smoothCore_fixedStep_reverseTimeSource_sub_reverseTimeSpatialForm_eq_commutator
@@ -656,9 +618,7 @@ private theorem h10CommutatorFixedStepOutputLocal_of_smoothCore
       ζ η χ k h τ hηshift hτ φ)
 
 private theorem h10CommutatorFixedStepOutputLocal_of_denseSmoothCore
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+     (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -684,24 +644,16 @@ private theorem h10CommutatorFixedStepOutputLocal_of_denseSmoothCore
       a b c haSmooth hbSmooth hcSmooth F hFSmooth ζ η χ k h τ hηshift v) :
     h10CommutatorFixedStepOutputLocal r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth
       hcSmooth F hFSmooth ζ η χ k h τ hτ hηshift u := by
-  change h10CommutatorLhsLocal r₀ r₁ h₀₁ hΩ hΩbounded a b c F hFSmooth ζ η χ k h τ
-      hηshift u =
-    h10CommutatorRawRhsLocal r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth
-      F hFSmooth ζ η χ k h τ hηshift u
   have hEq := (denseRange_smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ).equalizer
     hleft hright (by
       funext φ
-      let coreφ : H10HilbertGraph hΩ :=
+      let coreφ  :=
         smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ
-      have hSmoothRaw : h10CommutatorFixedStepOutputLocal r₀ r₁ h₀₁ hΩ hΩbounded a b c
-          haSmooth hbSmooth hcSmooth F hFSmooth ζ η χ k h τ hτ hηshift coreφ := by
-        exact h10CommutatorFixedStepOutputLocal_of_smoothCore
+      have hSmoothRaw  := h10CommutatorFixedStepOutputLocal_of_smoothCore
           r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth F hFSmooth
           ζ η χ k h τ hηshift hτ φ
-      change h10CommutatorLhsLocal r₀ r₁ h₀₁ hΩ hΩbounded a b c F hFSmooth ζ η χ k h τ
-          hηshift coreφ = rightInner coreφ
       exact hSmoothRaw.trans (hinnerRaw coreφ).symm)
-  exact (congrFun hEq u).trans (hinnerRaw u)
+  aesop
 
 private def h10CommutatorOutput
     {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
@@ -731,17 +683,17 @@ private def h10CommutatorOutput
           apply subset_tsupport
           change χ y ≠ 0
           rw [χ.eq_one_on_inner y hy]
-          exact one_ne_zero
+          simp
         let hηshift : Set.MapsTo
             (fun y : PDE.Vec d => y + h • PDE.basisVec k)
             (tsupport η.toFun) Ω := hχshift.mono_left hηχ
         h10CommutatorFixedStepOutputLocal r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth
           hcSmooth F hFSmooth ζ η χ k h τ hτ hηshift u
 
+variable {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ} (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
+
 private theorem h10CommutatorAtFixedStepFromFields
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+     (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
@@ -780,152 +732,119 @@ private theorem h10CommutatorAtFixedStepFromFields
       hcSmooth F hFSmooth ζ η χ k h τ hτ hηshift u := by
   classical
   let X := H10HilbertGraph hΩ
-  let L := PDE.ScalarLp Ω (2 : ℝ≥0∞)
+  let L := PDE.ScalarLp Ω (2)
   let A : X →L[ℝ] X := localizedSpatialDifferenceQuotientH10CLM
     hΩ η k h η.tsupport_subset hηshift
   let B : X →L[ℝ] X := localizedSpatialDifferenceQuotientEnergyTestH10CLM
     hΩ η k h η.tsupport_subset hηshift
   let source : TimeVelocity d → ℝ := fun z => F (r₁ - z.1) z.2
-  let sourceJoint : TimeVelocity d → ℝ := fun z =>
+  let sourceJoint  := fun z =>
     ζ z.1 * η z.2 * spatialDifferenceQuotient k h source z
   have hsourceJointCont : Continuous sourceJoint := by
     simpa only [sourceJoint, source] using hsourceJoint.1
   have hsourceJointCompact : HasCompactSupport sourceJoint := by
     simpa only [sourceJoint, source] using hsourceJoint.2.1
-  have hsourceJointBound : ∀ z, ‖sourceJoint z‖ ≤ CF := by
-    simpa only [sourceJoint, source] using hsourceJoint.2.2
   let α : Fin d → Fin d → TimeVelocity d → ℝ := fun i j z =>
     reverseTimeCoefficient r₁ a z.1 z.2 i j
   let drift : Fin d → TimeVelocity d → ℝ := fun j z =>
     reverseTimeDivergenceDrift r₁ a b z.1 z.2 j
   let γ : TimeVelocity d → ℝ := fun z =>
     reverseTimeScalarCoefficient r₁ c z.1 z.2
-  let aTJoint : Fin d → Fin d → TimeVelocity d → ℝ := fun i j z =>
+  let aTJoint  := fun i j z =>
     ζ z.1 * χ z.2 * spatialTranslate k h (α i j) z
-  let aDJoint : Fin d → Fin d → TimeVelocity d → ℝ := fun i j z =>
+  let aDJoint  := fun i j z =>
     ζ z.1 * χ z.2 * spatialDifferenceQuotient k h (α i j) z
-  let driftTJoint : Fin d → TimeVelocity d → ℝ := fun j z =>
+  let driftTJoint  := fun j z =>
     ζ z.1 * χ z.2 * spatialTranslate k h (drift j) z
-  let driftDJoint : Fin d → TimeVelocity d → ℝ := fun j z =>
+  let driftDJoint  := fun j z =>
     ζ z.1 * χ z.2 * spatialDifferenceQuotient k h (drift j) z
-  let γTJoint : TimeVelocity d → ℝ := fun z =>
+  let γTJoint  := fun z =>
     ζ z.1 * χ z.2 * spatialTranslate k h γ z
-  let γDJoint : TimeVelocity d → ℝ := fun z =>
+  let γDJoint  := fun z =>
     ζ z.1 * χ z.2 * spatialDifferenceQuotient k h γ z
   have haFields (i j : Fin d) := hmatrixFields i j
   have haTJointCont (i j : Fin d) : Continuous (aTJoint i j) := by
     simpa only [aTJoint, α] using (haFields i j).1.1
-  have haTJointCompact (i j : Fin d) : HasCompactSupport (aTJoint i j) := by
-    simpa only [aTJoint, α] using (haFields i j).1.2.1
   have haTJointBound (i j : Fin d) : ∀ z, ‖aTJoint i j z‖ ≤ CA := by
     simpa only [aTJoint, α] using (haFields i j).1.2.2
   have haDJointCont (i j : Fin d) : Continuous (aDJoint i j) := by
     simpa only [aDJoint, α] using (haFields i j).2.1
-  have haDJointCompact (i j : Fin d) : HasCompactSupport (aDJoint i j) := by
-    simpa only [aDJoint, α] using (haFields i j).2.2.1
   have haDJointBound (i j : Fin d) : ∀ z, ‖aDJoint i j z‖ ≤ CA := by
     simpa only [aDJoint, α] using (haFields i j).2.2.2
   have hdriftTJointCont (j : Fin d) : Continuous (driftTJoint j) := by
     simpa only [driftTJoint, drift] using (hdriftFields j).1.1
-  have hdriftTJointCompact (j : Fin d) : HasCompactSupport (driftTJoint j) := by
-    simpa only [driftTJoint, drift] using (hdriftFields j).1.2.1
   have hdriftTJointBound (j : Fin d) : ∀ z, ‖driftTJoint j z‖ ≤ CA := by
     simpa only [driftTJoint, drift] using (hdriftFields j).1.2.2
   have hdriftDJointCont (j : Fin d) : Continuous (driftDJoint j) := by
     simpa only [driftDJoint, drift] using (hdriftFields j).2.1
-  have hdriftDJointCompact (j : Fin d) : HasCompactSupport (driftDJoint j) := by
-    simpa only [driftDJoint, drift] using (hdriftFields j).2.2.1
   have hdriftDJointBound (j : Fin d) : ∀ z, ‖driftDJoint j z‖ ≤ CA := by
     simpa only [driftDJoint, drift] using (hdriftFields j).2.2.2
   have hγTJointCont : Continuous γTJoint := by
     simpa only [γTJoint, γ] using hscalarFields.1.1
-  have hγTJointCompact : HasCompactSupport γTJoint := by
-    simpa only [γTJoint, γ] using hscalarFields.1.2.1
   have hγTJointBound : ∀ z, ‖γTJoint z‖ ≤ CA := by
     simpa only [γTJoint, γ] using hscalarFields.1.2.2
   have hγDJointCont : Continuous γDJoint := by
     simpa only [γDJoint, γ] using hscalarFields.2.1
-  have hγDJointCompact : HasCompactSupport γDJoint := by
-    simpa only [γDJoint, γ] using hscalarFields.2.2.1
   have hγDJointBound : ∀ z, ‖γDJoint z‖ ≤ CA := by
     simpa only [γDJoint, γ] using hscalarFields.2.2.2
-  let sourceD : PDE.Vec d → ℝ := fun y => sourceJoint (τ, y)
-  let aT : Fin d → Fin d → PDE.Vec d → ℝ := fun i j y => aTJoint i j (τ, y)
-  let aD : Fin d → Fin d → PDE.Vec d → ℝ := fun i j y => aDJoint i j (τ, y)
-  let driftT : Fin d → PDE.Vec d → ℝ := fun j y => driftTJoint j (τ, y)
-  let driftD : Fin d → PDE.Vec d → ℝ := fun j y => driftDJoint j (τ, y)
-  let γT : PDE.Vec d → ℝ := fun y => γTJoint (τ, y)
-  let γD : PDE.Vec d → ℝ := fun y => γDJoint (τ, y)
+  let sourceD  := fun y => sourceJoint (τ, y)
+  let aT  := fun i j y => aTJoint i j (τ, y)
+  let aD  := fun i j y => aDJoint i j (τ, y)
+  let driftT  := fun j y => driftTJoint j (τ, y)
+  let driftD  := fun j y => driftDJoint j (τ, y)
+  let γT  := fun y => γTJoint (τ, y)
+  let γD  := fun y => γDJoint (τ, y)
   have hsourceDCont : Continuous sourceD := by
     simpa only [sourceD] using
       continuous_timeVelocity_slice sourceJoint hsourceJointCont τ
   have hsourceDCompact : HasCompactSupport sourceD := by
     simpa only [sourceD] using
       hasCompactSupport_timeVelocity_slice sourceJoint hsourceJointCompact τ
-  have hsourceDBound : ∀ y, ‖sourceD y‖ ≤ CF := by
-    simpa only [sourceD] using
-      norm_timeVelocity_slice_le sourceJoint CF hsourceJointBound τ
   have haTCont (i j : Fin d) : Continuous (aT i j) := by
     simpa only [aT] using
-      continuous_timeVelocity_slice (aTJoint i j) (haTJointCont i j) τ
-  have haTCompact (i j : Fin d) : HasCompactSupport (aT i j) := by
-    simpa only [aT] using
-      hasCompactSupport_timeVelocity_slice (aTJoint i j) (haTJointCompact i j) τ
+      continuous_timeVelocity_slice _ (haTJointCont i j) τ
   have haTBound (i j : Fin d) : ∀ y, ‖aT i j y‖ ≤ CA := by
     simpa only [aT] using
-      norm_timeVelocity_slice_le (aTJoint i j) CA (haTJointBound i j) τ
+      norm_timeVelocity_slice_le _ CA (haTJointBound i j) τ
   have haDCont (i j : Fin d) : Continuous (aD i j) := by
     simpa only [aD] using
-      continuous_timeVelocity_slice (aDJoint i j) (haDJointCont i j) τ
-  have haDCompact (i j : Fin d) : HasCompactSupport (aD i j) := by
-    simpa only [aD] using
-      hasCompactSupport_timeVelocity_slice (aDJoint i j) (haDJointCompact i j) τ
+      continuous_timeVelocity_slice _ (haDJointCont i j) τ
   have haDBound (i j : Fin d) : ∀ y, ‖aD i j y‖ ≤ CA := by
     simpa only [aD] using
-      norm_timeVelocity_slice_le (aDJoint i j) CA (haDJointBound i j) τ
+      norm_timeVelocity_slice_le _ CA (haDJointBound i j) τ
   have hdriftTCont (j : Fin d) : Continuous (driftT j) := by
     simpa only [driftT] using
-      continuous_timeVelocity_slice (driftTJoint j) (hdriftTJointCont j) τ
-  have hdriftTCompact (j : Fin d) : HasCompactSupport (driftT j) := by
-    simpa only [driftT] using
-      hasCompactSupport_timeVelocity_slice (driftTJoint j) (hdriftTJointCompact j) τ
+      continuous_timeVelocity_slice _ (hdriftTJointCont j) τ
   have hdriftTBound (j : Fin d) : ∀ y, ‖driftT j y‖ ≤ CA := by
     simpa only [driftT] using
-      norm_timeVelocity_slice_le (driftTJoint j) CA (hdriftTJointBound j) τ
+      norm_timeVelocity_slice_le _ CA (hdriftTJointBound j) τ
   have hdriftDCont (j : Fin d) : Continuous (driftD j) := by
     simpa only [driftD] using
-      continuous_timeVelocity_slice (driftDJoint j) (hdriftDJointCont j) τ
-  have hdriftDCompact (j : Fin d) : HasCompactSupport (driftD j) := by
-    simpa only [driftD] using
-      hasCompactSupport_timeVelocity_slice (driftDJoint j) (hdriftDJointCompact j) τ
+      continuous_timeVelocity_slice _ (hdriftDJointCont j) τ
   have hdriftDBound (j : Fin d) : ∀ y, ‖driftD j y‖ ≤ CA := by
     simpa only [driftD] using
-      norm_timeVelocity_slice_le (driftDJoint j) CA (hdriftDJointBound j) τ
+      norm_timeVelocity_slice_le _ CA (hdriftDJointBound j) τ
   have hγTCont : Continuous γT := by
     simpa only [γT] using continuous_timeVelocity_slice γTJoint hγTJointCont τ
-  have hγTCompact : HasCompactSupport γT := by
-    simpa only [γT] using hasCompactSupport_timeVelocity_slice γTJoint hγTJointCompact τ
   have hγTBound : ∀ y, ‖γT y‖ ≤ CA := by
     simpa only [γT] using norm_timeVelocity_slice_le γTJoint CA hγTJointBound τ
   have hγDCont : Continuous γD := by
     simpa only [γD] using continuous_timeVelocity_slice γDJoint hγDJointCont τ
-  have hγDCompact : HasCompactSupport γD := by
-    simpa only [γD] using hasCompactSupport_timeVelocity_slice γDJoint hγDJointCompact τ
   have hγDBound : ∀ y, ‖γD y‖ ≤ CA := by
     simpa only [γD] using norm_timeVelocity_slice_le γDJoint CA hγDJointBound τ
-  have haTMeas (i j : Fin d) : AEStronglyMeasurable (aT i j) (PDE.volumeOn Ω) :=
+  have haTMeas (i j : Fin d) : AEStronglyMeasurable _ (PDE.volumeOn Ω) :=
     (haTCont i j).aestronglyMeasurable
   have haTBoundAE (i j : Fin d) : ∀ᵐ y ∂PDE.volumeOn Ω, ‖aT i j y‖ ≤ CA :=
     Filter.Eventually.of_forall (haTBound i j)
-  have haDMeas (i j : Fin d) : AEStronglyMeasurable (aD i j) (PDE.volumeOn Ω) :=
+  have haDMeas (i j : Fin d) : AEStronglyMeasurable _ (PDE.volumeOn Ω) :=
     (haDCont i j).aestronglyMeasurable
   have haDBoundAE (i j : Fin d) : ∀ᵐ y ∂PDE.volumeOn Ω, ‖aD i j y‖ ≤ CA :=
     Filter.Eventually.of_forall (haDBound i j)
-  have hdriftTMeas (j : Fin d) : AEStronglyMeasurable (driftT j) (PDE.volumeOn Ω) :=
+  have hdriftTMeas (j : Fin d) : AEStronglyMeasurable _ (PDE.volumeOn Ω) :=
     (hdriftTCont j).aestronglyMeasurable
   have hdriftTBoundAE (j : Fin d) : ∀ᵐ y ∂PDE.volumeOn Ω, ‖driftT j y‖ ≤ CA :=
     Filter.Eventually.of_forall (hdriftTBound j)
-  have hdriftDMeas (j : Fin d) : AEStronglyMeasurable (driftD j) (PDE.volumeOn Ω) :=
+  have hdriftDMeas (j : Fin d) : AEStronglyMeasurable _ (PDE.volumeOn Ω) :=
     (hdriftDCont j).aestronglyMeasurable
   have hdriftDBoundAE (j : Fin d) : ∀ᵐ y ∂PDE.volumeOn Ω, ‖driftD j y‖ ≤ CA :=
     Filter.Eventually.of_forall (hdriftDBound j)
@@ -937,70 +856,62 @@ private theorem h10CommutatorAtFixedStepFromFields
     Filter.Eventually.of_forall hγDBound
   let sourceDLp : L := compactlySupportedContinuousToScalarLp
     (Ω := Ω) sourceD hsourceDCont hsourceDCompact
-  have hsourceDLpAE : ⇑sourceDLp =ᵐ[PDE.volumeOn Ω] sourceD := by
-    dsimp only [sourceDLp]
-    exact coeFn_compactlySupportedContinuousToScalarLp
+  have hsourceDLpAE : ⇑sourceDLp =ᵐ[PDE.volumeOn Ω] sourceD := coeFn_compactlySupportedContinuousToScalarLp
       (Ω := Ω) sourceD hsourceDCont hsourceDCompact
-  let MaT (i j : Fin d) := scalarL2Multiplier (aT i j) (haTMeas i j)
+  let MaT (i j : Fin d) := scalarL2Multiplier _ (haTMeas i j)
     CA hCA (haTBoundAE i j)
-  let MaD (i j : Fin d) := scalarL2Multiplier (aD i j) (haDMeas i j)
+  let MaD (i j : Fin d) := scalarL2Multiplier _ (haDMeas i j)
     CA hCA (haDBoundAE i j)
-  let MdriftT (j : Fin d) := scalarL2Multiplier (driftT j) (hdriftTMeas j)
+  let MdriftT (j : Fin d) := scalarL2Multiplier _ (hdriftTMeas j)
     CA hCA (hdriftTBoundAE j)
-  let MdriftD (j : Fin d) := scalarL2Multiplier (driftD j) (hdriftDMeas j)
+  let MdriftD (j : Fin d) := scalarL2Multiplier _ (hdriftDMeas j)
     CA hCA (hdriftDBoundAE j)
   let MγT := scalarL2Multiplier γT hγTMeas CA hCA hγTBoundAE
   let MγD := scalarL2Multiplier γD hγDMeas CA hCA hγDBoundAE
   let gradCoord : Fin d → X →L[ℝ] L := fun i =>
-    (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i).comp (gradientCLM hΩ)
+    (PDE.hilbertVectorLpCoord Ω _ i).comp (gradientCLM hΩ)
   let Vop : X →L[ℝ] L := (valueCLM hΩ).comp A
-  let Gop : Fin d → X →L[ℝ] L := fun i => (gradCoord i).comp A
+  let Gop  := fun i => (gradCoord i).comp A
   let Wop : Fin d → X →L[ℝ] L := fun i =>
     (cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h).comp
       (valueCLM hΩ)
-  let Eop : Fin d → X →L[ℝ] L := fun i => Gop i - Wop i
-  let Hop : Fin d → X →L[ℝ] L := fun i => Gop i + Wop i
+  let Eop  := fun i => Gop i - Wop i
+  let Hop  := fun i => Gop i + Wop i
   have hηMeas : AEStronglyMeasurable η.toFun (PDE.volumeOn Ω) :=
     η.smooth.continuous.aestronglyMeasurable
-  have hηBoundAE : ∀ᵐ y ∂PDE.volumeOn Ω, ‖η y‖ ≤ (1 : ℝ) :=
+  have hηBoundAE : ∀ᵐ y ∂PDE.volumeOn Ω, ‖η y‖ ≤ (1) :=
     ae_of_all _ fun y => by
       rw [Real.norm_eq_abs, abs_of_nonneg (η.nonneg y)]
       exact η.le_one y
   let Mη : L →L[ℝ] L := scalarL2Multiplier η.toFun hηMeas 1 zero_le_one hηBoundAE
-  let Uop : Fin d → X →L[ℝ] L := fun j => Mη.comp (gradCoord j)
+  let Uop  := fun j => Mη.comp (gradCoord j)
   let U₀op : X →L[ℝ] L := Mη.comp (valueCLM hΩ)
-  let Vraw : X → PDE.Vec d → ℝ := fun v y => valueCLM hΩ (A v) y
-  let Graw : X → Fin d → PDE.Vec d → ℝ := fun v i y =>
-    PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i (gradientCLM hΩ (A v)) y
+  let Vraw  := fun v y => valueCLM hΩ (A v) y
+  let Graw  := fun v i y =>
+    PDE.hilbertVectorLpCoord Ω _ i (gradientCLM hΩ (A v)) y
   let Wraw : X → Fin d → PDE.Vec d → ℝ := fun v i y =>
     cutoffGradientSpatialDifferenceQuotientL2 hΩ.measurableSet η i k h
       (valueCLM hΩ v) y
-  let Eraw : X → Fin d → PDE.Vec d → ℝ := fun v i y =>
+  let Eraw  := fun v i y =>
     Graw v i y - Wraw v i y
-  let Hraw : X → Fin d → PDE.Vec d → ℝ := fun v i y =>
+  let Hraw  := fun v i y =>
     Graw v i y + Wraw v i y
   let Uraw : X → Fin d → PDE.Vec d → ℝ := fun v j y => η y *
-    PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ v) y
+    PDE.hilbertVectorLpCoord Ω _ j (gradientCLM hΩ v) y
   let U₀raw : X → PDE.Vec d → ℝ := fun v y => η y * valueCLM hΩ v y
-  have hVAE (v : X) : ⇑(Vop v) =ᵐ[PDE.volumeOn Ω] Vraw v := by
-    dsimp only [Vop, Vraw, ContinuousLinearMap.comp_apply]
-    exact Filter.Eventually.of_forall fun _ => rfl
-  have hGAE (v : X) (i : Fin d) : ⇑(Gop i v) =ᵐ[PDE.volumeOn Ω] Graw v i := by
-    dsimp only [Gop, Graw, ContinuousLinearMap.comp_apply]
-    exact Filter.Eventually.of_forall fun _ => rfl
-  have hWAE (v : X) (i : Fin d) : ⇑(Wop i v) =ᵐ[PDE.volumeOn Ω] Wraw v i := by
-    dsimp only [Wop, Wraw, ContinuousLinearMap.comp_apply]
-    exact Filter.Eventually.of_forall fun _ => rfl
+  have hVAE (v : X) : ⇑(Vop v) =ᵐ[PDE.volumeOn Ω] Vraw v := Filter.Eventually.of_forall fun _ => rfl
+  have hGAE (v : X) (i : Fin d) : ⇑(Gop i v) =ᵐ[PDE.volumeOn Ω] Graw v i := Filter.Eventually.of_forall fun _ => rfl
+  have hWAE (v : X) (i : Fin d) : ⇑(Wop i v) =ᵐ[PDE.volumeOn Ω] Wraw v i := Filter.Eventually.of_forall fun _ => rfl
   have hEAE (v : X) (i : Fin d) : ⇑(Eop i v) =ᵐ[PDE.volumeOn Ω] Eraw v i := by
     change ⇑(Gop i v - Wop i v) =ᵐ[PDE.volumeOn Ω] Eraw v i
-    filter_upwards [MeasureTheory.Lp.coeFn_sub (Gop i v) (Wop i v), hGAE v i,
+    filter_upwards [MeasureTheory.Lp.coeFn_sub _ (Wop i v), hGAE v i,
       hWAE v i] with y hsub hG hW
     rw [hsub]
     simp only [Pi.sub_apply]
     rw [hG, hW]
   have hHAE (v : X) (i : Fin d) : ⇑(Hop i v) =ᵐ[PDE.volumeOn Ω] Hraw v i := by
     change ⇑(Gop i v + Wop i v) =ᵐ[PDE.volumeOn Ω] Hraw v i
-    filter_upwards [MeasureTheory.Lp.coeFn_add (Gop i v) (Wop i v), hGAE v i,
+    filter_upwards [MeasureTheory.Lp.coeFn_add _ (Wop i v), hGAE v i,
       hWAE v i] with y hadd hG hW
     rw [hadd]
     simp only [Pi.add_apply]
@@ -1008,14 +919,14 @@ private theorem h10CommutatorAtFixedStepFromFields
   have hUAE (v : X) (j : Fin d) : ⇑(Uop j v) =ᵐ[PDE.volumeOn Ω] Uraw v j := by
     simpa only [Uop, Uraw, Mη, gradCoord, ContinuousLinearMap.comp_apply] using
       scalarL2Multiplier_apply_ae η.toFun hηMeas 1 zero_le_one hηBoundAE
-        (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j (gradientCLM hΩ v))
+        _
   have hU₀AE (v : X) : ⇑(U₀op v) =ᵐ[PDE.volumeOn Ω] U₀raw v := by
     simpa only [U₀op, U₀raw, Mη, ContinuousLinearMap.comp_apply] using
       scalarL2Multiplier_apply_ae η.toFun hηMeas 1 zero_le_one hηBoundAE
-        (valueCLM hΩ v)
+        _
   let left : X → ℝ := h10CommutatorLhsLocal
     r₀ r₁ h₀₁ hΩ hΩbounded a b c F hFSmooth ζ η χ k h τ hηshift
-  let rightInner : X → ℝ := fun v =>
+  let rightInner  := fun v =>
     -Inner.inner ℝ sourceDLp (Vop v) -
       (∑ i : Fin d, ∑ j : Fin d,
         Inner.inner ℝ (MaT i j (Eop j v) + MaD i j (Uop j v)) (Hop i v)) -
@@ -1025,10 +936,10 @@ private theorem h10CommutatorAtFixedStepFromFields
   let rightRaw : X → ℝ := h10CommutatorRawRhsLocal
     r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth F hFSmooth ζ η χ k h τ hηshift
   have hsourceInner (v : X) :
-      Inner.inner ℝ sourceDLp (Vop v) =
+      Inner.inner ℝ sourceDLp _ =
         ∫ y in Ω, sourceD y * Vraw v y ∂volume :=
     inner_scalarLp_eq_setIntegral_of_ae_eq
-      sourceDLp (Vop v) sourceD (Vraw v) hsourceDLpAE (hVAE v)
+      sourceDLp _ sourceD _ hsourceDLpAE (hVAE v)
   have hprincipalInner (v : X) (i j : Fin d) :
       Inner.inner ℝ (MaT i j (Eop j v) + MaD i j (Uop j v)) (Hop i v) =
         ∫ y in Ω,
@@ -1038,8 +949,8 @@ private theorem h10CommutatorAtFixedStepFromFields
           (aT i j y * Eop j v y + aD i j y * Uop j v y) * Hop i v y ∂volume := by
         simpa only [MaT, MaD] using
           inner_add_scalarL2Multiplier_eq_setIntegral
-            (aT i j) (aD i j) (haTMeas i j) (haDMeas i j) CA CA hCA hCA
-            (haTBoundAE i j) (haDBoundAE i j) (Eop j v) (Uop j v) (Hop i v)
+            _ _ _ _ CA CA hCA hCA
+            _ _ _ _ _
       _ = _ := by
         apply integral_congr_ae
         filter_upwards [hEAE v j, hUAE v j, hHAE v i] with y hE hU hH
@@ -1053,8 +964,8 @@ private theorem h10CommutatorAtFixedStepFromFields
           (driftT j y * Eop j v y + driftD j y * Uop j v y) * Vop v y ∂volume := by
         simpa only [MdriftT, MdriftD] using
           inner_add_scalarL2Multiplier_eq_setIntegral
-            (driftT j) (driftD j) (hdriftTMeas j) (hdriftDMeas j) CA CA hCA hCA
-            (hdriftTBoundAE j) (hdriftDBoundAE j) (Eop j v) (Uop j v) (Vop v)
+            _ _ _ _ CA CA hCA hCA
+            _ _ _ _ _
       _ = _ := by
         apply integral_congr_ae
         filter_upwards [hEAE v j, hUAE v j, hVAE v] with y hE hU hV
@@ -1069,7 +980,7 @@ private theorem h10CommutatorAtFixedStepFromFields
         simpa only [MγT, MγD] using
           inner_add_scalarL2Multiplier_eq_setIntegral
             γT γD hγTMeas hγDMeas CA CA hCA hCA hγTBoundAE hγDBoundAE
-            (Vop v) (U₀op v) (Vop v)
+            _ _ _
       _ = _ := by
         apply integral_congr_ae
         filter_upwards [hVAE v, hU₀AE v] with y hV hU₀
@@ -1078,9 +989,7 @@ private theorem h10CommutatorAtFixedStepFromFields
     dsimp only [rightInner, rightRaw]
     simp_rw [hsourceInner, hprincipalInner, hdriftInner, hscalarInner]
     rfl
-  have hleft : Continuous left := by
-    dsimp only [left]
-    exact continuous_const.mul
+  have hleft : Continuous left := continuous_const.mul
       (((reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ).continuous.comp
         B.continuous).sub
         (continuous_reverseTimeSpatialForm_apply_energyTest
@@ -1088,23 +997,21 @@ private theorem h10CommutatorAtFixedStepFromFields
   have hsourceContinuous : Continuous (fun v : X => Inner.inner ℝ sourceDLp (Vop v)) :=
     continuous_inner.comp (continuous_const.prodMk Vop.continuous)
   have hprincipalContinuous (i j : Fin d) : Continuous (fun v : X =>
-      Inner.inner ℝ (MaT i j (Eop j v) + MaD i j (Uop j v)) (Hop i v)) :=
+      Inner.inner ℝ (MaT i j _ + MaD i j _) (Hop i v)) :=
     continuous_inner.comp
       ((((MaT i j).continuous.comp (Eop j).continuous).add
         ((MaD i j).continuous.comp (Uop j).continuous)).prodMk (Hop i).continuous)
   have hdriftContinuous (j : Fin d) : Continuous (fun v : X =>
-      Inner.inner ℝ (MdriftT j (Eop j v) + MdriftD j (Uop j v)) (Vop v)) :=
+      Inner.inner ℝ (MdriftT j _ + MdriftD j _) (Vop v)) :=
     continuous_inner.comp
       ((((MdriftT j).continuous.comp (Eop j).continuous).add
         ((MdriftD j).continuous.comp (Uop j).continuous)).prodMk Vop.continuous)
   have hscalarContinuous : Continuous (fun v : X =>
-      Inner.inner ℝ (MγT (Vop v) + MγD (U₀op v)) (Vop v)) :=
+      Inner.inner ℝ (MγT _ + MγD _) (Vop v)) :=
     continuous_inner.comp
       (((MγT.continuous.comp Vop.continuous).add
         (MγD.continuous.comp U₀op.continuous)).prodMk Vop.continuous)
-  have hright : Continuous rightInner := by
-    dsimp only [rightInner]
-    exact ((hsourceContinuous.neg.sub
+  have hright : Continuous rightInner := ((hsourceContinuous.neg.sub
       (continuous_finset_sum _ fun i _ =>
         continuous_finset_sum _ fun j _ => hprincipalContinuous i j)).sub
       (continuous_finset_sum _ fun j _ => hdriftContinuous j)).add hscalarContinuous
@@ -1113,8 +1020,7 @@ private theorem h10CommutatorAtFixedStepFromFields
     ζ η χ k h τ hτ hηshift u rightInner hleft hright hInnerRaw
 
 private theorem h10CommutatorFromFields
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
+    
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -1161,8 +1067,7 @@ private theorem h10CommutatorFromFields
     change χ y ≠ 0
     rw [χ.eq_one_on_inner y hy]
     exact one_ne_zero
-  let hηshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k) (tsupport η.toFun) Ω :=
+  let hηshift  :=
     (hshift k h hhχ).mono_left hηχ
   exact h10CommutatorAtFixedStepFromFields r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth
     hbSmooth hcSmooth F hFSmooth ζ η χ k h τ hτ hηshift u CF CA hCA
@@ -1173,8 +1078,7 @@ private theorem h10CommutatorFromFields
 localized energy test satisfies the literal reverse-time fixed-slice
 source-minus-form commutator identity. -/
 theorem exists_smallStep_reverseTimeSource_sub_reverseTimeSpatialForm_energyTest_eq_commutator
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
+     (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -1201,7 +1105,7 @@ theorem exists_smallStep_reverseTimeSource_sub_reverseTimeSpatialForm_energyTest
           apply subset_tsupport
           change χ y ≠ 0
           rw [χ.eq_one_on_inner y hy]
-          exact one_ne_zero
+          simp
         let hηshift : Set.MapsTo
             (fun y : PDE.Vec d => y + h • PDE.basisVec k)
             (tsupport η.toFun) Ω :=
@@ -1278,16 +1182,10 @@ theorem exists_smallStep_reverseTimeSource_sub_reverseTimeSpatialForm_energyTest
                 V y ∂volume) +
             ∫ y in Ω,
               (γT y * V y + γD y * U₀ y) * V y ∂volume := by
-  change h10CommutatorOutput r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth
-    F hFSmooth ζ hζunit η χ
-  let K : Set (TimeVelocity d) := ({0} : Set ℝ) ×ˢ tsupport χ.toFun
+  let K : Set (TimeVelocity d) := ({0}) ×ˢ tsupport χ.toFun
   let U : Set (TimeVelocity d) := Set.univ ×ˢ Ω
-  have hK : IsCompact K := by
-    dsimp only [K]
-    exact isCompact_singleton.prod χ.hasCompactSupport.isCompact
-  have hU : IsOpen U := by
-    dsimp only [U]
-    exact isOpen_univ.prod hΩ
+  have hK : IsCompact K := isCompact_singleton.prod χ.hasCompactSupport.isCompact
+  have hU : IsOpen U := isOpen_univ.prod hΩ
   have hKU : K ⊆ U := by
     intro z hz
     exact ⟨mem_univ _, χ.tsupport_subset hz.2⟩
@@ -1305,7 +1203,6 @@ theorem exists_smallStep_reverseTimeSource_sub_reverseTimeSpatialForm_energyTest
   obtain ⟨δA, CA, hδA, hCA, hfields⟩ :=
     exists_reverseTimeCoefficient_cutoff_mul_spatialFields_of_smoothOnNeighborhood
       r₀ r₁ χ χ.tsupport_subset ζ hζunit a b c haSmooth hbSmooth hcSmooth
-  dsimp only at hfields
   rcases hfields with ⟨hmatrixFields, hdriftFields, hscalarFields⟩
   exact h10CommutatorFromFields r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth
     F hFSmooth ζ hζunit η χ δχ δF CF δA CA hδχ hδF hδA hCF hCA hshift
@@ -1313,8 +1210,7 @@ theorem exists_smallStep_reverseTimeSource_sub_reverseTimeSpatialForm_energyTest
 
 /-- Fixed supplied-collar commutator identity from the raw majorants. -/
 theorem reverseTimeSource_sub_reverseTimeSpatialForm_energyTest_eq_commutator_of_majorants
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
+     (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
     (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ)
@@ -1445,8 +1341,6 @@ theorem reverseTimeSource_sub_reverseTimeSpatialForm_energyTest_eq_commutator_of
   let hηshift : Set.MapsTo
       (fun y : PDE.Vec d => y + h • PDE.basisVec k) (tsupport η.toFun) Ω :=
     (mapsTo_add_smul_basisVec_of_spatialCoordinateShiftCarrier_subset hcarrier k hh).mono_left hηχ
-  change h10CommutatorFixedStepOutputLocal r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth
-    hbSmooth hcSmooth F hFSmooth ζ η χ k h τ hτ hηshift u
   rcases reverseTimeSpatialRawAmplitude_bounds_of_majorants r₀ r₁ χ δ M
     hcarrier a b c F haSmooth hbSmooth hcSmooth hFSmooth hA hB hBD hq hqD hfD with
     ⟨_, hsourceDQχ, hADQ, hBT, hBDQ, hcT, hcDQ⟩

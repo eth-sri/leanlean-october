@@ -6,7 +6,6 @@ public import PDEFoundation.Sobolev.WeakDerivative.Algebra
 /-! # Locality of the selected weak representatives -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Set
 
@@ -25,10 +24,9 @@ theorem construction_weak_derivative_zero_on_open {n : ℕ} (D : Set (PDE.Vec n)
         _ = ∫ x in D, (0 : ℝ) := by
           apply integral_congr_ae
           filter_upwards [hu] with x hx
-          simp only [Pi.zero_apply] at hx
-          rw [hx, zero_mul]
-        _ = 0 := by simp only [integral_zero]
-    simpa only [Pi.zero_apply, zero_mul, integral_zero, neg_zero] using he
+          simp_all
+        _ = 0 := by simp
+    simp_all
   exact PDE.HasWeakPartialDerivOn.ae_eq hD (hg.locallyIntegrableOn D)
     (continuous_const.locallyIntegrable.locallyIntegrableOn D) hw hz
 

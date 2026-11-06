@@ -11,7 +11,6 @@ is restricted to the literal internal face in the open observation slab.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
 
@@ -19,15 +18,14 @@ open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
 theorem enlarged_closedEntrance_subset_active (c : Clock) :
     closure c.entrance ⊆ c.active := by
   intro v hv
-  rw [Clock.entrance, closure_Ioo (by linarith [c.positive])] at hv
-  change c.vbar - 3 * c.r / 4 < v ∧ v < c.vbar + 3 * c.r / 4
+  rw [Clock.entrance, closure_Ioo (by aesop)] at hv
   constructor <;> linarith [hv.1, hv.2, c.positive]
+
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
 
 /-- Every canonical entrance lies between the initial time and the horizon. -/
 theorem enlargedVisitEntrance_ae_support
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
+     (c : Clock) (J : Interval) (s T : ℝ)
     (P : Point) (hs : s ≤ P.time) (hT : P.time < T) (n : ℕ) :
     ∀ᵐ p ∂enlargedVisitEntrance hH hLE hlam hLam A c J s T P n,
       s ≤ p.time ∧ p.time < T ∧ p.velocity 0 ∈ closure c.entrance := by
@@ -35,26 +33,18 @@ theorem enlargedVisitEntrance_ae_support
   | zero =>
     unfold enlargedVisitEntrance visitGamma visitInitial
     split
-    · rename_i hv
-      apply (ae_dirac_iff ?_).mpr
-      · exact ⟨hs, hT, hv⟩
-      · exact (isClosed_le continuous_const continuous_time).measurableSet.inter
-          ((isOpen_lt continuous_time continuous_const).measurableSet.inter
-            (isClosed_closure.measurableSet.preimage
-              ((continuous_apply 0).comp continuous_velocity).measurable))
+    · aesop
     · exact (ae_restrict_mem
-        (measurableSet_visitBoundary s T (visitEntranceInterval c) J)).mono
+        (measurableSet_visitBoundary s T _ J)).mono
           (fun _ hp => ⟨hp.1.le, hp.2.1, frontier_subset_closure hp.2.2.1⟩)
   | succ n =>
     exact (ae_restrict_mem
-      (measurableSet_visitBoundary s T (visitEntranceInterval c) J)).mono
+      (measurableSet_visitBoundary s T _ J)).mono
         (fun _ hp => ⟨hp.1.le, hp.2.1, frontier_subset_closure hp.2.2.1⟩)
 
 /-- The canonical counting measure has the same time and entrance support as its pieces. -/
 theorem enlargedVisitStarts_ae_support
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
+     (c : Clock) (J : Interval) (s T : ℝ)
     (P : Point) (hs : s ≤ P.time) (hT : P.time < T) :
     ∀ᵐ p ∂enlargedVisitStarts hH hLE hlam hLam A c J s T P,
       s ≤ p.time ∧ p.time < T ∧ p.velocity 0 ∈ closure c.entrance :=
@@ -63,9 +53,7 @@ theorem enlargedVisitStarts_ae_support
 
 /-- The enlarged active-pole carrier includes almost every actual entrance. -/
 theorem enlargedVisitEntrance_ae_activePole
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
+     (c : Clock) (J : Interval) (s T : ℝ)
     (P : Point) (hs : s ≤ P.time) (hT : P.time < T)
     (hJ : closure c.active ⊆ J.carrier) (n : ℕ) :
     ∀ᵐ p ∂enlargedVisitEntrance hH hLE hlam hLam A c J s T P n,

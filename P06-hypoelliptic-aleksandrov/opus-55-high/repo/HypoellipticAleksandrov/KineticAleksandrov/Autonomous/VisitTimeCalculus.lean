@@ -12,13 +12,15 @@ import Mathlib.Tactic
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 
+variable (c : Clock) (eta : ℝ → ℝ)
+
 /-- The time-localized quadratic has exactly the source transport-diffusion operator. -/
-theorem visitTimeQuadratic_operator (c : Clock) (eta : ℝ → ℝ)
+theorem visitTimeQuadratic_operator 
     (heta : ContDiff ℝ (⊤ : ℕ∞) eta) (a : ℝ → ℝ → ℝ) (p : Point) :
     forwardScalarOperator a (fun q => eta q.time * visitQuadratic c (q.velocity 0)) p =
       deriv eta p.time * visitQuadratic c (p.velocity 0) -
         2 * a (p.position 0) (p.velocity 0) * eta p.time := by
-  have htime : deriv (fun t => eta t * visitQuadratic c (p.velocity 0)) p.time =
+  have htime : deriv (fun t => eta t * visitQuadratic c _) p.time =
       deriv eta p.time * visitQuadratic c (p.velocity 0) :=
     ((heta.differentiable (by norm_num) p.time).hasDerivAt.mul_const _).deriv
   have hquad (v : ℝ) : HasDerivAt (visitQuadratic c) (-2 * (v - c.vbar)) v := by
@@ -26,18 +28,16 @@ theorem visitTimeQuadratic_operator (c : Clock) (eta : ℝ → ℝ)
     rwa [visitQuadratic_deriv] at h
   have hfirst : deriv (fun v => eta p.time * visitQuadratic c v) =
       fun v => eta p.time * (-2 * (v - c.vbar)) :=
-    funext fun v => ((hquad v).const_mul (eta p.time)).deriv
+    funext fun v => ((hquad v).const_mul _).deriv
   have hsecond : deriv (deriv (fun v => eta p.time * visitQuadratic c v)) (p.velocity 0) =
       eta p.time * (-2) := by
-    rw [hfirst]
-    have hh := ((hasDerivAt_id (p.velocity 0)).sub_const c.vbar).const_mul (-2)
-    simpa only [id_eq, mul_one] using (hh.const_mul (eta p.time)).deriv
+    simp_all
   rw [forwardScalarOperator, kineticPositionGradient_scalar, kineticVelocityHessian_scalar]
-  simp only [kineticTimeDerivative, htime, deriv_const, mul_zero, add_zero, hsecond]
+  simp only [kineticTimeDerivative, htime, deriv_const, hsecond]
   ring
 
 /-- Raw physical smoothness of the time-localized quadratic. -/
-theorem visitTimeQuadratic_smooth (c : Clock) (eta : ℝ → ℝ)
+theorem visitTimeQuadratic_smooth 
     (heta : ContDiff ℝ (⊤ : ℕ∞) eta) :
     ContDiff ℝ (⊤ : ℕ∞)
       ((fun q : Point => eta q.time * visitQuadratic c (q.velocity 0)) ∘

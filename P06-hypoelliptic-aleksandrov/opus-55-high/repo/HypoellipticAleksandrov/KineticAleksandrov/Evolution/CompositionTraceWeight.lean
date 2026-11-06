@@ -11,7 +11,6 @@ expressed in the source's explicit Euclidean squared radius.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -30,7 +29,7 @@ theorem isCompact_quadratic_weight_sublevel
   have hs := sq_nonneg (‖x‖ - 1)
   have hr := abs_nonneg R
   have hx' : 1 + ‖x‖ ^ 2 ≤ R := hx
-  nlinarith only [hn, hR, hs, hr, hx']
+  linarith
 
 /-- The quadratic ambient norm weight is bounded by the actual Euclidean state weight. -/
 theorem quadratic_state_weight_le_radial {n : ℕ} (r : ℝ) (x : EvolutionAmbientState n) :

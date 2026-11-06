@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockGreenTe
 /-! # The genuine normalized Duhamel test satisfies the physical clock equation -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Parabolic
 open SectionTwo TheoremA Evolution
@@ -20,11 +19,11 @@ theorem clock_extended_operator_eq {lam Lam : ℝ} (A : SmoothAutonomous lam Lam
   have hB : fullKineticCoefficientAt (c.normalizedCoefficient A.a e) p =
       fullKineticCoefficientAt (zIndependentCoefficient (c.extendedCoefficient lam A.a e)) p := by
     ext i j
-    exact (c.extendedDiffusion_eq A.a e p.time (p.position 0) hp).symm
+    exact (c.extendedDiffusion_eq A.a e p.time _ hp).symm
   have hb : c.normalizedDrift p.position = c.extendedVectorDrift p.position := by
     ext i
     exact (c.extendedDrift_eq hp).symm
-  rw [transportedForwardOperator_apply, transportedForwardOperator_apply, hB, hb]
+  simp_all
 
 /-- The actual normalized compact-source test obeys the exact physical weighted source equation. -/
 theorem clockSourcePotential_physical_equation
@@ -43,15 +42,13 @@ theorem clockSourcePotential_physical_equation
     clockSourcePotential_regular hH hLE hlam hLam A c e R T hRT f hfn hs hz
   rw [c.conjugacy A.a e _ hsm p hp]
   have hi : (sectionTwoPoint (c.map e p)).position 0 ∈ normalizedActive :=
-    (c.mem_active_iff (p.velocity 0)).mp hp
+    (c.mem_active_iff _).mp hp
   rw [clock_extended_operator_eq A c e _ _ hi]
   have heq : (clockSourcePotential hH hLE hlam hLam A c e T f ∘ sectionTwoPoint) ∘
       sectionTwoPoint = clockSourcePotential hH hLE hlam hLam A c e T f := by
-    funext q
-    exact congrArg _ (sectionTwoPoint_involutive q)
+    aesop
   rw [heq, hop]
-  · rw [sectionTwoPoint_involutive]
-    ring
+  · aesop
   · rw [intervalDomain, PDE.mem_oneDimensionalAxisBox_iff]
     exact hi
 

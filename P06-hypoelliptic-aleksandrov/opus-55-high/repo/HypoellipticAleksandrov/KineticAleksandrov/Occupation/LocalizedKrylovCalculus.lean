@@ -31,36 +31,33 @@ variable {d : ℕ}
 def reflectScale (R : ℝ) (vStar : PDE.Vec d) (z : TimeVelocity d) : TimeVelocity d :=
   (1 - R ^ 2 * z.1, vStar + R • z.2)
 
+variable (R : ℝ) (vStar : PDE.Vec d) (V : TimeVelocity d → ℝ) (z : TimeVelocity d)
+
 /-- The reflect-and-rescale map is the time reflection of a parabolic affine map. -/
-theorem reflectScale_eq (R : ℝ) (vStar : PDE.Vec d) :
+theorem reflectScale_eq  :
     reflectScale R vStar = timeReflection ∘ parabolicAffine 0 vStar R := by
   funext z
   simp only [reflectScale, Function.comp_apply, timeReflection, parabolicAffine, zero_add]
 
 /-- The reflect-and-rescale map is continuous. -/
-theorem continuous_reflectScale (R : ℝ) (vStar : PDE.Vec d) :
+theorem continuous_reflectScale  :
     Continuous (reflectScale R vStar) := by
   unfold reflectScale
   fun_prop
 
 /-- Reflection reverses the scalar time derivative. -/
-theorem scalarTimeDerivative_timeReflectedScalar (V : TimeVelocity d → ℝ)
-    (z : TimeVelocity d) :
+theorem scalarTimeDerivative_timeReflectedScalar  :
     scalarTimeDerivative (timeReflectedScalar V) z =
-      -scalarTimeDerivative V (timeReflection z) := by
-  unfold scalarTimeDerivative timeReflectedScalar timeReflection
-  exact deriv_comp_const_sub (f := fun r : ℝ => V (r, z.2)) (a := 1) (x := z.1)
+      -scalarTimeDerivative V (timeReflection z) := deriv_comp_const_sub (f := fun r : ℝ => V (r, z.2)) (a := 1) (x := z.1)
 
 /-- Reflection preserves the scalar spatial gradient. -/
-theorem scalarSpatialGradient_timeReflectedScalar (V : TimeVelocity d → ℝ)
-    (z : TimeVelocity d) :
+theorem scalarSpatialGradient_timeReflectedScalar  :
     scalarSpatialGradient (timeReflectedScalar V) z =
       scalarSpatialGradient V (timeReflection z) :=
   rfl
 
 /-- Reflection preserves the scalar spatial Hessian. -/
-theorem scalarSpatialHessian_timeReflectedScalar (V : TimeVelocity d → ℝ)
-    (z : TimeVelocity d) :
+theorem scalarSpatialHessian_timeReflectedScalar  :
     scalarSpatialHessian (timeReflectedScalar V) z =
       scalarSpatialHessian V (timeReflection z) :=
   rfl
@@ -69,8 +66,8 @@ theorem scalarSpatialHessian_timeReflectedScalar (V : TimeVelocity d → ℝ)
 theorem isScalarC12On_timeReflectedScalar {V : TimeVelocity d → ℝ} {D : Set (TimeVelocity d)}
     (hV : IsScalarC12On V D) :
     IsScalarC12On (timeReflectedScalar V) (timeReflection ⁻¹' D) := by
-  have hm : MapsTo (timeReflection (d := d)) (timeReflection ⁻¹' D) D := fun _ hz => hz
-  have hc : ContinuousOn (timeReflection (d := d)) (timeReflection ⁻¹' D) :=
+  have hm : MapsTo _ (timeReflection ⁻¹' D) D := fun _ hz => hz
+  have hc : ContinuousOn _ (timeReflection ⁻¹' D) :=
     continuous_timeReflection.continuousOn
   refine ⟨hV.continuousOn.comp hc hm, ?_, ?_, ?_, ?_, ?_⟩
   · intro z hz
@@ -93,14 +90,13 @@ private theorem gradient_affine_aux (f : PDE.Vec d → ℝ)
       ρ • PDE.classicalGradient f (v + ρ • x) := by
   have ha : HasFDerivAt (fun y : PDE.Vec d => v + ρ • y)
       (ρ • ContinuousLinearMap.id ℝ (PDE.Vec d)) x := by
-    simpa only [Pi.smul_def, id_eq] using! ((hasFDerivAt_id x).const_smul ρ).const_add v
+    fun_prop
   have hc := hf.hasFDerivAt.comp x ha
   ext i
-  simp only [PDE.classicalGradient, Pi.smul_apply, smul_eq_mul]
+  simp only [PDE.classicalGradient, Pi.smul_apply]
   simp only [Function.comp_def] at hc
   rw [hc.fderiv]
-  simp only [ContinuousLinearMap.comp_apply, smul_apply,
-    ContinuousLinearMap.id_apply, map_smul, smul_eq_mul]
+  simp
 
 /-- The spatial gradient under a parabolic affine pullback. -/
 theorem scalarSpatialGradient_parabolicAffine (u : TimeVelocity d → ℝ) (b : ℝ)
@@ -108,7 +104,7 @@ theorem scalarSpatialGradient_parabolicAffine (u : TimeVelocity d → ℝ) (b : 
     (hu : DifferentiableAt ℝ (fun y : PDE.Vec d => u (b + ρ ^ 2 * z.1, y)) (v + ρ • z.2)) :
     scalarSpatialGradient (u ∘ parabolicAffine b v ρ) z =
       ρ • scalarSpatialGradient u (parabolicAffine b v ρ z) :=
-  gradient_affine_aux (fun y => u (b + ρ ^ 2 * z.1, y)) v ρ z.2 hu
+  gradient_affine_aux _ v ρ z.2 hu
 
 /-- `C^{1,2}` regularity and the derivative identities for `V ∘ reflectScale`. -/
 theorem isScalarC12On_reflectScale {V : TimeVelocity d → ℝ} {D : Set (TimeVelocity d)}
@@ -121,26 +117,25 @@ theorem isScalarC12On_reflectScale {V : TimeVelocity d → ℝ} {D : Set (TimeVe
         R • scalarSpatialGradient V (reflectScale R vStar z) ∧
       scalarSpatialHessian (fun w => V (reflectScale R vStar w)) z =
         R ^ 2 • scalarSpatialHessian V (reflectScale R vStar z) := by
-  have hD' : IsOpen (timeReflection ⁻¹' D : Set (TimeVelocity d)) :=
+  have hD'  :=
     hD.preimage continuous_timeReflection
   have hV' := isScalarC12On_timeReflectedScalar hV
   have hfun : (fun z => V (reflectScale R vStar z)) =
       timeReflectedScalar V ∘ parabolicAffine 0 vStar R := by
     funext z
-    simp only [Function.comp_apply, timeReflectedScalar_apply]
     exact congrArg V (congrFun (reflectScale_eq R vStar) z)
   have hpre : parabolicAffine 0 vStar R ⁻¹' (timeReflection ⁻¹' D) =
       reflectScale R vStar ⁻¹' D := by
     rw [reflectScale_eq, Set.preimage_comp]
   obtain ⟨hC, hform⟩ := KrylovEstimate.scalarC12On_affine_pullback hD'
-    (timeReflectedScalar V) hV' 0 vStar hR
+    _ hV' 0 vStar hR
   rw [hpre] at hC hform
   rw [hfun]
   refine ⟨hC, ?_⟩
   intro z hz
   have hz' : z ∈ parabolicAffine 0 vStar R ⁻¹' (timeReflection ⁻¹' D) := by
-    rw [hpre]; exact hz
-  have hΦ : reflectScale R vStar z = timeReflection (parabolicAffine 0 vStar R z) :=
+    simp_all
+  have hΦ : reflectScale R vStar z = timeReflection _ :=
     congrFun (reflectScale_eq R vStar) z
   obtain ⟨ht, hh⟩ := hform z hz
   refine ⟨?_, ?_, ?_⟩
@@ -149,7 +144,7 @@ theorem isScalarC12On_reflectScale {V : TimeVelocity d → ℝ} {D : Set (TimeVe
   · have hslice := (hV'.spatialSlice_contDiffAt hz').differentiableAt (by norm_num)
     rw [scalarSpatialGradient_parabolicAffine _ 0 vStar R z hslice,
       scalarSpatialGradient_timeReflectedScalar, hΦ]
-  · rw [hh, scalarSpatialHessian_timeReflectedScalar, hΦ]
+  aesop
 
 /-- The scaled backward operator: `u_t - a : D² u = -R² (V_r + B : D² V)` at `reflectScale`. -/
 theorem scaled_operator_eq {V : TimeVelocity d → ℝ} {D : Set (TimeVelocity d)}

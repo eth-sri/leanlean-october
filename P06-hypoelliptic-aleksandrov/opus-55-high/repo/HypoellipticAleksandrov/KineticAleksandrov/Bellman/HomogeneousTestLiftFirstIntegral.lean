@@ -8,7 +8,6 @@ import Mathlib.Tactic
 /-! # The explicit first derivative of a compact positive-radius parameter integral -/
 
 @[expose] public section
-noncomputable section
 open Set MeasureTheory Filter Topology
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -22,12 +21,12 @@ theorem bellman_joint_integral_fderiv {A : Type*}
     fderiv ℝ (fun x => ∫ a, f (x, radius a) ∂mu) q e =
       ∫ a, fderiv ℝ f (q, radius a) (e, 0) ∂mu := by
   let L : (ℝ × ℝ) →L[ℝ] (ℝ × ℝ) × ℝ :=
-    (ContinuousLinearMap.id ℝ (ℝ × ℝ)).prod 0
+    (ContinuousLinearMap.id ℝ _).prod 0
   let J : (((ℝ × ℝ) × ℝ) →L[ℝ] ℝ) →L[ℝ] (ℝ × ℝ) →L[ℝ] ℝ :=
     (ContinuousLinearMap.compL ℝ (ℝ × ℝ) ((ℝ × ℝ) × ℝ) ℝ).flip L
-  let g : ((ℝ × ℝ) × ℝ) → (ℝ × ℝ) →L[ℝ] ℝ := fun w => J (fderiv ℝ f w)
+  let g  := fun w => J (fderiv ℝ f w)
   have hopen : IsOpen (U ×ˢ Ioi (0 : ℝ)) := hU.prod isOpen_Ioi
-  have hg : ContinuousOn g (U ×ˢ Ioi 0) :=
+  have hg : ContinuousOn g _ :=
     (J.contDiff.comp_contDiffOn
       (hf.fderiv_of_isOpen hopen (m := 0) (by norm_num))).continuousOn
   have hmap : MapsTo (fun w : (ℝ × ℝ) × A => (w.1, radius w.2))
@@ -42,7 +41,7 @@ theorem bellman_joint_integral_fderiv {A : Type*}
     have hdf := ((hf (x, radius a) ⟨hx, hrp a⟩).contDiffAt
       (hopen.mem_nhds ⟨hx, hrp a⟩)).differentiableAt (by norm_num)
     have hdc : HasFDerivAt (fun z : ℝ × ℝ => (z, radius a)) L x :=
-      (hasFDerivAt_id x).prodMk (hasFDerivAt_const (radius a) x)
+      (hasFDerivAt_id x).prodMk (hasFDerivAt_const _ x)
     exact hdf.hasFDerivAt.comp x hdc
   have ht := bellman_compact_parameter_hasFDerivAt mu hU
     (fun x a => f (x, radius a)) (fun x a => g (x, radius a)) hc0 hc1 hd hq

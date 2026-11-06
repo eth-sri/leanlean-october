@@ -8,7 +8,6 @@ import Mathlib.Tactic
 /-! # Differentiating an integral with a compact parameter carrier -/
 
 @[expose] public section
-noncomputable section
 open Set MeasureTheory Filter Topology Metric
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -25,7 +24,7 @@ theorem bellman_compact_parameter_integrable (mu : Measure A) [IsFiniteMeasure m
     {q : E} (hq : q ∈ U) : Integrable (f q) mu := by
   have hc : Continuous (f q) := continuousOn_univ.mp
     (hf.comp (continuous_const.prodMk continuous_id).continuousOn (fun a _ => ⟨hq, trivial⟩))
-  simpa only [IntegrableOn, Measure.restrict_univ] using
+  simpa using
     ContinuousOn.integrableOn_compact' (μ := mu) isCompact_univ
       MeasurableSet.univ hc.continuousOn
 
@@ -44,7 +43,7 @@ theorem bellman_compact_parameter_bound {U : Set E} (hU : IsOpen U)
     exact lt_of_le_of_lt hx (half_lt_self hr)
   have hc := (isCompact_closedBall q (r / 2)).prod (isCompact_univ : IsCompact (univ : Set A))
   obtain ⟨C, hC⟩ := hc.bddAbove_image (hf.mono (prod_mono hsmall Subset.rfl)).norm
-  exact ⟨closedBall q (r / 2), closedBall_mem_nhds q hp, hsmall, C,
+  exact ⟨closedBall q _, closedBall_mem_nhds q hp, hsmall, C,
     fun x hx a => hC ⟨(x, a), ⟨hx, trivial⟩, rfl⟩⟩
 
 omit [CompleteSpace F] [SecondCountableTopology A] in

@@ -7,7 +7,6 @@ import Mathlib.Tactic
 /-! # The actual positive-tail limit and its flux normalization -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set Filter
 open scoped Topology
@@ -35,12 +34,11 @@ theorem bellmanAngularPositiveTail_limit (R β : ℝ) (hR : 1 ≤ R) (hβ : 3 �
       (hI.const_mul ((β - 2) / 3))).add (hM.const_mul ((β - 3) / 3))
     simp only [zero_add, mul_zero, add_zero] at ht
     apply ht.congr'
-    filter_upwards [eventually_gt_atTop (0 : ℝ)] with y hy
-    rw [he y]
-    field_simp
+    filter_upwards [eventually_gt_atTop (0)] with y hy
+    grind
   have hlower : 0 ≤ J 0 - ((β - 2) / 3) * L := by
     apply ge_of_tendsto hdiv
-    filter_upwards [eventually_ge_atTop (0 : ℝ)] with y hy
+    filter_upwards [eventually_ge_atTop (0)] with y hy
     exact div_nonneg (hh y) hy
   have hz : J 0 - ((β - 2) / 3) * L = 0 := by
     by_contra hne
@@ -56,11 +54,9 @@ theorem bellmanAngularPositiveTail_limit (R β : ℝ) (hR : 1 ≤ R) (hβ : 3 �
       exact mul_nonneg hz.le hnz
     · exact Eventually.of_forall (fun z hz => hz.1)
   have hMy := bellmanAngularSecondMoment_nonneg hn hy.le
-  rw [he y, hj]
+  rw [he y]
   have hc : 0 ≤ (β - 2) / 3 := by linarith
-  have hd : 0 ≤ (β - 3) / 3 := by linarith
   have hp := mul_nonneg (mul_nonneg hc hy.le) (sub_nonneg.mpr hIy)
-  have hq := mul_nonneg hd hMy
   nlinarith
 
 end HypoellipticAleksandrov.KineticAleksandrov

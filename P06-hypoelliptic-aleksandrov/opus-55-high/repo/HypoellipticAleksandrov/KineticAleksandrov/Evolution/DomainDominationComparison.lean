@@ -19,7 +19,6 @@ at the terminal slice and nonpositive on the small lateral frontier; the
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -39,8 +38,8 @@ theorem IsClassicalTerminalSolution.nonneg_of_nonneg {Ω : Set (PDE.Vec n)} {γ 
   intro p hp
   have h0 := IsClassicalTerminalSolution.smul hΩ hγ 0 hu
   have hle := IsClassicalTerminalSolution.le_of_le hΩ hγ hlam hB hb h0 hu
-    (fun y z _ => by simpa using hF (y, z)) p hp
-  simpa using hle
+    (fun y z _ => by simp_all) p hp
+  simp_all
 
 /-- A solution on a moving subdomain is dominated by the solution on the large domain with the
 same nonnegative datum. -/
@@ -54,7 +53,7 @@ theorem classical_le_of_subdomain {Ω Ω' : Set (PDE.Vec n)} {γ γ' : ℝ → P
     (hu' : IsClassicalTerminalSolution Ω' γ' B b τ F u') (hF : ∀ q, 0 ≤ F q) :
     ∀ p ∈ evolutionPastClosedCylinder Ω' γ' τ, u' p ≤ u p := by
   have hnn := hu.nonneg_of_nonneg hΩ hγ hlam hB hb hF
-  have hcl : ∀ t, closure (movingDomain Ω' γ' t) ⊆ closure (movingDomain Ω γ t) :=
+  have hcl  :=
     fun t => closure_mono (hsub t)
   have hu0 := (isClassicalViscousTerminalSolution_zero_iff Ω γ B b τ F u).2 hu
   have hu0' := (isClassicalViscousTerminalSolution_zero_iff Ω' γ' B b τ F u').2 hu'
@@ -74,11 +73,7 @@ theorem classical_le_of_subdomain {Ω Ω' : Set (PDE.Vec n)} {γ γ' : ℝ → P
     hlam hB hb le_rfl zero_le_one ?_ ?_ ?_ ?_ ?_ ?_ p₀ hp₀slab
   · linarith
   · refine ⟨C' + C, fun p hp => ?_⟩
-    have h1 := hC' p (hslab' _ hp)
-    have h2 := hC p (hslab _ hp)
-    have := le_abs_self (u' p)
-    have := neg_abs_le (u p)
-    linarith
+    grind
   · exact (hu0'.2.1.mono (hslab' _)).sub (hu0.2.1.mono (hslab _))
   · intro p hp
     exact (hu0'.isSliceRegularAt hΩ' hγ' (hact' _ hp)).sub
@@ -92,14 +87,11 @@ theorem classical_le_of_subdomain {Ω Ω' : Set (PDE.Vec n)} {γ γ' : ℝ → P
   · intro p hp hpT
     have hterm' : p ∈ evolutionTerminalClosure Ω' γ' τ := ⟨hpT, hpT ▸ hp.2.2⟩
     have hterm : p ∈ evolutionTerminalClosure Ω γ τ := ⟨hpT, hcl _ (hpT ▸ hp.2.2)⟩
-    show u' p - u p ≤ 0
     rw [hu0'.2.2.2.2.1 p hterm', hu0.2.2.2.2.1 p hterm]
     simp
   · intro p hp hfr
     have hlat' : p ∈ evolutionLateralFrontier Ω' γ' τ := ⟨hp.2.1, hfr⟩
-    show u' p - u p ≤ 0
     rw [hu0'.2.2.2.2.2 p hlat']
-    have := hnn p (hslab _ hp)
-    linarith
+    grind
 
 end HypoellipticAleksandrov.KineticAleksandrov

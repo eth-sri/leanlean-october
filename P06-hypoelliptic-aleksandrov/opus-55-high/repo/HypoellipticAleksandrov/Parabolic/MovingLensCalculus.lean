@@ -26,26 +26,26 @@ open Matrix
 open Filter Topology
 open scoped BigOperators
 
+variable {d : ℕ} (A : PDE.Mat d) (xi eps : ℝ) (n : ℕ) (y : PDE.Vec d) (i : Fin d) (z w : TimeVelocity d)
+
 /-- The rank-one velocity matrix formed from the moving-lens displacement. -/
-def movingLensDisplacementOuter {d : ℕ} (y : PDE.Vec d) (z : TimeVelocity d) : PDE.Mat d :=
+def movingLensDisplacementOuter  (y : PDE.Vec d) (z : TimeVelocity d) : PDE.Mat d :=
   fun i j => movingLensDisplacement y z i * movingLensDisplacement y z j
 
 /-- The source rational barrier on a moving lens. -/
-def movingLensBarrier {d : ℕ} (xi eps : ℝ) (n : ℕ) (y : PDE.Vec d) :
+def movingLensBarrier  (xi eps : ℝ) (n : ℕ) (y : PDE.Vec d) :
     TimeVelocity d → ℝ :=
   fun z =>
     (1 - movingLensRadiusSq xi eps y z) ^ 2 /
       (movingLensDenominator xi eps z.1) ^ n
 
 /-- Pointwise `C²` regularity of the moving radius under a nonzero denominator. -/
-theorem contDiffAt_movingLensRadiusSq {d : ℕ} {xi eps : ℝ} {y : PDE.Vec d}
+theorem contDiffAt_movingLensRadiusSq  {xi eps : ℝ} {y : PDE.Vec d}
     {z : TimeVelocity d} (hden : movingLensDenominator xi eps z.1 ≠ 0) :
     ContDiffAt ℝ 2 (movingLensRadiusSq xi eps y) z := by
-  unfold movingLensRadiusSq
   apply ContDiffAt.div
   · unfold PDE.vecNormSq PDE.vecDot
     apply ContDiffAt.sum
-    intro i _
     unfold movingLensDisplacement
     fun_prop
   · unfold movingLensDenominator
@@ -53,24 +53,21 @@ theorem contDiffAt_movingLensRadiusSq {d : ℕ} {xi eps : ℝ} {y : PDE.Vec d}
   · exact hden
 
 /-- Pointwise `C²` regularity of the moving barrier under a nonzero denominator. -/
-theorem contDiffAt_movingLensBarrier {d : ℕ} {xi eps : ℝ} {n : ℕ} {y : PDE.Vec d}
+theorem contDiffAt_movingLensBarrier  {xi eps : ℝ} {n : ℕ} {y : PDE.Vec d}
     {z : TimeVelocity d} (hden : movingLensDenominator xi eps z.1 ≠ 0) :
     ContDiffAt ℝ 2 (movingLensBarrier xi eps n y) z := by
-  unfold movingLensBarrier
   apply ContDiffAt.div
   · exact (contDiffAt_const.sub (contDiffAt_movingLensRadiusSq hden)).pow 2
   · unfold movingLensDenominator
     fun_prop
   · exact pow_ne_zero n hden
 
-private theorem fderiv_timeCoordinate_apply {d : ℕ}
-    (z w : TimeVelocity d) :
+theorem fderiv_timeCoordinate_apply  :
     fderiv ℝ (fun q : TimeVelocity d => q.1) z w = w.1 := by
   rw [(hasFDerivAt_fst (𝕜 := ℝ) (p := z)).fderiv]
   rfl
 
-private theorem fderiv_velocityCoordinate_apply {d : ℕ} (i : Fin d)
-    (z w : TimeVelocity d) :
+theorem fderiv_velocityCoordinate_apply  :
     fderiv ℝ (fun q : TimeVelocity d => q.2 i) z w = w.2 i := by
   have h :=
     (hasFDerivAt_apply (𝕜 := ℝ) i z.2).comp z
@@ -79,34 +76,29 @@ private theorem fderiv_velocityCoordinate_apply {d : ℕ} (i : Fin d)
   rw [h.fderiv]
   rfl
 
-private theorem fderiv_movingLensDenominator_apply {d : ℕ} (xi eps : ℝ)
-    (z w : TimeVelocity d) :
+private theorem fderiv_movingLensDenominator_apply  :
     fderiv ℝ (fun q : TimeVelocity d => movingLensDenominator xi eps q.1) z w =
       xi * w.1 := by
   unfold movingLensDenominator
   rw [fderiv_fun_add (by fun_prop) (by fun_prop),
-    fderiv_const_mul (by fun_prop) xi]
+    fderiv_const_mul (by fun_prop)]
   simp only [ContinuousLinearMap.smul_apply,
     smul_eq_mul, fderiv_timeCoordinate_apply, fderiv_const_apply, add_zero]
 
-private theorem fderiv_movingLensDisplacement_apply {d : ℕ} (y : PDE.Vec d)
-    (i : Fin d) (z w : TimeVelocity d) :
+private theorem fderiv_movingLensDisplacement_apply  :
     fderiv ℝ (fun q : TimeVelocity d => movingLensDisplacement y q i) z w =
       w.2 i - w.1 * y i := by
-  unfold movingLensDisplacement
   change fderiv ℝ (fun q : TimeVelocity d => q.2 i - q.1 * y i) z w = _
   have htime : DifferentiableAt ℝ (fun q : TimeVelocity d => q.1) z :=
     (hasFDerivAt_fst (𝕜 := ℝ) (p := z)).differentiableAt
-  have hvelocity : DifferentiableAt ℝ (fun q : TimeVelocity d => q.2 i) z := by
-    exact ((hasFDerivAt_apply (𝕜 := ℝ) i z.2).comp z
+  have hvelocity : DifferentiableAt ℝ (fun q : TimeVelocity d => q.2 i) z := ((hasFDerivAt_apply (𝕜 := ℝ) i z.2).comp z
       (hasFDerivAt_snd (𝕜 := ℝ) (p := z))).differentiableAt
-  rw [fderiv_fun_sub hvelocity (htime.mul_const (y i)),
-    fderiv_fun_mul htime (differentiableAt_const (y i))]
+  rw [fderiv_fun_sub hvelocity (htime.mul_const _),
+    fderiv_fun_mul htime (differentiableAt_const _)]
   simp [fderiv_velocityCoordinate_apply, fderiv_timeCoordinate_apply]
   ring
 
-private theorem fderiv_movingLensDisplacementNormSq_apply {d : ℕ} (y : PDE.Vec d)
-    (z w : TimeVelocity d) :
+private theorem fderiv_movingLensDisplacementNormSq_apply  :
     fderiv ℝ (fun q : TimeVelocity d => PDE.vecNormSq (movingLensDisplacement y q)) z w =
       2 * (PDE.vecDot (movingLensDisplacement y z) w.2 -
         w.1 * PDE.vecDot (movingLensDisplacement y z) y) := by
@@ -119,19 +111,18 @@ private theorem fderiv_movingLensDisplacementNormSq_apply {d : ℕ} (y : PDE.Vec
   have hsum :
       fderiv ℝ (fun q : TimeVelocity d =>
         ∑ i, movingLensDisplacement y q i * movingLensDisplacement y q i) z =
-        ∑ i, fderiv ℝ (fun q : TimeVelocity d =>
-          movingLensDisplacement y q i * movingLensDisplacement y q i) z :=
+        ∑ i, fderiv ℝ _ z :=
     fderiv_fun_sum fun i _ => (hdispDiff i).mul (hdispDiff i)
   rw [hsum]
   simp only [ContinuousLinearMap.sum_apply]
   calc
     ∑ i, (fderiv ℝ
-        (fun q => movingLensDisplacement y q i * movingLensDisplacement y q i) z) w =
+        _ z) w =
         ∑ i, 2 * movingLensDisplacement y z i * (w.2 i - w.1 * y i) := by
       apply Finset.sum_congr rfl
       intro i _
       rw [fderiv_fun_mul (hdispDiff i) (hdispDiff i)]
-      simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul]
+      simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply]
       rw [fderiv_movingLensDisplacement_apply]
       ring
     _ = 2 * (∑ i, movingLensDisplacement y z i * w.2 i -
@@ -146,21 +137,20 @@ private theorem fderiv_movingLensDisplacementNormSq_apply {d : ℕ} (y : PDE.Vec
         _ = 2 * ∑ i, movingLensDisplacement y z i * w.2 i -
             2 * w.1 * ∑ i, movingLensDisplacement y z i * y i := by
           rw [Finset.sum_sub_distrib, Finset.mul_sum, Finset.mul_sum]
-          apply congrArg₂ (· - ·)
+          apply congrArg₂ _
           · apply Finset.sum_congr rfl
             intro i _
             ring
           · rfl
         _ = _ := by ring
 
-private theorem differentiableAt_movingLensDenominator {d : ℕ} (xi eps : ℝ)
+private theorem differentiableAt_movingLensDenominator 
     (z : TimeVelocity d) :
     DifferentiableAt ℝ (fun q : TimeVelocity d => movingLensDenominator xi eps q.1) z := by
   unfold movingLensDenominator
   fun_prop
 
-private theorem fderiv_movingLensDenominatorInv_apply {d : ℕ} (xi eps : ℝ)
-    (z w : TimeVelocity d) (hden : movingLensDenominator xi eps z.1 ≠ 0) :
+private theorem fderiv_movingLensDenominatorInv_apply  (hden : movingLensDenominator xi eps z.1 ≠ 0) :
     fderiv ℝ (fun q : TimeVelocity d => (movingLensDenominator xi eps q.1)⁻¹) z w =
       -(xi * w.1) / (movingLensDenominator xi eps z.1) ^ 2 := by
   let q : TimeVelocity d → ℝ := fun a => movingLensDenominator xi eps a.1
@@ -169,27 +159,22 @@ private theorem fderiv_movingLensDenominatorInv_apply {d : ℕ} (xi eps : ℝ)
   have hinv := (hasFDerivAt_inv hden).comp z hq
   change fderiv ℝ ((fun x : ℝ => x⁻¹) ∘ q) z w = _
   rw [hinv.fderiv]
-  simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.toSpanSingleton_apply,
-    ContinuousLinearMap.smulRight_apply,
-    ContinuousLinearMap.one_apply, smul_eq_mul]
+  simp only [ContinuousLinearMap.comp_apply, ContinuousLinearMap.toSpanSingleton_apply]
   rw [fderiv_movingLensDenominator_apply]
-  simp only [div_eq_mul_inv]
   ring
 
-private theorem fderiv_movingLensDenominatorInvPow_apply {d : ℕ} (xi eps : ℝ)
-    (n : ℕ) (z w : TimeVelocity d) (hden : movingLensDenominator xi eps z.1 ≠ 0) :
+private theorem fderiv_movingLensDenominatorInvPow_apply  (hden : movingLensDenominator xi eps z.1 ≠ 0) :
     fderiv ℝ (fun q : TimeVelocity d =>
       (movingLensDenominator xi eps q.1)⁻¹ ^ n) z w =
       (n : ℝ) * (movingLensDenominator xi eps z.1)⁻¹ ^ (n - 1) *
         (-(xi * w.1) / (movingLensDenominator xi eps z.1) ^ 2) := by
   rw [fderiv_fun_pow n]
-  · simp only [ContinuousLinearMap.smul_apply, smul_eq_mul]
+  · simp only [ContinuousLinearMap.smul_apply]
     rw [fderiv_movingLensDenominatorInv_apply xi eps z w hden]
     ring
   · exact (differentiableAt_movingLensDenominator xi eps z).inv hden
 
-private theorem fderiv_movingLensRadiusSq_apply {d : ℕ} (xi eps : ℝ)
-    (y : PDE.Vec d) (z w : TimeVelocity d)
+private theorem fderiv_movingLensRadiusSq_apply 
     (hden : movingLensDenominator xi eps z.1 ≠ 0) :
     fderiv ℝ (movingLensRadiusSq xi eps y) z w =
       (2 * (PDE.vecDot (movingLensDisplacement y z) w.2 -
@@ -202,22 +187,18 @@ private theorem fderiv_movingLensRadiusSq_apply {d : ℕ} (xi eps : ℝ)
     unfold PDE.vecNormSq PDE.vecDot movingLensDisplacement
     fun_prop
   have hinv : DifferentiableAt ℝ
-      (fun q : TimeVelocity d => (movingLensDenominator xi eps q.1)⁻¹) z := by
-    exact (differentiableAt_movingLensDenominator xi eps z).inv hden
+      (fun q : TimeVelocity d => (movingLensDenominator xi eps q.1)⁻¹) z := (differentiableAt_movingLensDenominator xi eps z).inv hden
   unfold movingLensRadiusSq
   change fderiv ℝ (fun q : TimeVelocity d =>
-    PDE.vecNormSq (movingLensDisplacement y q) *
+    PDE.vecNormSq _ *
       (movingLensDenominator xi eps q.1)⁻¹) z w = _
   rw [fderiv_fun_mul hnum hinv]
-  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
-    smul_eq_mul]
+  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply]
   rw [fderiv_movingLensDisplacementNormSq_apply,
     fderiv_movingLensDenominatorInv_apply xi eps z w hden]
-  field_simp [hden]
   ring
 
-private theorem fderiv_movingLensBarrier_apply {d : ℕ} (xi eps : ℝ) (n : ℕ)
-    (y : PDE.Vec d) (z w : TimeVelocity d)
+private theorem fderiv_movingLensBarrier_apply 
     (hden : movingLensDenominator xi eps z.1 ≠ 0) :
     fderiv ℝ (movingLensBarrier xi eps n y) z w =
       2 * (movingLensRadiusSq xi eps y z - 1) *
@@ -243,27 +224,22 @@ private theorem fderiv_movingLensBarrier_apply {d : ℕ} (xi eps : ℝ) (n : ℕ
   rw [hrewrite]
   have hbase : DifferentiableAt ℝ
       (fun q : TimeVelocity d => 1 - movingLensRadiusSq xi eps y q) z :=
-    (differentiableAt_const (1 : ℝ)).sub hr
+    (differentiableAt_const _).sub hr
   have hnum : DifferentiableAt ℝ
       (fun q : TimeVelocity d => (1 - movingLensRadiusSq xi eps y q) ^ 2) z :=
     hbase.pow 2
   have hmul := congrArg (fun L : TimeVelocity d →L[ℝ] ℝ => L w)
     (fderiv_fun_mul hnum hq)
-  change fderiv ℝ (fun q : TimeVelocity d =>
-    (1 - movingLensRadiusSq xi eps y q) ^ 2 *
-      (movingLensDenominator xi eps q.1)⁻¹ ^ n) z w = _
-  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
-    smul_eq_mul] at hmul
-  rw [hmul]
-  rw [fderiv_fun_pow 2 hbase]
-  simp only [ContinuousLinearMap.smul_apply, smul_eq_mul]
-  rw [fderiv_fun_sub (differentiableAt_const (1 : ℝ)) hr]
+  simp only [ContinuousLinearMap.add_apply] at hmul
+  rw [hmul, fderiv_fun_pow 2 hbase]
+  simp only [ContinuousLinearMap.smul_apply]
+  rw [fderiv_fun_sub (differentiableAt_const _) hr]
   simp only [ContinuousLinearMap.neg_apply, fderiv_const_apply, zero_sub]
   ring
 
 /-- The exact time derivative of the moving-lens barrier.  The displayed
 normal form uses the source convention `r - 1 = -(1 - r)`. -/
-theorem timeDerivative_movingLensBarrier {d : ℕ} {xi eps : ℝ} {n : ℕ}
+theorem timeDerivative_movingLensBarrier  {xi eps : ℝ} {n : ℕ}
     {y : PDE.Vec d} {z : TimeVelocity d}
     (hden : movingLensDenominator xi eps z.1 ≠ 0) :
     timeDerivative (movingLensBarrier xi eps n y) z =
@@ -273,22 +249,18 @@ theorem timeDerivative_movingLensBarrier {d : ℕ} {xi eps : ℝ} {n : ℕ}
         (n : ℝ) * xi * (1 - movingLensRadiusSq xi eps y z) ^ 2) /
           (movingLensDenominator xi eps z.1) ^ (n + 1) := by
   unfold timeDerivative
-  rw [fderiv_movingLensBarrier_apply xi eps n y z (1, 0) hden,
-    fderiv_movingLensRadiusSq_apply xi eps y z (1, 0) hden,
-    fderiv_movingLensDenominatorInvPow_apply xi eps n z (1, 0) hden]
+  rw [fderiv_movingLensBarrier_apply xi eps n y z _ hden,
+    fderiv_movingLensRadiusSq_apply xi eps y z _ hden,
+    fderiv_movingLensDenominatorInvPow_apply xi eps n z _ hden]
   simp only [Pi.zero_apply, mul_zero, PDE.vecDot, Finset.sum_const_zero]
-  unfold movingLensRadiusSq
   cases n with
   | zero =>
-    norm_num
-    field_simp [hden]
     ring
   | succ n =>
-    simp only [Nat.cast_succ, Nat.succ_sub_one, inv_pow]
-    field_simp [hden]
+    simp only [Nat.succ_sub_one]
     ring
 
-private theorem fderiv_fderiv_apply_eq_fderiv_eval {d : ℕ}
+theorem fderiv_fderiv_apply_eq_fderiv_eval 
     {w : TimeVelocity d → ℝ} {z direction₁ direction₂ : TimeVelocity d}
     (hw : ContDiffAt ℝ 2 w z) :
     fderiv ℝ (fderiv ℝ w) z direction₁ direction₂ =
@@ -298,34 +270,29 @@ private theorem fderiv_fderiv_apply_eq_fderiv_eval {d : ℕ}
   have hEval :
       fderiv ℝ (fun a => fderiv ℝ w a direction₂) z =
         (fderiv ℝ (fderiv ℝ w) z).flip direction₂ := by
-    simpa only [ContinuousLinearMap.comp_zero, zero_add] using
+    simpa using
       ((hDw.hasFDerivAt.clm_apply (hasFDerivAt_const direction₂ z)).fderiv)
   have hEvalAt := congrArg
     (fun L : TimeVelocity d →L[ℝ] ℝ => L direction₁) hEval
-  simpa only [ContinuousLinearMap.flip_apply] using hEvalAt.symm
+  simpa using hEvalAt.symm
 
-private theorem fderiv_movingLensBarrier_velocity_apply {d : ℕ}
-    (xi eps : ℝ) (n : ℕ) (y : PDE.Vec d) (z : TimeVelocity d)
+private theorem fderiv_movingLensBarrier_velocity_apply  (z : TimeVelocity d)
     (j : Fin d) (hden : movingLensDenominator xi eps z.1 ≠ 0) :
     fderiv ℝ (movingLensBarrier xi eps n y) z (0, Pi.single j 1) =
       4 * (movingLensRadiusSq xi eps y z - 1) *
         movingLensDisplacement y z j /
           (movingLensDenominator xi eps z.1) ^ (n + 1) := by
-  rw [fderiv_movingLensBarrier_apply xi eps n y z (0, Pi.single j 1) hden,
-    fderiv_movingLensRadiusSq_apply xi eps y z (0, Pi.single j 1) hden,
-    fderiv_movingLensDenominatorInvPow_apply xi eps n z (0, Pi.single j 1) hden]
+  rw [fderiv_movingLensBarrier_apply xi eps n y z _ hden,
+    fderiv_movingLensRadiusSq_apply xi eps y z _ hden,
+    fderiv_movingLensDenominatorInvPow_apply xi eps n z _ hden]
   simp [PDE.vecDot, Pi.single_apply]
   cases n with
   | zero =>
-    norm_num
-    field_simp [hden]
     ring
   | succ n =>
-    field_simp [hden]
     ring
 
-private theorem fderiv_fderiv_movingLensBarrier_velocity_apply {d : ℕ}
-    (xi eps : ℝ) (n : ℕ) (y : PDE.Vec d) (z : TimeVelocity d)
+private theorem fderiv_fderiv_movingLensBarrier_velocity_apply  (z : TimeVelocity d)
     (i j : Fin d) (hden : movingLensDenominator xi eps z.1 ≠ 0) :
     fderiv ℝ (fderiv ℝ (movingLensBarrier xi eps n y)) z
       (0, Pi.single i 1) (0, Pi.single j 1) =
@@ -333,14 +300,14 @@ private theorem fderiv_fderiv_movingLensBarrier_velocity_apply {d : ℕ}
           (movingLensDenominator xi eps z.1) ^ (n + 2) +
         4 * (movingLensRadiusSq xi eps y z - 1) /
           (movingLensDenominator xi eps z.1) ^ (n + 1) * if i = j then 1 else 0 := by
-  let b : TimeVelocity d → ℝ := movingLensBarrier xi eps n y
+  let b  := movingLensBarrier xi eps n y
   let direction₁ : TimeVelocity d := (0, Pi.single i 1)
   let direction₂ : TimeVelocity d := (0, Pi.single j 1)
   have hdenCont : ContinuousAt
       (fun a : TimeVelocity d => movingLensDenominator xi eps a.1) z := by
     unfold movingLensDenominator
     fun_prop
-  have hnear : ∀ᶠ a in 𝓝 z, movingLensDenominator xi eps a.1 ≠ 0 :=
+  have hnear  :=
     hdenCont.eventually_ne hden
   have hfirst :
       (fun a => fderiv ℝ b a direction₂) =ᶠ[𝓝 z]
@@ -348,7 +315,6 @@ private theorem fderiv_fderiv_movingLensBarrier_velocity_apply {d : ℕ}
           movingLensDisplacement y a j /
             (movingLensDenominator xi eps a.1) ^ (n + 1) := by
     filter_upwards [hnear] with a ha
-    dsimp only [b, direction₂]
     exact fderiv_movingLensBarrier_velocity_apply xi eps n y a j ha
   have hr : DifferentiableAt ℝ (movingLensRadiusSq xi eps y) z :=
     (contDiffAt_movingLensRadiusSq hden).differentiableAt (by norm_num)
@@ -359,15 +325,12 @@ private theorem fderiv_fderiv_movingLensBarrier_velocity_apply {d : ℕ}
   have hq : DifferentiableAt ℝ
       (fun a : TimeVelocity d =>
         (movingLensDenominator xi eps a.1)⁻¹ ^ (n + 1)) z :=
-    ((differentiableAt_movingLensDenominator xi eps z).inv hden).pow (n + 1)
+    ((differentiableAt_movingLensDenominator xi eps z).inv hden).pow _
   calc
     fderiv ℝ (fderiv ℝ b) z direction₁ direction₂ =
-        fderiv ℝ (fun a => fderiv ℝ b a direction₂) z direction₁ :=
+        fderiv ℝ _ z direction₁ :=
       fderiv_fderiv_apply_eq_fderiv_eval (contDiffAt_movingLensBarrier hden)
-    _ = fderiv ℝ (fun a => 4 * (movingLensRadiusSq xi eps y a - 1) *
-        movingLensDisplacement y a j /
-          (movingLensDenominator xi eps a.1) ^ (n + 1)) z direction₁ := by
-      exact congrArg (fun L : TimeVelocity d →L[ℝ] ℝ => L direction₁) hfirst.fderiv_eq
+    _ = fderiv ℝ _ z direction₁ := congrArg (fun L : TimeVelocity d →L[ℝ] ℝ => L direction₁) hfirst.fderiv_eq
     _ = 8 * movingLensDisplacement y z i * movingLensDisplacement y z j /
           (movingLensDenominator xi eps z.1) ^ (n + 2) +
         4 * (movingLensRadiusSq xi eps y z - 1) /
@@ -385,24 +348,18 @@ private theorem fderiv_fderiv_movingLensBarrier_velocity_apply {d : ℕ}
       have hprod : DifferentiableAt ℝ (fun a : TimeVelocity d =>
           4 * (movingLensRadiusSq xi eps y a - 1) *
             movingLensDisplacement y a j) z :=
-        ((differentiableAt_const (4 : ℝ)).mul (hr.sub_const 1)).mul hdisp
+        ((differentiableAt_const _).mul (hr.sub_const 1)).mul hdisp
       rw [fderiv_fun_mul hprod hq]
-      simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
-        smul_eq_mul]
       have hscalar : DifferentiableAt ℝ (fun a : TimeVelocity d =>
           4 * (movingLensRadiusSq xi eps y a - 1)) z :=
-        (differentiableAt_const (4 : ℝ)).mul (hr.sub_const 1)
-      rw [fderiv_fun_mul hscalar hdisp]
-      simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
-        smul_eq_mul]
-      rw [fderiv_fun_mul (differentiableAt_const (4 : ℝ)) (hr.sub_const 1)]
-      simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
-        smul_eq_mul, fderiv_const_apply]
-      rw [fderiv_fun_sub hr (differentiableAt_const (1 : ℝ))]
+        (differentiableAt_const _).mul (hr.sub_const 1)
+      rw [fderiv_fun_mul hscalar hdisp, fderiv_fun_mul (differentiableAt_const _) (hr.sub_const 1)]
+      simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply]
+      rw [fderiv_fun_sub hr (differentiableAt_const _)]
       simp only [fderiv_const_apply, sub_zero]
       rw [fderiv_movingLensRadiusSq_apply xi eps y z direction₁ hden,
         fderiv_movingLensDisplacement_apply,
-        fderiv_movingLensDenominatorInvPow_apply xi eps (n + 1) z direction₁ hden]
+        fderiv_movingLensDenominatorInvPow_apply xi eps _ z direction₁ hden]
       dsimp only [direction₁]
       simp [PDE.vecDot, Pi.single_apply]
       by_cases hij : i = j
@@ -414,7 +371,7 @@ private theorem fderiv_fderiv_movingLensBarrier_velocity_apply {d : ℕ}
         ring
 
 /-- The exact velocity Hessian of the moving-lens barrier. -/
-theorem velocityHessian_movingLensBarrier {d : ℕ} {xi eps : ℝ} {n : ℕ}
+theorem velocityHessian_movingLensBarrier  {xi eps : ℝ} {n : ℕ}
     {y : PDE.Vec d} {z : TimeVelocity d}
     (hden : movingLensDenominator xi eps z.1 ≠ 0) :
     velocityHessian (movingLensBarrier xi eps n y) z =
@@ -426,18 +383,17 @@ theorem velocityHessian_movingLensBarrier {d : ℕ} {xi eps : ℝ} {n : ℕ}
   unfold velocityHessian
   rw [fderiv_fderiv_movingLensBarrier_velocity_apply xi eps n y z i j hden]
   simp only [Matrix.add_apply, Matrix.smul_apply, Matrix.one_apply,
-    movingLensDisplacementOuter, smul_eq_mul]
+    movingLensDisplacementOuter]
   ring
 
 /-- Contraction with the identity is the matrix trace. -/
-theorem movingLens_matrixContraction_one_eq_trace {d : ℕ} (A : PDE.Mat d) :
+theorem movingLens_matrixContraction_one_eq_trace  :
     matrixContraction A 1 = A.trace := by
   classical
-  simp [matrixContraction, Matrix.trace, Matrix.diag, Matrix.one_apply]
+  simp [matrixContraction, Matrix.trace, Matrix.one_apply]
 
 /-- Contraction with the moving displacement outer product is its quadratic form. -/
-theorem matrixContraction_movingLensDisplacementOuter {d : ℕ} (A : PDE.Mat d)
-    (y : PDE.Vec d) (z : TimeVelocity d) :
+theorem matrixContraction_movingLensDisplacementOuter  (z : TimeVelocity d) :
     matrixContraction A (movingLensDisplacementOuter y z) =
       PDE.vecDot (movingLensDisplacement y z)
         (A *ᵥ movingLensDisplacement y z) := by
@@ -452,8 +408,7 @@ theorem matrixContraction_movingLensDisplacementOuter {d : ℕ} (A : PDE.Mat d)
 
 /-- The exact contraction of the moving-lens barrier Hessian with an arbitrary
 matrix.  No symmetry or ellipticity assumption on the matrix is used. -/
-theorem matrixContraction_velocityHessian_movingLensBarrier {d : ℕ}
-    (A : PDE.Mat d) {xi eps : ℝ} {n : ℕ} {y : PDE.Vec d}
+theorem matrixContraction_velocityHessian_movingLensBarrier  {xi eps : ℝ} {n : ℕ} {y : PDE.Vec d}
     {z : TimeVelocity d} (hden : movingLensDenominator xi eps z.1 ≠ 0) :
     matrixContraction A (velocityHessian (movingLensBarrier xi eps n y) z) =
       8 * PDE.vecDot (movingLensDisplacement y z)
@@ -471,7 +426,7 @@ theorem matrixContraction_velocityHessian_movingLensBarrier {d : ℕ}
 
 /-- The project-sign moving-lens barrier identity.  Since
 `P_A = ∂t - A : Dv²`, this is the source identity for `-P_A`. -/
-theorem movingLensBarrier_neg_parabolicOperator_identity {d : ℕ}
+theorem movingLensBarrier_neg_parabolicOperator_identity 
     (A : CoefficientField d) {xi eps : ℝ} {n : ℕ} {y : PDE.Vec d}
     {z : TimeVelocity d} (hden : movingLensDenominator xi eps z.1 ≠ 0) :
     (movingLensDenominator xi eps z.1) ^ (n + 1) *
@@ -486,7 +441,7 @@ theorem movingLensBarrier_neg_parabolicOperator_identity {d : ℕ}
             2 * (coefficientAt A z).trace) := by
   rw [parabolicOperator_apply,
     timeDerivative_movingLensBarrier hden,
-    matrixContraction_velocityHessian_movingLensBarrier (coefficientAt A z) hden]
+    matrixContraction_velocityHessian_movingLensBarrier _ hden]
   field_simp [hden]
   ring
 

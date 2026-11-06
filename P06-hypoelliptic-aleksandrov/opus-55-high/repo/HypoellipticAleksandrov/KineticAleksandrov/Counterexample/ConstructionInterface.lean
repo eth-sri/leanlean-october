@@ -22,20 +22,22 @@ noncomputable def counterAlpha (d : ℕ) (p : ℝ) : ℝ := by
   exact if h : 1 ≤ d ∧ 1 ≤ p ∧ p < 4 * (d : ℝ) then
     (exists_subcritical_alpha d h.1 p h.2.1 h.2.2).choose else 1 / 2
 
+variable (d : ℕ)
+
 /-- The selected exponent satisfies the full source range and positive norm exponent. -/
-theorem counterAlpha_spec (d : ℕ) (hd : 1 ≤ d) (p : ℝ)
+theorem counterAlpha_spec  (hd : 1 ≤ d) (p : ℝ)
     (hp : 1 ≤ p) (hpd : p < 4 * (d : ℝ)) :
     0 < counterAlpha d p ∧ counterAlpha d p < 1 ∧
       0 < counterAlpha d p - 2 + 4 * (d : ℝ) / p := by
   classical
   simp only [counterAlpha, dite_eq_left (And.intro hd (And.intro hp hpd))]
-  exact (exists_subcritical_alpha d hd p hp hpd).choose_spec
+  grind
 
 /-- The internally proved profile at the one fixed selected exponent. -/
-theorem counterProfileFor (d : ℕ) (hd : 1 ≤ d) (p : ℝ)
+theorem counterProfileFor  (hd : 1 ≤ d) (p : ℝ)
     (hp : 1 ≤ p) (hpd : p < 4 * (d : ℝ)) :
     CounterProfileStatement d (counterAlpha d p) :=
-  counterProfile_holds d hd (counterAlpha d p)
+  counterProfile_holds d hd _
     (counterAlpha_spec d hd p hp hpd).1 (counterAlpha_spec d hd p hp hpd).2.1
 
 /-- Joint ellipticity bounds and cylinder parameters, independent of the sequence index. -/

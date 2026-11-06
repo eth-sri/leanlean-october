@@ -37,26 +37,26 @@ instance factOneLeConjExponent (p : ℝ≥0∞) [Fact (1 ≤ p)] :
 
 namespace WeakTestFunction
 
+variable {d : ℕ} {U : Set (Vec d)} (φ : WeakTestFunction U)
+
 /-- A bundled test function belongs to every scalar `L^r(U)`. -/
-theorem memLp_toFun {d : ℕ} {U : Set (Vec d)}
-    (φ : WeakTestFunction U) (r : ℝ≥0∞) :
+theorem memLp_toFun  (r : ℝ≥0∞) :
     MemLp φ.toFun r (volumeOn U) :=
   (φ.contDiff.continuous.memLp_of_hasCompactSupport
     φ.hasCompactSupport).restrict U
 
 /-- A directional derivative of a bundled test function belongs to every
 scalar `L^r(U)`. -/
-theorem memLp_partialDeriv {d : ℕ} {U : Set (Vec d)}
-    (φ : WeakTestFunction U) (i : Fin d) (r : ℝ≥0∞) :
+theorem memLp_partialDeriv  (i : Fin d) (r : ℝ≥0∞) :
     MemLp (φ.partialDeriv i) r (volumeOn U) := by
   have hcontinuous :
       Continuous (φ.partialDeriv i) := by
-    simpa only [WeakTestFunction.partialDeriv] using!
+    simpa using!
       (φ.contDiff.continuous_fderiv (by simp)).clm_apply continuous_const
   have hcompact :
       HasCompactSupport (φ.partialDeriv i) := by
-    simpa only [WeakTestFunction.partialDeriv] using!
-      φ.hasCompactSupport.fderiv_apply (𝕜 := ℝ) (basisVec i)
+    simpa using!
+      φ.hasCompactSupport.fderiv_apply (𝕜 := ℝ) _
   exact (hcontinuous.memLp_of_hasCompactSupport hcompact).restrict U
 
 /-- A bundled test function as an element of scalar `L^r(U)`. -/
@@ -72,13 +72,13 @@ def partialDerivToScalarLp {d : ℕ} {U : Set (Vec d)}
     ScalarLp U r :=
   (φ.memLp_partialDeriv i r).toLp (φ.partialDeriv i)
 
-theorem coeFn_toScalarLp {d : ℕ} {U : Set (Vec d)}
-    (φ : WeakTestFunction U) (r : ℝ≥0∞) :
+variable {d : ℕ} {U : Set (Vec d)} (φ : WeakTestFunction U)
+
+theorem coeFn_toScalarLp  (r : ℝ≥0∞) :
     ⇑(φ.toScalarLp r) =ᵐ[volumeOn U] φ.toFun :=
   (φ.memLp_toFun r).coeFn_toLp
 
-theorem coeFn_partialDerivToScalarLp {d : ℕ} {U : Set (Vec d)}
-    (φ : WeakTestFunction U) (i : Fin d) (r : ℝ≥0∞) :
+theorem coeFn_partialDerivToScalarLp  (i : Fin d) (r : ℝ≥0∞) :
     ⇑(φ.partialDerivToScalarLp i r) =ᵐ[volumeOn U]
       φ.partialDeriv i :=
   (φ.memLp_partialDeriv i r).coeFn_toLp
@@ -100,23 +100,21 @@ theorem coeFn_hilbertVectorLpCoord {d : ℕ} (U : Set (Vec d))
     (F : HilbertVectorLp U p) :
     ⇑(hilbertVectorLpCoord U p i F) =ᵐ[volumeOn U]
       fun x => F x i := by
-  simpa only [hilbertVectorLpCoord] using!
-    (PiLp.proj (𝕜 := ℝ) 2 (fun _ : Fin d => ℝ) i).coeFn_compLpL F
+  simpa using!
+    (PiLp.proj (𝕜 := ℝ) 2 _ i).coeFn_compLpL F
 
 /-- The scalar Hölder pairing between `L^p(U)` and `L^{p'}(U)`. -/
 def scalarLpDualPairing {d : ℕ} (U : Set (Vec d)) (p : ℝ≥0∞)
     [Fact (1 ≤ p)] :
-    ScalarLp U p →L[ℝ] ScalarLp U p.conjExponent →L[ℝ] ℝ := by
-  exact (ContinuousLinearMap.mul ℝ ℝ).lpPairing
+    ScalarLp U p →L[ℝ] ScalarLp U p.conjExponent →L[ℝ] ℝ := (ContinuousLinearMap.mul ℝ ℝ).lpPairing
     (volumeOn U) p p.conjExponent
 
 theorem scalarLpDualPairing_apply_eq_integral
     {d : ℕ} (U : Set (Vec d)) (p : ℝ≥0∞) [Fact (1 ≤ p)]
     (f : ScalarLp U p) (g : ScalarLp U p.conjExponent) :
     scalarLpDualPairing U p f g =
-      ∫ x, f x * g x ∂(volumeOn U) := by
-  exact ContinuousLinearMap.lpPairing_eq_integral
-    (ContinuousLinearMap.mul ℝ ℝ) f g
+      ∫ x, f x * g x ∂(volumeOn U) := ContinuousLinearMap.lpPairing_eq_integral
+    _ f g
 
 /-- The integration-by-parts constraint for coordinate `i` and test function
 `φ`. Membership in its kernel says
@@ -153,7 +151,7 @@ theorem weakGradientConstraint_apply_eq_integral
   · apply integral_congr_ae
     filter_upwards [coeFn_hilbertVectorLpCoord U p i v.2,
       φ.coeFn_toScalarLp p.conjExponent] with x hcoord hφ
-    rw [hcoord, hφ]
+    simp_all
 
 /-- The closed submodule of value-gradient pairs satisfying every weak
 integration-by-parts constraint. -/
@@ -163,10 +161,11 @@ def weakGradientGraph {d : ℕ} (U : Set (Vec d)) (p : ℝ≥0∞)
   ⨅ i : Fin d, ⨅ φ : WeakTestFunction U,
     (⊥ : ClosedSubmodule ℝ ℝ).comap (weakGradientConstraint U p i φ)
 
+variable {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞}
+
 /-- Membership in the weak-gradient graph is exactly vanishing of every
 coordinate test-function constraint. -/
-theorem mem_weakGradientGraph_iff {d : ℕ} {U : Set (Vec d)}
-    {p : ℝ≥0∞} [Fact (1 ≤ p)] (v : WeakGradientLpPair U p) :
+theorem mem_weakGradientGraph_iff  [Fact (1 ≤ p)] (v : WeakGradientLpPair U p) :
     v ∈ weakGradientGraph U p ↔
       ∀ i : Fin d, ∀ φ : WeakTestFunction U,
         weakGradientConstraint U p i φ v = 0 := by
@@ -175,7 +174,7 @@ theorem mem_weakGradientGraph_iff {d : ℕ} {U : Set (Vec d)}
 
 /-- Integral form of membership in the closed weak-gradient graph. -/
 theorem mem_weakGradientGraph_iff_integral
-    {d : ℕ} {U : Set (Vec d)} {p : ℝ≥0∞} [Fact (1 ≤ p)]
+     [Fact (1 ≤ p)]
     (v : WeakGradientLpPair U p) :
     v ∈ weakGradientGraph U p ↔
       ∀ i : Fin d, ∀ φ : WeakTestFunction U,
@@ -185,10 +184,10 @@ theorem mem_weakGradientGraph_iff_integral
   constructor
   · intro h i φ
     rw [← weakGradientConstraint_apply_eq_integral U p i φ v]
-    exact h i φ
+    simp_all
   · intro h i φ
     rw [weakGradientConstraint_apply_eq_integral]
-    exact h i φ
+    simp_all
 
 /-- Complete quotient-level `W^{1,p}` carrier, realized as the closed
 weak-gradient graph. -/
@@ -196,7 +195,7 @@ abbrev W1pGraph {d : ℕ} (U : Set (Vec d)) (p : ℝ≥0∞)
     [Fact (1 ≤ p)] :=
   ↥(weakGradientGraph U p).toSubmodule
 
-noncomputable instance w1pGraphCompleteSpace {d : ℕ}
+instance w1pGraphCompleteSpace {d : ℕ}
     (U : Set (Vec d)) (p : ℝ≥0∞) [Fact (1 ≤ p)] :
     CompleteSpace (W1pGraph U p) :=
   (weakGradientGraph U p).isClosed.completeSpace_coe

@@ -15,7 +15,6 @@ Composition discharges all four autonomous steps and preserves the statements' t
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov MeasureTheory Set Autonomous Holder
 open scoped ENNReal
@@ -26,7 +25,7 @@ namespace Autonomous
 theorem terminalDominationStatement_holds : TerminalDominationStatement := by
   intro hH hLE lam Lam hlam hLam A c J T P _hbar hT hJ _hvel N b hb hBT
   exact enlarged_active_terminal_le_fullspace hH hLE hlam hLam A c J
-    P.time (P.time + T) P le_rfl (lt_add_of_pos_right P.time hT) hJ N b hb hBT
+    P.time _ P le_rfl (lt_add_of_pos_right P.time hT) hJ N b hb hBT
 
 /-- The exact time-bin count follows from exponent-six admissibility and return. -/
 theorem timeBinCountStatement_holds : TimeBinCountStatement := by
@@ -36,8 +35,7 @@ theorem timeBinCountStatement_holds : TimeBinCountStatement := by
       (smoothAutonomousP6_holds hH hLE lam Lam hlam hLam))
 
 /-- All autonomous frontier steps hold relative to the source theorem. -/
-theorem autonomousRemainingFrontier_holds : AutonomousRemainingFrontier := by
-  exact ⟨timeBinCountStatement_holds,
+theorem autonomousRemainingFrontier_holds : AutonomousRemainingFrontier := ⟨timeBinCountStatement_holds,
     positionStartSlabBound_holds terminalDominationStatement_holds,
     terminalDominationStatement_holds, coreDominationStatement_holds⟩
 

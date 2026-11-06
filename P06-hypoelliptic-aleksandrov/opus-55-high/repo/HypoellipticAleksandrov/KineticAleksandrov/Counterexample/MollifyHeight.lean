@@ -6,7 +6,6 @@ import Mathlib.Tactic.NormNum
 /-! # Retaining a strict height margin under approximate identities -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Filter
 open scoped Topology
@@ -22,6 +21,6 @@ theorem mollify_preserves_height_eventually (f : G → ℝ) (hf : Continuous f)
   have he := ContDiffBump.convolution_tendsto_right_of_continuous
     (μ := volume) standardMollifierSequence_rOut_tendsto hf q
   apply he.eventually (Ioi_mem_nhds ?_)
-  exact lt_trans (by norm_num : (1 / 4 : ℝ) < 5 / 16) hq
+  linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ExhaustionLim
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -39,7 +38,7 @@ theorem isClassicalViscousTerminalSolution_ball_add_const_iff {n : ℕ}
         (fun s => Γ s + c) B b ε τ F v := by
   simp only [IsClassicalViscousTerminalSolution, evolutionPastClosedCylinder,
     evolutionPastInteriorRaw, evolutionPastOpenCylinder, evolutionTerminalClosure,
-    evolutionLateralFrontier, movingDomain_ball_add_const c r0 Γ]
+    evolutionLateralFrontier, movingDomain_ball_add_const c]
 
 section Data
 
@@ -71,20 +70,20 @@ theorem exists_viscous_terminalSolution_ball
   have hF0 : IsSmoothCompactTerminalDatum (PDE.euclideanBall 0 r0)
       (fun s => Γ s + c) τ F := by
     simpa only [IsSmoothCompactTerminalDatum, evolutionStateSet,
-      movingDomain_ball_add_const c r0 Γ] using hF
+      movingDomain_ball_add_const c] using hF
   obtain ⟨v, hv, hbound, huniq⟩ := exists_viscous_terminalSolution_innerBall
     hLE hH hn hlam hlamLam hm hmLb hBs hBsym hB hbs hb hbco (piecewiseC1_add_const hΓ c) hr0
     τ F hF0 ε hε hε1 C hC hFC
   have hK : evolutionPastClosedCylinder (PDE.euclideanBall c r0) Γ τ =
       evolutionPastClosedCylinder (PDE.euclideanBall 0 r0) (fun s => Γ s + c) τ := by
-    simp only [evolutionPastClosedCylinder, movingDomain_ball_add_const c r0 Γ]
+    simp only [evolutionPastClosedCylinder, movingDomain_ball_add_const c]
   refine ⟨v, (isClassicalViscousTerminalSolution_ball_add_const_iff
     c r0 Γ B b ε τ F v).mpr hv, ?_, ?_⟩
-  · simpa only [hK] using hbound
+  · simp_all
   · intro w hw
     have hw0 := (isClassicalViscousTerminalSolution_ball_add_const_iff
       c r0 Γ B b ε τ F w).mp hw
-    simpa only [hK] using huniq w hw0
+    simp_all
 
 end Data
 

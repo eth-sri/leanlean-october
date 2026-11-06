@@ -69,26 +69,20 @@ noncomputable def subConst
     hU.isFiniteMeasure_volumeOn
   exact u.addConst (-c)
 
+variable (u : H1Function U) (hU : IsOpenBoundedConvexDomain U) (c : ℝ) (x : Vec d)
+
 @[simp]
 theorem subConst_apply
-    (u : H1Function U) (hU : IsOpenBoundedConvexDomain U)
-    (c : ℝ) (x : Vec d) :
+     :
     u.subConst hU c x = u x - c := by
-  let : IsFiniteMeasure (volumeOn U) :=
-    hU.isFiniteMeasure_volumeOn
-  rw [subConst]
-  simp only [addConst_apply]
-  ring
+  aesop
 
 @[simp]
 theorem grad_subConst
-    (u : H1Function U) (hU : IsOpenBoundedConvexDomain U)
-    (c : ℝ) (x : Vec d) :
+     :
     (u.subConst hU c).grad x = u.grad x := by
-  let : IsFiniteMeasure (volumeOn U) :=
-    hU.isFiniteMeasure_volumeOn
   rw [subConst]
-  exact grad_addConst u (-c) x
+  simp
 
 /-- Subtract the arithmetic integral average without changing the chosen weak
 gradient. -/
@@ -100,10 +94,7 @@ noncomputable def subAverage [IsFiniteMeasure (volumeOn U)]
 theorem subAverage_apply [IsFiniteMeasure (volumeOn U)]
     (u : H1Function U) (x : Vec d) :
     u.subAverage x = u x - integralAverage U u := by
-  simpa only [subAverage, W1pFunction.toH1Function_apply,
-    H1Function.toW1pFunction_apply,
-    H1Function.toW1pFunction_toFun] using
-      u.toW1pFunction.subAverage_apply x
+  aesop
 
 @[simp]
 theorem grad_subAverage [IsFiniteMeasure (volumeOn U)]

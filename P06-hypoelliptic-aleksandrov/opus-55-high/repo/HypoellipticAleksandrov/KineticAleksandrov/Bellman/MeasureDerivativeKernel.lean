@@ -41,8 +41,8 @@ theorem bellman_test_derivative_kernel (L : BellmanRealTest →ₗ[ℝ] ℝ)
   have hρ : (∫ x, ρ x) = 1 := raw.integral_normed
   refine ⟨L ρ, ?_⟩
   intro φ
-  let a : ℝ := ∫ x, φ x
-  let θ : BellmanRealTest := φ - a • ρ
+  let a  := ∫ x, φ x
+  let θ  := φ - a • ρ
   have hiφ : Integrable (fun x => φ x) volume :=
     φ.contDiff.continuous.integrable_of_hasCompactSupport φ.hasCompactSupport
   have hiρ : Integrable (fun x => ρ x) volume :=
@@ -50,7 +50,6 @@ theorem bellman_test_derivative_kernel (L : BellmanRealTest →ₗ[ℝ] ℝ)
   have hmean : (∫ x, θ x) = 0 := by
     change (∫ x, φ x - a * ρ x) = 0
     rw [integral_sub hiφ (hiρ.const_mul a), integral_const_mul, hρ]
-    change a - a * 1 = 0
     ring
   obtain ⟨ψ, hψ, hcψ, hdψ⟩ :=
     bellman_exists_test_primitive θ θ.contDiff θ.hasCompactSupport hmean
@@ -60,11 +59,8 @@ theorem bellman_test_derivative_kernel (L : BellmanRealTest →ₗ[ℝ] ℝ)
     intro x
     exact congrFun hdψ x
   have hz := hzero Ψ
-  rw [he] at hz
-  change L (φ - a • ρ) = 0 at hz
-  rw [map_sub, map_smul] at hz
+  rw [he, map_sub, map_smul] at hz
   change L φ - a * L ρ = 0 at hz
-  change L φ = L ρ * a
   linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov

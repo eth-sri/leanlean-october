@@ -10,7 +10,6 @@ The lower observation endpoint is included in the canonical enlarged recursion.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
@@ -27,15 +26,15 @@ theorem enlargedGreenMixture_ae_active
     (isOpen_Ioo.measurableSet.preimage ((continuous_apply 0).comp continuous_velocity).measurable)
   apply Filter.Eventually.of_forall
   intro p
-  change ∀ᵐ q ∂(if hp : p ∈ enlargedVisitPoleSet (visitActiveUnion c J) T then
-    finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) T
-      (enlargedVisitPole _ T ⟨p, hp⟩) else 0), q.velocity 0 ∈ c.active
+  change ∀ᵐ q ∂(if hp : p ∈ enlargedVisitPoleSet _ T then
+    finiteUnionGreen hH hLE hlam hLam A _ T
+      _ else 0), q.velocity 0 ∈ c.active
   split
   · rename_i hp
-    exact (visitUnionGreen_ae_velocity hH hLE hlam hLam A (visitActiveUnion c J) T
-      (enlargedVisitPole _ T ⟨p, hp⟩)).mono fun q hq =>
+    exact (visitUnionGreen_ae_velocity hH hLE hlam hLam A _ T
+      _).mono fun q hq =>
         ((visitActiveUnion_carrier c J).le hq).1
-  · simp only [ae_zero, Filter.eventually_bot]
+  simp
 
 /-- Literal finite-piece active domination in the source open physical observation strip. -/
 theorem enlarged_piece_domination
@@ -52,7 +51,6 @@ theorem enlarged_piece_domination
       (∑ n ∈ Finset.range N, GA ∘ₘ gamma n) ≤
         (GO P).restrict {p | p.velocity 0 ∈ c.active} := by
   classical
-  dsimp only
   let gamma := enlargedVisitEntrance hH hLE hlam hLam A c J s T P
   let GA := enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) T
   let GW := enlargedVisitGreenKernel hH hLE hlam hLam A (visitWaitingUnion c J) T
@@ -85,19 +83,18 @@ theorem enlarged_piece_domination
       ⟨hP.2.1, by simpa only [Interval.toFiniteUnion_carrier] using hP.2.2⟩
     change (if h : P ∈ enlargedVisitPoleSet J.toFiniteUnion T then
       finiteUnionExit hH hLE hlam hLam A J.toFiniteUnion T
-        (enlargedVisitPole _ T ⟨P, h⟩) else 0) univ = 1
-    rw [dite_eq_left hp, measure_univ]
+        _ else 0) univ = 1
+    simp_all
   refine ⟨(hEle univ).trans_eq hmass, ?_⟩
   have hs : ∀ᵐ p ∂(∑ n ∈ Finset.range N, GA ∘ₘ gamma n), p.velocity 0 ∈ c.active := by
     apply ae_finsetSum_measure_iff.mpr
     intro n _
-    exact enlargedGreenMixture_ae_active hH hLE hlam hLam A c J T (gamma n)
+    exact enlargedGreenMixture_ae_active hH hLE hlam hLam A c J T _
   have hrestrict := Measure.restrict_mono (subset_refl {p : Point | p.velocity 0 ∈ c.active})
     hGle
   have hr : (∑ n ∈ Finset.range N, GA ∘ₘ gamma n).restrict
       {p | p.velocity 0 ∈ c.active} = ∑ n ∈ Finset.range N, GA ∘ₘ gamma n :=
     Measure.restrict_eq_self_of_ae_mem hs
-  rw [hr] at hrestrict
-  exact hrestrict
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

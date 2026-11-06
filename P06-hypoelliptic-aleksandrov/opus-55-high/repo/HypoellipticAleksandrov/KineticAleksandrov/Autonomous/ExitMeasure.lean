@@ -33,7 +33,7 @@ theorem existsUnique_strip_exit
     ∃! μ : Measure (stripClosedExit H T), μ univ ≤ 1 ∧
       ∀ f : C_c(stripClosedExit H T, ℝ), ∫ p, f p ∂μ =
         stripBoundaryFunctional hH hlam hLam A H E hE T e f :=
-  existsUnique_boundaryFunctional_measure (stripBoundaryFunctional hH hlam hLam A H E hE T e)
+  existsUnique_boundaryFunctional_measure _
     (stripBoundaryFunctional_spec hH hlam hLam A H E hE T e).1
 
 /-- The exit measure is chosen only from the proved unique full compact-test characterization. -/
@@ -84,39 +84,30 @@ instance stripExitOfRealization_isFiniteMeasure
   unfold stripExitOfRealization
   infer_instance
 
+variable (hH : HormanderHypoellipticityStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam) (H : Interval)
+
 /-- The physical exit measure has mass at most one. -/
 theorem stripExitOfRealization_mass_le_one
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
+     (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
     stripExitOfRealization hH hlam hLam A H E hE T e univ ≤ 1 := by
   unfold stripExitOfRealization
-  rw [Measure.map_apply measurable_subtype_coe MeasurableSet.univ,
-    preimage_univ]
+  rw [Measure.map_apply measurable_subtype_coe MeasurableSet.univ]
   exact (stripExitMeasureOnBoundary_spec hH hlam hLam A H E hE T e).1
 
 /-- The physical measure is supported on the full closed terminal/lateral exit carrier. -/
 theorem stripExitOfRealization_compl_closedExit
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
+     (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ)) :
     stripExitOfRealization hH hlam hLam A H E hE T e (stripClosedExit H T)ᶜ = 0 := by
   unfold stripExitOfRealization
   rw [Measure.map_apply measurable_subtype_coe
     (isClosed_stripClosedExit H T).measurableSet.compl]
-  have heq : (Subtype.val : stripClosedExit H T → Point) ⁻¹' (stripClosedExit H T)ᶜ = ∅ := by
-    ext p
-    simp only [mem_preimage, mem_compl_iff, mem_empty_iff_false, iff_false]
-    exact not_not.mpr p.2
-  rw [heq, measure_empty]
+  simp
 
 /-- Actual homogeneous probe values are exactly the physical exit integrals. -/
 theorem stripExitOfRealization_probe_integral
-    (hH : HormanderHypoellipticityStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : Interval) (E : StripEvolution H)
+     (E : StripEvolution H)
     (hE : IsStripEvolution A H E) (T : ℝ) (e : StripPole H (T : WithTop ℝ))
     (f : exitProbeSubmodule) :
     ∫ p, exitProbePhysical f p ∂stripExitOfRealization hH hlam hLam A H E hE T e =

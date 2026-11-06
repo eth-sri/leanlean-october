@@ -24,16 +24,18 @@ def localValueEnergyErrorRow {d : ℕ} (A : CoefficientField d)
   ∑ i, (2 * A z.1 z.2 i j * scalarSpatialGradient ρ z i +
     ρ z * spatialPartial i (fun y => A z.1 y i j) z.2)
 
+variable {d : ℕ} (A : CoefficientField d)
+
 /-- Smooth coefficients and cutoff make the error row continuous. -/
-theorem continuous_localValueEnergyErrorRow {d : ℕ} (A : CoefficientField d)
+theorem continuous_localValueEnergyErrorRow 
     (hA : IsSmoothCoefficient A) (ρ : TimeVelocity d → ℝ)
     (hρ : ContDiff ℝ (⊤ : ℕ∞) ρ) : Continuous (localValueEnergyErrorRow A ρ) := by
   apply continuous_pi
   intro j
   apply continuous_finsetSum
   intro i _
-  have hcoeff : ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => A z.1 z.2 i j) :=
-    (contDiff_apply ℝ ℝ j).comp ((contDiff_apply ℝ (Fin d → ℝ) i).comp hA)
+  have hcoeff : ContDiff ℝ _ (fun z : TimeVelocity d => A z.1 z.2 i j) :=
+    (contDiff_apply ℝ ℝ j).comp ((contDiff_apply ℝ _ i).comp hA)
   have hρ12 := isScalarC12On_of_contDiff_two (hρ.of_le (by simp)) univ
   have hA12 := isScalarC12On_of_contDiff_two (hcoeff.of_le (by simp)) univ
   have hρgrad := (continuous_apply i).comp
@@ -44,7 +46,7 @@ theorem continuous_localValueEnergyErrorRow {d : ℕ} (A : CoefficientField d)
     (hρ.continuous.mul hAgrad)
 
 /-- The error row vanishes outside the cutoff support, hence is compactly supported. -/
-theorem hasCompactSupport_localValueEnergyErrorRow {d : ℕ} (A : CoefficientField d)
+theorem hasCompactSupport_localValueEnergyErrorRow 
     (ρ : TimeVelocity d → ℝ) (hc : HasCompactSupport ρ) :
     HasCompactSupport (localValueEnergyErrorRow A ρ) := by
   apply HasCompactSupport.of_support_subset_isCompact hc
@@ -52,12 +54,12 @@ theorem hasCompactSupport_localValueEnergyErrorRow {d : ℕ} (A : CoefficientFie
   by_contra hnot
   apply hz
   ext j
-  have hzero : ρ z = 0 := image_eq_zero_of_notMem_tsupport hnot
+  have hzero  := image_eq_zero_of_notMem_tsupport hnot
   simp only [localValueEnergyErrorRow, scalarSpatialGradient_eq_zero_of_notMem_tsupport
     ρ z _ hnot, hzero, mul_zero, zero_mul, add_zero, Finset.sum_const_zero, Pi.zero_apply]
 
 /-- There is one finite error-row bound for all points and coordinate indices. -/
-theorem exists_localValueEnergyErrorRow_bound {d : ℕ} (A : CoefficientField d)
+theorem exists_localValueEnergyErrorRow_bound 
     (hA : IsSmoothCoefficient A) (ρ : TimeVelocity d → ℝ)
     (hρ : ContDiff ℝ (⊤ : ℕ∞) ρ) (hc : HasCompactSupport ρ) :
     ∃ K : ℝ, 0 ≤ K ∧ ∀ z j, |localValueEnergyErrorRow A ρ z j| ≤ K := by

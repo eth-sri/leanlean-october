@@ -9,15 +9,16 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open MeasureTheory Set Parabolic
 open scoped ENNReal
 
+variable {d : ℕ}
+
 /-- The full Borel coefficient and smooth jets give a measurable cutoff operator. -/
-theorem measurable_scaledUnitCutoff_backwardOperator {d : ℕ}
+theorem measurable_scaledUnitCutoff_backwardOperator 
     {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) {A : FullKineticCoefficient d}
     (hA : Measurable (fullKineticCoefficientAt A))
@@ -30,20 +31,15 @@ theorem measurable_scaledUnitCutoff_backwardOperator {d : ℕ}
   have hC : Measurable (fun P => matrixContraction (fullKineticCoefficientAt A P)
       (sliceHessian (unitCutoffVelocitySlice f (kineticAffineInverse P₀ R P))
         (kineticAffineInverse P₀ R P).velocity)) := by
-    unfold matrixContraction
     apply Finset.measurable_sum
-    intro i _
-    apply Finset.measurable_sum
-    intro j _
-    exact ((measurable_pi_apply j).comp ((measurable_pi_apply i).comp hA)).mul
-      ((measurable_pi_apply j).comp ((measurable_pi_apply i).comp hH))
+    fun_prop
   have h := (measurable_const (a := ell * (R ^ 2)⁻¹)).mul (hT.sub hC)
   convert h using 1
   funext P
   exact scaledUnitCutoff_backwardOperator hf A P₀ P R ell
 
 /-- Smooth tests with a measurable operator have measurable localized sources on open sets. -/
-theorem localizedSource_aestronglyMeasurable {d : ℕ} (A : FullKineticCoefficient d)
+theorem localizedSource_aestronglyMeasurable  (A : FullKineticCoefficient d)
     {psi u : KineticPoint d → ℝ} {Q : Set (KineticPoint d)} (hQ : IsOpen Q)
     (hpsi : ContinuousOn psi Q) (hu : ContinuousOn u Q)
     (hop : Measurable (backwardOperator A psi)) :
@@ -57,6 +53,6 @@ theorem localizedSource_aestronglyMeasurable {d : ℕ} (A : FullKineticCoefficie
     ((hop.max measurable_const).aestronglyMeasurable).indicator hE
   apply hm.restrict.congr
   filter_upwards [ae_restrict_mem hQ.measurableSet] with P hP
-  simp only [localizedSource, indicator, mem_inter_iff, mem_ofPred_eq, hP, true_and]
+  simp only [localizedSource, indicator, mem_inter_iff, hP, true_and]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

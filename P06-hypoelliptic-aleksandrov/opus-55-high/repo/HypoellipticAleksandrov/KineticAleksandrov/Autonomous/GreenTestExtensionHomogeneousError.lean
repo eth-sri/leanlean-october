@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.GreenTestExt
 /-! # Actual exit-probe approximation of a bounded smooth homogeneous solution -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Parabolic
 open SectionTwo TheoremA Evolution
@@ -36,11 +35,11 @@ theorem reconstruction_homogeneous_probe_error
   obtain ⟨F, hFb, hclose⟩ := exists_reconstruction_smooth_trace_probe H e.1.time T hT u
     (hc.mono (reconstructionClosedSlab_subset_strip_union_exit H he)) M hM hb R eps heps
   have hFc := (exitProbePhysical_continuous_compact F).1
-  have hFr := exitProbePhysical_isKineticC112On F (reconstructionStrip H lower T)
+  have hFr := exitProbePhysical_isKineticC112On F _
     (isOpen_reconstructionStrip H lower T)
   obtain ⟨C, hC⟩ := exitProbePhysical_bounded_source A F
   have hFs : ∃ M : ℝ, ∀ p ∈ reconstructionStrip H lower T,
-      |exitProbePhysical F p| ≤ M ∧ |forwardScalarOperator A.a (exitProbePhysical F) p| ≤ M :=
+      |exitProbePhysical F p| ≤ M ∧ |forwardScalarOperator A.a _ p| ≤ M :=
     ⟨C, fun p _ => hC p⟩
   obtain ⟨v, hvform, hvs, hvop, hvc, hvexit⟩ := strip_bounded_source_reconstruction
     hH hlam hLam A H E hE lower T (exitProbePhysical F) hFr hFc.continuousOn hFs
@@ -54,8 +53,8 @@ theorem reconstruction_homogeneous_probe_error
   have hqc : Continuous q := continuous_const.mul (reconstructionSpatialBarrier_continuous _ _)
   have hqr (p : Point) : IsSliceRegularAt q p :=
     (reconstructionSpatialBarrier_regular _ _ p).const_mul k
-  have hqo (p : Point) (hp : p ∈ evolutionPastOpenCylinder (intervalDomain H) (fun _ => 0) T) :
-      transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1) q p ≤ 0 :=
+  have hqo (p : Point) (hp : p ∈ evolutionPastOpenCylinder _ _ T) :
+      transportedForwardOperator _ _ q p ≤ 0 :=
     reconstructionSpatialBarrier_scaled_operator A H T k hk p hp
   have hbd (p : Point) (hp : p ∈ stripClosedExit H T) (ht : e.1.time ≤ p.time) :
       |u p - v p| ≤ eps + q (sectionTwoPoint p) := by
@@ -80,27 +79,20 @@ theorem reconstruction_homogeneous_probe_error
     · have hh := (abs_sub _ _).trans (add_le_add (hb p hslab) (hFb p))
       have htail := reconstructionSpatialBarrier_tail H T R (2 * M + eps)
         (by linarith) (sectionTwoPoint p) hslab.2.1 (not_le.mp hx).le
-      change 2 * M + eps ≤ q (sectionTwoPoint p) at htail
-      exact hh.trans ((by linarith : M + (M + eps) ≤ 2 * M + eps).trans
-        (htail.trans (le_add_of_nonneg_left heps.le)))
+      linarith
   have hupper := reconstruction_homogeneous_gap_le_barrier hlam A H lower T e he
     u v hu hvs hop hvop hc hvc M Mv hb hvb eps q hqc hqr hqn hqo
     (fun p hp ht => (le_abs_self _).trans (hbd p hp ht))
   have hlower := reconstruction_homogeneous_gap_le_barrier hlam A H lower T e he
     v u hvs hu hvop hop hvc hc Mv M hvb hb eps q hqc hqr hqn hqo
     (fun p hp ht => by
-      have hh := hbd p hp ht
-      rw [abs_sub_comm] at hh
-      exact (le_abs_self _).trans hh)
+      grind)
   have hval : v e.1 = ∫ p, exitProbePhysical F p
       ∂stripExitOfRealization hH hlam hLam A H E hE T e := by
     have hh := hvform e he
     rw [integral_neg] at hh
     have hi := stripExitOfRealization_probe_integral hH hlam hLam A H E hE T e F
-    unfold exitProbeValue at hi
-    linarith
-  refine ⟨F, hFb, hclose, ?_⟩
-  rw [← hval]
-  exact abs_le.mpr ⟨by linarith, hupper⟩
+    aesop
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

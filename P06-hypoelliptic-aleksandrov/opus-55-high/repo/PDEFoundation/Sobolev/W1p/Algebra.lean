@@ -48,8 +48,7 @@ instance : Zero (W1pFunction U p) where
       memLp := MeasureTheory.MemLp.zero
       gradMemLp := by
         intro i
-        exact (MeasureTheory.MemLp.zero :
-            MeasureTheory.MemLp (0 : Vec d → ℝ) p (volumeOn U))
+        simp
       hasWeakGradient := HasWeakGradientOn.zero }
 
 instance [Fact (1 ≤ p)] : Add (W1pFunction U p) where
@@ -118,13 +117,15 @@ theorem add_grad [Fact (1 ≤ p)] (u v : W1pFunction U p) :
     (u + v).grad = fun x => u.grad x + v.grad x :=
   rfl
 
+variable (c : ℝ) (u : W1pFunction U p)
+
 @[simp]
-theorem neg_toFun (u : W1pFunction U p) :
+theorem neg_toFun  :
     (-u).toFun = fun x => -u x :=
   rfl
 
 @[simp]
-theorem neg_grad (u : W1pFunction U p) :
+theorem neg_grad  :
     (-u).grad = fun x => -u.grad x :=
   rfl
 
@@ -139,12 +140,12 @@ theorem sub_grad [Fact (1 ≤ p)] (u v : W1pFunction U p) :
   rfl
 
 @[simp]
-theorem smul_toFun (c : ℝ) (u : W1pFunction U p) :
+theorem smul_toFun  :
     (c • u).toFun = fun x => c * u x :=
   rfl
 
 @[simp]
-theorem smul_grad (c : ℝ) (u : W1pFunction U p) :
+theorem smul_grad  :
     (c • u).grad = fun x => c • u.grad x :=
   rfl
 
@@ -160,9 +161,7 @@ theorem toFunGrad_injective :
     Function.Injective
       (fun u : W1pFunction U p => (u.toFun, u.grad)) := by
   intro u v h
-  exact W1pFunction.ext
-    (by simpa only using congrArg Prod.fst h)
-    (by simpa only using congrArg Prod.snd h)
+  aesop
 
 instance [Fact (1 ≤ p)] : AddCommGroup (W1pFunction U p) :=
   Function.Injective.addCommGroup
@@ -171,33 +170,13 @@ instance [Fact (1 ≤ p)] : AddCommGroup (W1pFunction U p) :=
     rfl
     (fun _ _ => rfl)
     (fun _ => by
-      ext x <;>
-        simp only [neg_toFun, neg_grad, Prod.fst_neg, Prod.snd_neg,
-          Pi.neg_apply])
+      aesop)
     (fun _ _ => by
-      ext x <;>
-        simp only [sub_toFun, sub_grad, Prod.fst_sub, Prod.snd_sub,
-          Pi.sub_apply])
+      aesop)
     (fun u n => by
-      apply Prod.ext
-      · funext x
-        change (((n : ℝ) • u).toFun x) = (n • u.toFun) x
-        simp only [smul_toFun, Pi.smul_apply, nsmul_eq_mul]
-      · funext x
-        ext i
-        change (((n : ℝ) • u).grad x i) = (n • u.grad) x i
-        simp only [smul_grad, Pi.smul_apply, nsmul_eq_mul,
-          smul_eq_mul])
+      aesop)
     (fun u n => by
-      apply Prod.ext
-      · funext x
-        change (((n : ℝ) • u).toFun x) = (n • u.toFun) x
-        simp only [smul_toFun, Pi.smul_apply, zsmul_eq_mul]
-      · funext x
-        ext i
-        change (((n : ℝ) • u).grad x i) = (n • u.grad) x i
-        simp only [smul_grad, Pi.smul_apply, zsmul_eq_mul,
-          smul_eq_mul])
+      aesop)
 
 /-- Additive value-gradient projection used to transfer the real module laws
 without inspecting proof fields. -/

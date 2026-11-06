@@ -37,9 +37,8 @@ theorem oneDimensionalAxisBox_eq_euclideanBall {lo hi : ℝ} (hlohi : lo < hi) :
   ext x
   rw [PDE.mem_oneDimensionalAxisBox_iff,
     PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (by linarith), vecEuclideanNorm_vec_one]
-  simp only [PDE.vecOneCoordinate, Pi.sub_apply, intervalCentre, mem_Ioo]
-  rw [abs_lt]
-  constructor <;> intro h <;> constructor <;> linarith [h.1, h.2]
+  simp only [PDE.vecOneCoordinate, Pi.sub_apply, intervalCentre]
+  grind
 
 /-- An admissible evolution domain is `ℝ^d` or a Euclidean ball: the bounded-interval case
 `d = 1` is a ball. -/
@@ -47,10 +46,10 @@ theorem eq_univ_or_exists_euclideanBall_of_isAdmissibleEvolutionDomain {n : ℕ}
     {Ω : Set (PDE.Vec n)} (hΩ : IsAdmissibleEvolutionDomain Ω) :
     Ω = Set.univ ∨ ∃ (c : PDE.Vec n) (r : ℝ), 0 < r ∧ Ω = PDE.euclideanBall c r := by
   rcases hΩ with h | h | ⟨hn, lo, hi, hlohi, h⟩
-  · exact Or.inl h
-  · exact Or.inr h
+  · simp_all
+  · simp_all
   · cases hn
-    have h' : Ω = PDE.oneDimensionalAxisBox lo hi := by simpa using h
+    have h' : Ω = PDE.oneDimensionalAxisBox lo hi := by omega
     exact Or.inr ⟨intervalCentre lo hi, (hi - lo) / 2, by linarith,
       h'.trans (oneDimensionalAxisBox_eq_euclideanBall hlohi)⟩
 

@@ -24,15 +24,13 @@ noncomputable section
 
 /-- Product Lebesgue volume is an additive Haar measure on time--velocity space. -/
 instance timeVelocityVolumeIsAddHaar (d : ℕ) :
-    Measure.IsAddHaarMeasure (volume : Measure (TimeVelocity d)) := by
-  rw [Measure.volume_eq_prod]
-  exact Measure.prod.instIsAddHaarMeasure _ _
+    Measure.IsAddHaarMeasure (volume : Measure (TimeVelocity d)) := Measure.prod.instIsAddHaarMeasure _ _
 
 /-- Product Lebesgue volume on time--velocity space has its exact factorization. -/
 theorem volume_timeVelocity_eq_prod (d : ℕ) :
     (volume : Measure (TimeVelocity d)) =
       (volume : Measure ℝ).prod (volume : Measure (PDE.Vec d)) :=
-  Measure.volume_eq_prod ℝ (PDE.Vec d)
+  Measure.volume_eq_prod ℝ _
 
 /-- The finite exponent `d + 1` in the parabolic ABP estimate. -/
 def parabolicExponent (d : ℕ) : ℝ≥0∞ := d + 1

@@ -12,7 +12,6 @@ Consumer files are read-only; the common definition is independent of these impo
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open Set MeasureTheory HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open scoped ProbabilityTheory MatrixOrder

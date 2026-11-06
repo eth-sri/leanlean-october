@@ -53,29 +53,22 @@ def ballSourcePotential (a T : ℝ) (F : KineticPoint d → ℝ) (P : KineticPoi
   duhamelPotential (localBallKernel hH hLE hd hlam hLam B hB v₀ hR) T
     ((localStrip a T v₀ R).indicator F ∘ sectionTwoPoint) (sectionTwoPoint P)
 
-/-- The canonical definition is exactly the potential used in the proof. -/
-theorem ballSourcePotential_eq_boundedBallSourcePotential (a T : ℝ)
-    (F : KineticPoint d → ℝ) :
-    ballSourcePotential hH hLE hd hlam hLam B hB v₀ hR a T F =
-      boundedBallSourcePotential (localBallKernel hH hLE hd hlam hLam B hB v₀ hR) a T F := by
-  funext P
-  rfl
+variable (a T : ℝ)
 
 /-- The exact planned signed bounded-source weak equation for the canonical ball potential. -/
 theorem ballSourcePotential_weak
-    (a T : ℝ) (haT : a < T) (F : KineticPoint d → ℝ)
+     (haT : a < T) (F : KineticPoint d → ℝ)
     (hF : Measurable F) (hFb : ∃ M : ℝ, ∀ P ∈ localStrip a T v₀ R, |F P| ≤ M) :
     IsKineticWeakTransportedSolution (zIndependentCoefficient B) (identityDrift d)
       (sectionTwoPoint '' localStrip a T v₀ R)
       (ballSourcePotential hH hLE hd hlam hLam B hB v₀ hR a T F ∘ sectionTwoPoint)
       (fun Q => -F (sectionTwoPoint Q)) := by
   obtain ⟨M, hb⟩ := hFb
-  rw [ballSourcePotential_eq_boundedBallSourcePotential]
   exact boundedBallSourcePotential_weak B hB v₀ hR
-    (localBallEvolution hH hLE hd hlam hLam B hB v₀ hR).1
-    (localBallKernel hH hLE hd hlam hLam B hB v₀ hR)
+    _
+    _
     (localBallEvolution_realizes hH hLE hd hlam hLam B hB v₀ hR)
-    a T (max M 0) (le_max_right _ _) F hF
+    a T _ (le_max_right _ _) F hF
     (fun P hP => (hb P hP).trans (le_max_left _ _))
 
 /-- The exact planned bounded-Borel continuity, traces, and minimum barrier, including
@@ -91,11 +84,9 @@ theorem ballSourcePotential_bounded_traces
       ∀ P ∈ localStrip a T v₀ R,
         |ballSourcePotential hH hLE hd hlam hLam B hB v₀ hR a T F P| ≤
           M * min (T - P.time)
-            ((R ^ 2 - PDE.vecNormSq (P.velocity - v₀)) / (2 * (d : ℝ) * lam)) := by
-  rw [ballSourcePotential_eq_boundedBallSourcePotential]
-  exact boundedBallSourcePotential_bounded_traces hH hd B hB v₀ hR
-    (localBallEvolution hH hLE hd hlam hLam B hB v₀ hR).1
-    (localBallKernel hH hLE hd hlam hLam B hB v₀ hR)
+            ((R ^ 2 - PDE.vecNormSq (P.velocity - v₀)) / (2 * (d : ℝ) * lam)) := boundedBallSourcePotential_bounded_traces hH hd B hB v₀ hR
+    _
+    _
     (localBallEvolution_realizes hH hLE hd hlam hLam B hB v₀ hR)
     a T M haT hM F hF hFb
 

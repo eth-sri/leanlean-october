@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockPushfor
 /-! # The exact weighted pushforward identity for the actual killed Green measures -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo TheoremA Evolution
@@ -22,14 +21,8 @@ theorem clock_green_pushforward
       ENNReal.ofReal (|c.vbar| * c.r ^ 2) • clockGreen hH hLE hlam hLam A c e he := by
   have hD : 0 < |c.vbar| * c.r ^ 2 :=
     mul_pos (abs_pos.mpr c.nonzero) (sq_pos_of_pos c.positive)
-  have : IsFiniteMeasure ((stripGreen hH hLE hlam hLam A c.activeInterval ⊤
-      ⟨e, WithTop.coe_lt_top _, he⟩).withDensity
-      (fun p => ENNReal.ofReal |p.velocity 0|)) :=
+  have  :=
     clockWeightedGreen_isFiniteMeasure hH hLE hlam hLam A c e he
-  have := Measure.isFiniteMeasure_map
-    ((stripGreen hH hLE hlam hLam A c.activeInterval ⊤
-      ⟨e, WithTop.coe_lt_top _, he⟩).withDensity
-      (fun p => ENNReal.ofReal |p.velocity 0|)) (c.map e)
   have := Measure.smul_finite (clockGreen hH hLE hlam hLam A c e he)
     (ENNReal.ofReal_ne_top : ENNReal.ofReal (|c.vbar| * c.r ^ 2) ≠ ⊤)
   apply nested_physical_measure_eq clockGreenSupport isOpen_clockGreenSupport
@@ -53,8 +46,7 @@ theorem clock_green_pushforward
         (fun p => ENNReal.ofReal |p.velocity 0|)) =
       ∫ p, clockWeightedProbe c e f p ∂stripGreen hH hLE hlam hLam A c.activeInterval ⊤
         ⟨e, WithTop.coe_lt_top _, he⟩ := by
-    simpa only [ENNReal.toReal_ofReal (abs_nonneg _), smul_eq_mul, clockWeightedProbe]
-      using hweight
+    aesop
   exact hmap.trans (hweight'.trans ((clock_weighted_test_infinite hH hLE hlam hLam A c e he
     f hn hs).trans (by rw [integral_smul_measure, ENNReal.toReal_ofReal hD.le]; rfl)))
 

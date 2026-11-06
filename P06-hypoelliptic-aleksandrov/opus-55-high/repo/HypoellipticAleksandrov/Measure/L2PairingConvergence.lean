@@ -12,7 +12,6 @@ This module derives convergence of scalar pairings from convergence of squared L
 
 open Filter MeasureTheory Topology
 
-noncomputable section
 
 /-- Pairing with a fixed L2 function preserves convergence to zero of squared L2 errors. -/
 theorem tendsto_integral_mul_of_memLp_two_of_tendsto_integral_sq
@@ -36,10 +35,10 @@ theorem tendsto_integral_mul_of_memLp_two_of_tendsto_integral_sq
   calc
     ‖∫ x, U x * g n x ∂μ‖ ≤ ∫ x, ‖U x * g n x‖ ∂μ :=
       norm_integral_le_integral_norm _
-    _ = ∫ x, ‖U x‖ * ‖g n x‖ ∂μ := by simp only [norm_mul]
-    _ ≤ (∫ x, ‖U x‖ ^ (2 : ℝ) ∂μ) ^ (1 / (2 : ℝ)) *
-        (∫ x, ‖g n x‖ ^ (2 : ℝ) ∂μ) ^ (1 / (2 : ℝ)) :=
+    _ = ∫ x, ‖U x‖ * ‖g n x‖ ∂μ := by simp
+    _ ≤ (∫ x, ‖U x‖ ^ (2) ∂μ) ^ (1 / (2)) *
+        (∫ x, ‖g n x‖ ^ (2) ∂μ) ^ (1 / (2)) :=
       integral_mul_norm_le_Lp_mul_Lq Real.HolderConjugate.two_two
-        (by simpa using hU) (by simpa using hg n)
-    _ = Real.sqrt (∫ x, U x ^ 2 ∂μ) * Real.sqrt (∫ x, (g n x) ^ 2 ∂μ) := by
+        (by simp_all) (by simp_all)
+    _ = Real.sqrt _ * Real.sqrt _ := by
       simp only [Real.sqrt_eq_rpow, Real.norm_eq_abs, Real.rpow_two, sq_abs]

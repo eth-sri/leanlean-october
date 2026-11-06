@@ -9,7 +9,6 @@ public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -42,17 +41,17 @@ theorem tendsto_setIntegral_mul_wholeSpace_ball_solutions
   have hU := (tendstoUniformlyOn_wholeSpace_ball_solutions (α := α) (S0 := S0)
     hlam hB hb hε hε1 hC F hFC r hrlim v hv).1
   have hnear : ∀ᶠ j : ℕ in atTop, |S0| < r j :=
-    hrlim.eventually (eventually_gt_atTop |S0|)
+    hrlim.eventually (eventually_gt_atTop _)
   have hclosed (j : ℕ) (hj : |S0| < r j) :
-      K ⊆ evolutionPastClosedCylinder (PDE.euclideanBall 0 (r j)) (fun _ => 0) τ :=
+      K ⊆ evolutionPastClosedCylinder _ _ τ :=
     fun p hp => ⟨hp.1.2.1, subset_closure (mem_movingBall_of_radialSq_le
-      (abs_nonneg S0) hj (by simpa only [sq_abs] using (show radialSq p ≤ S0 ^ 2 from hp.2)))⟩
+      (abs_nonneg S0) hj (by aesop))⟩
   apply tendsto_integral_filter_of_dominated_convergence (fun p => C * |φ p|)
   · exact hnear.mono fun j hj => ((hv j).2.1.mono (hclosed j hj) |>.mul
       hφ.continuousOn).aestronglyMeasurable hK.measurableSet
   · refine hnear.mono fun j hj => ?_
     filter_upwards [ae_restrict_mem hK.measurableSet] with p hp
-    have hbnd := classical_abs_le_const (PDE.isOpen_euclideanBall 0 (r j)) continuous_const
+    have hbnd := classical_abs_le_const (PDE.isOpen_euclideanBall 0 _) continuous_const
       hlam hB hb hε hε1 (hv j) hFC p (hclosed j hj hp)
     rw [Real.norm_eq_abs, abs_mul]
     exact mul_le_mul_of_nonneg_right hbnd (abs_nonneg _)

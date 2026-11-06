@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitMassCoe
 /-! # Integrability of the position-localized Green test -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
@@ -31,10 +30,12 @@ theorem positionStartQuadratic_integrable (c : Clock) (Y : ℝ)
   exact (mul_le_mul_of_nonneg_right
     ((positionStartCutoff_properties Y c.r c.positive).2 _).2
     (visitQuadratic_nonneg c hp)).trans (by
-      simpa only [one_mul] using visitQuadratic_le c (p.velocity 0))
+      simpa only [one_mul] using visitQuadratic_le c _)
+
+variable {lam Lam : ℝ}
 
 /-- The exact spatially localized operator is continuous. -/
-theorem positionStartQuadratic_operator_continuous {lam Lam : ℝ}
+theorem positionStartQuadratic_operator_continuous 
     (A : SmoothAutonomous lam Lam) (c : Clock) (Y : ℝ) :
     Continuous (fun p : Point => forwardScalarOperator A.a
       (fun q => positionStartCutoff Y c.r c.positive (q.position 0) *
@@ -50,7 +51,7 @@ theorem positionStartQuadratic_operator_continuous {lam Lam : ℝ}
       ((continuous_const.mul (visitCoefficient_continuous A)).mul (he.continuous.comp hx))
 
 /-- Finite active occupation makes the exact position-localized operator integrable. -/
-theorem positionStartQuadratic_operator_integrable {lam Lam : ℝ}
+theorem positionStartQuadratic_operator_integrable 
     (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
     (c : Clock) (Y : ℝ) (hc : |c.vbar| = 2 * c.r)
     (mu : Measure Point) [IsFiniteMeasure mu]
@@ -62,11 +63,10 @@ theorem positionStartQuadratic_operator_integrable {lam Lam : ℝ}
   apply Integrable.mono' (integrable_const C)
     (positionStartQuadratic_operator_continuous A c Y).measurable.aestronglyMeasurable
   filter_upwards [hmu] with p hp
-  rw [Real.norm_eq_abs]
   apply (hb A c Y p hc hp).trans
   by_cases hbox : (p.position 0, p.velocity 0) ∈ box 4 c.r Y
-  · rw [indicator_of_mem hbox, mul_one]
-  · rw [indicator_of_notMem hbox, mul_zero]
-    exact hC.le
+  · simp_all
+  · rw [indicator_of_notMem hbox]
+    linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -7,7 +7,6 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -44,10 +43,7 @@ theorem propagation_overlap_induction {d : ℕ} (hd : 1 ≤ d)
   have ha : ∀ k, 0 ≤ a k := fun k =>
     mul_nonneg (mul_nonneg (pow_nonneg hgamma.le k) (Real.exp_pos _).le) hell
   have hstep : ∀ k, a (k + 1) = gamma * a k := by
-    intro k
-    dsimp only [a]
-    rw [pow_succ]
-    ring
+    grind
   have hbudget := propagation_step_damping hd hlam hLam hH hT0 hT1 hh hhstar
   intro k
   induction k with
@@ -56,31 +52,27 @@ theorem propagation_overlap_induction {d : ℕ} (hd : 1 ≤ d)
     simp only [Nat.cast_zero, zero_mul]
     have hb : h ≤ TP := by
       have he := mul_le_mul_of_nonneg_right (Nat.cast_le.mpr hkn) hh.le
-      norm_num at he
-      exact he.trans hnTP
+      grind
     apply propagation_one_block hd hlam hLam hH hT0 hT1 hkx hkv hh hhstar (ha 0)
-      A hA O tminus 0 TP (by norm_num) (by simpa only [zero_add] using hb)
+      A hA O tminus 0 TP (by norm_num) (by simp_all)
       hx hv hkin hLip htube u hnonneg hu
     intro P hP ht
     have hcont := propagation_block_containment hH hT0 hT1 hkx hkv hh hhstar
       tminus 0 TP (by norm_num) (by
-        have he := mul_le_mul_of_nonneg_right (Nat.cast_le.mpr hkn) hh.le
-        norm_num at he ⊢
-        exact he.trans hnTP) hv.continuous hkin hLip hP
+        simp_all) hv.continuous hkin hLip hP
     have hupper := gaussianBarrier_initial_upper hlam hh Lam H L (a 0) tminus 0
       hLam (ha 0) hbudget x v P ht
     have heq : a 0 * Real.exp (L ^ 2 / 512) = ell := by
       dsimp only [a]
       rw [pow_zero, one_mul, mul_comm _ ell, mul_assoc, ← Real.exp_add]
       simp only [neg_div, neg_add_cancel, Real.exp_zero, mul_one]
-    exact (hupper.trans_eq heq).trans (hinitial P hcont (by linarith only [ht]))
+    grind
   | succ k ih =>
     intro hkn
     have hk : k < n := Nat.lt_trans (Nat.lt_succ_self k) hkn
     have hb : ((k + 1 : ℕ) : ℝ) * h + h ≤ TP := by
       have he := mul_le_mul_of_nonneg_right (Nat.cast_le.mpr hkn) hh.le
-      push_cast at he ⊢
-      linarith only [he, hnTP]
+      grind
     apply propagation_one_block hd hlam hLam hH hT0 hT1 hkx hkv hh hhstar (ha (k + 1))
       A hA O tminus (((k + 1 : ℕ) : ℝ) * h) TP (by positivity) hb
       hx hv hkin hLip htube u hnonneg hu
@@ -91,16 +83,9 @@ theorem propagation_overlap_induction {d : ℕ} (hd : 1 ≤ d)
       obtain ⟨hprev, hcompare⟩ := gaussianBarrier_overlap_compare hd hlam hLam hH hT0 hT1
         hh hhstar (ha k) tminus (((k + 1 : ℕ) : ℝ) * h)
         hv.continuous hkin hLip P ht hp
-      have heq : ((k + 1 : ℕ) : ℝ) * h = (k : ℝ) * h + h := by push_cast; ring
-      rw [heq, ← add_assoc] at hprev
-      have hprevtime : ((k + 1 : ℕ) : ℝ) * h - h = (k : ℝ) * h := by
-        rw [heq]
-        ring
-      rw [hprevtime] at hcompare
-      rw [hstep]
-      exact hcompare.trans (ih hk P hprev)
+      grind
     · have hcont := propagation_block_containment hH hT0 hT1 hkx hkv hh hhstar
         tminus (((k + 1 : ℕ) : ℝ) * h) TP (by positivity) hb hv.continuous hkin hLip hP
-      exact (le_of_not_gt hp).trans (hnonneg P (htube hcont))
+      grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

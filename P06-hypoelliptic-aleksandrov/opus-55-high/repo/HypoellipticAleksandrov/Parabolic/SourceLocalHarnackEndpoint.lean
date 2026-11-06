@@ -39,37 +39,29 @@ theorem exists_source_local_parabolic_harnack_nonnegative
     exists_source_local_parabolic_harnack_positive d hd lam hlam Lam hlamLam
   refine ⟨hBox, C, hhBox0, hhBox1, hC, ?_⟩
   intro K U B q F hK hKU hU hbox hB hq hF hnonneg hlower hupper heq v hv
-  have hqClosed : ContinuousOn q (parabolicClosedBox 2 2 0 0) :=
+  have hqClosed : ContinuousOn q _ :=
     hq.continuousOn.mono (hbox.trans hKU)
   have hsource : (4, (0 : PDE.Vec d)) ∈ parabolicClosedBox 2 2 0 0 := by
-    rw [mem_parabolicClosedBox_iff]
-    refine ⟨by norm_num, by norm_num, ?_⟩
-    intro i
     norm_num
   apply le_of_forall_pos_le_add
   intro eps heps
-  have hstrictEps : 0 < q (4, (0 : PDE.Vec d)) + eps :=
+  have hstrictEps : 0 < q _ + eps :=
     add_pos_of_nonneg_of_pos (hnonneg _ (hbox hsource)) heps
-  have hlimitEps : hBox * (q (4, (0 : PDE.Vec d)) + eps) ≤
-      q (8, v) + eps + C * parabolicLpNormOn d F K := by
-    exact le_of_tendsto_of_tendsto'
-      (tendsto_const_nhds : Tendsto
-        (fun _ : ℕ => hBox * (q (4, (0 : PDE.Vec d)) + eps)) atTop
-        (_root_.nhds (hBox * (q (4, (0 : PDE.Vec d)) + eps))))
+  have hlimitEps : hBox * (q (4, (0)) + eps) ≤
+      q (8, v) + eps + C * parabolicLpNormOn d F K := le_of_tendsto_of_tendsto'
+      tendsto_const_nhds
       (((ContinuousOn.tendsto_localHarnackTerminalApprox hqClosed hv).add
-        (tendsto_const_nhds : Tendsto (fun _ : ℕ => eps) atTop (_root_.nhds eps))).add
-        (tendsto_const_nhds : Tendsto
-          (fun _ : ℕ => C * parabolicLpNormOn d F K) atTop
-          (_root_.nhds (C * parabolicLpNormOn d F K))))
-      (fun j => hpositive K U B (fun z => q z + eps) F hK hKU hU hbox hB
+        tendsto_const_nhds).add
+        tendsto_const_nhds)
+      (fun j => hpositive K U B _ F hK hKU hU hbox hB
         (hq.add contDiffOn_const) hF
         (fun z hz => add_nonneg (hnonneg z hz) heps.le) hlower hupper
         (fun z hz => by rw [parabolicOperator_add_const, heq z hz]) hstrictEps j v hv)
   calc
-    hBox * q (4, (0 : PDE.Vec d)) ≤ hBox * (q (4, (0 : PDE.Vec d)) + eps) := by
+    hBox * q _ ≤ hBox * (q (4, (0)) + eps) := by
       gcongr
       linarith
-    _ ≤ q (8, v) + C * parabolicLpNormOn d F K + eps := by
+    _ ≤ q _ + C * parabolicLpNormOn d F K + eps := by
       linarith
 
 end

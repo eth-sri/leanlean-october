@@ -12,7 +12,6 @@ is discharged by integration of the proved one-pole estimate in the consumer.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 open scoped ENNReal
@@ -29,20 +28,20 @@ theorem mixture_density_eq_of_pairing {X : Type*} [MeasurableSpace X]
     have hi : (fun x => B.indicator (fun _ => 1) x * g x) = B.indicator g := by
       funext x
       by_cases hx : x ∈ B
-      · simp only [indicator_of_mem hx, one_mul]
-      · simp only [indicator_of_notMem hx, zero_mul]
+      · simp_all
+      simp_all
     rw [hi] at hh
     simpa only [integral_indicator hB,
-      integral_const, smul_eq_mul, mul_one, Measure.real, Measure.restrict_apply hB,
+      integral_const, smul_eq_mul, mul_one, Measure.real, Measure.restrict_apply,
       Measure.restrict_apply MeasurableSet.univ, univ_inter] using hh
   calc
-    mu B = ENNReal.ofReal (mu B).toReal :=
+    mu B = ENNReal.ofReal _ :=
       (ENNReal.ofReal_toReal (measure_ne_top mu B)).symm
-    _ = ENNReal.ofReal (∫ x in B, g x ∂m) := congrArg ENNReal.ofReal he.symm
-    _ = ∫⁻ x in B, ENNReal.ofReal (g x) ∂m :=
+    _ = ENNReal.ofReal _ := congrArg ENNReal.ofReal he.symm
+    _ = ∫⁻ x in B, ENNReal.ofReal _ ∂m :=
       ofReal_integral_eq_lintegral_ofReal hgi.restrict
         (Filter.Eventually.of_forall hgn)
-    _ = _ := (withDensity_apply (fun x => ENNReal.ofReal (g x)) hB).symm
+    _ = _ := (withDensity_apply _ hB).symm
 
 /-- Bounded conjugate tests give a sharp measurable nonnegative density with its Lq norm. -/
 theorem mixture_density_bound_of_bounded_tests {E : Type*}
@@ -63,7 +62,7 @@ theorem mixture_density_bound_of_bounded_tests {E : Type*}
     obtain ⟨M, hM⟩ := hfc.exists_bound_of_continuous hf.continuous
     let F : BoundedBorel E := ⟨f, hf.continuous.measurable, max M 0,
       le_max_right _ _, fun x => by
-        simpa only [Real.norm_eq_abs] using (hM x).trans (le_max_left M 0)⟩
+        simp_all⟩
     simpa only [Measure.restrict_univ] using
       htest F (hf.continuous.memLp_of_hasCompactSupport hfc) hfn
   obtain ⟨_, g, hgm, hgn, hgi, hgp, hgb, _, hpair⟩ :=

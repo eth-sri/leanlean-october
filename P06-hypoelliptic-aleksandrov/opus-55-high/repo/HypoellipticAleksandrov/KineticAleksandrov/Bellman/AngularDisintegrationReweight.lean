@@ -21,8 +21,10 @@ theorem measurable_bellmanRadialDegreeWeight (β : ℝ) :
   unfold bellmanRadialDegreeWeight
   fun_prop
 
+variable (β r : ℝ)
+
 /-- The exact degree weight at the inverse radial scaling. -/
-theorem bellmanRadialDegreeWeight_inverse_scale (β r : ℝ) (hr : 0 < r)
+theorem bellmanRadialDegreeWeight_inverse_scale  (hr : 0 < r)
     (w : BellmanPositiveTime × ℝ) :
     bellmanRadialDegreeWeight β
       (((bellmanRadialScale r hr).prodCongr (Homeomorph.refl ℝ)).symm w) =
@@ -33,15 +35,14 @@ theorem bellmanRadialDegreeWeight_inverse_scale (β r : ℝ) (hr : 0 < r)
     bellmanRadialDegreeWeight]
   have hp : (r⁻¹) ^ (β - 4) = r ^ (4 - β) := by
     rw [← Real.rpow_neg_eq_inv_rpow]
-    congr 1
     ring
   rw [hp]
 
 /-- The reciprocal degree factors multiply to one. -/
-theorem bellmanRadial_degreeFactors_cancel (β r : ℝ) (hr : 0 < r) :
+theorem bellmanRadial_degreeFactors_cancel  (hr : 0 < r) :
     ENNReal.ofReal (r ^ (β - 4)) * ENNReal.ofReal (r ^ (4 - β)) = 1 := by
   rw [← ENNReal.ofReal_mul (Real.rpow_nonneg hr.le _), ← Real.rpow_add hr]
-  simp only [show β - 4 + (4 - β) = 0 by ring, Real.rpow_zero, ENNReal.ofReal_one]
+  simp
 
 /-- Reweighting the actual homogeneous coordinate measure makes radial scaling invariant. -/
 theorem HasBellmanDensityDegree.map_reweighted_angularPullback {β : ℝ}
@@ -51,7 +52,7 @@ theorem HasBellmanDensityDegree.map_reweighted_angularPullback {β : ℝ}
       ((bellmanAngularPullback μ).withDensity (bellmanRadialDegreeWeight β)) =
       (bellmanAngularPullback μ).withDensity (bellmanRadialDegreeWeight β) := by
   rw [bellman_map_withDensity _ _ _ (measurable_bellmanRadialDegreeWeight β),
-    hμ.map_angularPullback r hr, withDensity_smul_measure]
+    hμ.map_angularPullback, withDensity_smul_measure]
   have he : (fun w => bellmanRadialDegreeWeight β
       (((bellmanRadialScale r hr).prodCongr (Homeomorph.refl ℝ)).symm w)) =
       ENNReal.ofReal (r ^ (4 - β)) • bellmanRadialDegreeWeight β := by
@@ -72,7 +73,7 @@ theorem HasBellmanDensityDegree.logAngularMeasure_invariant {β : ℝ}
     {μ : Measure BellmanPuncturedPlane} (hμ : HasBellmanDensityDegree β μ) (a : ℝ) :
     Measure.map (fun q : ℝ × ℝ => (a + q.1, q.2))
       (bellmanLogAngularMeasure β μ) = bellmanLogAngularMeasure β μ := by
-  let S := (bellmanRadialScale (Real.exp a) (Real.exp_pos a)).prodCongr (Homeomorph.refl ℝ)
+  let S := (bellmanRadialScale _ (Real.exp_pos a)).prodCongr (Homeomorph.refl ℝ)
   rw [bellmanLogAngularMeasure,
     Measure.map_map (by fun_prop) bellmanLogAngularHomeomorph.measurable]
   have he : (fun q : ℝ × ℝ => (a + q.1, q.2)) ∘ bellmanLogAngularHomeomorph =
@@ -81,6 +82,6 @@ theorem HasBellmanDensityDegree.logAngularMeasure_invariant {β : ℝ}
     change (a + Real.log w.1.val, w.2) = (Real.log (Real.exp a * w.1.val), w.2)
     rw [Real.log_mul (Real.exp_ne_zero a) w.1.property.ne', Real.log_exp]
   rw [he, ← Measure.map_map bellmanLogAngularHomeomorph.measurable S.measurable,
-    hμ.map_reweighted_angularPullback (Real.exp a) (Real.exp_pos a)]
+    hμ.map_reweighted_angularPullback]
 
 end HypoellipticAleksandrov.KineticAleksandrov

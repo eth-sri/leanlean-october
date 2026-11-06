@@ -7,7 +7,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.Deterministi
 /-! # Singular Bellman Green inequality for the actual occupation measure -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov MeasureTheory Set Filter
 open scoped Topology ENNReal
@@ -41,16 +40,14 @@ theorem deterministic_barrier_green_fatou
       ((measurable_fst.sub_const Y).prodMk measurable_snd)))
   have hp (q : Z) : Tendsto (fun n => f n q) atTop (𝓝 (F q)) :=
     (ENNReal.continuous_const_mul ENNReal.ofReal_ne_top).tendsto
-      (rhoWeight (gamma alpha) (q.1 - Y, q.2)) |>.comp
-        (regularizedBarrierWeight_tendsto alpha ha ha1 (q.1 - Y, q.2))
+      _ |>.comp
+        (regularizedBarrierWeight_tendsto alpha ha ha1 _)
   have hi (n : ℕ) : (∫⁻ q, f n q ∂physicalOccupationMeasure E z T) ≤
       ENNReal.ofReal (b n) := by
-    rw [show f n = fun q => ENNReal.ofReal c *
-      ENNReal.ofReal (regularizedBarrierWeight alpha n (q.1 - Y, q.2)) from rfl,
-      lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
+    rw [lintegral_const_mul' _ _ ENNReal.ofReal_ne_top]
     exact deterministic_regularized_barrier_green hH hLE hlam hLam h ha ha1 hc hbound
       _ (barrierMollifier_spec n) A z T hT Y
-  have hh := singular_fatou_of_real_bounds (physicalOccupationMeasure E z T) f F hm hp b _
+  have hh := singular_fatou_of_real_bounds _ f F hm hp b _
     (barrier_mollifier_endpoint_tendsto hH hLE hlam hLam h ha ha1 A z T Y) hi
   simpa only [F, lintegral_const_mul' _ _ ENNReal.ofReal_ne_top] using hh
 
@@ -60,7 +57,7 @@ theorem deterministic_barrier_occupation_uniform
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (alpha : ℝ)
     (ha : bellmanAdjointExponent (Lam / lam)
-      (by apply (le_div_iff₀ hlam).2; simpa only [one_mul] using hLam) - 2 < alpha)
+      (by apply (le_div_iff₀ hlam).2; simp_all) - 2 < alpha)
     (ha1 : alpha < 1) (M : ℝ) :
     ∃ c C : ℝ, 0 < c ∧ 0 < C ∧
       ∀ (A : SmoothAutonomous lam Lam) (z : Z) (T : NNReal) (Y : ℝ),

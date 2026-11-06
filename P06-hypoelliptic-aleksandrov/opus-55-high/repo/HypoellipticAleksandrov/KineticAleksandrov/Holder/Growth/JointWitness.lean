@@ -10,7 +10,6 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth
 
@@ -61,7 +60,6 @@ theorem exists_joint_growth_parameters (d : ℕ) (hd : 1 ≤ d) (lam Lam p C_A :
     rw [← kineticAffine_image_unitCylinder P0 hr]
     apply image_mono
     exact subset_closure.trans (stackComparisonRegion_geometry d m).2.2.1
-  exact hstack p C_A hp A hA P0 r ell hr hell O hO hregion u hnonneg hu
-    (hnear lam hlam hLam A hA P0 r ell hr hell O hO hQO u hnonneg hu hdensity)
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth

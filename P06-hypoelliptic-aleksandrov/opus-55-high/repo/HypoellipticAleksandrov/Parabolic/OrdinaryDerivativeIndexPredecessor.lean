@@ -35,8 +35,7 @@ theorem eq_zero_or_eq_timeSucc_or_eq_velocitySucc
       apply Subtype.ext
       rw [← TimeVelocityMultiIndex.ofTimeVelocity_timeOrder_velocity beta.1,
         ht, hv]
-      funext c
-      cases c <;> rfl
+      aesop
     · right
       right
       have hi : ∃ i : Fin d, beta.1.velocity i ≠ 0 := by
@@ -47,7 +46,6 @@ theorem eq_zero_or_eq_timeSucc_or_eq_velocitySucc
       let gammaIndex := TimeVelocityMultiIndex.ofTimeVelocity beta.1.timeOrder
         (Function.update beta.1.velocity i (beta.1.velocity i - 1))
       have horder : gammaIndex.order + 1 ≤ m := by
-        have hpos : 0 < beta.1.velocity i := Nat.pos_of_ne_zero hi
         have hsum :
             (∑ j, Function.update beta.1.velocity i
               (beta.1.velocity i - 1) j) + 1 =
@@ -57,14 +55,13 @@ theorem eq_zero_or_eq_timeSucc_or_eq_velocitySucc
           omega
         change beta.1.timeOrder +
             (∑ j, Function.update beta.1.velocity i
-              (beta.1.velocity i - 1) j) + 1 ≤ m
+              _ j) + 1 ≤ m
         rw [ht, zero_add, hsum]
         simpa [TimeVelocityMultiIndex.order, ht, VelocityMultiIndex.order] using beta.2
       let gamma : TimeVelocityDerivativeIndex d m :=
         ⟨gammaIndex, Nat.le_trans (Nat.le_add_right _ _) horder⟩
       refine ⟨i, gamma, horder, ?_⟩
       apply Subtype.ext
-      rw [coe_velocitySucc]
       change beta.1 = TimeVelocityMultiIndex.ofTimeVelocity beta.1.timeOrder
         (Function.update
           (Function.update beta.1.velocity i (beta.1.velocity i - 1)) i
@@ -72,19 +69,12 @@ theorem eq_zero_or_eq_timeSucc_or_eq_velocitySucc
             (beta.1.velocity i - 1)) i + 1))
       rw [Function.update_self,
         Nat.sub_add_cancel (Nat.one_le_iff_ne_zero.mpr hi)]
-      rw [← TimeVelocityMultiIndex.ofTimeVelocity_timeOrder_velocity beta.1]
-      congr 1
-      funext j
-      by_cases hji : j = i
-      · subst j
-        simp
-      · simp [hji]
+      simp
   · right
     left
     let gammaIndex := TimeVelocityMultiIndex.ofTimeVelocity
       (beta.1.timeOrder - 1) beta.1.velocity
     have horder : gammaIndex.order + 1 ≤ m := by
-      have hpos : 0 < beta.1.timeOrder := Nat.pos_of_ne_zero ht
       change (beta.1.timeOrder - 1) + beta.1.velocity.order + 1 ≤ m
       have hbeta := beta.2
       change beta.1.timeOrder + beta.1.velocity.order ≤ m at hbeta
@@ -93,11 +83,10 @@ theorem eq_zero_or_eq_timeSucc_or_eq_velocitySucc
       ⟨gammaIndex, Nat.le_trans (Nat.le_add_right _ _) horder⟩
     refine ⟨gamma, horder, ?_⟩
     apply Subtype.ext
-    rw [coe_timeSucc]
     change beta.1 = TimeVelocityMultiIndex.ofTimeVelocity
       (beta.1.timeOrder - 1 + 1) beta.1.velocity
     rw [Nat.sub_add_cancel (Nat.one_le_iff_ne_zero.mpr ht)]
-    exact (TimeVelocityMultiIndex.ofTimeVelocity_timeOrder_velocity beta.1).symm
+    simp
 
 end TimeVelocityDerivativeIndex
 

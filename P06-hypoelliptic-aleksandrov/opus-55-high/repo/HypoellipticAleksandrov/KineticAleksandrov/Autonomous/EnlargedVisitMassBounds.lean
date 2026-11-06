@@ -12,29 +12,26 @@ are hypotheses here, as they belong to the enlarged recursion.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+
 /-- Actual active pieces have the physical active-velocity support. -/
 theorem enlargedActivePiece_ae_active
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ)
+     (c : Clock) (J : Interval) (s T : ℝ)
     (P : Point) (hs : s ≤ P.time) (hT : P.time < T) (n : ℕ) :
     ∀ᵐ q ∂enlargedActivePiece hH hLE hlam hLam A c J s T P n,
       q.velocity 0 ∈ c.active := by
   unfold enlargedActivePiece
-  rw [enlargedVisitGreen_comp_eq_clipped hH hLE hlam hLam A (visitActiveUnion c J) s T _
+  rw [enlargedVisitGreen_comp_eq_clipped hH hLE hlam hLam A _ s T _
     ((enlargedVisitEntrance_ae_support hH hLE hlam hLam A c J s T P hs hT n).mono
       fun _ hp => hp.1)]
-  exact visitActiveGreenMixture_ae_active hH hLE hlam hLam A c J (s - 1) T _
+  exact visitActiveGreenMixture_ae_active hH hLE hlam hLam A c J _ T _
 
 /-- Finite active occupation sums inherit the full-space velocity-band capacity. -/
 theorem enlargedActivePiece_partial_capacity_of_domination
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ)
+     (c : Clock) (J : Interval) (T : ℝ)
     (P : Point) (hT : 0 < T) (hbar : |c.vbar| = 2 * c.r) (N : ℕ)
     (hOccupation : (∑ n ∈ Finset.range N,
       enlargedActivePiece hH hLE hlam hLam A c J P.time (P.time + T) P n) ≤
@@ -45,22 +42,17 @@ theorem enlargedActivePiece_partial_capacity_of_domination
   let gm := enlargedActivePiece hH hLE hlam hLam A c J P.time (P.time + T) P
   have hPT : P.time < P.time + T := by linarith
   have : ∀ n, IsFiniteMeasure (gm n) := fun n =>
-    enlargedActivePiece_isFiniteMeasure hH hLE hlam hLam A c J P.time (P.time + T)
+    enlargedActivePiece_isFiniteMeasure hH hLE hlam hLam A c J P.time _
       P le_rfl hPT n
   let B : Set Point := {q | |q.velocity 0| ≤ 3 * c.r}
-  have hB : MeasurableSet B := measurableSet_le
-    (continuous_abs.measurable.comp ((continuous_apply 0).comp continuous_velocity).measurable)
-    measurable_const
   have hs : ∀ᵐ q ∂(∑ n ∈ Finset.range N, gm n), q ∈ B := by
     apply ae_finsetSum_measure_iff.mpr
     intro n _
-    apply (enlargedActivePiece_ae_active hH hLE hlam hLam A c J P.time (P.time + T)
+    apply (enlargedActivePiece_ae_active hH hLE hlam hLam A c J P.time _
       P le_rfl hPT n).mono
     intro q hq
     have hv := (c.active_abs_bounds hq).2
-    rw [hbar] at hv
-    change |q.velocity 0| ≤ 3 * c.r
-    linarith
+    grind
   have he := congrArg (fun m : Measure Point => m univ)
     (Measure.restrict_eq_self_of_ae_mem hs)
   rw [Measure.restrict_apply MeasurableSet.univ, univ_inter] at he
@@ -79,8 +71,8 @@ theorem enlarged_mass_arithmetic {r R M D : ℝ} (hr : 0 < r) (hR : 0 ≤ R)
     M ≤ (9 / 5 + 16 / 5 * D) * (1 + R / r) := by
   have hraw : M ≤ 9 / 5 + 16 / 5 * D * (R / r) := by
     have hd : M ≤ (9 * r ^ 2 / 16 + D * R * r) / (5 * r ^ 2 / 16) :=
-      (le_div_iff₀ (by positivity : 0 < 5 * r ^ 2 / 16)).mpr
-        (by simpa only [mul_comm] using hM)
+      (le_div_iff₀ (by positivity)).mpr
+        (by linarith)
     convert hd using 1
     field_simp
   have hx : 0 ≤ R / r := div_nonneg hR hr.le

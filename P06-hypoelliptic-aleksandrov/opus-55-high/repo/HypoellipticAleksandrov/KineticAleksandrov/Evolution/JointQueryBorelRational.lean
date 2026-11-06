@@ -22,26 +22,27 @@ def terminalTimeMeshIndex (j : ℕ) (τ : ℝ) : ℤ := Int.ceil (τ * ((j : ℝ
 def terminalTimeMesh (j : ℕ) (τ : ℝ) : ℝ :=
   (terminalTimeMeshIndex j τ : ℝ) / ((j : ℝ) + 1)
 
+variable (j : ℕ) (τ : ℝ)
+
 /-- The mesh index is Borel measurable. -/
-theorem measurable_terminalTimeMeshIndex (j : ℕ) : Measurable (terminalTimeMeshIndex j) :=
+theorem measurable_terminalTimeMeshIndex  : Measurable (terminalTimeMeshIndex j) :=
   Int.measurable_ceil.comp (measurable_id.mul_const _)
 
 /-- Every upper mesh approximation is at least the original time. -/
-theorem le_terminalTimeMesh (j : ℕ) (τ : ℝ) : τ ≤ terminalTimeMesh j τ := by
-  rw [terminalTimeMesh, le_div_iff₀ (by positivity : 0 < (j : ℝ) + 1)]
+theorem le_terminalTimeMesh  : τ ≤ terminalTimeMesh j τ := by
+  rw [terminalTimeMesh, le_div_iff₀ (by positivity)]
   exact Int.le_ceil _
 
 /-- The upper mesh error is at most the mesh size. -/
-theorem terminalTimeMesh_sub_le (j : ℕ) (τ : ℝ) :
+theorem terminalTimeMesh_sub_le  :
     terminalTimeMesh j τ - τ ≤ 1 / ((j : ℝ) + 1) := by
-  have hh := Int.ceil_lt_add_one (τ * ((j : ℝ) + 1))
+  have hh := Int.ceil_lt_add_one (τ * (j + 1))
   dsimp only [terminalTimeMesh, terminalTimeMeshIndex]
-  rw [sub_le_iff_le_add, div_le_iff₀ (by positivity : 0 < (j : ℝ) + 1)]
   field_simp
-  linarith only [hh]
+  linarith
 
 /-- Upper mesh times tend to their original terminal time. -/
-theorem tendsto_terminalTimeMesh (τ : ℝ) :
+theorem tendsto_terminalTimeMesh  :
     Tendsto (fun j => terminalTimeMesh j τ) atTop (𝓝 τ) := by
   apply tendsto_iff_norm_sub_tendsto_zero.mpr
   have hnorm (j : ℕ) : ‖terminalTimeMesh j τ - τ‖ = terminalTimeMesh j τ - τ :=

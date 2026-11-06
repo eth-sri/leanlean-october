@@ -9,7 +9,6 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -38,9 +37,9 @@ theorem localizedSource_norm_le_sublevel_volume {d : ℕ} (A : FullKineticCoeffi
       rw [indicator_of_mem hPE]
       simp only [localizedSource, indicator, mem_ofPred_eq, hs, ite_true, Real.norm_eq_abs,
         abs_of_nonneg hB, abs_of_nonneg (le_max_right (backwardOperator A psi P) 0)]
-      exact max_le ((le_abs_self _).trans hb) hB
+      grind
     · simp only [localizedSource, indicator, mem_ofPred_eq, hs, ite_false, norm_zero]
-      exact norm_nonneg _
+      positivity
   have hp0 : 0 < p := lt_of_lt_of_le zero_lt_one hp
   have hnorm := eLpNorm_mono_ae (p := ENNReal.ofReal p) hm hbound
   rw [eLpNorm_indicator_const hE.nullMeasurableSet

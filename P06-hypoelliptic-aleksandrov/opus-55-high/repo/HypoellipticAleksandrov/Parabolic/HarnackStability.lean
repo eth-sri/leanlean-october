@@ -14,7 +14,6 @@ mollifications of a nonnegative local weak solution.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 

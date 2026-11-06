@@ -11,13 +11,14 @@ correctors or the source-facing local regularity theorem.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Filter
 open scoped Topology
 
+variable {d : ℕ} {E : Set (KineticPoint d)} {u : KineticPoint d → ℝ}
+
 /-- A uniform error increases oscillation by at most twice that error. -/
-theorem corrector_oscillation_le {d : ℕ} {u w : KineticPoint d → ℝ}
+theorem corrector_oscillation_le  {u w : KineticPoint d → ℝ}
     {E : Set (KineticPoint d)} (hne : E.Nonempty)
     (hab : BddAbove (u '' E)) (hbb : BddBelow (u '' E))
     {ε : ℝ} (he : ∀ P ∈ E, |w P - u P| ≤ ε) :
@@ -37,8 +38,7 @@ theorem corrector_oscillation_le {d : ℕ} {u w : KineticPoint d → ℝ}
   linarith
 
 /-- Oscillation is continuous under uniform convergence on a nonempty bounded range. -/
-theorem corrector_oscillation_tendsto {d : ℕ} {E : Set (KineticPoint d)}
-    {u : KineticPoint d → ℝ} {w : ℕ → KineticPoint d → ℝ}
+theorem corrector_oscillation_tendsto  {w : ℕ → KineticPoint d → ℝ}
     (hne : E.Nonempty) (hab : BddAbove (u '' E)) (hbb : BddBelow (u '' E))
     (ht : TendstoUniformlyOn w u atTop E) :
     Tendsto (fun j => Holder.oscillationOn (w j) E) atTop (𝓝 (Holder.oscillationOn u E)) := by
@@ -64,11 +64,10 @@ theorem corrector_oscillation_tendsto {d : ℕ} {E : Set (KineticPoint d)}
   have h2 := corrector_oscillation_le (u := w j) (w := u) hne hwa hwb
     (fun P hP => by rw [abs_sub_comm]; exact he P hP)
   rw [Real.dist_eq, abs_lt]
-  constructor <;> linarith
+  grind
 
 /-- Pairwise Hölder bounds pass to a uniform limit with convergent amplitudes. -/
-theorem corrector_holder_limit {d : ℕ} {E : Set (KineticPoint d)}
-    {u : KineticPoint d → ℝ} {u_j : ℕ → KineticPoint d → ℝ}
+theorem corrector_holder_limit  {u_j : ℕ → KineticPoint d → ℝ}
     (hu : TendstoUniformlyOn u_j u atTop E)
     {M_j : ℕ → ℝ} {M C α R : ℝ} (hM : Tendsto M_j atTop (𝓝 M))
     (P₀ : KineticPoint d)

@@ -55,15 +55,13 @@ theorem tendsto_eLpNorm_of_tendsto_sub
           eLpNorm f p μ + eLpNorm (F i - f) p μ := by
     intro i
     have heq : F i = f + (F i - f) := by
-      funext x
-      simp only [Pi.add_apply, Pi.sub_apply]
-      abel
+      simp
     calc
-      eLpNorm (F i) p μ =
-          eLpNorm (f + (F i - f)) p μ :=
+      eLpNorm _ p μ =
+          eLpNorm _ p μ :=
         congrArg (fun g => eLpNorm g p μ) heq
       _ ≤
-          eLpNorm f p μ + eLpNorm (F i - f) p μ :=
+          eLpNorm f p μ + eLpNorm _ p μ :=
         eLpNorm_add_le hp
   have hlower :
       ∀ i,
@@ -73,18 +71,15 @@ theorem tendsto_eLpNorm_of_tendsto_sub
     rw [tsub_le_iff_right]
     calc
       eLpNorm f p μ =
-          eLpNorm (F i + (f - F i)) p μ := by
-        congr 1
-        funext x
-        simp only [Pi.add_apply, Pi.sub_apply]
-        abel
+          eLpNorm _ p μ := by
+        simp
       _ ≤
           eLpNorm (F i) p μ +
             eLpNorm (f - F i) p μ :=
         eLpNorm_add_le hp
       _ =
-          eLpNorm (F i) p μ +
-            eLpNorm (F i - f) p μ := by
+          eLpNorm _ p μ +
+            eLpNorm _ p μ := by
         rw [eLpNorm_sub_comm]
   refine
     tendsto_of_tendsto_of_tendsto_of_le_of_le
@@ -99,10 +94,10 @@ theorem tendsto_eLpNorm_of_tendsto_sub
           Tendsto (fun _ : ι => eLpNorm f p μ)
             l (𝓝 (eLpNorm f p μ)))
         h (Or.inl hfin)
-    simpa using hlowerTendsto
+    simp_all
   · have hupperTendsto :=
       Tendsto.const_add (eLpNorm f p μ) h
-    simpa only [add_zero] using hupperTendsto
+    simp_all
 
 /-- On a probability measure, `L^p` convergence with `p ≥ 1` implies
 convergence of Bochner integrals.
@@ -130,12 +125,11 @@ theorem tendsto_integral_of_tendsto_eLpNorm_sub
     filter_upwards
       [(tendsto_order.1 h).2 1 zero_lt_one] with i hi
     have hdiffMemLp :
-        MemLp (F i - f) p μ :=
+        MemLp _ p μ :=
       (hi.trans ENNReal.one_lt_top)
-    have hdiffIntegrable :
-        Integrable (F i - f) μ :=
+    have hdiffIntegrable  :=
       hdiffMemLp.integrable hp
-    simpa only [sub_add_cancel] using
+    simpa using
       hdiffIntegrable.add hf
   have hL1 :
       Tendsto
@@ -174,7 +168,7 @@ theorem tendsto_eLpNorm_centered_sub_zero
               (f x - ∫ y, f y ∂μ))
           p μ)
       l (𝓝 0) := by
-  have hpZero : p ≠ 0 :=
+  have hpZero  :=
     ne_of_gt (zero_lt_one.trans_le hp)
   have hIntegral :=
     tendsto_integral_of_tendsto_eLpNorm_sub
@@ -185,10 +179,10 @@ theorem tendsto_eLpNorm_centered_sub_zero
         l (𝓝 0) := by
     have hConst :
         Tendsto
-          (fun _ : ι => ∫ y, f y ∂μ)
+          _
           l (𝓝 (∫ y, f y ∂μ)) :=
       tendsto_const_nhds
-    simpa only [sub_self] using hConst.sub hIntegral
+    simpa using hConst.sub hIntegral
   have hConstantNorm :
       Tendsto
         (fun i =>
@@ -202,7 +196,7 @@ theorem tendsto_eLpNorm_centered_sub_zero
           (fun i =>
             ‖(∫ y, f y ∂μ) - ∫ y, F i y ∂μ‖ₑ)
           l (𝓝 0) := by
-      simpa only [enorm_zero] using hIntegralDiff.enorm
+      simpa using hIntegralDiff.enorm
     have hFormula :
         (fun i =>
           eLpNorm
@@ -213,11 +207,10 @@ theorem tendsto_eLpNorm_centered_sub_zero
             ‖(∫ y, f y ∂μ) - ∫ y, F i y ∂μ‖ₑ := by
       funext i
       rw [eLpNorm_const'
-        ((∫ y, f y ∂μ) - ∫ y, F i y ∂μ)
+        _
         hpZero hpTop]
-      simp only [measure_univ, ENNReal.one_rpow, mul_one]
-    rw [hFormula]
-    exact hEnorm
+      simp
+    simp_all
   have hBound :
       ∀ i,
         eLpNorm
@@ -231,35 +224,26 @@ theorem tendsto_eLpNorm_centered_sub_zero
                 (∫ y, f y ∂μ) - ∫ y, F i y ∂μ)
               p μ := by
     intro i
-    let A : α → ℝ :=
+    let A  :=
       F i - f
     let B : α → ℝ :=
       fun _ =>
         (∫ y, f y ∂μ) - ∫ y, F i y ∂μ
-    have hA :
-        AEStronglyMeasurable A μ :=
-      (hF i).sub hf.aestronglyMeasurable
-    have hB :
-        AEStronglyMeasurable B μ :=
-      aestronglyMeasurable_const
     calc
       eLpNorm
-          (fun x =>
-            (F i x - ∫ y, F i y ∂μ) -
-              (f x - ∫ y, f y ∂μ))
+          _
           p μ =
-        eLpNorm (A + B) p μ := by
+        eLpNorm _ p μ := by
           apply eLpNorm_congr_ae
           filter_upwards with x
-          dsimp only [A, B, Pi.sub_apply, Pi.add_apply]
+          dsimp only [A, Pi.sub_apply, Pi.add_apply]
           ring
       _ ≤ eLpNorm A p μ + eLpNorm B p μ :=
         eLpNorm_add_le hp
       _ =
-          eLpNorm (F i - f) p μ +
+          eLpNorm _ p μ +
             eLpNorm
-              (fun _ : α =>
-                (∫ y, f y ∂μ) - ∫ y, F i y ∂μ)
+              _
               p μ :=
         rfl
   have hUpper :
@@ -271,7 +255,7 @@ theorem tendsto_eLpNorm_centered_sub_zero
                 (∫ y, f y ∂μ) - ∫ y, F i y ∂μ)
               p μ)
         l (𝓝 0) := by
-    simpa only [zero_add] using h.add hConstantNorm
+    simpa using h.add hConstantNorm
   exact
     tendsto_of_tendsto_of_tendsto_of_le_of_le
       tendsto_const_nhds hUpper

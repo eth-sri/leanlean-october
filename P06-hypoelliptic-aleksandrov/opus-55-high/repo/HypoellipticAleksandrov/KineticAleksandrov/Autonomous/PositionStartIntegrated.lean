@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionStar
 /-! # Integrating the literal position-start identity against actual starting measures -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 open scoped Classical
@@ -45,31 +44,27 @@ theorem positionStartQuadratic_integrated_slab_identity
   have hG : Integrable g (G ∘ₘ mu) :=
     positionStartQuadratic_operator_integrable hlam hLam A c Y hc _
       (positionStartAllTimeMixture_ae_active hH hLE hlam hLam A c mu)
-  have hGs : Integrable (S.indicator g) (G ∘ₘ mu) := hG.indicator hS
+  have hGs : Integrable (S.indicator g) _ := hG.indicator hS
   have hiB : Integrable (fun p => ∫ q, f q ∂B p) mu := by
     rw [Measure.comp_eq_comp_const_apply] at hB
-    simpa only [Kernel.const_apply] using hB.integral_comp
+    simpa using hB.integral_comp
   have hiD : Integrable (fun p => ∫ q, f q ∂D p) mu := by
     rw [Measure.comp_eq_comp_const_apply] at hD
-    simpa only [Kernel.const_apply] using hD.integral_comp
+    simpa using hD.integral_comp
   have hiG : Integrable (fun p => ∫ q, S.indicator g q ∂G p) mu := by
     rw [Measure.comp_eq_comp_const_apply] at hGs
-    simpa only [Kernel.const_apply] using hGs.integral_comp
+    simpa using hGs.integral_comp
   have hp : S.indicator f =ᵐ[mu] fun p =>
       (∫ q, f q ∂B p) - (∫ q, f q ∂D p) - ∫ q, S.indicator g q ∂G p := by
     filter_upwards [hmu] with p hv
     have hi := positionStartQuadratic_slab_identity
       hH hLE hlam hLam A c J Y a b hc hJ p hv hab
-    dsimp only at hi
     have he : G p = stripGreen hH hLE hlam hLam A c.activeInterval ⊤
         (densityClockPole c p hv) := by
-      change (if h : p.velocity 0 ∈ c.active then _ else (0 : Measure Point)) = _
-      rw [dite_eq_left hv]
-      rfl
+      change (if h : p.velocity 0 ∈ c.active then _ else (0)) = _
+      aesop
     rw [integral_indicator hS, he]
     exact hi
-  change (∫ p in S, f p ∂mu) =
-    (∫ q, f q ∂B ∘ₘ mu) - (∫ q, f q ∂D ∘ₘ mu) - ∫ q in S, g q ∂G ∘ₘ mu
   rw [← integral_indicator hS, integral_congr_ae hp]
   have he : (∫ p, (∫ q, f q ∂B p) - (∫ q, f q ∂D p) -
       (∫ q, S.indicator g q ∂G p) ∂mu) =
@@ -80,7 +75,7 @@ theorem positionStartQuadratic_integrated_slab_identity
   rw [he, hd,
     ← nested_integral_bind mu B B.measurable f hB,
     ← nested_integral_bind mu D D.measurable f hD,
-    ← nested_integral_bind mu G G.measurable (S.indicator g) hGs,
+    ← nested_integral_bind mu G G.measurable _ hGs,
     integral_indicator hS]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

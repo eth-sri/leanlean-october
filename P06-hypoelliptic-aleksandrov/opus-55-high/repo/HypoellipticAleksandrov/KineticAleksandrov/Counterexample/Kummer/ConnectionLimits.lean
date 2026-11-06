@@ -54,7 +54,7 @@ theorem tendsto_connectionIntegral_zero (c : ℝ) (hc : 0 < c) (hc1 : c < 1 / 3)
     have h : Tendsto (fun z : ℝ => Real.exp (-(z * t))) (𝓝[>] 0) (𝓝 1) := by
       have hc : ContinuousAt (fun z : ℝ => Real.exp (-(z * t))) 0 := by fun_prop
       simpa using hc.tendsto.mono_left nhdsWithin_le_nhds
-    simpa using h.mul_const (connectionKernel c t)
+    simpa using h.mul_const _
 
 /-- Exact decomposition of the positive integral into its singular term and finite part. -/
 theorem UIr_connection_decomposition (c : Pos) (hc1 : c.1 < 1 / 3)
@@ -62,62 +62,52 @@ theorem UIr_connection_decomposition (c : Pos) (hc1 : c.1 < 1 / 3)
     UIr c (4 / 3) z = (Real.Gamma c.1)⁻¹ *
       (z ^ (-(1 / 3 : ℝ)) * Real.Gamma (1 / 3) + connectionIntegral c.1 z) := by
   have hk := integrableOn_connectionLaplace c.1 z c.2 hc1 hz.le
-  have hg := integrableOn_gammaKernel (1 / 3 : ℝ) z (by norm_num) hz
-  have he : ∀ t ∈ Ioi (0 : ℝ), laplaceKernel c (4 / 3) z t =
+  have hg := integrableOn_gammaKernel (1 / 3) z (by norm_num) hz
+  have he : ∀ t ∈ Ioi (0), laplaceKernel c (4 / 3) z t =
       Real.exp (-(z * t)) * t ^ ((1 / 3 : ℝ) - 1) +
         Real.exp (-(z * t)) * connectionKernel c.1 t := by
     intro t ht
     dsimp [laplaceKernel, laplaceKernelReal, connectionKernel]
-    rw [show (4 / 3 : ℝ) - c.1 - 1 = 1 / 3 - c.1 by ring,
-      show (1 / 3 : ℝ) - 1 = -(2 / 3 : ℝ) by ring]
     ring
   rw [UIr, setIntegral_congr_fun measurableSet_Ioi he, integral_add hg hk,
-    integral_gammaKernel (1 / 3 : ℝ) z (by norm_num) hz]
+    integral_gammaKernel _ z (by norm_num) hz]
   rfl
 
+variable (a : NegThird)
+
 /-- The finite-part constant in the negative-parameter Gamma normalization. -/
-theorem integral_connectionKernel_gamma (a : NegThird) :
+theorem integral_connectionKernel_gamma  :
     (∫ t in Ioi (0 : ℝ), connectionKernel (a.1 + 1 / 3) t) =
       Real.Gamma (a.1 + 1 / 3) * Real.Gamma (-(1 / 3 : ℝ)) / Real.Gamma a.1 := by
-  have hc : 0 < a.1 + 1 / 3 := by linarith [a.2.1]
-  have hc1 : a.1 + 1 / 3 < 1 / 3 := by linarith [a.2.2]
+  have hc : 0 < a.1 + 1 / 3 := by grind
+  have hc1 : a.1 + 1 / 3 < 1 / 3 := by grind
   rw [integral_connectionKernel_beta _ hc hc1]
-  have ha : a.1 ≠ 0 := ne_of_lt a.2.2
-  have hga : Real.Gamma a.1 ≠ 0 := by
-    have hg := Real.Gamma_pos_of_pos (show 0 < a.1 + 1 by linarith [a.2.1])
-    rw [Real.Gamma_add_one ha] at hg
-    exact right_ne_zero_of_mul (ne_of_gt hg)
+  have ha  := ne_of_lt a.2.2
   have hg := Real.Gamma_add_one (by norm_num : -(1 / 3 : ℝ) ≠ 0)
   rw [show -(1 / 3 : ℝ) + 1 = 2 / 3 by ring] at hg
   rw [show a.1 + 1 / 3 + 2 / 3 = a.1 + 1 by ring, Real.Gamma_add_one ha, hg]
-  field_simp
-  ring
+  grind
 
 /-- Exact finite-part decomposition of the negative-parameter U solution. -/
-theorem UNr_connection_decomposition (a : NegThird) (z : ℝ) (hz : 0 < z) :
+theorem UNr_connection_decomposition  (z : ℝ) (hz : 0 < z) :
     UNr a z = Real.Gamma (1 / 3) / Real.Gamma (a.1 + 1 / 3) +
       z ^ (1 / 3 : ℝ) * (Real.Gamma (a.1 + 1 / 3))⁻¹ *
         connectionIntegral (a.1 + 1 / 3) z := by
-  rw [UNr, UIr_connection_decomposition _ (by linarith [a.2.2]) z hz]
+  rw [UNr, UIr_connection_decomposition _ (by grind) z hz]
   have he : z ^ (1 / 3 : ℝ) * z ^ (-(1 / 3 : ℝ)) = 1 := by
     rw [← Real.rpow_add hz, add_neg_cancel, Real.rpow_zero]
-  calc
-    _ = (Real.Gamma (a.1 + 1 / 3))⁻¹ * Real.Gamma (1 / 3) *
-        (z ^ (1 / 3 : ℝ) * z ^ (-(1 / 3 : ℝ))) +
-        z ^ (1 / 3 : ℝ) * (Real.Gamma (a.1 + 1 / 3))⁻¹ *
-          connectionIntegral (a.1 + 1 / 3) z := by ring
-    _ = _ := by rw [he]; ring
+  grind
 
 /-- The limiting constant of the negative-parameter solution at zero. -/
-theorem tendsto_UNr_zero (a : NegThird) :
+theorem tendsto_UNr_zero  :
     Tendsto (UNr a) (𝓝[>] 0)
       (𝓝 (Real.Gamma (1 / 3) / Real.Gamma (a.1 + 1 / 3))) := by
-  have hc : 0 < a.1 + 1 / 3 := by linarith [a.2.1]
+  have hc : 0 < a.1 + 1 / 3 := by grind
   have hp : Tendsto (fun z : ℝ => z ^ (1 / 3 : ℝ)) (𝓝[>] 0) (𝓝 0) := by
-    simpa using (Real.continuousAt_rpow_const 0 (1 / 3 : ℝ)
+    simpa using (Real.continuousAt_rpow_const 0 (1 / 3)
       (Or.inr (by norm_num))).tendsto.mono_left nhdsWithin_le_nhds
-  have hi := tendsto_connectionIntegral_zero (a.1 + 1 / 3) hc
-    (by linarith [a.2.2])
+  have hi := tendsto_connectionIntegral_zero _ hc
+    (by grind)
   have hl := (tendsto_const_nhds (x :=
     Real.Gamma (1 / 3) / Real.Gamma (a.1 + 1 / 3))).add
     ((hp.mul_const (Real.Gamma (a.1 + 1 / 3))⁻¹).mul hi)
@@ -127,26 +117,25 @@ theorem tendsto_UNr_zero (a : NegThird) :
   exact (UNr_connection_decomposition a z hz).symm
 
 /-- The coefficient of the fractional term at the singular endpoint. -/
-theorem tendsto_UNr_finitePart_zero (a : NegThird) :
+theorem tendsto_UNr_finitePart_zero  :
     Tendsto (fun z : ℝ =>
       (UNr a z - Real.Gamma (1 / 3) / Real.Gamma (a.1 + 1 / 3)) /
         z ^ (1 / 3 : ℝ)) (𝓝[>] 0)
       (𝓝 (Real.Gamma (-(1 / 3 : ℝ)) / Real.Gamma a.1)) := by
-  have hc : 0 < a.1 + 1 / 3 := by linarith [a.2.1]
-  have hi := (tendsto_connectionIntegral_zero (a.1 + 1 / 3) hc
-    (by linarith [a.2.2])).const_mul (Real.Gamma (a.1 + 1 / 3))⁻¹
-  rw [integral_connectionKernel_gamma a] at hi
-  have hg : Real.Gamma (a.1 + 1 / 3) ≠ 0 := ne_of_gt (Real.Gamma_pos_of_pos hc)
+  have hc : 0 < a.1 + 1 / 3 := by grind
+  have hi := (tendsto_connectionIntegral_zero _ hc
+    (by grind)).const_mul (Real.Gamma (a.1 + 1 / 3))⁻¹
+  rw [integral_connectionKernel_gamma] at hi
+  have hg  := ne_of_gt (Real.Gamma_pos_of_pos hc)
   have he : (Real.Gamma (a.1 + 1 / 3))⁻¹ *
-      (Real.Gamma (a.1 + 1 / 3) * Real.Gamma (-(1 / 3 : ℝ)) / Real.Gamma a.1) =
-        Real.Gamma (-(1 / 3 : ℝ)) / Real.Gamma a.1 := by
-    rw [← mul_div_assoc, ← mul_assoc, inv_mul_cancel₀ hg, one_mul]
+      (Real.Gamma (a.1 + 1 / 3) * Real.Gamma (-(1 / 3)) / Real.Gamma a.1) =
+        Real.Gamma (-(1 / 3)) / Real.Gamma a.1 := by
+    grind
   rw [he] at hi
   apply hi.congr'
   filter_upwards [self_mem_nhdsWithin] with z hz
   rw [UNr_connection_decomposition a z hz]
-  have hp := ne_of_gt (Real.rpow_pos_of_pos hz (1 / 3 : ℝ))
-  field_simp [hp]
-  ring
+  have hp := ne_of_gt (Real.rpow_pos_of_pos hz (1 / 3))
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

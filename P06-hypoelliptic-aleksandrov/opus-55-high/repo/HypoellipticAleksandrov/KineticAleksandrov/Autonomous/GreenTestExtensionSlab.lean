@@ -21,8 +21,10 @@ def reconstructionScalarHomeomorph : (ℝ × ℝ × ℝ) ≃ₜ Point :=
 def reconstructionClosedSlab (H : Interval) (a T : ℝ) : Set Point :=
   {p | a ≤ p.time ∧ p.time ≤ T ∧ p.velocity 0 ∈ Icc H.lo H.hi}
 
+variable (H : Interval) {lower a T : ℝ}
+
 /-- The closure of a nonempty physical open strip is its literal closed slab. -/
-theorem closure_reconstructionStrip (H : Interval) (a T : ℝ) (ha : a < T) :
+theorem closure_reconstructionStrip  (a T : ℝ) (ha : a < T) :
     closure (reconstructionStrip H a T) = reconstructionClosedSlab H a T := by
   let S : Set (ℝ × ℝ × ℝ) := Ioo a T ×ˢ (univ ×ˢ Ioo H.lo H.hi)
   have heq : reconstructionStrip H a T = reconstructionScalarHomeomorph '' S := by
@@ -40,7 +42,6 @@ theorem closure_reconstructionStrip (H : Interval) (a T : ℝ) (ha : a < T) :
     · rintro ⟨q, hq, rfl⟩
       exact ⟨hq.1.1, hq.1.2, hq.2.2⟩
   rw [heq, ← Homeomorph.image_closure]
-  dsimp only [S]
   rw [closure_prod_eq, closure_prod_eq, closure_Ioo ha.ne, closure_univ,
     closure_Ioo H.ordered.ne]
   ext p
@@ -58,8 +59,7 @@ theorem closure_reconstructionStrip (H : Interval) (a T : ℝ) (ha : a < T) :
       rfl
 
 /-- Every closed future slab lies in the regular strip together with its prescribed exit. -/
-theorem reconstructionClosedSlab_subset_strip_union_exit (H : Interval)
-    {lower a T : ℝ} (ha : lower < a) :
+theorem reconstructionClosedSlab_subset_strip_union_exit  (ha : lower < a) :
     reconstructionClosedSlab H a T ⊆ reconstructionStrip H lower T ∪ reconstructionExit H
       lower T := by
   intro p hp
@@ -69,7 +69,6 @@ theorem reconstructionClosedSlab_subset_strip_union_exit (H : Interval)
     by_cases hv : p.velocity 0 ∈ H.carrier
     · exact Or.inl ⟨ha.trans_le hp.1, hpt, hv⟩
     · have hf : p.velocity 0 = H.lo ∨ p.velocity 0 = H.hi := by
-        change ¬(H.lo < p.velocity 0 ∧ p.velocity 0 < H.hi) at hv
         rcases not_and_or.mp hv with hv | hv
         · exact Or.inl (le_antisymm (not_lt.mp hv) hp.2.2.1)
         · exact Or.inr (le_antisymm hp.2.2.2 (not_lt.mp hv))
@@ -77,7 +76,7 @@ theorem reconstructionClosedSlab_subset_strip_union_exit (H : Interval)
 
 /-- The original interior bound extends to every closed future slab by the prescribed continuity. -/
 theorem reconstruction_closed_slab_test_bound
-    (H : Interval) {lower a T : ℝ} (ha : lower < a) (hT : a < T)
+     (ha : lower < a) (hT : a < T)
     (phi : Point → ℝ)
     (hc : ContinuousOn phi (reconstructionStrip H lower T ∪ reconstructionExit H lower T))
     (M : ℝ) (hM : ∀ p ∈ reconstructionStrip H lower T, |phi p| ≤ M) :
@@ -90,7 +89,7 @@ theorem reconstruction_closed_slab_test_bound
     (fun p hp => hM p ⟨ha.trans hp.1, hp.2⟩)
   · rw [hcl]
     exact (hc.mono (reconstructionClosedSlab_subset_strip_union_exit H ha)).abs
-  · exact continuousOn_const
-  · exact hp
+  · fun_prop
+  omega
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

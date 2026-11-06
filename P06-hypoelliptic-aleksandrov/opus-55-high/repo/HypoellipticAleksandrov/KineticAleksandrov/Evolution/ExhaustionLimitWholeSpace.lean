@@ -15,7 +15,6 @@ whole-space limit with the original terminal bound and uniqueness.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -52,14 +51,12 @@ theorem exists_viscous_terminalSolution_wholeSpace
     (PDE.continuous_vecEuclideanNorm.comp continuous_fst).continuousOn
   let Z := max Z0 0
   have hZ : 0 ≤ Z := le_max_right _ _
-  let r (j : ℕ) := Z + (j : ℝ) + 1
-  have hr (j : ℕ) : 0 < r j := by dsimp [r]; positivity
+  let r (j : ℕ) := Z + j + 1
+  have hr (j : ℕ) : 0 < r j := by positivity
   have hrZ (j : ℕ) : Z < r j := by
-    dsimp [r]
-    have := Nat.cast_nonneg (α := ℝ) j
-    linarith
+    grind
   have hrlim : Tendsto r atTop atTop := tendsto_atTop_mono
-    (fun j => by dsimp [r]; linarith) tendsto_natCast_atTop_atTop
+    (fun j => by linarith) tendsto_natCast_atTop_atTop
   have hΓ0 : IsContinuousPiecewiseC1 (fun _ : ℝ => (0 : PDE.Vec n)) :=
     isContinuousPiecewiseC1_of_contDiff contDiff_const
   have hex (j : ℕ) : ∃ v : KineticPoint n → ℝ,
@@ -74,7 +71,7 @@ theorem exists_viscous_terminalSolution_wholeSpace
     obtain ⟨v, hv, -, -⟩ := exists_viscous_terminalSolution_innerBall
       hLE hH hn hlam hlamLam hm hmLb hBs hBsym hB hbs hb hbco hΓ0 (hr j)
       τ F hFj ε hε hε1 C hC hFC
-    exact ⟨v, hv⟩
+    grind
   choose v hv using hex
   obtain ⟨hf, hbound⟩ := isClassicalViscousTerminalSolution_wholeSpace_ball_limit
     hlam hB hb hε hε1 hC F hFC r hrlim v hv hBs hBsym hbs hH
@@ -85,11 +82,11 @@ theorem exists_viscous_terminalSolution_wholeSpace
       evolutionPastInteriorRaw, evolutionPastOpenCylinder, evolutionTerminalClosure,
       evolutionLateralFrontier, movingDomain_univ_eq]
   have hK : evolutionPastClosedCylinder univ Γ τ =
-      evolutionPastClosedCylinder univ (fun _ : ℝ => (0 : PDE.Vec n)) τ := by
+      evolutionPastClosedCylinder univ (fun _ : ℝ => (0)) τ := by
     simp only [evolutionPastClosedCylinder, movingDomain_univ_eq]
   have hfΓ := (hsame _).mpr hf
-  refine ⟨fun p => limUnder atTop (fun j => v j p), hfΓ, ?_, ?_⟩
-  · simpa only [hK] using hbound
+  refine ⟨fun p => limUnder atTop _, hfΓ, ?_, ?_⟩
+  · simp_all
   · intro w hw
     exact classical_unique isOpen_univ hΓ.1 hlam hB hb hε.le hε1 hw hfΓ
 

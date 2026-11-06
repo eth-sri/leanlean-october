@@ -6,13 +6,14 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionOver
 /-! # Canonical decomposition into disjoint time-position starting cells -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 open scoped ENNReal
 
+variable (c : Clock) (s x : ℝ)
+
 /-- The two-index source cells form a pairwise disjoint grid. -/
-theorem enlargedStartCell_pairwiseDisjoint (c : Clock) (s x : ℝ) :
+theorem enlargedStartCell_pairwiseDisjoint  :
     Pairwise (fun a b : ℕ × ℤ =>
       Disjoint (enlargedStartCell c s x a.1 a.2) (enlargedStartCell c s x b.1 b.2)) := by
   intro a b hab
@@ -20,13 +21,12 @@ theorem enlargedStartCell_pairwiseDisjoint (c : Clock) (s x : ℝ) :
   intro p ha hb
   by_cases ht : a.1 = b.1
   · have hk : a.2 ≠ b.2 := by
-      intro hk
-      exact hab (Prod.ext ht hk)
+      grind
     exact disjoint_left.mp (enlargedPositionCell_disjoint c.r x c.positive hk) ha.2 hb.2
   · exact disjoint_left.mp (enlargedTimeBin_disjoint c.r s c.positive ht) ha.1 hb.1
 
 /-- The time-position grid covers all starting points on and after its time origin. -/
-theorem enlargedStartCell_iUnion (c : Clock) (s x : ℝ) :
+theorem enlargedStartCell_iUnion  :
     (⋃ a : ℕ × ℤ, enlargedStartCell c s x a.1 a.2) = {p | s ≤ p.time} := by
   ext p
   constructor
@@ -34,7 +34,6 @@ theorem enlargedStartCell_iUnion (c : Clock) (s x : ℝ) :
     obtain ⟨a, ha⟩ := mem_iUnion.mp hp
     have h := (enlargedTimeBin_bounds c.r s p.time a.1 ha.1).1
     have hj : 0 ≤ (a.1 : ℝ) := Nat.cast_nonneg _
-    change s ≤ p.time
     exact (le_add_of_nonneg_right (mul_nonneg hj (sq_nonneg c.r))).trans h
   · intro hp
     obtain ⟨j, hj⟩ := enlargedTimeBin_covers c.r s p.time c.positive hp
@@ -62,9 +61,8 @@ theorem positionMixtureDensity_sum_cells
         (nu.restrict (enlargedStartCell c s x a.1 a.2)) z := by
   calc
     _ = positionMixtureDensity hH hLE hlam hLam A c
-        (Measure.sum (fun a : ℕ × ℤ => nu.restrict
-          (enlargedStartCell c s x a.1 a.2))) :=
-      congrArg (positionMixtureDensity hH hLE hlam hLam A c)
+        _ :=
+      congrArg _
         (enlargedStartCell_measure_sum nu c s x hnu)
     _ = _ := by
       funext z

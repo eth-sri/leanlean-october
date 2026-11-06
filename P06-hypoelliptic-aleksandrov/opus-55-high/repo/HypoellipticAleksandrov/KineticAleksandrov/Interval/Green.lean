@@ -10,7 +10,6 @@ Constants depend only on the structural parameters, interval length and exponent
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open Set MeasureTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
@@ -45,8 +44,6 @@ theorem interval_green_density
   obtain ⟨_Cm, _hCm, hmass⟩ := interval_green_finite_mass hH hLE
     lam Lam m Lb length hlam hlength
   refine ⟨C, hC, ?_⟩
-  intro a c hac B b hs hJ S K hr hlen σ μ _ Γ hΓ
-  obtain ⟨G, hGm, hGE, hGn⟩ := hnorm a c hac B b hs hJ S K hr hlen σ μ Γ hΓ
-  exact ⟨G, hGm, hGE, hGn, (hmass a c hac B b hs hJ S K hr hlen σ μ Γ hΓ).2⟩
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

@@ -21,8 +21,10 @@ def constructionExtendedNativeHessian {d : ℕ} {alpha : ℝ}
     (q : XV d) (i k : Fin d) : ℝ :=
   constructionExtendedPackedHessian h r mu R m t ((spatialCoordinateCLE d).symm q) i k
 
+variable {d : ℕ}
+
 /-- Spatial convolution differentiates to convolution of the selected first representatives. -/
-theorem construction_mollified_first_jet {d : ℕ} (hd : 1 ≤ d)
+theorem construction_mollified_first_jet  (hd : 1 ≤ d)
     {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
     (h : CounterProfileStatement d alpha) (r mu R m : ℝ)
     (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R) (hm : m < R ^ 2)
@@ -40,7 +42,7 @@ theorem construction_mollified_first_jet {d : ℕ} (hd : 1 ≤ d)
       hscale hmargin t i) q
 
 /-- The first velocity representative differentiates after convolution to the selected Hessian. -/
-theorem construction_mollified_velocityJet_derivative {d : ℕ} (hd : 1 ≤ d)
+theorem construction_mollified_velocityJet_derivative  (hd : 1 ≤ d)
     {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
     (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
     (mu R m t : ℝ) (i k : Fin d) (phi : ContDiffBump (0 : XV d)) (q : XV d) :
@@ -53,15 +55,15 @@ theorem construction_mollified_velocityJet_derivative {d : ℕ} (hd : 1 ≤ d)
   apply mollify_weak_directional_jet phi _ _ hL _ _ q
   intro test ht hs
   have he := construction_weak_directional_native
-    (fun x => constructionExtendedPackedGradient h r mu R m t x (Fin.natAdd d k))
-    (fun x => constructionExtendedPackedHessian h r mu R m t x i k)
-    (PDE.basisVec (Fin.natAdd d i))
+    _
+    _
+    _
     (construction_extended_velocityJet_weak hd ha ha1 h r hr mu R m t i k) test ht hs
   simpa only [spatialCoordinate_basis_velocity, constructionExtendedNativeGradient,
     constructionExtendedNativeHessian] using! he
 
 /-- The actual second velocity derivatives of the mollified value use the same Hessian. -/
-theorem construction_mollified_second_velocity_jet {d : ℕ} (hd : 1 ≤ d)
+theorem construction_mollified_second_velocity_jet  (hd : 1 ≤ d)
     {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
     (h : CounterProfileStatement d alpha) (r mu R m : ℝ)
     (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R) (hm : m < R ^ 2)
@@ -79,9 +81,8 @@ theorem construction_mollified_second_velocity_jet {d : ℕ} (hd : 1 ≤ d)
     have hj := construction_mollified_first_jet hd ha ha1 h r mu R m hr hmu hR hm
       hscale hmargin t (Fin.natAdd d k) phi y
     rw [spatialCoordinate_basis_velocity] at hj
-    simpa only [dv, PDE.basisVec] using! hj
-  change fderiv ℝ (fun y => dv (spatialMollify phi (fun z =>
-    zeroExtendedProfile (profileFunction h) alpha r mu R ⟨t, z.1, z.2⟩)) y k) q
+    aesop
+  change fderiv ℝ _ q
       (0, PDE.basisVec i) = _
   rw [he]
   exact construction_mollified_velocityJet_derivative hd ha ha1 h r hr mu R m t i k phi q

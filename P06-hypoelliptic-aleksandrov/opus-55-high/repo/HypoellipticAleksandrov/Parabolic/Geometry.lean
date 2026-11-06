@@ -45,71 +45,73 @@ def forwardParabolicBoundary {d : ℕ} (T : ℝ) (y₀ : PDE.Vec d) :
     Set (TimeVelocity d) :=
   initialParabolicBoundary y₀ ∪ lateralParabolicBoundary T y₀
 
+variable {d : ℕ} {T t : ℝ} {y₀ v : PDE.Vec d}
+
 /-- Membership in the analytic parabolic interior. -/
-@[simp] theorem mem_parabolicInterior_iff {d : ℕ} {T t : ℝ} {y₀ v : PDE.Vec d} :
+@[simp] theorem mem_parabolicInterior_iff  :
     (t, v) ∈ parabolicInterior T y₀ ↔
       0 < t ∧ t < T ∧ v ∈ PDE.euclideanBall y₀ 1 := by
   constructor
   · rintro ⟨⟨hzero, hT⟩, hv⟩
-    exact ⟨hzero, hT, hv⟩
+    simp_all
   · rintro ⟨hzero, hT, hv⟩
     exact ⟨⟨hzero, hT⟩, hv⟩
 
 /-- Membership in the forward-reachable parabolic cylinder. -/
-@[simp] theorem mem_parabolicReachable_iff {d : ℕ} {T t : ℝ} {y₀ v : PDE.Vec d} :
+@[simp] theorem mem_parabolicReachable_iff  :
     (t, v) ∈ parabolicReachable T y₀ ↔
       0 < t ∧ t ≤ T ∧ v ∈ PDE.euclideanBall y₀ 1 := by
   constructor
   · rintro ⟨⟨hzero, hT⟩, hv⟩
-    exact ⟨hzero, hT, hv⟩
+    simp_all
   · rintro ⟨hzero, hT, hv⟩
     exact ⟨⟨hzero, hT⟩, hv⟩
 
 /-- Membership in the closed parabolic cylinder. -/
-@[simp] theorem mem_closedParabolicCylinder_iff {d : ℕ} {T t : ℝ} {y₀ v : PDE.Vec d} :
+@[simp] theorem mem_closedParabolicCylinder_iff  :
     (t, v) ∈ closedParabolicCylinder T y₀ ↔
       0 ≤ t ∧ t ≤ T ∧ v ∈ PDE.euclideanClosedBall y₀ 1 := by
   constructor
   · rintro ⟨⟨hzero, hT⟩, hv⟩
-    exact ⟨hzero, hT, hv⟩
+    simp_all
   · rintro ⟨hzero, hT, hv⟩
     exact ⟨⟨hzero, hT⟩, hv⟩
 
 /-- Membership in the initial parabolic boundary face. -/
-@[simp] theorem mem_initialParabolicBoundary_iff {d : ℕ} {t : ℝ} {y₀ v : PDE.Vec d} :
+@[simp] theorem mem_initialParabolicBoundary_iff  {t : ℝ} {y₀ v : PDE.Vec d} :
     (t, v) ∈ initialParabolicBoundary y₀ ↔
       t = 0 ∧ v ∈ PDE.euclideanClosedBall y₀ 1 := by
-  simp [initialParabolicBoundary]
+  aesop
 
 /-- Membership in the lateral parabolic boundary face. -/
-@[simp] theorem mem_lateralParabolicBoundary_iff {d : ℕ} {T t : ℝ} {y₀ v : PDE.Vec d} :
+@[simp] theorem mem_lateralParabolicBoundary_iff  :
     (t, v) ∈ lateralParabolicBoundary T y₀ ↔
       0 ≤ t ∧ t ≤ T ∧ v ∈ PDE.euclideanSphere y₀ 1 := by
   constructor
   · rintro ⟨⟨hzero, hT⟩, hv⟩
-    exact ⟨hzero, hT, hv⟩
+    simp_all
   · rintro ⟨hzero, hT, hv⟩
     exact ⟨⟨hzero, hT⟩, hv⟩
 
 /-- Membership in the forward parabolic boundary. -/
-@[simp] theorem mem_forwardParabolicBoundary_iff {d : ℕ} {T t : ℝ} {y₀ v : PDE.Vec d} :
+@[simp] theorem mem_forwardParabolicBoundary_iff  :
     (t, v) ∈ forwardParabolicBoundary T y₀ ↔
       (t = 0 ∧ v ∈ PDE.euclideanClosedBall y₀ 1) ∨
         (0 ≤ t ∧ t ≤ T ∧ v ∈ PDE.euclideanSphere y₀ 1) := by
   simp [forwardParabolicBoundary]
 
 /-- The analytic parabolic interior is measurable. -/
-theorem measurableSet_parabolicInterior {d : ℕ} (T : ℝ) (y₀ : PDE.Vec d) :
+theorem measurableSet_parabolicInterior  (T : ℝ) (y₀ : PDE.Vec d) :
     MeasurableSet (parabolicInterior T y₀) :=
   measurableSet_Ioo.prod (PDE.measurableSet_euclideanBall y₀ 1)
 
 /-- The closed parabolic cylinder is compact. -/
-theorem isCompact_closedParabolicCylinder {d : ℕ} (T : ℝ) (y₀ : PDE.Vec d) :
+theorem isCompact_closedParabolicCylinder  (T : ℝ) (y₀ : PDE.Vec d) :
     IsCompact (closedParabolicCylinder T y₀) :=
   isCompact_Icc.prod (PDE.isCompact_euclideanClosedBall y₀ (by norm_num))
 
 /-- The analytic interior is contained in the closed parabolic cylinder. -/
-theorem parabolicInterior_subset_closedParabolicCylinder {d : ℕ} (T : ℝ)
+theorem parabolicInterior_subset_closedParabolicCylinder  (T : ℝ)
     (y₀ : PDE.Vec d) :
     parabolicInterior T y₀ ⊆ closedParabolicCylinder T y₀ := by
   intro p hp

@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.OriginalTimeProductRep
 
 open MeasureTheory Set
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -32,25 +31,25 @@ theorem originalTimeL2V_value_product_representative_ae_eq
       (volume.restrict (Set.Ioo r₀ r₁)).prod (PDE.volumeOn Ω) =
         timeVelocityVolumeOn (Set.Ioo r₀ r₁ ×ˢ Ω) := by
     rw [timeVelocityVolumeOn, volume_timeVelocity_eq_prod]
-    simpa only [PDE.volumeOn] using Measure.prod_restrict
-      (μ := (volume : Measure ℝ)) (ν := (volume : Measure (PDE.Vec d)))
-        (Set.Ioo r₀ r₁) Ω
+    simpa using Measure.prod_restrict
+      (μ := volume) (ν := volume)
+        _ Ω
   rw [← hprod] at hU_meas hV_meas ⊢
   let U' := hU_meas.mk U
   let V' := hV_meas.mk V
-  have hUU' : U =ᵐ[(volume.restrict (Set.Ioo r₀ r₁)).prod (PDE.volumeOn Ω)] U' :=
+  have hUU' : U =ᵐ[(volume.restrict _).prod (PDE.volumeOn Ω)] U' :=
     hU_meas.ae_eq_mk
-  have hVV' : V =ᵐ[(volume.restrict (Set.Ioo r₀ r₁)).prod (PDE.volumeOn Ω)] V' :=
+  have hVV' : V =ᵐ[(volume.restrict _).prod (PDE.volumeOn Ω)] V' :=
     hV_meas.ae_eq_mk
   have hUV : ∀ᵐ r ∂volume.restrict (Set.Ioo r₀ r₁),
       (fun y => U (r, y)) =ᵐ[PDE.volumeOn Ω] fun y => V (r, y) := by
     filter_upwards [hU, hV] with r hUr hVr
     exact hUr.trans hVr.symm
-  have hU'U : ∀ᵐ r ∂volume.restrict (Set.Ioo r₀ r₁),
-      (fun y => U' (r, y)) =ᵐ[PDE.volumeOn Ω] fun y => U (r, y) :=
+  have hU'U : ∀ᵐ r ∂volume.restrict _,
+      (fun y => U' _) =ᵐ[PDE.volumeOn Ω] fun y => U _ :=
     (Measure.ae_ae_eq_curry_of_prod hUU').mono fun _ hr => hr.symm
-  have hVV'c : ∀ᵐ r ∂volume.restrict (Set.Ioo r₀ r₁),
-      (fun y => V (r, y)) =ᵐ[PDE.volumeOn Ω] fun y => V' (r, y) :=
+  have hVV'c : ∀ᵐ r ∂volume.restrict _,
+      (fun y => V _) =ᵐ[PDE.volumeOn Ω] fun y => V' _ :=
     Measure.ae_ae_eq_curry_of_prod hVV'
   have hU'V' : ∀ᵐ r ∂volume.restrict (Set.Ioo r₀ r₁),
       (fun y => U' (r, y)) =ᵐ[PDE.volumeOn Ω] fun y => V' (r, y) := by
@@ -59,7 +58,7 @@ theorem originalTimeL2V_value_product_representative_ae_eq
   have hU'V'_meas : MeasurableSet {z | U' z = V' z} :=
     measurableSet_eq_fun hU_meas.measurable_mk hV_meas.measurable_mk
   have hU'V'prod :
-      U' =ᵐ[(volume.restrict (Set.Ioo r₀ r₁)).prod (PDE.volumeOn Ω)] V' :=
+      U' =ᵐ[(volume.restrict _).prod (PDE.volumeOn Ω)] V' :=
     (Measure.ae_prod_iff_ae_ae hU'V'_meas).2 hU'V'
   exact hUU'.trans (hU'V'prod.trans hVV'.symm)
 

@@ -62,9 +62,7 @@ noncomputable def mulContDiffMemLpTop [Fact (1 ≤ p)]
   hasWeakGradient := by
     convert u.hasWeakGradient.mul_contDiff hφ
       u.locallyIntegrable_toFun u.locallyIntegrable_grad using 1
-    funext x i
-    simp only [Pi.add_apply, Pi.smul_apply, smul_eq_mul,
-      classicalGradient_apply]
+    aesop
 
 @[simp]
 theorem mulContDiffMemLpTop_toFun [Fact (1 ≤ p)]
@@ -124,16 +122,10 @@ theorem eLpNormOn_mulContDiffMemLpTop_grad_coord_le
         eLpNormOn U ∞
             (fun x => classicalGradient φ x i) *
           eLpNormOn U p u.toFun := by
-  let first : Vec d → ℝ :=
+  let first  :=
     fun x => φ x * u.grad x i
-  let second : Vec d → ℝ :=
+  let second  :=
     fun x => u x * classicalGradient φ x i
-  have hfirstMem : MemLpOn U p first := by
-    simpa only [first, mul_comm] using
-      (u.gradMemLp i).fun_mul hφTop
-  have hsecondMem : MemLpOn U p second := by
-    simpa only [second, mul_comm] using
-      u.memLp.fun_mul (hDφTop i)
   have hfirstBound :
       eLpNormOn U p first ≤
         eLpNormOn U ∞ φ *
@@ -150,27 +142,24 @@ theorem eLpNormOn_mulContDiffMemLpTop_grad_coord_le
       eLpNormOn U p second =
           eLpNormOn U p
             (fun x => classicalGradient φ x i * u x) := by
-        apply MeasureTheory.eLpNorm_congr_ae
-        exact Filter.Eventually.of_forall fun x => by
-          simp only [second, mul_comm]
+        grind
       _ ≤ eLpNormOn U ∞
-            (fun x => classicalGradient φ x i) *
+            _ *
           eLpNormOn U p u.toFun := by
         exact
           MeasureTheory.eLpNorm_smul_le_eLpNorm_top_mul_eLpNorm
             (f := u.toFun) p (hDφTop i).aestronglyMeasurable
   calc
     eLpNormOn U p
-        (fun x =>
-          (u.mulContDiffMemLpTop hφ hφTop hDφTop).grad x i) =
-        eLpNormOn U p (first + second) := by
+        _ =
+        eLpNormOn U p _ := by
       rfl
     _ ≤ eLpNormOn U p first + eLpNormOn U p second := by
       exact MeasureTheory.eLpNorm_add_le Fact.out
     _ ≤ eLpNormOn U ∞ φ *
-          eLpNormOn U p (fun x => u.grad x i) +
+          eLpNormOn U p _ +
         eLpNormOn U ∞
-            (fun x => classicalGradient φ x i) *
+            _ *
           eLpNormOn U p u.toFun :=
       add_le_add hfirstBound hsecondBound
 
@@ -189,14 +178,14 @@ noncomputable def mulContDiffHasCompactSupport
     intro i
     have hDφCont :
         Continuous (fun x => classicalGradient φ x i) := by
-      simpa only [classicalGradient_apply] using
+      simpa using
         (hφ.continuous_fderiv (by simp)).clm_apply
           continuous_const
     have hDφCompact :
         HasCompactSupport
           (fun x => classicalGradient φ x i) := by
-      simpa only [classicalGradient_apply] using
-        hφCompact.fderiv_apply (𝕜 := ℝ) (basisVec i)
+      simpa using
+        hφCompact.fderiv_apply (𝕜 := ℝ) _
     exact
       (hDφCont.memLp_of_hasCompactSupport hDφCompact).restrict U
   exact u.mulContDiffMemLpTop hφ hφTop hDφTop
@@ -208,8 +197,7 @@ theorem mulContDiffHasCompactSupport_toFun
     (hφCompact : HasCompactSupport φ) :
     (u.mulContDiffHasCompactSupport hφ hφCompact).toFun =
       fun x => φ x * u x := by
-  simp only [mulContDiffHasCompactSupport,
-    mulContDiffMemLpTop_toFun]
+  aesop
 
 @[simp]
 theorem mulContDiffHasCompactSupport_grad
@@ -219,8 +207,7 @@ theorem mulContDiffHasCompactSupport_grad
     (u.mulContDiffHasCompactSupport hφ hφCompact).grad =
       fun x =>
         φ x • u.grad x + u x • classicalGradient φ x := by
-  simp only [mulContDiffHasCompactSupport,
-    mulContDiffMemLpTop_grad]
+  aesop
 
 end W1pFunction
 

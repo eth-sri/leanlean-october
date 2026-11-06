@@ -14,7 +14,6 @@ spatial-`L²` representatives of reverse-time Gelfand curves.
 open Filter MeasureTheory Set Topology
 open scoped ENNReal RealInnerProductSpace
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -37,16 +36,6 @@ theorem reverseTimeHilbertRepresentative_sub_eq
   obtain ⟨hW, _⟩ := reverseTimeHilbertRepresentative_spec hΩ T hT (u - v) (g - k) hdiff
   apply ReverseTimeHilbertRepresentativeAgrees.unique hW hT
   filter_upwards [hU, hV, Lp.coeFn_sub u v] with τ hUτ hVτ huv
-  intro hτ
-  let hτcc : τ ∈ Set.Icc 0 T := ⟨le_of_lt hτ.1, le_of_lt hτ.2⟩
-  change
-    (reverseTimeHilbertRepresentative hΩ T hT u g hdu -
-      reverseTimeHilbertRepresentative hΩ T hT v k hdv) ⟨τ, hτcc⟩ =
-      valueCLM hΩ ((u - v) τ)
-  change reverseTimeHilbertRepresentative hΩ T hT u g hdu ⟨τ, hτcc⟩ -
-      reverseTimeHilbertRepresentative hΩ T hT v k hdv ⟨τ, hτcc⟩ =
-        valueCLM hΩ ((u - v) τ)
-  rw [hUτ hτ, hVτ hτ, huv]
-  exact (valueCLM hΩ).map_sub _ _
+  aesop
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.GreenTestExt
 /-! # The actual larger-strip source potential restricted to the smaller strip -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo TheoremA Evolution
@@ -40,10 +39,9 @@ theorem nestedSourcePotential_small_identity
   have hb : ∃ M : ℝ, ∀ p ∈ reconstructionStrip H1 sMinus T,
       |u p| ≤ M ∧ |forwardScalarOperator A.a u p| ≤ M := by
     refine ⟨max C M, fun p hp => ⟨(hC p).trans (le_max_left _ _), ?_⟩⟩
-    rw [hop p (hi hp).1 (hi hp).2, abs_neg]
-    exact (hM p).1.trans (le_max_right _ _)
+    grind
   have ht : e.1.time < T := WithTop.coe_lt_coe.mp e.2.1
-  have hsmall : Parabolic.IsKineticC112On u (reconstructionStrip H1 sMinus T) :=
+  have hsmall : Parabolic.IsKineticC112On u _ :=
     ⟨hu.1.mono hi, fun p hp => hu.2.1 p (hi hp),
       fun p hp => hu.2.2.1 p (hi hp), fun p hp => hu.2.2.2.1 p (hi hp),
       hu.2.2.2.2.1.mono hi, hu.2.2.2.2.2.1.mono hi,
@@ -54,14 +52,13 @@ theorem nestedSourcePotential_small_identity
   have hg : (fun p => forwardScalarOperator A.a u p) =ᵐ[
       stripGreen hH hLE hlam hLam A H1 T e] fun p => -exitProbePhysical f p := by
     filter_upwards [stripGreenOfKernel_ae_mem_stripPast H1
-      (stripEvolution hH hLE hlam hLam A H1).2 T e] with p hp
+      _ T e] with p hp
     exact hop p hp.1 (hsub hp.2)
   rw [integral_congr_ae hg, integral_neg] at hid
   have hr := nestedSourcePotential_eq_green A H2 E T f
     (nestedPoleInclusion H1 H2 hsub T e)
   change u e.1 = ∫ p, exitProbePhysical f p ∂stripGreen hH hLE hlam hLam A H2 T
-    (nestedPoleInclusion H1 H2 hsub T e) at hr
-  rw [← hr]
+    _ at hr
   linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

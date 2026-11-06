@@ -35,8 +35,7 @@ def signedTruncatedDualPower (g : α → ℝ) (r : ℝ) (n : ℕ) (x : α) : ℝ
 
 /-- The absolute-value truncation is measurable. -/
 theorem measurable_truncatedAbs {g : α → ℝ} (hg : Measurable g) (n : ℕ) :
-    Measurable (truncatedAbs g n) := by
-  exact hg.norm.indicator (measurableSet_le hg.norm measurable_const)
+    Measurable (truncatedAbs g n) := hg.norm.indicator (measurableSet_le hg.norm measurable_const)
 
 omit [MeasurableSpace α] in
 /-- The absolute-value truncation is nonnegative. -/
@@ -44,7 +43,7 @@ theorem truncatedAbs_nonneg (g : α → ℝ) (n : ℕ) (x : α) :
     0 ≤ truncatedAbs g n x := by
   by_cases hx : x ∈ {x | |g x| ≤ n + 1}
   · rw [truncatedAbs, indicator_of_mem hx]
-    exact abs_nonneg _
+    positivity
   · rw [truncatedAbs, indicator_of_notMem hx]
 
 omit [MeasurableSpace α] in
@@ -63,7 +62,7 @@ theorem memLp_truncatedAbs [IsFiniteMeasure μ] {g : α → ℝ}
     MemLp (truncatedAbs g n) p μ := by
   apply MemLp.of_bound (measurable_truncatedAbs hg n).aestronglyMeasurable (n + 1)
   exact ae_of_all _ fun x => by
-    simpa only [Real.norm_eq_abs] using abs_truncatedAbs_le g n x
+    simpa using abs_truncatedAbs_le g n x
 
 /-- The signed truncated dual power is measurable and globally bounded. -/
 theorem signedTruncatedDualPower_measurable_bounded
@@ -102,15 +101,12 @@ theorem eLpNorm_signedTruncatedDualPower
     (signedTruncatedDualPower_measurable_bounded hg hr n).1.aestronglyMeasurable
     ((hTrunc.pow_const (r - 1)).aestronglyMeasurable)
     (ae_of_all _ fun x => by
-      show ‖signedTruncatedDualPower g r n x‖ =
-        ‖(truncatedAbs g n x) ^ (r - 1)‖
       rw [signedTruncatedDualPower]
-      split_ifs <;> simp)]
+      aesop)]
   have hrSub : 0 < r - 1 := sub_pos.mpr hr
   have hexp : ENNReal.ofReal (r / (r - 1)) * ENNReal.ofReal (r - 1) =
       ENNReal.ofReal r := by
     rw [← ENNReal.ofReal_mul (div_nonneg (zero_le_one.trans hr.le) hrSub.le)]
-    congr 1
     field_simp
   have hfun : (fun x => truncatedAbs g n x ^ (r - 1)) =
       fun x => ‖truncatedAbs g n x‖ ^ (r - 1) := by
@@ -124,11 +120,10 @@ private theorem signedTruncatedDualPower_mul
     signedTruncatedDualPower g r n x * g x =
       truncatedAbs g n x ^ r := by
   by_cases hxmem : x ∈ {x | |g x| ≤ n + 1}
-  · rw [truncatedAbs, indicator_of_mem hxmem]
-    by_cases hxzero : |g x| = 0
+  · by_cases hxzero : |g x| = 0
     · have hgzero : g x = 0 := abs_eq_zero.mp hxzero
-      rw [signedTruncatedDualPower, truncatedAbs, indicator_of_mem hxmem, hgzero,
-        abs_zero, Real.zero_rpow (sub_ne_zero.mpr (ne_of_gt hr)),
+      rw [truncatedAbs, indicator_of_mem hxmem, hgzero,
+        abs_zero,
         Real.zero_rpow (ne_of_gt (zero_lt_one.trans hr))]
       simp
     · have habsPos : 0 < |g x| := lt_of_le_of_ne (abs_nonneg _) (Ne.symm hxzero)
@@ -136,12 +131,10 @@ private theorem signedTruncatedDualPower_mul
       · rw [signedTruncatedDualPower, ite_eq_left hx, truncatedAbs,
           indicator_of_mem hxmem, abs_of_nonneg hx]
         calc
-          g x ^ (r - 1) * g x = g x ^ (r - 1) * g x ^ (1 : ℝ) := by
-            rw [Real.rpow_one]
-          _ = g x ^ ((r - 1) + 1) := (Real.rpow_add (by simpa [abs_of_nonneg hx]
-            using habsPos) _ _).symm
+          g x ^ (r - 1) * g x = g x ^ (r - 1) * g x ^ (1) := by
+            simp
+          _ = g x ^ ((r - 1) + 1) := (Real.rpow_add (by grind) _ _).symm
           _ = g x ^ r := by
-            congr 1
             ring
       · have hxneg : g x < 0 := lt_of_not_ge hx
         rw [signedTruncatedDualPower, ite_eq_right hx, truncatedAbs,
@@ -149,11 +142,10 @@ private theorem signedTruncatedDualPower_mul
         calc
           -(-g x) ^ (r - 1) * g x = (-g x) ^ (r - 1) * (-g x) := by ring
           _ =
-              (-g x) ^ (r - 1) * (-g x) ^ (1 : ℝ) := by rw [Real.rpow_one]
+              (-g x) ^ (r - 1) * (-g x) ^ (1 : ℝ) := by simp
           _ = (-g x) ^ ((r - 1) + 1) :=
             (Real.rpow_add (by linarith) _ _).symm
           _ = (-g x) ^ r := by
-            congr 1
             ring
   · rw [signedTruncatedDualPower, truncatedAbs, indicator_of_notMem hxmem]
     rw [Real.zero_rpow (sub_ne_zero.mpr (ne_of_gt hr)),
@@ -172,7 +164,7 @@ theorem integral_signedTruncatedDualPower_mul
   apply integral_congr_ae
   exact ae_of_all _ fun x => by
     change signedTruncatedDualPower g r n x * g x = ‖truncatedAbs g n x‖ ^ r
-    rw [signedTruncatedDualPower_mul g hr n x, Real.norm_eq_abs,
+    rw [signedTruncatedDualPower_mul g hr, Real.norm_eq_abs,
       abs_of_nonneg (truncatedAbs_nonneg g n x)]
 
 end

@@ -15,7 +15,6 @@ public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -60,7 +59,7 @@ theorem classical_innerBallDirichletLimit_on_innerCylinder
   let vlim (p : KineticPoint n) :=
     limUnder atTop (fun k => straightenedPullback (g k) (u k) p)
   have hU : IsOpen U := isOpen_boundedInnerOpenCylinder _ hΓ.1 _ _ _
-  have hV : IsOpen (evolutionHomeomorph n ⁻¹' U) :=
+  have hV  :=
     hU.preimage (evolutionHomeomorph n).continuous
   have hsm := contDiffOn_innerBall_dirichlet_limit (S0 := S0)
     hH hn hlam hlamLam hm hmLb hB hBs hBsym hbs hb hbco haα hατ hδ0 hδr hd hdr
@@ -68,16 +67,16 @@ theorem classical_innerBallDirichletLimit_on_innerCylinder
   have hw := weakRegularized_innerBall_dirichlet_limit (S0 := S0)
     hn hlam hlamLam hm hmLb hB hBs hBsym hbs hb hbco haα hατ hδ0 hδr hd hdr
     hL hε hε1 hC hΓ F hFC hsupp β R hβpos hβlim hRlim g hg hgL hclose u hu
-  have hwPack := (isWeakRegularizedSolution_comp_iff B b ε U vlim (fun _ => 0)).mpr hw
+  have hwPack := (isWeakRegularizedSolution_comp_iff B b ε U vlim _).mpr hw
   have heq := regularizedOperator_eq_zero_of_smooth_weak hV hBs hBsym hbs ε hsm hwPack
-  have hinside : ∀ p ∈ U, p.position ∈ movingDomain (PDE.euclideanBall 0 r0) Γ p.time :=
+  have hinside : ∀ p ∈ U, p.position ∈ movingDomain _ Γ p.time :=
     fun p hp => innerClosedCylinder_subset_movingBall hδ0 hδr
       (boundedInnerOpenCylinder_subset_closed _ Γ α τ S0 hp)
   refine ⟨hsm.congr (fun x hx => innerBallDirichletLimit_eq_limit r0 Γ g u
     (hinside _ hx)), ?_⟩
   intro p hp
   have hnear : ∀ᶠ q in 𝓝 p,
-      q.position ∈ movingDomain (PDE.euclideanBall 0 r0) Γ q.time :=
+      q.position ∈ movingDomain _ Γ q.time :=
     (isOpen_setOf_mem_movingDomain (PDE.isOpen_euclideanBall 0 r0) hΓ.1).mem_nhds
       (hinside p hp)
   have hgerm : innerBallDirichletLimit r0 Γ g u =ᶠ[𝓝 p] vlim :=
@@ -85,13 +84,10 @@ theorem classical_innerBallDirichletLimit_on_innerCylinder
   rw [viscousTransportedOperator_congr_germ B b ε hgerm]
   let x := (evolutionHomeomorph n).symm p
   have hx : x ∈ evolutionHomeomorph n ⁻¹' U := by
-    change evolutionHomeomorph n x ∈ U
-    simpa only [x, Homeomorph.apply_symm_apply] using hp
+    aesop
   have hc2 : ContDiffAt ℝ 2 (vlim ∘ evolutionHomeomorph n) x :=
     (hsm.contDiffAt (hV.mem_nhds hx)).of_le (by norm_num)
   have hOp := regularizedOperator_comp (B := B) (b := b) ε hc2
-  have hz := heq x hx
-  rw [hOp] at hz
-  simpa only [x, Homeomorph.apply_symm_apply, viscousTransportedOperator] using hz
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov

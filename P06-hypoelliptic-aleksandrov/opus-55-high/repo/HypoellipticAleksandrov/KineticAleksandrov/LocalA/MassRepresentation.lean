@@ -8,7 +8,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.MassRepresentati
 /-! # Representation of the exact bounded classical solution class by the actual exit measure -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Filter Parabolic SectionTwo
 open scoped Topology
@@ -33,9 +32,9 @@ theorem ballExit_represents (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.tim
   have hp : P.1 ∈ localClosedStrip P.1.time T.1 v₀ R :=
     ⟨le_rfl, T.2.le, subset_closure P.2⟩
   obtain ⟨M, hM⟩ := hUb
-  have hMn : 0 ≤ M := (abs_nonneg (u P.1)).trans (hM P.1 hp)
-  let ε (n : ℕ) : ℝ := 1 / ((n : ℝ) + 1)
-  let L (n : ℕ) : ℝ := (2 * M + 1) * ((n : ℝ) + 1) + 1 + (n : ℝ)
+  have hMn : 0 ≤ M := (abs_nonneg _).trans (hM P.1 hp)
+  let ε (n : ℕ)  := 1 / ((n : ℝ) + 1)
+  let L (n : ℕ)  := (2 * M + 1) * (n + 1) + 1 + n
   have hn (n : ℕ) := mass_aperture_size M hMn n
   choose F hFb hFc using fun n => exists_mass_trace_probe P.1.time T.1 v₀ hR u hUc
     M hMn hM (L n) (ε n) (hn n).1
@@ -47,15 +46,14 @@ theorem ballExit_represents (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.tim
     P.1.time T.1 T.2 (φ n) (hφs n) (hφc n)
   have hus := mass_classical_homogeneous_smooth hH B hB
     (isOpen_localStrip P.1.time T.1 v₀ R) u hUs hUe
-  have hweight (n : ℕ) : ∀ Q ∈ localClosedStrip P.1.time T.1 v₀ R,
-      |φ n Q - u Q| ≤ ε n * massGrowthBarrier Lam T.1 Q :=
-    mass_trace_probe_weighted Lam P.1.time T.1 v₀ R u (φ n) M (L n) (ε n)
+  have hweight (n : ℕ)  :=
+    mass_trace_probe_weighted Lam P.1.time T.1 v₀ R u (φ n) M _ (ε n)
       (hn n).1.le hM (hFb n) (hFc n) (hn n).2.2.1 (hn n).2.2.2.2
   have hval (n : ℕ) : |E n P.1 - u P.1| ≤ ε n * massGrowthBarrier Lam T.1 P.1 := by
     have hm := mass_homogeneous_abs_weighted B hB P.1.time T.1 T.2 v₀ R
       u (E n) hus (hEs n).1 hUe (hEs n).2.1 hUc (hEs n).2.2.1
       ⟨M, hM⟩ (ballBoundarySolution_bounded hH hLE hd hlam hLam B hB v₀ hR
-        P.1.time T.1 T.2 (φ n) (hφs n) (hφc n)) (ε n) (hn n).1.le
+        P.1.time T.1 T.2 _ (hφs n) (hφc n)) (ε n) (hn n).1.le
       (fun Q hQ => by
         dsimp only [E]
         rw [(hEs n).2.2.2 hQ, abs_sub_comm]
@@ -64,18 +62,17 @@ theorem ballExit_represents (P : LocalBallStart v₀ R) (T : {t : ℝ // P.1.tim
   have he0 : Tendsto ε atTop (𝓝 0) := tendsto_one_div_add_atTop_nhds_zero_nat
   have hvalLim : Tendsto (fun n => E n P.1) atTop (𝓝 (u P.1)) := by
     apply tendsto_iff_norm_sub_tendsto_zero.mpr
-    exact squeeze_zero_norm (fun n => by simpa only [Real.norm_eq_abs, abs_abs] using hval n)
-      (by simpa only [mul_zero, zero_mul] using he0.mul_const (massGrowthBarrier Lam T.1 P.1))
+    exact squeeze_zero_norm (fun n => by simpa using hval n)
+      (by simpa using he0.mul_const _)
   have hμ := ballExitRaw_ae_trace hH hLE hd hlam hLam B hB v₀ hR P T
   have hintLim : Tendsto (fun n => ∫ Q, φ n Q ∂μ) atTop (𝓝 (∫ Q, u Q ∂μ)) := by
     apply tendsto_integral_of_dominated_convergence (fun _ => M + 1)
     · intro n
-      exact (boundaryProbePhysical_regular (F n)).2.1.measurable.aestronglyMeasurable
+      exact (boundaryProbePhysical_regular _).2.1.measurable.aestronglyMeasurable
     · exact integrable_const _
     · intro n
       apply Eventually.of_forall
       intro Q
-      rw [Real.norm_eq_abs]
       exact (hFb n Q).trans (add_le_add_right (hn n).2.1 M)
     · filter_upwards [hμ] with Q hQ
       apply tendsto_iff_norm_sub_tendsto_zero.mpr

@@ -16,12 +16,14 @@ open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 def coreAllTimePole (c : Clock) (p : {p : Point | p.velocity 0 ∈ c.active}) :
     StripPole (visitActiveInterval c) ⊤ := ⟨p.1, WithTop.coe_lt_top _, p.2⟩
 
+variable (c : Clock)
+
 /-- The all-time pole inclusion keeps Borel physical coordinates. -/
-theorem measurable_coreAllTimePole (c : Clock) : Measurable (coreAllTimePole c) :=
+theorem measurable_coreAllTimePole  : Measurable (coreAllTimePole c) :=
   measurable_subtype_coe.subtype_mk
 
 /-- The physical active velocity carrier is measurable. -/
-theorem measurableSet_coreAllTimePole (c : Clock) :
+theorem measurableSet_coreAllTimePole  :
     MeasurableSet {p : Point | p.velocity 0 ∈ c.active} :=
   isOpen_Ioo.measurableSet.preimage ((continuous_apply 0).comp continuous_velocity).measurable
 
@@ -45,19 +47,18 @@ theorem coreAllTimeGreenKernel_mass_le
       ENNReal.ofReal (9 * c.r ^ 2 / (32 * lam)) := by
   classical
   change (if hp : p.velocity 0 ∈ c.active then
-    stripGreen hH hLE hlam hLam A (visitActiveInterval c) ⊤ (coreAllTimePole c ⟨p, hp⟩)
+    stripGreen hH hLE hlam hLam A _ ⊤ (coreAllTimePole c ⟨p, hp⟩)
       else 0) univ ≤ _
   split
   · rename_i hp
     apply (stripGreen_quadratic_mass hH hLE hlam hLam A (visitActiveInterval c) ⊤
       (coreAllTimePole c ⟨p, hp⟩)).trans
     apply ENNReal.ofReal_le_ofReal
-    change visitQuadratic c (p.velocity 0) / (2 * lam) ≤ 9 * c.r ^ 2 / (32 * lam)
     calc
       _ ≤ (9 * c.r ^ 2 / 16) / (2 * lam) :=
         div_le_div_of_nonneg_right (visitQuadratic_le c _) (by positivity)
-      _ = _ := by field_simp; ring
-  · exact zero_le
+      _ = _ := by ring
+  positivity
 
 /-- The actual all-time active-strip kernel is uniformly finite. -/
 instance coreAllTimeGreenKernel_isFiniteKernel

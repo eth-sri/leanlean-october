@@ -36,7 +36,7 @@ theorem position_source_cell_norm (hpush : PushforwardStatement)
           (nu.restrict (enlargedStartCell c s x j k))) ≤
         ENNReal.ofReal (C * c.r ^ (6 / q - 4)) *
           positionOverlapWeight c₀ i j ell k * nu (enlargedStartCell c s x j k) := by
-  have : SigmaFinite (volume : Measure Point) := density_volume_sigmaFinite
+  have  := density_volume_sigmaFinite
   obtain ⟨C, c₀, hC, hc₀, hd⟩ := positionActiveDensity_tail hpush htail hH hLE hlam hLam q hq
   refine ⟨C, c₀, hC, hc₀, ?_⟩
   intro A c hc s x nu hfinite hnu i j ell k
@@ -44,7 +44,7 @@ theorem position_source_cell_norm (hpush : PushforwardStatement)
   let B := enlargedStartCell c s x j k
   let F := positionActiveDensity hH hLE hlam hLam A c
   have hF := measurable_positionActiveDensity hH hLE hlam hLam A c
-  have hq0 : 0 < q := by linarith [hq.1]
+  have hq0 : 0 < q := by linarith
   by_cases hover : j ≤ i ∧ |((ell - k : ℤ) : ℝ)| ≤ 5 * ((i : ℝ) - (j : ℝ) + 1)
   · let K := ENNReal.ofReal (C * Real.exp (-c₀ * positionOverlapDelay i j) *
       c.r ^ (6 / q - 4))
@@ -53,7 +53,7 @@ theorem position_source_cell_norm (hpush : PushforwardStatement)
         ae_restrict_mem (measurableSet_enlargedStartCell c s x j k)] with e hv he
       have hdelay : 0 ≤ positionOverlapDelay i j * c.r ^ 2 :=
         mul_nonneg (le_max_right _ _) (sq_nonneg _)
-      have h := hd A c e hv (positionOverlapDelay i j * c.r ^ 2) hdelay
+      have h := hd A c e hv _ hdelay
       have hexp : -c₀ * (positionOverlapDelay i j * c.r ^ 2) / c.r ^ 2 =
           -c₀ * positionOverlapDelay i j := by field_simp [c.positive.ne']
       rw [hexp] at h
@@ -61,9 +61,6 @@ theorem position_source_cell_norm (hpush : PushforwardStatement)
         e he hv q hq0 K h
     have hn := positionPositiveNorm_mixture_le (nu.restrict B) (volume.restrict E)
       F hF q hq.1 K hpole
-    change positionPositiveNorm (volume.restrict E) q
-      (positionMixtureDensity hH hLE hlam hLam A c (nu.restrict B)) ≤
-        (nu.restrict B) univ * K at hn
     apply hn.trans_eq
     rw [Measure.restrict_apply MeasurableSet.univ, univ_inter]
     unfold K positionOverlapWeight
@@ -71,7 +68,7 @@ theorem position_source_cell_norm (hpush : PushforwardStatement)
     rw [show C * Real.exp (-c₀ * positionOverlapDelay i j) * c.r ^ (6 / q - 4) =
       (C * c.r ^ (6 / q - 4)) * Real.exp (-c₀ * positionOverlapDelay i j) by ring,
       ENNReal.ofReal_mul (mul_nonneg hC.le (Real.rpow_nonneg c.positive.le _))]
-    exact mul_comm _ _
+    ring
   · have hpole : ∀ᵐ e ∂nu.restrict B, positionPositiveNorm (volume.restrict E) q (F e) ≤ 0 := by
       filter_upwards [ae_restrict_of_ae hnu,
         ae_restrict_mem (measurableSet_enlargedStartCell c s x j k)] with e hv he
@@ -82,14 +79,14 @@ theorem position_source_cell_norm (hpush : PushforwardStatement)
         rw [← lintegral_zero]
         apply lintegral_congr_ae
         filter_upwards [hz] with z hz
-        simp only [F, hz, ENNReal.zero_rpow_of_pos hq0]
-      rw [hi, ENNReal.zero_rpow_of_pos (one_div_pos.mpr hq0)]
+        aesop
+      simp_all
     have hn := positionPositiveNorm_mixture_le (nu.restrict B) (volume.restrict E)
       F hF q hq.1 0 hpole
     change positionPositiveNorm (volume.restrict E) q
       (positionMixtureDensity hH hLE hlam hLam A c (nu.restrict B)) ≤
         (nu.restrict B) univ * 0 at hn
-    simpa only [positionOverlapWeight, ite_eq_right hover, mul_zero, zero_mul] using hn
+    aesop
 
 /-- The canonical mixture satisfies the source exponential two-index overlap convolution. -/
 theorem position_density_convolution_positive (hpush : PushforwardStatement)
@@ -107,22 +104,20 @@ theorem position_density_convolution_positive (hpush : PushforwardStatement)
         ENNReal.ofReal (C * c.r ^ (6 / q - 4)) *
           ∑' a : ℕ × ℤ, positionOverlapWeight c₀ i a.1 ell a.2 *
             nu (enlargedStartCell c s x a.1 a.2) := by
-  have : SigmaFinite (volume : Measure Point) := density_volume_sigmaFinite
   obtain ⟨C, c₀, hC, hc₀, hd⟩ := position_source_cell_norm hpush htail hH hLE hlam hLam q hq
   refine ⟨C, c₀, hC, hc₀, ?_⟩
   intro A c hc s x nu hfinite hnu i ell
   have ht := hnu.mono (fun _ h => h.1)
   have hv := hnu.mono (fun _ h => h.2)
   rw [positionMixtureDensity_sum_cells hH hLE hlam hLam A c nu s x ht]
-  apply (positionPositiveNorm_tsum (volume.restrict (enlargedOutputCell c s x i ell))
+  apply (positionPositiveNorm_tsum (volume.restrict _)
     q hq.1.le
-    (fun a : ℕ × ℤ => positionMixtureDensity hH hLE hlam hLam A c
-      (nu.restrict (enlargedStartCell c s x a.1 a.2)))
+    _
     (fun a : ℕ × ℤ => measurable_positionMixtureDensity hH hLE hlam hLam A c
-      (nu.restrict (enlargedStartCell c s x a.1 a.2)))).trans
+      _)).trans
   calc
-    _ ≤ ∑' a : ℕ × ℤ, ENNReal.ofReal (C * c.r ^ (6 / q - 4)) *
-        positionOverlapWeight c₀ i a.1 ell a.2 * nu (enlargedStartCell c s x a.1 a.2) :=
+    _ ≤ ∑' a : ℕ × ℤ, ENNReal.ofReal _ *
+        positionOverlapWeight c₀ i a.1 ell a.2 * nu _ :=
       ENNReal.tsum_le_tsum (fun a => hd A c hc s x nu hv i a.1 ell a.2)
     _ = _ := by simp_rw [mul_assoc]; rw [ENNReal.tsum_mul_left]
 

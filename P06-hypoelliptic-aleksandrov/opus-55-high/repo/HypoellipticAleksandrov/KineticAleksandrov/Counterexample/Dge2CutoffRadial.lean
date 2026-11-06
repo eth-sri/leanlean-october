@@ -15,22 +15,24 @@ noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
+variable {d : ℕ} (alpha : ℝ)
+
 /-- The first radial jet at a nonzero velocity. -/
-theorem hasFDerivAt_radialProfile {d : ℕ} (alpha : ℝ) (y : PDE.Vec d) (hy : y ≠ 0) :
+theorem hasFDerivAt_radialProfile  (y : PDE.Vec d) (hy : y ≠ 0) :
     HasFDerivAt (radialProfile alpha)
       ((alpha * Real.rpow (PDE.vecNormSq y) (alpha / 2 - 1)) • seedDotLinear y) y := by
   have hb : HasFDerivAt (PDE.vecNormSq (d := d)) (2 • seedDotLinear y) y := by
-    simpa only [seedBase, zero_pow (by norm_num : (2 : ℕ) ≠ 0), zero_add, sub_zero]
+    simpa only [seedBase, zero_pow (by norm_num : (2) ≠ 0), zero_add, sub_zero]
       using hasFDerivAt_seedBase 0 y 0
   convert hb.rpow_const (p := alpha / 2)
     (Or.inl (PDE.vecNormSq_eq_zero_iff.not.mpr hy)) using 1
   · rfl
   · ext w
-    simp only [smul_apply, smul_eq_mul, two_smul, add_apply, Real.rpow_eq_pow]
+    simp only [smul_apply, add_apply, Real.rpow_eq_pow]
     ring
 
 /-- The exact first radial derivative applied to a native vector. -/
-theorem fderiv_radialProfile_apply {d : ℕ} (alpha : ℝ) (y w : PDE.Vec d)
+theorem fderiv_radialProfile_apply  (y w : PDE.Vec d)
     (hy : y ≠ 0) :
     fderiv ℝ (radialProfile alpha) y w =
       alpha * Real.rpow (PDE.vecNormSq y) (alpha / 2 - 1) * PDE.vecDot y w := by
@@ -43,8 +45,10 @@ def radialHessianForm {d : ℕ} (alpha : ℝ) (y w u : PDE.Vec d) : ℝ :=
     alpha * (alpha - 2) * Real.rpow (PDE.vecNormSq y) (alpha / 2 - 2) *
       PDE.vecDot y w * PDE.vecDot y u
 
+variable {d : ℕ} (alpha : ℝ)
+
 /-- Differentiating the first radial jet gives the exact second jet. -/
-theorem hasFDerivAt_radialProfile_first {d : ℕ} (alpha : ℝ) (y w : PDE.Vec d)
+theorem hasFDerivAt_radialProfile_first  (y w : PDE.Vec d)
     (hy : y ≠ 0) :
     HasFDerivAt (fun z => fderiv ℝ (radialProfile alpha) z w)
       ((PDE.vecDot y w *
@@ -52,7 +56,7 @@ theorem hasFDerivAt_radialProfile_first {d : ℕ} (alpha : ℝ) (y w : PDE.Vec d
         seedDotLinear y +
         (alpha * Real.rpow (PDE.vecNormSq y) (alpha / 2 - 1)) • seedDotLinear w) y := by
   have hb : HasFDerivAt (PDE.vecNormSq (d := d)) (2 • seedDotLinear y) y := by
-    simpa only [seedBase, zero_pow (by norm_num : (2 : ℕ) ≠ 0), zero_add, sub_zero]
+    simpa only [seedBase, zero_pow (by norm_num : (2) ≠ 0), zero_add, sub_zero]
       using hasFDerivAt_seedBase 0 y 0
   have hp := (hb.rpow_const (p := alpha / 2 - 1)
     (Or.inl (PDE.vecNormSq_eq_zero_iff.not.mpr hy))).const_mul alpha
@@ -70,7 +74,7 @@ theorem hasFDerivAt_radialProfile_first {d : ℕ} (alpha : ℝ) (y w : PDE.Vec d
         (alpha * Real.rpow (PDE.vecNormSq y) (alpha / 2 - 1)) • seedDotLinear w) y := by
     convert hh using 1
     ext u
-    simp only [smul_apply, smul_eq_mul, add_apply, two_smul, Real.rpow_eq_pow, hexp]
+    simp only [smul_apply, add_apply, Real.rpow_eq_pow]
     ring
   apply hformula.congr_of_eventuallyEq
   have hevent : ∀ᶠ z : PDE.Vec d in nhds y, z ≠ 0 := isOpen_ne.mem_nhds hy
@@ -78,12 +82,12 @@ theorem hasFDerivAt_radialProfile_first {d : ℕ} (alpha : ℝ) (y w : PDE.Vec d
   exact fderiv_radialProfile_apply alpha z w hz
 
 /-- The exterior radial Hessian evaluated on arbitrary directions. -/
-theorem radialProfile_hessian {d : ℕ} (alpha : ℝ) (y w u : PDE.Vec d)
+theorem radialProfile_hessian  (y w u : PDE.Vec d)
     (hy : y ≠ 0) :
     fderiv ℝ (fun z => fderiv ℝ (radialProfile alpha) z w) y u =
       radialHessianForm alpha y w u := by
   rw [(hasFDerivAt_radialProfile_first alpha y w hy).fderiv]
-  simp only [radialHessianForm, smul_apply, smul_eq_mul, add_apply, seedDotLinear_apply]
+  simp only [radialHessianForm, smul_apply, add_apply, seedDotLinear_apply]
   ring
 
 /-- The radial Hessian has a positive direction in dimensions at least two. -/
@@ -97,10 +101,10 @@ theorem radialHessian_positive_direction (d : ℕ) (hd : 2 ≤ d) (alpha : ℝ)
   have hypos : 0 < PDE.vecNormSq y :=
     (PDE.vecNormSq_nonneg y).lt_of_ne' (PDE.vecNormSq_eq_zero_iff.not.mpr hy)
   simpa [radialHessianForm, hdot, PDE.vecNormSq] using
-    mul_pos (mul_pos ha (Real.rpow_pos_of_pos hypos (alpha / 2 - 1))) hsq
+    mul_pos (mul_pos ha (Real.rpow_pos_of_pos hypos _)) hsq
 
 /-- The radial direction is strictly negative when alpha is between zero and one. -/
-theorem radialHessian_radial_neg {d : ℕ} (alpha : ℝ) (ha : 0 < alpha)
+theorem radialHessian_radial_neg  (ha : 0 < alpha)
     (ha1 : alpha < 1) (y : PDE.Vec d) (hy : y ≠ 0) :
     radialHessianForm alpha y y y < 0 := by
   have hypos : 0 < PDE.vecNormSq y :=
@@ -110,7 +114,7 @@ theorem radialHessian_radial_neg {d : ℕ} (alpha : ℝ) (ha : 0 < alpha)
     simp only [Real.rpow_eq_pow]
     calc
       PDE.vecNormSq y ^ (alpha / 2 - 1) =
-          PDE.vecNormSq y ^ ((alpha / 2 - 2) + 1) := by congr 1; ring
+          PDE.vecNormSq y ^ ((alpha / 2 - 2) + 1) := by ring
       _ = _ := by rw [Real.rpow_add hypos, Real.rpow_one]
   have heq : radialHessianForm alpha y y y =
       (alpha * Real.rpow (PDE.vecNormSq y) (alpha / 2 - 2) *

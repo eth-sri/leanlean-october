@@ -20,15 +20,16 @@ continuity.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set
 open scoped Topology MatrixOrder
 
+variable {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ}
+
 /-- Inset comparison on the collar region of `[α, t₂]`, `t₁ < α < t₂`. -/
-theorem collar_piece_inset {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 < dstar)
+theorem collar_piece_inset  (hd : 0 < dstar)
     (hdr : dstar < r₀) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {Lγ : ℝ} (hLγ : 0 ≤ Lγ)
     (hγL : ∀ s t, PDE.vecEuclideanNorm (γ s - γ t) ≤ Lγ * |s - t|)
     {t₁ t₂ α : ℝ} (hα : t₁ < α)
@@ -48,14 +49,14 @@ theorem collar_piece_inset {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 
     (htop : ∀ p ∈ collarClosed c r₀ dstar γ t₁ t₂, p.time = t₂ →
       v p ≤ collarSupersolution c r₀ dstar Lγ lam FB γ p) :
     ∀ p ∈ collarClosed c r₀ dstar γ α t₂, v p ≤ collarSupersolution c r₀ dstar Lγ lam FB γ p := by
-  have hΩo : IsOpen (PDE.euclideanBall c r₀) := PDE.isOpen_euclideanBall c r₀
+  have hΩo  := PDE.isOpen_euclideanBall c r₀
   have hκ : 0 < collarKappa Lγ lam := div_pos (by linarith) hlam
-  have hc0 : 0 ≤ FB / barrierW (collarKappa Lγ lam) dstar :=
+  have hc0 : 0 ≤ FB / barrierW _ dstar :=
     div_nonneg hFB (barrierW_pos hκ hd).le
   have hr₀ : 0 ≤ r₀ := by linarith
-  have hKsub : collarClosed c r₀ dstar γ α t₂ ⊆ movingClosedSlab (PDE.euclideanBall c r₀) γ t₁ t₂ :=
+  have hKsub : collarClosed c r₀ dstar γ α t₂ ⊆ movingClosedSlab _ γ t₁ t₂ :=
     fun p hp => ⟨hα.le.trans hp.1.1, hp.1.2.1, hp.1.2.2⟩
-  have hDsub : collarActive c r₀ dstar γ α t₂ ⊆ movingActiveSlab (PDE.euclideanBall c r₀) γ t₁ t₂ :=
+  have hDsub : collarActive c r₀ dstar γ α t₂ ⊆ movingActiveSlab _ γ t₁ t₂ :=
     fun p hp => ⟨hα.le.trans hp.1.1, hp.1.2.1, hp.1.2.2⟩
   have hGnn : ∀ p ∈ collarClosed c r₀ dstar γ α t₂,
       0 ≤ collarSupersolution c r₀ dstar Lγ lam FB γ p := by
@@ -70,7 +71,7 @@ theorem collar_piece_inset {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 
     lt_of_le_of_lt (sq_nonneg _) hp.2
   have hGreg : ∀ p ∈ collarActive c r₀ dstar γ α t₂,
       IsSliceRegularAt (collarSupersolution c r₀ dstar Lγ lam FB γ) p := fun p hp =>
-    (isSliceRegularAt_collarBarrier (collarKappa Lγ lam) r₀ (hmdiff p hp) (hSpos p hp)).const_mul _
+    (isSliceRegularAt_collarBarrier _ r₀ (hmdiff p hp) (hSpos p hp)).const_mul _
   have key := le_zero_of_viscous_nonneg_growth (B := B) (b := b) (ε := ε) (Lam := Lam) (Lb := Lb)
     (K := collarClosed c r₀ dstar γ α t₂) (D := collarActive c r₀ dstar γ α t₂)
     (u := fun q => v q - collarSupersolution c r₀ dstar Lγ lam FB γ q) (a := α) (T := t₂)
@@ -80,7 +81,7 @@ theorem collar_piece_inset {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 
     (fun p hp => ⟨hp.1.1, hp.1.2.1⟩)
     ?hfut ?hcont ?hbdd ?hreg ?hpsd ?hsub ?hbdry
   · intro p hp
-    have : v p - collarSupersolution c r₀ dstar Lγ lam FB γ p ≤ 0 := key p hp
+    have  := key p hp
     linarith
   case hfut =>
     intro p hp
@@ -99,7 +100,6 @@ theorem collar_piece_inset {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 
     refine ⟨M, fun p hp => ?_⟩
     have h1 := hM p (hKsub hp)
     have h2 := hGnn p hp
-    show v p - collarSupersolution c r₀ dstar Lγ lam FB γ p ≤ M
     linarith
   case hreg =>
     intro p hp
@@ -118,15 +118,15 @@ theorem collar_piece_inset {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 
     have hmnorm : PDE.vecEuclideanNorm (deriv γ p.time) ≤ Lγ :=
       vecEuclideanNorm_le_of_hasDerivAt_lipschitz hLγ (hdiff _ hpt).hasDerivAt hγL
     have hκlam : collarKappa Lγ lam * lam = 1 + Lγ := div_mul_cancel₀ _ hlam.ne'
-    have hBlam : lam • (1 : PDE.Mat n) ≤ B p.time p.position p.velocity := (hB _ _ _).1
+    have hBlam : lam • (1) ≤ B p.time p.position p.velocity := (hB _ _ _).1
     have hLcb := viscousTransportedOperator_collarBarrier_nonpos (b := b) ε hκ hlam.le hκlam r₀
       hm' hmnorm (hSpos p hp) hBlam
     have e : viscousTransportedOperator B b ε (collarSupersolution c r₀ dstar Lγ lam FB γ) p =
-        FB / barrierW (collarKappa Lγ lam) dstar *
+        FB / barrierW _ dstar *
           viscousTransportedOperator B b ε
-            (collarBarrier (collarKappa Lγ lam) r₀ (fun t => γ t + c)) p :=
+            _ p :=
       viscousTransportedOperator_const_mul _
-        (isSliceRegularAt_collarBarrier (collarKappa Lγ lam) r₀ (hmdiff p hp) (hSpos p hp))
+        (isSliceRegularAt_collarBarrier _ r₀ (hmdiff p hp) (hSpos p hp))
     have hLG : viscousTransportedOperator B b ε
         (collarSupersolution c r₀ dstar Lγ lam FB γ) p ≤ 0 := by
       rw [e]
@@ -140,19 +140,16 @@ theorem collar_piece_inset {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 
         le_antisymm (not_lt.mp (fun h => hpD ⟨hact, h⟩)) hpK.2
       have h1 := collarSupersolution_inner (Lγ := Lγ) (lam := lam) (FB := FB) hdr hκ hd hS
       have h2 := hFBle p (hKsub hpK)
-      show v p - collarSupersolution c r₀ dstar Lγ lam FB γ p ≤ 0
       linarith
     · rcases mem_boundary_of_movingClosedSlab hΩo hpK.1 hact with h | h
       · have h1 := htop p ⟨⟨hα.le.trans hpK.1.1, hpK.1.2.1, hpK.1.2.2⟩, hpK.2⟩ h
-        show v p - collarSupersolution c r₀ dstar Lγ lam FB γ p ≤ 0
         linarith
       · have h1 := hlat p (hKsub hpK) h
         have h2 := hGnn p hpK
-        show v p - collarSupersolution c r₀ dstar Lγ lam FB γ p ≤ 0
         linarith
 
 /-- Collar comparison on the whole closed piece `[t₁, t₂]`. -/
-theorem collar_piece {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 < dstar)
+theorem collar_piece  (hd : 0 < dstar)
     (hdr : dstar < r₀) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {Lγ : ℝ} (hLγ : 0 ≤ Lγ)
     (hγL : ∀ s t, PDE.vecEuclideanNorm (γ s - γ t) ≤ Lγ * |s - t|)
     {t₁ t₂ : ℝ} (ht : t₁ < t₂)
@@ -197,7 +194,6 @@ theorem collar_piece {n : ℕ} {c : PDE.Vec n} {r₀ dstar : ℝ} (hd : 0 < dsta
       have := mem_closure_movingDomain_iff.mp hp.1.2.2
       rw [hpt] at this
       have e : (p.position + γ α - γ t₁) - γ α = p.position - γ t₁ := by abel
-      show (p.position + γ α - γ t₁) - γ α ∈ closure (PDE.euclideanBall c r₀)
       rw [e]
       exact this
     · have e : (q α).position - (γ (q α).time + c) = p.position - (γ p.time + c) := by

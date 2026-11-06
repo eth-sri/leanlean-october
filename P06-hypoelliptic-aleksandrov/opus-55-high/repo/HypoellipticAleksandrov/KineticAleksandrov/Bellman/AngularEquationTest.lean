@@ -16,8 +16,10 @@ open scoped Topology
 def bellmanAngularTest (ζ φ : ℝ → ℝ) (q : ℝ × ℝ) : ℝ :=
   if 0 < q.1 then bellmanSeparatedExpression ζ φ q else 0
 
+variable (ζ φ : ℝ → ℝ)
+
 /-- On positive position, the zero extension agrees locally with the separated expression. -/
-theorem bellmanAngularTest_eventuallyEq_positive (ζ φ : ℝ → ℝ)
+theorem bellmanAngularTest_eventuallyEq_positive 
     (q : ℝ × ℝ) (hq : 0 < q.1) :
     bellmanAngularTest ζ φ =ᶠ[𝓝 q] bellmanSeparatedExpression ζ φ := by
   have ho : IsOpen {q : ℝ × ℝ | 0 < q.1} := isOpen_lt continuous_const continuous_fst
@@ -25,7 +27,7 @@ theorem bellmanAngularTest_eventuallyEq_positive (ζ φ : ℝ → ℝ)
   exact ite_eq_left hz
 
 /-- The separated expression is smooth at every point with positive position. -/
-theorem bellmanSeparatedExpression_contDiffAt (ζ φ : ℝ → ℝ)
+theorem bellmanSeparatedExpression_contDiffAt 
     (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
     (q : ℝ × ℝ) (hq : 0 < q.1) :
     ContDiffAt ℝ (⊤ : ℕ∞) (bellmanSeparatedExpression ζ φ) q := by
@@ -33,12 +35,12 @@ theorem bellmanSeparatedExpression_contDiffAt (ζ φ : ℝ → ℝ)
     contDiffAt_fst.rpow_const_of_ne hq.ne'
   have hn : bellmanTestRadius q ≠ 0 :=
     (Real.rpow_pos_of_pos hq _).ne'
-  have ha : ContDiffAt ℝ (⊤ : ℕ∞) bellmanTestAngle q :=
+  have ha : ContDiffAt ℝ _ bellmanTestAngle q :=
     contDiffAt_snd.div hr hn
   exact (hζ.contDiffAt.comp q hr).mul (hφ.contDiffAt.comp q ha)
 
 /-- The separated test extended by zero is smooth, including on the position axis. -/
-theorem bellmanAngularTest_contDiff (ζ φ : ℝ → ℝ)
+theorem bellmanAngularTest_contDiff 
     (hζ : ContDiff ℝ (⊤ : ℕ∞) ζ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
     (hs : tsupport ζ ⊆ Ioi (0 : ℝ)) :
     ContDiff ℝ (⊤ : ℕ∞) (bellmanAngularTest ζ φ) := by

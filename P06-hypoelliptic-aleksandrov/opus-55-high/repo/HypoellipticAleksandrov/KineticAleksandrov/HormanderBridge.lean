@@ -18,7 +18,6 @@ transported along the evident evaluation-preserving map of Lie words.
 @[expose] public section
 
 noncomputable section
-set_option autoImplicit false
 
 open Set MeasureTheory
 open HypoellipticAleksandrov
@@ -30,8 +29,10 @@ def LieWord.toInterface {k : ℕ} : LieWord k → Hormander.Interface.LieWord k
   | .generator i => .generator i
   | .bracket p q => .bracket p.toInterface q.toInterface
 
+variable {k N : ℕ} {Ω : Set (PDE.Vec N)}
+
 /-- Copying a Lie word preserves its evaluation. -/
-theorem LieWord.eval_toInterface {k N : ℕ}
+theorem LieWord.eval_toInterface 
     (X : Fin (k + 1) → PDE.Vec N → PDE.Vec N) (w : LieWord k) :
     Hormander.Interface.LieWord.eval X w.toInterface = LieWord.eval X w := by
   induction w with
@@ -40,7 +41,7 @@ theorem LieWord.eval_toInterface {k N : ℕ}
       simp only [LieWord.toInterface, Hormander.Interface.LieWord.eval, LieWord.eval, hp, hq]
 
 /-- The bracket condition implies the bracket condition of the `hormander` package. -/
-theorem LieAlgebraSpansOn.toInterface {k N : ℕ} {Ω : Set (PDE.Vec N)}
+theorem LieAlgebraSpansOn.toInterface 
     {X : Fin (k + 1) → PDE.Vec N → PDE.Vec N} (h : LieAlgebraSpansOn Ω X) :
     Hormander.Interface.LieAlgebraSpansOn Ω X := by
   intro x hx
@@ -52,7 +53,7 @@ theorem LieAlgebraSpansOn.toInterface {k N : ℕ} {Ω : Set (PDE.Vec N)}
 /-- Hörmander's hypoellipticity theorem for locally integrable weak solutions, from the
 public facade of the `hormander` package. -/
 theorem exists_smooth_aeRepresentative_of_hormander_aux
-    {k N : ℕ} {Ω : Set (PDE.Vec N)}
+    
     (hΩ : IsOpen Ω)
     (X : Fin (k + 1) → PDE.Vec N → PDE.Vec N)
     (c g u : PDE.Vec N → ℝ)

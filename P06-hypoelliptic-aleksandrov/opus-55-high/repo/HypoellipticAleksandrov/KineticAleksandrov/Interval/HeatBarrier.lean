@@ -53,50 +53,49 @@ theorem strictMono_intervalErf : StrictMono intervalErf := by
   apply strictMono_of_deriv_pos
   intro x
   rw [(hasDerivAt_intervalErf x).deriv]
-  exact mul_pos (div_pos (by norm_num) (Real.sqrt_pos.2 Real.pi_pos)) (Real.exp_pos _)
+  positivity
+
+variable {x : ℝ} {lam θ : ℝ}
 
 /-- Nonnegativity of the error function on the nonnegative half-line. -/
-theorem intervalErf_nonneg {x : ℝ} (hx : 0 ≤ x) : 0 ≤ intervalErf x := by
-  simpa only [intervalErf_zero] using strictMono_intervalErf.monotone hx
+theorem intervalErf_nonneg  (hx : 0 ≤ x) : 0 ≤ intervalErf x := by
+  simpa using strictMono_intervalErf.monotone hx
 
 /-- Every finite nonnegative argument leaves a strictly positive Gaussian tail. -/
-theorem intervalErf_lt_one {x : ℝ} (hx : 0 ≤ x) : intervalErf x < 1 := by
+theorem intervalErf_lt_one  (hx : 0 ≤ x) : intervalErf x < 1 := by
   have hi : Integrable (fun t : ℝ => Real.exp (-t ^ 2)) := by
-    simpa only [neg_mul, one_mul] using integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 1)
-  have : NeZero (volume.restrict (Ioi x) : Measure ℝ) := ⟨by
-    intro h
-    have he := congrArg (fun ν : Measure ℝ => ν univ) h
-    simp at he⟩
-  have htail : 0 < ∫ t in Ioi x, Real.exp (-t ^ 2) :=
+    simpa using integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 1)
+  have : NeZero (volume.restrict (Ioi x)) := ⟨by
+    simp⟩
+  have htail : 0 < ∫ t in Ioi x, Real.exp _ :=
     integral_exp_pos hi.integrableOn
   have hsplit := intervalIntegral.integral_Ioi_sub_Ioi
-    (hi.integrableOn (s := Ioi (0 : ℝ))) hx
-  have hfull : (∫ t in Ioi (0 : ℝ), Real.exp (-t ^ 2)) = Real.sqrt Real.pi / 2 := by
-    simpa only [neg_mul, one_mul, div_one] using integral_gaussian_Ioi 1
+    (hi.integrableOn (s := Ioi _)) hx
+  have hfull : (∫ t in Ioi (0), Real.exp (-t ^ 2)) = Real.sqrt Real.pi / 2 := by
+    simpa using integral_gaussian_Ioi 1
   rw [hfull] at hsplit
-  have hlt : (∫ t in (0:ℝ)..x, Real.exp (-t ^ 2)) < Real.sqrt Real.pi / 2 := by
-    linarith only [hsplit, htail]
+  have hlt : (∫ t in (0)..x, Real.exp (-t ^ 2)) < Real.sqrt Real.pi / 2 := by
+    linarith
   have hk : 0 < 2 / Real.sqrt Real.pi := div_pos (by norm_num)
     (Real.sqrt_pos.2 Real.pi_pos)
   have hbound := mul_lt_mul_of_pos_left hlt hk
   have hnorm : (2 / Real.sqrt Real.pi) * (Real.sqrt Real.pi / 2) = 1 := by
     field_simp
-  simpa only [intervalErf, hnorm] using hbound
+  aesop
 
 /-- Gaussian normalization gives the error-function limit at positive infinity. -/
 theorem tendsto_intervalErf_atTop :
     Filter.Tendsto intervalErf Filter.atTop (nhds (1 : ℝ)) := by
   have hi : Integrable (fun t : ℝ => Real.exp (-t ^ 2)) := by
-    simpa only [neg_mul, one_mul] using integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 1)
+    simpa using integrable_exp_neg_mul_sq (by norm_num : (0:ℝ) < 1)
   have ht := (intervalIntegral_tendsto_integral_Ioi 0 hi.integrableOn
     Filter.tendsto_id).const_mul (2 / Real.sqrt Real.pi)
-  have hfull : (∫ t in Ioi (0 : ℝ), Real.exp (-t ^ 2)) = Real.sqrt Real.pi / 2 := by
-    simpa only [neg_mul, one_mul, div_one] using integral_gaussian_Ioi 1
+  have hfull : (∫ t in Ioi (0), Real.exp (-t ^ 2)) = Real.sqrt Real.pi / 2 := by
+    simpa using integral_gaussian_Ioi 1
   rw [hfull] at ht
   have hnorm : (2 / Real.sqrt Real.pi) * (Real.sqrt Real.pi / 2) = 1 := by
     field_simp
-  rw [hnorm] at ht
-  exact ht
+  aesop
 
 /-- Spatial derivative of the heat barrier. -/
 theorem hasDerivAt_intervalHeat_space (lam θ : ℝ)
@@ -106,8 +105,8 @@ theorem hasDerivAt_intervalHeat_space (lam θ : ℝ)
         (2 * Real.sqrt (lam * θ))) x := by
   unfold intervalHeat
   simpa only [Function.comp_def, id_eq, mul_one_div] using
-    (hasDerivAt_intervalErf (x / (2 * Real.sqrt (lam * θ)))).comp x
-      ((hasDerivAt_id x).div_const (2 * Real.sqrt (lam * θ)))
+    (hasDerivAt_intervalErf _).comp x
+      ((hasDerivAt_id x).div_const _)
 
 /-- Spatial derivative written as an equality of functions. -/
 theorem deriv_intervalHeat_space (lam θ : ℝ) :
@@ -118,41 +117,38 @@ theorem deriv_intervalHeat_space (lam θ : ℝ) :
   exact (hasDerivAt_intervalHeat_space lam θ x).deriv
 
 /-- Second spatial derivative of the barrier. -/
-theorem deriv2_intervalHeat_space {lam θ : ℝ} (hlam : 0 < lam) (hθ : 0 < θ)
+theorem deriv2_intervalHeat_space  (hlam : 0 < lam) (hθ : 0 < θ)
     (x : ℝ) :
     deriv (deriv (intervalHeat lam θ)) x =
       -(2 * x * (2 / Real.sqrt Real.pi) *
         Real.exp (-(x / (2 * Real.sqrt (lam * θ))) ^ 2)) /
         (2 * Real.sqrt (lam * θ)) ^ 3 := by
-  rw [deriv_intervalHeat_space lam θ]
+  rw [deriv_intervalHeat_space]
   have h := ((((hasDerivAt_id x).div_const (2 * Real.sqrt (lam * θ))).pow 2).neg.exp
     |>.const_mul (2 / Real.sqrt Real.pi)).div_const (2 * Real.sqrt (lam * θ))
   dsimp only [id_eq, Pi.neg_apply, Pi.pow_apply] at h
   rw [h.deriv]
-  simp only [Nat.reduceSub, pow_one]
-  field_simp [(Real.sqrt_pos.2 (mul_pos hlam hθ)).ne']
   ring
 
 /-- Time derivative of the barrier. -/
-theorem hasDerivAt_intervalHeat_time {lam θ : ℝ} (hlam : 0 < lam) (hθ : 0 < θ)
+theorem hasDerivAt_intervalHeat_time  (hlam : 0 < lam) (hθ : 0 < θ)
     (x : ℝ) :
     HasDerivAt (fun t => intervalHeat lam t x)
       (-(2 * x * lam * (2 / Real.sqrt Real.pi) *
         Real.exp (-(x / (2 * Real.sqrt (lam * θ))) ^ 2)) /
         (2 * Real.sqrt (lam * θ)) ^ 3) θ := by
   have hs : Real.sqrt (lam * θ) ≠ 0 := (Real.sqrt_pos.2 (mul_pos hlam hθ)).ne'
-  have hd : 2 * Real.sqrt (lam * θ) ≠ 0 := mul_ne_zero (by norm_num) hs
+  have hd : 2 * Real.sqrt _ ≠ 0 := mul_ne_zero (by norm_num) hs
   have hg := (((hasDerivAt_id θ).const_mul lam).sqrt (mul_pos hlam hθ).ne').const_mul 2
   have h := (hasDerivAt_intervalErf (x / (2 * Real.sqrt (lam * θ)))).comp θ
     ((hasDerivAt_const θ x).div hg hd)
-  dsimp only [id_eq, Function.comp_def, Pi.div_apply] at h
+  dsimp only [id_eq] at h
   convert h using 1
   · rfl
-  · field_simp
-    ring
+  · ring
 
 /-- The barrier solves the half-line heat equation with diffusivity `lam`. -/
-theorem intervalHeat_heatEquation {lam θ : ℝ} (hlam : 0 < lam) (hθ : 0 < θ)
+theorem intervalHeat_heatEquation  (hlam : 0 < lam) (hθ : 0 < θ)
     (x : ℝ) :
     deriv (fun t => intervalHeat lam t x) θ =
       lam * deriv (deriv (intervalHeat lam θ)) x := by
@@ -167,7 +163,7 @@ theorem intervalHeat_secondDerivative_nonpos {lam θ x : ℝ}
   rw [deriv2_intervalHeat_space hlam hθ]
   apply div_nonpos_of_nonpos_of_nonneg
   · exact neg_nonpos.2 (by positivity)
-  · positivity
+  positivity
 
 /-- The source supersolution inequality for any coefficient at least `lam`. -/
 theorem intervalHeat_supersolution {lam θ x A : ℝ}

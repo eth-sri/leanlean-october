@@ -8,7 +8,6 @@ import Mathlib.MeasureTheory.Function.LpSeminorm.Basic
 /-! # The Green-density Hölder bound used by abstract Aleksandrov comparison -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory
 
@@ -40,9 +39,7 @@ theorem abp_potential_holder {E : Type*} [MeasurableSpace E]
   rw [hΓ,integral_withDensity_eq_integral_toReal_smul (hG.ennreal_ofReal)
     (Filter.Eventually.of_forall (fun _ => ENNReal.ofReal_lt_top))]
   have heq : (fun x => (ENNReal.ofReal (G x)).toReal • g x) = fun x => G x * g x := by
-    funext x
-    rw [ENNReal.toReal_ofReal (hG0 x)]
-    rfl
+    simp_all
   rw [heq]
   have hnn : ∀ᵐ x ∂μ, 0 ≤ G x := Filter.Eventually.of_forall hG0
   have hh := integral_mul_le_Lp_mul_Lq_of_nonneg hpq hnn hg0 hGq hgp

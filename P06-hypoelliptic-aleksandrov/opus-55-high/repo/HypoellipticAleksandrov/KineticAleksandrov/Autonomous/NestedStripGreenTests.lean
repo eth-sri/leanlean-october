@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripI
 /-! # Actual larger-interval Green decomposition on all compact interior source tests -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
@@ -30,21 +29,19 @@ theorem nestedIntervalGreen_probe_identity
     sMinus T e he f hfn hs
   have hmap : (∫ p, u p ∂(stripExit hH hLE hlam hLam A H1 T e).restrict
       (nestedIntervalInternalExit H1 H2 sMinus T)) = ∫ ep, u ep.1 ∂τ := by
-    rw [← nestedIntervalRestartPoles_map hH hLE hlam hLam A H1 H2 sMinus T e]
+    rw [← nestedIntervalRestartPoles_map]
     exact integral_map measurable_subtype_coe.aemeasurable
       (nestedSourcePotential_measurable H2 E T f).aestronglyMeasurable
-  have hrep : (fun ep : StripPole H2 (T : WithTop ℝ) => u ep.1) =
+  have hrep : (fun ep : StripPole H2 _ => u ep.1) =
       fun ep => ∫ p, exitProbePhysical f p ∂stripGreen hH hLE hlam hLam A H2 T ep := by
     funext ep
     exact nestedSourcePotential_eq_green A H2 E T f ep
-  have hb := nested_integral_bind τ (stripGreen hH hLE hlam hLam A H2 T)
+  have hb := nested_integral_bind τ _
     (Measure.measurable_measure.mpr (fun B hB =>
       stripGreen_measurable_apply hH hLE hlam hLam A H2 T B hB))
-    (exitProbePhysical f)
+    _
     (nestedProbe_integrable A f
       (nestedIntervalRestartGreen hH hLE hlam hLam A H1 H2 sMinus T e))
-  change _ = _ + ∫ p, u p ∂(stripExit hH hLE hlam hLam A H1 T e).restrict
-    (nestedIntervalInternalExit H1 H2 sMinus T) at hid
   rw [hmap, hrep, ← hb] at hid
   exact hid
 

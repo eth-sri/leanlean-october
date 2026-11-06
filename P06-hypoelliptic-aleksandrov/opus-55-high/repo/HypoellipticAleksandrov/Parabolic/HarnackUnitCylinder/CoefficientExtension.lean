@@ -7,7 +7,6 @@ public import HypoellipticAleksandrov.Parabolic.LocalClassical
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -25,7 +24,7 @@ theorem isBorel_midpointExtension_of_continuousOn
     IsBorelCoefficient
       (extendCoefficientByMidpoint B U (ellipticityMidpoint d lam Lam)) := by
   classical
-  change Measurable (U.piecewise (coefficientAt B) (fun _ => ellipticityMidpoint d lam Lam))
+  change Measurable (U.piecewise (coefficientAt B) _)
   apply Measurable.of_eval
   intro i
   apply Measurable.of_eval
@@ -37,6 +36,6 @@ theorem isBorel_midpointExtension_of_continuousOn
     (g := fun _ => ellipticityMidpoint d lam Lam i j) continuousOn_const hU.measurableSet
   convert hm using 1
   funext z
-  by_cases hz : z ∈ U <;> simp only [Set.piecewise, hz, ite_true, ite_false]
+  by_cases hz : z ∈ U <;> simp_all
 
 end HypoellipticAleksandrov.Parabolic

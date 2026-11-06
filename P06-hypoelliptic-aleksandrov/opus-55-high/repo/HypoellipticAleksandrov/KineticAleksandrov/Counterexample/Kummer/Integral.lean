@@ -31,25 +31,27 @@ def UIr (a : Pos) (b z : ℝ) : ℝ :=
 
 /-- Transformed U for the negative shape interval in Appendix C. -/
 def UN (a : NegThird) (z : Pos) : ℝ :=
-  z.1 ^ (1 / 3 : ℝ) * UI ⟨a.1 + 1 / 3, by linarith only [a.2.1]⟩ (4 / 3) z
+  z.1 ^ (1 / 3 : ℝ) * UI ⟨a.1 + 1 / 3, by grind⟩ (4 / 3) z
 
 /-- The transformed real formula, characterized only at positive arguments. -/
 def UNr (a : NegThird) (z : ℝ) : ℝ :=
-  z ^ (1 / 3 : ℝ) * UIr ⟨a.1 + 1 / 3, by linarith only [a.2.1]⟩ (4 / 3) z
+  z ^ (1 / 3 : ℝ) * UIr ⟨a.1 + 1 / 3, by grind⟩ (4 / 3) z
+
+variable (a : Pos) (b z : ℝ)
 
 /-- Restriction of the auxiliary integral formula to its genuine domain. -/
-@[simp] theorem UIr_coe (a : Pos) (b : ℝ) (z : Pos) : UIr a b z.1 = UI a b z := rfl
+@[simp] theorem UIr_coe  (b : ℝ) (z : Pos) : UIr a b z.1 = UI a b z := rfl
 
 /-- Restriction of the auxiliary transformed formula to its genuine domain. -/
 @[simp] theorem UNr_coe (a : NegThird) (z : Pos) : UNr a z.1 = UN a z := rfl
 
 /-- Absolute convergence for the positive integral definition. -/
-theorem integrable_laplaceKernel (a : Pos) (b z : ℝ) (hz : 0 < z) :
+theorem integrable_laplaceKernel  (hz : 0 < z) :
     IntegrableOn (laplaceKernel a b z) (Ioi 0) volume :=
   integrableOn_laplaceKernelReal a.1 b z a.2 hz
 
 /-- Strict positivity of the unbundled integral on its positive argument domain. -/
-theorem UIr_pos (a : Pos) (b z : ℝ) (hz : 0 < z) : 0 < UIr a b z :=
+theorem UIr_pos  (hz : 0 < z) : 0 < UIr a b z :=
   mul_pos (inv_pos.mpr (Real.Gamma_pos_of_pos a.2))
     (integral_laplaceKernelReal_pos a.1 b z a.2 hz)
 

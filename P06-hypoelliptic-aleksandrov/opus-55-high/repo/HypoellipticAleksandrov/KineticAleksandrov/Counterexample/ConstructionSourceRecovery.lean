@@ -6,22 +6,23 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Construc
 /-! # Spacetime recovery and shell domination of the actual limiting source -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Filter Set HypoellipticAleksandrov.Parabolic
 open scoped Topology
 
+variable {d : ℕ}
+
 /-- The spacetime indicator uses exactly the fixed-time profile domain. -/
-theorem constructionIndicatorSource_apply {d : ℕ} {alpha : ℝ}
+theorem constructionIndicatorSource_apply  {alpha : ℝ}
     (h : CounterProfileStatement d alpha) (r mu R t : ℝ) (q : XV d) :
     constructionIndicatorSource h r mu R (t, q) =
       {y | profileFunction h y < 1}.indicator
         (fun y => timeCutoffSourceRepresentative h r mu R ⟨t, y.1, y.2⟩) q := by
-  by_cases hp : profileFunction h q < 1 <;> simp [constructionIndicatorSource, hp]
+  aesop
 
 /-- The actual mollified operator converges almost everywhere in native spacetime
 volume to a jointly measurable version of the selected zero-extended source. -/
-theorem construction_smoothedOperator_tendsto_ae_spacetime {d : ℕ} (hd : 1 ≤ d)
+theorem construction_smoothedOperator_tendsto_ae_spacetime  (hd : 1 ≤ d)
     {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
     (h : CounterProfileStatement d alpha) (r mu R m : ℝ)
     (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R) (hm : m < R ^ 2)
@@ -32,27 +33,26 @@ theorem construction_smoothedOperator_tendsto_ae_spacetime {d : ℕ} (hd : 1 ≤
         (smoothedZeroExtendedProfile h r mu R (standardMollifierSequence n)) P)
       atTop (𝓝 (constructionIndicatorSource h r mu R (KineticPoint.equivProd d P))) := by
   have hA := (selectedProfile_spec h).2.2.2.2.1
-  have hF (n : ℕ) := measurable_backwardOperator_of_joint_smooth (profileMatrix h) hA
-    (smoothedZeroExtendedProfile h r mu R (standardMollifierSequence n))
+  have hF (n : ℕ) := measurable_backwardOperator_of_joint_smooth _ hA
+    _
     (smoothedZeroExtendedProfile_contDiff ha h r mu R hr hmu hR
       (fun q hq => (hmargin q hq).trans hm) (standardMollifierSequence n))
   have he := construction_fixed_time_tendsto_ae_spacetime
-    (fun n z => backwardOperator (fun _t x v => profileMatrix h (x, v))
-      (smoothedZeroExtendedProfile h r mu R (standardMollifierSequence n))
-      ((KineticPoint.equivProd d).symm z)) (constructionIndicatorSource h r mu R)
+    (fun n z => backwardOperator _
+      _
+      _) _
     (fun n => (hF n).comp (KineticPoint.measurable_equivProd_symm d))
     (construction_indicatorSource_measurable h r mu R) ?_
-  · simpa only [Equiv.symm_apply_apply] using! he
+  · simp_all
   · intro t
     filter_upwards [construction_smoothed_operator_tendsto_ae hd ha ha1 h r mu R m
       hr hmu hR hm hscale (fun q hq => (hmargin q hq).le) (profileMatrix h) t,
       construction_extendedSource_eq_indicator_ae hd ha ha1 h r mu R m hr hmu hR hm
         hscale hmargin t] with q hq heq
-    simpa only [constructionIndicatorSource_apply,
-      ← heq] using! hq
+    aesop
 
 /-- Jointly measurable fixed-time almost-everywhere inequalities lift to spacetime. -/
-theorem construction_fixed_time_le_ae_spacetime {d : ℕ} (f g : ℝ × XV d → ℝ)
+theorem construction_fixed_time_le_ae_spacetime  (f g : ℝ × XV d → ℝ)
     (hf : Measurable f) (hg : Measurable g)
     (hfg : ∀ t : ℝ, ∀ᵐ q ∂volume, f (t, q) ≤ g (t, q)) :
     ∀ᵐ P : KineticPoint d ∂volume,

@@ -27,31 +27,10 @@ or comparison principle is used.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
 open Filter Set Matrix
 open scoped MatrixOrder Topology
-
-/-- The trace of the product of two real positive semidefinite matrices is nonnegative. -/
-theorem trace_mul_nonneg_of_posSemidef
-    {d : ℕ} {A H : PDE.Mat d}
-    (hA : A.PosSemidef) (hH : H.PosSemidef) :
-    0 ≤ (A * H).trace := by
-  classical
-  let S : PDE.Mat d := CFC.sqrt H
-  have hS : S.PosSemidef := by
-    dsimp [S]
-    exact CFC.sqrt_nonneg H |>.posSemidef
-  have hconj : (S * A * Sᴴ).PosSemidef := hA.mul_mul_conjTranspose_same S
-  calc
-    0 ≤ (S * A * Sᴴ).trace := hconj.trace_nonneg
-    _ = (S * A * S).trace := by rw [hS.isHermitian.eq]
-    _ = (A * S * S).trace := (Matrix.trace_mul_cycle A S S).symm
-    _ = (A * (S * S)).trace := by rw [Matrix.mul_assoc]
-    _ = (A * H).trace := by rw [show S * S = H by
-      dsimp [S]
-      exact CFC.sqrt_mul_sqrt_self H hH.nonneg]
 
 end HypoellipticAleksandrov.Parabolic

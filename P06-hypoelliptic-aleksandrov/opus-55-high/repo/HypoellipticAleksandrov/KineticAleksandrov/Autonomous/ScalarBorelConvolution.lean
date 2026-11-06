@@ -27,8 +27,10 @@ def scalarBorelConvolution (φ : ContDiffBump (0 : ℝ × ℝ))
     (a : ℝ → ℝ → ℝ) : ℝ → ℝ → ℝ :=
   fun x v => (φ.normed volume ⋆[lsmul ℝ ℝ, volume] Function.uncurry a) (x, v)
 
+variable {lam Lam : ℝ}
+
 /-- Bounded Borel scalar coefficients are locally integrable. -/
-theorem scalar_borel_locallyIntegrable {lam Lam : ℝ} (hlam : 0 < lam)
+theorem scalar_borel_locallyIntegrable  (hlam : 0 < lam)
     (a : ℝ → ℝ → ℝ) (ha : Measurable (Function.uncurry a))
     (hb : ∀ x v, lam ≤ a x v ∧ a x v ≤ Lam) :
     LocallyIntegrable (Function.uncurry a) volume := by
@@ -37,10 +39,10 @@ theorem scalar_borel_locallyIntegrable {lam Lam : ℝ} (hlam : 0 < lam)
   dsimp only [Function.uncurry]
   rw [Real.norm_of_nonneg (hlam.le.trans (hb z.1 z.2).1),
     Real.norm_of_nonneg (hlam.le.trans (hb z.1 z.2).1 |>.trans (hb z.1 z.2).2)]
-  exact (hb z.1 z.2).2
+  simp_all
 
 /-- Scalar convolution is smooth and retains the original pointwise interval. -/
-theorem scalarBorelConvolution_spec {lam Lam : ℝ} (hlam : 0 < lam)
+theorem scalarBorelConvolution_spec  (hlam : 0 < lam)
     (a : ℝ → ℝ → ℝ) (ha : Measurable (Function.uncurry a))
     (hb : ∀ x v, lam ≤ a x v ∧ a x v ≤ Lam)
     (φ : ContDiffBump (0 : ℝ × ℝ)) :
@@ -50,22 +52,22 @@ theorem scalarBorelConvolution_spec {lam Lam : ℝ} (hlam : 0 < lam)
   have : (volume : Measure (ℝ × ℝ)).IsAddHaarMeasure :=
     Measure.prod.instIsAddHaarMeasure volume volume
   have hloc := scalar_borel_locallyIntegrable hlam a ha hb
-  refine ⟨φ.hasCompactSupport_normed.contDiff_convolution_left (lsmul ℝ ℝ)
+  refine ⟨φ.hasCompactSupport_normed.contDiff_convolution_left _
     φ.contDiff_normed hloc, ?_⟩
   intro x v
   have hi := φ.hasCompactSupport_normed.convolutionExists_left
     (μ := volume) (lsmul ℝ ℝ) (φ.continuous_normed (μ := volume)) hloc (x, v)
   have hl := integral_mono ((φ.integrable_normed (μ := volume)).smul_const lam) hi
-    (fun y => mul_le_mul_of_nonneg_left (hb ((x, v) - y).1 ((x, v) - y).2).1
+    (fun y => mul_le_mul_of_nonneg_left (hb _ _).1
       (φ.nonneg_normed y))
   have hu := integral_mono hi ((φ.integrable_normed (μ := volume)).smul_const Lam)
-    (fun y => mul_le_mul_of_nonneg_left (hb ((x, v) - y).1 ((x, v) - y).2).2
+    (fun y => mul_le_mul_of_nonneg_left (hb _ _).2
       (φ.nonneg_normed y))
   simpa only [scalarBorelConvolution, convolution, lsmul_apply, smul_eq_mul,
     integral_mul_const, φ.integral_normed, one_mul] using And.intro hl hu
 
 /-- Smooth autonomous approximations preserve ellipticity and converge almost everywhere. -/
-theorem scalar_borel_coefficient_approximation {lam Lam : ℝ} (hlam : 0 < lam)
+theorem scalar_borel_coefficient_approximation  (hlam : 0 < lam)
     (a : ℝ → ℝ → ℝ) (ha : Measurable (Function.uncurry a))
     (hb : ∀ x v, lam ≤ a x v ∧ a x v ≤ Lam) :
     ∃ C : ℕ → ℝ → ℝ → ℝ,
@@ -97,7 +99,6 @@ theorem scalar_borel_phase_ae_lift {p : (ℝ × ℝ) → Prop}
     Measure.quasiMeasurePreserving_snd
   have hp' := hproj.ae hpv
   have h := (KineticPoint.measurePreserving_equivProd 1).quasiMeasurePreserving.ae hp'
-  change ∀ᵐ P : Point ∂volume, p (P.position 0, P.velocity 0) at h
   exact h
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

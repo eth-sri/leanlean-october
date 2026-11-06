@@ -13,7 +13,6 @@ and preserves the actual terminal and lateral boundary data.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Set KineticAleksandrov
 open scoped MatrixOrder Matrix.Norms.Elementwise
@@ -29,9 +28,9 @@ theorem exists_smooth_backward_homogeneous_replacement {d : ℕ} (hd : 0 < d)
       IsClassicalBackwardDirichletSolution a T (PDE.euclideanBall v₀ r) A
         (fun _ _ => 0) (fun _ _ => 0) (fun _ _ => 0)
         (fun y => w (T, y)) w v := by
-  let F : TimeVelocity d → ℝ := fun z => scalarTimeDerivative w z +
+  let F  := fun z => scalarTimeDerivative w z +
     matrixContraction (coefficientAt A z) (scalarSpatialHessian w z)
-  have hF : ContDiff ℝ (⊤ : ℕ∞) F := contDiff_smooth_backward_residual A hA w hw
+  have hF : ContDiff ℝ _ F := contDiff_smooth_backward_residual A hA w hw
   obtain ⟨u, hu⟩ := exists_signed_source_ball_correction hd v₀ r hr a T haT
     lam Lam hlam hLam A hA hlo hhi F hF
   have hwr := isScalarC12On_of_contDiff_two (hw.of_le (by simp))
@@ -45,7 +44,7 @@ theorem exists_smooth_backward_homogeneous_replacement {d : ℕ} (hd : 0 < d)
       simp only [scalarParabolicZeroOrderOperator_apply, Pi.zero_apply, PDE.vecDot,
         zero_mul, Finset.sum_const_zero, add_zero]
       rfl
-    rw [hwF, sub_self]
+    simp_all
   · intro y hy
     change w (T, y) - u (T, y) = w (T, y)
     rw [hu.2.2.2.1 y hy, sub_zero]

@@ -32,17 +32,17 @@ theorem exists_disjoint_selection_measure_bounds {d : ℕ} {ι : Type*}
     exists_disjoint_cylinder_selection P r t R hr hR
   refine ⟨u, hut, hcount, hdisj, ?_, ?_⟩
   · exact (measure_mono hcover).trans
-      (measure_biUnion_le volume hcount (fun i => inflatedCylinder (P i) (r i) 8))
+      (measure_biUnion_le volume hcount _)
   · calc
-      (∑' i : u, volume (E ∩ backwardCylinder (P i) (r i))) =
-          ∑' i : u, (volume.restrict E) (backwardCylinder (P i) (r i)) := by
+      (∑' i : u, volume _) =
+          ∑' i : u, (volume.restrict E) _ := by
         apply tsum_congr
         intro i
-        rw [Measure.restrict_apply (isOpen_cylinder (P i) (r i)).measurableSet,
+        rw [Measure.restrict_apply (isOpen_cylinder _ _).measurableSet,
           inter_comm]
-      _ = (volume.restrict E) (⋃ i ∈ u, backwardCylinder (P i) (r i)) :=
+      _ = (volume.restrict E) _ :=
         (measure_biUnion hcount hdisj
-          (fun i _ => (isOpen_cylinder (P i) (r i)).measurableSet)).symm
+          (fun i _ => (isOpen_cylinder _ _).measurableSet)).symm
       _ ≤ (volume.restrict E) univ := measure_mono (subset_univ _)
       _ = volume E := Measure.restrict_apply_univ E
 

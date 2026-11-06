@@ -8,7 +8,6 @@ import Mathlib.Tactic
 /-! # Common annular normalization and compact bounds for homogeneous adjoint pairs -/
 
 @[expose] public section
-noncomputable section
 open Set MeasureTheory
 open scoped ENNReal NNReal
 namespace HypoellipticAleksandrov.KineticAleksandrov
@@ -32,13 +31,13 @@ theorem bellman_pairs_annular_normalization (R : ℝ) (hR : 1 ≤ R)
   have hpos (n : ℕ) : 0 < ∫ q, chi q.val ∂mu n :=
     bellman_annular_integral_pos _ _ (hp n).1 (hp n).left_ne_zero
       (hp n).2.2.2.2.2.2.1 chi hchi.continuous hc hs (fun q => (hr q).1) hone
-  have hn (n : ℕ) := bellman_annular_normalize (mu n) chi (hpos n)
+  have hn (n : ℕ) := bellman_annular_normalize _ chi (hpos n)
   choose c hcp hcn using hn
   let nu (n : ℕ) := ENNReal.ofReal (c n) • mu n
   have hradnu (n : ℕ) : IsBellmanRadon (nu n) :=
     (hp n).1.smul _ ENNReal.ofReal_ne_top
-  let (n : ℕ) : IsFiniteMeasureOnCompacts (nu n) := (hradnu n).1
-  have hdeg (n : ℕ) : HasBellmanDensityDegree (beta n) (nu n) :=
+  let (n : ℕ)  := (hradnu n).1
+  have hdeg (n : ℕ) : HasBellmanDensityDegree _ (nu n) :=
     (hp n).2.2.2.2.2.2.1.smul _
   have hunit (n : ℕ) : nu n bellmanUnitAnnulus ≤ 1 := by
     have hi : Integrable (fun q : BellmanPuncturedPlane => chi q.val) (nu n) :=
@@ -47,29 +46,27 @@ theorem bellman_pairs_annular_normalization (R : ℝ) (hR : 1 ≤ R)
     have h := hi.measure_le_integral (Filter.Eventually.of_forall
       (fun q : BellmanPuncturedPlane => (hr q.val).1))
       (s := bellmanUnitAnnulus) (fun q hq => by rw [hone _ hq.1 hq.2])
-    rw [hcn n, ENNReal.ofReal_one] at h
-    exact h
+    aesop
   refine ⟨chi, hchi, hc, hs, hr, hone, hrad, c, hcp, hcn, ?_⟩
   intro K hK
   obtain ⟨C, hC⟩ := bellman_homogeneous_compact_bound beta nu hdeg hunit hb K hK
   let M : ℝ≥0 := ⟨R, zero_le_one.trans hR⟩
   refine ⟨C + M * C, ?_⟩
   intro n
-  have hm : nu n K ≤ (C : ℝ≥0∞) + M * C :=
+  have hm : nu n K ≤ C + M * C :=
     (hC n).trans (le_add_right le_rfl)
   have hh := smul_le_smul_left (ENNReal.ofReal (c n)) (hp n).2.2.2.2.1
   have he : (ENNReal.ofReal (c n) • eta n) ≤ ENNReal.ofReal R • nu n := by
     simpa only [nu, smul_smul, mul_comm] using hh
   have heK := Measure.le_iff.mp he K hK.measurableSet
-  rw [Measure.smul_apply, smul_eq_mul] at heK
-  have heM : ENNReal.ofReal R = (M : ℝ≥0∞) :=
-    ENNReal.ofReal_eq_coe_nnreal (zero_le_one.trans hR)
+  have heM : ENNReal.ofReal R = M :=
+    ENNReal.ofReal_eq_coe_nnreal _
   rw [heM] at heK
   constructor
-  · simpa only [ENNReal.coe_add, ENNReal.coe_mul] using hm
-  · calc (ENNReal.ofReal (c n) • eta n) K ≤ (M : ℝ≥0∞) * nu n K := heK
-      _ ≤ (M : ℝ≥0∞) * C := mul_le_mul_right (hC n) _
-      _ ≤ (C : ℝ≥0∞) + M * C := le_add_left le_rfl
-      _ = _ := by simp only [ENNReal.coe_add, ENNReal.coe_mul]
+  · aesop
+  · calc (ENNReal.ofReal _ • eta n) K ≤ M * nu n K := heK
+      _ ≤ M * C := mul_le_mul_right (hC n) _
+      _ ≤ C + M * C := le_add_left le_rfl
+      _ = _ := by simp
 
 end HypoellipticAleksandrov.KineticAleksandrov

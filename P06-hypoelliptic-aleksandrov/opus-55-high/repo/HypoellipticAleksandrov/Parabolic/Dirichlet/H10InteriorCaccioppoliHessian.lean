@@ -12,7 +12,6 @@ gradient representatives into ordered weak spatial Hessian representatives.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -136,7 +135,7 @@ theorem exists_gradientCoord_representatives_hessian_uniform_interior_caccioppol
       hA hB hBD hq hqD hfD initial u g hdu hu
   refine ⟨G, hGmem, hGslice, ?_⟩
   let Qin : Set (TimeVelocity d) := Set.Ioo τ₁ τ₂ ×ˢ O
-  let B : ℝ := C_cac * ((r₁ - r₀) +
+  let B  := C_cac * ((r₁ - r₀) +
     (reverseTimeGalerkinPrimalRadius r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
       a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial) ^ 2)
   have hQinOpen : IsOpen Qin := isOpen_Ioo.prod hOopen
@@ -145,28 +144,26 @@ theorem exists_gradientCoord_representatives_hessian_uniform_interior_caccioppol
     intro τ hτ
     exact ⟨hτ₀.trans (hτ₀τ₁.trans hτ.1),
       hτ.2.trans (hτ₂τ₃.trans hτ₃)⟩
-  have hQin : Qin ⊆ reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω :=
+  have hQin : Qin ⊆ reverseTimeOpenInterval _ ×ˢ Ω :=
     Set.prod_mono htime hOΩ
-  have hGlocal : ∀ j, ParabolicMemLpOn Qin (2 : ℝ≥0∞) (G j) := by
+  have hGlocal : ∀ j, ParabolicMemLpOn Qin (2) (G j) := by
     intro j
     exact (hGmem j).mono_measure (Measure.restrict_mono_set volume hQin)
   have hclose : ∀ j k : Fin d, ∃ entry : TimeVelocity d → ℝ,
-      ∃ hentry : ParabolicMemLpOn Qin (2 : ℝ≥0∞) entry,
+      ∃ hentry : ParabolicMemLpOn Qin (2) entry,
         HasWeakVelocityPartialDerivOn Qin k (G j) entry ∧
           ‖hentry.toLp entry‖ ≤ Real.sqrt B := by
     intro j k
     exact exists_hasWeakVelocityPartialDerivOn_norm_le_of_uniform_spatialDifferenceQuotient
-      Qin hQinOpen k (G j) (hGlocal j) δ (Real.sqrt B) hδ
-        (hDQmem j k) (hDQnorm j k)
+      Qin hQinOpen k _ (hGlocal j) δ _ hδ
+        _ (hDQnorm j k)
   choose entry hentry hweak hnorm using hclose
   let H : TimeVelocity d → PDE.Mat d := fun z j k => entry j k z
   let hHmem : ∀ j k : Fin d,
-      ParabolicMemLpOn Qin (2 : ℝ≥0∞) (fun z => H z j k) := fun j k => hentry j k
+      ParabolicMemLpOn Qin _ (fun z => H z j k) := fun j k => hentry j k
   refine ⟨H, hHmem, ?_, ?_⟩
-  · intro j k
-    exact hweak j k
-  · intro j k
-    exact hnorm j k
+  · omega
+  omega
 
 end IsReverseTimeVariationalEnergySolution
 end HypoellipticAleksandrov.Parabolic.Dirichlet

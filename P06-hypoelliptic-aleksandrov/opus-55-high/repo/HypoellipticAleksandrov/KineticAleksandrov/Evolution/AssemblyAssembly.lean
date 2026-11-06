@@ -15,7 +15,6 @@ This module performs no analytic limit.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set MeasureTheory SectionTwo
 open scoped ProbabilityTheory
@@ -121,26 +120,21 @@ theorem construction_terminalEvolution_assembly
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx hJoint σ τ hστ
   have hComposition : K.HasComposition
       (measurableSet_of_isAdmissibleEvolutionDomain hΩ) := by
-    intro σ r τ hσr hrτ
-    rw [hFiber, hFiber, hFiber]
-    exact hKComp σ r τ hσr hrτ
+    aesop
   have hBasic := terminalOperators_basic n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
   refine ⟨P₀, K, ?_, hBasic.1, hBasic.2.1, hBasic.2.2.1, ?_, ?_,
     K.terminal_support, K.mass_le_one, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · exact terminalOperators_classical n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
-  · exact hComp
+  · omega
   · intro σ τ hστ p f
-    rw [hFiber]
     exact terminalOperators_apply n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ f p
   · exact K.jointlyMeasurable_apply
-  · exact K.fiberKernel_mass_le_one (measurableSet_of_isAdmissibleEvolutionDomain hΩ)
-  · intro σ
-    rw [hFiber]
-    exact hBasic.2.2.2 σ
-  · exact hComposition
+  · exact K.fiberKernel_mass_le_one _
+  · aesop
+  · omega
   · exact terminalKernel_translation_of_master_eq n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx K hK
   · exact terminalKernel_domain_domination_of_master_eq n hn lam Lam m L_b hlam hlamLam hm hmLb

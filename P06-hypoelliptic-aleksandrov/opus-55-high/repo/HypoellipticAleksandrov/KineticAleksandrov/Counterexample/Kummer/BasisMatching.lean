@@ -39,11 +39,11 @@ theorem exists_secondM_coefficient (a : NegThird) (f : ℝ → ℝ) (F : ℝ)
       nhdsWithin_le_nhds
   have hwf (z : ℝ) (hz : 0 < z) :=
     weightedWronskian_secondM_eq a.1 f F hf ho hlim hdlim z hz
-  have hwm (z : ℝ) (hz : 0 < z) := weightedWronskian_secondM_eq a.1 (M a.1 b23) 1 hm
+  have hwm (z : ℝ) (hz : 0 < z) := weightedWronskian_secondM_eq a.1 _ 1 hm
     (by intro z _; simpa only [b23] using M_ode a.1 b23 z) hm0
       (tendsto_M_scaled_deriv_zero _ _) z hz
-  let q : ℝ → ℝ := fun z => (f z - F * M a.1 b23 z) / secondM a.1 z
-  have hd (z : ℝ) (hz : z ∈ Ioi (0 : ℝ)) : HasDerivAt q 0 z := by
+  let q  := fun z => (f z - F * M a.1 b23 z) / secondM a.1 z
+  have hd (z : ℝ) (hz : z ∈ Ioi (0)) : HasDerivAt q 0 z := by
     have hdf := (hf.differentiableOn (by simp)).differentiableAt
       (isOpen_Ioi.mem_nhds hz)
     have hdm := (hasDerivAt_M a.1 b23 z).differentiableAt
@@ -58,23 +58,16 @@ theorem exists_secondM_coefficient (a : NegThird) (f : ℝ → ℝ) (F : ℝ)
         have he := hwf z hz
         have hm' := hwm z hz
         dsimp only [weightedWronskian] at he hm'
-        have hp : Real.exp (-z) * z ^ (2 / 3 : ℝ) ≠ 0 := ne_of_gt
-          (mul_pos (Real.exp_pos _) (Real.rpow_pos_of_pos hz _))
-        apply (mul_left_cancel₀ hp)
-        linear_combination he - F * hm'
+        grind
       dsimp only [Pi.sub_apply]
-      symm
-      rw [div_eq_zero_iff]
-      left
-      linear_combination hw
+      grind
   obtain ⟨B, hB⟩ := isOpen_Ioi.exists_is_const_of_deriv_eq_zero
-    (convex_Ioi (0 : ℝ)).isPreconnected
+    (convex_Ioi _).isPreconnected
     (fun z hz => (hd z hz).differentiableAt.differentiableWithinAt)
     (fun z hz => (hd z hz).deriv)
   refine ⟨B, fun z hz => ?_⟩
   have h := hB z hz
-  dsimp [q] at h
   have he := (div_eq_iff (ne_of_gt (secondM_pos a z hz))).mp h
-  linarith only [he]
+  linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Kummer

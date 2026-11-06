@@ -13,7 +13,6 @@ continuity from below over finite subfamilies, with no uniform bound on the inte
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering
 
@@ -29,44 +28,41 @@ theorem interval_delay_of_bounded_union {ι : Type*} (a h : ι → ℝ) (I : Set
   let U := ⋃ i ∈ I, Ioo (a i) (a i+m*h i)
   obtain ⟨C, hcount, hdisj, hcomp, hcover, hcontains⟩ :=
     bounded_open_interval_components (isOpen_biUnion fun _ _ => isOpen_Ioo) hbelow habove
-  let ext : Set ℝ → Set ℝ := fun s => Ioo (sInf s-(sSup s-sInf s)/m) (sSup s)
+  let ext  := fun s => Ioo (sInf s-(sSup s-sInf s)/m) (sSup s)
   have hback : (⋃ i ∈ I, Ioo (a i-h i) (a i)) ⊆ ⋃ s ∈ C, ext s := by
     intro x hx
     obtain ⟨i, hi, hxi⟩ := mem_iUnion₂.mp hx
     have hai : a i < a i+m*h i := by nlinarith only [hm, hh i hi]
-    obtain ⟨s, hs, hIs⟩ := hcontains (a i) (a i+m*h i) hai
+    obtain ⟨s, hs, hIs⟩ := hcontains _ _ hai
       (subset_iUnion₂_of_subset i hi Subset.rfl)
     have hI := backwardInterval_subset_component_extension (hh i hi) hm
       (hIs.trans (subset_of_eq (hcomp s hs).2))
     exact mem_iUnion₂.mpr ⟨s, hs, hI hxi⟩
   have hvol : ∀ s ∈ C, volume (ext s) = ENNReal.ofReal ((m+1)/m) * volume s := by
     intro s hs
-    change volume (Ioo (sInf s-(sSup s-sInf s)/m) (sSup s)) = _
     rw [volume_component_extension hm, ← (hcomp s hs).2]
   have hmeas : ∀ s ∈ C, MeasurableSet s := by
     intro s hs
     rw [(hcomp s hs).2]
-    exact measurableSet_Ioo
+    simp
   calc
-    volume (⋃ i ∈ I, Ioo (a i-h i) (a i)) ≤ volume (⋃ s ∈ C, ext s) :=
+    volume _ ≤ volume _ :=
       measure_mono hback
-    _ ≤ ∑' s : C, volume (ext s) := measure_biUnion_le volume hcount ext
-    _ = ∑' s : C, ENNReal.ofReal ((m+1)/m) * volume (s : Set ℝ) :=
+    _ ≤ ∑' s : C, volume _ := measure_biUnion_le volume hcount ext
+    _ = ∑' s : C, ENNReal.ofReal _ * volume _ :=
       tsum_congr fun s => hvol s s.2
-    _ = ENNReal.ofReal ((m+1)/m) * ∑' s : C, volume (s : Set ℝ) :=
+    _ = ENNReal.ofReal _ * ∑' s : C, volume _ :=
       ENNReal.tsum_mul_left
-    _ = ENNReal.ofReal ((m+1)/m) * volume U := by
+    _ = ENNReal.ofReal _ * volume U := by
       have hsum := measure_biUnion (μ := volume) hcount hdisj hmeas
-      simp only [id_eq] at hsum
-      rw [hcover] at hsum
-      rw [← hsum]
+      grind
 
 /-- The sharp delayed-union inequality for a finite interval family. -/
 theorem interval_delay_finset {ι : Type*} (a h : ι → ℝ) (s : Finset ι)
     {m : ℝ} (hm : 0 < m) (hh : ∀ i ∈ s, 0 < h i) :
     volume (⋃ i ∈ s, Ioo (a i-h i) (a i)) ≤
       ENNReal.ofReal ((m+1)/m) * volume (⋃ i ∈ s, Ioo (a i) (a i+m*h i)) := by
-  apply interval_delay_of_bounded_union a h (s : Set ι) hm hh
+  apply interval_delay_of_bounded_union a h _ hm hh
   · obtain ⟨l, hl⟩ := (s.finite_toSet.image a).bddBelow
     refine ⟨l, ?_⟩
     intro x hx
@@ -76,7 +72,7 @@ theorem interval_delay_finset {ι : Type*} (a h : ι → ℝ) (s : Finset ι)
     refine ⟨b, ?_⟩
     intro x hx
     obtain ⟨i, hi, hxi⟩ := mem_iUnion₂.mp hx
-    exact hxi.2.le.trans (hb (mem_image_of_mem (fun i => a i+m*h i) hi))
+    exact hxi.2.le.trans (hb (mem_image_of_mem _ hi))
 
 /-- Countable delayed interval families satisfy the same sharp factor. -/
 theorem interval_delay_countable {ι : Type*} [Countable ι] (a h : ι → ℝ)
@@ -87,28 +83,25 @@ theorem interval_delay_countable {ι : Type*} [Countable ι] (a h : ι → ℝ)
   let B : Finset ι → Set ℝ := fun s => ⋃ i ∈ s, Ioo (a i-h i) (a i)
   have hB : Monotone B := by
     intro s t hst x hx
-    obtain ⟨i, hi, hxi⟩ := mem_iUnion₂.mp hx
-    exact mem_iUnion₂.mpr ⟨i, hst hi, hxi⟩
+    aesop
   have heq : (⋃ s, B s) = ⋃ i, Ioo (a i-h i) (a i) := by
     ext x
-    simp only [B, mem_iUnion, exists_prop]
+    simp only [B, mem_iUnion]
     constructor
-    · rintro ⟨s, i, _, hx⟩
-      exact ⟨i, hx⟩
+    · grind
     · rintro ⟨i, hx⟩
       exact ⟨{i}, i, Finset.mem_singleton_self i, hx⟩
   rw [← heq, hB.measure_iUnion]
   apply iSup_le
   intro s
   calc
-    volume (B s) ≤ ENNReal.ofReal ((m+1)/m) *
-        volume (⋃ i ∈ s, Ioo (a i) (a i+m*h i)) :=
+    volume _ ≤ ENNReal.ofReal _ *
+        volume _ :=
       interval_delay_finset a h s hm (fun i _ => hh i)
-    _ ≤ ENNReal.ofReal ((m+1)/m) * volume (⋃ i, Ioo (a i) (a i+m*h i)) := by
+    _ ≤ ENNReal.ofReal _ * volume _ := by
       apply mul_le_mul_right
       apply measure_mono
       intro x hx
-      obtain ⟨i, _, hxi⟩ := mem_iUnion₂.mp hx
-      exact mem_iUnion.mpr ⟨i, hxi⟩
+      aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering

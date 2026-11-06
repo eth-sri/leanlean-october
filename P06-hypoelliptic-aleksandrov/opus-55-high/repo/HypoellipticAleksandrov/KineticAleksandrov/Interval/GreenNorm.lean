@@ -22,7 +22,6 @@ def killedGreenConstant (A δ k q : ℝ) : ℝ≥0∞ :=
 theorem killedGreenConstant_ne_top {A δ k q : ℝ}
     (hδ : 0 < δ) (hk : 0 < k) (hq : 0 < q) :
     killedGreenConstant A δ k q ≠ ⊤ := by
-  unfold killedGreenConstant
   apply ENNReal.rpow_ne_top_of_nonneg (by positivity)
   apply ENNReal.mul_ne_top
   · exact ENNReal.mul_ne_top ENNReal.ofReal_ne_top (killed_power_moment_finite hδ hk).ne
@@ -45,11 +44,10 @@ theorem killed_green_norm_bound {d : ℕ} (G : GreenCarrier d → ℝ≥0∞)
       ENNReal.ofReal A * M ^ q *
         ENNReal.ofReal (T ^ δ * Real.exp (-k * T)) := by
     intro T hT
-    dsimp only [ν]
     rw [withDensity_apply _ (measurableSet_slabSet T)]
-    exact hslab T hT
+    simp_all
   have hint : ENNReal.ofReal (Real.log 2) * ν univ ≤
-      (ENNReal.ofReal A * M ^ q) * (∫⁻ T in Ioi (0 : ℝ), ENNReal.ofReal
+      (ENNReal.ofReal A * M ^ q) * (∫⁻ T in Ioi (0), ENNReal.ofReal
         (T ^ (δ - 1) * Real.exp (-k * T))) := by
     refine hlog.trans ?_
     rw [← lintegral_inv_killed_power]
@@ -58,15 +56,14 @@ theorem killed_green_norm_bound {d : ℕ} (G : GreenCarrier d → ℝ≥0∞)
   have hL0 : ENNReal.ofReal (Real.log 2) ≠ 0 :=
     (ENNReal.ofReal_pos.mpr (Real.log_pos one_lt_two)).ne'
   have hbound := (ENNReal.mul_le_iff_le_inv hL0 ENNReal.ofReal_ne_top).mp hint
-  have hp0 : ENNReal.ofReal q ≠ 0 := (ENNReal.ofReal_pos.mpr hq).ne'
+  have hp0  := (ENNReal.ofReal_pos.mpr hq).ne'
   rw [eLpNorm_eq_lintegral_rpow_enorm_toReal hp0 ENNReal.ofReal_ne_top
     hGm.aestronglyMeasurable, ENNReal.toReal_ofReal hq.le]
   simp only [enorm_eq_self]
   have hmass : (∫⁻ p, G p ^ q ∂greenLebesgue d) = ν univ := by
-    dsimp only [ν]
-    rw [withDensity_apply _ MeasurableSet.univ, Measure.restrict_univ]
+    aesop
   rw [hmass]
-  refine (ENNReal.rpow_le_rpow hbound (by positivity : 0 ≤ 1 / q)).trans (le_of_eq ?_)
+  refine (ENNReal.rpow_le_rpow hbound (by positivity)).trans (le_of_eq ?_)
   unfold killedGreenConstant
   rw [show (ENNReal.ofReal (Real.log 2))⁻¹ *
       ((ENNReal.ofReal A * M ^ q) * (∫⁻ T in Ioi (0 : ℝ), ENNReal.ofReal
@@ -74,7 +71,7 @@ theorem killed_green_norm_bound {d : ℕ} (G : GreenCarrier d → ℝ≥0∞)
       (ENNReal.ofReal A * (∫⁻ T in Ioi (0 : ℝ), ENNReal.ofReal
         (T ^ (δ - 1) * Real.exp (-k * T))) *
         (ENNReal.ofReal (Real.log 2))⁻¹) * M ^ q by ring]
-  rw [ENNReal.mul_rpow_of_nonneg _ _ (by positivity : 0 ≤ 1 / q),
+  rw [ENNReal.mul_rpow_of_nonneg _ _ (by positivity),
     ← ENNReal.rpow_mul, mul_one_div_cancel hq.ne', ENNReal.rpow_one]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

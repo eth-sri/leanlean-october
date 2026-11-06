@@ -53,7 +53,7 @@ instance : Zero (WeakTestFunction U) where
     { toFun := 0
       contDiff := contDiff_zero_fun
       hasCompactSupport := HasCompactSupport.zero
-      tsupport_subset := by simp only [tsupport_zero, Set.empty_subset] }
+      tsupport_subset := by simp }
 
 instance : Add (WeakTestFunction U) where
   add φ ψ :=
@@ -96,8 +96,10 @@ theorem zero_toFun :
     (0 : WeakTestFunction U).toFun = 0 :=
   rfl
 
+variable (φ ψ : WeakTestFunction U)
+
 @[simp]
-theorem add_toFun (φ ψ : WeakTestFunction U) :
+theorem add_toFun  :
     (φ + ψ).toFun = fun x => φ x + ψ x :=
   rfl
 
@@ -107,7 +109,7 @@ theorem neg_toFun (φ : WeakTestFunction U) :
   rfl
 
 @[simp]
-theorem sub_toFun (φ ψ : WeakTestFunction U) :
+theorem sub_toFun  :
     (φ - ψ).toFun = fun x => φ x - ψ x :=
   rfl
 
@@ -119,9 +121,7 @@ theorem smul_toFun (c : ℝ) (φ : WeakTestFunction U) :
 @[ext]
 theorem ext {φ ψ : WeakTestFunction U} (h : φ.toFun = ψ.toFun) : φ = ψ := by
   cases φ
-  cases ψ
-  cases h
-  rfl
+  simp_all
 
 theorem toFun_injective : Function.Injective (fun φ : WeakTestFunction U => φ.toFun) :=
   fun _ _ h => ext h
@@ -137,13 +137,9 @@ instance : AddCommGroup (WeakTestFunction U) :=
     (fun φ : WeakTestFunction U => φ.toFun) toFun_injective rfl
     (fun _ _ => rfl) (fun _ => rfl) (fun _ _ => rfl)
     (fun φ n => by
-      funext x
-      change ((n : ℝ) • φ.toFun) x = (n • φ.toFun) x
-      simp only [Pi.smul_apply, nsmul_eq_mul, smul_eq_mul])
+      aesop)
     (fun φ n => by
-      funext x
-      change ((n : ℝ) • φ.toFun) x = (n • φ.toFun) x
-      simp only [Pi.smul_apply, zsmul_eq_mul, smul_eq_mul])
+      aesop)
 
 /-- The underlying-function additive homomorphism transfers the standard
 real module structure to bundled weak test functions. -/
@@ -221,7 +217,7 @@ theorem tendsto_toW1pGraph_of_tendsto_eLpNorm
         atTop (𝓝 u.memLp.toScalarLp) := by
     exact
       (Lp.tendsto_Lp_iff_tendsto_eLpNorm''
-        (fun n => (uSeq n).toFun) (fun n => (uSeq n).memLp)
+        _ _
         u.toFun u.memLp).mpr hValue
   have hGradientEuclidean :
       Tendsto
@@ -237,7 +233,7 @@ theorem tendsto_toW1pGraph_of_tendsto_eLpNorm
       exact
         ((uSeq n).grad_memLp i).aestronglyMeasurable.sub
           (u.grad_memLp i).aestronglyMeasurable
-    · exact hGradient
+    omega
   have hGradientHilbert :
       Tendsto
         (fun n =>
@@ -246,7 +242,7 @@ theorem tendsto_toW1pGraph_of_tendsto_eLpNorm
             p (volumeOn U))
         atTop (𝓝 0) := by
     have hEq : ∀ n,
-        eLpNorm (toHilbertVecField fun x => (uSeq n).grad x - u.grad x) p
+        eLpNorm (toHilbertVecField _) p
             (volumeOn U) =
           eLpNorm (fun x => vecEuclideanNorm ((uSeq n).grad x - u.grad x)) p
             (volumeOn U) :=
@@ -254,19 +250,17 @@ theorem tendsto_toW1pGraph_of_tendsto_eLpNorm
         (aemeasurable_pi_iff.2 fun i =>
           (((uSeq n).grad_memLp i).aestronglyMeasurable.sub
             (u.grad_memLp i).aestronglyMeasurable).aemeasurable).aestronglyMeasurable
-    simpa only [toHilbertVecField_sub, hEq] using
-      hGradientEuclidean
+    simp_all
   have hGradientLp :
       Tendsto
         (fun n => (uSeq n).gradMemLp.toHilbertVectorLp)
         atTop (𝓝 u.gradMemLp.toHilbertVectorLp) := by
     exact
       (Lp.tendsto_Lp_iff_tendsto_eLpNorm''
-        (fun n => toHilbertVecField (uSeq n).grad)
-        (fun n =>
-          gradMemLpOn_iff_memLp_toHilbertVecField.mp (uSeq n).gradMemLp)
-        (toHilbertVecField u.grad)
-        (gradMemLpOn_iff_memLp_toHilbertVecField.mp u.gradMemLp)).mpr
+        _
+        _
+        _
+        _).mpr
         hGradientHilbert
   have hPair :
       Tendsto
@@ -277,7 +271,7 @@ theorem tendsto_toW1pGraph_of_tendsto_eLpNorm
         (𝓝 (weakGradientLpPairOfRepresentatives u.memLp u.gradMemLp)) := by
     simpa only [weakGradientLpPairOfRepresentatives] using
       hValueLp.prodMk_nhds hGradientLp
-  exact hPair
+  aesop
 
 /-- The graph images of a supported smooth approximation converge to the graph
 image of its target representative. -/
@@ -340,18 +334,7 @@ theorem smoothCompactlySupportedW1pGraph_add
           (φ.contDiff.of_le (by simp)) φ.hasCompactSupport p).toW1pGraph.1.1 +
           ⇑(W1pFunction.ofContDiff hU
             (ψ.contDiff.of_le (by simp)) ψ.hasCompactSupport p).toW1pGraph.1.1) x at hadd
-    change
-      ⇑(W1pFunction.ofContDiff hU
-        ((φ + ψ).contDiff.of_le (by simp))
-        (φ + ψ).hasCompactSupport p).toW1pGraph.1.1 x =
-        ⇑((W1pFunction.ofContDiff hU
-          (φ.contDiff.of_le (by simp)) φ.hasCompactSupport p).toW1pGraph.1.1 +
-          (W1pFunction.ofContDiff hU
-            (ψ.contDiff.of_le (by simp)) ψ.hasCompactSupport p).toW1pGraph.1.1) x
-    rw [hsum, hadd]
-    simp only [Pi.add_apply]
-    rw [hφ, hψ]
-    rfl
+    aesop
   · apply Lp.ext
     filter_upwards [
       (W1pFunction.coeFn_toW1pGraph_snd
@@ -380,7 +363,7 @@ theorem smoothCompactlySupportedW1pGraph_add
     change
       ⇑(W1pFunction.ofContDiff hU
         ((φ + ψ).contDiff.of_le (by simp))
-        (φ + ψ).hasCompactSupport p).toW1pGraph.1.2 x =
+        _ p).toW1pGraph.1.2 x =
         ⇑((W1pFunction.ofContDiff hU
           (φ.contDiff.of_le (by simp)) φ.hasCompactSupport p).toW1pGraph.1.2 +
           (W1pFunction.ofContDiff hU
@@ -389,12 +372,10 @@ theorem smoothCompactlySupportedW1pGraph_add
     simp only [Pi.add_apply]
     rw [hφ, hψ]
     ext i
-    simp only [W1pFunction.ofContDiff, toHilbertVecField_apply,
-      Vec.toHilbertVec_apply]
     change
-      (fderiv ℝ (φ.toFun + ψ.toFun) x) (basisVec i) =
-        (fderiv ℝ φ.toFun x) (basisVec i) +
-          (fderiv ℝ ψ.toFun x) (basisVec i)
+      (fderiv ℝ (φ.toFun + ψ.toFun) x) _ =
+        (fderiv ℝ φ.toFun x) _ +
+          (fderiv ℝ ψ.toFun x) _
     rw [fderiv_add]
     · rfl
     · exact φ.contDiff.differentiable (by simp) x
@@ -420,21 +401,7 @@ theorem smoothCompactlySupportedW1pGraph_smul
         (W1pFunction.ofContDiff hU
           (φ.contDiff.of_le (by simp)) φ.hasCompactSupport p))]
       with x hsmul htarget hφ
-    change
-      ⇑(c • (W1pFunction.ofContDiff hU
-        (φ.contDiff.of_le (by simp)) φ.hasCompactSupport p).toW1pGraph.1.1) x =
-        (c • ⇑(W1pFunction.ofContDiff hU
-          (φ.contDiff.of_le (by simp)) φ.hasCompactSupport p).toW1pGraph.1.1) x at htarget
-    change
-      ⇑(W1pFunction.ofContDiff hU
-        ((c • φ).contDiff.of_le (by simp))
-        (c • φ).hasCompactSupport p).toW1pGraph.1.1 x =
-        ⇑(c • (W1pFunction.ofContDiff hU
-          (φ.contDiff.of_le (by simp)) φ.hasCompactSupport p).toW1pGraph.1.1) x
-    rw [hsmul, htarget]
-    simp only [Pi.smul_apply]
-    rw [hφ]
-    rfl
+    aesop
   · apply Lp.ext
     filter_upwards [
       (W1pFunction.coeFn_toW1pGraph_snd
@@ -455,18 +422,16 @@ theorem smoothCompactlySupportedW1pGraph_smul
     change
       ⇑(W1pFunction.ofContDiff hU
         ((c • φ).contDiff.of_le (by simp))
-        (c • φ).hasCompactSupport p).toW1pGraph.1.2 x =
+        _ p).toW1pGraph.1.2 x =
         ⇑(c • (W1pFunction.ofContDiff hU
           (φ.contDiff.of_le (by simp)) φ.hasCompactSupport p).toW1pGraph.1.2) x
     rw [hsmul, htarget]
     simp only [Pi.smul_apply]
     rw [hφ]
     ext i
-    simp only [W1pFunction.ofContDiff, toHilbertVecField_apply,
-      Vec.toHilbertVec_apply]
     change
-      (fderiv ℝ (c • φ.toFun) x) (basisVec i) =
-        c * (fderiv ℝ φ.toFun x) (basisVec i)
+      (fderiv ℝ (c • φ.toFun) x) _ =
+        c * (fderiv ℝ φ.toFun x) _
     rw [fderiv_const_smul]
     rfl
     exact φ.contDiff.differentiable (by simp) x
@@ -511,10 +476,9 @@ noncomputable instance w10pGraphCompleteSpace
 theorem smoothCompactlySupportedW1pGraph_mem_w10pGraph
     [Fact (1 ≤ p)] (hU : IsOpen U) (φ : WeakTestFunction U) :
     smoothCompactlySupportedW1pGraph (p := p) hU φ ∈
-      (w10pGraphClosedSubmodule (p := p) hU).toSubmodule := by
-  exact subset_closure
+      (w10pGraphClosedSubmodule (p := p) hU).toSubmodule := subset_closure
     (LinearMap.mem_range_self
-      (smoothCompactlySupportedW1pGraphLinearMap (p := p) hU) φ)
+      _ φ)
 
 namespace W1pFunction
 
@@ -549,9 +513,8 @@ theorem exists_tendsto_smooth_span
       (u : W1pGraph U p) ∈
         closure
           ((smoothCompactlySupportedW1pGraphSubmodule (p := p) hU :
-            Submodule ℝ (W1pGraph U p)) : Set (W1pGraph U p)) := by
-    simpa only [w10pGraphClosedSubmodule,
-      Submodule.topologicalClosure_coe] using! u.property
+            Submodule ℝ _)) := by
+    aesop
   exact mem_closure_iff_seq_limit.mp huClosure
 
 /-- Every complete zero-boundary graph point is a limit of actual bundled
@@ -567,12 +530,10 @@ theorem exists_tendsto_smooth
   rcases exists_tendsto_smooth_span hU u with ⟨v, hv, hvTendsto⟩
   have hactual : ∀ n, ∃ φ : WeakTestFunction U,
       smoothCompactlySupportedW1pGraph (p := p) hU φ = v n := by
-    intro n
-    rcases hv n with ⟨φ, hφ⟩
-    exact ⟨φ, hφ⟩
+    aesop
   choose φ hφ using hactual
   refine ⟨φ, ?_⟩
-  simpa only [hφ] using hvTendsto
+  simp_all
 
 end W10pGraph
 

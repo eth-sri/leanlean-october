@@ -9,7 +9,6 @@ import Mathlib.Tactic
 /-! # A uniform short-time bound for actual finite entrance sums -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
@@ -49,13 +48,12 @@ theorem exists_visitTime_partial_constant {lam Lam : ℝ}
             {p | p.time ∈ Icc b (b + c.r ^ 2)}).toReal) ≤ C := by
   obtain ⟨D, hD, hd⟩ := visitTimeQuadratic_partial_mass_bound
   let M := 9 * D / 16 + 2 * Lam
-  have hM : 0 ≤ M := by dsimp only [M]; linarith
+  have hM : 0 ≤ M := by grind
   refine ⟨9 / 5 + 48 * M / 5, by positivity, ?_⟩
   intro hH hLE A c J s T b hT P hP N
   have h := hd hH hLE lam Lam hlam hLam A c J s T b P hP N
   have he := visitRetainedExit_partial_real_mass_le_one hH hLE hlam hLam A c J s T hT P hP N
   have hg := visitActiveGreen_partial_time_mass_le hH hLE hlam hLam A c J s T b hT P hP N
-  dsimp only at h he hg
   have hh := h.trans (add_le_add
     (mul_le_mul_of_nonneg_left he (by positivity)) (mul_le_mul_of_nonneg_left hg hM))
   have hr : 0 < c.r ^ 2 := pow_pos c.positive _

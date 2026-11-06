@@ -12,7 +12,6 @@ actual source approximation therefore gives both L2 convergence and that point's
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Filter Evolution
 open scoped Topology
@@ -50,7 +49,7 @@ theorem continuousOn_duhamelFuture_compact_collar
     intro h
     exact (not_lt_of_gt hp) h.1
   have hweak := duhamelPotential_weak_before_source hΩa hΩ hγ B b S K hreal hB hBs hb
-    F hF M hM (fun p => by rw [abs_of_nonneg (hFb p).1]; exact (hFb p).2)
+    F hF M hM (fun p => by grind)
     s T hsT hzero
   have hw := boundedSource_ambientWeak_restrict hUpast B b u hweak
   have hbound (g : KineticPoint d → ℝ) (Cg : ℝ) (hCg : 0 ≤ Cg)
@@ -58,54 +57,51 @@ theorem continuousOn_duhamelFuture_compact_collar
       |duhamelPotential K T g (P z)| ≤ (T - a) * Cg := by
     intro z hz
     have hzT : (P z).time ≤ T := (hUpast hz).1.le.trans hsT
-    exact (abs_duhamelPotential_le K g Cg hCg hgb (P z) T hzT).trans
+    exact (abs_duhamelPotential_le K g Cg hCg hgb _ T hzT).trans
       (mul_le_mul_of_nonneg_right (sub_le_sub_left (hUfloor z hz) T) hCg)
   have hum : Measurable u := (measurable_duhamelPotential K hΩ hγ T F hF).comp P.measurable
   have hub : ∀ᵐ z ∂μ, |u z| ≤ (T - a) * (M + 2) := by
     apply ae_restrict_of_forall_mem hU.measurableSet
-    intro z hz
-    exact hbound F (M + 2) (by linarith) (fun p => by
-      rw [abs_of_nonneg (hFb p).1]; linarith [(hFb p).2]) z hz
+    grind
   have hu : MemLp u 2 μ := MemLp.of_bound hum.aestronglyMeasurable.restrict
-    ((T - a) * (M + 2)) (by simpa only [Real.norm_eq_abs] using hub)
+    _ (by omega)
   obtain ⟨v, hvc, hve, hidentify⟩ :=
     exists_continuousRepresentative_identified_by_homogeneous_limits hH B b hB hb
       lam Lam m hlam hm hell hcoerc U C hU hC hCi hCU u hu hw
   have heq : EqOn u v C := by
     intro z hz
-    let ν : Measure (KineticPoint d) := μ.map P + Measure.dirac (P z)
+    let ν  := μ.map P + Measure.dirac (P z)
     have hfloor : ∀ᵐ p ∂ν, a ≤ p.time := by
       apply ae_add_measure_iff.mpr
       refine ⟨?_, ?_⟩
       · apply (ae_map_iff P.measurable.aemeasurable
           (measurableSet_le measurable_const continuous_time.measurable)).2
         exact ae_restrict_of_forall_mem hU.measurableSet hUfloor
-      · simpa only [ae_dirac_eq, eventually_pure] using hUfloor z (hCU hz)
+      aesop
     obtain ⟨f, hfm, hfb, hfc, hfw, hlim⟩ := exists_duhamelFuture_approximating_sequence
       hΩa hΩ hγ B b S K hreal hB hBs hb a s T hsT ν hfloor F hF M hM hFb hFz
     let fn (n : ℕ) := duhamelPotential K T (f n) ∘ P
     have hfnm (n : ℕ) : Measurable (fn n) :=
-      (measurable_duhamelPotential K hΩ hγ T (f n) (hfm n)).comp P.measurable
+      (measurable_duhamelPotential K hΩ hγ T _ (hfm n)).comp P.measurable
     have hfnb (n : ℕ) : ∀ᵐ w ∂μ, |fn n w| ≤ (T - a) * (M + 2) := by
       apply ae_restrict_of_forall_mem hU.measurableSet
-      exact hbound (f n) (M + 2) (by linarith) (fun p => by
-        rw [abs_of_nonneg (hfb n p).1]; exact (hfb n p).2)
+      grind
     have hfn (n : ℕ) : MemLp (fn n) 2 μ :=
-      MemLp.of_bound (hfnm n).aestronglyMeasurable.restrict ((T - a) * (M + 2))
+      MemLp.of_bound (hfnm n).aestronglyMeasurable.restrict _
         (by simpa only [Real.norm_eq_abs] using hfnb n)
     have hconv := ae_add_measure_iff.mp hlim
     have hae : ∀ᵐ w ∂μ, Tendsto (fun n => fn n w) atTop (𝓝 (u w)) :=
       ae_of_ae_map P.measurable.aemeasurable hconv.1
     have hp : Tendsto (fun n => fn n z) atTop (𝓝 (u z)) := by
-      simpa only [ae_dirac_eq, eventually_pure, fn, u, Function.comp_def] using hconv.2
+      aesop
     have hstrong := tendsto_toLp_two_of_bounded_ae μ fn u hfn hu
-      ((T - a) * (M + 2)) (mul_nonneg (sub_nonneg.mpr (has.trans hsT)) (by linarith))
+      _ (mul_nonneg (sub_nonneg.mpr (has.trans hsT)) (by linarith))
       hfnb hub hae
     have hfnc (n : ℕ) : ContinuousOn (fn n) U :=
       (hfc n).comp P.continuous.continuousOn (fun w hw =>
         ⟨(hUpast hw).1.le.trans hsT, subset_closure (hUpast hw).2⟩)
     have hfnw (n : ℕ) := boundedSource_ambientWeak_restrict hUpast B b (fn n) (hfw n)
-    exact hidentify fn hfn hfnc hfnw hstrong z hz hp
+    aesop
   exact (hvc.mono hCU).congr (fun z hz => heq hz)
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

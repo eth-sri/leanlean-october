@@ -11,18 +11,19 @@ import Mathlib.Tactic
 /-! # The actual distributional derivative of a weighted measure primitive -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
+variable (μ : Measure ℝ)
+
 /-- A weighted measure primitive satisfies the weak derivative identity on a test collar. -/
-theorem bellmanMeasurePrimitive_weak_Icc (μ : Measure ℝ) [IsFiniteMeasureOnCompacts μ]
+theorem bellmanMeasurePrimitive_weak_Icc  [IsFiniteMeasureOnCompacts μ]
     (g : ℝ → ℝ) (hg : Continuous g) (r R : ℝ) (φ : ℝ → ℝ)
     (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hs : tsupport φ ⊆ Ioo r R) :
     (∫ x in Icc r R, bellmanMeasurePrimitive μ g r x * deriv φ x) =
       -∫ z in Ioc r R, g z * φ z ∂μ := by
   have hφd := (contDiff_infty_iff_deriv.mp hφ).2
-  have hR : φ R = 0 := image_eq_zero_of_notMem_tsupport
+  have hR  := image_eq_zero_of_notMem_tsupport
     (fun h => (lt_irrefl R) (hs h).2)
   have he : (∫ x in Icc r R, bellmanMeasurePrimitive μ g r x * deriv φ x) =
       ∫ x in Icc r R, ∫ z in Ioc r x, g z * deriv φ x ∂μ := by
@@ -40,14 +41,14 @@ theorem bellmanMeasurePrimitive_weak_Icc (μ : Measure ℝ) [IsFiniteMeasureOnCo
     rw [integral_const_mul, integral_Icc_eq_integral_Ioc,
       ← intervalIntegral.integral_of_le hz.2,
       intervalIntegral.integral_deriv_of_contDiffOn_Icc
-        (hφ.of_le (by simp : (1 : WithTop ℕ∞) ≤ (⊤ : ℕ∞))).contDiffOn hz.2,
+        (hφ.of_le (by simp)).contDiffOn hz.2,
       hR]
     ring
   rw [ht, integral_neg]
 
 /-- The primitive based at zero has exactly the weighted measure as its distributional
 derivative. -/
-theorem bellmanMeasurePrimitive_weak (μ : Measure ℝ) [IsFiniteMeasureOnCompacts μ]
+theorem bellmanMeasurePrimitive_weak  [IsFiniteMeasureOnCompacts μ]
     (g : ℝ → ℝ) (hg : Continuous g) (φ : ℝ → ℝ)
     (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hcφ : HasCompactSupport φ) :
     (∫ x, bellmanMeasurePrimitive μ g 0 x * deriv φ x) = -∫ x, g x * φ x ∂μ := by
@@ -60,8 +61,7 @@ theorem bellmanMeasurePrimitive_weak (μ : Measure ℝ) [IsFiniteMeasureOnCompac
       intro x hx
       have hl : r₀ ≤ x := hmin hx
       have hr : x ≤ R₀ := hmax hx
-      dsimp [r, R]
-      constructor <;> linarith
+      grind
     have hdr : tsupport (deriv φ) ⊆ Ioo r R := tsupport_deriv_subset.trans hs
     have hφd := (contDiff_infty_iff_deriv.mp hφ).2
     have hr0 : φ r = 0 := image_eq_zero_of_notMem_tsupport
@@ -97,15 +97,13 @@ theorem bellmanMeasurePrimitive_weak (μ : Measure ℝ) [IsFiniteMeasureOnCompac
         have hp := bellmanMeasurePrimitive_sub μ g hg 0 r x
         change bellmanMeasurePrimitive μ g 0 x - bellmanMeasurePrimitive μ g 0 r =
           bellmanMeasurePrimitive μ g r x at hp
-        rw [← hp]
-        ring
+        grind
       have hle : r ≤ R := by
-        obtain ⟨x, hx⟩ := hn
-        exact (hs hx).1.le.trans (hs hx).2.le
+        grind
       have hdInt : (∫ x in Icc r R, deriv φ x) = 0 := by
         rw [integral_Icc_eq_integral_Ioc, ← intervalIntegral.integral_of_le hle,
           intervalIntegral.integral_deriv_of_contDiffOn_Icc
-            (hφ.of_le (by simp : (1 : WithTop ℕ∞) ≤ (⊤ : ℕ∞))).contDiffOn hle,
+            (hφ.of_le (by simp)).contDiffOn hle,
           hr0, hR0, sub_self]
       rw [hfun, integral_sub hi hc, integral_const_mul, hdInt, mul_zero, sub_zero]
     rw [hlhs, hrhs, he]
@@ -113,7 +111,6 @@ theorem bellmanMeasurePrimitive_weak (μ : Measure ℝ) [IsFiniteMeasureOnCompac
   · have hz : φ = 0 := by
       funext x
       exact image_eq_zero_of_notMem_tsupport (fun hx => hn ⟨x, hx⟩)
-    rw [hz, deriv_zero]
-    simp only [Pi.zero_apply, mul_zero, integral_zero, neg_zero]
+    simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov

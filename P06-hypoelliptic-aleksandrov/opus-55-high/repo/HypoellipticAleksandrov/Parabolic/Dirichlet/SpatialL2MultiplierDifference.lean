@@ -14,18 +14,15 @@ multipliers on spatial restricted-volume `L²`.
 open Filter MeasureTheory
 open scoped ENNReal RealInnerProductSpace
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
+
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (q p : PDE.Vec d → ℝ) (hq : AEStronglyMeasurable q (PDE.volumeOn Ω)) (hp : AEStronglyMeasurable p (PDE.volumeOn Ω)) (Cq : ℝ)
 
 /-- An almost-everywhere uniform bound on two scalar coefficients' difference
 bounds the difference of their induced spatial `L²` multipliers at each input. -/
 theorem norm_scalarL2Multiplier_sub_apply_le_of_ae_norm_sub_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (q p : PDE.Vec d → ℝ)
-    (hq : AEStronglyMeasurable q (PDE.volumeOn Ω))
-    (hp : AEStronglyMeasurable p (PDE.volumeOn Ω))
-    (Cq : ℝ) (hCq : 0 ≤ Cq)
+     (hCq : 0 ≤ Cq)
     (hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ Cq)
     (Cp : ℝ) (hCp : 0 ≤ Cp)
     (hpBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖p y‖ ≤ Cp)
@@ -48,11 +45,7 @@ theorem norm_scalarL2Multiplier_sub_apply_le_of_ae_norm_sub_le
 /-- An almost-everywhere uniform bound on two scalar coefficients' difference
 bounds the operator norm of their induced spatial `L²` multipliers. -/
 theorem norm_scalarL2Multiplier_sub_le_of_ae_norm_sub_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (q p : PDE.Vec d → ℝ)
-    (hq : AEStronglyMeasurable q (PDE.volumeOn Ω))
-    (hp : AEStronglyMeasurable p (PDE.volumeOn Ω))
-    (Cq : ℝ) (hCq : 0 ≤ Cq)
+     (hCq : 0 ≤ Cq)
     (hqBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖q y‖ ≤ Cq)
     (Cp : ℝ) (hCp : 0 ≤ Cp)
     (hpBound : ∀ᵐ y ∂PDE.volumeOn Ω, ‖p y‖ ≤ Cp)

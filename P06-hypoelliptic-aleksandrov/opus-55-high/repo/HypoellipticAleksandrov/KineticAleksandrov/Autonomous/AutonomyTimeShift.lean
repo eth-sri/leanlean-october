@@ -27,12 +27,11 @@ theorem autonomous_operator_timeShift (a : ℝ → ℝ → ℝ) (h : ℝ)
       (fun q => u (autonomousTimeShift h q)) p =
     transportedForwardOperator (evolutionCoefficient a) (identityDrift 1) u
       (autonomousTimeShift h p) := by
-  rw [transportedForwardOperator_apply, transportedForwardOperator_apply]
+  rw [transportedForwardOperator_apply]
   have ht : kineticTimeDerivative (fun q => u (autonomousTimeShift h q)) p =
       kineticTimeDerivative u (autonomousTimeShift h p) :=
     deriv_comp_add_const (fun r => u ⟨r, p.position, p.velocity⟩) h p.time
-  rw [ht]
-  rfl
+  aesop
 
 /-- Time translation carries an actual full-space terminal solution to an actual solution. -/
 theorem fullspace_classical_timeShift {a : ℝ → ℝ → ℝ} (h τ : ℝ)
@@ -42,18 +41,18 @@ theorem fullspace_classical_timeShift {a : ℝ → ℝ → ℝ} (h τ : ℝ)
     IsClassicalTerminalSolution autonomousWholeDomain (fun _ => 0)
       (evolutionCoefficient a) (identityDrift 1) τ F
       (fun p => u (autonomousTimeShift h p)) := by
-  have hd (t : ℝ) : movingDomain autonomousWholeDomain (fun _ => 0) t = univ :=
+  have hd (t : ℝ) : movingDomain autonomousWholeDomain _ t = univ :=
     movingDomain_wholeSpace 1 t
   have hclosed (p : KineticPoint 1)
       (hp : p ∈ evolutionPastClosedCylinder autonomousWholeDomain (fun _ => 0) τ) :
       autonomousTimeShift h p ∈
-        evolutionPastClosedCylinder autonomousWholeDomain (fun _ => 0) (τ + h) :=
+        evolutionPastClosedCylinder autonomousWholeDomain _ _ :=
     ⟨by change p.time + h ≤ τ + h; linarith [hp.1], by rw [hd, closure_univ]; trivial⟩
   obtain ⟨⟨C, hC0, hC⟩, hc, hs, hop, ht, _⟩ := hu
   refine ⟨⟨C, hC0, fun p hp => hC _ (hclosed p hp)⟩,
     hc.comp (continuous_autonomousTimeShift h).continuousOn hclosed, ?_, ?_, ?_, ?_⟩
   · exact hs.comp ((contDiff_fst.add contDiff_const).prodMk contDiff_snd).contDiffOn
-      (fun q hq => ⟨by change q.1 + h < τ + h; linarith [hq.1], by rw [hd]; trivial⟩)
+      (fun q hq => ⟨by linarith [hq.1], by rw [hd]; trivial⟩)
   · intro p hp
     rw [autonomous_operator_timeShift]
     exact hop _ ⟨by change p.time + h < τ + h; linarith [hp.1], by rw [hd]; trivial⟩

@@ -18,7 +18,7 @@ def duhamelSourceBorel (g : KineticPoint d → ℝ) (hg : Continuous g)
   ⟨g, hg.measurable, by
     obtain ⟨C, hC⟩ := hg.bounded_above_of_compact_support hc
     refine ⟨max C 0, le_max_right _ _, fun p => ?_⟩
-    simpa only [Real.norm_eq_abs] using (hC p).trans (le_max_left _ _)⟩
+    simp_all⟩
 
 /-- A smooth source supported in the past cylinder gives smooth compact terminal slices. -/
 theorem isSmoothCompactTerminalDatum_duhamelSlice (g : KineticPoint d → ℝ)
@@ -42,8 +42,7 @@ theorem isSmoothCompactTerminalDatum_duhamelSlice (g : KineticPoint d → ℝ)
     obtain ⟨p, ⟨hp, hpr⟩, rfl⟩ := hsub hw
     refine ⟨?_, mem_univ _⟩
     have hm := (hU hp).2
-    change p.time = r at hpr
-    simpa only [hpr] using hm
+    grind
 
 /-- The supplied terminal evolution identifies every source slice with a classical solution. -/
 theorem exists_duhamelSlice_solution (hΩ : MeasurableSet Ω)
@@ -63,9 +62,9 @@ theorem exists_duhamelSlice_solution (hΩ : MeasurableSet Ω)
   obtain ⟨V, hV, hVS, -⟩ := hreal.1 r _
     (isSmoothCompactTerminalDatum_duhamelSlice g hg hc hs T hU r)
   refine ⟨V, hV, fun s hsr p => ?_⟩
-  rw [hVS s hsr p]
+  rw [hVS s hsr]
   exact (duhamelSourceIntegral_eq_evolution hΩ B b S K hreal
-    (duhamelSourceBorel g hg hc) s r hsr p).symm
+    _ s r hsr p).symm
 
 /-- On the closed source cylinder the zero-extended integrand is the classical slice solution. -/
 theorem duhamelIntegrand_eq_slice_solution (hΩa : IsAdmissibleEvolutionDomain Ω)

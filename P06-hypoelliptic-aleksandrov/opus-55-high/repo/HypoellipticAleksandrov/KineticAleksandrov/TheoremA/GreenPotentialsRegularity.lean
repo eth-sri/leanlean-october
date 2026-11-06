@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ComparisonCal
 /-! # Anisotropic regularity from joint interior smoothness -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.TheoremA
 open Set
 open Evolution Parabolic
@@ -22,7 +21,7 @@ theorem isKineticC112On_of_contDiffOn {u : KineticPoint d → ℝ}
   let U := e ⁻¹' D
   let f := u ∘ e
   have hU : IsOpen U := hD.preimage e.continuous
-  have hx : ∀ p ∈ D, e.symm p ∈ U := fun p hp => by simpa [U] using hp
+  have hx : ∀ p ∈ D, e.symm p ∈ U := fun p hp => by aesop
   have hs : ∀ x ∈ U, ContDiffAt ℝ 2 f x :=
     fun x hx => (hu.contDiffAt (hU.mem_nhds hx)).of_le (by simp)
   have hd : ∀ x ∈ U, DifferentiableAt ℝ f x :=
@@ -39,17 +38,14 @@ theorem isKineticC112On_of_contDiffOn {u : KineticPoint d → ℝ}
   have hslice : ∀ p ∈ D, IsSliceRegularAt u p := by
     intro p hp
     apply IsSliceRegularAt.of_contDiffAt
-    have h := (hs (e.symm p) (hx p hp)).comp
+    have h := (hs _ (hx p hp)).comp
       (p.time, p.position, p.velocity) (evolutionProdCLE d).symm.contDiff.contDiffAt
     have heq : (fun q => f ((evolutionProdCLE d).symm q)) = rawLift u := by
-      funext q
-      simp [f, e, evolutionHomeomorph, rawLift, KineticPoint.homeomorphProd,
-        KineticPoint.isometryEquivProd, KineticPoint.equivProd]
+      simp [f, e, evolutionHomeomorph]
       rfl
     change ContDiffAt ℝ 2 (fun q => f ((evolutionProdCLE d).symm q))
-      (p.time, p.position, p.velocity) at h
-    rw [heq] at h
-    exact h
+      _ at h
+    simp_all
   refine ⟨?_, fun p hp => (hslice p hp).time,
     fun p hp => (hslice p hp).position.of_le (by norm_num),
     fun p hp => (hslice p hp).velocity, ?_, ?_, ?_, ?_⟩

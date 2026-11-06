@@ -47,31 +47,31 @@ private theorem bump_volume_integral_pos (d : ℕ) :
     0 < ∫ x : TimeVelocity d, ExistsContDiffBumpBase.u x
       ∂(volume : Measure (TimeVelocity d)) := by
   refine (integral_pos_iff_support_of_nonneg ExistsContDiffBumpBase.u_nonneg ?_).mpr ?_
-  · exact (ExistsContDiffBumpBase.u_smooth (TimeVelocity d)).continuous
+  · exact (ExistsContDiffBumpBase.u_smooth _).continuous
       |>.integrable_of_hasCompactSupport
-        (ExistsContDiffBumpBase.u_compact_support (TimeVelocity d))
+        (ExistsContDiffBumpBase.u_compact_support _)
   · rw [ExistsContDiffBumpBase.u_support]
-    exact Metric.measure_ball_pos (volume : Measure (TimeVelocity d)) 0 zero_lt_one
+    exact Metric.measure_ball_pos _ 0 zero_lt_one
+
+variable {d : ℕ} {ε : ℝ}
 
 /-- The spacetime mollifier is nonnegative at every real scale. -/
 theorem spacetimeMollifier_nonneg
-    {d : ℕ} (ε : ℝ) (z : TimeVelocity d) :
-    0 ≤ spacetimeMollifier ε z := by
-  unfold spacetimeMollifier
-  exact mul_nonneg
+     (ε : ℝ) (z : TimeVelocity d) :
+    0 ≤ spacetimeMollifier ε z := mul_nonneg
     (inv_nonneg.mpr (mul_nonneg (bump_volume_integral_pos d).le
       (pow_nonneg (abs_nonneg ε) _)))
     (ExistsContDiffBumpBase.u_nonneg _)
 
 /-- A positive-radius spacetime mollifier has literal volume integral one. -/
 theorem spacetimeMollifier_integral
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε) :
+     (hε : 0 < ε) :
     (∫ z : TimeVelocity d,
       spacetimeMollifier ε z
       ∂(volume : Measure (TimeVelocity d))) = 1 := by
   simp_rw [spacetimeMollifier, ← smul_eq_mul, integral_smul]
   rw [Measure.integral_comp_inv_smul_of_nonneg
-    (volume : Measure (TimeVelocity d))
+    volume
     (ExistsContDiffBumpBase.u : TimeVelocity d → ℝ) hε.le,
     abs_of_nonneg hε.le]
   simp only [smul_eq_mul]
@@ -79,12 +79,12 @@ theorem spacetimeMollifier_integral
       (∫ x : TimeVelocity d, ExistsContDiffBumpBase.u x ∂volume) *
           ε ^ Module.finrank ℝ (TimeVelocity d) ≠ 0 :=
     mul_ne_zero (bump_volume_integral_pos d).ne' (pow_ne_zero _ hε.ne')
-  rw [mul_comm (ε ^ Module.finrank ℝ (TimeVelocity d)), inv_mul_cancel₀ hden]
+  grind
 
 /-- The function support of a positive-radius mollifier is the exact open
 ball of that radius. -/
 theorem spacetimeMollifier_support
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε) :
+     (hε : 0 < ε) :
     Function.support (spacetimeMollifier (d := d) ε) =
       Metric.ball 0 ε := by
   have hball : ε • Metric.ball (0 : TimeVelocity d) 1 = Metric.ball 0 ε := by
@@ -93,13 +93,11 @@ theorem spacetimeMollifier_support
     pow_ne_zero _ hε.ne'
   have hnormal :
       ((∫ x : TimeVelocity d, ExistsContDiffBumpBase.u x ∂volume) *
-        |ε| ^ Module.finrank ℝ (TimeVelocity d))⁻¹ ≠ 0 := by
-    exact inv_ne_zero (mul_ne_zero (bump_volume_integral_pos d).ne' (by
-      rw [abs_of_nonneg hε.le]
-      exact hpow))
+        |ε| ^ Module.finrank ℝ (TimeVelocity d))⁻¹ ≠ 0 := inv_ne_zero (mul_ne_zero (bump_volume_integral_pos d).ne' (by
+      positivity))
   change Function.support (fun z : TimeVelocity d =>
       (((∫ x : TimeVelocity d, ExistsContDiffBumpBase.u x ∂volume) *
-        |ε| ^ Module.finrank ℝ (TimeVelocity d))⁻¹) *
+        |ε| ^ Module.finrank ℝ _)⁻¹) *
           ExistsContDiffBumpBase.u (ε⁻¹ • z)) = Metric.ball 0 ε
   rw [support_mul, support_const hnormal, univ_inter,
     support_comp_inv_smul₀ hε.ne', ExistsContDiffBumpBase.u_support, hball]
@@ -107,30 +105,28 @@ theorem spacetimeMollifier_support
 /-- The topological support of a positive-radius mollifier is the exact closed
 ball of that radius. -/
 theorem spacetimeMollifier_tsupport
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε) :
+     (hε : 0 < ε) :
     tsupport (spacetimeMollifier (d := d) ε) =
       Metric.closedBall 0 ε := by
   rw [tsupport, spacetimeMollifier_support hε, closure_ball _ hε.ne']
 
 /-- A positive-radius spacetime mollifier has compact support. -/
 theorem spacetimeMollifier_hasCompactSupport
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε) :
+     (hε : 0 < ε) :
     HasCompactSupport (spacetimeMollifier (d := d) ε) := by
   rw [HasCompactSupport, spacetimeMollifier_tsupport hε]
   exact isCompact_closedBall _ _
 
 /-- A spacetime mollifier is smooth at every real scale. -/
 theorem spacetimeMollifier_contDiff
-    {d : ℕ} (ε : ℝ) :
-    ContDiff ℝ (⊤ : ℕ∞) (spacetimeMollifier (d := d) ε) := by
-  unfold spacetimeMollifier
-  exact contDiff_const.mul
-    ((ExistsContDiffBumpBase.u_smooth (TimeVelocity d)).comp
-      (contDiff_id.const_smul ε⁻¹))
+     (ε : ℝ) :
+    ContDiff ℝ (⊤ : ℕ∞) (spacetimeMollifier (d := d) ε) := contDiff_const.mul
+    ((ExistsContDiffBumpBase.u_smooth _).comp
+      (contDiff_id.const_smul _))
 
 /-- The spacetime mollifier is even. -/
 theorem spacetimeMollifier_neg
-    {d : ℕ} (ε : ℝ) (z : TimeVelocity d) :
+     (ε : ℝ) (z : TimeVelocity d) :
     spacetimeMollifier ε (-z) = spacetimeMollifier ε z := by
   unfold spacetimeMollifier
   rw [smul_neg, ExistsContDiffBumpBase.u_neg]
@@ -138,12 +134,11 @@ theorem spacetimeMollifier_neg
 /-- Convolution with a positive-radius spacetime mollifier is smooth when the
 raw function is locally integrable. -/
 theorem contDiff_spacetimeMollification
-    {d : ℕ} {ε : ℝ} (hε : 0 < ε)
+     (hε : 0 < ε)
     (f : TimeVelocity d → ℝ)
     (hf : LocallyIntegrable f
       (volume : Measure (TimeVelocity d))) :
-    ContDiff ℝ (⊤ : ℕ∞) (spacetimeMollification ε f) := by
-  exact (spacetimeMollifier_hasCompactSupport hε).contDiff_convolution_left
-    (ContinuousLinearMap.lsmul ℝ ℝ) (spacetimeMollifier_contDiff ε) hf
+    ContDiff ℝ (⊤ : ℕ∞) (spacetimeMollification ε f) := (spacetimeMollifier_hasCompactSupport hε).contDiff_convolution_left
+    _ (spacetimeMollifier_contDiff ε) hf
 
 end HypoellipticAleksandrov.Parabolic.SpacetimeMollifier

@@ -8,7 +8,6 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth
 
@@ -39,7 +38,7 @@ theorem exists_physical_macroscopic_cap_constant (d : ℕ) (hd : 1 ≤ d) (lam L
   let Pref := kineticAffineInverse P0 scale P
   have hrref : r0 ≤ r / scale := (le_div_iff₀ hscale).mpr hbig
   have hsubref := physical_sampling_subcylinder P0 Q hscale hr m hsub
-  have hPref : Pref ∈ backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1 := by
+  have hPref : Pref ∈ backwardCylinder ⟨0, 0, 0⟩ 1 := by
     apply (kineticAffine_mem_cylinder P0 Pref hscale).mp
     simpa only [Pref, kineticAffine_apply_inverse P0 hscale.ne'] using hP
   have hcapref : ∀ Z ∈ kineticAffine (kineticAffine P0 scale Qref) (scale * (r / scale)) ''
@@ -47,7 +46,7 @@ theorem exists_physical_macroscopic_cap_constant (d : ℕ) (hd : 1 ≤ d) (lam L
     simpa only [Qref, kineticAffine_apply_inverse P0 hscale.ne',
       mul_div_cancel₀ r hscale.ne'] using hcap
   have hbound := hmacro p C_A hp A hA P0 scale hscale O hO hregion u hnonneg hu
-    Qref (r / scale) ell hrref hsubref hell hcapref Pref hPref
+    Qref _ ell hrref hsubref hell hcapref Pref hPref
   simpa only [Pref, kineticAffine_apply_inverse P0 hscale.ne'] using hbound
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth

@@ -36,15 +36,15 @@ instance belowFour_coreGreenKernel_isFinite
     (s := {z | z.velocity 0 ∈ c.core}) univ).trans
   apply (stripGreen_quadratic_mass hH hLE hlam hLam A H T e).trans
   apply ENNReal.ofReal_le_ofReal
-  apply (div_le_div_iff_of_pos_right (by linarith : 0 < 2 * lam)).2
+  apply (div_le_div_iff_of_pos_right (by linarith)).2
   nlinarith only [sq_nonneg (e.1.velocity 0 - H.lo),
     sq_nonneg (H.hi - e.1.velocity 0), sq_nonneg (H.hi - H.lo)]
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+
 /-- The actual internal first-arrival pole measure has mass at most one. -/
 theorem belowFour_restart_mass_le_one
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (W H : Interval) (s T : ℝ)
+     (W H : Interval) (s T : ℝ)
     (e : StripPole W (T : WithTop ℝ)) (he : s ≤ e.1.time) :
     nestedIntervalRestartPoles hH hLE hlam hLam A W H s T e univ ≤ 1 := by
   have hm := congrArg (fun mu : Measure Point => mu univ)
@@ -57,15 +57,13 @@ theorem belowFour_restart_mass_le_one
 
 /-- The actual internal first-arrival poles lie on the smaller interval's internal face. -/
 theorem belowFour_restart_ae_internal
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (W H : Interval) (s T : ℝ)
+     (W H : Interval) (s T : ℝ)
     (e : StripPole W (T : WithTop ℝ)) :
     ∀ᵐ ep ∂nestedIntervalRestartPoles hH hLE hlam hLam A W H s T e,
       ep.1 ∈ nestedIntervalInternalExit W H s T := by
   have hp := ae_restrict_mem (μ := stripExit hH hLE hlam hLam A W T e)
     (measurableSet_nestedIntervalInternalExit W H s T)
-  rw [← nestedIntervalRestartPoles_map hH hLE hlam hLam A W H s T e] at hp
+  rw [← nestedIntervalRestartPoles_map] at hp
   exact ((MeasurableEmbedding.subtype_coe (measurableSet_nestedIntervalPole H T)).ae_map_iff).mp hp
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

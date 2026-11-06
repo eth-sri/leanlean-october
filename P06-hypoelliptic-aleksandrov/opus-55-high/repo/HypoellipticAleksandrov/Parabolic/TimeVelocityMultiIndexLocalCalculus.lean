@@ -47,7 +47,7 @@ private theorem localDirs_ofFn_eq_iteratedFDeriv (n : ℕ) (v : Fin n → E)
   induction n generalizing f z with
   | zero => simp [localDirs]
   | succ n ih =>
-      rw [List.ofFn_succ, localDirs, iteratedFDeriv_succ_apply_left]
+      rw [List.ofFn_succ]
       have hfun : localDirs (List.ofFn fun i => v i.succ) f =ᶠ[nhds z] fun y =>
           iteratedFDeriv ℝ n f y fun i => v i.succ := by
         filter_upwards [hf.eventually (by simp)] with y hy
@@ -65,11 +65,9 @@ private theorem localDirs_contDiffAt (l : List E) (m : ℕ) (f : E → ℝ) (z :
   induction l generalizing m f with
   | nil => simpa [localDirs] using hf
   | cons v l ih =>
-      rw [localDirs]
       have h : ContDiffAt ℝ (m + 1) (localDirs l f) z := by
         apply ih
         convert hf using 1
-        norm_num
         exact_mod_cast (show (m + 1) + l.length = m + (l.length + 1) by omega)
       exact (h.fderiv_right (by norm_num)).clm_apply contDiffAt_const
 
@@ -81,8 +79,7 @@ private theorem localDirectional_comm (a b : E) (f : E → ℝ) (z : E)
     (hf.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
   rw [fderiv_clm_apply hd (differentiableAt_const a),
     fderiv_clm_apply hd (differentiableAt_const b)]
-  simp only [fderiv_const_apply, ContinuousLinearMap.comp_zero, zero_add,
-    ContinuousLinearMap.flip_apply]
+  simp only [fderiv_const_apply, ContinuousLinearMap.comp_zero, zero_add]
   exact (hf.isSymmSndFDerivAt (by simp)).eq b a
 
 private theorem localDirs_perm {l₁ l₂ : List E} (hperm : l₁.Perm l₂)
@@ -91,28 +88,28 @@ private theorem localDirs_perm {l₁ l₂ : List E} (hperm : l₁.Perm l₂)
   induction hperm generalizing f z with
   | nil => rfl
   | @cons a l₁ l₂ hperm ih =>
-      simp only [localDirs]
       have heq : localDirs l₁ f =ᶠ[nhds z] localDirs l₂ f := by
         filter_upwards [hf.eventually (by simp)] with y hy
         exact ih f y (hy.of_le (by simp))
       exact congrArg (fun L : E →L[ℝ] ℝ => L a) heq.fderiv_eq
   | @swap a b l =>
-      simp only [localDirs]
       apply localDirectional_comm
       apply localDirs_contDiffAt l 2 f z
       simpa [Nat.cast_add, add_assoc, add_comm, add_left_comm] using hf
   | @trans l₁ l₂ l₃ h₁₂ h₂₃ ih₁₂ ih₂₃ =>
       exact (ih₁₂ f z hf).trans (ih₂₃ f z (h₁₂.length_eq ▸ hf))
 
+variable (beta : TimeVelocityMultiIndex d) (c : TimeVelocityCoord d) (f : TimeVelocity d → ℝ) (z : TimeVelocity d)
+
 private theorem coordinateList_add_single_perm_local
-    (beta : TimeVelocityMultiIndex d) (c : TimeVelocityCoord d) :
+     :
     (beta + Pi.single c 1).coordinateList.Perm (c :: beta.coordinateList) := by
   classical
   letI : BEq (TimeVelocityCoord d) := ⟨fun a b => decide (a = b)⟩
-  letI : LawfulBEq (TimeVelocityCoord d) := ⟨by intro a b; simp⟩
+  letI : LawfulBEq (TimeVelocityCoord d) := ⟨by simp⟩
   rw [List.perm_iff_count]
   intro a
-  have count_flat (q : TimeVelocityMultiIndex d) : ∀ l : List (TimeVelocityCoord d),
+  have count_flat (q : TimeVelocityMultiIndex d) : ∀ l : List _,
       l.Nodup → List.count a (l.flatMap fun b => List.replicate (q b) b) =
         if a ∈ l then q a else 0 := by
     intro l hl
@@ -128,16 +125,13 @@ private theorem coordinateList_add_single_perm_local
           rw [List.count_replicate]
           split <;> simp_all
   unfold coordinateList
-  rw [count_flat _ _ (Finset.nodup_toList (Finset.univ : Finset (TimeVelocityCoord d)))]
+  rw [count_flat _ _ (Finset.nodup_toList _)]
   simp only [List.count_cons]
-  rw [count_flat _ _ (Finset.nodup_toList (Finset.univ : Finset (TimeVelocityCoord d)))]
+  rw [count_flat _ _ (Finset.nodup_toList _)]
   simp only [Finset.mem_toList, Finset.mem_univ, if_true, Pi.add_apply]
-  change beta a + (Pi.single c 1 : TimeVelocityMultiIndex d) a =
-    beta a + (if c == a then 1 else 0)
-  congr 1
   by_cases h : c = a
   · subst a
-    simp only [Pi.single_eq_same, beq_self_eq_true, if_true]
+    simp
   · rw [Pi.single_apply, if_neg (fun hac => h hac.symm)]
     have hb : (c == a) = false := Bool.eq_false_iff.mpr fun heq => h (beq_iff_eq.mp heq)
     rw [hb]
@@ -146,13 +140,12 @@ private theorem coordinateList_add_single_perm_local
 /-- Adding one coordinate differentiates the associated coordinate derivative
 at a point under the exact finite germ-local regularity. -/
 theorem coordinateIteratedFDeriv_add_single_at
-    (beta : TimeVelocityMultiIndex d) (c : TimeVelocityCoord d)
-    (f : TimeVelocity d → ℝ) (z : TimeVelocity d)
+    
     (hf : ContDiffAt ℝ (beta.order + 1) f z) :
     coordinateIteratedFDeriv (beta + Pi.single c 1) f z =
       fderiv ℝ (coordinateIteratedFDeriv beta f) z
         (timeVelocityBasis c) := by
-  let vecList (alpha : TimeVelocityMultiIndex d) : List (TimeVelocity d) :=
+  let vecList (alpha : TimeVelocityMultiIndex d)  :=
     alpha.coordinateList.map timeVelocityBasis
   have eval_dirs (alpha : TimeVelocityMultiIndex d) (y : TimeVelocity d)
       (ha : ContDiffAt ℝ alpha.order f y) :
@@ -169,31 +162,29 @@ theorem coordinateIteratedFDeriv_add_single_at
       (timeVelocityBasis c :: vecList beta) := by
     simpa [vecList] using (coordinateList_add_single_perm_local beta c).map timeVelocityBasis
   calc
-    coordinateIteratedFDeriv (beta + Pi.single c 1) f z =
-        localDirs (vecList (beta + Pi.single c 1)) f z :=
+    coordinateIteratedFDeriv _ f z =
+        localDirs _ f z :=
       eval_dirs _ _ (by simpa using hf)
-    _ = localDirs (timeVelocityBasis c :: vecList beta) f z := by
+    _ = localDirs _ f z := by
       apply localDirs_perm hperm f z
       simpa [vecList] using hf
-    _ = fderiv ℝ (coordinateIteratedFDeriv beta f) z (timeVelocityBasis c) := by
-      simp only [localDirs]
+    _ = fderiv ℝ _ z _ := by
       have hfun : localDirs (vecList beta) f =ᶠ[nhds z]
           coordinateIteratedFDeriv beta f := by
         filter_upwards [hf.eventually (by simp)] with y hy
         exact (eval_dirs beta y (hy.of_le (by simp))).symm
-      exact congrArg (fun L : TimeVelocity d →L[ℝ] ℝ => L (timeVelocityBasis c))
+      exact congrArg (fun L : TimeVelocity d →L[ℝ] ℝ => L _)
         hfun.fderiv_eq
 
 /-- A coordinate derivative composed before a coordinate multi-index agrees
 with addition of that coordinate, under exact finite germ-local regularity. -/
 theorem coordinateIteratedFDeriv_comp_single_at
-    (beta : TimeVelocityMultiIndex d) (c : TimeVelocityCoord d)
-    (f : TimeVelocity d → ℝ) (z : TimeVelocity d)
+    
     (hf : ContDiffAt ℝ (beta.order + 1) f z) :
     coordinateIteratedFDeriv beta
         (coordinateIteratedFDeriv (Pi.single c 1) f) z =
       coordinateIteratedFDeriv (beta + Pi.single c 1) f z := by
-  let vecList (alpha : TimeVelocityMultiIndex d) : List (TimeVelocity d) :=
+  let vecList (alpha : TimeVelocityMultiIndex d)  :=
     alpha.coordinateList.map timeVelocityBasis
   have eval_dirs (alpha : TimeVelocityMultiIndex d) (g : TimeVelocity d → ℝ)
       (y : TimeVelocity d) (hg : ContDiffAt ℝ alpha.order g y) :
@@ -209,9 +200,9 @@ theorem coordinateIteratedFDeriv_comp_single_at
   have hsingle : coordinateIteratedFDeriv (Pi.single c 1) f =ᶠ[nhds z]
       localDirs (vecList (Pi.single c 1)) f := by
     filter_upwards [hf.eventually (by simp)] with y hy
-    exact eval_dirs (Pi.single c 1) f y (by
+    exact eval_dirs _ f y (by
       apply hy.of_le
-      simp only [order_single, Nat.cast_one]
+      simp only [order_single]
       exact le_add_self)
   have houter : ContDiffAt ℝ beta.order
       (localDirs (vecList (Pi.single c 1)) f) z := by
@@ -219,28 +210,27 @@ theorem coordinateIteratedFDeriv_comp_single_at
     simpa [vecList, add_comm] using hf
   have hsinglePerm : (vecList (Pi.single c 1)).Perm [timeVelocityBasis c] := by
     have h := (coordinateList_add_single_perm_local
-      (0 : TimeVelocityMultiIndex d) c).map timeVelocityBasis
+      (0) c).map timeVelocityBasis
     simpa [vecList] using h
   have hperm : (vecList beta ++ vecList (Pi.single c 1)).Perm
       (vecList (beta + Pi.single c 1)) := by
     have h := (coordinateList_add_single_perm_local beta c).map timeVelocityBasis
-    exact (hsinglePerm.append_left (vecList beta)).trans
+    exact (hsinglePerm.append_left _).trans
       (List.perm_append_comm.trans (by simpa [vecList] using h.symm))
   calc
     coordinateIteratedFDeriv beta
-        (coordinateIteratedFDeriv (Pi.single c 1) f) z =
+        _ z =
         coordinateIteratedFDeriv beta
-          (localDirs (vecList (Pi.single c 1)) f) z := by
-      exact coordinateIteratedFDeriv_congr_of_eventuallyEq beta hsingle
-    _ = localDirs (vecList beta)
-        (localDirs (vecList (Pi.single c 1)) f) z :=
+          _ z := coordinateIteratedFDeriv_congr_of_eventuallyEq beta hsingle
+    _ = localDirs _
+        _ z :=
       eval_dirs beta _ z houter
-    _ = localDirs (vecList beta ++ vecList (Pi.single c 1)) f z := by
+    _ = localDirs _ f z := by
       rw [localDirs_append]
-    _ = localDirs (vecList (beta + Pi.single c 1)) f z := by
+    _ = localDirs _ f z := by
       apply localDirs_perm hperm f z
       simpa [vecList] using hf
-    _ = coordinateIteratedFDeriv (beta + Pi.single c 1) f z := by
+    _ = coordinateIteratedFDeriv _ f z := by
       symm
       apply eval_dirs
       simpa using hf

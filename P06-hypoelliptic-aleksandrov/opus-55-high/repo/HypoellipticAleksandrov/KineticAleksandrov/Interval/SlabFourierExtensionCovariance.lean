@@ -9,14 +9,15 @@ commutes with inclusion and preserves both interior and zero exterior fibers.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open Set MeasureTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 
+variable {a c : ℝ}
+
 /-- Inclusion of interval states commutes with position translation. -/
-theorem intervalStateInclusion_shift {a c : ℝ} (σ : ℝ) (z : PDE.Vec 1)
+theorem intervalStateInclusion_shift  (σ : ℝ) (z : PDE.Vec 1)
     (p : EvolutionState (PDE.oneDimensionalAxisBox a c) stationary σ) :
     evolutionStateShift (wholeSpace 1) (fun _ => (0 : PDE.Vec 1)) σ z
       (intervalStateInclusion σ p) =
@@ -24,7 +25,7 @@ theorem intervalStateInclusion_shift {a c : ℝ} (σ : ℝ) (z : PDE.Vec 1)
         (evolutionStateShift (PDE.oneDimensionalAxisBox a c) stationary σ z p) := rfl
 
 /-- Literal zero extension preserves position-translation covariance. -/
-theorem intervalExtension_covariance {a c : ℝ}
+theorem intervalExtension_covariance 
     (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
     (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
     (hc : IsTranslationCovariantEvolution (PDE.oneDimensionalAxisBox a c)

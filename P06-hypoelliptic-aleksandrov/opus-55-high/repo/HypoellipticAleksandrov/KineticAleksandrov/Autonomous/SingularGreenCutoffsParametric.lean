@@ -6,7 +6,6 @@ public import Mathlib.Analysis.Calculus.ContDiff.Defs
 /-! # C² parameter integration with integrable jet bounds and a null exceptional set -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory Filter
 open scoped Topology
@@ -33,7 +32,7 @@ theorem singular_parameter_integral_contDiffOn_two
     ContDiffOn ℝ 2 (fun x => ∫ a, f x a ∂mu) U ∧
       (∀ x ∈ U, HasFDerivAt (fun y => ∫ a, f y a ∂mu) (∫ a, f' x a ∂mu) x) ∧
       (∀ x ∈ U, HasFDerivAt (fun y => ∫ a, f' y a ∂mu) (∫ a, f'' x a ∂mu) x) := by
-  have hi0 x (hx : x ∈ U) : Integrable (f x) mu :=
+  have hi0 x (hx : x ∈ U)  :=
     hb0.mono' (hm0 x hx) (hn0.mono (fun a ha => ha x hx))
   have hi1 x (hx : x ∈ U) : Integrable (f' x) mu :=
     hb1.mono' (hm1 x hx) (hn1.mono (fun a ha => ha x hx))
@@ -41,28 +40,28 @@ theorem singular_parameter_integral_contDiffOn_two
       HasFDerivAt (fun y => ∫ a, f y a ∂mu) (∫ a, f' x a ∂mu) x := by
     apply hasFDerivAt_integral_of_dominated_of_fderiv_le (hU.mem_nhds hx)
     · filter_upwards [hU.mem_nhds hx] with y hy
-      exact hm0 y hy
-    · exact hi0 x hx
-    · exact hm1 x hx
+      fun_prop
+    · fun_prop
+    · fun_prop
     · exact hn1
     · exact hb1
-    · exact hd0
+    omega
   have hd1I x (hx : x ∈ U) :
       HasFDerivAt (fun y => ∫ a, f' y a ∂mu) (∫ a, f'' x a ∂mu) x := by
     apply hasFDerivAt_integral_of_dominated_of_fderiv_le (hU.mem_nhds hx)
     · filter_upwards [hU.mem_nhds hx] with y hy
-      exact hm1 y hy
-    · exact hi1 x hx
-    · exact hm2 x hx
+      fun_prop
+    · fun_prop
+    · fun_prop
     · exact hn2
     · exact hb2
-    · exact hd1
+    omega
   have hcI : ContinuousOn (fun x => ∫ a, f'' x a ∂mu) U := by
     intro x hx
     apply ContinuousAt.continuousWithinAt
     apply continuousAt_of_dominated
     · filter_upwards [hU.mem_nhds hx] with y hy
-      exact hm2 y hy
+      fun_prop
     · filter_upwards [hU.mem_nhds hx] with y hy
       exact hn2.mono (fun a ha => ha y hy)
     · exact hb2

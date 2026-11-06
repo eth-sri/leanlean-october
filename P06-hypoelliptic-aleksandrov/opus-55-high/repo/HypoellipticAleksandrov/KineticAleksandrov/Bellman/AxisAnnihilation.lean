@@ -8,7 +8,6 @@ import Mathlib.Tactic
 /-! # An axis-supported stationary compared Radon pair vanishes -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set Filter
 open scoped Topology
@@ -20,8 +19,7 @@ theorem stationary_axis_pair_eq_zero (R : ℝ) (_hR : 1 ≤ R)
     (_hlo : μ ≤ η) (hhi : η ≤ ENNReal.ofReal R • μ)
     (heq : IsBellmanStationaryAdjointPair μ η)
     (haxis : μ {q | q.val.1 ≠ 0} = 0) : μ = 0 ∧ η = 0 := by
-  let : IsFiniteMeasureOnCompacts μ := hμ.1
-  let : Measure.InnerRegular μ := hμ.2
+  let  := hμ.1
   have hηaxis := bellman_axis_support_comparison R μ η hhi haxis
   have hzero : μ = 0 := by
     apply Measure.support_eq_empty_iff.mp
@@ -29,9 +27,7 @@ theorem stationary_axis_pair_eq_zero (R : ℝ) (_hR : 1 ≤ R)
     intro q
     by_cases hqx : q.val.1 = 0
     · have hqv : q.val.2 ≠ 0 := by
-        intro hv
-        apply q.property
-        exact Prod.ext hqx hv
+        grind
       have ho : IsOpen {p : ℝ × ℝ | p ≠ (0, 0)} := isClosed_singleton.isOpen_compl
       obtain ⟨χ, hsχ, hcχ, hχ, hrχ, hχq⟩ :=
         exists_contDiff_tsupport_subset (n := (⊤ : ℕ∞)) (ho.mem_nhds q.property)
@@ -54,9 +50,7 @@ theorem stationary_axis_pair_eq_zero (R : ℝ) (_hR : 1 ≤ R)
       let U : Set BellmanPuncturedPlane := {p | w p.val ≠ 0}
       have hU : IsOpen U := isOpen_ne_fun (hw.comp continuous_subtype_val) continuous_const
       have hqU : q ∈ U := by
-        change q.val.2 ^ 2 * χ q.val ≠ 0
-        rw [hχq, mul_one]
-        exact pow_ne_zero 2 hqv
+        grind
       have hμU : μ U = 0 := by
         have ha' : ∀ᵐ p ∂μ, w p.val = 0 := ha
         exact ae_iff.mp ha'
@@ -66,6 +60,6 @@ theorem stationary_axis_pair_eq_zero (R : ℝ) (_hR : 1 ≤ R)
       exact Measure.notMem_support_iff_exists.mpr
         ⟨{p | p.val.1 ≠ 0}, ho.mem_nhds hqx, haxis⟩
   refine ⟨hzero, le_antisymm ?_ bot_le⟩
-  simpa only [hzero, smul_zero] using hhi
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov

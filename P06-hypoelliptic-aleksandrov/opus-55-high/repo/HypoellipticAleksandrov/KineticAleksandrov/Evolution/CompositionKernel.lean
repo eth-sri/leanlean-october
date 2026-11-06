@@ -11,7 +11,6 @@ probes. All equalities hold at every source state.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -69,11 +68,11 @@ theorem terminalFiberKernel_comp
         lintegral_mono fun x => terminalFiberKernel_univ_le_one n hn lam Lam m L_b
           hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
           hb_smooth hb_lipschitz hb_coercive hEx r τ hrτ x
-      _ = κ σ r hσr p univ := by rw [lintegral_const, one_mul]
+      _ = κ σ r hσr p univ := by simp
       _ ≤ 1 := terminalFiberKernel_univ_le_one n hn lam Lam m L_b
         hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
         hb_smooth hb_lipschitz hb_coercive hEx σ r hσr p
-  have hsupp : νa.restrict (evolutionStateSet Ω γ τ) = νa :=
+  have hsupp : νa.restrict _ = νa :=
     map_subtype_val_restrict (measurableSet_evolutionStateSet_of_isOpen
       (isOpen_of_isAdmissibleEvolutionDomain hΩ)) ν
   have hint (F : BoundedBorel (EvolutionAmbientState n))
@@ -85,16 +84,16 @@ theorem terminalFiberKernel_comp
       (measurableSet_evolutionStateSet_of_isOpen
         (isOpen_of_isAdmissibleEvolutionDomain hΩ))).integral_map]
     change (∫ x, terminalStateDatum F x ∂((κ r τ hrτ ∘ₖ κ σ r hσr) p)) = _
-    rw [ProbabilityTheory.Kernel.integral_comp (integrable_boundedBorel (terminalStateDatum F) _)]
+    rw [ProbabilityTheory.Kernel.integral_comp (integrable_boundedBorel _ _)]
     simp_rw [← terminalOperators_apply]
-    have hc := congrArg (fun f : BoundedBorel (EvolutionState Ω γ σ) => f p)
+    have hc := congrArg (fun f : BoundedBorel _ => f p)
       (terminalOperators_comp_smooth n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
         hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
         σ r τ hσr hrτ F hF)
     rw [← hc]
     exact terminalOperators_apply_smooth n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
-      σ τ (hσr.trans hrτ) p F hF
+      σ τ _ p F hF
   have heq := terminalMeasure_eq_of_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
     q νa hmass hsupp hint
@@ -102,7 +101,7 @@ theorem terminalFiberKernel_comp
   rw [(MeasurableEmbedding.subtype_coe
     (measurableSet_evolutionStateSet_of_isOpen
       (isOpen_of_isAdmissibleEvolutionDomain hΩ))).comap_map] at hm
-  exact hm.symm
+  aesop
 
 /-- The terminal operators compose on every bounded Borel datum. -/
 theorem terminalOperators_comp

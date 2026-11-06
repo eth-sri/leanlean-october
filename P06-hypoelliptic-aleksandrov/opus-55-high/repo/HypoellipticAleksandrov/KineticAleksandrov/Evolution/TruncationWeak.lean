@@ -73,7 +73,7 @@ theorem weakRegularized_of_straightened_dirichlet
   let K (i : Fin n) (x : EvolutionVec n) :=
     scalarSpatialHessian u (Q x) (Fin.natAdd n i) (Fin.natAdd n i)
   have hD : IsOpen D := by
-    have he : D = {x : PDE.Vec (n + n) |
+    have he : D = {x : PDE.Vec _ |
         PDE.vecNormSq (spatialY x) / r ^ 2 + PDE.vecNormSq (spatialZ x) / R ^ 2 < 1} := by
       ext x
       exact (straightenedEllipsoid_characterization n r R hr hR).2 x
@@ -83,30 +83,29 @@ theorem weakRegularized_of_straightened_dirichlet
         ((PDE.continuous_vecNormSq.comp (contDiff_spatialZ (m := 0)).continuous).div_const _))
       continuous_const
   have hW : IsOpen W := isOpen_Ioo.prod hD
-  have hQ : ContDiff ℝ (⊤ : ℕ∞) Q := contDiff_truncationPoint hg
+  have hQ : ContDiff ℝ _ Q := contDiff_truncationPoint hg
   have hU : IsOpen U := hW.preimage hQ.continuous
   have huc : IsScalarC12On u W := hu.2.1
   have hw : ContinuousOn w U := huc.continuousOn.comp hQ.continuous.continuousOn
     (fun x hx => hx)
-  have ht0 : ContinuousOn (fun x => scalarTimeDerivative u (Q x)) U :=
+  have ht0 : ContinuousOn (fun x => scalarTimeDerivative u _) U :=
     huc.continuousOn_scalarTimeDerivative.comp hQ.continuous.continuousOn (fun x hx => hx)
-  have hg0 : ContinuousOn (fun x => scalarSpatialGradient u (Q x)) U :=
+  have hg0 : ContinuousOn (fun x => scalarSpatialGradient u _) U :=
     huc.continuousOn_scalarSpatialGradient.comp hQ.continuous.continuousOn (fun x hx => hx)
-  have hh0 : ContinuousOn (fun x => scalarSpatialHessian u (Q x)) U :=
+  have hh0 : ContinuousOn (fun x => scalarSpatialHessian u _) U :=
     huc.continuousOn_scalarSpatialHessian.comp hQ.continuous.continuousOn (fun x hx => hx)
   have hT : ContinuousOn T U := by
     apply ht0.add
-    unfold PDE.vecDot
     apply continuousOn_finsetSum
     intro i _
     exact ((continuous_apply i).comp
       (((hg.continuous_deriv (by simp)).comp (timeCoord n).continuous).neg)).continuousOn.mul
-      ((continuous_apply (Fin.castAdd n i)).comp_continuousOn hg0)
+      ((continuous_apply _).comp_continuousOn hg0)
   have hV : ∀ i, ContinuousOn (V i) U := fun i => (continuous_apply _).comp_continuousOn hg0
   have hZ : ∀ i, ContinuousOn (Z i) U := fun i => (continuous_apply _).comp_continuousOn hg0
-  have hentry (i j : Fin (n + n)) :
-      ContinuousOn (fun x => scalarSpatialHessian u (Q x) i j) U :=
-    (show Continuous (fun A : PDE.Mat (n + n) => A i j) from
+  have hentry (i j : Fin _) :
+      ContinuousOn (fun x => scalarSpatialHessian u _ i j) U :=
+    (show Continuous (fun A : PDE.Mat _ => A i j) from
       (continuous_apply j).comp (continuous_apply i)).comp_continuousOn hh0
   have hH : ∀ i j, ContinuousOn (H i j) U := fun i j => hentry _ _
   have hK : ∀ i, ContinuousOn (K i) U := fun i => hentry _ _
@@ -122,32 +121,29 @@ theorem weakRegularized_of_straightened_dirichlet
     truncation_hasLineDerivAt_time hg hW huc hx
   have hdV : ∀ i x, x ∈ U → HasLineDerivAt ℝ w (V i x) x (basisV i) := by
     intro i x hx
-    have h := truncation_hasLineDerivAt_spatial (w := basisV i) huc hx (by simp [basisV])
+    have h := truncation_hasLineDerivAt_spatial (w := basisV i) huc hx (by aesop)
     simpa only [hdirV, PDE.vecDot_basisVec_right] using! h
   have hdZ : ∀ i x, x ∈ U → HasLineDerivAt ℝ w (Z i x) x (basisZ i) := by
     intro i x hx
-    have h := truncation_hasLineDerivAt_spatial (w := basisZ i) huc hx (by simp [basisZ])
+    have h := truncation_hasLineDerivAt_spatial (w := basisZ i) huc hx (by aesop)
     simpa only [hdirZ, PDE.vecDot_basisVec_right] using! h
   have hdH : ∀ i j x, x ∈ U → HasLineDerivAt ℝ (V i) (H i j x) x (basisV j) := by
     intro i j x hx
-    have h := truncation_gradient_hasLineDerivAt (w := basisV j) huc hx (by simp [basisV])
-      (Fin.castAdd n j) (Fin.castAdd n i) (hdirV j)
+    have h := truncation_gradient_hasLineDerivAt (w := basisV j) huc hx (by aesop)
+      _ (Fin.castAdd n i) (hdirV j)
     have hsymm := scalarSpatialHessian_isSymm_of_c12 huc hx
-    have he : scalarSpatialHessian u (Q x) (Fin.castAdd n j) (Fin.castAdd n i) =
-        H i j x := congrFun (congrFun hsymm (Fin.castAdd n i)) (Fin.castAdd n j)
-    change HasLineDerivAt ℝ (V i)
-      (scalarSpatialHessian u (Q x) (Fin.castAdd n j) (Fin.castAdd n i)) x (basisV j) at h
-    rw [he] at h
-    exact h
-  have hdK : ∀ i x, x ∈ U → HasLineDerivAt ℝ (Z i) (K i x) x (basisZ i) :=
-    fun i x hx => truncation_gradient_hasLineDerivAt (w := basisZ i) huc hx (by simp [basisZ])
-      (Fin.natAdd n i) (Fin.natAdd n i) (hdirZ i)
+    have he : scalarSpatialHessian u _ _ _ =
+        H i j x := congrFun (congrFun hsymm _) _
+    grind
+  have hdK : ∀ i x, x ∈ U → HasLineDerivAt ℝ (Z i) (K i x) x _ :=
+    fun i x hx => truncation_gradient_hasLineDerivAt (w := basisZ i) huc hx (by aesop)
+      _ _ (hdirZ i)
   have heq : ∀ x ∈ U, T x +
       (∑ i, ∑ j, B (timeCoord n x) (diffusedCoord n x) (transportedCoord n x) i j * H i j x) +
       (∑ i, b (diffusedCoord n x) i * Z i x) + ε * ∑ i, K i x = 0 := by
     intro x hx
-    have h := hu.2.2.1 (Q x) hx
-    simp only [scalarParabolicZeroOrderOperator, zero_mul, add_zero] at h
+    have h := hu.2.2.1 _ hx
+    simp only [scalarParabolicZeroOrderOperator] at h
     rw [scalarParabolicOperator_apply] at h
     have ha : straightenedCoefficient B g ε (Q x).1 (Q x).2 =
         viscousBlockMatrix (B (timeCoord n x) (diffusedCoord n x) (transportedCoord n x)) ε := by
@@ -156,15 +152,15 @@ theorem weakRegularized_of_straightened_dirichlet
         spatialPack (-deriv g (timeCoord n x)) (b (diffusedCoord n x)) := by
       simp [Q, truncationPoint, straightenedDrift]
     rw [ha, hb, matrixContraction_viscousBlockMatrix, vecDot_spatialPack_left] at h
-    dsimp only [T, H, Z, K]
-    simp only [matrixContraction, PDE.vecDot, spatialZ, Fin.natAdd_eq_addNat] at h ⊢
+    dsimp only [T]
+    simp only [matrixContraction, PDE.vecDot, spatialZ] at h ⊢
     linarith
-  apply (isWeakRegularizedSolution_comp_iff B b ε _ _ (fun _ => 0)).mp
+  apply (isWeakRegularizedSolution_comp_iff B b ε _ _ _).mp
   have hUeq : evolutionHomeomorph n ⁻¹'
       {p : KineticPoint n | a < p.time ∧ p.time < τ ∧
         spatialPack (p.position - g p.time) p.velocity ∈ D} = U := by
     ext x
-    simp only [U, Q, W, D, truncationPoint, Set.mem_preimage, Set.mem_ofPred_eq,
+    simp only [U, Q, W, truncationPoint, Set.mem_preimage, Set.mem_ofPred_eq,
       mem_scalarParabolicOpenCylinder_iff, time_evolutionHomeomorph,
       position_evolutionHomeomorph, velocity_evolutionHomeomorph]
   rw [hUeq]
@@ -175,9 +171,9 @@ theorem weakRegularized_of_straightened_dirichlet
   have hz : (fun x => (T x +
       (∑ i, ∑ j, B (timeCoord n x) (diffusedCoord n x) (transportedCoord n x) i j * H i j x) +
       (∑ i, b (diffusedCoord n x) i * Z i x) + ε * ∑ i, K i x) * ψ x) =ᵐ[volume.restrict U]
-        fun _ => (0 : ℝ) := by
+        fun _ => (0) := by
     filter_upwards [ae_restrict_mem hU.measurableSet] with x hx
-    rw [heq x hx, zero_mul]
+    simp_all
   simp only [zero_mul, integral_zero]
   exact integral_eq_zero_of_ae hz
 

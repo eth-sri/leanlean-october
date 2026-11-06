@@ -6,7 +6,6 @@ import Mathlib.Tactic
 /-! # Uniform source time power for signed barrier endpoint differences -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov MeasureTheory
 open scoped ENNReal
@@ -21,7 +20,7 @@ theorem position_moment_scale_le {v M T Lam : ℝ} (hT : 0 ≤ T)
     rw [← pow_two, ← pow_two, sq_abs, mul_pow, hs] at h
     exact h
   have hmul := mul_le_mul_of_nonneg_right hsq (sq_nonneg T)
-  nlinarith only [hmul]
+  linarith
 
 /-- The origin-extension modulus yields the exact source uniform endpoint time power.
 The constant is fixed before the coefficient, pole, terminal time and spatial shift. -/
@@ -41,37 +40,31 @@ theorem deterministic_barrier_endpoint_uniform_of_modulus
   let D := 2*M^2+4/3*Lam
   let C0 := B*(D^(alpha/6)+(2*Lam)^(alpha/2))
   have hL : 0 ≤ Lam := hlam.le.trans hLam
-  have hD : 0 ≤ D := by dsimp only [D]; positivity
+  have hD : 0 ≤ D := by positivity
   have hC : 0 ≤ C0 := by
-    exact mul_nonneg hB (add_nonneg (Real.rpow_nonneg hD _) (Real.rpow_nonneg (by positivity) _))
+    positivity
   refine ⟨C0+1, by linarith, ?_⟩
   intro A z T Y hv
   have h := deterministic_barrier_endpoint_of_modulus hH hLE hlam hLam
     alpha B ha0 ha1 hB Phi hPhi hmod A z T Y
   refine ⟨h.1, h.2.trans ?_⟩
-  have hp : 0 ≤ 2*z.2^2*(T : ℝ)^2+4/3*Lam*(T : ℝ)^3 := by
-    have ht := T.property
+  have hp : 0 ≤ 2*z.2^2*T^2+4/3*Lam*T^3 := by
     positivity
   have hbound := Real.rpow_le_rpow hp (position_moment_scale_le T.property hv)
     (show 0 ≤ alpha/6 by linarith)
-  have he : ((T : ℝ)^(3 : ℕ))^(alpha/6) = (T : ℝ)^(alpha/2) := by
-    exact (Real.rpow_natCast_mul T.property 3 (alpha/6)).symm.trans
-      (congrArg (fun a : ℝ => (T : ℝ)^a) (by ring))
-  have hpos : (D*(T : ℝ)^(3 : ℕ))^(alpha/6) = D^(alpha/6)*(T : ℝ)^(alpha/2) :=
+  have he : (T^(3))^(alpha/6) = (T : ℝ)^(alpha/2) := (Real.rpow_natCast_mul T.property 3 _).symm.trans
+      (congrArg _ (by ring))
+  have hpos : (D*T^(3))^(alpha/6) = D^(alpha/6)*T^(alpha/2) :=
     (Real.mul_rpow hD (pow_nonneg T.property 3)).trans
-      (congrArg (fun a : ℝ => D^(alpha/6)*a) he)
-  have hvel : (2*Lam*(T : ℝ))^(alpha/2) = (2*Lam)^(alpha/2)*(T : ℝ)^(alpha/2) :=
+      (congrArg _ he)
+  have hvel : (2*Lam*T)^(alpha/2) = (2*Lam)^(alpha/2)*T^(alpha/2) :=
     Real.mul_rpow (by positivity) T.property
   calc
-    _ ≤ B*((D*(T : ℝ)^(3 : ℕ))^(alpha/6)+(2*Lam*(T : ℝ))^(alpha/2)) :=
+    _ ≤ B*((D*T^(3))^(alpha/6)+(2*Lam*T)^(alpha/2)) :=
       mul_le_mul_of_nonneg_left (add_le_add hbound le_rfl) hB
-    _ = C0*(T : ℝ)^(alpha/2) := by
-      rw [hpos, hvel]
-      change B*(D^(alpha/6)*(T : ℝ)^(alpha/2)+
-        (2*Lam)^(alpha/2)*(T : ℝ)^(alpha/2)) =
-          (B*(D^(alpha/6)+(2*Lam)^(alpha/2)))*(T : ℝ)^(alpha/2)
-      ring
-    _ ≤ (C0+1)*(T : ℝ)^(alpha/2) :=
+    _ = C0*T^(alpha/2) := by
+      grind
+    _ ≤ (C0+1)*T^(alpha/2) :=
       mul_le_mul_of_nonneg_right (by linarith) (Real.rpow_nonneg T.property _)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

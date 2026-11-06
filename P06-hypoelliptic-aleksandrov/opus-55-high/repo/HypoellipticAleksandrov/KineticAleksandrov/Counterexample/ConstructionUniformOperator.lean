@@ -7,7 +7,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Construc
 /-! # Uniform bounds on the actual spatially mollified operator -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Set HypoellipticAleksandrov.Parabolic
 
@@ -40,45 +39,43 @@ theorem construction_smoothedOperator_uniform_bound {d : ℕ} (hd : 1 ≤ d)
       (fun k _ => mul_nonneg hAC (hH i k))))
   refine ⟨C, hC, fun phi P ht hv => ?_⟩
   have htg := construction_spatialMollify_norm_le_ae phi
-    (constructionExtendedTimeJet h r mu R P.time)
+    _
     (construction_extendedTimeJet_locallyIntegrable h r mu R P.time).aestronglyMeasurable
     CT hCT (Filter.Eventually.of_forall (hbCT P.time ht)) (P.position, P.velocity)
   have hgg (i : Fin d) := construction_spatialMollify_norm_le_ae phi
-    (fun q => constructionExtendedNativeGradient h r mu R m P.time q (Fin.castAdd d i))
+    (fun q => constructionExtendedNativeGradient h r mu R m P.time q _)
     (construction_locallyIntegrable_native _
       (construction_extendedGradient_locallyIntegrable h r hr mu R m P.time
-        (Fin.castAdd d i))).aestronglyMeasurable
-    (G i) (hG i) (hbG i P.time ht) (P.position, P.velocity)
+        _)).aestronglyMeasurable
+    _ (hG i) (hbG i P.time ht) (P.position, P.velocity)
   have hhh (i k : Fin d) := construction_spatialMollify_norm_le_ae phi
     (fun q => constructionExtendedNativeHessian h r mu R m P.time q i k)
     (construction_locallyIntegrable_native _
 
         (construction_extendedHessian_locallyIntegrable h r hr mu R
           m P.time i k)).aestronglyMeasurable
-    (H i k) (hH i k) (hbH i k P.time ht) (P.position, P.velocity)
+    _ (hH i k) (hbH i k P.time ht) (P.position, P.velocity)
   rw [construction_smoothed_operator_eq hd ha ha1 h r mu R m hr hmu hR hm hscale
     (fun q hq => (hmargin q hq).le)]
   apply (abs_sub _ _).trans
   apply add_le_add
   · apply (abs_add_le _ _).trans
     apply add_le_add
-    · simpa only [Real.norm_eq_abs] using htg
-    · unfold PDE.vecDot
-      apply (Finset.abs_sum_le_sum_abs _ _).trans
+    · omega
+    · apply (Finset.abs_sum_le_sum_abs _ _).trans
       apply Finset.sum_le_sum
       intro i hi
       rw [abs_mul]
-      exact mul_le_mul (hv i) (by simpa only [Real.norm_eq_abs] using hgg i)
+      exact mul_le_mul (hv i) (by simp_all)
         (abs_nonneg _) hS
-  · unfold matrixContraction
-    apply (Finset.abs_sum_le_sum_abs _ _).trans
+  · apply (Finset.abs_sum_le_sum_abs _ _).trans
     apply Finset.sum_le_sum
     intro i hi
     apply (Finset.abs_sum_le_sum_abs _ _).trans
     apply Finset.sum_le_sum
     intro k hk
     rw [abs_mul]
-    exact mul_le_mul (hAb _ i k) (by simpa only [Real.norm_eq_abs] using hhh i k)
+    exact mul_le_mul (hAb _ i k) (by simp_all)
       (abs_nonneg _) hAC
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

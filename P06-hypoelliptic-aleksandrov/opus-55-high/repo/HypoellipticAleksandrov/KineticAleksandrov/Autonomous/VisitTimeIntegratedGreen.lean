@@ -10,11 +10,11 @@ import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripKernelIn
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+
 /-- The localized quadratic is integrable against every actual entrance measure. -/
 theorem visitTimeQuadratic_integrable_entrance
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T b : ℝ)
+     (c : Clock) (J : Interval) (s T b : ℝ)
     (P : Point) (n : ℕ) :
     Integrable (fun p => visitTimeCutoff b c.r c.positive p.time *
       visitQuadratic c (p.velocity 0))
@@ -25,9 +25,7 @@ theorem visitTimeQuadratic_integrable_entrance
 
 /-- The localized quadratic also has exactly zero outgoing internal-face integral. -/
 theorem visitTimeQuadratic_outgoing_integral_zero
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T b : ℝ)
+     (c : Clock) (J : Interval) (s T b : ℝ)
     (P : Point) (n : ℕ) :
     (∫ p, visitTimeCutoff b c.r c.positive p.time * visitQuadratic c (p.velocity 0)
       ∂visitOutgoingPiece hH hLE hlam hLam A c J s T P n) = 0 := by
@@ -35,10 +33,9 @@ theorem visitTimeQuadratic_outgoing_integral_zero
       visitQuadratic c (p.velocity 0)) =ᵐ[
         visitOutgoingPiece hH hLE hlam hLam A c J s T P n] 0 := by
     filter_upwards [visitQuadratic_ae_zero_outgoing hH hLE hlam hLam A c J s T P n] with p hp
-    rw [hp, mul_zero]
-    rfl
+    simp_all
   rw [integral_congr_ae hz]
-  exact integral_zero _ _
+  simp
 
 /-- Every actual entrance satisfies the genuine integrated short-time quadratic identity. -/
 theorem visitTimeQuadratic_entrance_green_identity
@@ -74,22 +71,19 @@ theorem visitTimeQuadratic_entrance_green_identity
   have hp : f =ᵐ[mu] fun p => (∫ q, f q ∂E p) - ∫ q, g q ∂G p := by
     filter_upwards [visitEntrancePiece_ae_activePole hH hLE hlam hLam A c J s T P hP n]
       with p hp
-    let ep := visitPoleInclusion (visitActiveUnion c J) s T ⟨p, hp⟩
-    have he : E p = finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) T ep := by
-      change (if ht : p ∈ visitPoleSet (visitActiveUnion c J) s T then
-        finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) T
-          (visitPoleInclusion _ s T ⟨p, ht⟩) else 0) = _
-      rw [dite_eq_left hp]
-    have hg : G p = finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) T ep := by
-      change (if ht : p ∈ visitPoleSet (visitActiveUnion c J) s T then
-        finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) T
-          (visitPoleInclusion _ s T ⟨p, ht⟩) else 0) = _
-      rw [dite_eq_left hp]
+    let ep := visitPoleInclusion _ s T ⟨p, hp⟩
+    have he : E p = finiteUnionExit hH hLE hlam hLam A _ T ep := by
+      change (if ht : p ∈ visitPoleSet _ s T then
+        finiteUnionExit hH hLE hlam hLam A _ T
+          _ else 0) = _
+      grind
+    have hg : G p = finiteUnionGreen hH hLE hlam hLam A _ T ep := by
+      change (if ht : p ∈ visitPoleSet _ s T then
+        finiteUnionGreen hH hLE hlam hLam A _ T
+          _ else 0) = _
+      grind
     have hh := visitTimeQuadratic_active_identity hH hLE hlam hLam A c J b T ep
-    dsimp only at hh
-    rw [← he, ← hg] at hh
-    exact hh
-  change (∫ p, f p ∂mu) = (∫ p, f p ∂E ∘ₘ mu) - ∫ p, g p ∂G ∘ₘ mu
+    aesop
   rw [integral_congr_ae hp, integral_sub hiE hiG]
   rw [nested_integral_bind mu E E.measurable f hE,
     nested_integral_bind mu G G.measurable g hG]

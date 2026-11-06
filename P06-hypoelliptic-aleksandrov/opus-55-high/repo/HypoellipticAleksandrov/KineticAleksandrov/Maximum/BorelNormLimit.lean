@@ -38,9 +38,8 @@ theorem borel_source_norm_tendsto {E : Type*} [MeasurableSpace E] {μ : Measure 
     filter_upwards [hFn,hGn j,hen j,hclose j] with z hFz hGz hez hcl
     simp only [Pi.add_apply]
     rw [Real.norm_of_nonneg hGz,Real.norm_of_nonneg (add_nonneg hFz hez)]
-    have hab := (abs_le.mp hcl).2
-    exact by linarith only [hab]
-  have hGp j : MemLp (G j) (ENNReal.ofReal p) μ :=
+    grind
+  have hGp j : MemLp (G j) _ μ :=
     (hF.add (he j)).of_le (hGm j) (hdom j)
   have hu j : (eLpNorm (G j) (ENNReal.ofReal p) μ).toReal ≤
       (eLpNorm F (ENNReal.ofReal p) μ).toReal +
@@ -57,20 +56,17 @@ theorem borel_source_norm_tendsto {E : Type*} [MeasurableSpace E] {μ : Measure 
     · filter_upwards [hFn,hGn j,hen j,hclose j] with z hFz hGz hez hcl
       simp only [Pi.add_apply]
       rw [Real.norm_of_nonneg hFz,Real.norm_of_nonneg (add_nonneg hGz hez)]
-      have hab := (abs_le.mp hcl).1
-      linarith only [hab]
+      grind
   rw [Metric.tendsto_atTop] at ht ⊢
   intro ε hε
   obtain ⟨N,hN⟩ := ht ε hε
   refine ⟨N,fun j hj => ?_⟩
   have hb := hN j hj
   rw [Real.dist_eq,sub_zero,abs_of_nonneg ENNReal.toReal_nonneg] at hb
-  rw [Real.dist_eq]
   have ha : |(eLpNorm (G j) (ENNReal.ofReal p) μ).toReal -
       (eLpNorm F (ENNReal.ofReal p) μ).toReal| ≤
       (eLpNorm (e j) (ENNReal.ofReal p) μ).toReal := by
-    rw [abs_le]
-    constructor <;> linarith only [hu j,hl j]
+    grind
   exact ha.trans_lt hb
 
 end HypoellipticAleksandrov.KineticAleksandrov

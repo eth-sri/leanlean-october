@@ -14,30 +14,25 @@ This module packages a fixed spatial sample of a spacetime test as a scalar time
 open Set Topology
 open scoped Topology
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private theorem isClosedEmbedding_fixedSpatial {d : ℕ} (y : PDE.Vec d) :
+variable {d : ℕ} (y : PDE.Vec d)
+
+private theorem isClosedEmbedding_fixedSpatial  :
     IsClosedEmbedding (fun τ : ℝ => ((τ, y) : TimeVelocity d)) := by
   refine IsClosedEmbedding.of_continuous_injective_isClosedMap
     (continuous_id.prodMk continuous_const) (fun x z h => by
-      simpa using congrArg Prod.fst h) ?_
+      simp_all) ?_
   intro s hs
-  have himage : (fun τ : ℝ => ((τ, y) : TimeVelocity d)) '' s =
-      s ×ˢ ({y} : Set (PDE.Vec d)) := by
-    ext z
-    simp only [mem_image, mem_prod, mem_singleton_iff]
-    constructor
-    · rintro ⟨τ, hτ, rfl⟩
-      exact ⟨hτ, rfl⟩
-    · rintro ⟨hτ, hy⟩
-      exact ⟨z.1, hτ, Prod.ext rfl hy.symm⟩
+  have himage : (fun τ : ℝ => ((τ, y))) '' s =
+      s ×ˢ ({y}) := by
+    grind
   rw [himage]
   exact hs.prod isClosed_singleton
 
 private theorem hasCompactSupport_fixedSpatial
-    {d : ℕ} (y : PDE.Vec d) (f : TimeVelocity d → ℝ) (hf : HasCompactSupport f) :
+     (f : TimeVelocity d → ℝ) (hf : HasCompactSupport f) :
     HasCompactSupport (fun τ : ℝ => f (τ, y)) := by
   refine HasCompactSupport.of_support_subset_isCompact
     ((isClosedEmbedding_fixedSpatial y).isCompact_preimage hf) ?_
@@ -47,7 +42,7 @@ private theorem hasCompactSupport_fixedSpatial
 /-- A sampled time slice is an original-time scalar test, with its expected derivative and
 support in the compact time projection. -/
 theorem exists_sampledTimeFactor
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)} {hO : IsOpen O}
+     {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)} {hO : IsOpen O}
     (φ : TestFunction (originalTimeOpenCylinderOpens τ₁ τ₂ O hO) ℝ (⊤ : ℕ∞))
     (y : PDE.Vec d) :
     ∃ η : OriginalTimeScalarTest τ₁ τ₂,
@@ -62,19 +57,18 @@ theorem exists_sampledTimeFactor
       tsupport_subset' := by
         intro τ hτ
         have hclosed : IsClosed
-            ((fun r : ℝ => ((r, y) : TimeVelocity d)) ⁻¹'
-              tsupport (φ : TimeVelocity d → ℝ)) :=
+            ((fun r : ℝ => ((r, y))) ⁻¹'
+              tsupport _) :=
           (isClosed_tsupport φ).preimage (continuous_id.prodMk continuous_const)
         have hsupp : Function.support (fun r : ℝ => φ (r, y)) ⊆
-            (fun r : ℝ => ((r, y) : TimeVelocity d)) ⁻¹' tsupport φ := by
+            (fun r : ℝ => ((r, y))) ⁻¹' tsupport φ := by
           intro r hr
           exact subset_tsupport φ hr
-        have hz : (τ, y) ∈ tsupport (φ : TimeVelocity d → ℝ) :=
+        have hz : (τ, y) ∈ tsupport φ :=
           closure_minimal hsupp hclosed hτ
         exact (φ.tsupport_subset hz).1 }
   refine ⟨η, fun _ => rfl, ?_, ?_⟩
   · intro τ
-    rw [OriginalTimeScalarTest.deriv_apply]
     change deriv (fun r : ℝ => φ (r, y)) τ =
       fderiv ℝ (φ : TimeVelocity d → ℝ) (τ, y) (1, 0)
     have hcomp := (φ.contDiff.differentiable (by simp)).differentiableAt.hasFDerivAt.comp τ
@@ -84,10 +78,8 @@ theorem exists_sampledTimeFactor
         (fderiv ℝ (φ : TimeVelocity d → ℝ) (τ, y)).comp
           ((ContinuousLinearMap.id ℝ ℝ).prod 0) := by
       simpa only [Function.comp_def, id_eq] using hcomp.fderiv
-    rw [hfderiv]
-    rfl
+    simp_all
   · intro τ hτ
-    change τ ∈ Prod.fst '' tsupport (φ : TimeVelocity d → ℝ)
     have hclosed : IsClosed
         ((fun r : ℝ => ((r, y) : TimeVelocity d)) ⁻¹'
           tsupport (φ : TimeVelocity d → ℝ)) :=

@@ -17,7 +17,6 @@ reverse-time equation into an interior weak time derivative.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -161,7 +160,7 @@ theorem exists_gradientCoord_representatives_hessian_timeDerivative_uniform_inte
     hprevC a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hUpper hcNonpos
       hA hB hBD hq hqD hfD initial u g hdu hu
   refine ⟨G, hG, H, hHmem, hHweak, hHbound, ?_⟩
-  obtain ⟨U, hU, hUslice⟩ := exists_reverseTimeL2V_value_product_representative hΩ (r₁ - r₀) u
+  obtain ⟨U, hU, hUslice⟩ := exists_reverseTimeL2V_value_product_representative hΩ _ u
   have hslice : ∀ᵐ τ ∂reverseTimeVolume (r₁ - r₀),
       ((fun y => U (τ, y)) =ᵐ[PDE.volumeOn Ω]
         fun y => valueCLM hΩ (u τ) y) ∧
@@ -175,34 +174,34 @@ theorem exists_gradientCoord_representatives_hessian_timeDerivative_uniform_inte
   have hOΩ : O ⊆ Ω := hOinner.trans η.inner_subset_outer
   have hUGlobal :=
     reverseTime_hasWeakVelocityPartialDerivOn_of_product_representatives
-      hΩ (r₁ - r₀) u U hU hUslice G hG hGslice
+      hΩ _ u U hU hUslice G hG hGslice
   have hUweak : ∀ j : Fin d,
       HasWeakVelocityPartialDerivOn (Set.Ioo τ₁ τ₂ ×ˢ O) j U (G j) := by
     intro j
     exact (hUGlobal j).restrict (Set.prod_mono htime hOΩ)
-  let W : TimeVelocity d → ℝ := fun z =>
+  let W  := fun z =>
     (∑ i : Fin d, ∑ j : Fin d,
       reverseTimeCoefficient r₁ a z.1 z.2 i j * H z j i) +
     (∑ j : Fin d, reverseTimeVectorCoefficient r₁ b z.1 z.2 j * G j z) +
     reverseTimeScalarCoefficient r₁ c z.1 z.2 * U z -
     reverseTimeScalarCoefficient r₁ F z.1 z.2
   have hUlocal : ParabolicMemLpOn
-      (Set.Ioo τ₁ τ₂ ×ˢ O) (2 : ℝ≥0∞) U :=
+      _ _ U :=
     hU.mono_measure
       (Measure.restrict_mono_set volume (Set.prod_mono htime hOΩ))
   have hGlocal : ∀ j,
-      ParabolicMemLpOn (Set.Ioo τ₁ τ₂ ×ˢ O) (2 : ℝ≥0∞) (G j) := fun j =>
+      ParabolicMemLpOn _ _ _ := fun j =>
     (hG j).mono_measure
       (Measure.restrict_mono_set volume (Set.prod_mono htime hOΩ))
   have hW : ParabolicMemLpOn
-      (Set.Ioo τ₁ τ₂ ×ˢ O) (2 : ℝ≥0∞) W :=
+      _ _ W :=
     hessianTimeDerivative_memLp r₀ r₁ τ₁ τ₂ hΩ hΩbounded hOopen hOΩ htime
       a b c F haSmooth hbSmooth hcSmooth hFSmooth U hUlocal G hGlocal H hHmem
   have hsep :=
     reverseTime_separated_hessian_coefficient_cancellation
       r₀ r₁ h₀₁ hΩ hΩbounded hOopen hOΩ τ₁ τ₂ htime a b c F haSmooth hbSmooth
       hcSmooth hFSmooth initial u g hdu hu U hU hUslice G hG hGslice H hHmem hHweak
-  have hWweak : HasWeakTimeDerivOn (Set.Ioo τ₁ τ₂ ×ˢ O) U W :=
+  have hWweak : HasWeakTimeDerivOn _ U W :=
     hasWeakTimeDerivOn_of_forall_separatedProduct hOopen hUlocal hW (by
       intro eta psi
       simpa only [W] using hsep eta psi)

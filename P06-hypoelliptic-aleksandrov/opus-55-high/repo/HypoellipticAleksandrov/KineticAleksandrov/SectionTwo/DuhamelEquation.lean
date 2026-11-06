@@ -6,34 +6,34 @@ import Mathlib.Analysis.Distribution.AEEqOfIntegralContDiff
 /-! # Pointwise source equation for the kinetic Duhamel potential -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Filter
 open Evolution Occupation
 open scoped Topology
 variable {d : ℕ}
 
+variable {U : Set (EvolutionVec d)}
+
 /-- The full kinetic operator preserves smoothness on an open set with smooth coefficients. -/
-theorem contDiffOn_duhamel_operator {U : Set (EvolutionVec d)} (hU : IsOpen U)
+theorem contDiffOn_duhamel_operator  (hU : IsOpen U)
     {B : FullKineticCoefficient d} (hB : IsSmoothFullKineticCoefficient B)
     {b : PDE.Vec d → PDE.Vec d} (hb : IsSmoothDrift b)
     {u : EvolutionVec d → ℝ} (hu : ContDiffOn ℝ (⊤ : ℕ∞) u U) :
     ContDiffOn ℝ (⊤ : ℕ∞) (transportedOperator B b u) U := by
-  have hA : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x : EvolutionVec d =>
+  have hA : ∀ i j, ContDiff ℝ _ (fun x : EvolutionVec d =>
       B (timeCoord d x) (diffusedCoord d x) (transportedCoord d x) i j) :=
     fun i j => (hB i j).comp (evolutionProdCLE d).contDiff
-  have hβ : ∀ i, ContDiff ℝ (⊤ : ℕ∞) (fun x : EvolutionVec d => b (diffusedCoord d x) i) :=
+  have hβ : ∀ i, ContDiff ℝ _ (fun x : EvolutionVec d => b (diffusedCoord d x) i) :=
     fun i => (contDiff_pi.mp hb i).comp (diffusedCoord d).contDiff
-  unfold transportedOperator
   refine ((contDiffOn_duhamel_direction hU hu basisT).add ?_).add ?_
   · exact ContDiffOn.sum fun i _ => ContDiffOn.sum fun j _ => (hA i j).contDiffOn.mul
-      (contDiffOn_duhamel_direction hU (contDiffOn_duhamel_direction hU hu (basisV j))
-        (basisV i))
+      (contDiffOn_duhamel_direction hU (contDiffOn_duhamel_direction hU hu _)
+        _)
   · exact ContDiffOn.sum fun i _ => (hβ i).contDiffOn.mul
-      (contDiffOn_duhamel_direction hU hu (basisZ i))
+      (contDiffOn_duhamel_direction hU hu _)
 
 /-- A smooth kinetic weak solution satisfies its source equation at every interior point. -/
-theorem duhamel_operator_eq_of_smooth_weak {U : Set (EvolutionVec d)} (hU : IsOpen U)
+theorem duhamel_operator_eq_of_smooth_weak  (hU : IsOpen U)
     {B : FullKineticCoefficient d} (hB : IsSmoothFullKineticCoefficient B)
     (hBs : IsSymmetricFullKineticCoefficient B)
     {b : PDE.Vec d → PDE.Vec d} (hb : IsSmoothDrift b)
@@ -60,16 +60,14 @@ theorem duhamel_operator_eq_of_smooth_weak {U : Set (EvolutionVec d)} (hU : IsOp
       have hfun : (fun x => ψ x • (transportedOperator B b u x - f x)) =
           fun x => transportedOperator B b u x * ψ x - f x * ψ x := by
         funext x
-        simp only [smul_eq_mul]
         ring
       simp only [Pi.sub_apply]
       rw [hfun, integral_sub iA iF, hEq, sub_self])
   have hae1 : (fun x => transportedOperator B b u x - f x)
-      =ᵐ[volume.restrict U] fun _ => (0 : ℝ) :=
+      =ᵐ[volume.restrict U] fun _ => (0) :=
     (ae_restrict_iff' hU.measurableSet).2 hae0
   have heq := Measure.eqOn_open_of_ae_eq hae1 hU hcont continuousOn_const
-  intro x hx
-  exact sub_eq_zero.mp (heq hx)
+  grind
 
 variable {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
 
@@ -104,9 +102,9 @@ theorem duhamelPotential_source_equation (hH : HormanderHypoellipticityStatement
   have heq := duhamel_operator_eq_of_smooth_weak hU hB hBs hb hsm hf hweak
   intro p hp
   have hx : (evolutionHomeomorph d).symm p ∈
-      evolutionHomeomorph d ⁻¹' evolutionPastOpenCylinder Ω γ T := by simpa using hp
+      evolutionHomeomorph d ⁻¹' evolutionPastOpenCylinder Ω γ T := by simp_all
   have key := heq _ hx
   rw [transportedOperator_comp ((hsm.contDiffAt (hU.mem_nhds hx)).of_le (by simp))] at key
-  simpa only [Function.comp_apply, Homeomorph.apply_symm_apply] using key
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

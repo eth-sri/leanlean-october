@@ -9,12 +9,13 @@ import Mathlib.Tactic
 /-! # Closure extension and distance comparison for the time–velocity corollary -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 open Set LocalA
 
+variable {d : ℕ} (P0 : KineticPoint d)
+
 /-- The centered local increment is continuous in both endpoints. -/
-theorem continuous_kineticIncrement_pair {d : ℕ} (P0 : KineticPoint d) :
+theorem continuous_kineticIncrement_pair  :
     Continuous (fun z : KineticPoint d × KineticPoint d => kineticIncrement P0 z.1 z.2) := by
   have hf : Continuous (Prod.fst : KineticPoint d × KineticPoint d → KineticPoint d) :=
     continuous_fst
@@ -26,27 +27,27 @@ theorem continuous_kineticIncrement_pair {d : ℕ} (P0 : KineticPoint d) :
     (continuous_velocity.comp hs)
   have hx := ((continuous_position.comp hf).sub
     (continuous_position.comp hs)).sub (ht.smul (continuous_const (y := P0.velocity)))
-  exact ((Real.continuous_rpow_const (by norm_num : (0 : ℝ) ≤ 1 / 2)).comp ht.abs).add
+  exact ((Real.continuous_rpow_const (by norm_num)).comp ht.abs).add
     (PDE.continuous_vecEuclideanNorm.comp hv) |>.add
-    ((Real.continuous_rpow_const (by norm_num : (0 : ℝ) ≤ 1 / 3)).comp
+    ((Real.continuous_rpow_const (by norm_num)).comp
       (PDE.continuous_vecEuclideanNorm.comp hx))
 
 /-- At the later endpoint, the local increment is bounded by the symmetric distance. -/
-theorem kineticIncrement_later_le_distance {d : ℕ} (P Q : KineticPoint d) :
+theorem kineticIncrement_later_le_distance  (P Q : KineticPoint d) :
     kineticIncrement Q P Q ≤ quasiDistance P Q := by
   unfold kineticIncrement quasiDistance
   rw [← Real.sqrt_eq_rpow]
   have hr := Real.rpow_le_rpow
     (PDE.vecEuclideanNorm_nonneg
-      (P.position - Q.position - (P.time - Q.time) • Q.velocity))
+      _)
     (le_max_right
       (PDE.vecEuclideanNorm (Q.position - P.position - (Q.time - P.time) • P.velocity))
       (PDE.vecEuclideanNorm (P.position - Q.position - (P.time - Q.time) • Q.velocity)))
     (by norm_num : (0 : ℝ) ≤ 1 / 3)
-  exact add_le_add_right hr _
+  simp_all
 
 /-- A continuous local estimate extends to both closed inner-cylinder endpoints. -/
-theorem local_estimate_on_closure {d : ℕ} (P0 : KineticPoint d) {R C a : ℝ}
+theorem local_estimate_on_closure  {R C a : ℝ}
     (ha : 0 ≤ a) (u : KineticPoint d → ℝ)
     (hu : ContinuousOn u (closure (backwardCylinder P0 (R / 2))))
     (hlocal : ∀ P ∈ backwardCylinder P0 (R / 2),
@@ -68,7 +69,7 @@ theorem local_estimate_on_closure {d : ℕ} (P0 : KineticPoint d) {R C a : ℝ}
       ((continuous_kineticIncrement_pair P0).div_const R))
   have hpq : (P, Q) ∈ closure (B ×ˢ B) := by
     rw [closure_prod_eq]
-    exact ⟨hP, hQ⟩
+    grind
   exact le_on_closure
     (f := fun z : KineticPoint d × KineticPoint d => |u z.1 - u z.2|)
     (g := fun z => C * (kineticIncrement P0 z.1 z.2 / R) ^ a)

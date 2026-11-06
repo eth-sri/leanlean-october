@@ -36,17 +36,13 @@ noncomputable def add (u v : PDE.H10Function U) : PDE.H10Function U where
     have hbound : Tendsto
         (fun n =>
           eLpNorm (fun x => u.approx n x - u.toH1Function.toFun x)
-              (2 : ℝ≥0∞) (volume.restrict U) +
+              (2) (volume.restrict U) +
             eLpNorm (fun x => v.approx n x - v.toH1Function.toFun x)
-              (2 : ℝ≥0∞) (volume.restrict U))
+              (2) (volume.restrict U))
         atTop (nhds 0) := by
       simpa using u.tendsto_approx.add v.tendsto_approx
     refine tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hbound
       (fun _ => zero_le) (fun n => ?_)
-    have huApprox : AEStronglyMeasurable (u.approx n) (volume.restrict U) :=
-      (u.approx_smooth n).continuous.aestronglyMeasurable
-    have hvApprox : AEStronglyMeasurable (v.approx n) (volume.restrict U) :=
-      (v.approx_smooth n).continuous.aestronglyMeasurable
     have heq :
         (fun x => (u.approx n x + v.approx n x) -
           (u.toH1Function + v.toH1Function).toFun x) =
@@ -58,7 +54,7 @@ noncomputable def add (u v : PDE.H10Function U) : PDE.H10Function U where
     change eLpNorm
       (fun x => (u.approx n x + v.approx n x) -
         (u.toH1Function + v.toH1Function).toFun x)
-      (2 : ℝ≥0∞) (volume.restrict U) ≤ _
+      _ _ ≤ _
     rw [heq]
     exact eLpNorm_add_le (by norm_num)
   tendsto_approx_grad := by
@@ -69,26 +65,16 @@ noncomputable def add (u v : PDE.H10Function U) : PDE.H10Function U where
               (fun x =>
                 (fderiv ℝ (u.approx n) x) (basisVec i) -
                   u.toH1Function.grad x i)
-              (2 : ℝ≥0∞) (volume.restrict U) +
+              (2) (volume.restrict U) +
             eLpNorm
               (fun x =>
                 (fderiv ℝ (v.approx n) x) (basisVec i) -
                   v.toH1Function.grad x i)
-              (2 : ℝ≥0∞) (volume.restrict U))
+              (2) (volume.restrict U))
         atTop (nhds 0) := by
       simpa using (u.tendsto_approx_grad i).add (v.tendsto_approx_grad i)
     refine tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hbound
       (fun _ => zero_le) (fun n => ?_)
-    have huDeriv : AEStronglyMeasurable
-        (fun x => (fderiv ℝ (u.approx n) x) (basisVec i))
-        (volume.restrict U) := by
-      exact ((((u.approx_smooth n).fderiv_right (m := (⊤ : ℕ∞)) (by norm_cast)).clm_apply
-        contDiff_const).continuous.aestronglyMeasurable)
-    have hvDeriv : AEStronglyMeasurable
-        (fun x => (fderiv ℝ (v.approx n) x) (basisVec i))
-        (volume.restrict U) := by
-      exact ((((v.approx_smooth n).fderiv_right (m := (⊤ : ℕ∞)) (by norm_cast)).clm_apply
-        contDiff_const).continuous.aestronglyMeasurable)
     have heq :
         (fun x =>
           (fderiv ℝ (fun y => u.approx n y + v.approx n y) x) (basisVec i) -
@@ -108,9 +94,9 @@ noncomputable def add (u v : PDE.H10Function U) : PDE.H10Function U where
       ring
     change eLpNorm
       (fun x =>
-        (fderiv ℝ (fun y => u.approx n y + v.approx n y) x) (basisVec i) -
+        (fderiv ℝ (fun y => u.approx n y + v.approx n y) x) _ -
           (u.toH1Function + v.toH1Function).grad x i)
-      (2 : ℝ≥0∞) (volume.restrict U) ≤ _
+      _ _ ≤ _
     rw [heq]
     exact eLpNorm_add_le (by norm_num)
 

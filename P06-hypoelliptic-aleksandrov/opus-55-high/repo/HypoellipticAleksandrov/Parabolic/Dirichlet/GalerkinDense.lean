@@ -27,16 +27,16 @@ open scoped ENNReal RealInnerProductSpace Topology
 variable {d : ℕ} {Ω : Set (PDE.Vec d)}
 
 /-- The H10 Hilbert carrier inherits a second countable topology from spatial L2. -/
-noncomputable def h10HilbertGraphSecondCountableTopology
+def h10HilbertGraphSecondCountableTopology
     (hΩ : IsOpen Ω) : SecondCountableTopology (H10HilbertGraph hΩ) := by
   letI : MeasureTheory.SFinite (PDE.volumeOn Ω) := by infer_instance
   letI : MeasurableSpace.CountablyGenerated (PDE.Vec d) := by infer_instance
   letI : MeasureTheory.IsSeparable (PDE.volumeOn Ω) := by infer_instance
   letI : Fact (1 ≤ (2 : ℝ≥0∞)) := ⟨by norm_num⟩
   letI : Fact ((2 : ℝ≥0∞) ≠ ⊤) := ⟨by norm_num⟩
-  letI : SecondCountableTopology (PDE.ScalarLp Ω (2 : ℝ≥0∞)) :=
+  letI : SecondCountableTopology (PDE.ScalarLp Ω (2)) :=
     MeasureTheory.Lp.SecondCountableTopology
-  letI : SecondCountableTopology (PDE.HilbertVectorLp Ω (2 : ℝ≥0∞)) :=
+  letI : SecondCountableTopology (PDE.HilbertVectorLp Ω (2)) :=
     MeasureTheory.Lp.SecondCountableTopology
   letI : SecondCountableTopology (PDE.H1HilbertAmbient Ω) :=
     WithLp.secondCountableTopology 2 _ _
@@ -44,14 +44,14 @@ noncomputable def h10HilbertGraphSecondCountableTopology
   exact by infer_instance
 
 /-- The H10 Hilbert carrier is separable. -/
-noncomputable instance instSeparableSpaceH10HilbertGraph
+instance instSeparableSpaceH10HilbertGraph
     (hΩ : IsOpen Ω) : TopologicalSpace.SeparableSpace (H10HilbertGraph hΩ) := by
-  letI : SecondCountableTopology (H10HilbertGraph hΩ) :=
+  letI  :=
     h10HilbertGraphSecondCountableTopology hΩ
   exact TopologicalSpace.SecondCountableTopology.to_separableSpace
 
 /-- The actual-test map, codomain-restricted to the H10 closure. -/
-noncomputable def smoothCompactlySupportedH1HilbertGraphToH10LinearMap
+def smoothCompactlySupportedH1HilbertGraphToH10LinearMap
     (hΩ : IsOpen Ω) :
     PDE.WeakTestFunction Ω →ₗ[ℝ] H10HilbertGraph hΩ :=
   (smoothCompactlySupportedH1HilbertGraphLinearMap hΩ).codRestrict
@@ -67,7 +67,7 @@ noncomputable def smoothCompactlySupportedH1HilbertGraphToH10LinearMap
   rfl
 
 /-- Smooth approximations to the selected dense sequence in the H10 Hilbert carrier. -/
-noncomputable def smoothApproximation
+def smoothApproximation
     (hΩ : IsOpen Ω) (m : ℕ) : ℕ → PDE.WeakTestFunction Ω :=
   Classical.choose (exists_tendsto_smooth hΩ (TopologicalSpace.denseSeq (H10HilbertGraph hΩ) m))
 
@@ -79,23 +79,23 @@ private theorem tendsto_smoothApproximation
       atTop (𝓝 ((TopologicalSpace.denseSeq (H10HilbertGraph hΩ) m :
         H10HilbertGraph hΩ) : PDE.H1HilbertGraph Ω)) :=
   Classical.choose_spec
-    (exists_tendsto_smooth hΩ (TopologicalSpace.denseSeq (H10HilbertGraph hΩ) m))
+    (exists_tendsto_smooth hΩ _)
 
 /-- A countable sequence of genuine zero-trace smooth tests. -/
-noncomputable def galerkinTestSequence
+def galerkinTestSequence
     (hΩ : IsOpen Ω) : ℕ → PDE.WeakTestFunction Ω :=
   fun n => smoothApproximation hΩ n.unpair.1 n.unpair.2
 
 /-- Its images in the internally constructed H10 Hilbert carrier. -/
-noncomputable def galerkinVector
+def galerkinVector
     (hΩ : IsOpen Ω) : ℕ → H10HilbertGraph hΩ :=
   smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ ∘
     galerkinTestSequence hΩ
 
 theorem denseRange_galerkinVector
     (hΩ : IsOpen Ω) : DenseRange (galerkinVector hΩ) := by
-  let q : ℕ → H10HilbertGraph hΩ := TopologicalSpace.denseSeq (H10HilbertGraph hΩ)
-  have hqDense : DenseRange q := TopologicalSpace.denseRange_denseSeq (H10HilbertGraph hΩ)
+  let q  := TopologicalSpace.denseSeq (H10HilbertGraph hΩ)
+  have hqDense : DenseRange q := TopologicalSpace.denseRange_denseSeq _
   have hqClosure : Set.range q ⊆ closure (Set.range (galerkinVector hΩ)) := by
     rintro _ ⟨m, rfl⟩
     have hT : Tendsto (fun k : ℕ => galerkinVector hΩ (Nat.pair m k)) atTop (𝓝 (q m)) := by
@@ -105,44 +105,42 @@ theorem denseRange_galerkinVector
         coe_smoothCompactlySupportedH1HilbertGraphToH10LinearMap_apply] using
         (tendsto_smoothApproximation hΩ m)
     apply mem_closure_of_tendsto hT
-    filter_upwards with k
-    exact ⟨Nat.pair m k, by simp [galerkinVector, galerkinTestSequence]⟩
+    simp
   rw [denseRange_iff_closure_range]
   apply Set.eq_univ_of_forall
   intro u
   have hu : u ∈ closure (Set.range q) := by
     rw [hqDense.closure_range]
-    exact Set.mem_univ u
-  have hclosure : closure (Set.range q) ⊆ closure (Set.range (galerkinVector hΩ)) := by
-    simpa only [closure_closure] using closure_mono hqClosure
-  exact hclosure hu
+    simp
+  aesop
 
 /-- The span of the first `N` actual-test images; in particular `E 0 = ⊥`. -/
-noncomputable def galerkinSpace
+def galerkinSpace
     (hΩ : IsOpen Ω) (N : ℕ) :
     Submodule ℝ (H10HilbertGraph hΩ) :=
   Submodule.span ℝ (Set.range fun i : Fin N => galerkinVector hΩ i)
 
-@[simp] theorem galerkinSpace_zero (hΩ : IsOpen Ω) :
+variable (hΩ : IsOpen Ω)
+
+@[simp] theorem galerkinSpace_zero  :
     galerkinSpace hΩ 0 = ⊥ := by
   simp [galerkinSpace]
 
 theorem galerkinSpace_mono
-    (hΩ : IsOpen Ω) {N M : ℕ} (hNM : N ≤ M) :
+     {N M : ℕ} (hNM : N ≤ M) :
     galerkinSpace hΩ N ≤ galerkinSpace hΩ M := by
-  rw [galerkinSpace, galerkinSpace]
   apply Submodule.span_le.mpr
   rintro _ ⟨i, rfl⟩
   apply Submodule.subset_span
   exact ⟨⟨i, lt_of_lt_of_le i.isLt hNM⟩, rfl⟩
 
-noncomputable instance galerkinSpace_finiteDimensional
+instance galerkinSpace_finiteDimensional
     (hΩ : IsOpen Ω) (N : ℕ) :
     FiniteDimensional ℝ (galerkinSpace hΩ N) :=
   FiniteDimensional.span_of_finite ℝ (Set.finite_range _)
 
 /-- A coordinate basis for the finite ODE on `E N`; no global basis is chosen. -/
-noncomputable def galerkinSpaceBasis
+def galerkinSpaceBasis
     (hΩ : IsOpen Ω) (N : ℕ) :
     Basis (Fin (Module.finrank ℝ (galerkinSpace hΩ N))) ℝ
       (galerkinSpace hΩ N) :=

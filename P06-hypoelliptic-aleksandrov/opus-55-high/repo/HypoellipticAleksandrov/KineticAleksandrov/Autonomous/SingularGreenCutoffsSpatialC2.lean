@@ -6,7 +6,6 @@ import Mathlib.Topology.UniformSpace.HeineCantor
 /-! # Derived Green identity for actual compact C² spatial tests -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic SectionTwo Evolution Occupation Set MeasureTheory
 
@@ -32,9 +31,6 @@ theorem fullspace_green_spatial_compact_c2
   have hfraw : ContDiff ℝ 2 fraw := hF.comp
     ((diffusedCoord 1).contDiff.prodMk (transportedCoord 1).contDiff)
   have hfeq : f ∘ evolutionHomeomorph 1 = fraw := by
-    funext x
-    simp [f, fraw, π, evolutionHomeomorph, KineticPoint.homeomorphProd,
-      KineticPoint.isometryEquivProd, KineticPoint.equivProd]
     rfl
   let H := fun x : EvolutionAmbientState 1 =>
     transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1) f ⟨0, x.1, x.2⟩
@@ -45,11 +41,9 @@ theorem fullspace_green_spatial_compact_c2
       ∘ x0 := by
     funext x
     have hh := transportedOperator_comp (B := evolutionCoefficient A.a)
-      (b := identityDrift 1) (u := f) (x := x0 x) (by rw [hfeq]; exact hfraw.contDiffAt)
-    rw [hfeq] at hh
+      (b := identityDrift 1) (u := f) (x := x0 x) (hfraw.contDiffAt)
     have hx : evolutionHomeomorph 1 (x0 x) = ⟨0, x.1, x.2⟩ := by
-      simp [x0, evolutionHomeomorph, KineticPoint.homeomorphProd,
-        KineticPoint.isometryEquivProd, KineticPoint.equivProd]
+      simp [x0, evolutionHomeomorph]
       rfl
     rw [hx] at hh
     exact hh.symm
@@ -65,7 +59,7 @@ theorem fullspace_green_spatial_compact_c2
       intro hh
       have hhit := tsupport_comp_subset_preimage F hπ hh
       apply hn
-      change π (x0 x) ∈ tsupport F at hhit
+      change π _ ∈ tsupport F at hhit
       have hpx : π (x0 x) = x := by
         have hh := (evolutionProdCLE 1).apply_symm_apply (0, x)
         exact congrArg Prod.snd hh
@@ -78,17 +72,17 @@ theorem fullspace_green_spatial_compact_c2
         H (q.position, q.velocity) := by
     have ht (z : Point) : kineticTimeDerivative f z = 0 := by
       change deriv (fun _ : ℝ => F (z.position, z.velocity)) z.time = 0
-      exact deriv_const z.time (F (z.position, z.velocity))
+      exact deriv_const z.time _
     dsimp only [H]
     rw [transportedForwardOperator_apply, transportedForwardOperator_apply, ht, ht]
     rfl
   obtain ⟨M, hMb⟩ := hHc.bounded_above_of_compact_support hHk
   obtain ⟨C, -, hCb⟩ := F.exists_bound
   exact fullspace_green_terminal_c2 hH hlam hLam A E hE T f
-    (by rw [hfeq]; exact hfraw) C (max M 0) (le_max_right _ _) (fun q => hCb _)
+    (hfraw) C _ (le_max_right _ _) (fun q => hCb _)
     (fun q => by
       rw [hstation]
-      simpa only [Real.norm_eq_abs] using (hMb (q.position, q.velocity)).trans
+      simpa only [Real.norm_eq_abs] using (hMb _).trans
         (le_max_left M 0)) F (hc.uniformContinuous_of_continuous hF.continuous)
     (fun _ _ => rfl) p hp
 

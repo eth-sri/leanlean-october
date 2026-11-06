@@ -8,7 +8,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.CoreDominati
 /-! # The actual core occupation identity after removing the continuation remainder -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory Filter
 open scoped Topology
@@ -16,13 +15,13 @@ open scoped Topology
 /-- Restriction distributes over every finite measure sum. -/
 theorem visit_restrict_finset_sum (mu : ℕ → Measure Point) (N : ℕ) (B : Set Point) :
     (∑ n ∈ Finset.range N, mu n).restrict B = ∑ n ∈ Finset.range N, (mu n).restrict B :=
-  map_sum (Measure.restrictₗ B) mu (Finset.range N)
+  map_sum _ mu _
+
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
 
 /-- The genuine outer Green continuation tends to zero for the actual entrance recursion. -/
 theorem visitOuterGreen_remainder_tendsto_zero
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
+     (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
     (P : Point) (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) :
     Tendsto (fun n => (visitUnionGreenKernel hH hLE hlam hLam A J.toFiniteUnion s T ∘ₘ
       visitEntrancePiece hH hLE hlam hLam A c J s T P n) univ) atTop (𝓝 0) := by
@@ -31,9 +30,7 @@ theorem visitOuterGreen_remainder_tendsto_zero
 
 /-- The actual outer core occupation is exactly the sum of its active visit occupations. -/
 theorem visitOuterGreen_core_identity
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
+     (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
     (P : Point) (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) :
     (visitUnionGreenKernel hH hLE hlam hLam A J.toFiniteUnion s T P).restrict
       {q | q.velocity 0 ∈ c.core} =
@@ -50,12 +47,12 @@ theorem visitOuterGreen_core_identity
     classical
     unfold visitInitialGreen
     split
-    · exact Measure.restrict_zero C
+    · simp
     · exact Measure.restrict_eq_zero.mpr
         (visitWaitingGreenKernel_core_zero hH hLE hlam hLam A c J s T P)
   have hw (n : ℕ) : (GW ∘ₘ beta n).restrict C = 0 :=
     Measure.restrict_eq_zero.mpr
-      (visitWaitingGreenMixture_core_zero hH hLE hlam hLam A c J s T (beta n))
+      (visitWaitingGreenMixture_core_zero hH hLE hlam hLam A c J s T _)
   apply measure_eq_sum_of_remainder_mass_tendsto_zero _ _
     (fun n => (GO ∘ₘ gamma n).restrict C)
   · intro N

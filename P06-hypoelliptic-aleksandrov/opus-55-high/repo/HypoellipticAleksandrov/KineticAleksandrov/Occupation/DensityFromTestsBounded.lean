@@ -36,35 +36,32 @@ theorem memLp_and_eLpNorm_le_of_bounded_conjugate_tests
   have hnormTrunc (n : ℕ) :
       (eLpNorm (truncatedAbs g n) (ENNReal.ofReal r) μ).toReal ≤ M := by
     let N := (eLpNorm (truncatedAbs g n) (ENNReal.ofReal r) μ).toReal
-    have htestn := htest (signedTruncatedDualPower g r n)
+    have htestn := htest _
       (signedTruncatedDualPower_measurable_bounded hgMeas hr n).1
-      ⟨(n + 1 : ℝ) ^ (r - 1),
+      ⟨(n + 1) ^ (r - 1),
         Real.rpow_nonneg (by positivity) _,
         signedTruncatedDualPower_measurable_bounded hgMeas hr n |>.2⟩
-    rw [integral_signedTruncatedDualPower_mul hgMeas hr n,
-      eLpNorm_signedTruncatedDualPower hgMeas hr n] at htestn
+    rw [integral_signedTruncatedDualPower_mul hgMeas hr,
+      eLpNorm_signedTruncatedDualPower hgMeas hr] at htestn
     rw [← ENNReal.toReal_rpow] at htestn
-    change |N ^ r| ≤ M * N ^ (r - 1) at htestn
     have hN0 : 0 ≤ N := ENNReal.toReal_nonneg
     rw [abs_of_nonneg (Real.rpow_nonneg hN0 _)] at htestn
     by_cases hNz : N = 0
-    · simpa [N, hNz] using hM
+    · linarith
     · have hNpos : 0 < N := lt_of_le_of_ne hN0 (Ne.symm hNz)
       have hsplit : N ^ r = N * N ^ (r - 1) := by
         calc
           N ^ r = N ^ (1 + (r - 1)) := by
-            congr 1
             ring
-          _ = N ^ (1 : ℝ) * N ^ (r - 1) := Real.rpow_add hNpos _ _
-          _ = N * N ^ (r - 1) := by rw [Real.rpow_one]
+          _ = N ^ (1) * N ^ (r - 1) := Real.rpow_add hNpos _ _
+          _ = N * N ^ (r - 1) := by simp
       rw [hsplit] at htestn
       exact le_of_mul_le_mul_right htestn (Real.rpow_pos_of_pos hNpos _)
   have htruncNormENN (n : ℕ) :
       eLpNorm (truncatedAbs g n) (ENNReal.ofReal r) μ ≤ ENNReal.ofReal M := by
     apply (ENNReal.toReal_le_toReal
       (memLp_truncatedAbs hgMeas n _).eLpNorm_ne_top ENNReal.ofReal_ne_top).mp
-    rw [ENNReal.toReal_ofReal hM]
-    exact hnormTrunc n
+    simp_all
   have hlim (x : α) :
       Tendsto (fun n => truncatedAbs g n x) atTop (𝓝 |g x|) := by
     apply tendsto_atTop_of_eventually_const
@@ -77,23 +74,22 @@ theorem memLp_and_eLpNorm_le_of_bounded_conjugate_tests
       ENNReal.ofReal M := by
     refine (Lp.eLpNorm_lim_le_liminf_eLpNorm
       (fun n => (measurable_truncatedAbs hgMeas n).aestronglyMeasurable)
-      (fun x => |g x|) (continuous_abs.measurable.comp hgMeas).aestronglyMeasurable
+      _ (continuous_abs.measurable.comp hgMeas).aestronglyMeasurable
       (ae_of_all _ hlim)).trans ?_
     exact liminf_le_of_frequently_le (Frequently.of_forall htruncNormENN)
-  have habsLp : MemLp (fun x => |g x|) (ENNReal.ofReal r) μ := by
-    exact habsNorm.trans_lt ENNReal.ofReal_lt_top
+  have habsLp : MemLp (fun x => |g x|) (ENNReal.ofReal r) μ := habsNorm.trans_lt ENNReal.ofReal_lt_top
   have hnormEq : eLpNorm g (ENNReal.ofReal r) μ =
       eLpNorm (fun x => |g x|) (ENNReal.ofReal r) μ := by
     apply eLpNorm_congr_norm_ae hgMeas.aestronglyMeasurable
       (continuous_abs.measurable.comp hgMeas).aestronglyMeasurable
-    exact ae_of_all _ fun x => by simp [Real.norm_eq_abs]
+    simp
   have hgLp : MemLp g (ENNReal.ofReal r) μ := by
     rw [memLp_iff, hnormEq]
-    exact habsLp.eLpNorm_lt_top
+    aesop
   refine ⟨hgLp, ?_⟩
   rw [hnormEq]
   have hreal := ENNReal.toReal_mono ENNReal.ofReal_ne_top habsNorm
-  simpa [ENNReal.toReal_ofReal hM] using hreal
+  simp_all
 
 end
 

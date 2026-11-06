@@ -45,24 +45,23 @@ theorem parabolic_harnack_unit_cylinder_aux
   let U := Ioo (0 : ℝ) 1 ×ˢ PDE.euclideanBall (0 : PDE.Vec N) 1
   have hU : IsOpen U := isOpen_Ioo.prod (PDE.isOpen_euclideanBall _ _)
   have hWeak := IsScalarC12On.isWeakParabolicEquationLoc hU hu heq (parabolicExponent N)
-  let m : ℕ := 256 * N
-  let dt : ℝ := (P'.1 - P.1) / (m : ℝ)
-  let r : ℝ := Real.sqrt dt
-  let t : ℕ → ℝ := fun k => P.1 + (k : ℝ) * dt
+  let m  := 256 * N
+  let dt  := (P'.1 - P.1) / m
+  let r  := Real.sqrt dt
+  let t : ℕ → ℝ := fun k => P.1 + k * dt
   let v : ℕ → PDE.Vec N := fun k =>
-    P.2 + ((k : ℝ) / (m : ℝ)) • (P'.2 - P.2)
+    P.2 + (k / (m : ℝ)) • (P'.2 - P.2)
   have hgeom := unitCylinder_harnack_link_geometry N hN P P' hP hP'
   change 0 < m ∧ 0 < r ∧ (t 0, v 0) = P ∧ (t m, v m) = P' ∧
-    (∀ k < m, t (k + 1) = t k + r ^ 2) ∧
+    (∀ k < m, t _ = t k + r ^ 2) ∧
     (∀ k < m, parabolicClosedBox 2 r (t k - r ^ 2) (v k) ⊆ U) ∧
-    (∀ k < m, v (k + 1) ∈ velocityCube (v k) (r / 2)) at hgeom
+    (∀ k < m, v _ ∈ velocityCube (v k) (r / 2)) at hgeom
   obtain ⟨_hm, hr, hstart, hend, htstep, hboxes, hvstep⟩ := hgeom
   have hchain : ∀ k ≤ m, hBox ^ k * u P ≤ u (t k, v k) := by
     intro k
     induction k with
     | zero =>
-      intro _
-      simp only [pow_zero, one_mul, hstart, le_refl]
+      simp_all
     | succ k ih =>
       intro hk
       have hkm : k < m := Nat.lt_of_succ_le hk
@@ -70,10 +69,10 @@ theorem parabolic_harnack_unit_cylinder_aux
         hB hSymm hLower hUpper hWeak hu.continuousOn huNonneg (v (k + 1)) (hvstep k hkm)
       rw [← htstep k hkm] at hlink
       calc
-        hBox ^ (k + 1) * u P = hBox * (hBox ^ k * u P) := by rw [pow_succ]; ring
-        _ ≤ hBox * u (t k, v k) :=
+        hBox ^ (k + 1) * u P = hBox * (hBox ^ k * u P) := by ring
+        _ ≤ hBox * u _ :=
           mul_le_mul_of_nonneg_left (ih (Nat.le_of_lt hkm)) hh0.le
-        _ ≤ u (t (k + 1), v (k + 1)) := hlink
-  simpa only [hend] using hchain m le_rfl
+        _ ≤ u _ := hlink
+  grind
 
 end HypoellipticAleksandrov.Parabolic

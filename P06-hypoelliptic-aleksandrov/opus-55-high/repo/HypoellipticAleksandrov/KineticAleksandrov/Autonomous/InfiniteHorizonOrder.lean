@@ -28,8 +28,7 @@ theorem stripGreen_mono
   cases T1 with
   | top =>
     have he : T2 = ⊤ := top_le_iff.mp hT
-    subst T2
-    exact hd
+    aesop
   | coe t1 =>
     have ht1 : e.1.time < t1 := WithTop.coe_lt_coe.mp e.2.1
     have h1 := stripGreen_finite_restrict_infinite hH hLE hlam hLam A H1 ei t1 ht1

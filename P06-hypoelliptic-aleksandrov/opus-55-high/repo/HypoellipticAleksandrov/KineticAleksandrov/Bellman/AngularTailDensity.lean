@@ -7,7 +7,6 @@ import Mathlib.Tactic
 /-! # The literal angular density tail estimate -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
@@ -31,6 +30,6 @@ theorem bellmanAngularDensity_tail (β : ℝ) (μ : Measure BellmanPuncturedPlan
     (ae_of_all _ fun x => ENNReal.ofReal_lt_top)).mp hi
   apply ht.congr
   filter_upwards [ae_restrict_of_ae hn] with x hx
-  rw [ENNReal.toReal_ofReal hx, smul_eq_mul]
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov

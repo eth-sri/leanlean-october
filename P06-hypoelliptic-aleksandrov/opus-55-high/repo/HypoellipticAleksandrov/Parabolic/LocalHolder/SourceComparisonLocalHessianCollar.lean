@@ -12,7 +12,6 @@ The resulting estimate controls the actual unweighted Hessian on the inner colla
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 open scoped BigOperators MatrixOrder Matrix.Norms.Elementwise
@@ -34,7 +33,6 @@ theorem exists_local_homogeneous_hessian_collar_constant {d : ℕ}
             (timeVelocityVolumeOn (Ioo a T ×ˢ O))).toReal ^ 2) := by
   classical
   let Q := Ioo a T ×ˢ O
-  have hQ : IsOpen Q := isOpen_Ioo.prod hO
   have hQc : IsCompact (closure Q) := by
     rw [closure_prod_eq]
     exact (isCompact_Icc.of_isClosed_subset isClosed_closure
@@ -48,8 +46,8 @@ theorem exists_local_homogeneous_hessian_collar_constant {d : ℕ}
   have hAs : ∀ t ∈ Ioo a T, ∀ i j,
       ContDiffOn ℝ 1 (fun y => A t y i j) O := by
     intro t _ i j
-    have hc : ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => A z.1 z.2 i j) :=
-      (contDiff_apply ℝ ℝ j).comp ((contDiff_apply ℝ (Fin d → ℝ) i).comp hA)
+    have hc : ContDiff ℝ _ (fun z : TimeVelocity d => A z.1 z.2 i j) :=
+      (contDiff_apply ℝ ℝ j).comp ((contDiff_apply ℝ _ i).comp hA)
     exact ((hc.comp (contDiff_const.prodMk contDiff_id)).of_le (by simp)).contDiffOn
   obtain ⟨C, hC, hrun⟩ := exists_local_homogeneous_hessian_constant a T O hO
     (fun z => A z.1 z.2) hA.continuous.aestronglyMeasurable.restrict hAs
@@ -66,7 +64,7 @@ theorem exists_local_homogeneous_hessian_collar_constant {d : ℕ}
     intro k _
     apply integrable_finsetSum
     intro i _
-    simpa only [Real.norm_eq_abs, sq_abs, timeVelocityVolumeOn, IntegrableOn] using
+    simpa using
       (J.velocityHessian_memLp k i).integrable_norm_pow (by norm_num)
   have hwcont : Continuous (fun z : TimeVelocity d => ζ z.1 * η.toFun z.2 ^ 2) :=
     (hζ.continuous.comp continuous_fst).mul ((η.smooth.continuous.comp continuous_snd).pow 2)
@@ -75,7 +73,7 @@ theorem exists_local_homogeneous_hessian_collar_constant {d : ℕ}
     rw [Real.norm_eq_abs, abs_of_nonneg (mul_nonneg (hζ0 _) (sq_nonneg _))]
     exact (mul_le_mul_of_nonneg_left
       (pow_le_one₀ (η.nonneg _) (η.le_one _)) (hζ0 _)).trans
-        (by simpa only [mul_one] using hζ1 z.1)
+        (by simp_all)
   have hwi := hfi.bdd_mul hwcont.aestronglyMeasurable.restrict hwbound
   have hmono := setIntegral_mono_set hwi
     (Eventually.of_forall (fun z => mul_nonneg
@@ -90,7 +88,6 @@ theorem exists_local_homogeneous_hessian_collar_constant {d : ℕ}
     change ζ z.1 * η.toFun z.2 ^ 2 * f z = f z
     rw [hζone z.1 ⟨hz.1.1.le, hz.1.2.le⟩,
       η.eq_one_on_inner z.2 (subset_closure hz.2), one_pow, one_mul, one_mul]
-  rw [he] at hmono
-  exact hmono.trans (hrun J heq)
+  grind
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

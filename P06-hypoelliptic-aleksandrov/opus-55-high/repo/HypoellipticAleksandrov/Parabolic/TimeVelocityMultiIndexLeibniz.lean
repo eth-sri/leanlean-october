@@ -35,8 +35,7 @@ private def directionalFDerivs {E F : Type*} [NormedAddCommGroup E] [NormedSpace
 private theorem contDiff_directionalFDeriv {E F : Type*} [NormedAddCommGroup E]
     [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F] {n : ℕ}
     (v : E) (f : E → F) (hf : ContDiff ℝ (n + 1) f) :
-    ContDiff ℝ n (directionalFDeriv v f) := by
-  exact (hf.fderiv_right (le_refl _)).clm_apply contDiff_const
+    ContDiff ℝ n (directionalFDeriv v f) := (hf.fderiv_right (le_refl _)).clm_apply contDiff_const
 
 private theorem directionalFDeriv_comm {E F : Type*} [NormedAddCommGroup E]
     [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F]
@@ -50,8 +49,7 @@ private theorem directionalFDeriv_comm {E F : Type*} [NormedAddCommGroup E]
     fderiv ℝ (fun y => fderiv ℝ f y b) x a
   rw [fderiv_clm_apply hd (differentiableAt_const a),
     fderiv_clm_apply hd (differentiableAt_const b)]
-  simp only [fderiv_const_apply, ContinuousLinearMap.comp_zero, zero_add,
-    ContinuousLinearMap.flip_apply]
+  simp only [fderiv_const_apply, ContinuousLinearMap.comp_zero, zero_add]
   exact (hf.contDiffAt.isSymmSndFDerivAt (by simp)).eq b a
 
 private theorem directionalFDerivs_congr {E F : Type*} [NormedAddCommGroup E]
@@ -69,8 +67,7 @@ private theorem directionalFDerivs_append {E F : Type*} [NormedAddCommGroup E]
   induction l₁ generalizing f with
   | nil => rfl
   | cons v l ih =>
-      simp only [List.cons_append, directionalFDerivs]
-      exact ih (directionalFDeriv v f)
+      exact ih _
 
 private theorem directionalFDerivs_eq_of_perm {E F : Type*} [NormedAddCommGroup E]
     [NormedSpace ℝ E] [NormedAddCommGroup F] [NormedSpace ℝ F]
@@ -80,7 +77,6 @@ private theorem directionalFDerivs_eq_of_perm {E F : Type*} [NormedAddCommGroup 
   induction hperm generalizing f with
   | nil => rfl
   | @cons a l₁ l₂ hperm ih =>
-      simp only [directionalFDerivs]
       apply ih
       simpa using contDiff_directionalFDeriv a f hf
   | @swap a b l =>
@@ -104,15 +100,13 @@ private theorem directionalFDerivs_reverse_ofFn {E F : Type*} [NormedAddCommGrou
       rw [List.ofFn_succ', List.concat_eq_append, List.reverse_concat]
       simp only [directionalFDerivs]
       rw [ih]
-      · change iteratedFDeriv ℝ n (fun y => fderiv ℝ f y (v (Fin.last n))) z
-            (fun i => v i.castSucc) = _
-        calc
-          _ = iteratedFDeriv ℝ n (fderiv ℝ f) z (fun i => v i.castSucc)
-                (v (Fin.last n)) :=
+      · calc
+          _ = iteratedFDeriv ℝ n (fderiv ℝ f) z _
+                _ :=
             iteratedFDeriv_clm_apply_const_apply
               (hc := hf.fderiv_right (by simp)) (hi := le_rfl)
           _ = _ := (iteratedFDeriv_succ_apply_right v).symm
-      · exact contDiff_directionalFDeriv (v (Fin.last n)) f hf
+      · exact contDiff_directionalFDeriv _ f hf
 
 /-- The coordinate multiset of a multi-index, represented by the fixed `Finset.univ.toList`
 coordinate order and repeated according to multiplicity. -/
@@ -147,20 +141,22 @@ def coordinateIteratedFDeriv (beta : TimeVelocityMultiIndex d)
     coordinateList (0 : TimeVelocityMultiIndex d) = [] := by
   simp [coordinateList]
 
+variable (beta : TimeVelocityMultiIndex d) (c : TimeVelocityCoord d) (f : TimeVelocity d → ℝ) (z : TimeVelocity d)
+
 /-- The coordinate list has length equal to the total differential order. -/
-@[simp] theorem length_coordinateList (beta : TimeVelocityMultiIndex d) :
+@[simp] theorem length_coordinateList  :
     beta.coordinateList.length = beta.order := by
   simp [coordinateList, TimeVelocityMultiIndex.order,
     TimeVelocityMultiIndex.timeOrder, TimeVelocityMultiIndex.velocity,
     VelocityMultiIndex.order, timeCoord, velocityCoord]
 
 /-- Choosing zero derivatives in every coordinate has coefficient one. -/
-@[simp] theorem choose_zero_right (beta : TimeVelocityMultiIndex d) :
+@[simp] theorem choose_zero_right  :
     beta.choose 0 = 1 := by
   simp [choose]
 
 /-- Choosing every derivative in every coordinate has coefficient one. -/
-@[simp] theorem choose_self (beta : TimeVelocityMultiIndex d) :
+@[simp] theorem choose_self  :
     beta.choose beta = 1 := by
   simp [choose]
 
@@ -196,7 +192,7 @@ theorem Split.left_le {beta : TimeVelocityMultiIndex d}
   omega
 
 /-- A single coordinate derivative has total order one. -/
-@[simp] theorem order_single (c : TimeVelocityCoord d) :
+@[simp] theorem order_single  :
     TimeVelocityMultiIndex.order (Pi.single c 1 : TimeVelocityMultiIndex d) = 1 := by
   cases c with
   | inl u => cases u; simp [TimeVelocityMultiIndex.order,
@@ -205,7 +201,7 @@ theorem Split.left_le {beta : TimeVelocityMultiIndex d}
   | inr i =>
       change 0 + ∑ x,
         (Pi.single (Sum.inr i) 1 : TimeVelocityMultiIndex d) (Sum.inr x) = 1
-      rw [zero_add, Finset.sum_eq_single i]
+      rw [Finset.sum_eq_single i]
       · simp
       · intro j _ hji
         simp [hji]
@@ -227,7 +223,6 @@ theorem Split.left_le {beta : TimeVelocityMultiIndex d}
       (Pi.single (velocityCoord i) 1 : TimeVelocityMultiIndex d) = 1 := by
   change 2 * 0 + ∑ x,
     (Pi.single (Sum.inr i) 1 : TimeVelocityMultiIndex d) (Sum.inr x) = 1
-  simp only [Nat.mul_zero, zero_add]
   rw [Finset.sum_eq_single i]
   · simp
   · intro j _ hji
@@ -237,21 +232,21 @@ theorem Split.left_le {beta : TimeVelocityMultiIndex d}
 
 /-- The coordinate derivative of order zero is evaluation of the function. -/
 @[simp] theorem coordinateIteratedFDeriv_zero
-    (f : TimeVelocity d → ℝ) (z : TimeVelocity d) :
+     :
     coordinateIteratedFDeriv 0 f z = f z := by
   unfold coordinateIteratedFDeriv
   rw [coordinateList_zero]
   exact iteratedFDeriv_zero_apply _
 
 private theorem coordinateList_add_single_perm
-    (beta : TimeVelocityMultiIndex d) (c : TimeVelocityCoord d) :
+     :
     (beta + Pi.single c 1).coordinateList.Perm (c :: beta.coordinateList) := by
   classical
   letI : BEq (TimeVelocityCoord d) := ⟨fun a b => decide (a = b)⟩
-  letI : LawfulBEq (TimeVelocityCoord d) := ⟨by intro a b; simp⟩
+  letI : LawfulBEq (TimeVelocityCoord d) := ⟨by simp⟩
   rw [List.perm_iff_count]
   intro a
-  have count_flat (q : TimeVelocityMultiIndex d) : ∀ l : List (TimeVelocityCoord d),
+  have count_flat (q : TimeVelocityMultiIndex d) : ∀ l : List _,
       l.Nodup → List.count a (l.flatMap fun b => List.replicate (q b) b) =
         if a ∈ l then q a else 0 := by
     intro l hl
@@ -267,31 +262,26 @@ private theorem coordinateList_add_single_perm
           rw [List.count_replicate]
           split <;> simp_all
   unfold coordinateList
-  rw [count_flat _ _ (Finset.nodup_toList (Finset.univ : Finset (TimeVelocityCoord d)))]
+  rw [count_flat _ _ (Finset.nodup_toList _)]
   simp only [List.count_cons]
-  rw [count_flat _ _ (Finset.nodup_toList (Finset.univ : Finset (TimeVelocityCoord d)))]
+  rw [count_flat _ _ (Finset.nodup_toList _)]
   simp only [Finset.mem_toList, Finset.mem_univ, if_true, Pi.add_apply]
-  change beta a + (Pi.single c 1 : TimeVelocityMultiIndex d) a =
-    beta a + (if c == a then 1 else 0)
-  congr 1
   by_cases h : c = a
   · subst a
-    simp only [Pi.single_eq_same, beq_self_eq_true, if_true]
+    simp
   · rw [Pi.single_apply, if_neg (fun hac => h hac.symm)]
-    have hb : (c == a) = false := by
-      exact Bool.eq_false_iff.mpr fun heq => h (beq_iff_eq.mp heq)
+    have hb : (c == a) = false := Bool.eq_false_iff.mpr fun heq => h (beq_iff_eq.mp heq)
     rw [hb]
     rfl
 
 /-- Adding one coordinate to a multi-index differentiates the associated
 classical coordinate derivative in that direction. -/
 theorem coordinateIteratedFDeriv_add_single
-    (beta : TimeVelocityMultiIndex d) (c : TimeVelocityCoord d)
-    (f : TimeVelocity d → ℝ) (z : TimeVelocity d)
+    
     (hf : ContDiff ℝ (beta.order + 1) f) :
     coordinateIteratedFDeriv (beta + Pi.single c 1) f z =
       fderiv ℝ (coordinateIteratedFDeriv beta f) z (timeVelocityBasis c) := by
-  let vecList (alpha : TimeVelocityMultiIndex d) : List (TimeVelocity d) :=
+  let vecList (alpha : TimeVelocityMultiIndex d)  :=
     alpha.coordinateList.map timeVelocityBasis
   have eval_dirs (alpha : TimeVelocityMultiIndex d) (y : TimeVelocity d)
       (ha : ContDiff ℝ alpha.order f) :
@@ -299,35 +289,32 @@ theorem coordinateIteratedFDeriv_add_single
         directionalFDerivs (vecList alpha).reverse f y := by
     unfold coordinateIteratedFDeriv
     rw [← directionalFDerivs_reverse_ofFn alpha.coordinateList.length
-      (fun i => timeVelocityBasis (alpha.coordinateList.get i)) f y
+      _ f y
       (by simpa using ha)]
     congr 2
     have hget : List.ofFn (fun i => alpha.coordinateList.get i) =
         alpha.coordinateList := List.ofFn_get _
-    simpa only [vecList, List.map_ofFn, Function.comp_def] using! congrArg (List.map
+    simpa using! congrArg (List.map
       timeVelocityBasis) hget
   have hperm : ((vecList (beta + Pi.single c 1)).reverse).Perm
       ((vecList beta).reverse ++ [timeVelocityBasis c]) := by
     have hm := (coordinateList_add_single_perm beta c).map timeVelocityBasis
-    exact (List.reverse_perm (l := vecList (beta + Pi.single c 1))).trans
+    exact (List.reverse_perm (l := vecList _)).trans
       (hm.trans (by
         simpa [vecList, List.map_ofFn, Function.comp_def] using!
           (List.reverse_perm (l := timeVelocityBasis c :: vecList beta)).symm))
   calc
-    coordinateIteratedFDeriv (beta + Pi.single c 1) f z =
-        directionalFDerivs (vecList (beta + Pi.single c 1)).reverse f z :=
+    coordinateIteratedFDeriv _ f z =
+        directionalFDerivs _ f z :=
       eval_dirs _ _ (by simpa using hf)
-    _ = directionalFDerivs ((vecList beta).reverse ++ [timeVelocityBasis c]) f z := by
-      exact congrFun (directionalFDerivs_eq_of_perm hperm f
+    _ = directionalFDerivs _ f z := congrFun (directionalFDerivs_eq_of_perm hperm f
         (by simpa [vecList, List.map_ofFn, Function.comp_def] using! hf)) z
-    _ = directionalFDeriv (timeVelocityBasis c)
-          (directionalFDerivs (vecList beta).reverse f) z := by
+    _ = directionalFDeriv _
+          _ z := by
       rw [directionalFDerivs_append]
       rfl
-    _ = fderiv ℝ (coordinateIteratedFDeriv beta f) z
-          (timeVelocityBasis c) := by
-      unfold directionalFDeriv
-      exact congrArg (fun q => fderiv ℝ q z (timeVelocityBasis c))
+    _ = fderiv ℝ _ z
+          _ := congrArg (fun q => fderiv ℝ q z _)
         (funext fun y => (eval_dirs beta y (hf.of_le (by simp))).symm)
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -348,16 +335,16 @@ variable {d : ℕ}
 
 variable {d : ℕ}
 
+variable (beta : TimeVelocityMultiIndex d)
+
 /-- Coordinate iterated derivatives depend only on the germ of a function at
 the evaluation point. -/
 theorem coordinateIteratedFDeriv_congr_of_eventuallyEq
-    (beta : TimeVelocityMultiIndex d)
+    
     {f g : TimeVelocity d → ℝ} {z : TimeVelocity d}
     (hfg : f =ᶠ[nhds z] g) :
     coordinateIteratedFDeriv beta f z =
-      coordinateIteratedFDeriv beta g z := by
-  unfold coordinateIteratedFDeriv
-  exact congrArg
+      coordinateIteratedFDeriv beta g z := congrArg
     (fun L => L (fun i => timeVelocityBasis (beta.coordinateList.get i)))
     (hfg.iteratedFDeriv ℝ beta.coordinateList.length).self_of_nhds
 
@@ -377,17 +364,16 @@ theorem coordinateIteratedFDeriv_congr_of_eqOn
 
 /-- Pointwise finite-order addition rule for actual coordinate derivatives. -/
 theorem coordinateIteratedFDeriv_add_at
-    (beta : TimeVelocityMultiIndex d)
+    
     (f g : TimeVelocity d → ℝ) (z : TimeVelocity d)
     (hf : ContDiffAt ℝ beta.order f z)
     (hg : ContDiffAt ℝ beta.order g z) :
     coordinateIteratedFDeriv beta (fun x ↦ f x + g x) z =
       coordinateIteratedFDeriv beta f z +
         coordinateIteratedFDeriv beta g z := by
-  unfold coordinateIteratedFDeriv
   have hf' : ContDiffAt ℝ beta.coordinateList.length f z := by simpa using hf
   have hg' : ContDiffAt ℝ beta.coordinateList.length g z := by simpa using hg
-  simpa only [Pi.add_def] using! congrArg
+  simpa using! congrArg
     (fun L => L (fun i => timeVelocityBasis (beta.coordinateList.get i)))
     (iteratedFDeriv_add_apply hf' hg')
 

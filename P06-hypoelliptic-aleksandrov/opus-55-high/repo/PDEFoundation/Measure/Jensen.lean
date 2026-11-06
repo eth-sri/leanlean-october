@@ -49,7 +49,7 @@ theorem abs_integral_rpow_le_integral_abs_rpow
       (convexOn_rpow hp).map_integral_le
         (Real.continuous_rpow_const hpNonneg).continuousOn
         isClosed_Ici
-        (Filter.Eventually.of_forall fun x => abs_nonneg (f x))
+        (Filter.Eventually.of_forall fun x => abs_nonneg _)
         hf.abs hfp
   exact
     (Real.rpow_le_rpow (abs_nonneg _)

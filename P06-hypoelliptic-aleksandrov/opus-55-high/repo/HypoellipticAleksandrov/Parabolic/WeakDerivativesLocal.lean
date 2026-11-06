@@ -31,8 +31,10 @@ end ParabolicMemLpOn
 
 namespace HasWeakTimeDerivOn
 
+variable {d : ℕ} {U : Set (TimeVelocity d)}
+
 /-- Change only the value representative in a weak time-derivative identity. -/
-theorem congr_value_ae {d : ℕ} {U : Set (TimeVelocity d)}
+theorem congr_value_ae 
     {u v du : TimeVelocity d → ℝ}
     (hu : HasWeakTimeDerivOn U u du)
     (huv : u =ᵐ[timeVelocityVolumeOn U] v) :
@@ -47,7 +49,7 @@ theorem congr_value_ae {d : ℕ} {U : Set (TimeVelocity d)}
     _ = -∫ z in U, du z * φ z ∂volume := hu φ hφSmooth hφCompact hφSupport
 
 /-- Change both representatives in a weak time-derivative identity. -/
-theorem congr_ae {d : ℕ} {U : Set (TimeVelocity d)}
+theorem congr_ae 
     {u v du dv : TimeVelocity d → ℝ}
     (hu : HasWeakTimeDerivOn U u du)
     (huv : u =ᵐ[timeVelocityVolumeOn U] v)
@@ -66,7 +68,7 @@ theorem congr_ae {d : ℕ} {U : Set (TimeVelocity d)}
       rw [hz]
 
 /-- Restrict a raw weak time-derivative identity to any smaller set. -/
-theorem restrict {d : ℕ} {U V : Set (TimeVelocity d)}
+theorem restrict  {U V : Set (TimeVelocity d)}
     {u du : TimeVelocity d → ℝ} (hu : HasWeakTimeDerivOn U u du)
     (hVU : V ⊆ U) : HasWeakTimeDerivOn V u du := by
   intro φ hφSmooth hφCompact hφSupport
@@ -97,8 +99,10 @@ end HasWeakTimeDerivOn
 
 namespace HasWeakVelocityPartialDerivOn
 
+variable {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
+
 /-- Change only the value representative in a weak velocity-derivative identity. -/
-theorem congr_value_ae {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
+theorem congr_value_ae 
     {u v dui : TimeVelocity d → ℝ}
     (hu : HasWeakVelocityPartialDerivOn U i u dui)
     (huv : u =ᵐ[timeVelocityVolumeOn U] v) :
@@ -113,7 +117,7 @@ theorem congr_value_ae {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
     _ = -∫ z in U, dui z * φ z ∂volume := hu φ hφSmooth hφCompact hφSupport
 
 /-- Change both representatives in a weak velocity-derivative identity. -/
-theorem congr_ae {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
+theorem congr_ae 
     {u v dui dvi : TimeVelocity d → ℝ}
     (hu : HasWeakVelocityPartialDerivOn U i u dui)
     (huv : u =ᵐ[timeVelocityVolumeOn U] v)
@@ -132,7 +136,7 @@ theorem congr_ae {d : ℕ} {U : Set (TimeVelocity d)} {i : Fin d}
       rw [hz]
 
 /-- Restrict a raw weak velocity-derivative identity to any smaller set. -/
-theorem restrict {d : ℕ} {U V : Set (TimeVelocity d)} {i : Fin d}
+theorem restrict  {U V : Set (TimeVelocity d)} {i : Fin d}
     {u dui : TimeVelocity d → ℝ} (hu : HasWeakVelocityPartialDerivOn U i u dui)
     (hVU : V ⊆ U) : HasWeakVelocityPartialDerivOn V i u dui := by
   intro φ hφSmooth hφCompact hφSupport

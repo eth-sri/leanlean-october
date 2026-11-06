@@ -42,10 +42,12 @@ def ParabolicWeakDerivativeFamily.compactSupportGlobalize
     (F.hasWeakVelocitySucc beta i h).univ_of_tsupport_subset hU
       (hsupp beta) (hsupp (ParabolicDerivativeIndex.velocitySucc beta i h))
 
+variable {d L : ℕ} {U : Set (TimeVelocity d)}
+
 /-- Compact-support globalization preserves every selected representative
 literally. -/
 @[simp] theorem ParabolicWeakDerivativeFamily.compactSupportGlobalize_representative
-    {d L : ℕ} {U : Set (TimeVelocity d)}
+    
     (hU : IsOpen U) {f : TimeVelocity d → ℝ}
     (F : ParabolicWeakDerivativeFamily d L U f)
     (hsupp : ∀ beta, tsupport (F.representative beta) ⊆ U)
@@ -57,7 +59,7 @@ literally. -/
 vanish off a measurable carrier, their local almost-everywhere equality
 extends to ambient volume. -/
 theorem ParabolicWeakDerivativeFamily.zero_representative_ae_eq_of_support_subset
-    {d L : ℕ} {U : Set (TimeVelocity d)}
+    
     (hU : MeasurableSet U) {f : TimeVelocity d → ℝ}
     (F : ParabolicWeakDerivativeFamily d L U f)
     (hFzero : tsupport
@@ -68,14 +70,14 @@ theorem ParabolicWeakDerivativeFamily.zero_representative_ae_eq_of_support_subse
   refine ae_of_ae_restrict_of_ae_restrict_compl U F.zero_ae ?_
   apply ae_restrict_of_forall_mem hU.compl
   intro z hz
-  show F.representative (ParabolicDerivativeIndex.zero d L) z = f z
+  
   have hzU : z ∉ U := hz
   have hFz : F.representative (ParabolicDerivativeIndex.zero d L) z = 0 := by
     by_contra hne
     exact hzU (hFzero (subset_tsupport _ (Function.mem_support.mpr hne)))
   have hfz : f z = 0 := by
     by_contra hne
-    exact hzU (hf (Function.mem_support.mpr hne))
-  rw [hFz, hfz]
+    simp_all
+  simp_all
 
 end HypoellipticAleksandrov.Parabolic

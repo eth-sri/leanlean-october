@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecu
 /-! # Exact stopped exit action of a supplied bounded homogeneous potential -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Filter Parabolic
 open SectionTwo TheoremA Evolution
@@ -28,20 +27,20 @@ theorem enlarged_stripExit_potential_identity
     exact ⟨hc0.mono hsub, fun p hp => ht p (hsub hp), fun p hp => hx p (hsub hp),
       fun p hp => hv p (hsub hp), htc.mono hsub, hxc.mono hsub, hvc.mono hsub,
       hvvc.mono hsub⟩
-  have hi := strip_identity_C112 hH hLE hlam hLam A H (e.1.time - 1) b
+  have hi := strip_identity_C112 hH hLE hlam hLam A H _ b
     (by linarith) (stripPoleFinite H e b hb) (by change e.1.time - 1 < e.1.time; linarith)
     u hr
       (hc.mono fun p hp => by
         rcases hp with hp | hp
-        · exact hp.2.1.le
+        · grind
         · rcases hp with hp | hp
-          · exact hp.1.le
-          · exact hp.2.1.le)
-      ⟨M, fun p hp => ⟨hbound p hp.2.1.le, by rw [hop p hp.2.1, abs_zero]; exact hM⟩⟩
+          · simp_all
+          grind)
+      ⟨M, fun p hp => ⟨hbound p hp.2.1.le, by grind⟩⟩
   have hz : (∫ p, forwardScalarOperator A.a u p
       ∂stripGreen hH hLE hlam hLam A H b (stripPoleFinite H e b hb)) = 0 := by
     apply integral_eq_zero_of_ae
-    exact (stripGreenOfKernel_ae_mem_stripPast H _ b (stripPoleFinite H e b hb)).mono
+    exact (stripGreenOfKernel_ae_mem_stripPast H _ b _).mono
       fun p hp => hop p hp.1
   rw [hz, sub_zero] at hi
   exact hi.symm

@@ -28,7 +28,7 @@ theorem enlargedActiveGreenKernel_apply
       stripGreen hH hLE hlam hLam A c.activeInterval ⊤ (densityClockPole c e he) := by
   change (if hp : e.velocity 0 ∈ c.active then
     stripGreen hH hLE hlam hLam A c.activeInterval ⊤ (densityClockPole c e hp) else 0) = _
-  rw [dite_eq_left he]
+  simp_all
 
 /-- Uniform quadratic mass makes the all-time physical active family a finite kernel. -/
 instance enlargedActiveGreenKernel_isFiniteKernel
@@ -49,8 +49,7 @@ instance enlargedActiveGreenKernel_isFiniteKernel
   · change (if hp : e.velocity 0 ∈ c.active then
       stripGreen hH hLE hlam hLam A c.activeInterval ⊤ (densityClockPole c e hp)
       else 0) univ ≤ _
-    rw [dite_eq_right he]
-    exact zero_le
+    simp_all
 
 /-- The pushforward predecessor supplies absolute continuity of every actual active pole. -/
 theorem enlargedActiveGreenKernel_absolutelyContinuous (hpush : PushforwardStatement)
@@ -67,9 +66,7 @@ theorem enlargedActiveGreenKernel_absolutelyContinuous (hpush : PushforwardState
   · change (if hp : e.velocity 0 ∈ c.active then
       stripGreen hH hLE hlam hLam A c.activeInterval ⊤ (densityClockPole c e hp)
       else 0) ≪ volume
-    rw [dite_eq_right he]
-    intro B _
-    rfl
+    simp_all
 
 /-- The actual joint extended density of the all-time active Green kernel. -/
 def positionActiveDensity
@@ -86,9 +83,9 @@ theorem measurable_positionActiveDensity
     (A : SmoothAutonomous lam Lam) (c : Clock) :
     Measurable (fun p : Point × Point =>
       positionActiveDensity hH hLE hlam hLam A c p.1 p.2) := by
-  have : SigmaFinite (volume : Measure Point) := density_volume_sigmaFinite
+  have  := density_volume_sigmaFinite
   exact measurable_positionKernelDensity
-    (enlargedActiveGreenKernel hH hLE hlam hLam A c) (volume : Measure Point)
+    _ _
 
 /-- The jointly measurable density represents the same canonical active kernel. -/
 theorem withDensity_positionActiveDensity (hpush : PushforwardStatement)
@@ -97,9 +94,9 @@ theorem withDensity_positionActiveDensity (hpush : PushforwardStatement)
     (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) :
     volume.withDensity (positionActiveDensity hH hLE hlam hLam A c e) =
       enlargedActiveGreenKernel hH hLE hlam hLam A c e := by
-  have : SigmaFinite (volume : Measure Point) := density_volume_sigmaFinite
+  have  := density_volume_sigmaFinite
   exact withDensity_positionKernelDensity
-    (enlargedActiveGreenKernel hH hLE hlam hLam A c) (volume : Measure Point) e
+    _ _ e
     (enlargedActiveGreenKernel_absolutelyContinuous hpush hH hLE hlam hLam A c e)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

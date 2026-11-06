@@ -7,7 +7,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierInterv
 /-! # The uniform unit-frequency block on arbitrary bounded intervals -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open Set MeasureTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
@@ -26,7 +25,7 @@ theorem interval_ball_subset_of_distance {a c R : ℝ} (hR : 0 < R) (v : PDE.Vec
   have hr := (lt_min_iff.mp hd).2
   simp only [PDE.vecOneCoordinate]
   simp only [Pi.sub_apply] at hh
-  constructor <;> linarith only [hh.1, hh.2, hl, hr]
+  grind
 
 /-- The length-independent boundary branch of the unit block. -/
 theorem interval_boundary_block
@@ -54,7 +53,7 @@ theorem interval_boundary_block
   have hp := (interval_evolution_clauses hH hLE hac B b hs hJ S K hr).2.1
   have hkill := interval_killing hH hLE hac B b hs hJ S K hr
     σ (σ + blockTime m Lb) (lt_add_of_pos_right σ ht) v hv
-  have htv := interval_fourier_tv_le_mass hJ K B hp σ (σ + blockTime m Lb) hL
+  have htv := interval_fourier_tv_le_mass hJ K B hp σ _ hL
     v 0 ξ hv ν hν
   have hnorm : σ + blockTime m Lb - σ = blockTime m Lb := by ring
   rw [hnorm] at hkill
@@ -91,22 +90,20 @@ theorem unit_frequency_block_interval
     positivity
   let δ₂ := 1 - intervalHeat lam (blockTime m Lb) (blockOuter Lb)
   have hδ₂ : 0 < δ₂ := sub_pos.mpr (intervalErf_lt_one (by
-    exact div_nonneg hR.le (by positivity)))
+    positivity))
   let δ := min δ₁ (min δ₂ (1 / 2))
   refine ⟨blockTime m Lb, δ, ht, lt_min hδ₁ (lt_min hδ₂ (by norm_num)),
     (min_le_right _ _).trans_lt ((min_le_right _ _).trans_lt (by norm_num)), ?_⟩
   intro a c hac B b hs hJ S K hr ξ hξ σ v hv hL ν hν
   obtain ⟨hmono, hpar, _hcov⟩ := interval_evolution_clauses hH hLE hac B b hs hJ S K hr
   by_cases hfit : PDE.euclideanBall v (blockOuter Lb) ⊆ PDE.oneDimensionalAxisBox a c
-  · exact (hi a c B b hs hJ S K hr hmono hpar ξ hξ σ v hv hfit hL ν hν).trans
-      (sub_le_sub_left (min_le_left _ _) 1)
+  · grind
   · have hb : min (v 0 - a) (c - v 0) ≤ blockOuter Lb := by
       by_contra hn
       exact hfit (interval_ball_subset_of_distance hR v (lt_of_not_ge hn))
     have hbound := interval_boundary_block hH hLE hac B b hs hJ S K hr
       σ v hv hb ξ hL ν hν
     have hδle : δ ≤ δ₂ := (min_le_right _ _).trans (min_le_left _ _)
-    dsimp only [δ₂] at hδle
     linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

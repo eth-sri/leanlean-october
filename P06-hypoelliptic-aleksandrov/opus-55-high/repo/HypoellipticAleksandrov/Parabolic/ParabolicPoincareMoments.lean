@@ -16,18 +16,17 @@ calculations remain private.
 
 @[expose] public section
 
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory
 open scoped BigOperators ENNReal
 
 private theorem int_id : ∫ x in Set.Ioo (-1 : ℝ) 1, x = 0 := by
   rw [← integral_Ioc_eq_integral_Ioo,
-    ← intervalIntegral.integral_of_le (by norm_num : (-1 : ℝ) ≤ 1)]
+    ← intervalIntegral.integral_of_le (by norm_num)]
   norm_num [integral_id]
 
 private theorem int_sq : ∫ x in Set.Ioo (-1 : ℝ) 1, x * x = 2 / 3 := by
-  rw [show (fun x : ℝ => x * x) = fun x => x ^ 2 by ext; ring,
+  rw [show (fun x : ℝ => x * x) = fun x => x ^ 2 by ring,
     ← integral_Ioc_eq_integral_Ioo,
     ← intervalIntegral.integral_of_le (by norm_num : (-1 : ℝ) ≤ 1)]
   norm_num [integral_pow]
@@ -38,7 +37,7 @@ private theorem cube_measure (d : ℕ) :
   rw [velocityCube_eq_pi]
   simp only [Pi.zero_apply, zero_sub, zero_add]
   change (Measure.pi (fun _ : Fin d => volume)).restrict
-    (Set.univ.pi fun _ : Fin d => Set.Ioo (-1 : ℝ) 1) = _
+    (Set.univ.pi fun _ : Fin d => Set.Ioo (-1) 1) = _
   rw [Measure.restrict_pi_pi]
 
 private theorem box_measure (d : ℕ) :
@@ -47,32 +46,30 @@ private theorem box_measure (d : ℕ) :
         (volume.restrict (velocityCube (0 : PDE.Vec d) 1)) := by
   rw [parabolicMorreyUnitBox, volume_timeVelocity_eq_prod]
   symm
-  simpa [parabolicBox] using Measure.prod_restrict (μ := (volume : Measure ℝ))
-    (ν := (volume : Measure (PDE.Vec d))) (Set.Ioo 0 1)
-    (velocityCube (0 : PDE.Vec d) 1)
+  simpa [parabolicBox] using Measure.prod_restrict (μ := volume)
+    (ν := volume) _
+    _
 
-private theorem cube_int_eval {d : ℕ} (i : Fin d) :
+variable {d : ℕ} (a : ℝ) (b : Fin d → ℝ) (f g : TimeVelocity d → ℝ) (i : Fin d)
+
+private theorem cube_int_eval  :
     ∫ v in velocityCube (0 : PDE.Vec d) 1, v i = 0 := by
   rw [cube_measure]
   let q : Fin d → ℝ → ℝ := fun k x => if k = i then x else 1
   have hq : (fun v : PDE.Vec d => v i) = fun v => ∏ k, q k (v k) := by
-    ext v
     simp [q]
   rw [hq, integral_fintype_prod_eq_prod]
-  simp only [q]
   apply Finset.prod_eq_zero (Finset.mem_univ i)
   simpa [q] using int_id
 
-private theorem box_int_eval {d : ℕ} (i : Fin d) :
+private theorem box_int_eval  :
     ∫ z in parabolicMorreyUnitBox d, z.2 i = 0 := by
   rw [box_measure]
-  change ∫ z, z.2 i ∂((volume.restrict (Set.Ioo (0 : ℝ) 1)).prod
-    (volume.restrict (velocityCube (0 : PDE.Vec d) 1))) = 0
-  simpa using (integral_fun_snd (μ := volume.restrict (Set.Ioo (0 : ℝ) 1))
-    (ν := volume.restrict (velocityCube (0 : PDE.Vec d) 1))
-    (fun v : PDE.Vec d => v i)).trans (by rw [cube_int_eval i]; simp)
+  simpa using (integral_fun_snd (μ := volume.restrict _)
+    (ν := volume.restrict _)
+    (fun v : PDE.Vec d => v i)).trans (by rw [cube_int_eval]; simp)
 
-private theorem cube_int_eval_mul_eval {d : ℕ} (i j : Fin d) :
+private theorem cube_int_eval_mul_eval  (i j : Fin d) :
     ∫ v in velocityCube (0 : PDE.Vec d) 1, v i * v j =
       if i = j then (2 : ℝ) ^ d / 3 else 0 := by
   classical
@@ -81,7 +78,6 @@ private theorem cube_int_eval_mul_eval {d : ℕ} (i j : Fin d) :
   · subst j
     let q : Fin d → ℝ → ℝ := fun k x => if k = i then x * x else 1
     have hq : (fun v : PDE.Vec d => v i * v i) = fun v => ∏ k, q k (v k) := by
-      ext v
       simp [q]
     rw [hq, integral_fintype_prod_eq_prod]
     have hqint : (fun k : Fin d => ∫ x in Set.Ioo (-1 : ℝ) 1, q k x) =
@@ -97,8 +93,7 @@ private theorem cube_int_eval_mul_eval {d : ℕ} (i j : Fin d) :
         fun k => 2 * (if k = i then (1 / 3 : ℝ) else 1) := by
       funext k
       by_cases hki : k = i
-      · simp [hki]
-        norm_num
+      · norm_num
       · simp [hki]
     rw [hfactor, Finset.prod_mul_distrib, Finset.prod_const, Fintype.prod_ite_eq']
     simp only [Finset.card_univ, Fintype.card_fin]
@@ -108,36 +103,32 @@ private theorem cube_int_eval_mul_eval {d : ℕ} (i j : Fin d) :
       ext v
       calc
         v i * v j = q i (v i) * q j (v j) := by simp [q]
-        _ = q i (v i) * (q j (v j) *
-            ∏ k ∈ (Finset.univ.erase i).erase j, q k (v k)) := by
-          congr 1
+        _ = q i _ * (q j _ *
+            ∏ k ∈ (Finset.univ.erase i).erase j, q k _) := by
           have hprod : ∏ k ∈ (Finset.univ.erase i).erase j, q k (v k) = 1 := by
             apply Finset.prod_eq_one
             intro k hk
             rcases Finset.mem_erase.mp hk with ⟨hkj, hki_mem⟩
             exact by simp [q, hkj, (Finset.mem_erase.mp hki_mem).1]
           rw [hprod, mul_one]
-        _ = ∏ k, q k (v k) := by
-          rw [Finset.mul_prod_erase (Finset.univ.erase i) (fun k => q k (v k))]
-          · rw [Finset.mul_prod_erase Finset.univ (fun k => q k (v k))]
+        _ = ∏ k, q k _ := by
+          rw [Finset.mul_prod_erase _ (fun k => q k _)]
+          · rw [Finset.mul_prod_erase Finset.univ (fun k => q k _)]
             exact Finset.mem_univ _
           · exact Finset.mem_erase.mpr ⟨fun h => hij h.symm, Finset.mem_univ _⟩
-    rw [hq, integral_fintype_prod_eq_prod]
-    rw [if_neg hij]
+    rw [hq, integral_fintype_prod_eq_prod, if_neg hij]
     apply Finset.prod_eq_zero (Finset.mem_univ i)
     simpa [q, hij] using int_id
 
-private theorem box_int_eval_mul_eval {d : ℕ} (i j : Fin d) :
+private theorem box_int_eval_mul_eval  (i j : Fin d) :
     ∫ z in parabolicMorreyUnitBox d, z.2 i * z.2 j =
       if i = j then (2 : ℝ) ^ d / 3 else 0 := by
   rw [box_measure]
-  change ∫ z, z.2 i * z.2 j ∂((volume.restrict (Set.Ioo (0 : ℝ) 1)).prod
-    (volume.restrict (velocityCube (0 : PDE.Vec d) 1))) = _
   calc
-    _ = (∫ _ in Set.Ioo (0 : ℝ) 1, (1 : ℝ)) *
-        ∫ v in velocityCube (0 : PDE.Vec d) 1, v i * v j := by
-      simpa using integral_prod_mul (μ := volume.restrict (Set.Ioo (0 : ℝ) 1))
-        (ν := volume.restrict (velocityCube (0 : PDE.Vec d) 1)) (fun _ : ℝ => (1 : ℝ))
+    _ = (∫ _ in Set.Ioo (0 : ℝ) 1, (1)) *
+        ∫ v in velocityCube _ 1, v i * v j := by
+      simpa using integral_prod_mul (μ := volume.restrict (Set.Ioo (0) 1))
+        (ν := volume.restrict _) (fun _ : ℝ => (1))
         (fun v : PDE.Vec d => v i * v j)
     _ = _ := by simp [cube_int_eval_mul_eval]
 
@@ -151,14 +142,14 @@ theorem parabolicMorreyUnitAverage_one (d : ℕ) :
   field_simp
 
 /-- Every velocity coordinate has zero average on the symmetric unit box. -/
-theorem parabolicMorreyUnitAverage_velocity {d : ℕ} (i : Fin d) :
+theorem parabolicMorreyUnitAverage_velocity  :
     parabolicMorreyUnitAverage (fun z : TimeVelocity d => z.2 i) = 0 := by
   rw [parabolicMorreyUnitAverage, box_int_eval]
   ring
 
 /-- The unit-box velocity-coordinate moment matrix is diagonal with diagonal
 entry `1 / 3`. -/
-theorem parabolicMorreyUnitAverage_velocity_mul_velocity {d : ℕ} (i j : Fin d) :
+theorem parabolicMorreyUnitAverage_velocity_mul_velocity  (i j : Fin d) :
     parabolicMorreyUnitAverage (fun z : TimeVelocity d => z.2 i * z.2 j) =
       if i = j then (1 / 3 : ℝ) else 0 := by
   rw [parabolicMorreyUnitAverage, box_int_eval_mul_eval,
@@ -169,7 +160,7 @@ theorem parabolicMorreyUnitAverage_velocity_mul_velocity {d : ℕ} (i j : Fin d)
   · simp [hij]
 
 /-- The unit-box average is additive on genuinely integrable inputs. -/
-theorem parabolicMorreyUnitAverage_add {d : ℕ} (f g : TimeVelocity d → ℝ)
+theorem parabolicMorreyUnitAverage_add 
     (hf : Integrable f (volume.restrict (parabolicMorreyUnitBox d)))
     (hg : Integrable g (volume.restrict (parabolicMorreyUnitBox d))) :
     parabolicMorreyUnitAverage (f + g) =
@@ -180,20 +171,18 @@ theorem parabolicMorreyUnitAverage_add {d : ℕ} (f g : TimeVelocity d → ℝ)
   ring
 
 /-- The unit-box average commutes with real scalar multiplication. -/
-theorem parabolicMorreyUnitAverage_smul {d : ℕ} (c : ℝ) (f : TimeVelocity d → ℝ) :
+theorem parabolicMorreyUnitAverage_smul  (c : ℝ) (f : TimeVelocity d → ℝ) :
     parabolicMorreyUnitAverage (c • f) = c • parabolicMorreyUnitAverage f := by
-  simp only [parabolicMorreyUnitAverage]
-  change (volume (parabolicMorreyUnitBox d)).toReal⁻¹ *
+  change (volume _).toReal⁻¹ *
       ∫ z in parabolicMorreyUnitBox d, c • f z = c •
-    ((volume (parabolicMorreyUnitBox d)).toReal⁻¹ *
+    ((volume _).toReal⁻¹ *
       ∫ z in parabolicMorreyUnitBox d, f z)
   rw [integral_smul]
-  simp only [smul_eq_mul]
   ring
 
 /-- A velocity moment coefficient is additive when its two weighted inputs
 are integrable on the unit box. -/
-theorem parabolicMorreyUnitVelocityCoeff_add {d : ℕ} (f g : TimeVelocity d → ℝ) (i : Fin d)
+theorem parabolicMorreyUnitVelocityCoeff_add 
     (hf : Integrable (fun z => f z * z.2 i)
       (volume.restrict (parabolicMorreyUnitBox d)))
     (hg : Integrable (fun z => g z * z.2 i)
@@ -211,7 +200,7 @@ theorem parabolicMorreyUnitVelocityCoeff_add {d : ℕ} (f g : TimeVelocity d →
 
 /-- The moment projection is additive when the value and every first moment
 of both inputs are integrable on the unit box. -/
-theorem parabolicMorreyUnitAffineProjection_add {d : ℕ} (f g : TimeVelocity d → ℝ)
+theorem parabolicMorreyUnitAffineProjection_add 
     (hf : Integrable f (volume.restrict (parabolicMorreyUnitBox d)))
     (hg : Integrable g (volume.restrict (parabolicMorreyUnitBox d)))
     (hfv : ∀ i : Fin d, Integrable (fun z => f z * z.2 i)
@@ -222,10 +211,7 @@ theorem parabolicMorreyUnitAffineProjection_add {d : ℕ} (f g : TimeVelocity d 
       parabolicMorreyUnitAffineProjection f +
         parabolicMorreyUnitAffineProjection g := by
   funext z
-  have hcoeff : ∀ i : Fin d,
-      parabolicMorreyUnitVelocityCoeff (f + g) i =
-        parabolicMorreyUnitVelocityCoeff f i +
-          parabolicMorreyUnitVelocityCoeff g i :=
+  have hcoeff  :=
     fun i => parabolicMorreyUnitVelocityCoeff_add f g i (hfv i) (hgv i)
   simp only [parabolicMorreyUnitAffineProjection, Pi.add_apply]
   rw [parabolicMorreyUnitAverage_add f g hf hg]
@@ -234,16 +220,14 @@ theorem parabolicMorreyUnitAffineProjection_add {d : ℕ} (f g : TimeVelocity d 
   rw [Finset.sum_add_distrib]
   ring
 
-private theorem continuous_integrable_unit {d : ℕ} {f : TimeVelocity d → ℝ}
+private theorem continuous_integrable_unit  {f : TimeVelocity d → ℝ}
     (hf : Continuous f) :
     Integrable f (volume.restrict (parabolicMorreyUnitBox d)) := by
-  let K : Set (TimeVelocity d) := parabolicClosedBox 1 1 0 (0 : PDE.Vec d)
+  let K  := parabolicClosedBox 1 1 0 (0 : PDE.Vec d)
   have hKcompact : IsCompact K :=
-    isCompact_parabolicClosedBox 1 1 0 (0 : PDE.Vec d)
+    isCompact_parabolicClosedBox 1 1 0 _
   have hunitSubset : parabolicMorreyUnitBox d ⊆ K := by
     rintro ⟨t, v⟩ hz
-    change (t, v) ∈ parabolicBox 1 1 0 0 at hz
-    change (t, v) ∈ parabolicClosedBox 1 1 0 0
     rcases hz with ⟨⟨htLeft, htRight⟩, hv⟩
     exact ⟨⟨htLeft.le, htRight.le⟩, fun i => (hv i).le⟩
   exact (hf.continuousOn.integrableOn_compact hKcompact).mono_set hunitSubset
@@ -256,7 +240,7 @@ private theorem average_finset_sum {d ι : ℕ} (s : Finset (Fin ι))
   simp only [parabolicMorreyUnitAverage]
   rw [integral_finset_sum s hf, Finset.mul_sum]
 
-private theorem average_velocity_affine {d : ℕ} (a : ℝ) (b : Fin d → ℝ) :
+private theorem average_velocity_affine  :
     parabolicMorreyUnitAverage
         (fun z : TimeVelocity d => a + ∑ i : Fin d, b i * z.2 i) = a := by
   let f : Fin d → TimeVelocity d → ℝ := fun i z => b i * z.2 i
@@ -270,7 +254,7 @@ private theorem average_velocity_affine {d : ℕ} (a : ℝ) (b : Fin d → ℝ) 
     apply continuous_integrable_unit
     fun_prop
   have hsum : Integrable (fun z => ∑ i : Fin d, f i z)
-      (volume.restrict (parabolicMorreyUnitBox d)) :=
+      _ :=
     integrable_finset_sum _ fun i _ => hf i
   rw [show (fun z : TimeVelocity d => a + ∑ i : Fin d, b i * z.2 i) =
       (fun _ => a) + fun z => ∑ i : Fin d, f i z by
@@ -291,7 +275,7 @@ private theorem average_velocity_affine {d : ℕ} (a : ℝ) (b : Fin d → ℝ) 
   simp_rw [parabolicMorreyUnitAverage_smul, parabolicMorreyUnitAverage_velocity]
   simp only [smul_eq_mul, mul_zero, Finset.sum_const_zero, add_zero]
 
-private theorem coeff_velocity_affine {d : ℕ} (a : ℝ) (b : Fin d → ℝ)
+private theorem coeff_velocity_affine 
     (j : Fin d) :
     parabolicMorreyUnitVelocityCoeff
         (fun z : TimeVelocity d => a + ∑ i : Fin d, b i * z.2 i) j = b j := by
@@ -306,7 +290,7 @@ private theorem coeff_velocity_affine {d : ℕ} (a : ℝ) (b : Fin d → ℝ)
     apply continuous_integrable_unit
     fun_prop
   have hsum : Integrable (fun z => ∑ i : Fin d, g i z)
-    (volume.restrict (parabolicMorreyUnitBox d)) :=
+    _ :=
     integrable_finset_sum _ fun i _ => hg i
   rw [parabolicMorreyUnitVelocityCoeff]
   rw [show (fun z : TimeVelocity d =>
@@ -331,7 +315,6 @@ private theorem coeff_velocity_affine {d : ℕ} (a : ℝ) (b : Fin d → ℝ)
     simp only [g, Pi.smul_apply, smul_eq_mul]]
   simp_rw [parabolicMorreyUnitAverage_smul,
     parabolicMorreyUnitAverage_velocity_mul_velocity]
-  simp only [smul_eq_mul, zero_add]
   have hnormalization : 3 * (1 / 3 : ℝ) = 1 := by norm_num
   rw [Finset.sum_eq_single_of_mem j (Finset.mem_univ _)]
   · simp only [ite_true]
@@ -344,7 +327,7 @@ private theorem coeff_velocity_affine {d : ℕ} (a : ℝ) (b : Fin d → ℝ)
 /-- The canonical unit-box moment projection exactly reproduces every
 time-independent velocity-affine scalar field. -/
 theorem parabolicMorreyUnitAffineProjection_reproduces_velocity_affine
-    {d : ℕ} (a : ℝ) (b : Fin d → ℝ) :
+     :
     parabolicMorreyUnitAffineProjection
         (fun z : TimeVelocity d => a + ∑ i : Fin d, b i * z.2 i) =
       fun z => a + ∑ i : Fin d, b i * z.2 i := by

@@ -12,7 +12,6 @@ whole-space supplied-evolution conclusion, retaining its shared witnesses and so
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open Set MeasureTheory SectionTwo Green Parabolic TheoremA
 open scoped ENNReal NNReal MatrixOrder
@@ -65,19 +64,15 @@ theorem kinetic_aleksandrov_timeVelocity_of_slabFourierBounds
               (eLpNorm (fun P => max (f P) 0) (ENNReal.ofReal p)
                 (volume.restrict (backwardCylinder P₀ R))).toReal := by
   have he : ∀ B : CoefficientField d, IsSectionTwoCoefficient lam Lam B →
-      ∃ (S : TerminalOperatorFamily (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
-        (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))),
-        RealizesTerminalEvolution (wholeSpace d) (fun _ => (0 : PDE.Vec d)) MeasurableSet.univ
+      ∃ (S : TerminalOperatorFamily _ _)
+        (K : MovingFiberKernel _ _),
+        RealizesTerminalEvolution (wholeSpace d) (fun _ => (0)) MeasurableSet.univ
           (zIndependentCoefficient B) (identityDrift d) S K := by
     intro B hB
     obtain ⟨S, K, hreal, hcov, hmono, hpar⟩ := hevolution B hB
-    have _ := hcov
-    have _ := hmono
-    have _ := hpar
     exact ⟨S, K, hreal⟩
   obtain ⟨C, hC, hsmooth⟩ := smooth_estimate_of_slabFourierBounds hd lam Lam p
     hlam hLam hp hH hbounds he
-  have hdR : (1 : ℝ) ≤ d := by exact_mod_cast hd
   have hp1 : 1 ≤ p := by linarith
   have hfull : ∀ A : CoefficientField d,
       IsSmoothCoefficient A → IsSymmetricCoefficient A →
@@ -92,7 +87,7 @@ theorem kinetic_aleksandrov_timeVelocity_of_slabFourierBounds
         backwardOperatorOfTimeVelocityCoefficient A u P ≤ f P) →
       ∀ P ∈ closure (backwardCylinder P₀ R), u P ≤
         sSup ((fun P => max (u P) 0) '' kineticBoundary P₀ R) +
-          C * R ^ (2 - (4 * (d : ℝ) + 2) / p) *
+          C * R ^ (2 - (4 * d + 2) / p) *
             (eLpNorm (borelSource false u f) (ENNReal.ofReal p)
               (volume.restrict (backwardCylinder P₀ R))).toReal := by
     intro A hAs hsym hlo hhi P₀ R hR u f hc hr hf hLp hsub P hP
@@ -106,8 +101,8 @@ theorem kinetic_aleksandrov_timeVelocity_of_slabFourierBounds
     apply mul_le_mul_of_nonneg_left
     · simpa only [borelSource, Bool.false_eq_true, ite_false] using
         localized_positive_source_norm_le volume (isOpen_backwardCylinder P₀ R hR)
-        u f hr.continuousOn (ENNReal.ofReal p) hLp
-    · exact mul_nonneg hC (Real.rpow_nonneg hR.le _)
+        u f hr.continuousOn _ hLp
+    positivity
   refine ⟨C, hC, ?_⟩
   intro P₀ R hR A hBorel hsym hlo hhi f u hf hc hr hsub hLp P hP
   have hQ := (isOpen_backwardCylinder P₀ R hR).measurableSet
@@ -117,20 +112,16 @@ theorem kinetic_aleksandrov_timeVelocity_of_slabFourierBounds
   have hmax : (fun P => max (f P) 0) =ᵐ[volume.restrict (backwardCylinder P₀ R)]
       (fun P => max (f₀ P) 0) := by
     filter_upwards [hae] with P hP
-    change max (f P) 0 = max ((backwardCylinder P₀ R).indicator f P) 0
-    rw [hP]
+    grind
   have hLp₀ := hLp.ae_eq hmax
   have hsub₀ : ∀ᵐ P ∂volume.restrict (backwardCylinder P₀ R),
       backwardOperatorOfTimeVelocityCoefficient A u P ≤ f₀ P := by
     filter_upwards [hsub, hae] with P hsub hEq
-    change backwardOperatorOfTimeVelocityCoefficient A u P ≤
-      (backwardCylinder P₀ R).indicator f P
-    rw [hEq]
-    exact hsub
+    linarith
   have hbound := kinetic_abp_smooth_to_borel lam Lam hlam hLam p hp1
-    (2 - (4 * (d : ℝ) + 2) / p) C false hfull A hBorel hsym hlo hhi
+    _ C false hfull A hBorel hsym hlo hhi
     P₀ R hR u f₀ hc hr hf₀ hLp₀ hsub₀ P hP
   simpa only [f₀, borelSource, Bool.false_eq_true, ite_false,
-    eLpNorm_positive_source_indicator hQ f] using hbound
+    eLpNorm_positive_source_indicator hQ] using hbound
 
 end HypoellipticAleksandrov.KineticAleksandrov

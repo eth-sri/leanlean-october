@@ -17,7 +17,9 @@ open scoped ENNReal Topology
 
 namespace HypoellipticAleksandrov.Parabolic
 
-private theorem cross_ae_eq_of_pairing_eq {d : ℕ} {U : Set (TimeVelocity d)}
+variable {d : ℕ} {f : TimeVelocity d → ℝ} {i : Fin d}
+
+private theorem cross_ae_eq_of_pairing_eq  {U : Set (TimeVelocity d)}
     (hU : IsOpen U) {du dv : TimeVelocity d → ℝ}
     (hdu : LocallyIntegrableOn du U volume)
     (hdv : LocallyIntegrableOn dv U volume)
@@ -56,61 +58,46 @@ private theorem cross_ae_eq_of_pairing_eq {d : ℕ} {U : Set (TimeVelocity d)}
       calc
         ∫ z in U, φ z * (du z - dv z) ∂volume =
             ∫ z in U, (du z * φ z - dv z * φ z) ∂volume := by
-              apply setIntegral_congr_fun hU.measurableSet
-              intro z hz
-              ring
+              grind
         _ = (∫ z in U, du z * φ z ∂volume) -
             ∫ z in U, dv z * φ z ∂volume := by
               rw [integral_sub hduInt hdvInt]
-        _ = 0 := by rw [hpair φ hφSmooth hφCompact hφSub, sub_self]
+        _ = 0 := by simp_all
     have hzeroOut : ∀ z, z ∉ U → φ z * (du z - dv z) = 0 := by
       intro z hz
       have hzNotIn : z ∉ tsupport φ := fun hz' => hz (hφSub hz')
       simp [image_eq_zero_of_notMem_tsupport hzNotIn]
     calc
       ∫ z, φ z • (du z - dv z) ∂volume =
-          ∫ z, φ z * (du z - dv z) ∂volume := by simp [smul_eq_mul]
+          ∫ z, φ z * (du z - dv z) ∂volume := by simp
       _ = ∫ z in U, φ z * (du z - dv z) ∂volume := by
             rw [setIntegral_eq_integral_of_forall_compl_eq_zero hzeroOut]
       _ = 0 := hsetZero
   rw [Filter.EventuallyEq, ae_restrict_iff' hU.measurableSet]
-  filter_upwards [hdiffZero] with z hz hzU
-  exact sub_eq_zero.mp (hz hzU)
+  grind
 
-private theorem cross_velocityGradient_contDiff_infty {d : ℕ}
-    {f : TimeVelocity d → ℝ} {i : Fin d}
+private theorem cross_velocityGradient_contDiff_infty 
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient f z i) := by
-  unfold velocityGradient
-  exact (contDiff_infty_iff_fderiv.mp hf).2.clm_apply contDiff_const
+    ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient f z i) := (contDiff_infty_iff_fderiv.mp hf).2.clm_apply contDiff_const
 
-private theorem cross_velocityGradient_hasCompactSupport {d : ℕ}
-    {f : TimeVelocity d → ℝ} {i : Fin d}
+private theorem cross_velocityGradient_hasCompactSupport 
     (hf : HasCompactSupport f) :
     HasCompactSupport (fun z => velocityGradient f z i) := by
   unfold velocityGradient
   simpa using hf.fderiv_apply (𝕜 := ℝ)
-    ((0, Pi.single i 1) : TimeVelocity d)
+    _
 
-private theorem cross_velocityGradient_tsupport_subset {d : ℕ}
-    {f : TimeVelocity d → ℝ} {i : Fin d} :
+private theorem cross_velocityGradient_tsupport_subset  :
     tsupport (fun z => velocityGradient f z i) ⊆ tsupport f := by
   unfold velocityGradient
-  change closure (Function.support
-    (fun z => fderiv ℝ f z (0, Pi.single i 1))) ⊆ tsupport f
   refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
+  aesop
 
-private theorem cross_velocityGradient_velocityGradient_commute {d : ℕ}
-    {f : TimeVelocity d → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
+private theorem cross_velocityGradient_velocityGradient_commute  (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (i j : Fin d) (z : TimeVelocity d) :
     velocityGradient (fun y => velocityGradient f y i) z j =
       velocityGradient (fun y => velocityGradient f y j) z i := by
-  have hgrad : ContDiff ℝ (⊤ : ℕ∞) (fderiv ℝ f) :=
+  have hgrad : ContDiff ℝ _ (fderiv ℝ f) :=
     (contDiff_infty_iff_fderiv.mp hf).2
   have hgradDiff : DifferentiableAt ℝ (fderiv ℝ f) z :=
     hgrad.contDiffAt.differentiableAt (by simp)
@@ -118,24 +105,15 @@ private theorem cross_velocityGradient_velocityGradient_commute {d : ℕ}
       HypoellipticAleksandrov.Parabolic.velocityHessian f z j i := by
     unfold velocityGradient HypoellipticAleksandrov.Parabolic.velocityHessian
     rw [fderiv_clm_apply hgradDiff (differentiableAt_const _)]
-    have hconst : fderiv ℝ (fun _ : TimeVelocity d =>
-        ((0, Pi.single i 1) : TimeVelocity d)) z = 0 :=
-      (hasFDerivAt_const ((0, Pi.single i 1) : TimeVelocity d) z).fderiv
-    rw [hconst]
     simp
   have hright : velocityGradient (fun y => velocityGradient f y j) z i =
       HypoellipticAleksandrov.Parabolic.velocityHessian f z i j := by
     unfold velocityGradient HypoellipticAleksandrov.Parabolic.velocityHessian
     rw [fderiv_clm_apply hgradDiff (differentiableAt_const _)]
-    have hconst : fderiv ℝ (fun _ : TimeVelocity d =>
-        ((0, Pi.single j 1) : TimeVelocity d)) z = 0 :=
-      (hasFDerivAt_const ((0, Pi.single j 1) : TimeVelocity d) z).fderiv
-    rw [hconst]
     simp
   rw [hleft, hright]
   exact (HypoellipticAleksandrov.Parabolic.velocityHessian_isSymm
       (hf.of_le (by
-        change ((2 : ℕ∞) : WithTop ℕ∞) ≤ ((⊤ : ℕ∞) : WithTop ℕ∞)
         exact WithTop.coe_le_coe.mpr le_top)) z).apply i j
 
 namespace HasWeakVelocityPartialDerivOn
@@ -159,7 +137,7 @@ theorem cross_ae_eq_of_memLp
     (hdji.locallyIntegrableOn (by norm_num))
   intro φ hφSmooth hφCompact hφSub
   have htestSmooth (k : Fin d) :
-      ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient φ z k) :=
+      ContDiff ℝ _ (fun z => velocityGradient φ z k) :=
     cross_velocityGradient_contDiff_infty hφSmooth
   have htestCompact (k : Fin d) :
       HasCompactSupport (fun z => velocityGradient φ z k) :=
@@ -168,18 +146,18 @@ theorem cross_ae_eq_of_memLp
       tsupport (fun z => velocityGradient φ z k) ⊆ U :=
     cross_velocityGradient_tsupport_subset.trans hφSub
   have hijSecond := hij φ hφSmooth hφCompact hφSub
-  have hiFirst := hui (fun z => velocityGradient φ z j) (htestSmooth j)
+  have hiFirst := hui _ (htestSmooth j)
     (htestCompact j) (htestSub j)
   have hjiSecond := hji φ hφSmooth hφCompact hφSub
-  have hjFirst := huj (fun z => velocityGradient φ z i) (htestSmooth i)
+  have hjFirst := huj _ (htestSmooth i)
     (htestCompact i) (htestSub i)
   calc
     (∫ z in U, dij z * φ z ∂volume) =
         ∫ z in U, u z *
-          velocityGradient (fun y => velocityGradient φ y j) z i ∂volume := by
+          velocityGradient _ z i ∂volume := by
       linarith only [hijSecond, hiFirst]
     _ = ∫ z in U, u z *
-          velocityGradient (fun y => velocityGradient φ y i) z j ∂volume := by
+          velocityGradient _ z j ∂volume := by
       apply setIntegral_congr_fun hU.measurableSet
       intro z hz
       simp only

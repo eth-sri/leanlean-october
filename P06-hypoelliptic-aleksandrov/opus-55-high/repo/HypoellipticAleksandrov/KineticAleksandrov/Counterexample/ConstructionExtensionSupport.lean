@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Construc
 /-! # No derivative mass outside the literal profile domain -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Set
 
@@ -23,7 +22,7 @@ theorem construction_extended_jets_zero_outside_profile {d : ℕ} (hd : 1 ≤ d)
       (∀ i k, constructionExtendedPackedHessian h r mu R m t x i k = 0) := by
   let s := fun x => selectedFlatProfile h r (spatialCoordinateCLE d x) -
     spatialPackedBarrier d mu R t x
-  let D : Set (PDE.Vec (d + d)) := {x | s x < 0} ∪
+  let D  := {x | s x < 0} ∪
     {x | R ^ 2 < PDE.vecNormSq (spatialCoordinateCLE d x).2}
   let u := fun x => zeroExtendedProfile (profileFunction h) alpha r mu R
     ⟨t, (spatialCoordinateCLE d x).1, (spatialCoordinateCLE d x).2⟩
@@ -35,8 +34,8 @@ theorem construction_extended_jets_zero_outside_profile {d : ℕ} (hd : 1 ≤ d)
         (spatialCoordinateCLE d).continuous.snd))
   have hu : u =ᵐ[volume.restrict D] 0 := by
     filter_upwards [ae_restrict_mem hD.measurableSet] with x hx
-    change zeroExtendedProfile (profileFunction h) alpha r mu R
-      ⟨t, (spatialCoordinateCLE d x).1, (spatialCoordinateCLE d x).2⟩ = 0
+    change zeroExtendedProfile _ alpha r mu R
+      _ = 0
     rw [construction_zero_extension_eq_cutoff h r mu R m hr hmu hR hm hscale hmargin]
     rcases hx with hs | hv
     · change constructionVelocityCutoff m R (spatialCoordinateCLE d x) * timeCutoffTheta (s x) = 0
@@ -49,17 +48,13 @@ theorem construction_extended_jets_zero_outside_profile {d : ℕ} (hd : 1 ≤ d)
       have hf := flatProfile_eq_one_sub (profileFunction h) alpha r hr
         (spatialCoordinateCLE d x) (hscale.trans hx)
       have hb : 0 < spatialPackedBarrier d mu R t x := by
-        unfold spatialPackedBarrier barrier
         have he := (div_le_one (sq_pos_of_pos hR)).mpr hv
-        exact mul_pos (Real.exp_pos _) (by linarith only [he])
-      change selectedFlatProfile h r (spatialCoordinateCLE d x) -
-        spatialPackedBarrier d mu R t x < 0
+        exact mul_pos (Real.exp_pos _) (by linarith)
       change flatProfile (profileFunction h) flatteningPsi flatteningOffset alpha r
         (spatialCoordinateCLE d x) - _ < 0
-      rw [hf]
-      linarith only [hx, hb]
-    · exact Or.inr (lt_of_not_ge hv)
-  have hg (i : Fin (d + d)) :
+      linarith
+    grind
+  have hg (i : Fin _) :
       (fun x => constructionExtendedPackedGradient h r mu R m t x i) =ᵐ[volume.restrict D] 0 := by
     apply construction_weak_derivative_zero_on_open D hD i u _
       (construction_extendedGradient_locallyIntegrable h r hr mu R m t i) hu
@@ -71,14 +66,13 @@ theorem construction_extended_jets_zero_outside_profile {d : ℕ} (hd : 1 ≤ d)
     apply construction_weak_derivative_zero_on_open D hD (Fin.natAdd d i) _ _
       (construction_extendedHessian_locallyIntegrable h r hr mu R m t i k)
       (hg (Fin.natAdd d k))
-    exact weakPartial_on_of_global D (Fin.natAdd d i) _ _
+    exact weakPartial_on_of_global D _ _ _
       (construction_extended_velocityJet_weak hd ha ha1 h r hr mu R m t i k)
   have hga := ae_all_iff.mpr hg
   have hha := ae_all_iff.mpr (fun i => ae_all_iff.mpr (hh i))
   have hga' := (ae_restrict_iff' hD.measurableSet).mp hga
   have hha' := (ae_restrict_iff' hD.measurableSet).mp hha
   filter_upwards [hga', hha'] with x hx hy
-  intro hprof
-  exact ⟨hx (hsub x hprof), hy (hsub x hprof)⟩
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

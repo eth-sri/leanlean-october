@@ -22,8 +22,8 @@ theorem existsUnique_infiniteBoundaryFunctional
         (∀ p, |f p| ≤ c) → |ℓ f| ≤ c) ∧
       ∀ f : exitProbeSubmodule, ℓ (infiniteExitProbeCcLinear H f) = infiniteExitProbeValueLinear
         hH hLE hlam hLam A H e f := by
-  obtain ⟨ℓ, hbd, hagree⟩ := exists_positive_extension_of_dense (infiniteExitProbeCcLinear H)
-    (infiniteExitProbeValueLinear hH hLE hlam hLam A H e)
+  obtain ⟨ℓ, hbd, hagree⟩ := exists_positive_extension_of_dense _
+    _
     (infiniteExitProbeValueLinear_bound hH hLE hlam hLam A H e)
     (infiniteExitProbeValueLinear_nonneg hH hLE hlam hLam A H e)
     (infiniteExitProbeCc_sq H) (infiniteExitProbeCc_dense H)
@@ -31,7 +31,7 @@ theorem existsUnique_infiniteBoundaryFunctional
   have hlin : k.toLinearMap = ℓ.toLinearMap :=
     eq_of_bounded_of_dense (infiniteExitProbeCcLinear H) k.toLinearMap ℓ.toLinearMap
       hk.1 hbd (fun f => (hk.2 f).trans (hagree f).symm) (infiniteExitProbeCc_dense H)
-  exact PositiveLinearMap.ext (fun f => LinearMap.congr_fun hlin f)
+  simp_all
 
 /-- The strip boundary functional is chosen only from its proved unique characterization. -/
 def infiniteBoundaryFunctional

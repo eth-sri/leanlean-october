@@ -16,7 +16,9 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory
 
-private theorem velocityTwo_comm {d : ℕ} (i j : Fin d) :
+variable {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U) (J : ParabolicW12Function d U 2)
+
+private theorem velocityTwo_comm  (i j : Fin d) :
     ParabolicDerivativeIndex.velocityTwo i j =
       ParabolicDerivativeIndex.velocityTwo j i := by
   apply Subtype.ext
@@ -27,40 +29,22 @@ private theorem velocityTwo_comm {d : ℕ} (i j : Fin d) :
       by_cases hki : k = i
       · subst k
         by_cases hij : i = j
-        · subst j
-          rfl
-        · simp [ParabolicDerivativeIndex.velocityTwo,
-            ParabolicDerivativeIndex.velocityOne,
-            ParabolicDerivativeIndex.velocitySucc,
-            TimeVelocityMultiIndex.ofTimeVelocity,
-            TimeVelocityMultiIndex.timeOrder,
-            TimeVelocityMultiIndex.velocity, velocityCoord, hij]
+        · simp_all
+        · simp [TimeVelocityMultiIndex.ofTimeVelocity, velocityCoord, hij]
       · by_cases hkj : k = j
         · subst k
-          simp [ParabolicDerivativeIndex.velocityTwo,
-            ParabolicDerivativeIndex.velocityOne,
-            ParabolicDerivativeIndex.velocitySucc,
-            TimeVelocityMultiIndex.ofTimeVelocity,
-            TimeVelocityMultiIndex.timeOrder,
-            TimeVelocityMultiIndex.velocity, velocityCoord, hki]
-        · simp [ParabolicDerivativeIndex.velocityTwo,
-            ParabolicDerivativeIndex.velocityOne,
-            ParabolicDerivativeIndex.velocitySucc,
-            TimeVelocityMultiIndex.ofTimeVelocity,
-            TimeVelocityMultiIndex.timeOrder,
-            TimeVelocityMultiIndex.velocity, velocityCoord, hki, hkj]
+          simp [TimeVelocityMultiIndex.ofTimeVelocity, velocityCoord, hki]
+        · simp [TimeVelocityMultiIndex.ofTimeVelocity, hki, hkj]
 
 private theorem representative_velocityTwo_ae_eq_velocityHessian
-    {d : ℕ} {U : Set (TimeVelocity d)}
-    (hU : IsOpen U) (J : ParabolicW12Function d U 2) (j i : Fin d) :
+     (j i : Fin d) :
     (fun z =>
       (J.toWeakDerivativeFamily hU).representative
         (ParabolicDerivativeIndex.velocityTwo j i) z)
       =ᵐ[timeVelocityVolumeOn U]
         fun z => J.velocityHessian z j i := by
   rcases le_total j i with hji | hij
-  · rw [ParabolicW12Function.toWeakDerivativeFamily_representative_velocityTwo
-      hU J j i hji]
+  · simp_all
   · rw [velocityTwo_comm j i,
       ParabolicW12Function.toWeakDerivativeFamily_representative_velocityTwo
         hU J i j hij]
@@ -69,9 +53,7 @@ private theorem representative_velocityTwo_ae_eq_velocityHessian
 /-- The literal original-time equation of a selected local `W^{1,2}_2` jet
 is preserved by its canonical weight-two weak-derivative family. -/
 theorem ParabolicW12Function.toWeakDerivativeFamily_originalTimeEquation
-    {d : ℕ} {U : Set (TimeVelocity d)}
-    (hU : IsOpen U)
-    (J : ParabolicW12Function d U 2)
+    
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F : ℝ → PDE.Vec d → ℝ)
@@ -111,10 +93,6 @@ theorem ParabolicW12Function.toWeakDerivativeFamily_originalTimeEquation
     intro j
     exact representative_velocityTwo_ae_eq_velocityHessian hU J j i
   filter_upwards [hEq, hhessian] with z hz hzhessian
-  rw [ParabolicW12Function.toWeakDerivativeFamily_representative_timeOne,
-    ParabolicW12Function.toWeakDerivativeFamily_representative_zeroTwo]
-  simp_rw [ParabolicW12Function.toWeakDerivativeFamily_representative_velocityOne,
-    hzhessian]
-  exact hz
+  simp_all
 
 end HypoellipticAleksandrov.Parabolic

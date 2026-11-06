@@ -13,7 +13,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Green.SlabFourierDomina
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Green
 
@@ -30,13 +29,12 @@ theorem ae_enorm_le_of_setIntegral_enorm_le {α : Type*} [MeasurableSpace α] (m
     Measure.variation_withDensityᵥ hk
   have hle : (m.withDensityᵥ k).variation ≤ m.withDensity G := by
     refine VectorMeasure.variation_le_of_forall_enorm_le (fun E hE => ?_)
-    rw [withDensityᵥ_apply hk hE, withDensity_apply _ hE]
-    exact h E hE
-  rw [hv] at hle
+    rw [withDensityᵥ_apply hk hE]
+    simp_all
   refine ae_le_of_forall_setLIntegral_le_of_sigmaFinite₀ hk.aestronglyMeasurable.enorm
     (fun E hE _ => ?_)
   have := Measure.le_iff.1 hle E hE
-  rwa [withDensity_apply _ hE, withDensity_apply _ hE] at this
+  simp_all
 
 
 variable {d : ℕ} (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d)))
@@ -61,10 +59,10 @@ theorem slab_fourier_ae_bound
     ∀ᵐ y ∂slabBase d T, ‖k y‖ₑ ≤ ENNReal.ofReal (gξ (slabShift d (T / 2) y)) := by
   have hρfin : IsFiniteMeasure (halfMeasure K σ₀ T hT.le μ ξ).variation :=
     evolved_variation_finite μ _ _ _ (measurable_halfPhase ξ _) (norm_halfPhase ξ _)
-  refine ae_enorm_le_of_setIntegral_enorm_le (slabBase d T) k hk _ (fun E hE => ?_)
+  refine ae_enorm_le_of_setIntegral_enorm_le _ k hk _ (fun E hE => ?_)
   rw [hkE E hE]
   refine (slab_domination_ineq K hcov hcomp σ₀ μ Γ hΓ hT ξ hE).trans (le_of_eq ?_)
-  exact (slab_occupation_identity K (σ₀ + T / 2) (T / 2) T (3 * T / 2) (by linarith) hT
+  exact (slab_occupation_identity K _ _ T _ (by linarith) hT
     (by linarith) (by linarith) _ gξ hgξ hint hE).symm
 
 end HypoellipticAleksandrov.KineticAleksandrov.Green

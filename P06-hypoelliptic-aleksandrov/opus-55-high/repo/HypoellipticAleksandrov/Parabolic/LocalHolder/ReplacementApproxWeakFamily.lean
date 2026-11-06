@@ -16,17 +16,15 @@ namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 open scoped Topology ENNReal
 
-private theorem test_time_smooth {d : ℕ} {φ : TimeVelocity d → ℝ}
-    (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) :
-    ContDiff ℝ (⊤ : ℕ∞) (timeDerivative φ) := by
-  unfold timeDerivative
-  exact (contDiff_infty_iff_fderiv.mp hφ).2.clm_apply contDiff_const
+variable {d : ℕ} {φ : TimeVelocity d → ℝ}
 
-private theorem test_velocity_smooth {d : ℕ} {φ : TimeVelocity d → ℝ}
+private theorem test_time_smooth 
+    (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) :
+    ContDiff ℝ (⊤ : ℕ∞) (timeDerivative φ) := (contDiff_infty_iff_fderiv.mp hφ).2.clm_apply contDiff_const
+
+private theorem test_velocity_smooth 
     (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (i : Fin d) :
-    ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient φ z i) := by
-  unfold velocityGradient
-  exact (contDiff_infty_iff_fderiv.mp hφ).2.clm_apply contDiff_const
+    ContDiff ℝ (⊤ : ℕ∞) (fun z => velocityGradient φ z i) := (contDiff_infty_iff_fderiv.mp hφ).2.clm_apply contDiff_const
 
 /-- Limits of all compact test pairings retain every weak successor relation. -/
 def weakDerivativeFamily_of_tendsto_integral_mul {d L : ℕ}
@@ -47,10 +45,10 @@ def weakDerivativeFamily_of_tendsto_integral_mul {d L : ℕ}
   hasWeakTimeSucc := by
     intro β h φ hφ hc hsub
     have hdc : HasCompactSupport (timeDerivative φ) :=
-      hc.fderiv_apply (𝕜 := ℝ) (1, 0)
+      hc.fderiv_apply (𝕜 := ℝ) _
     have hds : tsupport (timeDerivative φ) ⊆ U :=
-      (tsupport_fderiv_apply_subset ℝ (1, 0)).trans hsub
-    have hleft := hlim β (timeDerivative φ) (test_time_smooth hφ) hdc hds
+      (tsupport_fderiv_apply_subset ℝ _).trans hsub
+    have hleft := hlim β _ (test_time_smooth hφ) hdc hds
     have hright := (hlim (ParabolicDerivativeIndex.timeSucc β h) φ hφ hc hsub).neg
     have hright' : Tendsto
         (fun n => ∫ z in U, (D n).representative β z * timeDerivative φ z)
@@ -61,10 +59,10 @@ def weakDerivativeFamily_of_tendsto_integral_mul {d L : ℕ}
   hasWeakVelocitySucc := by
     intro β i h φ hφ hc hsub
     have hdc : HasCompactSupport (fun z => velocityGradient φ z i) :=
-      hc.fderiv_apply (𝕜 := ℝ) (0, PDE.basisVec i)
+      hc.fderiv_apply (𝕜 := ℝ) _
     have hds : tsupport (fun z => velocityGradient φ z i) ⊆ U :=
-      (tsupport_fderiv_apply_subset ℝ (0, PDE.basisVec i)).trans hsub
-    have hleft := hlim β (fun z => velocityGradient φ z i)
+      (tsupport_fderiv_apply_subset ℝ _).trans hsub
+    have hleft := hlim β _
       (test_velocity_smooth hφ i) hdc hds
     have hright :=
       (hlim (ParabolicDerivativeIndex.velocitySucc β i h) φ hφ hc hsub).neg

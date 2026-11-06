@@ -9,7 +9,6 @@ A two-case argument gives the same bound as Young's inequality.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 
 /-- A nonlinear height comparison implies a linear absorption bound. -/

@@ -8,14 +8,14 @@ import Mathlib.MeasureTheory.Measure.Real
 /-! # Integrating the source minorant and selecting common marginals -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open Set MeasureTheory
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 
-private theorem marginal_query_eq {d : ℕ} {D : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (hD : MeasurableSet D) (B : CoefficientField d)
+variable {d : ℕ} {D : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+
+private theorem marginal_query_eq  (hD : MeasurableSet D) (B : CoefficientField d)
     (K : MovingFiberKernel D γ)
     (hpar : HasParabolicMarginalBundle D γ hD (zIndependentCoefficient B) K)
     (s T : ℝ) (hsT : s ≤ T) (p : EvolutionState D γ s) :
@@ -24,12 +24,11 @@ private theorem marginal_query_eq {d : ℕ} {D : Set (PDE.Vec d)}
   obtain ⟨Q, hfirst, _⟩ := hpar (fun _ _ _ _ => rfl)
   change Measure.map Subtype.val
     (parabolicMarginalKernel K hD s T hsT ⟨p.1.1, p.2.1⟩) = _
-  rw [hfirst s T hsT ⟨p.1.1, p.2.1⟩ p.1.2,
-    K.map_fiberFirstMarginal_eq_firstMarginal hD s T hsT]
+  rw [hfirst s T hsT _ p.1.2,
+    K.map_fiberFirstMarginal_eq_firstMarginal]
   rfl
 
-private theorem integrated_minorant {d : ℕ} {D : Set (PDE.Vec d)}
-    {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel D γ) {s T : ℝ} (hsT : s ≤ T)
+private theorem integrated_minorant  (K : MovingFiberKernel D γ) {s T : ℝ} (hsT : s ≤ T)
     (R : Measure (EvolutionState D γ s)) [IsFiniteMeasure R]
     (a h : ℝ) (ha : 0 < a) (hmass : R.real univ = a)
     (ν : Measure (PDE.Vec d))
@@ -38,13 +37,11 @@ private theorem integrated_minorant {d : ℕ} {D : Set (PDE.Vec d)}
     ENNReal.ofReal (a * h) • ν ≤ (continuedMeasure K hsT R).map Prod.fst := by
   apply Measure.le_iff.mpr
   intro A hA
-  rw [Measure.smul_apply, smul_eq_mul,
-    Measure.map_apply measurable_fst hA, continuedMeasure_apply K hsT R (measurable_fst hA)]
+  rw [Measure.map_apply measurable_fst hA, continuedMeasure_apply K hsT R (measurable_fst hA)]
   have hmass' : R univ = ENNReal.ofReal a := by
-    rw [← hmass]
-    exact (ofReal_measureReal (measure_ne_top _ _)).symm
+    aesop
   calc
-    ENNReal.ofReal (a * h) * ν A =
+    ENNReal.ofReal _ * ν A =
         ∫⁻ _p, ENNReal.ofReal h * ν A ∂R := by
       rw [lintegral_const, hmass', ENNReal.ofReal_mul ha.le]
       ring
@@ -99,23 +96,23 @@ theorem continued_common_minorant_trimming (d : ℕ) (hd : 1 ≤ d)
   intro m Lb D B b hsetting v0 ρ T hv0 hρ hsub S K hreal hpar hmono
     s a η hs hsT ha hη hηρ R1 R2 hf1 hf2 hmass1 hmass2 hsupport1 hsupport2
     E1 E2 M hfM hE1 hE2 hdom qlate hql
-  let ν := P K (PDE.isOpen_euclideanBall v0 (4 * ρ)).measurableSet qlate
+  let ν := P K (PDE.isOpen_euclideanBall v0 _).measurableSet qlate
   let Θ := ENNReal.ofReal (a * h) • ν
-  have hpoint (R : Measure (EvolutionState (PDE.euclideanBall v0 (4 * ρ)) stationary s))
+  have hpoint (R : Measure _)
       (hsupport : ∀ᵐ p ∂R, p.1.1 ∈ PDE.euclideanBall v0 η) :
       ∀ᵐ p ∂R, ENNReal.ofReal h • ν ≤
         (K.master (evolutionQueryOfState _ stationary s T hsT p)).map Prod.fst := by
     filter_upwards [hsupport] with p hp
-    have hpρ : p.1.1 ∈ PDE.euclideanBall v0 ρ :=
+    have hpρ  :=
       PDE.euclideanBall_mono hη.le hηρ.le hp
     have hh' := (hminor m Lb D B b hsetting v0 ρ T hv0 hρ hsub S K hreal hpar
       hmono (scalarQuery s T hsT p.1.1 p.2.1) qlate
-      (by simp only [scalarQuery]; exact Prod.ext hs (Prod.ext rfl rfl)) hql hpρ).1
-    rw [marginal_query_eq (PDE.isOpen_euclideanBall v0 (4 * ρ)).measurableSet
-      B K hpar s T hsT p] at hh'
+      (Prod.ext hs (Prod.ext rfl rfl)) hql hpρ).1
+    rw [marginal_query_eq _
+      B K hpar] at hh'
     exact hh'
-  have heq1 : E1 = continuedMeasure K hsT R1 := eq_continuedMeasure_of_apply K hsT R1 hE1
-  have heq2 : E2 = continuedMeasure K hsT R2 := eq_continuedMeasure_of_apply K hsT R2 hE2
+  have heq1  := eq_continuedMeasure_of_apply K hsT R1 hE1
+  have heq2  := eq_continuedMeasure_of_apply K hsT R2 hE2
   have hmin1 : Θ ≤ E1.map Prod.fst := by
     rw [heq1]
     exact integrated_minorant K hsT R1 a h ha hmass1 ν (hpoint R1 hsupport1)
@@ -130,15 +127,14 @@ theorem continued_common_minorant_trimming (d : ℕ) (hd : 1 ≤ d)
         rw [movingDomain_stationary]
         simpa only [PDE.euclideanBall, PDE.euclideanSqDist, mem_ofPred_eq, sub_self,
           PDE.vecNormSq, PDE.vecDot, Pi.zero_apply, zero_mul, Finset.sum_const_zero]
-          using sq_pos_of_pos (mul_pos (by norm_num : (0 : ℝ) < 4) hρ)⟩
+          using sq_pos_of_pos (mul_pos (by norm_num) hρ)⟩
     have hpρ : v0 ∈ PDE.euclideanBall v0 ρ := by
       simpa only [PDE.euclideanBall, PDE.euclideanSqDist, mem_ofPred_eq, sub_self,
         PDE.vecNormSq, PDE.vecDot, Pi.zero_apply, zero_mul, Finset.sum_const_zero]
         using sq_pos_of_pos hρ
     have he := (hminor m Lb D B b hsetting v0 ρ T hv0 hρ hsub S K hreal hpar
       hmono (scalarQuery s T hsT v0 p.2) qlate
-      (by simp only [scalarQuery]; exact Prod.ext hs (Prod.ext rfl rfl)) hql hpρ).2
-    have hfν : IsFiniteMeasure ν := inferInstance
+      (Prod.ext hs (Prod.ext rfl rfl)) hql hpρ).2
     have h' := ENNReal.toReal_mono (measure_ne_top ν univ)
       (he.trans (measure_mono (subset_univ _)))
     simpa only [ENNReal.toReal_ofReal hq0.le, measureReal_def] using h'
@@ -147,8 +143,8 @@ theorem continued_common_minorant_trimming (d : ℕ) (hd : 1 ≤ d)
     exact mul_le_mul_of_nonneg_left hνmass (mul_pos ha hh).le
   obtain ⟨g1, hg1, hgle1, hΘ1, hmap1, hF1⟩ := exists_trimming_of_le_map_fst E1 Θ hmin1
   obtain ⟨g2, hg2, hgle2, hΘ2, hmap2, hF2⟩ := exists_trimming_of_le_map_fst E2 Θ hmin2
-  exact ⟨hmin1, hmin2, hfloor, E1.withDensity (g1 ∘ Prod.fst),
-    E2.withDensity (g2 ∘ Prod.fst), hF1, hF2, (add_le_add hF1 hF2).trans hdom,
+  exact ⟨hmin1, hmin2, hfloor, E1.withDensity _,
+    E2.withDensity _, hF1, hF2, (add_le_add hF1 hF2).trans hdom,
     hmap1, hmap2⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

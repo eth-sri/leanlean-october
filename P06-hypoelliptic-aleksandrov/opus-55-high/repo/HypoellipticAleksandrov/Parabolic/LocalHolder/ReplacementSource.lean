@@ -14,7 +14,6 @@ The internal signed source solver gives the correction and its time-barrier boun
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Set
 open KineticAleksandrov

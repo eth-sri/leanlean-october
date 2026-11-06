@@ -43,42 +43,38 @@ theorem return_patch_power (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
   obtain ⟨m, hm, hmloss⟩ := return_loss_exponent hc
   obtain ⟨cf, hcf, hf⟩ := return_fixed_patch_path lam Lam hlam hLam hp6
     (1 / 128) (by norm_num) (by norm_num)
-  refine ⟨(m : ℝ), cf * (1 / 128 : ℝ) ^ m, by exact_mod_cast hm, by positivity, ?_⟩
+  refine ⟨m, cf * (1 / 128) ^ m, by positivity, by positivity, ?_⟩
   intro A u hu ell k z zStar hell hell1 hk hz hstar hpatch
-  let e := min ell (1 / 128 : ℝ)
+  let e := min ell (1 / 128)
   have he : 0 < e := lt_min hell (by norm_num)
   have heell : e ≤ ell := min_le_left _ _
   have hecut : e ≤ 1 / 128 := min_le_right _ _
-  have hebase : (1 / 128 : ℝ) * ell ≤ e := by
+  have hebase : (1 / 128) * ell ≤ e := by
     apply le_min
     · linarith
-    · linarith
-  obtain ⟨N, hRlo, hRhi⟩ := return_doubling_cutoff (1 / 128) e (by norm_num) he hecut
+    simp_all
+  obtain ⟨N, hRlo, hRhi⟩ := return_doubling_cutoff _ e (by norm_num) he hecut
   have hsmall : returnExpandedRadius e N ≤ 1 / 64 := by linarith
-  have hinit : ∀ p ∈ backwardCylinder z e, k ≤ u p :=
+  have hinit  :=
     fun p hp => hpatch p (backwardCylinder_radius_mono z he heell hp)
   have hexpand := hd A u hu z e k N he (by linarith [hz.1.1]) hsmall hk hinit
   let zN := returnExpandedCenter z e N
-  let dt := (8 / 3 : ℝ) * ((returnExpandedRadius e N) ^ 2 - e ^ 2)
+  let dt := (8 / 3) * ((returnExpandedRadius e N) ^ 2 - e ^ 2)
   have hdt0 : 0 ≤ dt := by
     have hR := returnExpandedRadius_mono he.le (Nat.zero_le N)
     rw [show returnExpandedRadius e 0 = e by simp [returnExpandedRadius]] at hR
     have hs := pow_le_pow_left₀ he.le hR 2
-    dsimp [dt]
-    linarith
+    positivity
   have hdt1 : dt ≤ 1 / 128 := by
-    have hRp : 0 ≤ returnExpandedRadius e N := by dsimp [returnExpandedRadius]; positivity
     dsimp [dt]
     nlinarith [sq_nonneg e]
   have htN : zN.time = z.time + dt := rfl
   have hxN : zN.position = z.position + dt • z.velocity := rfl
   have hvN : zN.velocity = z.velocity := rfl
-  have hNlo : 1 / 2 ≤ zN.time := by rw [htN]; linarith [hz.1.1]
+  have hNlo : 1 / 2 ≤ zN.time := by linarith [hz.1.1]
   have hgaplo : 1 / 2 ≤ zStar.time - zN.time := by
-    rw [htN]
     linarith [hstar.1.1, hz.1.2]
   have hgaphi : zStar.time - zN.time ≤ 3 := by
-    rw [htN]
     linarith [hstar.1.2, hz.1.1]
   have hxNb : PDE.vecEuclideanNorm zN.position ≤ 1 := by
     rw [hxN]
@@ -86,14 +82,13 @@ theorem return_patch_power (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
     rw [PDE.vecEuclideanNorm_smul, abs_of_nonneg hdt0] at h
     have hmul := mul_le_mul_of_nonneg_left hz.2.2 hdt0
     linarith [hz.2.1]
-  have hvNb : PDE.vecEuclideanNorm zN.velocity ≤ 2 := by rw [hvN]; exact hz.2.2
+  have hvNb : PDE.vecEuclideanNorm zN.velocity ≤ 2 := by exact hz.2.2
   have hdisp : PDE.vecEuclideanNorm
       (zStar.position - zN.position - (zStar.time - zN.time) • zN.velocity) ≤ 12 := by
     have h₁ := norm_sub_le zStar.position zN.position
     have h₂ := norm_sub_le (zStar.position - zN.position)
       ((zStar.time - zN.time) • zN.velocity)
-    rw [PDE.vecEuclideanNorm_smul, abs_of_nonneg (by linarith :
-      0 ≤ zStar.time - zN.time)] at h₂
+    rw [PDE.vecEuclideanNorm_smul, abs_of_nonneg (by linarith)] at h₂
     have hm := mul_le_mul_of_nonneg_left hvNb (by linarith :
       0 ≤ zStar.time - zN.time)
     linarith [hstar.2.1]
@@ -103,13 +98,13 @@ theorem return_patch_power (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (mul_nonneg (pow_nonneg hc.le N) hk) (fun p hp => hexpand p
       (backwardCylinder_radius_mono zN (by norm_num) hRlo hp))
   have hpower : e ^ m ≤ c ^ N := return_loss_power hc.le he.le hmloss (by linarith)
-  have hsmallpower : (1 / 128 : ℝ) ^ m * ell ^ m ≤ e ^ m := by
+  have hsmallpower : (1 / 128) ^ m * ell ^ m ≤ e ^ m := by
     rw [← mul_pow]
     exact pow_le_pow_left₀ (by positivity) hebase m
   have hcoeff := hsmallpower.trans hpower
   have hfinal := mul_le_mul_of_nonneg_right
     (mul_le_mul_of_nonneg_left hcoeff hcf.le) hk
   rw [Real.rpow_natCast]
-  simpa only [mul_assoc] using hfinal.trans (by simpa only [mul_assoc] using hlast)
+  linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

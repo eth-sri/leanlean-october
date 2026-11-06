@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitMassSum
 /-! # Uniform short-time bounds for the full actual entrance counting measure -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
@@ -30,6 +29,6 @@ theorem exists_visitTime_mass_constant {lam Lam : ℝ}
   rw [← Measure.finsetSum_apply]
   apply (ENNReal.le_ofReal_iff_toReal_le (measure_ne_top _ W) hC.le).mpr
   rw [visit_partial_real_mass _ N W hW]
-  exact hc hH hLE A c J s T b hT P hP N
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

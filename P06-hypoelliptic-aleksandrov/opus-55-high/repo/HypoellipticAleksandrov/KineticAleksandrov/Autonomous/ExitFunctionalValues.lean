@@ -18,11 +18,10 @@ def exitProbeOperatorDatum {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
   ⟨forwardScalarOperator A.a (exitProbePhysical f), by
     have hm := (exitProbe_operator_smooth_compact A f).1.continuous.measurable.comp
       reconstructionPhysicalHomeomorph.symm.continuous.measurable
-    have heq : forwardScalarOperator A.a (exitProbePhysical f) =
-        transportedOperator (evolutionCoefficient A.a) (identityDrift 1) f.1 ∘
+    have heq : forwardScalarOperator A.a _ =
+        transportedOperator _ _ f.1 ∘
           reconstructionPhysicalHomeomorph.symm := funext (exitProbePhysical_operator A f)
-    rw [heq]
-    exact hm, by
+    simp_all, by
     obtain ⟨M, hM⟩ := exitProbePhysical_bounded_source A f
     exact ⟨max M 0, le_max_right _ _, fun p => (hM p).2.trans (le_max_left _ _)⟩⟩
 
@@ -33,7 +32,9 @@ def exitProbeValue {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (H : Interval)
   exitProbePhysical f e.1 + ∫ p, forwardScalarOperator A.a (exitProbePhysical f) p
     ∂stripGreenOfKernel H E.2 T e
 
-private theorem probe_operator_add {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+
+private theorem probe_operator_add 
     (f g : exitProbeSubmodule) :
     forwardScalarOperator A.a (exitProbePhysical (f + g)) =
       fun p => forwardScalarOperator A.a (exitProbePhysical f) p +
@@ -45,7 +46,7 @@ private theorem probe_operator_add {lam Lam : ℝ} (A : SmoothAutonomous lam Lam
   simp only [forwardOperator_autonomous] at h
   exact h
 
-private theorem probe_operator_smul {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+private theorem probe_operator_smul 
     (c : ℝ) (f : exitProbeSubmodule) :
     forwardScalarOperator A.a (exitProbePhysical (c • f)) =
       fun p => c * forwardScalarOperator A.a (exitProbePhysical f) p := by
@@ -64,11 +65,11 @@ def exitProbeValueLinear {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (H : Int
   map_add' f g := by
     unfold exitProbeValue
     rw [probe_operator_add]
-    have hf : Integrable (forwardScalarOperator A.a (exitProbePhysical f))
-        (stripGreenOfKernel H E.2 T e) :=
+    have hf : Integrable (forwardScalarOperator A.a _)
+        _ :=
       stripGreen_integrable_boundedBorel H E.2 T e (exitProbeOperatorDatum A f)
-    have hg : Integrable (forwardScalarOperator A.a (exitProbePhysical g))
-        (stripGreenOfKernel H E.2 T e) :=
+    have hg : Integrable (forwardScalarOperator A.a _)
+        _ :=
       stripGreen_integrable_boundedBorel H E.2 T e (exitProbeOperatorDatum A g)
     rw [integral_add hf hg]
     change exitProbePhysical f e.1 + exitProbePhysical g e.1 + _ = _
@@ -90,7 +91,7 @@ theorem exitProbeValue_le_of_boundary
     exitProbeValue A H E T e f ≤ c := by
   obtain ⟨M, hM⟩ := exitProbePhysical_bounded_source A f
   have h := reconstruction_boundary_comparison hH hlam hLam A H E hE
-    (e.1.time - 1) T e (by linarith) (exitProbePhysical f)
+    (e.1.time - 1) T e (by linarith) _
     (exitProbePhysical_isKineticC112On f _ (isOpen_reconstructionStrip H _ T))
     (exitProbePhysical_continuous_compact f).1
     ⟨M, fun p _ => hM p⟩ M (fun p => (hM p).1) c hbd

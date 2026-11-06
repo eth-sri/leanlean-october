@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.MassRepresentati
 /-! # The actual local exit law stays in the closure of the original cylinder -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic SectionTwo
 
@@ -24,11 +23,11 @@ theorem ballExitRaw_local_outer
       Q ∈ closure (forwardCylinder Z₀ R hR) := by
   have ht : T.1 ≤ Z₀.time + R ^ 2 := by
     have hp := hP.2.1
-    nlinarith only [hp, hT, sq_pos_of_pos hR]
+    grind
   filter_upwards [ballExitRaw_cone hH hLE hd hlam hLam B hB Z₀.velocity hR P T,
     ballExitRaw_ae_trace hH hLE hd hlam hLam B hB Z₀.velocity hR P T] with Q hQ htr
   have hq := localTrace_subset_closed T.2.le Z₀.velocity R htr
-  have hqt : Q.time ≤ P.1.time + R ^ 2 / 8 := by linarith only [hQ.2.1, hT]
+  have hqt : Q.time ≤ P.1.time + R ^ 2 / 8 := by linarith
   have hx := local_cone_cutoff_mem Z₀ P.1 Q hR hP hQ.1 hqt hQ.2.2
   apply local_closed_strip_mem_outer Z₀ Q hR hP.1.le ht hq
   apply PDE.euclideanBall_mono (by positivity)

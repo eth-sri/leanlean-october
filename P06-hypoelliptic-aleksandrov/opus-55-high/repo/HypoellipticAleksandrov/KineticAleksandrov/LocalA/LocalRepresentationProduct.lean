@@ -7,7 +7,6 @@ public import HypoellipticAleksandrov.Parabolic.ScalarClassical
 /-! # The classical residual of a multiplier independent of velocity -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Parabolic
 
@@ -36,17 +35,15 @@ theorem forward_operator_position_multiplier {d : ℕ}
       η (P.time, P.position) • kineticPositionGradient u P +
         u P • scalarSpatialGradient η (P.time, P.position) := by
     ext i
-    change fderiv ℝ ((fun x => η (P.time, x)) * fun x => u ⟨P.time, x, P.velocity⟩)
-      P.position (PDE.basisVec i) = _
+    change fderiv ℝ ((fun x => η (P.time, x)) * fun x => u _)
+      P.position _ = _
     rw [fderiv_mul hηx hux]
-    simp only [add_apply, smul_apply,
-      Pi.add_apply, Pi.smul_apply, smul_eq_mul, kineticPositionGradient,
-      scalarSpatialGradient, PDE.classicalGradient_apply]
+    aesop
   have hv : kineticVelocityHessian (fun Q => η (Q.time, Q.position) * u Q) P =
       η (P.time, P.position) • kineticVelocityHessian u P := by
     simp only [kineticVelocityHessian_eq_sliceHessian]
     exact sliceHessian_const_mul _ (hu.velocitySlice_contDiffAt hP)
-  rw [forwardKineticOperator_apply, ht, hx, hv, matrixContraction_smul_right,
+  rw [forwardKineticOperator_apply, hx, hv, matrixContraction_smul_right,
     forwardKineticOperator_apply]
   simp only [PDE.vecDot, Pi.add_apply, Pi.smul_apply, smul_eq_mul, mul_add,
     Finset.sum_add_distrib]
@@ -54,17 +51,12 @@ theorem forward_operator_position_multiplier {d : ℕ}
       (η (P.time, P.position) * kineticPositionGradient u P i)) =
       η (P.time, P.position) * ∑ i, P.velocity i * kineticPositionGradient u P i := by
     rw [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro i _
-    ring
+    grind
   have hb : (∑ i, P.velocity i *
       (u P * scalarSpatialGradient η (P.time, P.position) i)) =
       u P * ∑ i, P.velocity i * scalarSpatialGradient η (P.time, P.position) i := by
     rw [Finset.mul_sum]
-    apply Finset.sum_congr rfl
-    intro i _
-    ring
-  rw [ha, hb]
-  ring
+    grind
+  linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

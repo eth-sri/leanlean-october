@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitMeasureP
 /-! # Actual exit-mass estimates from classical supersolutions -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Filter
 open SectionTwo TheoremA Evolution
@@ -45,25 +44,22 @@ theorem stripExitOfRealization_le_supersolution
   have hint : Integrable phi Ω := by
     apply Integrable.mono' (integrable_const (max M 0)) hc.measurable.aestronglyMeasurable
     filter_upwards [hΩ] with p hp
-    rw [Real.norm_eq_abs]
     exact (reconstruction_closed_velocity_slice_bound H phi hc M p hp.2.2
       (fun v hv => (hM ⟨p.time, p.position, fun _ => v⟩ hp.1 hp.2.1 hv).1)).trans
         (le_max_left _ _)
   have hnn : 0 ≤ᵐ[Ω] phi := by
     filter_upwards [hΩ] with p hp
-    exact hn p hp.1 hp.2.1 hp.2.2
+    simp_all
   calc Ω B = ∫⁻ p, B.indicator 1 p ∂Ω := (lintegral_indicator_one hB).symm
-    _ ≤ ∫⁻ p, ENNReal.ofReal (phi p) ∂Ω := by
+    _ ≤ ∫⁻ p, ENNReal.ofReal _ ∂Ω := by
       apply lintegral_mono_ae
       filter_upwards [hΩ] with p hp
       by_cases hpb : p ∈ B
-      · rw [indicator_of_mem hpb, Pi.one_apply]
-        exact ENNReal.one_le_ofReal.mpr (hbd p hpb hp.1 hp.2.1 hp.2.2)
-      · simp only [indicator_of_notMem hpb, zero_le]
-    _ = ENNReal.ofReal (∫ p, phi p ∂Ω) :=
+      · simp_all
+      simp_all
+    _ = ENNReal.ofReal _ :=
       (ofReal_integral_eq_lintegral_ofReal hint hnn).symm
-    _ ≤ ENNReal.ofReal (phi e.1) := ENNReal.ofReal_le_ofReal (by
-      change phi e.1 = (∫ p, phi p ∂Ω) - (∫ p, forwardScalarOperator A.a phi p ∂Γ) at hi
+    _ ≤ ENNReal.ofReal _ := ENNReal.ofReal_le_ofReal (by
       linarith)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

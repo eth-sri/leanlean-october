@@ -29,21 +29,18 @@ theorem construction_mollified_time_jet {d : ℕ} {alpha : ℝ}
     deriv (fun s => spatialMollify phi
       (fun y => zeroExtendedProfile (profileFunction h) alpha r mu R ⟨s, y.1, y.2⟩) q) t =
       spatialMollify phi (constructionExtendedTimeJet h r mu R t) q := by
-  let K : Set (XV d) := {y | profileFunction h y ≤ 1}
-  let Omega : Set (XV d) := {y | profileFunction h y < 1}
+  let K  := {y | profileFunction h y ≤ 1}
+  let Omega  := {y | profileFunction h y < 1}
   have hK : IsCompact K := isCompact_profile_unit_sublevel ha h
   have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
   have hOmega : MeasurableSet Omega := (isOpen_lt hH continuous_const).measurableSet
   have hOK : Omega ⊆ K := by
-    intro y hy
-    change profileFunction h y ≤ 1
-    exact le_of_lt hy
-  let : CompactSpace K := isCompact_iff_compactSpace.mp hK
+    grind
+  let  := isCompact_iff_compactSpace.mp hK
   let nu : Measure K := Measure.comap Subtype.val (volume.restrict Omega)
   have : IsFiniteMeasureOnCompacts nu := IsFiniteMeasureOnCompacts.comap'
-    (volume.restrict Omega) continuous_subtype_val
+    _ continuous_subtype_val
     (MeasurableEmbedding.subtype_coe hK.measurableSet)
-  have : IsFiniteMeasure nu := inferInstance
   have he : (fun s => spatialMollify phi
       (fun y => zeroExtendedProfile (profileFunction h) alpha r mu R ⟨s, y.1, y.2⟩) q) =
       (fun s => ∫ y : K, phi.normed volume (q - y) * timeCutoffTheta
@@ -52,13 +49,11 @@ theorem construction_mollified_time_jet {d : ℕ} {alpha : ℝ}
     funext s
     rw [spatialMollify, convolution_lsmul_swap]
     simp only [smul_eq_mul]
-    dsimp only [nu]
     rw [integral_subtype_comap hK.measurableSet (fun y : XV d =>
-      phi.normed volume (q - y) * timeCutoffTheta
-        (selectedFlatProfile h r y - Real.exp (-mu * s) *
+      phi.normed volume _ * timeCutoffTheta
+        (selectedFlatProfile h r y - Real.exp _ *
           (2 - PDE.vecNormSq y.2 / R ^ 2)))]
-    rw [Measure.restrict_restrict hK.measurableSet, inter_eq_right.mpr hOK]
-    rw [← integral_indicator hOmega]
+    rw [Measure.restrict_restrict hK.measurableSet, inter_eq_right.mpr hOK, ← integral_indicator hOmega]
     apply integral_congr_ae
     filter_upwards [] with y
     by_cases hy : y ∈ Omega
@@ -66,28 +61,23 @@ theorem construction_mollified_time_jet {d : ℕ} {alpha : ℝ}
         zeroExtendedProfile_eq_raw_on_profile _ alpha r mu R hr hmu hR hvel ⟨s, y.1, y.2⟩ hy]
       rfl
     · rw [indicator_of_notMem hy,
-        zeroExtendedProfile_eq_zero_of_profile _ alpha r mu R ⟨s, y.1, y.2⟩ (not_lt.mp hy),
+        zeroExtendedProfile_eq_zero_of_profile _ alpha r mu R _ (not_lt.mp hy),
         mul_zero]
-  rw [he, construction_deriv_cutoff_integral nu (fun y : K => (y : XV d))
+  rw [he, construction_deriv_cutoff_integral nu _
     continuous_subtype_val (fun y : K => selectedFlatProfile h r y)
     ((continuous_selectedFlatProfile h r).comp continuous_subtype_val)]
-  dsimp only [nu]
-  rw [integral_subtype_comap hK.measurableSet (fun y : XV d => phi.normed volume (q - y) *
+  rw [integral_subtype_comap hK.measurableSet (fun y : XV d => phi.normed volume _ *
     deriv (fun s => timeCutoffTheta (selectedFlatProfile h r y - Real.exp (-mu * s) *
       (2 - PDE.vecNormSq y.2 / R ^ 2))) t)]
-  rw [Measure.restrict_restrict hK.measurableSet, inter_eq_right.mpr hOK]
-  rw [← integral_indicator hOmega, spatialMollify, convolution_lsmul_swap]
+  rw [Measure.restrict_restrict hK.measurableSet, inter_eq_right.mpr hOK, ← integral_indicator hOmega, spatialMollify, convolution_lsmul_swap]
   apply integral_congr_ae
   filter_upwards [] with y
-  change Omega.indicator (fun y : XV d => phi.normed volume (q - y) *
-    deriv (fun s => timeCutoffTheta (selectedFlatProfile h r y - Real.exp (-mu * s) *
-      (2 - PDE.vecNormSq y.2 / R ^ 2))) t) y =
+  change Omega.indicator _ y =
     phi.normed volume (q - y) * Omega.indicator
-      (fun y => kineticTimeDerivative (timeCutoffProfile (profileFunction h) alpha r mu R)
-        ⟨t, y.1, y.2⟩) y
+      _ y
   by_cases hy : y ∈ Omega
   · rw [indicator_of_mem hy, indicator_of_mem hy]
     rfl
-  · rw [indicator_of_notMem hy, indicator_of_notMem hy, mul_zero]
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

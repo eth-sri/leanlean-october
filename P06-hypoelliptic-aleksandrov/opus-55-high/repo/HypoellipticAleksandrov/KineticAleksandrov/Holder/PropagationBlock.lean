@@ -9,7 +9,6 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -48,14 +47,14 @@ theorem propagation_one_block {d : ℕ} (hd : 1 ≤ d)
   have hQO := (propagation_block_containment hH hT0 hT1 hkx hkv hh hhstar
     tminus sblock TP hsblock hblock hv.continuous hkin hLip).trans htube
   apply admissible_test_le_of_zero_source hu P₀ hR hQO
-    (gaussianBarrier_isSmoothNear hlam hh Lam H (barrierL d lam Lam H T1)
+    (gaussianBarrier_isSmoothNear hlam hh Lam H _
       ell tminus sblock hx hv _)
   · intro P hP
     exact (gaussianBarrier_nonpos_boundary hd hlam hLam hH hT0 hT1 hh hhstar
       hell tminus sblock hv.continuous hkin hLip P hP).trans
       (hnonneg P (hQO (mem_kineticBoundary_iff.mp hP).1))
   · exact gaussianBarrier_localizedSource_zero hlam hh hR Lam H
-      (barrierL d lam Lam H T1) ell tminus sblock hLam hH hell A hA
+      _ ell tminus sblock hLam hH hell A hA
       hx hv hkin hLip u hinit
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

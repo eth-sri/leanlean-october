@@ -10,7 +10,6 @@ time-bin density estimate.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
@@ -35,7 +34,7 @@ theorem entranceStatement_holds :
       exact (hm hH hLE A c Z0 R hR P hP a).trans
         (ENNReal.ofReal_le_ofReal (le_add_of_nonneg_left hB.le))
     · exact (core_green_le_visitGreen hH hLE hlam hLam A c Z0 R hR P hP).trans_eq
-        (congrArg (fun rho : Measure Point => rho.restrict {p | p.velocity 0 ∈ c.core})
+        (congrArg (fun rho : Measure Point => rho.restrict _)
           (entrance_coreAllTimeGreen_eq hH hLE hlam hLam A c nu))
   · intro q hq
     exact entrance_density hH hLE hlam hLam q hq

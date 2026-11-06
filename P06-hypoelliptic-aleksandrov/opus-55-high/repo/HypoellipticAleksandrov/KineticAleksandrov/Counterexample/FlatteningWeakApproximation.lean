@@ -17,19 +17,21 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Filter Set Metric
 open scoped Convolution
 
+variable {d : ℕ}
+
 /-- A local bound on the kernel sampling ball suffices for the normalized convolution bound. -/
-theorem spatialMollify_norm_le_on_ball {d : ℕ} (phi : ContDiffBump (0 : XV d))
+theorem spatialMollify_norm_le_on_ball  (phi : ContDiffBump (0 : XV d))
     (g : XV d → ℝ) (hg : AEStronglyMeasurable g volume) (C : ℝ) (hC : 0 ≤ C)
     (q : XV d) (hb : ∀ y ∈ ball q phi.rOut, ‖g y‖ ≤ C) :
     ‖spatialMollify phi g q‖ ≤ C := by
-  have h := dist_convolution_le (μ := volume) (x₀ := q) (z₀ := (0 : ℝ)) hC
+  have h := dist_convolution_le (μ := volume) (x₀ := q) (z₀ := (0)) hC
     phi.support_normed_eq.subset phi.nonneg_normed phi.integral_normed hg
-    (fun y hy => by simpa only [dist_zero_right] using hb y hy)
-  simpa only [spatialMollify, dist_zero_right] using h
+    (fun y hy => by simp_all)
+  aesop
 
 /-- The standard normalized convolution converges almost everywhere for every locally
 integrable scalar function, without a global boundedness assumption. -/
-theorem spatialMollify_ae_tendsto {d : ℕ} (g : XV d → ℝ) (hg : LocallyIntegrable g volume) :
+theorem spatialMollify_ae_tendsto  (g : XV d → ℝ) (hg : LocallyIntegrable g volume) :
     ∀ᵐ q ∂volume,
       Tendsto (fun n => spatialMollify (standardMollifierSequence n) g q) atTop (nhds (g q)) := by
   have h := ContDiffBump.ae_convolution_tendsto_right_of_locallyIntegrable

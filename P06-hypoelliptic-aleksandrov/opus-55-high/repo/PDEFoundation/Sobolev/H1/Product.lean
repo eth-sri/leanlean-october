@@ -46,37 +46,22 @@ noncomputable def mulContDiffMemLpTop
   (W1pFunction.mulContDiffMemLpTop
     u.toW1pFunction hφ hφTop hDφTop).toH1Function
 
+variable (u : H1Function U) {φ : Vec d → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hφTop : MemLpOn U ∞ φ) (hDφTop : ∀ i : Fin d, MemLpOn U ∞ (fun x => classicalGradient φ x i))
+
 @[simp]
 theorem mulContDiffMemLpTop_toFun
-    (u : H1Function U) {φ : Vec d → ℝ}
-    (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
-    (hφTop : MemLpOn U ∞ φ)
-    (hDφTop : ∀ i : Fin d,
-      MemLpOn U ∞
-        (fun x => classicalGradient φ x i)) :
+     :
     (u.mulContDiffMemLpTop hφ hφTop hDφTop).toFun =
       fun x => φ x * u x := by
-  simp only [mulContDiffMemLpTop,
-    W1pFunction.toH1Function_toFun,
-    W1pFunction.mulContDiffMemLpTop_toFun,
-    H1Function.toW1pFunction_apply]
+  aesop
 
 @[simp]
 theorem mulContDiffMemLpTop_grad
-    (u : H1Function U) {φ : Vec d → ℝ}
-    (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
-    (hφTop : MemLpOn U ∞ φ)
-    (hDφTop : ∀ i : Fin d,
-      MemLpOn U ∞
-        (fun x => classicalGradient φ x i)) :
+     :
     (u.mulContDiffMemLpTop hφ hφTop hDφTop).grad =
       fun x =>
         φ x • u.grad x + u x • classicalGradient φ x := by
-  simp only [mulContDiffMemLpTop,
-    W1pFunction.toH1Function_grad,
-    W1pFunction.mulContDiffMemLpTop_grad,
-    H1Function.toW1pFunction_grad,
-    H1Function.toW1pFunction_apply]
+  aesop
 
 /-- A smooth compactly supported multiplier preserves representative-level
 `H¹`; compact support supplies the required `L∞` hypotheses. -/
@@ -88,31 +73,22 @@ noncomputable def mulContDiffHasCompactSupport
   (W1pFunction.mulContDiffHasCompactSupport
     u.toW1pFunction hφ hφCompact).toH1Function
 
+variable (u : H1Function U) {φ : Vec d → ℝ} (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hφCompact : HasCompactSupport φ)
+
 @[simp]
 theorem mulContDiffHasCompactSupport_toFun
-    (u : H1Function U) {φ : Vec d → ℝ}
-    (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
-    (hφCompact : HasCompactSupport φ) :
+     :
     (u.mulContDiffHasCompactSupport hφ hφCompact).toFun =
       fun x => φ x * u x := by
-  simp only [mulContDiffHasCompactSupport,
-    W1pFunction.toH1Function_toFun,
-    W1pFunction.mulContDiffHasCompactSupport_toFun,
-    H1Function.toW1pFunction_apply]
+  aesop
 
 @[simp]
 theorem mulContDiffHasCompactSupport_grad
-    (u : H1Function U) {φ : Vec d → ℝ}
-    (hφ : ContDiff ℝ (⊤ : ℕ∞) φ)
-    (hφCompact : HasCompactSupport φ) :
+     :
     (u.mulContDiffHasCompactSupport hφ hφCompact).grad =
       fun x =>
         φ x • u.grad x + u x • classicalGradient φ x := by
-  simp only [mulContDiffHasCompactSupport,
-    W1pFunction.toH1Function_grad,
-    W1pFunction.mulContDiffHasCompactSupport_grad,
-    H1Function.toW1pFunction_grad,
-    H1Function.toW1pFunction_apply]
+  aesop
 
 end H1Function
 

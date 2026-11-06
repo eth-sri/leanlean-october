@@ -52,12 +52,11 @@ noncomputable def compContDiffOfDerivBounded
     hU (by norm_num) (by norm_num)
     hG hM hderiv).toH1Function
 
+variable (hU : IsOpenBoundedConvexDomain U) (u : H1Function U) {G : ℝ → ℝ} (hG : ContDiff ℝ 1 G) {M : ℝ} (hM : 0 ≤ M)
+
 @[simp]
 theorem compContDiffOfDerivBounded_toFun
-    (hU : IsOpenBoundedConvexDomain U)
-    (u : H1Function U)
-    {G : ℝ → ℝ} (hG : ContDiff ℝ 1 G)
-    {M : ℝ} (hM : 0 ≤ M)
+    
     (hderiv : ∀ t, |deriv G t| ≤ M) :
     (u.compContDiffOfDerivBounded
       hU hG hM hderiv).toFun =
@@ -66,10 +65,7 @@ theorem compContDiffOfDerivBounded_toFun
 
 @[simp]
 theorem compContDiffOfDerivBounded_grad
-    (hU : IsOpenBoundedConvexDomain U)
-    (u : H1Function U)
-    {G : ℝ → ℝ} (hG : ContDiff ℝ 1 G)
-    {M : ℝ} (hM : 0 ≤ M)
+    
     (hderiv : ∀ t, |deriv G t| ≤ M) :
     (u.compContDiffOfDerivBounded
       hU hG hM hderiv).grad =

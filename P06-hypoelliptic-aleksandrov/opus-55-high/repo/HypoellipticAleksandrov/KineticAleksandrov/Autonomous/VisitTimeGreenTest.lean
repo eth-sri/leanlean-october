@@ -20,8 +20,7 @@ theorem visitTimeQuadratic_active_identity
     f e.1 = (∫ p, f p ∂finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) T e) -
       ∫ p, forwardScalarOperator A.a f p
         ∂finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) T e := by
-  dsimp only
-  apply visitUnion_identity_bounded_smooth hH hLE hlam hLam A (visitActiveUnion c J) T e
+  apply visitUnion_identity_bounded_smooth hH hLE hlam hLam A _ T e
     (fun q => visitTimeCutoff b c.r c.positive q.time * visitQuadratic c (q.velocity 0))
   · exact visitTimeQuadratic_smooth c _ (visitTimeCutoff_properties b c.r c.positive).1
   · obtain ⟨D, _hD, hd⟩ := visitTimeQuadratic_uniform_operator_bound
@@ -36,6 +35,6 @@ theorem visitTimeQuadratic_active_identity
       have hm := mul_le_mul_of_nonneg_right he.2 hf
       simp only [one_mul] at hm
       exact (hm.trans (visitQuadratic_le c _)).trans (le_max_left _ _)
-    · exact (hd c b lam Lam hlam A p hv).trans (le_max_right _ _)
+    simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

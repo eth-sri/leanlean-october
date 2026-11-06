@@ -45,19 +45,21 @@ def barrierCb (L : ℝ) : ℝ := Real.exp (-3 / 4 * L ^ 2) - Real.exp (-L ^ 2)
 /-- Source amplitude loss at one overlap step. -/
 def barrierGamma (L : ℝ) : ℝ := barrierCb L * Real.exp (-L ^ 2 / 512)
 
+variable (d : ℕ) (lam Lam H T0 T1 kx kv : ℝ)
+
 /-- The source step is at most its time restriction. -/
-theorem stepSize_le_time (d : ℕ) (lam Lam H T0 T1 kx kv : ℝ) :
+theorem stepSize_le_time  :
     stepSize d lam Lam H T0 T1 kx kv ≤ T0 / (barrierW d lam Lam H T1) ^ 2 :=
   min_le_left _ _
 
 /-- The source step is at most its velocity restriction. -/
-theorem stepSize_le_velocity (d : ℕ) (lam Lam H T0 T1 kx kv : ℝ) :
+theorem stepSize_le_velocity  :
     stepSize d lam Lam H T0 T1 kx kv ≤
       (kv / (2 * velocityTubeConstant d lam Lam H T1)) ^ 2 :=
   (min_le_right _ _).trans (min_le_left _ _)
 
 /-- The source step is at most its position restriction. -/
-theorem stepSize_le_position (d : ℕ) (lam Lam H T0 T1 kx kv : ℝ) :
+theorem stepSize_le_position  :
     stepSize d lam Lam H T0 T1 kx kv ≤
       (kx / (2 * positionTubeConstant d lam Lam H T1)) ^ (2 / 3 : ℝ) :=
   (min_le_right _ _).trans (min_le_right _ _)

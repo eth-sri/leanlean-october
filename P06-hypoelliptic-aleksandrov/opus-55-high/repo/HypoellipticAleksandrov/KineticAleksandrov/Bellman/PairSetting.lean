@@ -37,9 +37,9 @@ theorem IsBellmanAdjointPair.left_ne_zero {lam Lam β : ℝ}
     μ ≠ 0 := by
   intro hμ
   have hη : η = 0 := le_antisymm (by simpa only [hμ, smul_zero] using h.2.2.2.2.1)
-    (bot_le : (⊥ : Measure BellmanPuncturedPlane) ≤ η)
+    bot_le
   rcases h.2.2.1 with h | h
-  · exact h hμ
-  · exact h hη
+  · simp_all
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov

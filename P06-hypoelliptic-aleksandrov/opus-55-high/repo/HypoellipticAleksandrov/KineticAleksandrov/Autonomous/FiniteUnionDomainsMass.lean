@@ -20,13 +20,13 @@ def finiteUnionGreenMassBound (lam : ℝ) (H : FiniteIntervalUnion) : ℝ≥0∞
 theorem finiteUnionGreenMassBound_ne_top (lam : ℝ) (H : FiniteIntervalUnion) :
     finiteUnionGreenMassBound lam H ≠ ⊤ := by
   unfold finiteUnionGreenMassBound
-  exact ENNReal.sum_ne_top.mpr (fun _ _ => ENNReal.ofReal_ne_top)
+  simp
+
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
 
 /-- Every actual union Green pole has the same uniform finite mass bound. -/
 theorem finiteUnionGreen_mass_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : WithTop ℝ)
+     (H : FiniteIntervalUnion) (T : WithTop ℝ)
     (e : FiniteUnionPole H T) :
     finiteUnionGreen hH hLE hlam hLam A H T e univ ≤ finiteUnionGreenMassBound lam H := by
   let i := finiteUnionPoleIndex H T e
@@ -42,11 +42,9 @@ theorem finiteUnionGreen_mass_le
       sq_nonneg (I.hi - e.1.velocity 0), mul_nonneg h1 h2]
   have hb := stripGreen_quadratic_mass hH hLE hlam hLam A I T ep
   apply hb.trans
-  apply (show ENNReal.ofReal ((e.1.velocity 0 - I.lo) * (I.hi - e.1.velocity 0) /
-    (2 * lam)) ≤ ENNReal.ofReal ((I.hi - I.lo) ^ 2 / (2 * lam)) from
+  apply (show ENNReal.ofReal _ ≤ ENNReal.ofReal ((I.hi - I.lo) ^ 2 / (2 * lam)) from
     ENNReal.ofReal_le_ofReal
-      ((div_le_div_iff_of_pos_right (by positivity : 0 < 2 * lam)).mpr hprod)).trans
-  unfold finiteUnionGreenMassBound
+      ((div_le_div_iff_of_pos_right (by positivity)).mpr hprod)).trans
   exact Finset.single_le_sum
     (f := fun j : Fin H.count => ENNReal.ofReal
       (((H.component j).hi - (H.component j).lo) ^ 2 / (2 * lam)))
@@ -54,9 +52,7 @@ theorem finiteUnionGreen_mass_le
 
 /-- The actual Green mixture has mass bounded linearly by source mass. -/
 theorem finiteUnionGreenMixture_mass_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (T : WithTop ℝ)
+     (H : FiniteIntervalUnion) (T : WithTop ℝ)
     (nu : Measure (FiniteUnionPole H T)) :
     finiteUnionGreenMixture hH hLE hlam hLam A H T nu univ ≤
       finiteUnionGreenMassBound lam H * nu univ := by

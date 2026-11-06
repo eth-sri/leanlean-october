@@ -10,7 +10,6 @@ public import Mathlib.Topology.UniformSpace.UniformApproximation
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -63,7 +62,7 @@ theorem innerBallDirichletLimit_bound_terminal_lateral
   refine ⟨?_, ?_, ?_⟩
   · intro p hp
     by_cases hi : p.position ∈ movingDomain (PDE.euclideanBall 0 r0) Γ p.time
-    · exact hpoint p hp hi
+    · simp_all
     · simpa only [innerBallDirichletLimit, ite_eq_right hi, abs_zero] using hC
   · intro p hp ht
     by_cases hi : p.position ∈ movingDomain (PDE.euclideanBall 0 r0) Γ p.time
@@ -78,7 +77,6 @@ theorem innerBallDirichletLimit_bound_terminal_lateral
           straightenedPullback (g k) (u k) p = F (p.position, p.velocity) := by
         filter_upwards [hmem] with k hk
         have hm := subset_closure (hk.2.2 p hpK)
-        simp only [straightenedPoint, ht] at hm
         have het := (hu k).2.2.2.1 _ hm
         simpa only [straightenedPullback, straightenedPoint, ht,
           spatialY_spatialPack, spatialZ_spatialPack, add_sub_cancel] using het
@@ -87,17 +85,15 @@ theorem innerBallDirichletLimit_bound_terminal_lateral
         (tendsto_const_nhds.congr' (he.mono fun k hk => hk.symm))
     · have hzero : F (p.position, p.velocity) = 0 := by
         by_contra hne
-        have hs := hsupp (p.position, p.velocity)
-          (subset_tsupport (F : EvolutionAmbientState n → ℝ) hne)
+        have hs := hsupp _
+          (subset_tsupport _ hne)
         have hn := (mem_movingBall_iff_norm_lt hr0).not.mp hi
-        rw [ht] at hn
-        linarith
+        grind
       simp only [innerBallDirichletLimit, ite_eq_right hi, hzero]
   · intro p hp
     have hnot : p.position ∉ movingDomain (PDE.euclideanBall 0 r0) Γ p.time :=
       by
         have hopen := isOpen_movingDomain (γ := Γ) (PDE.isOpen_euclideanBall 0 r0) p.time
-        change p.position ∈ closure _ ∧ p.position ∉ interior _ at hp
         simpa only [hopen.interior_eq] using hp.2
     exact ite_eq_right hnot
 

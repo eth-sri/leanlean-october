@@ -25,7 +25,6 @@ the (continuous linear) coordinate projections.
 @[expose] public section
 
 noncomputable section
-set_option autoImplicit false
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Evolution
 
@@ -71,7 +70,7 @@ def transportedCoord : EvolutionVec n →L[ℝ] PDE.Vec n :=
     transportedCoord n x l = x (Fin.succ (Fin.natAdd n l)) := rfl
 
 @[simp] theorem packPoint_zero_apply (s : ℝ) (v z : PDE.Vec n) : packPoint s v z 0 = s := by
-  simp only [packPoint, Fin.cons_zero]
+  aesop
 
 @[simp] theorem packPoint_diffused_apply (s : ℝ) (v z : PDE.Vec n) (i : Fin n) :
     packPoint s v z (Fin.succ (Fin.castAdd n i)) = v i := by
@@ -83,12 +82,11 @@ def transportedCoord : EvolutionVec n →L[ℝ] PDE.Vec n :=
 
 @[simp] theorem timeCoord_packPoint (s : ℝ) (v z : PDE.Vec n) :
     timeCoord n (packPoint s v z) = s := by
-  rw [timeCoord_apply, packPoint_zero_apply]
+  simp
 
 @[simp] theorem diffusedCoord_packPoint (s : ℝ) (v z : PDE.Vec n) :
     diffusedCoord n (packPoint s v z) = v := by
-  ext i
-  rw [diffusedCoord_apply, packPoint_diffused_apply]
+  aesop
 
 @[simp] theorem transportedCoord_packPoint (s : ℝ) (v z : PDE.Vec n) :
     transportedCoord n (packPoint s v z) = z := by
@@ -101,7 +99,7 @@ theorem ext_coords {x y : EvolutionVec n} (ht : timeCoord n x = timeCoord n y)
     (hz : transportedCoord n x = transportedCoord n y) : x = y := by
   funext i
   refine Fin.cases ?_ (fun j => ?_) i
-  · simpa using ht
+  · simp_all
   · refine Fin.addCases (fun a => ?_) (fun b => ?_) j
     · simpa using congrFun hv a
     · simpa using congrFun hz b

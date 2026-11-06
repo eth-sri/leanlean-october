@@ -133,9 +133,8 @@ theorem exists_viscous_terminalSolution_of_finiteSlabs {n : ℕ}
         ∀ p ∈ movingClosedSlab Ω γ a τ, |u p| ≤ C := by
     intro a
     by_cases ha : a < τ
-    · obtain ⟨u, hu⟩ := hfinite a ha
-      exact ⟨u, fun _ => hu⟩
-    · exact ⟨fun _ => 0, fun h => (ha h).elim⟩
+    · simp_all
+    simp_all
   choose u hu using hex
   obtain ⟨hg, hgb⟩ := pastGluedFunction_isClassical hΩ hγ hlam hB hb hε0 hε1 u
     (fun a ha => (hu a ha).1) hC (fun a ha => (hu a ha).2)

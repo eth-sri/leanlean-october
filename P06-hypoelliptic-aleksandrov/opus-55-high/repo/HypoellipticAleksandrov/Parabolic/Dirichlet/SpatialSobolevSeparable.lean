@@ -26,9 +26,9 @@ noncomputable def h10HilbertGraphSeparableSpace
   letI : MeasureTheory.IsSeparable (PDE.volumeOn Ω) := by infer_instance
   letI : Fact (1 ≤ (2 : ℝ≥0∞)) := ⟨by norm_num⟩
   letI : Fact ((2 : ℝ≥0∞) ≠ ⊤) := ⟨by norm_num⟩
-  letI : SecondCountableTopology (PDE.ScalarLp Ω (2 : ℝ≥0∞)) :=
+  letI : SecondCountableTopology (PDE.ScalarLp Ω (2)) :=
     MeasureTheory.Lp.SecondCountableTopology
-  letI : SecondCountableTopology (PDE.HilbertVectorLp Ω (2 : ℝ≥0∞)) :=
+  letI : SecondCountableTopology (PDE.HilbertVectorLp Ω (2)) :=
     MeasureTheory.Lp.SecondCountableTopology
   letI : SecondCountableTopology (PDE.H1HilbertAmbient Ω) :=
     WithLp.secondCountableTopology 2 _ _

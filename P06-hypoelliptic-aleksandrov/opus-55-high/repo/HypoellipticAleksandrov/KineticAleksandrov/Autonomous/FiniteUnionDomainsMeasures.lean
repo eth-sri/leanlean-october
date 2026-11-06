@@ -29,11 +29,11 @@ def finiteUnionExit
   stripExit hH hLE hlam hLam A (H.component (finiteUnionPoleIndex H T e)) T
     (finiteUnionComponentPole H T e)
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+
 /-- Green measures do not depend on a component representation once membership is certified. -/
 theorem finiteUnionGreen_component
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (i : Fin H.count)
+     (H : FiniteIntervalUnion) (i : Fin H.count)
     (T : WithTop ℝ) (e : StripPole (H.component i) T) :
     finiteUnionGreen hH hLE hlam hLam A H T (componentPoleInclusion H i T e) =
       stripGreen hH hLE hlam hLam A (H.component i) T e := by
@@ -45,9 +45,7 @@ theorem finiteUnionGreen_component
 
 /-- Exit measures do not depend on a component representation once membership is certified. -/
 theorem finiteUnionExit_component
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (i : Fin H.count)
+     (H : FiniteIntervalUnion) (i : Fin H.count)
     (T : ℝ) (e : StripPole (H.component i) (T : WithTop ℝ)) :
     finiteUnionExit hH hLE hlam hLam A H T (componentPoleInclusion H i T e) =
       stripExit hH hLE hlam hLam A (H.component i) T e := by

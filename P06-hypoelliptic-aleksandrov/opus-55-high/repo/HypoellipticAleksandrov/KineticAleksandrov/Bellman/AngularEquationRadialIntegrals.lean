@@ -8,7 +8,6 @@ import Mathlib.Tactic
 /-! # The radial coefficients in the actual homogeneous product representation -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
@@ -20,7 +19,7 @@ theorem bellmanRadialWeight_integral_div (β : ℝ) (ψ : ℝ → ℝ) (n : ℕ)
   apply setIntegral_congr_fun measurableSet_Ioi
   intro s hs
   change s ^ (3 - β) * (ψ s / s ^ n) = s ^ ((3 - β) - n) * ψ s
-  rw [Real.rpow_sub hs (3 - β) (n : ℝ), Real.rpow_natCast]
+  rw [Real.rpow_sub hs (3 - β), Real.rpow_natCast]
   ring
 
 /-- A positive-position supported integrand has the same positive and full real integral. -/
@@ -30,7 +29,7 @@ theorem bellman_positiveIntegral_eq_full {ψ : ℝ → ℝ}
   apply setIntegral_eq_integral_of_forall_compl_eq_zero
   intro s hn
   by_contra h
-  exact hn (hs h)
+  simp_all
 
 /-- The two radial factors satisfy the exact relation required by the angular equation. -/
 theorem bellmanRadialWeight_deriv_relation (β a b : ℝ) (ha : 0 < a) (hab : a ≤ b)
@@ -52,8 +51,8 @@ theorem bellmanRadialWeight_deriv_relation (β a b : ℝ) (ha : 0 < a) (hab : a 
   have hp2 : Function.support (fun s : ℝ => s ^ (1 - β) * ζ s) ⊆ Ioi 0 :=
     fun s h => ha.trans (hs2 h).1
   have h1 := bellmanRadialWeight_integral_div β (deriv ζ) 1
-  simp only [pow_one, Nat.cast_one] at h1
-  rw [h1, bellmanRadialWeight_integral_div β ζ 2]
+  simp only [pow_one] at h1
+  rw [h1, bellmanRadialWeight_integral_div]
   norm_num only [Nat.cast_ofNat]
   have he1 : (3 - β) - 1 = 2 - β := by ring
   have he2 : (3 - β) - 2 = 1 - β := by ring
@@ -61,9 +60,9 @@ theorem bellmanRadialWeight_deriv_relation (β a b : ℝ) (ha : 0 < a) (hab : a 
     bellman_positiveIntegral_eq_full hp2,
     ← intervalIntegral.integral_eq_integral_of_support_subset hs1,
     ← intervalIntegral.integral_eq_integral_of_support_subset hs2]
-  have hza : ζ a = 0 := image_eq_zero_of_notMem_tsupport
+  have hza  := image_eq_zero_of_notMem_tsupport
     (fun h => (lt_irrefl a) (hs h).1)
-  have hzb : ζ b = 0 := image_eq_zero_of_notMem_tsupport
+  have hzb  := image_eq_zero_of_notMem_tsupport
     (fun h => (lt_irrefl b) (hs h).2)
   exact bellmanAngularRadial_integrationByParts β a b ha hab ζ hζ hza hzb
 

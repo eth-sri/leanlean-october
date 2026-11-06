@@ -25,7 +25,6 @@ blocks of the gradient and the Hessian of `ũ`.  The identity needs joint differ
 @[expose] public section
 
 noncomputable section
-set_option autoImplicit false
 
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter
 open scoped Topology ContDiff
@@ -70,9 +69,7 @@ theorem matrixContraction_viscousBlockMatrix (A : PDE.Mat n) (ε : ℝ) (H : PDE
       matrixContraction A (fun i j => H (Fin.castAdd n i) (Fin.castAdd n j)) +
         ε * ∑ i : Fin n, H (Fin.natAdd n i) (Fin.natAdd n i) := by
   simp only [matrixContraction, Fin.sum_univ_add, viscousBlockMatrix_castAdd_castAdd,
-    viscousBlockMatrix_castAdd_addNat, viscousBlockMatrix_addNat_castAdd,
-    viscousBlockMatrix_addNat_addNat, zero_mul, Finset.sum_const_zero, add_zero, zero_add,
-    Matrix.one_apply, Fin.natAdd_eq_addNat]
+    viscousBlockMatrix_castAdd_addNat, viscousBlockMatrix_addNat_castAdd, zero_mul, Finset.sum_const_zero, add_zero, Fin.natAdd_eq_addNat]
   congr 1
   rw [Finset.mul_sum]
   refine Finset.sum_congr rfl fun i _ => ?_
@@ -94,8 +91,8 @@ theorem kineticVelocityGradient_straightenedPullback
     kineticVelocityGradient (straightenedPullback g ũ) p =
       spatialZ (scalarSpatialGradient ũ (straightenedPoint g p)) := by
   have := classicalGradient_comp_block
-    (f := fun X => ũ (p.time, X)) (ι := fun z' => spatialPack (p.position - g p.time) z')
-    (hasFDerivAt_pack_right (p.position - g p.time) p.velocity) h (e := Fin.natAdd n)
+    (f := fun X => ũ _) (ι := fun z' => spatialPack _ z')
+    (hasFDerivAt_pack_right _ p.velocity) h (e := Fin.natAdd n)
     (fun i => embedZCLM_basisVec i)
   exact this
 
@@ -105,8 +102,8 @@ theorem diffusedHessian_straightenedPullback
     diffusedHessian (straightenedPullback g ũ) p i j =
       scalarSpatialHessian ũ (straightenedPoint g p) (Fin.castAdd n i) (Fin.castAdd n j) := by
   have := hessian_comp_block
-    (f := fun X => ũ (p.time, X)) (ι := fun y' => spatialPack (y' - g p.time) p.velocity)
-    (fun y' => hasFDerivAt_pack_left (g p.time) p.velocity y') (y := p.position) h
+    (f := fun X => ũ _) (ι := fun y' => spatialPack _ p.velocity)
+    (fun y' => hasFDerivAt_pack_left _ p.velocity y') (y := p.position) h
     (e := Fin.castAdd n) (fun i => embedYCLM_basisVec i) i j
   exact this
 
@@ -116,8 +113,8 @@ theorem kineticVelocityHessian_straightenedPullback
     kineticVelocityHessian (straightenedPullback g ũ) p i j =
       scalarSpatialHessian ũ (straightenedPoint g p) (Fin.natAdd n i) (Fin.natAdd n j) := by
   have := hessian_comp_block
-    (f := fun X => ũ (p.time, X)) (ι := fun z' => spatialPack (p.position - g p.time) z')
-    (fun z' => hasFDerivAt_pack_right (p.position - g p.time) z') (y := p.velocity) h
+    (f := fun X => ũ _) (ι := fun z' => spatialPack _ z')
+    (fun z' => hasFDerivAt_pack_right _ z') (y := p.velocity) h
     (e := Fin.natAdd n) (fun i => embedZCLM_basisVec i) i j
   exact this
 
@@ -131,14 +128,14 @@ theorem kineticTimeDerivative_straightenedPullback
           (spatialY (scalarSpatialGradient ũ (straightenedPoint g p))) := by
   set X := (straightenedPoint g p).2 with hX
   set L := fderiv ℝ ũ (straightenedPoint g p) with hL
-  have hL' : HasFDerivAt ũ L (straightenedPoint g p) := hũ.hasFDerivAt
+  have hL' : HasFDerivAt ũ L _ := hũ.hasFDerivAt
   -- the curve `r ↦ (r, (y - g r, z))`
   have hcurve1 : HasDerivAt (fun r : ℝ => p.position - g r) (-deriv g p.time) p.time :=
     hg.hasDerivAt.const_sub p.position
   have hcurve2 : HasDerivAt (fun r : ℝ => spatialPack (p.position - g r) p.velocity)
       (spatialPack (-deriv g p.time) 0) p.time := by
-    have h : HasDerivAt (fun r : ℝ => embedYCLM n (p.position - g r) + spatialPack 0 p.velocity)
-        (embedYCLM n (-deriv g p.time)) p.time :=
+    have h : HasDerivAt (fun r : ℝ => embedYCLM n _ + spatialPack 0 p.velocity)
+        (embedYCLM n _) p.time :=
       HasDerivAt.add_const _ ((embedYCLM n).hasFDerivAt.comp_hasDerivAt p.time hcurve1)
     have hfun : (fun r : ℝ => spatialPack (p.position - g r) p.velocity) =
         fun r : ℝ => embedYCLM n (p.position - g r) + spatialPack 0 p.velocity := by
@@ -146,17 +143,12 @@ theorem kineticTimeDerivative_straightenedPullback
       rw [embedYCLM_apply, ← spatialPack_add, add_zero, zero_add]
     rw [hfun]
     exact h
-  have hcurve : HasDerivAt (fun r : ℝ => (r, spatialPack (p.position - g r) p.velocity))
-      (1, spatialPack (-deriv g p.time) 0) p.time :=
+  have hcurve : HasDerivAt (fun r : ℝ => (r, spatialPack _ p.velocity))
+      (1, spatialPack _ 0) p.time :=
     HasDerivAt.prodMk (hasDerivAt_id p.time) hcurve2
   have hcomp := hL'.comp_hasDerivAt p.time hcurve
   have h1 : kineticTimeDerivative (straightenedPullback g ũ) p =
-      L (1, spatialPack (-deriv g p.time) 0) := by
-    have : (fun r : ℝ => straightenedPullback g ũ ⟨r, p.position, p.velocity⟩) =
-        ũ ∘ (fun r : ℝ => (r, spatialPack (p.position - g r) p.velocity)) := rfl
-    unfold kineticTimeDerivative
-    rw [this]
-    exact hcomp.deriv
+      L (1, spatialPack (-deriv g p.time) 0) := hcomp.deriv
   -- split the derivative into its time part and its spatial part
   have hsplit : L (1, spatialPack (-deriv g p.time) 0) =
       L (1, 0) + L (0, spatialPack (-deriv g p.time) 0) := by
@@ -169,15 +161,15 @@ theorem kineticTimeDerivative_straightenedPullback
   have hspace : L (0, spatialPack (-deriv g p.time) 0) =
       PDE.vecDot (-deriv g p.time)
         (spatialY (scalarSpatialGradient ũ (straightenedPoint g p))) := by
-    have hslice : HasFDerivAt (fun X' => ũ (p.time, X')) (L.comp (ContinuousLinearMap.inr ℝ ℝ
-        (PDE.Vec (n + n)))) X :=
+    have hslice : HasFDerivAt (fun X' => ũ _) (L.comp (ContinuousLinearMap.inr ℝ ℝ
+        (PDE.Vec _))) X :=
       hL'.comp X (hasFDerivAt_prodMk_right p.time X)
-    have h2 : fderiv ℝ (fun X' => ũ (p.time, X')) X = L.comp (ContinuousLinearMap.inr ℝ ℝ
-        (PDE.Vec (n + n))) := hslice.fderiv
+    have h2 : fderiv ℝ _ X = L.comp (ContinuousLinearMap.inr ℝ ℝ
+        (PDE.Vec _)) := hslice.fderiv
     have h3 := PDE.fderiv_apply_eq_vecDot_classicalGradient (fun X' => ũ (p.time, X')) X
       (spatialPack (-deriv g p.time) 0)
     rw [h2] at h3
-    change L (0, spatialPack (-deriv g p.time) 0) = _ at h3
+    change L (0, spatialPack _ 0) = _ at h3
     rw [h3]
     show PDE.vecDot (scalarSpatialGradient ũ (straightenedPoint g p)) _ = _
     rw [vecDot_spatialPack_right, PDE.vecDot_comm]
@@ -216,7 +208,7 @@ theorem viscousTransportedOperator_straightenedPullback
     viscousTransportedOperator B b ε (straightenedPullback g ũ) p =
       scalarParabolicOperator (straightenedCoefficient B g ε) (straightenedDrift b g) ũ
         (straightenedPoint g p) := by
-  have hdiff : DifferentiableAt ℝ (fun X => ũ (p.time, X)) (straightenedPoint g p).2 :=
+  have hdiff : DifferentiableAt ℝ (fun X => ũ (p.time, X)) _ :=
     hslice.differentiableAt (by norm_num)
   rw [viscousTransportedOperator_apply, transportedForwardOperator_apply,
     scalarParabolicOperator_apply, kineticTimeDerivative_straightenedPullback hg hũ,
@@ -227,9 +219,9 @@ theorem viscousTransportedOperator_straightenedPullback
       (Fin.castAdd n j)) = diffusedHessian (straightenedPullback g ũ) p := by
     funext i j
     exact (diffusedHessian_straightenedPullback hslice i j).symm
-  have hV : ∑ i, kineticVelocityHessian (straightenedPullback g ũ) p i i =
-      ∑ i : Fin n, scalarSpatialHessian ũ (straightenedPoint g p) (Fin.natAdd n i)
-        (Fin.natAdd n i) :=
+  have hV : ∑ i, kineticVelocityHessian _ p i i =
+      ∑ i : Fin n, scalarSpatialHessian ũ _ _
+        _ :=
     Finset.sum_congr rfl fun i _ => kineticVelocityHessian_straightenedPullback hslice i i
   rw [hH, hV]
   simp only [fullKineticCoefficientAt_apply]
@@ -257,7 +249,7 @@ theorem differentiableAt_time_straightenedPullback (hg : DifferentiableAt ℝ g 
       rw [embedYCLM_apply, ← spatialPack_add, add_zero, zero_add]
     rw [hfun]
     exact h
-  exact DifferentiableAt.comp (g := ũ) (f := fun r : ℝ => (r, spatialPack (p.position - g r)
+  exact DifferentiableAt.comp (g := ũ) (f := fun r : ℝ => (r, spatialPack _
     p.velocity)) p.time hũ (differentiableAt_id.prodMk hc)
 
 /-- `C²` regularity of the spatial slice of `ũ` at the straightened point gives `C²` regularity

@@ -7,15 +7,14 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecu
 /-! # Localized occupation domination for starts in a time slab -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+
 /-- Restricting starts and shortening the horizon can only decrease actual occupation. -/
 theorem entranceSlab_greenMixture_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (b T : ℝ)
+     (H : FiniteIntervalUnion) (b T : ℝ)
     (hBT : b ≤ T) (mu : Measure Point) (D : Set Point) :
     enlargedVisitGreenKernel hH hLE hlam hLam A H b ∘ₘ mu.restrict D ≤
       enlargedVisitGreenKernel hH hLE hlam hLam A H T ∘ₘ mu := by
@@ -32,9 +31,7 @@ theorem entranceSlab_greenMixture_le
 
 /-- An active Green kernel lives strictly between its starting time and its horizon. -/
 theorem entranceSlab_greenKernel_ae_support
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b : ℝ)
+     (c : Clock) (J : Interval) (b : ℝ)
     (hJ : closure c.active ⊆ J.carrier) (p : Point) :
     ∀ᵐ q ∂enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) b p,
       p.time < q.time ∧ q.time < b ∧ q.velocity 0 ∈ c.active := by
@@ -42,7 +39,7 @@ theorem entranceSlab_greenKernel_ae_support
   rw [enlarged_activeUnion_eq c J hJ]
   change ∀ᵐ q ∂(if hp : p ∈ enlargedVisitPoleSet c.activeInterval.toFiniteUnion b then
     finiteUnionGreen hH hLE hlam hLam A c.activeInterval.toFiniteUnion b
-      (enlargedVisitPole _ b ⟨p, hp⟩) else 0), _
+      _ else 0), _
   split
   · rename_i hp
     have hv : p.velocity 0 ∈ c.activeInterval.carrier := by
@@ -57,15 +54,12 @@ theorem entranceSlab_greenKernel_ae_support
     have ht : ∀ᵐ q ∂(stripGreen hH hLE hlam hLam A c.activeInterval ⊤ e).restrict
         {q | q.time < b}, q.time < b :=
       ae_restrict_mem (isOpen_lt continuous_time continuous_const).measurableSet
-    filter_upwards [hf, ht] with q hq hqt
-    exact ⟨hq.1, hqt, hq.2⟩
-  · simp only [ae_zero, Filter.eventually_bot]
+    aesop
+  simp
 
 /-- New starts in `(a,b]` produce occupation only in that same physical slab and active band. -/
 theorem entranceSlab_greenMixture_ae_support
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (a b : ℝ)
+     (c : Clock) (J : Interval) (a b : ℝ)
     (hJ : closure c.active ⊆ J.carrier) (mu : Measure Point) :
     ∀ᵐ q ∂(enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) b ∘ₘ
       mu.restrict {p | p.time ∈ Ioc a b}),
@@ -81,9 +75,7 @@ theorem entranceSlab_greenMixture_ae_support
 
 /-- Localized active occupation is bounded by the same slab of the actual full occupation. -/
 theorem entranceSlab_greenMixture_le_restrict
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (a b T : ℝ)
+     (c : Clock) (J : Interval) (a b T : ℝ)
     (hBT : b ≤ T) (hJ : closure c.active ⊆ J.carrier) (mu : Measure Point) :
     enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) b ∘ₘ
       mu.restrict {p | p.time ∈ Ioc a b} ≤
@@ -93,20 +85,18 @@ theorem entranceSlab_greenMixture_le_restrict
     {q : Point | q.time ∈ Ioc a b ∧ q.velocity 0 ∈ c.active})
       (entranceSlab_greenMixture_le hH hLE hlam hLam A (visitActiveUnion c J) b T hBT
         mu {p | p.time ∈ Ioc a b})
-  have heq : (enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) b ∘ₘ
-      mu.restrict {p | p.time ∈ Ioc a b}).restrict
+  have heq : (enlargedVisitGreenKernel hH hLE hlam hLam A _ b ∘ₘ
+      mu.restrict _).restrict
         {q | q.time ∈ Ioc a b ∧ q.velocity 0 ∈ c.active} =
-      enlargedVisitGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) b ∘ₘ
-        mu.restrict {p | p.time ∈ Ioc a b} :=
+      enlargedVisitGreenKernel hH hLE hlam hLam A _ b ∘ₘ
+        mu.restrict _ :=
     Measure.restrict_eq_self_of_ae_mem
       (entranceSlab_greenMixture_ae_support hH hLE hlam hLam A c J a b hJ mu)
-  exact heq.symm.le.trans hle
+  simp_all
 
 /-- Every finite canonical sum of new-start occupations inherits full-space slab domination. -/
 theorem entranceSlab_partial_occupation_le_fullspace
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T a b : ℝ)
+     (c : Clock) (J : Interval) (T a b : ℝ)
     (hT : 0 < T) (hbT : b ≤ T) (hJ : closure c.active ⊆ J.carrier)
     (P : Point) (hv : P.velocity 0 ∈ J.carrier) (N : ℕ) :
     (∑ n ∈ Finset.range N,
@@ -120,14 +110,10 @@ theorem entranceSlab_partial_occupation_le_fullspace
   let gm := enlargedActivePiece hH hLE hlam hLam A c J P.time (P.time + T) P
   have he : ∀ N : ℕ, (∑ n ∈ Finset.range N, (gm n).restrict S) =
       (∑ n ∈ Finset.range N, gm n).restrict S := by
-    intro N
-    induction N with
-    | zero => simp only [Finset.range_zero, Finset.sum_empty, Measure.restrict_zero]
-    | succ N ih => rw [Finset.sum_range_succ, Finset.sum_range_succ,
-        Measure.restrict_add, ih]
+    aesop
   have hle := Finset.sum_le_sum (s := Finset.range N) (fun n _ =>
     entranceSlab_greenMixture_le_restrict hH hLE hlam hLam A c J
-      (P.time + a) (P.time + b) (P.time + T) (by linarith only [hbT]) hJ
+      (P.time + a) (P.time + b) (P.time + T) (by simp_all) hJ
       (enlargedVisitEntrance hH hLE hlam hLam A c J P.time (P.time + T) P n))
   exact hle.trans ((he N).le.trans (Measure.restrict_mono (subset_refl S)
     (enlarged_active_occupation_le_fullspace hH hLE hlam hLam A c J T hT P hv N)))

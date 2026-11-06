@@ -37,13 +37,6 @@ def IsParabolicSubsolutionOn {d : ℕ} (A : CoefficientField d)
 
 namespace IsParabolicSubsolutionOn
 
-/-- A subsolution inequality holds at every point of its defining set. -/
-theorem le {d : ℕ} {A : CoefficientField d} {f u : TimeVelocity d → ℝ}
-    {s : Set (TimeVelocity d)} (h : IsParabolicSubsolutionOn A f u s)
-    {z : TimeVelocity d} (hz : z ∈ s) :
-    parabolicOperator A u z ≤ f z :=
-  h z hz
-
 end IsParabolicSubsolutionOn
 
 end HypoellipticAleksandrov.Parabolic

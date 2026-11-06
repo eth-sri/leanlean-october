@@ -47,38 +47,36 @@ theorem exists_contDiffOn_two_gluing
     have hy : v y =ᵐ[timeVelocityVolumeOn (V x ∩ V y)] w₀ :=
       (hvAE y).filter_mono
         (ae_mono (Measure.restrict_mono_set volume inter_subset_right))
-    have hxy : v x =ᵐ[timeVelocityVolumeOn (V x ∩ V y)] v y := hx.trans hy.symm
+    have hxy  := hx.trans hy.symm
     exact Measure.eqOn_open_of_ae_eq hxy ((hVopen x).inter (hVopen y))
       (hvC2 x).continuous.continuousOn (hvC2 y).continuous.continuousOn
-  let w : TimeVelocity d → ℝ := fun y => if hy : y ∈ Q then v ⟨y, hy⟩ y else 0
+  let w  := fun y => if hy : y ∈ Q then v ⟨y, hy⟩ y else 0
   have hwv (x : Q) : Set.EqOn w (v x) (V x) := by
     intro y hy
-    have hyQ : y ∈ Q := hVQ x hy
-    rw [show w y = v ⟨y, hyQ⟩ y by simp [w, hyQ]]
-    exact hcompat ⟨y, hyQ⟩ x ⟨hzV ⟨y, hyQ⟩, hy⟩
+    have hyQ  := hVQ x hy
+    aesop
   have hwC2 : ContDiffOn ℝ 2 w Q := by
     apply contDiffOn_of_locally_contDiffOn
     intro x hx
-    refine ⟨V ⟨x, hx⟩, hVopen ⟨x, hx⟩, hzV ⟨x, hx⟩, ?_⟩
-    exact (hvC2 ⟨x, hx⟩).contDiffOn.congr_mono
-      (fun y hy => hwv ⟨x, hx⟩ hy.2) inter_subset_right
+    refine ⟨V _, hVopen _, hzV ⟨x, hx⟩, ?_⟩
+    exact (hvC2 _).contDiffOn.congr_mono
+      (fun y hy => hwv _ hy.2) inter_subset_right
   obtain ⟨t, htcount, hQcover⟩ :=
     (HereditarilyLindelofSpace.isLindelof Q).elim_nhds_subcover'
-      (fun x hx => V ⟨x, hx⟩)
-      (fun x hx => (hVopen ⟨x, hx⟩).mem_nhds (hzV ⟨x, hx⟩))
+      _
+      (fun x hx => (hVopen _).mem_nhds (hzV ⟨x, hx⟩))
   have hunionQ : (⋃ x ∈ t, V x) = Q := by
     apply Set.Subset.antisymm
-    · exact iUnion₂_subset fun x _ => hVQ x
-    · exact hQcover
+    · simp_all
+    omega
   have hwAEunion : w =ᵐ[timeVelocityVolumeOn (⋃ x ∈ t, V x)] w₀ := by
-    rw [timeVelocityVolumeOn, MeasureTheory.ae_eq_restrict_biUnion_iff V htcount]
+    rw [MeasureTheory.ae_eq_restrict_biUnion_iff V htcount]
     intro x hx
     have hwvx : w =ᵐ[timeVelocityVolumeOn (V x)] v x := by
       filter_upwards [ae_restrict_mem (hVopen x).measurableSet] with y hy
-      exact hwv x hy
+      grind
     exact hwvx.trans (hvAE x)
-  refine ⟨w, hwC2, ?_, hwv⟩
-  simpa [hunionQ] using hwAEunion
+  grind
 
 end
 

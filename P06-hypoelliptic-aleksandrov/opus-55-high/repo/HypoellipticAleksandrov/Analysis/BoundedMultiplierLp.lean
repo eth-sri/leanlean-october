@@ -11,7 +11,6 @@ multiplication by an almost-everywhere bounded measurable scalar function.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Analysis
 
@@ -32,7 +31,7 @@ theorem memLp_mul_eLpNorm_toReal_le_of_ae_abs_le
   have hpoint : ∀ᵐ x ∂μ, ‖a x * f x‖ ≤ M * ‖f x‖ := by
     filter_upwards [haM] with x hx
     simpa only [Real.norm_eq_abs, abs_mul] using
-      mul_le_mul hx le_rfl (abs_nonneg (f x)) hM
+      mul_le_mul hx le_rfl (abs_nonneg _) hM
   have haf : MemLp (fun x => a x * f x) p μ := MemLp.of_le_mul hf hmeas hpoint
   have hle : eLpNorm (fun x => a x * f x) p μ ≤
       ENNReal.ofReal M * eLpNorm f p μ :=
@@ -41,6 +40,6 @@ theorem memLp_mul_eLpNorm_toReal_le_of_ae_abs_le
   have htop : ENNReal.ofReal M * eLpNorm f p μ ≠ ∞ :=
     ENNReal.mul_ne_top ENNReal.ofReal_ne_top hf.eLpNorm_ne_top
   have hr := ENNReal.toReal_mono htop hle
-  simpa only [ENNReal.toReal_mul, ENNReal.toReal_ofReal hM] using hr
+  simp_all
 
 end HypoellipticAleksandrov.Analysis

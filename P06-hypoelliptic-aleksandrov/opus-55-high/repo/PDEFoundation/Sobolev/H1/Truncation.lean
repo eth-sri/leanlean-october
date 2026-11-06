@@ -31,18 +31,18 @@ noncomputable def positivePartSubConst
   (u.toW1pFunction.positivePartSubConst
     hU (by norm_num) (by norm_num) c).toH1Function
 
+variable (hU : IsOpenBoundedConvexDomain U) (u : H1Function U) (c : ℝ)
+
 @[simp]
 theorem positivePartSubConst_toFun
-    (hU : IsOpenBoundedConvexDomain U)
-    (u : H1Function U) (c : ℝ) :
+     :
     (u.positivePartSubConst hU c).toFun =
       fun x => max (u.toFun x - c) 0 :=
   rfl
 
 @[simp]
 theorem positivePartSubConst_grad
-    (hU : IsOpenBoundedConvexDomain U)
-    (u : H1Function U) (c : ℝ) :
+     :
     (u.positivePartSubConst hU c).grad =
       fun x =>
         {y | c < u.toFun y}.indicator u.grad x :=

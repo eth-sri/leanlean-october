@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.TimeCuto
 /-! # The actual backward operator of the cutoff profile -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory HypoellipticAleksandrov.Parabolic
 
@@ -14,8 +13,8 @@ open MeasureTheory HypoellipticAleksandrov.Parabolic
 theorem contDiff_nativeBarrier (d : ℕ) (mu R t : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (fun q : XV d => barrier mu R ⟨t, q.1, q.2⟩) := by
   simpa only [barrier] using!
-    (contDiff_const (c := Real.exp (-mu * t))).mul ((contDiff_const (c := (2 : ℝ))).sub
-      ((PDE.contDiff_vecNormSq.comp contDiff_snd).div_const (R ^ 2)))
+    (contDiff_const (c := Real.exp _)).mul ((contDiff_const (c := (2))).sub
+      ((PDE.contDiff_vecNormSq.comp contDiff_snd).div_const _))
 
 /-- The cutoff's time derivative differentiates only the explicit exponential barrier. -/
 theorem timeCutoffProfile_timeDerivative {d : ℕ} {alpha : ℝ}
@@ -31,12 +30,10 @@ theorem timeCutoffProfile_timeDerivative {d : ℕ} {alpha : ℝ}
     (contDiff_timeCutoffTheta.differentiable (by simp)).differentiableAt
   have he := ht.hasDerivAt.comp P.time hi
   change HasDerivAt
-    (fun s => timeCutoffProfile (profileFunction h) alpha r mu R
+    (fun s => timeCutoffProfile _ alpha r mu R
       ⟨s, P.position, P.velocity⟩) _ P.time at he
-  change deriv (fun s => timeCutoffProfile (profileFunction h) alpha r mu R
-    ⟨s, P.position, P.velocity⟩) P.time = _
+  change deriv _ P.time = _
   rw [he.deriv, barrier_timeDerivative]
-  simp only [selectedFlatProfile, barrier, id_eq, mul_one]
-  ring
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

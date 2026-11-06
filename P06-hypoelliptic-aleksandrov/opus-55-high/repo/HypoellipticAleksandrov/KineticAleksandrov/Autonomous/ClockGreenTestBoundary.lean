@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripB
 /-! # Genuine continuity and lateral traces of normalized clock tests -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo TheoremA Evolution
@@ -25,7 +24,7 @@ theorem clock_continuous_of_zero_after (u : Point → ℝ) (R T : ℝ) (hRT : R 
     have hn : ∀ᶠ q in 𝓝 p, q.time < T :=
       (isOpen_lt continuous_time continuous_const).mem_nhds ht
     filter_upwards [hn.filter_mono nhdsWithin_le_nhds, self_mem_nhdsWithin] with q hq hmem
-    exact ⟨hq.le, hmem⟩
+    grind
   · have hRp : R < p.time := hRT.trans_le (not_lt.mp ht)
     have hn : ∀ᶠ q in 𝓝 p, R < q.time :=
       (isOpen_lt continuous_const continuous_time).mem_nhds hRp
@@ -48,8 +47,8 @@ theorem clockSourcePotential_boundary
       clockSourcePotential hH hLE hlam hLam A c e T f p = 0) := by
   let E := clockEvolution hH hLE hlam hLam A c e
   have hsetting := c.extended_sourceSetting hlam hLam A e
-  obtain ⟨hBs, hBsym, hBell⟩ := sectionTwoCoefficient_fullBounds (3 * lam / 5) (3 * Lam)
-    (c.extendedCoefficient lam A.a e) hsetting.1
+  obtain ⟨hBs, hBsym, hBell⟩ := sectionTwoCoefficient_fullBounds _ _
+    _ hsetting.1
   obtain ⟨-, -, -, -, -, hc, -, hv, -⟩ :=
     kinetic_duhamel hH (by omega)
       (intervalDomain_admissible clockNormalizedInterval) (zeroCurve_piecewiseC1 1)
@@ -69,7 +68,7 @@ theorem clockSourcePotential_boundary
     intro p hp
     refine ⟨hp.1, ?_⟩
     rw [mem_closure_movingDomain_iff, sub_zero]
-    exact hp.2
+    grind
   · intro p hp
     apply hv p
     rw [mem_frontier_movingDomain_iff, sub_zero]

@@ -36,8 +36,7 @@ lemma minkowski_aux [SFinite m] [SFinite ν] {p : ℝ} (hp : 1 < p) {F : α → 
   set B := ∫⁻ ξ, (∫⁻ y, F y ξ ^ p ∂m) ^ (1 / p) ∂ν with hBdef
   have hq := Real.HolderConjugate.conjExponent hp
   set q := p.conjExponent with hqdef
-  have hp0 : 0 < p := by linarith
-  have hq0 : 0 < q := hq.symm.pos
+  have hq0  := hq.symm.pos
   have hpq : 1 / p + 1 / q = 1 := by simpa using hq.inv_add_inv_eq_one
   have hq1 : p - 1 = p / q := by
     have := hq.inv_add_inv_eq_one
@@ -68,7 +67,7 @@ lemma minkowski_aux [SFinite m] [SFinite ν] {p : ℝ} (hp : 1 < p) {F : α → 
           have h2 : ∫⁻ y, (I y ^ (p - 1)) ^ q ∂m = A := by
             refine lintegral_congr fun y => ?_
             rw [← ENNReal.rpow_mul, hpq']
-          simp only [Pi.mul_apply, h2] at h
+          simp only [h2] at h
           calc ∫⁻ y, I y ^ (p - 1) * F y ξ ∂m
               = ∫⁻ y, F y ξ * I y ^ (p - 1) ∂m := lintegral_congr fun y => mul_comm _ _
             _ ≤ _ := h
@@ -99,20 +98,20 @@ variable [SigmaFinite m] [SigmaFinite ν] {F : α → β → ℝ≥0∞}
 
 /-- The truncation is jointly measurable. -/
 lemma measurable_trunc (hF : Measurable (Function.uncurry F)) (n : ℕ) :
-    Measurable (Function.uncurry (trunc m ν F n)) := by
-  unfold trunc
-  exact (hF.min measurable_const).indicator
+    Measurable (Function.uncurry (trunc m ν F n)) := (hF.min measurable_const).indicator
     ((measurableSet_spanningSets m n).prod (measurableSet_spanningSets ν n))
 
+variable (n : ℕ) (y : α) (ξ : β)
+
 /-- The truncation is dominated by `F`. -/
-lemma trunc_le (n : ℕ) (y : α) (ξ : β) : trunc m ν F n y ξ ≤ F y ξ := by
+lemma trunc_le  : trunc m ν F n y ξ ≤ F y ξ := by
   unfold trunc
   by_cases h : (y, ξ) ∈ spanningSets m n ×ˢ spanningSets ν n
   · rw [Set.indicator_of_mem h]; exact min_le_left _ _
   · rw [Set.indicator_of_notMem h]; exact zero_le
 
 /-- The truncation is monotone in `n`. -/
-lemma trunc_mono (y : α) (ξ : β) : Monotone fun n => trunc m ν F n y ξ := by
+lemma trunc_mono  : Monotone fun n => trunc m ν F n y ξ := by
   intro a b hab
   show trunc m ν F a y ξ ≤ trunc m ν F b y ξ
   unfold trunc
@@ -124,7 +123,7 @@ lemma trunc_mono (y : α) (ξ : β) : Monotone fun n => trunc m ν F n y ξ := b
   · rw [Set.indicator_of_notMem h]; exact zero_le
 
 /-- The truncations increase to `F`. -/
-lemma iSup_trunc (y : α) (ξ : β) : ⨆ n, trunc m ν F n y ξ = F y ξ := by
+lemma iSup_trunc  : ⨆ n, trunc m ν F n y ξ = F y ξ := by
   refine le_antisymm (iSup_le fun n => trunc_le n y ξ) ?_
   refine le_of_forall_lt fun c hc => ?_
   obtain ⟨N, hN⟩ := mem_iUnion.1 (by rw [iUnion_spanningSets]; trivial : y ∈ ⋃ n, spanningSets m n)
@@ -150,7 +149,7 @@ lemma lintegral_trunc_ne_top {p : ℝ} (hp : 0 < p) (n : ℕ) :
     by_cases hy : y ∈ spanningSets m n
     · rw [Set.indicator_of_mem hy]
       calc ∫⁻ ξ, trunc m ν F n y ξ ∂ν
-          ≤ ∫⁻ ξ, (spanningSets ν n).indicator (fun _ => (n : ℝ≥0∞)) ξ ∂ν := by
+          ≤ ∫⁻ ξ, (spanningSets ν n).indicator (fun _ => n) ξ ∂ν := by
             refine lintegral_mono fun ξ => ?_
             unfold trunc
             by_cases hξ : ξ ∈ spanningSets ν n
@@ -159,10 +158,8 @@ lemma lintegral_trunc_ne_top {p : ℝ} (hp : 0 < p) (n : ℕ) :
               exact min_le_right _ _
             · rw [Set.indicator_of_notMem (fun h => hξ h.2)]; exact zero_le
         _ = c := by
-            rw [lintegral_indicator_const (measurableSet_spanningSets ν n), hc]
-    · rw [Set.indicator_of_notMem hy]
-      have : ∀ ξ, trunc m ν F n y ξ = 0 := fun ξ => by
-        unfold trunc
+            rw [lintegral_indicator_const (measurableSet_spanningSets ν n)]
+    · have : ∀ ξ, trunc m ν F n y ξ = 0 := fun ξ => by
         exact Set.indicator_of_notMem (fun h => hy h.1) _
       simp [this]
   refine ne_top_of_le_ne_top (b := ∫⁻ y, (spanningSets m n).indicator (fun _ => c ^ p) y ∂m) ?_ ?_
@@ -204,11 +201,9 @@ theorem minkowski_integral [SigmaFinite m] [SigmaFinite ν] {p : ℝ} (hp : 1 < 
     exact lintegral_congr fun ξ => iSup_trunc y ξ
   have hA : ∫⁻ y, (∫⁻ ξ, F y ξ ∂ν) ^ p ∂m =
       ⨆ n, ∫⁻ y, (∫⁻ ξ, trunc m ν F n y ξ ∂ν) ^ p ∂m := by
-    have hmono : ∀ y, Monotone fun n => ∫⁻ ξ, trunc m ν F n y ξ ∂ν :=
-      fun y a b hab => lintegral_mono fun ξ => trunc_mono y ξ hab
     rw [← lintegral_iSup]
     · refine lintegral_congr fun y => ?_
-      rw [← hI y]
+      rw [← hI]
       exact (ENNReal.monotone_rpow_of_nonneg hp0.le).map_iSup_of_continuousAt
         (ENNReal.continuous_rpow_const.continuousAt) (ENNReal.zero_rpow_of_pos hp0)
     · intro n

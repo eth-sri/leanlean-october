@@ -22,8 +22,10 @@ def continuousMapZeroExtension {d : ℕ} {K : Set (TimeVelocity d)}
   classical
   exact if hz : z ∈ K then V ⟨z, hz⟩ else 0
 
+variable {d : ℕ}
+
 /-- The ambient extension retains the prescribed continuous closed-carrier restriction. -/
-theorem continuousOn_continuousMapZeroExtension {d : ℕ} {K : Set (TimeVelocity d)}
+theorem continuousOn_continuousMapZeroExtension  {K : Set (TimeVelocity d)}
     (V : C(K, ℝ)) : ContinuousOn (continuousMapZeroExtension V) K := by
   rw [continuousOn_iff_continuous_domRestrict]
   convert V.continuous using 1
@@ -31,7 +33,7 @@ theorem continuousOn_continuousMapZeroExtension {d : ℕ} {K : Set (TimeVelocity
   simp only [Set.domRestrict_apply, continuousMapZeroExtension, dite_eq_left z.property]
 
 /-- Uniform closed-carrier convergence implies strong restricted L2 convergence. -/
-theorem tendsto_local_toLp_of_continuousMap_tendsto {d : ℕ}
+theorem tendsto_local_toLp_of_continuousMap_tendsto 
     (K S : Set (TimeVelocity d)) [CompactSpace K]
     (hS : IsOpen S) (hSc : IsCompact (closure S)) (hSK : closure S ⊆ K)
     (U : ℕ → C(K, ℝ)) (V : C(K, ℝ)) (hlim : Tendsto U atTop (𝓝 V))
@@ -45,8 +47,8 @@ theorem tendsto_local_toLp_of_continuousMap_tendsto {d : ℕ}
   let : IsFiniteMeasure (timeVelocityVolumeOn S) := ⟨by
     simpa only [timeVelocityVolumeOn, Measure.restrict_apply_univ] using
       lt_of_le_of_lt (measure_mono subset_closure) hSc.measure_lt_top⟩
-  refine ⟨hv, tendsto_toLp_two_of_ae_sub_le (timeVelocityVolumeOn S) u hu
-    (continuousMapZeroExtension V) hv (fun n => ‖U n - V‖)
+  refine ⟨hv, tendsto_toLp_two_of_ae_sub_le _ u hu
+    _ hv (fun n => ‖U n - V‖)
     (fun _ => norm_nonneg _) (tendsto_iff_norm_sub_tendsto_zero.mp hlim) ?_⟩
   intro n
   apply ae_restrict_of_forall_mem hS.measurableSet
@@ -54,8 +56,8 @@ theorem tendsto_local_toLp_of_continuousMap_tendsto {d : ℕ}
   have hzK := hSK (subset_closure hz)
   have he : u n z - continuousMapZeroExtension V z = (U n - V) ⟨z, hzK⟩ := by
     simp only [continuousMapZeroExtension, dite_eq_left hzK, ContinuousMap.sub_apply,
-      hueq n ⟨z, hzK⟩]
-  rw [he, ← Real.norm_eq_abs]
-  exact (U n - V).norm_coe_le_norm ⟨z, hzK⟩
+      hueq]
+  rw [he]
+  exact (U n - V).norm_coe_le_norm _
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

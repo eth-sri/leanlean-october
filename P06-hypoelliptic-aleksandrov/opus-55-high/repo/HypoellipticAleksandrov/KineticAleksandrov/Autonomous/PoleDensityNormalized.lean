@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.SmoothEstimate
 /-! # The actual normalized physical Green has a uniform real Lebesgue density -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo TheoremA Evolution Green
@@ -28,10 +27,10 @@ theorem clockGreen_real_density
   intro A c e he
   obtain ⟨G, hm, hd, hn, -⟩ := hc A c e he
   have hphysical : clockGreen hH hLE hlam hLam A c e he =
-      volume.withDensity (poleDensityExtend G) :=
-    (congrArg (fun μ : Measure (GreenCarrier 1) => μ.map (elapsedPhysicalPoint 0)) hd).trans
+      volume.withDensity _ :=
+    (congrArg _ hd).trans
       (poleDensityExtend_map_withDensity hm)
-  have hnorm : eLpNorm (poleDensityExtend G) (ENNReal.ofReal q) volume ≤
+  have hnorm : eLpNorm _ _ volume ≤
       ENNReal.ofReal C := (poleDensityExtend_eLpNorm hm _).le.trans hn
   obtain ⟨F, hFm, hFn, hFd, hFN, hFLp⟩ := real_density_of_eLpNorm_bound volume
     (clockGreen hH hLE hlam hLam A c e he) (poleDensityExtend G)

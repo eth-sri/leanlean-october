@@ -21,10 +21,9 @@ theorem visitTimeQuadratic_entrance_integral_lower
         {p | p.time ∈ Icc b (b + c.r ^ 2)}).toReal ≤
       ∫ p, visitTimeCutoff b c.r c.positive p.time * visitQuadratic c (p.velocity 0)
         ∂visitEntrancePiece hH hLE hlam hLam A c J s T P n := by
-  let mu := visitEntrancePiece hH hLE hlam hLam A c J s T P n
   let W := {p : Point | p.time ∈ Icc b (b + c.r ^ 2)}
   have hW : MeasurableSet W := isClosed_Icc.measurableSet.preimage continuous_time.measurable
-  have hi := integral_mono_ae ((integrable_const (5 * c.r ^ 2 / 16)).indicator hW)
+  have hi := integral_mono_ae ((integrable_const _).indicator hW)
     (visitTimeQuadratic_integrable_entrance hH hLE hlam hLam A c J s T b P n) (by
       filter_upwards [visitGamma_ae_closedEntrance P c J s T _ _ n] with p hp
       by_cases ht : p ∈ W
@@ -52,8 +51,6 @@ theorem visitTimeQuadratic_activeGreen_integral_bound : ∃ D : ℝ, 0 ≤ D ∧
   obtain ⟨D, hD, hd⟩ := visitTimeQuadratic_uniform_operator_bound
   refine ⟨D, hD, ?_⟩
   intro hH hLE lam Lam hlam hLam A c J s T b mu hmuFinite
-  let := hmuFinite
-  dsimp only
   let G := visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ mu
   let f := fun p : Point => forwardScalarOperator A.a
     (fun q => visitTimeCutoff b c.r c.positive q.time * visitQuadratic c (q.velocity 0)) p
@@ -62,17 +59,16 @@ theorem visitTimeQuadratic_activeGreen_integral_bound : ∃ D : ℝ, 0 ≤ D ∧
   have hi := integral_mono_ae
     (visitTimeQuadratic_operator_integrable_activeGreenMixture
       hH hLE hlam hLam A c J s T b mu).neg
-    ((integrable_const (9 * D / 16 + 2 * Lam)).indicator hW) (by
+    ((integrable_const _).indicator hW) (by
       filter_upwards [visitActiveGreenMixture_ae_closedActive hH hLE hlam hLam A c J s T mu]
         with p hp
-      change -f p ≤ W.indicator (fun _ => 9 * D / 16 + 2 * Lam) p
+      change -f p ≤ W.indicator _ p
       by_cases ht : p ∈ W
       · rw [indicator_of_mem ht]
         exact (neg_le_abs _).trans (hd c b lam Lam hlam A p hp)
       · have hz : f p = 0 := (visitTimeQuadratic_zero_off_window c b A.a p ht).2
-        rw [indicator_of_notMem ht, hz]
-        exact neg_zero.le)
-  change (∫ p, -f p ∂G) ≤ ∫ p, W.indicator (fun _ => 9 * D / 16 + 2 * Lam) p ∂G at hi
+        simp_all)
+  change (∫ p, -f p ∂G) ≤ ∫ p, W.indicator _ p ∂G at hi
   rw [integral_neg, integral_indicator hW, integral_const] at hi
   change -(∫ p, f p ∂G) ≤ (9 * D / 16 + 2 * Lam) * (G W).toReal
   simpa only [smul_eq_mul, Measure.real, Measure.restrict_apply_univ, mul_comm] using hi

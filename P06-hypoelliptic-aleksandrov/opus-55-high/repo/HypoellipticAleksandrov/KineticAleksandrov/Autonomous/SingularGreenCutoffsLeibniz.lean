@@ -56,19 +56,18 @@ theorem spatialCutoffTest_operator (a : ℝ → ℝ → ℝ) (chi psi : ℝ → 
       2*a (p.position 0) (p.velocity 0)*chi (p.position 0)*deriv psi (p.velocity 0)*
         kineticVelocityGradient phi p 0 := by
   have hc := hchi.differentiable (by norm_num)
-  have hp := hpsi.differentiable (by norm_num)
   have htime : kineticTimeDerivative (spatialCutoffTest chi psi phi) p =
       chi (p.position 0)*psi (p.velocity 0)*kineticTimeDerivative phi p := by
     change deriv (fun t => (chi (p.position 0)*psi (p.velocity 0))*
-      phi ⟨t, p.position, p.velocity⟩) p.time = _
-    exact deriv_const_mul _ ht
+      phi _) p.time = _
+    aesop
   have hposition : kineticPositionGradient (spatialCutoffTest chi psi phi) p 0 =
       deriv chi (p.position 0)*psi (p.velocity 0)*phi p+
         chi (p.position 0)*psi (p.velocity 0)*kineticPositionGradient phi p 0 := by
     rw [kineticPositionGradient_scalar, kineticPositionGradient_scalar]
     change deriv (fun x => (chi x*psi (p.velocity 0))*
-      phi ⟨p.time, fun _ => x, p.velocity⟩) (p.position 0) = _
-    rw [deriv_fun_mul ((hc _).mul_const _) hx, deriv_mul_const (hc _) _]
+      phi _) _ = _
+    rw [deriv_fun_mul ((hc _).mul_const _) hx, deriv_mul_const (hc _)]
     have he : phi ⟨p.time, fun _ => p.position 0, p.velocity⟩ = phi p := by
       congr 1
       ext i
@@ -86,7 +85,6 @@ theorem spatialCutoffTest_operator (a : ℝ → ℝ → ℝ) (chi psi : ℝ → 
     have he : (fun v => spatialCutoffTest chi psi phi
         ⟨p.time, p.position, fun _ => v⟩) =
         fun v => chi (p.position 0)*(psi v*phi ⟨p.time, p.position, fun _ => v⟩) := by
-      funext v
       dsimp [spatialCutoffTest]
       ring
     rw [he, deriv_const_mul_field', deriv_const_mul_field,
@@ -99,7 +97,6 @@ theorem spatialCutoffTest_operator (a : ℝ → ℝ → ℝ) (chi psi : ℝ → 
       · rw [Fin.eq_zero i]
     rw [he']
   dsimp [forwardScalarOperator]
-  rw [htime, hposition, hvelocity]
-  ring
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -5,30 +5,26 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.HomogeneousR
 /-! # Continuous boundary values for the actual homogeneous reconstruction -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Filter
 open SectionTwo TheoremA Evolution
 open scoped Topology
 
+variable (H : Interval) (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ) (g : BoundedBorel Point) (p : Point)
+
 /-- The source potential is zero at every invalid open-strip pole. -/
-theorem reconstruction_potential_zero_outside (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ)
-    (g : BoundedBorel Point) (p : Point) (hp : p ∉ stripPast H T) :
+theorem reconstruction_potential_zero_outside  (hp : p ∉ stripPast H T) :
     stripSourcePotential H K T g p = 0 := by
   by_cases ht : p.time < T
   · apply duhamelPotential_eq_zero_of_not_mem
-    change p.velocity ∉ movingDomain (intervalDomain H) (fun _ => 0) p.time
     rw [movingDomain, PDE.mem_translateSet_iff_sub_mem, sub_zero, intervalDomain,
       PDE.mem_oneDimensionalAxisBox_iff]
     exact fun hv => hp ⟨ht, hv⟩
-  · exact duhamelPotential_eq_zero_of_terminal_le K T (nativeStripSource g)
-      (sectionTwoPoint p) (le_of_not_gt ht)
+  · exact duhamelPotential_eq_zero_of_terminal_le K T _
+      _ (le_of_not_gt ht)
 
 /-- The time barrier extends continuously to all ambient points. -/
-theorem reconstruction_potential_abs_le_time (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ)
-    (g : BoundedBorel Point) (C : ℝ) (hC : 0 ≤ C) (hg : ∀ p, |g p| ≤ C) (p : Point) :
+theorem reconstruction_potential_abs_le_time  (C : ℝ) (hC : 0 ≤ C) (hg : ∀ p, |g p| ≤ C) (p : Point) :
     |stripSourcePotential H K T g p| ≤ C * max (T - p.time) 0 := by
   by_cases hp : p ∈ stripPast H T
   · let e : StripPole H (T : WithTop ℝ) := ⟨p, WithTop.coe_lt_coe.mpr hp.1, hp.2⟩
@@ -36,7 +32,7 @@ theorem reconstruction_potential_abs_le_time (H : Interval)
       max_eq_left (sub_nonneg.mpr hp.1.le)]
     exact stripPotentialOfKernel_abs_le H K T g e C hC hg
   · rw [reconstruction_potential_zero_outside H K T g p hp, abs_zero]
-    exact mul_nonneg hC (le_max_right _ _)
+    positivity
 
 /-- The quadratic face barrier extends continuously to all ambient points. -/
 theorem reconstruction_potential_abs_le_face
@@ -55,12 +51,10 @@ theorem reconstruction_potential_abs_le_face
     rw [stripSourcePotential_eq_green H E.2 T g e, max_eq_left hq]
     exact stripPotentialOfRealization_abs_le_quadratic hH hlam hLam A H E hE T e g C hC hg
   · rw [reconstruction_potential_zero_outside H E.2 T g p hp, abs_zero]
-    exact mul_nonneg hC (le_max_right _ _)
+    positivity
 
 /-- Bounded-source potentials are ambient continuous at the terminal face. -/
-theorem reconstruction_potential_continuousAt_terminal (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : ℝ)
-    (g : BoundedBorel Point) (p : Point) (hp : p.time = T) :
+theorem reconstruction_potential_continuousAt_terminal  (hp : p.time = T) :
     ContinuousAt (stripSourcePotential H K T g) p := by
   obtain ⟨C, hC, hg⟩ := g.exists_bound
   have hc : Continuous (fun q : Point => C * max (T - q.time) 0) :=
@@ -70,8 +64,8 @@ theorem reconstruction_potential_continuousAt_terminal (H : Interval)
   have ht := squeeze_zero_norm (f := stripSourcePotential H K T g)
     (fun q => by simpa only [Real.norm_eq_abs] using
       reconstruction_potential_abs_le_time H K T g C hC hg q) hb
-  change Tendsto (stripSourcePotential H K T g) (𝓝 p)
-    (𝓝 (stripSourcePotential H K T g p))
+  change Tendsto _ _
+    _
   rw [reconstruction_potential_zero_outside H K T g p
     (fun h => (by simpa only [hp] using h.1 : T < T).false)]
   exact ht
@@ -90,7 +84,7 @@ theorem reconstruction_potential_continuousAt_face
   have hc : Continuous (fun q : Point => C *
       max ((q.velocity 0 - H.lo) * (H.hi - q.velocity 0) / (2 * lam)) 0) :=
     continuous_const.mul
-    ((((hv.sub continuous_const).mul (continuous_const.sub hv)).div_const (2 * lam)).max
+    ((((hv.sub continuous_const).mul (continuous_const.sub hv)).div_const _).max
       continuous_const)
   have hb : Tendsto (fun q : Point => C *
       max ((q.velocity 0 - H.lo) * (H.hi - q.velocity 0) / (2 * lam)) 0)
@@ -101,13 +95,13 @@ theorem reconstruction_potential_continuousAt_face
   have ht := squeeze_zero_norm (f := stripSourcePotential H E.2 T g)
     (fun q => by simpa only [Real.norm_eq_abs] using
       reconstruction_potential_abs_le_face hH hlam hLam A H E hE T g C hC hg q) hb
-  change Tendsto (stripSourcePotential H E.2 T g) (𝓝 p)
-    (𝓝 (stripSourcePotential H E.2 T g p))
+  change Tendsto _ _
+    _
   have hn : p ∉ stripPast H T := by
     intro h
     rcases hp with hp | hp
-    · exact (lt_irrefl _ : ¬H.lo < H.lo) (hp ▸ h.2.1)
-    · exact (lt_irrefl _ : ¬H.hi < H.hi) (hp ▸ h.2.2)
+    · exact (lt_irrefl _) (hp ▸ h.2.1)
+    · exact (lt_irrefl _) (hp ▸ h.2.2)
   rw [reconstruction_potential_zero_outside H E.2 T g p hn]
   exact ht
 

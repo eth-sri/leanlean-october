@@ -15,7 +15,6 @@ the common weak limit carrying the reverse-time residual derivative.
 open Filter
 open scoped ENNReal Matrix.Norms.Elementwise MatrixOrder Topology
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -66,14 +65,12 @@ theorem exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal_residual_derivat
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial
   refine ⟨U, φ, hφ, hclm, hdu, ?_⟩
   exact HypoellipticAleksandrov.norm_le_of_tendsto_clm_of_norm_le
-    (fun n => reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos (φ n) initial)
+    _
     U
-    (reverseTimeGalerkinPrimalRadius r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial)
+    _
     (fun n => norm_reverseTimeGalerkinPrimal_le_radius
       r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial (φ n))
+      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial _)
     hclm
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

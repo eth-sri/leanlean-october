@@ -14,7 +14,6 @@ This module specializes the reverse-time variational weighted identity
 to the totalized localized spatial quotient and its literal energy test.
 -/
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -79,9 +78,8 @@ theorem
     integral_value_norm_sq_mul_reverseTimeScalarTest_deriv_eq
         r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth F hFSmooth
         initial u g hdu hu
-        (localizedSpatialDifferenceQuotientH10CLM hΩ η k h hηΩ hηshift)
-        (localizedSpatialDifferenceQuotientEnergyTestH10CLM
-          hΩ η k h hηΩ hηshift)
+        _
+        _
         (fun x y =>
           inner_value_localizedSpatialDifferenceQuotientEnergyTestH10CLM_eq
             hΩ η k h x y hηΩ hηshift)

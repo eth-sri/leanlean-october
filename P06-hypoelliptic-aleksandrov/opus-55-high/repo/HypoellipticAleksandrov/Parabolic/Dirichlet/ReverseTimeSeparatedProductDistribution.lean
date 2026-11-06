@@ -17,7 +17,6 @@ and spatial test lifts and the supports of the tests and their derivatives.
 open Filter MeasureTheory Set Topology
 open scoped BigOperators ENNReal Matrix.Norms.Elementwise MatrixOrder
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -80,8 +79,7 @@ theorem reverseTime_separated_product_distribution_of_reverseTimeVariationalEner
         (timeVelocityVolumeOn (Set.Ioo τ₁ τ₂ ×ˢ O)) ∧
       (∫ z, raw z
         ∂timeVelocityVolumeOn (Set.Ioo τ₁ τ₂ ×ˢ O)) = 0 := by
-  dsimp only
-  let raw : TimeVelocity d → ℝ := fun z =>
+  let raw  := fun z =>
     U z * eta.deriv z.1 * psi z.2 -
       (∑ i : Fin d, ∑ j : Fin d,
         reverseTimeCoefficient r₁ a z.1 z.2 i j * G j z *
@@ -101,57 +99,41 @@ theorem reverseTime_separated_product_distribution_of_reverseTimeVariationalEner
           (timeVelocityVolumeOn (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω)) ∧
         (∫ z, raw z
           ∂timeVelocityVolumeOn (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω)) = 0 := by
-    simpa only [raw, etaGlobal, psiGlobal, reverseTimeScalarTestOfLocal_apply,
-      reverseTimeScalarTestOfLocal_deriv, PDE.WeakTestFunction.mono_apply,
-      PDE.WeakTestFunction.mono_partialDeriv] using hglobal
+    aesop
   let localSet : Set (TimeVelocity d) := Set.Ioo τ₁ τ₂ ×ˢ O
   let globalSet : Set (TimeVelocity d) := reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω
   have hlocalGlobal : localSet ⊆ globalSet := by
     rintro ⟨τ, y⟩ ⟨hτ, hy⟩
-    exact ⟨htime hτ, hOΩ hy⟩
-  have hglobalOpen : IsOpen globalSet := by
-    exact (isOpen_Ioo.prod hΩ)
-  have hglobalMeas : MeasurableSet globalSet := hglobalOpen.measurableSet
-  have hlocalMeas : MeasurableSet localSet := (isOpen_Ioo.prod hO).measurableSet
-  have hetaDerivSupport : tsupport eta.deriv ⊆ tsupport (eta : ℝ → ℝ) := by
-    rw [OriginalTimeScalarTest.deriv, tsupport]
-    exact closure_minimal support_deriv_subset (isClosed_tsupport _)
+    aesop
+  have hglobalOpen : IsOpen globalSet := (isOpen_Ioo.prod hΩ)
+  have hglobalMeas  := hglobalOpen.measurableSet
+  have hetaDerivSupport : tsupport eta.deriv ⊆ tsupport eta := closure_minimal support_deriv_subset (isClosed_tsupport _)
   have hzero : ∀ z ∈ globalSet \ localSet, raw z = 0 := by
     rintro ⟨τ, y⟩ ⟨hglobalMem, hnotLocal⟩
     by_cases hτ : τ ∈ Set.Ioo τ₁ τ₂
     · have hy : y ∉ O := by
-        intro hy
-        exact hnotLocal ⟨hτ, hy⟩
+        aesop
       have hpsiT : y ∉ tsupport (psi : PDE.Vec d → ℝ) := fun h => hy (psi.tsupport_subset h)
       have hpsi : psi y = 0 := image_eq_zero_of_notMem_tsupport hpsiT
       have hdpsi (i : Fin d) : psi.partialDeriv i y = 0 := by
         unfold PDE.WeakTestFunction.partialDeriv
         rw [fderiv_of_notMem_tsupport ℝ hpsiT]
         rfl
-      simp only [raw, hpsi, hdpsi, mul_zero, zero_mul, Finset.sum_const_zero,
-        sub_zero, add_zero]
+      aesop
     · have hetaT : τ ∉ tsupport (eta : ℝ → ℝ) := fun h => hτ (eta.tsupport_subset h)
       have heta : eta τ = 0 := image_eq_zero_of_notMem_tsupport hetaT
       have hdetaT : τ ∉ tsupport eta.deriv := fun h => hetaT (hetaDerivSupport h)
       have hdeta : eta.deriv τ = 0 := image_eq_zero_of_notMem_tsupport hdetaT
-      simp only [raw, heta, hdeta, mul_zero, zero_mul, sub_zero, add_zero]
-  have hmeasure : timeVelocityVolumeOn localSet ≤ timeVelocityVolumeOn globalSet := by
-    dsimp only [timeVelocityVolumeOn]
-    exact Measure.restrict_mono hlocalGlobal le_rfl
-  have hlocalInt : Integrable raw (timeVelocityVolumeOn localSet) :=
+      aesop
+  have hmeasure : timeVelocityVolumeOn localSet ≤ timeVelocityVolumeOn globalSet := Measure.restrict_mono hlocalGlobal le_rfl
+  have hlocalInt  :=
     hglobal'.1.mono_measure hmeasure
   refine ⟨?_, ?_⟩
-  · simpa only [raw, localSet] using hlocalInt
+  · omega
   · have hintEq :
         (∫ z in globalSet, raw z ∂(volume : Measure (TimeVelocity d))) =
           ∫ z in localSet, raw z ∂(volume : Measure (TimeVelocity d)) :=
       setIntegral_eq_of_subset_of_forall_diff_eq_zero hglobalMeas hlocalGlobal hzero
-    have hglobalZero :
-        (∫ z in globalSet, raw z ∂(volume : Measure (TimeVelocity d))) = 0 := by
-      simpa only [timeVelocityVolumeOn] using hglobal'.2
-    have hlocalZero :
-        (∫ z in localSet, raw z ∂(volume : Measure (TimeVelocity d))) = 0 := by
-      rw [← hintEq, hglobalZero]
-    simpa only [raw, localSet, timeVelocityVolumeOn] using hlocalZero
+    linarith
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

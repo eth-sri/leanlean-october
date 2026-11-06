@@ -35,12 +35,12 @@ theorem barrier_position_convolution_position_jet {alpha : ℝ} {Phi : (ℝ × �
   have he : positionConvolution (deriv eta) (bellmanOriginExtension Phi) (X, v) =
       positionConvolution eta (bellmanDx Phi) (X, v) := by
     dsimp only [positionConvolution]
-    simpa only [neg_inj, mul_comm] using hw
+    grind
   have hefun : ((fun Y => bellmanOriginExtension Phi (Y, v))
       ⋆[ContinuousLinearMap.mul ℝ ℝ, volume] eta) =
-      (fun w => positionConvolution eta (bellmanOriginExtension Phi) (w, v)) :=
+      (fun w => positionConvolution eta _ _) :=
     funext fun w => (positionConvolution_eq eta _ (w, v)).symm
-  rw [hefun, ← positionConvolution_eq (deriv eta) _ (X, v), he] at hd
+  rw [hefun, ← positionConvolution_eq _ _ (X, v), he] at hd
   exact hd
 
 /-- The precise separate regularity asserted for the position-regularized barrier. -/
@@ -73,7 +73,7 @@ theorem barrier_position_regularization_of_positive_degree
       positionConvolution eta (bellmanOriginExtension Phi) (q.1 - Y, v)) =
       (fun v => positionConvolution eta (bellmanDv Phi) (q.1 - Y, v)) := by
     funext v
-    exact (barrier_position_convolution_velocity_jets h ha ha1 eta heta (q.1 - Y) v).1.deriv
+    exact (barrier_position_convolution_velocity_jets h ha ha1 eta heta _ v).1.deriv
   have hvv := (barrier_position_convolution_velocity_jets h ha ha1 eta heta
     (q.1 - Y) q.2).2.deriv
   rw [he, hvv]

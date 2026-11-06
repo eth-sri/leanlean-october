@@ -32,14 +32,15 @@ private def movingLensSourceConstant (d : Nat) (lam kappa : Real) : Real :=
       ((volume (PDE.euclideanBall (0 : PDE.Vec d) 1)).toReal * lam ^ d)) ^
         (1 / ((d : Real) + 1) : Real)
 
-private theorem parabolicExponent_eq_ofReal (d : Nat) :
+theorem parabolicExponent_eq_ofReal (d : Nat) :
     parabolicExponent d = ENNReal.ofReal ((d : Real) + 1) := by
-  rw [show ((d : Real) + 1) = ((d + 1 : Nat) : Real) by norm_num]
   simpa only [parabolicExponent, Nat.cast_add, Nat.cast_one] using
     (ENNReal.ofReal_natCast (d + 1)).symm
 
+variable {d : Nat} {kappa eps tau : Real} {y : PDE.Vec d}
+
 private theorem source_memLp_movingLensClosed
-    {d : Nat} {kappa eps tau : Real} {y : PDE.Vec d}
+    
     (hkappa : 0 < kappa) (heps : 0 < eps) (htau : 0 < tau)
     (F : TimeVelocity d -> Real)
     (hF : ContinuousOn F
@@ -52,7 +53,7 @@ private theorem source_memLp_movingLensClosed
     positivity
   have hLcompact : IsCompact L :=
     isCompact_movingLensClosed hxi heps htau.le
-  have hLmeas : MeasurableSet L := hLcompact.measurableSet
+  have hLmeas  := hLcompact.measurableSet
   letI : IsFiniteMeasure (volume.restrict L) :=
     ⟨by rw [Measure.restrict_apply_univ]; exact hLcompact.measure_lt_top⟩
   obtain ⟨C, hC⟩ := hLcompact.exists_bound_of_continuousOn hF
@@ -61,7 +62,7 @@ private theorem source_memLp_movingLensClosed
   exact hC z hz
 
 private theorem parabolicLpNormOn_movingLensClosed_eq_integral_abs_pow
-    {d : Nat} {kappa eps tau : Real} {y : PDE.Vec d}
+    
     {F : TimeVelocity d -> Real}
     (hFmem : MemLp F (parabolicExponent d)
       (volume.restrict (movingLensClosed (movingLensSignXi kappa) eps tau y))) :
@@ -70,19 +71,19 @@ private theorem parabolicLpNormOn_movingLensClosed_eq_integral_abs_pow
       (∫ z in movingLensClosed (movingLensSignXi kappa) eps tau y,
         |F z| ^ (d + 1) ∂volume) ^ (1 / ((d : Real) + 1) : Real) := by
   have hp : 0 < (d : Real) + 1 := by positivity
-  have hFmem' : MemLp F (ENNReal.ofReal ((d : Real) + 1))
+  have hFmem' : MemLp F (ENNReal.ofReal (d + 1))
       (volume.restrict (movingLensClosed (movingLensSignXi kappa) eps tau y)) := by
     rw [<- parabolicExponent_eq_ofReal]
     exact hFmem
   rw [parabolicLpNormOn, parabolicELpNormOn, parabolicExponent_eq_ofReal]
   calc
-    (eLpNorm F (ENNReal.ofReal ((d : Real) + 1))
-        (volume.restrict (movingLensClosed (movingLensSignXi kappa) eps tau y))).toReal =
-      (∫ z in movingLensClosed (movingLensSignXi kappa) eps tau y,
-        ‖F z‖ ^ ((d : Real) + 1) ∂volume) ^ (1 / ((d : Real) + 1) : Real) :=
+    (eLpNorm F _
+        _).toReal =
+      (∫ z in movingLensClosed _ eps tau y,
+        ‖F z‖ ^ ((d : Real) + 1) ∂volume) ^ (1 / ((d : Real) + 1)) :=
       PDE.toReal_eLpNorm_ofReal_eq_integral_rpow_norm_rpow_inv hp hFmem'
-    _ = (∫ z in movingLensClosed (movingLensSignXi kappa) eps tau y,
-        |F z| ^ (d + 1) ∂volume) ^ (1 / ((d : Real) + 1) : Real) := by
+    _ = (∫ z in movingLensClosed _ eps tau y,
+        |F z| ^ (d + 1) ∂volume) ^ (1 / ((d : Real) + 1)) := by
       congr 1
       apply integral_congr_ae
       filter_upwards with z
@@ -94,34 +95,26 @@ private theorem movingLensSourceConstant_pos
     (d : Nat) {lam kappa : Real} (hlam : 0 < lam) (hkappa : 0 < kappa) :
     0 < movingLensSourceConstant d lam kappa := by
   have hp : 0 < (d : Real) + 1 := by positivity
-  have homega : 0 < (volume (PDE.euclideanBall (0 : PDE.Vec d) 1)).toReal :=
+  have homega : 0 < (volume (PDE.euclideanBall _ 1)).toReal :=
     PDE.volume_euclideanBall_toReal_pos (0 : PDE.Vec d) (by norm_num)
   have hlamPow : 0 < lam ^ d := pow_pos hlam d
-  have hR : 0 < movingLensVelocityFootprint d kappa := by
-    unfold movingLensVelocityFootprint
-    exact add_pos_of_pos_of_nonneg hkappa
+  have hR : 0 < movingLensVelocityFootprint d kappa := add_pos_of_pos_of_nonneg hkappa
       (mul_nonneg (Real.sqrt_nonneg _) (zpow_nonneg (le_of_lt hkappa) _))
-  unfold movingLensSourceConstant
   exact mul_pos (div_pos (by norm_num) hp)
     (Real.rpow_pos_of_pos (div_pos (pow_pos hR d) (mul_pos homega hlamPow)) _)
 
 private theorem measurable_movingLensSourceSignSet_of_localC2
-    {d : Nat} {xi eps tau : Real} {y : PDE.Vec d}
+     {xi eps tau : Real} {y : PDE.Vec d}
     {u : TimeVelocity d -> Real}
     (hlocal : ∀ z ∈ movingLensActive xi eps tau y, ContDiffAt Real 2 u z) :
     MeasurableSet (movingLensSourceSignSet xi eps tau y u) := by
-  let O : Set (TimeVelocity d) := {z | 0 < z.1 /\ z.1 < tau /\
+  let O  := {z | 0 < z.1 /\ z.1 < tau /\
     PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1}
   have hO : IsOpen O := by
     rw [show O = {z | 0 < z.1 /\
-        PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1} ∩
+        PDE.vecNormSq _ < movingLensDenominator xi eps z.1} ∩
           {z | z.1 < tau} by
       ext z
-      change (0 < z.1 /\ z.1 < tau /\
-          PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1) ↔
-        ((0 < z.1 /\
-          PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1) /\
-          z.1 < tau)
       constructor
       · rintro ⟨ht0, httau, hspatial⟩
         exact ⟨⟨ht0, hspatial⟩, httau⟩
@@ -143,7 +136,6 @@ private theorem measurable_movingLensSourceSignSet_of_localC2
     unfold timeDerivative
     simpa using hDu.continuousOn.clm_apply continuousOn_const
   have hhess : ContinuousOn (velocityHessian u) O := by
-    change ContinuousOn (fun z i j => velocityHessian u z i j) O
     unfold velocityHessian
     apply continuousOn_pi.mpr
     intro i
@@ -156,7 +148,7 @@ private theorem measurable_movingLensSourceSignSet_of_localC2
           {H : PDE.Mat d | H.IsHermitian} =
             ⋂ i : Fin d, ⋂ j : Fin d, {H : PDE.Mat d | H j i = H i j} := by
         ext H
-        simp only [Set.mem_setOf_eq, Set.mem_iInter]
+        simp only [Set.mem_iInter]
         constructor
         · intro h i j
           simpa using h.apply i j
@@ -172,7 +164,6 @@ private theorem measurable_movingLensSourceSignSet_of_localC2
           {H : PDE.Mat d | H.IsHermitian} ∩
             ⋂ q : PDE.Vec d, {H : PDE.Mat d | 0 ≤ dotProduct q (H.mulVec q)} := by
       ext H
-      simp only [Set.mem_setOf_eq, Set.mem_inter_iff, Set.mem_iInter]
       simpa using (Matrix.posSemidef_iff_dotProduct_mulVec (M := H))
     rw [hset]
     refine hhermitian.inter (isClosed_iInter fun q => ?_)
@@ -185,8 +176,6 @@ private theorem measurable_movingLensSourceSignSet_of_localC2
     rw [show O ∩ {z | 0 ≤ timeDerivative u z} =
         O \ (O ∩ (timeDerivative u) ⁻¹' Set.Iio 0) by
       ext z
-      simp only [Set.mem_inter_iff, Set.mem_diff, Set.mem_preimage, Set.mem_setOf_eq,
-        Set.mem_Iio]
       constructor
       · rintro ⟨hz, htimez⟩
         exact ⟨hz, fun hnegative => not_lt_of_ge htimez hnegative.2⟩
@@ -198,8 +187,6 @@ private theorem measurable_movingLensSourceSignSet_of_localC2
     rw [show O ∩ {z | (-velocityHessian u z).PosSemidef} = O \ (O ∩
         (fun z => -velocityHessian u z) ⁻¹' {H : PDE.Mat d | H.PosSemidef}ᶜ) by
       ext z
-      simp only [Set.mem_inter_iff, Set.mem_diff, Set.mem_preimage, Set.mem_setOf_eq,
-        Set.mem_compl_iff]
       constructor
       · rintro ⟨hz, hzpsd⟩
         exact ⟨hz, fun hnotpsd => hnotpsd.2 hzpsd⟩
@@ -211,11 +198,6 @@ private theorem measurable_movingLensSourceSignSet_of_localC2
       (O ∩ {z | 0 < u z}) ∩ (O ∩ {z | 0 ≤ timeDerivative u z}) ∩
         (O ∩ {z | (-velocityHessian u z).PosSemidef}) by
     ext z
-    change (0 < z.1 /\ z.1 < tau /\
-      PDE.vecNormSq (movingLensDisplacement y z) < movingLensDenominator xi eps z.1 /\
-      0 < u z /\ 0 ≤ timeDerivative u z /\ (-velocityHessian u z).PosSemidef) ↔
-      ((z ∈ O /\ 0 < u z) /\ (z ∈ O /\ 0 ≤ timeDerivative u z)) /\
-        (z ∈ O /\ (-velocityHessian u z).PosSemidef)
     constructor
     · rintro ⟨ht0, httau, hspatial, hpositivez, htimez, hpsdz⟩
       exact ⟨⟨⟨⟨ht0, httau, hspatial⟩, hpositivez⟩,
@@ -227,7 +209,7 @@ private theorem measurable_movingLensSourceSignSet_of_localC2
   exact (hpositive.inter hnonnegative).inter hpsd
 
 private theorem movingLens_wedge_le_source_lintegral
-    {d : Nat} {lam kappa eps tau : Real} {y : PDE.Vec d}
+     {lam kappa eps tau : Real} {y : PDE.Vec d}
     {A : CoefficientField d} {F u : TimeVelocity d -> Real} {M : Real}
     (hlam : 0 < lam)
     (hFcont : ContinuousOn F
@@ -250,9 +232,8 @@ private theorem movingLens_wedge_le_source_lintegral
   let xi := movingLensSignXi kappa
   let L := movingLensClosed xi eps tau y
   let S := movingLensSourceSignSet xi eps tau y u
-  let q : Real := ((d : Real) + 1) ^ (d + 1)
+  let q  := ((d : Real) + 1) ^ (d + 1)
   have hqpos : 0 < q := by
-    dsimp [q]
     positivity
   have hlamPow : 0 < lam ^ d := pow_pos hlam d
   have hdenpos : 0 < q * lam ^ d := mul_pos hqpos hlamPow
@@ -273,20 +254,19 @@ private theorem movingLens_wedge_le_source_lintegral
     have hdetlower := det_lower_of_loewner hlam hlo
     have hJ := abs_det_fderiv_parabolicNormalMap_le_source_of_signs (y₀ := 0)
       (hulocal z hzActive) hz.2.2.2.2.1 hz.2.2.2.2.2 hposdef (hsub z hzActive)
-    have hdenle : q * lam ^ d <= q * (coefficientAt A z).det :=
+    have hdenle  :=
       mul_le_mul_of_nonneg_left hdetlower hqpos.le
-    have hfirst : |((fderiv Real (parabolicNormalMap u 0) z).det)| <=
-        (max (F z) 0) ^ (d + 1) / (q * lam ^ d) := by
+    have hfirst  := by
       calc
-        |((fderiv Real (parabolicNormalMap u 0) z).det)| <=
-            (max (F z) 0) ^ (d + 1) / (q * (coefficientAt A z).det) := by
-          simpa only [q, mul_assoc] using hJ
-        _ <= (max (F z) 0) ^ (d + 1) / (q * lam ^ d) :=
+        |((fderiv Real _ z).det)| <=
+            (max _ 0) ^ (d + 1) / (q * (coefficientAt A z).det) := by
+          simpa using hJ
+        _ <= (max _ 0) ^ (d + 1) / (q * lam ^ d) :=
           div_le_div_of_nonneg_left (pow_nonneg (le_max_right _ _) _) hdenpos hdenle
     apply ENNReal.ofReal_le_ofReal
     calc
-      |((fderiv Real (parabolicNormalMap u 0) z).det)| <=
-          (max (F z) 0) ^ (d + 1) / (q * lam ^ d) := hfirst
+      |((fderiv Real _ z).det)| <=
+          (max _ 0) ^ (d + 1) / (q * lam ^ d) := hfirst
       _ <= |F z| ^ (d + 1) / (q * lam ^ d) :=
         div_le_div_of_nonneg_right
           (pow_le_pow_left₀ (le_max_right _ _)
@@ -300,21 +280,18 @@ private theorem movingLens_wedge_le_source_lintegral
     · apply AEMeasurable.ennreal_ofReal
       exact ((hFcont.mono hSL).aemeasurable (by
         exact measurable_movingLensSourceSignSet_of_localC2 hulocal)).norm.pow_const
-          (d + 1) |>.div_const _
+          _ |>.div_const _
     · exact ae_of_all _ fun z hz => hpointwise z hz
   calc
-    volume (movingLensSlopeInterceptWedge d
-        (movingLensVelocityFootprint d kappa) M) <=
+    volume _ <=
         ∫⁻ z in S,
-          ENNReal.ofReal |((fderiv Real (parabolicNormalMap u 0) z).det)| ∂volume := harea
-    _ <= ∫⁻ z in S, ENNReal.ofReal (|F z| ^ (d + 1) /
-        (q * lam ^ d)) ∂volume := hsign
-    _ <= ∫⁻ z in L, ENNReal.ofReal (|F z| ^ (d + 1) /
-        (q * lam ^ d)) ∂volume := MeasureTheory.lintegral_mono_set hSL
+          ENNReal.ofReal _ ∂volume := harea
+    _ <= ∫⁻ z in S, ENNReal.ofReal _ ∂volume := hsign
+    _ <= ∫⁻ z in L, ENNReal.ofReal _ ∂volume := MeasureTheory.lintegral_mono_set hSL
     _ = _ := by rfl
 
 private theorem movingLensSourceConstant_mul_rpow_pow
-    {d : Nat} {lam kappa I : Real}
+     {lam kappa I : Real}
     (hlam : 0 < lam) (hkappa : 0 < kappa) (hI : 0 <= I) :
     (movingLensSourceConstant d lam kappa *
       I ^ (1 / ((d : Real) + 1) : Real)) ^ (d + 1) =
@@ -322,19 +299,15 @@ private theorem movingLensSourceConstant_mul_rpow_pow
         ((((d : Real) + 1) ^ (d + 1)) *
           (volume (PDE.euclideanBall (0 : PDE.Vec d) 1)).toReal * lam ^ d) := by
   have hp : 0 < (d : Real) + 1 := by positivity
-  have homega : 0 < (volume (PDE.euclideanBall (0 : PDE.Vec d) 1)).toReal :=
+  have homega : 0 < (volume (PDE.euclideanBall _ 1)).toReal :=
     PDE.volume_euclideanBall_toReal_pos (0 : PDE.Vec d) (by norm_num)
   have hlamPow : 0 < lam ^ d := pow_pos hlam d
-  have hR : 0 < movingLensVelocityFootprint d kappa := by
-    unfold movingLensVelocityFootprint
-    exact add_pos_of_pos_of_nonneg hkappa
+  have hR : 0 < movingLensVelocityFootprint d kappa := add_pos_of_pos_of_nonneg hkappa
       (mul_nonneg (Real.sqrt_nonneg _) (zpow_nonneg (le_of_lt hkappa) _))
   have hratio : 0 <= movingLensVelocityFootprint d kappa ^ d /
-      ((volume (PDE.euclideanBall (0 : PDE.Vec d) 1)).toReal * lam ^ d) :=
+      ((volume _).toReal * lam ^ d) :=
     div_nonneg (pow_nonneg hR.le _) (mul_nonneg homega.le hlamPow.le)
-  have hrecip : 1 / ((d : Real) + 1) = ((d + 1 : Nat) : Real)⁻¹ := by
-    norm_num [Nat.cast_add, one_div]
-  have hpcast : (d : Real) + 1 = ((d + 1 : Nat) : Real) := by norm_num
+  have hpcast : d + 1 = ((d + 1 : Nat) : Real) := by norm_num
   unfold movingLensSourceConstant
   rw [hpcast, mul_pow, mul_pow, one_div,
     Real.rpow_inv_natCast_pow hratio (Nat.succ_ne_zero d),
@@ -343,7 +316,7 @@ private theorem movingLensSourceConstant_mul_rpow_pow
   field_simp [hp.ne', homega.ne', hlamPow.ne', hR.ne']
 
 private theorem movingLens_source_height_le_constant_mul_norm
-    {d : Nat} {lam kappa tau eps : Real} {y : PDE.Vec d}
+     {lam kappa tau eps : Real} {y : PDE.Vec d}
     {A : CoefficientField d} {F u : TimeVelocity d -> Real}
     (hd : 0 < d) (hlam : 0 < lam) (hkappa : 0 < kappa)
     (hkappa_one : kappa <= 1) (htau : 0 < tau) (htau_kappa : tau <= kappa⁻¹)
@@ -367,39 +340,28 @@ private theorem movingLens_source_height_le_constant_mul_norm
   let L := movingLensClosed (movingLensSignXi kappa) eps tau y
   let R := movingLensVelocityFootprint d kappa
   let omega := (volume (PDE.euclideanBall (0 : PDE.Vec d) 1)).toReal
-  let q : Real := ((d : Real) + 1) ^ (d + 1)
-  let I : Real := ∫ z in L, |F z| ^ (d + 1) ∂volume
+  let q  := ((d : Real) + 1) ^ (d + 1)
+  let I  := ∫ z in L, |F z| ^ (d + 1) ∂volume
   have hxi : 0 <= movingLensSignXi kappa := by
     unfold movingLensSignXi
     positivity
   have hLcompact : IsCompact L := isCompact_movingLensClosed hxi heps htau.le
-  have hLmeas : MeasurableSet L := hLcompact.measurableSet
+  have hLmeas  := hLcompact.measurableSet
   have hFmem := source_memLp_movingLensClosed hkappa heps htau F hFcont
-  have hFtop : parabolicELpNormOn d F L ≠ ∞ := by
-    simpa only [parabolicELpNormOn] using hFmem.eLpNorm_ne_top
-  have hnorm : parabolicLpNormOn d F L = I ^ (1 / ((d : Real) + 1) : Real) := by
-    dsimp [I, L]
-    exact parabolicLpNormOn_movingLensClosed_eq_integral_abs_pow hFmem
-  have hR : 0 < R := by
-    dsimp [R, movingLensVelocityFootprint]
-    exact add_pos_of_pos_of_nonneg hkappa
+  have hnorm : parabolicLpNormOn d F L = I ^ (1 / ((d : Real) + 1)) := parabolicLpNormOn_movingLensClosed_eq_integral_abs_pow hFmem
+  have hR : 0 < R := add_pos_of_pos_of_nonneg hkappa
       (mul_nonneg (Real.sqrt_nonneg _) (zpow_nonneg (le_of_lt hkappa) _))
-  have homega : 0 < omega := by
-    dsimp [omega]
-    exact PDE.volume_euclideanBall_toReal_pos (0 : PDE.Vec d) (by norm_num)
+  have homega : 0 < omega := PDE.volume_euclideanBall_toReal_pos _ (by norm_num)
   have hlamPow : 0 < lam ^ d := pow_pos hlam d
   have hq : 0 < q := by
-    dsimp [q]
     positivity
-  have hI : 0 <= I := by
-    dsimp [I]
-    exact integral_nonneg fun z => pow_nonneg (abs_nonneg _) _
+  have hI : 0 <= I := integral_nonneg fun z => pow_nonneg (abs_nonneg _) _
   by_cases hMnonpos : u (tau, tau • y) <= 0
   · calc
-      u (tau, tau • y) <= 0 := hMnonpos
+      u _ <= 0 := hMnonpos
       _ <= movingLensSourceConstant d lam kappa * parabolicLpNormOn d F L :=
         mul_nonneg (movingLensSourceConstant_pos d hlam hkappa).le
-          (by unfold parabolicLpNormOn; exact ENNReal.toReal_nonneg)
+          (ENNReal.toReal_nonneg)
   let M := u (tau, tau • y)
   have hM : 0 < M := lt_of_not_ge hMnonpos
   have hcoverage := movingLensSlopeInterceptWedge_subset_image_signSet_local
@@ -438,7 +400,6 @@ private theorem movingLens_source_height_le_constant_mul_norm
     have hleft : (M / 4) * ((M / (4 * R)) ^ d * omega) =
         omega * M ^ (d + 1) / (4 ^ (d + 1) * R ^ d) := by
       rw [div_pow]
-      field_simp [hR.ne']
       ring
     rw [hleft, integral_div] at hreal
     exact hreal
@@ -459,15 +420,15 @@ private theorem movingLens_source_height_le_constant_mul_norm
       (movingLensSourceConstant d lam kappa *
         I ^ (1 / ((d : Real) + 1) : Real)) ^ (d + 1) := by
     rw [hconstpow]
-    simpa only [q, omega, R, mul_assoc] using hscaled
+    simpa using hscaled
   have hrootnonneg : 0 <= movingLensSourceConstant d lam kappa *
       I ^ (1 / ((d : Real) + 1) : Real) :=
     mul_nonneg (movingLensSourceConstant_pos d hlam hkappa).le
       (Real.rpow_nonneg hI _)
   have hroot := le_of_pow_le_pow_left₀ (Nat.succ_ne_zero d) hrootnonneg hrootpower
   calc
-    u (tau, tau • y) = M := rfl
-    _ <= movingLensSourceConstant d lam kappa * I ^ (1 / ((d : Real) + 1) : Real) := hroot
+    u _ = M := rfl
+    _ <= movingLensSourceConstant d lam kappa * I ^ (1 / ((d : Real) + 1)) := hroot
     _ = movingLensSourceConstant d lam kappa * parabolicLpNormOn d F L := by rw [hnorm]
 
 /-- A nonnegative supplied source bounds the lower terminal height on a
@@ -505,11 +466,10 @@ theorem exists_movingLens_source_lower_bound
     movingLensSourceConstant_pos d hlam hkappa, ?_⟩
   intro A U F w tau eps y htau htau_kappa heps heps_small hy hU hLU hAcont hF hwcont
     hwlocal hlower hupper hFnonneg hsuper hboundary
-  let u : TimeVelocity d -> Real := fun z => -w z
+  let u  := fun z => -w z
   have hucont : ContinuousOn u
-      (movingLensClosed (movingLensSignXi kappa) eps tau y) := hwcont.neg
-  have hFcont : ContinuousOn F
-      (movingLensClosed (movingLensSignXi kappa) eps tau y) := hF.mono hLU
+      _ := hwcont.neg
+  have hFcont  := hF.mono hLU
   have hulocal : ∀ z ∈ movingLensActive (movingLensSignXi kappa) eps tau y,
       ContDiffAt Real 2 u z := by
     intro z hz
@@ -518,22 +478,13 @@ theorem exists_movingLens_source_lower_bound
       parabolicOperator A u z <= F z := by
     intro z hz
     have h := hsuper z hz
-    change parabolicOperator A (fun q => -w q) z <= F z
     rw [parabolicOperator_neg]
-    change -F z <= parabolicOperator A w z at h
     linarith
   have huboundary : ∀ z ∈ movingLensClosed (movingLensSignXi kappa) eps tau y \
       movingLensActive (movingLensSignXi kappa) eps tau y, u z <= 0 := by
     intro z hz
-    change -w z <= 0
     linarith [hboundary z hz]
   have hheight := movingLens_source_height_le_constant_mul_norm
     hd hlam hkappa hkappa_one htau htau_kappa heps heps_small hy hucont hFcont hulocal
     hlower hsub huboundary
-  change -movingLensSourceConstant d lam kappa *
-      parabolicLpNormOn d F (movingLensClosed (movingLensSignXi kappa) eps tau y) <=
-      w (tau, tau • y)
-  have hheight' : -w (tau, tau • y) <= movingLensSourceConstant d lam kappa *
-      parabolicLpNormOn d F (movingLensClosed (movingLensSignXi kappa) eps tau y) := by
-    simpa only [u] using hheight
   linarith

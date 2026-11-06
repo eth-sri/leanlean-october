@@ -32,7 +32,7 @@ variable (σ T : ℝ) (hT : 0 < T)
 include hT in
 /-- Finite positive elapsed horizons carry finite Lebesgue measure. -/
 theorem intervalElapsedVolume_finite : IsFiniteMeasure (elapsedVolume (ENNReal.ofReal T)) :=
-  ⟨by rw [elapsedVolume_univ T hT]; exact ENNReal.ofReal_lt_top⟩
+  ⟨by rw [elapsedVolume_univ T hT]; simp⟩
 
 /-- Pull back the first marginal along the literal finite-horizon occupation queries. -/
 def intervalOccupationKernel (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary) :
@@ -40,10 +40,8 @@ def intervalOccupationKernel (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a
       (PDE.Vec 1) :=
   K.firstMarginal.comap (fun q => movingQuery σ (σ + q.2.1) (le_add_of_nonneg_right q.2.2.1.le)
     q.1.1 0
-    (by simpa only [movingDomain_stationary] using q.1.2)) (by
+    (by simp)) (by
     apply Measurable.subtype_mk
-    change Measurable (fun q : (PDE.oneDimensionalAxisBox a c) × ElapsedTime (ENNReal.ofReal T) =>
-      (σ, (σ + q.2.1, (q.1.1, 0))))
     fun_prop)
 
 /-- The pulled-back velocity kernel is finite. -/
@@ -79,11 +77,9 @@ theorem intervalOccupationMeasure_compl_slab (K : MovingFiberKernel (PDE.oneDime
   have he : (fun q : ((PDE.oneDimensionalAxisBox a c) × ElapsedTime (ENNReal.ofReal T)) × PDE.Vec
     1 =>
       (q.1.2.1, q.2)) ⁻¹'
-      (Ioo (0 : ℝ) T ×ˢ univ)ᶜ = ∅ := by
+      (Ioo (0) T ×ˢ univ)ᶜ = ∅ := by
     ext q
-    simp only [mem_preimage, mem_compl_iff, mem_prod, mem_Ioo, mem_univ, and_true,
-      mem_empty_iff_false, iff_false, not_not]
-    exact ⟨q.1.2.2.1, ((ENNReal.ofReal_lt_ofReal_iff hT).mp q.1.2.2.2)⟩
+    aesop
   rw [he, measure_empty]
 
 include hT in
@@ -96,23 +92,20 @@ theorem integral_intervalOccupationMeasure (K : MovingFiberKernel (PDE.oneDimens
       ∫ v, ∫ τ : ElapsedTime (ENNReal.ofReal T),
         ∫ w, φ (τ.1, w) ∂K.firstMarginal
           (movingQuery σ (σ + τ.1) (le_add_of_nonneg_right τ.2.1.le) v.1 0
-            (by simpa only [movingDomain_stationary] using v.2))
+            (by simp))
         ∂elapsedVolume (ENNReal.ofReal T) ∂ρ := by
   have := intervalElapsedVolume_finite T hT
   obtain ⟨M, hM⟩ := hφb
   let ψ : ((PDE.oneDimensionalAxisBox a c) × ElapsedTime (ENNReal.ofReal T)) × PDE.Vec 1 → ℝ :=
     fun q => φ (q.1.2.1, q.2)
   have hψ : Measurable ψ := hφ.comp (by fun_prop)
-  have hi : Integrable ψ ((ρ.prod (elapsedVolume (ENNReal.ofReal T))).compProd
+  have hi : Integrable ψ ((ρ.prod (elapsedVolume _)).compProd
       (intervalOccupationKernel σ T K)) :=
     (integrable_const M).mono' hψ.aestronglyMeasurable
-      (Filter.Eventually.of_forall fun q => by simpa only [Real.norm_eq_abs] using hM _)
-  rw [intervalOccupationMeasure, integral_map (by fun_prop) hφ.aestronglyMeasurable]
-  change (∫ q, ψ q ∂_) = _
-  rw [Measure.integral_compProd hi]
+      (Filter.Eventually.of_forall fun q => by aesop)
+  rw [intervalOccupationMeasure, integral_map (by fun_prop) hφ.aestronglyMeasurable, Measure.integral_compProd hi]
   exact (integral_prod _ hi.integral_compProd).trans (by
-    simp only [ProbabilityTheory.Kernel.prodMkLeft_apply, intervalOccupationKernel,
-      ProbabilityTheory.Kernel.comap_apply, ψ])
+    aesop)
 
 /-- Set evaluation of the projected occupation measure is the iterated kernel action. -/
 theorem intervalOccupationMeasure_apply
@@ -142,22 +135,22 @@ theorem intervalOccupationMeasure_compl_region
   refine Filter.Eventually.of_forall fun v => ?_
   apply lintegral_eq_zero_of_ae_eq_zero
   refine Filter.Eventually.of_forall fun t => ?_
-  have ht : t.1 < T := (ENNReal.ofReal_lt_ofReal_iff hT).mp t.2.2
+  have ht  := (ENNReal.ofReal_lt_ofReal_iff hT).mp t.2.2
   have he : {w : PDE.Vec 1 | (t.1, w) ∈
-      (Ioo (0 : ℝ) T ×ˢ PDE.oneDimensionalAxisBox a c)ᶜ} =
+      (Ioo (0) T ×ˢ PDE.oneDimensionalAxisBox a c)ᶜ} =
         (PDE.oneDimensionalAxisBox a c)ᶜ := by
     ext w
     simp only [mem_ofPred_eq, mem_compl_iff, mem_prod, mem_Ioo,
       t.2.1, ht, true_and]
   dsimp only
   rw [he]
-  let q : EvolutionQuery (PDE.oneDimensionalAxisBox a c) stationary := movingQuery σ (σ + t.1)
+  let q : EvolutionQuery _ stationary := movingQuery σ (σ + t.1)
     (le_add_of_nonneg_right t.2.1.le) v.1 0
     (by simpa only [movingDomain_stationary] using v.2)
   change K.firstMarginal q _ = 0
   have hpre : MeasurableSet {p : EvolutionAmbientState 1 |
       p.1 ∈ (PDE.oneDimensionalAxisBox a c)ᶜ} := hJ.compl.preimage measurable_fst
-  rw [K.firstMarginal_apply q _ hJ.compl, ← K.terminal_support q,
+  rw [K.firstMarginal_apply q _ hJ.compl, ← K.terminal_support,
     Measure.restrict_apply hpre]
   have he' : {p : EvolutionAmbientState 1 | p.1 ∈
       (PDE.oneDimensionalAxisBox a c)ᶜ} ∩

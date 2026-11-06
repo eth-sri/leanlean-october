@@ -36,7 +36,6 @@ theorem barrier_weight_position_axis (beta X : ℝ) :
   simp only [bellmanGauge, bellmanGaugePower, zero_pow (by decide : 6 ≠ 0),
     add_zero, he]
   rw [← Real.rpow_natCast_mul (abs_nonneg X), ← Real.rpow_mul (abs_nonneg X)]
-  congr 1
   ring
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

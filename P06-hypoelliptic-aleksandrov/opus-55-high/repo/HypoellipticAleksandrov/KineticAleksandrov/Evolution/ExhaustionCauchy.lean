@@ -14,7 +14,6 @@ comparison core are discharged from the inner-ball approximation data.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -55,25 +54,24 @@ theorem exists_transportedRadius_dirichlet_cauchy_bound
             (1 + S ^ 2) + barrierW (collarKappa L lam) (δ + 3 / 2 * A) /
               barrierW (collarKappa L lam) d) := by
   obtain ⟨R0, hR0, hsize⟩ := exists_transportedRadius_common_innerCylinder
-    (sub_pos.mpr hδr) (by linarith : 0 ≤ A / 2)
+    (sub_pos.mpr hδr) (by linarith)
     (by linarith : (r0 - δ) + A / 2 < r0 - A) S
   refine ⟨R0, hR0, ?_⟩
   intro β R hβ hR g hg hgL hclose u hu p hp
-  have hr (i : Fin 2) : 0 < r0 - β i := by linarith [(hβ i).2]
-  have hd' (i : Fin 2) : d < r0 - β i := by linarith [(hβ i).2]
+  have hr (i : Fin 2) : 0 < r0 - β i := by grind
+  have hd' (i : Fin 2) : d < r0 - β i := by grind
   have hc (i : Fin 2) (s : ℝ) (hs : s ∈ Icc α τ) :
-      PDE.vecEuclideanNorm (g i s - Γ s) ≤ A / 2 :=
-    (hclose i s hs).trans (by linarith [(hβ i).2])
-  have ht (i : Fin 2) : ∀ q ∈ tsupport (F : EvolutionAmbientState n → ℝ),
-      2 * d ≤ (r0 - β i) - PDE.vecEuclideanNorm (q.1 - g i τ) :=
+      PDE.vecEuclideanNorm _ ≤ A / 2 :=
+    (hclose i s hs).trans (by grind)
+  have ht (i : Fin 2)  :=
     terminal_support_margin_of_innerBall_close ((hβ i).2.trans hAd) hsupp
       (hclose i τ ⟨hατ.le, le_rfl⟩)
   have he := abs_sub_le_common_innerCylinder_straightened_dirichlet
     hlam hB hBs hbs hb haα hατ (sub_pos.mpr hδr)
-    (by linarith : r0 - δ ≤ r0) (by linarith : 0 ≤ A / 2)
-    hd hL hε hε1 hC hΓ g (fun i => r0 - β i) R hg hgL hr
-    (fun i => hR0.trans_le (hR i)) (fun i => by linarith [(hβ i).1]) hd' hc
-    (fun i => hsize _ _ (by linarith [(hβ i).2]) (hR i)) F hFC ht u hu p hp
+    (by linarith : r0 - δ ≤ r0) (by linarith)
+    hd hL hε hε1 hC hΓ g _ R hg hgL hr
+    (fun i => hR0.trans_le (hR i)) (fun i => by grind) hd' hc
+    (fun i => hsize _ _ (by grind) (hR i)) F hFC ht u hu p hp
   have hκ : 0 < collarKappa L lam := div_pos (by linarith) hlam
   have hW := barrierW_pos hκ hd
   have hm : barrierW (collarKappa L lam) (r0 - (r0 - δ) + A / 2) ≤

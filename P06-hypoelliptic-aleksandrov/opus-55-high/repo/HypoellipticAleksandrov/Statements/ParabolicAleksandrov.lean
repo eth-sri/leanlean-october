@@ -13,7 +13,6 @@ Companion paper, Theorem 4.1: Krylov's parabolic Aleksandrov estimate.
 
 @[expose] public section
 
-noncomputable section
 open MeasureTheory
 open scoped MatrixOrder Matrix.Norms.Elementwise
 
@@ -36,7 +35,6 @@ theorem parabolic_aleksandrov
             ≤ f z) →
         (∀ z ∈ krylovParabolicBoundary t₀ h v₀, u z ≤ 0) →
         ∀ z ∈ krylovCylinder t₀ h v₀,
-          u z ≤ C * parabolicLpNormOn N f (krylovCylinder t₀ h v₀) := by
-  exact HypoellipticAleksandrov.Parabolic.parabolic_aleksandrov_aux N hN lam Lam hlam hLam
+          u z ≤ C * parabolicLpNormOn N f (krylovCylinder t₀ h v₀) := HypoellipticAleksandrov.Parabolic.parabolic_aleksandrov_aux N hN lam Lam hlam hLam
 
 end HypoellipticAleksandrov.Parabolic

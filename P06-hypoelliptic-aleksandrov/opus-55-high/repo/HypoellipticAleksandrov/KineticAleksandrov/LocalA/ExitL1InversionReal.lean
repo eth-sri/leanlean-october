@@ -31,18 +31,14 @@ theorem ballExitL1Density_coe
     let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
     (exitL1Density ν y : TimeVelocity d → ℂ) =ᵐ[exitMarginal ν]
       fun z => (exitJointDensity ν (y, z) : ℂ) := by
-  dsimp only
   let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
   have hi := ballExitL1Inversion_coe hH hLE hd hlam hLam B hB v₀ hR P T hv hT y
-  change (exitRealPart.compLp (exitL1Inversion ν y) : TimeVelocity d → ℂ) =ᵐ[exitMarginal ν]
-    fun z => (exitJointDensity ν (y, z) : ℂ)
-  change (exitL1Inversion ν y : TimeVelocity d → ℂ) =ᵐ[exitMarginal ν]
-    fun z => ((2 * Real.pi) ^ d)⁻¹ •
-      vecInvIntegral (fun ξ => exitFourierRep ν ξ z) y at hi
+  change (exitRealPart.compLp (exitL1Inversion ν y)) =ᵐ[exitMarginal ν]
+    fun z => (exitJointDensity ν _)
   filter_upwards [exitRealPart.coeFn_compLp (exitL1Inversion ν y), hi] with z hz hz'
   rw [hz, hz']
   change Complex.ofReal (Complex.reCLM
-    ((((2 * Real.pi) ^ d)⁻¹ : ℝ) • vecInvIntegral (fun ξ => exitFourierRep ν ξ z) y)) =
+    _) =
     Complex.ofReal (((2 * Real.pi) ^ d)⁻¹ *
       (vecInvIntegral (fun ξ => exitFourierRep ν ξ z) y).re)
   rw [map_smul]
@@ -59,8 +55,7 @@ theorem ballExitL1Density_contDiff
     (hv : P.1.velocity ∈ PDE.euclideanBall v₀ (3 * R / 4))
     (hT : T.1 - P.1.time = R ^ 2 / 8) :
     ContDiff ℝ (⊤ : ℕ∞)
-      (exitL1Density (ballExit hH hLE hd hlam hLam B hB v₀ hR P T)) := by
-  exact (exitRealPart.compLpL 1 _).contDiff.comp
+      (exitL1Density (ballExit hH hLE hd hlam hLam B hB v₀ hR P T)) := (exitRealPart.compLpL 1 _).contDiff.comp
     (ballExitL1Inversion_contDiff hH hLE hd hlam hLam B hB v₀ hR P T hv hT)
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

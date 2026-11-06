@@ -6,7 +6,6 @@ import Mathlib.MeasureTheory.Integral.IntegralEqImproper
 /-! # Position-fiber integration by parts without a hidden origin mass -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BarrierRegularization
 open HypoellipticAleksandrov Set MeasureTheory Filter
 open scoped Topology
@@ -28,21 +27,22 @@ theorem singular_line_weak_derivative (f g : ℝ → ℝ) (hf : Continuous f)
   have hdH (x : ℝ) (hx : x ≠ 0) : HasDerivAt H (D x) x :=
     (hd x hx).mul ((ht.differentiable (by norm_num) x).hasDerivAt)
   have hneg := integral_Iic_of_hasDerivAt_of_tendsto
-    (hH.continuousAt.continuousWithinAt (x := (0 : ℝ)))
+    (hH.continuousAt.continuousWithinAt (x := (0)))
     (fun x hx => hdH x hx.ne) hD.integrableOn
     (hHk.is_zero_at_infty.mono_left atBot_le_cocompact)
   have hpos := integral_Ioi_of_hasDerivAt_of_tendsto
-    (hH.continuousAt.continuousWithinAt (x := (0 : ℝ)))
+    (hH.continuousAt.continuousWithinAt (x := (0)))
     (fun x hx => hdH x hx.ne') hD.integrableOn
     (hHk.is_zero_at_infty.mono_left atTop_le_cocompact)
   have he := integral_add_compl (s := Iic (0 : ℝ)) measurableSet_Iic hD
-  rw [compl_Iic, hneg, hpos] at he
-  have hz : (∫ x, D x) = 0 := by linarith only [he]
+  have hz : (∫ x, D x) = 0 := by simp_all
   rw [integral_add h1 h2] at hz
-  linarith only [hz]
+  linarith
+
+variable {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
 
 /-- Each actual position derivative fiber is locally integrable on the full position line. -/
-theorem barrier_dx_fiber_locallyIntegrable {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
+theorem barrier_dx_fiber_locallyIntegrable 
     (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha) (ha1 : alpha < 1) (v : ℝ) :
     LocallyIntegrable (fun X => bellmanDx phi (X, v)) volume := by
   rw [locallyIntegrable_iff]
@@ -52,10 +52,10 @@ theorem barrier_dx_fiber_locallyIntegrable {alpha : ℝ} {phi : (ℝ × ℝ) →
   intro x hx
   have hh := hRb x hx
   rw [Real.norm_eq_abs] at hh
-  exact abs_le.mp hh.le
+  grind
 
 /-- The actual position convolution moves its derivative onto the source jet even at v=0. -/
-theorem barrier_position_fiber_weak_dx {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
+theorem barrier_position_fiber_weak_dx 
     (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha) (ha1 : alpha < 1)
     (v : ℝ) (test : ℝ → ℝ) (ht : ContDiff ℝ 1 test) (hs : HasCompactSupport test) :
     (∫ X, bellmanOriginExtension phi (X, v) * deriv test X) =

@@ -11,7 +11,6 @@ import Mathlib.Analysis.SpecificLimits.Basic
 /-! # Smooth interior representatives of vanishing-viscosity sequences -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov Set Filter MeasureTheory Evolution
 open scoped Topology MatrixOrder
@@ -35,7 +34,7 @@ theorem transportedForwardOperator_eq_zero_of_smooth_weak {n : ℕ}
     apply integral_congr_ae
     filter_upwards [hrep] with p hp
     rw [hp]
-  have hp := (isWeakTransportedSolution_comp_iff B b U V (fun _ => 0)).mpr hw
+  have hp := (isWeakTransportedSolution_comp_iff B b U V _).mpr hw
   have hP := (evolutionHomeomorph n).continuous.isOpen_preimage U hU
   have hreg : IsWeakRegularizedSolution B b 0 (evolutionHomeomorph n ⁻¹' U)
       (V ∘ evolutionHomeomorph n) (fun _ => 0) := by
@@ -45,11 +44,10 @@ theorem transportedForwardOperator_eq_zero_of_smooth_weak {n : ℕ}
   have he := regularizedOperator_eq_zero_of_smooth_weak hP hB hBs hb 0 hV hreg
   intro p hpin
   let x := (evolutionHomeomorph n).symm p
-  have hx : x ∈ evolutionHomeomorph n ⁻¹' U := by simpa [x] using hpin
+  have hx : x ∈ evolutionHomeomorph n ⁻¹' U := by aesop
   have heq := he x hx
-  rw [regularizedOperator_comp 0 ((hV.contDiffAt (hP.mem_nhds hx)).of_le (by simp)),
-    zero_mul, add_zero] at heq
-  simpa [x] using heq
+  rw [regularizedOperator_comp 0 ((hV.contDiffAt (hP.mem_nhds hx)).of_le (by simp))] at heq
+  aesop
 
 /-- Interior compactness retains all integrable tests as well as a smooth representative.
 Boundary extension is handled separately by uniform trace estimates. -/
@@ -81,29 +79,29 @@ theorem exists_smooth_viscosity_sequence_limit
       u =ᵐ[volume.restrict (evolutionPastOpenCylinder Ω γ τ)] V ∧
       (∀ p ∈ evolutionPastOpenCylinder Ω γ τ, |V p| ≤ C) ∧
       (∀ p ∈ evolutionPastOpenCylinder Ω γ τ, transportedForwardOperator B b V p = 0) := by
-  let : SecondCountableTopology (KineticPoint n) :=
+  let  :=
     (KineticPoint.homeomorphProd n).isEmbedding.secondCountableTopology
   let U := evolutionPastOpenCylinder Ω γ τ
   have hU := isOpen_evolutionPastOpenCylinder
     (isOpen_of_isAdmissibleEvolutionDomain hΩ) hγ.1 τ
   have hUS : U ⊆ evolutionPastClosedCylinder Ω γ τ :=
     fun p hp => ⟨hp.1.le, subset_closure hp.2⟩
-  have hva : ∀ j, AEStronglyMeasurable (v j) (volume.restrict U) := fun j =>
+  have hva : ∀ j, AEStronglyMeasurable _ (volume.restrict U) := fun j =>
     (((hv j).2.1.mono hUS).aestronglyMeasurable hU.measurableSet)
   have hba : ∀ j, ∀ᵐ p ∂volume.restrict U, |v j p| ≤ C := fun j => by
     filter_upwards [ae_restrict_mem hU.measurableSet] with p hp
-    exact hb j p (hUS hp)
+    grind
   obtain ⟨u, ν, hν, hua, hub, hlim⟩ := exists_sigmaFinite_bounded_weak_subsequence
     (volume.restrict U) v C hC hva hba
   have hε : Tendsto (fun j => 1 / ((ν j : ℝ) + 1)) atTop (𝓝 0) :=
     tendsto_one_div_add_atTop_nhds_zero_nat.comp hν.tendsto_atTop
   have hw := weak_transport_equation_of_vanishing_viscosity n hn lam Lam m L_b
     hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell hb_smooth
-    hb_lipschitz hb_coercive τ (fun j => 1 / ((ν j : ℝ) + 1))
-    (fun j => by positivity) hε (fun j => v (ν j)) u C hC
+    hb_lipschitz hb_coercive τ _
+    (fun j => by positivity) hε _ u C hC
     (fun j => classical_viscous_terminalSolution_isWeak
-      (isOpen_of_isAdmissibleEvolutionDomain hΩ) hγ.1 hB_smooth hB_symm hb_smooth (hv (ν j)))
-    (fun j => hba (ν j)) hua hub hlim
+      (isOpen_of_isAdmissibleEvolutionDomain hΩ) hγ.1 hB_smooth hB_symm hb_smooth (hv _))
+    (fun j => hba _) hua hub hlim
   obtain ⟨V, hV, hrep⟩ := exists_smooth_kinetic_representative hH hlam hB_smooth hB_ell
     hb_smooth hm hb_coercive U hU u hw
   have hc : ContinuousOn V U := by
@@ -113,8 +111,8 @@ theorem exists_smooth_viscosity_sequence_limit
   refine ⟨u, V, ν, hν, hua, hub, hlim, hV, hrep, ?_, ?_⟩
   · have hh := bounded_weak_limit_abs_sub_le_on_open U U hU Subset.rfl
       (fun j => v (ν j)) u V C 0 C (fun j => hva (ν j)) (fun j => hba (ν j))
-      hua hub hlim hc hrep (fun j p hp => by simpa using hb (ν j) p (hUS hp))
-    simpa only [sub_zero] using hh
+      hua hub hlim hc hrep (fun j p hp => by grind)
+    grind
   · exact transportedForwardOperator_eq_zero_of_smooth_weak hB_smooth hB_symm
       hb_smooth hU hw hV hrep
 

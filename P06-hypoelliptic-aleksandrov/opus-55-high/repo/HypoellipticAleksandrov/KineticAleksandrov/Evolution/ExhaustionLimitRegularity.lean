@@ -17,7 +17,6 @@ Actual limit continuity identifies that representative pointwise on the open cyl
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -72,7 +71,7 @@ theorem contDiffOn_innerBall_dirichlet_limit
       hlam hB hBs hbs hb haα hατ hδ0 hδr hd hdr hL hε.le hε1 hC hΓ.1
       F hFC hsupp β R hβpos hβlim hRlim g hg hgL hclose u hu).1.mono
         (boundedInnerOpenCylinder_subset_closed _ Γ α τ S0)
-  have hcPack : ContinuousOn (vlim ∘ evolutionHomeomorph n)
+  have hcPack : ContinuousOn _
       (evolutionHomeomorph n ⁻¹' U) :=
     hcLim.comp (evolutionHomeomorph n).continuous.continuousOn (fun _ hx => hx)
   have heq := eqOn_of_ae_eq_of_continuousOn_kinetic hU hcPack hvs.continuousOn hae

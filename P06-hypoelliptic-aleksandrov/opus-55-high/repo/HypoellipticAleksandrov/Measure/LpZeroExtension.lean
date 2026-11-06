@@ -36,11 +36,8 @@ private theorem coeFn_zeroExtend
     {p : ℝ≥0∞} [Fact (1 ≤ p)]
     {μ : Measure α} {s : Set α}
     (hs : MeasurableSet s) (f : Lp E p (μ.restrict s)) :
-    ⇑(zeroExtend hs f) =ᵐ[μ] Set.indicator s (⇑f) := by
-  change ⇑(((memLp_indicator_iff_restrict hs).mpr (Lp.memLp f)).toLp
-    (Set.indicator s (⇑f))) =ᵐ[μ] Set.indicator s (⇑f)
-  exact @MemLp.coeFn_toLp α E _ p μ _ (Set.indicator s (⇑f))
-    ((memLp_indicator_iff_restrict hs).mpr (Lp.memLp f))
+    ⇑(zeroExtend hs f) =ᵐ[μ] Set.indicator s (⇑f) := @MemLp.coeFn_toLp α E _ p μ _ _
+    _
 
 private theorem indicator_add_ae
     {α E : Type*} [MeasurableSpace α]
@@ -52,8 +49,8 @@ private theorem indicator_add_ae
       Set.indicator s (⇑f) + Set.indicator s (⇑g) := by
   filter_upwards [ae_imp_of_ae_restrict (Lp.coeFn_add f g)] with x hfg
   by_cases hx : x ∈ s
-  · simp only [Set.indicator_of_mem hx, hfg hx, Pi.add_apply]
-  · simp only [Pi.add_apply, Set.indicator_of_notMem hx, zero_add]
+  · simp_all
+  simp_all
 
 private theorem indicator_smul_ae
     {α E : Type*} [MeasurableSpace α]
@@ -64,12 +61,12 @@ private theorem indicator_smul_ae
     Set.indicator s (⇑(c • f)) =ᵐ[μ] c • Set.indicator s (⇑f) := by
   filter_upwards [ae_imp_of_ae_restrict (Lp.coeFn_smul c f)] with x hcf
   by_cases hx : x ∈ s
-  · simp only [Set.indicator_of_mem hx, hcf hx, Pi.smul_apply]
-  · simp only [Pi.smul_apply, Set.indicator_of_notMem hx, smul_zero]
+  · simp_all
+  simp_all
 
 /-- Extension by zero from `Lp E p (μ.restrict s)` to `Lp E p μ`, as a
 linear isometry. -/
-noncomputable def zeroExtendLinearIsometry
+def zeroExtendLinearIsometry
     {α E : Type*} [MeasurableSpace α]
     [NormedAddCommGroup E] [NormedSpace ℝ E]
     {p : ℝ≥0∞} [Fact (1 ≤ p)]
@@ -79,17 +76,17 @@ noncomputable def zeroExtendLinearIsometry
   toFun f := zeroExtend hs f
   map_add' f g := by
     apply Lp.ext
-    exact (coeFn_zeroExtend hs (f + g)).trans
+    exact (coeFn_zeroExtend hs _).trans
       ((indicator_add_ae f g).trans (((coeFn_zeroExtend hs f).add
         (coeFn_zeroExtend hs g)).symm.trans
-          (Lp.coeFn_add (zeroExtend hs f) (zeroExtend hs g)).symm))
+          (Lp.coeFn_add _ _).symm))
   map_smul' c f := by
     apply Lp.ext
     have hsmul : c • Set.indicator s (⇑f) =ᵐ[μ] ⇑(c • zeroExtend hs f) := by
       filter_upwards [coeFn_zeroExtend hs f,
         Lp.coeFn_smul c (zeroExtend hs f)] with x hf hcf
-      simp only [hf, hcf, Pi.smul_apply]
-    exact (coeFn_zeroExtend hs (c • f)).trans
+      simp_all
+    exact (coeFn_zeroExtend hs _).trans
       ((indicator_smul_ae c f).trans hsmul)
   norm_map' f := by
     change ‖((memLp_indicator_iff_restrict hs).mpr (Lp.memLp f)).toLp

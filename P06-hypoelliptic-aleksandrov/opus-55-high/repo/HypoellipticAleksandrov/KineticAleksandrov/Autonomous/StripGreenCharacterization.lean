@@ -30,28 +30,12 @@ theorem stripGreenOfKernel_spec (H : Interval)
     IsStripGreen H K T e (stripGreenOfKernel H K T e) := by
   intro F hF
   rw [stripGreenOfKernel, lintegral_map hF (measurable_elapsedPhysicalPoint _ _)]
-  have hs := greenMeasure_spec K e.1.time (stripHorizon T e.1.time)
+  have hs := greenMeasure_spec K e.1.time _
     (stripHorizon_pos H T e) (Measure.dirac (stripPoleState H T e))
     (fun q => F (elapsedPhysicalPoint e.1.time q))
     (hF.comp (measurable_elapsedPhysicalPoint _ _))
   refine hs.trans ?_
-  have : ProbabilityTheory.IsFiniteKernel
-      (elapsedKernel K e.1.time (stripHorizon T e.1.time)) := by
-    unfold elapsedKernel
-    infer_instance
-  have hm : Measurable (fun p : EvolutionState (intervalDomain H) (fun _ => 0) e.1.time =>
-      ∫⁻ τ, ∫⁻ w, F (elapsedPhysicalPoint e.1.time (τ, w))
-        ∂K.master (elapsedQuery e.1.time p τ)
-        ∂elapsedVolume (stripHorizon T e.1.time)) := by
-    have hi : Measurable (fun q :
-        (EvolutionState (intervalDomain H) (fun _ => 0) e.1.time ×
-          ElapsedTime (stripHorizon T e.1.time)) × EvolutionAmbientState 1 =>
-        F (elapsedPhysicalPoint e.1.time (q.1.2, q.2))) :=
-      hF.comp ((measurable_elapsedPhysicalPoint _ _).comp
-        ((measurable_snd.comp measurable_fst).prodMk measurable_snd))
-    exact (hi.lintegral_kernel_prod_right'
-      (κ := elapsedKernel K e.1.time (stripHorizon T e.1.time))).lintegral_prod_right
-  exact lintegral_dirac' _ hm
+  simp
 
 /-- The canonical autonomous measure has the literal killed-kernel integration formula. -/
 theorem stripGreen_lintegral

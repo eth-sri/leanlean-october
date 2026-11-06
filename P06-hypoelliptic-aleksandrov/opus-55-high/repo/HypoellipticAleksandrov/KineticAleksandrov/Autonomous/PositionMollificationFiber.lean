@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BarrierModul
 /-! # Position-fiber majorants of the actual homogeneous Bellman jets -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BarrierRegularization
 open HypoellipticAleksandrov Set MeasureTheory
 
@@ -16,7 +15,7 @@ theorem barrier_position_gauge_lower (q : ℝ × ℝ) : |q.1| ^ (1 / 3 : ℝ) �
   have he : (bellmanGauge q ^ 3) ^ (1 / 3 : ℝ) = bellmanGauge q := by
     rw [← Real.rpow_natCast_mul (bellmanGauge_nonneg q)]
     norm_num
-  rwa [he] at hh
+  simp_all
 
 /-- A negative homogeneous gauge bound has a uniform position-fiber power majorant. -/
 theorem barrier_position_fiber_bound (beta : ℝ) (hb : beta ≤ 0)
@@ -28,7 +27,7 @@ theorem barrier_position_fiber_bound (beta : ℝ) (hb : beta ≤ 0)
   have hh := Real.rpow_le_rpow_of_nonpos
     (Real.rpow_pos_of_pos (abs_pos.mpr hX) _) hl hb
   rw [← Real.rpow_mul (abs_nonneg X)] at hh
-  have he : (1 / 3 : ℝ) * beta = beta / 3 := by ring
+  have he : (1 / 3) * beta = beta / 3 := by ring
   rw [he] at hh
   exact (hbound _ hq).trans (mul_le_mul_of_nonneg_left hh hC)
 
@@ -45,12 +44,12 @@ theorem barrier_jet_fiber_integrable {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
       (hbound : ∀ q ∈ bellmanPuncturedSet, |f q| ≤ C * bellmanGauge q ^ beta) :
       IntegrableOn (fun X => f (X, v)) (Icc a b) volume := by
     have hm : Measurable (fun X => f (X, v)) :=
-      (measurable_of_continuousOn_compl_singleton (0, 0) hc).comp
+      (measurable_of_continuousOn_compl_singleton _ hc).comp
         (measurable_id.prodMk measurable_const)
     have hmaj := ((bellman_abs_rpow_locallyIntegrable (beta / 3) (by linarith)).smul C)
       |>.integrableOn_isCompact (isCompact_Icc (a := a) (b := b))
     apply hmaj.mono' hm.aestronglyMeasurable.restrict
-    filter_upwards [ae_restrict_of_ae (volume.ae_ne (0 : ℝ))] with X hX
+    filter_upwards [ae_restrict_of_ae (volume.ae_ne (0))] with X hX
     simpa only [Real.norm_eq_abs, Pi.smul_apply, smul_eq_mul] using
       barrier_position_fiber_bound beta hb0 f C hC hbound X v hX
   obtain ⟨_, hX, hv, hvv⟩ := h.origin_jet_bounds
@@ -58,9 +57,9 @@ theorem barrier_jet_fiber_integrable {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
   obtain ⟨Cv, hCv, hbv⟩ := hv
   obtain ⟨Cvv, hCvv, hbvv⟩ := hvv
   refine ⟨?_, ?_, ?_⟩
-  · exact hi (alpha - 3) (by linarith) (by linarith) _ h.dx_continuousOn CX hCX hbX
-  · exact hi (alpha - 1) (by linarith) (by linarith) _
-      (h.directional_contDiffOn (0, 1)).continuousOn Cv hCv hbv
-  · exact hi (alpha - 2) (by linarith) (by linarith) _ h.dvv_continuousOn Cvv hCvv hbvv
+  · exact hi _ (by linarith) (by linarith) _ h.dx_continuousOn CX hCX hbX
+  · exact hi _ (by linarith) (by linarith) _
+      (h.directional_contDiffOn _).continuousOn Cv hCv hbv
+  · exact hi _ (by linarith) (by linarith) _ h.dvv_continuousOn Cvv hCvv hbvv
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BarrierRegularization

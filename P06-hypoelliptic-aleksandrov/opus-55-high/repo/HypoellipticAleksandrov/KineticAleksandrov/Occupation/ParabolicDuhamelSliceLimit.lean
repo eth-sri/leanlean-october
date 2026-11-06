@@ -29,26 +29,24 @@ variable {d : ℕ}
 def packQ (d : ℕ) (q : ℝ × (PDE.Vec d × PDE.Vec d)) : EvolutionVec d :=
   packPoint q.1 q.2.1 q.2.2
 
-@[simp] theorem timeCoord_packQ (q : ℝ × (PDE.Vec d × PDE.Vec d)) :
+variable (q : ℝ × (PDE.Vec d × PDE.Vec d))
+
+@[simp] theorem timeCoord_packQ  :
     Evolution.timeCoord d (packQ d q) = q.1 := timeCoord_packPoint _ _ _
 
-@[simp] theorem diffusedCoord_packQ (q : ℝ × (PDE.Vec d × PDE.Vec d)) :
+@[simp] theorem diffusedCoord_packQ  :
     diffusedCoord d (packQ d q) = q.2.1 := diffusedCoord_packPoint _ _ _
 
-@[simp] theorem evolutionToTimeVelocity_packQ (q : ℝ × (PDE.Vec d × PDE.Vec d)) :
+@[simp] theorem evolutionToTimeVelocity_packQ  :
     evolutionToTimeVelocity d (packQ d q) = (q.1, q.2.1) :=
   Prod.ext (timeCoord_packQ q) (diffusedCoord_packQ q)
 
-theorem packQ_eq_symm (q : ℝ × (PDE.Vec d × PDE.Vec d)) :
+theorem packQ_eq_symm  :
     packQ d q = (evolutionProdMeasurableEquiv d).symm q := by
   rw [MeasurableEquiv.eq_symm_apply, evolutionProdMeasurableEquiv_apply]
   simp [packQ]
 
-theorem continuous_packQ : Continuous (packQ d) := by
-  have : packQ d = (evolutionProdCLE d).symm := by
-    funext q; rfl
-  rw [this]
-  exact (evolutionProdCLE d).symm.continuous
+theorem continuous_packQ : Continuous (packQ d) := (evolutionProdCLE d).symm.continuous
 
 /-- Integrals over the packed space are integrals over product coordinates. -/
 theorem integral_evolution_eq_prod (F : EvolutionVec d → ℝ) :
@@ -62,7 +60,7 @@ theorem integral_evolution_eq_prod (F : EvolutionVec d → ℝ) :
 theorem hasCompactSupport_comp_packQ {f : EvolutionVec d → ℝ} (hf : HasCompactSupport f) :
     HasCompactSupport (fun q => f (packQ d q)) := by
   have : (fun q => f (packQ d q)) = f ∘ (evolutionProdCLE d).symm.toHomeomorph := by
-    funext q; rfl
+    rfl
   rw [this]
   exact hf.comp_homeomorph _
 
@@ -87,12 +85,12 @@ theorem slice_weak_identity {B' : CoefficientField d}
         (fun q => u (q.1, q.2.1) *
           transportedAdjoint (zIndependentCoefficient B') b ψ (packQ d q)) q) +
       ∫ w : PDE.Vec d × PDE.Vec d, m₀ w = 0 := by
-  have hLc : Continuous (transportedAdjoint (zIndependentCoefficient B') b ψ) :=
+  have hLc : Continuous (transportedAdjoint _ b ψ) :=
     (contDiff_transportedAdjoint hB hb hψ).continuous
   have hLcs := hasCompactSupport_transportedAdjoint (B := zIndependentCoefficient B') (b := b) hc
-  refine layer_slice_identity (volume : Measure (PDE.Vec d × PDE.Vec d)) r
-    (fun q => u (q.1, q.2.1)) (fun q => ψ (packQ d q))
-    (fun q => transportedAdjoint (zIndependentCoefficient B') b ψ (packQ d q))
+  refine layer_slice_identity volume r
+    (fun q => u _) (fun q => ψ _)
+    (fun q => transportedAdjoint _ b ψ _)
     (hum.comp (measurable_fst.prodMk (measurable_snd.fst))) C hC0 (fun q => hub _)
     (hψ.continuous.comp continuous_packQ) (hasCompactSupport_comp_packQ hc)
     (hLc.comp continuous_packQ) (hasCompactSupport_comp_packQ hLcs) ?_ m₀ hlim

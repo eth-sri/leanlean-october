@@ -9,7 +9,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundaryMeasureT
 /-! # The actual exit integral is the convolution with the canonical real density -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Filter Parabolic SectionTwo
 open scoped ENNReal Convolution
@@ -29,7 +28,6 @@ include hv hT
 theorem ballExit_density_nonneg :
     let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
     ∀ᵐ p ∂volume.prod (exitMarginal ν), 0 ≤ exitJointDensity ν p := by
-  dsimp only
   let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
   apply (Measure.ae_prod_iff_ae_ae
     (measurableSet_le measurable_const (measurable_exitJointDensity ν))).mpr
@@ -47,7 +45,6 @@ theorem ballExit_boundary_convolution
     (∫ Q, (H (KineticPoint.equivProd d (boundaryPositionShift x Q)) : ℂ)
       ∂ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T) =
       (f ⋆[spatialDensityPairing (exitMarginal ν), volume] (G ∘ Neg.neg)) x := by
-  dsimp only
   let ν := ballExit hH hLE hd hlam hLam B hB v₀ hR P T
   let μ := exitMarginal ν
   let f := spatialBoundaryLpData μ H hHc hc M hb P.1 v₀
@@ -59,19 +56,17 @@ theorem ballExit_boundary_convolution
       ((continuous_const.add continuous_fst).prodMk continuous_snd))
   have hFi : Integrable (fun p => (F p : ℂ)) ν :=
     Integrable.of_bound (Complex.continuous_ofReal.comp hFc).aestronglyMeasurable M
-      (Eventually.of_forall fun p => by simpa only [Complex.norm_real] using hb _)
-  have hi := spatialDensity_integral volume μ ν (exitJointDensity ν)
+      (Eventually.of_forall fun p => by aesop)
+  have hi := spatialDensity_integral volume μ ν _
     (measurable_exitJointDensity ν)
     (ballExit_density_nonneg hH hLE hd hlam hLam B hB v₀ hR P T hv hT)
     (ballExit_eq_withDensity_exitJointDensity hH hLE hd hlam hLam B hB v₀ hR P T hv hT)
     G (ballExitL1Density_coe hH hLE hd hlam hLam B hB v₀ hR P T hv hT)
-    F hFi (fun y => f (x + y))
-    (fun y => spatialBoundaryLpData_coe μ H hHc hc M hb P.1 v₀ (x + y))
+    F hFi (fun y => f _)
+    (fun y => spatialBoundaryLpData_coe μ H hHc hc M hb P.1 v₀ _)
   have hr : (∫ p, (F p : ℂ) ∂ν) =
       ∫ Q, (H (KineticPoint.equivProd d (boundaryPositionShift x Q)) : ℂ)
         ∂ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T := by
-    change (∫ p, (F p : ℂ) ∂Measure.map (exitCoordinates P.1 v₀)
-      (ballExitRaw hH hLE hd hlam hLam B hB v₀ hR P T)) = _
     refine (integral_map (f := fun p => (F p : ℂ))
       (continuous_exitCoordinates P.1 v₀).aemeasurable
       (Complex.continuous_ofReal.comp hFc).aestronglyMeasurable).trans ?_
@@ -82,16 +77,12 @@ theorem ballExit_boundary_convolution
     change (Q.time, (P.1.position + (x +
       (Q.position - P.1.position - (Q.time - P.1.time) • v₀)) +
       (Q.time - P.1.time) • v₀, Q.velocity)) = (Q.time, (Q.position + x, Q.velocity))
-    refine Prod.ext ?_ ?_
-    · rfl
-    · refine Prod.ext ?_ ?_
-      · abel
-      · rfl
+    ring
   rw [← hr, hi]
-  change (∫ y, spatialDensityPairing μ (f (x + y)) (G y)) =
-    ∫ y, spatialDensityPairing μ (f y) (G (-(x - y)))
-  have ha := integral_add_left_eq_self x (μ := (volume : Measure (PDE.Vec d)))
+  change (∫ y, spatialDensityPairing μ _ _) =
+    ∫ y, spatialDensityPairing μ (f y) (G _)
+  have ha := integral_add_left_eq_self x (μ := volume)
     (f := fun y => spatialDensityPairing μ (f y) (G (y - x)))
-  simpa only [add_sub_cancel_left, neg_sub] using ha
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

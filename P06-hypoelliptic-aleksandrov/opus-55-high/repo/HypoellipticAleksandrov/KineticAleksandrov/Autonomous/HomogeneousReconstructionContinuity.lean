@@ -9,7 +9,6 @@ import Mathlib.Analysis.SpecificLimits.Basic
 /-! # Continuity of the actual bounded continuous-source potential -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Filter
 open SectionTwo TheoremA Evolution
@@ -26,7 +25,7 @@ theorem reconstruction_compact_potential_continuousOn
     (hs : tsupport f ⊆ reconstructionSourceDomain H sMinus T) :
     ContinuousOn (fun p => duhamelPotential E.2 T (f ∘ KineticPoint.equivProd 1)
       (sectionTwoPoint p)) (stripPast H T) := by
-  have hg : ContDiff ℝ (⊤ : ℕ∞) (rawLift (f ∘ KineticPoint.equivProd 1)) := hf
+  have hg : ContDiff ℝ _ (rawLift (f ∘ KineticPoint.equivProd 1)) := hf
   have hgc := hc.comp_homeomorph (KineticPoint.homeomorphProd 1)
   have hgs : tsupport (f ∘ KineticPoint.equivProd 1) ⊆
       evolutionPastOpenCylinder (intervalDomain H) (fun _ => 0) T := by
@@ -60,54 +59,50 @@ theorem reconstruction_source_potential_continuousOn_window
     ContinuousOn (stripSourcePotential H E.2 T g)
       {p | a ≤ p.time ∧ p ∈ stripPast H T ∧ |p.position 0| ≤ R₀} := by
   classical
-  let r (n : ℕ) : ℝ := 1 / ((n : ℝ) + 1)
-  have hr (n : ℕ) : 0 < r n := by dsimp [r]; positivity
+  let r (n : ℕ)  := 1 / ((n : ℝ) + 1)
+  have hr (n : ℕ) : 0 < r n := by positivity
   have hR (n : ℕ) : 0 < (n : ℝ) + 1 := by positivity
   obtain ⟨C, hC, hgb⟩ := g.exists_bound
   choose f hf hc hs hclose using fun n => exists_reconstruction_compact_source_approx
     H sMinus a T ha (hr n) (hR n) (hr n)
-    (fun x => g (sectionTwoPoint ((KineticPoint.equivProd 1).symm x))) hg C hC
+    _ hg C hC
     (fun x => hgb _)
   have hfc (n : ℕ) : Continuous (f n) := (hf n).continuous
   have hfb (n : ℕ) : ∃ B : ℝ, 0 ≤ B ∧ ∀ x, |f n x| ≤ B := by
     obtain ⟨B, hB⟩ := (hfc n).bounded_above_of_compact_support (hc n)
     refine ⟨max B 0, le_max_right _ _, fun x => ?_⟩
-    have hh : |f n x| ≤ B := by simpa only [Real.norm_eq_abs] using hB x
-    exact hh.trans (le_max_left _ _)
+    simp_all
   let G (n : ℕ) : BoundedBorel Point :=
-    ⟨fun p => f n (KineticPoint.equivProd 1 (sectionTwoPoint p)),
+    ⟨fun p => f n (KineticPoint.equivProd 1 _),
       (hfc n).measurable.comp
         ((KineticPoint.homeomorphProd 1).continuous.comp
           (continuous_sectionTwoPoint 1)).measurable, by
       obtain ⟨B, hB, hb⟩ := hfb n
-      exact ⟨B, hB, fun p => hb _⟩⟩
-  let F (n : ℕ) (p : Point) : ℝ :=
+      grind⟩
+  let F (n : ℕ) (p : Point)  :=
     duhamelPotential E.2 T (f n ∘ KineticPoint.equivProd 1) (sectionTwoPoint p)
-  have hF (n : ℕ) : ContinuousOn (F n) (stripPast H T) :=
+  have hF (n : ℕ) : ContinuousOn (F n) _ :=
     reconstruction_compact_potential_continuousOn hH hlam hLam A H E hE T
-      (f n) (hf n) (hc n) (hs n)
-  have hFG (n : ℕ) (e : StripPole H (T : WithTop ℝ)) :
+      _ (hf n) (hc n) (hs n)
+  have hFG (n : ℕ) (e : StripPole H _) :
       stripPotentialOfKernel H E.2 T (G n) e = F n e.1 := by
-    rw [← stripSourcePotential_eq_green H E.2 T (G n) e]
-    unfold stripSourcePotential
+    rw [← stripSourcePotential_eq_green]
     congr 1
   let Q := Real.exp ((max |H.lo| |H.hi| + 1) * (T - a)) * (2 * Real.exp R₀)
-  let b (n : ℕ) : ℝ := r n * (T - a) + C *
+  let b (n : ℕ)  := r n * (T - a) + C *
     (Real.exp 1 * (2 * (r n) ^ 2 / lam) + r n + Q * r n)
   have hbd (n : ℕ) (p : Point)
       (hp : a ≤ p.time ∧ p ∈ stripPast H T ∧ |p.position 0| ≤ R₀) :
       |stripSourcePotential H E.2 T g p - F n p| ≤ b n := by
-    let e : StripPole H (T : WithTop ℝ) := ⟨p, WithTop.coe_lt_coe.mpr hp.2.1.1, hp.2.1.2⟩
+    let e : StripPole H _ := ⟨p, WithTop.coe_lt_coe.mpr hp.2.1.1, hp.2.1.2⟩
     have herr := reconstruction_green_potential_error hH hlam hLam A H E hE T a e hp.1
       g (G n) C hC (hr n) (hR n) (hr n).le (fun z hz => by
         have hh := hclose n (KineticPoint.equivProd 1 (sectionTwoPoint z)) hz
         rw [Equiv.symm_apply_apply, sectionTwoPoint_involutive] at hh
-        simpa only [G, abs_sub_comm] using hh)
-    rw [hFG] at herr
-    rw [← stripSourcePotential_eq_green H E.2 T g e] at herr
+        grind)
+    rw [hFG, ← stripSourcePotential_eq_green] at herr
     have hV : 0 ≤ max |H.lo| |H.hi| + 1 := by
-      have hv := (abs_nonneg H.lo).trans (le_max_left |H.lo| |H.hi|)
-      linarith only [hv]
+      positivity
     have hex := Real.exp_le_exp.mpr (mul_le_mul_of_nonneg_left
       (sub_le_sub_left hp.1 T) hV)
     have hx := abs_le.mp hp.2.2
@@ -115,14 +110,12 @@ theorem reconstruction_source_potential_continuousOn_window
     have hxm := Real.exp_le_exp.mpr (neg_le.mp hx.1)
     have hw : reconstructionSpatialWeight (p.position 0) ≤ 2 * Real.exp R₀ := by
       unfold reconstructionSpatialWeight
-      linarith only [hxp, hxm]
-    have hQ : Real.exp ((max |H.lo| |H.hi| + 1) * (T - p.time)) *
-        reconstructionSpatialWeight (p.position 0) ≤ Q :=
+      linarith
+    have hQ : Real.exp ((max _ _ + 1) * (T - p.time)) *
+        reconstructionSpatialWeight _ ≤ Q :=
       mul_le_mul hex hw (add_nonneg (Real.exp_pos _).le (Real.exp_pos _).le)
         (Real.exp_pos _).le
     apply herr.trans
-    change _ ≤ b n
-    dsimp only [b]
     apply add_le_add
     · exact mul_le_mul_of_nonneg_left (sub_le_sub_left hp.1 T) (hr n).le
     · apply mul_le_mul_of_nonneg_left _ hC
@@ -132,8 +125,8 @@ theorem reconstruction_source_potential_continuousOn_window
   have hr0 : Tendsto r atTop (𝓝 0) := tendsto_one_div_add_atTop_nhds_zero_nat
   have hb0 : Tendsto b atTop (𝓝 0) := by
     simpa only [b, zero_mul, zero_pow (by decide : 2 ≠ 0), zero_div, mul_zero, add_zero] using
-      (hr0.mul_const (T - a)).add
-        ((((hr0.pow 2).const_mul 2).div_const lam).const_mul (Real.exp 1) |>.add hr0 |>.add
+      (hr0.mul_const _).add
+        ((((hr0.pow 2).const_mul 2).div_const lam).const_mul _ |>.add hr0 |>.add
           (hr0.const_mul Q) |>.const_mul C)
   have hu : TendstoUniformlyOn F (stripSourcePotential H E.2 T g) atTop
       {p | a ≤ p.time ∧ p ∈ stripPast H T ∧ |p.position 0| ≤ R₀} := by
@@ -159,8 +152,8 @@ theorem reconstruction_source_potential_continuousOn
   let a := (sMinus + p.time) / 2
   let R := |p.position 0| + 1
   have ha : sMinus < a := by dsimp only [a]; linarith only [hp.1]
-  have hap : a < p.time := by dsimp only [a]; linarith only [hp.1]
-  have hR : |p.position 0| < R := by dsimp only [R]; linarith
+  have hap : a < p.time := by grind
+  have hR : |p.position 0| < R := by linarith
   have hc := reconstruction_source_potential_continuousOn_window hH hlam hLam A H E hE
     sMinus a T R ha g hg
   have hpos : Continuous (fun q : Point => |q.position 0|) :=

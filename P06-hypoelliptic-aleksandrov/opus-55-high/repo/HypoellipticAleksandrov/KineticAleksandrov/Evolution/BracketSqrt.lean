@@ -24,7 +24,6 @@ positive-semidefinite matrices.
 @[expose] public section
 
 noncomputable section
-set_option autoImplicit false
 
 open scoped MatrixOrder Matrix.Norms.L2Operator Matrix
 
@@ -47,12 +46,10 @@ theorem sylvester_injective {β : PDE.Mat d} (hβ : β.PosDef) :
   have h1 : (Xᴴ * β * X).PosSemidef := hβ.posSemidef.conjTranspose_mul_mul_same X
   have h2 : (X * β * Xᴴ).PosSemidef := hβ.posSemidef.mul_mul_conjTranspose_same X
   have htr : (Xᴴ * β * X).trace + (X * β * Xᴴ).trace = 0 := by
-    have : (Xᴴ * (β * X + X * β)).trace = 0 := by rw [hX]; simp
+    have : (Xᴴ * (β * X + X * β)).trace = 0 := by simp_all
     rw [mul_add, Matrix.trace_add] at this
-    rw [Matrix.trace_mul_cycle X β Xᴴ]
-    rw [← Matrix.mul_assoc Xᴴ β X] at this
-    rw [← Matrix.mul_assoc Xᴴ X β] at this
-    exact this
+    rw [Matrix.trace_mul_cycle X]
+    grind
   have h0 : (Xᴴ * β * X).trace = 0 :=
     le_antisymm (by linarith [h2.trace_nonneg]) h1.trace_nonneg
   have hM : Xᴴ * β * X = 0 := (h1.trace_eq_zero_iff).1 h0
@@ -61,10 +58,10 @@ theorem sylvester_injective {β : PDE.Mat d} (hβ : β.PosDef) :
     by_contra hy
     have hpos := hβ.dotProduct_mulVec_pos hy
     have h3 : star (X.mulVec y) ⬝ᵥ β.mulVec (X.mulVec y) = 0 := by
-      have : star y ⬝ᵥ (Xᴴ * β * X).mulVec y = 0 := by rw [hM]; simp
+      have : star y ⬝ᵥ (Xᴴ * β * X).mulVec y = 0 := by simp_all
       rw [← Matrix.mulVec_mulVec, ← Matrix.mulVec_mulVec, Matrix.dotProduct_mulVec,
         Matrix.vecMul_conjTranspose] at this
-      simpa [Matrix.dotProduct_mulVec] using this
+      omega
     linarith
   ext i j
   have := congrFun (hXy (Pi.single j 1)) i
@@ -78,24 +75,24 @@ theorem posDef_sqrt {B : PDE.Mat d} (hB : B.PosDef) : (CFC.sqrt B).PosDef := by
   intro x y hxy
   apply hB.mulVec_injective
   have h := congrArg (fun z => (CFC.sqrt B).mulVec z) hxy
-  simpa only [Matrix.mulVec_mulVec, CFC.sqrt_mul_sqrt_self B hB.posSemidef.nonneg] using h
+  simpa only [Matrix.mulVec_mulVec, CFC.sqrt_mul_sqrt_self B] using h
 
 /-- The derivative of squaring at a positive-definite matrix, as a continuous linear
 equivalence (finite-dimensional, from injectivity). -/
 def sylvesterEquiv {β : PDE.Mat d} (hβ : β.PosDef) : PDE.Mat d ≃L[ℝ] PDE.Mat d :=
   (LinearEquiv.ofInjectiveEndo (sylvester β) (sylvester_injective hβ)).toContinuousLinearEquiv
 
-theorem sylvesterEquiv_apply {β : PDE.Mat d} (hβ : β.PosDef) (X : PDE.Mat d) :
+variable {β : PDE.Mat d} (hβ : β.PosDef)
+
+theorem sylvesterEquiv_apply  (X : PDE.Mat d) :
     sylvesterEquiv hβ X = β * X + X * β := rfl
 
-theorem hasFDerivAt_matrix_sq {β : PDE.Mat d} (hβ : β.PosDef) :
+theorem hasFDerivAt_matrix_sq  :
     HasFDerivAt (fun A : PDE.Mat d => A * A)
       ((sylvesterEquiv hβ : PDE.Mat d ≃L[ℝ] PDE.Mat d) : PDE.Mat d →L[ℝ] PDE.Mat d) β := by
   have h : HasFDerivAt (fun A : PDE.Mat d => A * A) _ β :=
     (hasFDerivAt_id (𝕜 := ℝ) β).mul' (hasFDerivAt_id (𝕜 := ℝ) β)
-  refine h.congr_fderiv ?_
-  ext X : 1
-  simp [sylvesterEquiv_apply]
+  fun_prop
 
 open Filter Topology in
 /-- Smoothness of `p ↦ √(B p)` at a point, for a smooth positive-definite field `B`,
@@ -111,9 +108,9 @@ theorem contDiffAt_sqrt_comp {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ
   have hf' := hasFDerivAt_matrix_sq hβpd
   have hstrict := hf.hasStrictFDerivAt' hf' (by simp)
   set g := hf.localInverse hf' (by simp) with hg
-  have hg_cd : ContDiffAt ℝ (⊤ : ℕ∞) g (β₀ * β₀) := hf.to_localInverse hf' (by simp)
+  have hg_cd : ContDiffAt ℝ _ g _ := hf.to_localInverse hf' _
   rw [hsq] at hg_cd
-  have hcomp : ContDiffAt ℝ (⊤ : ℕ∞) (fun p => g (B p)) p₀ :=
+  have hcomp : ContDiffAt ℝ _ (fun p => g _) p₀ :=
     hg_cd.comp p₀ hB.contDiffAt
   refine hcomp.congr_of_eventuallyEq ?_
   have hcont : ContinuousAt (fun p => CFC.sqrt (B p)) p₀ := by
@@ -126,9 +123,8 @@ theorem contDiffAt_sqrt_comp {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ
   filter_upwards [hev2] with p hp
   have h2 : g (B p) = CFC.sqrt (B p) := by
     have h3 := hp
-    change g (CFC.sqrt (B p) * CFC.sqrt (B p)) = CFC.sqrt (B p) at h3
     rwa [CFC.sqrt_mul_sqrt_self _ (hpd p).posSemidef.nonneg] at h3
-  exact h2.symm
+  simp_all
 
 /-- Entrywise smoothness is smoothness for the `L²`-operator normed structure. -/
 def matrixCLE (d : ℕ) : (Fin d → Fin d → ℝ) ≃L[ℝ] PDE.Mat d :=
@@ -154,16 +150,16 @@ theorem contDiff_sqrt_entry {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ 
     (B : E → PDE.Mat d) (hB : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun p => B p i j))
     (hpd : ∀ p, (B p).PosDef) (i j : Fin d) :
     ContDiff ℝ (⊤ : ℕ∞) (fun p => CFC.sqrt (B p) i j) := by
-  have h := (contDiff_matrix_iff (fun p => CFC.sqrt (B p))).1
+  have h := (contDiff_matrix_iff _).1
     (contDiff_iff_contDiffAt.2 (contDiffAt_sqrt_comp B ((contDiff_matrix_iff B).2 hB) hpd))
-  exact h i j
+  fun_prop
 
 /-- A matrix with `lam • 1 ≤ A` for `0 < lam` is positive definite. -/
 theorem posDef_of_smul_one_le {lam : ℝ} (hlam : 0 < lam) {A : PDE.Mat d}
     (h : lam • (1 : PDE.Mat d) ≤ A) : A.PosDef := by
   have h1 : (lam • (1 : PDE.Mat d)).PosDef := Matrix.PosDef.one.smul hlam
-  have h2 : (A - lam • (1 : PDE.Mat d)).PosSemidef := Matrix.le_iff.1 h
+  have h2 : (A - lam • (1)).PosSemidef := Matrix.le_iff.1 h
   have := h1.add_posSemidef h2
-  simpa using this
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Evolution

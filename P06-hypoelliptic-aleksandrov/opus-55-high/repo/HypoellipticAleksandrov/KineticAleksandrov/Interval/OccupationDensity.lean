@@ -10,7 +10,6 @@ whole-space density to the killed interval occupation measure.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open Set MeasureTheory Filter
 open scoped ENNReal
@@ -23,7 +22,7 @@ theorem exists_real_density_of_le_withDensity {X : Type*} [MeasurableSpace X]
     ∃ g : X → ℝ, Measurable g ∧ (∀ x, 0 ≤ g x) ∧ Integrable g m ∧
       (∀ᵐ x ∂m, g x ≤ f x) ∧
       (∀ φ : X → ℝ, (∫ x, φ x * g x ∂m) = ∫ x, φ x ∂ν) := by
-  have hac : ν ≪ m := hle.absolutelyContinuous.trans (withDensity_absolutelyContinuous _ _)
+  have hac  := hle.absolutelyContinuous.trans (withDensity_absolutelyContinuous _ _)
   let g := fun x => (ν.rnDeriv m x).toReal
   have hrle : ∀ᵐ x ∂m, ν.rnDeriv m x ≤ ENNReal.ofReal (f x) := by
     apply ae_le_of_forall_setLIntegral_le_of_sigmaFinite₀
@@ -35,7 +34,7 @@ theorem exists_real_density_of_le_withDensity {X : Type*} [MeasurableSpace X]
     exact h
   refine ⟨g, (Measure.measurable_rnDeriv ν m).ennreal_toReal,
     fun _ => ENNReal.toReal_nonneg, ?_, ?_, ?_⟩
-  · simpa only [integrableOn_univ] using
+  · simpa using
       Measure.integrableOn_toReal_rnDeriv (μ := ν) (ν := m) (measure_ne_top ν univ)
   · filter_upwards [hrle] with x hx
     exact (ENNReal.toReal_mono ENNReal.ofReal_ne_top hx).trans_eq

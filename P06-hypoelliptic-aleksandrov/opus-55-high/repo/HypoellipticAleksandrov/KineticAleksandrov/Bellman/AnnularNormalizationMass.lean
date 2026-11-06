@@ -9,7 +9,6 @@ import Mathlib.Tactic
 /-! # Strictly positive annular normalization of homogeneous Radon measures -/
 
 @[expose] public section
-noncomputable section
 open Set MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 

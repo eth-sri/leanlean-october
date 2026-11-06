@@ -6,7 +6,6 @@ import HypoellipticAleksandrov.KineticAleksandrov.Evolution.DomainDominationMeas
 /-! # Exact finite-time restrictions of the unique infinite-horizon exit measure -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo TheoremA Evolution
@@ -17,7 +16,7 @@ theorem physical_restrict_eq_of_early_probes {μ ν : Measure Point}
     (hprobe : ∀ f : exitProbeSubmodule, tsupport f.1 ⊆ {x | timeCoord 1 x < R} →
       (∫ p, exitProbePhysical f p ∂μ) = ∫ p, exitProbePhysical f p ∂ν) :
     μ.restrict {p | p.time < R} = ν.restrict {p | p.time < R} := by
-  let U : Set (EvolutionVec 1) := {x | timeCoord 1 x < R}
+  let U  := {x | timeCoord 1 x < R}
   have hU : IsOpen U := isOpen_lt (timeCoord 1).continuous continuous_const
   let a := (μ.map reconstructionPhysicalHomeomorph.symm).restrict U
   let b := (ν.map reconstructionPhysicalHomeomorph.symm).restrict U
@@ -35,33 +34,23 @@ theorem physical_restrict_eq_of_early_probes {μ ν : Measure Point}
         (hc : HasCompactSupport f) (hs : tsupport f ⊆ U) :
         (∫ x, f x ∂a) = ∫ x, f x ∂b := by
       let F : exitProbeSubmodule := ⟨f, hf, hc⟩
-      change (∫ x, F.1 x ∂a) = ∫ x, F.1 x ∂b
       rw [hin μ F hs, hin ν F hs]
-      exact hprobe F hs
+      grind
     apply le_antisymm
     · apply measure_le_of_smooth_integral_le hU
         (by simp only [a, Measure.restrict_restrict hU.measurableSet, inter_self])
-      intro f hf hc hs _
-      exact (htest f hf hc hs).le
+      simp_all
     · apply measure_le_of_smooth_integral_le hU
         (by simp only [b, Measure.restrict_restrict hU.measurableSet, inter_self])
-      intro f hf hc hs _
-      exact (htest f hf hc hs).symm.le
+      simp_all
   have hmap (ρ : Measure Point) :
       ((ρ.map reconstructionPhysicalHomeomorph.symm).restrict U).map
         reconstructionPhysicalHomeomorph = ρ.restrict {p | p.time < R} := by
     rw [Measure.restrict_map reconstructionPhysicalHomeomorph.symm.continuous.measurable
       hU.measurableSet, Measure.map_map reconstructionPhysicalHomeomorph.continuous.measurable
         reconstructionPhysicalHomeomorph.symm.continuous.measurable]
-    have hid : reconstructionPhysicalHomeomorph ∘ reconstructionPhysicalHomeomorph.symm =
-        (id : Point → Point) := funext reconstructionPhysicalHomeomorph.apply_symm_apply
-    rw [hid, Measure.map_id]
-    rfl
-  have hh := congrArg (fun ρ : Measure (EvolutionVec 1) =>
-    ρ.map reconstructionPhysicalHomeomorph) heq
-  change a.map reconstructionPhysicalHomeomorph = b.map reconstructionPhysicalHomeomorph at hh
-  rw [hmap μ, hmap ν] at hh
-  exact hh
+    aesop
+  grind
 
 /-- The unique infinite exit measure has exactly the consistent finite early restrictions. -/
 theorem stripInfiniteExit_restrict_finite
@@ -78,9 +67,9 @@ theorem stripInfiniteExit_restrict_finite
   have hfinite := stripExitOfRealization_probe_integral hH hlam hLam A H _
     (stripEvolution_spec hH hLE hlam hLam A H) T (stripPoleFinite H e T ht) f
   change (∫ p, exitProbePhysical f p
-    ∂stripExit hH hLE hlam hLam A H T (stripPoleFinite H e T ht)) =
-      exitProbePhysical f e.1 + ∫ p, forwardScalarOperator A.a (exitProbePhysical f) p
-        ∂stripGreen hH hLE hlam hLam A H T (stripPoleFinite H e T ht) at hfinite
+    ∂stripExit hH hLE hlam hLam A H T _) =
+      exitProbePhysical f e.1 + ∫ p, forwardScalarOperator A.a _ p
+        ∂stripGreen hH hLE hlam hLam A H T _ at hfinite
   rw [hfinite, infinite_probe_source_integral hH hLE hlam hLam A H e T ht R hRT f hs]
   rfl
 

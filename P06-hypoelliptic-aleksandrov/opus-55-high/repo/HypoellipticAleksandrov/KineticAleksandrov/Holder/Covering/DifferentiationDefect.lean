@@ -28,6 +28,6 @@ theorem measure_density_defect {d : ℕ} {E C : Set (KineticPoint d)}
   apply (ENNReal.toReal_le_toReal
     (ENNReal.mul_ne_top ENNReal.ofReal_ne_top hC) hD).mp
   rw [ENNReal.toReal_mul, ENNReal.toReal_ofReal heta]
-  linarith only [hdef, hsum]
+  linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Covering

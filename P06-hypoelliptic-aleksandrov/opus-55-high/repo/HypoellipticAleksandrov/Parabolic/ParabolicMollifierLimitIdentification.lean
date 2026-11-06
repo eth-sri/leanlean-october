@@ -13,7 +13,6 @@ measurable carrier.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -34,22 +33,15 @@ theorem ae_eq_limit_toFun_on_of_pointwiseLimit
         parabolicConvolution g.toFun (parabolicMollifier d n) z)
         atTop (nhds (q z))) :
     q =ᵐ[timeVelocityVolumeOn K] g.toFun := by
-  let p : ENNReal := parabolicExponent d
-  have hpOne : (1 : ENNReal) ≤ p := by
-    simpa only [p, Pi.sub_def] using (by simp [parabolicExponent] :
-      (1 : ENNReal) ≤ parabolicExponent d)
+  let p  := parabolicExponent d
+  have hpOne : (1) ≤ p := by
+    simpa only [p, Pi.sub_def] using (by simp [parabolicExponent])
   have hpTop : p ≠ ∞ := by
-    simpa only [p, Pi.sub_def] using (by simp [parabolicExponent] :
-      parabolicExponent d ≠ ∞)
-  have hpNeZero : p ≠ 0 :=
+    simpa only [p, Pi.sub_def] using (by simp [parabolicExponent])
+  have hpNeZero  :=
     (zero_lt_one.trans_le hpOne).ne.symm
-  have hgMem : MemLp g.toFun p (volume : Measure (TimeVelocity d)) := by
-    have h := g.memLp
-    change MemLp g.toFun p
-      ((volume : Measure (TimeVelocity d)).restrict Set.univ) at h
-    simpa only [Measure.restrict_univ] using h
-  have hInMeasure : TendstoInMeasure (volume : Measure (TimeVelocity d))
-      (fun n z => parabolicConvolution g.toFun (parabolicMollifier d n) z)
+  have hInMeasure : TendstoInMeasure _
+      (fun n z => parabolicConvolution g.toFun _ z)
       atTop g.toFun :=
     tendstoInMeasure_of_tendsto_eLpNorm hpNeZero
       (by

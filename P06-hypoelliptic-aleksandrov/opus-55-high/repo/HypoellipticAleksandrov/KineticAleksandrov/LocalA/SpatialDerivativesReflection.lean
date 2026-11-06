@@ -7,12 +7,13 @@ import HypoellipticAleksandrov.KineticAleksandrov.Maximum.BorelSource
 /-! # Reflection preserves spatial derivative norms and the literal cylinder oscillation -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic SectionTwo
 
+variable {d : ℕ} (u : KineticPoint d → ℝ) (P : KineticPoint d)
+
 /-- The backward source data become exactly the local forward homogeneous solution class. -/
-theorem spatial_reflected_data {d : ℕ} {lam Lam : ℝ}
+theorem spatial_reflected_data  {lam Lam : ℝ}
     (A : CoefficientField d) (hA : IsSectionTwoCoefficient lam Lam A)
     (P₀ : KineticPoint d) {R : ℝ} (hR : 0 < R) (u : KineticPoint d → ℝ)
     (hc : ContinuousOn u (closure (backwardCylinder P₀ R)))
@@ -26,7 +27,6 @@ theorem spatial_reflected_data {d : ℕ} {lam Lam : ℝ}
       ∀ Q ∈ forwardCylinder Z₀ R hR,
         forwardKineticOperator (ofTimeVelocityCoefficient (kineticReflectedCoefficient A)) U Q =
           0 := by
-  dsimp only
   have heq := spatial_backward_equation_pointwise (isOpen_backwardCylinder P₀ R hR)
     A (sectionTwo_coefficient_smooth hA) u hs he
   refine ⟨?_, ?_, ?_⟩
@@ -35,12 +35,12 @@ theorem spatial_reflected_data {d : ℕ} {lam Lam : ℝ}
   · rw [← TheoremA.preimage_backwardCylinder_reflection P₀ R hR]
     exact isKineticC112On_kineticReflection u _ hs
   · intro Q hQ
-    rw [reflectedKineticOperator_reflection, heq (kineticReflection Q) ?_, neg_zero]
-    rw [← TheoremA.preimage_backwardCylinder_reflection P₀ R hR] at hQ
+    rw [reflectedKineticOperator_reflection, heq _, neg_zero]
+    rw [← TheoremA.preimage_backwardCylinder_reflection] at hQ
     exact hQ
 
 /-- Reflection preserves the raw oscillation on the exact pair of cylinders. -/
-theorem spatial_oscillation_reflection {d : ℕ} (P₀ : KineticPoint d)
+theorem spatial_oscillation_reflection  (P₀ : KineticPoint d)
     {R : ℝ} (hR : 0 < R) (u : KineticPoint d → ℝ) :
     Holder.oscillationOn (u ∘ kineticReflection)
         (forwardCylinder (kineticReflection P₀) R hR) =
@@ -51,15 +51,14 @@ theorem spatial_oscillation_reflection {d : ℕ} (P₀ : KineticPoint d)
   simp only [Holder.oscillationOn, hi]
 
 /-- The original physical position slice is the reflected slice composed with negation. -/
-theorem spatial_slice_reflection {d : ℕ} (u : KineticPoint d → ℝ) (P : KineticPoint d) :
+theorem spatial_slice_reflection  :
     physicalPositionSlice u P =
       physicalPositionSlice (u ∘ kineticReflection) (kineticReflection P) ∘ Neg.neg := by
   funext x
   simp only [physicalPositionSlice, Function.comp_apply, kineticReflection, neg_neg]
 
 /-- The stipulated spatial derivative norm is unchanged by reflection, at every order. -/
-theorem spatial_derivative_norm_reflection {d : ℕ} (u : KineticPoint d → ℝ)
-    (P : KineticPoint d) (m : ℕ) :
+theorem spatial_derivative_norm_reflection  (m : ℕ) :
     ‖iteratedFDeriv ℝ m (physicalPositionSlice u P) P.position‖ =
       ‖iteratedFDeriv ℝ m (physicalPositionSlice (u ∘ kineticReflection)
         (kineticReflection P)) (kineticReflection P).position‖ := by

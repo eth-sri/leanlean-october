@@ -16,7 +16,6 @@ to `KineticPoint` is used only for the topological closure in the boundary.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -30,11 +29,13 @@ def relativeVelocity {d : ℕ} (P₀ P : KineticPoint d) : PDE.Vec d :=
 def relativePosition {d : ℕ} (P₀ P : KineticPoint d) : PDE.Vec d :=
   P.position - P₀.position - (P.time - P₀.time) • P₀.velocity
 
-@[simp] theorem relativeVelocity_self {d : ℕ} (P₀ : KineticPoint d) :
+variable {d : ℕ} (P₀ : KineticPoint d)
+
+@[simp] theorem relativeVelocity_self  :
     relativeVelocity P₀ P₀ = 0 := by
   simp [relativeVelocity]
 
-@[simp] theorem relativePosition_self {d : ℕ} (P₀ : KineticPoint d) :
+@[simp] theorem relativePosition_self  :
     relativePosition P₀ P₀ = 0 := by
   simp [relativePosition]
 
@@ -85,34 +86,34 @@ def kineticAffine {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) :
         (R ^ 2 * P.time) • P₀.velocity
       velocity := P₀.velocity + R • P.velocity }
 
+variable {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (P : KineticPoint d)
+
 @[simp] theorem kineticAffine_time
-    {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (P : KineticPoint d) :
+     :
     (kineticAffine P₀ R P).time = P₀.time + R ^ 2 * P.time := by
   rfl
 
 @[simp] theorem kineticAffine_position
-    {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (P : KineticPoint d) :
+     :
     (kineticAffine P₀ R P).position =
       P₀.position + R ^ 3 • P.position +
         (R ^ 2 * P.time) • P₀.velocity := by
   rfl
 
 @[simp] theorem kineticAffine_velocity
-    {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (P : KineticPoint d) :
+     :
     (kineticAffine P₀ R P).velocity = P₀.velocity + R • P.velocity := by
   rfl
 
 @[simp] theorem relativeVelocity_kineticAffine
-    {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (P : KineticPoint d) :
+     :
     relativeVelocity P₀ (kineticAffine P₀ R P) = R • P.velocity := by
-  ext i
-  simp [relativeVelocity, kineticAffine]
+  simp [relativeVelocity]
 
 @[simp] theorem relativePosition_kineticAffine
-    {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (P : KineticPoint d) :
+     :
     relativePosition P₀ (kineticAffine P₀ R P) = R ^ 3 • P.position := by
-  ext i
-  simp [relativePosition, kineticAffine]
+  simp [relativePosition]
   ring
 
 /-- The source kinetic quasi-distance, using explicit Euclidean vector norms. -/

@@ -12,7 +12,6 @@ Local convolution and a smooth cutoff give actual ambient smooth compact approxi
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Set Metric
 
@@ -39,7 +38,7 @@ theorem exists_smooth_compact_boundary_approx
     tsupport_mul_subset_left.trans hχU, ?_⟩
   intro x hx
   change |χ x * g x - w x| < ε
-  rw [hχK x hx, one_mul, ← heq x hx, ← Real.dist_eq]
+  rw [hχK x hx, one_mul, ← heq x hx]
   apply (hgc x (ε / 2) ?_).trans_lt (half_lt_self hε)
   intro y hy
   rw [mem_ball, lt_min_iff] at hy

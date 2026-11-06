@@ -17,13 +17,14 @@ and gradient representatives.
 open Filter MeasureTheory Set Topology
 open scoped BigOperators ENNReal RealInnerProductSpace Matrix.Norms.Elementwise MatrixOrder
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
+variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+
 /-- A joint reverse-time value representative expands the fixed-time mass pairing. -/
 theorem reverseTime_raw_mass_expand_ae
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (T : ℝ) (hΩ : IsOpen Ω)
     (u : ReverseTimeL2V hΩ T)
     (U : TimeVelocity d → ℝ)
@@ -37,16 +38,14 @@ theorem reverseTime_raw_mass_expand_ae
         (valueCLM hΩ (u τ)) =
       ∫ y, U (τ, y) * ψ y ∂PDE.volumeOn Ω := by
   filter_upwards [hUslice] with τ hU
-  rw [L2.inner_def]
   apply integral_congr_ae
   filter_upwards
     [ae_valueCLM_smoothCompactlySupportedH1HilbertGraph hΩ ψ, hU] with y hψ hy
-  rw [hψ, ← hy]
-  simp only [RCLike.inner_apply, conj_trivial]
+  simp_all
 
 /-- The reverse-time negative source expands to the literal negative source integral. -/
 theorem reverseTime_raw_source_expand
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (F : ℝ → PDE.Vec d → ℝ)
@@ -58,11 +57,11 @@ theorem reverseTime_raw_source_expand
     reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ
         (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ ψ) =
       -(∫ y, reverseTimeScalarCoefficient r₁ F τ y * ψ y ∂PDE.volumeOn Ω) := by
-  have hτIcc : τ ∈ Set.Icc 0 (r₁ - r₀) :=
+  have hτIcc : τ ∈ Set.Icc 0 _ :=
     ⟨le_of_lt hτ.1, le_of_lt hτ.2⟩
   rw [reverseTimeNegativeSourceRaw_eq_sourceFunctional_of_mem_Icc
       r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ hτIcc,
-    reverseTimeSourceFunctional_apply, L2.inner_def]
+    reverseTimeSourceFunctional_apply]
   congr 1
   apply integral_congr_ae
   filter_upwards
@@ -70,12 +69,11 @@ theorem reverseTime_raw_source_expand
       (reverseTimeSourceSlice_memLp_of_smoothOnNeighborhood
         r₀ r₁ hΩ hΩbounded F hFSmooth τ hτIcc),
       ae_valueCLM_smoothCompactlySupportedH1HilbertGraph hΩ ψ] with y hF hψ
-  rw [hψ, hF]
-  simp only [RCLike.inner_apply, conj_trivial, reverseTimeScalarCoefficient_apply]
+  simp_all
 
 /-- Joint reverse-time value and gradient representatives expand the spatial form. -/
 theorem reverseTime_raw_spatialForm_expand_ae
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (T r₁ : ℝ) (hΩ : IsOpen Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
@@ -104,27 +102,26 @@ theorem reverseTime_raw_spatialForm_expand_ae
   rw [reverseTimeSpatialForm_apply]
   have hprincipal (i j : Fin d) :
       (∫ y in Ω, a (r₁ - τ) y i j *
-          (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j
+          (PDE.hilbertVectorLpCoord Ω _ j
             (gradientCLM hΩ (u τ))) y *
-          (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
+          (PDE.hilbertVectorLpCoord Ω _ i
             (gradientCLM hΩ
               (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ ψ))) y) =
         ∫ y, reverseTimeCoefficient r₁ a τ y i j * G j (τ, y) *
           ψ.partialDeriv i y ∂PDE.volumeOn Ω := by
     apply integral_congr_ae
     filter_upwards
-      [PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j
+      [PDE.coeFn_hilbertVectorLpCoord Ω _ j
         (gradientCLM hΩ (u τ)), hG j,
-       PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
+       PDE.coeFn_hilbertVectorLpCoord Ω _ i
         (gradientCLM hΩ
           (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ ψ)),
        ae_gradientCoordCLM_smoothCompactlySupportedH1HilbertGraph hΩ ψ i] with
         y hGj hGyi hψi hψ
-    rw [hGj, ← hGyi, hψi, hψ]
-    simp only [reverseTimeCoefficient_apply]
+    simp_all
   have hdrift (j : Fin d) :
       (∫ y in Ω, reverseTimeDivergenceDrift r₁ a b τ y j *
-          (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j
+          (PDE.hilbertVectorLpCoord Ω _ j
             (gradientCLM hΩ (u τ))) y *
           (valueCLM hΩ
             (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ ψ)) y) =
@@ -132,10 +129,10 @@ theorem reverseTime_raw_spatialForm_expand_ae
           ∂PDE.volumeOn Ω := by
     apply integral_congr_ae
     filter_upwards
-      [PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j
+      [PDE.coeFn_hilbertVectorLpCoord Ω _ j
         (gradientCLM hΩ (u τ)), hG j,
        ae_valueCLM_smoothCompactlySupportedH1HilbertGraph hΩ ψ] with y hGj hGyi hψ
-    rw [hGj, ← hGyi, hψ]
+    simp_all
   have hscalar :
       (∫ y in Ω, reverseTimeScalarCoefficient r₁ c τ y *
           (valueCLM hΩ (u τ)) y *
@@ -146,7 +143,7 @@ theorem reverseTime_raw_spatialForm_expand_ae
     apply integral_congr_ae
     filter_upwards
       [hU, ae_valueCLM_smoothCompactlySupportedH1HilbertGraph hΩ ψ] with y hUyi hψ
-    rw [← hUyi, hψ]
-  simp_rw [hprincipal, hdrift, hscalar]
+    simp_all
+  simp_all
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

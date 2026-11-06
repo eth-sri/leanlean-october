@@ -18,7 +18,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic
 
 /-- Classical derivative in one native spatial coordinate. -/
-noncomputable def spatialPartial {d : ℕ} (i : Fin d)
+def spatialPartial {d : ℕ} (i : Fin d)
     (f : PDE.Vec d → ℝ) (y : PDE.Vec d) : ℝ :=
   (fderiv ℝ f y) (PDE.basisVec i)
 
@@ -34,7 +34,7 @@ theorem ContDiffOn.spatialPartial
   exact ContDiffOn.clm_apply hdf contDiffOn_const
 
 /-- Ordered classical second derivative `∂_i(∂_j q)`. -/
-noncomputable def spatialSecond {d : ℕ} (q : PDE.Vec d → ℝ)
+def spatialSecond {d : ℕ} (q : PDE.Vec d → ℝ)
     (j i : Fin d) (y : PDE.Vec d) : ℝ :=
   spatialPartial i (spatialPartial j q) y
 

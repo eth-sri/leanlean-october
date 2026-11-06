@@ -21,20 +21,21 @@ def sourceBallBarrierForcing {d : ℕ} (lam M : ℝ) (A : CoefficientField d)
     (z : TimeVelocity d) : ℝ :=
   -(2 * M * (A z.1 z.2).trace) / (2 * (d : ℝ) * lam)
 
+variable {d : ℕ}
+
 /-- The trace forcing is smooth for smooth coefficients. -/
-theorem contDiff_sourceBallBarrierForcing {d : ℕ} (lam M : ℝ)
+theorem contDiff_sourceBallBarrierForcing  (lam M : ℝ)
     (A : CoefficientField d) (hA : IsSmoothCoefficient A) :
     ContDiff ℝ (⊤ : ℕ∞) (sourceBallBarrierForcing lam M A) := by
   have htr : ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => (A z.1 z.2).trace) := by
-    unfold Matrix.trace Matrix.diag
     apply ContDiff.sum
     intro i _
     exact (contDiff_apply ℝ ℝ i).comp
-      ((contDiff_apply ℝ (Fin d → ℝ) i).comp hA)
+      ((contDiff_apply ℝ _ i).comp hA)
   exact (contDiff_const.mul htr).neg.div_const _
 
 /-- The ball barrier has an actual smooth H10 realization with its literal trace forcing. -/
-theorem exists_h10_sourceBallBarrier {d : ℕ} (v₀ : PDE.Vec d) (r lam M : ℝ)
+theorem exists_h10_sourceBallBarrier  (v₀ : PDE.Vec d) (r lam M : ℝ)
     (hr : 0 < r) (hlam : 0 < lam) (hM : 0 ≤ M) (A : CoefficientField d) :
     ∃ q : PDE.H10Function (PDE.euclideanBall v₀ r),
       ContDiff ℝ (⊤ : ℕ∞) q.toH1Function.toFun ∧
@@ -52,7 +53,7 @@ theorem exists_h10_sourceBallBarrier {d : ℕ} (v₀ : PDE.Vec d) (r lam M : ℝ
   refine ⟨q, hq, hqe, ?_⟩
   intro z hz
   rw [stationary_scalarOperator_eqOn (PDE.isOpen_euclideanBall v₀ r)
-    q.toH1Function.toFun (sourceBallBarrier v₀ r lam M)
+    q.toH1Function.toFun _
     (hqe.mono subset_closure) A z hz, scalarOperator_sourceBallBarrier]
   rfl
 

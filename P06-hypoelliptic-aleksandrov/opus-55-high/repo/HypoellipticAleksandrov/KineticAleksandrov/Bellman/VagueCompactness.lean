@@ -29,7 +29,7 @@ theorem bellman_radon_pair_subsequence (mu eta : ℕ → Measure BellmanPuncture
       IsBellmanVagueLimit (fun n => eta (k n)) etainf := by
   let : LocallyCompactSpace BellmanPuncturedPlane :=
     isOpen_compl_singleton.locallyCompactSpace
-  let m (b : Bool) (n : ℕ) : Measure BellmanPuncturedPlane := if b then eta n else mu n
+  let m (b : Bool) (n : ℕ)  := if b then eta n else mu n
   let (b : Bool) (n : ℕ) : IsFiniteMeasureOnCompacts (m b n) := by
     cases b
     · exact (hm n).1
@@ -38,18 +38,15 @@ theorem bellman_radon_pair_subsequence (mu eta : ℕ → Measure BellmanPuncture
       ∃ C : ℝ≥0, ∀ n, m b n K ≤ C := by
     obtain ⟨C, hC⟩ := hb K hK
     refine ⟨C, ?_⟩
-    intro n
-    cases b
-    · exact (hC n).1
-    · exact (hC n).2
+    grind
   obtain ⟨k, hk, ht⟩ := bellman_radon_family_subsequence m hbound
   obtain ⟨muinf, hmf, hmr, hmt⟩ := ht false
   obtain ⟨etainf, hef, her, het⟩ := ht true
   refine ⟨k, hk, muinf, etainf, ⟨hmf, hmr⟩, ⟨hef, her⟩, ?_, ?_⟩
   · intro f hf hfc
-    exact hmt (⟨⟨f, hf⟩, hfc⟩ : C_c(BellmanPuncturedPlane, ℝ))
+    exact hmt ⟨⟨f, hf⟩, hfc⟩
   · intro f hf hfc
-    exact het (⟨⟨f, hf⟩, hfc⟩ : C_c(BellmanPuncturedPlane, ℝ))
+    exact het ⟨⟨f, hf⟩, hfc⟩
 
 /-- Bounded-degree homogeneous pairs have annular normalization and a simultaneous Radon limit. -/
 theorem homogeneous_pairs_subsequence (R : ℝ) (hR : 1 ≤ R)

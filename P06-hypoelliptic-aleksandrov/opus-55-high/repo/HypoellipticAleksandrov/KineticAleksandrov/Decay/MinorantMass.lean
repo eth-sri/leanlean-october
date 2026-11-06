@@ -13,7 +13,6 @@ positive mass independent of the center, radius, terminal time and coefficients.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 
@@ -37,12 +36,10 @@ theorem minorant_mass_floor (d : ℕ) (hd : 1 ≤ d)
           P K (PDE.isOpen_euclideanBall v0 R).measurableSet qlate
             (PDE.euclideanBall v0 R) := by
   obtain ⟨N, hN, _hchoice, hc⟩ := exists_retention_barrier_order d hd lam Lam hlam hlamLam
-  let Cstar : ℝ := 2 * N * d * Lam
+  let Cstar  := 2 * N * d * Lam
   have hLam : 0 < Lam := hlam.trans_le hlamLam
-  have hNp : 0 < (N : ℝ) := by exact_mod_cast (show 0 < N by omega)
-  have hdp : 0 < (d : ℝ) := by exact_mod_cast hd
-  have hC : 0 < Cstar := by dsimp [Cstar]; positivity
-  refine ⟨Cstar, Real.exp (-Cstar / 9), hC, rfl, Real.exp_pos _, ?_⟩
+  have hC : 0 < Cstar := by positivity
+  refine ⟨Cstar, Real.exp _, hC, rfl, Real.exp_pos _, ?_⟩
   intro B hB v0 ρ T R hρ hR K hpar qlate hql
   subst R
   have hΩ := PDE.isOpen_euclideanBall v0 (4 * ρ)
@@ -53,49 +50,44 @@ theorem minorant_mass_floor (d : ℕ) (hd : 1 ≤ d)
     exists_smooth_cutoff hcompact hΩ hsub
   obtain ⟨V, hV, -, hVeval⟩ := exists_scalar_probe hΩ.measurableSet B K hpar
     φ hφ hφc hφsupp T
-  let φ' : PDE.Vec d → ℝ := fun y => φ (parabolicAffine v0 ρ y)
-  have hφ' : ContDiff ℝ (⊤ : ℕ∞) φ' := hφ.comp (contDiff_parabolicAffine v0 ρ)
+  let φ'  := fun y => φ (parabolicAffine v0 ρ y)
+  have hφ' : ContDiff ℝ _ φ' := hφ.comp (contDiff_parabolicAffine v0 ρ)
   have hc' : HasCompactSupport φ' := hφc.comp_homeomorph (parabolicAffineHomeo v0 hρ)
   have hV0 : ParabolicProbe.IsClassicalScalarTerminalSolution
       (PDE.euclideanBall v0 (4 * ρ)) stationary (zIndependentCoefficient B)
       (T + ρ ^ 2 * 0) (smoothTestBorel φ hφ.continuous hφc) V := by
-    simpa only [mul_zero, add_zero] using hV
+    simp_all
   have hW := isClassicalScalarTerminalSolution_comp_minorantAffine hΩ B T v0 hρ
     (parabolicAffine_preimage_ball v0 hρ).symm 0
-    (smoothTestBorel φ hφ.continuous hφc) (smoothTestBorel φ' hφ'.continuous hc')
+    _ (smoothTestBorel φ' hφ'.continuous hc')
     (fun _ => rfl) hV0
   have hdom : ∀ y : PDE.Vec d, barrier N 3 y ≤
       smoothTestBorel φ' hφ'.continuous hc' y := by
     intro y
-    change barrier N 3 y ≤ φ (parabolicAffine v0 ρ y)
+    change barrier N 3 y ≤ φ _
     by_cases hy : y ∈ PDE.euclideanBall 0 3
     · have hyc : parabolicAffine v0 ρ y ∈ PDE.euclideanClosedBall v0 (3 * ρ) := by
         change PDE.euclideanSqDist (v0 + ρ • y) v0 ≤ (3 * ρ) ^ 2
         rw [add_comm, PDE.euclideanSqDist_affine_center]
-        change PDE.vecNormSq (y - 0) < 3 ^ 2 at hy
+        change PDE.vecNormSq _ < 3 ^ 2 at hy
         rw [sub_zero] at hy
         simp only [PDE.euclideanSqDist, sub_zero]
         nlinarith [sq_pos_of_pos hρ]
       rw [hφone _ hyc]
       exact ((retention_polynomial_barrier (d := d) hN 3 (by norm_num)).2.1 y).2
     · rw [((retention_polynomial_barrier hN 3 (by norm_num)).2.2.2.2 y hy).1]
-      exact (hφbound _).1
+      simp_all
   have hfloor := minorant_scalar_barrier_floor hN lam Lam hlam hlamLam hc
-    (normalizedParabolicCoefficient B T ρ v0)
+    _
     (normalizedParabolicCoefficient_sectionTwo lam Lam B hB T v0 ρ hρ)
     _ _ hW hdom
   have hpoint : minorantAffine T ρ v0 (-1, 0) = (T - ρ ^ 2, v0) := by
-    simp [minorantAffine, scalarAffine, sub_eq_add_neg]
-  change Real.exp (-Cstar / 9) ≤ V (minorantAffine T ρ v0 (-1, 0)) at hfloor
+    simp [scalarAffine, sub_eq_add_neg]
   rw [hpoint] at hfloor
   have hv0 : v0 ∈ movingDomain (PDE.euclideanBall v0 (4 * ρ)) stationary (T - ρ ^ 2) := by
-    rw [movingDomain_stationary]
-    change PDE.vecNormSq (v0 - v0) < (4 * ρ) ^ 2
-    simp only [sub_self]
-    simpa [PDE.vecNormSq, PDE.vecDot] using
-      sq_pos_of_pos (show 0 < 4 * ρ by positivity)
-  have heval := hVeval (T - ρ ^ 2) (by nlinarith [sq_nonneg ρ]) v0 hv0
-  have hq : scalarQuery (T - ρ ^ 2) T (by nlinarith [sq_nonneg ρ]) v0 hv0 = qlate :=
+    grind
+  have heval := hVeval _ (by grind) v0 hv0
+  have hq : scalarQuery _ T (by grind) v0 hv0 = qlate :=
     Subtype.ext hql.symm
   rw [hq] at heval
   rw [heval] at hfloor

@@ -7,7 +7,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.AlternatingE
 /-! # The initial waiting split for the actual physical visit recursion -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
@@ -31,17 +30,16 @@ theorem visitInitial_nested
       visitInitialExit P (visitEntranceInterval c) (finiteUnionExitSet J.toFiniteUnion s T) EW +
         visitUnionExitKernel hH hLE hlam hLam A J.toFiniteUnion s T ∘ₘ gamma := by
   classical
-  dsimp only
   by_cases hi : P.velocity 0 ∈ closure (visitEntranceInterval c).carrier
   · simp only [visitEntrancePiece, visitGamma, visitInitial, visitInitialGreen,
       visitInitialExit, ite_eq_left hi, visitKernel_comp_dirac, zero_add, and_self]
   · have hsub : (visitWaitingUnion c J).carrier ⊆ J.toFiniteUnion.carrier := by
       rw [visitWaitingUnion_carrier, Interval.toFiniteUnion_carrier]
-      exact sdiff_subset
+      simp
     have hpw : P ∈ visitPoleSet (visitWaitingUnion c J) s T := by
       refine ⟨hP.1, hP.2.1, ?_⟩
       rw [visitWaitingUnion_carrier]
-      exact ⟨hP.2.2, hi⟩
+      aesop
     have hmu : ∀ᵐ p ∂Measure.dirac P, p ∈ visitPoleSet (visitWaitingUnion c J) s T :=
       (ae_dirac_iff (measurableSet_visitPoleSet _ s T)).mpr hpw
     have h := visitUnion_nested hH hLE hlam hLam A (visitWaitingUnion c J) J.toFiniteUnion

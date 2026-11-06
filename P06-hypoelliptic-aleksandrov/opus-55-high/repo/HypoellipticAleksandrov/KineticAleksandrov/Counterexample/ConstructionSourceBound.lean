@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Construc
 /-! # Positive extended sources are controlled by the literal stationary shell source -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Set
 
@@ -29,9 +28,7 @@ theorem construction_extended_positive_source_le_shell_ae {d : ℕ} (hd : 1 ≤ 
   filter_upwards [he, hb, hn] with q hq hbq hnq
   rw [hq]
   by_cases hprof : q ∈ {y | profileFunction h y < 1}
-  · rw [indicator_of_mem hprof, indicator_of_mem hprof]
-    rw [hrate]
-    exact max_le hbq hnq
-  · rw [indicator_of_notMem hprof, indicator_of_notMem hprof, max_self]
+  · simp_all
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

@@ -6,7 +6,6 @@ import Mathlib.Analysis.SpecialFunctions.Gaussian.GaussianIntegral
 /-! # Integrating killed slab bounds over all positive times -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open Set MeasureTheory
 open HypoellipticAleksandrov.KineticAleksandrov.Green
@@ -17,10 +16,10 @@ theorem killed_power_moment_finite {δ k : ℝ} (hδ : 0 < δ) (hk : 0 < k) :
     (∫⁻ T in Ioi (0 : ℝ), ENNReal.ofReal
       (T ^ (δ - 1) * Real.exp (-k * T))) < ⊤ := by
   have hi : IntegrableOn (fun T : ℝ => T ^ (δ - 1) * Real.exp (-k * T)) (Ioi 0) := by
-    simpa only [Real.rpow_one] using integrableOn_rpow_mul_exp_neg_mul_rpow
+    simpa using integrableOn_rpow_mul_exp_neg_mul_rpow
       (p := 1) (s := δ - 1) (by linarith) (by norm_num) hk
   rw [← ofReal_integral_eq_lintegral_ofReal hi]
-  · exact ENNReal.ofReal_lt_top
+  · simp
   · filter_upwards [self_mem_ae_restrict measurableSet_Ioi] with T hT
     exact mul_nonneg (Real.rpow_nonneg hT.le _) (Real.exp_pos _).le
 
@@ -53,7 +52,7 @@ theorem log_mul_measure_univ_le {X : Type*} [MeasurableSpace X]
       ∫⁻ T in Ioi (0 : ℝ), ENNReal.ofReal T⁻¹ * ν {x | T < h x ∧ h x < 2 * T} := by
   have hm : Monotone (fun S : ℝ => {x | h x < S}) := by
     intro S R hSR x hx
-    exact hx.trans_le hSR
+    grind
   have hu : (⋃ S : ℝ, {x | h x < S}) = univ := by
     ext x
     simp only [mem_iUnion, mem_ofPred_eq, mem_univ, iff_true]

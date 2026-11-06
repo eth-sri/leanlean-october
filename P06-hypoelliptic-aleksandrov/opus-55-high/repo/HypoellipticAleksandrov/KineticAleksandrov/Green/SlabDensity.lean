@@ -41,11 +41,7 @@ section Numerics
 variable {d : ℕ} {q : ℝ}
 
 lemma slab_d_pos (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) : 0 < (d : ℝ) := by
-  rcases Nat.eq_zero_or_pos d with h | h
-  · subst h
-    simp at hqd
-    linarith
-  · exact_mod_cast h
+  grind
 
 lemma slabGamma0_eq {d : ℕ} (hd : 0 < (d : ℝ)) : slabGamma0 d = 1 + 1 / (d : ℝ) := by
   unfold slabGamma0
@@ -56,7 +52,7 @@ lemma slab_q_lt_gamma (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) :
   have hd := slab_d_pos hq hqd
   unfold slabGamma
   rw [slabGamma0_eq hd]
-  constructor <;> linarith [hqd]
+  grind
 
 lemma slab_gamma_one_lt (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) : 1 < slabGamma d q :=
   hq.trans (slab_q_lt_gamma hq hqd).1
@@ -64,15 +60,12 @@ lemma slab_gamma_one_lt (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) : 1 < slabGam
 lemma slab_hq₁ (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) :
     (q - 1) / slabGamma d q + 1 / slabQ1 d q = 1 := by
   have hγ := slab_gamma_one_lt hq hqd
-  have h0 : slabGamma d q - q + 1 ≠ 0 := by linarith [(slab_q_lt_gamma hq hqd).1]
   unfold slabQ1
-  field_simp
-  ring
+  grind
 
 lemma slab_q1_bounds (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) :
     1 ≤ slabQ1 d q ∧ slabQ1 d q ≤ slabGamma0 d := by
   have hd := slab_d_pos hq hqd
-  have hγ := slab_gamma_one_lt hq hqd
   have hlt := (slab_q_lt_gamma hq hqd).1
   have hpos : 0 < slabGamma d q - q + 1 := by linarith
   unfold slabQ1
@@ -81,14 +74,10 @@ lemma slab_q1_bounds (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) :
   · rw [div_le_iff₀ hpos, slabGamma0_eq hd]
     have h1 : (d : ℝ) * (q - 1) < 1 := by
       have := mul_lt_mul_of_pos_left (sub_lt_sub_right hqd 1) hd
-      rw [show 1 + 1 / (d : ℝ) - 1 = 1 / (d : ℝ) by ring, mul_one_div_cancel hd.ne'] at this
-      exact this
-    have h2 : (d : ℝ) * (1 + 1 / (d : ℝ)) = d + 1 := by field_simp
+      grind
     have h3 : slabGamma d q ≤ (1 + 1 / (d : ℝ)) * (slabGamma d q - q + 1) := by
-      have : (d : ℝ) * slabGamma d q ≤ (d + 1) * (slabGamma d q - q + 1) := by
-        nlinarith
-      have h4 : (1 + 1 / (d : ℝ)) * (slabGamma d q - q + 1) =
-          ((d : ℝ) + 1) * (slabGamma d q - q + 1) / d := by field_simp
+      have h4 : (1 + 1 / d) * (slabGamma d q - q + 1) =
+          (d + 1) * (slabGamma d q - q + 1) / d := by field_simp
       rw [h4, le_div_iff₀ hd]
       linarith
     exact h3
@@ -97,23 +86,9 @@ lemma slab_q1_bounds (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) :
 lemma slab_exponent (hq : 1 < q) (hqd : q < 1 + 1 / (d : ℝ)) :
     (q - 1) * (slabBeta d (slabGamma d q) - 3 * (d : ℝ) / 2) +
         slabBeta d (slabQ1 d q) = 1 - 2 * d * (q - 1) := by
-  have hγ0 : slabGamma d q ≠ 0 := by linarith [slab_gamma_one_lt hq hqd]
   have hq1 := slab_hq₁ hq hqd
-  have hq10 : slabQ1 d q ≠ 0 := by
-    intro h; rw [h] at hq1; simp at hq1
-    have : (q - 1) / slabGamma d q < 1 := by
-      rw [div_lt_one (by linarith [slab_gamma_one_lt hq hqd])]
-      linarith [(slab_q_lt_gamma hq hqd).1]
-    linarith
   unfold slabBeta
-  have key : ((d : ℝ) + 2) / (2 * slabGamma d q) * (q - 1) +
-      ((d : ℝ) + 2) / (2 * slabQ1 d q) = ((d : ℝ) + 2) / 2 := by
-    have : ((d : ℝ) + 2) / (2 * slabGamma d q) * (q - 1) +
-        ((d : ℝ) + 2) / (2 * slabQ1 d q) =
-        ((d : ℝ) + 2) / 2 * ((q - 1) / slabGamma d q + 1 / slabQ1 d q) := by
-      field_simp
-    rw [this, hq1, mul_one]
-  nlinarith [key]
+  grind
 
 end Numerics
 
@@ -125,7 +100,6 @@ lemma slab_arith (a b : ℝ≥0) (M : ℝ≥0∞) {T e₁ e₂ s q : ℝ} (hT : 
       ((a ^ (q - 1) * b : ℝ≥0) : ℝ≥0∞) * M ^ q * ENNReal.ofReal (T ^ s) := by
   have hq0 : 0 ≤ q - 1 := by linarith
   have hT1 : 0 ≤ T ^ e₁ := (Real.rpow_pos_of_pos hT _).le
-  have hT2 : 0 ≤ T ^ e₂ := (Real.rpow_pos_of_pos hT _).le
   rw [ENNReal.mul_rpow_of_nonneg _ _ hq0, ENNReal.mul_rpow_of_nonneg _ _ hq0,
     ← ENNReal.coe_rpow_of_nonneg _ hq0, ENNReal.ofReal_rpow_of_nonneg hT1 hq0,
     ← Real.rpow_mul hT.le, ENNReal.coe_mul]
@@ -135,8 +109,7 @@ lemma slab_arith (a b : ℝ≥0) (M : ℝ≥0∞) {T e₁ e₂ s q : ℝ} (hT : 
   have hTs : ENNReal.ofReal (T ^ (e₁ * (q - 1))) * ENNReal.ofReal (T ^ e₂) =
       ENNReal.ofReal (T ^ s) := by
     rw [← ENNReal.ofReal_mul (Real.rpow_pos_of_pos hT _).le, ← Real.rpow_add hT]
-    congr 2
-    linarith
+    grind
   rw [hMq, ← hTs]
   ring
 
@@ -163,32 +136,32 @@ theorem slab_density_of_fourier_marginals {d : ℕ} (C : ℝ → ℝ≥0) (c : �
   obtain ⟨hq1a, hq1b⟩ := slab_q1_bounds hq hqd
   have hγ1 : 1 ≤ slabGamma d q := (slab_gamma_one_lt hq hqd).le
   have hMfin : μ univ < ⊤ := measure_lt_top μ _
-  have hfin : IsFiniteMeasure (slabMeasure d T Γ) := ⟨by
+  have hfin : IsFiniteMeasure _ := ⟨by
     rw [slabMeasure_univ]
     exact (green_slab_le K σ₀ μ Γ hΓ hT).trans_lt
       (ENNReal.mul_lt_top hMfin ENNReal.ofReal_lt_top)⟩
-  have hgn := hgnorm (slabQ1 d q) hq1a hq1b
-  have hgL : eLpNorm g (ENNReal.ofReal (slabQ1 d q)) (slabBase d T) < ⊤ :=
+  have hgn := hgnorm _ hq1a hq1b
+  have hgL  :=
     hgn.trans_lt (ENNReal.mul_lt_top (ENNReal.mul_lt_top ENNReal.coe_lt_top hMfin)
       ENNReal.ofReal_lt_top)
-  obtain ⟨-, hkγ⟩ := hkb (slabGamma d q) hγ1 hγ0.le
+  obtain ⟨-, hkγ⟩ := hkb _ hγ1 hγ0.le
   have hH : ENNReal.ofReal (((2 * Real.pi) ^ d)⁻¹) *
-      ∫⁻ ξ, eLpNorm (k ξ) (ENNReal.ofReal (slabGamma d q)) (slabBase d T) < ⊤ :=
+      ∫⁻ ξ, eLpNorm (k ξ) _ _ < ⊤ :=
     hkγ.trans_lt (ENNReal.mul_lt_top (ENNReal.mul_lt_top ENNReal.coe_lt_top hMfin)
       ENNReal.ofReal_lt_top)
   obtain ⟨G', hG'm, hΓG', hbd, -⟩ := Reconstruction.reconstruction (m := slabBase d T)
     (slabMeasure d T Γ) hgm (slabMeasure_fst T Γ g hgmarg) hq hqγ (slab_hq₁ hq hqd) hgL k
     (fun ξ => ⟨(hk ξ).1, slabMeasure_fourier T Γ ξ (k ξ) (hk ξ).2⟩) hH
-  refine ⟨fun p => G' (slabRegroup d p), hG'm.comp (slabRegroup d).measurable,
-    eq_withDensity_of_map_eq (slabRegroup d) (measurePreserving_slabRegroup d T) hΓG', ?_⟩
-  calc ∫⁻ p in slabSet T, G' (slabRegroup d p) ^ q ∂greenLebesgue d
+  refine ⟨fun p => G' _, hG'm.comp (slabRegroup d).measurable,
+    eq_withDensity_of_map_eq _ (measurePreserving_slabRegroup d T) hΓG', ?_⟩
+  calc ∫⁻ p in slabSet T, G' _ ^ q ∂greenLebesgue d
       = ∫⁻ y, G' y ^ q ∂((slabBase d T).prod volume) :=
         (measurePreserving_slabRegroup d T).lintegral_comp_emb
           (slabRegroup d).measurableEmbedding (fun y => G' y ^ q)
     _ ≤ _ := hbd
-    _ ≤ ((C (slabGamma d q) : ℝ≥0∞) * μ univ *
-          ENNReal.ofReal (T ^ (slabBeta d (slabGamma d q) - 3 * (d : ℝ) / 2))) ^ (q - 1) *
-        ((C (slabQ1 d q) : ℝ≥0∞) * μ univ * ENNReal.ofReal (T ^ slabBeta d (slabQ1 d q))) :=
+    _ ≤ ((C _) * μ univ *
+          ENNReal.ofReal _) ^ (q - 1) *
+        ((C _) * μ univ * ENNReal.ofReal _) :=
         mul_le_mul' (ENNReal.rpow_le_rpow hkγ hq0) hgn
     _ = _ := by
         rw [slab_arith _ _ _ hT hq (slab_exponent hq hqd)]

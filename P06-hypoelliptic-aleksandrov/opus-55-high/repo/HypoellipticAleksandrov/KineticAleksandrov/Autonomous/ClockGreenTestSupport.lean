@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockGreenTe
 /-! # Compact clock tests have a genuine late cutoff -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo TheoremA Evolution
@@ -17,18 +16,16 @@ theorem clock_probe_cutoff (f : exitProbeSubmodule) :
       (∀ p, R ≤ p.time → exitProbePhysical f p = 0) := by
   have hc := (exitProbePhysical_continuous_compact f).2
   obtain ⟨b, hb⟩ := (hc.image continuous_time).bddAbove
-  refine ⟨max b 0 + 1, by have := le_max_right b 0; linarith, ?_, ?_⟩
+  refine ⟨max b 0 + 1, by positivity, ?_, ?_⟩
   · intro p hp
     have ht := hb (show p.time ∈ KineticPoint.time '' tsupport (exitProbePhysical f)
       from ⟨p, hp, rfl⟩)
-    have := le_max_left b 0
-    linarith
+    grind
   · intro p hp
     apply image_eq_zero_of_notMem_tsupport
     intro hs
     have ht := hb (show p.time ∈ KineticPoint.time '' tsupport (exitProbePhysical f)
       from ⟨p, hs, rfl⟩)
-    have := le_max_left b 0
-    linarith
+    grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

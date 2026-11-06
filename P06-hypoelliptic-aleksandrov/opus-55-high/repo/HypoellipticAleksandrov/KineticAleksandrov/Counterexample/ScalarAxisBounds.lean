@@ -17,10 +17,9 @@ open scoped Topology
 theorem scalar_similarity_power_cancel_general (beta x v : ℝ) (hx : 0 < x) :
     Real.rpow x (beta / 3) * Real.rpow |scalarSimilarity x v| beta = Real.rpow |v| beta := by
   simp only [scalarSimilarity, Real.rpow_eq_pow, abs_div, abs_neg,
-    abs_of_pos (Real.rpow_pos_of_pos hx (1 / 3 : ℝ))]
+    abs_of_pos (Real.rpow_pos_of_pos hx (1 / 3))]
   rw [Real.div_rpow (abs_nonneg _) (Real.rpow_nonneg hx.le _),
-    ← Real.rpow_mul hx.le, show (1 / 3 : ℝ) * beta = beta / 3 by ring]
-  have hp := (Real.rpow_pos_of_pos hx (beta / 3)).ne'
+    ← Real.rpow_mul hx.le]
   field_simp
 
 /-- The signed similarity coordinate tends to the appropriate infinite ray in a joint axis limit. -/
@@ -65,10 +64,10 @@ theorem scalar_scaled_tail_bounded {ι : Type*} (l : Filter ι) (f : ℝ → ℝ
   have he : (fun i => Real.rpow (X i) (beta / 3) *
       Real.rpow |scalarSimilarity (X i) (V i)| beta) =ᶠ[l] fun i => Real.rpow |V i| beta := by
     filter_upwards [hXp] with i hi
-    exact scalar_similarity_power_cancel_general beta (X i) (V i) hi
+    exact scalar_similarity_power_cancel_general beta _ _ hi
   have hP : Tendsto (fun i => Real.rpow |V i| beta) l (𝓝 (Real.rpow |v| beta)) := by
     simpa only [Real.rpow_eq_pow, Function.comp_def] using
-      (Real.continuousAt_rpow_const |v| beta (Or.inl (abs_ne_zero.mpr hv))).tendsto.comp hV.abs
+      (Real.continuousAt_rpow_const _ beta (Or.inl (abs_ne_zero.mpr hv))).tendsto.comp hV.abs
   exact (hm.congr' EventuallyEq.rfl he).trans (isBigO_const_of_tendsto hP one_ne_zero)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

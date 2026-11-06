@@ -15,8 +15,10 @@ open Set MeasureTheory
 def visitTimeCutoff (a r : ℝ) (hr : 0 < r) (t : ℝ) : ℝ :=
   reconstructionPositionBump (3 * r ^ 2 / 4) (by positivity) (t - (a + r ^ 2 / 2))
 
+variable (a r : ℝ) (hr : 0 < r)
+
 /-- The time cutoff is smooth and lies between zero and one. -/
-theorem visitTimeCutoff_properties (a r : ℝ) (hr : 0 < r) :
+theorem visitTimeCutoff_properties  :
     ContDiff ℝ (⊤ : ℕ∞) (visitTimeCutoff a r hr) ∧
       (∀ t, 0 ≤ visitTimeCutoff a r hr t ∧ visitTimeCutoff a r hr t ≤ 1) :=
   ⟨(reconstructionPositionBump _ _).contDiff.comp (contDiff_id.sub contDiff_const),
@@ -24,24 +26,22 @@ theorem visitTimeCutoff_properties (a r : ℝ) (hr : 0 < r) :
       (reconstructionPositionBump _ _).le_one⟩⟩
 
 /-- It equals one on the whole closed interval, including a possible initial atom. -/
-theorem visitTimeCutoff_eq_one (a r : ℝ) (hr : 0 < r) {t : ℝ}
+theorem visitTimeCutoff_eq_one  {t : ℝ}
     (ht : t ∈ Icc a (a + r ^ 2)) : visitTimeCutoff a r hr t = 1 := by
   apply (reconstructionPositionBump _ _).one_of_mem_closedBall
   rw [Metric.mem_closedBall, Real.dist_eq, sub_zero]
   change |t - (a + r ^ 2 / 2)| ≤ 3 * r ^ 2 / 4
-  apply abs_le.mpr
-  constructor <;> nlinarith [ht.1, ht.2, sq_nonneg r]
+  grind
 
 /-- Its nonzero support is confined to an interval of length three r squared. -/
-theorem visitTimeCutoff_support (a r : ℝ) (hr : 0 < r) :
+theorem visitTimeCutoff_support  :
     Function.support (visitTimeCutoff a r hr) ⊆ Ioo (a - r ^ 2) (a + 2 * r ^ 2) := by
   intro t ht
   have hb : t - (a + r ^ 2 / 2) ∈
       Function.support (reconstructionPositionBump (3 * r ^ 2 / 4) (by positivity)) := ht
   rw [ContDiffBump.support_eq, Metric.mem_ball, Real.dist_eq, sub_zero] at hb
   change |t - (a + r ^ 2 / 2)| < 2 * (3 * r ^ 2 / 4) at hb
-  obtain ⟨hl, hu⟩ := abs_lt.mp hb
-  constructor <;> linarith
+  grind
 
 /-- A single constant controls the derivative of every rescaled time cutoff. -/
 theorem visitTimeCutoff_deriv_bound : ∃ D : ℝ, 0 ≤ D ∧
@@ -51,10 +51,10 @@ theorem visitTimeCutoff_deriv_bound : ∃ D : ℝ, 0 ≤ D ∧
   refine ⟨4 * D / 3, by positivity, ?_⟩
   intro a r hr t
   have hs : ContDiff ℝ (⊤ : ℕ∞)
-      (reconstructionPositionBump (3 * r ^ 2 / 4) (by positivity) : ℝ → ℝ) :=
+      (reconstructionPositionBump (3 * r ^ 2 / 4) (by positivity)) :=
     (reconstructionPositionBump _ _).contDiff
   have hc := (hs.differentiable (by norm_num) (t - (a + r ^ 2 / 2))).hasDerivAt.comp t
-    ((hasDerivAt_id t).sub_const (a + r ^ 2 / 2))
+    ((hasDerivAt_id t).sub_const _)
   have he : deriv (visitTimeCutoff a r hr) t =
       deriv (reconstructionPositionBump (3 * r ^ 2 / 4) (by positivity))
         (t - (a + r ^ 2 / 2)) := by
@@ -70,14 +70,14 @@ theorem visitTimeCutoff_deriv_bound : ∃ D : ℝ, 0 ≤ D ∧
   field_simp
 
 /-- The closed support has the same length-three bounding interval. -/
-theorem visitTimeCutoff_tsupport (a r : ℝ) (hr : 0 < r) :
+theorem visitTimeCutoff_tsupport  :
     tsupport (visitTimeCutoff a r hr) ⊆ Icc (a - r ^ 2) (a + 2 * r ^ 2) := by
   have h := closure_mono (visitTimeCutoff_support a r hr)
   have ho : a - r ^ 2 < a + 2 * r ^ 2 := by nlinarith [sq_pos_of_pos hr]
   rwa [closure_Ioo ho.ne] at h
 
 /-- The cutoff derivative vanishes outside the same closed time window. -/
-theorem visitTimeCutoff_deriv_tsupport (a r : ℝ) (hr : 0 < r) :
+theorem visitTimeCutoff_deriv_tsupport  :
     tsupport (deriv (visitTimeCutoff a r hr)) ⊆ Icc (a - r ^ 2) (a + 2 * r ^ 2) :=
   tsupport_deriv_subset.trans (visitTimeCutoff_tsupport a r hr)
 

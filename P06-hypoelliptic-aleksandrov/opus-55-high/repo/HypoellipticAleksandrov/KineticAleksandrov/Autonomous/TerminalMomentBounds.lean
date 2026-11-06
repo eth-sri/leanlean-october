@@ -6,7 +6,6 @@ import Mathlib.Tactic
 /-! # Source terminal second moments of the canonical full-space kernel -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov MeasureTheory
 open scoped ENNReal
@@ -27,9 +26,8 @@ theorem terminal_second_moments
   apply (kernelXV_position_2_moment hlam A E hE z T).trans
   apply ENNReal.ofReal_le_ofReal
   have hL : 0 ≤ Lam := hlam.le.trans hLam
-  have hT := T.property
-  have hh : 0 ≤ z.2^2*(T : ℝ)^2+(2/3 : ℝ)*Lam*(T : ℝ)^3 := by positivity
-  linarith only [hh]
+  have hh : 0 ≤ z.2^2*T^2+(2/3)*Lam*T^3 := by positivity
+  linarith
 
 /-- Both actual real second moments are integrable, rather than merely total integrals. -/
 theorem terminal_second_moments_integrable
@@ -43,9 +41,9 @@ theorem terminal_second_moments_integrable
   constructor
   · apply (lintegral_ofReal_ne_top_iff_integrable (by fun_prop)
       (Filter.Eventually.of_forall (fun w : Z => sq_nonneg (w.2-z.2)))).mp
-    exact ne_of_lt (h.1.trans_lt ENNReal.ofReal_lt_top)
+    aesop
   · apply (lintegral_ofReal_ne_top_iff_integrable (by fun_prop)
       (Filter.Eventually.of_forall (fun w : Z => sq_nonneg (w.1-z.1)))).mp
-    exact ne_of_lt (h.2.trans_lt ENNReal.ofReal_lt_top)
+    aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

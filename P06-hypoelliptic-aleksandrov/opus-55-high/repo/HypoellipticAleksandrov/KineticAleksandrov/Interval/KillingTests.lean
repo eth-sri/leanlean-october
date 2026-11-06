@@ -12,7 +12,6 @@ makes the positive endpoint distance uniform, permitting the terminal epsilon li
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open Set MeasureTheory Filter Topology HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
@@ -23,9 +22,8 @@ open scoped MatrixOrder
 theorem interval_coefficient_lower {lam Lam : ℝ} (B : CoefficientField 1)
     (hB : IsSectionTwoCoefficient lam Lam B) (r : ℝ) (v : PDE.Vec 1) :
     lam ≤ B r v 0 0 := by
-  have h := (hB.2.2.2.2.1 r v).diag_nonneg (i := (0 : Fin 1))
-  simpa only [Matrix.sub_apply, Matrix.smul_apply, Matrix.one_apply_eq,
-    smul_eq_mul, mul_one, sub_nonneg] using h
+  have h := (hB.2.2.2.2.1 r v).diag_nonneg (i := (0))
+  simp_all
 
 /-- Coordinates of the closure of an interval satisfy the closed endpoint bounds. -/
 theorem interval_coordinate_closure {a c : ℝ} {v : PDE.Vec 1}
@@ -50,10 +48,9 @@ theorem endpointHeat_terminal_domination {lam s e κ : ℝ} (hlam : 0 < lam)
     have ht := tendsto_intervalHeat_time_zero hlam (hpos v₀ hv₀)
     have he := ht.eventually (eventually_gt_nhds hκ)
     filter_upwards [he, self_mem_nhdsWithin] with ε hε hεpos v hv
-    calc κ * φ v ≤ κ := by
-          exact mul_le_of_le_one_right hκ0 (hφ v).2
-      _ ≤ intervalHeat lam ε (s * (v₀ 0 - e)) := hε.le
-      _ ≤ intervalHeat lam ε (s * (v 0 - e)) :=
+    calc κ * φ v ≤ κ := mul_le_of_le_one_right hκ0 (hφ v).2
+      _ ≤ intervalHeat lam ε _ := hε.le
+      _ ≤ intervalHeat lam ε _ :=
         intervalHeat_mono_distance hlam hεpos (hmin hv)
   · exact Eventually.of_forall fun _ v hv => (hempty ⟨v, hv⟩).elim
 
@@ -80,7 +77,7 @@ theorem interval_endpoint_test_bound {a c lam Lam σ τ s e : ℝ}
   have hscaled : ∀ κ : ℝ, 0 ≤ κ → κ < 1 →
       κ * (∫ w, φ w ∂μ) ≤ intervalHeat lam (τ - σ) (s * (v 0 - e)) := by
     intro κ hκ0 hκ1
-    let F : BoundedBorel (PDE.Vec 1) :=
+    let F : BoundedBorel _ :=
       ⟨fun w => κ * φ w, measurable_const.mul hφs.continuous.measurable,
         ⟨1, zero_le_one, fun w => by
           rw [abs_of_nonneg (mul_nonneg hκ0 (hφ w).1)]
@@ -89,7 +86,7 @@ theorem interval_endpoint_test_bound {a c lam Lam σ τ s e : ℝ}
       tsupport_mul_subset_right.trans hφJ
     obtain ⟨V, hV, heval, _hunique⟩ := hsolve τ F
       ⟨contDiff_const.mul hφs, hφc.mul_left, by
-        simpa only [movingDomain_stationary] using hFJ⟩
+        simpa using hFJ⟩
     have hdom := endpointHeat_terminal_domination hlam hκ0 hκ1 φ hφc hφ
       (fun w hw => hdpos w (hφJ hw))
     have hεbound : ∀ᶠ ε in nhdsWithin 0 (Ioi 0),
@@ -116,17 +113,17 @@ theorem interval_endpoint_test_bound {a c lam Lam σ τ s e : ℝ}
       · intro p hp
         exact intervalErf_nonneg (div_nonneg (hdnonneg _ (frontier_subset_closure hp.2))
           (by positivity))
-      · simpa only [movingDomain_stationary] using subset_closure
+      · simpa using subset_closure
           (show v ∈ PDE.oneDimensionalAxisBox a c from
-            by simpa only [movingDomain_stationary] using hv)
+            by simpa using hv)
     have hlimit : Tendsto (fun ε => intervalHeat lam (τ - σ + ε) (s * (v 0 - e)))
         (nhdsWithin 0 (Ioi 0)) (𝓝 (intervalHeat lam (τ - σ) (s * (v 0 - e)))) := by
       have hc := (contDiffAt_intervalHeat hlam (τ - σ, s * (v 0 - e))
         (sub_pos.mpr hστ)).continuousAt
-      have ht0 : Tendsto (fun ε : ℝ => ε) (nhdsWithin 0 (Ioi 0)) (𝓝 0) :=
+      have ht0 : Tendsto (fun ε : ℝ => ε) (nhdsWithin 0 (Ioi 0)) _ :=
         tendsto_id.mono_left nhdsWithin_le_nhds
       have ht1 : Tendsto (fun ε : ℝ => τ - σ + ε) (nhdsWithin 0 (Ioi 0))
-          (𝓝 (τ - σ)) := by simpa only [add_zero] using ht0.const_add (τ - σ)
+          (𝓝 (τ - σ)) := by simpa using ht0.const_add _
       have ht := ht1.prodMk_nhds (tendsto_const_nhds (x := s * (v 0 - e)))
       exact hc.tendsto.comp
         (f := fun ε : ℝ => (τ - σ + ε, s * (v 0 - e))) ht
@@ -134,20 +131,19 @@ theorem interval_endpoint_test_bound {a c lam Lam σ τ s e : ℝ}
     have he := heval σ hστ.le ⟨v, hv⟩
     rw [hrepr] at he
     have hi : (∫ w, φ w ∂μ) =
-        ∫ w : EvolutionPosition (PDE.oneDimensionalAxisBox a c) stationary τ, φ w.1
-          ∂parabolicMarginalKernel K hJ σ τ hστ.le ⟨v, hv⟩ := by
-      exact integral_map measurable_subtype_coe.aemeasurable
+        ∫ w : EvolutionPosition _ stationary τ, φ w.1
+          ∂parabolicMarginalKernel K hJ σ τ hστ.le ⟨v, hv⟩ := integral_map measurable_subtype_coe.aemeasurable
         hφs.continuous.measurable.aestronglyMeasurable
     rw [hi, ← integral_const_mul]
-    exact he ▸ hbound
+    aesop
   have ht : Tendsto (fun κ : ℝ => κ * (∫ w, φ w ∂μ)) (nhdsWithin 1 (Iio 1))
       (𝓝 (∫ w, φ w ∂μ)) := by
-    have hκ : Tendsto (fun κ : ℝ => κ) (nhdsWithin 1 (Iio 1)) (𝓝 1) :=
+    have hκ : Tendsto (fun κ : ℝ => κ) (nhdsWithin 1 (Iio 1)) _ :=
       tendsto_id.mono_left nhdsWithin_le_nhds
-    simpa only [one_mul] using hκ.mul_const (∫ w, φ w ∂μ)
+    simpa using hκ.mul_const _
   apply le_of_tendsto ht
-  filter_upwards [(eventually_gt_nhds (zero_lt_one : (0 : ℝ) < 1)).filter_mono
+  filter_upwards [(eventually_gt_nhds zero_lt_one).filter_mono
     nhdsWithin_le_nhds, self_mem_nhdsWithin] with κ hκ0 hκ1
-  exact hscaled κ hκ0.le hκ1
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

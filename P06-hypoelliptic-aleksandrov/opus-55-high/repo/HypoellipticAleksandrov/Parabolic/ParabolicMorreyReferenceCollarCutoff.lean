@@ -3,6 +3,7 @@ module
 public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyNorm
 public import HypoellipticAleksandrov.Parabolic.LocalGluing
 public import HypoellipticAleksandrov.Parabolic.WeakJetCutoff
+public import HypoellipticAleksandrov.Parabolic.ParabolicMorreyBoxCoefficientBound
 
 /-!
 This module fixes a normalized reference collar cutoff and derives its exact
@@ -12,7 +13,6 @@ certificates. It proves no Hölder, PDE, or representative theorem.
 
 @[expose] public section
 
-noncomputable section
 
 open Filter Function MeasureTheory Set
 open scoped BigOperators ENNReal Topology
@@ -27,12 +27,10 @@ private theorem reference_closed_collar_subset_unit_box (d : Nat) :
   rw [mem_parabolicClosedBox_iff] at hz
   rw [mem_parabolicBox_iff]
   refine ⟨?_, ?_, ?_⟩
-  · norm_num at hz ⊢
-    linarith
-  · norm_num at hz ⊢
-    linarith
+  · linarith
+  · linarith
   · intro i
-    simpa only [Pi.zero_apply, sub_zero] using lt_of_le_of_lt (hz.2.2 i) (by norm_num)
+    simpa using lt_of_le_of_lt (hz.2.2 i) (by norm_num)
 
 /-- The closed unit coordinate box contains the closure of the open unit source box. -/
 private theorem closure_reference_unit_box_subset_closed (d : Nat) :
@@ -46,14 +44,15 @@ private theorem closure_reference_unit_box_subset_closed (d : Nat) :
 
 /-- The open unit source box has compact closure. -/
 private theorem isCompact_closure_reference_unit_box (d : Nat) :
-    IsCompact (closure (parabolicBox (d := d) 1 1 0 (0 : PDE.Vec d))) := by
-  exact IsCompact.of_isClosed_subset (isCompact_parabolicClosedBox 1 1 0 0)
+    IsCompact (closure (parabolicBox (d := d) 1 1 0 (0 : PDE.Vec d))) := IsCompact.of_isClosed_subset (isCompact_parabolicClosedBox 1 1 0 0)
     isClosed_closure (closure_reference_unit_box_subset_closed d)
+
+variable {d : Nat} {eta : TimeVelocity d → Real} {i j : Fin d} {U : Set (TimeVelocity d)} {p : ENNReal} {a f : TimeVelocity d → Real}
 
 /-- The literal time derivative of a cutoff product, valid also outside the
 locality set because the cutoff is zero on a neighbourhood there. -/
 private theorem timeDerivative_cutoff_mul
-    {d : Nat} {U : Set (TimeVelocity d)} {eta q : TimeVelocity d → Real}
+     {eta q : TimeVelocity d → Real}
     (hU : IsOpen U) (heta : ContDiff Real 2 eta) (hetaU : tsupport eta ⊆ U)
     (hq : ContDiffOn Real 2 q U) (z : TimeVelocity d) :
     timeDerivative (fun y => eta y * q y) z =
@@ -63,7 +62,7 @@ private theorem timeDerivative_cutoff_mul
     change (fderiv Real (eta * q) z) (1, 0) = _
     rw [fderiv_mul (heta.differentiable (by norm_num) z)
       ((hq.contDiffAt (hU.mem_nhds hz)).differentiableAt (by norm_num))]
-    simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul]
+    simp
   · have hnot : z ∉ tsupport eta := fun hzeta => hz (hetaU hzeta)
     have hzero : eta =ᶠ[𝓝 z] fun _ : TimeVelocity d => (0 : Real) :=
       notMem_tsupport_iff_eventuallyEq.mp hnot
@@ -79,13 +78,12 @@ private theorem timeDerivative_cutoff_mul
       unfold timeDerivative
       rw [hproduct.fderiv_eq]
       simp
-    rw [htime_product, heta_zero, htime_eta]
-    ring
+    simp_all
 
 /-- The literal velocity-gradient product rule for a locally smooth scalar
 and a compact cutoff. -/
 private theorem velocityGradient_cutoff_mul
-    {d : Nat} {U : Set (TimeVelocity d)} {eta q : TimeVelocity d → Real}
+     {eta q : TimeVelocity d → Real}
     (hU : IsOpen U) (heta : ContDiff Real 2 eta) (hetaU : tsupport eta ⊆ U)
     (hq : ContDiffOn Real 2 q U) (z : TimeVelocity d) (i : Fin d) :
     velocityGradient (fun y => eta y * q y) z i =
@@ -95,7 +93,7 @@ private theorem velocityGradient_cutoff_mul
     change (fderiv Real (eta * q) z) (0, Pi.single i 1) = _
     rw [fderiv_mul (heta.differentiable (by norm_num) z)
       ((hq.contDiffAt (hU.mem_nhds hz)).differentiableAt (by norm_num))]
-    simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, smul_eq_mul]
+    simp
   · have hnot : z ∉ tsupport eta := fun hzeta => hz (hetaU hzeta)
     have hzero : eta =ᶠ[𝓝 z] fun _ : TimeVelocity d => (0 : Real) :=
       notMem_tsupport_iff_eventuallyEq.mp hnot
@@ -111,21 +109,20 @@ private theorem velocityGradient_cutoff_mul
       unfold velocityGradient
       rw [hproduct.fderiv_eq]
       simp
-    rw [hgrad_product, heta_zero, hgrad_eta]
-    ring
+    simp_all
 
 /-- The ordered velocity-Hessian product formula for a compact cutoff and a
 locally `C²` scalar.  The middle terms have the project-wide `(i,j)`
 orientation. -/
 private theorem velocityHessian_cutoff_mul
-    {d : Nat} {U : Set (TimeVelocity d)} {eta q : TimeVelocity d → Real}
+     {eta q : TimeVelocity d → Real}
     (hU : IsOpen U) (heta : ContDiff Real 2 eta) (hetaU : tsupport eta ⊆ U)
     (hq : ContDiffOn Real 2 q U) (z : TimeVelocity d) (i j : Fin d) :
     velocityHessian (fun y => eta y * q y) z i j =
       eta z * velocityHessian q z i j + velocityGradient eta z j * velocityGradient q z i +
         velocityGradient q z j * velocityGradient eta z i +
           q z * velocityHessian eta z i j := by
-  have hproduct_cont : ContDiff Real 2 (fun y => eta y * q y) :=
+  have hproduct_cont  :=
     contDiff_cutoff_mul_of_tsupport_subset hU heta hetaU hq
   by_cases hz : z ∈ U
   · have heta_at : ContDiffAt Real 2 eta z := heta.contDiffAt
@@ -149,14 +146,10 @@ private theorem velocityHessian_cutoff_mul
             q z • fderiv Real (fderiv Real eta) z +
               (fderiv Real q z).smulRight (fderiv Real eta z) := by
       calc
-        fderiv Real (fderiv Real (eta * q)) z =
-            fderiv Real (fun y => eta y • fderiv Real q y +
-              q y • fderiv Real eta y) z := hfirst.fderiv_eq
-        _ = fderiv Real (fun y => eta y • fderiv Real q y) z +
-            fderiv Real (fun y => q y • fderiv Real eta y) z := by
-              change fderiv Real ((fun y => eta y • fderiv Real q y) +
-                fun y => q y • fderiv Real eta y) z = _
-              exact fderiv_add (heta_diff.smul hq_deriv_diff)
+        fderiv Real _ z =
+            fderiv Real _ z := hfirst.fderiv_eq
+        _ = fderiv Real _ z +
+            fderiv Real _ z := fderiv_add (heta_diff.smul hq_deriv_diff)
                 (hq_diff.smul heta_deriv_diff)
         _ = _ := by
               change fderiv Real (eta • fderiv Real q) z +
@@ -173,31 +166,30 @@ private theorem velocityHessian_cutoff_mul
         TimeVelocity d →L[Real] Real => H ((0, Pi.single j 1) : TimeVelocity d)
           ((0, Pi.single i 1) : TimeVelocity d)) hsecond
     calc
-      velocityHessian (fun y => eta y * q y) z i j =
-          velocityHessian (fun y => eta y * q y) z j i := hproduct_symm.apply j i
+      velocityHessian _ z i j =
+          velocityHessian _ z j i := hproduct_symm.apply j i
       _ = eta z * velocityHessian q z i j +
           velocityGradient eta z j * velocityGradient q z i +
             velocityGradient q z j * velocityGradient eta z i +
               q z * velocityHessian eta z i j := by
         change (fderiv Real (fderiv Real (eta * q)) z)
-            ((0, Pi.single j 1) : TimeVelocity d) ((0, Pi.single i 1) : TimeVelocity d) = _
+            _ _ = _
         simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
           ContinuousLinearMap.smulRight_apply, smul_eq_mul] at heval
         have heval' :
             (fderiv Real (fderiv Real (eta * q)) z)
-                ((0, Pi.single j 1) : TimeVelocity d) ((0, Pi.single i 1) : TimeVelocity d) =
+                ((0, Pi.single j 1)) ((0, Pi.single i 1)) =
               eta z * (fderiv Real (fderiv Real q) z)
-                  ((0, Pi.single i 1) : TimeVelocity d) ((0, Pi.single j 1) : TimeVelocity d) +
-                (fderiv Real eta z) ((0, Pi.single j 1) : TimeVelocity d) *
-                    (fderiv Real q z) ((0, Pi.single i 1) : TimeVelocity d) +
-                  (fderiv Real q z) ((0, Pi.single j 1) : TimeVelocity d) *
-                    (fderiv Real eta z) ((0, Pi.single i 1) : TimeVelocity d) +
+                  ((0, Pi.single i 1)) ((0, Pi.single j 1)) +
+                (fderiv Real eta z) ((0, Pi.single j 1)) *
+                    (fderiv Real q z) ((0, Pi.single i 1)) +
+                  (fderiv Real q z) ((0, Pi.single j 1)) *
+                    (fderiv Real eta z) ((0, Pi.single i 1)) +
                       q z * (fderiv Real (fderiv Real eta) z)
-                        ((0, Pi.single i 1) : TimeVelocity d)
-                        ((0, Pi.single j 1) : TimeVelocity d) := by
-          rw [heval, hq_symm, heta_symm]
-          ring
-        simpa only [velocityHessian, velocityGradient] using heval'
+                        ((0, Pi.single i 1))
+                        ((0, Pi.single j 1)) := by
+          grind
+        aesop
   · have hnot : z ∉ tsupport eta := fun hzeta => hz (hetaU hzeta)
     have hzero : eta =ᶠ[𝓝 z] fun _ : TimeVelocity d => (0 : Real) :=
       notMem_tsupport_iff_eventuallyEq.mp hnot
@@ -213,106 +205,79 @@ private theorem velocityHessian_cutoff_mul
     have hhess_eta : velocityHessian eta z = 0 := by
       ext k l
       unfold velocityHessian
-      rw [hzero.fderiv.fderiv_eq, fderiv_fun_const]
+      rw [hzero.fderiv.fderiv_eq]
       simp
     have hhess_product : velocityHessian (fun y => eta y * q y) z = 0 := by
       ext k l
       unfold velocityHessian
-      rw [hproduct.fderiv.fderiv_eq, fderiv_fun_const]
+      rw [hproduct.fderiv.fderiv_eq]
       simp
-    rw [hhess_product, heta_zero, hgrad_eta, hhess_eta]
-    simp only [Pi.zero_apply, Matrix.zero_apply]
-    ring
+    simp_all
 
-private theorem timeDerivative_cutoff_continuous {d : Nat} {eta : TimeVelocity d → Real}
-    (heta : ContDiff Real 2 eta) : Continuous (timeDerivative eta) := by
-  unfold timeDerivative
-  exact ((heta.contDiff_fderiv_apply (m := 0) (by norm_num)).comp
+private theorem timeDerivative_cutoff_continuous 
+    (heta : ContDiff Real 2 eta) : Continuous (timeDerivative eta) := ((heta.contDiff_fderiv_apply (m := 0) (by norm_num)).comp
     (contDiff_id.prodMk contDiff_const)).continuous
 
-private theorem timeDerivative_cutoff_hasCompactSupport {d : Nat} {eta : TimeVelocity d → Real}
+private theorem timeDerivative_cutoff_hasCompactSupport 
     (heta : HasCompactSupport eta) : HasCompactSupport (timeDerivative eta) := by
   unfold timeDerivative
-  simpa using heta.fderiv_apply (𝕜 := Real) ((1, 0) : TimeVelocity d)
+  simpa using heta.fderiv_apply (𝕜 := Real) _
 
-private theorem velocityGradient_cutoff_continuous {d : Nat} {eta : TimeVelocity d → Real}
+private theorem velocityGradient_cutoff_continuous 
     {i : Fin d} (heta : ContDiff Real 2 eta) :
-    Continuous (fun z => velocityGradient eta z i) := by
-  unfold velocityGradient
-  exact ((heta.contDiff_fderiv_apply (m := 0) (by norm_num)).comp
+    Continuous (fun z => velocityGradient eta z i) := ((heta.contDiff_fderiv_apply (m := 0) (by norm_num)).comp
     (contDiff_id.prodMk contDiff_const)).continuous
 
 private theorem velocityGradient_cutoff_hasCompactSupport
-    {d : Nat} {eta : TimeVelocity d → Real} {i : Fin d}
+     {i : Fin d}
     (heta : HasCompactSupport eta) :
     HasCompactSupport (fun z => velocityGradient eta z i) := by
   unfold velocityGradient
-  simpa using heta.fderiv_apply (𝕜 := Real) ((0, Pi.single i 1) : TimeVelocity d)
+  simpa using heta.fderiv_apply (𝕜 := Real) _
 
-private theorem velocityHessian_cutoff_continuous {d : Nat} {eta : TimeVelocity d → Real}
-    {i j : Fin d} (heta : ContDiff Real 2 eta) :
+private theorem velocityHessian_cutoff_continuous  (heta : ContDiff Real 2 eta) :
     Continuous (fun z => velocityHessian eta z i j) := by
   unfold velocityHessian
-  have hfirst : ContDiff Real 1 (fderiv Real eta) :=
-    heta.fderiv_right (m := 1) (by norm_num)
-  simpa using (hfirst.continuous_fderiv (by norm_num)).clm_apply continuous_const |>.clm_apply
-    continuous_const
+  fun_prop
 
 private theorem velocityHessian_cutoff_hasCompactSupport
-    {d : Nat} {eta : TimeVelocity d → Real} {i j : Fin d}
+    
     (heta : HasCompactSupport eta) :
     HasCompactSupport (fun z => velocityHessian eta z i j) := by
   unfold velocityHessian
-  have hfirst : HasCompactSupport (fderiv Real eta) := heta.fderiv Real
-  have hsecond : HasCompactSupport (fderiv Real (fderiv Real eta)) := hfirst.fderiv Real
+  have hfirst  := heta.fderiv Real
+  have hsecond  := hfirst.fderiv Real
   simpa only [Function.comp_def] using hsecond.comp_left
     (g := fun H : TimeVelocity d →L[Real] TimeVelocity d →L[Real] Real =>
-      H ((0, Pi.single i 1) : TimeVelocity d) ((0, Pi.single j 1) : TimeVelocity d)) rfl
+      H _ _) rfl
 
-private theorem timeDerivative_tsupport_subset {d : Nat} (eta : TimeVelocity d → Real) :
+private theorem timeDerivative_tsupport_subset  (eta : TimeVelocity d → Real) :
     tsupport (timeDerivative eta) ⊆ tsupport eta := by
   unfold timeDerivative
-  change closure (Function.support (fun z => fderiv Real eta z (1, 0))) ⊆ tsupport eta
   refine (closure_mono ?_).trans (tsupport_fderiv_subset Real)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
+  aesop
 
-private theorem velocityGradient_tsupport_subset {d : Nat} {i : Fin d}
+private theorem velocityGradient_tsupport_subset  {i : Fin d}
     (eta : TimeVelocity d → Real) :
     tsupport (fun z => velocityGradient eta z i) ⊆ tsupport eta := by
   unfold velocityGradient
-  change closure (Function.support (fun z => fderiv Real eta z (0, Pi.single i 1))) ⊆ tsupport eta
   refine (closure_mono ?_).trans (tsupport_fderiv_subset Real)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
+  aesop
 
-private theorem velocityHessian_tsupport_subset {d : Nat} {i j : Fin d}
+private theorem velocityHessian_tsupport_subset 
     (eta : TimeVelocity d → Real) :
     tsupport (fun z => velocityHessian eta z i j) ⊆ tsupport eta := by
   unfold velocityHessian
-  have hfirst : tsupport (fderiv Real eta) ⊆ tsupport eta := tsupport_fderiv_subset Real
-  have hsecond : tsupport (fderiv Real (fderiv Real eta)) ⊆ tsupport (fderiv Real eta) :=
+  have hfirst : tsupport _ ⊆ tsupport eta := tsupport_fderiv_subset Real
+  have hsecond : tsupport _ ⊆ tsupport (fderiv Real eta) :=
     tsupport_fderiv_subset Real
-  change closure (Function.support (fun z =>
-    fderiv Real (fderiv Real eta) z (0, Pi.single i 1) (0, Pi.single j 1))) ⊆ tsupport eta
   refine (closure_mono ?_).trans (hsecond.trans hfirst)
-  intro z hz
-  rw [Function.mem_support] at hz ⊢
-  intro hzero
-  apply hz
-  simp [hzero]
+  aesop
 
 /-- A bounded cutoff supported in `U` multiplies a locally finite `Lᵖ`
 function with the corresponding restricted-norm bound. -/
 private theorem eLpNorm_cutoff_mul_le
-    {d : Nat} {U : Set (TimeVelocity d)} {p : ENNReal}
-    {a f : TimeVelocity d → Real}
+    
     (haf : AEStronglyMeasurable (fun z => a z * f z) volume)
     (hU : MeasurableSet U) (haU : tsupport a ⊆ U)
     {B : Real} (hB : ∀ z, ‖a z‖ ≤ B) :
@@ -320,39 +285,38 @@ private theorem eLpNorm_cutoff_mul_le
       ENNReal.ofReal B * eLpNorm f p (volume.restrict U) := by
   have hzero : ∀ z ∉ U, a z = 0 := by
     intro z hz
-    have hnot : z ∉ tsupport a := fun hza => hz (haU hza)
+    have hnot  := fun hza => hz (haU hza)
     exact (notMem_tsupport_iff_eventuallyEq.mp hnot).self_of_nhds
   have hproduct : (fun z => a z * f z) = fun z => a z * U.indicator f z := by
     funext z
     by_cases hz : z ∈ U
     · simp [hz]
-    · simp [hz, hzero z hz]
+    simp_all
   rw [hproduct]
   calc
-    eLpNorm (fun z => a z * U.indicator f z) p volume ≤
+    eLpNorm _ p volume ≤
         ENNReal.ofReal B * eLpNorm (U.indicator f) p volume := by
       apply eLpNorm_le_mul_eLpNorm_of_ae_le_mul (hproduct ▸ haf) _ p
       filter_upwards [] with z
       rw [norm_mul]
       exact mul_le_mul_of_nonneg_right (hB z) (norm_nonneg _)
-    _ = ENNReal.ofReal B * eLpNorm f p (volume.restrict U) := by
+    _ = ENNReal.ofReal B * eLpNorm f p _ := by
       rw [eLpNorm_indicator_eq_eLpNorm_restrict hU]
 
 private theorem memLp_cutoff_mul
-    {d : Nat} {U : Set (TimeVelocity d)} {p : ENNReal}
-    {a f : TimeVelocity d → Real} (hU : MeasurableSet U) (ha : Continuous a)
+     (hU : MeasurableSet U) (ha : Continuous a)
     (haCompact : HasCompactSupport a) (haU : tsupport a ⊆ U)
     (hf : MemLp f p (volume.restrict U)) :
     MemLp (fun z => a z * f z) p volume := by
   have hzero : ∀ z ∉ U, a z = 0 := by
     intro z hz
-    have hnot : z ∉ tsupport a := fun hza => hz (haU hza)
+    have hnot  := fun hza => hz (haU hza)
     exact (notMem_tsupport_iff_eventuallyEq.mp hnot).self_of_nhds
   have hproduct : (fun z => a z * f z) = fun z => a z * U.indicator f z := by
     funext z
     by_cases hz : z ∈ U
     · simp [hz]
-    · simp [hz, hzero z hz]
+    simp_all
   rw [hproduct]
   have ha_top : MemLp a ∞ volume := ha.memLp_of_hasCompactSupport haCompact
   have hf_indicator : MemLp (U.indicator f) p volume :=
@@ -367,39 +331,32 @@ private theorem exists_reference_collar_cutoff (d : Nat) :
         (∀ᶠ z in 𝓝ˢ
           (parabolicClosedBox (d := d) 1 (1 / 2 : Real) (1 / 4 : Real) 0), eta z = 1) ∧
           tsupport eta ⊆ parabolicBox (d := d) 1 1 0 0 := by
-  let K : Set (TimeVelocity d) := parabolicClosedBox 1 (1 / 2 : Real) (1 / 4 : Real) 0
-  let U : Set (TimeVelocity d) := parabolicBox 1 1 0 0
   obtain ⟨eta, heta, heta_one, hetaU⟩ := exists_smooth_cutoff_tsupport_subset
-    (isCompact_parabolicClosedBox 1 (1 / 2 : Real) (1 / 4 : Real) 0)
+    (isCompact_parabolicClosedBox 1 (1 / 2) (1 / 4) 0)
     (isOpen_parabolicBox 1 1 0 0) (reference_closed_collar_subset_unit_box d)
   refine ⟨eta, heta, ?_, heta_one, hetaU⟩
   exact hasCompactSupport_of_tsupport_subset_of_isCompact_closure hetaU
     (isCompact_closure_reference_unit_box d)
 
-private theorem cutoff_uniform_bound {d : Nat} {a : TimeVelocity d → Real}
+private theorem cutoff_uniform_bound  {a : TimeVelocity d → Real}
     (ha : Continuous a) (haCompact : HasCompactSupport a) :
     ∃ B : Real, 0 ≤ B ∧ ∀ z, ‖a z‖ ≤ B := by
   obtain ⟨B, hB⟩ := ha.bounded_above_of_compact_support haCompact
   refine ⟨max 0 B, le_max_left _ _, fun z => (hB z).trans (le_max_right _ _)⟩
 
-private theorem parabolicExponent_one_le (d : Nat) :
-    (1 : ENNReal) ≤ parabolicExponent d := by
-  unfold parabolicExponent
-  exact le_add_of_nonneg_left bot_le
 
 private theorem eLpNorm_cutoff_mul_le_of_bound_le
-    {d : Nat} {U : Set (TimeVelocity d)} {p : ENNReal}
-    {a f : TimeVelocity d → Real}
+    
     (haf : AEStronglyMeasurable (fun z => a z * f z) volume)
     (hU : MeasurableSet U) (haU : tsupport a ⊆ U)
     {B M : Real} (hB : ∀ z, ‖a z‖ ≤ B) (hBM : B ≤ M) :
     eLpNorm (fun z => a z * f z) p volume ≤
       ENNReal.ofReal M * eLpNorm f p (volume.restrict U) := by
   calc
-    eLpNorm (fun z => a z * f z) p volume ≤
-        ENNReal.ofReal B * eLpNorm f p (volume.restrict U) :=
+    eLpNorm _ p volume ≤
+        ENNReal.ofReal B * eLpNorm f p _ :=
       eLpNorm_cutoff_mul_le haf hU haU hB
-    _ ≤ ENNReal.ofReal M * eLpNorm f p (volume.restrict U) := by
+    _ ≤ ENNReal.ofReal M * eLpNorm f p _ := by
       gcongr
 
 /-- The normalized reference collar cutoff has a selected-jet product bound
@@ -445,44 +402,28 @@ theorem exists_parabolicMorreyReferenceCollarCutoffJetConst (d : Nat) :
     Finset.sum_nonneg fun i _ => hBgnonneg i
   have hBhSum : 0 ≤ ∑ i : Fin d, ∑ j : Fin d, Bh i j :=
     Finset.sum_nonneg fun i _ => Finset.sum_nonneg fun j _ => hBhnonneg i j
-  have hMpos : 0 < M := by
-    dsimp [M]
-    linarith
   have hB₀M : B₀ ≤ M := by
-    dsimp [M]
-    have : 0 ≤ Bt + ∑ i : Fin d, Bg i + ∑ i : Fin d, ∑ j : Fin d, Bh i j := by
-      linarith
     linarith
   have hBtM : Bt ≤ M := by
-    dsimp [M]
-    have : 0 ≤ B₀ + ∑ i : Fin d, Bg i + ∑ i : Fin d, ∑ j : Fin d, Bh i j := by
-      linarith
     linarith
   have hBgM (i : Fin d) : Bg i ≤ M := by
-    dsimp [M]
     have hsum : Bg i ≤ ∑ j : Fin d, Bg j := Finset.single_le_sum
       (fun j _ => hBgnonneg j) (Finset.mem_univ i)
-    have : 0 ≤ B₀ + Bt + ∑ i : Fin d, ∑ j : Fin d, Bh i j := by linarith
     linarith
   have hBhM (i j : Fin d) : Bh i j ≤ M := by
-    dsimp [M]
     have hinner : Bh i j ≤ ∑ k : Fin d, Bh i k := Finset.single_le_sum
       (fun k _ => hBhnonneg i k) (Finset.mem_univ j)
     have houter : (∑ k : Fin d, Bh i k) ≤ ∑ l : Fin d, ∑ k : Fin d, Bh l k :=
       Finset.single_le_sum (fun l _ => Finset.sum_nonneg fun k _ => hBhnonneg l k)
         (Finset.mem_univ i)
-    have : 0 ≤ B₀ + Bt + ∑ i : Fin d, Bg i := by linarith
     linarith
   let N : Nat := 3 + d * 2 + d ^ 2 * 4
   let C : Real := (N : Real) * M
   have hCpos : 0 < C := by
-    dsimp [C, N]
     positivity
   refine ⟨eta, C, hCpos, heta, hetaCompact, heta_one, hetaU, ?_⟩
   intro q hq hqMem hqtMem hqgMem hqhMem
-  have hUopen : IsOpen U := by
-    dsimp [U]
-    exact isOpen_parabolicBox 1 1 0 0
+  have hUopen : IsOpen U := isOpen_parabolicBox 1 1 0 0
   have hUmeas : MeasurableSet U := hUopen.measurableSet
   have hp : (1 : ENNReal) ≤ parabolicExponent d := parabolicExponent_one_le d
   have hetaU' : tsupport eta ⊆ U := by simpa only [U] using hetaU
@@ -502,14 +443,6 @@ theorem exists_parabolicMorreyReferenceCollarCutoffJetConst (d : Nat) :
     simpa only [mul_comm] using memLp_cutoff_mul hUmeas
       (timeDerivative_cutoff_continuous heta₂)
       (timeDerivative_cutoff_hasCompactSupport hetaCompact) htimeU hqMem
-  have htimeMem : MemLp (timeDerivative (fun z => eta z * q z))
-      (parabolicExponent d) volume := by
-    have hformula : timeDerivative (fun z => eta z * q z) = fun z =>
-        eta z * timeDerivative q z + q z * timeDerivative eta z := by
-      funext z
-      exact timeDerivative_cutoff_mul hUopen heta₂ hetaU' hq z
-    rw [hformula]
-    exact htimeLeftMem.add htimeRightMem
   have hgradLeftMem (i : Fin d) : MemLp (fun z => eta z * velocityGradient q z i)
       (parabolicExponent d) volume :=
     memLp_cutoff_mul hUmeas heta.continuous hetaCompact hetaU' (hqgMem i)
@@ -518,14 +451,6 @@ theorem exists_parabolicMorreyReferenceCollarCutoffJetConst (d : Nat) :
     simpa only [mul_comm] using memLp_cutoff_mul hUmeas
       (velocityGradient_cutoff_continuous heta₂)
       (velocityGradient_cutoff_hasCompactSupport hetaCompact) (hgradU i) hqMem
-  have hgradMem (i : Fin d) : MemLp (fun z => velocityGradient (fun y => eta y * q y) z i)
-      (parabolicExponent d) volume := by
-    have hformula : (fun z => velocityGradient (fun y => eta y * q y) z i) = fun z =>
-        eta z * velocityGradient q z i + q z * velocityGradient eta z i := by
-      funext z
-      exact velocityGradient_cutoff_mul hUopen heta₂ hetaU' hq z i
-    rw [hformula]
-    exact (hgradLeftMem i).add (hgradRightMem i)
   have hhessOneMem (i j : Fin d) : MemLp (fun z => eta z * velocityHessian q z i j)
       (parabolicExponent d) volume :=
     memLp_cutoff_mul hUmeas heta.continuous hetaCompact hetaU' (hqhMem i j)
@@ -543,20 +468,6 @@ theorem exists_parabolicMorreyReferenceCollarCutoffJetConst (d : Nat) :
     simpa only [mul_comm] using memLp_cutoff_mul hUmeas
       (velocityHessian_cutoff_continuous heta₂)
       (velocityHessian_cutoff_hasCompactSupport hetaCompact) (hhessU i j) hqMem
-  have hhessMem (i j : Fin d) : MemLp (fun z =>
-      velocityHessian (fun y => eta y * q y) z i j) (parabolicExponent d) volume := by
-    have hformula : (fun z => velocityHessian (fun y => eta y * q y) z i j) = fun z =>
-        eta z * velocityHessian q z i j +
-          velocityGradient eta z j * velocityGradient q z i +
-            velocityGradient q z j * velocityGradient eta z i +
-              q z * velocityHessian eta z i j := by
-      funext z
-      exact velocityHessian_cutoff_mul hUopen heta₂ hetaU' hq z i j
-    rw [hformula]
-    simpa only [Pi.add_def, add_assoc] using ((hhessOneMem i j).add (hhessTwoMem i j)).add
-      ((hhessThreeMem i j).add (hhessFourMem i j))
-  have hjetMem : ParabolicSmoothJetMemLp d (fun z => eta z * q z) :=
-    ⟨hvalueMem, htimeMem, hgradMem, hhessMem⟩
   let m : ENNReal := ENNReal.ofReal M
   let Q : ENNReal := eLpNorm q (parabolicExponent d) (volume.restrict U)
   let T : ENNReal := eLpNorm (timeDerivative q) (parabolicExponent d) (volume.restrict U)
@@ -565,24 +476,17 @@ theorem exists_parabolicMorreyReferenceCollarCutoffJetConst (d : Nat) :
   let H : Fin d → Fin d → ENNReal := fun i j =>
     eLpNorm (fun z => velocityHessian q z i j) (parabolicExponent d) (volume.restrict U)
   let R : ENNReal := Q + T + ∑ i : Fin d, G i + ∑ i : Fin d, ∑ j : Fin d, H i j
-  have hQR : Q ≤ R := by
-    dsimp [R]
-    exact le_self_add.trans (le_self_add.trans le_self_add)
-  have hTR : T ≤ R := by
-    dsimp [R]
-    exact (le_add_of_nonneg_left (by positivity : 0 ≤ Q)).trans
+  have hQR : Q ≤ R := le_self_add.trans (le_self_add.trans le_self_add)
+  have hTR : T ≤ R := (le_add_of_nonneg_left (by positivity)).trans
       (le_self_add.trans le_self_add)
-  have hGR (i : Fin d) : G i ≤ R := by
-    dsimp [R]
-    exact le_trans (Finset.single_le_sum (fun j _ => bot_le) (Finset.mem_univ i))
-      ((le_add_of_nonneg_left (by positivity : 0 ≤ Q + T)).trans le_self_add)
+  have hGR (i : Fin d) : G i ≤ R := le_trans (Finset.single_le_sum (fun j _ => bot_le) (Finset.mem_univ i))
+      ((le_add_of_nonneg_left (by positivity)).trans le_self_add)
   have hHR (i j : Fin d) : H i j ≤ R := by
-    dsimp [R]
     calc
       H i j ≤ ∑ k : Fin d, H i k := Finset.single_le_sum (fun k _ => bot_le) (Finset.mem_univ j)
       _ ≤ ∑ l : Fin d, ∑ k : Fin d, H l k :=
         Finset.single_le_sum (fun l _ => Finset.sum_nonneg fun k _ => bot_le) (Finset.mem_univ i)
-      _ ≤ R := le_add_of_nonneg_left (by positivity : 0 ≤ Q + T + ∑ i : Fin d, G i)
+      _ ≤ R := le_add_of_nonneg_left (by positivity)
   have hvalueE : eLpNorm (fun z => eta z * q z) (parabolicExponent d) volume ≤ m * Q := by
     simpa only [m, Q] using eLpNorm_cutoff_mul_le_of_bound_le
       (by simpa only [mul_comm] using (hvalueMem).aestronglyMeasurable) hUmeas hetaU' hB₀ hB₀M
@@ -628,19 +532,19 @@ theorem exists_parabolicMorreyReferenceCollarCutoffJetConst (d : Nat) :
     simpa only [m, Q, mul_comm] using eLpNorm_cutoff_mul_le_of_bound_le
       (by simpa only [mul_comm] using (hhessFourMem i j).aestronglyMeasurable) hUmeas (hhessU i j)
       (hBh i j) (hBhM i j)
-  have hvalueR : eLpNorm (fun z => eta z * q z) (parabolicExponent d) volume ≤ m * R :=
+  have hvalueR : eLpNorm _ _ volume ≤ m * R :=
     hvalueE.trans (mul_le_mul_right hQR m)
   have htimeR : eLpNorm (timeDerivative (fun z => eta z * q z))
       (parabolicExponent d) volume ≤ 2 * (m * R) := by
-    rw [show timeDerivative (fun z => eta z * q z) = fun z =>
+    rw [show timeDerivative _ = fun z =>
         eta z * timeDerivative q z + q z * timeDerivative eta z by
       funext z
       exact timeDerivative_cutoff_mul hUopen heta₂ hetaU' hq z]
     calc
-      eLpNorm (fun z => eta z * timeDerivative q z + q z * timeDerivative eta z)
-          (parabolicExponent d) volume ≤
-          eLpNorm (fun z => eta z * timeDerivative q z) (parabolicExponent d) volume +
-            eLpNorm (fun z => q z * timeDerivative eta z) (parabolicExponent d) volume :=
+      eLpNorm _
+          _ volume ≤
+          eLpNorm _ _ volume +
+            eLpNorm _ _ volume :=
         eLpNorm_add_le hp
       _ ≤ m * R + m * R := add_le_add
         (htimeLeftE.trans (mul_le_mul_right hTR m))
@@ -648,15 +552,15 @@ theorem exists_parabolicMorreyReferenceCollarCutoffJetConst (d : Nat) :
       _ = 2 * (m * R) := by ring
   have hgradR (i : Fin d) : eLpNorm (fun z => velocityGradient (fun y => eta y * q y) z i)
       (parabolicExponent d) volume ≤ 2 * (m * R) := by
-    rw [show (fun z => velocityGradient (fun y => eta y * q y) z i) = fun z =>
+    rw [show (fun z => velocityGradient _ z i) = fun z =>
         eta z * velocityGradient q z i + q z * velocityGradient eta z i by
       funext z
       exact velocityGradient_cutoff_mul hUopen heta₂ hetaU' hq z i]
     calc
-      eLpNorm (fun z => eta z * velocityGradient q z i + q z * velocityGradient eta z i)
-          (parabolicExponent d) volume ≤
-          eLpNorm (fun z => eta z * velocityGradient q z i) (parabolicExponent d) volume +
-            eLpNorm (fun z => q z * velocityGradient eta z i) (parabolicExponent d) volume :=
+      eLpNorm _
+          _ volume ≤
+          eLpNorm _ _ volume +
+            eLpNorm _ _ volume :=
         eLpNorm_add_le hp
       _ ≤ m * R + m * R := add_le_add
         ((hgradLeftE i).trans (mul_le_mul_right (hGR i) m))
@@ -664,40 +568,24 @@ theorem exists_parabolicMorreyReferenceCollarCutoffJetConst (d : Nat) :
       _ = 2 * (m * R) := by ring
   have hhessR (i j : Fin d) : eLpNorm (fun z => velocityHessian (fun y => eta y * q y) z i j)
       (parabolicExponent d) volume ≤ 4 * (m * R) := by
-    rw [show (fun z => velocityHessian (fun y => eta y * q y) z i j) = fun z =>
+    rw [show (fun z => velocityHessian _ z i j) = fun z =>
         eta z * velocityHessian q z i j +
           velocityGradient eta z j * velocityGradient q z i +
             velocityGradient q z j * velocityGradient eta z i +
               q z * velocityHessian eta z i j by
       funext z
       exact velocityHessian_cutoff_mul hUopen heta₂ hetaU' hq z i j]
-    rw [show (fun z =>
-        eta z * velocityHessian q z i j +
-          velocityGradient eta z j * velocityGradient q z i +
-            velocityGradient q z j * velocityGradient eta z i +
-              q z * velocityHessian eta z i j) =
-        ((fun z => eta z * velocityHessian q z i j) +
-          (fun z => velocityGradient eta z j * velocityGradient q z i) +
-            (fun z => velocityGradient q z j * velocityGradient eta z i)) +
-          fun z => q z * velocityHessian eta z i j by
-      funext z
-      simp only [Pi.add_def, add_assoc]]
     calc
-      eLpNorm (fun z => eta z * velocityHessian q z i j +
-          velocityGradient eta z j * velocityGradient q z i +
-            velocityGradient q z j * velocityGradient eta z i +
-              q z * velocityHessian eta z i j) (parabolicExponent d) volume ≤
-          (eLpNorm (fun z => eta z * velocityHessian q z i j) (parabolicExponent d) volume +
-            eLpNorm (fun z => velocityGradient eta z j * velocityGradient q z i)
-              (parabolicExponent d) volume +
-              eLpNorm (fun z => velocityGradient q z j * velocityGradient eta z i)
-                (parabolicExponent d) volume) +
-            eLpNorm (fun z => q z * velocityHessian eta z i j) (parabolicExponent d) volume := by
+      eLpNorm _ _ volume ≤
+          (eLpNorm _ _ volume +
+            eLpNorm _
+              _ volume +
+              eLpNorm _
+                _ volume) +
+            eLpNorm _ _ volume := by
         calc
-          _ ≤ eLpNorm (fun z => eta z * velocityHessian q z i j +
-              velocityGradient eta z j * velocityGradient q z i +
-                velocityGradient q z j * velocityGradient eta z i) (parabolicExponent d) volume +
-              eLpNorm (fun z => q z * velocityHessian eta z i j) (parabolicExponent d) volume :=
+          _ ≤ eLpNorm _ _ volume +
+              eLpNorm _ _ volume :=
             eLpNorm_add_le hp
           _ ≤ _ := by
             have htwo := eLpNorm_add_le (μ := volume)
@@ -715,16 +603,7 @@ theorem exists_parabolicMorreyReferenceCollarCutoffJetConst (d : Nat) :
                   eLpNorm (fun z => velocityGradient eta z j * velocityGradient q z i)
                     (parabolicExponent d) volume +
                     eLpNorm (fun z => velocityGradient q z j * velocityGradient eta z i)
-                      (parabolicExponent d) volume := by
-              rw [show (fun z => eta z * velocityHessian q z i j +
-                  velocityGradient eta z j * velocityGradient q z i +
-                    velocityGradient q z j * velocityGradient eta z i) =
-                  ((fun z => eta z * velocityHessian q z i j) +
-                    fun z => velocityGradient eta z j * velocityGradient q z i) +
-                      fun z => velocityGradient q z j * velocityGradient eta z i by
-                funext z
-                simp only [Pi.add_def, add_assoc]]
-              exact hthree.trans (add_le_add_left htwo _)
+                      (parabolicExponent d) volume := hthree.trans (add_le_add_left htwo _)
             exact add_le_add_left hthree' _
       _ ≤ (m * R + m * R + m * R) + m * R := by
         gcongr
@@ -734,28 +613,24 @@ theorem exists_parabolicMorreyReferenceCollarCutoffJetConst (d : Nat) :
         · exact (hhessFourE i j).trans (mul_le_mul_right hQR m)
       _ = 4 * (m * R) := by ring
   have hENN : parabolicSmoothJetELpNorm d (fun z => eta z * q z) ≤ ENNReal.ofReal C * R := by
-    unfold parabolicSmoothJetELpNorm parabolicELpNorm
     calc
-      eLpNorm (fun z => eta z * q z) (parabolicExponent d) volume +
-          eLpNorm (timeDerivative (fun z => eta z * q z)) (parabolicExponent d) volume +
-          ∑ i : Fin d, eLpNorm (fun z => velocityGradient (fun y => eta y * q y) z i)
-            (parabolicExponent d) volume +
+      eLpNorm _ _ volume +
+          eLpNorm _ _ volume +
+          ∑ i : Fin d, eLpNorm _
+            _ volume +
           ∑ i : Fin d, ∑ j : Fin d, eLpNorm
-            (fun z => velocityHessian (fun y => eta y * q y) z i j) (parabolicExponent d) volume ≤
+            _ _ volume ≤
           m * R + 2 * (m * R) + ∑ _i : Fin d, 2 * (m * R) +
-            ∑ _i : Fin d, ∑ _j : Fin d, 4 * (m * R) := by
-        exact add_le_add
+            ∑ _i : Fin d, ∑ _j : Fin d, 4 * (m * R) := add_le_add
           (add_le_add
             (add_le_add hvalueR htimeR)
             (Finset.sum_le_sum fun i _ => hgradR i))
           (Finset.sum_le_sum fun i _ => Finset.sum_le_sum fun j _ => hhessR i j)
-      _ = (N : ENNReal) * (m * R) := by
+      _ = N * (m * R) := by
         dsimp [N]
-        simp [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul,
-          Nat.cast_add, Nat.cast_mul, Nat.cast_pow]
+        simp [Finset.sum_const]
         ring
       _ = ENNReal.ofReal C * R := by
-        dsimp [C, m]
         rw [ENNReal.ofReal_mul (Nat.cast_nonneg _)]
         simp only [ENNReal.ofReal_natCast]
         ring
@@ -764,7 +639,6 @@ theorem exists_parabolicMorreyReferenceCollarCutoffJetConst (d : Nat) :
   have hGtop (i : Fin d) : G i ≠ ⊤ := by simpa only [G] using (hqgMem i).eLpNorm_ne_top
   have hHtop (i j : Fin d) : H i j ≠ ⊤ := by simpa only [H] using (hqhMem i j).eLpNorm_ne_top
   have hRtop : R ≠ ⊤ := by
-    dsimp [R]
     apply ENNReal.add_ne_top.mpr
     constructor
     · apply ENNReal.add_ne_top.mpr
@@ -782,14 +656,12 @@ theorem exists_parabolicMorreyReferenceCollarCutoffJetConst (d : Nat) :
           (parabolicBox 1 1 0 0) +
         ∑ i : Fin d, ∑ j : Fin d, parabolicLpNormOn d
           (fun z => velocityHessian q z i j) (parabolicBox 1 1 0 0) := by
-    dsimp [R, Q, T, G, H, U, parabolicLpNormOn, parabolicELpNormOn]
     rw [ENNReal.toReal_add (ENNReal.add_ne_top.mpr
       ⟨ENNReal.add_ne_top.mpr ⟨hQtop, hTtop⟩, ENNReal.sum_ne_top.mpr fun i _ => hGtop i⟩)
       (ENNReal.sum_ne_top.mpr fun i _ => ENNReal.sum_ne_top.mpr fun j _ => hHtop i j)]
     rw [ENNReal.toReal_add (ENNReal.add_ne_top.mpr ⟨hQtop, hTtop⟩)
       (ENNReal.sum_ne_top.mpr fun i _ => hGtop i)]
-    rw [ENNReal.toReal_add hQtop hTtop]
-    rw [ENNReal.toReal_sum fun i _ => hGtop i]
+    rw [ENNReal.toReal_add hQtop hTtop, ENNReal.toReal_sum fun i _ => hGtop i]
     rw [ENNReal.toReal_sum fun i _ => ENNReal.sum_ne_top.mpr fun j _ => hHtop i j]
     simp_rw [ENNReal.toReal_sum fun j _ => hHtop _ j]
     rfl

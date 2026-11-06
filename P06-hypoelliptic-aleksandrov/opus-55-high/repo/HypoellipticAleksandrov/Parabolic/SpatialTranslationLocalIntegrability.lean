@@ -12,7 +12,6 @@ translations on domains mapped forward into the original domain.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -27,17 +26,16 @@ theorem LocallyIntegrableOn.spatialTranslate_of_mapsTo
     (hshift : Set.MapsTo (spatialShift k h) V U) :
     LocallyIntegrableOn (spatialTranslate k h f) V volume := by
   intro x hx
-  rcases hf (spatialShift k h x) (hshift hx) with ⟨s, hs, hfs⟩
+  rcases hf _ (hshift hx) with ⟨s, hs, hfs⟩
   refine ⟨spatialShift k h ⁻¹' s, ?_, ?_⟩
   · have hcontinuous : Continuous (spatialShift k h) := by
       change Continuous (fun z : TimeVelocity d => z + (0, h • PDE.basisVec k))
-      simpa only [Homeomorph.coe_addRight] using
-        (Homeomorph.addRight ((0, h • PDE.basisVec k) : TimeVelocity d)).continuous
+      fun_prop
     exact hcontinuous.continuousWithinAt.preimage_mem_nhdsWithin'
       (nhdsWithin_mono _ hshift.image_subset hs)
   · have hembed : MeasurableEmbedding (spatialShift k h) := by
       change MeasurableEmbedding (fun z : TimeVelocity d => z + (0, h • PDE.basisVec k))
-      simpa only [Homeomorph.coe_addRight] using
+      simpa using
         (Homeomorph.addRight ((0, h • PDE.basisVec k) : TimeVelocity d)).measurableEmbedding
     change IntegrableOn (fun z => f (spatialShift k h z)) (spatialShift k h ⁻¹' s) volume
     simpa only [Function.comp_def] using

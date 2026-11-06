@@ -8,7 +8,6 @@ import HypoellipticAleksandrov.KineticAleksandrov.Evolution.ClassicalTerminalWea
 /-! # Continuity strictly before a bounded source starts -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Filter Evolution Metric
 open scoped Topology
@@ -42,14 +41,13 @@ theorem continuousOn_duhamelFuture_before_source
     obtain ⟨r, hr, hball⟩ := Metric.isOpen_iff.mp hD z hz
     let U := ball z r
     let C := closedBall z (r / 2)
-    have hC : IsCompact C := isCompact_closedBall z (r / 2)
+    have hC : IsCompact C := isCompact_closedBall z _
     have hCU : C ⊆ U := closedBall_subset_ball (half_lt_self hr)
     have hCi : C ⊆ closure (interior C) := by
       rw [interior_closedBall z (half_pos hr).ne', closure_ball z (half_pos hr).ne']
     have hbig : IsCompact (closedBall z r) := isCompact_closedBall z r
     let : IsFiniteMeasure (volume.restrict U) := ⟨by
-      rw [Measure.restrict_apply_univ]
-      exact (measure_mono ball_subset_closedBall).trans_lt hbig.measure_lt_top⟩
+      aesop⟩
     have htime : Continuous (fun w : EvolutionVec d => (P w).time) :=
       continuous_time.comp P.continuous
     obtain ⟨q, hq, hmin⟩ := hbig.exists_isMinOn
@@ -63,7 +61,7 @@ theorem continuousOn_duhamelFuture_before_source
       isOpen_ball hC hCi hCU hball hfloor F hF M hM hFb hFz
     exact (hcont.continuousAt (closedBall_mem_nhds z (half_pos hr))).continuousWithinAt
   have hcomp := hc.comp P.symm.continuous.continuousOn (fun p hp => by
-    simpa only [D, mem_preimage, Homeomorph.apply_symm_apply] using hp)
+    aesop)
   simpa only [Function.comp_def, Homeomorph.apply_symm_apply] using hcomp
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

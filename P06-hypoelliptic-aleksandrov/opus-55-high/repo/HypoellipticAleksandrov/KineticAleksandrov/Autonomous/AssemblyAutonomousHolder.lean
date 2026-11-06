@@ -10,7 +10,6 @@ classical inputs remain explicit; this is a conditional theorem.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov MeasureTheory Set Autonomous Holder
 open scoped ENNReal
@@ -35,8 +34,7 @@ theorem kinetic_holder_autonomous_relative_of_frontier
         (∀ P ∈ K, closure (backwardCylinder P (2 * R₀)) ⊆ Omega) →
       ∀ P ∈ K, ∀ P' ∈ K,
         |u P - u P'| ≤ C * oscillationOn u (holderNeighbourhood R₀ K) *
-          (quasiDistance P P' / R₀) ^ alpha := by
-  exact kinetic_holder_autonomous_relative_of_below_four_density
+          (quasiDistance P P' / R₀) ^ alpha := kinetic_holder_autonomous_relative_of_below_four_density
     (below_four_density_of_frontier hfront hH hLE) hH hLE lam Lam hlam hLam
 
 end HypoellipticAleksandrov.KineticAleksandrov

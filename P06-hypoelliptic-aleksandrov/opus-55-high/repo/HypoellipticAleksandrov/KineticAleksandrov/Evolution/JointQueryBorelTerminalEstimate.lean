@@ -13,7 +13,6 @@ to all earlier sources. No bound uniform over arbitrary terminal data is asserte
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -67,21 +66,19 @@ theorem terminalOperators_terminal_time_error
   obtain ⟨C, _, hC⟩ := F.exists_bound
   have herr (x : EvolutionState Ω γ τ) :
       |P₀ τ q hτq (terminalStateDatum F) x - terminalStateDatum F x| ≤ (q - τ) * M := by
-    rw [← hrep τ hτq x]
+    rw [← hrep]
     exact classical_sub_terminalDatum_le_core_of_slab
       (isOpen_of_isAdmissibleEvolutionDomain hΩ) hγ.1 hlam hB_ell hb_lipschitz
       (le_refl 0) zero_le_one hF.1 hC (fun z _ => hM 0 (le_refl 0) zero_le_one z)
       ((isClassicalViscousTerminalSolution_zero_iff Ω γ B b q F u).2 hu)
-      hlat ⟨τ, x.1.1, x.1.2⟩ ⟨le_rfl, hτq, subset_closure x.2.1⟩
+      hlat _ ⟨le_rfl, hτq, subset_closure x.2.1⟩
   let D := P₀ τ q hτq (terminalStateDatum F) - terminalStateDatum F
   have heq : P₀ σ q (hστ.trans hτq) (terminalStateDatum F) p -
       P₀ σ τ hστ (terminalStateDatum F) p = P₀ σ τ hστ D p := by
     rw [terminalOperators_comp_smooth n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
       σ τ q hστ hτq F hFq]
-    exact (congrArg (fun f : BoundedBorel (EvolutionState Ω γ σ) => f p)
-      ((P₀ σ τ hστ).map_sub (P₀ τ q hτq (terminalStateDatum F))
-        (terminalStateDatum F))).symm
+    aesop
   rw [heq, terminalOperators_apply]
   exact abs_integral_boundedBorel_le D _
     (terminalFiberKernel_univ_le_one n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b

@@ -33,7 +33,7 @@ theorem profile_classical_jets_locallyIntegrable (d : ℕ) (hd : 1 ≤ d)
       obtain ⟨M, hM⟩ := profile_jets_compact_bound H hs K hK hz
       refine ⟨M, ?_⟩
       intro q hq
-      simpa only [Real.norm_eq_abs] using (norm_le_pi_norm (dx H q) i).trans (hM q hq).1
+      simpa using (norm_le_pi_norm _ i).trans (hM q hq).1
   · intro i
     apply homogeneous_component_locallyIntegrable_off_origin d hd (fun q => dv H q i)
       ((measurable_pi_apply i).comp (measurable_dv H))
@@ -46,7 +46,7 @@ theorem profile_classical_jets_locallyIntegrable (d : ℕ) (hd : 1 ≤ d)
       obtain ⟨M, hM⟩ := profile_jets_compact_bound H hs K hK hz
       refine ⟨M, ?_⟩
       intro q hq
-      simpa only [Real.norm_eq_abs] using (norm_le_pi_norm (dv H q) i).trans (hM q hq).2.1
+      simpa using (norm_le_pi_norm _ i).trans (hM q hq).2.1
   · intro i k
     apply homogeneous_component_locallyIntegrable_off_origin d hd (fun q => dvv H q i k)
       (measurable_dvv H i k) (alpha - 2) (by linarith) (by linarith)

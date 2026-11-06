@@ -12,7 +12,6 @@ records its exact basis-row weak equation.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -61,30 +60,26 @@ theorem exists_reverseTimeGalerkin_solution
               reverseTimeGalerkinSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ i) := by
   let T := r₁ - r₀
   have hT : 0 ≤ T := sub_nonneg.mpr h₀₁.le
-  let x0 : Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ :=
+  let x0  :=
     (galerkinSpaceBasis hΩ N).equivFun (galerkinInitialProjection hΩ N initial)
-  let A : ℝ → (Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) →L[ℝ]
-      (Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ) :=
+  let A  :=
     fun τ => reverseTimeGalerkinLinearPart r₀ r₁ h₀₁ hΩ hΩbounded a b c
       haSmooth hbSmooth hcSmooth N (Set.projIcc 0 T hT τ)
-  let f : ℝ → Fin (Module.finrank ℝ (galerkinSpace hΩ N)) → ℝ :=
+  let f  :=
     fun τ => reverseTimeGalerkinForcing r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N
       (Set.projIcc 0 T hT τ)
-  have hA : ContinuousOn A (Set.Icc 0 T) := by
-    exact ((continuous_reverseTimeGalerkinLinearPart r₀ r₁ h₀₁ hΩ hΩbounded a b c
+  have hA : ContinuousOn A (Set.Icc 0 T) := ((continuous_reverseTimeGalerkinLinearPart r₀ r₁ h₀₁ hΩ hΩbounded a b c
       haSmooth hbSmooth hcSmooth N).comp continuous_projIcc).continuousOn
-  have hf : ContinuousOn f (Set.Icc 0 T) := by
-    exact ((continuous_reverseTimeGalerkinForcing r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N).comp
+  have hf : ContinuousOn f (Set.Icc 0 T) := ((continuous_reverseTimeGalerkinForcing r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N).comp
       continuous_projIcc).continuousOn
   have hode := exists_linear_ode_on_Icc hT A f hA hf x0
   let x := hode.choose
   have hx0 : x 0 = x0 := hode.choose_spec.1
-  have hxcont : ContinuousOn x (Set.Icc 0 T) := hode.choose_spec.2.1
+  have hxcont : ContinuousOn x _ := hode.choose_spec.2.1
   have hdx : ∀ τ ∈ Set.Icc 0 T, HasDerivWithinAt x (A τ (x τ) + f τ)
-      (Set.Icc 0 T) τ := hode.choose_spec.2.2
-  let u : ℝ → galerkinSpace hΩ N := fun τ => galerkinReconstruct hΩ N (x τ)
-  have hucont : ContinuousOn u (Set.Icc 0 T) := by
-    exact (LinearMap.toContinuousLinearMap (galerkinReconstruct hΩ N)).continuous.continuousOn
+      _ τ := hode.choose_spec.2.2
+  let u  := fun τ => galerkinReconstruct hΩ N (x τ)
+  have hucont : ContinuousOn u (Set.Icc 0 T) := (LinearMap.toContinuousLinearMap _).continuous.continuousOn
       |>.comp hxcont (fun _ _ => Set.mem_univ _)
   refine ⟨x, u, ?_, rfl, hxcont, hucont, ?_⟩
   · simpa only [x0] using hx0
@@ -94,9 +89,7 @@ theorem exists_reverseTimeGalerkin_solution
   · simpa only [A, f, hproj] using hdx τ τ.2
   · simpa only [u] using
       (reverseTimeGalerkin_coordinateEquation_iff r₀ r₁ h₀₁ hΩ hΩbounded a b c F
-        haSmooth hbSmooth hcSmooth hFSmooth N τ (x τ)
-        (reverseTimeGalerkinLinearPart r₀ r₁ h₀₁ hΩ hΩbounded a b c
-          haSmooth hbSmooth hcSmooth N τ (x τ) +
-        reverseTimeGalerkinForcing r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth N τ)).mpr rfl
+        haSmooth hbSmooth hcSmooth hFSmooth N τ _
+        _).mpr rfl
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

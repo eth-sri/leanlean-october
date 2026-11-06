@@ -15,7 +15,6 @@ parabolic boxes.  The real-valued statement remains guarded by the normalized
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -24,15 +23,12 @@ open scoped ENNReal
 
 private theorem parabolicExponent_toReal (d : Nat) :
     (parabolicExponent d).toReal = (d : Real) + 1 := by
-  unfold parabolicExponent
-  have hcast : (d : ENNReal) + 1 = ((d + 1 : Nat) : ENNReal) := by
-    norm_num
-  rw [hcast, ENNReal.toReal_natCast]
-  norm_num
+  aesop
+
+variable {d : Nat} (tᵦ : Real) (vᵦ : PDE.Vec d) {rᵦ : Real}
 
 private theorem parabolicMorreyBox_volume_ratio_rpow_toReal
-    {d : Nat}
-    (tᵦ : Real) (vᵦ : PDE.Vec d) {rᵦ : Real} (hrᵦ : 0 < rᵦ)
+     (hrᵦ : 0 < rᵦ)
     (tₛ : Real) (vₛ : PDE.Vec d) {rₛ : Real} (hrₛ : 0 < rₛ) :
     ((volume (parabolicBox 1 rᵦ tᵦ vᵦ) /
         volume (parabolicBox 1 rₛ tₛ vₛ)) ^
@@ -44,29 +40,25 @@ private theorem parabolicMorreyBox_volume_ratio_rpow_toReal
   simp only [ENNReal.toReal_div, ENNReal.toReal_one, parabolicExponent_toReal]
   have htwo : (2 : Real) ^ d ≠ 0 := pow_ne_zero _ (by norm_num)
   have hratio :
-      ((2 : Real) ^ d * rᵦ ^ (d + 2)) /
-          ((2 : Real) ^ d * rₛ ^ (d + 2)) =
+      ((2) ^ d * rᵦ ^ (d + 2)) /
+          ((2) ^ d * rₛ ^ (d + 2)) =
         (rᵦ / rₛ) ^ (d + 2) := by
     rw [mul_div_mul_left _ _ htwo, (div_pow _ _ _).symm]
   rw [hratio, ← Real.rpow_natCast,
     ← Real.rpow_mul (div_nonneg hrᵦ.le hrₛ.le)]
-  congr 1
-  have hp : (d : Real) + 1 ≠ 0 := by positivity
-  push_cast
-  field_simp [hp]
+  grind
 
 /-- Restricting to a smaller positive finite set costs the normalized-volume
 ratio to the power `1 / (d + 1)`. -/
 theorem parabolicELpMeanNormOn_mono_set
-    {d : Nat} {Qₛ Qᵦ : Set (TimeVelocity d)}
+     {Qₛ Qᵦ : Set (TimeVelocity d)}
     (_hₛpos : 0 < volume Qₛ) (hₛtop : volume Qₛ < ∞)
     (hᵦpos : 0 < volume Qᵦ) (hᵦtop : volume Qᵦ < ∞)
     (hsub : Qₛ ⊆ Qᵦ) (f : TimeVelocity d -> Real) :
     parabolicELpMeanNormOn d f Qₛ ≤
       (volume Qᵦ / volume Qₛ) ^ (1 / parabolicExponent d).toReal *
         parabolicELpMeanNormOn d f Qᵦ := by
-  have hraw : parabolicELpNormOn d f Qₛ ≤ parabolicELpNormOn d f Qᵦ := by
-    exact eLpNorm_mono_measure f (Measure.restrict_mono_set volume hsub)
+  have hraw : parabolicELpNormOn d f Qₛ ≤ parabolicELpNormOn d f Qᵦ := eLpNorm_mono_measure f (Measure.restrict_mono_set volume hsub)
   calc
     parabolicELpMeanNormOn d f Qₛ =
         (volume Qₛ)⁻¹ ^ (1 / parabolicExponent d).toReal *
@@ -78,7 +70,7 @@ theorem parabolicELpMeanNormOn_mono_set
     _ = (volume Qᵦ / volume Qₛ) ^ (1 / parabolicExponent d).toReal *
           parabolicELpMeanNormOn d f Qᵦ := by
       rw [parabolicELpNormOn_eq_volume_rpow_mul_parabolicELpMeanNormOn
-        hᵦpos hᵦtop f, ENNReal.inv_rpow,
+        hᵦpos hᵦtop, ENNReal.inv_rpow,
         ENNReal.div_rpow_of_nonneg _ _ ENNReal.toReal_nonneg]
       simp only [div_eq_mul_inv]
       ac_rfl
@@ -86,8 +78,7 @@ theorem parabolicELpMeanNormOn_mono_set
 /-- Normalized `MemLp` on a larger literal forward physical box restricts to
 a contained smaller such box. -/
 theorem memLp_parabolicNormalizedVolumeOn_mono_parabolicBox
-    {d : Nat}
-    (tᵦ : Real) (vᵦ : PDE.Vec d) {rᵦ : Real} (hrᵦ : 0 < rᵦ)
+     (hrᵦ : 0 < rᵦ)
     (tₛ : Real) (vₛ : PDE.Vec d) {rₛ : Real} (hrₛ : 0 < rₛ)
     (hsub : parabolicBox 1 rₛ tₛ vₛ ⊆ parabolicBox 1 rᵦ tᵦ vᵦ)
     {f : TimeVelocity d -> Real}
@@ -98,8 +89,7 @@ theorem memLp_parabolicNormalizedVolumeOn_mono_parabolicBox
   have hrawᵦ := memLp_restrict_of_memLp_parabolicNormalizedVolumeOn
     (volume_parabolicMorreyBox_pos tᵦ vᵦ hrᵦ)
     (volume_parabolicMorreyBox_lt_top tᵦ vᵦ hrᵦ) hᵦ
-  have hrawₛ : MemLp f (parabolicExponent d)
-      (volume.restrict (parabolicBox 1 rₛ tₛ vₛ)) :=
+  have hrawₛ  :=
     hrawᵦ.mono_measure (Measure.restrict_mono_set volume hsub)
   exact memLp_parabolicNormalizedVolumeOn_of_memLp
     (volume_parabolicMorreyBox_pos tₛ vₛ hrₛ) hrawₛ
@@ -107,8 +97,7 @@ theorem memLp_parabolicNormalizedVolumeOn_mono_parabolicBox
 /-- The guarded real normalized mean norm on a smaller contained forward box
 is bounded by that on the larger box with the exact parabolic radius factor. -/
 theorem parabolicLpMeanNormOn_mono_parabolicBox
-    {d : Nat}
-    (tᵦ : Real) (vᵦ : PDE.Vec d) {rᵦ : Real} (hrᵦ : 0 < rᵦ)
+     (hrᵦ : 0 < rᵦ)
     (tₛ : Real) (vₛ : PDE.Vec d) {rₛ : Real} (hrₛ : 0 < rₛ)
     (hsub : parabolicBox 1 rₛ tₛ vₛ ⊆ parabolicBox 1 rᵦ tᵦ vᵦ)
     (f : TimeVelocity d -> Real)
@@ -119,22 +108,19 @@ theorem parabolicLpMeanNormOn_mono_parabolicBox
     parabolicLpMeanNormOn d f (parabolicBox 1 rₛ tₛ vₛ) hₛ ≤
       (rᵦ / rₛ) ^ (((d : Real) + 2) / ((d : Real) + 1)) *
         parabolicLpMeanNormOn d f (parabolicBox 1 rᵦ tᵦ vᵦ) hᵦ := by
-  have hratio_top :
-      volume (parabolicBox 1 rᵦ tᵦ vᵦ) /
-          volume (parabolicBox 1 rₛ tₛ vₛ) ≠ ∞ :=
+  have hratio_top  :=
     ENNReal.div_ne_top (volume_parabolicMorreyBox_ne_top tᵦ vᵦ hrᵦ)
       (volume_parabolicMorreyBox_pos tₛ vₛ hrₛ).ne'
   have hfactor_top :
       ((volume (parabolicBox 1 rᵦ tᵦ vᵦ) /
           volume (parabolicBox 1 rₛ tₛ vₛ)) ^
             (1 / parabolicExponent d).toReal) ≠ ∞ := by
-    exact ENNReal.rpow_ne_top_of_nonneg ENNReal.toReal_nonneg hratio_top
+    simp_all
   have hright_top :
       ((volume (parabolicBox 1 rᵦ tᵦ vᵦ) /
           volume (parabolicBox 1 rₛ tₛ vₛ)) ^
             (1 / parabolicExponent d).toReal) *
-          parabolicELpMeanNormOn d f (parabolicBox 1 rᵦ tᵦ vᵦ) ≠ ∞ := by
-    exact ENNReal.mul_ne_top hfactor_top (ne_of_lt (memLp_iff.mp hᵦ))
+          parabolicELpMeanNormOn d f (parabolicBox 1 rᵦ tᵦ vᵦ) ≠ ∞ := ENNReal.mul_ne_top hfactor_top (ne_of_lt (memLp_iff.mp hᵦ))
   have hmean := parabolicELpMeanNormOn_mono_set
     (d := d)
     (volume_parabolicMorreyBox_pos tₛ vₛ hrₛ)

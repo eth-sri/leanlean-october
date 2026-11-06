@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Decay.FrequencyBlocksCo
 /-! # Local supplied evolutions from the authorized evolution statement -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open Set MeasureTheory
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic

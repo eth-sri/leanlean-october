@@ -10,18 +10,19 @@ boundedness and measurability follow from the source test hypotheses, not a new 
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open Parabolic
 
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (H : Interval) (sMinus T : ℝ)
+
 /-- The reconstruction regularity domain is open. -/
-theorem isOpen_reconstructionStrip (H : Interval) (sMinus T : ℝ) :
+theorem isOpen_reconstructionStrip  :
     IsOpen (reconstructionStrip H sMinus T) :=
   (isOpen_Ioi.preimage continuous_time).inter (isOpen_stripPast H T)
 
 /-- A C112 test has a continuous scalar kinetic operator on its regularity set. -/
-theorem continuousOn_forwardScalarOperator {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+theorem continuousOn_forwardScalarOperator 
     {D : Set Point} {phi : Point → ℝ} (hphi : IsKineticC112On phi D) :
     ContinuousOn (forwardScalarOperator A.a phi) D := by
   have hx : Continuous (fun p : Point => p.position 0) :=
@@ -38,8 +39,7 @@ theorem continuousOn_forwardScalarOperator {lam Lam : ℝ} (A : SmoothAutonomous
     (ha.continuousOn.mul hh)
 
 /-- The source assumptions supply an actual zero-extended bounded Borel negative operator. -/
-theorem exists_bounded_reconstruction_source {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
-    (H : Interval) (sMinus T : ℝ) (phi : Point → ℝ)
+theorem exists_bounded_reconstruction_source  (phi : Point → ℝ)
     (hphi : IsKineticC112On phi (reconstructionStrip H sMinus T))
     (hb : ∃ M : ℝ, ∀ p ∈ reconstructionStrip H sMinus T,
       |phi p| ≤ M ∧ |forwardScalarOperator A.a phi p| ≤ M) :
@@ -49,28 +49,18 @@ theorem exists_bounded_reconstruction_source {lam Lam : ℝ} (A : SmoothAutonomo
   classical
   obtain ⟨M, hM⟩ := hb
   let D := reconstructionStrip H sMinus T
-  let f : Point → ℝ := D.piecewise (fun p => -forwardScalarOperator A.a phi p) (fun _ => 0)
+  let f  := D.piecewise (fun p => -forwardScalarOperator A.a phi p) (fun _ => 0)
   have hm : Measurable f :=
     (continuousOn_forwardScalarOperator A hphi).neg.measurable_piecewise
       continuous_const.continuousOn (isOpen_reconstructionStrip H sMinus T).measurableSet
   have hb' : ∀ p, |f p| ≤ max M 0 := by
     intro p
     by_cases hp : p ∈ D
-    · dsimp only [f]
-      rw [piecewise_eq_of_mem D _ _ hp, abs_neg]
-      exact (hM p hp).2.trans (le_max_left _ _)
-    · dsimp only [f]
-      rw [piecewise_eq_of_notMem D _ _ hp, abs_zero]
-      exact le_max_right _ _
+    · aesop
+    aesop
   let g : BoundedBorel Point := ⟨f, hm, ⟨max M 0, le_max_right _ _, hb'⟩⟩
   refine ⟨g, ?_, ?_⟩
-  · intro p hp
-    change f p = _
-    dsimp only [f]
-    exact piecewise_eq_of_mem D _ _ hp
-  · intro p hp
-    change f p = _
-    dsimp only [f]
-    exact piecewise_eq_of_notMem D _ _ hp
+  · aesop
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

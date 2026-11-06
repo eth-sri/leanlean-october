@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.ABPAbstract
 /-! # The forward autonomous ABP estimate conditional on improved cylinder density -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Parabolic
 open scoped MatrixOrder Matrix.Norms.Elementwise
@@ -15,12 +14,8 @@ open scoped MatrixOrder Matrix.Norms.Elementwise
 theorem autonomous_conjugate_identities (p : ℝ) (hp : 1 < p) :
     (p / (p - 1)) / (p / (p - 1) - 1) = p ∧
       6 / (p / (p - 1)) - 4 = 2 - 6 / p := by
-  have hp0 : p ≠ 0 := ne_of_gt (lt_trans zero_lt_one hp)
-  have hpm : p - 1 ≠ 0 := sub_ne_zero.mpr hp.ne'
-  have hq : p / (p - 1) - 1 ≠ 0 := by
-    have : 1 < p / (p - 1) := (one_lt_div (sub_pos.mpr hp)).mpr (by linarith)
-    exact sub_ne_zero.mpr this.ne'
-  constructor <;> field_simp [hp0, hpm, hq] <;> ring
+  have hp0  := ne_of_gt (lt_trans zero_lt_one hp)
+  grind
 
 /-- The uniform smooth forward estimate uses no additional analytic hypothesis beyond
 the exact improved density statement. -/
@@ -29,7 +24,7 @@ theorem forward_autonomous_abp_of_below_four_density
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (p : ℝ)
     (hp : criticalP ⟨Lam / lam, (le_div_iff₀ hlam).2
-      (by simpa only [one_mul] using hLam)⟩ < p) :
+      (by simp_all)⟩ < p) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam)
       (Z₀ : Point) (R : ℝ) (hR : 0 < R) (u g : Point → ℝ),
       ContinuousOn u (closure (forwardCylinder Z₀ R hR)) →
@@ -44,11 +39,11 @@ theorem forward_autonomous_abp_of_below_four_density
             (eLpNorm ({P | 0 < u P}.indicator g) (ENNReal.ofReal p)
               (volume.restrict (forwardCylinder Z₀ R hR))).toReal := by
   obtain ⟨alpha, ha, ha1, -, hq, hqa⟩ := exists_autonomous_exponents lam Lam hlam hLam p hp
-  obtain ⟨C, hC, hden⟩ := hdensity hH hLE lam Lam hlam hLam alpha (p / (p - 1))
+  obtain ⟨C, hC, hden⟩ := hdensity hH hLE lam Lam hlam hLam alpha _
     ⟨ha, ha1⟩ ⟨hq, hqa⟩
   have hcritical := (criticalP_bounds ⟨Lam / lam, (le_div_iff₀ hlam).2
-    (by simpa only [one_mul] using hLam)⟩).1
-  have hp1 : 1 < p := by linarith only [hcritical, hp]
+    (by simp_all)⟩).1
+  have hp1 : 1 < p := by linarith
   have hid := autonomous_conjugate_identities p hp1
   refine ⟨C, hC, ?_⟩
   intro A Z₀ R hR u g hcont hreg hg0 hLp hsub
@@ -65,11 +60,11 @@ theorem forward_autonomous_abp_of_below_four_density
       (autonomousCoefficient A.a P.time P.position P.velocity).PosSemidef := by
     intro P _
     have heq : autonomousCoefficient A.a P.time P.position P.velocity =
-        A.a (P.position 0) (P.velocity 0) • (1 : PDE.Mat 1) := by
+        A.a (P.position 0) (P.velocity 0) • (1) := by
       ext i j
       fin_cases i
       fin_cases j
-      simp [autonomousCoefficient]
+      aesop
     rw [heq]
     exact Matrix.PosSemidef.smul Matrix.PosSemidef.one
       (hlam.le.trans (A.bounds _ _).1)
@@ -92,13 +87,13 @@ theorem forward_autonomous_abp_of_below_four_density
       -g P ≤ forwardKineticOperator (autonomousCoefficient A.a) u P := by
     simpa only [forwardOperator_autonomous] using hsub
   have hl : MemLp g (ENNReal.ofReal ((p / (p - 1)) / (p / (p - 1) - 1)))
-      (volume.restrict (forwardCylinder Z₀ R hR)) := by rwa [hid.1]
-  have hb := kinetic_abp_abstract_of_continuous Z₀ R hR (autonomousCoefficient A.a)
-    hAc hpos (p / (p - 1)) hq (C * R ^ (2 - 6 / p))
+      (volume.restrict (forwardCylinder Z₀ R hR)) := by simp_all
+  have hb := kinetic_abp_abstract_of_continuous Z₀ R hR _
+    hAc hpos _ hq (C * R ^ (2 - 6 / p))
     (mul_pos hC (Real.rpow_pos_of_pos hR _))
-    (autonomousCylinderGreen hH hLE hlam hLam A Z₀ R hR)
+    _
     (autonomous_cylinder_green_potentials hH hLE hlam hLam A Z₀ R hR)
     hden' u g hcont hreg hg0 hl hs
-  simpa only [hid.1] using hb
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

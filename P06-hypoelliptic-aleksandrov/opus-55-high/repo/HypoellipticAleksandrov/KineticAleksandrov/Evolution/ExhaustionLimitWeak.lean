@@ -16,7 +16,6 @@ identity is the proved limit of the finite Dirichlet weak equations.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 

@@ -14,8 +14,6 @@ the `hormander` package.
 
 @[expose] public section
 
-noncomputable section
-set_option autoImplicit false
 
 open Set MeasureTheory
 open HypoellipticAleksandrov
@@ -36,8 +34,7 @@ theorem exists_smooth_aeRepresentative_of_hormander
     (hEq : HasWeakHormanderEquation Ω X c g u) :
     ∃ f : PDE.Vec N → ℝ,
       ContDiffOn ℝ (⊤ : ℕ∞) f Ω ∧
-        u =ᵐ[Measure.restrict volume Ω] f := by
-  exact HypoellipticAleksandrov.KineticAleksandrov.exists_smooth_aeRepresentative_of_hormander_aux
+        u =ᵐ[Measure.restrict volume Ω] f := HypoellipticAleksandrov.KineticAleksandrov.exists_smooth_aeRepresentative_of_hormander_aux
     hΩ X c g u hX hspan hc hEq
 
 end HypoellipticAleksandrov.KineticAleksandrov

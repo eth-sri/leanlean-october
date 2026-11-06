@@ -8,7 +8,6 @@ import Mathlib.MeasureTheory.Group.Arithmetic
 /-! # Passing the coefficient limit on a fixed compact inner cylinder -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov.Parabolic MeasureTheory Set Filter
 open scoped MatrixOrder Matrix.Norms.Elementwise Topology ENNReal
@@ -48,20 +47,15 @@ theorem borel_smooth_inner_limit {d : ℕ} (lam Lam : ℝ) (hlam : 0 < lam) (hLa
   have hQK : Q ⊆ K := subset_closure
   have hregQ := comparison_regular_mono hreg (hQK.trans hKD)
   have hcontK := hreg.continuousOn.mono hKD
-  let : SecondCountableTopology (PDE.Mat d) :=
-    inferInstanceAs (SecondCountableTopology (Fin d → Fin d → ℝ))
-  let : BorelSpace (PDE.Mat d) := inferInstanceAs (BorelSpace (Fin d → Fin d → ℝ))
   have hHext : Measurable Hext :=
     hH.measurable_piecewise continuousOn_const hK.measurableSet
   have hproj : Measurable (fun P : KineticPoint d => (P.time,P.velocity)) :=
     (continuous_time.prodMk continuous_velocity).measurable
   have hA : Measurable (fun P : KineticPoint d => A P.time P.velocity) := hBorel.comp hproj
   have hem j : Measurable (e j) := by
-    have hCs : Continuous (coefficientAt (C j)) := (hC j).1.continuous
+    have hCs : Continuous (coefficientAt _) := (hC j).1.continuous
     have hs : Measurable (fun P : KineticPoint d =>
-        matrixContraction (C j P.time P.velocity - A P.time P.velocity) (Hext P)) := by
-      unfold matrixContraction
-      exact Finset.measurable_fun_sum _ fun i _ =>
+        matrixContraction (C j P.time P.velocity - A P.time P.velocity) (Hext P)) := Finset.measurable_fun_sum _ fun i _ =>
         Finset.measurable_fun_sum _ fun k _ =>
           (((hCs.measurable.comp hproj).eval.eval).sub hA.eval.eval).mul hHext.eval.eval
     exact continuous_abs.measurable.comp hs
@@ -70,10 +64,10 @@ theorem borel_smooth_inner_limit {d : ℕ} (lam Lam : ℝ) (hlam : 0 < lam) (hLa
     simp only [e,borelCoefficientError,Hext,indicator_of_mem hP]
   obtain ⟨_,hmraw,htraw⟩ := borel_inner_error hlam hLam A hBorel hlo hhi C hC hc K hK H hH
     (lt_of_lt_of_le zero_lt_one hp)
-  have hmK j : MemLp (e j) (ENNReal.ofReal p) (volume.restrict K) :=
+  have hmK j  :=
     (hmraw j).ae_eq (heq j).symm
-  have hμ : volume.restrict Q ≤ volume.restrict K := Measure.restrict_mono_set volume hQK
-  have hme j : MemLp (e j) (ENNReal.ofReal p) (volume.restrict Q) := (hmK j).mono_measure hμ
+  have hμ  := Measure.restrict_mono_set volume hQK
+  have hme j  := (hmK j).mono_measure hμ
   have hte : Tendsto (fun j => (eLpNorm (e j) (ENNReal.ofReal p)
       (volume.restrict Q)).toReal) atTop (𝓝 0) := by
     have htK : Tendsto (fun j => (eLpNorm (e j) (ENNReal.ofReal p)
@@ -89,33 +83,31 @@ theorem borel_smooth_inner_limit {d : ℕ} (lam Lam : ℝ) (hlam : 0 < lam) (hLa
       (volume.restrict Q) := by
     apply (hLp.add (hme j)).of_le ((hf.add (hem j)).sup measurable_const).aestronglyMeasurable
     filter_upwards with P
-    change ‖max (f P + e j P) 0‖ ≤ ‖max (f P) 0 + e j P‖
+    change ‖max (f P + e j P) 0‖ ≤ ‖max _ 0 + e j P‖
     simp only [Real.norm_of_nonneg (le_max_right _ _),
       Real.norm_of_nonneg (add_nonneg (le_max_right _ _) (he0 j P))]
-    exact max_le (by linarith only [le_max_left (f P) 0])
-      (add_nonneg (le_max_right (f P) 0) (he0 j P))
-  have hGp j := borelSource_memLp hQ localised u (f + e j) hregQ.continuousOn (hpert j)
+    grind
+  have hGp j := borelSource_memLp hQ localised u _ hregQ.continuousOn (hpert j)
   have htG := borel_source_norm_tendsto hp F G e hFp hme
     (fun j => (hGp j).aestronglyMeasurable)
     (Filter.Eventually.of_forall (borelSource_nonneg localised u f))
-    (fun j => Filter.Eventually.of_forall (borelSource_nonneg localised u (f + e j)))
+    (fun j => Filter.Eventually.of_forall (borelSource_nonneg localised u _))
     (fun j => Filter.Eventually.of_forall (he0 j))
     (fun j => Filter.Eventually.of_forall fun P => borelSource_error_le localised u f P (he0 j P))
     hte
   have hineq j : ∀ P ∈ K, u P ≤ sSup ((fun P => max (u P) 0) '' kineticBoundary P₁ r) +
       C₀ * r ^ alpha * (eLpNorm (G j) (ENNReal.ofReal p) (volume.restrict Q)).toReal := by
-    apply hsmooth (C j) (hC j).1 (hC j).2.1 (hC j).2.2.1 (hC j).2.2.2
-      P₁ r hr u (f + e j) hcontK hregQ (hf.add (hem j)) (hpert j)
+    apply hsmooth _ (hC j).1 (hC j).2.1 (hC j).2.2.1 (hC j).2.2.2
+      P₁ r hr u _ hcontK hregQ (hf.add (hem j)) (hpert j)
     filter_upwards [hsub,ae_restrict_mem hQ.measurableSet] with P hsubP hP
     have heP : e j P = borelCoefficientError (C j) A H P := by
       simp only [e,borelCoefficientError,Hext,indicator_of_mem (hQK hP)]
     have hdiff := borel_backwardOperator_sub (C j) A u P
     have hab := neg_le_abs (matrixContraction
       (C j P.time P.velocity - A P.time P.velocity) (H P))
-    dsimp only [borelCoefficientError,H] at heP
-    change backwardOperatorOfTimeVelocityCoefficient (C j) u P ≤ f P + e j P
-    rw [heP]
-    linarith only [hdiff,hsubP,hab]
+    dsimp only [borelCoefficientError] at heP
+    change backwardOperatorOfTimeVelocityCoefficient _ u P ≤ f P + e j P
+    linarith
   intro P hP
   exact ge_of_tendsto
     (tendsto_const_nhds.add (tendsto_const_nhds.mul htG))

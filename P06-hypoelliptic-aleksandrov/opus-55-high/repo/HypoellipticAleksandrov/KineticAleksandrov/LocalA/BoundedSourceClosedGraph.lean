@@ -54,22 +54,16 @@ def compactRepresentativeMap : H →ₗ[ℝ] C(K, ℝ) := by
   · intro u v
     have hae : f (u + v) =ᵐ[μ.restrict U] (fun z => f u z + f v z) := by
       filter_upwards [he (u + v), he u, he v, Lp.coeFn_add u.1 v.1] with z ha hb hd heq
-      change (u.1 + v.1) z = f (u + v) z at ha
-      simp only [Pi.add_apply] at heq
-      linarith
+      simp_all
     have hpoint := Measure.eqOn_open_of_ae_eq hae hU (hc (u + v)) ((hc u).add (hc v))
-    ext z
-    exact hpoint (hKU z.2)
+    aesop
   · intro c u
     have hae : f (c • u) =ᵐ[μ.restrict U] (fun z => c * f u z) := by
       filter_upwards [he (c • u), he u, Lp.coeFn_smul c u.1] with z ha hb heq
-      change (c • u.1) z = f (c • u) z at ha
-      simp only [Pi.smul_apply, smul_eq_mul] at heq
-      rw [← ha, heq, hb]
+      simp_all
     have hpoint := Measure.eqOn_open_of_ae_eq hae hU (hc (c • u))
       (continuousOn_const.mul (hc u))
-    ext z
-    exact hpoint (hKU z.2)
+    aesop
 
 /-- Evaluation agrees pointwise with any actual continuous representative of the class. -/
 theorem compactRepresentativeMap_apply_eq (u : H) (g : E → ℝ)
@@ -78,31 +72,29 @@ theorem compactRepresentativeMap_apply_eq (u : H) (g : E → ℝ)
   have hae := (continuousWeakRepresentative_ae μ U H hrep u).symm.trans he
   have hpoint := Measure.eqOn_open_of_ae_eq hae hU
     (continuousWeakRepresentative_continuous μ U H hrep u) hg
-  exact hpoint (hKU z.2)
+  aesop
 
 include hK hKi hH in
 /-- Compact evaluation of the continuous representatives is a continuous linear map. -/
 theorem continuous_compactRepresentativeMap :
     Continuous (compactRepresentativeMap μ U K hU hKU H hrep) := by
   classical
-  let : CompactSpace K := isCompact_iff_compactSpace.mp hK
-  let : CompleteSpace H := hH.isComplete.completeSpace_coe
+  let  := isCompact_iff_compactSpace.mp hK
   apply LinearMap.continuous_of_seq_closed_graph
   intro u x y hu hy
   let f := continuousWeakRepresentative μ U H hrep
   have hf := continuousWeakRepresentative_continuous μ U H hrep x
   have hx := continuousWeakRepresentative_ae μ U H hrep x
-  have hlp : Tendsto (fun n => (u n).1) atTop (𝓝 x.1) :=
+  have hlp : Tendsto (fun n => (u n).1) atTop _ :=
     continuous_subtype_val.tendsto x |>.comp hu
   obtain ⟨σ, hσ, hae⟩ := (tendstoInMeasure_of_tendsto_Lp hlp).exists_seq_tendsto_ae
-  have hseq : ∀ᵐ z ∂μ.restrict U, ∀ n, (u n).1 z = f (u n) z :=
-    ae_all_iff.mpr (fun n => continuousWeakRepresentative_ae μ U H hrep (u n))
-  let yext : E → ℝ := fun z => if hz : z ∈ K then y ⟨z, hz⟩ else 0
+  have hseq : ∀ᵐ z ∂μ.restrict U, ∀ n, (u n).1 z = f _ z :=
+    ae_all_iff.mpr (fun n => continuousWeakRepresentative_ae μ U H hrep _)
+  let yext  := fun z => if hz : z ∈ K then y ⟨z, hz⟩ else 0
   have hyc : ContinuousOn yext K := by
     rw [continuousOn_iff_continuous_domRestrict]
     convert y.continuous using 1
-    ext z
-    exact dite_eq_left z.2
+    grind
   have heq : yext =ᵐ[μ.restrict K] f x := by
     filter_upwards [ae_restrict_of_ae_restrict_of_subset hKU hae,
       ae_restrict_of_ae_restrict_of_subset hKU hseq,
@@ -111,15 +103,11 @@ theorem continuous_compactRepresentativeMap :
     have hp := (continuous_eval_const ⟨z, hzK⟩).tendsto y |>.comp hy
     have hpσ := hp.comp hσ.tendsto_atTop
     have hactual : Tendsto (fun n => f (u (σ n)) z) atTop (𝓝 (f x z)) := by
-      rw [hxz] at hz
-      exact hz.congr' (Eventually.of_forall fun n => hs (σ n))
-    have hp' : Tendsto (fun n => f (u (σ n)) z) atTop (𝓝 (y ⟨z, hzK⟩)) := hpσ
-    change yext z = f x z
-    rw [show yext z = y ⟨z, hzK⟩ from dite_eq_left hzK]
+      grind
+    have hp' : Tendsto (fun n => f _ z) atTop _ := hpσ
+    rw [show yext z = y _ from dite_eq_left hzK]
     exact tendsto_nhds_unique hp' hactual
   have hpoint := Measure.eqOn_of_ae_eq heq hyc (hf.mono hKU) hKi
-  ext z
-  change y z = f x z
-  simpa only [yext, dite_eq_left z.2] using hpoint z.2
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

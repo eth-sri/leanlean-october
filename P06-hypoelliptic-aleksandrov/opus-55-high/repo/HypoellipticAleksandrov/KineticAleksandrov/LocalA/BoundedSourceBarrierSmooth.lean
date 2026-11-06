@@ -10,7 +10,6 @@ The bound depends on the source supremum, rather than its distance to the bounda
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov Parabolic Evolution Set
 open scoped Topology
@@ -18,9 +17,7 @@ open scoped Topology
 /-- The stationary moving-domain convention recovers exactly the given ball. -/
 theorem boundedSource_stationary_domain {d : ℕ} (c : PDE.Vec d) (R t : ℝ) :
     movingDomain (PDE.euclideanBall c R) (fun _ => 0) t = PDE.euclideanBall c R := by
-  ext y
-  rw [mem_movingDomain_iff]
-  simp only [sub_zero]
+  simp
 
 /-- Smooth compact sources bounded by one satisfy the uniform quadratic comparison. -/
 theorem duhamel_smooth_le_boundedSourceQuadratic
@@ -64,28 +61,26 @@ theorem duhamel_smooth_le_boundedSourceQuadratic
     have hqm : (evolutionHomeomorph d).symm q ∈
         evolutionHomeomorph d ⁻¹'
           evolutionPastOpenCylinder (PDE.euclideanBall c R) (fun _ => 0) T := by
-      simpa using hq
+      simp_all
     exact hWs.contDiffAt (hU.mem_nhds hqm)
-  have hslab : movingClosedSlab (PDE.euclideanBall c R) (fun _ => 0) p.time T ⊆
+  have hslab : movingClosedSlab _ _ p.time T ⊆
       evolutionPastClosedCylinder (PDE.euclideanBall c R) (fun _ => 0) T :=
     fun q hq => ⟨hq.2.1, hq.2.2⟩
-  have hactive : movingActiveSlab (PDE.euclideanBall c R) (fun _ => 0) p.time T ⊆
+  have hactive : movingActiveSlab _ _ p.time T ⊆
       evolutionPastOpenCylinder (PDE.euclideanBall c R) (fun _ => 0) T :=
     fun q hq => ⟨hq.2.1, hq.2.2⟩
   have hQn : ∀ q ∈ movingClosedSlab (PDE.euclideanBall c R) (fun _ => 0) p.time T,
       0 ≤ Q q := by
     intro q hq
     apply boundedSourceQuadratic_nonneg hlam c R
-    simpa only [boundedSource_stationary_domain] using hq.2.2
+    simpa using hq.2.2
   have hmax := growth_comparison (PDE.isOpen_euclideanBall c R) hγ hlam hell hbounds.1
     (le_refl 0) zero_le_one (a := p.time) (T := T) (u := fun q => W q - Q q)
     ?_ ?_ ?_ ?_ ?_ ?_ p ⟨le_rfl, hp.1, hp.2⟩
-  · exact sub_nonpos.mp hmax
+  · linarith
   · refine ⟨T - p.time, fun q hq => ?_⟩
     have hw := (duhamelPotential_nonneg_le K T g hgn 1 zero_le_one hgb q hq.2.1).2
-    dsimp only [W, Q]
     have hqn := hQn q hq
-    dsimp only [Q] at hqn
     linarith only [hw, hqn, hq.1]
   · exact (hWc.mono hslab).sub (continuous_boundedSourceQuadratic c R lam).continuousOn
   · intro q hq
@@ -94,27 +89,17 @@ theorem duhamel_smooth_le_boundedSourceQuadratic
     rw [viscousTransportedOperator_sub (hreg q (hactive hq))
       (isSliceRegularAt_boundedSourceQuadratic c R lam q)]
     have hw : viscousTransportedOperator B b 0 W q = -g q := by
-      rw [viscousTransportedOperator_zero]
-      exact hWe q (hactive hq)
+      aesop
     have hqv := viscousTransportedOperator_boundedSourceQuadratic_le hd hlam B hell b c R q
-    change 0 ≤ viscousTransportedOperator B b 0 W q -
-      viscousTransportedOperator B b 0 Q q
-    rw [hw]
-    exact sub_nonneg.mpr (hqv.trans (neg_le_neg (hgb q)))
+    grind
   · intro q hq ht
     have hw := duhamelPotential_eq_zero_of_terminal_le K T g q ht.ge
-    change W q - Q q ≤ 0
-    dsimp only [W]
-    rw [hw, zero_sub]
-    exact neg_nonpos.mpr (hQn q hq)
+    grind
   · intro q hq hfront
     have hnot : q.position ∉ movingDomain (PDE.euclideanBall c R) (fun _ => 0) q.time :=
       ((isOpen_movingDomain_of_isAdmissibleEvolutionDomain (fun _ => 0) hΩ q.time
         ).frontier_eq ▸ hfront).2
     have hw := duhamelPotential_eq_zero_of_not_mem K T g q hnot
-    change W q - Q q ≤ 0
-    dsimp only [W]
-    rw [hw, zero_sub]
-    exact neg_nonpos.mpr (hQn q hq)
+    grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

@@ -9,7 +9,6 @@ import HypoellipticAleksandrov.KineticAleksandrov.Evolution.JointQueryBorelCutof
 /-! # Quadratic mass by interior smooth exhaustion and bounded comparison -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Filter
 open SectionTwo TheoremA
@@ -33,23 +32,20 @@ theorem stripGreenOfRealization_quadratic_mass
   let g (n : ℕ) : Point → ℝ := χ n ∘ KineticPoint.equivProd 1
   have hgc (n : ℕ) : HasCompactSupport (g n) :=
     (hχ n).2.1.comp_homeomorph (KineticPoint.homeomorphProd 1)
-  have hgs (n : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (rawLift (g n)) := (hχ n).1
+  have hgs (n : ℕ) : ContDiff ℝ _ (rawLift (g n)) := (hχ n).1
   have hgcont (n : ℕ) : Continuous (g n) :=
     (hχ n).1.continuous.comp (KineticPoint.homeomorphProd 1).continuous
   have hgD (n : ℕ) : tsupport (g n) ⊆ D := by
     intro p hp
-    have hx := (tsupport_comp_subset_preimage (χ n)
+    have hx := (tsupport_comp_subset_preimage _
       (KineticPoint.homeomorphProd 1).continuous) hp
     have hu := (hχ n).2.2 hx
-    change (KineticPoint.equivProd 1).symm (KineticPoint.equivProd 1 p) ∈ D at hu
-    simpa only [Equiv.symm_apply_apply] using hu
+    aesop
   let F (n : ℕ) : BoundedBorel Point :=
     ⟨g n ∘ sectionTwoPoint,
       (hgcont n).measurable.comp (continuous_sectionTwoPoint 1).measurable,
       ⟨1, zero_le_one, fun p => by
-        change |χ n (KineticPoint.equivProd 1 (sectionTwoPoint p))| ≤ 1
-        rw [abs_of_nonneg (hb n _).1]
-        exact (hb n _).2⟩⟩
+        grind⟩⟩
   have hlim : ∀ᵐ p ∂stripGreenOfKernel H E.2 T e,
       Tendsto (fun n => F n p) atTop (𝓝 ((1 : BoundedBorel Point) p)) := by
     filter_upwards [stripGreenOfKernel_ae_mem_stripPast H E.2 T e] with p hp
@@ -59,16 +55,14 @@ theorem stripGreenOfRealization_quadratic_mass
       simpa only [sub_zero, intervalDomain, PDE.mem_oneDimensionalAxisBox_iff,
         PDE.vecOneCoordinate, sectionTwoPoint, Interval.carrier] using hp.2
     have hnU : KineticPoint.equivProd 1 (sectionTwoPoint p) ∈ U := by
-      simpa only [U, mem_preimage, Equiv.symm_apply_apply] using hnp
+      grind
     obtain ⟨N, hN⟩ := hcover _ hnU
     apply tendsto_const_nhds.congr'
     filter_upwards [eventually_ge_atTop N] with n hn
-    exact (hN n hn).symm
+    aesop
   have hI := stripPotentialOfKernel_tendsto H E.2 T e F 1 1
     (fun n p => by
-      change |χ n (KineticPoint.equivProd 1 (sectionTwoPoint p))| ≤ 1
-      rw [abs_of_nonneg (hb n _).1]
-      exact (hb n _).2) hlim
+      grind) hlim
   let q := (e.1.velocity 0 - H.lo) * (H.hi - e.1.velocity 0) / (2 * lam)
   have hbound (n : ℕ) : stripPotentialOfKernel H E.2 T (F n) e ≤ q := by
     have heT : e.1.time < T := WithTop.coe_lt_coe.mp e.2.1
@@ -87,12 +81,12 @@ theorem stripGreenOfRealization_quadratic_mass
     rw [hIeq]
     simpa only [stripQuadraticBarrier_eq, q, p, sectionTwoPoint] using hcmp
   have hreal : (stripGreenOfKernel H E.2 T e).real univ ≤ q := by
-    have hc : stripPotentialOfKernel H E.2 T (1 : BoundedBorel Point) e =
+    have hc : stripPotentialOfKernel H E.2 T (1) e =
         (stripGreenOfKernel H E.2 T e).real univ := by
-      simp [stripPotentialOfKernel, integral_const, smul_eq_mul]
+      simp [stripPotentialOfKernel]
     rw [hc] at hI
     exact le_of_tendsto hI (Eventually.of_forall hbound)
-  rw [← ENNReal.ofReal_toReal (measure_ne_top (stripGreenOfKernel H E.2 T e) univ)]
+  rw [← ENNReal.ofReal_toReal (measure_ne_top _ univ)]
   exact ENNReal.ofReal_le_ofReal hreal
 
 /-- The canonical autonomous measure obeys the exact finite-horizon quadratic bound. -/

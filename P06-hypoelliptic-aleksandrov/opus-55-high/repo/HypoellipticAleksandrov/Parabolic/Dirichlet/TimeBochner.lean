@@ -27,7 +27,7 @@ def reverseTimeOpenInterval (T : ℝ) : Set ℝ :=
   Set.Ioo 0 T
 
 /-- Lebesgue measure restricted to the literal open reverse-time interval. -/
-noncomputable def reverseTimeVolume (T : ℝ) : Measure ℝ :=
+def reverseTimeVolume (T : ℝ) : Measure ℝ :=
   volume.restrict (reverseTimeOpenInterval T)
 
 /-- Bochner `L²` curves with values in the zero-boundary spatial Hilbert graph. -/
@@ -48,50 +48,49 @@ abbrev ReverseTimeL2VStar
     (reverseTimeVolume T)
 
 /-- Pointwise application of the spatial value map, lifted to Bochner `L²`. -/
-noncomputable def reverseTimeValueCLM
+def reverseTimeValueCLM
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) :
     ReverseTimeL2V hΩ T →L[ℝ] ReverseTimeL2H hΩ T :=
   (valueCLM hΩ).compLpL (2 : ℝ≥0∞) (reverseTimeVolume T)
 
 /-- Pointwise application of the spatial pivot map, lifted to Bochner `L²`. -/
-noncomputable def reverseTimePivotCLM
+def reverseTimePivotCLM
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) :
     ReverseTimeL2H hΩ T →L[ℝ] ReverseTimeL2VStar hΩ T :=
   (scalarLpToH10HilbertGraphDual hΩ).compLpL (2 : ℝ≥0∞)
     (reverseTimeVolume T)
 
 /-- The timewise Gelfand embedding `V → H → V*`. -/
-noncomputable def reverseTimeGelfandCLM
+def reverseTimeGelfandCLM
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) :
     ReverseTimeL2V hΩ T →L[ℝ] ReverseTimeL2VStar hΩ T :=
   (reverseTimePivotCLM hΩ T).comp (reverseTimeValueCLM hΩ T)
 
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (u : ReverseTimeL2V hΩ T)
+
 /-- Almost-everywhere formula for the Bochner lift of the spatial value map. -/
 theorem coeFn_reverseTimeValueCLM
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    (u : ReverseTimeL2V hΩ T) :
+     :
     reverseTimeValueCLM hΩ T u =ᵐ[reverseTimeVolume T]
       fun τ => valueCLM hΩ (u τ) :=
-  ContinuousLinearMap.coeFn_compLpL (valueCLM hΩ) u
+  ContinuousLinearMap.coeFn_compLpL _ u
 
 /-- Almost-everywhere formula for the Bochner lift of the spatial pivot map. -/
 theorem coeFn_reverseTimePivotCLM
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    
     (h : ReverseTimeL2H hΩ T) :
     reverseTimePivotCLM hΩ T h =ᵐ[reverseTimeVolume T]
       fun τ => scalarLpToH10HilbertGraphDual hΩ (h τ) :=
-  ContinuousLinearMap.coeFn_compLpL (scalarLpToH10HilbertGraphDual hΩ) h
+  ContinuousLinearMap.coeFn_compLpL _ h
 
 /-- Almost-everywhere formula for the composed timewise Gelfand map. -/
 theorem coeFn_reverseTimeGelfandCLM
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    (u : ReverseTimeL2V hΩ T) :
+     :
     reverseTimeGelfandCLM hΩ T u =ᵐ[reverseTimeVolume T]
       fun τ => scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ (u τ)) := by
   filter_upwards [coeFn_reverseTimePivotCLM hΩ T
       (reverseTimeValueCLM hΩ T u), coeFn_reverseTimeValueCLM hΩ T u]
     with τ hPivot hValue
-  change ((reverseTimePivotCLM hΩ T) (reverseTimeValueCLM hΩ T u)) τ = _
-  rw [hPivot, hValue]
+  aesop
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

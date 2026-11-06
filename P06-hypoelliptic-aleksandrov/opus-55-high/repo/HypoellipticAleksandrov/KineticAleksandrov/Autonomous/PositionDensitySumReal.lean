@@ -8,7 +8,6 @@ import Mathlib.MeasureTheory.Integral.Lebesgue.Markov
 /-! # Real representatives of the actual positive Green density -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory Filter
 open scoped ENNReal
@@ -19,9 +18,9 @@ theorem position_density_finite {X : Type*} [MeasurableSpace X]
     (hd : m.withDensity F = mu) : ∀ᵐ x ∂m, F x ≠ ⊤ := by
   have hi : (∫⁻ x, F x ∂m) ≠ ⊤ := by
     have he : (m.withDensity F) univ = ∫⁻ x, F x ∂m := by
-      rw [withDensity_apply _ MeasurableSet.univ, Measure.restrict_univ]
+      simp
     rw [← he, hd]
-    exact measure_ne_top _ _
+    simp
   exact (ae_lt_top hF hi).mono (fun _ h => h.ne)
 
 /-- The real representative has exactly the original positive density and power integral. -/
@@ -38,7 +37,7 @@ theorem position_density_real {X : Type*} [MeasurableSpace X]
     exact hf.mono (fun _ h => (ENNReal.ofReal_toReal h).symm)
   · apply lintegral_congr_ae
     filter_upwards [hf] with x hx
-    rw [Real.enorm_toReal hx]
+    simp_all
 
 /-- The actual active mixture has a real density with precisely the source power bound. -/
 theorem position_density_sum (hpush : PushforwardStatement) (htail : RestartTailStatement)
@@ -58,7 +57,7 @@ theorem position_density_sum (hpush : PushforwardStatement) (htail : RestartTail
   obtain ⟨C, hC, hd⟩ := position_density_power_sum hpush htail hH hLE hlam hLam q hq
   refine ⟨C, hC, ?_⟩
   intro A c hc s x nu hfinite hnu
-  have hq0 : 0 < q := by linarith [hq.1]
+  have hq0 : 0 < q := by linarith
   let F := positionMixtureDensity hH hLE hlam hLam A c nu
   have hF := measurable_positionMixtureDensity hH hLE hlam hLam A c nu
   have hm := withDensity_positionMixtureDensity hpush hH hLE hlam hLam A c nu
@@ -66,12 +65,12 @@ theorem position_density_sum (hpush : PushforwardStatement) (htail : RestartTail
     unfold enlargedActiveGreen
     infer_instance
   obtain ⟨hG, hG0, hGd, hGi⟩ := position_density_real volume
-    (enlargedActiveGreen hH hLE hlam hLam A c nu) F hF hm q
+    _ F hF hm q
   have hbound := hd A c hc s x nu hnu
   have hsum := enlargedStartCell_power_sum_le nu c s x q hq.1.le
     (hnu.mono (fun _ h => h.1))
-  have hsumfinite : (∑' a : ℕ × ℤ, nu (enlargedStartCell c s x a.1 a.2) ^ q) < ⊤ :=
-    hsum.trans_lt (ENNReal.rpow_lt_top_of_nonneg (by linarith [hq.1]) (measure_ne_top _ _))
+  have hsumfinite : (∑' a : ℕ × ℤ, nu _ ^ q) < ⊤ :=
+    hsum.trans_lt (ENNReal.rpow_lt_top_of_nonneg (by positivity) (measure_ne_top _ _))
   have hi : (∫⁻ z, ‖(F z).toReal‖ₑ ^ q ∂volume) < ⊤ := by
     rw [hGi]
     exact hbound.trans_lt (ENNReal.mul_lt_top ENNReal.ofReal_lt_top hsumfinite)
@@ -81,6 +80,6 @@ theorem position_density_sum (hpush : PushforwardStatement) (htail : RestartTail
       (ne_of_gt (ENNReal.ofReal_pos.mpr hq0)) ENNReal.ofReal_ne_top
       hG.aestronglyMeasurable, ENNReal.toReal_ofReal (by linarith : 0 ≤ q)]
     exact ENNReal.rpow_lt_top_of_nonneg (one_div_nonneg.mpr hq0.le) hi.ne
-  · rwa [hGi]
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -27,16 +27,18 @@ theorem sourcePositiveMeasure_isFinite (Λ : ℝ × EvolutionAmbientState d → 
       (hc.comp_left (g := fun r : ℝ => max r 0) (max_self 0))
   apply isFiniteMeasure_withDensity
   rw [← ofReal_integral_eq_lintegral_ofReal hint
-    (Filter.Eventually.of_forall fun q => le_max_right (Λ q) 0)]
-  exact ENNReal.ofReal_ne_top
+    (Filter.Eventually.of_forall fun q => le_max_right _ 0)]
+  simp
 
 /-- The same test weight on physical starting points uses the coordinate equivalence. -/
 def sourcePositiveStartMeasure (Λ : ℝ × EvolutionAmbientState d → ℝ) :
     Measure (KineticPoint d) :=
   (sourcePositiveMeasure Λ).map (KineticPoint.equivProd d).symm
 
+variable {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d} (K : MovingFiberKernel Ω γ) (Λ : ℝ × EvolutionAmbientState d → ℝ)
+
 /-- Positive compact test weights are finite also in the starting-point carrier. -/
-theorem sourcePositiveStartMeasure_isFinite (Λ : ℝ × EvolutionAmbientState d → ℝ)
+theorem sourcePositiveStartMeasure_isFinite 
     (hΛ : Continuous Λ) (hc : HasCompactSupport Λ) :
     IsFiniteMeasure (sourcePositiveStartMeasure Λ) := by
   have := sourcePositiveMeasure_isFinite Λ hΛ hc
@@ -44,17 +46,17 @@ theorem sourcePositiveStartMeasure_isFinite (Λ : ℝ × EvolutionAmbientState d
   infer_instance
 
 /-- Integrals against positive test weights are the ordinary weighted integrals. -/
-theorem integral_sourcePositiveMeasure (Λ : ℝ × EvolutionAmbientState d → ℝ)
+theorem integral_sourcePositiveMeasure 
     (hΛ : Measurable Λ) (f : ℝ × EvolutionAmbientState d → ℝ) :
     (∫ q, f q ∂sourcePositiveMeasure Λ) = ∫ q, max (Λ q) 0 * f q := by
   unfold sourcePositiveMeasure
   rw [integral_withDensity_eq_integral_toReal_smul
     ((hΛ.max measurable_const).ennreal_ofReal)
     (Filter.Eventually.of_forall fun q => ENNReal.ofReal_lt_top)]
-  simp only [ENNReal.toReal_ofReal (le_max_right _ _), smul_eq_mul]
+  aesop
 
 /-- A starting-coordinate weight integrates by the literal coordinate permutation. -/
-theorem integral_sourcePositiveStartMeasure (Λ : ℝ × EvolutionAmbientState d → ℝ)
+theorem integral_sourcePositiveStartMeasure 
     (hΛ : Measurable Λ) (f : KineticPoint d → ℝ) (hf : Measurable f) :
     (∫ p, f p ∂sourcePositiveStartMeasure Λ) =
       ∫ q, max (Λ q) 0 * f ⟨q.1, q.2.1, q.2.2⟩ := by
@@ -64,17 +66,15 @@ theorem integral_sourcePositiveStartMeasure (Λ : ℝ × EvolutionAmbientState d
   exact integral_sourcePositiveMeasure Λ hΛ _
 
 /-- The finite-window source action is Borel as a function of starting point. -/
-theorem measurable_duhamel_window {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
+theorem measurable_duhamel_window  (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
     (g : KineticPoint d → ℝ) (hg : Measurable g) (a T : ℝ) :
     Measurable (fun p => ∫ r in Ioo a T, duhamelIntegrand K g p r) :=
   ((measurable_duhamelIntegrand K hΩ hγ g hg).stronglyMeasurable.integral_prod_right'
-    (ν := volume.restrict (Ioo a T))).measurable
+    (ν := volume.restrict _)).measurable
 
 /-- Compact-test source weights reproduce the weighted Duhamel window integral. -/
 theorem integral_boundedSourceAction_positive_weight
-    {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
+     (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
     (Λ : ℝ × EvolutionAmbientState d → ℝ) (hΛ : Continuous Λ)
     (hc : HasCompactSupport Λ) (a T : ℝ)
     (g : KineticPoint d → ℝ) (hg : Measurable g)
@@ -90,8 +90,7 @@ theorem integral_boundedSourceAction_positive_weight
 
 /-- A compact test's lower time bound identifies its action with the Duhamel potential. -/
 theorem integral_boundedSourceAction_positive_potential
-    {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
+     (hΩ : MeasurableSet Ω) (hγ : Continuous γ)
     (Λ : ℝ × EvolutionAmbientState d → ℝ) (hΛ : Continuous Λ)
     (hc : HasCompactSupport Λ) (a T : ℝ) (hfloor : ∀ q, Λ q ≠ 0 → a ≤ q.1)
     (g : KineticPoint d → ℝ) (hg : Measurable g)
@@ -103,11 +102,11 @@ theorem integral_boundedSourceAction_positive_potential
   apply integral_congr_ae
   apply Filter.Eventually.of_forall
   intro q
-  change max (Λ q) 0 *
-    (∫ r in Ioo a T, duhamelIntegrand K g ⟨q.1, q.2.1, q.2.2⟩ r) =
-      max (Λ q) 0 * duhamelPotential K T g ⟨q.1, q.2.1, q.2.2⟩
+  change max _ 0 *
+    (∫ r in Ioo a T, duhamelIntegrand K g _ r) =
+      max _ 0 * duhamelPotential K T g _
   by_cases hq : Λ q = 0
-  · simp only [hq, max_self, zero_mul]
-  · rw [duhamelPotential_eq_integral_window K g ⟨q.1, q.2.1, q.2.2⟩ (hfloor q hq)]
+  · simp_all
+  · rw [duhamelPotential_eq_integral_window K g _ (hfloor q hq)]
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

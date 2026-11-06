@@ -41,26 +41,28 @@ theorem IsSkeleton.continuousOn_position {d : ℕ} {x v : ℝ → PDE.Vec d}
 noncomputable def extendVelocity {d : ℕ} (v : ℝ → PDE.Vec d) (a b : ℝ) (hab : a ≤ b) :
     ℝ → PDE.Vec d := fun s => v (projIcc a b hab s)
 
+variable {d : ℕ}
+
 /-- The extension agrees with the original velocity on the closed interval. -/
-theorem extendVelocity_eq {d : ℕ} (v : ℝ → PDE.Vec d) {a b : ℝ}
+theorem extendVelocity_eq  (v : ℝ → PDE.Vec d) {a b : ℝ}
     (hab : a ≤ b) {s : ℝ} (hs : s ∈ Icc a b) :
     extendVelocity v a b hab s = v s := by
   simp only [extendVelocity, projIcc_of_mem hab hs]
 
 /-- Extending velocity by endpoint constants preserves continuity. -/
-theorem continuous_extendVelocity {d : ℕ} {v : ℝ → PDE.Vec d} {a b : ℝ}
+theorem continuous_extendVelocity  {v : ℝ → PDE.Vec d} {a b : ℝ}
     (hab : a ≤ b) (hv : ContinuousOn v (Icc a b)) :
     Continuous (extendVelocity v a b hab) :=
   hv.domRestrict.comp continuous_projIcc
 
 /-- Extending velocity by endpoint constants preserves the Euclidean Lipschitz constant. -/
-theorem extendVelocity_lipschitz {d : ℕ} {x v : ℝ → PDE.Vec d} {H a b : ℝ}
+theorem extendVelocity_lipschitz  {x v : ℝ → PDE.Vec d} {H a b : ℝ}
     (hab : a ≤ b) (hH : 0 ≤ H) (hx : IsSkeleton x v H a b) (s t : ℝ) :
     PDE.vecEuclideanNorm
       (extendVelocity v a b hab s - extendVelocity v a b hab t) ≤ H * |s - t| := by
   have hdist := (LipschitzWith.projIcc hab).dist_le_mul s t
-  have hproj : |(projIcc a b hab s : ℝ) - (projIcc a b hab t : ℝ)| ≤ |s - t| := by
-    simpa only [Subtype.dist_eq, Real.dist_eq, NNReal.coe_one, one_mul] using hdist
+  have hproj : |(projIcc a b hab s) - (projIcc a b hab t : ℝ)| ≤ |s - t| := by
+    aesop
   exact (hx.2.2 _ (projIcc a b hab s).property _ (projIcc a b hab t).property).trans
     (mul_le_mul_of_nonneg_left hproj hH)
 

@@ -12,7 +12,6 @@ is constructed. Only the supplied scalar C1,2 regularity is used.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -36,29 +35,27 @@ theorem abs_le_of_classicalBackwardDirichlet_zero
   have side (s : ℝ) (hs : s = 1 ∨ s = -1) :
       ∀ q ∈ scalarParabolicClosedCylinder a τ Ω, s * u q + 0 ≤ C := by
     apply scalar_le_on_closedCylinder_of_terminal_lateral_le hΩ hΩb haτ A β hA hβ hAp
-      (fun q => s * u q + 0)
+      _
     · exact (hu.1.const_smul s).add continuousOn_const
     · exact hu.2.1.const_mul_add_const s 0
     · intro q hq
       have heq := hu.2.2.1 q hq
       have hid := scalarParabolicZeroOrderOperator_const_mul_add_const
         A β (fun _ _ => 0) s 0 u q
-      simp only [scalarParabolicZeroOrderOperator, zero_mul, add_zero] at heq hid
-      simpa only [add_zero, hid, heq, mul_zero] using (le_refl (0 : ℝ))
+      simp_all
     · rintro ⟨t, x⟩ ⟨ht, hx⟩
       simp only [mem_singleton_iff] at ht
       subst t
       rw [hu.2.2.2.1 x hx]
       rcases hs with rfl | rfl
-      · simpa only [one_mul, add_zero] using (abs_le.mp (hφ x hx)).2
-      · have := (abs_le.mp (hφ x hx)).1
-        linarith
+      · grind
+      grind
     · intro q hq
       rw [hu.2.2.2.2 q hq, mul_zero, zero_add]
       exact hC
   intro q hq
   have hp := side 1 (Or.inl rfl) q hq
-  have hn := side (-1) (Or.inr rfl) q hq
-  exact abs_le.mpr ⟨by linarith, by linarith⟩
+  have hn := side _ (Or.inr rfl) q hq
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov

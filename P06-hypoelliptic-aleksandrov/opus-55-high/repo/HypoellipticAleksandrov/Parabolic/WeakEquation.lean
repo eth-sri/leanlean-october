@@ -76,17 +76,12 @@ theorem weakParabolicOperator_congr_ae_of_value_ae
   rcases w.ae_eq_jet_of_value_ae hU hp w' hvalue with ⟨htime, _hgrad, hhess⟩
   have hhessAll : ∀ᵐ z ∂timeVelocityVolumeOn U,
       ∀ i j : Fin d, w.velocityHessian z i j = w'.velocityHessian z i j := by
-    exact ae_all_iff.mpr fun i => ae_all_iff.mpr fun j => hhess i j
+    aesop
   filter_upwards [htime, hhessAll] with z htimez hhessz
   unfold weakParabolicOperator
-  rw [htimez]
   congr 1
-  unfold matrixContraction
   apply Finset.sum_congr rfl
-  intro i _hi
-  apply Finset.sum_congr rfl
-  intro j _hj
-  rw [hhessz i j]
+  simp_all
 
 namespace IsWeakParabolicEquationOn
 
@@ -107,17 +102,19 @@ end IsWeakParabolicEquationOn
 
 namespace IsWeakParabolicEquationLoc
 
+variable {d : ℕ} {A : CoefficientField d}
+
 /-- A local homogeneous equation supplies the underlying local weak Sobolev data. -/
-theorem parabolicW12Loc {d : ℕ} {A : CoefficientField d}
+theorem parabolicW12Loc 
     {U : Set (TimeVelocity d)} {p : ℝ≥0∞} {u : TimeVelocity d → ℝ}
     (h : IsWeakParabolicEquationLoc A U p u) : ParabolicW12Loc U p u := by
   intro V hVOpen hVCompact hVU
   rcases h V hVOpen hVCompact hVU with ⟨w, hwu, _hweq⟩
-  exact ⟨w, hwu⟩
+  grind
 
 /-- Every compatible selected jet on a compactly-contained open subdomain obeys
 the local homogeneous equation. -/
-theorem equationOn {d : ℕ} {A : CoefficientField d}
+theorem equationOn 
     {U V : Set (TimeVelocity d)} {p : ℝ≥0∞} {u : TimeVelocity d → ℝ}
     (h : IsWeakParabolicEquationLoc A U p u) (hVOpen : IsOpen V)
     (hVCompact : IsCompact (closure V)) (hVU : closure V ⊆ U) (hp : 1 ≤ p)

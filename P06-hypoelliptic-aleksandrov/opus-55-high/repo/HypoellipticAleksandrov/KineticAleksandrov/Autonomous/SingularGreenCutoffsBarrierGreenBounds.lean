@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGree
 /-! # Quantitative compact Green bounds for the actual regularized-barrier cutoff -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov MeasureTheory Set Filter
 open scoped ENNReal
@@ -32,7 +31,7 @@ theorem barrier_cutoff_green_bounds
   obtain ⟨D1, D2, hD1, hD2, hb1, hb2⟩ := barrierCutoff_derivative_bounds
   let C := (2 * D1 + Lam * D2) * (|f (Y, 0)| + 4 * D) + 2 * Lam * D1 * Bv
   have hL : 0 ≤ Lam := hlam.le.trans hLam
-  have hC : 0 ≤ C := by dsimp only [C]; positivity
+  have hC : 0 ≤ C := by positivity
   refine ⟨C, hC, fun R hR => ?_⟩
   have hR0 : 0 < R := zero_lt_one.trans_le hR
   let F := fun q : Z => barrierRectCutoff Y R q * f q
@@ -42,8 +41,7 @@ theorem barrier_cutoff_green_bounds
   have hFs := barrierRectCutoff_hasCompactSupport Y R hR0 f
   have hFL := physicalSpatialOperator_continuous_compact A F hFc hFs
   have hFi := physicalSpatialOperator_occupation_integrable A F hFc hFs E z T
-  have hcut : Continuous (barrierRectCutoff Y R) := by
-    exact (barrierCutoff_contDiff.continuous.comp
+  have hcut : Continuous (barrierRectCutoff Y R) := (barrierCutoff_contDiff.continuous.comp
       ((continuous_fst.sub continuous_const).div_const _)).mul
         (barrierCutoff_contDiff.continuous.comp (continuous_snd.div_const _))
   have hGm : Measurable G := (hcut.measurable.mul hw).const_mul c
@@ -55,28 +53,24 @@ theorem barrier_cutoff_green_bounds
       (hlam.le.trans (A.bounds _ _).1) (A.bounds _ _).2
     have hid := barrierRectError_eq_operator A.a f hf Y R hR0 q
     have hlift := mul_le_mul_of_nonneg_left (hbound q) (barrierRectCutoff_bounds Y R q).1
-    have heG : G q = barrierRectCutoff Y R q * (c * w q) := by dsimp only [G]; ring
-    rw [← heG] at hlift
-    have he := (neg_le_abs (barrierRectError A.a f Y R q)).trans herr
-    change G q ≤ physicalSpatialOperator A.a F q + C / R
-    linarith only [hid, hlift, he]
+    grind
   obtain ⟨K, hbK⟩ := hFL.1.bounded_above_of_compact_support hFL.2
   have hGi : Integrable G mu := by
     apply (integrable_const (K + C / R)).mono' hGm.aestronglyMeasurable
     filter_upwards with q
     rw [Real.norm_eq_abs, abs_of_nonneg (hGn q)]
     have hLb : physicalSpatialOperator A.a F q ≤ K :=
-      (le_abs_self _).trans (by simpa only [Real.norm_eq_abs] using hbK q)
-    exact (hGb q).trans (add_le_add hLb le_rfl)
-  have hi := integral_mono hGi (hFi.add (integrable_const (C / R))) hGb
+      (le_abs_self _).trans (by simp_all)
+    grind
+  have hi := integral_mono hGi (hFi.add (integrable_const _)) hGb
   change (∫ q, G q ∂physicalOccupationMeasure E z T) ≤
     ∫ q, physicalSpatialOperator A.a F q + C / R ∂physicalOccupationMeasure E z T at hi
-  rw [integral_add hFi (integrable_const (C / R)), integral_const,
+  rw [integral_add hFi (integrable_const _), integral_const,
     smul_eq_mul, measureReal_def, physicalOccupationMeasure_mass_eq hlam A E hE,
     ENNReal.toReal_ofReal hT.le] at hi
   rw [fullspace_physical_green_compact_c2 hH hlam hLam A E hE F hFc hFs z T hT] at hi
   rw [← ofReal_integral_eq_lintegral_ofReal hGi (Eventually.of_forall hGn)]
   apply ENNReal.ofReal_le_ofReal
-  exact hi.trans_eq (by dsimp only [F]; ring)
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

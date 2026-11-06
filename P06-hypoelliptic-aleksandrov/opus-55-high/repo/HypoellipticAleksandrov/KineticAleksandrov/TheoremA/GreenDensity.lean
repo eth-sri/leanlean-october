@@ -37,14 +37,16 @@ def kineticStartState (d : ℕ) (P : KineticPoint d) :
     EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) P.time :=
   ⟨(P.velocity, P.position), by
     rw [evolutionStateSet, movingDomain_wholeSpace]
-    exact ⟨mem_univ _, mem_univ _⟩⟩
+    simp⟩
 
 /-- The remaining time `S_P = s₀ + R² - s` of a point `P = (s,X,v)` in a forward cylinder
 with bottom time `s₀ = Z₀.time`. -/
 def remainingTime {d : ℕ} (Z₀ P : KineticPoint d) (R : ℝ) : ℝ := Z₀.time + R ^ 2 - P.time
 
+variable {d : ℕ}
+
 /-- Forward cylinders are open, hence measurable. -/
-theorem measurableSet_forwardCylinder' {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+theorem measurableSet_forwardCylinder'  (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
     MeasurableSet (forwardCylinder Z₀ R hR) := by
   have ht : Continuous (@KineticPoint.time d) := continuous_time
   have hv : Continuous (@KineticPoint.velocity d) := continuous_velocity
@@ -53,35 +55,32 @@ theorem measurableSet_forwardCylinder' {d : ℕ} (Z₀ : KineticPoint d) (R : �
       ((ht.sub continuous_const).smul continuous_const))
   exact ((isOpen_lt continuous_const ht).inter ((isOpen_lt ht continuous_const).inter
     (((PDE.isOpen_euclideanBall Z₀.velocity R).preimage hv).inter
-      ((PDE.isOpen_euclideanBall (0 : PDE.Vec d) (R ^ 3)).preimage hrel)))).measurableSet
+      ((PDE.isOpen_euclideanBall _ _).preimage hrel)))).measurableSet
 
 /-- Exponent algebra: with `q = p/(p-1)` and `p > 2d+1`, `S^{δ_q/q} ≤ (R²)^{δ_q/q} = R^{2-(4d+2)/p}`
 for `0 ≤ S ≤ R²`. -/
-theorem greenDelta_rpow_le {d : ℕ} {p S R : ℝ} (hp : 2 * (d : ℝ) + 1 < p) (hS : 0 ≤ S)
+theorem greenDelta_rpow_le  {p S R : ℝ} (hp : 2 * (d : ℝ) + 1 < p) (hS : 0 ≤ S)
     (hSR : S ≤ R ^ 2) (hR : 0 < R) :
     S ^ ((1 - 2 * (d : ℝ) * (p / (p - 1) - 1)) / (p / (p - 1))) ≤
       R ^ (2 - (4 * (d : ℝ) + 2) / p) := by
-  have hd : (0 : ℝ) ≤ d := Nat.cast_nonneg d
   have hp0 : 0 < p := by linarith
   have hp1 : 0 < p - 1 := by linarith
-  have he : (1 - 2 * (d : ℝ) * (p / (p - 1) - 1)) / (p / (p - 1)) = (p - 1 - 2 * d) / p := by
-    field_simp
-    ring
-  have h2 : 2 - (4 * (d : ℝ) + 2) / p = 2 * ((p - 1 - 2 * d) / p) := by
-    field_simp
-    ring
+  have he : (1 - 2 * d * (p / (p - 1) - 1)) / (p / (p - 1)) = (p - 1 - 2 * d) / p := by
+    grind
+  have h2 : 2 - (4 * d + 2) / p = 2 * ((p - 1 - 2 * d) / p) := by
+    grind
   have hnn : 0 ≤ (p - 1 - 2 * d) / p := div_nonneg (by linarith) hp0.le
   rw [he, h2, Real.rpow_mul hR.le]
-  calc S ^ ((p - 1 - 2 * (d : ℝ)) / p) ≤ (R ^ 2) ^ ((p - 1 - 2 * (d : ℝ)) / p) :=
+  calc S ^ ((p - 1 - 2 * d) / p) ≤ (R ^ 2) ^ ((p - 1 - 2 * d) / p) :=
         Real.rpow_le_rpow hS hSR hnn
-    _ = (R ^ (2 : ℝ)) ^ ((p - 1 - 2 * (d : ℝ)) / p) := by
-        rw [Real.rpow_two]
+    _ = (R ^ (2 : ℝ)) ^ ((p - 1 - 2 * d) / p) := by
+        simp
 
 /-- **Conditional Theorem 1.1.**  See the module docstring.  The premise `hbounds`
 is the conclusion of Lemma 5.1 for all case-W coefficients and realizing `(S,K)`, with
 structural constants `C_γ, c` fixed first; `C = greenConstant d (p/(p-1)) C_γ` depends only on
 `d, λ, Λ, p`. -/
-theorem green_density_bound_of_slabFourierBounds {d : ℕ} (hd : 1 ≤ d) (lam Lam p : ℝ)
+theorem green_density_bound_of_slabFourierBounds  (hd : 1 ≤ d) (lam Lam p : ℝ)
     (hlam : 0 < lam) (hLam : lam ≤ Lam) (hp : 2 * (d : ℝ) + 1 < p)
     (hbounds : ∃ (C : ℝ → ℝ≥0) (c : ℝ), ∀ (B : CoefficientField d),
       IsSectionTwoCoefficient lam Lam B →
@@ -117,29 +116,26 @@ theorem green_density_bound_of_slabFourierBounds {d : ℕ} (hd : 1 ≤ d) (lam L
             ((1 - 2 * (d : ℝ) * (p / (p - 1) - 1)) / (p / (p - 1))) ≤
           C * R ^ (2 - (4 * (d : ℝ) + 2) / p) := by
   obtain ⟨Cγ, c, hb⟩ := hbounds
-  have hd0 : (1 : ℝ) ≤ d := by exact_mod_cast hd
   have hp1 : 0 < p - 1 := by linarith
-  have hp0 : 0 < p := by linarith
   have hq : 1 < p / (p - 1) := by
     rw [lt_div_iff₀ hp1]
     linarith
-  have hqd : p / (p - 1) < 1 + 1 / (2 * (d : ℝ)) := by
-    have h : p / (p - 1) = 1 + 1 / (p - 1) := by field_simp; ring
-    rw [h]
-    have : 1 / (p - 1) < 1 / (2 * (d : ℝ)) :=
+  have hqd : p / (p - 1) < 1 + 1 / (2 * d) := by
+    have h : p / (p - 1) = 1 + 1 / (p - 1) := by grind
+    have : 1 / (p - 1) < 1 / (2 * d) :=
       one_div_lt_one_div_of_lt (by positivity) (by linarith)
     linarith
-  refine ⟨((greenConstant d (p / (p - 1)) Cγ : ℝ≥0) : ℝ), NNReal.coe_nonneg _, ?_⟩
+  refine ⟨((greenConstant d (p / (p - 1)) Cγ : ℝ≥0)), NNReal.coe_nonneg _, ?_⟩
   intro P₀ R hR A hsm hsymm hlo hhi S K hreal P hP ΓP hΓP
   have hP' := (mem_forwardCylinder_iff _ _ _ hR).1 hP
   have hSP : 0 < remainingTime (kineticReflection P₀) P R := by
     unfold remainingTime
-    linarith [hP'.2.1]
+    linarith
   have hSR : remainingTime (kineticReflection P₀) P R < R ^ 2 := by
     unfold remainingTime
-    linarith [hP'.1]
+    linarith
   have hset := (caseW_sourceSetting hlam hLam hsm hsymm hlo hhi).1
-  let μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) P.time) :=
+  let μ  :=
     Measure.dirac (kineticStartState d P)
   have hΓ := greenMeasure_spec K P.time ⊤ (by simp) μ
   have hbd := hb _ hset S K hreal P.time μ _ hΓ
@@ -149,9 +145,7 @@ theorem green_density_bound_of_slabFourierBounds {d : ℕ} (hd : 1 ≤ d) (lam L
     (measurableSet_forwardCylinder' (kineticReflection P₀) R hR)
   refine ⟨_, hGm, hGden, ?_, ?_⟩
   · refine (hGnorm _).trans (hnorm.trans (le_of_eq ?_))
-    have hμ : μ Set.univ = 1 := measure_univ
-    rw [hμ, mul_one, ← ENNReal.ofReal_coe_nnreal, ← ENNReal.ofReal_mul (NNReal.coe_nonneg _)]
-    rfl
+    aesop
   · exact mul_le_mul_of_nonneg_left
       (greenDelta_rpow_le hp hSP.le hSR.le hR) (NNReal.coe_nonneg _)
 

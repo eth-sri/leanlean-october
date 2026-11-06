@@ -12,7 +12,6 @@ identifies marginal mass with the joint master mass at the physical starting poi
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open HypoellipticAleksandrov Parabolic SectionTwo Set MeasureTheory
 
@@ -31,14 +30,11 @@ theorem ballKernel_short_time_loss_explicit
   let δ := R / (4 * Real.sqrt d)
   let α := δ / (2 * Lam * (T.1 - P.1.time))
   let Ψ := ballExitBarrier Lam α δ T.1 P.1.velocity
-  have hdR : 0 < (d : ℝ) := by exact_mod_cast (show 0 < d by omega)
   have hLam0 : 0 < Lam := hlam.trans_le hLam
-  have hα : 0 ≤ α := by
-    dsimp only [α, δ]
-    exact (div_pos (div_pos hR (by positivity))
+  have hα : 0 ≤ α := (div_pos (div_pos hR (by positivity))
       (mul_pos (mul_pos (by norm_num) hLam0) (sub_pos.mpr T.2))).le
   have h := ballExit_marginal_loss_le v₀ hR T.2 B hB
-    (localBallKernel hH hLE hd hlam hLam B hB v₀ hR)
+    _
     (localBallKernel_marginal hH hLE hd hlam hLam B hB v₀ hR) Ψ
     (ballExitBarrier_contDiff _ _ _ _ _)
     (fun p _ => ballExitBarrier_nonneg _ _ _ _ _ p)
@@ -47,9 +43,7 @@ theorem ballKernel_short_time_loss_explicit
     P.1.velocity P.2
   have hm := ballTransition_mass_eq_marginal hH hLE hd hlam hLam B hB v₀ hR P T
   have hbound := h.trans_eq (ballExitBarrier_optimized hd hLam0 hR T.2 P.1.velocity)
-  calc
-    _ = _ := congrArg (fun m : ℝ => 1 - m) hm
-    _ ≤ _ := hbound
+  aesop
 
 /-- The planned short-time exit estimate, with constants uniform over the coefficient,
 center, radius, physical starting point, and terminal time. -/
@@ -65,14 +59,12 @@ theorem ballKernel_short_time_loss
       T.1 - P.1.time ≤ R ^ 2 / 8 →
       let Kpt := ballTransition hH hLE hd hlam hLam B hB v₀ hR
       1 - (Kpt P T).real univ ≤ C * Real.exp (-c * R ^ 2 / (T.1 - P.1.time)) := by
-  have hdR : 0 < (d : ℝ) := by exact_mod_cast (show 0 < d by omega)
+  have hdR : 0 < (d : ℝ) := by positivity
   have hLam0 : 0 < Lam := hlam.trans_le hLam
   refine ⟨2 * d, 1 / (64 * d * Lam), mul_pos (by norm_num) hdR,
     div_pos one_pos (mul_pos (mul_pos (by norm_num) hdR) hLam0), ?_⟩
   intro B hB v₀ R hR P T hv _hsmall
   have h := ballKernel_short_time_loss_explicit hH hLE hd hlam hLam B hB v₀ hR P T hv
-  convert h using 1
-  congr 2
-  field_simp
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

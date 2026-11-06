@@ -12,22 +12,21 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Set Parabolic
 
+variable {d : ℕ} {psi : KineticPoint d → ℝ} {E : Set (KineticPoint d)}
+
 /-- Positive rescaling and constant shifting preserve source-near smoothness. -/
-theorem IsSmoothNear.affine {d : ℕ} {psi : KineticPoint d → ℝ}
-    {E : Set (KineticPoint d)} (h : IsSmoothNear psi E) (a b : ℝ) :
+theorem IsSmoothNear.affine  (h : IsSmoothNear psi E) (a b : ℝ) :
     IsSmoothNear (fun P => a * psi P + b) E := by
   obtain ⟨U, hU, hEU, hpsi⟩ := h
   exact ⟨U, hU, hEU, contDiffOn_const.mul hpsi |>.add contDiffOn_const⟩
 
 /-- Near smoothness gives smoothness of each physical coordinate slice. -/
-theorem IsSmoothNear.slices {d : ℕ} {psi : KineticPoint d → ℝ}
-    {E : Set (KineticPoint d)} (h : IsSmoothNear psi E) {P : KineticPoint d}
+theorem IsSmoothNear.slices  (h : IsSmoothNear psi E) {P : KineticPoint d}
     (hP : P ∈ E) :
     ContDiffAt ℝ (⊤ : ℕ∞) (fun t => psi ⟨t, P.position, P.velocity⟩) P.time ∧
     ContDiffAt ℝ (⊤ : ℕ∞) (fun x => psi ⟨P.time, x, P.velocity⟩) P.position ∧
@@ -48,10 +47,10 @@ theorem IsSmoothNear.slices {d : ℕ} {psi : KineticPoint d → ℝ}
   have htime := hg.comp P.time ht.contDiffAt
   have hposition := hg.comp P.position hx.contDiffAt
   have hvelocity := hg.comp P.velocity hv.contDiffAt
-  exact ⟨htime, hposition, hvelocity⟩
+  aesop
 
 /-- The source backward operator is affine-linear on every smooth-near test. -/
-theorem backwardOperator_affine {d : ℕ} (A : FullKineticCoefficient d)
+theorem backwardOperator_affine  (A : FullKineticCoefficient d)
     {psi : KineticPoint d → ℝ} {E : Set (KineticPoint d)}
     (hpsi : IsSmoothNear psi E) {P : KineticPoint d} (hP : P ∈ E) (a b : ℝ) :
     backwardOperator A (fun Q => a * psi Q + b) P = a * backwardOperator A psi P := by
@@ -79,7 +78,7 @@ theorem backwardOperator_affine {d : ℕ} (A : FullKineticCoefficient d)
     kineticVelocityHessian_eq_sliceHessian]
   unfold PDE.vecDot
   simp only [Pi.smul_apply, smul_eq_mul]
-  simp_rw [mul_left_comm (P.velocity _) a]
+  simp_rw [mul_left_comm]
   rw [← Finset.mul_sum]
   ring
 

@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionDens
 /-! # Summing the source overlap convolution on the two-index lattice -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 open scoped ENNReal
@@ -17,7 +16,7 @@ theorem position_two_index_young_source (w a : ℤ × ℤ → ℝ≥0∞) (q : �
   have he (g : ℤ × ℤ) : (∑' h, w (g - h) * a h) =
       ∑' h, w h * a (g - h) := by
     have h := (Equiv.subLeft g).tsum_eq (fun h => w (g - h) * a h)
-    simpa only [Equiv.subLeft_apply, sub_sub_cancel] using h.symm
+    simp_all
   simp_rw [he]
   exact position_two_index_young w a q hq
 
@@ -38,36 +37,36 @@ theorem position_overlap_power_sum (c₀ : ℝ) (hc₀ : 0 < c₀)
         nu (enlargedStartCell c s x z.1 z.2)) ≤
       D * ∑' h, w (positionIndexEmbedding b - h) * a h := by
     calc
-      _ ≤ ∑' z : ℕ × ℤ, D * w (positionIndexEmbedding b - positionIndexEmbedding z) *
-          a (positionIndexEmbedding z) := by
+      _ ≤ ∑' z : ℕ × ℤ, D * w _ *
+          a _ := by
         apply ENNReal.tsum_le_tsum
         intro z
-        change _ ≤ D * w (positionIndexEmbedding b - positionIndexEmbedding z) *
-          positionMassSequence nu c s x (positionIndexEmbedding z)
+        change _ ≤ D * w _ *
+          positionMassSequence nu c s x _
         rw [positionMassSequence_embed]
         exact mul_le_mul_left (positionOverlapWeight_le c₀ hc₀ b.1 z.1 b.2 z.2) _
       _ = D * ∑' z : ℕ × ℤ,
-          w (positionIndexEmbedding b - positionIndexEmbedding z) *
-            a (positionIndexEmbedding z) := by
+          w _ *
+            a _ := by
         simp_rw [mul_assoc]
         rw [ENNReal.tsum_mul_left]
       _ ≤ _ := mul_le_mul_right (ENNReal.tsum_comp_le_tsum_of_injective
         positionIndexEmbedding_injective
-        (fun h => w (positionIndexEmbedding b - h) * a h)) D
+        (fun h => w _ * a h)) D
   calc
-    _ ≤ ∑' b : ℕ × ℤ, (D * ∑' h, w (positionIndexEmbedding b - h) * a h) ^ q :=
+    _ ≤ ∑' b : ℕ × ℤ, (D * ∑' h, w _ * a h) ^ q :=
       ENNReal.tsum_le_tsum (fun b => ENNReal.rpow_le_rpow (hcell b) (by linarith))
     _ = D ^ q * ∑' b : ℕ × ℤ,
-        (∑' h, w (positionIndexEmbedding b - h) * a h) ^ q := by
-      simp_rw [ENNReal.mul_rpow_of_nonneg _ _ (by linarith : 0 ≤ q)]
+        (∑' h, w _ * a h) ^ q := by
+      simp_rw [ENNReal.mul_rpow_of_nonneg _ _ (by linarith)]
       rw [ENNReal.tsum_mul_left]
-    _ ≤ D ^ q * ∑' g, (∑' h, w (g - h) * a h) ^ q :=
+    _ ≤ D ^ q * ∑' g, (∑' h, w _ * a h) ^ q :=
       mul_le_mul_right (ENNReal.tsum_comp_le_tsum_of_injective
-        positionIndexEmbedding_injective (fun g => (∑' h, w (g - h) * a h) ^ q)) _
+        positionIndexEmbedding_injective (fun g => (∑' h, w _ * a h) ^ q)) _
     _ ≤ D ^ q * ((∑' h, w h) ^ q * ∑' g, a g ^ q) :=
       mul_le_mul_right (position_two_index_young_source w a q hq) _
     _ = _ := by
-      rw [← mul_assoc, ← ENNReal.mul_rpow_of_nonneg _ _ (by linarith : 0 ≤ q),
+      rw [← mul_assoc, ← ENNReal.mul_rpow_of_nonneg _ _ (by linarith),
         positionMassSequence_power_sum nu c s x q (by linarith)]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

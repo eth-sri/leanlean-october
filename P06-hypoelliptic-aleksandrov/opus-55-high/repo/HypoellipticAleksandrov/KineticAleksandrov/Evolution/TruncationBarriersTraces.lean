@@ -24,41 +24,40 @@ The admissible interval domains of dimension `1` are balls (`BarrierIntervalGeom
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Filter Set
 open scoped Topology MatrixOrder
 
+variable {n : ℕ}
+
 /-- The collar scale: the compact support of a terminal datum of the moving ball lies at positive
 distance from the terminal boundary, so some `d_* < r/4` has `2 d_* ≤` that distance. -/
-theorem exists_collar_scale {n : ℕ} {c : PDE.Vec n} {r : ℝ} (hr : 0 < r) {γ : ℝ → PDE.Vec n}
+theorem exists_collar_scale  {c : PDE.Vec n} {r : ℝ} (hr : 0 < r) {γ : ℝ → PDE.Vec n}
     {τ : ℝ} {F : BoundedBorel (EvolutionAmbientState n)}
     (hF : IsSmoothCompactTerminalDatum (PDE.euclideanBall c r) γ τ F) :
     ∃ d : ℝ, 0 < d ∧ d < r / 4 ∧ ∀ q ∈ tsupport (F : EvolutionAmbientState n → ℝ),
       2 * d ≤ r - PDE.vecEuclideanNorm (q.1 - (γ τ + c)) := by
-  have hcpt : IsCompact (tsupport (F : EvolutionAmbientState n → ℝ)) := hF.2.1.isCompact
+  have hcpt  := hF.2.1.isCompact
   have hcont : Continuous (fun q : EvolutionAmbientState n =>
       r - PDE.vecEuclideanNorm (q.1 - (γ τ + c))) :=
     continuous_const.sub (PDE.continuous_vecEuclideanNorm.comp
       (continuous_fst.sub continuous_const))
   obtain ⟨m, hm, hmle⟩ := hcpt.exists_forall_le' (a := 0) hcont.continuousOn (fun q hq => by
-    have h1 : q.1 ∈ movingDomain (PDE.euclideanBall c r) γ τ := (hF.2.2 hq).1
+    have h1  := (hF.2.2 hq).1
     have h2 := mem_movingDomain_euclideanBall_iff.mp h1
-    have h3 : PDE.vecEuclideanNorm (q.1 - (γ τ + c)) < r := by
-      unfold PDE.vecEuclideanNorm
-      exact (Real.sqrt_lt' hr).mpr h2
+    have h3 : PDE.vecEuclideanNorm (q.1 - (γ τ + c)) < r := (Real.sqrt_lt' hr).mpr h2
     linarith)
   refine ⟨min (m / 2) (r / 8), lt_min (by linarith) (by linarith),
     lt_of_le_of_lt (min_le_right _ _) (by linarith), fun q hq => ?_⟩
   have := hmle q hq
-  have h2 : min (m / 2) (r / 8) ≤ m / 2 := min_le_left _ _
+  have h2 : min _ (r / 8) ≤ m / 2 := min_le_left _ _
   linarith
 
 /-- Terminal trace from a uniform terminal window: if `|u_i - F| ≤ (τ - σ) M` for all `i` on the
 past cylinder near the terminal time, then the terminal trace at a terminal point is uniform. -/
-theorem terminal_trace_of_window {n : ℕ} {ι : Type*} {Ω : Set (PDE.Vec n)}
+theorem terminal_trace_of_window  {ι : Type*} {Ω : Set (PDE.Vec n)}
     {γ : ℝ → PDE.Vec n} {τ : ℝ} (F : BoundedBorel (EvolutionAmbientState n))
     (hF : Continuous (F : EvolutionAmbientState n → ℝ)) (u : ι → KineticPoint n → ℝ)
     {M δ₀ : ℝ} (hM0 : 0 ≤ M) (hδ₀ : 0 < δ₀)
@@ -71,7 +70,7 @@ theorem terminal_trace_of_window {n : ℕ} {ι : Type*} {Ω : Set (PDE.Vec n)}
   have hK : 0 < η / (2 * (M + 1)) := by positivity
   set δ := min δ₀ (η / (2 * (M + 1))) with hδ
   have hδpos : 0 < δ := lt_min hδ₀ hK
-  have hFe : Continuous (fun p : KineticPoint n => F (p.position, p.velocity)) :=
+  have hFe : Continuous (fun p : KineticPoint n => F _) :=
     hF.comp (continuous_position.prodMk continuous_velocity)
   refine ⟨{p | τ - δ < p.time} ∩
     {p | |F (p.position, p.velocity) - F (p₀.position, p₀.velocity)| < η / 2}, ?_, ?_, ?_⟩
@@ -79,10 +78,9 @@ theorem terminal_trace_of_window {n : ℕ} {ι : Type*} {Ω : Set (PDE.Vec n)}
       (isOpen_lt ((hFe.sub continuous_const).abs) continuous_const)
   · refine ⟨?_, ?_⟩
     · show τ - δ < p₀.time
-      rw [hp₀]
       linarith
     · show |F (p₀.position, p₀.velocity) - F (p₀.position, p₀.velocity)| < η / 2
-      simp only [sub_self, abs_zero]
+      simp only [sub_self]
       linarith
   · rintro i p ⟨⟨hpt, hpF⟩, hcyl⟩
     have hpt' : τ - δ < p.time := hpt
@@ -105,7 +103,7 @@ there is a neighbourhood `O` of `p₀`, independent of `ε ∈ (0, 1]`, on which
 (past cylinder), and likewise `|u_ε| ≤ η` near every lateral frontier point.  The standing premises
 (`Ω` admissible, `γ` continuous piecewise `C¹`, the Loewner bounds of `B`, the Lipschitz drift)
 are explicit. -/
-theorem uniform_viscous_boundary_traces {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
+theorem uniform_viscous_boundary_traces  {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
     (hΩ : IsAdmissibleEvolutionDomain Ω) (hγ : IsContinuousPiecewiseC1 γ)
     {lam Lam : ℝ} (hlam : 0 < lam) {B : FullKineticCoefficient n}
     (hB : HasEverywhereLoewnerBounds lam Lam B) {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n}
@@ -124,13 +122,13 @@ theorem uniform_viscous_boundary_traces {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : �
           |u ε p| ≤ η) := by
   obtain ⟨M, hM0, hM⟩ := exists_uniform_terminalDatum_operator_bound hlam hB hb τ F hF
   obtain ⟨C, -, hC⟩ := F.exists_bound
-  have hFc : Continuous (F : EvolutionAmbientState n → ℝ) := hF.1.continuous
+  have hFc : Continuous F := hF.1.continuous
   rcases eq_univ_or_exists_euclideanBall_of_isAdmissibleEvolutionDomain hΩ with
     rfl | ⟨c, r, hr, rfl⟩
   · refine ⟨fun p₀ hp₀ η hη => ?_, fun p₀ hp₀ η hη => ?_⟩
     · refine terminal_trace_of_window F hFc u hM0 one_pos (fun i p hp ht => ?_) hp₀.1 hη
       exact wholeSpace_terminalDatum_bound hlam hB hb rfl (τ - 1) τ (by linarith) F hF i.1
-        i.2.1.le i.2.2 M hM0 (fun q _ => hM i.1 i.2.1.le i.2.2 q) (u i) (hu i) p
+        i.2.1.le i.2.2 M hM0 (fun q _ => hM i.1 i.2.1.le i.2.2 q) _ (hu i) p
         ⟨by linarith, hp.1, hp.2⟩
     · exfalso
       have h := hp₀.2
@@ -143,10 +141,10 @@ theorem uniform_viscous_boundary_traces {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : �
       refine terminal_trace_of_window F hFc u hM0 (lt_min one_pos hL1)
         (fun i p hp ht => ?_) hp₀.1 hη
       have hslab : p ∈ movingClosedSlab (PDE.euclideanBall c r) γ (τ - 1) τ :=
-        ⟨by linarith [min_le_left (1 : ℝ) (d / (1 + L))], hp.1, hp.2⟩
-      exact (two_barriers_on_finite_slab hr hγ (τ - 1) τ (by linarith) L hL hγL hlam hB hb
+        ⟨by linarith [min_le_left (1) (d / (1 + L))], hp.1, hp.2⟩
+      exact (two_barriers_on_finite_slab hr hγ _ τ (by linarith) L hL hγL hlam hB hb
         i.2.1.le i.2.2 hF d hd hdr hsupp C M hC (fun q _ => hM i.1 i.2.1.le i.2.2 q)
-        (hu i)).2 p hslab (by linarith [min_le_right (1 : ℝ) (d / (1 + L))])
+        (hu i)).2 p hslab (by linarith [min_le_right (1) (d / (1 + L))])
     · have hpτ : p₀.time ≤ τ := hp₀.1
       obtain ⟨L, hL, hγL⟩ := exists_evolution_curve_lipschitzOn hγ (p₀.time - 1) τ
         (by linarith)

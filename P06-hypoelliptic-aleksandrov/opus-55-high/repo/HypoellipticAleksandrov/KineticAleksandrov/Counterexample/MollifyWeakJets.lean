@@ -13,7 +13,6 @@ all smooth compactly supported tests. No classical differentiability of `u` is r
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory ContinuousLinearMap
 open scoped Convolution
@@ -39,10 +38,9 @@ theorem fderiv_translated_reflection (k : G → ℝ) (hk : ContDiff ℝ 1 k)
     fderiv ℝ (fun z => k (q - z)) y w = -(fderiv ℝ k (q - y) w) := by
   have h := ((hk.differentiable (by simp)) (q - y)).hasFDerivAt.comp y
     ((hasFDerivAt_const q y).sub (hasFDerivAt_id y))
-  change HasFDerivAt (fun z => k (q - z)) _ y at h
+  change HasFDerivAt (fun z => k _) _ y at h
   rw [h.fderiv]
-  simp only [ContinuousLinearMap.comp_apply, zero_sub, neg_apply,
-    ContinuousLinearMap.id_apply, map_neg]
+  simp
 
 omit [MeasureSpace G] [BorelSpace G] [FiniteDimensional ℝ G]
   [Measure.IsAddHaarMeasure (volume : Measure G)] in
@@ -55,8 +53,7 @@ theorem smooth_test_second_swap (test : G → ℝ) (ht : ContDiff ℝ 2 test)
     ((ht.fderiv_right (m := 1) (by norm_num)).differentiable (by norm_num)) q
   rw [fderiv_clm_apply hd (differentiableAt_const _),
     fderiv_clm_apply hd (differentiableAt_const _)]
-  simpa only [fderiv_const_apply, ContinuousLinearMap.comp_zero, zero_add,
-    ContinuousLinearMap.flip_apply] using!
+  simpa using!
       ((ht.contDiffAt (x := q)).isSymmSndFDerivAt (by simp)).eq w z
 
 /-- A locally integrable weak derivative commutes with smoothing by a compact smooth
@@ -72,28 +69,23 @@ theorem mollify_weak_directional_jet (phi : ContDiffBump (0 : G))
   have hs : spatialMollify phi u = u ⋆[lsmul ℝ ℝ, volume] k := by
     unfold spatialMollify
     rw [convolution_symm (lsmul ℝ ℝ)]
-    apply ContinuousLinearMap.ext
-    intro a
-    apply ContinuousLinearMap.ext
-    intro b
-    exact mul_comm _ _
-  rw [hs, (hkc.hasFDerivAt_convolution_right (lsmul ℝ ℝ) hu
+    aesop
+  rw [hs, (hkc.hasFDerivAt_convolution_right _ hu
     (hk.of_le (by simp)) q).fderiv,
     convolution_precompR_apply (lsmul ℝ ℝ) hu (hkc.fderiv ℝ)
-      ((hk.of_le (by simp) : ContDiff ℝ 1 k).continuous_fderiv one_ne_zero) q w]
-  have ht : ContDiff ℝ (⊤ : ℕ∞) (fun y => k (q - y)) :=
+      ((hk.of_le (by simp)).continuous_fderiv one_ne_zero)]
+  have ht : ContDiff ℝ _ (fun y => k (q - y)) :=
     hk.comp (contDiff_const.sub contDiff_id)
-  have he := hweak (fun y => k (q - y)) ht
+  have he := hweak _ ht
     (hasCompactSupport_translated_reflection k hkc q)
   simp_rw [fderiv_translated_reflection k (hk.of_le (by simp)), mul_neg,
     integral_neg] at he
   have he' := neg_injective he
-  rw [convolution_def]
-  change (∫ y, u y * fderiv ℝ k (q - y) w) = _
+  change (∫ y, u y * fderiv ℝ k _ w) = _
   rw [he', spatialMollify, convolution_lsmul_swap]
   apply integral_congr_ae
   filter_upwards [] with y
-  exact mul_comm _ _
+  ring
 
 /-- A second distributional jet commutes with convolution. The second weak identity
 uses the reverse order on test derivatives, as required by two integrations by parts. -/
@@ -113,10 +105,8 @@ theorem mollify_weak_second_jet (phi : ContDiffBump (0 : G))
   apply mollify_weak_directional_jet phi g h hg z
   intro test ht hs
   have hd : ContDiff ℝ (⊤ : ℕ∞) (fun x => fderiv ℝ test x z) := by
-    exact (ht.contDiff_fderiv_apply (by simp)).comp (contDiff_id.prodMk contDiff_const)
-  have ha := hfirst (fun x => fderiv ℝ test x z) hd (hs.fderiv_apply (𝕜 := ℝ) z)
-  have hb := hsecond test ht hs
-  rw [hb] at ha
-  simpa only [neg_neg] using (congrArg Neg.neg ha).symm
+    fun_prop
+  have ha := hfirst _ hd (hs.fderiv_apply (𝕜 := ℝ) z)
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

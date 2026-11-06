@@ -8,7 +8,6 @@ import Mathlib.Tactic
 /-! # Integrability of the literal separated radial and angular test factors -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
@@ -18,8 +17,7 @@ theorem bellmanRadialTest_compact (ψ : ℝ → ℝ) (hc : HasCompactSupport ψ)
     HasCompactSupport (fun s : BellmanPositiveTime => ψ s.val) := by
   have hk : IsCompact ((Subtype.val : BellmanPositiveTime → ℝ) ⁻¹' tsupport ψ) := by
     apply Topology.IsInducing.subtypeVal.isCompact_preimage' hc
-    intro s hsψ
-    exact ⟨⟨s, hs hsψ⟩, rfl⟩
+    aesop
   exact hk.of_isClosed_subset (isClosed_tsupport _)
     (tsupport_comp_subset_preimage ψ continuous_subtype_val)
 
@@ -39,7 +37,6 @@ theorem bellmanRadialTest_integrable (β : ℝ) (ψ : ℝ → ℝ) (hψ : Contin
 measure. -/
 theorem bellmanAngularTestFactor_integrable (F : Measure ℝ) [IsFiniteMeasureOnCompacts F]
     (ψ : ℝ → ℝ) (hψ : Continuous ψ) (hc : HasCompactSupport ψ) (n : ℕ) :
-    Integrable (fun y => y ^ n * ψ y) F := by
-  exact ((continuous_id.pow n).mul hψ).integrable_of_hasCompactSupport hc.mul_left
+    Integrable (fun y => y ^ n * ψ y) F := ((continuous_id.pow n).mul hψ).integrable_of_hasCompactSupport hc.mul_left
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -14,7 +14,6 @@ maximum-principle bound. No ambient measurability of a Dirichlet extension is as
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -62,8 +61,8 @@ theorem tendsto_setIntegral_mul_innerBall_dirichlet
   have hmem := eventually_innerCylinder_mem_straightenedEllipsoid (S := S0)
     hδ0 hδr β R hβlim hRlim g hclose
   have hclosed (k : ℕ) (hk : 0 < r0 - β k ∧ 0 < R k ∧
-      ∀ p ∈ K, (straightenedPoint (g k) p).2 ∈
-        openEllipsoid (straightenedEllipsoidMatrix n (r0 - β k) (R k))) :
+      ∀ p ∈ K, (straightenedPoint _ p).2 ∈
+        openEllipsoid _) :
       MapsTo (straightenedPoint (g k)) K
         (scalarParabolicClosedCylinder a τ
           (openEllipsoid (straightenedEllipsoidMatrix n (r0 - β k) (R k)))) :=
@@ -75,7 +74,7 @@ theorem tendsto_setIntegral_mul_innerBall_dirichlet
   · refine hmem.mono fun k hk => ?_
     filter_upwards [ae_restrict_mem hK.measurableSet] with p hp
     have hbnd := abs_le_straightened_dirichlet
-      hlam hB hBs hbs (haα.trans hατ) hk.1 hk.2.1 (hg k) hε F (u k) (hu k)
+      hlam hB hBs hbs (haα.trans hατ) hk.1 hk.2.1 (hg k) hε F _ (hu k)
       hC hFC _ (hclosed k hk hp)
     rw [Real.norm_eq_abs, abs_mul]
     exact mul_le_mul_of_nonneg_right hbnd (abs_nonneg _)

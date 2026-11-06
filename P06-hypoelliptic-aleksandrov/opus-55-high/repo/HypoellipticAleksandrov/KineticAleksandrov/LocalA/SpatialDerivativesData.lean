@@ -30,22 +30,17 @@ theorem spatialData_local_extension {d : ℕ} (Z₀ P : KineticPoint d) {R : ℝ
     rw [← ho]
     exact Holder.oscillationOn_nonneg ⟨P, subset_closure hP⟩ hab hbb
   refine ⟨hM, ?_⟩
-  have hdata : ContinuousOn (fun q => U (e.symm q) - U P) (e '' closure E) :=
+  have hdata : ContinuousOn (fun q => U _ - U P) (e '' closure E) :=
     (hU.comp e.symm.continuous.continuousOn
-      (fun q hq => by rcases hq with ⟨Q, hQ, rfl⟩; simpa using hQ)).sub continuousOn_const
+      (fun q hq => by rcases hq with ⟨Q, hQ, rfl⟩; aesop)).sub continuousOn_const
   have hb : ∀ q ∈ e '' closure E, ‖U (e.symm q) - U P‖ ≤
       Holder.oscillationOn U E := by
     rintro q ⟨Q, hQ, rfl⟩
-    simp only [e.symm_apply_apply, Real.norm_eq_abs]
     rw [← ho]
     exact Holder.abs_sub_le_oscillationOn hab hbb hQ (subset_closure hP)
   obtain ⟨H, hH, hHc, hHb, hHe⟩ := spatialData_compact_extension
     (e '' closure E) (hc.image e.continuous) _ hdata _ hM hb
-  refine ⟨H, hH, hHc, hHb, fun Q hQ => ?_⟩
-  have hv := hHe (e Q) ⟨Q, hQ, rfl⟩
-  rw [e.symm_apply_apply] at hv
-  simpa only [e, KineticPoint.homeomorphProd, KineticPoint.isometryEquivProd,
-    IsometryEquiv.coe_toHomeomorph, IsometryEquiv.coe_mk] using hv
+  aesop
 
 /-- Boundary displacement and exit data give literal physical product coordinates. -/
 def spatialBoundaryCoordinates {d : ℕ} (P : KineticPoint d) (v₀ : PDE.Vec d)

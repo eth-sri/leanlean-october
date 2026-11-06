@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.HomogeneousR
 /-! # Uniform bounds of the actual homogeneous reconstruction on closed future slabs -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Filter Parabolic
 open SectionTwo TheoremA Evolution
@@ -35,7 +34,7 @@ theorem reconstruction_uniform_bound
   refine ⟨B, hB, reconstruction_closed_slab_test_bound H he
     (WithTop.coe_lt_coe.mp e.2.1) u hc B ?_⟩
   intro p hp
-  let ep : StripPole H (T : WithTop ℝ) := ⟨p, WithTop.coe_lt_coe.mpr hp.2.1, hp.2.2⟩
+  let ep : StripPole H _ := ⟨p, WithTop.coe_lt_coe.mpr hp.2.1, hp.2.2⟩
   have hAE : g =ᵐ[stripGreenOfKernel H E.2 T ep] fun q => -forwardScalarOperator A.a phi q := by
     filter_upwards [stripGreenOfKernel_ae_mem_stripPast H E.2 T ep,
       reconstruction_green_ae_time_gt H E.2 T ep] with q hq ht
@@ -47,7 +46,6 @@ theorem reconstruction_uniform_bound
   have heq : u p = phi p - stripSourcePotential H E.2 T g p := by
     rw [hformula ep hp.1, stripSourcePotential_eq_green H E.2 T g ep, stripPotentialOfKernel]
     rw [integral_congr_ae hAE]
-  rw [heq]
-  exact (abs_sub _ _).trans ((add_le_add (hM p hp).1 (hpot.trans hh)))
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

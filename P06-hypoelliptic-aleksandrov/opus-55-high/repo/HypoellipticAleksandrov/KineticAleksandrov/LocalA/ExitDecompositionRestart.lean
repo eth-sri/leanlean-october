@@ -32,11 +32,7 @@ theorem ballExitRestart_mass (P : LocalBallStart v₀ R)
         (PDE.isOpen_euclideanBall v₀ R).measurableSet P.1.time H.1 H.2.1.le
         (ballStartState P)) univ := by
   unfold ballExitRestart
-  rw [Measure.bind_apply MeasurableSet.univ
-    (ProbabilityTheory.Kernel.measurable _).aemeasurable]
-  change (∫⁻ w, ballExitRaw hH hLE hd hlam hLam B hB v₀ hR
-    (ballStateStart H.1 w) ⟨T.1, H.2.2⟩ univ ∂_) = _
-  simp only [ballExitRaw_mass, lintegral_const, one_mul]
+  simp
 
 /-- The genuine later-exit mixture is finite. -/
 instance ballExitRestart_isFinite (P : LocalBallStart v₀ R)
@@ -63,7 +59,7 @@ theorem ballExitRestart_integral (P : LocalBallStart v₀ R)
   obtain ⟨M, hM⟩ := hgb
   have hi : Integrable g (ballExitRestart hH hLE hd hlam hLam B hB v₀ hR P T H) :=
     Integrable.of_bound hg.aestronglyMeasurable M
-      (Filter.Eventually.of_forall (fun Q => by simpa only [Real.norm_eq_abs] using hM Q))
+      (Filter.Eventually.of_forall (fun Q => by simp_all))
   exact Autonomous.nested_integral_bind _ _
     (ProbabilityTheory.Kernel.measurable _) g hi
 

@@ -10,7 +10,6 @@ on the open strip. No representative or classical source solver is an input hypo
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Parabolic
 open SectionTwo TheoremA Evolution
@@ -24,7 +23,7 @@ theorem reconstruction_source_continuousOn
     (hg : ∀ p ∈ reconstructionStrip H sMinus T, g p = -forwardScalarOperator A.a phi p) :
     ContinuousOn (fun x => g (sectionTwoPoint ((KineticPoint.equivProd 1).symm x)))
       (reconstructionSourceDomain H sMinus T) := by
-  have hc : ContinuousOn g (reconstructionStrip H sMinus T) :=
+  have hc  :=
     ((continuousOn_forwardScalarOperator A hphi).neg).congr (fun p hp => hg p hp)
   apply hc.comp ((continuous_sectionTwoPoint 1).comp
     (KineticPoint.homeomorphProd 1).symm.continuous).continuousOn
@@ -51,7 +50,7 @@ theorem reconstruction_candidate_eq_smooth
   have hp := reconstruction_source_potential_continuousOn hH hlam hLam A H E hE
     sMinus T g (reconstruction_source_continuousOn A H sMinus T phi hphi g hg)
   have hc : ContinuousOn (stripReconstructionCandidate H E.2 T phi g)
-      (reconstructionStrip H sMinus T) := hphi.continuousOn.sub hp
+      _ := hphi.continuousOn.sub hp
   have hcp := hc.comp continuous_reconstructionPhysicalPoint.continuousOn (fun _ hx => hx)
   exact Measure.eqOn_open_of_ae_eq hae
     ((isOpen_reconstructionStrip H sMinus T).preimage continuous_reconstructionPhysicalPoint)

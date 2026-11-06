@@ -9,18 +9,19 @@ import Mathlib.Tactic
 /-! # Spatial integration by parts for the explicit Kolmogorov Gaussian -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory
 
+variable {f g : ℝ × ℝ → ℝ}
+
 /-- A continuous factor times a continuous compactly supported test is integrable. -/
-theorem bellman_integrable_mul_test {f g : ℝ × ℝ → ℝ}
+theorem bellman_integrable_mul_test 
     (hf : Continuous f) (hg : Continuous g) (hc : HasCompactSupport g) :
     Integrable (fun q => f q * g q) :=
   (hf.mul hg).integrable_of_hasCompactSupport hc.mul_left
 
 /-- Integration by parts for smooth functions with a compactly supported right factor. -/
-theorem bellman_integral_mul_direction {f g : ℝ × ℝ → ℝ}
+theorem bellman_integral_mul_direction 
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hg : ContDiff ℝ (⊤ : ℕ∞) g)
     (hc : HasCompactSupport g) (v : ℝ × ℝ) :
     (∫ q, f q * fderiv ℝ g q v) = -(∫ q, fderiv ℝ f q v * g q) := by
@@ -47,7 +48,7 @@ theorem bellmanGaussianKernel_integral_generator (t : BellmanPositiveTime)
       fderiv ℝ (fun z => fderiv ℝ (bellmanGaussianKernel t) z (0, 1)) q (0, 1)) *
         φ q := by
   have hk := contDiff_bellmanGaussianKernel t
-  have hvφ : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × ℝ => q.2 * φ q) :=
+  have hvφ : ContDiff ℝ _ (fun q : ℝ × ℝ => q.2 * φ q) :=
     contDiff_snd.mul hφ
   have hd (q : ℝ × ℝ) : fderiv ℝ (fun z : ℝ × ℝ => z.2 * φ z) q (1, 0) =
       q.2 * fderiv ℝ φ q (1, 0) := by
@@ -55,36 +56,33 @@ theorem bellmanGaussianKernel_integral_generator (t : BellmanPositiveTime)
     simp [fderiv_snd]
   have hx := bellman_integral_mul_direction hk hvφ hc.mul_left (1, 0)
   simp only [hd] at hx
-  have hv := bellman_integral_mul_direction hk (bellman_contDiff_direction hφ (0, 1))
+  have hv := bellman_integral_mul_direction hk (bellman_contDiff_direction hφ _)
     (hc.fderiv_apply ℝ (0, 1)) (0, 1)
   have hv2 := bellman_integral_mul_direction (bellman_contDiff_direction hk (0, 1)) hφ
     hc (0, 1)
   rw [hv2, neg_neg] at hv
   have hiX : Integrable (fun q => bellmanGaussianKernel t q *
-      (q.2 * fderiv ℝ φ q (1, 0))) :=
+      (q.2 * fderiv ℝ φ q _)) :=
     bellman_integrable_mul_test hk.continuous
-      (continuous_snd.mul (bellman_contDiff_direction hφ (1, 0)).continuous)
+      (continuous_snd.mul (bellman_contDiff_direction hφ _).continuous)
       (hc.fderiv_apply ℝ (1, 0)).mul_left
-  have hiV : Integrable (fun q => bellmanGaussianKernel t q *
-      fderiv ℝ (fun z => fderiv ℝ φ z (0, 1)) q (0, 1)) :=
+  have hiV  :=
     bellman_integrable_mul_test hk.continuous
-      (bellman_contDiff_direction (bellman_contDiff_direction hφ (0, 1)) (0, 1)).continuous
+      (bellman_contDiff_direction (bellman_contDiff_direction hφ _) _).continuous
       ((hc.fderiv_apply ℝ (0, 1)).fderiv_apply ℝ (0, 1))
-  have hjX : Integrable (fun q => -q.2 * fderiv ℝ (bellmanGaussianKernel t) q (1, 0) *
+  have hjX : Integrable (fun q => -q.2 * fderiv ℝ _ q _ *
       φ q) := bellman_integrable_mul_test
         (continuous_snd.neg.mul (bellman_contDiff_direction hk (1, 0)).continuous)
         hφ.continuous hc
-  have hjV : Integrable (fun q =>
-      fderiv ℝ (fun z => fderiv ℝ (bellmanGaussianKernel t) z (0, 1)) q (0, 1) * φ q) :=
+  have hjV  :=
     bellman_integrable_mul_test
       (bellman_contDiff_direction (bellman_contDiff_direction hk (0, 1)) (0, 1)).continuous
       hφ.continuous hc
   simp only [mul_add, add_mul]
-  rw [integral_add hiX hiV, integral_add hjX hjV, hx, hv]
+  rw [integral_add hiX hiV, integral_add hjX hjV, hx]
   congr 1
   rw [← integral_neg]
   congr 1
-  funext q
-  ring
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov

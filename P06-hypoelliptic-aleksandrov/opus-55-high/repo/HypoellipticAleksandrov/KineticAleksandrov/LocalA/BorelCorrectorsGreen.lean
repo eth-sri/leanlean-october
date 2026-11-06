@@ -14,7 +14,6 @@ import HypoellipticAleksandrov.KineticAleksandrov.Green.SlabFourier
 /-! # Uniform Green bounds for the actual signed corrector potentials -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic SectionTwo TheoremA Evolution Green Filter
 open scoped Topology ENNReal Matrix.Norms.Elementwise
@@ -32,7 +31,7 @@ theorem borelCorrectorPotential_abs_le {d : ℕ}
   have hi := integrableOn_duhamelIntegrand_bounded K MeasurableSet.univ continuous_const
     g hgm M hM hgb (sectionTwoPoint P) T
   have hia := integrableOn_duhamelIntegrand_bounded K MeasurableSet.univ continuous_const
-    (fun Q => |g Q|) (by simpa only [Real.norm_eq_abs] using hgm.norm) M hM
+    _ (by simpa only [Real.norm_eq_abs] using hgm.norm) M hM
     (fun Q => by rw [abs_abs]; exact hgb Q) (sectionTwoPoint P) T
   have hb : ∀ r, |duhamelIntegrand K g (sectionTwoPoint P) r| ≤
       duhamelIntegrand K (fun Q => |g Q|) (sectionTwoPoint P) r := by
@@ -41,13 +40,12 @@ theorem borelCorrectorPotential_abs_le {d : ℕ}
     split
     · unfold duhamelSourceIntegral
       simpa only [Real.norm_eq_abs] using norm_integral_le_integral_norm
-        (fun w : EvolutionAmbientState d => g ⟨r, w.1, w.2⟩)
+        (fun w : EvolutionAmbientState d => g _)
     · simp only [abs_zero, le_refl]
-  change |∫ r in Ioc P.time T, duhamelIntegrand K g (sectionTwoPoint P) r| ≤ _
   have hn : |∫ r in Ioc P.time T, duhamelIntegrand K g (sectionTwoPoint P) r| ≤
       ∫ r in Ioc P.time T, |duhamelIntegrand K g (sectionTwoPoint P) r| := by
     simpa only [Real.norm_eq_abs] using norm_integral_le_integral_norm
-      (fun r => duhamelIntegrand K g (sectionTwoPoint P) r)
+      (fun r => duhamelIntegrand K g _ r)
   exact hn.trans (integral_mono
     (by simpa only [Real.norm_eq_abs, sectionTwoPoint] using hi.norm)
     (by simpa only [IntegrableOn, sectionTwoPoint, g, Function.comp_def] using hia) hb)
@@ -80,19 +78,18 @@ theorem borelCorrectorPotential_uniform_bound
   have hDecay := Decay.fourierDecayFamily_of_unitBlock d hd lam Lam hlam hLam hIter hBlock
   obtain ⟨C, hC, hgreen⟩ := green_density_bound_of_slabFourierBounds hd lam Lam p
     hlam hLam hp (Green.slabFourierBounds_of_occupation_decay hd lam Lam hOcc hDecay)
-  have hp1 : 1 < p := by have hd0 : (0 : ℝ) ≤ d := Nat.cast_nonneg d; linarith
+  have hp1 : 1 < p := by linarith
   let q := p / (p - 1)
   have hq : 1 < q := by
-    dsimp only [q]
-    rw [lt_div_iff₀ (by linarith : 0 < p - 1)]
+    rw [lt_div_iff₀ (by linarith)]
     linarith
   have hqp : q.HolderConjugate p := (Real.HolderConjugate.conjExponent hp1).symm
   refine ⟨C, hC, ?_⟩
   intro B hB S K hreal Z₀ R hR F hF hFc hFs hFLp P hP
   let Q := forwardCylinder Z₀ R hR
   let Γ := cylinderGreenMeasure K Z₀ R hR P
-  let a := 2 - (4 * (d : ℝ) + 2) / p
-  have ht : P.time < Z₀.time + R ^ 2 := hP.2.1
+  let a := 2 - (4 * d + 2) / p
+  have ht  := hP.2.1
   let GP := greenMeasure K P.time (ENNReal.ofReal (remainingTime Z₀ P R))
     (ENNReal.ofReal_pos.mpr (sub_pos.mpr ht)) (Measure.dirac (kineticStartState d P))
   have hGP := greenMeasure_spec K P.time _
@@ -105,55 +102,50 @@ theorem borelCorrectorPotential_uniform_bound
     intro j
     exact (hB.2.2.1 i j).comp
       (contDiff_fst.prodMk (contDiff_snd.prodMk
-        (contDiff_const (c := (0 : PDE.Vec d)))))
+        (contDiff_const (c := (0)))))
   have hAs := isSmoothCoefficient_kineticReflectedCoefficient B hBs
-  have hAreal : RealizesTerminalEvolution (wholeSpace d) (fun _ => (0 : PDE.Vec d))
+  have hAreal : RealizesTerminalEvolution (wholeSpace d) _
       MeasurableSet.univ (zIndependentCoefficient (kineticReflectedCoefficient A))
       (identityDrift d) S K := by
     have hBB : kineticReflectedCoefficient A = B := by
       funext t v
       simp only [A, kineticReflectedCoefficient, neg_neg]
-    rw [hBB]
-    exact hreal
+    simp_all
   have hgreenB := hgreen (kineticReflection Z₀) R hR A hAs
     (isSymmetricCoefficient_kineticReflectedCoefficient B hB.2.2.2.1)
-    (fun t v => hB.2.2.2.2.1 (-t) v) (fun t v => hB.2.2.2.2.2 (-t) v)
+    (fun t v => hB.2.2.2.2.1 _ v) (fun t v => hB.2.2.2.2.2 _ v)
     S K hAreal
-  rw [kineticReflection_involutive Z₀] at hgreenB
+  rw [kineticReflection_involutive] at hgreenB
   obtain ⟨G, hG, hden, hn, hscale⟩ := hgreenB P hP GP hGP
   have hnorm : eLpNorm G (ENNReal.ofReal q) (volume.restrict Q) ≤
-      ENNReal.ofReal (C * R ^ a) := by
-    exact hn.trans (ENNReal.ofReal_le_ofReal hscale)
+      ENNReal.ofReal (C * R ^ a) := hn.trans (ENNReal.ofReal_le_ofReal hscale)
   have hden' : Γ = (volume.restrict Q).withDensity G := by
     dsimp only [Γ, cylinderGreenMeasure]
-    rw [dite_eq_left ht]
-    exact hden
+    aesop
   obtain ⟨g, hgm, hgn, hgd, hgb, hgLp⟩ := real_density_of_eLpNorm_bound
     (volume.restrict Q) Γ G hG hden' q (C * R ^ a) (lt_trans zero_lt_one hq)
     (mul_nonneg hC (Real.rpow_nonneg hR.le _)) hnorm
   have habs : MemLp (fun Q => |F Q|) (ENNReal.ofReal p) (volume.restrict Q) := by
-    simpa only [Real.norm_eq_abs] using hFLp.norm.restrict Q
-  have hpair := abp_potential_holder (volume.restrict Q) Γ g (fun Q => |F Q|) hqp
-    hgm hgn (Eventually.of_forall fun Q => abs_nonneg (F Q)) hgd hgLp habs hgb
+    simpa using hFLp.norm.restrict Q
+  have hpair := abp_potential_holder (volume.restrict Q) Γ g _ hqp
+    hgm hgn (Eventually.of_forall fun Q => abs_nonneg _) hgd hgLp habs hgb
   have hsabs : tsupport (fun Q => |F Q|) ⊆ forwardCylinder Z₀ R hR := by
     apply Subset.trans _ hFs
     apply closure_mono
-    intro P hP
-    exact abs_ne_zero.mp hP
-  have heq := integral_cylinderGreenMeasure K Z₀ R hR (fun Q => |F Q|)
+    simp
+  have heq := integral_cylinderGreenMeasure K Z₀ R hR _
     (fun Q => abs_nonneg _) hF.abs hFc.abs hsabs P ht
   obtain ⟨M, hM⟩ := hFc.exists_bound_of_continuous hF
   have hM0 : 0 ≤ max M 0 := le_max_right _ _
   have hFb : ∀ Q, |F Q| ≤ max M 0 := fun Q => (hM Q).trans (le_max_left _ _)
   have hfirst := borelCorrectorPotential_abs_le K (Z₀.time + R ^ 2) F hF.measurable
-    (max M 0) hM0 hFb P
+    _ hM0 hFb P
   have hlast : (eLpNorm (fun Q => |F Q|) (ENNReal.ofReal p)
       (volume.restrict Q)).toReal ≤ (eLpNorm F (ENNReal.ofReal p) volume).toReal := by
     rw [show (fun Q => |F Q|) = (fun Q => ‖F Q‖) from funext fun Q =>
       (Real.norm_eq_abs _).symm, eLpNorm_norm F hFLp.aestronglyMeasurable.restrict]
     exact ENNReal.toReal_mono hFLp.eLpNorm_ne_top (eLpNorm_mono_measure F Measure.restrict_le_self)
   exact hfirst.trans (by
-    change borelCorrectorPotential K (Z₀.time + R ^ 2) (fun Q => |F Q|) P ≤ _
     change duhamelPotential K _ _ _ ≤ _
     rw [← heq]
     exact hpair.trans (mul_le_mul_of_nonneg_left hlast

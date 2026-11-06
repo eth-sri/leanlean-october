@@ -7,7 +7,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Evolution.BarrierInterv
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -43,7 +42,7 @@ theorem exists_viscous_terminalSolution_interval
         IsClassicalViscousTerminalSolution Ω Γ B b ε τ F w →
           EqOn w v (evolutionPastClosedCylinder Ω Γ τ)) := by
   cases hN
-  have hΩ' : Ω = PDE.oneDimensionalAxisBox lo hi := by simpa using hΩ
+  have hΩ' : Ω = PDE.oneDimensionalAxisBox lo hi := by omega
   rw [hΩ', oneDimensionalAxisBox_eq_euclideanBall hlohi] at hF ⊢
   exact exists_viscous_terminalSolution_ball hLE hH hn hlam hlamLam hm hmLb
     hBs hBsym hB hbs hb hbco hΓ (show 0 < (hi - lo) / 2 by linarith)

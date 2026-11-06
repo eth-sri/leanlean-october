@@ -40,10 +40,7 @@ noncomputable def reverseTimeSpatialFormOperatorClamp :
 /-- The clamped representative is continuous in operator norm. -/
 theorem continuous_reverseTimeSpatialFormOperatorClamp :
     Continuous (reverseTimeSpatialFormOperatorClamp r₀ r₁ h₀₁ hΩ hΩbounded a b c
-      haSmooth hbSmooth hcSmooth) := by
-  change Continuous ((reverseTimeSpatialFormOperator r₀ r₁ h₀₁ hΩ hΩbounded a b c
-    haSmooth hbSmooth hcSmooth) ∘ Set.projIcc 0 (r₁ - r₀) (sub_nonneg.mpr h₀₁.le))
-  exact (continuous_reverseTimeSpatialFormOperator r₀ r₁ h₀₁ hΩ hΩbounded a b c
+      haSmooth hbSmooth hcSmooth) := (continuous_reverseTimeSpatialFormOperator r₀ r₁ h₀₁ hΩ hΩbounded a b c
     haSmooth hbSmooth hcSmooth).comp continuous_projIcc
 
 /-- On the literal reverse-time time measure, the clamped representative has
@@ -52,16 +49,15 @@ theorem ae_reverseTimeSpatialFormOperatorClamp_apply :
     ∀ᵐ τ ∂reverseTimeVolume (r₁ - r₀), ∀ u v : H10HilbertGraph hΩ,
       reverseTimeSpatialFormOperatorClamp r₀ r₁ h₀₁ hΩ hΩbounded a b c
         haSmooth hbSmooth hcSmooth τ u v = reverseTimeSpatialForm hΩ r₁ τ a b c u v := by
-  rw [reverseTimeVolume, reverseTimeOpenInterval]
   filter_upwards [ae_restrict_mem measurableSet_Ioo] with τ hτ
   intro u v
   have hproj : Set.projIcc 0 (r₁ - r₀) (sub_nonneg.mpr h₀₁.le) τ =
       ⟨τ, ⟨hτ.1.le, hτ.2.le⟩⟩ :=
-    Set.projIcc_of_mem (sub_nonneg.mpr h₀₁.le) ⟨hτ.1.le, hτ.2.le⟩
+    Set.projIcc_of_mem _ _
   unfold reverseTimeSpatialFormOperatorClamp
   rw [hproj]
   exact reverseTimeSpatialFormOperator_apply r₀ r₁ h₀₁ hΩ hΩbounded a b c
-    haSmooth hbSmooth hcSmooth ⟨τ, ⟨hτ.1.le, hτ.2.le⟩⟩ u v
+    haSmooth hbSmooth hcSmooth _ u v
 
 end
 

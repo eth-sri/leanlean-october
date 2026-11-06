@@ -9,7 +9,6 @@ import Mathlib.Tactic
 /-! # Compact smooth majorants of velocity intervals -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 
@@ -30,18 +29,13 @@ theorem exists_capacity_cutoff (E : Interval) :
       isOpen_Ioo hsub
   refine ⟨chi, hs, hc, hsup, h01, h1, ?_⟩
   have hi : Integrable chi volume := hs.continuous.integrable_of_hasCompactSupport hc
-  have he : (∫ v, chi v) = ∫ v in Ioo a b, chi v := by
-    exact (setIntegral_eq_integral_of_forall_compl_eq_zero
+  have he : (∫ v, chi v) = ∫ v in Ioo a b, chi v := (setIntegral_eq_integral_of_forall_compl_eq_zero
       (fun v hv => image_eq_zero_of_notMem_tsupport (fun ht => hv (hsup ht)))).symm
-  rw [he]
-  have hm := integral_mono (hi.restrict (s := Ioo a b)) (integrable_const (1 : ℝ))
+  have hm := integral_mono (hi.restrict (s := Ioo a b)) (integrable_const _)
     (fun v => (h01 v).2)
   have hab : 0 ≤ b - a := by dsimp only [a, b]; linarith [E.ordered]
-  have hv : (∫ _v in Ioo a b, (1 : ℝ)) = b - a := by
-    simp only [integral_const, smul_eq_mul, mul_one, Measure.real,
-      Measure.restrict_apply_univ, Real.volume_Ioo,
-      ENNReal.toReal_ofReal hab]
-  rw [hv] at hm
-  exact hm.trans_eq (by dsimp only [a, b]; ring)
+  have hv : (∫ _v in Ioo a b, (1)) = b - a := by
+    simp_all
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

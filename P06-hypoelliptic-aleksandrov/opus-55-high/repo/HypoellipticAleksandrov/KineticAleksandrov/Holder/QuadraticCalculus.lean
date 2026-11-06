@@ -11,14 +11,15 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open scoped BigOperators
 
+variable {d : ℕ} (lam : ℝ) {h : ℝ}
+
 /-- Scalar representation of the covariance quadratic form. -/
-theorem qform_eq_scalar {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
+theorem qform_eq_scalar  (hh : 0 < h)
     (s : ℝ) (y V : PDE.Vec d) :
     qform lam h s y V =
       (covarianceVV lam h s * PDE.vecDot y y -
@@ -26,12 +27,11 @@ theorem qform_eq_scalar {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
         covarianceXX lam h s * PDE.vecDot V V) / covarianceDet lam h s := by
   unfold qform
   rw [gramian_inv_blocks lam hh]
-  simp only [Matrix.of_apply, Matrix.cons_val_zero, Matrix.cons_val_one,
-    Matrix.cons_val_fin_one]
+  simp only [Matrix.of_apply, Matrix.cons_val_zero, Matrix.cons_val_one]
   ring
 
 /-- Scalar representation of the velocity component of inverse covariance. -/
-theorem pform_eq_scalar {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
+theorem pform_eq_scalar  (hh : 0 < h)
     (s : ℝ) (y V : PDE.Vec d) :
     pform lam h s y V =
       (-covarianceXV lam h s / covarianceDet lam h s) • y +
@@ -41,17 +41,17 @@ theorem pform_eq_scalar {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
   simp
 
 /-- Bilinearity of the explicit native Euclidean dot product under scalar multiplication. -/
-theorem vecDot_smul_smul {d : ℕ} (a b : ℝ) (y V : PDE.Vec d) :
+theorem vecDot_smul_smul  (a b : ℝ) (y V : PDE.Vec d) :
     PDE.vecDot (a • y) (b • V) = a * b * PDE.vecDot y V := by
   unfold PDE.vecDot
-  simp only [Pi.smul_apply, smul_eq_mul]
+  simp only [Pi.smul_apply]
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro i _
   ring
 
 /-- Squared Euclidean norm of the inverse velocity component. -/
-theorem vecNormSq_pform {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
+theorem vecNormSq_pform  (hh : 0 < h)
     (s : ℝ) (y V : PDE.Vec d) :
     PDE.vecNormSq (pform lam h s y V) =
       (covarianceXV lam h s ^ 2 * PDE.vecDot y y -
@@ -63,36 +63,35 @@ theorem vecNormSq_pform {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
   ring
 
 /-- Derivative of a native dot product along a position line. -/
-theorem hasDerivAt_vecDot_line {d : ℕ} (y V W : PDE.Vec d) (r : ℝ) :
+theorem hasDerivAt_vecDot_line  (y V W : PDE.Vec d) (r : ℝ) :
     HasDerivAt (fun t => PDE.vecDot (y + t • V) W) (PDE.vecDot V W) r := by
-  have hp := HasDerivAt.sum (u := Finset.univ) (fun i (_ : i ∈ Finset.univ) =>
+  have hp := HasDerivAt.sum (u := Finset.univ) (fun i (_) =>
     (((hasDerivAt_id r).mul_const (V i)).const_add (y i)).mul_const (W i))
   convert hp using 1
-  · funext t
-    simp [PDE.vecDot, Pi.add_apply, Pi.smul_apply, smul_eq_mul]
-  · simp [PDE.vecDot]
+  · aesop
+  aesop
 
 /-- Derivative of the squared native norm along a position line. -/
-theorem hasDerivAt_vecDot_line_self {d : ℕ} (y V : PDE.Vec d) (r : ℝ) :
+theorem hasDerivAt_vecDot_line_self  (y V : PDE.Vec d) (r : ℝ) :
     HasDerivAt (fun t => PDE.vecDot (y + t • V) (y + t • V))
       (2 * PDE.vecDot V (y + r • V)) r := by
-  have hp := HasDerivAt.sum (u := Finset.univ) (fun i (_ : i ∈ Finset.univ) =>
+  have hp := HasDerivAt.sum (u := Finset.univ) (fun i (_) =>
     ((((hasDerivAt_id r).mul_const (V i)).const_add (y i)).pow 2))
   convert hp using 1
   · funext t
-    simp only [PDE.vecDot, Pi.add_apply, Pi.smul_apply, smul_eq_mul, Finset.sum_apply,
+    simp only [PDE.vecDot, Pi.add_apply, Pi.smul_apply, Finset.sum_apply,
       Pi.pow_apply, id_eq]
     apply Finset.sum_congr rfl
     intro i _
     ring
-  · simp only [PDE.vecDot, Finset.mul_sum, Pi.add_apply, Pi.smul_apply, smul_eq_mul,
-      id_eq, Nat.cast_ofNat, Nat.reduceSub, pow_one]
+  · simp only [PDE.vecDot, Finset.mul_sum, Pi.add_apply, Pi.smul_apply,
+      id_eq]
     apply Finset.sum_congr rfl
     intro i _
     ring
 
 /-- Time derivative of the physical covariance quadratic form. -/
-theorem hasDerivAt_qform_time {d : ℕ} {lam h s : ℝ}
+theorem hasDerivAt_qform_time  {lam h s : ℝ}
     (hlam : 0 < lam) (hh : 0 < h) (hs : -(h / 128) ≤ s) (y V : PDE.Vec d) :
     HasDerivAt (fun t => qform lam h t y V)
       (((lam * PDE.vecDot y y - 2 * covarianceVV lam h s * PDE.vecDot y V +
@@ -115,7 +114,7 @@ theorem hasDerivAt_qform_time {d : ℕ} {lam h s : ℝ}
     ring
 
 /-- Position transport derivative of the covariance quadratic form. -/
-theorem hasDerivAt_qform_transport {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
+theorem hasDerivAt_qform_transport  (hh : 0 < h)
     (s : ℝ) (y V : PDE.Vec d) :
     HasDerivAt (fun (r : ℝ) => qform lam h s (y + r • V) V)
       ((2 * covarianceVV lam h s * PDE.vecDot V y -
@@ -129,11 +128,11 @@ theorem hasDerivAt_qform_transport {d : ℕ} (lam : ℝ) {h : ℝ} (hh : 0 < h)
   · funext r
     rw [qform_eq_scalar lam hh]
     congr 1
-  · simp only [zero_smul, add_zero]
+  · simp only [zero_smul]
     ring
 
 /-- The time and transport terms cancel, leaving exactly the velocity diffusion square. -/
-theorem quadratic_transport_identity {d : ℕ}
+theorem quadratic_transport_identity 
     (lam h sigma : ℝ) (hlam : 0 < lam) (hh : 0 < h)
     (hsigma : -(h / 128) < sigma) (y V : PDE.Vec d) :
     deriv (fun s => qform lam h s y V) sigma +
@@ -142,7 +141,6 @@ theorem quadratic_transport_identity {d : ℕ}
   rw [(hasDerivAt_qform_time hlam hh hsigma.le y V).deriv,
     (hasDerivAt_qform_transport lam hh sigma y V).deriv, vecNormSq_pform lam hh]
   rw [PDE.vecDot_comm V y]
-  have hd := (covarianceDet_pos hlam hh hsigma.le).ne'
   field_simp
   unfold covarianceDet
   ring

@@ -7,7 +7,6 @@ import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKrylovRegu
 /-! # Source correction on a closed ellipsoid cylinder using an earlier time collar -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Lieberman
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.Parabolic.Dirichlet HypoellipticAleksandrov.Parabolic.LocalHolder
@@ -77,9 +76,7 @@ theorem exists_signed_source_ellipsoid_correction_of_upstream
   let M := max C 0
   have hM : 0 ≤ M := le_max_right _ _
   have hFM : ∀ z ∈ scalarParabolicClosedCylinder (a - 1) T Ω, |F z| ≤ M := by
-    intro z hz
-    rw [← Real.norm_eq_abs]
-    exact (hC z hz).trans (le_max_left _ _)
+    aesop
   obtain ⟨w, q, hq, hqf, hw, he, ht, hs⟩ := hInterior hd hQ
     (a - 1) T lam Lam hleftT hlam hLam A b hsym hA hlo hhi hb F hF M hM hFM
   let U := scalarParabolicOpenCylinder (a - 1) T Ω
@@ -88,7 +85,7 @@ theorem exists_signed_source_ellipsoid_correction_of_upstream
   have hsub : D ⊆ U := prod_mono (Ioo_subset_Ioo hleft.le le_rfl) (Subset.refl _)
   have hWD : EqOn W w D := by
     intro z hz
-    exact piecewise_eq_of_mem U w (fun _ => 0) (hsub hz)
+    exact piecewise_eq_of_mem U w _ (hsub hz)
   have hwD : IsScalarC12On w D :=
     ⟨hw.continuousOn.mono hsub,
       fun z hz => hw.timeSlice_differentiableAt (hsub hz),
@@ -97,25 +94,25 @@ theorem exists_signed_source_ellipsoid_correction_of_upstream
       hw.continuousOn_scalarSpatialGradient.mono hsub,
       hw.continuousOn_scalarSpatialHessian.mono hsub⟩
   have hD : IsOpen D := isOpen_Ioo.prod hΩ
-  have hWc := hBoundary hΩ (a - 1) a T M hleft hM
+  have hWc := hBoundary hΩ _ a T M hleft hM
     q.toH1Function.toFun hq.continuous hqf w hw.continuousOn ht hs
   have hWr := Occupation.isScalarC12On_congr_open hD hwD hWD
   obtain ⟨hdt, hdg, hdd⟩ := Occupation.scalarJet_eqOn_of_eqOn_open hD hWD
   refine ⟨W, hWc, hWr, ?_, ?_, ?_⟩
   · intro z hz
-    simp only [scalarParabolicZeroOrderOperator_apply, zero_mul, add_zero,
+    simp only [scalarParabolicZeroOrderOperator_apply,
       hdt hz, hdg hz, hdd hz] at ⊢
-    simpa only [scalarParabolicZeroOrderOperator_apply, zero_mul, add_zero]
+    simpa
       using he z (hsub hz)
   · intro y _
-    exact piecewise_eq_of_notMem U w (fun _ => 0)
+    exact piecewise_eq_of_notMem U w _
       (fun h => (lt_irrefl T) h.1.2)
   · intro z hz
     have hzo : z.2 ∉ Ω := by
       have hf : z.2 ∈ frontier Ω := hz.2
       rw [hΩ.frontier_eq] at hf
-      exact hf.2
-    exact piecewise_eq_of_notMem U w (fun _ => 0) (fun h => hzo h.2)
+      grind
+    exact piecewise_eq_of_notMem U w _ (fun h => hzo h.2)
 
 /-- The earlier time collar uses the domain-independent boundary squeeze. -/
 theorem exists_signed_source_ellipsoid_correction_of_interior_geometry
@@ -156,8 +153,7 @@ theorem exists_signed_source_ellipsoid_correction_of_interior_geometry
   ∀ (F : TimeVelocity d → ℝ), ContDiff ℝ (⊤ : ℕ∞) F →
   ∃ W : TimeVelocity d → ℝ,
     IsClassicalBackwardDirichletSolution a T (openEllipsoid Q) A b
-      (fun _ _ => 0) (fun t y => F (t, y)) (fun _ => 0) (fun _ => 0) W := by
-  exact exists_signed_source_ellipsoid_correction_of_upstream hOpen hGeom hInterior
+      (fun _ _ => 0) (fun t y => F (t, y)) (fun _ => 0) (fun _ => 0) W := exists_signed_source_ellipsoid_correction_of_upstream hOpen hGeom hInterior
     (@continuousOn_source_zeroExtension_closed_domain)
 
 /-- Every smooth signed source has a continuous zero-boundary ellipsoid correction. -/
@@ -171,8 +167,7 @@ theorem exists_signed_source_ellipsoid_correction :
   ∀ (F : TimeVelocity d → ℝ), ContDiff ℝ (⊤ : ℕ∞) F →
   ∃ W : TimeVelocity d → ℝ,
     IsClassicalBackwardDirichletSolution a T (openEllipsoid Q) A b
-      (fun _ _ => 0) (fun t y => F (t, y)) (fun _ => 0) (fun _ => 0) W := by
-  exact exists_signed_source_ellipsoid_correction_of_interior_geometry
+      (fun _ _ => 0) (fun t y => F (t, y)) (fun _ => 0) (fun _ => 0) W := exists_signed_source_ellipsoid_correction_of_interior_geometry
     (@isOpen_openEllipsoid) (@openEllipsoid_geometry)
     (@exists_signed_source_ellipsoidInterior_with_bounds)
 

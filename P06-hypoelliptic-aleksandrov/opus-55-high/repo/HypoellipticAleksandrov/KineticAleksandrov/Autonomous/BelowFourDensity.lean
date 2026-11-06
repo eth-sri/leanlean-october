@@ -11,7 +11,6 @@ conditional inputs. The conclusion is the independently density Prop.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 

@@ -13,7 +13,6 @@ public import Mathlib.MeasureTheory.Integral.DominatedConvergence
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -46,7 +45,7 @@ theorem classical_wholeSpace_ball_limit (hH : HormanderHypoellipticityStatement)
   let U := wholeSpaceInnerCylinder (n := n) α τ S0
   let f (p : KineticPoint n) := limUnder atTop (fun j => v j p)
   have hU : IsOpen U := isOpen_wholeSpaceInnerCylinder α τ S0
-  have hV : IsOpen (evolutionHomeomorph n ⁻¹' U) := hU.preimage
+  have hV  := hU.preimage
     (evolutionHomeomorph n).continuous
   have hw := weakRegularized_wholeSpace_ball_limit (α := α) (S0 := S0)
     hlam hB hb hε hε1 hC F hFC r hrlim v hv hBs hBsym hbs
@@ -56,24 +55,23 @@ theorem classical_wholeSpace_ball_limit (hH : HormanderHypoellipticityStatement)
     (tendstoUniformlyOn_wholeSpace_ball_solutions (α := α) (S0 := S0)
       hlam hB hb hε.le hε1 hC F hFC r hrlim v hv).2.1.mono
         (wholeSpaceInnerCylinder_subset_closed α τ S0)
-  have hcPack : ContinuousOn (f ∘ evolutionHomeomorph n) (evolutionHomeomorph n ⁻¹' U) :=
+  have hcPack : ContinuousOn _ (evolutionHomeomorph n ⁻¹' U) :=
     hcf.comp (evolutionHomeomorph n).continuous.continuousOn (fun _ hx => hx)
   have heq := eqOn_of_ae_eq_of_continuousOn_kinetic hU hcPack hws.continuousOn hae
-  have hsm : ContDiffOn ℝ (⊤ : ℕ∞) (f ∘ evolutionHomeomorph n)
-      (evolutionHomeomorph n ⁻¹' U) := hws.congr (fun _ hx => heq hx)
-  have hwPack := (isWeakRegularizedSolution_comp_iff B b ε U f (fun _ => 0)).mpr hw
+  have hsm : ContDiffOn ℝ _ (f ∘ evolutionHomeomorph n)
+      _ := hws.congr (fun _ hx => heq hx)
+  have hwPack := (isWeakRegularizedSolution_comp_iff B b ε U f _).mpr hw
   have hOp := regularizedOperator_eq_zero_of_smooth_weak hV hBs hBsym hbs ε hsm hwPack
   refine ⟨hsm, ?_⟩
   intro p hp
   let x := (evolutionHomeomorph n).symm p
   have hx : x ∈ evolutionHomeomorph n ⁻¹' U := by
-    change evolutionHomeomorph n x ∈ U
-    simpa only [x, Homeomorph.apply_symm_apply] using hp
-  have hc2 : ContDiffAt ℝ 2 (f ∘ evolutionHomeomorph n) x :=
+    aesop
+  have hc2 : ContDiffAt ℝ 2 _ x :=
     (hsm.contDiffAt (hV.mem_nhds hx)).of_le (by norm_num)
   have hz := hOp x hx
   rw [regularizedOperator_comp ε hc2] at hz
-  simpa only [x, Homeomorph.apply_symm_apply, viscousTransportedOperator] using hz
+  aesop
 
 end Data
 

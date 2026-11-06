@@ -74,7 +74,7 @@ theorem HasWeakGradientOn.of_tendsto_eLpNorm
       exact
         ((hDuSeq n i).aestronglyMeasurable.sub
           (hDu i).aestronglyMeasurable)
-    · exact hGradient
+    omega
   have hGradientHilbert :
       Tendsto
         (fun n =>
@@ -84,26 +84,23 @@ theorem HasWeakGradientOn.of_tendsto_eLpNorm
             p (volumeOn U))
         atTop (𝓝 0) := by
     have hEq : ∀ n,
-        eLpNorm (toHilbertVecField fun x => DuSeq n x - Du x) p (volumeOn U) =
+        eLpNorm (toHilbertVecField _) p (volumeOn U) =
           eLpNorm (fun x => vecEuclideanNorm (DuSeq n x - Du x)) p (volumeOn U) :=
       fun n => eLpNorm_toHilbertVecField_eq _ _ _
         (aemeasurable_pi_iff.2 fun i =>
           ((hDuSeq n i).aestronglyMeasurable.sub
             (hDu i).aestronglyMeasurable).aemeasurable).aestronglyMeasurable
-    simpa only [toHilbertVecField_sub, hEq] using
-      hGradientEuclidean
+    simp_all
   have hGradientLp :
       Tendsto
         (fun n => (hDuSeq n).toHilbertVectorLp)
         atTop (𝓝 hDu.toHilbertVectorLp) := by
     exact
       (Lp.tendsto_Lp_iff_tendsto_eLpNorm''
-        (fun n => toHilbertVecField (DuSeq n))
-        (fun n =>
-          gradMemLpOn_iff_memLp_toHilbertVecField.mp
-            (hDuSeq n))
-        (toHilbertVecField Du)
-        (gradMemLpOn_iff_memLp_toHilbertVecField.mp hDu)).mpr
+        _
+        _
+        _
+        _).mpr
         hGradientHilbert
   have hPair :
       Tendsto
@@ -123,7 +120,7 @@ theorem HasWeakGradientOn.of_tendsto_eLpNorm
         hPair
         (Eventually.of_forall fun n =>
           weakGradientLpPairOfRepresentatives_mem_weakGradientGraph
-            (huSeq n) (hDuSeq n) (hweak n))
+            _ _ (hweak n))
   exact
     hasWeakGradientOn_of_weakGradientLpPairOfRepresentatives_mem
       hu hDu hPairMem

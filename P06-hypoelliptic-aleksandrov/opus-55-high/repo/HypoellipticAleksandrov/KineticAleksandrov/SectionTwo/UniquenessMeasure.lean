@@ -30,10 +30,10 @@ theorem exists_smooth_cutoff {C V : Set E} (hC : IsCompact C) (hV : IsOpen V) (h
   obtain ⟨W, hW, hCW, hWV, hWc⟩ := exists_open_between_and_isCompact_closure hC hV hCV
   obtain ⟨φ, hφ, hrange, hsupp, hone⟩ :=
     exists_contDiff_support_eq_eq_one_iff (n := (⊤ : ℕ∞)) hW hC.isClosed hCW
-  have hts : tsupport φ = closure W := by rw [tsupport, hsupp]
+  have hts : tsupport φ = closure W := by aesop
   refine ⟨φ, hφ, ?_, ?_, fun x => hrange (mem_range_self x), fun x hx => (hone x).mp hx⟩
-  · rw [HasCompactSupport, hts]; exact hWc
-  · rw [hts]; exact hWV
+  · aesop
+  simp_all
 
 /-- Compact sets inside an open set carrying the test identity are dominated. -/
 theorem measure_compact_le_of_smooth {μ ν : Measure E} [IsFiniteMeasure μ] [IsFiniteMeasure ν]
@@ -47,24 +47,24 @@ theorem measure_compact_le_of_smooth {μ ν : Measure E} [IsFiniteMeasure μ] [I
   have hint : ∀ (m : Measure E) [IsFiniteMeasure m], Integrable φ m := fun m _ =>
     hcont.integrable_of_hasCompactSupport hφc
   have h1 : μ.real C ≤ ∫ x, φ x ∂μ := by
-    calc μ.real C = ∫ x, C.indicator (1 : E → ℝ) x ∂μ := by
+    calc μ.real C = ∫ x, C.indicator _ x ∂μ := by
           rw [integral_indicator_one hC.measurableSet]
       _ ≤ ∫ x, φ x ∂μ := by
-          refine integral_mono ((integrable_const (1 : ℝ)).indicator hC.measurableSet) (hint μ) ?_
+          refine integral_mono ((integrable_const _).indicator hC.measurableSet) (hint μ) ?_
           intro x
           by_cases hx : x ∈ C
-          · simp [hx, hφ1 x hx]
-          · simpa [hx] using (hφr x).1
+          · simp_all
+          simp_all
   have h2 : ∫ x, φ x ∂ν ≤ ν.real V := by
-    calc ∫ x, φ x ∂ν ≤ ∫ x, V.indicator (1 : E → ℝ) x ∂ν := by
-          refine integral_mono (hint ν) ((integrable_const (1 : ℝ)).indicator hV.measurableSet) ?_
+    calc ∫ x, φ x ∂ν ≤ ∫ x, V.indicator (1) x ∂ν := by
+          refine integral_mono (hint ν) ((integrable_const _).indicator hV.measurableSet) ?_
           intro x
           by_cases hx : x ∈ V
-          · simpa [hx] using (hφr x).2
+          · simp_all
           · have : φ x = 0 := by
               by_contra hne
               exact hx (hφV (subset_tsupport φ hne))
-            simp [hx, this]
+            simp_all
       _ = ν.real V := by rw [integral_indicator_one hV.measurableSet]
   have h3 : μ.real C ≤ ν.real V := h1.trans ((h φ hφ hφc (hφV.trans hVU) hφr).le.trans h2)
   exact (ENNReal.toReal_le_toReal (measure_ne_top _ _) (measure_ne_top _ _)).mp h3
@@ -86,19 +86,16 @@ theorem measure_eq_of_smooth_integral_eq {μ ν : Measure E} [IsFiniteMeasure μ
   have hopen : ∀ {m : Measure E}, m Uᶜ = 0 → ∀ O : Set E, m O = m (O ∩ U) := by
     intro m hm O
     refine le_antisymm ?_ (measure_mono inter_subset_left)
-    calc m O ≤ m ((O ∩ U) ∪ Uᶜ) := measure_mono (fun x hx => by
-          by_cases hxU : x ∈ U
-          · exact Or.inl ⟨hx, hxU⟩
-          · exact Or.inr hxU)
+    calc m O ≤ m _ := measure_mono (fun x hx => by
+          grind)
       _ ≤ m (O ∩ U) + m Uᶜ := measure_union_le _ _
-      _ = m (O ∩ U) := by rw [hm, add_zero]
+      _ = m _ := by simp_all
   have key : ∀ O : Set E, IsOpen O → μ O = ν O := by
     intro O hO
     rw [hopen hμ, hopen hν]
-    have hOU : IsOpen (O ∩ U) := hO.inter hU
-    exact le_antisymm (hle h _ hOU inter_subset_right)
-      (hle (fun φ a b c d => (h φ a b c d).symm) _ hOU inter_subset_right)
-  exact ext_of_generate_finite {s : Set E | IsOpen s} (BorelSpace.measurable_eq)
+    have hOU  := hO.inter hU
+    grind
+  exact ext_of_generate_finite _ (BorelSpace.measurable_eq)
     isPiSystem_isOpen (fun O hO => key O hO) (key univ isOpen_univ)
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

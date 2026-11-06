@@ -8,7 +8,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionVisi
 /-! # The entrance slab estimate for the actual enlarged visit count -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory HypoellipticAleksandrov
 
@@ -33,10 +32,10 @@ theorem entranceSlab_mass_le
   have hp : 0 ≤ f b := by
     dsimp only [f]
     rw [activeVelocityDatum_action_eq hH hLE hlam hLam A c b (ha.trans hab)]
-    exact ENNReal.toReal_nonneg
+    positivity
   have hg : 0 ≤ ∫ t in Ioc a b, f t := by
     rw [← entranceSlab_fullSpaceOccupation_active_real hH hLE hlam hLam A c P T a b ha hbT]
-    exact ENNReal.toReal_nonneg
+    positivity
   have hbound (N : ℕ) : (∑ n ∈ Finset.range N, mu n) univ ≤
       ENNReal.ofReal (entranceSlabConstant Lam *
         (f b + c.r ^ (-2 : ℤ) * ∫ t in Ioc a b, f t)) := by

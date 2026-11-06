@@ -6,7 +6,6 @@ import Mathlib.MeasureTheory.Integral.Lebesgue.Add
 /-! # Total-variation product bound for Fourier kernel composition -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open HypoellipticAleksandrov HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
@@ -30,11 +29,7 @@ theorem intervalFourierKernel_totalVariation_composition {a c : ℝ}
   let C := ⨆ v' : PDE.oneDimensionalAxisBox a c,
     totalVariationNorm (intervalFourierKernel K r τ hrτ ξ v')
   have hB : ‖ContinuousLinearMap.mul ℝ ℂ‖ₑ ≤ 1 := by
-    rw [← ofReal_norm]
-    exact (ENNReal.ofReal_le_ofReal
-      (LinearMap.mkContinuous₂_norm_le (LinearMap.mul ℝ ℂ) zero_le_one
-        (fun x y => by simpa only [LinearMap.mul_apply', one_mul] using norm_mul_le x y))).trans_eq
-      ENNReal.ofReal_one
+    simp
   by_contra hn
   have hlt : totalVariationNorm ν * C < ν'.variation univ := lt_of_not_ge hn
   obtain ⟨P, _, hPd, hPm, hPgt⟩ :=
@@ -47,9 +42,7 @@ theorem intervalFourierKernel_totalVariation_composition {a c : ℝ}
         rw [intervalFourierKernel_composition K hJ hcomp hcov σ r τ hσr hrτ ξ v E (hPm E hEP)]
         exact (VectorMeasure.enorm_integral_le_lintegral_enorm).trans
           (by
-            simpa only [one_mul] using
-              (mul_le_mul' hB (le_refl
-                (∫⁻ v', ‖intervalFourierKernelZero K r τ hrτ ξ v' E‖ₑ ∂ν.variation))))
+            aesop)
       _ = ∫⁻ v', ∑ E ∈ P, ‖intervalFourierKernelZero K r τ hrτ ξ v' E‖ₑ ∂ν.variation := by
         rw [lintegral_finsetSum P (fun E hEP =>
           (measurable_intervalFourierKernelZero_apply K hJ r τ hrτ ξ E (hPm E hEP)).enorm)]
@@ -59,14 +52,14 @@ theorem intervalFourierKernel_totalVariation_composition {a c : ℝ}
         change (∑ E ∈ P, ‖intervalFourierKernelZero K r τ hrτ ξ v' E‖ₑ) ≤ C
         by_cases hv' : v' ∈ PDE.oneDimensionalAxisBox a c
         · rw [intervalFourierKernelZero_coe K r τ hrτ ξ ⟨v', hv'⟩]
-          exact (VectorMeasure.le_variation (intervalFourierKernel K r τ hrτ ξ ⟨v', hv'⟩)
+          exact (VectorMeasure.le_variation _
             MeasurableSet.univ (fun E _ => subset_univ E) hPd).trans
-            (le_iSup (fun x => totalVariationNorm (intervalFourierKernel K r τ hrτ ξ x))
-              ⟨v', hv'⟩)
+            (le_iSup (fun x => totalVariationNorm _)
+              _)
         · simp only [intervalFourierKernelZero_of_notMem K r τ hrτ ξ v' hv',
             zero_apply, enorm_zero, Finset.sum_const_zero, zero_le]
       _ = totalVariationNorm ν * C := by
         rw [lintegral_const, mul_comm]
-  exact (not_lt_of_ge hsum) hPgt
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

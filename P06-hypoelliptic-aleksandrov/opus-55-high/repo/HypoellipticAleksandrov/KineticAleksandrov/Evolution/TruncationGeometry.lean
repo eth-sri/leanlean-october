@@ -25,7 +25,6 @@ theorem (Lieberman, Theorem 5.14) for the straightened problem.
 @[expose] public section
 
 noncomputable section
-set_option autoImplicit false
 
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open scoped MatrixOrder ContDiff Matrix
@@ -33,7 +32,7 @@ open scoped MatrixOrder ContDiff Matrix
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- The matrix `diag(r⁻² I, R⁻² I)` of the straightened truncation ellipsoid. -/
-noncomputable def straightenedEllipsoidMatrix (n : ℕ) (r R : ℝ) : PDE.Mat (n + n) :=
+def straightenedEllipsoidMatrix (n : ℕ) (r R : ℝ) : PDE.Mat (n + n) :=
   viscousBlockMatrix ((r ^ 2)⁻¹ • (1 : PDE.Mat n)) ((R ^ 2)⁻¹)
 
 /-- Block form of the quadratic form of the ellipsoid matrix. -/
@@ -41,8 +40,7 @@ theorem vecDot_straightenedEllipsoidMatrix_mulVec (n : ℕ) (r R : ℝ) (x : PDE
     PDE.vecDot x (straightenedEllipsoidMatrix n r R *ᵥ x) =
       PDE.vecNormSq (spatialY x) / r ^ 2 + PDE.vecNormSq (spatialZ x) / R ^ 2 := by
   rw [straightenedEllipsoidMatrix, vecDot_viscousBlockMatrix_mulVec]
-  simp only [Matrix.smul_mulVec, Matrix.one_mulVec, PDE.vecDot, PDE.vecNormSq, Pi.smul_apply,
-    smul_eq_mul, div_eq_inv_mul, Finset.mul_sum]
+  simp only [Matrix.smul_mulVec, Matrix.one_mulVec, PDE.vecDot, PDE.vecNormSq, Pi.smul_apply, div_eq_inv_mul, Finset.mul_sum]
   congr 1
   exact Finset.sum_congr rfl fun i _ => by ring
 
@@ -76,15 +74,17 @@ def terminalCoordinateHomeomorph (c : PDE.Vec n) :
   continuous_invFun :=
     (contDiff_spatialPack (contDiff_fst.sub contDiff_const) contDiff_snd (m := 0)).continuous
 
+variable (c : PDE.Vec n) {F : PDE.Vec n × PDE.Vec n → ℝ}
+
 /-- The transformed terminal datum `x ↦ F (c + Y, z)` of a smooth datum is smooth. -/
-theorem contDiff_terminalDatum (c : PDE.Vec n) {F : PDE.Vec n × PDE.Vec n → ℝ}
+theorem contDiff_terminalDatum 
     (hF : ContDiff ℝ (⊤ : ℕ∞) F) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x : PDE.Vec (n + n) => F (c + spatialY x, spatialZ x)) :=
   hF.comp ((contDiff_const.add contDiff_spatialY).prodMk contDiff_spatialZ)
 
 /-- The transformed terminal datum of a compactly supported datum has compact support: the
 affine terminal-coordinate map is a homeomorphism, hence proper. -/
-theorem hasCompactSupport_terminalDatum (c : PDE.Vec n) {F : PDE.Vec n × PDE.Vec n → ℝ}
+theorem hasCompactSupport_terminalDatum 
     (hF : HasCompactSupport F) :
     HasCompactSupport (fun x : PDE.Vec (n + n) => F (c + spatialY x, spatialZ x)) :=
   hF.comp_homeomorph (terminalCoordinateHomeomorph c)
@@ -134,7 +134,7 @@ theorem straightened_base_premises
     straightenedCoefficient_bounds_smooth hB_smooth hB_symm hB_ell hb_smooth g hg ε
   obtain ⟨h0, h1⟩ := straightened_ellipticity_constants hlam hlamLam hε
   exact ⟨(straightenedEllipsoid_characterization n r R hr hR).1, h0, h1, hsy, hsm, hlo, hup,
-    hdr, contDiff_terminalDatum (g τ) hF, hasCompactSupport_terminalDatum (g τ) hFc⟩
+    hdr, contDiff_terminalDatum _ hF, hasCompactSupport_terminalDatum _ hFc⟩
 
 end AnchorPremises
 

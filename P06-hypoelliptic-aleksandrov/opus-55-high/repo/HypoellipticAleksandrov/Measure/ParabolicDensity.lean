@@ -24,14 +24,16 @@ namespace HypoellipticAleksandrov.Parabolic
 
 noncomputable section
 
+variable (d : ℕ) (Gamma : Set (ParabolicDyadicReferenceSpace d))
+
 private theorem integrable_indicator_one
-    (d : ℕ) (Gamma : Set (ParabolicDyadicReferenceSpace d))
+    
     (hGamma : MeasurableSet Gamma) :
     Integrable (Gamma.indicator (fun _ => (1 : ℝ)))
       (parabolicDyadicReferenceMeasure d) := by
-  let : IsFiniteMeasure (parabolicDyadicReferenceMeasure d) :=
+  let : IsFiniteMeasure _ :=
     ⟨lt_top_iff_ne_top.mpr (parabolicDyadicReferenceMeasure_univ_ne_top d)⟩
-  exact IntegrableOn.integrable_indicator integrableOn_const hGamma
+  fun_prop
 
 private theorem parabolicDyadicCellAverage_indicator_one
     {d n : ℕ} (Gamma : Set (ParabolicDyadicReferenceSpace d))
@@ -48,27 +50,23 @@ private theorem parabolicDyadicCellAverage_indicator_one
 /-- At almost every point, the explicit complete-generation parabolic dyadic averages of an
 integrable function converge to that function. -/
 theorem parabolicDyadicCheckpointAverage_tendsto_ae
-    (d : ℕ) (f : ParabolicDyadicReferenceSpace d → ℝ)
+     (f : ParabolicDyadicReferenceSpace d → ℝ)
     (hf : Integrable f (parabolicDyadicReferenceMeasure d)) :
     ∀ᵐ z ∂parabolicDyadicReferenceMeasure d,
       Tendsto (fun n => parabolicDyadicCheckpointAverage d n f z)
         atTop (nhds (f z)) := by
   classical
-  let : IsFiniteMeasure (parabolicDyadicReferenceMeasure d) :=
+  let : IsFiniteMeasure _ :=
     ⟨lt_top_iff_ne_top.mpr (parabolicDyadicReferenceMeasure_univ_ne_top d)⟩
-  let f' : ParabolicDyadicReferenceSpace d → ℝ := hf.1.mk f
+  let f'  := hf.1.mk f
   have hff' : f =ᵐ[parabolicDyadicReferenceMeasure d] f' := by
     simpa only [f'] using hf.1.ae_eq_mk
-  have hf' : Integrable f' (parabolicDyadicReferenceMeasure d) :=
+  have hf'  :=
     hf.congr hff'
   have hf'meas : StronglyMeasurable[⨆ k, parabolicDyadicFiltration d k] f' := by
     rw [iSup_parabolicDyadicFiltration_eq_referenceMeasurableSpace]
-    simpa only [f'] using hf.1.stronglyMeasurable_mk
-  have hcond : ∀ᵐ z ∂parabolicDyadicReferenceMeasure d,
-      Tendsto
-        (fun k => ((parabolicDyadicReferenceMeasure d)[f' |
-          parabolicDyadicFiltration d k]) z)
-        atTop (nhds (f' z)) :=
+    fun_prop
+  have hcond  :=
     hf'.tendsto_ae_condExp hf'meas
   have havg : ∀ᵐ z ∂parabolicDyadicReferenceMeasure d, ∀ n,
       parabolicDyadicCheckpointAverage d n f z =
@@ -80,23 +78,19 @@ theorem parabolicDyadicCheckpointAverage_tendsto_ae
       (condExp_congr_ae hff')
   have hcheckpoint : Tendsto (fun n : ℕ => (d + 2) * n) atTop atTop := by
     apply tendsto_atTop_mono (fun n => ?_) tendsto_id
-    exact Nat.le_mul_of_pos_left n (by omega)
+    grind
   filter_upwards [hcond, havg, hff'] with z hzcond hzavg hzff'
   have htendsto : Tendsto
       (fun n => ((parabolicDyadicReferenceMeasure d)[f' |
-        parabolicDyadicFiltration d ((d + 2) * n)]) z)
-      atTop (nhds (f' z)) :=
+        parabolicDyadicFiltration d _]) z)
+      atTop _ :=
     hzcond.comp hcheckpoint
-  have havgTendsto : Tendsto
-      (fun n => parabolicDyadicCheckpointAverage d n f z)
-      atTop (nhds (f' z)) :=
-    Tendsto.congr' (Eventually.of_forall fun n => (hzavg n).symm) htendsto
-  simpa only [hzff'] using havgTendsto
+  simp_all
 
 /-- At almost every point of a measurable set, every sufficiently fine addressed cell
 containing the point has density strictly above the fixed threshold. -/
 theorem ae_eventually_parabolicDyadicRestrictedCell_density_gt
-    (d : ℕ) (Gamma : Set (ParabolicDyadicReferenceSpace d))
+    
     (hGamma : MeasurableSet Gamma) (xi : ℝ)
     (hxi : xi ∈ Set.Ioo (0 : ℝ) 1) :
     ∀ᵐ z ∂parabolicDyadicReferenceMeasure d,
@@ -108,30 +102,30 @@ theorem ae_eventually_parabolicDyadicRestrictedCell_density_gt
               (parabolicDyadicReferenceMeasure d).real
                 (parabolicDyadicRestrictedCell index ∩ Gamma) := by
   have hconverges := parabolicDyadicCheckpointAverage_tendsto_ae d
-    (Gamma.indicator (fun _ => (1 : ℝ)))
+    _
     (integrable_indicator_one d Gamma hGamma)
   filter_upwards [hconverges] with z hzconverges
   intro hzGamma
   have hzconvergesOne : Tendsto
       (fun n => parabolicDyadicCheckpointAverage d n
-        (Gamma.indicator (fun _ => (1 : ℝ))) z)
+        (Gamma.indicator (fun _ => (1))) z)
       atTop (nhds 1) := by
-    simpa only [Set.indicator_of_mem hzGamma] using hzconverges
+    simp_all
   have hdensity : ∀ᶠ n in atTop,
       xi < parabolicDyadicCheckpointAverage d n
-        (Gamma.indicator (fun _ => (1 : ℝ))) z :=
+        _ z :=
     hzconvergesOne.eventually_const_lt hxi.2
   filter_upwards [hdensity] with n hn
   intro index hzindex
   rw [parabolicDyadicCheckpointAverage_eq_cellAverage _ index z hzindex,
-    parabolicDyadicCellAverage_indicator_one Gamma hGamma index] at hn
+    parabolicDyadicCellAverage_indicator_one Gamma hGamma] at hn
   exact (lt_inv_mul_iff₀'
     (parabolicDyadicReferenceMeasure_restrictedCell_real_pos index)).mp hn
 
 /-- Almost every point of a measurable set lies in an addressed generation cell on which
 that set has density strictly above the fixed threshold. -/
 theorem ae_exists_parabolicDyadicRestrictedCell_density_gt
-    (d : ℕ) (Gamma : Set (ParabolicDyadicReferenceSpace d))
+    
     (hGamma : MeasurableSet Gamma) (xi : ℝ)
     (hxi : xi ∈ Set.Ioo (0 : ℝ) 1) :
     ∀ᵐ z ∂parabolicDyadicReferenceMeasure d,
@@ -151,12 +145,10 @@ theorem ae_exists_parabolicDyadicRestrictedCell_density_gt
       ⋃ index : ParabolicDyadicIndex d n,
         parabolicDyadicHalfOpenCell index := by
     rw [iUnion_parabolicDyadicHalfOpenCell_eq_reference]
-    exact z.property
+    simp
   obtain ⟨index, hzindex⟩ := Set.mem_iUnion.mp hzcover
-  have hzindex' : z ∈ parabolicDyadicRestrictedCell index := by
-    change (z : TimeVelocity d) ∈ parabolicDyadicHalfOpenCell index
-    exact hzindex
-  exact ⟨n, index, hzindex', hn index hzindex'⟩
+  have hzindex' : z ∈ parabolicDyadicRestrictedCell index := hzindex
+  grind
 
 end
 

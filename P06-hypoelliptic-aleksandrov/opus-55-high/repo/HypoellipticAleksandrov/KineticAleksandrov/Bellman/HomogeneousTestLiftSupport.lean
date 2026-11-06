@@ -7,12 +7,13 @@ import Mathlib.Tactic
 /-! # Uniform positive radial windows for compact tests away from the origin -/
 
 @[expose] public section
-noncomputable section
 open Set Filter Topology MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
+variable (zeta : (ℝ × ℝ) → ℝ)
+
 /-- A compact test away from zero has a positive lower and finite upper gauge bound. -/
-theorem bellman_compact_test_gauge_bounds (zeta : (ℝ × ℝ) → ℝ)
+theorem bellman_compact_test_gauge_bounds 
     (hc : HasCompactSupport zeta) (hs : tsupport zeta ⊆ bellmanPuncturedSet) :
     ∃ a b : ℝ, 0 < a ∧ a ≤ b ∧ ∀ q ∈ tsupport zeta,
       a ≤ bellmanGauge q ∧ bellmanGauge q ≤ b := by
@@ -24,7 +25,7 @@ theorem bellman_compact_test_gauge_bounds (zeta : (ℝ × ℝ) → ℝ)
   · exact ⟨1, 1, by norm_num, le_rfl, fun q hq => (hn ⟨q, hq⟩).elim⟩
 
 /-- Each punctured spatial point has a neighborhood sharing one compact positive radial window. -/
-theorem bellman_compact_test_local_radius_window (zeta : (ℝ × ℝ) → ℝ)
+theorem bellman_compact_test_local_radius_window 
     (hc : HasCompactSupport zeta) (hs : tsupport zeta ⊆ bellmanPuncturedSet)
     (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet) :
     ∃ U : Set (ℝ × ℝ), IsOpen U ∧ q ∈ U ∧ U ⊆ bellmanPuncturedSet ∧
@@ -32,7 +33,7 @@ theorem bellman_compact_test_local_radius_window (zeta : (ℝ × ℝ) → ℝ)
         ∀ x ∈ U, ∀ r : BellmanPositiveTime,
           bellmanPlaneDilation r.val x ∈ tsupport zeta → r.val ∈ Icc a b := by
   obtain ⟨a0, b0, ha0, hab0, hbounds⟩ := bellman_compact_test_gauge_bounds zeta hc hs
-  have hg : 0 < bellmanGauge q := bellmanGauge_pos q hq
+  have hg  := bellmanGauge_pos q hq
   let U := {x : ℝ × ℝ | bellmanGauge q / 2 < bellmanGauge x ∧
     bellmanGauge x < 2 * bellmanGauge q}
   have hU : IsOpen U :=
@@ -44,8 +45,7 @@ theorem bellman_compact_test_local_radius_window (zeta : (ℝ × ℝ) → ℝ)
     have hh := hx.1
     have hzero : bellmanGauge (0, 0) = 0 := by
       norm_num [bellmanGauge, bellmanGaugePower]
-    rw [hz, hzero] at hh
-    linarith
+    grind
   refine ⟨U, hU, hqU, hsub, a0 / (2 * bellmanGauge q),
     2 * b0 / bellmanGauge q, div_pos ha0 (by positivity), ?_, ?_⟩
   · apply (div_le_div_iff₀ (by positivity) hg).mpr

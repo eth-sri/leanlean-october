@@ -48,7 +48,6 @@ theorem finiteUnionRestartMeasure_ae_valid
     (nu : Measure (FiniteUnionPole H1 (T : WithTop ℝ))) :
     ∀ᵐ p ∂finiteUnionRestartMeasure hH hLE hlam hLam A H1 H2 sMinus T nu,
       sMinus < p.time ∧ p.time < T ∧ p.velocity 0 ∈ H2.carrier := by
-  unfold finiteUnionRestartMeasure
   filter_upwards [ae_restrict_mem
     (measurableSet_finiteUnionInternalExit H1 H2 sMinus T)] with p hp
   exact ⟨hp.1, hp.2.1, hp.2.2.2⟩

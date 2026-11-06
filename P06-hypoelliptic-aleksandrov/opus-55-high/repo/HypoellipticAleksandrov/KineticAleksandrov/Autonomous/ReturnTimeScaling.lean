@@ -20,7 +20,7 @@ def returnScaledCoefficient {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) (r X 
     SmoothAutonomous lam Lam where
   a x v := A.a (X + r ^ 3 * x) (r * v)
   smooth := by
-    change ContDiff ℝ (⊤ : ℕ∞)
+    change ContDiff ℝ _
       ((Function.uncurry A.a) ∘ fun z : ℝ × ℝ => (X + r ^ 3 * z.1, r * z.2))
     exact A.smooth.comp (by fun_prop)
   bounds x v := A.bounds _ _
@@ -31,16 +31,14 @@ theorem returnScaling_coefficient {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
     (returnScaling r hr X).coefficient (evolutionCoefficient A.a) =
       evolutionCoefficient (returnScaledCoefficient A r X).a := by
   ext s y z i j
-  simp [Scaling.KineticAffineScaling.coefficient, Scaling.KineticAffineScaling.time,
-    Scaling.KineticAffineScaling.position, Scaling.KineticAffineScaling.transport,
+  simp [Scaling.KineticAffineScaling.position, Scaling.KineticAffineScaling.transport,
     returnScaling, evolutionCoefficient, returnScaledCoefficient, hr.ne']
 
 /-- Kinetic scaling preserves the identity drift exactly. -/
 theorem returnScaling_drift (r : ℝ) (hr : 0 < r) (X : ℝ) :
     (returnScaling r hr X).drift (identityDrift 1) = identityDrift 1 := by
-  funext y
   ext i
-  simp [Scaling.KineticAffineScaling.drift, Scaling.KineticAffineScaling.position,
+  simp [Scaling.KineticAffineScaling.position,
     returnScaling, identityDrift]
   field_simp
 
@@ -59,13 +57,13 @@ theorem exists_return_scaled_solution
           (X - r ^ 3 * p.position 0, r * p.velocity 0) := by
   let E := fullSpaceEvolution hH hLE hlam hLam A
   let G := physicalTerminalDatum (scalarTerminalDatum F)
-  have hG : ContDiff ℝ (⊤ : ℕ∞) G :=
+  have hG : ContDiff ℝ _ G :=
     (scalarTerminalDatum_smooth F hF).comp (contDiff_snd.prodMk contDiff_fst)
   obtain ⟨w, hw, hrep⟩ := fullspace_bounded_smooth_solution hH hlam hLam A E
     (fullSpaceEvolution_spec hH hLE hlam hLam A) 0 G hG
   let Φ := returnScaling r hr X
   let W : Point → ℝ := w ∘ Φ.point
-  let U : Point → ℝ := W ∘ autonomousReversal ∘ autonomousPositionReflection
+  let U  := W ∘ autonomousReversal ∘ autonomousPositionReflection
   have heq (p : Point) (hp : 0 < p.time) :
       U p = S hH hLE hlam hLam A (r ^ 2 * p.time) F
         (X - r ^ 3 * p.position 0, r * p.velocity 0) := by
@@ -74,37 +72,35 @@ theorem exists_return_scaled_solution
         ⟨-(r ^ 2 * p.time), fun _ => r * p.velocity 0,
           fun _ => X - r ^ 3 * p.position 0⟩ := by
       apply KineticPoint.ext
-      · simp [Φ, returnScaling, Scaling.KineticAffineScaling.point,
+      · simp [Φ, returnScaling,
           Scaling.KineticAffineScaling.time, autonomousReversal, autonomousPositionReflection]
       · funext i
         rw [Fin.eq_zero i]
-        simp [Φ, returnScaling, Scaling.KineticAffineScaling.point,
+        simp [Φ, returnScaling,
           Scaling.KineticAffineScaling.position, autonomousReversal, autonomousPositionReflection]
       · funext i
         rw [Fin.eq_zero i]
-        simp [Φ, returnScaling, Scaling.KineticAffineScaling.point,
+        simp [Φ, returnScaling,
           Scaling.KineticAffineScaling.transport, autonomousReversal,
           autonomousPositionReflection, sub_eq_add_neg]
     dsimp only [U, W, Function.comp_apply]
     rw [hpoint]
     unfold S fullSpaceAction
     split
-    · exact hrep (wholeSpaceQuery (-(r ^ 2 * p.time)) 0 (neg_nonpos.mpr ht)
-      (fun _ => r * p.velocity 0) (fun _ => X - r ^ 3 * p.position 0)) rfl
+    · exact hrep (wholeSpaceQuery _ 0 _
+      _ _) rfl
     · rename_i h
       exact False.elim (h ht)
   let O : Set Point := {p | 0 < p.time}
   let T : EvolutionVec 1 → ℝ × (PDE.Vec 1 × PDE.Vec 1) := fun q =>
     (-(r ^ 2 * timeCoord 1 q), r • transportedCoord 1 q,
       (fun _ => X) - r ^ 3 • diffusedCoord 1 q)
-  have hT : ContDiff ℝ (⊤ : ℕ∞) T := by unfold T; fun_prop
+  have hT : ContDiff ℝ (⊤ : ℕ∞) T := by fun_prop
   have hmaps : MapsTo T (evolutionHomeomorph 1 ⁻¹' O)
       (evolutionPastInteriorRaw autonomousWholeDomain (fun _ => 0) 0) := by
     intro q hq
     refine ⟨?_, ?_⟩
-    · change -(r ^ 2 * timeCoord 1 q) < 0
-      change 0 < timeCoord 1 q at hq
-      nlinarith [sq_pos_of_pos hr]
+    · aesop
     · change r • transportedCoord 1 q ∈ movingDomain (wholeSpace 1) (fun _ => 0) _
       rw [movingDomain_wholeSpace]
       trivial
@@ -116,18 +112,8 @@ theorem exists_return_scaled_solution
     dsimp [U, W, Φ, returnScaling, Scaling.KineticAffineScaling.point,
       Scaling.KineticAffineScaling.time, Scaling.KineticAffineScaling.position,
       Scaling.KineticAffineScaling.transport, autonomousReversal,
-      autonomousPositionReflection, T]
-    congr 1
-    apply KineticPoint.ext
-    · change 0 + r ^ 2 * (-q 0) = -(r ^ 2 * q 0)
-      ring
-    · funext i
-      change 0 + r * transportedCoord 1 q i = r * transportedCoord 1 q i
-      ring
-    · funext i
-      change X + (r ^ 2 * -q 0) * 0 + r ^ 3 * -(diffusedCoord 1 q i) =
-        X - r ^ 3 * diffusedCoord 1 q i
-      ring
+      autonomousPositionReflection]
+    aesop
   obtain ⟨M, hM, hbound⟩ := F.exists_bound
   refine ⟨U, ⟨⟨M, ?_⟩, ?_, hreg, ?_⟩, heq⟩
   · intro p hp
@@ -145,7 +131,7 @@ theorem exists_return_scaled_solution
     have hq : Φ.point q ∈ evolutionPastOpenCylinder autonomousWholeDomain (fun _ => 0) 0 := by
       refine ⟨?_, ?_⟩
       · change 0 + r ^ 2 * (-p.time) < 0
-        nlinarith [sq_pos_of_pos hr]
+        simp_all
       · change (Φ.point q).position ∈ movingDomain (wholeSpace 1) (fun _ => 0) _
         rw [movingDomain_wholeSpace]
         trivial
@@ -154,7 +140,6 @@ theorem exists_return_scaled_solution
     have hopen : IsOpen (evolutionPastInteriorRaw autonomousWholeDomain (fun _ => 0) 0) := by
       have he : evolutionPastInteriorRaw autonomousWholeDomain (fun _ => 0) 0 =
           {x : ℝ × (PDE.Vec 1 × PDE.Vec 1) | x.1 < 0} := by
-        ext x
         simp [evolutionPastInteriorRaw, autonomousWholeDomain, movingDomain]
       rw [he]
       exact isOpen_lt continuous_fst continuous_const
@@ -163,10 +148,10 @@ theorem exists_return_scaled_solution
     have hscaled := Scaling.KineticAffineScaling.transportedForwardOperator_comp_point (Φ := Φ)
       (u := w) (p := q) (evolutionCoefficient A.a) (identityDrift 1) hw2
     rw [returnScaling_coefficient A r hr X, returnScaling_drift r hr X] at hscaled
-    rw [show transportedForwardOperator (evolutionCoefficient (returnScaledCoefficient A r X).a)
-        (identityDrift 1) W q = r ^ 2 *
-          transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1) w
-            (Φ.point q) from hscaled,
+    rw [show transportedForwardOperator _
+        _ W q = r ^ 2 *
+          transportedForwardOperator _ _ w
+            _ from hscaled,
       hw.2.2.2.1 _ hq, mul_zero, neg_zero]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

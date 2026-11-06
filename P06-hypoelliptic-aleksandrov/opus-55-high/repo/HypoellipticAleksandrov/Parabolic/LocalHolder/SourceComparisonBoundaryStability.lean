@@ -12,7 +12,6 @@ uniformly close throughout the whole closed cylinder.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Set
 
@@ -33,10 +32,10 @@ theorem abs_homogeneous_solution_sub_le_boundary_error {d : ℕ}
   have huv := isClassicalBackwardDirichletSolution_sub hu hv
   intro z hz
   have h := abs_le_terminal_lateral_source_envelope_of_isClassicalBackwardDirichletSolution
-    hΩ hΩb haT A (fun _ _ => 0) (fun _ _ => 0) (fun _ _ => (0 : ℝ) - 0)
-    (fun y => φ₁ y - φ₂ y) (fun z => b₁ z - b₂ z) (fun z => u z - v z)
+    hΩ hΩb haT A _ _ _
+    _ _ _
     hAc continuous_const hApsd (fun _ _ => le_rfl) huv
-    ε ε 0 hε hε le_rfl hφ hb (fun _ _ => by simp only [sub_self, abs_zero, le_refl]) hz
-  simpa only [mul_zero, add_zero, two_mul] using h
+    ε ε 0 hε hε le_rfl hφ hb (fun _ _ => by simp) hz
+  linarith
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

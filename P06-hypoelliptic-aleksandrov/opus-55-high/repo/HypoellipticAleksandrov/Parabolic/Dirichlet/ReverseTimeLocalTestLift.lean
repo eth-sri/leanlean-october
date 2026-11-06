@@ -24,15 +24,13 @@ def reverseTimeScalarTestOfLocal {τ₁ τ₂ T : ℝ}
   hasCompactSupport' := eta.hasCompactSupport
   tsupport_subset' := eta.tsupport_subset.trans htime
 
-@[simp] theorem reverseTimeScalarTestOfLocal_apply {τ₁ τ₂ T : ℝ}
-    (htime : Set.Ioo τ₁ τ₂ ⊆ reverseTimeOpenInterval T)
-    (eta : OriginalTimeScalarTest τ₁ τ₂) (τ : ℝ) :
+variable {τ₁ τ₂ T : ℝ} (htime : Set.Ioo τ₁ τ₂ ⊆ reverseTimeOpenInterval T) (eta : OriginalTimeScalarTest τ₁ τ₂) (τ : ℝ)
+
+@[simp] theorem reverseTimeScalarTestOfLocal_apply  :
     reverseTimeScalarTestOfLocal htime eta τ = eta τ :=
   rfl
 
-@[simp] theorem reverseTimeScalarTestOfLocal_deriv {τ₁ τ₂ T : ℝ}
-    (htime : Set.Ioo τ₁ τ₂ ⊆ reverseTimeOpenInterval T)
-    (eta : OriginalTimeScalarTest τ₁ τ₂) (τ : ℝ) :
+@[simp] theorem reverseTimeScalarTestOfLocal_deriv  :
     (reverseTimeScalarTestOfLocal htime eta).deriv τ = eta.deriv τ :=
   rfl
 

@@ -26,13 +26,10 @@ theorem exists_strictMono_tendsto_inner_of_norm_le
     StrongDual.toWeakDual (InnerProductSpace.toDual ℝ H (u n))
   have hf : ∀ n, f n ∈ WeakDual.toStrongDual ⁻¹'
       Metric.closedBall (0 : StrongDual ℝ H) R := by
-    intro n
-    rw [Set.mem_preimage, Metric.mem_closedBall, dist_eq_norm]
-    change ‖InnerProductSpace.toDual ℝ H (u n) - 0‖ ≤ R
-    simpa using hu n
+    aesop
   obtain ⟨ℓ, hℓ, φ, hφ, hlim⟩ :=
     (WeakDual.isSeqCompact_closedBall ℝ H (0 : StrongDual ℝ H) R) hf
-  let v : H :=
+  let v  :=
     (InnerProductSpace.toDual ℝ H).symm (WeakDual.toStrongDual ℓ)
   refine ⟨v, φ, hφ, fun z => ?_⟩
   simpa [f, v, Function.comp_def] using

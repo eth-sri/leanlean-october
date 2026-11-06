@@ -15,7 +15,6 @@ gradient energy bounds into its quotient-valued reverse-time Bochner class.
 open MeasureTheory Set
 open scoped ENNReal
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -38,57 +37,40 @@ theorem exists_reverseTimeL2V_of_continuousOn_energy
   let W : ReverseTimeL2V hΩ T := reverseTimeL2OfContinuousOn T w hw
   let hwLp := memLp_two_reverseTime_of_continuousOn T w hw
   letI : IsFiniteMeasure (reverseTimeVolume T) := by
-    change IsFiniteMeasure (volume.restrict (Ioo (0 : ℝ) T))
+    change IsFiniteMeasure (volume.restrict (Ioo _ T))
     infer_instance
-  have hBnonneg : 0 ≤ B := by
-    exact (sq_nonneg (‖valueCLM hΩ (w 0)‖)).trans
-      (hvalue 0 ⟨le_rfl, le_of_lt hT⟩)
-  have hgradientIntegralNonneg :
-      0 ≤ ∫ t in Set.Ioc 0 T, ‖gradientCLM hΩ (w t)‖ ^ 2 := by
-    exact integral_nonneg fun _ => sq_nonneg _
-  have hGnonneg : 0 ≤ G := by
-    exact (mul_nonneg (le_of_lt hlam) hgradientIntegralNonneg).trans hgradient
   have hvalueContinuous :
-      ContinuousOn (fun t => valueCLM hΩ (w t)) (Set.Icc 0 T) :=
+      ContinuousOn (fun t => valueCLM hΩ _) _ :=
     (valueCLM hΩ).continuous.comp_continuousOn hw
   have hgradientContinuous :
-      ContinuousOn (fun t => gradientCLM hΩ (w t)) (Set.Icc 0 T) :=
+      ContinuousOn (fun t => gradientCLM hΩ _) _ :=
     (gradientCLM hΩ).continuous.comp_continuousOn hw
-  have hvalueLp :
-      MemLp (fun t => valueCLM hΩ (w t)) (2 : ℝ≥0∞) (reverseTimeVolume T) :=
+  have hvalueLp  :=
     memLp_two_reverseTime_of_continuousOn T _ hvalueContinuous
-  have hgradientLp :
-      MemLp (fun t => gradientCLM hΩ (w t)) (2 : ℝ≥0∞) (reverseTimeVolume T) :=
+  have hgradientLp  :=
     memLp_two_reverseTime_of_continuousOn T _ hgradientContinuous
   have hvalueIntegrable :
-      Integrable (fun t => ‖valueCLM hΩ (w t)‖ ^ 2) (reverseTimeVolume T) := by
-    exact hvalueLp.integrable_norm_pow (by norm_num)
+      Integrable (fun t => ‖valueCLM hΩ (w t)‖ ^ 2) (reverseTimeVolume T) := hvalueLp.integrable_norm_pow (by norm_num)
   have hgradientIntegrable :
-      Integrable (fun t => ‖gradientCLM hΩ (w t)‖ ^ 2) (reverseTimeVolume T) := by
-    exact hgradientLp.integrable_norm_pow (by norm_num)
+      Integrable (fun t => ‖gradientCLM hΩ (w t)‖ ^ 2) (reverseTimeVolume T) := hgradientLp.integrable_norm_pow (by norm_num)
   have hvalueBound :
       (∫ t, ‖valueCLM hΩ (w t)‖ ^ 2 ∂reverseTimeVolume T) ≤ T * B := by
     calc
-      (∫ t, ‖valueCLM hΩ (w t)‖ ^ 2 ∂reverseTimeVolume T) ≤
+      (∫ t, ‖valueCLM hΩ _‖ ^ 2 ∂reverseTimeVolume T) ≤
           ∫ _ : ℝ, B ∂reverseTimeVolume T := by
         apply integral_mono_ae hvalueIntegrable (integrable_const B)
-        change ∀ᵐ t ∂volume.restrict (Ioo 0 T),
-          ‖valueCLM hΩ (w t)‖ ^ 2 ≤ B
         filter_upwards [ae_restrict_mem measurableSet_Ioo] with t ht
         exact hvalue t ⟨le_of_lt ht.1, le_of_lt ht.2⟩
       _ = T * B := by
         rw [integral_const, smul_eq_mul, reverseTimeVolume_real_univ T hT]
   have hgradientIoc :
       (∫ t, ‖gradientCLM hΩ (w t)‖ ^ 2 ∂reverseTimeVolume T) =
-        ∫ t in Set.Ioc 0 T, ‖gradientCLM hΩ (w t)‖ ^ 2 := by
-    change (∫ t in Set.Ioo 0 T, ‖gradientCLM hΩ (w t)‖ ^ 2) =
-      ∫ t in Set.Ioc 0 T, ‖gradientCLM hΩ (w t)‖ ^ 2
-    exact MeasureTheory.setIntegral_congr_set Ioo_ae_eq_Ioc
+        ∫ t in Set.Ioc 0 T, ‖gradientCLM hΩ (w t)‖ ^ 2 := MeasureTheory.setIntegral_congr_set Ioo_ae_eq_Ioc
   have hgradientBound :
       (∫ t, ‖gradientCLM hΩ (w t)‖ ^ 2 ∂reverseTimeVolume T) ≤ G / lam := by
     rw [hgradientIoc]
     apply (le_div_iff₀ hlam).mpr
-    simpa only [mul_comm] using hgradient
+    linarith
   have hnorm :
       (∫ t, ‖w t‖ ^ 2 ∂reverseTimeVolume T) = ‖W‖ ^ 2 := by
     simpa only [W, reverseTimeL2OfContinuousOn] using
@@ -96,13 +78,13 @@ theorem exists_reverseTimeL2V_of_continuousOn_energy
   refine ⟨W, coeFn_reverseTimeL2OfContinuousOn T w hw, ?_⟩
   calc
     ‖W‖ ^ 2 = ∫ t, ‖w t‖ ^ 2 ∂reverseTimeVolume T := hnorm.symm
-    _ = ∫ t, (‖valueCLM hΩ (w t)‖ ^ 2 + ‖gradientCLM hΩ (w t)‖ ^ 2)
+    _ = ∫ t, (‖valueCLM hΩ _‖ ^ 2 + ‖gradientCLM hΩ _‖ ^ 2)
         ∂reverseTimeVolume T := by
       apply integral_congr_ae
       filter_upwards with t
-      exact norm_sq_h10HilbertGraph hΩ (w t)
-    _ = (∫ t, ‖valueCLM hΩ (w t)‖ ^ 2 ∂reverseTimeVolume T) +
-        ∫ t, ‖gradientCLM hΩ (w t)‖ ^ 2 ∂reverseTimeVolume T :=
+      exact norm_sq_h10HilbertGraph hΩ _
+    _ = (∫ t, ‖valueCLM hΩ _‖ ^ 2 ∂reverseTimeVolume T) +
+        ∫ t, ‖gradientCLM hΩ _‖ ^ 2 ∂reverseTimeVolume T :=
       integral_add hvalueIntegrable hgradientIntegrable
     _ ≤ T * B + G / lam := add_le_add hvalueBound hgradientBound
 

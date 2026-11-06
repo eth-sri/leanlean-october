@@ -14,7 +14,6 @@ has no approximation-index or transported-radius dependence.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -61,7 +60,7 @@ theorem abs_le_collar_innerBall_dirichlet_limit
   filter_upwards [hmem, hβlim.eventually (gt_mem_nhds hd)] with k hk hβk
   exact abs_le_original_collar_straightened_dirichlet
     hlam hB hBs hbs haα hατ hk.2.1 (hβpos k).le hβk.le hd hdr (hg k) hL
-    (hgL k) (hclose k) hε hC F hFC hsupp (u k) (hu k) p
+    (hgL k) (hclose k) hε hC F hFC hsupp _ (hu k) p
     ⟨⟨hp.1.1, hp.1.2.1⟩, subset_closure (hk.2.2 p hp)⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov

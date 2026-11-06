@@ -20,13 +20,15 @@ open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 def intervalDomain (H : Interval) : Set (PDE.Vec 1) :=
   PDE.oneDimensionalAxisBox H.lo H.hi
 
+variable (H : Interval)
+
 /-- A nonempty bounded velocity interval is an admissible evolution domain. -/
-theorem intervalDomain_admissible (H : Interval) :
+theorem intervalDomain_admissible  :
     IsAdmissibleEvolutionDomain (intervalDomain H) :=
   Or.inr (Or.inr ⟨rfl, H.lo, H.hi, H.ordered, rfl⟩)
 
 /-- The literal interval domain is Borel. -/
-theorem intervalDomain_measurable (H : Interval) : MeasurableSet (intervalDomain H) :=
+theorem intervalDomain_measurable  : MeasurableSet (intervalDomain H) :=
   measurableSet_of_isAdmissibleEvolutionDomain (intervalDomain_admissible H)
 
 /-- A pair of operator and kernel families on the stationary interval. -/
@@ -59,10 +61,10 @@ theorem autonomous_evolution_instance
 theorem stripEvolution_unique {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
     (H : Interval) (E E' : StripEvolution H)
     (hE : IsStripEvolution A H E) (hE' : IsStripEvolution A H E') : E = E' := by
-  obtain ⟨hS, hK⟩ := terminalEvolution_unique (intervalDomain H) (fun _ => 0)
-    (intervalDomain_admissible H) (evolutionCoefficient A.a) (identityDrift 1)
+  obtain ⟨hS, hK⟩ := terminalEvolution_unique _ _
+    (intervalDomain_admissible H) _ _
     E.1 E'.1 E.2 E'.2 hE hE'
-  exact Prod.ext hS hK
+  grind
 
 /-- Existence and uniqueness precede the definition of a canonical killed family. -/
 theorem existsUnique_stripEvolution

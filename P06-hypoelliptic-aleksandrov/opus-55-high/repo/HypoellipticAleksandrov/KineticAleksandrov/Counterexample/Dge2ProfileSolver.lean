@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.Dge2Prof
 
 @[expose] public section
 
-noncomputable section
 
 open scoped MatrixOrder Matrix.Norms.L2Operator
 
@@ -29,8 +28,7 @@ theorem exists_spectral_weights_of_homogeneous_profile {d : ℕ} (alpha : ℝ) (
   let b := fun q : XV d => PDE.vecDot q.2 (dx H q)
   have hKnz : ∀ q ∈ K, q ≠ 0 := by
     intro q hq hz
-    have hh : rho q = 1 := hq
-    simp [hz] at hh
+    aesop
   have hopen : IsOpen ({0}ᶜ : Set (XV d)) := isClosed_singleton.isOpen_compl
   have hherm : ∀ q, q ≠ 0 → (M q).IsHermitian :=
     fun q hq => dvv_isHermitian H q (hsmooth.contDiffAt (hopen.mem_nhds hq))
@@ -38,15 +36,15 @@ theorem exists_spectral_weights_of_homogeneous_profile {d : ℕ} (alpha : ℝ) (
     (fun q hq => hKnz q hq)
   have hbc : ContinuousOn b K := (continuousOn_transport_off_origin H hsmooth).mono
     (fun q hq => hKnz q hq)
-  have hmp : ContinuousOn (fun q => positiveSpectralMass (M q)) K :=
+  have hmp  :=
     continuousOn_positiveSpectralMass M K hMc (fun q hq => hherm q (hKnz q hq))
-  have hmn : ContinuousOn (fun q => negativeSpectralMass (M q)) K :=
-    continuousOn_positiveSpectralMass (fun q => -M q) K hMc.neg
+  have hmn : ContinuousOn (fun q => negativeSpectralMass _) K :=
+    continuousOn_positiveSpectralMass _ K hMc.neg
       (fun q hq => (hherm q (hKnz q hq)).neg)
-  have hm0 : ∀ q ∈ K, 0 ≤ negativeSpectralMass (M q) :=
-    fun q hq => positiveSpectralMass_nonneg (-M q) (hherm q (hKnz q hq)).neg
+  have hm0 : ∀ q ∈ K, 0 ≤ negativeSpectralMass _ :=
+    fun q hq => positiveSpectralMass_nonneg _ (hherm q (hKnz q hq)).neg
   obtain ⟨cminus, hcminus, hnum⟩ := exists_spectral_weight_on_compact K
-    (isCompact_unitGaugeShell d) b (fun q => negativeSpectralMass (M q)) hbc hmn hm0
+    (isCompact_unitGaugeShell d) b _ hbc hmn hm0
     (fun q hq => hzero q (hKnz q hq))
   let w := fun q => (b q + cminus * negativeSpectralMass (M q)) / positiveSpectralMass (M q)
   have hwc : ContinuousOn w K :=
@@ -61,22 +59,22 @@ theorem exists_spectral_weights_of_homogeneous_profile {d : ℕ} (alpha : ℝ) (
     (lt_min hlo (lt_of_lt_of_le zero_lt_one hcminus))
   have hlam1 : lam ≤ 1 := min_le_left _ _
   have hLam1 : 1 ≤ Lam := le_max_left _ _
-  have hbound : ∀ q ∈ K, lam • (1 : PDE.Mat d) ≤ spectralTraceMatrix (M q) (b q) cminus ∧
-      spectralTraceMatrix (M q) (b q) cminus ≤ Lam • (1 : PDE.Mat d) := by
+  have hbound : ∀ q ∈ K, lam • (1) ≤ spectralTraceMatrix (M q) (b q) cminus ∧
+      spectralTraceMatrix (M q) (b q) cminus ≤ Lam • (1) := by
     intro q hq
-    exact spectralTraceMatrix_uniform_bounds (M q) (hherm q (hKnz q hq)) (b q) cminus
+    exact spectralTraceMatrix_uniform_bounds _ (hherm q (hKnz q hq)) _ cminus
       lower upper (hweights q hq).1 (hweights q hq).2
   refine ⟨cminus, lam, Lam, hcminus, hlam, hlam1, hLam1, ?_, ?_⟩
   · intro q
     by_cases hq : q = 0
     · rw [homogeneousSpectralMatrix, ite_eq_left hq]
-      simpa only [one_smul] using
+      simpa using
         And.intro (scalar_identity_le (d := d) lam 1 hlam1)
           (scalar_identity_le (d := d) 1 Lam hLam1)
     · have hp : normalizeGauge q ∈ K := rho_normalizeGauge q hq
       rw [homogeneousSpectralMatrix, ite_eq_right hq, normalizedProfileMatrix,
         ite_eq_right hq, normalizedProfileTransport, ite_eq_right hq]
-      exact hbound (normalizeGauge q) hp
+      grind
   · intro q hq
     have hr : 0 < rho q := (rho_nonneg q).lt_of_ne' ((rho_eq_zero_iff q).not.mpr hq)
     let p := normalizeGauge q
@@ -88,7 +86,7 @@ theorem exists_spectral_weights_of_homogeneous_profile {d : ℕ} (alpha : ℝ) (
       ite_eq_right hq, normalizedProfileTransport, ite_eq_right hq, hMscale,
       matrixContraction_smul_right,
       spectral_trace_solver _ (hherm p hpnz) _ _ (hpos p hpnz).ne']
-    exact hbscale.symm
+    linarith
 
 /-- The geometric profile has a global measurable elliptic matrix solving its pointwise PDE. -/
 theorem exists_geometricProfile_elliptic_solver (d : ℕ) (hd : 2 ≤ d) (alpha : ℝ)

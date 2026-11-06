@@ -41,14 +41,13 @@ theorem gramian_eq_blocks (lam : ℝ) {h : ℝ} (hh : 0 < h) (s : ℝ) :
 /-- Positive definiteness of the physical covariance on its actual cutoff domain. -/
 theorem posDef_gramian {lam h s : ℝ} (hlam : 0 < lam) (hh : 0 < h)
     (hs : -(h / 128) ≤ s) : (gramian lam h s).PosDef := by
-  have hstrip : -(1 / 128 : ℝ) ≤ s / h := by
+  have hstrip : -(1 / 128) ≤ s / h := by
     apply (le_div_iff₀ hh).mpr
     linarith
   have hD : (covarianceDilation h)ᴴ = covarianceDilation h := by
     ext i j
-    fin_cases i <;> fin_cases j <;> simp [covarianceDilation, Matrix.conjTranspose]
+    fin_cases i <;> fin_cases j <;> simp [covarianceDilation]
   have hdet : (covarianceDilation h).det ≠ 0 := by
-    rw [Matrix.det_fin_two]
     simp [covarianceDilation, ne_of_gt (Real.rpow_pos_of_pos hh _)]
   have hpos := (posDef_ghat hlam hstrip).conjTranspose_mul_mul_same
     (Matrix.mulVec_injective_of_det_ne_zero hdet)
@@ -58,7 +57,7 @@ theorem posDef_gramian {lam h s : ℝ} (hlam : 0 < lam) (hh : 0 < h)
 theorem covarianceDet_pos {lam h s : ℝ} (hlam : 0 < lam) (hh : 0 < h)
     (hs : -(h / 128) ≤ s) : 0 < covarianceDet lam h s := by
   have hp := (posDef_gramian hlam hh hs).det_pos
-  rw [gramian_eq_blocks lam hh, Matrix.det_fin_two] at hp
+  rw [gramian_eq_blocks lam hh] at hp
   simpa [covarianceDet, pow_two] using hp
 
 /-- Exact inverse covariance, including the off-diagonal symmetry. -/
@@ -68,14 +67,15 @@ theorem gramian_inv_blocks (lam : ℝ) {h : ℝ} (hh : 0 < h) (s : ℝ) :
         -covarianceXV lam h s / covarianceDet lam h s;
         -covarianceXV lam h s / covarianceDet lam h s,
         covarianceXX lam h s / covarianceDet lam h s] := by
-  rw [Matrix.inv_def, Matrix.adjugate_fin_two, gramian_eq_blocks lam hh]
-  rw [Matrix.det_fin_two, Ring.inverse_eq_inv]
+  rw [Matrix.inv_def, gramian_eq_blocks lam hh]
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [covarianceDet, pow_two, Matrix.smul_apply, div_eq_mul_inv, mul_comm]
+    simp [covarianceDet, pow_two, div_eq_mul_inv, mul_comm]
+
+variable (lam h s : ℝ)
 
 /-- Position covariance evolves by twice the mixed covariance. -/
-theorem hasDerivAt_covarianceXX (lam h s : ℝ) :
+theorem hasDerivAt_covarianceXX  :
     HasDerivAt (covarianceXX lam h) (2 * covarianceXV lam h s) s := by
   have hp := ((hasDerivAt_const s (lam * h ^ 3 / 64)).add
     (((hasDerivAt_id s).pow 2).const_mul (lam * h / 64))).add
@@ -88,7 +88,7 @@ theorem hasDerivAt_covarianceXX (lam h s : ℝ) :
     ring
 
 /-- Mixed covariance evolves by the velocity covariance. -/
-theorem hasDerivAt_covarianceXV (lam h s : ℝ) :
+theorem hasDerivAt_covarianceXV  :
     HasDerivAt (covarianceXV lam h) (covarianceVV lam h s) s := by
   have hp := ((hasDerivAt_id s).const_mul (lam * h / 64)).add
     (((hasDerivAt_id s).pow 2).const_mul (lam / 2))
@@ -100,22 +100,20 @@ theorem hasDerivAt_covarianceXV (lam h s : ℝ) :
     ring
 
 /-- Velocity covariance evolves at the diffusion rate. -/
-theorem hasDerivAt_covarianceVV (lam h s : ℝ) :
+theorem hasDerivAt_covarianceVV  :
     HasDerivAt (covarianceVV lam h) lam s := by
   convert ((hasDerivAt_id s).const_mul lam).const_add (lam * h / 64) using 1
   · funext t
     dsimp [covarianceVV]
-  · simp only [mul_one]
+  · simp
 
 /-- Determinant evolution; the transport contributions cancel. -/
-theorem hasDerivAt_covarianceDet (lam h s : ℝ) :
+theorem hasDerivAt_covarianceDet  :
     HasDerivAt (covarianceDet lam h) (lam * covarianceXX lam h s) s := by
   have hp := ((hasDerivAt_covarianceXX lam h s).mul
     (hasDerivAt_covarianceVV lam h s)).sub ((hasDerivAt_covarianceXV lam h s).pow 2)
   convert hp using 1
-  · funext t
-    rfl
-  · norm_num
-    ring
+  · rfl
+  · ring
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

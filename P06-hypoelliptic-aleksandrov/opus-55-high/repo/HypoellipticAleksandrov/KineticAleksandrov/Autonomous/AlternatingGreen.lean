@@ -44,8 +44,6 @@ theorem alternating_green_of_nested_splitting
           greenWaiting ∘ₘ visitBeta P I Sin Sout exitActive exitWaiting n) +
       greenOuter ∘ₘ visitGamma P I Sin Sout exitActive exitWaiting N := by
   apply alternating_measure_telescope _ _ _ _ hinitial
-  intro n
-  rw [hactive n, hwaiting n]
-  ac_rfl
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

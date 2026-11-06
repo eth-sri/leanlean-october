@@ -21,7 +21,6 @@ that statement.  It does not prove an existence or uniqueness theorem.
 @[expose] public section
 
 noncomputable section
-set_option autoImplicit false
 
 open Set MeasureTheory
 open HypoellipticAleksandrov
@@ -40,9 +39,10 @@ def IsAdmissibleEvolutionDomain {n : ℕ} (Ω : Set (PDE.Vec n)) : Prop :=
       (∃ hn : n = 1, ∃ a b, a < b ∧
         hn ▸ Ω = PDE.oneDimensionalAxisBox a b)
 
+variable {n : ℕ} {Ω : Set (PDE.Vec n)}
+
 /-- An admissible base domain is open. -/
-theorem isOpen_of_isAdmissibleEvolutionDomain {n : ℕ}
-    {Ω : Set (PDE.Vec n)}
+theorem isOpen_of_isAdmissibleEvolutionDomain 
     (hΩ : IsAdmissibleEvolutionDomain Ω) : IsOpen Ω := by
   rcases hΩ with hΩ | ⟨c, r, hr, hΩ⟩ | ⟨hn, a, b, hab, hΩ⟩
   · rw [hΩ]
@@ -54,17 +54,15 @@ theorem isOpen_of_isAdmissibleEvolutionDomain {n : ℕ}
       simpa using hΩ
     rw [hΩ']
     simpa [PDE.oneDimensionalAxisBox] using
-      (PDE.isOpen_axisBox (fun _ : Fin 1 => a) (fun _ : Fin 1 => b))
+      (PDE.isOpen_axisBox _ _)
 
 /-- An admissible base domain is Borel measurable. -/
-theorem measurableSet_of_isAdmissibleEvolutionDomain {n : ℕ}
-    {Ω : Set (PDE.Vec n)}
+theorem measurableSet_of_isAdmissibleEvolutionDomain 
     (hΩ : IsAdmissibleEvolutionDomain Ω) : MeasurableSet Ω :=
   (isOpen_of_isAdmissibleEvolutionDomain hΩ).measurableSet
 
 /-- The moving domain is open for an admissible base domain. -/
-theorem isOpen_movingDomain_of_isAdmissibleEvolutionDomain {n : ℕ}
-    {Ω : Set (PDE.Vec n)} (γ : ℝ → PDE.Vec n)
+theorem isOpen_movingDomain_of_isAdmissibleEvolutionDomain  (γ : ℝ → PDE.Vec n)
     (hΩ : IsAdmissibleEvolutionDomain Ω) (σ : ℝ) :
     IsOpen (movingDomain Ω γ σ) :=
   isOpen_movingDomain (isOpen_of_isAdmissibleEvolutionDomain hΩ) σ
@@ -215,7 +213,7 @@ theorem measurable_positionStateZero {n : ℕ} (Ω : Set (PDE.Vec n))
   fun_prop
 
 /-- The scalar marginal kernel pulled back from the same fiber kernel. -/
-noncomputable def parabolicMarginalKernel {n : ℕ}
+def parabolicMarginalKernel {n : ℕ}
     {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
     (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
     (σ τ : ℝ) (hστ : σ ≤ τ) :
@@ -298,7 +296,7 @@ def parabolicQuerySource {n : ℕ} {Ω : Set (PDE.Vec n)}
   ⟨q.1.2.2, q.property.2⟩
 
 /-- The ambient spatial measure obtained from the scalar marginal kernel. -/
-noncomputable def parabolicMarginalAmbientMeasure {n : ℕ}
+def parabolicMarginalAmbientMeasure {n : ℕ}
     {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
     (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω)
     (q : ParabolicEvolutionQuery Ω γ) : Measure (PDE.Vec n) :=

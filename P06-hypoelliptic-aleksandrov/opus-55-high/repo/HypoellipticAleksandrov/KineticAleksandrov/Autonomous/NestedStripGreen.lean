@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripM
 /-! # The exact Green measure decomposition for nested physical velocity intervals -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
@@ -21,17 +20,15 @@ theorem nestedIntervalGreen_identity
       stripGreen hH hLE hlam hLam A H1 T e +
         nestedIntervalRestartGreen hH hLE hlam hLam A H1 H2 sMinus T e := by
   let D := stripPast H2 T
-  have hs (ep : StripPole H2 (T : WithTop ℝ)) :
+  have hs (ep : StripPole H2 _) :
       ∀ᵐ p ∂stripGreen hH hLE hlam hLam A H2 T ep, p ∈ D :=
-    stripGreenOfKernel_ae_mem_stripPast H2 (stripEvolution hH hLE hlam hLam A H2).2 T ep
+    stripGreenOfKernel_ae_mem_stripPast H2 _ T ep
   have hsmall : ∀ᵐ p ∂stripGreen hH hLE hlam hLam A H1 T e, p ∈ D := by
     filter_upwards [stripGreenOfKernel_ae_mem_stripPast H1
-      (stripEvolution hH hLE hlam hLam A H1).2 T e] with p hp
+      _ T e] with p hp
     exact ⟨hp.1, hsub hp.2⟩
   have hrestart : ∀ᵐ p ∂nestedIntervalRestartGreen hH hLE hlam hLam A H1 H2 sMinus T e,
       p ∈ D := by
-    rw [ae_iff]
-    unfold nestedIntervalRestartGreen
     refine (Measure.bind_apply (m := nestedIntervalRestartPoles hH hLE hlam hLam A
       H1 H2 sMinus T e) (isOpen_stripPast H2 T).measurableSet.compl
       (Measure.measurable_measure.mpr (fun B hB =>
@@ -39,9 +36,8 @@ theorem nestedIntervalGreen_identity
     apply lintegral_eq_zero_of_ae_eq_zero
     exact Filter.Eventually.of_forall (fun ep => ae_iff.mp (hs ep))
   apply nested_physical_measure_eq D (isOpen_stripPast H2 T)
-    (hs (nestedPoleInclusion H1 H2 hsub T e))
-  · rw [ae_iff, Measure.add_apply, ae_iff.mp hsmall, ae_iff.mp hrestart]
-    exact zero_add 0
+    (hs _)
+  · simp_all
   · intro f hfs hfn
     rw [integral_add_measure (nestedProbe_integrable A f _)
       (nestedProbe_integrable A f _)]

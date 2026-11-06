@@ -58,27 +58,25 @@ theorem vecEuclideanNorm_weighted_integral_le {n : ℕ} {f : ℝ → PDE.Vec n}
     intro i
     have := (ContinuousLinearMap.proj (R := ℝ) (φ := fun _ : Fin n => ℝ) i).integral_comp_comm
       (integrable_weight_smul hρc hρs hf)
-    simpa using this.symm
+    simp_all
   have hint : ∀ i, Integrable (fun t => ρ t * f t i) := fun i =>
     integrable_weight_mul hρc hρs (continuous_apply i |>.comp hf)
   have hsq : PDE.vecNormSq v = ∫ t, ρ t * PDE.vecDot v (f t) := by
     unfold PDE.vecNormSq PDE.vecDot
     have : ∀ i, v i * v i = ∫ t, ρ t * (v i * f t i) := by
       intro i
-      calc v i * v i = v i * ∫ t, ρ t * f t i := by rw [← hcoord i]
+      calc v i * v i = v i * ∫ t, ρ t * f t i := by simp_all
         _ = ∫ t, ρ t * (v i * f t i) := by
           rw [← integral_const_mul]
-          congr 1; funext t; ring
+          ring
     simp_rw [this]
     rw [← integral_finsetSum]
     · congr 1; funext t
       rw [Finset.mul_sum]
     · intro i _
       have := (hint i).const_mul (v i)
-      refine this.congr (Filter.Eventually.of_forall fun t => ?_)
-      simp only; ring
+      grind
   have hle : PDE.vecNormSq v ≤ PDE.vecEuclideanNorm v * c := by
-    rw [hsq]
     have h1 : ∫ t, ρ t * PDE.vecDot v (f t) ≤ ∫ t, ρ t * (PDE.vecEuclideanNorm v * c) := by
       refine integral_mono ?_ ?_ fun t => ?_
       · have : Continuous fun t => PDE.vecDot v (f t) := by
@@ -96,7 +94,6 @@ theorem vecEuclideanNorm_weighted_integral_le {n : ℕ} {f : ℝ → PDE.Vec n}
     linarith
   by_contra hcon
   push Not at hcon
-  have hpos : 0 < PDE.vecEuclideanNorm v := hc.trans_lt hcon
   have : PDE.vecEuclideanNorm v ^ 2 ≤ PDE.vecEuclideanNorm v * c := by
     rwa [PDE.vecEuclideanNorm_sq]
   nlinarith
@@ -126,8 +123,7 @@ end Weighted
 /-- The mollification is the convolution with the weight, for the scalar action. -/
 theorem curveMollify_eq_convolution {n : ℕ} (ρ : ℝ → ℝ) (γ : ℝ → PDE.Vec n) :
     curveMollify ρ γ = ρ ⋆[ContinuousLinearMap.lsmul ℝ ℝ, volume] γ := by
-  funext s
-  simp [curveMollify, convolution_def]
+  aesop
 
 /-- **Analytic core of the curve approximation.**  A globally `L`-Lipschitz curve is uniformly
 `ε`-approximated by a smooth curve which is globally `L`-Lipschitz for the Euclidean norm. -/
@@ -148,25 +144,23 @@ theorem exists_smooth_lipschitz_approx {n : ℕ} {γ : ℝ → PDE.Vec n} (hγ :
     intro t ht
     have : t ∈ Function.support (φ.normed volume) := ht
     rw [φ.support_normed_eq] at this
-    simpa [Metric.mem_ball, Real.dist_eq] using this
+    aesop
   refine ⟨curveMollify (φ.normed volume) γ, ?_, ?_, ?_⟩
   · rw [curveMollify_eq_convolution]
     exact hρs.contDiff_convolution_left _ φ.contDiff_normed (hγ.locallyIntegrable (μ := volume))
   · intro s s'
     rw [curveMollify_sub hρc hρs hγ]
     refine vecEuclideanNorm_weighted_integral_le hρ0 hρc hρs hρ1 ?_ (by positivity) fun t _ => ?_
-    · exact (hγ.comp (continuous_const.sub continuous_id)).sub
-        (hγ.comp (continuous_const.sub continuous_id))
-    · refine (hLip _ _).trans (le_of_eq ?_)
-      congr 2; ring
+    · fun_prop
+    grind
   · intro s
     rw [curveMollify_sub_self hρc hρs hρ1 hγ]
     refine vecEuclideanNorm_weighted_integral_le hρ0 hρc hρs hρ1 ?_ hε.le fun t ht => ?_
-    · exact (hγ.comp (continuous_const.sub continuous_id)).sub continuous_const
+    · fun_prop
     · refine (hLip _ _).trans ?_
-      have h1 : |s - t - s| < δ := by rw [show s - t - s = -t by ring, abs_neg]; exact hsupp t ht
+      have h1 : |s - t - s| < δ := by simp_all
       calc L * |s - t - s| ≤ L * δ := mul_le_mul_of_nonneg_left h1.le hL
-        _ = ε * (L / (L + 1)) := by rw [hδ]; ring
+        _ = ε * (L / (L + 1)) := by ring
         _ ≤ ε * 1 := mul_le_mul_of_nonneg_left (by rw [div_le_one (by positivity)]; linarith)
             hε.le
         _ = ε := mul_one ε

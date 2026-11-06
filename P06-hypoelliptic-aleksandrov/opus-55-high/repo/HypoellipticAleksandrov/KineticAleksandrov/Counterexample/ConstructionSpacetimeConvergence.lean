@@ -9,7 +9,6 @@ import Mathlib.MeasureTheory.Measure.Prod
 /-! # Measurable fixed-time convergence and positive-part norm convergence -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Filter MeasureTheory
 open scoped Topology ENNReal
@@ -26,7 +25,7 @@ theorem construction_fixed_time_tendsto_ae_spacetime {d : ℕ}
         (𝓝 (g (KineticPoint.equivProd d P))) := by
   have hp := measurableSet_tendsto_fun (l := atTop) hF hg
   have he : ∀ᵐ z : ℝ × XV d ∂volume,
-      Tendsto (fun n => F n z) atTop (𝓝 (g z)) :=
+      Tendsto _ atTop _ :=
     (Measure.ae_prod_iff_ae_ae hp).mpr (Eventually.of_forall ht)
   exact (KineticPoint.measurePreserving_equivProd d).quasiMeasurePreserving.ae he
 
@@ -47,16 +46,14 @@ theorem construction_positive_part_error_tendsto {X : Type*} [MeasurableSpace X]
   · intro n
     filter_upwards [hFb n, hgb] with x hx hy
     have hbF : |max (F n x) 0| ≤ C := by
-      rw [abs_of_nonneg (le_max_right _ _)]
-      exact max_le (le_abs_self _ |>.trans hx) hC
+      grind
     have hbg : |max (g x) 0| ≤ C := by
-      rw [abs_of_nonneg (le_max_right _ _)]
-      exact max_le (le_abs_self _ |>.trans hy) hC
-    simpa only [Pi.sub_apply, Real.norm_eq_abs] using!
+      grind
+    simpa using!
       (abs_sub _ _).trans (show |max (F n x) 0| + |max (g x) 0| ≤ 2 * C by
-        linarith only [hbF, hbg])
+        linarith)
   · filter_upwards [hlim] with x hx
-    have hm := (hx.max (tendsto_const_nhds (x := (0 : ℝ)))).sub_const (max (g x) 0)
-    simpa only [Pi.sub_apply, sub_self] using! hm
+    have hm := (hx.max (tendsto_const_nhds (x := (0)))).sub_const (max (g x) 0)
+    simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

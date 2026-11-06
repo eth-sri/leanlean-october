@@ -7,12 +7,13 @@ import Mathlib.Tactic
 /-! # Absolute integrability of the compact radial test integrands -/
 
 @[expose] public section
-noncomputable section
 open Set MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
+variable (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
+
 /-- The radial integrand has compact support for every fixed punctured spatial point. -/
-theorem bellman_lift_integrand_compactSupport (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
+theorem bellman_lift_integrand_compactSupport 
     (hc : HasCompactSupport zeta) (hs : tsupport zeta ⊆ bellmanPuncturedSet)
     (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet) :
     HasCompactSupport (fun r : BellmanPositiveTime => r.val ^ (-1 - alpha) *
@@ -24,13 +25,12 @@ theorem bellman_lift_integrand_compactSupport (alpha : ℝ) (zeta : (ℝ × ℝ)
   apply closure_minimal
   · intro r hr
     have hz : zeta (bellmanPlaneDilation r.val q) ≠ 0 := by
-      intro he
-      exact hr (by simp only [he, mul_zero])
+      simp_all
     exact hwindow q hqU r (subset_tsupport zeta hz)
-  · exact hK.isClosed
+  grind
 
 /-- Compact radial support and continuity prove absolute integrability of the lift integrand. -/
-theorem bellman_lift_integrand_integrable (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
+theorem bellman_lift_integrand_integrable 
     (hz : Continuous zeta) (hc : HasCompactSupport zeta)
     (hs : tsupport zeta ⊆ bellmanPuncturedSet)
     (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet) :
@@ -40,7 +40,7 @@ theorem bellman_lift_integrand_integrable (alpha : ℝ) (zeta : (ℝ × ℝ) →
     unfold bellmanPlaneDilation
     fun_prop
   have hcont : Continuous (fun r : BellmanPositiveTime =>
-      r.val ^ (-1 - alpha) * zeta (bellmanPlaneDilation r.val q)) :=
+      r.val ^ (-1 - alpha) * zeta _) :=
     (continuous_subtype_val.rpow_const
     (fun r : BellmanPositiveTime => Or.inl r.property.ne')).mul (hz.comp hd)
   exact hcont.integrable_of_hasCompactSupport

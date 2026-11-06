@@ -11,8 +11,10 @@ noncomputable section
 open Set Filter Topology
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
+variable {alpha : ℝ} {phi psi : (ℝ × ℝ) → ℝ}
+
 /-- The first directional derivative respects addition on the punctured carrier. -/
-theorem bellman_directional_add {alpha : ℝ} {phi psi : (ℝ × ℝ) → ℝ}
+theorem bellman_directional_add 
     (hf : IsBellmanHomogeneous alpha phi) (hg : IsBellmanHomogeneous alpha psi)
     (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet) (e : ℝ × ℝ) :
     fderiv ℝ (phi + psi) q e = fderiv ℝ phi q e + fderiv ℝ psi q e := by
@@ -23,13 +25,13 @@ theorem bellman_directional_add {alpha : ℝ} {phi psi : (ℝ × ℝ) → ℝ}
   rw [fderiv_add hfq hgq, add_apply]
 
 /-- The second velocity derivative respects addition on the punctured carrier. -/
-theorem bellmanDvv_add {alpha : ℝ} {phi psi : (ℝ × ℝ) → ℝ}
+theorem bellmanDvv_add 
     (hf : IsBellmanHomogeneous alpha phi) (hg : IsBellmanHomogeneous alpha psi)
     (q : ℝ × ℝ) (hq : q ∈ bellmanPuncturedSet) :
     bellmanDvv (phi + psi) q = bellmanDvv phi q + bellmanDvv psi q := by
   have he : bellmanDv (phi + psi) =ᶠ[𝓝 q] bellmanDv phi + bellmanDv psi := by
     filter_upwards [bellmanPuncturedSet_isOpen.mem_nhds hq] with z hz
-    exact bellman_directional_add hf hg z hz (0, 1)
+    exact bellman_directional_add hf hg z hz _
   have hfq := ((hf.directional_contDiffOn (0, 1)).contDiffAt
     (bellmanPuncturedSet_isOpen.mem_nhds hq)).differentiableAt (by norm_num)
   have hgq := ((hg.directional_contDiffOn (0, 1)).contDiffAt
@@ -45,7 +47,7 @@ theorem bellmanDvv_smul (c : ℝ) (phi : (ℝ × ℝ) → ℝ) (q : ℝ × ℝ) 
   have he : bellmanDv (c • phi) = c • bellmanDv phi := by
     funext z
     simp only [bellmanDv, fderiv_const_smul_field, Pi.smul_apply,
-      smul_apply, smul_eq_mul]
+      smul_apply]
   simp only [bellmanDvv, he, fderiv_const_smul_field, Pi.smul_apply,
     smul_apply, smul_eq_mul]
 
@@ -67,7 +69,7 @@ def bellmanImageLinearMap (alpha lam Lam : ℝ) :
       c * bellmanOperator w.2.val phi.val w.1.val
     unfold bellmanOperator bellmanDx
     rw [fderiv_const_smul_field, bellmanDvv_smul]
-    simp only [Pi.smul_apply, smul_apply, smul_eq_mul]
+    simp only [Pi.smul_apply, smul_apply]
     ring
 
 /-- The literal image subspace in the source's uniform function space. -/
@@ -83,7 +85,7 @@ theorem mem_bellmanImageSpace_iff (alpha lam Lam : ℝ)
         bellmanImage lam Lam phi h = f := by
   constructor
   · rintro ⟨phi, hphi⟩
-    exact ⟨phi.val, phi.property, hphi⟩
+    aesop
   · rintro ⟨phi, hphi, he⟩
     exact ⟨⟨phi, hphi⟩, he⟩
 

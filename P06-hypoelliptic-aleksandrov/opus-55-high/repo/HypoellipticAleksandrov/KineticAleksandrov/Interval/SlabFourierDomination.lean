@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Green.SlabFourierBound
 /-! # Evolved variation domination and the killed half-time bound -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open Set MeasureTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
@@ -21,19 +20,14 @@ theorem interval_evolved_variation_domination
     (evolvedMeasure μ κ ph π).variation ≤ ((μ ⊗ₘ κ).snd).map π := by
   let Λ := (μ ⊗ₘ κ).snd
   by_cases hi : Integrable ph Λ
-  · unfold evolvedMeasure
-    refine VectorMeasure.variation_map_le.trans ?_
+  · refine VectorMeasure.variation_map_le.trans ?_
     rw [Measure.variation_withDensityᵥ hi]
     have he : (fun y => ‖ph y‖ₑ) = (fun _ : Y => (1 : ℝ≥0∞)) := by
-      funext y
-      simp only [← ofReal_norm, hph1 y, ENNReal.ofReal_one]
-    rw [he]
-    change Measure.map π (Λ.withDensity (1 : Y → ℝ≥0∞)) ≤ _
-    rw [withDensity_one]
+      simp only [← ofReal_norm, hph1, ENNReal.ofReal_one]
+    aesop
   · have hz : Λ.withDensityᵥ ph = 0 := by
       rw [Measure.withDensityᵥ, dite_eq_right hi]
     unfold evolvedMeasure
-    change ((Λ.withDensityᵥ ph).map π).variation ≤ _
     rw [hz, VectorMeasure.map_zero, VectorMeasure.variation_zero]
     exact Measure.zero_le _
 
@@ -60,12 +54,9 @@ theorem killed_halfMeasure_mass_le {d : ℕ}
     (halfMeasure K σ T hT.le μ ξ).variation univ ≤
       μ univ * ENNReal.ofReal (C * Real.exp
         (-(k * (T / 2) * (1 + PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3))))) := by
-  unfold halfMeasure
   refine evolved_variation_le μ _ _ _ (measurable_halfPhase ξ _) (norm_halfPhase ξ _)
     (measurable_halfVelocity _) _ (fun x => ?_)
   refine (fibreMeasure_variation_le K hcov σ _ (le_halfTime σ T hT.le) ξ x).trans ?_
-  have h := hdec σ (σ + T / 2) (le_halfTime σ T hT.le) ξ x.1.1
-  have he : σ + T / 2 - σ = T / 2 := by ring
-  simpa only [he, neg_mul] using h
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

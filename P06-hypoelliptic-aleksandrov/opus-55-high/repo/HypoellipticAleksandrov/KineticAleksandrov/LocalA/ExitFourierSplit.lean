@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitDecompositio
 /-! # The actual exit Fourier variation is bounded by lateral mass plus killed variation -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Parabolic
 open scoped ENNReal
@@ -44,7 +43,7 @@ theorem ballExit_fourier_short_strip_bound
       exitFourier (β.map (exitCoordinates P.1 v₀)) ξ +
         exitFourier (ζ.map (exitCoordinates P.1 v₀)) ξ := by
     unfold ballExit
-    rw [ballExit_short_strip_measure_decomposition hH hLE hd hlam hLam B hB v₀ hR P T H,
+    rw [ballExit_short_strip_measure_decomposition,
       Measure.map_add _ _ (continuous_exitCoordinates P.1 v₀).measurable, exitFourier_add]
   have he : (exitFourier (ballExit hH hLE hd hlam hLam B hB v₀ hR P T) ξ).variation univ ≤
       β univ + ν.variation univ := by
@@ -63,8 +62,7 @@ theorem ballExit_fourier_short_strip_bound
     (ENNReal.add_ne_top.mpr ⟨measure_ne_top β univ, hνfin⟩) he
   rw [ENNReal.toReal_add (measure_ne_top β univ) hνfin] at hr
   change _ ≤ β.real univ + (ν.variation univ).toReal at hr
-  dsimp only [β] at hr
-  rw [ballExit_lateral_mass hH hLE hd hlam hLam B hB v₀ hR P ⟨H.1, H.2.1⟩] at hr
+  rw [ballExit_lateral_mass] at hr
   exact hr
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

@@ -31,8 +31,10 @@ def innerBallDirichletLimit {n : ℕ} (r0 : ℝ) (Γ : ℝ → PDE.Vec n)
   exact if p.position ∈ movingDomain (PDE.euclideanBall 0 r0) Γ p.time then
     limUnder atTop (fun k => straightenedPullback (g k) (u k) p) else 0
 
+variable {n : ℕ} {lam Lam Lb : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+
 /-- On the original diffused interior the zero extension is the actual limit. -/
-theorem innerBallDirichletLimit_eq_limit {n : ℕ} (r0 : ℝ) (Γ : ℝ → PDE.Vec n)
+theorem innerBallDirichletLimit_eq_limit  (r0 : ℝ) (Γ : ℝ → PDE.Vec n)
     (g : ℕ → ℝ → PDE.Vec n) (u : ℕ → TimeVelocity (n + n) → ℝ)
     {p : KineticPoint n}
     (hp : p.position ∈ movingDomain (PDE.euclideanBall 0 r0) Γ p.time) :
@@ -43,7 +45,7 @@ theorem innerBallDirichletLimit_eq_limit {n : ℕ} (r0 : ℝ) (Γ : ℝ → PDE.
 
 /-- The zero extension inherits the collar estimate on the entire original closed slab. -/
 theorem abs_le_collar_innerBallDirichletLimit
-    {n : ℕ} {lam Lam Lb : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    
     (hlam : 0 < lam) (hB : HasEverywhereLoewnerBounds lam Lam B)
     (hBs : IsSmoothFullKineticCoefficient B) (hbs : IsSmoothDrift b)
     (hb : HasEuclideanLipschitzDrift Lb b)
@@ -82,12 +84,12 @@ theorem abs_le_collar_innerBallDirichletLimit
       le_antisymm (norm_le_of_mem_closure_movingBall hr0 hp.2.2)
         (not_lt.mp (fun hn => hi ((mem_movingBall_iff_norm_lt hr0).mpr hn)))
     simp only [innerBallDirichletLimit, ite_eq_right hi, hn, sub_self, barrierW,
-      mul_zero, Real.exp_zero, zero_div, mul_zero, abs_zero, le_refl]
+      mul_zero, Real.exp_zero, zero_div, abs_zero, le_refl]
 
 /-- The actual exhaustion limit, extended by zero on the diffused boundary, is continuous
 on the entire original closed slab, including its time faces. -/
 theorem continuousOn_innerBallDirichletLimit
-    {n : ℕ} {lam Lam Lb : ℝ} {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+    
     (hlam : 0 < lam) (hB : HasEverywhereLoewnerBounds lam Lam B)
     (hBs : IsSmoothFullKineticCoefficient B) (hbs : IsSmoothDrift b)
     (hb : HasEuclideanLipschitzDrift Lb b)
@@ -141,14 +143,14 @@ theorem continuousOn_innerBallDirichletLimit
         (continuous_position.sub (hΓ.comp continuous_time))
     have hGc : Continuous G := by dsimp [G, barrierW]; fun_prop
     have hGp : G p = 0 := by
-      simp only [G, hn, sub_self, barrierW, mul_zero, Real.exp_zero, zero_div, mul_zero]
+      simp only [G, hn, sub_self, barrierW, mul_zero, Real.exp_zero, zero_div]
     have hGlim : Tendsto G (𝓝[K] p) (𝓝 0) :=
       hGp ▸ hGc.continuousWithinAt.tendsto
     have hKmem : ∀ᶠ q in 𝓝[K] p, q ∈ K := self_mem_nhdsWithin
     have hz : Tendsto (innerBallDirichletLimit r0 Γ g u) (𝓝[K] p) (𝓝 0) :=
       squeeze_zero_norm' (hKmem.mono fun q hq =>
         (show ‖innerBallDirichletLimit r0 Γ g u q‖ ≤ G q from
-          (by rw [Real.norm_eq_abs]; exact hbound q hq))) hGlim
+          (hbound q hq))) hGlim
     simpa only [ContinuousWithinAt, innerBallDirichletLimit, ite_eq_right hi] using hz
 
 end HypoellipticAleksandrov.KineticAleksandrov

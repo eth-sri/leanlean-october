@@ -27,9 +27,8 @@ theorem boundaryProbePhysical_regular {d : ℕ} (f : boundaryProbeSubmodule d) :
     ContDiff ℝ (⊤ : ℕ∞) (boundaryProbePhysical f ∘ (KineticPoint.equivProd d).symm) ∧
       Continuous (boundaryProbePhysical f) ∧ HasCompactSupport (boundaryProbePhysical f) := by
   have heq : boundaryProbePhysical f ∘ (KineticPoint.equivProd d).symm = f.1 := by
-    funext q
-    exact congrArg f.1 ((KineticPoint.equivProd d).apply_symm_apply q)
-  refine ⟨by rw [heq]; exact f.2.1, ?_, ?_⟩
+    aesop
+  refine ⟨by exact f.2.1, ?_, ?_⟩
   · exact f.2.1.continuous.comp (KineticPoint.homeomorphProd d).continuous
   · exact f.2.2.comp_homeomorph (KineticPoint.homeomorphProd d)
 
@@ -45,8 +44,8 @@ def boundaryProbeCc {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ)
 def boundaryProbeCcLinear {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ) :
     boundaryProbeSubmodule d →ₗ[ℝ] C_c(localTrace a T v₀ R, ℝ) where
   toFun := boundaryProbeCc a T v₀ R
-  map_add' f g := by ext P; rfl
-  map_smul' c f := by ext P; rfl
+  map_add' f g := by rfl
+  map_smul' c f := by rfl
 
 /-- Products of a probe with itself supply squares in the dense trace range. -/
 theorem boundaryProbeCc_sq {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ)
@@ -55,7 +54,6 @@ theorem boundaryProbeCc_sq {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ)
       boundaryProbeCcLinear a T v₀ R g =
         boundaryProbeCcLinear a T v₀ R f * boundaryProbeCcLinear a T v₀ R f := by
   refine ⟨⟨fun x => f.1 x * f.1 x, f.2.1.mul f.2.1, f.2.2.mul_left⟩, ?_⟩
-  ext P
   rfl
 
 variable (hH : HormanderHypoellipticityStatement)

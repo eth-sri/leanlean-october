@@ -18,7 +18,7 @@ theorem spatialData_compact_extension
     (M : ℝ) (hM : 0 ≤ M) (hb : ∀ x ∈ K, ‖f x‖ ≤ M) :
     ∃ H : E → ℝ, Continuous H ∧ HasCompactSupport H ∧
       (∀ x, ‖H x‖ ≤ M) ∧ ∀ x ∈ K, H x = f x := by
-  have : CompactSpace K := isCompact_iff_compactSpace.mp hK
+  have  := isCompact_iff_compactSpace.mp hK
   let F : K →ᵇ ℝ := BoundedContinuousFunction.mkOfCompact ⟨fun x => f x, hf.domRestrict⟩
   have hF : ‖F‖ ≤ M := (BoundedContinuousFunction.norm_le hM).mpr fun x => hb x x.2
   obtain ⟨G, hG, he⟩ := F.exists_norm_eq_domRestrict_eq_of_closed hK.isClosed
@@ -28,7 +28,7 @@ theorem spatialData_compact_extension
     hc.mul_right (f' := fun x => G x), fun x => ?_, fun x hx => ?_⟩
   · rw [norm_mul, Real.norm_eq_abs, abs_of_nonneg (hχb x).1]
     exact (mul_le_mul_of_nonneg_right (hχb x).2 (norm_nonneg _)).trans
-      (by simpa only [one_mul] using (G.norm_coe_le_norm x).trans (hG.trans_le hF))
+      (by simpa using (G.norm_coe_le_norm x).trans (hG.trans_le hF))
   · change χ x * G x = f x
     rw [hχone x hx, one_mul]
     exact congrArg (fun g : K →ᵇ ℝ => g ⟨x, hx⟩) he
@@ -52,6 +52,6 @@ theorem continuous_spatialDataCurry {V Z : Type} [PseudoMetricSpace V] [PseudoMe
     (half_lt_self hε)
   intro z
   apply (hd ?_).le
-  simpa only [Prod.dist_eq, dist_self, max_eq_left (dist_nonneg)] using hy
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

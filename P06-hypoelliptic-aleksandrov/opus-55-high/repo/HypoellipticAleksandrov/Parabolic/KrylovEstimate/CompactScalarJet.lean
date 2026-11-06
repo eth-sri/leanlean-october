@@ -9,7 +9,6 @@ public import HypoellipticAleksandrov.Parabolic.WeakJetExtension
 /-! # Compactly supported continuous weak representatives of a scalar jet -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.KrylovEstimate
 open Set Filter MeasureTheory
 open scoped Topology
@@ -61,22 +60,20 @@ theorem exists_compact_continuous_scalar_jet
     exists_smooth_compact_cutoff_mul_eventuallyEq_jet hK hU hcU hKU w le_rfl
   let W := w.mulContDiffHasCompactSupport_univ le_rfl hb hc hU hbU
   have hb2 : ContDiff ℝ 2 b := hb.of_le (by simp)
-  have hdb : Continuous (timeDerivative b) := by
-    exact ((hb2.fderiv_right (m := 1) (by norm_num)).continuous.clm_apply continuous_const)
+  have hdb : Continuous (timeDerivative b) := ((hb2.fderiv_right (m := 1) (by norm_num)).continuous.clm_apply continuous_const)
   have hgb (i : Fin N) : Continuous (fun z => velocityGradient b z i) :=
     (continuous_apply i).comp (contDiff_velocityGradient hb2).continuous
-  have hhb (i j : Fin N) : Continuous (fun z => velocityHessian b z i j) := by
-    exact (((hb2.fderiv_right (m := 1) (by norm_num)).fderiv_right
+  have hhb (i j : Fin N) : Continuous (fun z => velocityHessian b z i j) := (((hb2.fderiv_right (m := 1) (by norm_num)).fderiv_right
       (m := 0) (by norm_num)).continuous.clm_apply continuous_const).clm_apply
       continuous_const
   have hvs : tsupport W.toFun ⊆ tsupport b := tsupport_mul_subset_left
   have hts : tsupport W.timeDeriv ⊆ tsupport b :=
-    tsupport_mul_timeDeriv_subset b q (scalarTimeDerivative q)
+    tsupport_mul_timeDeriv_subset b q _
   have hgs (i : Fin N) : tsupport (fun z => W.velocityGrad z i) ⊆ tsupport b :=
-    tsupport_mul_velocityGrad_subset b q (fun z => scalarSpatialGradient q z i)
+    tsupport_mul_velocityGrad_subset b q _
   have hhs (i j : Fin N) : tsupport (fun z => W.velocityHessian z i j) ⊆ tsupport b :=
-    tsupport_mul_velocityHessian_subset b q (fun z => scalarSpatialGradient q z i)
-      (fun z => scalarSpatialGradient q z j) (fun z => scalarSpatialHessian q z i j)
+    tsupport_mul_velocityHessian_subset b q _
+      _ _
   have hvc : Continuous W.toFun :=
     (hb.continuous.continuousOn.mul hlocal.continuousOn).continuous_of_tsupport_subset
       hU (hvs.trans hbU)

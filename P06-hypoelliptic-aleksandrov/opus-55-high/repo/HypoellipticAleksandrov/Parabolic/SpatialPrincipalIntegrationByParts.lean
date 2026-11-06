@@ -12,19 +12,19 @@ identity used in the smooth difference-quotient argument.
 
 @[expose] public section
 
-noncomputable section
 
 open Function MeasureTheory Set Topology
 
 namespace HypoellipticAleksandrov.Parabolic
 
-private theorem contDiffOn_spatialPartial {d n : ℕ} {O : Set (PDE.Vec d)}
+theorem contDiffOn_spatialPartial {d n : ℕ} {O : Set (PDE.Vec d)}
     (hO : IsOpen O) (i : Fin d) {f : PDE.Vec d → ℝ}
     (hf : ContDiffOn ℝ (n + 1) f O) :
-    ContDiffOn ℝ n (spatialPartial i f) O := by
-  exact (hf.fderiv_of_isOpen hO (by simp)).clm_apply contDiffOn_const
+    ContDiffOn ℝ n (spatialPartial i f) O := (hf.fderiv_of_isOpen hO (by simp)).clm_apply contDiffOn_const
 
-private theorem spatialPartial_mul {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
+variable {d : ℕ} {O : Set (PDE.Vec d)}
+
+private theorem spatialPartial_mul  (hO : IsOpen O)
     (i : Fin d) {f g : PDE.Vec d → ℝ}
     (hf : ContDiffOn ℝ 1 f O) (hg : ContDiffOn ℝ 1 g O)
     {y : PDE.Vec d} (hy : y ∈ O) :
@@ -36,18 +36,18 @@ private theorem spatialPartial_mul {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen 
   simp [spatialPartial]
   ring
 
-private theorem spatialPartial_sq_mul {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
+private theorem spatialPartial_sq_mul  (hO : IsOpen O)
     (i : Fin d) {f g : PDE.Vec d → ℝ}
     (hf : ContDiffOn ℝ 1 f O) (hg : ContDiffOn ℝ 1 g O)
     {y : PDE.Vec d} (hy : y ∈ O) :
     spatialPartial i (fun x => f x ^ 2 * g x) y =
       2 * f y * spatialPartial i f y * g y + f y ^ 2 * spatialPartial i g y := by
-  rw [show (fun x => f x ^ 2 * g x) = fun x => (f x * f x) * g x by funext x; ring]
+  rw [show (fun x => f x ^ 2 * g x) = fun x => (f x * f x) * g x by ring]
   rw [spatialPartial_mul hO i (hf.mul hf) hg hy,
     spatialPartial_mul hO i hf hf hy]
   ring
 
-private theorem spatialThird_comm {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
+private theorem spatialThird_comm  (hO : IsOpen O)
     (q : PDE.Vec d → ℝ) (hq : ContDiffOn ℝ 3 q O)
     (i j k : Fin d) {y : PDE.Vec d} (hy : y ∈ O) :
     spatialPartial k (spatialSecond q j i) y =
@@ -66,14 +66,9 @@ private theorem spatialThird_comm {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O
     unfold spatialPartial
     have hc : ContDiffAt ℝ 1 (fderiv ℝ (spatialPartial j q)) y :=
       (hj.fderiv_of_isOpen hO (by norm_num)).contDiffAt (hO.mem_nhds hy)
-    change (fderiv ℝ (fun y => (fderiv ℝ (spatialPartial j q) y)
-      (PDE.basisVec a)) y) (PDE.basisVec b) = _
     rw [fderiv_clm_apply
       (hc.differentiableAt (by norm_num))
       (differentiableAt_const (c := PDE.basisVec a))]
-    have hb : fderiv ℝ (fun _ : PDE.Vec d => PDE.basisVec a) y = 0 := by
-      exact fderiv_const_apply (𝕜 := ℝ) (c := PDE.basisVec a)
-    rw [hb]
     change _ = ((fderiv ℝ (fderiv ℝ (spatialPartial j q)) y)
       (PDE.basisVec b)) (PDE.basisVec a)
     simp
@@ -84,7 +79,7 @@ private theorem spatialThird_comm {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O
     heval i k, heval k i]
   exact hs.eq (PDE.basisVec k) (PDE.basisVec i)
 
-private theorem spatialSecond_comm {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
+theorem spatialSecond_comm  (hO : IsOpen O)
     (q : PDE.Vec d → ℝ) (hq : ContDiffOn ℝ 2 q O)
     (j k : Fin d) {y : PDE.Vec d} (hy : y ∈ O) :
     spatialSecond q j k y = spatialSecond q k j y := by
@@ -94,20 +89,17 @@ private theorem spatialSecond_comm {d : ℕ} {O : Set (PDE.Vec d)} (hO : IsOpen 
       spatialPartial b (spatialPartial a q) y =
         ((fderiv ℝ (fderiv ℝ q) y) (PDE.basisVec b)) (PDE.basisVec a) := by
     unfold spatialPartial
-    have hc : ContDiffAt ℝ 1 (fderiv ℝ q) y :=
+    have hc : ContDiffAt ℝ 1 _ y :=
       (hq.fderiv_of_isOpen hO (by norm_num)).contDiffAt (hO.mem_nhds hy)
     rw [fderiv_clm_apply (hc.differentiableAt (by norm_num))
       (differentiableAt_const (c := PDE.basisVec a))]
-    have hb : fderiv ℝ (fun _ : PDE.Vec d => PDE.basisVec a) y = 0 := by
-      exact fderiv_const_apply (𝕜 := ℝ) (c := PDE.basisVec a)
-    rw [hb]
     simp
   rw [show spatialSecond q j k y = spatialPartial k (spatialPartial j q) y by rfl,
     show spatialSecond q k j y = spatialPartial j (spatialPartial k q) y by rfl,
     heval j k, heval k j]
-  exact hs.eq (PDE.basisVec k) (PDE.basisVec j)
+  exact hs.eq _ _
 
-private theorem contDiff_of_local_compactSupport {d : ℕ} {O : Set (PDE.Vec d)}
+theorem contDiff_of_local_compactSupport 
     (hO : IsOpen O) (f : PDE.Vec d → ℝ) (hf : ContDiffOn ℝ 0 f O)
     (hfsupport : tsupport f ⊆ O) : Continuous f := by
   rw [continuous_iff_continuousAt]
@@ -118,7 +110,7 @@ private theorem contDiff_of_local_compactSupport {d : ℕ} {O : Set (PDE.Vec d)}
     exact continuousAt_const.congr_of_eventuallyEq
       (notMem_tsupport_iff_eventuallyEq.mp hnot)
 
-private theorem integrableOn_of_local_compactSupport {d : ℕ} {O : Set (PDE.Vec d)}
+theorem integrableOn_of_local_compactSupport 
     (hO : IsOpen O) (f : PDE.Vec d → ℝ) (hf : ContDiffOn ℝ 0 f O)
     (hfcompact : HasCompactSupport f) (hfsupport : tsupport f ⊆ O) :
     IntegrableOn f O :=
@@ -128,7 +120,7 @@ private theorem integrableOn_of_local_compactSupport {d : ℕ} {O : Set (PDE.Vec
 /-- Exact fixed-time principal integration-by-parts identity with the
 negative localized gradient divergence. -/
 theorem smoothPrincipalIntegrationByParts
-    {d : ℕ} (O : Set (PDE.Vec d)) (hO : IsOpen O)
+     (O : Set (PDE.Vec d)) (hO : IsOpen O)
     (A : PDE.Vec d → PDE.Mat d) (q η : PDE.Vec d → ℝ)
     (hA : ∀ i j : Fin d, ContDiffOn ℝ 1 (fun y => A y i j) O)
     (hq : ContDiffOn ℝ 3 q O)
@@ -153,14 +145,12 @@ theorem smoothPrincipalIntegrationByParts
         (∑ i, ∑ j, ∑ k,
           spatialPartial k (fun x => A x i j) y *
             spatialSecond q j i y * spatialPartial k q y) ∂volume) := by
-  have hq1 : ContDiffOn ℝ 1 q O := hq.of_le (by norm_num)
   have hη1 : ContDiffOn ℝ 1 η O := hη.contDiffOn.of_le (by simp)
-  have hqp (i : Fin d) : ContDiffOn ℝ 1 (spatialPartial i q) O :=
+  have hqp (i : Fin d) : ContDiffOn ℝ 1 _ O :=
     contDiffOn_spatialPartial hO i (hq.of_le (by norm_num))
-  have hqsecond (j i : Fin d) : ContDiffOn ℝ 1 (spatialSecond q j i) O := by
-    exact contDiffOn_spatialPartial hO i
+  have hqsecond (j i : Fin d) : ContDiffOn ℝ 1 (spatialSecond q j i) O := contDiffOn_spatialPartial hO i
       (contDiffOn_spatialPartial hO j hq)
-  have hηp (i : Fin d) : ContDiffOn ℝ 0 (spatialPartial i η) O :=
+  have hηp (i : Fin d) : ContDiffOn ℝ 0 _ O :=
     contDiffOn_spatialPartial hO i (hη.contDiffOn.of_le (by simp))
   have hcompact2 : HasCompactSupport (fun y => η y ^ 2) := by
     simpa [pow_two] using! hηcompact.mul_left
@@ -178,9 +168,9 @@ theorem smoothPrincipalIntegrationByParts
             spatialPartial k q y * spatialSecond q j k y ∂volume)
         + (∫ y in O, η y ^ 2 * spatialPartial k (fun x => A x i j) y *
             spatialSecond q j i y * spatialPartial k q y ∂volume) := by
-    let F : PDE.Vec d → ℝ := fun y => A y i j * spatialSecond q j i y
-    let G : PDE.Vec d → ℝ := fun y => η y ^ 2 * spatialPartial k q y
-    have hF : ContDiffOn ℝ 1 F O := (hA i j).mul (hqsecond j i)
+    let F  := fun y => A y i j * spatialSecond q j i y
+    let G  := fun y => η y ^ 2 * spatialPartial k q y
+    have hF  := (hA i j).mul (hqsecond j i)
     have hG : ContDiffOn ℝ 1 G O := by
       simpa [G, pow_two] using (hη1.mul hη1).mul (hqp k)
     have hGcompact : HasCompactSupport G := hcompact2.mul_right
@@ -190,8 +180,7 @@ theorem smoothPrincipalIntegrationByParts
     have hGderiv (y : PDE.Vec d) (hy : y ∈ O) :
         spatialPartial k G y =
           2 * η y * spatialPartial k η y * spatialPartial k q y +
-            η y ^ 2 * spatialSecond q k k y := by
-      exact spatialPartial_sq_mul hO k hη1 (hqp k) hy
+            η y ^ 2 * spatialSecond q k k y := spatialPartial_sq_mul hO k hη1 (hqp k) hy
     have hFderiv (y : PDE.Vec d) (hy : y ∈ O) :
         spatialPartial k F y =
           spatialPartial k (fun x => A x i j) y * spatialSecond q j i y +
@@ -209,11 +198,11 @@ theorem smoothPrincipalIntegrationByParts
           ring
         _ = _ := by linarith
     rw [setIntegral_congr_fun hO.measurableSet (fun y hy => by rw [hGderiv y hy])] at hfirst'
-    let L : PDE.Vec d → ℝ := fun y => η y ^ 2 * A y i j * spatialPartial k q y
-    let R : PDE.Vec d → ℝ := spatialSecond q j k
+    let L  := fun y => η y ^ 2 * A y i j * spatialPartial k q y
+    let R  := spatialSecond q j k
     have hL : ContDiffOn ℝ 1 L O := by
       simpa [L, pow_two] using ((hη1.mul hη1).mul (hA i j)).mul (hqp k)
-    have hR : ContDiffOn ℝ 1 R O := hqsecond j k
+    have hR  := hqsecond j k
     have hLcompact : HasCompactSupport L := hcompact2.mul_right.mul_right
     have hLsupport : tsupport L ⊆ O :=
       tsupport_mul_subset_left.trans (tsupport_mul_subset_left.trans hsupport2)
@@ -226,11 +215,11 @@ theorem smoothPrincipalIntegrationByParts
           η y ^ 2 * A y i j * spatialSecond q k i y := by
       dsimp [L]
       rw [show (fun y => η y ^ 2 * A y i j * spatialPartial k q y) =
-          fun y => (η y * η y * A y i j) * spatialPartial k q y by funext x; ring,
+          fun y => (η y * η y * A y i j) * spatialPartial k q y by ring,
         spatialPartial_mul hO i ((hη1.mul hη1).mul (hA i j)) (hqp k) hy,
         spatialPartial_mul hO i (hη1.mul hη1) (hA i j) hy,
         spatialPartial_mul hO i hη1 hη1 hy]
-      change _ = _ + _ + η y ^ 2 * A y i j * spatialPartial i (spatialPartial k q) y
+      change _ = _ + _ + η y ^ 2 * A y i j * spatialPartial i _ y
       ring
     have hsecond' :
         (∫ y in O, L y * spatialPartial i R y ∂volume) =
@@ -244,7 +233,6 @@ theorem smoothPrincipalIntegrationByParts
       intro y hy
       change spatialPartial i L y * R y = _
       rw [hLderiv y hy]
-    dsimp [F, G, L, R] at hfirst' hsecond
     have hfirst'' :
         (∫ y in O, A y i j * spatialSecond q j i y *
           -(2 * η y * spatialPartial k η y * spatialPartial k q y +
@@ -258,27 +246,27 @@ theorem smoothPrincipalIntegrationByParts
       intro y hy
       change spatialPartial k F y * G y = _
       rw [hFderiv y hy]
-    let U : PDE.Vec d → ℝ := fun y =>
+    let U  := fun y =>
       η y * (2 * spatialPartial i η y * A y i j * spatialPartial k q y * R y)
-    let V : PDE.Vec d → ℝ := fun y =>
+    let V  := fun y =>
       η y ^ 2 * spatialPartial i (fun x => A x i j) y * spatialPartial k q y * R y
-    let W : PDE.Vec d → ℝ := fun y =>
+    let W  := fun y =>
       η y ^ 2 * A y i j * spatialSecond q k i y * R y
-    have hAi : ContDiffOn ℝ 0 (spatialPartial i (fun x => A x i j)) O :=
+    have hAi  :=
       contDiffOn_spatialPartial hO i (hA i j)
     have hη0 : ContDiffOn ℝ 0 η O := hη1.of_le (by norm_num)
-    have hA0 : ContDiffOn ℝ 0 (fun y => A y i j) O := (hA i j).of_le (by norm_num)
-    have hqp0 : ContDiffOn ℝ 0 (spatialPartial k q) O := (hqp k).of_le (by norm_num)
-    have hqki0 : ContDiffOn ℝ 0 (spatialSecond q k i) O :=
+    have hA0 : ContDiffOn ℝ 0 _ O := (hA i j).of_le (by norm_num)
+    have hqp0 : ContDiffOn ℝ 0 _ O := (hqp k).of_le (by norm_num)
+    have hqki0 : ContDiffOn ℝ 0 _ O :=
       (hqsecond k i).of_le (by norm_num)
     have hR0 : ContDiffOn ℝ 0 R O := hR.of_le (by norm_num)
-    have hU : IntegrableOn U O := by
+    have hU  := by
       apply integrableOn_of_local_compactSupport hO U
       · simpa [U] using hη0.mul
           (((((contDiffOn_const.mul (hηp i)).mul hA0).mul hqp0).mul hR0))
       · exact hηcompact.mul_right
       · exact tsupport_mul_subset_left.trans hηsupport
-    have hV : IntegrableOn V O := by
+    have hV  := by
       apply integrableOn_of_local_compactSupport hO V
       · simpa [V, pow_two] using
           (((((hη1.of_le (by norm_num)).mul (hη1.of_le (by norm_num))).mul hAi).mul
@@ -287,7 +275,7 @@ theorem smoothPrincipalIntegrationByParts
       · exact tsupport_mul_subset_left.trans
           (tsupport_mul_subset_left.trans
             (tsupport_mul_subset_left.trans hsupport2))
-    have hW : IntegrableOn W O := by
+    have hW  := by
       apply integrableOn_of_local_compactSupport hO W
       · simpa [W, pow_two] using
           (((((hη0.mul hη0).mul hA0).mul hqki0).mul hR0))
@@ -305,10 +293,8 @@ theorem smoothPrincipalIntegrationByParts
         _ = ∫ y in O, (U y + V y) + W y ∂volume := by
           apply setIntegral_congr_fun hO.measurableSet
           intro y _
-          simp only [U, V, W]
           ring
         _ = _ := by
-          change (∫ y, ((U + V) + W) y ∂(volume.restrict O)) = _
           calc
             _ = (∫ y, (U + V) y ∂(volume.restrict O)) +
                 ∫ y, W y ∂(volume.restrict O) :=
@@ -317,14 +303,14 @@ theorem smoothPrincipalIntegrationByParts
               rw [show (∫ y, (U + V) y ∂(volume.restrict O)) =
                   (∫ y, U y ∂(volume.restrict O)) +
                     ∫ y, V y ∂(volume.restrict O) from integral_add hU hV]
-    let P : PDE.Vec d → ℝ := fun y =>
+    let P  := fun y =>
       η y ^ 2 * spatialPartial k (fun x => A x i j) y *
         spatialSecond q j i y * spatialPartial k q y
-    let Q : PDE.Vec d → ℝ := fun y =>
+    let Q  := fun y =>
       L y * spatialPartial i R y
-    have hAk : ContDiffOn ℝ 0 (spatialPartial k (fun x => A x i j)) O :=
+    have hAk  :=
       contDiffOn_spatialPartial hO k (hA i j)
-    have hP : IntegrableOn P O := by
+    have hP  := by
       apply integrableOn_of_local_compactSupport hO P
       · simpa [P, pow_two] using
           ((((hη0.mul hη0).mul hAk).mul ((hqsecond j i).of_le (by norm_num))).mul hqp0)
@@ -332,9 +318,9 @@ theorem smoothPrincipalIntegrationByParts
       · exact tsupport_mul_subset_left.trans
           (tsupport_mul_subset_left.trans
             (tsupport_mul_subset_left.trans hsupport2))
-    have hRi : ContDiffOn ℝ 0 (spatialPartial i R) O :=
+    have hRi  :=
       contDiffOn_spatialPartial hO i hR
-    have hQ : IntegrableOn Q O := by
+    have hQ  := by
       apply integrableOn_of_local_compactSupport hO Q
       · exact hL.of_le (by norm_num) |>.mul hRi
       · exact hLcompact.mul_right
@@ -349,10 +335,9 @@ theorem smoothPrincipalIntegrationByParts
         _ = ∫ y in O, P y + Q y ∂volume := by
           apply setIntegral_congr_fun hO.measurableSet
           intro y _
-          simp only [P, Q, L, R]
           ring
         _ = _ := integral_add hP hQ
-    dsimp [P, Q, U, V, W, L, R] at hfirstSplit combine
+    dsimp [U] at hfirstSplit combine
     have hsymmInt :
         (∫ y in O, η y ^ 2 * A y i j * spatialSecond q k i y *
           spatialSecond q j k y ∂volume) =
@@ -405,27 +390,26 @@ theorem smoothPrincipalIntegrationByParts
       · exact fun j _ => integrable_finset_sum _ (fun k _ => hf i j k)
     · exact fun i _ => integrable_finset_sum _ (fun j _ =>
         integrable_finset_sum _ (fun k _ => hf i j k))
-  let fl : Fin d → Fin d → Fin d → PDE.Vec d → ℝ := fun i j k y =>
+  let fl  := fun i j k y =>
     η y * (A y i j * spatialSecond q j i y *
       (-(2 * spatialPartial k η y * spatialPartial k q y +
         η y * spatialSecond q k k y)))
-  let fh : Fin d → Fin d → Fin d → PDE.Vec d → ℝ := fun i j k y =>
+  let fh  := fun i j k y =>
     η y ^ 2 * (A y i j * spatialSecond q k i y * spatialSecond q k j y)
-  let fc : Fin d → Fin d → Fin d → PDE.Vec d → ℝ := fun i j k y =>
+  let fc  := fun i j k y =>
     η y * (spatialPartial i η y * A y i j * spatialPartial k q y *
       spatialSecond q j k y)
-  let fiA : Fin d → Fin d → Fin d → PDE.Vec d → ℝ := fun i j k y =>
+  let fiA  := fun i j k y =>
     η y ^ 2 * (spatialPartial i (fun x => A x i j) y * spatialPartial k q y *
       spatialSecond q j k y)
-  let fkA : Fin d → Fin d → Fin d → PDE.Vec d → ℝ := fun i j k y =>
+  let fkA  := fun i j k y =>
     η y ^ 2 * (spatialPartial k (fun x => A x i j) y * spatialSecond q j i y *
       spatialPartial k q y)
   have hfl (i j k : Fin d) : IntegrableOn (fl i j k) O := by
     have hf0 : ContDiffOn ℝ 0 (fun y =>
         A y i j * spatialSecond q j i y *
           (-(2 * spatialPartial k η y * spatialPartial k q y +
-            η y * spatialSecond q k k y))) O := by
-      exact (((hA i j).of_le (by norm_num)).mul ((hqsecond j i).of_le (by norm_num))).mul
+            η y * spatialSecond q k k y))) O := (((hA i j).of_le (by norm_num)).mul ((hqsecond j i).of_le (by norm_num))).mul
         ((((contDiffOn_const.mul (hηp k)).mul ((hqp k).of_le (by norm_num))).add
           ((hη1.of_le (by norm_num)).mul ((hqsecond k k).of_le (by norm_num)))).neg)
     exact hηmul _ hf0
@@ -478,14 +462,12 @@ theorem smoothPrincipalIntegrationByParts
               η y ^ 2 * spatialSecond q k k y)) ∂volume by
         apply setIntegral_congr_fun hO.measurableSet
         intro y _
-        simp only [fl]
         ring]
-      rw [hibp i j k]
+      rw [hibp]
       simp only [fh, fc, fiA, fkA]
       ring_nf
     _ = _ := by
-      simp only [Finset.sum_add_distrib, Finset.sum_sub_distrib, Finset.sum_neg_distrib,
-        Finset.mul_sum]
+      simp only [Finset.sum_add_distrib, Finset.sum_sub_distrib, Finset.sum_neg_distrib]
       simp_rw [← Finset.mul_sum]
       rw [← integral_triple fh hfh, ← integral_triple fc hfc,
         ← integral_triple fiA hfiA, ← integral_triple fkA hfkA]

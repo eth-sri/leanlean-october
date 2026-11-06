@@ -40,37 +40,37 @@ def parabolicDyadicChildIndex {d n : ℕ} (index : ParabolicDyadicIndex d n)
     (child : ParabolicDyadicChild d) : ParabolicDyadicIndex d (n + 1) :=
   Fin.lastCases child index
 
-@[simp] theorem parabolicDyadicParent_childIndex {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) (child : ParabolicDyadicChild d) :
+variable {d n : ℕ} (index : ParabolicDyadicIndex d n) (child : ParabolicDyadicChild d)
+
+@[simp] theorem parabolicDyadicParent_childIndex  :
     parabolicDyadicParent (parabolicDyadicChildIndex index child) = index := by
   funext j
   simp [parabolicDyadicParent, parabolicDyadicChildIndex]
 
-@[simp] theorem parabolicDyadicChildIndex_last {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) (child : ParabolicDyadicChild d) :
+@[simp] theorem parabolicDyadicChildIndex_last  :
     parabolicDyadicChildIndex index child (Fin.last n) = child := by
   simp [parabolicDyadicChildIndex]
 
 /-- Decomposing an address into its prefix and final choice reconstructs it. -/
-@[simp] theorem parabolicDyadicChildIndex_parent_last {d n : ℕ}
+@[simp] theorem parabolicDyadicChildIndex_parent_last 
     (index : ParabolicDyadicIndex d (n + 1)) :
     parabolicDyadicChildIndex (parabolicDyadicParent index) (index (Fin.last n)) = index := by
   funext j
   obtain ⟨k, rfl⟩ | rfl := Fin.eq_castSucc_or_eq_last j
   · simp [parabolicDyadicParent, parabolicDyadicChildIndex]
-  · simp [parabolicDyadicChildIndex]
+  simp
 
 /-- The source branching number is four time choices times two choices in each
 velocity coordinate. -/
 theorem card_parabolicDyadicChild (d : ℕ) :
     Fintype.card (ParabolicDyadicChild d) = 4 * 2 ^ d := by
-  simp [ParabolicDyadicChild]
+  simp
 
 /-- The source branching number in the paper's normalized power-of-two form. -/
 theorem card_parabolicDyadicChild_eq_two_pow (d : ℕ) :
     Fintype.card (ParabolicDyadicChild d) = 2 ^ (d + 2) := by
   calc
-    Fintype.card (ParabolicDyadicChild d) = 4 * 2 ^ d :=
+    Fintype.card _ = 4 * 2 ^ d :=
       card_parabolicDyadicChild d
     _ = 2 ^ d * 4 := Nat.mul_comm _ _
     _ = 2 ^ d * 2 ^ 2 := by norm_num
@@ -79,19 +79,19 @@ theorem card_parabolicDyadicChild_eq_two_pow (d : ℕ) :
 /-- The generation-`n` address set has the expected branching cardinality. -/
 theorem card_parabolicDyadicIndex (d n : ℕ) :
     Fintype.card (ParabolicDyadicIndex d n) = (4 * 2 ^ d) ^ n := by
-  simp [ParabolicDyadicIndex, ParabolicDyadicChild]
+  simp
 
 /-- The generation cardinality in the paper's normalized power-of-two form. -/
 theorem card_parabolicDyadicIndex_eq_two_pow (d n : ℕ) :
     Fintype.card (ParabolicDyadicIndex d n) = 2 ^ ((d + 2) * n) := by
-  have hbranch : 4 * 2 ^ d = 2 ^ (d + 2) :=
+  have hbranch  :=
     (card_parabolicDyadicChild d).symm.trans
       (card_parabolicDyadicChild_eq_two_pow d)
   calc
-    Fintype.card (ParabolicDyadicIndex d n) = (4 * 2 ^ d) ^ n :=
+    Fintype.card _ = (4 * 2 ^ d) ^ n :=
       card_parabolicDyadicIndex d n
     _ = (2 ^ (d + 2)) ^ n := congrArg (fun cardinality : ℕ => cardinality ^ n) hbranch
-    _ = 2 ^ ((d + 2) * n) := (pow_mul 2 (d + 2) n).symm
+    _ = 2 ^ ((d + 2) * n) := (pow_mul 2 _ n).symm
 
 /-- Read the base-four time address from a refinement word. -/
 def parabolicDyadicTimeCode {d : ℕ} : (n : ℕ) → ParabolicDyadicIndex d n → ℕ
@@ -108,55 +108,52 @@ def parabolicDyadicVelocityCode {d : ℕ} : (n : ℕ) →
       2 * parabolicDyadicVelocityCode n (parabolicDyadicParent index) coordinate +
         ((index (Fin.last n)).2 coordinate).val
 
+variable {d n : ℕ} (index : ParabolicDyadicIndex d n) (child : ParabolicDyadicChild d) (coordinate : Fin d)
+
 /-- The time code lies in the base-four range for its generation. -/
-theorem parabolicDyadicTimeCode_lt_pow {d n : ℕ} (index : ParabolicDyadicIndex d n) :
+theorem parabolicDyadicTimeCode_lt_pow  :
     parabolicDyadicTimeCode n index < 4 ^ n := by
   induction n with
-  | zero => simp [parabolicDyadicTimeCode]
+  | zero => positivity
   | succ n ih =>
-      rw [parabolicDyadicTimeCode]
       have hchild : (index (Fin.last n)).1.val < 4 := (index (Fin.last n)).1.isLt
       calc
-        4 * parabolicDyadicTimeCode n (parabolicDyadicParent index) +
-            (index (Fin.last n)).1.val <
-            4 * parabolicDyadicTimeCode n (parabolicDyadicParent index) + 4 :=
+        4 * parabolicDyadicTimeCode n _ +
+            (index _).1.val <
+            4 * parabolicDyadicTimeCode n _ + 4 :=
           Nat.add_lt_add_left hchild _
-        _ = 4 * (parabolicDyadicTimeCode n (parabolicDyadicParent index) + 1) := by omega
+        _ = 4 * (parabolicDyadicTimeCode n _ + 1) := by omega
         _ ≤ 4 * 4 ^ n := Nat.mul_le_mul_left 4 (Nat.succ_le_iff.mpr
           (ih (parabolicDyadicParent index)))
-        _ = 4 ^ (n + 1) := by simp [pow_succ, Nat.mul_comm]
+        _ = 4 ^ (n + 1) := by omega
 
 /-- Every coordinate's velocity code lies in the base-two range for its generation. -/
-theorem parabolicDyadicVelocityCode_lt_pow {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) (coordinate : Fin d) :
+theorem parabolicDyadicVelocityCode_lt_pow  :
     parabolicDyadicVelocityCode n index coordinate < 2 ^ n := by
   induction n with
-  | zero => simp [parabolicDyadicVelocityCode]
+  | zero => positivity
   | succ n ih =>
-      rw [parabolicDyadicVelocityCode]
       have hchild : ((index (Fin.last n)).2 coordinate).val < 2 :=
         ((index (Fin.last n)).2 coordinate).isLt
       calc
-        2 * parabolicDyadicVelocityCode n (parabolicDyadicParent index) coordinate +
-            ((index (Fin.last n)).2 coordinate).val <
-            2 * parabolicDyadicVelocityCode n (parabolicDyadicParent index) coordinate + 2 :=
+        2 * parabolicDyadicVelocityCode n _ coordinate +
+            ((index _).2 coordinate).val <
+            2 * parabolicDyadicVelocityCode n _ coordinate + 2 :=
           Nat.add_lt_add_left hchild _
-        _ = 2 * (parabolicDyadicVelocityCode n (parabolicDyadicParent index) coordinate + 1) := by
+        _ = 2 * (parabolicDyadicVelocityCode n _ coordinate + 1) := by
           omega
         _ ≤ 2 * 2 ^ n := Nat.mul_le_mul_left 2 (Nat.succ_le_iff.mpr
           (ih (parabolicDyadicParent index)))
-        _ = 2 ^ (n + 1) := by simp [pow_succ, Nat.mul_comm]
+        _ = 2 ^ (n + 1) := by omega
 
 /-- Appending a child appends its time digit in base four. -/
-theorem parabolicDyadicTimeCode_childIndex {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) (child : ParabolicDyadicChild d) :
+theorem parabolicDyadicTimeCode_childIndex  :
     parabolicDyadicTimeCode (n + 1) (parabolicDyadicChildIndex index child) =
       4 * parabolicDyadicTimeCode n index + child.1.val := by
   simp [parabolicDyadicTimeCode]
 
 /-- Appending a child appends each velocity digit in base two. -/
-theorem parabolicDyadicVelocityCode_childIndex {d n : ℕ}
-    (index : ParabolicDyadicIndex d n) (child : ParabolicDyadicChild d) (coordinate : Fin d) :
+theorem parabolicDyadicVelocityCode_childIndex  :
     parabolicDyadicVelocityCode (n + 1) (parabolicDyadicChildIndex index child) coordinate =
       2 * parabolicDyadicVelocityCode n index coordinate + (child.2 coordinate).val := by
   simp [parabolicDyadicVelocityCode]
@@ -188,15 +185,15 @@ def parabolicDyadicOpenCell {d n : ℕ} (index : ParabolicDyadicIndex d n) :
       Ioo (-1 + 2 * (parabolicDyadicVelocityCode n index coordinate : ℝ) / (2 : ℝ) ^ n)
         (-1 + 2 * (parabolicDyadicVelocityCode n index coordinate + 1 : ℝ) / (2 : ℝ) ^ n))
 
-@[simp] theorem mem_parabolicDyadicTimeCell_iff {d n : ℕ}
-    {index : ParabolicDyadicIndex d n} {time : ℝ} :
+variable {d n : ℕ} {index : ParabolicDyadicIndex d n} {time : ℝ} {velocity : PDE.Vec d}
+
+@[simp] theorem mem_parabolicDyadicTimeCell_iff  :
     time ∈ parabolicDyadicTimeCell index ↔
       (parabolicDyadicTimeCode n index : ℝ) / (4 : ℝ) ^ n < time ∧
         time ≤ (parabolicDyadicTimeCode n index + 1 : ℝ) / (4 : ℝ) ^ n :=
   Iff.rfl
 
-@[simp] theorem mem_parabolicDyadicVelocityCell_iff {d n : ℕ}
-    {index : ParabolicDyadicIndex d n} {velocity : PDE.Vec d} :
+@[simp] theorem mem_parabolicDyadicVelocityCell_iff  :
     velocity ∈ parabolicDyadicVelocityCell index ↔
       ∀ coordinate : Fin d,
         -1 + 2 * (parabolicDyadicVelocityCode n index coordinate : ℝ) / (2 : ℝ) ^ n <
@@ -205,14 +202,12 @@ def parabolicDyadicOpenCell {d n : ℕ} (index : ParabolicDyadicIndex d n) :
             -1 + 2 * (parabolicDyadicVelocityCode n index coordinate + 1 : ℝ) / (2 : ℝ) ^ n := by
   simp [parabolicDyadicVelocityCell]
 
-@[simp] theorem mem_parabolicDyadicHalfOpenCell_iff {d n : ℕ}
-    {index : ParabolicDyadicIndex d n} {time : ℝ} {velocity : PDE.Vec d} :
+@[simp] theorem mem_parabolicDyadicHalfOpenCell_iff  :
     (time, velocity) ∈ parabolicDyadicHalfOpenCell index ↔
       time ∈ parabolicDyadicTimeCell index ∧ velocity ∈ parabolicDyadicVelocityCell index :=
   Iff.rfl
 
-@[simp] theorem mem_parabolicDyadicOpenCell_iff {d n : ℕ}
-    {index : ParabolicDyadicIndex d n} {time : ℝ} {velocity : PDE.Vec d} :
+@[simp] theorem mem_parabolicDyadicOpenCell_iff  :
     (time, velocity) ∈ parabolicDyadicOpenCell index ↔
       (parabolicDyadicTimeCode n index : ℝ) / (4 : ℝ) ^ n < time ∧
         time < (parabolicDyadicTimeCode n index + 1 : ℝ) / (4 : ℝ) ^ n ∧
@@ -224,29 +219,28 @@ def parabolicDyadicOpenCell {d n : ℕ} (index : ParabolicDyadicIndex d n) :
                   (2 : ℝ) ^ n := by
   constructor
   · rintro ⟨⟨htlower, htupper⟩, hvelocity⟩
-    refine ⟨htlower, htupper, fun coordinate => ?_⟩
-    exact hvelocity coordinate trivial
+    simp_all
   · rintro ⟨htlower, htupper, hvelocity⟩
     exact ⟨⟨htlower, htupper⟩, fun coordinate _ => hvelocity coordinate⟩
 
 /-- Half-open time intervals of addressed cells are measurable. -/
-theorem measurableSet_parabolicDyadicTimeCell {d n : ℕ}
+theorem measurableSet_parabolicDyadicTimeCell 
     (index : ParabolicDyadicIndex d n) : MeasurableSet (parabolicDyadicTimeCell index) :=
   measurableSet_Ioc
 
 /-- Half-open velocity rectangles of addressed cells are measurable. -/
-theorem measurableSet_parabolicDyadicVelocityCell {d n : ℕ}
+theorem measurableSet_parabolicDyadicVelocityCell 
     (index : ParabolicDyadicIndex d n) : MeasurableSet (parabolicDyadicVelocityCell index) :=
   MeasurableSet.univ_pi fun _ => measurableSet_Ioc
 
 /-- Half-open addressed cells are measurable. -/
-theorem measurableSet_parabolicDyadicHalfOpenCell {d n : ℕ}
+theorem measurableSet_parabolicDyadicHalfOpenCell 
     (index : ParabolicDyadicIndex d n) : MeasurableSet (parabolicDyadicHalfOpenCell index) :=
   (measurableSet_parabolicDyadicTimeCell index).prod
     (measurableSet_parabolicDyadicVelocityCell index)
 
 /-- Open addressed cells are measurable. -/
-theorem measurableSet_parabolicDyadicOpenCell {d n : ℕ}
+theorem measurableSet_parabolicDyadicOpenCell 
     (index : ParabolicDyadicIndex d n) : MeasurableSet (parabolicDyadicOpenCell index) :=
   measurableSet_Ioo.prod (MeasurableSet.univ_pi fun _ => measurableSet_Ioo)
 

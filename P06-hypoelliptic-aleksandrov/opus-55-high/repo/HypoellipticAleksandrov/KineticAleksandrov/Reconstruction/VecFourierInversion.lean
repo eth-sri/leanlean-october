@@ -43,9 +43,7 @@ abbrev toEuclid (d : ℕ) : PDE.Vec d ≃ᵐ EuclideanSpace ℝ (Fin d) :=
 
 /-- The Euclidean inner product of coordinate vectors is `PDE.vecDot`. -/
 lemma inner_toLp (ξ x : PDE.Vec d) :
-    inner ℝ (WithLp.toLp 2 ξ : EuclideanSpace ℝ (Fin d)) (WithLp.toLp 2 x) = PDE.vecDot ξ x := by
-  simp only [PiLp.inner_apply, PDE.vecDot, RCLike.inner_apply, conj_trivial]
-  exact Finset.sum_congr rfl fun i _ => mul_comm _ _
+    inner ℝ (WithLp.toLp 2 ξ : EuclideanSpace ℝ (Fin d)) (WithLp.toLp 2 x) = PDE.vecDot ξ x := Finset.sum_congr rfl fun i _ => mul_comm _ _
 
 /-- The Fourier transform on `ℝ^d` agrees with that of the pushforward to Euclidean space. -/
 lemma vecFourier_eq (μ : Measure (PDE.Vec d)) (ξ : PDE.Vec d) :
@@ -53,14 +51,14 @@ lemma vecFourier_eq (μ : Measure (PDE.Vec d)) (ξ : PDE.Vec d) :
   unfold measureFourier vecFourier
   rw [(toEuclid d).measurableEmbedding.integral_map]
   refine integral_congr_ae (Filter.Eventually.of_forall fun x => ?_)
-  simp only [toEuclid, MeasurableEquiv.toLp_apply, inner_toLp]
+  simp only [MeasurableEquiv.toLp_apply, inner_toLp]
 
 /-- The inversion integral agrees with that of the pushforward to Euclidean space. -/
 lemma invIntegral_eq (μ : Measure (PDE.Vec d)) (z : PDE.Vec d) :
     invIntegral (measureFourier (μ.map (toEuclid d))) (WithLp.toLp 2 z) =
       vecInvIntegral (vecFourier μ) z := by
   unfold invIntegral vecInvIntegral
-  rw [← (PiLp.volume_preserving_toLp (Fin d)).integral_comp
+  rw [← (PiLp.volume_preserving_toLp _).integral_comp
     (toEuclid d).measurableEmbedding]
   refine integral_congr_ae (Filter.Eventually.of_forall fun ξ => ?_)
   simp only [inner_toLp, vecFourier_eq]
@@ -74,7 +72,7 @@ lemma invDensity_eq (μ : Measure (PDE.Vec d)) (z : PDE.Vec d) :
 /-- Integrability of the Fourier transform is preserved by the coordinate equivalence. -/
 lemma integrable_vecFourier_iff (μ : Measure (PDE.Vec d)) :
     Integrable (measureFourier (μ.map (toEuclid d))) ↔ Integrable (vecFourier μ) := by
-  rw [← (PiLp.volume_preserving_toLp (Fin d)).integrable_comp_emb
+  rw [← (PiLp.volume_preserving_toLp _).integrable_comp_emb
     (toEuclid d).measurableEmbedding]
   refine integrable_congr (Filter.Eventually.of_forall fun ξ => ?_)
   exact vecFourier_eq μ ξ
@@ -82,7 +80,7 @@ lemma integrable_vecFourier_iff (μ : Measure (PDE.Vec d)) :
 /-- The `L^1` norm of the Fourier transform is preserved by the coordinate equivalence. -/
 lemma integral_norm_vecFourier (μ : Measure (PDE.Vec d)) :
     ∫ ξ, ‖measureFourier (μ.map (toEuclid d)) ξ‖ = ∫ ξ, ‖vecFourier μ ξ‖ := by
-  rw [← (PiLp.volume_preserving_toLp (Fin d)).integral_comp (toEuclid d).measurableEmbedding]
+  rw [← (PiLp.volume_preserving_toLp _).integral_comp (toEuclid d).measurableEmbedding]
   exact integral_congr_ae (Filter.Eventually.of_forall fun ξ => by
     simp only [vecFourier_eq])
 
@@ -99,7 +97,7 @@ theorem vecInvDensity_nonneg (z : PDE.Vec d) : 0 ≤ vecInvDensity μ z := by
 /-- The inversion density is bounded by `(2π)^{-d} ‖μ̂‖₁`. -/
 theorem vecInvDensity_le (z : PDE.Vec d) :
     vecInvDensity μ z ≤ ((2 * Real.pi) ^ d)⁻¹ * ∫ ξ, ‖vecFourier μ ξ‖ := by
-  have h := invDensity_le (μ.map (toEuclid d)) ((integrable_vecFourier_iff μ).2 hφ)
+  have h := invDensity_le _ ((integrable_vecFourier_iff μ).2 hφ)
     (WithLp.toLp 2 z)
   rwa [invDensity_eq, integral_norm_vecFourier, finrank_euclideanSpace_fin] at h
 
@@ -107,18 +105,18 @@ theorem vecInvDensity_le (z : PDE.Vec d) :
 density `vecInvDensity μ` with respect to Lebesgue measure. -/
 theorem eq_withDensity_vecInvDensity :
     μ = volume.withDensity (fun z => ENNReal.ofReal (vecInvDensity μ z)) := by
-  have h := eq_withDensity_invDensity (μ.map (toEuclid d)) ((integrable_vecFourier_iff μ).2 hφ)
+  have h := eq_withDensity_invDensity _ ((integrable_vecFourier_iff μ).2 hφ)
   ext S hS
   have he := (toEuclid d).measurableEmbedding
   have h1 : μ S = (μ.map (toEuclid d)) (toEuclid d '' S) := by
     rw [he.map_apply, (toEuclid d).injective.preimage_image]
   rw [h1, h, withDensity_apply _ (he.measurableSet_image.2 hS), withDensity_apply _ hS]
-  calc ∫⁻ a in toEuclid d '' S, ENNReal.ofReal (invDensity (μ.map (toEuclid d)) a)
-      = ∫⁻ a in S, ENNReal.ofReal (invDensity (μ.map (toEuclid d)) (toEuclid d a)) :=
-        ((PiLp.volume_preserving_toLp (Fin d)).setLIntegral_comp_emb he
-          (fun a => ENNReal.ofReal (invDensity (μ.map (toEuclid d)) a)) S).symm
+  calc ∫⁻ a in toEuclid d '' S, ENNReal.ofReal _
+      = ∫⁻ a in S, ENNReal.ofReal _ :=
+        ((PiLp.volume_preserving_toLp _).setLIntegral_comp_emb he
+          _ S).symm
     _ = _ := setLIntegral_congr_fun hS fun z _ => by
-        simp only [toEuclid, MeasurableEquiv.toLp_apply, invDensity_eq]
+        simp only [invDensity_eq]
 
 end Inversion
 

@@ -11,7 +11,6 @@ family. No joint measurability of arbitrarily chosen pole densities is asserted.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 open SectionTwo
@@ -57,8 +56,7 @@ theorem mixture_density_conjugate_tests
     · change (∫ z, f z ∂(if hv : e.velocity 0 ∈ c.active then
         stripGreen hH hLE hlam hLam A c.activeInterval ⊤ (densityClockPole c e hv)
           else 0)) ≤ L
-      rw [dite_eq_right he, integral_zero_measure]
-      exact hL
+      simp_all
   have hfi : Integrable f (K ∘ₘ nu) := boundedBorel_integrable f _
   have hi : Integrable (fun e => ∫ z, f z ∂K e) nu := by
     rw [Measure.comp_eq_comp_const_apply] at hfi

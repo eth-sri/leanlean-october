@@ -9,7 +9,6 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth
 
@@ -73,7 +72,7 @@ theorem exists_affine_ink_spots_constants (d : ℕ) (hd : 1 ≤ d) :
       rw [← hinter, ← himage, volume_affine_image_toReal P0 hR,
         volume_affine_image_toReal P0 hR]
       nlinarith only [mul_le_mul_of_nonneg_left hdense hfactor.le]
-    obtain ⟨hsmall, hforward⟩ := hstack (phi P) (R * r) (mul_pos hR hr) hsubp hdensep
+    obtain ⟨hsmall, hforward⟩ := hstack _ (R * r) (mul_pos hR hr) hsubp hdensep
     refine ⟨?_, ?_⟩
     · nlinarith only [hsmall, hR]
     · intro Z hZ

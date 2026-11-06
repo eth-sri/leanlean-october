@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.StripGreenHo
 /-! # Infinite-horizon quadratic Green mass and its finite-horizon specialization -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open scoped ENNReal
@@ -19,37 +18,33 @@ theorem stripGreenOfRealization_infinite_quadratic_mass
     (hE : IsStripEvolution A H E) (e : StripPole H ⊤) :
     stripGreenOfKernel H E.2 ⊤ e univ ≤
       ENNReal.ofReal ((e.1.velocity 0 - H.lo) * (H.hi - e.1.velocity 0) / (2 * lam)) := by
-  let T (n : ℕ) : ℝ := e.1.time + (n : ℝ) + 1
+  let T (n : ℕ)  := e.1.time + n + 1
   have ht (n : ℕ) : e.1.time < T n := by
-    dsimp [T]
-    linarith [Nat.cast_nonneg (α := ℝ) n]
-  let pole (n : ℕ) : StripPole H (T n : WithTop ℝ) :=
+    grind
+  let pole (n : ℕ) : StripPole H _ :=
     ⟨e.1, WithTop.coe_lt_coe.mpr (ht n), e.2.2⟩
   let B (n : ℕ) : Set Point := {p | p.time < T n}
   have hm : Monotone B := by
     intro n m hnm p hp
     have hnm' : (n : ℝ) ≤ m := Nat.cast_le.mpr hnm
-    change p.time < e.1.time + (m : ℝ) + 1
-    change p.time < e.1.time + (n : ℝ) + 1 at hp
-    linarith
+    grind
   have hun : (⋃ n, B n) = univ := by
     apply eq_univ_of_forall
     intro p
     obtain ⟨n, hn⟩ := exists_nat_gt (p.time - e.1.time)
     apply mem_iUnion.mpr
     refine ⟨n, ?_⟩
-    change p.time < e.1.time + (n : ℝ) + 1
-    linarith
+    grind
   rw [← hun, hm.measure_iUnion]
   apply iSup_le
   intro n
-  have hh := stripGreenOfKernel_horizonRestriction H E.2 (T n) (pole n)
-  have he : stripPoleInfinite H (T n) (pole n) = e := rfl
+  have hh := stripGreenOfKernel_horizonRestriction H E.2 _ (pole n)
+  have he : stripPoleInfinite H _ (pole n) = e := rfl
   rw [he] at hh
   have hm := congrArg (fun μ : Measure Point => μ univ) hh
   rw [Measure.restrict_apply MeasurableSet.univ, univ_inter] at hm
   rw [← hm]
-  exact stripGreenOfRealization_quadratic_mass hH hlam hLam A H E hE (T n) (pole n)
+  exact stripGreenOfRealization_quadratic_mass hH hlam hLam A H E hE _ _
 
 /-- The canonical Green measure has the exact quadratic bound at every admitted horizon. -/
 theorem stripGreen_quadratic_mass

@@ -9,21 +9,20 @@ public import HypoellipticAleksandrov.Parabolic.ScalarDirichletData
 /-! # Maximum-principle comparison with the occupation quadratic -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic SectionTwo Set
 open scoped MatrixOrder Matrix.Norms.Elementwise
 
+variable {d : ℕ}
+
 /-- The quadratic is nonnegative before the terminal time. -/
-theorem occupationQuadratic_nonneg {d : ℕ} {Lam : ℝ} (hLam : 0 ≤ Lam)
+theorem occupationQuadratic_nonneg  {Lam : ℝ} (hLam : 0 ≤ Lam)
     (vStar : PDE.Vec d) {z : TimeVelocity d} (hz : z.1 ≤ 1) :
-    0 ≤ occupationQuadratic Lam vStar z := by
-  unfold occupationQuadratic
-  exact add_nonneg (Finset.sum_nonneg fun _ _ => sq_nonneg _)
+    0 ≤ occupationQuadratic Lam vStar z := add_nonneg (Finset.sum_nonneg fun _ _ => sq_nonneg _)
     (mul_nonneg (by positivity) (sub_nonneg.mpr hz))
 
 /-- A smooth quadratic majorant controls a classical comparison defect. -/
-theorem wholeSpace_quadratic_comparison {d : ℕ} {lam Lam α R H : ℝ}
+theorem wholeSpace_quadratic_comparison  {lam Lam α R H : ℝ}
     {B : CoefficientField d} (hB : IsSectionTwoCoefficient lam Lam B)
     (hα : α < 1) (vStar : PDE.Vec d)
     (hΩbounded : Bornology.IsBounded (PDE.euclideanBall vStar R))
@@ -56,10 +55,10 @@ theorem wholeSpace_quadratic_comparison {d : ℕ} {lam Lam α R H : ℝ}
   have hdiff := isScalarC12On_sub hWreg hV.2.1
   let u := fun z => W z - V z - ψ z
   have hureg : IsScalarC12On u
-      (scalarParabolicOpenCylinder α 1 (PDE.euclideanBall vStar R)) :=
+      _ :=
     isScalarC12On_sub hdiff hψreg
   have huc : ContinuousOn u
-      (scalarParabolicClosedCylinder α 1 (PDE.euclideanBall vStar R)) :=
+      _ :=
     (hWcont.sub hV.1).sub
       (((contDiff_occupationQuadratic Lam vStar).continuous.const_mul c).add
         continuous_const).continuousOn
@@ -76,10 +75,9 @@ theorem wholeSpace_quadratic_comparison {d : ℕ} {lam Lam α R H : ℝ}
     have hQop := scalarParabolicOperator_occupationQuadratic_le B Lam vStar z
       (hB.2.2.2.2.2 z.1 z.2)
     simp only [scalarParabolicZeroOrderOperator, zero_mul, add_zero] at huop hdop hψop hVeq
-    change 0 ≤ scalarParabolicOperator B (fun _ _ => 0) u z
     simp only [u, ψ, add_zero]
     rw [huop, hdop, hψop, hWeq z hz, hVeq]
-    simpa only [Prod.mk.eta, sub_self] using
+    simpa using
       sub_nonneg.mpr (mul_nonpos_of_nonneg_of_nonpos hc hQop)
   have ht : ∀ z ∈ scalarParabolicTerminalFace 1 (PDE.euclideanBall vStar R),
       u z ≤ 0 := by
@@ -91,25 +89,19 @@ theorem wholeSpace_quadratic_comparison {d : ℕ} {lam Lam α R H : ℝ}
       exact hV.2.2.2.1 z.2 hv
     have hQ0 := occupationQuadratic_nonneg (hB.1.le.trans hB.2.1) vStar
       (show z.1 ≤ 1 from htime.le)
-    dsimp [u, ψ]
-    rw [hterminal z hz, hVz]
+    dsimp [u]
+    rw [hterminal z hz]
     nlinarith [mul_nonneg hc hQ0]
   have hl : ∀ z ∈ scalarParabolicLateralFace α 1 (PDE.euclideanBall vStar R),
       u z ≤ 0 := by
     intro z hz
     have hw := hlateral z hz
     have hv := hV.2.2.2.2 z hz
-    dsimp [u, ψ, c, Q]
-    rw [hv]
-    simpa only [sub_zero, add_zero, div_mul_eq_mul_div, sub_nonpos] using hw
+    grind
   have hmax := scalar_le_on_closedCylinder_of_terminal_lateral_le
-    (PDE.isOpen_euclideanBall vStar R) hΩbounded hα B (fun _ _ => 0)
+    (PDE.isOpen_euclideanBall vStar R) hΩbounded hα B _
     (sectionTwoCoefficient_smooth hB).continuous continuous_const
     (sectionTwoCoefficient_posSemidef hB) u huc hureg hsub ht hl
-  intro z hz
-  have hu := hmax z hz
-  dsimp [u, ψ, c, Q] at hu
-  rw [div_mul_eq_mul_div] at hu
-  linarith
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

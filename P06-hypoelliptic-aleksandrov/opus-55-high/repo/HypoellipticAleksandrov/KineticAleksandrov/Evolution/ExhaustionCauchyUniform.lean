@@ -12,7 +12,6 @@ analytic hypotheses concern actual finite solutions; no Cauchy bound is assumed.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -72,7 +71,7 @@ theorem uniformCauchySeqOn_innerBall_dirichlet
   refine ⟨N, ?_⟩
   intro k hk l hl p hp
   let j (i : Fin 2) := if i = 0 then k else l
-  have hj (i : Fin 2) : N ≤ j i := by dsimp [j]; split_ifs <;> assumption
+  have hj (i : Fin 2) : N ≤ j i := by grind
   have hp' : p ∈ movingClosedSlab (PDE.euclideanBall 0 (r0 - δ)) Γ α τ ∩
       {p | radialSq p ≤ S ^ 2} := by
     refine ⟨⟨hp.1.1, hp.1.2.1, ?_⟩, (show radialSq p ≤ S0 ^ 2 from hp.2).trans hS⟩
@@ -80,15 +79,14 @@ theorem uniformCauchySeqOn_innerBall_dirichlet
     apply closure_mono (PDE.euclideanBall_mono (by linarith : 0 ≤ r0 - δ0)
       (by linarith : r0 - δ0 ≤ r0 - δ))
     exact mem_closure_movingDomain_iff.mp hp.1.2.2
-  have he' := hcompare (fun i => β (j i)) (fun i => R (j i))
+  have he' := hcompare _ _
     (fun i => ⟨hβpos _, (hN _ (hj i)).1.le⟩) (fun i => (hN _ (hj i)).2)
-    (fun i => g (j i)) (fun i => hg _) (fun i => hgL _)
-    (fun i => hclose _) (fun i => u (j i)) (fun i => hu _) p hp'
+    _ (fun i => hg _) (fun i => hgL _)
+    (fun i => hclose _) _ (fun i => hu _) p hp'
   have hbound : growthBarrier cg τ p / (1 + S ^ 2) ≤ M / (1 + S ^ 2) :=
     div_le_div_of_nonneg_right (hΦ p hp) (by positivity)
   have hfinal := he'.trans_lt ((mul_le_mul_of_nonneg_left
     (add_le_add hbound (le_refl _)) (by positivity)).trans_lt herr)
-  have h10 : (1 : Fin 2) ≠ 0 := by decide
-  simpa only [j, ite_true, h10, ite_false, Real.dist_eq] using hfinal
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov

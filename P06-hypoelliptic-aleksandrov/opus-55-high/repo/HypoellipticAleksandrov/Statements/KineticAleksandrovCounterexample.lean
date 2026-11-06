@@ -52,8 +52,7 @@ theorem kinetic_aleksandrov_autonomous_counterexample
           Tendsto (fun j => eLpNorm
             (fun P => max (backwardOperator (fun _t x v => A j (x, v)) (U j) P) 0)
             (ENNReal.ofReal p) (volume.restrict (backwardCylinder P₀ R)))
-            atTop (nhds 0))) := by
-  exact HypoellipticAleksandrov.KineticAleksandrov.kinetic_aleksandrov_autonomous_counterexample_aux
+            atTop (nhds 0))) := HypoellipticAleksandrov.KineticAleksandrov.kinetic_aleksandrov_autonomous_counterexample_aux
     d hd p hp hpd
 
 end HypoellipticAleksandrov.KineticAleksandrov

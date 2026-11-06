@@ -21,15 +21,15 @@ theorem forced_recurrence_le_geometric
     ∀ n, f n ≤ K * q ^ n := by
   intro n
   induction n with
-  | zero => simpa only [pow_zero, mul_one] using hf0
+  | zero => simp_all
   | succ n ih =>
     have hpow : (1 / 4 : ℝ) ^ n ≤ q ^ n := pow_le_pow_left₀ (by norm_num) hq n
     have hforce : E * (1 / 4 : ℝ) ^ n ≤ ((q - θ) * K) * q ^ n :=
       (mul_le_mul_of_nonneg_left hpow hE).trans
-        (mul_le_mul_of_nonneg_right hgap (pow_nonneg (by linarith only [hq]) n))
-    calc f (n + 1) ≤ θ * f n + E * (1 / 4 : ℝ) ^ n := hf n
+        (mul_le_mul_of_nonneg_right hgap (pow_nonneg (by positivity) n))
+    calc f _ ≤ θ * f n + E * (1 / 4) ^ n := hf n
       _ ≤ θ * (K * q ^ n) + ((q - θ) * K) * q ^ n :=
         add_le_add (mul_le_mul_of_nonneg_left ih hθ) hforce
-      _ = K * q ^ (n + 1) := by rw [pow_succ]; ring
+      _ = K * q ^ (n + 1) := by ring
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

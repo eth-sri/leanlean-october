@@ -13,7 +13,6 @@ is introduced. This estimate is available before the exhaustion limit exists.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -50,12 +49,12 @@ theorem abs_le_original_collar_straightened_dirichlet
   have hs := terminal_support_margin_of_innerBall_close hβd hsupp
     (hclose τ ⟨hατ.le, le_rfl⟩)
   have he := abs_le_min_collar_straightened_dirichlet hlam hB hBs hbs haα hατ
-    (by linarith : 0 < r0 - β) hR hd (by linarith : d < r0 - β)
+    (by linarith) hR hd (by linarith)
     hg hL hgL hε hC F hFC hs u hu p hp
   have hc : PDE.vecEuclideanNorm (Γ p.time - g p.time) ≤ β / 2 := by
     rw [PDE.vecEuclideanNorm_sub_comm]
     exact hclose p.time hp.1
-  have hh := vecEuclideanNorm_sub_add_le (c := (0 : PDE.Vec n)) hc p.position
+  have hh := vecEuclideanNorm_sub_add_le (c := (0)) hc p.position
   simp only [add_zero] at hh
   have hdist : (r0 - β) - PDE.vecEuclideanNorm (p.position - g p.time) ≤
       r0 - PDE.vecEuclideanNorm (p.position - Γ p.time) := by linarith

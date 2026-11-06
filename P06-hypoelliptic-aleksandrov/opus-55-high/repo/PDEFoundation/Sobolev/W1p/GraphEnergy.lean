@@ -22,10 +22,12 @@ open MeasureTheory
 
 noncomputable section
 
+variable {d : ℕ} {U : Set (Vec d)}
+
 /-- The squared integral of a representative of a scalar `L²` class is its
 squared `L²` norm. -/
 theorem integral_sq_eq_sq_norm_of_ae_eq
-    {d : ℕ} {U : Set (Vec d)} (F : ScalarLp U (2 : ℝ≥0∞))
+     (F : ScalarLp U (2 : ℝ≥0∞))
     (f : Vec d → ℝ)
     (hF : ⇑F =ᵐ[volumeOn U] f) :
     (∫ x, f x ^ 2 ∂(volumeOn U)) = ‖F‖ ^ 2 := by
@@ -36,16 +38,14 @@ theorem integral_sq_eq_sq_norm_of_ae_eq
       filter_upwards [hF] with x hx
       rw [hx]
     _ = RCLike.re (inner ℝ F F) := by
-      rw [L2.inner_def, ← integral_re (L2.integrable_inner F F)]
-      apply integral_congr_ae
-      filter_upwards with x
+      rw [L2.inner_def]
       simp
     _ = ‖F‖ ^ 2 := inner_self_eq_norm_sq F
 
 /-- The squared integral of the norm of a representative of a Hilbert-vector
 `L²` class is its squared `L²` norm. -/
 theorem integral_norm_sq_eq_sq_norm_of_ae_eq_hilbert
-    {d : ℕ} {U : Set (Vec d)}
+    
     (F : HilbertVectorLp U (2 : ℝ≥0∞))
     (f : Vec d → ℝ)
     (hF : (fun x => ‖F x‖) =ᵐ[volumeOn U] f) :
@@ -57,9 +57,7 @@ theorem integral_norm_sq_eq_sq_norm_of_ae_eq_hilbert
       filter_upwards [hF] with x hx
       rw [hx]
     _ = RCLike.re (inner ℝ F F) := by
-      rw [L2.inner_def, ← integral_re (L2.integrable_inner F F)]
-      apply integral_congr_ae
-      filter_upwards with x
+      rw [L2.inner_def]
       simp
     _ = ‖F‖ ^ 2 := inner_self_eq_norm_sq F
 

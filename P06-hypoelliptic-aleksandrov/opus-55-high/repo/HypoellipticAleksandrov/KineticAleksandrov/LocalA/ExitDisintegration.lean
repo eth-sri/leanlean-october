@@ -44,33 +44,35 @@ theorem exitPositionKernel_disintegrate (ν : Measure (PDE.Vec d × TimeVelocity
     [IsFiniteMeasure ν] :
     exitMarginal ν ⊗ₘ exitPositionKernel ν = ν.map Prod.swap := by
   simpa only [exitMarginal, exitPositionKernel, Measure.fst_map_swap, Measure.snd] using
-    (Measure.disintegrate (ν.map Prod.swap) (ν.map Prod.swap).condKernel)
+    (Measure.disintegrate (ν.map Prod.swap) _)
 
 /-- Jointly measurable Fourier representatives from the conditional position kernel. -/
 def exitFourierRep (ν : Measure (PDE.Vec d × TimeVelocity d)) [IsFiniteMeasure ν]
     (ξ : PDE.Vec d) (z : TimeVelocity d) : ℂ :=
   fiberFourier (exitPositionKernel ν) ξ z
 
+variable (ν : Measure (PDE.Vec d × TimeVelocity d))
+
 /-- The conditional Fourier representatives are jointly measurable. -/
-theorem measurable_exitFourierRep (ν : Measure (PDE.Vec d × TimeVelocity d))
+theorem measurable_exitFourierRep 
     [IsFiniteMeasure ν] :
     Measurable (fun p : PDE.Vec d × TimeVelocity d => exitFourierRep ν p.1 p.2) :=
-  measurable_fiberFourier (exitPositionKernel ν)
+  measurable_fiberFourier _
 
 /-- Each conditional characteristic function is continuous in frequency. -/
-theorem continuous_exitFourierRep (ν : Measure (PDE.Vec d × TimeVelocity d))
+theorem continuous_exitFourierRep 
     [IsFiniteMeasure ν] (z : TimeVelocity d) :
     Continuous (fun ξ => exitFourierRep ν ξ z) :=
-  continuous_fiberFourier (exitPositionKernel ν) z
+  continuous_fiberFourier _ z
 
 /-- Conditional characteristic functions have modulus at most one. -/
-theorem norm_exitFourierRep_le_one (ν : Measure (PDE.Vec d × TimeVelocity d))
+theorem norm_exitFourierRep_le_one 
     [IsFiniteMeasure ν] (ξ : PDE.Vec d) (z : TimeVelocity d) :
     ‖exitFourierRep ν ξ z‖ ≤ 1 :=
-  norm_fiberFourier_le (exitPositionKernel ν) ξ z
+  norm_fiberFourier_le _ ξ z
 
 /-- The Fourier representative is integrable over the actual finite marginal. -/
-theorem integrable_exitFourierRep (ν : Measure (PDE.Vec d × TimeVelocity d))
+theorem integrable_exitFourierRep 
     [IsFiniteMeasure ν] (ξ : PDE.Vec d) :
     Integrable (exitFourierRep ν ξ) (exitMarginal ν) :=
   Integrable.of_bound
@@ -78,15 +80,15 @@ theorem integrable_exitFourierRep (ν : Measure (PDE.Vec d × TimeVelocity d))
     (Filter.Eventually.of_forall (norm_exitFourierRep_le_one ν ξ))
 
 /-- Integration of the disintegrated representative equals the actual Fourier exit measure. -/
-theorem setIntegral_exitFourierRep (ν : Measure (PDE.Vec d × TimeVelocity d))
+theorem setIntegral_exitFourierRep 
     [IsFiniteMeasure ν] (ξ : PDE.Vec d) {E : Set (TimeVelocity d)} (hE : MeasurableSet E) :
     (∫ z in E, exitFourierRep ν ξ z ∂exitMarginal ν) = exitFourier ν ξ E := by
   have hd := exitPositionKernel_disintegrate ν
   have hfin : IsFiniteMeasure (exitMarginal ν ⊗ₘ exitPositionKernel ν) :=
     hd.symm ▸ inferInstance
   have hfin' : IsFiniteMeasure
-      ((exitMarginal ν).withDensity (fun _ => (1 : ℝ≥0∞)) ⊗ₘ exitPositionKernel ν) := by
-    simpa only [withDensity_const, one_smul] using hfin
+      ((exitMarginal ν).withDensity (fun _ => (1)) ⊗ₘ exitPositionKernel ν) := by
+    simpa using hfin
   have htop : ∀ᵐ _z ∂exitMarginal ν, (1 : ℝ≥0∞) < ⊤ := by simp
   have h := setIntegral_fiberDensity (m := exitMarginal ν) (g := fun _ => 1)
     measurable_const htop
@@ -103,13 +105,13 @@ theorem setIntegral_exitFourierRep (ν : Measure (PDE.Vec d × TimeVelocity d))
       by_cases hp : p.2 ∈ E <;>
         simp [hp, exitPhase, mul_comm])
   · have hc : Continuous (fun p : TimeVelocity d × PDE.Vec d =>
-        Complex.exp (-((PDE.vecDot ξ p.2 : ℝ) * Complex.I))) := by
+        Complex.exp (-((PDE.vecDot ξ p.2) * Complex.I))) := by
       unfold PDE.vecDot
       fun_prop
     exact (hc.measurable.indicator (hE.prod MeasurableSet.univ)).aestronglyMeasurable
 
 /-- The disintegrated representative is the Radon--Nikodym density of exit Fourier data. -/
-theorem exitFourier_eq_withDensity (ν : Measure (PDE.Vec d × TimeVelocity d))
+theorem exitFourier_eq_withDensity 
     [IsFiniteMeasure ν] (ξ : PDE.Vec d) :
     exitFourier ν ξ = (exitMarginal ν).withDensityᵥ (exitFourierRep ν ξ) := by
   ext E hE

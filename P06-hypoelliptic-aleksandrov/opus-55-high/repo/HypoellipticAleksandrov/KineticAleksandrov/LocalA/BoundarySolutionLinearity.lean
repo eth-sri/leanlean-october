@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundedSourceLin
 /-! # Linearity of the literal boundary reconstruction -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Evolution TheoremA Parabolic
 
@@ -22,7 +21,7 @@ theorem boundary_duhamelPotential_const_mul {d : ℕ} {Ω : Set (PDE.Vec d)}
     unfold duhamelIntegrand
     split
     · exact integral_const_mul c _
-    · exact (mul_zero c).symm
+    simp
   rw [heq, integral_const_mul]
 
 variable (hH : HormanderHypoellipticityStatement)
@@ -46,17 +45,19 @@ theorem boundary_ballSourcePotential_add (a T : ℝ) (F G : KineticPoint d → �
         (localStrip a T v₀ R).indicator G (sectionTwoPoint Q) := by
     funext Q
     by_cases hQ : sectionTwoPoint Q ∈ localStrip a T v₀ R
-    · simp only [Function.comp_apply, indicator_of_mem hQ]
-    · simp only [Function.comp_apply, indicator_of_notMem hQ, add_zero]
+    · simp_all
+    simp_all
   unfold ballSourcePotential
   rw [heq]
   obtain ⟨hFm, hFbound⟩ := boundedBallSource_extension a T M v₀ R hM F hF hFb
   obtain ⟨hGm, hGbound⟩ := boundedBallSource_extension a T N v₀ R hN G hG hGb
   exact duhamelPotential_add_bounded _ (PDE.isOpen_euclideanBall v₀ R).measurableSet
-    continuous_const _ _ hFm hGm M N hM hN hFbound hGbound T (sectionTwoPoint P)
+    continuous_const _ _ hFm hGm M N hM hN hFbound hGbound T _
+
+variable (a T c : ℝ)
 
 /-- Scalar factors pass through the canonical finite-strip source potential. -/
-theorem boundary_ballSourcePotential_const_mul (a T c : ℝ)
+theorem boundary_ballSourcePotential_const_mul 
     (F : KineticPoint d → ℝ) (P : KineticPoint d) :
     ballSourcePotential hH hLE hd hlam hLam B hB v₀ hR a T (fun Q => c * F Q) P =
       c * ballSourcePotential hH hLE hd hlam hLam B hB v₀ hR a T F P := by
@@ -64,8 +65,8 @@ theorem boundary_ballSourcePotential_const_mul (a T c : ℝ)
       fun Q => c * (localStrip a T v₀ R).indicator F (sectionTwoPoint Q) := by
     funext Q
     by_cases hQ : sectionTwoPoint Q ∈ localStrip a T v₀ R
-    · simp only [Function.comp_apply, indicator_of_mem hQ]
-    · simp only [Function.comp_apply, indicator_of_notMem hQ, mul_zero]
+    · simp_all
+    simp_all
   unfold ballSourcePotential
   rw [heq, boundary_duhamelPotential_const_mul]
   rfl
@@ -82,8 +83,8 @@ theorem ballBoundarySolution_add (a T : ℝ) (φ ψ : KineticPoint d → ℝ)
     (hφ.comp (evolutionProdCLE d).contDiff).contDiffOn
   have hψr := isKineticC112On_of_contDiffOn isOpen_univ
     (hψ.comp (evolutionProdCLE d).contDiff).contDiffOn
-  have heq : forwardKineticOperator (ofTimeVelocityCoefficient B) (fun Q => φ Q + ψ Q) =
-      fun Q => forwardKineticOperator (ofTimeVelocityCoefficient B) φ Q +
+  have heq : forwardKineticOperator _ _ =
+      fun Q => forwardKineticOperator _ φ Q +
         forwardKineticOperator (ofTimeVelocityCoefficient B) ψ Q :=
     funext (fun Q => comparison_forwardOperator_add hφr hψr _ (mem_univ Q))
   obtain ⟨hFc, M, hM, hFb⟩ := boundary_probe_operator_bounded B hB φ hφ hcφ
@@ -95,13 +96,13 @@ theorem ballBoundarySolution_add (a T : ℝ) (φ ψ : KineticPoint d → ℝ)
   ring
 
 /-- The boundary reconstruction is homogeneous under scalar multiplication of probes. -/
-theorem ballBoundarySolution_const_mul (a T c : ℝ) (φ : KineticPoint d → ℝ)
+theorem ballBoundarySolution_const_mul  (φ : KineticPoint d → ℝ)
     (hφ : ContDiff ℝ (⊤ : ℕ∞) (φ ∘ (KineticPoint.equivProd d).symm)) (P : KineticPoint d) :
     ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR a T (fun Q => c * φ Q) P =
       c * ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR a T φ P := by
   have hφr := isKineticC112On_of_contDiffOn isOpen_univ
     (hφ.comp (evolutionProdCLE d).contDiff).contDiffOn
-  have heq : forwardKineticOperator (ofTimeVelocityCoefficient B) (fun Q => c * φ Q) =
+  have heq : forwardKineticOperator _ _ =
       fun Q => c * forwardKineticOperator (ofTimeVelocityCoefficient B) φ Q :=
     funext (fun Q => comparison_forwardOperator_const_mul hφr c _ (mem_univ Q))
   unfold ballBoundarySolution

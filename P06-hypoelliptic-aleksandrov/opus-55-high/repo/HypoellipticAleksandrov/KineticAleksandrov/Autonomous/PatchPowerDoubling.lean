@@ -28,8 +28,10 @@ def IsNonnegativeHomogeneousSolution {lam Lam : ℝ} (A : SmoothAutonomous lam L
 def returnDoubleCenter (z : Point) (ell : ℝ) : Point :=
   ⟨z.time + 8 * ell ^ 2, z.position + (8 * ell ^ 2) • z.velocity, z.velocity⟩
 
+variable {lam Lam : ℝ}
+
 /-- Smooth autonomous scalar coefficients satisfy the full ellipticity predicate. -/
-theorem autonomous_fullElliptic {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) :
+theorem autonomous_fullElliptic  (A : SmoothAutonomous lam Lam) :
     FullElliptic lam Lam (autonomousCoefficient A.a) := by
   refine ⟨?_, ?_, ?_, ?_⟩
   · have hc : Continuous (fullKineticCoefficientAt (autonomousCoefficient A.a)) := by
@@ -40,16 +42,15 @@ theorem autonomous_fullElliptic {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) :
       exact A.smooth.continuous.comp
         ((continuous_apply 0 |>.comp continuous_position).prodMk
           (continuous_apply 0 |>.comp continuous_velocity))
-    exact hc.measurable
-  · intro p
-    exact autonomousCoefficient_symmetric A.a p.time p.position p.velocity
+    fun_prop
+  · aesop
   · exact Filter.Eventually.of_forall fun p =>
       (autonomousCoefficient_bounds A p.time p.position p.velocity).1
   · exact Filter.Eventually.of_forall fun p =>
       (autonomousCoefficient_bounds A p.time p.position p.velocity).2
 
 /-- The p-six hypothesis supplies admissibility on the positive-time slab. -/
-theorem return_solution_admissible {lam Lam : ℝ}
+theorem return_solution_admissible 
     (hp6 : SmoothAutonomousP6Statement lam Lam) :
     ∃ C_A : ℝ, 0 < C_A ∧ ∀ (A : SmoothAutonomous lam Lam) (u : Point → ℝ),
       IsNonnegativeHomogeneousSolution A u →
@@ -77,7 +78,7 @@ theorem return_patch_double (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam
   let z' := returnDoubleCenter z ell
   have hscale : 0 < 2 * ell := by positivity
   have hcenter : kineticAffine z' (2 * ell) (samplingCenter 1 0) = z := by
-    ext i <;> simp [z', returnDoubleCenter, kineticAffine, samplingCenter] <;> ring
+    ext i <;> simp [z', returnDoubleCenter, samplingCenter] <;> ring
   have hregion : closure (kineticAffine z' (2 * ell) ''
       referenceRegion 1 0 (referenceBound 0)) ⊆ {p | 0 < p.time} := by
     have hclosed : IsClosed {p : Point | z.time - 12 * ell ^ 2 ≤ p.time} :=
@@ -90,10 +91,8 @@ theorem return_patch_double (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam
       nlinarith [sq_nonneg ell]
     intro q hq
     have hq' := closure_minimal hsub hclosed hq
-    change z.time - 12 * ell ^ 2 ≤ q.time at hq'
-    change 0 < q.time
-    linarith
-  apply hmacro 6 C_A (by norm_num) _ (autonomous_fullElliptic A) z' (2 * ell) hscale
+    grind
+  apply hmacro 6 C_A (by norm_num) _ (autonomous_fullElliptic A) z' _ hscale
     _ (isOpen_lt continuous_const continuous_time) hregion u
     (fun q hq => hu.2.1 q hq) (hadm A u hu).1 z ell k hell (by linarith)
     (by rw [hcenter]; exact backwardCylinder_radius_mono z hell (by linarith)) hk

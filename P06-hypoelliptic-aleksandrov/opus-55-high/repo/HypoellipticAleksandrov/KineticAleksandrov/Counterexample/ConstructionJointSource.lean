@@ -12,9 +12,10 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory Set HypoellipticAleksandrov.Parabolic
 
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha) (r mu R : ℝ)
+
 /-- The explicit raw time representative is continuous jointly in time and native space. -/
-theorem construction_rawTimeJet_joint_continuous {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R : ℝ) :
+theorem construction_rawTimeJet_joint_continuous  :
     Continuous (fun z : ℝ × XV d => kineticTimeDerivative
       (timeCutoffProfile (profileFunction h) alpha r mu R) ⟨z.1, z.2.1, z.2.2⟩) := by
   simp_rw [timeCutoffProfile_timeDerivative, barrier_timeDerivative]
@@ -29,8 +30,7 @@ theorem construction_rawTimeJet_joint_continuous {d : ℕ} {alpha : ℝ}
     ((continuous_const.mul he).mul (continuous_const.sub (hv.div_const _)))
 
 /-- The explicit raw source is jointly measurable, with the original selected flat jets. -/
-theorem construction_rawSource_joint_measurable {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R : ℝ) :
+theorem construction_rawSource_joint_measurable  :
     Measurable (fun z : ℝ × XV d =>
       timeCutoffSourceRepresentative h r mu R ⟨z.1, z.2.1, z.2.2⟩) := by
   obtain ⟨hx, hv, hh⟩ := measurable_flatProfile_jets h r
@@ -52,11 +52,10 @@ theorem construction_rawSource_joint_measurable {d : ℕ} {alpha : ℝ}
   have hBG (i : Fin d) : Measurable (fun z : ℝ × XV d =>
       kineticVelocityGradient (barrier mu R) ⟨z.1, z.2.1, z.2.2⟩ i) := by
     simp_rw [barrier_velocityGradient]
-    exact (((continuous_const.mul he).div_const _).neg.mul
-      ((continuous_apply i).comp continuous_snd.snd)).measurable
+    fun_prop
   have hBH (i k : Fin d) : Measurable (fun z : ℝ × XV d =>
       kineticVelocityHessian (barrier mu R) ⟨z.1, z.2.1, z.2.2⟩ i k) := by
-    simp only [barrier_velocityHessian, Matrix.smul_apply, smul_eq_mul]
+    simp only [barrier_velocityHessian]
     exact (((continuous_const.mul he).div_const _).neg.mul continuous_const).measurable
   have hpos (i : Fin d) : Measurable (fun z : ℝ × XV d =>
       flatProfilePositionJet h r z.2 i) :=
@@ -68,9 +67,7 @@ theorem construction_rawSource_joint_measurable {d : ℕ} {alpha : ℝ}
   have htransport : Measurable (fun z : ℝ × XV d => PDE.vecDot z.2.2
       (fun i => deriv timeCutoffTheta
         (selectedFlatProfile h r z.2 - barrier mu R ⟨z.1, z.2.1, z.2.2⟩) *
-          flatProfilePositionJet h r z.2 i)) := by
-    unfold PDE.vecDot
-    exact Finset.measurable_sum _ (fun i _ =>
+          flatProfilePositionJet h r z.2 i)) := Finset.measurable_sum _ (fun i _ =>
       ((measurable_pi_apply i).comp measurable_snd.snd).mul (ht.mul (hpos i)))
   have hcontraction : Measurable (fun z : ℝ × XV d => matrixContraction
       (profileMatrix h z.2) (fun i k =>
@@ -83,9 +80,7 @@ theorem construction_rawSource_joint_measurable {d : ℕ} {alpha : ℝ}
             (flatProfileVelocityJet h r z.2 i -
               kineticVelocityGradient (barrier mu R) ⟨z.1, z.2.1, z.2.2⟩ i) *
             (flatProfileVelocityJet h r z.2 k -
-              kineticVelocityGradient (barrier mu R) ⟨z.1, z.2.1, z.2.2⟩ k))) := by
-    unfold matrixContraction
-    exact Finset.measurable_sum _ (fun i _ => Finset.measurable_sum _ (fun k _ =>
+              kineticVelocityGradient (barrier mu R) ⟨z.1, z.2.1, z.2.2⟩ k))) := Finset.measurable_sum _ (fun i _ => Finset.measurable_sum _ (fun k _ =>
       ((hA i k).comp measurable_snd).mul
         ((ht.mul (((hh i k).comp measurable_snd).sub (hBH i k))).add
           ((ht2.mul ((hvel i).sub (hBG i))).mul ((hvel k).sub (hBG k))))))

@@ -14,7 +14,6 @@ almost everywhere with the stored value representative.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -39,34 +38,29 @@ theorem exists_continuousOn_tendstoUniformlyOn_ae_eq_toFun_parabolicConvolution
         q atTop K ∧
       q =ᵐ[timeVelocityVolumeOn K] g.toFun := by
   classical
-  let F : Nat → TimeVelocity d → Real := fun n z =>
+  let F  := fun n z =>
     parabolicConvolution g.toFun (parabolicMollifier d n) z
   have hSup : UniformCauchySeqOn F atTop K := by
-    simpa only [F] using g.uniformCauchySeqOn_parabolicConvolution hd hg K hK
-  let q : TimeVelocity d → Real := fun z =>
+    simpa using g.uniformCauchySeqOn_parabolicConvolution hd hg K hK
+  let q  := fun z =>
     if hz : z ∈ K then
       Classical.choose (cauchySeq_tendsto_of_complete (hSup.cauchySeq hz))
     else 0
   have hPointwise : ∀ z ∈ K, Tendsto (fun n : Nat => F n z) atTop (nhds (q z)) := by
-    intro z hz
-    rw [show q z = Classical.choose (cauchySeq_tendsto_of_complete (hSup.cauchySeq hz)) by
-      simp only [q, dif_pos hz]]
-    exact Classical.choose_spec (cauchySeq_tendsto_of_complete (hSup.cauchySeq hz))
-  have hUniform : TendstoUniformlyOn F q atTop K :=
+    grind
+  have hUniform  :=
     hSup.tendstoUniformlyOn_of_tendsto hPointwise
   have hContinuous : ContinuousOn q K := by
     apply hUniform.continuousOn
-    have hEventually : ∀ᶠ n : Nat in atTop, ContinuousOn (F n) K := by
-      exact Filter.Eventually.of_forall fun n => by
-        change ContinuousOn (parabolicConvolution g.toFun (parabolicMollifier d n)) K
-        have hSmooth : ContDiff Real (⊤ : ℕ∞)
-            (parabolicConvolution g.toFun (parabolicMollifier d n)) :=
-          g.contDiff_convolution (by simp [parabolicExponent]) (parabolicMollifier d n)
+    have hEventually : ∀ᶠ n : Nat in atTop, ContinuousOn (F n) K := Filter.Eventually.of_forall fun n => by
+        have hSmooth : ContDiff Real _
+            _ :=
+          g.contDiff_convolution (by simp [parabolicExponent]) _
             (contDiff_parabolicMollifier d n) (hasCompactSupport_parabolicMollifier d n)
         exact hSmooth.continuous.continuousOn
     exact hEventually.frequently
   refine ⟨q, hContinuous, ?_, ?_⟩
-  · simpa only [F] using hUniform
+  · omega
   · exact g.ae_eq_limit_toFun_on_of_pointwiseLimit hK.measurableSet hPointwise
 
 end ParabolicW12Function

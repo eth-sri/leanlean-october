@@ -11,7 +11,6 @@ envelopes supply zero terminal and lateral traces, without compact-source restri
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set Dirichlet KineticAleksandrov
 open scoped ENNReal MatrixOrder Matrix.Norms.Elementwise
@@ -38,9 +37,7 @@ theorem exists_signed_source_ball_correction {d : ℕ} (hd : 0 < d)
   let M := max C 0
   have hM : 0 ≤ M := le_max_right _ _
   have hFM : ∀ z ∈ scalarParabolicClosedCylinder (a - 1) T Ω, |F z| ≤ M := by
-    intro z hz
-    rw [← Real.norm_eq_abs]
-    exact (hC z hz).trans (le_max_left _ _)
+    aesop
   obtain ⟨w, hw, he, ht, hs⟩ := exists_signed_source_ballInterior_with_bounds hd
     v₀ r hr (a - 1) T hleftT lam Lam hlam hLam A hA hlo hhi F hF M hM hFM
   let U := scalarParabolicOpenCylinder (a - 1) T Ω
@@ -49,7 +46,7 @@ theorem exists_signed_source_ball_correction {d : ℕ} (hd : 0 < d)
   have hsub : D ⊆ U := prod_mono (Ioo_subset_Ioo hleft.le le_rfl) (Subset.refl _)
   have hWD : EqOn W w D := by
     intro z hz
-    exact piecewise_eq_of_mem U w (fun _ => 0) (hsub hz)
+    exact piecewise_eq_of_mem U w _ (hsub hz)
   have hwD : IsScalarC12On w D :=
     ⟨hw.continuousOn.mono hsub,
       fun z hz => hw.timeSlice_differentiableAt (hsub hz),
@@ -58,7 +55,7 @@ theorem exists_signed_source_ball_correction {d : ℕ} (hd : 0 < d)
       hw.continuousOn_scalarSpatialGradient.mono hsub,
       hw.continuousOn_scalarSpatialHessian.mono hsub⟩
   have hD : IsOpen D := isOpen_Ioo.prod hΩ
-  have hWc := continuousOn_source_zeroExtension_closed_ball (a - 1) a T hleft
+  have hWc := continuousOn_source_zeroExtension_closed_ball _ a T hleft
     v₀ r lam M hM w hw.continuousOn ht hs
   have hWr := Occupation.isScalarC12On_congr_open hD hwD hWD
   obtain ⟨hdt, _, hdd⟩ := Occupation.scalarJet_eqOn_of_eqOn_open hD hWD
@@ -68,13 +65,13 @@ theorem exists_signed_source_ball_correction {d : ℕ} (hd : 0 < d)
       zero_mul, Finset.sum_const_zero, add_zero, hdt hz, hdd hz]
     exact he z (hsub hz)
   · intro y _
-    exact piecewise_eq_of_notMem U w (fun _ => 0)
+    exact piecewise_eq_of_notMem U w _
       (fun h => (lt_irrefl T) h.1.2)
   · intro z hz
     have hzo : z.2 ∉ Ω := by
       have hf : z.2 ∈ frontier Ω := hz.2
       rw [hΩ.frontier_eq] at hf
-      exact hf.2
-    exact piecewise_eq_of_notMem U w (fun _ => 0) (fun h => hzo h.2)
+      grind
+    exact piecewise_eq_of_notMem U w _ (fun h => hzo h.2)
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

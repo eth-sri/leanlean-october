@@ -12,7 +12,6 @@ principal-coercivity theorem.
 
 @[expose] public section
 
-noncomputable section
 
 open Function MeasureTheory Set Topology
 open scoped ENNReal BigOperators MatrixOrder
@@ -213,7 +212,7 @@ theorem weakPrincipalIntegrationByParts_coercive
       ∑ k : Fin d, ∑ i : Fin d, rH z k i ^ 2 ∂volume) -
     principalCoercivityConstant d lam Lam M K *
       (∫ z in Set.Ioo s₀ s₁ ×ˢ O, ζ z.1 * (tsupport η).indicator
-        (fun y => ∑ k : Fin d, rG (z.1, y) k ^ 2) z.2 ∂volume) at hlocal
+        (fun y => ∑ k : Fin d, rG _ k ^ 2) z.2 ∂volume) at hlocal
   rw [show (∫ z in Set.Ioo s₀ s₁ ×ˢ O,
       ζ z.1 *
         (∑ i : Fin d, ∑ j : Fin d,

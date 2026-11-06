@@ -31,21 +31,21 @@ theorem intervalQueryInclusion_measurableEmbedding {a c : ℝ}
     MeasurableEmbedding (intervalQueryInclusion (a := a) (c := c)) := by
   have hq : MeasurableSet {q : RawEvolutionQuery 1 |
       q.1 ≤ q.2.1 ∧ q.2.2.1 ∈ movingDomain (PDE.oneDimensionalAxisBox a c)
-        stationary q.1 ∧ q.2.2.2 ∈ (univ : Set (PDE.Vec 1))} := by
+        stationary q.1 ∧ q.2.2.2 ∈ univ} := by
     simp only [movingDomain_stationary, mem_univ, and_true]
     exact (measurableSet_le
-      (show Measurable (fun q : RawEvolutionQuery 1 => q.1) from by fun_prop)
+      (show Measurable _ from by fun_prop)
       (show Measurable (fun q : RawEvolutionQuery 1 => q.2.1) from by fun_prop)).inter
-      (hJ.preimage (show Measurable (fun q : RawEvolutionQuery 1 => q.2.2.1) from
+      (hJ.preimage (show Measurable _ from
         by fun_prop))
   have he := MeasurableEmbedding.subtype_coe hq
   refine ⟨?_, ?_, ?_⟩
   · intro p q hpq
     apply Subtype.ext
     exact congrArg (fun r : EvolutionQuery (wholeSpace 1)
-      (fun _ => (0 : PDE.Vec 1)) => r.1) hpq
+      _ => r.1) hpq
   · apply Measurable.subtype_mk
-    exact measurable_subtype_coe
+    fun_prop
   · intro A hA
     have him : MeasurableSet (Subtype.val '' A) := he.measurableSet_image.2 hA
     have heq : intervalQueryInclusion '' A =
@@ -54,9 +54,8 @@ theorem intervalQueryInclusion_measurableEmbedding {a c : ℝ}
       ext q
       constructor
       · rintro ⟨p, hp, rfl⟩
-        exact ⟨p, hp, rfl⟩
-      · rintro ⟨p, hp, he⟩
-        exact ⟨p, hp, Subtype.ext he⟩
+        aesop
+      aesop
     rw [heq]
     exact him.preimage measurable_subtype_coe
 
@@ -77,7 +76,7 @@ theorem intervalExtensionMaster_inside {a c : ℝ}
     (q : EvolutionQuery (PDE.oneDimensionalAxisBox a c) stationary) :
     intervalExtensionMaster hJ K (intervalQueryInclusion q) = K.master q := by
   change Function.extend intervalQueryInclusion K.master (fun _ => 0)
-    (intervalQueryInclusion q) = K.master q
+    _ = K.master q
   exact (intervalQueryInclusion_measurableEmbedding hJ).injective.extend_apply _ _ q
 
 /-- The adapted kernel has whole-space carriers and zero transitions outside the interval. -/
@@ -98,7 +97,6 @@ def intervalExtension {a c : ℝ}
       rw [intervalExtensionMaster_inside]
       exact K.mass_le_one p
     · change (Function.extend intervalQueryInclusion K.master (fun _ => 0) q) univ ≤ 1
-      rw [Function.extend_apply' _ _ _ hq]
-      exact zero_le
+      simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

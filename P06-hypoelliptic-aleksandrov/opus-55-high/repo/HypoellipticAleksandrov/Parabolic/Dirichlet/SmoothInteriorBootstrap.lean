@@ -119,7 +119,7 @@ theorem exists_smoothInteriorBootstrap
       hLower hUpper hcNonpos initial u g hdu hu
   let Q : Set (TimeVelocity d) := Set.Ioo r₀ r₁ ×ˢ Ω
   have hQopen : IsOpen Q := isOpen_Ioo.prod hΩ
-  have hlocal : ∀ z : Q, ∃ (V : Set (TimeVelocity d)) (v : TimeVelocity d → ℝ),
+  have hlocal : ∀ z : Q, ∃ (V : Set _) (v : TimeVelocity d → ℝ),
       IsOpen V ∧ (z : TimeVelocity d) ∈ V ∧ V ⊆ Q ∧ ContDiff ℝ 2 v ∧
       v =ᵐ[timeVelocityVolumeOn V] w₀ ∧
       ∀ x ∈ V,
@@ -132,17 +132,17 @@ theorem exists_smoothInteriorBootstrap
     have hztime := z.property.1
     have hzspace := z.property.2
     obtain ⟨hzlo, hzhi⟩ := hztime
-    let q₀ : ℝ := (r₀ + (z : TimeVelocity d).1) / 2
-    let s₀ : ℝ := (q₀ + (z : TimeVelocity d).1) / 2
-    let q₁ : ℝ := ((z : TimeVelocity d).1 + r₁) / 2
-    let s₁ : ℝ := ((z : TimeVelocity d).1 + q₁) / 2
+    let q₀  := (r₀ + (z : TimeVelocity d).1) / 2
+    let s₀  := (q₀ + (z : TimeVelocity d).1) / 2
+    let q₁  := ((z : TimeVelocity d).1 + r₁) / 2
+    let s₁  := ((z : TimeVelocity d).1 + q₁) / 2
     have hrq₀ : r₀ < q₀ := by dsimp [q₀]; linarith
     have hq₀s₀ : q₀ < s₀ := by dsimp [s₀, q₀]; linarith
     have hs₀z : s₀ < (z : TimeVelocity d).1 := by dsimp [s₀, q₀]; linarith
     have hz_s₁ : (z : TimeVelocity d).1 < s₁ := by dsimp [s₁, q₁]; linarith
     have hs₁q₁ : s₁ < q₁ := by dsimp [s₁, q₁]; linarith
     have hq₁r : q₁ < r₁ := by dsimp [q₁]; linarith
-    have hsingleton : ({(z : TimeVelocity d).2} : Set (PDE.Vec d)) ⊆ Ω := by
+    have hsingleton : ({(z : TimeVelocity d).2}) ⊆ Ω := by
       intro y hy
       rw [Set.mem_singleton_iff] at hy
       simpa [hy] using hzspace
@@ -150,7 +150,7 @@ theorem exists_smoothInteriorBootstrap
       exists_open_between_and_isCompact_closure
         (isCompact_singleton : IsCompact ({(z : TimeVelocity d).2} : Set (PDE.Vec d)))
         hΩ hsingleton
-    have hsingletonO₀ : ({(z : TimeVelocity d).2} : Set (PDE.Vec d)) ⊆ O₀ := hzO₀
+    have hsingletonO₀  := hzO₀
     obtain ⟨O, hOopen, hzO, hOO₀, hOcompact⟩ :=
       exists_open_between_and_isCompact_closure
         (isCompact_singleton : IsCompact ({(z : TimeVelocity d).2} : Set (PDE.Vec d)))
@@ -176,9 +176,9 @@ theorem exists_smoothInteriorBootstrap
   choose V v hVopen hzV hVQ hvC2 hvAE hpde using hlocal
   obtain ⟨w, hwC2, hww₀, hwv⟩ :=
     exists_contDiffOn_two_gluing V v hVopen hzV hVQ hvC2 hvAE
-  have hwC12 : IsScalarC12On w Q :=
+  have hwC12  :=
     isScalarC12On_of_isOpen_contDiffOn_two hQopen hwC2
-  have hwmem : MemLp w (2 : ℝ≥0∞) (timeVelocityVolumeOn Q) :=
+  have hwmem  :=
     hw₀mem.ae_eq hww₀.symm
   have hwslice : ∀ᵐ r ∂volume.restrict (Set.Ioo r₀ r₁),
       (fun y => w (r, y)) =ᵐ[PDE.volumeOn Ω]
@@ -186,9 +186,9 @@ theorem exists_smoothInteriorBootstrap
     have hprod : (volume.restrict (Set.Ioo r₀ r₁)).prod (PDE.volumeOn Ω) =
         timeVelocityVolumeOn Q := by
       rw [timeVelocityVolumeOn, volume_timeVelocity_eq_prod]
-      simpa only [Q, PDE.volumeOn] using Measure.prod_restrict
-        (μ := (volume : Measure ℝ)) (ν := (volume : Measure (PDE.Vec d)))
-          (Set.Ioo r₀ r₁) Ω
+      simpa using Measure.prod_restrict
+        (μ := volume) (ν := volume)
+          _ Ω
     have hcurry := Measure.ae_ae_eq_curry_of_prod (hprod ▸ hww₀)
     filter_upwards [hcurry, hw₀slice] with r hraw hs
     exact hraw.trans hs
@@ -202,21 +202,21 @@ theorem exists_smoothInteriorBootstrap
     let zQ : Q := ⟨z, hz⟩
     have hEq : w =ᶠ[nhds z] v zQ :=
       (hVopen zQ).eventually_mem (hzV zQ) |>.mono (fun _ hy => hwv zQ hy)
-    have hwAt : ContDiffAt ℝ 2 w z := hwC2.contDiffAt (hQopen.mem_nhds hz)
+    have hwAt  := hwC2.contDiffAt (hQopen.mem_nhds hz)
     obtain ⟨ht, hg, hh⟩ := scalarJet_eqAt_of_eventuallyEq hwAt (hvC2 zQ).contDiffAt hEq
-    have hvval : w z = v zQ z := hEq.eq_of_nhds
+    have hvval  := hEq.eq_of_nhds
     simpa [ht, hg, hh, hvval] using hpde zQ z (hzV zQ)
   refine ⟨w, hwmem, hwslice, hwC12, hpdeGlobal, ?_⟩
   intro s₀ s₁ O hr₀s₀ hs₀s₁ hs₁r₁ hOopen hOne hOcompact hOΩ
-  let q₀ : ℝ := (r₀ + s₀) / 2
-  let q₁ : ℝ := (s₁ + r₁) / 2
+  let q₀  := (r₀ + s₀) / 2
+  let q₁  := (s₁ + r₁) / 2
   have hrq₀ : r₀ < q₀ := by dsimp [q₀]; linarith
   have hq₀s₀ : q₀ < s₀ := by dsimp [q₀]; linarith
   have hs₁q₁ : s₁ < q₁ := by dsimp [q₁]; linarith
   have hq₁r : q₁ < r₁ := by dsimp [q₁]; linarith
   obtain ⟨O₀, hO₀open, hOO₀, hO₀Ω, hO₀compact⟩ :=
     exists_open_between_and_isCompact_closure hOcompact hΩ hOΩ
-  have hO₀ne : O₀.Nonempty := hOne.mono (subset_closure.trans hOO₀)
+  have hO₀ne  := hOne.mono (subset_closure.trans hOO₀)
   obtain ⟨Jouter, rho, hrho, vloc, hJw₀, hSsub, hvlocC2, hvlocC12,
       hvlocw₀, htloc, hgloc, hhloc, hpdeloc⟩ :=
     exists_localC12Representative_of_valueRepresentative hd
@@ -236,7 +236,6 @@ theorem exists_smoothInteriorBootstrap
     have hae : w =ᵐ[timeVelocityVolumeOn B] vloc :=
       (hww₀.filter_mono (ae_mono (Measure.restrict_mono_set volume hBQ))).trans
         (hvlocw₀.filter_mono (ae_mono (Measure.restrict_mono_set volume hBS))).symm
-    rw [timeVelocityVolumeOn] at hae
     exact Measure.eqOn_open_of_ae_eq hae (isOpen_Ioo.prod hOopen)
       (hwC12.continuousOn.mono hBQ) (hvlocC2.continuous.continuousOn)
   have hjetAE : ∀ᵐ z ∂timeVelocityVolumeOn B,

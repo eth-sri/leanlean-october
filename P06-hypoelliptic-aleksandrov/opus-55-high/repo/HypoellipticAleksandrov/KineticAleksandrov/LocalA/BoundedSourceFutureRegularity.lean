@@ -12,7 +12,6 @@ there. Hörmander gives a smooth almost-everywhere representative on that earlie
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open Set MeasureTheory Evolution Occupation
 open scoped Topology
@@ -37,15 +36,15 @@ theorem duhamelPotential_weak_before_source
     fun p hp => ⟨hp.1.trans_le hsT, hp.2⟩
   have hw := duhamel_bounded_isKineticWeakTransportedSolution hΩa hΩ hγ B b S K hreal
     hB hBs hb g hg M hM hgb T
-  have hwr := boundedSource_weak_restrict hsub B b (duhamelPotential K T g)
-    (fun p => -g p) hw
+  have hwr := boundedSource_weak_restrict hsub B b _
+    _ hw
   have hsource : EqOn (fun p => -g p) (fun _ => 0)
       (evolutionPastOpenCylinder Ω γ s) := by
     intro p hp
     change -g p = 0
     rw [hgz p hp.1, neg_zero]
   have hzero := boundedSource_weak_source_congr hU.measurableSet B b
-    (duhamelPotential K T g) (fun p => -g p) (fun _ => 0) hsource hwr
+    _ _ _ hsource hwr
   exact (isWeakTransportedSolution_comp_iff B b _ _ _).2 hzero
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

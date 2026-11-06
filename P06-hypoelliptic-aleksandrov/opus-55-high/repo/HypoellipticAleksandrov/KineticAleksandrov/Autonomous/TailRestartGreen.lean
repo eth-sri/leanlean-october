@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.TailRestartA
 /-! # Exact Green restart from the surviving terminal measure -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov SectionTwo ProbabilityTheory
 open scoped ENNReal
@@ -21,7 +20,7 @@ theorem tailGreen_integrand_measurable (H : Interval)
   have : IsFiniteKernel k := by dsimp [k, elapsedKernel]; infer_instance
   have hm : Measurable (fun q :
       (EvolutionState (intervalDomain H) (fun _ => 0) s × ElapsedTime ⊤) ×
-        EvolutionAmbientState 1 => F (elapsedPhysicalPoint s (q.1.2, q.2))) :=
+        EvolutionAmbientState 1 => F (elapsedPhysicalPoint s _)) :=
     hF.comp ((measurable_elapsedPhysicalPoint s ⊤).comp
       (measurable_fst.snd.prodMk measurable_snd))
   exact (hm.lintegral_kernel_prod_right' (κ := k)).comp
@@ -40,10 +39,10 @@ theorem tailRestart_green_identity {lam Lam : ℝ}
   let nu := E.2.fiberKernel (intervalDomain_measurable H) e.1.time r
     (le_add_of_nonneg_right ht) z
   have : IsFiniteMeasure nu :=
-    ⟨(E.2.fiberKernel_mass_le_one (intervalDomain_measurable H)
-      e.1.time r (le_add_of_nonneg_right ht) z).trans_lt ENNReal.one_lt_top⟩
+    ⟨(E.2.fiberKernel_mass_le_one _
+      e.1.time r _ z).trans_lt ENNReal.one_lt_top⟩
   have hk : Measurable (fun a =>
-      stripGreenOfKernel H E.2 ⊤ (tailRestartPole H r a)) :=
+      stripGreenOfKernel H E.2 ⊤ _) :=
     (Measure.measurable_measure.mpr (fun B hB =>
       stripGreenOfKernel_infinite_measurable_apply H E.2 B hB)).comp
         (measurable_tailRestartPole H r)
@@ -65,7 +64,7 @@ theorem tailRestart_green_identity {lam Lam : ℝ}
     by_cases hh : t < tau.1
     · have hh' : e.1.time + t < e.1.time + tau.1 := by linarith
       simp only [Set.indicator, Set.mem_ofPred_eq, elapsedPhysicalPoint, hh, hh', ite_true]
-    · have hh' : ¬e.1.time + t < e.1.time + tau.1 := by simpa using hh
+    · have hh' : ¬e.1.time + t < e.1.time + tau.1 := by simp_all
       simp only [Set.indicator, Set.mem_ofPred_eq, elapsedPhysicalPoint,
         hh, hh', ite_false, lintegral_zero]
   change (∫⁻ tau, (fun tau : ElapsedTime ⊤ => ∫⁻ w,
@@ -85,7 +84,7 @@ theorem tailRestart_green_identity {lam Lam : ℝ}
     intro tau
     have hh := tailRestart_master_lintegral A H E hE e.1.time r (r + tau.1)
       (le_add_of_nonneg_right ht) (le_add_of_nonneg_right tau.2.1.le) z F hF
-    have htau : e.1.time + (t + tau.1) = r + tau.1 := by dsimp [r]; ring
+    have htau : e.1.time + (t + tau.1) = r + tau.1 := by linarith
     simpa only [elapsedPhysicalPoint, tailElapsedShift, elapsedQuery, htau,
       tailRestartQuery, nu] using hh
   rw [hc, tailRestart_action_swap H E.2 r nu F hF]

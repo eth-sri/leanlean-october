@@ -36,7 +36,7 @@ def scalarParabolicInitialFace {n : ℕ} (r₀ : ℝ) (Ω : Set (PDE.Vec n)) :
 @[simp] theorem mem_scalarParabolicInitialFace_iff {n : ℕ} {r₀ r : ℝ}
     {Ω : Set (PDE.Vec n)} {y : PDE.Vec n} :
     (r, y) ∈ scalarParabolicInitialFace r₀ Ω ↔ r = r₀ ∧ y ∈ closure Ω := by
-  simp [scalarParabolicInitialFace]
+  aesop
 
 /-- The terminal corner `{r₁} × frontier Ω` of a scalar parabolic cylinder. -/
 def scalarParabolicTerminalCorner {n : ℕ} (r₁ : ℝ) (Ω : Set (PDE.Vec n)) :
@@ -47,6 +47,6 @@ def scalarParabolicTerminalCorner {n : ℕ} (r₁ : ℝ) (Ω : Set (PDE.Vec n)) 
 @[simp] theorem mem_scalarParabolicTerminalCorner_iff {n : ℕ} {r₁ r : ℝ}
     {Ω : Set (PDE.Vec n)} {y : PDE.Vec n} :
     (r, y) ∈ scalarParabolicTerminalCorner r₁ Ω ↔ r = r₁ ∧ y ∈ frontier Ω := by
-  simp [scalarParabolicTerminalCorner]
+  aesop
 
 end HypoellipticAleksandrov.Parabolic

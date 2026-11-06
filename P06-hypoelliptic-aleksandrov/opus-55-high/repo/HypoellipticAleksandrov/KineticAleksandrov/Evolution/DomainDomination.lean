@@ -27,7 +27,6 @@ statement (they are part of the conjunct) but are not needed.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -51,9 +50,9 @@ theorem integral_master_eq_operator {Ω' : Set (PDE.Vec n)} {γ' : ℝ → PDE.V
     (F : BoundedBorel (EvolutionAmbientState n)) :
     P' σ τ hστ (terminalStateDatum F) p =
       ∫ x, F x ∂(K'.master (evolutionQueryOfState Ω' γ' σ τ hστ p)) := by
-  rw [h6 σ τ hστ p (terminalStateDatum F),
+  rw [h6,
     ← MovingFiberKernel.map_fiberKernel_eq_master K'
-      (measurableSet_of_isAdmissibleEvolutionDomain hΩ') σ τ hστ p,
+      (measurableSet_of_isAdmissibleEvolutionDomain hΩ'),
     integral_map measurable_subtype_coe.aemeasurable F.measurable.aestronglyMeasurable]
   rfl
 
@@ -113,14 +112,14 @@ theorem terminalMeasure_domination
   have hspec := terminalMeasure_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
     (largeQueryOfSmall hsub ⟨(σ, τ, w), hστ, hw⟩)
-  have hfinν : IsFiniteMeasure (K'.master ⟨(σ, τ, w), hστ, hw⟩) :=
+  have hfinν : IsFiniteMeasure _ :=
     ⟨(K'.mass_le_one ⟨(σ, τ, w), hστ, hw⟩).trans_lt ENNReal.one_lt_top⟩
-  have hfinμ : IsFiniteMeasure (μ (largeQueryOfSmall hsub ⟨(σ, τ, w), hστ, hw⟩)) :=
+  have hfinμ : IsFiniteMeasure _ :=
     ⟨hspec.1.trans_lt ENNReal.one_lt_top⟩
-  refine measure_le_of_smooth_integral_le hU (K'.terminal_support ⟨(σ, τ, w), hστ, hw⟩) ?_
+  refine measure_le_of_smooth_integral_le hU (K'.terminal_support _) ?_
   intro f hfs hfc hfU hfnn
   obtain ⟨C, hC⟩ := hfc.exists_bound_of_continuous hfs.continuous
-  let F : BoundedBorel (EvolutionAmbientState n) :=
+  let F : BoundedBorel _ :=
     ⟨f, hfs.continuous.measurable, ⟨max C 0, le_max_right _ _,
       fun x => (hC x).trans (le_max_left _ _)⟩⟩
   have hF' : IsSmoothCompactTerminalDatum Ω' γ' τ F := ⟨hfs, hfc, hfU⟩
@@ -132,7 +131,7 @@ theorem terminalMeasure_domination
     hu hu' hfnn ⟨σ, w.1, w.2⟩ ⟨hστ, subset_closure hw.1⟩
   have hA := integral_master_eq_operator hΩ' K' P' h6 σ hστ ⟨w, hw⟩ F
   have hlhs : ∫ x, f x ∂(K'.master ⟨(σ, τ, w), hστ, hw⟩) = u' ⟨σ, w.1, w.2⟩ :=
-    ((hrep σ hστ ⟨w, hw⟩).trans hA).symm
+    ((hrep σ hστ _).trans hA).symm
   have hS := terminalValue_eq_of_solution n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ
     ⟨w, ⟨hsub σ hw.1, hw.2⟩⟩ F hF u hu

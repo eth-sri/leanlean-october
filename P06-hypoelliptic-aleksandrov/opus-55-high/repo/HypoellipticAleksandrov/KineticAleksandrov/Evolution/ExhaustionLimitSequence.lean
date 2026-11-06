@@ -14,7 +14,6 @@ Dirichlet solution. No convergence or Cauchy estimate is a hypothesis.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -56,39 +55,37 @@ theorem exists_innerBall_dirichlet_sequence
     ⟨(hβ0 _).1, (hj0 _ (by omega)).le⟩
   obtain ⟨Z, -, hZ⟩ := exists_transported_terminal_support_bound hFc
   obtain ⟨R0, hR0, hsize⟩ := exists_transportedRadius_terminal_window
-    (by linarith : 0 < r0) hd (by linarith : d < r0) Z
-  let R (k : ℕ) := R0 + (k : ℝ) + 1
+    (by linarith) hd (by linarith : d < r0) Z
+  let R (k : ℕ) := R0 + k + 1
   have hRR0 (k : ℕ) : R0 ≤ R k := by
-    dsimp only [R]
-    have hk := Nat.cast_nonneg (α := ℝ) k
-    linarith
+    grind
   have hRp (k : ℕ) : 0 < R k := hR0.trans_le (hRR0 k)
-  have hex (k : ℕ) : ∃ u : TimeVelocity (n + n) → ℝ,
+  have hex (k : ℕ) : ∃ u : TimeVelocity _ → ℝ,
       IsClassicalBackwardDirichletSolution a τ
         (openEllipsoid (straightenedEllipsoidMatrix n (r0 - β k) (R k)))
         (straightenedCoefficient B (g k) ε) (straightenedDrift b (g k))
         (fun _ _ => 0) (fun _ _ => 0)
         (fun x => F (g k τ + spatialY x, spatialZ x)) (fun _ => 0) u := by
-    have hr : 0 < r0 - β k := by linarith [(hβ k).2]
-    have hdr' : d < r0 - β k := by linarith [(hβ k).2]
+    have hr : 0 < r0 - β k := by grind
+    have hdr' : d < r0 - β k := by grind
     have hc : PDE.vecEuclideanNorm (g k τ - Γ τ) ≤ β k / 2 := hc0 _ τ ⟨haτ.le, le_rfl⟩
     have hs := terminal_support_margin_of_innerBall_close (hβ k).2 hsupp hc
     have hsz : (r0 - β k - d) ^ 2 / (r0 - β k) ^ 2 + Z ^ 2 / (R k) ^ 2 < 1 :=
       lt_of_le_of_lt
         (add_le_add (terminal_window_ratio_le_of_radius_le hr hdr' hd.le
-          (by linarith [(hβ k).1])) (le_refl _)) (hsize _ (hRR0 k))
-    have hsupport : tsupport (fun x : PDE.Vec (n + n) =>
+          (by grind)) (le_refl _)) (hsize _ (hRR0 k))
+    have hsupport : tsupport (fun x : PDE.Vec _ =>
         F (g k τ + spatialY x, spatialZ x)) ⊆
         openEllipsoid (straightenedEllipsoidMatrix n (r0 - β k) (R k)) := by
       intro x hx
       let H := terminalCoordinateHomeomorph (g k τ)
-      have hx' : x ∈ tsupport ((F : EvolutionAmbientState n → ℝ) ∘ H) := hx
-      have hxF := tsupport_comp_subset_preimage (F : EvolutionAmbientState n → ℝ)
+      have hx' : x ∈ tsupport (F ∘ H) := hx
+      have hxF := tsupport_comp_subset_preimage F
         H.continuous hx'
       let p : KineticPoint n := ⟨τ, g k τ + spatialY x, spatialZ x⟩
       have hm := mem_straightenedEllipsoid_of_terminal_support_window hr (hRp k) hd hL
-        (hgL0 (k + j0)) hs hZ hsz (p := p) le_rfl
-        (by have : 0 ≤ d / (1 + L) := div_nonneg hd.le (by linarith); dsimp [p]; linarith)
+        (hgL0 _) hs hZ hsz (p := p) le_rfl
+        (by have : 0 ≤ d / (1 + L) := div_nonneg hd.le (by linarith); linarith)
         hxF
       simpa only [p, g, straightenedPoint, add_sub_cancel_left,
         spatialPack_spatialY_spatialZ]
@@ -96,15 +93,13 @@ theorem exists_innerBall_dirichlet_sequence
     obtain ⟨hQ, hl, ho, hsy, hsm, hlo, hup, hbsm, hdatum, hcompact⟩ :=
       straightened_base_premises hBs hBsym hB hbs hlam hlamLam
         (r0 - β k) (R k) hr (hRp k) (g k) (hg0 _) ε hε τ hF hFc
-    obtain ⟨u, hu, -⟩ := hLE hQ haτ (min lam ε) (max Lam ε) hl ho
-      (straightenedCoefficient B (g k) ε) (straightenedDrift b (g k)) hsy hsm hlo hup hbsm
-      (fun x => F (g k τ + spatialY x, spatialZ x)) hdatum hcompact hsupport
-    exact ⟨u, hu⟩
+    obtain ⟨u, hu, -⟩ := hLE hQ haτ _ _ hl ho
+      _ _ hsy hsm hlo hup hbsm
+      _ hdatum hcompact hsupport
+    grind
   choose u hu using hex
   refine ⟨β, R, g, L, u, hL, hβ, hβlim.comp (tendsto_add_atTop_nat j0), ?_,
     fun k => hg0 _, fun k => hgL0 _, fun k => hc0 _, hu⟩
-  intro k
-  dsimp only [R]
-  linarith
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov

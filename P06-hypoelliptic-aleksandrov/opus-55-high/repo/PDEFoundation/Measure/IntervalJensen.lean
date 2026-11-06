@@ -27,23 +27,16 @@ theorem abs_intervalIntegral_rpow_le_intervalIntegral_abs_rpow
     |∫ t in (0 : ℝ)..1, f t| ^ p ≤
       ∫ t in (0 : ℝ)..1, |f t| ^ p := by
   let μ : Measure ℝ :=
-    volume.restrict (Icc (0 : ℝ) 1)
+    volume.restrict (Icc (0) 1)
   let : IsProbabilityMeasure μ := by
     refine ⟨?_⟩
-    simp only [μ, Measure.restrict_apply_univ,
-      Real.volume_Icc, sub_zero, ENNReal.ofReal_one]
+    aesop
   have hfμ : Integrable f μ := by
-    change
-      Integrable f
-        (volume.restrict (Icc (0 : ℝ) 1))
     exact
       (intervalIntegrable_iff_integrableOn_Icc_of_le
         zero_le_one).mp hf
   have hfpμ :
       Integrable (fun t => |f t| ^ p) μ := by
-    change
-      Integrable (fun t => |f t| ^ p)
-        (volume.restrict (Icc (0 : ℝ) 1))
     exact
       (intervalIntegrable_iff_integrableOn_Icc_of_le
         zero_le_one).mp hfp

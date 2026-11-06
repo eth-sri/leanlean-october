@@ -40,13 +40,14 @@ lemma measurableEmbedding_elapsedInclusion {T S : ℝ≥0∞} (hTS : T ≤ S) :
       ext τ
       constructor
       · rintro ⟨σ, hσ, rfl⟩
-        exact ⟨σ, hσ, rfl⟩
-      · rintro ⟨σ, hσ, h⟩
-        exact ⟨σ, hσ, Subtype.ext h⟩
+        aesop
+      aesop
     rw [this]
     exact measurable_subtype_coe (hT.measurableSet_image.2 hB)
 
-lemma measurableEmbedding_horizonInclusion (d : ℕ) (S : ℝ≥0∞) :
+variable (d : ℕ) (S : ℝ≥0∞)
+
+lemma measurableEmbedding_horizonInclusion  :
     MeasurableEmbedding (horizonInclusion d S) :=
   (measurableEmbedding_elapsedInclusion (le_top : S ≤ ⊤)).prodMap MeasurableEmbedding.id
 
@@ -62,21 +63,20 @@ lemma eq_withDensity_of_map_eq_emb {X Z : Type*} [MeasurableSpace X] [Measurable
   exact ((MeasurePreserving.mk hf.measurable rfl).setLIntegral_comp_emb hf G' B).symm
 
 /-- Lebesgue measure on the finite carrier pushes forward to the time-restricted one. -/
-lemma map_horizonInclusion_lebesgue (d : ℕ) (S : ℝ≥0∞) :
+lemma map_horizonInclusion_lebesgue  :
     ((elapsedVolume S).prod (volume : Measure (EvolutionAmbientState d))).map
         (horizonInclusion d S) =
       (greenLebesgue d).restrict {p | ENNReal.ofReal p.1.1 < S} := by
   have h1 := Measure.map_prod_map (elapsedVolume S) (volume : Measure (EvolutionAmbientState d))
-    (measurable_elapsedInclusion (le_top : S ≤ ⊤)) measurable_id
-  rw [Measure.map_id, elapsedInclusion_map] at h1
+    (measurable_elapsedInclusion le_top) measurable_id
+  rw [elapsedInclusion_map] at h1
   have h2 := Measure.prod_restrict (μ := elapsedVolume ⊤)
     (ν := (volume : Measure (EvolutionAmbientState d))) {τ : ElapsedTime ⊤ | ENNReal.ofReal τ.1 < S}
     univ
   rw [Measure.restrict_univ, Set.prod_univ] at h2
   have h3 : (greenLebesgue d).restrict {p | ENNReal.ofReal p.1.1 < S} =
-      ((elapsedVolume ⊤).restrict {τ : ElapsedTime ⊤ | ENNReal.ofReal τ.1 < S}).prod
-        (volume : Measure (EvolutionAmbientState d)) := h2.symm
-  rw [h3]
-  exact h1.symm
+      ((elapsedVolume ⊤).restrict _).prod
+        volume := h2.symm
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.Green

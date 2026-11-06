@@ -25,40 +25,30 @@ theorem exists_spectral_weight_on_compact {X : Type*} [TopologicalSpace X]
   · let g := fun x => m x + max 0 (b x)
     have hg : ContinuousOn g K := hm.add (continuousOn_const.sup hb)
     have hgpos : ∀ x ∈ K, 0 < g x := by
-      intro x hx
-      by_cases hmx : m x = 0
-      · have hbx := hzero x hx hmx
-        simpa [g, hmx, max_eq_right hbx.le] using hbx
-      · exact add_pos_of_pos_of_nonneg (lt_of_le_of_ne (hm0 x hx) (Ne.symm hmx))
-          (le_max_left _ _)
+      grind
     obtain ⟨x₀, hx₀, hmin⟩ := hK.exists_isMinOn hne hg
     have hd : 0 < g x₀ := hgpos x₀ hx₀
     obtain ⟨B₀, hB₀⟩ := hK.bddAbove_image hb.abs
     let B := max 0 B₀
     have hB : 0 ≤ B := le_max_left _ _
     have hbound : ∀ x ∈ K, |b x| ≤ B := by
-      intro x hx
-      exact (hB₀ ⟨x, hx, rfl⟩).trans (le_max_right _ _)
+      aesop
     let cminus := 1 + B / g x₀
-    have hc : 1 ≤ cminus := by
-      dsimp [cminus]
-      exact le_add_of_nonneg_right (div_nonneg hB hd.le)
+    have hc : 1 ≤ cminus := le_add_of_nonneg_right (div_nonneg hB hd.le)
     have hc0 : 0 < cminus := lt_of_lt_of_le zero_lt_one hc
     have heq : cminus * g x₀ = g x₀ + B := by
-      dsimp [cminus]
-      field_simp
+      grind
     refine ⟨cminus, hc, ?_⟩
     intro x hx
     by_cases hbx : 0 < b x
     · exact add_pos_of_pos_of_nonneg hbx (mul_nonneg hc0.le (hm0 x hx))
     · have hmx : g x₀ ≤ m x := by
         have hh := hmin hx
-        simpa [g, max_eq_left (le_of_not_gt hbx)] using hh
+        grind
       have hh : g x₀ + B ≤ cminus * m x := by
         rw [← heq]
         exact mul_le_mul_of_nonneg_left hmx hc0.le
-      have hlow : -B ≤ b x := (abs_le.mp (hbound x hx)).1
-      linarith
+      grind
   · refine ⟨1, le_rfl, ?_⟩
     intro x hx
     exact (hne ⟨x, hx⟩).elim
@@ -72,9 +62,7 @@ theorem exists_positive_bounds_on_compact {X : Type*} [TopologicalSpace X]
   by_cases hne : K.Nonempty
   · obtain ⟨a, ha, hmin⟩ := hK.exists_isMinOn hne hw
     obtain ⟨b, hb, hmax⟩ := hK.exists_isMaxOn hne hw
-    refine ⟨w a, w b, hpos a ha, hmin hb, ?_⟩
-    intro x hx
-    exact ⟨hmin hx, hmax hx⟩
+    aesop
   · refine ⟨1, 1, zero_lt_one, le_rfl, ?_⟩
     intro x hx
     exact (hne ⟨x, hx⟩).elim

@@ -17,14 +17,15 @@ open scoped Topology
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
+variable {d : ℕ} {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
+
 /-- The joint first derivative of an anisotropic scalar C1,2 function. -/
-theorem scalarC12_hasFDerivAt {d : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ} (hU : IsOpen U) (hu : IsScalarC12On u U)
+theorem scalarC12_hasFDerivAt  (hU : IsOpen U) (hu : IsScalarC12On u U)
     {z : TimeVelocity d} (hz : z ∈ U) :
     HasFDerivAt u
       (((ContinuousLinearMap.id ℝ ℝ).smulRight (scalarTimeDerivative u z)).coprod
         (fderiv ℝ (fun y => u (z.1, y)) z.2)) z := by
-  let T (t : ℝ) (x : PDE.Vec d) : ℝ →L[ℝ] ℝ :=
+  let T (t : ℝ) (x : PDE.Vec d)  :=
     (ContinuousLinearMap.id ℝ ℝ).smulRight (scalarTimeDerivative u (t, x))
   let S (t : ℝ) (x : PDE.Vec d) := fderiv ℝ (fun y => u (t, y)) x
   have hT : ContinuousOn (fun q : TimeVelocity d => T q.1 q.2) U := by
@@ -39,7 +40,6 @@ theorem scalarC12_hasFDerivAt {d : ℕ} {U : Set (TimeVelocity d)}
       funext q
       exact PDE.fderiv_apply_eq_vecDot_classicalGradient _ _ _
     rw [he]
-    unfold PDE.vecDot
     exact continuousOn_finsetSum _ fun i _ =>
       ((continuous_apply i).comp_continuousOn hu.continuousOn_scalarSpatialGradient).mul
         continuousOn_const
@@ -52,12 +52,11 @@ theorem scalarC12_hasFDerivAt {d : ℕ} {U : Set (TimeVelocity d)}
     filter_upwards [hU.mem_nhds hz] with q hq
     exact ((hu.spatialSlice_contDiffAt hq).differentiableAt (by norm_num)).hasFDerivAt
   exact (hasStrictFDerivAt_uncurry_coprod
-    (f := fun t x => u (t, x)) (f₁ := T) (f₂ := S) (u := z) hdT hdS
+    (f := fun t x => u _) (f₁ := T) (f₂ := S) (u := z) hdT hdS
     (hT.continuousAt (hU.mem_nhds hz)) (hS.continuousAt (hU.mem_nhds hz))).hasFDerivAt
 
 /-- An anisotropic scalar C1,2 function on an open set is jointly differentiable. -/
-theorem scalarC12_differentiableAt {d : ℕ} {U : Set (TimeVelocity d)}
-    {u : TimeVelocity d → ℝ} (hU : IsOpen U) (hu : IsScalarC12On u U)
+theorem scalarC12_differentiableAt  (hU : IsOpen U) (hu : IsScalarC12On u U)
     {z : TimeVelocity d} (hz : z ∈ U) : DifferentiableAt ℝ u z :=
   (scalarC12_hasFDerivAt hU hu hz).differentiableAt
 

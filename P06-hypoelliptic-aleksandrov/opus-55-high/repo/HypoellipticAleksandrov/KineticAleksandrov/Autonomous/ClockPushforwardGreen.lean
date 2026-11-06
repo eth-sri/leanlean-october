@@ -19,10 +19,8 @@ def clockInitialState (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active) :
     EvolutionState (intervalDomain clockNormalizedInterval) (fun _ => 0) 0 :=
   ⟨((fun _ => (e.velocity 0 - c.vbar) / c.r), fun _ => 0), by
     refine ⟨?_, mem_univ _⟩
-    change (fun _ : Fin 1 => (e.velocity 0 - c.vbar) / c.r) ∈
-      movingDomain (intervalDomain clockNormalizedInterval) (fun _ => 0) 0
     rw [mem_movingDomain_iff, sub_zero, intervalDomain, PDE.mem_oneDimensionalAxisBox_iff]
-    exact (c.mem_active_iff (e.velocity 0)).mp he⟩
+    exact (c.mem_active_iff _).mp he⟩
 
 /-- The normalized Green carrier measure is obtained from the actual, uniquely realized
   evolution. -/
@@ -43,21 +41,21 @@ def clockGreen
     Measure Point :=
   (clockNativeGreen hH hLE hlam hLam A c e he).map (elapsedPhysicalPoint 0)
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+
 /-- The actual normalized carrier measure has the exact canonical Green characterization. -/
 theorem clockNativeGreen_spec
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active) :
     IsGreenMeasure (clockEvolution hH hLE hlam hLam A c e).2 0 ⊤
       (Measure.dirac (clockInitialState c e he))
       (clockNativeGreen hH hLE hlam hLam A c e he) :=
-  greenMeasure_spec _ 0 ⊤ (by simp) _
+  greenMeasure_spec _ 0 ⊤ _ _
 
 /-- The landed interval theorem gives a uniform density for the actual normalized clock Green.
 The constant depends only on ellipticity and the exponent, not on the clock or coefficient jets. -/
 theorem clockNativeGreen_density
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (q : ℝ) (hq : 1 < q) (hq2 : q < (3 : ℝ) / 2) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point)
       (he : e.velocity 0 ∈ c.active),
@@ -82,7 +80,7 @@ theorem clockNativeGreen_density
     (clockNativeGreen_spec hH hLE hlam hLam A c e he)
   have hm1 : (Measure.dirac (clockInitialState c e he)) univ = 1 :=
     Measure.dirac_apply_of_mem (mem_univ _)
-  exact ⟨G, hm, hd, hn.trans (le_of_eq ((congrArg (fun x : ℝ≥0∞ => ENNReal.ofReal C * x) hm1).trans
+  exact ⟨G, hm, hd, hn.trans (le_of_eq ((congrArg _ hm1).trans
     (mul_one _))), hf⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

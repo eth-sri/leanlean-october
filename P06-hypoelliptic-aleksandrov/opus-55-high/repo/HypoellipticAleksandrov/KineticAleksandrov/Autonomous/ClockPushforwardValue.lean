@@ -22,11 +22,11 @@ theorem clock_map_pole (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active) 
     c.map e e = (clockPhysicalPole c e he).1 := by
   ext i <;> simp [Clock.map, clockPhysicalPole]
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+
 /-- The actual physical normalized Green is exactly the established strip map of the same kernel. -/
 theorem clockGreen_eq_stripGreenOfKernel
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active) :
+     (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active) :
     clockGreen hH hLE hlam hLam A c e he =
       stripGreenOfKernel clockNormalizedInterval (clockEvolution hH hLE hlam hLam A c e).2
         ⊤ (clockPhysicalPole c e he) := rfl
@@ -34,9 +34,7 @@ theorem clockGreen_eq_stripGreenOfKernel
 /-- Late vanishing identifies the genuine clock test value with the actual infinite Green
   integral. -/
 theorem clockSourcePotential_eq_infinite_green
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active)
+     (c : Clock) (e : Point) (he : e.velocity 0 ∈ c.active)
     (R T : ℝ) (hT : 0 < T) (hRT : R < T) (f : exitProbeSubmodule)
     (hz : ∀ p, R ≤ p.time → exitProbePhysical f p = 0) :
     clockSourcePotential hH hLE hlam hLam A c e T f (sectionTwoPoint (c.map e e)) =
@@ -55,7 +53,7 @@ theorem clockSourcePotential_eq_infinite_green
     Subtype.ext rfl
   have heq := congrArg (stripGreenOfKernel clockNormalizedInterval
     (clockEvolution hH hLE hlam hLam A c e).2 ⊤) hep
-  have hm := (congrArg (fun μ : Measure Point => μ.restrict {p | p.time < T}) heq).trans
+  have hm := (congrArg (fun μ : Measure Point => μ.restrict _) heq).trans
     (congrArg (fun μ : Measure Point => μ.restrict {p | p.time < T})
       (clockGreen_eq_stripGreenOfKernel hH hLE hlam hLam A c e he).symm)
   have hrestricted := hr.trans hm

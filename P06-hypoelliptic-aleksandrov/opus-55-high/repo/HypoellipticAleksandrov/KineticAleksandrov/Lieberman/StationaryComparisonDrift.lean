@@ -10,7 +10,6 @@ Comparison with the same barrier bounds the solution and its negative.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Lieberman
 open HypoellipticAleksandrov.Parabolic
 open Filter MeasureTheory Set
@@ -57,31 +56,30 @@ theorem variational_abs_le_stationary_withDrift {d : ℕ}
     ⟨univ, isOpen_univ, subset_univ _, hG.contDiffOn⟩
   have hinit : ∀ᵐ y ∂PDE.volumeOn Ω,
       (0 : PDE.ScalarLp Ω 2) y ≤ valueCLM hΩ Q y := by
-    filter_upwards [Lp.coeFn_zero ℝ 2 (PDE.volumeOn Ω),
+    filter_upwards [Lp.coeFn_zero ℝ 2 _,
       valueCLM_h10HilbertGraphOfH10Function hΩ q,
       ae_restrict_mem hΩ.measurableSet] with y hy hqy hyo
-    rw [hy, hqy]
-    exact hqn y hyo
+    aesop
   have hqenergy := stationarySourceCurve_withDrift
     hΩ hΩb a T haT A b hb hA G hG q hq heq
   have hupper := reverseTimeVariationalEnergySolution_le a T lam haT hlam hΩ hΩb
-    A b (fun _ _ => 0) (fun t y => F (t, y)) (fun t y => G (t, y))
+    A b _ _ _
     hAs hbs hcs hFs hGs (fun z _ => hlo z.1 z.2) (fun _ _ => le_rfl)
-    (fun z hz => (hGF z hz).trans (neg_abs_le (F z)))
-    0 (valueCLM hΩ Q) hinit u g hdu hu
-    (stationarySourceCurve hΩ (T - a) Q) 0
-    (stationarySourceCurve_hasWeakTimeDerivative hΩ (T - a) (sub_pos.mpr haT) Q) hqenergy
+    (fun z hz => (hGF z hz).trans (neg_abs_le _))
+    0 _ hinit u g hdu hu
+    _ 0
+    (stationarySourceCurve_hasWeakTimeDerivative hΩ (T - a) _ Q) hqenergy
   have hninit : ∀ᵐ y ∂PDE.volumeOn Ω,
       (-(0 : PDE.ScalarLp Ω 2)) y ≤ valueCLM hΩ Q y := by
-    simpa only [neg_zero] using hinit
+    simp_all
   have hneg := reverseTimeVariationalEnergySolution_le a T lam haT hlam hΩ hΩb
-    A b (fun _ _ => 0) (fun t y => -F (t, y)) (fun t y => G (t, y))
-    hAs hbs hcs (IsSmoothOnNeighborhood.neg hFs) hGs
+    A b _ _ _
+    hAs hbs hcs _ hGs
     (fun z _ => hlo z.1 z.2) (fun _ _ => le_rfl)
-    (fun z hz => (hGF z hz).trans (neg_le_neg (le_abs_self (F z))))
-    (-0) (valueCLM hΩ Q) hninit ((-1 : ℝ) • u) ((-1 : ℝ) • g)
-    (hdu.smul (-1)) hu.neg (stationarySourceCurve hΩ (T - a) Q) 0
-    (stationarySourceCurve_hasWeakTimeDerivative hΩ (T - a) (sub_pos.mpr haT) Q) hqenergy
+    (fun z hz => (hGF z hz).trans (neg_le_neg (le_abs_self _)))
+    _ _ hninit _ ((-1 : ℝ) • g)
+    _ hu.neg _ 0
+    (stationarySourceCurve_hasWeakTimeDerivative hΩ (T - a) _ Q) hqenergy
   rw [stationarySourceCurve_hilbertRepresentative] at hupper hneg
   rw [reverseTimeHilbertRepresentative_neg_eq] at hneg
   intro τ hτ
@@ -92,7 +90,7 @@ theorem variational_abs_le_stationary_withDrift {d : ℕ}
   change _ ≤ valueCLM hΩ Q y at hu₁
   change (-reverseTimeHilbertRepresentative hΩ (T - a) (sub_pos.mpr haT)
     u g hdu ⟨τ, hτ⟩) y ≤ valueCLM hΩ Q y at hu₂
-  rw [hn, Pi.neg_apply, hqy] at hu₂
+  rw [hn, Pi.neg_apply] at hu₂
   rw [hqy] at hu₁
   exact abs_le.mpr ⟨by linarith, hu₁⟩
 

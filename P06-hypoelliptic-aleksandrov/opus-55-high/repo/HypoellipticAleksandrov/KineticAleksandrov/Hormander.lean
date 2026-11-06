@@ -20,7 +20,6 @@ introduced here.
 @[expose] public section
 
 noncomputable section
-set_option autoImplicit false
 
 open Set MeasureTheory
 open scoped BigOperators

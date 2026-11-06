@@ -8,7 +8,6 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -23,22 +22,22 @@ theorem propagation_ceiling_steps {hs TP T1 : ℝ} (hhs : 0 < hs) (hTP : hs ≤ 
       (Nat.ceil (TP / hs) : ℝ) * (TP / (Nat.ceil (TP / hs) : ℝ)) = TP := by
   have hTP0 := hhs.trans_le hTP
   have hn : 0 < Nat.ceil (TP / hs) := Nat.ceil_pos.mpr (div_pos hTP0 hhs)
-  have hnr : 0 < (Nat.ceil (TP / hs) : ℝ) := Nat.cast_pos.mpr hn
-  have hratio : 1 ≤ TP / hs := (le_div_iff₀ hhs).mpr (by simpa using hTP)
+  have hnr : 0 < (Nat.ceil _ : ℝ) := Nat.cast_pos.mpr hn
+  have hratio : 1 ≤ TP / hs := (le_div_iff₀ hhs).mpr (by simp_all)
   have hlo := Nat.le_ceil (TP / hs)
   have hup := Nat.ceil_lt_add_one (div_pos hTP0 hhs).le
-  have htwice : (Nat.ceil (TP / hs) : ℝ) ≤ 2 * (TP / hs) := by
-    linarith only [hup, hratio]
+  have htwice : (Nat.ceil (TP / hs)) ≤ 2 * (TP / hs) := by
+    linarith
   refine ⟨hn, div_pos hTP0 hnr, ?_, ?_, ?_, ?_⟩
   · apply (div_le_iff₀ hnr).mpr
     have he := (div_le_iff₀ hhs).mp hlo
-    simpa only [mul_comm] using he
+    linarith
   · apply (le_div_iff₀ hnr).mpr
     have he := (le_div_iff₀ hhs).mp (by
-      simpa only [mul_div_assoc] using htwice :
+      grind :
       (Nat.ceil (TP / hs) : ℝ) ≤ (2 * TP) / hs)
-    nlinarith only [he]
+    linarith
   · exact Nat.ceil_mono (div_le_div_of_nonneg_right hT1 hhs.le)
-  · field_simp
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

@@ -22,8 +22,8 @@ def spatialPackedBarrier (d : ℕ) (mu R t : ℝ) (x : PDE.Vec (d + d)) : ℝ :=
 theorem contDiff_spatialPackedBarrier (d : ℕ) (mu R t : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (spatialPackedBarrier d mu R t) := by
   simpa only [spatialPackedBarrier, barrier, Function.comp_apply] using!
-    (contDiff_const (c := Real.exp (-mu * t))).mul ((contDiff_const (c := (2 : ℝ))).sub
-      ((PDE.contDiff_vecNormSq.comp (spatialCoordinateCLE d).contDiff.snd).div_const (R ^ 2)))
+    (contDiff_const (c := Real.exp (-mu * t))).mul ((contDiff_const (c := (2))).sub
+      ((PDE.contDiff_vecNormSq.comp (spatialCoordinateCLE d).contDiff.snd).div_const _))
 
 /-- The first weak chain rule for the actual cutoff profile. All regularity of the
 flattened profile is discharged by the complete published upstream source theorem. -/
@@ -45,9 +45,7 @@ theorem weakGradient_timeCutoffProfile_of_flatProfile_source
   let u := flatProfileW1p_of_flatProfile_source hflat hd ha ha1 h r hr hD
   let B := PDE.W1pFunction.ofContDiffOnIsOpenBoundedConvexDomain (p := 2) hD
     ((contDiff_spatialPackedBarrier d mu R t).of_le (by simp))
-  simpa only [u, B, flatProfileW1p_of_flatProfile_source,
-    PDE.W1pFunction.ofContDiffOnIsOpenBoundedConvexDomain,
-    PDE.W1pFunction.ofContDiffOnIsSobolevRegularDomain] using!
+  simpa using!
     weakGradient_timeCutoff_sub hD (by norm_num) (by norm_num) u B
 
 /-- The actual velocity Hessian chain rule for the cutoff profile, proved using the
@@ -81,8 +79,8 @@ theorem weakSecond_timeCutoffProfile_of_flatProfile_source
   have hm := memLp_flatProfileHessian_spatialCoordinate_of_flatProfile_source
     hflat hd ha ha1 h r hr hD i k 2
   obtain ⟨M, hM, hb⟩ := timeCutoffTheta_deriv2_abs_bound
-  have he := weakSecond_cutoff_sub_smooth hD u (spatialPackedBarrier d mu R t)
-    (contDiff_spatialPackedBarrier d mu R t) (Fin.natAdd d i) (Fin.natAdd d k)
+  have he := weakSecond_cutoff_sub_smooth hD u _
+    (contDiff_spatialPackedBarrier d mu R t) _ _
     _ hm hw timeCutoffTheta (contDiff_timeCutoffTheta.of_le (by simp)) M hM.le hb
   simpa only [u, flatProfileW1p_of_flatProfile_source, spatialPackedGradient,
     Fin.addCases_right] using! he

@@ -31,49 +31,34 @@ def addWithin
     ParabolicDerivativeIndex d L :=
   ⟨alpha.1 + beta.1, by
     rw [TimeVelocityMultiIndex.parabolicWeight_add]
-    exact (Nat.add_le_add_left beta.2 _).trans hαM⟩
+    omega⟩
+
+variable {d L M : ℕ} (alpha : ParabolicDerivativeIndex d L) (beta : ParabolicDerivativeIndex d M) (hαM : alpha.1.parabolicWeight + M ≤ L)
 
 /-- The underlying multi-index of `addWithin` is literal addition. -/
 @[simp] theorem coe_addWithin
-    {d L M : ℕ}
-    (alpha : ParabolicDerivativeIndex d L)
-    (beta : ParabolicDerivativeIndex d M)
-    (hαM : alpha.1.parabolicWeight + M ≤ L) :
+     :
     (ParabolicDerivativeIndex.addWithin alpha beta hαM).1 =
       alpha.1 + beta.1 :=
   rfl
 
 /-- Adding the bounded zero index leaves the fixed left index unchanged. -/
 @[simp] theorem addWithin_zero
-    {d L M : ℕ}
-    (alpha : ParabolicDerivativeIndex d L)
-    (hαM : alpha.1.parabolicWeight + M ≤ L) :
+     :
     ParabolicDerivativeIndex.addWithin alpha
         (ParabolicDerivativeIndex.zero d M) hαM = alpha := by
-  apply Subtype.ext
-  exact add_zero alpha.1
+  aesop
 
 private theorem addWithin_timeSucc
-    {d L M : ℕ}
-    (alpha : ParabolicDerivativeIndex d L)
-    (beta : ParabolicDerivativeIndex d M)
-    (hαM : alpha.1.parabolicWeight + M ≤ L)
+    
     (hβ : beta.1.parabolicWeight + 2 ≤ M)
     (hL : (addWithin alpha beta hαM).1.parabolicWeight + 2 ≤ L) :
     addWithin alpha (timeSucc beta hβ) hαM =
       timeSucc (addWithin alpha beta hαM) hL := by
-  apply Subtype.ext
-  funext c
-  rcases c with _ | i
-  · change alpha.1 (timeCoord d) + (beta.1 (timeCoord d) + 1) =
-      alpha.1 (timeCoord d) + beta.1 (timeCoord d) + 1
-    omega
-  · rfl
+  aesop
 
 private theorem addWithin_velocitySucc
-    {d L M : ℕ}
-    (alpha : ParabolicDerivativeIndex d L)
-    (beta : ParabolicDerivativeIndex d M)
+    
     (i : Fin d)
     (hαM : alpha.1.parabolicWeight + M ≤ L)
     (hβ : beta.1.parabolicWeight + 1 ≤ M)
@@ -86,9 +71,9 @@ private theorem addWithin_velocitySucc
   · rfl
   · by_cases hji : j = i
     · subst j
-      simp [addWithin, velocitySucc, TimeVelocityMultiIndex.ofTimeVelocity,
+      simp [TimeVelocityMultiIndex.ofTimeVelocity,
         TimeVelocityMultiIndex.velocity, velocityCoord, Nat.add_assoc]
-    · simp [addWithin, velocitySucc, TimeVelocityMultiIndex.ofTimeVelocity,
+    · simp [TimeVelocityMultiIndex.ofTimeVelocity,
         TimeVelocityMultiIndex.velocity, velocityCoord, hji]
 
 end ParabolicDerivativeIndex
@@ -108,14 +93,14 @@ def shift
     D.representative (ParabolicDerivativeIndex.addWithin alpha beta hαM)
   memLp := fun beta => D.memLp _
   zero_ae := by
-    rw [ParabolicDerivativeIndex.addWithin_zero]
+    simp
   hasWeakTimeSucc := by
     intro beta hβ
     have hL : (ParabolicDerivativeIndex.addWithin alpha beta hαM).1.parabolicWeight +
         2 ≤ L := by
       change (alpha.1 + beta.1).parabolicWeight + 2 ≤ L
       rw [TimeVelocityMultiIndex.parabolicWeight_add]
-      exact (Nat.add_le_add_left hβ _).trans hαM
+      omega
     rw [ParabolicDerivativeIndex.addWithin_timeSucc alpha beta hαM hβ hL]
     exact D.hasWeakTimeSucc _ hL
   hasWeakVelocitySucc := by
@@ -124,7 +109,7 @@ def shift
         1 ≤ L := by
       change (alpha.1 + beta.1).parabolicWeight + 1 ≤ L
       rw [TimeVelocityMultiIndex.parabolicWeight_add]
-      exact (Nat.add_le_add_left hβ _).trans hαM
+      omega
     rw [ParabolicDerivativeIndex.addWithin_velocitySucc alpha beta i hαM hβ hL]
     exact D.hasWeakVelocitySucc _ i hL
 

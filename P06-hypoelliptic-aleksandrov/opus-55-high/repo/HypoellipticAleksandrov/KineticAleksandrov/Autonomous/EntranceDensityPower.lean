@@ -6,19 +6,20 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionDens
 /-! # The source integrated time-bin density q-power estimate -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory Filter
 open scoped ENNReal
 
+variable (c : Clock)
+
 /-- Full-position output bins partition the entire active observation region. -/
-theorem entranceOutputBin_iUnion (c : Clock) :
+theorem entranceOutputBin_iUnion  :
     (⋃ j : ℤ, entranceOutputBin c j) = {p | p.velocity 0 ∈ c.active} := by
   unfold entranceOutputBin
   rw [← iUnion_inter, iUnion_entranceTimeBin c.r c.positive, univ_inter]
 
 /-- Full-position output bins remain pairwise disjoint. -/
-theorem entranceOutputBin_pairwise (c : Clock) :
+theorem entranceOutputBin_pairwise  :
     Pairwise (fun i j => Disjoint (entranceOutputBin c i) (entranceOutputBin c j)) := by
   intro i j hij
   exact (entranceTimeBin_pairwise c.r hij).mono inter_subset_left inter_subset_left
@@ -33,17 +34,17 @@ theorem entranceMixtureDensity_support (hpush : PushforwardStatement)
       positionMixtureDensity hH hLE hlam hLam A c nu z ≠ 0 → z.velocity 0 ∈ c.active := by
   have hm := measurable_positionMixtureDensity hH hLE hlam hLam A c nu
   apply (ae_withDensity_iff hm).mp
-  rw [withDensity_positionMixtureDensity hpush hH hLE hlam hLam]
+  rw [withDensity_positionMixtureDensity hpush]
   have hS : MeasurableSet {z : Point | z.velocity 0 ∈ c.active} :=
     isOpen_Ioo.measurableSet.preimage ((continuous_apply 0).comp continuous_velocity).measurable
   apply Measure.ae_comp_of_ae_ae hS
   filter_upwards [hnu] with e he
-  rw [← withDensity_positionActiveDensity hpush hH hLE hlam hLam]
+  rw [← withDensity_positionActiveDensity hpush]
   apply (ae_withDensity_iff ((measurable_positionActiveDensity hH hLE hlam hLam A c).comp
     (measurable_const.prodMk measurable_id))).mpr
   filter_upwards [timeActiveDensity_support hpush hH hLE hlam hLam A c e he]
     with z hz hn
-  exact (hz hn).2
+  simp_all
 
 /-- Summing output-bin q-power norms gives exactly the whole density power integral. -/
 theorem entranceMixtureDensity_power_partition (hpush : PushforwardStatement)
@@ -64,12 +65,11 @@ theorem entranceMixtureDensity_power_partition (hpush : PushforwardStatement)
     filter_upwards [entranceMixtureDensity_support hpush hH hLE hlam hLam A c nu hnu]
       with z hz
     by_cases h : z ∈ U
-    · simp only [indicator_of_mem h]
-    · have hf : F z = 0 := by by_contra hn; exact h (hz hn)
-      simp only [indicator_of_notMem h, hf, ENNReal.zero_rpow_of_pos hq]
+    · simp_all
+    aesop
   rw [he]
   change (∫⁻ z in {p | p.velocity 0 ∈ c.active}, F z ^ q ∂volume) = _
-  rw [← entranceOutputBin_iUnion c,
+  rw [← entranceOutputBin_iUnion,
     lintegral_iUnion (measurableSet_entranceOutputBin c) (entranceOutputBin_pairwise c)]
   apply tsum_congr
   intro j
@@ -91,29 +91,29 @@ theorem entrance_density_power_sum
   have hs := position_exp_abs_summable c₀ hc₀
   have hw (k : ℤ) : 0 ≤ Real.exp (-c₀ * |(k : ℝ)|) := (Real.exp_pos _).le
   have hW : 0 < W := hs.tsum_pos hw 0 (Real.exp_pos _)
-  have hWe : (∑' k : ℤ, ENNReal.ofReal (Real.exp (-c₀ * |(k : ℝ)|))) =
+  have hWe : (∑' k : ℤ, ENNReal.ofReal _) =
       ENNReal.ofReal W := (ENNReal.ofReal_tsum_of_nonneg hw hs).symm
   let D := C * Real.exp c₀ * W
   have hD : 0 < D := mul_pos (mul_pos hC (Real.exp_pos _)) hW
   refine ⟨D ^ q, Real.rpow_pos_of_pos hD q, ?_⟩
   intro A c nu hfinite hnu
-  have hq0 : 0 < q := by linarith [hq.1]
+  have hq0 : 0 < q := by linarith
   rw [entranceMixtureDensity_power_partition (pushforwardStatement_holds)
     hH hLE hlam hLam A c nu q hq0 hnu]
   calc
-    _ ≤ ∑' j : ℤ, (ENNReal.ofReal (C * c.r ^ (6 / q - 4)) *
-        ∑' k : ℤ, entranceBinWeight c₀ j k * nu (entranceTimeBin c.r k)) ^ q :=
+    _ ≤ ∑' j : ℤ, (ENNReal.ofReal _ *
+        ∑' k : ℤ, entranceBinWeight c₀ j k * nu _) ^ q :=
       ENNReal.tsum_le_tsum (fun j => ENNReal.rpow_le_rpow (hd A c nu hnu j) hq0.le)
-    _ = ENNReal.ofReal (C * c.r ^ (6 / q - 4)) ^ q *
-        ∑' j : ℤ, (∑' k : ℤ, entranceBinWeight c₀ j k * nu (entranceTimeBin c.r k)) ^ q := by
+    _ = ENNReal.ofReal _ ^ q *
+        ∑' j : ℤ, (∑' k : ℤ, entranceBinWeight c₀ j k * nu _) ^ q := by
       simp_rw [ENNReal.mul_rpow_of_nonneg _ _ hq0.le]
       rw [ENNReal.tsum_mul_left]
     _ ≤ ENNReal.ofReal (C * c.r ^ (6 / q - 4)) ^ q *
         ((ENNReal.ofReal (Real.exp c₀) * ENNReal.ofReal W) ^ q *
-          ∑' k : ℤ, nu (entranceTimeBin c.r k) ^ q) := by
+          ∑' k : ℤ, nu _ ^ q) := by
       rw [← hWe]
       exact mul_le_mul_right (entrance_convolution_power_sum c₀ hc₀
-        (fun k => nu (entranceTimeBin c.r k)) q hq.1) _
+        _ q hq.1) _
     _ = _ := by
       rw [← mul_assoc, ← ENNReal.mul_rpow_of_nonneg _ _ hq0.le,
         ← ENNReal.ofReal_mul (Real.exp_pos _).le,
@@ -121,12 +121,10 @@ theorem entrance_density_power_sum
         ENNReal.ofReal_rpow_of_pos
           (mul_pos (mul_pos hC (Real.rpow_pos_of_pos c.positive _))
             (mul_pos (Real.exp_pos _) hW))]
-      congr 2
       have hbase : C * c.r ^ (6 / q - 4) * (Real.exp c₀ * W) =
-          D * c.r ^ (6 / q - 4) := by dsimp [D]; ring
+          D * c.r ^ (6 / q - 4) := by ring
       rw [hbase, Real.mul_rpow hD.le (Real.rpow_nonneg c.positive.le _),
         ← Real.rpow_mul c.positive.le]
-      congr 2
       field_simp
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

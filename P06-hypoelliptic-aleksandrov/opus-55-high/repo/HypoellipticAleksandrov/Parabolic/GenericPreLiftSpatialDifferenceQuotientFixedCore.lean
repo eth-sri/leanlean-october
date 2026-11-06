@@ -10,7 +10,6 @@ This module aggregates the one-direction estimate over all spatial directions.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -68,11 +67,7 @@ theorem exists_gradient_spatialDifferenceQuotient_estimate_of_testedEquation
   by_cases hd : d = 0
   · subst d
     refine ⟨0, 1, le_rfl, zero_lt_one, ?_⟩
-    intro A q G R hSymm hEll hA hAbound hq hG hR hWeak hEq h hh hhone
-    constructor
-    · intro j
-      exact Fin.elim0 j
-    · simp
+    simp
   · obtain ⟨C, δ, hC, hδ, hfixed⟩ :=
       exists_fixedDirection_gradient_spatialDifferenceQuotient_estimate_of_testedEquation
         d s₀ t₁ t₂ s₁ hs₀t₁ ht₁t₂ ht₂s₁ O₀ O₁ hO₀ hO₁ hO₁ne
@@ -82,7 +77,7 @@ theorem exists_gradient_spatialDifferenceQuotient_estimate_of_testedEquation
     have hk (k : Fin d) := hfixed A q G R hSymm hEll hA hAbound hq hG hR
       hWeak hEq k h hh hhd
     constructor
-    · exact fun j k ↦ (hk k).1 j
+    · simp_all
     · have hsum := Finset.sum_le_sum fun k (_hk : k ∈ Finset.univ) ↦ (hk k).2
       rw [Finset.sum_comm]
       simpa only [Finset.sum_const, Finset.card_univ, Fintype.card_fin,

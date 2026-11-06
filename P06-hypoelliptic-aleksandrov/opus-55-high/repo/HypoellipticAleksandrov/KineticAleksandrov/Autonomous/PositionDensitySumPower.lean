@@ -7,7 +7,6 @@ import Mathlib.Topology.Algebra.InfiniteSum.Order
 /-! # The source global position-density q-power estimate -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 open scoped ENNReal
@@ -33,28 +32,28 @@ theorem position_density_power_sum (hpush : PushforwardStatement)
     mul_nonneg (Real.exp_pos _).le (Real.exp_pos _).le
   have hW : 0 < W := hs.tsum_pos (fun _ => hw _) (0, 0) (by
     exact mul_pos (Real.exp_pos _) (Real.exp_pos _))
-  have hWe : (∑' h, ENNReal.ofReal (positionYoungKernel (c₀ / 12) h)) =
+  have hWe : (∑' h, ENNReal.ofReal _) =
       ENNReal.ofReal W := (ENNReal.ofReal_tsum_of_nonneg hw hs).symm
   let D := C * Real.exp (2 * c₀) * W
   have hD : 0 < D := mul_pos (mul_pos hC (Real.exp_pos _)) hW
   refine ⟨D ^ q, Real.rpow_pos_of_pos hD q, ?_⟩
   intro A c hc s x nu hfinite hnu
-  have hq0 : 0 < q := by linarith [hq.1]
+  have hq0 : 0 < q := by linarith
   rw [positionMixtureDensity_power_partition hpush hH hLE hlam hLam A c hc nu s x q hq0 hnu]
   calc
-    _ ≤ ∑' b : ℕ × ℤ, (ENNReal.ofReal (C * c.r ^ (6 / q - 4)) *
+    _ ≤ ∑' b : ℕ × ℤ, (ENNReal.ofReal _ *
         ∑' a : ℕ × ℤ, positionOverlapWeight c₀ b.1 a.1 b.2 a.2 *
-          nu (enlargedStartCell c s x a.1 a.2)) ^ q :=
+          nu _) ^ q :=
       ENNReal.tsum_le_tsum (fun b => ENNReal.rpow_le_rpow
         (hd A c hc s x nu hnu b.1 b.2) hq0.le)
-    _ = ENNReal.ofReal (C * c.r ^ (6 / q - 4)) ^ q *
+    _ = ENNReal.ofReal _ ^ q *
         ∑' b : ℕ × ℤ, (∑' a : ℕ × ℤ, positionOverlapWeight c₀ b.1 a.1 b.2 a.2 *
-          nu (enlargedStartCell c s x a.1 a.2)) ^ q := by
+          nu _) ^ q := by
       simp_rw [ENNReal.mul_rpow_of_nonneg _ _ hq0.le]
       rw [ENNReal.tsum_mul_left]
     _ ≤ ENNReal.ofReal (C * c.r ^ (6 / q - 4)) ^ q *
-        ((ENNReal.ofReal (Real.exp (2 * c₀)) * ENNReal.ofReal W) ^ q *
-          ∑' a : ℕ × ℤ, nu (enlargedStartCell c s x a.1 a.2) ^ q) := by
+        ((ENNReal.ofReal (Real.exp _) * ENNReal.ofReal W) ^ q *
+          ∑' a : ℕ × ℤ, nu _ ^ q) := by
       rw [← hWe]
       exact mul_le_mul_right (position_overlap_power_sum c₀ hc₀ nu c s x q hq.1) _
     _ = _ := by
@@ -64,12 +63,10 @@ theorem position_density_power_sum (hpush : PushforwardStatement)
         ENNReal.ofReal_rpow_of_pos
           (mul_pos (mul_pos hC (Real.rpow_pos_of_pos c.positive _))
             (mul_pos (Real.exp_pos _) hW))]
-      congr 2
       have hbase : C * c.r ^ (6 / q - 4) * (Real.exp (2 * c₀) * W) =
-          D * c.r ^ (6 / q - 4) := by dsimp [D]; ring
+          D * c.r ^ (6 / q - 4) := by linarith
       rw [hbase, Real.mul_rpow hD.le (Real.rpow_nonneg c.positive.le _),
         ← Real.rpow_mul c.positive.le]
-      congr 2
-      field_simp
+      grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

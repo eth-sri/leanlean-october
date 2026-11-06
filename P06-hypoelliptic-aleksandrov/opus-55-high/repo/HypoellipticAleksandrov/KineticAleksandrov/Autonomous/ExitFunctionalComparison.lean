@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitFunction
 /-! # Boundary comparison for actual homogeneous Green reconstructions -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Filter Parabolic
 open SectionTwo TheoremA Evolution
@@ -35,27 +34,26 @@ theorem reconstruction_boundary_comparison
     (continuous_sectionTwoPoint 1)
   have hU : IsOpen U := (isOpen_reconstructionStrip H sMinus T).preimage
     continuous_reconstructionPhysicalPoint
-  have hsm : ContDiffOn ℝ (⊤ : ℕ∞) ((u ∘ sectionTwoPoint) ∘ evolutionHomeomorph 1)
+  have hsm : ContDiffOn ℝ _ ((u ∘ sectionTwoPoint) ∘ evolutionHomeomorph 1)
       (evolutionHomeomorph 1 ⁻¹' D) := hf.congr (fun x hx => heq hx)
-  have hreg (p : Point) (hp : p ∈ D) : IsSliceRegularAt (u ∘ sectionTwoPoint) p :=
+  have hreg (p : Point) (hp : p ∈ D)  :=
     reconstruction_slice_regular_of_contDiffOn hD hsm p hp
   have huop (p : Point) (hp : p ∈ D) :
       transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1)
         (u ∘ sectionTwoPoint) p = 0 := by
     let x := (evolutionHomeomorph 1).symm p
     have hx : x ∈ U := by
-      change sectionTwoPoint (evolutionHomeomorph 1 x) ∈ reconstructionStrip H sMinus T
-      rwa [Homeomorph.apply_symm_apply]
+      aesop
     have hh : (u ∘ reconstructionPhysicalPoint) =ᶠ[𝓝 x] f :=
       Filter.mem_of_superset (hU.mem_nhds hx) (fun y hy => heq hy)
-    have hj : ContDiffAt ℝ 2 ((u ∘ sectionTwoPoint) ∘ evolutionHomeomorph 1) x :=
+    have hj : ContDiffAt ℝ 2 _ x :=
       (hsm.contDiffAt ((hD.preimage (evolutionHomeomorph 1).continuous).mem_nhds hx)).of_le
         (by simp)
     have ht := transportedOperator_comp (B := evolutionCoefficient A.a) (b := identityDrift 1) hj
-    change transportedOperator (evolutionCoefficient A.a) (identityDrift 1)
+    change transportedOperator _ _
       (u ∘ reconstructionPhysicalPoint) x = _ at ht
     rw [reconstruction_transportedOperator_congr _ _ hh, hop x hx] at ht
-    simpa only [x, Homeomorph.apply_symm_apply] using ht.symm
+    aesop
   let a := e.1.time
   have hactive : movingActiveSlab (intervalDomain H) (fun _ => 0) a T ⊆ D := by
     intro p hp
@@ -68,13 +66,13 @@ theorem reconstruction_boundary_comparison
   have hcand := reconstruction_candidate_continuousOn_exit hH hlam hLam A H E hE
     sMinus T phi hphi hc.continuousOn g hg
   have hcslab : ContinuousOn (u ∘ sectionTwoPoint)
-      (movingClosedSlab (intervalDomain H) (fun _ => 0) a T) :=
+      (movingClosedSlab _ _ a T) :=
     hcand.comp (continuous_sectionTwoPoint 1).continuousOn (reconstruction_closedSlab_mapsTo H he)
   have hmax := growth_comparison
     (isOpen_of_isAdmissibleEvolutionDomain (intervalDomain_admissible H)) continuous_const
     hlam (evolutionCoefficient_bounds A) (identityDrift_bounds 1).1
     (le_refl 0) zero_le_one (a := a) (T := T)
-    (u := fun p => u (sectionTwoPoint p) - c)
+    (u := fun p => u _ - c)
     ⟨M + C * (T - a) + |c|, fun p hp => by
       have hv := reconstruction_potential_abs_le_time H E.2 T g C hC hgb (sectionTwoPoint p)
       have ht : max (T - p.time) 0 ≤ T - a := max_le
@@ -83,13 +81,13 @@ theorem reconstruction_boundary_comparison
       have hφ := (le_abs_self (phi (sectionTwoPoint p))).trans (hM _)
       have hw := neg_le_abs (stripSourcePotential H E.2 T g (sectionTwoPoint p))
       have hcc := neg_le_abs c
-      change phi (sectionTwoPoint p) - stripSourcePotential H E.2 T g (sectionTwoPoint p) - c ≤ _
-      change |stripSourcePotential H E.2 T g (sectionTwoPoint p)| ≤ C * max (T - p.time) 0 at hv
-      linarith only [hv, hb', hφ, hw, hcc]⟩
+      change phi _ - stripSourcePotential H E.2 T g _ - c ≤ _
+      change |stripSourcePotential H E.2 T g _| ≤ C * max (T - p.time) 0 at hv
+      linarith⟩
     (hcslab.sub continuousOn_const)
     (fun p hp => (hreg p (hactive hp)).sub (IsSliceRegularAt.const c p))
     (fun p hp => by
-      change 0 ≤ viscousTransportedOperator (evolutionCoefficient A.a) (identityDrift 1) 0
+      change 0 ≤ viscousTransportedOperator _ _ 0
         (fun q => (u ∘ sectionTwoPoint) q - (fun _ : Point => c) q) p
       rw [viscousTransportedOperator_sub (hreg p (hactive hp)) (IsSliceRegularAt.const c p),
         viscousTransportedOperator_zero, huop p (hactive hp), viscousTransportedOperator_const]
@@ -99,8 +97,8 @@ theorem reconstruction_boundary_comparison
         simpa only [mem_closure_movingDomain_iff, sub_zero] using hp.2.2)
       have hn : sectionTwoPoint p ∉ stripPast H T := fun hh =>
         (by simpa only [sectionTwoPoint, hpt] using hh.1 : T < T).false
-      have hz := reconstruction_potential_zero_outside H E.2 T g (sectionTwoPoint p) hn
-      change phi (sectionTwoPoint p) - stripSourcePotential H E.2 T g (sectionTwoPoint p) - c ≤ 0
+      have hz := reconstruction_potential_zero_outside H E.2 T g _ hn
+      change phi _ - stripSourcePotential H E.2 T g _ - c ≤ 0
       rw [hz, sub_zero]
       exact sub_nonpos.mpr (hbd _ (Or.inl ⟨hpt, hv⟩)))
     (fun p hp hpf => by
@@ -112,11 +110,11 @@ theorem reconstruction_boundary_comparison
         rcases hv with hv | hv
         · exact (lt_irrefl H.lo) (hv ▸ h.2.1)
         · exact (lt_irrefl H.hi) (hv ▸ h.2.2)
-      have hz := reconstruction_potential_zero_outside H E.2 T g (sectionTwoPoint p) hn
-      change phi (sectionTwoPoint p) - stripSourcePotential H E.2 T g (sectionTwoPoint p) - c ≤ 0
+      have hz := reconstruction_potential_zero_outside H E.2 T g _ hn
+      change phi _ - stripSourcePotential H E.2 T g _ - c ≤ 0
       rw [hz, sub_zero]
       exact sub_nonpos.mpr (hbd _ (Or.inr ⟨hp.2.1, hv⟩)))
-  have hp : sectionTwoPoint e.1 ∈ movingClosedSlab (intervalDomain H) (fun _ => 0) a T :=
+  have hp : sectionTwoPoint e.1 ∈ movingClosedSlab _ _ a T :=
     ⟨le_rfl, (WithTop.coe_lt_coe.mp e.2.1).le, subset_closure (stripPoleState H T e).2.1⟩
   have hres := sub_nonpos.mp (hmax _ hp)
   have hgAE : g =ᵐ[stripGreenOfKernel H E.2 T e] fun p => -forwardScalarOperator A.a phi p := by
@@ -124,8 +122,8 @@ theorem reconstruction_boundary_comparison
       reconstruction_green_ae_time_gt H E.2 T e] with p hp ht
     exact hg p ⟨he.trans ht, hp⟩
   change phi e.1 - stripSourcePotential H E.2 T g e.1 ≤ c at hres
-  rw [stripSourcePotential_eq_green H E.2 T g e, stripPotentialOfKernel,
+  rw [stripSourcePotential_eq_green, stripPotentialOfKernel,
     integral_congr_ae hgAE] at hres
-  exact hres
+  omega
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

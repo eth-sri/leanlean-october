@@ -13,7 +13,6 @@ on the moving domains.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov Set Filter MeasureTheory Evolution Classical
 open scoped Topology MatrixOrder
@@ -50,19 +49,16 @@ theorem exists_classical_terminalSolution_of_viscous
       (∀ v : KineticPoint n → ℝ,
         IsClassicalTerminalSolution Ω γ B b τ F v →
           EqOn v u (evolutionPastClosedCylinder Ω γ τ)) := by
-  let : SecondCountableTopology (KineticPoint n) :=
-    (KineticPoint.homeomorphProd n).isEmbedding.secondCountableTopology
   obtain ⟨C, hC, hFC⟩ := F.exists_bound
   let family (ε : {ε : ℝ // 0 < ε ∧ ε ≤ 1}) :=
     (hvisc τ F hF ε.1 ε.2.1 ε.2.2 C hC hFC).choose
   have hfamily (ε : {ε : ℝ // 0 < ε ∧ ε ≤ 1}) :=
     (hvisc τ F hF ε.1 ε.2.1 ε.2.2 C hC hFC).choose_spec
   let seqε (j : ℕ) : {ε : ℝ // 0 < ε ∧ ε ≤ 1} :=
-    ⟨1 / ((j : ℝ) + 1), by
+    ⟨1 / (j + 1), by
       constructor
       · positivity
       · exact (div_le_one (by positivity)).mpr (by
-          have hj : (0 : ℝ) ≤ j := Nat.cast_nonneg j
           linarith)⟩
   let v := fun j => family (seqε j)
   let w := family ⟨1, one_pos, le_rfl⟩
@@ -81,7 +77,7 @@ theorem exists_classical_terminalSolution_of_viscous
     (((hfamily (seqε (ν j))).1.2.1.mono hUS).aestronglyMeasurable hU.measurableSet)
   have hba : ∀ j, ∀ᵐ p ∂volume.restrict U, |v (ν j) p| ≤ C := fun j => by
     filter_upwards [ae_restrict_mem hU.measurableSet] with p hp
-    exact (hfamily (seqε (ν j))).2.1 p (hUS hp)
+    grind
   have hcV : ContinuousOn V U := by
     have hc := hV.continuousOn.comp (evolutionHomeomorph n).symm.continuous.continuousOn
       (fun p hp => by simpa using hp)
@@ -121,24 +117,18 @@ theorem exists_classical_terminalSolution_of_viscous
   have hgerm : ∀ p ∈ U, candidate =ᶠ[𝓝 p] V := by
     intro p hp
     filter_upwards [hU.mem_nhds hp] with q hq
-    change (if q ∈ U then V q else w q) = V q
-    exact ite_eq_left (show q ∈ U from hq)
+    grind
   have hclass : IsClassicalTerminalSolution Ω γ B b τ F candidate := by
     refine ⟨⟨C, hC, ?_⟩, ?_, ?_, ?_, ?_, ?_⟩
-    · intro p hp
-      by_cases hi : p ∈ U
-      · simpa only [candidate, ite_eq_left hi] using hVC p hi
-      · simpa only [candidate, ite_eq_right hi] using (hfamily ⟨1, one_pos, le_rfl⟩).2.1 p hp
+    · grind
     · exact continuousOn_interior_patch U S hU hUS V w hcV hw.2.1 htrace
     · rw [evolutionPastInteriorRaw_eq_image]
       apply contDiffOn_comp_evolutionHomeomorph_iff.mp
       apply hV.congr
-      intro x hx
-      change (if evolutionHomeomorph n x ∈ U then _ else _) = _
-      exact ite_eq_left (show evolutionHomeomorph n x ∈ U from hx)
+      grind
     · intro p hp
       have he := viscousTransportedOperator_congr_germ B b 0 (hgerm p hp)
-      simpa only [viscousTransportedOperator_zero, hVE p hp] using he
+      simp_all
     · intro p hp
       have hi : p ∉ U := fun h => (ne_of_lt h.1) hp.1
       simpa only [candidate, ite_eq_right hi] using hw.2.2.2.2.1 p hp
@@ -150,7 +140,6 @@ theorem exists_classical_terminalSolution_of_viscous
   have hzero := (isClassicalViscousTerminalSolution_zero_iff Ω γ B b τ F candidate).mpr hclass
   refine ⟨candidate, hclass, ?_, ?_⟩
   · intro D hD hFD
-    have _hD := hD
     exact classical_abs_le_const hΩo hγ.1 hlam hB_ell hb_lipschitz
       le_rfl zero_le_one hzero hFD
   · intro z hz

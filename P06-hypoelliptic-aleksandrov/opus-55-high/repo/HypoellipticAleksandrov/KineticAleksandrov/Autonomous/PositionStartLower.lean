@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionCell
 /-! # The exact localized lower weight of position-resolved starts -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
@@ -18,7 +17,7 @@ theorem positionStartQuadratic_slab_lower (mu : Measure Point) [IsFiniteMeasure 
       ∫ p in {q : Point | s + a < q.time ∧ q.time ≤ s + b},
         positionStartCutoff (x + ((k : ℝ) + 1 / 2) * c.r ^ 3) c.r c.positive
           (p.position 0) * visitQuadratic c (p.velocity 0) ∂mu := by
-  let Y := x + ((k : ℝ) + 1 / 2) * c.r ^ 3
+  let Y := x + (k + 1 / 2) * c.r ^ 3
   let f := fun p : Point => positionStartCutoff Y c.r c.positive (p.position 0) *
     visitQuadratic c (p.velocity 0)
   let S := {q : Point | s + a < q.time ∧ q.time ≤ s + b}
@@ -50,7 +49,7 @@ theorem positionStartQuadratic_slab_lower (mu : Measure Point) [IsFiniteMeasure 
         exact mul_nonneg ((positionStartCutoff_properties Y c.r c.positive).2 _).1
           (visitQuadratic_nonneg c
             (subset_closure (enlarged_closedEntrance_subset_active c hv)))
-      · rw [indicator_of_notMem hs]
+      simp_all
   rw [integral_indicator hB, integral_const, integral_indicator hS] at hm
   change 5 * c.r ^ 2 / 16 * (mu B).toReal ≤ ∫ p in S, f p ∂mu
   simpa only [smul_eq_mul, mul_comm, Measure.real,

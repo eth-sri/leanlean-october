@@ -4,6 +4,8 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeGelfandPositivePar
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimePositivePartPairingConvergence
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimePositivePartContinuity
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeHilbertTraces
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeSteklovPairing
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeScalarEnergy
 
 /-!
 # Positive-part reverse-time energy increments
@@ -22,60 +24,56 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 open Filter Function MeasureTheory Set Topology
 open scoped ENNReal RealInnerProductSpace
 
-private noncomputable def rawPositivePartEnergy
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T) (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) (eta : ReverseTimeScalarTest T)
+
+private def rawPositivePartEnergy
+    
     (u : ReverseTimeL2V hΩ T) : ℝ → ℝ :=
   fun t => ‖valueCLM hΩ (h10PositivePart hΩ (u t))‖ ^ 2
 
-private noncomputable def rawPositivePartEnergyRate
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+private def rawPositivePartEnergyRate
+    
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) : ℝ → ℝ :=
   fun t => 2 * (g t) (h10PositivePart hΩ (u t))
 
-private noncomputable def reverseTimePositivePartEnergyPrimitive
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+private def reverseTimePositivePartEnergyPrimitive
+    
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) : ℝ → ℝ :=
   fun t => ∫ r in Set.Ioc 0 t, rawPositivePartEnergyRate hΩ T u g r ∂reverseTimeVolume T
 
 private theorem integrable_rawPositivePartEnergy
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    (u : ReverseTimeL2V hΩ T) :
+     :
     Integrable (rawPositivePartEnergy hΩ T u) (reverseTimeVolume T) := by
   letI : IsFiniteMeasure (reverseTimeVolume T) := by
-    change IsFiniteMeasure (volume.restrict (Ioo (0 : ℝ) T))
+    change IsFiniteMeasure (volume.restrict (Ioo _ T))
     infer_instance
   have hu : MemLp (fun t => valueCLM hΩ (h10PositivePart hΩ (u t))) 2
-      (reverseTimeVolume T) :=
+      _ :=
     memLp_congr_ae (by
         filter_upwards [coeFn_reverseTimePositivePart hΩ T u] with t ht
-        exact congrArg (valueCLM hΩ) ht) |>.mp
+        simp_all) |>.mp
       ((MeasureTheory.Lp.memLp (reverseTimePositivePart hΩ T u)).continuousLinearMap_comp
         (valueCLM hΩ))
-  exact hu.integrable_norm_pow (by norm_num : (2 : ℕ) ≠ 0)
+  exact hu.integrable_norm_pow (by norm_num)
 
 private theorem integrable_rawPositivePartEnergyRate
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
-    Integrable (rawPositivePartEnergyRate hΩ T u g) (reverseTimeVolume T) := by
-  exact ((integrable_reverseTimeDualPairing hΩ T
+     :
+    Integrable (rawPositivePartEnergyRate hΩ T u g) (reverseTimeVolume T) := ((integrable_reverseTimeDualPairing hΩ T
     (reverseTimePositivePart hΩ T u) g).const_mul 2).congr (by
       filter_upwards [coeFn_reverseTimePositivePart hΩ T u] with t ht
-      simp only [rawPositivePartEnergyRate]
-      rw [ht])
+      aesop)
 
 private theorem continuousOn_reverseTimePositivePartEnergyPrimitive
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
+     :
     ContinuousOn (reverseTimePositivePartEnergyPrimitive hΩ T u g) (Icc 0 T) := by
   letI : NullSingletonClass (reverseTimeVolume T) := by
-    change NullSingletonClass (volume.restrict (Ioo (0 : ℝ) T))
+    change NullSingletonClass (volume.restrict (Ioo _ T))
     infer_instance
   exact intervalIntegral.continuousOn_primitive
     (integrable_rawPositivePartEnergyRate hΩ T u g).integrableOn
 
 private theorem reverseTimePositivePartEnergyPrimitive_sub
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     {s t : ℝ} (hs : s ∈ Icc 0 T) (ht : t ∈ Icc 0 T) (hst : s ≤ t) :
     reverseTimePositivePartEnergyPrimitive hΩ T u g t -
         reverseTimePositivePartEnergyPrimitive hΩ T u g s =
@@ -89,166 +87,11 @@ private theorem reverseTimePositivePartEnergyPrimitive_sub
       (integrable_rawPositivePartEnergyRate hΩ T u g).intervalIntegrable,
     intervalIntegral.integral_of_le hst]
 
-private theorem exists_strict_test_collar
-    (T : ℝ) (hT : 0 < T) (eta : ReverseTimeScalarTest T) :
-    ∃ a b : ℝ, 0 < a ∧ a < b ∧ b < T ∧
-      tsupport (eta : ℝ → ℝ) ⊆ Ioo a b ∧ tsupport eta.deriv ⊆ Ioo a b := by
-  by_cases hsupport : (tsupport (eta : ℝ → ℝ)).Nonempty
-  · obtain ⟨lo, hlo, hloMin⟩ :=
-      eta.hasCompactSupport.exists_isMinOn hsupport continuousOn_id
-    obtain ⟨hi, hhi, hhiMax⟩ :=
-      eta.hasCompactSupport.exists_isMaxOn hsupport continuousOn_id
-    have hloIoo : lo ∈ Ioo (0 : ℝ) T := eta.tsupport_subset hlo
-    have hhiIoo : hi ∈ Ioo (0 : ℝ) T := eta.tsupport_subset hhi
-    obtain ⟨a, ha0, halo⟩ := exists_between hloIoo.1
-    obtain ⟨b, hhib, hbT⟩ := exists_between hhiIoo.2
-    have hlohi : lo ≤ hi := hloMin hhi
-    refine ⟨a, b, ha0, ?_, hbT, ?_, ?_⟩
-    · exact lt_of_lt_of_le halo (hlohi.trans_lt hhib).le
-    · intro t ht
-      have hlot : lo ≤ t := hloMin ht
-      have hthi : t ≤ hi := hhiMax ht
-      exact ⟨lt_of_lt_of_le halo hlot, lt_of_le_of_lt hthi hhib⟩
-    · have hderivSupport : tsupport eta.deriv ⊆ tsupport (eta : ℝ → ℝ) := by
-        rw [ReverseTimeScalarTest.deriv, tsupport]
-        exact closure_minimal support_deriv_subset (isClosed_tsupport _)
-      exact hderivSupport.trans (by
-        intro t ht
-        have hlot : lo ≤ t := hloMin ht
-        have hthi : t ≤ hi := hhiMax ht
-        exact ⟨lt_of_lt_of_le halo hlot, lt_of_le_of_lt hthi hhib⟩)
-  · have heta : (eta : ℝ → ℝ) = 0 := by
-      funext t
-      apply image_eq_zero_of_notMem_tsupport
-      exact fun ht => hsupport ⟨t, ht⟩
-    have hderiv : eta.deriv = 0 := by
-      apply funext
-      intro t
-      rw [eta.deriv_apply, heta]
-      simp
-    refine ⟨T / 3, 2 * T / 3, by linarith, by linarith, by linarith, ?_, ?_⟩
-    · rw [heta]
-      simp
-    · rw [hderiv]
-      simp
 
-private theorem integral_reverseTime_eq_integral_Icc_of_tsupport_subset
-    {T a b : ℝ} {F phi : ℝ → ℝ}
-    (hK : Icc a b ⊆ Ioo (0 : ℝ) T) (hphi : tsupport phi ⊆ Ioo a b) :
-    (∫ t, F t * phi t ∂reverseTimeVolume T) = ∫ t in Icc a b, F t * phi t := by
-  change (∫ t in Ioo (0 : ℝ) T, F t * phi t) = ∫ t in Icc a b, F t * phi t
-  apply setIntegral_eq_of_subset_of_forall_diff_eq_zero measurableSet_Ioo hK
-  intro t ht
-  rw [image_eq_zero_of_notMem_tsupport (fun hts => ht.2
-    ⟨le_of_lt (hphi hts).1, le_of_lt (hphi hts).2⟩)]
-  ring
 
-private theorem integral_energy_mul_deriv_eq_neg_integral_pairing_of_increment
-    {a b : ℝ} {E Q : ℝ → ℝ} (hab : a ≤ b)
-    (hE : Continuous E) (hQ : Continuous Q)
-    (hinc : ∀ s ∈ Icc a b, ∀ t ∈ Icc a b, s ≤ t →
-      E t - E s = ∫ r in Icc s t, Q r)
-    {eta : ℝ → ℝ} (heta : ContDiff ℝ 1 eta) (hsupp : tsupport eta ⊆ Ioo a b) :
-    (∫ t in Icc a b, E t * deriv eta t) =
-      -(∫ t in Icc a b, Q t * eta t) := by
-  have hQIcc : IntegrableOn Q (Icc a b) volume := hQ.integrableOn_Icc
-  have hEIcc : IntegrableOn E (Icc a b) volume := hE.integrableOn_Icc
-  have hetaIcc : IntegrableOn eta (Icc a b) volume := heta.continuous.integrableOn_Icc
-  have hderivIcc : IntegrableOn (deriv eta) (Icc a b) volume :=
-    (heta.continuous_deriv (by simp)).integrableOn_Icc
-  have hEformula : ∀ t ∈ Icc a b, E t = PDE.intervalPrimitive a Q t + E a := by
-    intro t ht
-    have h := hinc a ⟨le_rfl, hab⟩ t ht ht.1
-    calc
-      E t = (∫ r in Icc a t, Q r) + E a := by linarith
-      _ = PDE.intervalPrimitive a Q t + E a := by
-        rw [PDE.intervalPrimitive_eq_setIntegral_Icc ht.1]
-  have hleft : (∫ t in Icc a b, E t * deriv eta t) =
-      ∫ t in Icc a b, (PDE.intervalPrimitive a Q t + E a) * deriv eta t := by
-    apply setIntegral_congr_fun measurableSet_Icc
-    intro t ht
-    change E t * deriv eta t = _
-    rw [hEformula t ht]
-  rw [hleft]
-  calc
-    (∫ t in Icc a b, (PDE.intervalPrimitive a Q t + E a) * deriv eta t) =
-        ∫ t in Icc a b,
-          PDE.intervalPrimitive a Q t * deriv eta t + E a * deriv eta t := by
-            apply setIntegral_congr_fun measurableSet_Icc
-            intro t _
-            ring
-    _ = (∫ t in Icc a b, PDE.intervalPrimitive a Q t * deriv eta t) +
-        ∫ t in Icc a b, E a * deriv eta t := by
-          rw [integral_add]
-          · exact ((PDE.continuousOn_intervalPrimitive hab hQIcc).mul
-              (heta.continuous_deriv (by simp)).continuousOn).integrableOn_Icc
-          · simpa only [Pi.mul_apply] using hderivIcc.const_mul (E a)
-    _ = -(∫ t in Icc a b, Q t * eta t) := by
-      rw [PDE.intervalPrimitive_scalar_weak_identity_Icc hQIcc heta hsupp]
-      have htail : ∫ t in Icc a b, deriv eta t = 0 := by
-        rw [integral_Icc_eq_integral_Ioc,
-          ← intervalIntegral.integral_of_le hab,
-          intervalIntegral.integral_deriv_of_contDiffOn_Icc heta.contDiffOn hab]
-        have ha : eta a = 0 := by
-          apply image_eq_zero_of_notMem_tsupport
-          exact fun ht => (not_lt_of_ge le_rfl) (hsupp ht).1
-        have hb : eta b = 0 := by
-          apply image_eq_zero_of_notMem_tsupport
-          exact fun ht => (not_lt_of_ge le_rfl) (hsupp ht).2
-        rw [ha, hb]
-        ring
-      rw [integral_const_mul, htail]
-      ring
 
-private theorem abs_sq_sub_le_of_bounds
-    {a b N delta y : ℝ} (ha : 0 ≤ a) (hb : 0 ≤ b) (hN : 0 ≤ N)
-    (hdelta : 0 ≤ delta) (hy : 0 ≤ y)
-    (hdiff : |a - b| ≤ N * delta)
-    (hsum : a + b ≤ N * delta + 2 * N * y) :
-    |a ^ 2 - b ^ 2| ≤ N ^ 2 * delta ^ 2 + 2 * N ^ 2 * y * delta := by
-  rw [sq_sub_sq, abs_mul, abs_of_nonneg (add_nonneg ha hb)]
-  calc
-    (a + b) * |a - b| ≤ (N * delta + 2 * N * y) * (N * delta) := by
-      exact mul_le_mul hsum hdiff (abs_nonneg _) (by positivity)
-    _ = N ^ 2 * delta ^ 2 + 2 * N ^ 2 * y * delta := by ring
 
-private theorem abs_sqNorm_valueCLM_sub_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (x y : H10HilbertGraph hΩ) :
-    |‖valueCLM hΩ x‖ ^ 2 - ‖valueCLM hΩ y‖ ^ 2| ≤
-      ‖valueCLM hΩ‖ ^ 2 * ‖x - y‖ ^ 2 +
-        2 * ‖valueCLM hΩ‖ ^ 2 * ‖y‖ * ‖x - y‖ := by
-  let L := valueCLM hΩ
-  have hLx : ‖L x‖ ≤ ‖L‖ * ‖x‖ := L.le_opNorm x
-  have hLy : ‖L y‖ ≤ ‖L‖ * ‖y‖ := L.le_opNorm y
-  have hLsub : ‖L (x - y)‖ ≤ ‖L‖ * ‖x - y‖ := L.le_opNorm (x - y)
-  have hx : ‖x‖ ≤ ‖x - y‖ + ‖y‖ := by
-    calc
-      ‖x‖ = ‖(x - y) + y‖ := by
-        congr 1
-        abel
-      _ ≤ ‖x - y‖ + ‖y‖ := norm_add_le _ _
-  have hLx' : ‖L x‖ ≤ ‖L‖ * (‖x - y‖ + ‖y‖) :=
-    hLx.trans (mul_le_mul_of_nonneg_left hx (norm_nonneg _))
-  have hdiff : |‖L x‖ - ‖L y‖| ≤ ‖L‖ * ‖x - y‖ := by
-    calc
-      |‖L x‖ - ‖L y‖| ≤ ‖L x - L y‖ := abs_norm_sub_norm_le _ _
-      _ = ‖L (x - y)‖ := by rw [L.map_sub]
-      _ ≤ ‖L‖ * ‖x - y‖ := hLsub
-  have hfactor : ‖L x‖ + ‖L y‖ ≤ ‖L‖ * ‖x - y‖ + 2 * ‖L‖ * ‖y‖ := by
-    calc
-      ‖L x‖ + ‖L y‖ ≤ ‖L‖ * (‖x - y‖ + ‖y‖) + ‖L‖ * ‖y‖ :=
-        add_le_add hLx' hLy
-      _ = ‖L‖ * ‖x - y‖ + 2 * ‖L‖ * ‖y‖ := by ring
-  exact abs_sq_sub_le_of_bounds (norm_nonneg _) (norm_nonneg _) (norm_nonneg _)
-    (norm_nonneg _) (norm_nonneg _) hdiff hfactor
 
-private theorem memLp_on_Icc_of_continuous
-    {E : Type*} [NormedAddCommGroup E]
-    (f : ℝ → E) (hf : Continuous f) (a b : ℝ) :
-    MemLp f (2 : ℝ≥0∞) (volume.restrict (Icc a b)) := by
-  refine (memLp_two_iff_integrable_sq_norm hf.aestronglyMeasurable).mpr ?_
-  exact (hf.norm.pow 2).integrableOn_Icc
 
 private theorem eventually_memLp_reverseTimeForwardSteklov_on_Icc
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
@@ -266,215 +109,54 @@ private theorem memLp_restrict_Icc_of_subset
     (f : MeasureTheory.Lp E 2 (reverseTimeVolume T)) {a b : ℝ}
     (hK : Icc a b ⊆ Ioo (0 : ℝ) T) :
     MemLp (f : ℝ → E) 2 (volume.restrict (Icc a b)) := by
-  dsimp only [reverseTimeVolume, reverseTimeOpenInterval]
   rw [← Measure.restrict_restrict_of_subset hK]
   exact (Lp.memLp f).restrict _
 
-private theorem tendsto_integral_abs_valueSq_of_sqNorm
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω)
-    (μ : Measure ℝ) (u : ℝ → H10HilbertGraph hΩ)
-    (uh : ℝ → ℝ → H10HilbertGraph hΩ)
-    (hu : MemLp u (2 : ℝ≥0∞) μ)
-    (huh : ∀ᶠ h : ℝ in 𝓝[>] 0, MemLp (uh h) (2 : ℝ≥0∞) μ)
-    (hU : Tendsto (fun h : ℝ => ∫ t, ‖uh h t - u t‖ ^ 2 ∂μ)
-      (𝓝[>] 0) (𝓝 0)) :
-    Tendsto (fun h : ℝ => ∫ t,
-      |‖valueCLM hΩ (uh h t)‖ ^ 2 - ‖valueCLM hΩ (u t)‖ ^ 2| ∂μ)
-      (𝓝[>] 0) (𝓝 0) := by
-  let C : ℝ := ‖valueCLM hΩ‖ ^ 2
-  have hUsqrt : Tendsto (fun h : ℝ =>
-      √(∫ t, ‖uh h t - u t‖ ^ 2 ∂μ)) (𝓝[>] 0) (𝓝 0) := by
-    simpa only [Real.sqrt_zero] using hU.sqrt
-  have hfirst : Tendsto (fun h : ℝ =>
-      C * (∫ t, ‖uh h t - u t‖ ^ 2 ∂μ))
-      (𝓝[>] 0) (𝓝 0) := by
-    simpa only [mul_zero] using tendsto_const_nhds.mul hU
-  have hsecond : Tendsto (fun h : ℝ =>
-      2 * C * √(∫ t, ‖u t‖ ^ 2 ∂μ) *
-        √(∫ t, ‖uh h t - u t‖ ^ 2 ∂μ)) (𝓝[>] 0) (𝓝 0) := by
-    have hconst : Tendsto (fun _ : ℝ =>
-        2 * C * √(∫ t, ‖u t‖ ^ 2 ∂μ))
-        (𝓝[>] 0) (𝓝 (2 * C * √(∫ t, ‖u t‖ ^ 2 ∂μ)) : Filter ℝ) :=
-      tendsto_const_nhds
-    simpa only [mul_zero] using hconst.mul hUsqrt
-  apply squeeze_zero'
-  · filter_upwards with h
-    exact integral_nonneg fun _ => abs_nonneg _
-  · filter_upwards [huh] with h huh
-    have hdu : MemLp (fun t => uh h t - u t) (2 : ℝ≥0∞) μ := huh.sub hu
-    have hLuh : MemLp (fun t => valueCLM hΩ (uh h t)) (2 : ℝ≥0∞) μ :=
-      huh.continuousLinearMap_comp (valueCLM hΩ)
-    have hLu : MemLp (fun t => valueCLM hΩ (u t)) (2 : ℝ≥0∞) μ :=
-      hu.continuousLinearMap_comp (valueCLM hΩ)
-    have hleft : Integrable (fun t =>
-        |‖valueCLM hΩ (uh h t)‖ ^ 2 - ‖valueCLM hΩ (u t)‖ ^ 2|) μ := by
-      simpa only [Real.norm_eq_abs, Pi.sub_def] using
-        ((hLuh.integrable_norm_pow (by norm_num : (2 : ℕ) ≠ 0)).sub
-          (hLu.integrable_norm_pow (by norm_num : (2 : ℕ) ≠ 0))).norm
-    have hterm1 : Integrable (fun t =>
-        C * ‖uh h t - u t‖ ^ 2) μ :=
-      (hdu.integrable_norm_pow (by norm_num : (2 : ℕ) ≠ 0)).const_mul _
-    have hterm2 : Integrable (fun t =>
-        2 * C * ‖u t‖ * ‖uh h t - u t‖) μ :=
-      by
-        apply ((hu.norm).integrable_mul hdu.norm).const_mul (2 * C) |>.congr
-        filter_upwards with t
-        change 2 * C *
-          ((fun x => ‖u x‖) * fun x => ‖uh h x - u x‖) t = _
-        simp only [Pi.mul_apply]
-        ring
-    have hpoint : ∀ t : ℝ,
-        |‖valueCLM hΩ (uh h t)‖ ^ 2 - ‖valueCLM hΩ (u t)‖ ^ 2| ≤
-          C * ‖uh h t - u t‖ ^ 2 + 2 * C * ‖u t‖ * ‖uh h t - u t‖ := by
-      intro t
-      simpa only [C] using abs_sqNorm_valueCLM_sub_le hΩ (uh h t) (u t)
-    have hmono := integral_mono hleft (hterm1.add hterm2) hpoint
-    have hholder := integral_mul_norm_le_sqrt_mul_sqrt
-      u (fun t => uh h t - u t) hu hdu
-    have hterm2_eq : (∫ t,
-        2 * C * ‖u t‖ * ‖uh h t - u t‖ ∂μ) =
-        2 * C *
-          (∫ t, ‖u t‖ * ‖uh h t - u t‖ ∂μ) := by
-      rw [show (fun t : ℝ =>
-          2 * C * ‖u t‖ * ‖uh h t - u t‖) =
-          fun t => (2 * C) *
-            (‖u t‖ * ‖uh h t - u t‖) by
-            funext t
-            ring, integral_const_mul]
-    calc
-      (∫ t, |‖valueCLM hΩ (uh h t)‖ ^ 2 - ‖valueCLM hΩ (u t)‖ ^ 2| ∂μ) ≤
-          ∫ t, C * ‖uh h t - u t‖ ^ 2 +
-            2 * C * ‖u t‖ * ‖uh h t - u t‖ ∂μ := hmono
-      _ = C * (∫ t, ‖uh h t - u t‖ ^ 2 ∂μ) +
-          (∫ t, 2 * C * ‖u t‖ * ‖uh h t - u t‖ ∂μ) := by
-            rw [integral_add hterm1 hterm2, integral_const_mul]
-      _ = C * (∫ t, ‖uh h t - u t‖ ^ 2 ∂μ) +
-          2 * C *
-            (∫ t, ‖u t‖ * ‖uh h t - u t‖ ∂μ) := by
-            rw [hterm2_eq]
-      _ ≤ C * (∫ t, ‖uh h t - u t‖ ^ 2 ∂μ) +
-          2 * C * √(∫ t, ‖u t‖ ^ 2 ∂μ) *
-            √(∫ t, ‖uh h t - u t‖ ^ 2 ∂μ) := by
-            apply add_le_add_right
-            simpa only [mul_assoc] using
-              mul_le_mul_of_nonneg_left hholder (by positivity : 0 ≤ 2 * C)
-  · simpa only [add_zero] using hfirst.add hsecond
 
-private theorem tendsto_integral_mul_of_tendsto_integral_abs
-    {μ : Measure ℝ} {F : ℝ → ℝ → ℝ} {f phi : ℝ → ℝ}
-    (hF : ∀ᶠ h : ℝ in 𝓝[>] 0, Integrable (F h) μ)
-    (hf : Integrable f μ) (hphi : AEStronglyMeasurable phi μ)
-    (hbound : ∃ C : ℝ, ∀ t : ℝ, ‖phi t‖ ≤ C)
-    (hlim : Tendsto (fun h : ℝ => ∫ t, |F h t - f t| ∂μ) (𝓝[>] 0) (𝓝 0)) :
-    Tendsto (fun h : ℝ => ∫ t, F h t * phi t ∂μ) (𝓝[>] 0)
-      (𝓝 (∫ t, f t * phi t ∂μ)) := by
-  obtain ⟨C, hC⟩ := hbound
-  have hCnorm : ∀ t : ℝ, ‖‖phi t‖‖ ≤ C := by
-    intro t
-    simpa only [norm_norm] using hC t
-  have hC0 : 0 ≤ C := by
-    have := hC 0
-    exact (norm_nonneg _).trans this
-  have herr : Tendsto (fun h : ℝ => ∫ t, (F h t - f t) * phi t ∂μ)
-      (𝓝[>] 0) (𝓝 0) := by
-    apply tendsto_zero_iff_norm_tendsto_zero.mpr
-    apply squeeze_zero'
-    · filter_upwards with h
-      exact norm_nonneg _
-    · filter_upwards [hF] with h hF
-      have hdiff : Integrable (fun t => F h t - f t) μ := hF.sub hf
-      have hprod : Integrable (fun t => |F h t - f t| * ‖phi t‖) μ :=
-        hdiff.norm.mul_bdd hphi.norm (Eventually.of_forall fun t => hCnorm t)
-      calc
-        ‖∫ t, (F h t - f t) * phi t ∂μ‖ ≤
-            ∫ t, ‖(F h t - f t) * phi t‖ ∂μ := norm_integral_le_integral_norm _
-        _ = ∫ t, |F h t - f t| * ‖phi t‖ ∂μ := by
-          apply integral_congr_ae
-          filter_upwards with t
-          rw [norm_mul, Real.norm_eq_abs]
-        _ ≤ ∫ t, C * |F h t - f t| ∂μ := by
-          apply integral_mono
-          · exact hprod
-          · exact hdiff.norm.const_mul C
-          · intro t
-            calc
-              |F h t - f t| * ‖phi t‖ ≤ |F h t - f t| * C :=
-                mul_le_mul_of_nonneg_left (hC t) (abs_nonneg _)
-              _ = C * |F h t - f t| := mul_comm _ _
-        _ = C * (∫ t, |F h t - f t| ∂μ) :=
-          integral_const_mul C (fun t => |F h t - f t|)
-    · simpa only [mul_zero] using tendsto_const_nhds.mul hlim
-  have hsum : Tendsto (fun h : ℝ =>
-      (∫ t, (F h t - f t) * phi t ∂μ) + ∫ t, f t * phi t ∂μ)
-      (𝓝[>] 0) (𝓝 (∫ t, f t * phi t ∂μ)) := by
-    simpa only [zero_add] using herr.add tendsto_const_nhds
-  apply hsum.congr'
-  filter_upwards [hF] with h hF
-  have hdiff : Integrable (fun t => F h t - f t) μ := hF.sub hf
-  have hprod : Integrable (fun t => (F h t - f t) * phi t) μ :=
-    hdiff.mul_bdd hphi (Eventually.of_forall fun t => hC t)
-  have hraw : Integrable (fun t => f t * phi t) μ :=
-    hf.mul_bdd hphi (Eventually.of_forall fun t => hC t)
-  rw [← integral_add hprod hraw]
-  apply integral_congr_ae
-  filter_upwards with t
-  ring
 
-private noncomputable def forwardSteklovPositivePartEnergy
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T h : ℝ)
+private def forwardSteklovPositivePartEnergy
+     (T h : ℝ)
     (u : ReverseTimeL2V hΩ T) : ℝ → ℝ :=
   fun t => ‖valueCLM hΩ
     (h10PositivePart hΩ (reverseTimeForwardSteklov T h u t))‖ ^ 2
 
-private noncomputable def forwardSteklovPositivePartEnergyRate
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T h : ℝ)
+private def forwardSteklovPositivePartEnergyRate
+     (T h : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) : ℝ → ℝ :=
   fun t => 2 * (reverseTimeForwardSteklov T h g t)
     (h10PositivePart hΩ (reverseTimeForwardSteklov T h u t))
 
-private theorem abs_two_mul_sub (x y : ℝ) :
-    |2 * x - 2 * y| = 2 * |x - y| := by
-  rw [← mul_sub, abs_mul, abs_of_nonneg (by norm_num : (0 : ℝ) ≤ 2)]
 
 private theorem abs_forwardSteklovPositivePartEnergyRate_sub_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T h : ℝ)
+     (T h : ℝ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) (t : ℝ) :
     |forwardSteklovPositivePartEnergyRate hΩ T h u g t - rawPositivePartEnergyRate hΩ T u g t| =
       2 * |(reverseTimeForwardSteklov T h g t)
         (h10PositivePart hΩ (reverseTimeForwardSteklov T h u t)) -
-          (g t) (h10PositivePart hΩ (u t))| := by
-  change |2 * (reverseTimeForwardSteklov T h g t)
-      (h10PositivePart hΩ (reverseTimeForwardSteklov T h u t)) -
-        2 * (g t) (h10PositivePart hΩ (u t))| = _
-  exact abs_two_mul_sub _ _
+          (g t) (h10PositivePart hΩ (u t))| := abs_two_mul_sub _ _
 
 private theorem forwardSteklovPositivePartEnergy_increment
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     {h a b s t : ℝ} (hh : 0 < h) (ha : 0 < a)
     (hsmall : h < T - b) (hs : s ∈ Icc a b) (ht : t ∈ Icc a b) (hst : s ≤ t) :
     forwardSteklovPositivePartEnergy hΩ T h u t -
         forwardSteklovPositivePartEnergy hΩ T h u s =
       ∫ r in Icc s t, forwardSteklovPositivePartEnergyRate hΩ T h u g r := by
-  change ‖valueCLM hΩ (h10PositivePart hΩ (reverseTimeForwardSteklov T h u t))‖ ^ 2 -
-      ‖valueCLM hΩ (h10PositivePart hΩ (reverseTimeForwardSteklov T h u s))‖ ^ 2 = _
   calc
     _ = 2 * (∫ r in Icc s t, (reverseTimeForwardSteklov T h g r)
-        (h10PositivePart hΩ (reverseTimeForwardSteklov T h u r))) :=
+        _) :=
       reverseTimeForwardSteklov_positivePart_energy_identity hΩ T hT u g hderiv hh
         (le_trans ha.le hs.1) hst (by linarith [ht.2, hsmall])
     _ = ∫ r in Icc s t, forwardSteklovPositivePartEnergyRate hΩ T h u g r := by
       change 2 * (∫ r in Icc s t, (reverseTimeForwardSteklov T h g r)
-          (h10PositivePart hΩ (reverseTimeForwardSteklov T h u r))) =
+          _) =
         ∫ r in Icc s t, 2 * (reverseTimeForwardSteklov T h g r)
-          (h10PositivePart hΩ (reverseTimeForwardSteklov T h u r))
+          _
       rw [integral_const_mul]
 
 private theorem eventually_forwardSteklov_positivePartEnergy_test_identity
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (eta : ReverseTimeScalarTest T) {a b : ℝ}
     (ha : 0 < a) (hab : a < b) (hb : b < T)
@@ -485,17 +167,15 @@ private theorem eventually_forwardSteklov_positivePartEnergy_test_identity
         ∂reverseTimeVolume T) =
       -(∫ t, forwardSteklovPositivePartEnergyRate hΩ T h u g t * eta t
         ∂reverseTimeVolume T) := by
-  have hK : Icc a b ⊆ Ioo (0 : ℝ) T := by
+  have hK : Icc a b ⊆ Ioo (0) T := by
     intro t ht
     exact ⟨lt_of_lt_of_le ha ht.1, lt_of_le_of_lt ht.2 hb⟩
   filter_upwards [show ∀ᶠ h : ℝ in 𝓝[>] 0, 0 < h from self_mem_nhdsWithin,
     (eventually_lt_nhds (show 0 < T - b by linarith)).filter_mono nhdsWithin_le_nhds]
     with h hh hsmall
-  have hE : Continuous (forwardSteklovPositivePartEnergy hΩ T h u) := by
-    exact ((valueCLM hΩ).continuous.comp ((continuous_h10PositivePart hΩ).comp
+  have hE : Continuous (forwardSteklovPositivePartEnergy hΩ T h u) := ((valueCLM hΩ).continuous.comp ((continuous_h10PositivePart hΩ).comp
       (continuous_reverseTimeForwardSteklov T h hh u))).norm.pow 2
-  have hQ : Continuous (forwardSteklovPositivePartEnergyRate hΩ T h u g) := by
-    exact continuous_const.mul
+  have hQ : Continuous (forwardSteklovPositivePartEnergyRate hΩ T h u g) := continuous_const.mul
       ((continuous_reverseTimeForwardSteklov T h hh g).clm_apply
         ((continuous_h10PositivePart hΩ).comp
           (continuous_reverseTimeForwardSteklov T h hh u)))
@@ -511,8 +191,7 @@ private theorem eventually_forwardSteklov_positivePartEnergy_test_identity
     (eta.contDiff.of_le (by simp)) heta
 
 private theorem tendsto_forwardSteklov_positivePartEnergy_test
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    (u : ReverseTimeL2V hΩ T) (eta : ReverseTimeScalarTest T) {a b : ℝ}
+     {a b : ℝ}
     (ha : 0 < a) (hab : a < b) (hb : b < T)
     (hK : Icc a b ⊆ Ioo (0 : ℝ) T) :
     Tendsto (fun h : ℝ => ∫ t in Icc a b,
@@ -530,21 +209,21 @@ private theorem tendsto_forwardSteklov_positivePartEnergy_test
     exact ((valueCLM hΩ).continuous.comp ((continuous_h10PositivePart hΩ).comp
       (continuous_reverseTimeForwardSteklov T h hh u))).norm.pow 2 |>.integrableOn_Icc
   let μ : Measure ℝ := volume.restrict (Icc a b)
-  let up : ℝ → H10HilbertGraph hΩ := fun t => h10PositivePart hΩ (u t)
-  let uhp : ℝ → ℝ → H10HilbertGraph hΩ := fun h t =>
+  let up  := fun t => h10PositivePart hΩ (u t)
+  let uhp  := fun h t =>
     h10PositivePart hΩ (reverseTimeForwardSteklov T h u t)
-  have huLocal : MemLp (u : ℝ → H10HilbertGraph hΩ) (2 : ℝ≥0∞) μ := by
-    simpa only [μ] using memLp_restrict_Icc_of_subset T u hK
-  have hup : MemLp up (2 : ℝ≥0∞) μ := by
+  have huLocal : MemLp u (2) μ := by
+    simpa using memLp_restrict_Icc_of_subset T u hK
+  have hup : MemLp up (2) μ := by
     apply MemLp.of_le huLocal
     · exact (continuous_h10PositivePart hΩ).comp_aestronglyMeasurable
         huLocal.aestronglyMeasurable
     · filter_upwards with r
       exact norm_h10PositivePart_le hΩ _
   have huh : ∀ᶠ h : ℝ in 𝓝[>] 0,
-      MemLp (reverseTimeForwardSteklov T h u) (2 : ℝ≥0∞) μ := by
-    simpa only [μ] using eventually_memLp_reverseTimeForwardSteklov_on_Icc T u a b
-  have huhp : ∀ᶠ h : ℝ in 𝓝[>] 0, MemLp (uhp h) (2 : ℝ≥0∞) μ := by
+      MemLp (reverseTimeForwardSteklov T h u) (2) μ := by
+    simpa using eventually_memLp_reverseTimeForwardSteklov_on_Icc T u a b
+  have huhp : ∀ᶠ h : ℝ in 𝓝[>] 0, MemLp (uhp h) (2) μ := by
     filter_upwards [huh] with h hh
     apply MemLp.of_le hh
     · exact (continuous_h10PositivePart hΩ).comp_aestronglyMeasurable
@@ -553,19 +232,17 @@ private theorem tendsto_forwardSteklov_positivePartEnergy_test
       exact norm_h10PositivePart_le hΩ _
   have hUraw := tendsto_forwardSteklov_sqNorm_integral_on_Icc T u ha hab.le hb
   have hUpos := tendsto_positivePart_sqNorm_integral_of_sqNorm hΩ μ
-    (u : ℝ → H10HilbertGraph hΩ) (fun h r => reverseTimeForwardSteklov T h u r)
+    _ _
     huLocal huh hUraw
   have hEabs : Tendsto (fun h : ℝ => ∫ r in Icc a b,
-      |‖valueCLM hΩ (uhp h r)‖ ^ 2 - ‖valueCLM hΩ (up r)‖ ^ 2|)
-      (𝓝[>] 0) (𝓝 0) :=
+      |‖valueCLM hΩ _‖ ^ 2 - ‖valueCLM hΩ _‖ ^ 2|)
+      _ _ :=
     tendsto_integral_abs_valueSq_of_sqNorm hΩ μ up uhp hup huhp hUpos
   exact tendsto_integral_mul_of_tendsto_integral_abs hforward hraw
     eta.contDiff_deriv.continuous.aestronglyMeasurable eta.exists_norm_deriv_le hEabs
 
 private theorem tendsto_forwardSteklov_positivePartEnergyRate_test
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
-    (eta : ReverseTimeScalarTest T) {a b : ℝ}
+     {a b : ℝ}
     (ha : 0 < a) (hab : a < b) (hb : b < T)
     (hK : Icc a b ⊆ Ioo (0 : ℝ) T) :
     Tendsto (fun h : ℝ => ∫ t in Icc a b,
@@ -574,7 +251,6 @@ private theorem tendsto_forwardSteklov_positivePartEnergyRate_test
         rawPositivePartEnergyRate hΩ T u g t * eta t)) := by
   have hpair : Integrable (fun t => (g t) (h10PositivePart hΩ (u t)))
       (volume.restrict (Icc a b)) := by
-    dsimp only [reverseTimeVolume, reverseTimeOpenInterval]
     rw [← Measure.restrict_restrict_of_subset hK]
     exact (integrable_reverseTimeDualPairing_positivePart hΩ T u g).restrict
   have hforward : ∀ᶠ h : ℝ in 𝓝[>] 0,
@@ -587,28 +263,28 @@ private theorem tendsto_forwardSteklov_positivePartEnergyRate_test
         ((continuous_h10PositivePart hΩ).comp
           (continuous_reverseTimeForwardSteklov T h hh u)))).integrableOn_Icc
   let μ : Measure ℝ := volume.restrict (Icc a b)
-  let up : ℝ → H10HilbertGraph hΩ := fun t => h10PositivePart hΩ (u t)
-  let uhp : ℝ → ℝ → H10HilbertGraph hΩ := fun h t =>
+  let up  := fun t => h10PositivePart hΩ (u t)
+  let uhp  := fun h t =>
     h10PositivePart hΩ (reverseTimeForwardSteklov T h u t)
-  have huLocal : MemLp (u : ℝ → H10HilbertGraph hΩ) (2 : ℝ≥0∞) μ := by
-    simpa only [μ] using memLp_restrict_Icc_of_subset T u hK
-  have hgLocal : MemLp (g : ℝ → H10HilbertGraphDual hΩ) 2 μ := by
-    simpa only [μ] using memLp_restrict_Icc_of_subset T g hK
+  have huLocal : MemLp u (2) μ := by
+    simpa using memLp_restrict_Icc_of_subset T u hK
+  have hgLocal : MemLp g 2 μ := by
+    simpa using memLp_restrict_Icc_of_subset T g hK
   have huh : ∀ᶠ h : ℝ in 𝓝[>] 0,
-      MemLp (reverseTimeForwardSteklov T h u) (2 : ℝ≥0∞) μ := by
-    simpa only [μ] using eventually_memLp_reverseTimeForwardSteklov_on_Icc T u a b
+      MemLp (reverseTimeForwardSteklov T h u) (2) μ := by
+    simpa using eventually_memLp_reverseTimeForwardSteklov_on_Icc T u a b
   have hgh : ∀ᶠ h : ℝ in 𝓝[>] 0,
       MemLp (reverseTimeForwardSteklov T h g) 2 μ := by
-    simpa only [μ] using eventually_memLp_reverseTimeForwardSteklov_on_Icc T g a b
+    simpa using eventually_memLp_reverseTimeForwardSteklov_on_Icc T g a b
   have hUraw := tendsto_forwardSteklov_sqNorm_integral_on_Icc T u ha hab.le hb
   have hGraw := tendsto_forwardSteklov_sqNorm_integral_on_Icc T g ha hab.le hb
   have hQabs : Tendsto (fun h : ℝ => ∫ r in Icc a b,
       |(reverseTimeForwardSteklov T h g r) (uhp h r) - (g r) (up r)|)
-      (𝓝[>] 0) (𝓝 0) :=
+      _ _ :=
     tendsto_dualPairing_positivePart_of_sqNorm hΩ μ
-      (u : ℝ → H10HilbertGraph hΩ) (g : ℝ → H10HilbertGraphDual hΩ)
-      (fun h r => reverseTimeForwardSteklov T h u r)
-      (fun h r => reverseTimeForwardSteklov T h g r)
+      _ _
+      _
+      _
       huLocal hgLocal huh hgh hUraw hGraw
   have hQabs2 : Tendsto (fun h : ℝ => ∫ t in Icc a b,
       |forwardSteklovPositivePartEnergyRate hΩ T h u g t -
@@ -624,15 +300,13 @@ private theorem tendsto_forwardSteklov_positivePartEnergyRate_test
     eta.contDiff.continuous.aestronglyMeasurable eta.exists_norm_le hQabs2
 
 private theorem rawPositivePartEnergy_test_deriv
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (eta : ReverseTimeScalarTest T) :
     (∫ t, rawPositivePartEnergy hΩ T u t * eta.deriv t ∂reverseTimeVolume T) =
       -(∫ t, rawPositivePartEnergyRate hΩ T u g t * eta t ∂reverseTimeVolume T) := by
   obtain ⟨a, b, ha, hab, hb, heta, hetaDeriv⟩ := exists_strict_test_collar T hT eta
-  have hK : Icc a b ⊆ Ioo (0 : ℝ) T := by
+  have hK : Icc a b ⊆ Ioo (0) T := by
     intro t ht
     exact ⟨lt_of_lt_of_le ha ht.1, lt_of_le_of_lt ht.2 hb⟩
   have hforward := eventually_forwardSteklov_positivePartEnergy_test_identity
@@ -655,41 +329,26 @@ private theorem rawPositivePartEnergy_test_deriv
     apply (hEtest.add hQtest).congr'
     filter_upwards [hforwardIcc] with h hh
     exact (eq_neg_iff_add_eq_zero).mp hh
-  have hzeroIcc : (∫ t in Icc a b,
-      rawPositivePartEnergy hΩ T u t * eta.deriv t) +
-      ∫ t in Icc a b, rawPositivePartEnergyRate hΩ T u g t * eta t = 0 :=
+  have hzeroIcc  :=
     tendsto_nhds_unique hConst tendsto_const_nhds
   rw [integral_reverseTime_eq_integral_Icc_of_tsupport_subset hK hetaDeriv,
     integral_reverseTime_eq_integral_Icc_of_tsupport_subset hK heta]
-  exact (eq_neg_iff_add_eq_zero).mpr hzeroIcc
+  linarith
 
 private theorem integrable_reverseTimePositivePartEnergyPrimitive
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
-    Integrable (reverseTimePositivePartEnergyPrimitive hΩ T u g) (reverseTimeVolume T) := by
-  change IntegrableOn (reverseTimePositivePartEnergyPrimitive hΩ T u g) (Ioo (0 : ℝ) T) volume
-  exact (continuousOn_reverseTimePositivePartEnergyPrimitive hΩ T u g).integrableOn_Icc.mono_set
+     :
+    Integrable (reverseTimePositivePartEnergyPrimitive hΩ T u g) (reverseTimeVolume T) := (continuousOn_reverseTimePositivePartEnergyPrimitive hΩ T u g).integrableOn_Icc.mono_set
     Ioo_subset_Icc_self
 
-private theorem integrable_mul_reverseTimeScalarTest_deriv
-    {T : ℝ} {f : ℝ → ℝ} (hf : Integrable f (reverseTimeVolume T))
-    (eta : ReverseTimeScalarTest T) :
-    Integrable (fun t => f t * eta.deriv t) (reverseTimeVolume T) := by
-  obtain ⟨C, hC⟩ := eta.exists_norm_deriv_le
-  apply hf.mul_bdd eta.contDiff_deriv.continuous.aestronglyMeasurable
-  filter_upwards with t
-  exact hC t
 
 private theorem reverseTimePositivePartEnergyPrimitive_test_deriv
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
-    (eta : ReverseTimeScalarTest T) :
+     :
     (∫ t, reverseTimePositivePartEnergyPrimitive hΩ T u g t * eta.deriv t
       ∂reverseTimeVolume T) =
       -(∫ t, rawPositivePartEnergyRate hΩ T u g t * eta t ∂reverseTimeVolume T) := by
   have hrate := integrable_rawPositivePartEnergyRate hΩ T u g
-  have hrateIcc : IntegrableOn (rawPositivePartEnergyRate hΩ T u g) (Icc (0 : ℝ) T) volume := by
-    change Integrable (rawPositivePartEnergyRate hΩ T u g) (volume.restrict (Icc (0 : ℝ) T))
+  have hrateIcc : IntegrableOn (rawPositivePartEnergyRate hΩ T u g) (Icc (0) T) volume := by
+    change Integrable _ _
     simpa only [reverseTimeVolume, reverseTimeOpenInterval,
       restrict_Ioo_eq_restrict_Icc] using hrate
   have hae : (fun t => reverseTimePositivePartEnergyPrimitive hΩ T u g t * eta.deriv t) =ᵐ[
@@ -710,7 +369,7 @@ private theorem reverseTimePositivePartEnergyPrimitive_test_deriv
   calc
     (∫ t, reverseTimePositivePartEnergyPrimitive hΩ T u g t * eta.deriv t
       ∂reverseTimeVolume T) =
-        ∫ t, PDE.intervalPrimitive 0 (rawPositivePartEnergyRate hΩ T u g) t * _root_.deriv eta t
+        ∫ t, PDE.intervalPrimitive 0 _ t * _root_.deriv eta t
           ∂reverseTimeVolume T := integral_congr_ae hae
     _ = -(∫ t, rawPositivePartEnergyRate hΩ T u g t * eta t ∂reverseTimeVolume T) := by
       simpa only [reverseTimeVolume, reverseTimeOpenInterval] using
@@ -718,9 +377,7 @@ private theorem reverseTimePositivePartEnergyPrimitive_test_deriv
           (eta.contDiff.of_le (by simp)) eta.tsupport_subset
 
 private theorem exists_continuous_reverseTimePositivePartEnergyRepresentative_raw
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g) :
     ∃ e : ℝ → ℝ,
       ContinuousOn e (Icc 0 T) ∧
@@ -728,9 +385,9 @@ private theorem exists_continuous_reverseTimePositivePartEnergyRepresentative_ra
       (fun t => e t) =ᵐ[reverseTimeVolume T] rawPositivePartEnergy hΩ T u ∧
       ∀ s t : ℝ, s ∈ Icc 0 T → t ∈ Icc 0 T → s ≤ t →
         e t - e s = ∫ r in Ioc s t, rawPositivePartEnergyRate hΩ T u g r ∂reverseTimeVolume T := by
-  let defect : ℝ → ℝ := fun t =>
+  let defect  := fun t =>
     rawPositivePartEnergy hΩ T u t - reverseTimePositivePartEnergyPrimitive hΩ T u g t
-  have hdefInt : Integrable defect (reverseTimeVolume T) :=
+  have hdefInt : Integrable defect _ :=
     (integrable_rawPositivePartEnergy hΩ T u).sub
       (integrable_reverseTimePositivePartEnergyPrimitive hΩ T u g)
   have hdefZero : ∀ eta : ReverseTimeScalarTest T,
@@ -747,30 +404,26 @@ private theorem exists_continuous_reverseTimePositivePartEnergyRepresentative_ra
       rw [← integral_sub hrawInt hprimInt]
       apply integral_congr_ae
       filter_upwards with t
-      dsimp only [defect]
       ring,
-      rawPositivePartEnergy_test_deriv hΩ T hT u g hderiv eta,
-      reverseTimePositivePartEnergyPrimitive_test_deriv hΩ T u g eta]
+      rawPositivePartEnergy_test_deriv hΩ T hT u g hderiv,
+      reverseTimePositivePartEnergyPrimitive_test_deriv]
     ring
   obtain ⟨c, hc⟩ := exists_ae_eq_const_of_integral_deriv_eq_zero T hT hdefInt hdefZero
-  let e : ℝ → ℝ := fun t => reverseTimePositivePartEnergyPrimitive hΩ T u g t + c
-  have heCont : ContinuousOn e (Icc 0 T) :=
+  let e  := fun t => reverseTimePositivePartEnergyPrimitive hΩ T u g t + c
+  have heCont : ContinuousOn e _ :=
     (continuousOn_reverseTimePositivePartEnergyPrimitive hΩ T u g).add continuousOn_const
   have heAE : e =ᵐ[reverseTimeVolume T] rawPositivePartEnergy hΩ T u := by
     filter_upwards [hc] with t ht
-    dsimp only [defect] at ht
-    dsimp only [e]
     linarith
   have heNonneg : ∀ t : ℝ, t ∈ Icc 0 T → 0 ≤ e t := by
-    have heIcc : e =ᵐ[volume.restrict (Icc (0 : ℝ) T)] rawPositivePartEnergy hΩ T u := by
+    have heIcc  := by
       simpa only [reverseTimeVolume, reverseTimeOpenInterval,
         restrict_Ioo_eq_restrict_Icc] using heAE
-    have hmaxAE : e =ᵐ[volume.restrict (Icc (0 : ℝ) T)] fun t => max (e t) 0 := by
+    have hmaxAE : e =ᵐ[volume.restrict (Icc (0) T)] fun t => max (e t) 0 := by
       filter_upwards [heIcc] with t ht
       rw [ht]
       simp only [rawPositivePartEnergy, max_eq_left (sq_nonneg _)]
-    have hmaxCont : ContinuousOn (fun t => max (e t) 0) (Icc 0 T) := by
-      exact heCont.sup continuousOn_const
+    have hmaxCont : ContinuousOn (fun t => max (e t) 0) (Icc 0 T) := heCont.sup continuousOn_const
     have heEqOn := Measure.eqOn_Icc_of_ae_eq volume hT.ne hmaxAE heCont hmaxCont
     intro t ht
     rw [heEqOn ht]
@@ -780,7 +433,6 @@ private theorem exists_continuous_reverseTimePositivePartEnergyRepresentative_ra
   calc
     e t - e s = reverseTimePositivePartEnergyPrimitive hΩ T u g t -
         reverseTimePositivePartEnergyPrimitive hΩ T u g s := by
-          dsimp only [e]
           ring
     _ = ∫ r in Ioc s t, rawPositivePartEnergyRate hΩ T u g r ∂reverseTimeVolume T :=
       reverseTimePositivePartEnergyPrimitive_sub hΩ T u g hs ht hst
@@ -788,9 +440,7 @@ private theorem exists_continuous_reverseTimePositivePartEnergyRepresentative_ra
 /-- A continuous scalar reverse-time energy representative of a Gelfand weak
 derivative on the closed reverse-time interval. -/
 theorem exists_continuous_reverseTimePositivePartEnergyRepresentative
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g) :
     ∃ e : ℝ → ℝ,
       ContinuousOn e (Set.Icc 0 T) ∧
@@ -811,9 +461,7 @@ theorem exists_continuous_reverseTimePositivePartEnergyRepresentative
 
 /-- Positive-part energy increment for the canonical closed-time Hilbert representative. -/
 theorem reverseTimeHilbertRepresentative_posPart_norm_sq_increment
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (s t : ℝ) (hs : s ∈ Set.Icc 0 T) (ht : t ∈ Set.Icc 0 T)
     (hst : s ≤ t) :
@@ -826,7 +474,7 @@ theorem reverseTimeHilbertRepresentative_posPart_norm_sq_increment
   obtain ⟨e, heCont, _heNonneg, heAE, heInc⟩ :=
     exists_continuous_reverseTimePositivePartEnergyRepresentative hΩ T hT u g hderiv
   let Ubar := reverseTimeHilbertRepresentative hΩ T hT u g hderiv
-  let E : ℝ → ℝ := fun r => if hr : r ∈ Icc 0 T then
+  let E  := fun r => if hr : r ∈ Icc 0 T then
     ‖MeasureTheory.Lp.posPart (Ubar ⟨r, hr⟩)‖ ^ 2 else 0
   have hECont : ContinuousOn E (Icc 0 T) := by
     rw [continuousOn_iff_continuous_domRestrict]
@@ -839,12 +487,11 @@ theorem reverseTimeHilbertRepresentative_posPart_norm_sq_increment
       (MeasureTheory.Lp.continuous_posPart.comp Ubar.continuous)).pow 2
   have hrep := (reverseTimeHilbertRepresentative_spec hΩ T hT u g hderiv).1
   have hAE : E =ᵐ[volume.restrict (Icc 0 T)] e := by
-    have hrep' : ∀ᵐ r ∂volume.restrict (Icc 0 T),
-        ∀ hr : r ∈ Ioo 0 T, Ubar ⟨r, ⟨hr.1.le, hr.2.le⟩⟩ = valueCLM hΩ (u r) := by
+    have hrep'  := by
       simpa only [Ubar, ReverseTimeHilbertRepresentativeAgrees, reverseTimeVolume,
         reverseTimeOpenInterval, restrict_Ioo_eq_restrict_Icc] using hrep
-    have he' : e =ᵐ[volume.restrict (Icc 0 T)] rawPositivePartEnergy hΩ T u := by
-      have heRaw : e =ᵐ[reverseTimeVolume T] rawPositivePartEnergy hΩ T u := heAE
+    have he'  := by
+      have heRaw  := heAE
       simpa only [reverseTimeVolume, reverseTimeOpenInterval,
         restrict_Ioo_eq_restrict_Icc] using heRaw
     have hi : ∀ᵐ r ∂volume.restrict (Icc 0 T), r ∈ Ioo 0 T := by
@@ -852,7 +499,7 @@ theorem reverseTimeHilbertRepresentative_posPart_norm_sq_increment
       exact ae_restrict_mem measurableSet_Ioo
     filter_upwards [hrep', he', hi] with r hU he hr
     have hr' : r ∈ Icc 0 T := ⟨hr.1.le, hr.2.le⟩
-    change (if h : r ∈ Icc 0 T then ‖MeasureTheory.Lp.posPart (Ubar ⟨r, h⟩)‖ ^ 2
+    change (if h : r ∈ Icc 0 T then ‖MeasureTheory.Lp.posPart _‖ ^ 2
       else 0) = e r
     rw [dif_pos hr', hU hr, ← valueCLM_h10PositivePart]
     exact he.symm
@@ -860,11 +507,9 @@ theorem reverseTimeHilbertRepresentative_posPart_norm_sq_increment
     Measure.eqOn_Icc_of_ae_eq volume hT.ne hAE hECont heCont
   calc
     _ = E t - E s := by
-      change ‖MeasureTheory.Lp.posPart (Ubar ⟨t, ht⟩)‖ ^ 2 -
-        ‖MeasureTheory.Lp.posPart (Ubar ⟨s, hs⟩)‖ ^ 2 = _
       dsimp only [E]
-      rw [dif_pos ht, dif_pos hs]
-    _ = e t - e s := congrArg₂ (· - ·) (hEqOn ht) (hEqOn hs)
+      rw [dif_pos, dif_pos]
+    _ = e t - e s := congrArg₂ _ (hEqOn ht) (hEqOn hs)
     _ = _ := heInc s t hs ht hst
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

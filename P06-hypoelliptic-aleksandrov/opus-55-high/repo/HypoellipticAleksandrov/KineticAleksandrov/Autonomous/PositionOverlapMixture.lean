@@ -24,8 +24,7 @@ theorem measurable_positionMixtureDensity
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (A : SmoothAutonomous lam Lam) (c : Clock) (nu : Measure Point) [SFinite nu] :
-    Measurable (positionMixtureDensity hH hLE hlam hLam A c nu) := by
-  exact (measurable_positionActiveDensity hH hLE hlam hLam A c).lintegral_prod_left'
+    Measurable (positionMixtureDensity hH hLE hlam hLam A c nu) := (measurable_positionActiveDensity hH hLE hlam hLam A c).lintegral_prod_left'
 
 /-- Fubini identifies the actual Green mixture with its integrated joint density. -/
 theorem withDensity_positionMixtureDensity (hpush : PushforwardStatement)
@@ -34,9 +33,9 @@ theorem withDensity_positionMixtureDensity (hpush : PushforwardStatement)
     (A : SmoothAutonomous lam Lam) (c : Clock) (nu : Measure Point) [SFinite nu] :
     volume.withDensity (positionMixtureDensity hH hLE hlam hLam A c nu) =
       enlargedActiveGreen hH hLE hlam hLam A c nu := by
-  have : SigmaFinite (volume : Measure Point) := density_volume_sigmaFinite
+  have  := density_volume_sigmaFinite
   ext B hB
-  change (volume.withDensity (positionMixtureDensity hH hLE hlam hLam A c nu)) B =
+  change (volume.withDensity _) B =
     (nu.bind (enlargedActiveGreenKernel hH hLE hlam hLam A c)) B
   rw [withDensity_apply _ hB, Measure.bind_apply hB (Kernel.aemeasurable _)]
   unfold positionMixtureDensity
@@ -45,7 +44,7 @@ theorem withDensity_positionMixtureDensity (hpush : PushforwardStatement)
     (measurable_positionActiveDensity hH hLE hlam hLam A c).aemeasurable]
   apply lintegral_congr
   intro e
-  rw [← withDensity_apply _ hB, withDensity_positionActiveDensity hpush hH hLE hlam hLam]
+  rw [← withDensity_apply _ hB, withDensity_positionActiveDensity hpush]
 
 /-- A positive mixture inherits a uniform pole bound, with its total starting mass. -/
 theorem positionPositiveNorm_mixture_le {X Y : Type*}
@@ -57,7 +56,7 @@ theorem positionPositiveNorm_mixture_le {X Y : Type*}
     positionPositiveNorm m q (fun y => ∫⁻ x, F x y ∂nu) ≤ nu univ * K := by
   have hpow : ∀ᵐ x ∂nu, (∫⁻ y, F x y ^ q ∂m) ≤ K ^ q := by
     filter_upwards [hK] with x hx
-    have h := ENNReal.rpow_le_rpow hx (by linarith : 0 ≤ q)
+    have h := ENNReal.rpow_le_rpow hx (by linarith)
     simpa only [positionPositiveNorm, ← ENNReal.rpow_mul,
       one_div_mul_cancel (by linarith : q ≠ 0), ENNReal.rpow_one] using h
   have hi : (∫⁻ y, (∫⁻ x, F x y ∂nu) ^ q ∂m) ≤ (nu univ * K) ^ q := by
@@ -71,7 +70,7 @@ theorem positionPositiveNorm_mixture_le {X Y : Type*}
         have hm : Measurable (fun y => ∫⁻ x, F x y ^ q ∂nu) :=
           (hF.pow_const q).lintegral_prod_left'
         rw [lintegral_const_mul _ hm]
-        exact congrArg (fun t => nu univ ^ (q - 1) * t)
+        exact congrArg _
           (lintegral_lintegral_swap (μ := nu) (ν := m)
             (f := fun x y => F x y ^ q) (hF.pow_const q).aemeasurable).symm
       _ ≤ (nu univ) ^ (q - 1) * (nu univ * K ^ q) := by
@@ -79,9 +78,8 @@ theorem positionPositiveNorm_mixture_le {X Y : Type*}
         simpa only [lintegral_const, mul_comm] using lintegral_mono_ae hpow
       _ = (nu univ * K) ^ q := by
         rw [← mul_assoc, position_rpow_sub_one_mul _ q hq.le,
-          ENNReal.mul_rpow_of_nonneg _ _ (by linarith : 0 ≤ q)]
-  unfold positionPositiveNorm
+          ENNReal.mul_rpow_of_nonneg _ _ (by linarith)]
   apply (ENNReal.rpow_le_rpow hi (one_div_nonneg.mpr (by linarith))).trans_eq
-  rw [← ENNReal.rpow_mul, mul_one_div_cancel (by linarith : q ≠ 0), ENNReal.rpow_one]
+  rw [← ENNReal.rpow_mul, mul_one_div_cancel (by linarith), ENNReal.rpow_one]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -23,15 +23,17 @@ theorem eLpNorm_le_shell_bound {d : ℕ} (f : XV d → ℝ) (S : Set (XV d))
     by_cases hq : q ∈ S
     · rw [indicator_of_mem hq, Real.norm_eq_abs, abs_of_nonneg (hbound q).1,
         Real.norm_eq_abs, abs_of_nonneg hB]
-      exact (hbound q).2
-    · rw [hsupp q hq, indicator_of_notMem hq]
+      simp_all
+    simp_all
   apply (eLpNorm_mono_ae hf hm).trans_eq
   rw [eLpNorm_indicator_const hS.nullMeasurableSet (ENNReal.ofReal_ne_zero_iff.mpr hp)
     ENNReal.ofReal_ne_top, ENNReal.toReal_ofReal hp.le]
   rw [← ofReal_norm, Real.norm_eq_abs, abs_of_nonneg hB]
 
+variable (d : ℕ)
+
 /-- The shell norm powers combine to the precise source exponent. -/
-theorem source_norm_rpow_identity (d : ℕ) (alpha p V K r : ℝ)
+theorem source_norm_rpow_identity  (alpha p V K r : ℝ)
     (hp : 0 < p) (hV : 0 < V) (hK : 0 ≤ K) (hr : 0 < r) :
     ENNReal.ofReal (K * Real.rpow r (alpha - 2)) *
       ENNReal.ofReal (V * r ^ (4 * d)) ^ (1 / p) =
@@ -43,17 +45,16 @@ theorem source_norm_rpow_identity (d : ℕ) (alpha p V K r : ℝ)
     (div_nonneg zero_le_one hp.le),
     ← ENNReal.ofReal_mul (mul_nonneg hK (Real.rpow_pos_of_pos hr _).le),
     Real.mul_rpow hV.le (pow_nonneg hr.le _), ← Real.rpow_natCast_mul hr.le]
-  have he : (4 * d : ℕ) * (1 / p : ℝ) = 4 * (d : ℝ) / p := by
-    push_cast
-    ring
+  have he : (4 * d : ℕ) * (1 / p) = 4 * d / p := by
+    grind
   rw [he]
   congr 1
   calc
-    _ = (K * V ^ (1 / p)) * (r ^ (alpha - 2) * r ^ (4 * (d : ℝ) / p)) := by ring
+    _ = (K * V ^ (1 / p)) * (r ^ (alpha - 2) * r ^ (4 * d / p)) := by ring
     _ = _ := by rw [← Real.rpow_add hr]
 
 /-- The literal source formula satisfies the source manuscript's Lp estimate. -/
-theorem flat_source_eLpNorm_le_of_profile (d : ℕ) (alpha p : ℝ)
+theorem flat_source_eLpNorm_le_of_profile  (alpha p : ℝ)
     (ha : 0 < alpha) (ha1 : alpha < 1) (hp : 1 ≤ p)
     (hprofile : CounterProfileStatement d alpha) :
     ∃ C r₀ : ℝ, 0 < C ∧ 0 < r₀ ∧ ∀ r : ℝ, 0 < r → r < r₀ →
@@ -64,27 +65,27 @@ theorem flat_source_eLpNorm_le_of_profile (d : ℕ) (alpha p : ℝ)
   obtain ⟨hlam, hlamLam, hc, hC, hAm, hA, hH, hzero, hhom, hcomp,
     _, hgv, _, _, _, hgrad, _⟩ := selectedProfile_spec hprofile
   have hp0 : 0 < p := zero_lt_one.trans_le hp
-  obtain ⟨V, hV, hvol⟩ := shell_volume_bound (profileFunction hprofile) alpha
-    (profileLowerComparison hprofile) ha hc hH (fun q => (hcomp q).1) hhom
-  obtain ⟨K, hK, hbound⟩ := shell_source_bound (profileMatrix hprofile)
-    (profileFunction hprofile) (profileVelocityJet hprofile) alpha
-    (profileLowerEllipticity hprofile) (profileUpperEllipticity hprofile)
-    (profileUpperComparison hprofile) ha ha1 hlam hlamLam hA hC hzero
+  obtain ⟨V, hV, hvol⟩ := shell_volume_bound _ alpha
+    _ ha hc hH (fun q => (hcomp q).1) hhom
+  obtain ⟨K, hK, hbound⟩ := shell_source_bound _
+    _ _ alpha
+    _ _
+    _ ha ha1 hlam hlamLam hA hC hzero
     (fun q => (hcomp q).2) hgrad
   refine ⟨K * Real.rpow V (1 / p), 1, mul_pos hK (Real.rpow_pos_of_pos hV _),
     zero_lt_one, ?_⟩
   intro r hr _
-  have hf := (measurable_flatSourceWithJet (profileMatrix hprofile)
-    (profileFunction hprofile) (profileVelocityJet hprofile) alpha r
+  have hf := (measurable_flatSourceWithJet _
+    _ _ alpha r
     hAm hH.measurable hgv).aestronglyMeasurable (μ := volume)
-  have hS : MeasurableSet (profileShell (profileFunction hprofile) alpha r) :=
+  have hS : MeasurableSet (profileShell _ alpha r) :=
     ((isClosed_le continuous_const hH).inter (isClosed_le hH continuous_const)).measurableSet
-  have hn := eLpNorm_le_shell_bound _ (profileShell (profileFunction hprofile) alpha r)
-    p (K * Real.rpow r (alpha - 2)) hp0
+  have hn := eLpNorm_le_shell_bound _ _
+    p (K * Real.rpow r _) hp0
     (mul_nonneg hK.le (Real.rpow_pos_of_pos hr _).le) hf hS (hbound r hr)
     (fun q hq => flatSourceWithJet_eq_zero_off_shell _ _ _ alpha r hr q hq)
   have hpow := ENNReal.rpow_le_rpow (hvol r hr) (div_nonneg zero_le_one hp0.le)
-  have hn' := hn.trans (mul_le_mul_right hpow (ENNReal.ofReal (K * Real.rpow r (alpha - 2))))
+  have hn' := hn.trans (mul_le_mul_right hpow _)
   rw [source_norm_rpow_identity d alpha p V K r hp0 hV hK.le hr] at hn'
   apply (eLpNorm_restrict_le _ _ _ _).trans
   rw [eLpNorm_congr_ae (flatSource_ae_eq_jet_of_profile hprofile r)]

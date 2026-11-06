@@ -6,15 +6,16 @@ import Mathlib.Tactic
 /-! # Elementary estimates for the time-integrated Gaussian away from its pole -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
+variable (t : BellmanPositiveTime)
+
 /-- A uniform quadratic lower bound for the Gaussian precision at small positive time. -/
-theorem bellmanGaussianExponent_le_smallTime (t : BellmanPositiveTime) (ht : t.val ≤ 1)
+theorem bellmanGaussianExponent_le_smallTime  (ht : t.val ≤ 1)
     (q : ℝ × ℝ) :
     bellmanGaussianExponent t q ≤ -(q.1 ^ 2 + q.2 ^ 2) / (8 * t.val) := by
   have ht2 : t.val ^ 2 ≤ 1 := by nlinarith only [t.property, ht]
-  have hcoeff : 0 ≤ 24 - 7 * t.val ^ 2 := by linarith only [ht2]
+  have hcoeff : 0 ≤ 24 - 7 * t.val ^ 2 := by linarith
   have hQ : 0 ≤ (24 - t.val ^ 2) * q.1 ^ 2 - 24 * t.val * q.1 * q.2 +
       7 * t.val ^ 2 * q.2 ^ 2 := by
     nlinarith only [sq_nonneg (12 * q.1 - 7 * t.val * q.2),
@@ -24,15 +25,12 @@ theorem bellmanGaussianExponent_le_smallTime (t : BellmanPositiveTime) (ht : t.v
       -((24 - t.val ^ 2) * q.1 ^ 2 - 24 * t.val * q.1 * q.2 +
         7 * t.val ^ 2 * q.2 ^ 2) / (8 * t.val ^ 3) := by
     dsimp [bellmanGaussianExponent]
-    field_simp
-    ring
+    grind
   have hneg : -((24 - t.val ^ 2) * q.1 ^ 2 - 24 * t.val * q.1 * q.2 +
       7 * t.val ^ 2 * q.2 ^ 2) / (8 * t.val ^ 3) ≤ 0 :=
     div_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr hQ)
       (mul_nonneg (by norm_num) (pow_nonneg t.property.le 3))
-  rw [← hidentity] at hneg
-  rw [neg_div]
-  linarith only [hneg]
+  grind
 
 /-- Exponential decay dominates the quadratic inverse-power singularity. -/
 theorem bellman_exp_neg_le_inv_sq (y : ℝ) (hy : 0 < y) :
@@ -42,12 +40,11 @@ theorem bellman_exp_neg_le_inv_sq (y : ℝ) (hy : 0 < y) :
   have hexp : Real.exp y * Real.exp (-y) = 1 := by
     rw [← Real.exp_add, add_neg_cancel, Real.exp_zero]
   rw [hexp] at hm
-  norm_num at hm
   apply (le_div_iff₀ (pow_pos hy 2)).mpr
-  nlinarith only [hm]
+  linarith
 
 /-- At small time the kernel is uniformly bounded on each plane set away from the origin. -/
-theorem bellmanGaussianKernel_le_smallTime (t : BellmanPositiveTime) (ht : t.val ≤ 1)
+theorem bellmanGaussianKernel_le_smallTime  (ht : t.val ≤ 1)
     (q : ℝ × ℝ) (a : ℝ) (ha : 0 < a) (hq : a ≤ q.1 ^ 2 + q.2 ^ 2) :
     bellmanGaussianKernel t q ≤ 64 * Real.sqrt 3 / (Real.pi * a ^ 2) := by
   have hE : bellmanGaussianExponent t q ≤ -a / (8 * t.val) := by
@@ -63,9 +60,7 @@ theorem bellmanGaussianKernel_le_smallTime (t : BellmanPositiveTime) (ht : t.val
   have hc : 0 ≤ Real.sqrt 3 / (2 * Real.pi * t.val ^ 2) :=
     div_nonneg (Real.sqrt_nonneg _) (by positivity)
   have hm := mul_le_mul_of_nonneg_left he hc
-  unfold bellmanGaussianKernel
   refine hm.trans_eq ?_
-  field_simp [ne_of_gt t.property]
-  norm_num
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov

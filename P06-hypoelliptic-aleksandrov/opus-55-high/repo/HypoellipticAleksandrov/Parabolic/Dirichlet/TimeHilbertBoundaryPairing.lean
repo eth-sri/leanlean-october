@@ -18,7 +18,6 @@ evaluates the raw Bochner representative at a time endpoint.
 open Filter Function MeasureTheory Set Topology
 open scoped ENNReal RealInnerProductSpace
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -32,7 +31,7 @@ private theorem intervalPrimitive_boundary_pairing
     (∫ tau, PDE.intervalPrimitive 0 f tau * etaDeriv tau
       ∂reverseTimeVolume T) =
       -(∫ tau, f tau * eta tau ∂reverseTimeVolume T) := by
-  have hEtaCont : ContinuousOn eta (Icc 0 T) := HasDerivWithinAt.continuousOn hEta
+  have hEtaCont : ContinuousOn eta _ := HasDerivWithinAt.continuousOn hEta
   have hleft :
       (∫ tau, PDE.intervalPrimitive 0 f tau * etaDeriv tau
         ∂reverseTimeVolume T) =
@@ -59,8 +58,7 @@ private theorem intervalPrimitive_boundary_pairing
       intro s hs
       change (∫ tau in Icc s T, f s * etaDeriv tau) = -(f s * eta s)
       rw [integral_const_mul]
-      have hFTC : ∫ tau in s..T, etaDeriv tau = eta T - eta s := by
-        exact intervalIntegral.integral_eq_sub_of_hasDeriv_right_of_le hs.2
+      have hFTC : ∫ tau in s..T, etaDeriv tau = eta T - eta s := intervalIntegral.integral_eq_sub_of_hasDeriv_right_of_le hs.2
           (hEtaCont.mono (Icc_subset_Icc hs.1 le_rfl)) (fun tau ht =>
             (hEta tau ⟨le_trans hs.1 ht.1.le, ht.2.le⟩).hasDerivAt
               (Icc_mem_nhds (lt_of_le_of_lt hs.1 ht.1) ht.2)
@@ -71,17 +69,17 @@ private theorem intervalPrimitive_boundary_pairing
       ring
     _ = -(∫ s in Icc 0 T, f s * eta s) := by rw [integral_neg]
 
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T) (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+
 private theorem reverseTimeVStarPrimitive_apply_eq_intervalPrimitive_on_Ioo
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (g : ReverseTimeL2VStar hΩ T)
+    
     (v : H10HilbertGraph hΩ) {tau : ℝ} (ht : tau ∈ Ioo 0 T) :
     reverseTimeVStarPrimitive hΩ T g tau v =
       PDE.intervalPrimitive 0 (fun s => (g s) v) tau := by
-  rw [reverseTimeVStarPrimitive_apply hΩ T g v tau]
-  change (∫ s in Ioc 0 tau, (g s) v ∂reverseTimeVolume T) = _
+  rw [reverseTimeVStarPrimitive_apply]
   rw [show (∫ s in Ioc 0 tau, (g s) v ∂reverseTimeVolume T) =
       ∫ s in Ioc 0 tau, (g s) v ∂volume by
-        simp only [reverseTimeVolume, reverseTimeOpenInterval,
+        simp only [reverseTimeVolume,
           Measure.restrict_restrict measurableSet_Ioc]
         rw [inter_eq_left.mpr]
         intro s hs
@@ -92,7 +90,7 @@ private theorem reverseTimeVolume_affine_constant_integral
     {T a : ℝ} (hT : 0 < T) :
     (∫ _ : ℝ, a * (-(T⁻¹)) ∂reverseTimeVolume T) = -a := by
   have hMeasure : (reverseTimeVolume T).real univ = T := by
-    change (volume.restrict (Ioo (0 : ℝ) T)).real univ = T
+    change (volume.restrict (Ioo _ T)).real univ = T
     rw [MeasureTheory.measureReal_restrict_apply_univ,
       Real.volume_real_Ioo_of_le hT.le]
     norm_num
@@ -100,15 +98,13 @@ private theorem reverseTimeVolume_affine_constant_integral
     (∫ _ : ℝ, a * (-(T⁻¹)) ∂reverseTimeVolume T) =
         ∫ _ : ℝ, a * (-(T⁻¹)) ∂reverseTimeVolume T := rfl
     _ = (reverseTimeVolume T).real univ * (a * (-(T⁻¹))) :=
-      MeasureTheory.integral_const (a * (-(T⁻¹)))
+      MeasureTheory.integral_const _
     _ = -a := by
       rw [hMeasure]
       field_simp [hT.ne']
 
 private theorem reverseTimeHilbertRepresentative_affine_pairing_eqOn
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (v : H10HilbertGraph hΩ) :
     EqOn
@@ -119,7 +115,7 @@ private theorem reverseTimeHilbertRepresentative_affine_pairing_eqOn
         reverseTimeGelfandAffineConstant hΩ T hT u g v)
       (Icc 0 T) := by
   let Ubar := reverseTimeHilbertRepresentative hΩ T hT u g hderiv
-  let Uext : ℝ → PDE.ScalarLp Ω (2 : ℝ≥0∞) := Set.IccExtend hT.le Ubar
+  let Uext  := Set.IccExtend hT.le Ubar
   let P := reverseTimeVStarPrimitive hΩ T g
   let c := reverseTimeGelfandAffineConstant hΩ T hT u g
   have hUAE : ∀ᵐ tau ∂volume.restrict (Icc 0 T),
@@ -153,32 +149,27 @@ private theorem reverseTimeHilbertRepresentative_affine_pairing_eqOn
       with tau ht hU hG hA
     have htIcc : tau ∈ Icc 0 T := ⟨le_of_lt ht.1, le_of_lt ht.2⟩
     calc
-      inner ℝ (valueCLM hΩ v) (Uext tau) =
+      inner ℝ _ _ =
           inner ℝ (valueCLM hΩ v) (Ubar ⟨tau, htIcc⟩) := by
-            change inner ℝ (valueCLM hΩ v) (Set.IccExtend hT.le Ubar tau) = _
-            rw [Set.IccExtend_of_mem hT.le Ubar htIcc]
-      _ = inner ℝ (valueCLM hΩ v) (valueCLM hΩ (u tau)) := by rw [hU ht]
-      _ = scalarLpToH10HilbertGraphDual hΩ (valueCLM hΩ (u tau)) v := by
+            change inner ℝ _ (Set.IccExtend hT.le Ubar tau) = _
+            rw [Set.IccExtend_of_mem]
+      _ = inner ℝ _ _ := by rw [hU ht]
+      _ = scalarLpToH10HilbertGraphDual hΩ _ v := by
             rw [scalarLpToH10HilbertGraphDual_apply]
-      _ = reverseTimeGelfandCLM hΩ T u tau v := by
-            exact congrArg (fun ell : H10HilbertGraphDual hΩ => ell v) hG.symm
+      _ = reverseTimeGelfandCLM hΩ T u tau v := congrArg (fun ell : H10HilbertGraphDual hΩ => ell v) hG.symm
       _ = (P tau + c) v := congrArg (fun ell : H10HilbertGraphDual hΩ => ell v) hA
       _ = P tau v + c v := by rw [ContinuousLinearMap.add_apply]
-  have hUCont : ContinuousOn (fun tau => inner ℝ (valueCLM hΩ v) (Uext tau)) (Icc 0 T) := by
-    exact (innerSL ℝ (valueCLM hΩ v)).continuous.comp_continuousOn
+  have hUCont : ContinuousOn (fun tau => inner ℝ (valueCLM hΩ v) (Uext tau)) (Icc 0 T) := (innerSL ℝ _).continuous.comp_continuousOn
       Ubar.continuous.Icc_extend'.continuousOn
-  have hPCont : ContinuousOn (fun tau => P tau v + c v) (Icc 0 T) := by
-    exact ((ContinuousLinearMap.apply ℝ ℝ v).continuous.comp_continuousOn
+  have hPCont : ContinuousOn (fun tau => P tau v + c v) (Icc 0 T) := ((ContinuousLinearMap.apply ℝ ℝ v).continuous.comp_continuousOn
       (continuousOn_reverseTimeVStarPrimitive hΩ T g)).add continuousOn_const
-  have hPairEqOn : EqOn (fun tau => inner ℝ (valueCLM hΩ v) (Uext tau))
-      (fun tau => P tau v + c v) (Icc 0 T) :=
+  have hPairEqOn : EqOn _
+      _ (Icc 0 T) :=
     Measure.eqOn_Icc_of_ae_eq volume hT.ne hPairAE hUCont hPCont
   exact hPairEqOn
 
 private theorem reverseTimeHilbertRepresentative_affine_pairing_integral
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (v : H10HilbertGraph hΩ) :
     (∫ tau, inner ℝ (valueCLM hΩ v)
@@ -196,17 +187,16 @@ private theorem reverseTimeHilbertRepresentative_affine_pairing_integral
     (hPairEqOn ⟨le_of_lt ht.1, le_of_lt ht.2⟩)
 
 private theorem reverseTimeVStarPrimitive_affine_initial_source_pairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+     (hT : 0 < T)
     (g : ReverseTimeL2VStar hΩ T) (v : H10HilbertGraph hΩ) :
     (∫ tau, reverseTimeVStarPrimitive hΩ T g tau v * (-(T⁻¹))
       ∂reverseTimeVolume T) =
       -(∫ tau, (g tau) v * (1 - tau / T) ∂reverseTimeVolume T) := by
   have hgIcc : IntegrableOn (fun tau => (g tau) v) (Icc 0 T) volume := by
     letI : IsFiniteMeasure (reverseTimeVolume T) := by
-      change IsFiniteMeasure (volume.restrict (Ioo (0 : ℝ) T))
+      change IsFiniteMeasure (volume.restrict (Ioo _ T))
       infer_instance
-    change Integrable (fun tau => (g tau) v) (volume.restrict (Icc 0 T))
+    change Integrable _ _
     simpa only [reverseTimeVolume, reverseTimeOpenInterval,
       restrict_Ioo_eq_restrict_Icc, ContinuousLinearMap.apply_apply] using
       ((MeasureTheory.Lp.memLp g).continuousLinearMap_comp
@@ -215,8 +205,8 @@ private theorem reverseTimeVStarPrimitive_affine_initial_source_pairing
       HasDerivWithinAt (fun tau : ℝ => 1 - tau / T) (-(T⁻¹)) (Icc 0 T) tau := by
     intro tau _
     simpa only [div_eq_mul_inv, zero_sub, one_mul, Pi.sub_def, id_eq] using
-      (hasDerivAt_const (x := tau) (1 : ℝ)).sub
-        ((hasDerivAt_id (x := tau)).mul_const T⁻¹) |>.hasDerivWithinAt
+      (hasDerivAt_const (x := tau) _).sub
+        ((hasDerivAt_id (x := tau)).mul_const _) |>.hasDerivWithinAt
   have hAffineTerminal : 1 - T / T = 0 := by
     rw [div_self hT.ne']
     ring
@@ -232,14 +222,12 @@ private theorem reverseTimeVStarPrimitive_affine_initial_source_pairing
   calc
     (∫ tau, reverseTimeVStarPrimitive hΩ T g tau v * (-(T⁻¹))
       ∂reverseTimeVolume T) =
-        ∫ tau, PDE.intervalPrimitive 0 (fun s => (g s) v) tau * (-(T⁻¹))
+        ∫ tau, PDE.intervalPrimitive 0 _ tau * (-(T⁻¹))
           ∂reverseTimeVolume T := integral_congr_ae hPrimitiveAE
     _ = -(∫ tau, (g tau) v * (1 - tau / T) ∂reverseTimeVolume T) := hboundary
 
 private theorem reverseTimeGelfandAffineConstant_apply_eq_initial_trace
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (v : H10HilbertGraph hΩ) :
     reverseTimeGelfandAffineConstant hΩ T hT u g v = inner ℝ (valueCLM hΩ v)
@@ -247,25 +235,19 @@ private theorem reverseTimeGelfandAffineConstant_apply_eq_initial_trace
   have hPairEqOn := reverseTimeHilbertRepresentative_affine_pairing_eqOn
     hΩ T hT u g hderiv v
   have hzero := hPairEqOn (left_mem_Icc.mpr hT.le)
-  change inner ℝ (valueCLM hΩ v)
-    (Set.IccExtend hT.le (reverseTimeHilbertRepresentative hΩ T hT u g hderiv) 0) =
+  change inner ℝ _
+    _ =
       reverseTimeVStarPrimitive hΩ T g 0 v +
         reverseTimeGelfandAffineConstant hΩ T hT u g v at hzero
   rw [Set.IccExtend_left, reverseTimeVStarPrimitive_zero, ContinuousLinearMap.zero_apply,
     zero_add] at hzero
-  change reverseTimeGelfandAffineConstant hΩ T hT u g v =
-    inner ℝ (valueCLM hΩ v)
-      (reverseTimeHilbertRepresentative hΩ T hT u g hderiv
-        ⟨(0 : ℝ), ⟨le_rfl, hT.le⟩⟩)
   exact hzero.symm
 
 /-- Pairing the canonical continuous Hilbert representative with the affine
 terminal-zero cutoff recovers the reverse-time source pairing and the canonical
 initial trace. -/
 theorem reverseTimeHilbertRepresentative_affine_initial_pairing
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+    
     (hderiv : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (v : H10HilbertGraph hΩ) :
     (∫ tau,
@@ -284,8 +266,7 @@ theorem reverseTimeHilbertRepresentative_affine_initial_pairing
   have hConstant :
       (∫ tau, reverseTimeGelfandAffineConstant hΩ T hT u g v * (-(T⁻¹))
         ∂reverseTimeVolume T) =
-        -(reverseTimeGelfandAffineConstant hΩ T hT u g v) := by
-    exact reverseTimeVolume_affine_constant_integral (T := T)
+        -(reverseTimeGelfandAffineConstant hΩ T hT u g v) := reverseTimeVolume_affine_constant_integral (T := T)
       (a := reverseTimeGelfandAffineConstant hΩ T hT u g v) hT
   have hTrace := reverseTimeGelfandAffineConstant_apply_eq_initial_trace
     hΩ T hT u g hderiv v
@@ -304,7 +285,7 @@ theorem reverseTimeHilbertRepresentative_affine_initial_pairing
                 ring
               · exact (integrable_reverseTimeVStarPrimitive_apply hΩ T g v).mul_const _
               · letI : IsFiniteMeasure (reverseTimeVolume T) := by
-                  change IsFiniteMeasure (volume.restrict (Ioo (0 : ℝ) T))
+                  change IsFiniteMeasure (volume.restrict (Ioo _ T))
                   infer_instance
                 exact integrable_const _
     _ = -(∫ tau, (g tau) v * (1 - tau / T) ∂reverseTimeVolume T) -
@@ -312,7 +293,7 @@ theorem reverseTimeHilbertRepresentative_affine_initial_pairing
           rw [hPrimitive, hConstant]
           ring
     _ = -(∫ tau, (g tau) v * (1 - tau / T) ∂reverseTimeVolume T) -
-        inner ℝ (valueCLM hΩ v)
-          (reverseTimeInitialTrace hΩ T hT u g hderiv) := by rw [hTrace]
+        inner ℝ _
+          _ := by rw [hTrace]
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

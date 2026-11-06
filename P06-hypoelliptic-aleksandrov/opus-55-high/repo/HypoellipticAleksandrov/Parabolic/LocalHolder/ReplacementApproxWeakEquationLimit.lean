@@ -27,8 +27,10 @@ def homogeneousWeakFamilyResidual {d L : ℕ} {U : Set (TimeVelocity d)}
   ∑ i, ∑ j, A z.1 z.2 i j * D.representative
     (ParabolicDerivativeIndex.castLE hL (ParabolicDerivativeIndex.velocityTwo j i)) z
 
+variable {d L : ℕ}
+
 /-- Testing the literal residual equals the sum of its selected derivative pairings. -/
-theorem integral_homogeneousWeakFamilyResidual_mul {d L : ℕ}
+theorem integral_homogeneousWeakFamilyResidual_mul 
     {U : Set (TimeVelocity d)} {u : TimeVelocity d → ℝ}
     (hL : 2 ≤ L) (A : CoefficientField d) (hA : IsSmoothCoefficient A)
     (D : ParabolicWeakDerivativeFamily d L U u)
@@ -46,8 +48,8 @@ theorem integral_homogeneousWeakFamilyResidual_mul {d L : ℕ}
   have hij (i j : Fin d) : IntegrableOn (fun z => D.representative
       (ParabolicDerivativeIndex.castLE hL (ParabolicDerivativeIndex.velocityTwo j i)) z *
       (A z.1 z.2 i j * φ z)) U := by
-    have ha : ContDiff ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => A z.1 z.2 i j) :=
-      (contDiff_apply ℝ ℝ j).comp ((contDiff_apply ℝ (Fin d → ℝ) i).comp hA)
+    have ha : ContDiff ℝ _ (fun z : TimeVelocity d => A z.1 z.2 i j) :=
+      (contDiff_apply ℝ ℝ j).comp ((contDiff_apply ℝ _ i).comp hA)
     exact integrableOn_weak_pairing _ _ (D.memLp _) (ha.mul hφ)
       (HasCompactSupport.mul_left hc)
   have heq : (fun z => homogeneousWeakFamilyResidual hL A D z * φ z) =
@@ -57,12 +59,7 @@ theorem integral_homogeneousWeakFamilyResidual_mul {d L : ℕ}
           (ParabolicDerivativeIndex.velocityTwo j i)) z * (A z.1 z.2 i j * φ z)) := by
     funext z
     simp only [homogeneousWeakFamilyResidual, add_mul, Finset.sum_mul]
-    congr 1
-    apply Finset.sum_congr rfl
-    intro i _
-    apply Finset.sum_congr rfl
-    intro j _
-    ring
+    grind
   rw [heq, integral_add ht (integrable_finsetSum Finset.univ (fun i _ =>
     integrable_finsetSum Finset.univ (fun j _ => hij i j))),
     integral_finsetSum Finset.univ (fun i _ =>
@@ -70,7 +67,7 @@ theorem integral_homogeneousWeakFamilyResidual_mul {d L : ℕ}
   simp_rw [integral_finsetSum Finset.univ (fun j _ => hij _ j)]
 
 /-- A common weak testing limit preserves the homogeneous equation almost everywhere. -/
-theorem homogeneousWeakFamilyResidual_ae_eq_zero_of_testing_limit {d L : ℕ}
+theorem homogeneousWeakFamilyResidual_ae_eq_zero_of_testing_limit 
     (U : Set (TimeVelocity d)) (hU : IsOpen U)
     (hL : 2 ≤ L) (A : CoefficientField d) (hA : IsSmoothCoefficient A)
     (M : ℝ) (hAb : ∀ z ∈ U, ∀ i j, |A z.1 z.2 i j| ≤ M)
@@ -110,17 +107,16 @@ theorem homogeneousWeakFamilyResidual_ae_eq_zero_of_testing_limit {d L : ℕ}
     tendsto_finsetSum Finset.univ (fun j _ => hij i j)))
   have hn (n : ℕ) : (∫ z in U, homogeneousWeakFamilyResidual hL A (D n) z * φ z) = 0 := by
     have hz := hzero n
-    rw [timeVelocityVolumeOn] at hz
     calc
-      _ = ∫ z in U, (0 : ℝ) := integral_congr_ae (hz.mono fun z hz => by rw [hz]; simp)
+      _ = ∫ z in U, (0) := integral_congr_ae (hz.mono fun z hz => by simp_all)
       _ = 0 := integral_zero _ _
   have hvpair := integral_homogeneousWeakFamilyResidual_mul hL A hA E φ hφ hc
-  have hseq : Tendsto (fun _n : ℕ => (0 : ℝ)) atTop
+  have hseq : Tendsto (fun _n : ℕ => (0)) atTop
       (𝓝 (∫ z in U, homogeneousWeakFamilyResidual hL A E z * φ z)) := by
     rw [hvpair]
     apply hsum.congr'
     exact Eventually.of_forall (fun n =>
       (integral_homogeneousWeakFamilyResidual_mul hL A hA (D n) φ hφ hc).symm.trans (hn n))
-  exact tendsto_nhds_unique hseq tendsto_const_nhds
+  simp_all
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

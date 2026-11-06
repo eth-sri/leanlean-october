@@ -12,7 +12,6 @@ and having left limits `m₀(w)` at `t = r` for every `w`, the layer averages
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
@@ -36,9 +35,9 @@ theorem layer_inner_tendsto (r : ℝ) (m : ℝ → ℝ) (hm : Measurable m) (M :
   have hbound : Integrable (fun s => |layerKernel s| * M) :=
     integrable_layerKernel.norm.mul_const M
   have h := tendsto_integral_filter_of_dominated_convergence
-    (μ := (volume : Measure ℝ)) (l := 𝓝[>] (0 : ℝ))
-    (F := fun (h : ℝ) s => layerKernel s * m (r - h * s)) (f := fun s => layerKernel s * m₀)
-    (fun s => |layerKernel s| * M)
+    (μ := volume) (l := 𝓝[>] (0))
+    (F := fun h s => layerKernel s * m (r - h * s)) (f := fun s => layerKernel s * m₀)
+    _
     (Eventually.of_forall fun h =>
       (continuous_layerKernel.measurable.mul
         (hm.comp (measurable_const.sub (measurable_const.mul measurable_id)))).aestronglyMeasurable)
@@ -79,7 +78,7 @@ theorem layer_prod_tendsto (ν : Measure E) [SigmaFinite ν] (r : ℝ) (m : ℝ 
       ((measurable_const.sub measurable_fst).div_const h))).mul hm
   have hGint : ∀ h : ℝ, 0 < h →
       Integrable (fun q : ℝ × E => h⁻¹ * layerKernel ((r - q.1) / h) * m q)
-        ((volume : Measure ℝ).prod ν) := by
+        (volume.prod ν) := by
     intro h hh
     have h1 : Integrable ((Icc (r - 2 * h) (r - h)).indicator (fun _ => (1 : ℝ))) :=
       (integrable_indicator_iff measurableSet_Icc).2 (integrableOn_const (by simp))
@@ -87,8 +86,8 @@ theorem layer_prod_tendsto (ν : Measure E) [SigmaFinite ν] (r : ℝ) (m : ℝ 
       (integrable_indicator_iff hK).2 (integrableOn_const hKν.ne)
     have h3 := (h1.mul_prod h2).const_mul (h⁻¹ * Mρ * M)
     refine h3.mono' (hG h).aestronglyMeasurable (Eventually.of_forall fun q => ?_)
-    have hb0 : 0 ≤ (h⁻¹ * Mρ * M) * ((Icc (r - 2 * h) (r - h)).indicator (fun _ => (1 : ℝ)) q.1 *
-        K.indicator (fun _ => (1 : ℝ)) q.2) :=
+    have hb0 : 0 ≤ (h⁻¹ * Mρ * M) * ((Icc (r - 2 * h) (r - h)).indicator _ q.1 *
+        K.indicator _ q.2) :=
       mul_nonneg (by positivity) (mul_nonneg (indicator_nonneg (fun _ _ => zero_le_one) _)
         (indicator_nonneg (fun _ _ => zero_le_one) _))
     rw [Real.norm_eq_abs, abs_mul, abs_mul]
@@ -109,31 +108,31 @@ theorem layer_prod_tendsto (ν : Measure E) [SigmaFinite ν] (r : ℝ) (m : ℝ 
     · rw [hmK q.1 q.2 hw, abs_zero, mul_zero]
       exact hb0
   have hEq : ∀ h : ℝ, 0 < h →
-      ∫ q, h⁻¹ * layerKernel ((r - q.1) / h) * m q ∂((volume : Measure ℝ).prod ν) =
+      ∫ q, h⁻¹ * layerKernel ((r - q.1) / h) * m q ∂(volume.prod ν) =
         ∫ w, ∫ s, layerKernel s * m (r - h * s, w) ∂volume ∂ν := by
     intro h hh
     rw [integral_prod_symm _ (hGint h hh)]
     congr 1
     funext w
-    exact integral_layer_substitution r h hh (fun t => m (t, w))
+    exact integral_layer_substitution r h hh _
   have hΦ : Tendsto (fun h : ℝ => ∫ w, ∫ s, layerKernel s * m (r - h * s, w) ∂volume ∂ν)
       (𝓝[>] 0) (𝓝 (∫ w, m₀ w ∂ν)) := by
     have hdom := tendsto_integral_filter_of_dominated_convergence
-      (μ := ν) (l := 𝓝[>] (0 : ℝ))
-      (F := fun (h : ℝ) w => ∫ s, layerKernel s * m (r - h * s, w) ∂volume) (f := m₀)
-      (fun w => ((∫ s, |layerKernel s|) * M) * K.indicator (fun _ => (1 : ℝ)) w)
+      (μ := ν) (l := 𝓝[>] (0))
+      (F := fun h w => ∫ s, layerKernel s * m _ ∂volume) (f := m₀)
+      _
       (Eventually.of_forall fun h => by
         have hm' : Measurable (fun q : ℝ × E => layerKernel q.1 * m (r - h * q.1, q.2)) :=
           (continuous_layerKernel.measurable.comp measurable_fst).mul
             (hm.comp ((measurable_const.sub (measurable_const.mul measurable_fst)).prodMk
               measurable_snd))
-        exact (hm'.stronglyMeasurable.integral_prod_left' (μ := (volume : Measure ℝ))
+        exact (hm'.stronglyMeasurable.integral_prod_left' (μ := volume)
           ).aestronglyMeasurable)
       (Eventually.of_forall fun h => Eventually.of_forall fun w => by
         by_cases hw : w ∈ K
-        · simp only [indicator_of_mem hw, mul_one]
-          calc ‖∫ s, layerKernel s * m (r - h * s, w)‖
-              ≤ ∫ s, ‖layerKernel s * m (r - h * s, w)‖ := norm_integral_le_integral_norm _
+        · simp only [indicator_of_mem hw]
+          calc ‖∫ s, layerKernel s * m _‖
+              ≤ ∫ s, ‖layerKernel s * m _‖ := norm_integral_le_integral_norm _
             _ ≤ ∫ s, |layerKernel s| * M := by
               apply integral_mono_of_nonneg (Eventually.of_forall fun s => norm_nonneg _)
                 (integrable_layerKernel.norm.mul_const M)
@@ -146,7 +145,7 @@ theorem layer_prod_tendsto (ν : Measure E) [SigmaFinite ν] (r : ℝ) (m : ℝ 
           exact le_rfl)
       (((integrable_indicator_iff hK).2 (integrableOn_const hKν.ne)).const_mul _)
       (Eventually.of_forall fun w => layer_inner_tendsto r (fun t => m (t, w))
-        (hm.comp (measurable_id.prodMk measurable_const)) M (fun t => hM _) (m₀ w) (hlim w))
+        (hm.comp (measurable_id.prodMk measurable_const)) M (fun t => hM _) _ (hlim w))
     exact hdom
   refine hΦ.congr' ?_
   filter_upwards [self_mem_nhdsWithin] with h hh
@@ -155,7 +154,7 @@ theorem layer_prod_tendsto (ν : Measure E) [SigmaFinite ν] (r : ℝ) (m : ℝ 
 /-- The smooth step tends to one at `+∞`. -/
 theorem tendsto_layerStep_atTop : Tendsto layerStep atTop (𝓝 1) := by
   apply tendsto_const_nhds.congr'
-  filter_upwards [Ici_mem_atTop (2 : ℝ)] with y hy using (layerStep_of_ge hy).symm
+  filter_upwards [Ici_mem_atTop _] with y hy using (layerStep_of_ge hy).symm
 
 section Identity
 
@@ -178,19 +177,19 @@ theorem layer_slice_identity (r : ℝ) (U Ψ Λ : ℝ × E → ℝ) (hU : Measur
         ∂((volume : Measure ℝ).prod ν) + ∫ w, m₀ w ∂ν = 0 := by
   obtain ⟨MΨ, hMΨ⟩ := hΨ.bounded_above_of_compact_support hΨc
   have hMΨ0 : 0 ≤ max MΨ 0 := le_max_right _ _
-  have hKc : IsCompact (Prod.snd '' tsupport Ψ) := hΨc.image continuous_snd
-  have hmeasΛ : Measurable Λ := hΛ.measurable
-  have hΛint : Integrable Λ ((volume : Measure ℝ).prod ν) := by
+  have hKc  := hΨc.image continuous_snd
+  have hmeasΛ  := hΛ.measurable
+  have hΛint : Integrable Λ (volume.prod ν) := by
     have : Integrable Λ (volume.prod ν) := hΛ.integrable_of_hasCompactSupport hΛc
     exact this
   have h1 : Tendsto (fun h : ℝ => ∫ q, layerStep ((r - q.1) / h) * (U q * Λ q)
-      ∂((volume : Measure ℝ).prod ν)) (𝓝[>] 0)
+      ∂(volume.prod ν)) (𝓝[>] 0)
       (𝓝 (∫ q, {q : ℝ × E | q.1 < r}.indicator (fun q => U q * Λ q) q
-        ∂((volume : Measure ℝ).prod ν))) := by
+        ∂(volume.prod ν))) := by
     refine tendsto_integral_filter_of_dominated_convergence
-      (μ := (volume : Measure ℝ).prod ν) (l := 𝓝[>] (0 : ℝ))
-      (F := fun (h : ℝ) q => layerStep ((r - q.1) / h) * (U q * Λ q))
-      (f := {q : ℝ × E | q.1 < r}.indicator (fun q => U q * Λ q))
+      (μ := volume.prod ν) (l := 𝓝[>] (0))
+      (F := fun h q => layerStep _ * (U q * Λ q))
+      (f := {q : ℝ × E | q.1 < r}.indicator _)
       (fun q => C * |Λ q|) ?_ ?_ ?_ ?_
     · refine Eventually.of_forall fun h => ?_
       exact ((contDiff_layerStep.continuous.measurable.comp
@@ -201,16 +200,14 @@ theorem layer_slice_identity (r : ℝ) (U Ψ Λ : ℝ × E → ℝ) (hU : Measur
       have h1 : layerStep ((r - q.1) / h) ≤ 1 := Real.smoothTransition.le_one _
       rw [Real.norm_eq_abs, abs_mul, abs_mul, abs_of_nonneg h0]
       have := hUb q
-      calc layerStep ((r - q.1) / h) * (|U q| * |Λ q|) ≤ 1 * (C * |Λ q|) := by
+      calc layerStep _ * (|U q| * |Λ q|) ≤ 1 * (C * |Λ q|) := by
             gcongr
         _ = C * |Λ q| := one_mul _
     · exact (hΛint.norm.const_mul C)
     · refine Eventually.of_forall fun q => ?_
       by_cases hq : q.1 < r
       · rw [indicator_of_mem (show q ∈ {q : ℝ × E | q.1 < r} from hq)]
-        have ht : Tendsto (fun h : ℝ => (r - q.1) / h) (𝓝[>] 0) atTop := by
-          simp only [div_eq_mul_inv]
-          exact tendsto_inv_nhdsGT_zero.const_mul_atTop (sub_pos.2 hq)
+        have ht : Tendsto (fun h : ℝ => (r - q.1) / h) (𝓝[>] 0) atTop := tendsto_inv_nhdsGT_zero.const_mul_atTop (sub_pos.2 hq)
         have := (tendsto_layerStep_atTop.comp ht).mul_const (U q * Λ q)
         simpa using this
       · rw [indicator_of_notMem (show q ∉ {q : ℝ × E | q.1 < r} from hq)]
@@ -220,23 +217,23 @@ theorem layer_slice_identity (r : ℝ) (U Ψ Λ : ℝ × E → ℝ) (hU : Measur
           div_nonpos_of_nonpos_of_nonneg (by linarith [not_lt.1 hq]) (le_of_lt hh)
         rw [layerStep_of_le (by linarith)]
         simp
-  have hKm : MeasurableSet (Prod.snd '' tsupport Ψ) := hKc.isClosed.measurableSet
+  have hKm  := hKc.isClosed.measurableSet
   have h2 := layer_prod_tendsto ν r (fun q => U q * Ψ q) (hU.mul hΨ.measurable)
-    (C * max MΨ 0) (mul_nonneg hC0 hMΨ0)
+    _ (mul_nonneg hC0 hMΨ0)
     (fun q => by
       rw [abs_mul]
       refine mul_le_mul (hUb q) ?_ (abs_nonneg _) hC0
       simpa only [Real.norm_eq_abs] using (hMΨ q).trans (le_max_left _ _))
-    (Prod.snd '' tsupport Ψ) hKm hKc.measure_lt_top
+    _ hKm hKc.measure_lt_top
     (fun t w hw => by
       have : Ψ (t, w) = 0 := image_eq_zero_of_notMem_tsupport (fun h => hw ⟨_, h, rfl⟩)
       simp [this])
     m₀ hlim
   have h3 := h1.add h2
   have h4 : Tendsto (fun h : ℝ =>
-      ∫ q, layerStep ((r - q.1) / h) * (U q * Λ q) ∂((volume : Measure ℝ).prod ν) +
+      ∫ q, layerStep ((r - q.1) / h) * (U q * Λ q) ∂(volume.prod ν) +
         ∫ q, h⁻¹ * layerKernel ((r - q.1) / h) * (U q * Ψ q)
-          ∂((volume : Measure ℝ).prod ν)) (𝓝[>] 0) (𝓝 0) := by
+          ∂(volume.prod ν)) (𝓝[>] 0) (𝓝 0) := by
     refine tendsto_const_nhds.congr' ?_
     filter_upwards [self_mem_nhdsWithin] with h hh
     exact (hI h hh).symm

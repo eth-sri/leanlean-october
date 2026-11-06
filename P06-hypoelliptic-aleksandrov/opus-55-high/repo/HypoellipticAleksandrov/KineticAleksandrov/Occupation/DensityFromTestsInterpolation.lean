@@ -94,14 +94,14 @@ theorem memLp_intermediate_of_bounds {r γ A : ℝ} (hr : 1 < r)
   rcases hA.eq_or_lt with hAz | hAp
   · have hzero : eLpNorm g 1 μ = 0 := by
       apply (ENNReal.toReal_eq_zero_iff _).mp (le_antisymm
-        (h1n.trans (by rw [← hAz])) ENNReal.toReal_nonneg) |>.resolve_right
+        (h1n.trans (by simp_all)) ENNReal.toReal_nonneg) |>.resolve_right
         h1.eLpNorm_ne_top
     have hae := (eLpNorm_eq_zero_iff one_ne_zero).mp hzero
     have hn : eLpNorm g (ENNReal.ofReal γ) μ = 0 := by
       rw [eLpNorm_congr_ae hae]
       simp
-    refine ⟨by rw [memLp_iff, hn]; exact ENNReal.zero_lt_top, ?_⟩
-    rw [hn, ENNReal.toReal_zero, ← hAz, mul_zero]
+    refine ⟨by rw [memLp_iff, hn]; simp, ?_⟩
+    grind
   · let f : α → ℝ := fun x => A⁻¹ * g x
     have hf1 : MemLp f 1 μ := h1.const_mul _
     have hfr : MemLp f (ENNReal.ofReal r) μ := hrLp.const_mul _
@@ -113,8 +113,7 @@ theorem memLp_intermediate_of_bounds {r γ A : ℝ} (hr : 1 < r)
     obtain ⟨hfγ, hfγn⟩ := memLp_intermediate_of_unit_bounds hr hγ hγr hf1 hfr
       (hfn 1 h1n) (hfn _ hrn)
     have heq : (fun x => A * f x) = g := by
-      funext x
-      simp only [f, ← mul_assoc, mul_inv_cancel₀ hAp.ne', one_mul]
+      grind
     have hγLp : MemLp g (ENNReal.ofReal γ) μ := heq ▸ hfγ.const_mul A
     refine ⟨hγLp, ?_⟩
     rw [← heq, toReal_eLpNorm_const_mul, abs_of_pos hAp]

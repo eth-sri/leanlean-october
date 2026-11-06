@@ -10,7 +10,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.SourceProblem.SourceCor
 /-! # Localization of the whole-space occupation potential -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic SectionTwo Set
 
@@ -35,15 +34,14 @@ theorem wholeSpace_localization_direct {d : ℕ} (hH : HormanderHypoellipticityS
       (∀ q ∈ scalarParabolicClosedCylinder α 1 (PDE.euclideanBall vStar R),
         W q ≤ V q + H * occupationQuadratic Lam vStar q / R ^ 2) ∧
       (2 * d * Lam * (1 - α)) / R ^ 2 ≤ 1 / 2 := by
-  dsimp only
   let W := parabolicDuhamelPotential K MeasurableSet.univ 1 F
-  let H := sSup (W '' (Icc (0 : ℝ) 1 ×ˢ univ))
+  let H := sSup (W '' (Icc (0) 1 ×ˢ univ))
   obtain ⟨hW0, hbdd, -, hWt, hWs, hWe⟩ :=
     occupation_potential hH hB K hP F hF0 hFs hFc hFsupp
-  have hH0 : 0 ≤ H := (hW0 (0, 0)).trans
+  have hH0 : 0 ≤ H := (hW0 _).trans
     (le_csSup hbdd ⟨(0, 0), ⟨⟨le_rfl, zero_le_one⟩, mem_univ _⟩, rfl⟩)
   have hU : tsupport F ⊆ {p : TimeVelocity d | p.1 < 1 ∧
-      p.2 ∈ movingDomain (wholeSpace d) (fun _ => (0 : PDE.Vec d)) p.1} := by
+      p.2 ∈ movingDomain (wholeSpace d) (fun _ => (0)) p.1} := by
     intro p hp
     exact ⟨(hFsupp hp).1.2, by simp [movingDomain_wholeSpace]⟩
   have hWcont := (parabolic_duhamel hH (wholeSpace_admissible d)
@@ -59,14 +57,9 @@ theorem wholeSpace_localization_direct {d : ℕ} (hH : HormanderHypoellipticityS
   · apply isScalarC12On_of_isOpen_contDiffOn_two
       (isOpen_Ioo.prod (PDE.isOpen_euclideanBall vStar R))
     exact (hWs.of_le (by simp)).mono fun p hp => hp.1.2
-  · intro p hp
-    exact hWe p hp.1.2
+  · aesop
   · exact hV
-  · intro p hp
-    have ht := (mem_scalarParabolicTerminalFace_iff.mp hp).1
-    have hpEq : p = (1, p.2) := Prod.ext ht rfl
-    rw [hpEq]
-    exact hWt p.2
+  · aesop
   · intro p hp
     have hz := mem_scalarParabolicLateralFace_iff.mp hp
     have hw : W p ≤ H := le_csSup hbdd

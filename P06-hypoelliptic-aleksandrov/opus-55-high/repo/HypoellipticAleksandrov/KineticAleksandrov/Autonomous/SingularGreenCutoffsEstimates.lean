@@ -10,7 +10,6 @@ coefficient derivatives. They are estimates on cutoffs, not a singular Green fun
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov.Parabolic
 
@@ -24,10 +23,8 @@ theorem cutoff_error_abs_le (a Lam v chi psi dx dv dvv phi phiv DX DV DVV B0 B1 
   have hDX := (abs_nonneg dx).trans hx
   have hDV := (abs_nonneg dv).trans hv
   have hDVV := (abs_nonneg dvv).trans hvv
-  have hB0 := (abs_nonneg phi).trans hb
-  have hB1 := (abs_nonneg phiv).trans hbv
   have hLam := ha.trans haL
-  have ha' : |a| ≤ Lam := by rwa [abs_of_nonneg ha]
+  have ha' : |a| ≤ Lam := by grind
   have h₁ : |v*dx*psi*phi| ≤ |v| *DX*B0 := by
     simp only [abs_mul]
     calc
@@ -43,8 +40,6 @@ theorem cutoff_error_abs_le (a Lam v chi psi dx dv dvv phi phiv DX DV DVV B0 B1 
     calc
       _ ≤ 2*Lam*1*DV*B1 := by gcongr
       _ = _ := by ring
-  have hsum := (abs_add_le (v*dx*psi*phi+a*chi*dvv*phi) (2*a*chi*dv*phiv)).trans
-    (add_le_add (abs_add_le _ _) le_rfl)
-  linarith only [hsum, h₁, h₂, h₃]
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -22,8 +22,7 @@ theorem coordinateIteratedFDeriv_tsupport_subset
   intro hzero
   exact hz (by
     unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
-    rw [hzero]
-    exact ContinuousMultilinearMap.zero_apply _)
+    simp_all)
 
 /-- The grid-FTC sup estimate with the exact common compact-support constant. -/
 theorem abs_le_sqrt_volume_mul_eLpNorm_coordinateIteratedFDeriv_allOnes
@@ -50,19 +49,17 @@ theorem abs_le_sqrt_volume_mul_eLpNorm_coordinateIteratedFDeriv_allOnes
   have hgcontdiff : ContDiff ℝ (⊤ : ℕ∞) g := by
     rw [contDiff_infty]
     intro m
-    unfold g TimeVelocityMultiIndex.coordinateIteratedFDeriv
     have hi := (contDiff_infty.mp hf
       (m + (TimeVelocityMultiIndex.allOnes d).order)).iteratedFDeriv_right
       (m := m)
       (i := (TimeVelocityMultiIndex.allOnes d).coordinateList.length) (by simp)
     exact (contDiff_const (c := ContinuousMultilinearMap.apply ℝ _ _
-      (fun i ↦ timeVelocityBasis
-        ((TimeVelocityMultiIndex.allOnes d).coordinateList.get i)))).clm_apply hi
+      _)).clm_apply hi
   have hgcontinuous : Continuous g := hgcontdiff.continuous
-  have hgcompact : HasCompactSupport g :=
+  have hgcompact  :=
     HasCompactSupport.of_support_subset_isCompact hK hgsupp
-  have hgmem : MemLp g (2 : ℝ≥0∞)
-      (volume : Measure (TimeVelocity d)) :=
+  have hgmem : MemLp g (2)
+      volume :=
     hgcontinuous.memLp_of_hasCompactSupport hgcompact
   exact (abs_le_integral_abs_coordinateIteratedFDeriv_allOnes d f hf hfcompact z).trans
     (integral_abs_le_sqrt_volume_mul_eLpNorm K hK.measurableSet

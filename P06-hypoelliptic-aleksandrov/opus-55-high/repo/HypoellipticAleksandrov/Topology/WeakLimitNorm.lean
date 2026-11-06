@@ -26,13 +26,13 @@ theorem norm_le_of_tendsto_clm_of_norm_le
     (hweak : ∀ ell : H →L[ℝ] ℝ,
       Tendsto (fun n => ell (u n)) atTop (𝓝 (ell v))) :
     ‖v‖ ≤ R := by
-  have hR : 0 ≤ R := (norm_nonneg (u 0)).trans (hu 0)
+  have hR : 0 ≤ R := (norm_nonneg _).trans (hu 0)
   refine NormedSpace.norm_le_dual_bound ℝ v hR ?_
   intro ell
   refine le_of_tendsto' ((hweak ell).norm) ?_
   intro n
   calc
-    ‖ell (u n)‖ ≤ ‖ell‖ * ‖u n‖ := ContinuousLinearMap.le_opNorm ell (u n)
+    ‖ell _‖ ≤ ‖ell‖ * ‖u n‖ := ContinuousLinearMap.le_opNorm ell _
     _ ≤ ‖ell‖ * R := mul_le_mul_of_nonneg_left (hu n) (norm_nonneg ell)
     _ = R * ‖ell‖ := mul_comm _ _
 

@@ -15,7 +15,6 @@ assumed as a premise.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -65,7 +64,6 @@ theorem abs_sub_le_common_innerCylinder_straightened_dirichlet
   have hκ : 0 < collarKappa L lam := div_pos (by linarith) hlam
   have hW := barrierW_pos hκ hd
   have hQ : 0 ≤ Q := div_nonneg (by
-    unfold barrierW
     have he : Real.exp (-collarKappa L lam * (r0 - ρ + η)) ≤ 1 :=
       Real.exp_le_one_iff.mpr (by nlinarith)
     exact div_nonneg (by linarith) hκ.le) hW.le
@@ -75,14 +73,12 @@ theorem abs_sub_le_common_innerCylinder_straightened_dirichlet
     dsimp only [cg, growthConstant]
     have := PDE.vecEuclideanNorm_nonneg (b 0)
     positivity
-  have hmem (i : Fin 2) (p : KineticPoint n) (hp : p ∈ K) :
-      (straightenedPoint (g i) p).2 ∈
-        openEllipsoid (straightenedEllipsoidMatrix n (r i) (R i)) :=
+  have hmem (i : Fin 2) (p : KineticPoint n) (hp : p ∈ K)  :=
     mem_straightenedEllipsoid_of_common_innerCylinder hρ (hr i) (hR i)
       (hclose i) (hsize i) hp
   have hclosed (i : Fin 2) (p : KineticPoint n) (hp : p ∈ K) :
-      straightenedPoint (g i) p ∈ scalarParabolicClosedCylinder a τ
-        (openEllipsoid (straightenedEllipsoidMatrix n (r i) (R i))) :=
+      straightenedPoint _ p ∈ scalarParabolicClosedCylinder a τ
+        _ :=
     ⟨⟨haα.le.trans hp.1.1, hp.1.2.1⟩, subset_closure (hmem i p hp)⟩
   have hactive : A ⊆ K := fun p hp =>
     ⟨⟨hp.1.1, hp.1.2.1.le, subset_closure hp.1.2.2⟩,
@@ -96,12 +92,12 @@ theorem abs_sub_le_common_innerCylinder_straightened_dirichlet
       ⟨⟨haα.trans_le hp.1.1, hp.1.2.1⟩, hmem i p (hactive hp)⟩
   have hbound (i : Fin 2) (p : KineticPoint n) (hp : p ∈ K) : |v i p| ≤ C :=
     abs_le_straightened_dirichlet hlam hB hBs hbs (haα.trans hατ) (hr i) (hR i)
-      (hg i) hε F (u i) (hu i) hC hFC _ (hclosed i p hp)
+      (hg i) hε F _ (hu i) hC hFC _ (hclosed i p hp)
   have hcollar (i : Fin 2) (p : KineticPoint n) (hp : p ∈ K)
       (hfr : p.position ∈ frontier (movingDomain (PDE.euclideanBall 0 ρ) Γ p.time)) :
       |v i p| ≤ C * Q := by
     have he := abs_le_min_collar_straightened_dirichlet hlam hB hBs hbs haα hατ
-      (hr i) (hR i) hd (hdr i) (hg i) hL (hgL i) hε hC F hFC (hsupp i) (u i) (hu i) p
+      (hr i) (hR i) hd (hdr i) (hg i) hL (hgL i) hε hC F hFC (hsupp i) _ (hu i) p
       ⟨⟨hp.1.1, hp.1.2.1⟩, subset_closure (hmem i p hp)⟩
     have hb' := distance_to_approximating_boundary_le_of_common_frontier hρ (hrr0 i)
       (hclose i p.time ⟨hp.1.1, hp.1.2.1⟩) hfr
@@ -119,7 +115,7 @@ theorem abs_sub_le_common_innerCylinder_straightened_dirichlet
     viscousTransportedOperator_growthBarrier_le hε1 (fun s y z => (hB s y z).2) hb τ p
   have hterm (i : Fin 2) (p : KineticPoint n) (hp : p ∈ K) (hτ : p.time = τ) :
       v i p = F (p.position, p.velocity) := by
-    have he := (hu i).2.2.2.1 (straightenedPoint (g i) p).2 (hclosed i p hp).2
+    have he := (hu i).2.2.2.1 _ (hclosed i p hp).2
     simpa only [v, straightenedPullback, straightenedPoint, hτ,
       spatialY_spatialPack, spatialZ_spatialPack, add_sub_cancel] using he
   have side (s : ℝ) (hs : s = 1 ∨ s = -1) :
@@ -129,9 +125,7 @@ theorem abs_sub_le_common_innerCylinder_straightened_dirichlet
       ((((hvc 0).sub (hvc 1)).const_smul s).sub continuousOn_const |>.sub
         ((continuous_const.mul (continuous_growthBarrier cg τ)).continuousOn))
       ?_ ?_ ?_ ?_ ?_
-    · intro p hp
-      have := hmax p hp
-      linarith
+    · grind
     · intro p hp
       exact ((((hreg 0 p hp).1.sub (hreg 1 p hp).1).const_mul s).sub
         (IsSliceRegularAt.const E p)).sub ((hφreg p).const_mul k)
@@ -145,17 +139,16 @@ theorem abs_sub_le_common_innerCylinder_straightened_dirichlet
         viscousTransportedOperator_sub (hreg 0 p hp).1 (hreg 1 p hp).1,
         (hreg 0 p hp).2, (hreg 1 p hp).2, viscousTransportedOperator_const,
         viscousTransportedOperator_const_mul k (hφreg p)]
-      have hn := mul_nonpos_of_nonneg_of_nonpos hk (le_trans (hφop p) (by linarith [hφ p]))
+      have hn := mul_nonpos_of_nonneg_of_nonpos hk (le_trans (hφop p) (by grind))
       linarith
     · intro p hp hτ
-      rw [hterm 0 p hp hτ, hterm 1 p hp hτ, sub_self, mul_zero]
+      rw [hterm 0 p hp hτ, hterm 1 p hp hτ]
       have := mul_nonneg hk (hφ p).le
       linarith
     · intro p hp hfr
       have h0 := abs_le.mp (hcollar 0 p hp hfr)
       have h1 := abs_le.mp (hcollar 1 p hp hfr)
       have hn := mul_nonneg hk (hφ p).le
-      dsimp only [E]
       rcases hs with rfl | rfl <;> linarith
     · intro p hp he
       have h0 := abs_le.mp (hbound 0 p hp)
@@ -163,17 +156,12 @@ theorem abs_sub_le_common_innerCylinder_straightened_dirichlet
       have hdom := one_add_radialSq_le_growthBarrier hcg hp.1.2.1
       rw [he] at hdom
       have hb' : 2 * C ≤ k * Φ p := by
-        dsimp only [k]
         rw [div_mul_eq_mul_div, le_div_iff₀ (by positivity)]
         exact mul_le_mul_of_nonneg_left hdom (by positivity)
       rcases hs with rfl | rfl <;> linarith
   intro p hp
   have h0 := side 1 (Or.inl rfl) p hp
-  have h1 := side (-1) (Or.inr rfl) p hp
-  have he : E + k * Φ p = 2 * C * (Φ p / (1 + S ^ 2) + Q) := by
-    dsimp only [E, k]
-    ring
-  rw [he] at h0 h1
-  exact abs_le.mpr ⟨by linarith, by linarith⟩
+  have h1 := side _ (Or.inr rfl) p hp
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov

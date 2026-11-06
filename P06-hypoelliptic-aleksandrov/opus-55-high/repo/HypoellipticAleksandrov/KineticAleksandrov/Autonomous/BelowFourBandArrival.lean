@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.BelowFourBan
 /-! # Removing the starting-velocity restriction by actual first arrival and Minkowski -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory Filter
 open scoped ENNReal
@@ -30,7 +29,7 @@ theorem belowFour_first_arrival
       MemLp G (ENNReal.ofReal q) volume ∧
       (eLpNorm G (ENNReal.ofReal q) volume).toReal ≤ K := by
   by_cases hvel : e.1.velocity 0 ∈ closure c.entrance
-  · exact hstart e he.le hvel
+  · grind
   obtain ⟨W, hv, hsub, hdisj, hface⟩ := belowFour_waiting_interval c H (e.1.velocity 0) e.2.2 hvel
   let ew : StripPole W (T : WithTop ℝ) := ⟨e.1, e.2.1, hv⟩
   let tau := nestedIntervalRestartPoles hH hLE hlam hLam A W H s T ew
@@ -56,13 +55,12 @@ theorem belowFour_first_arrival
   have hep : nestedPoleInclusion W H hsub T ew = e := Subtype.ext rfl
   rw [hep] at hid
   have hr : (nestedIntervalRestartGreen hH hLE hlam hLam A W H s T ew).restrict
-      {z | z.velocity 0 ∈ c.core} = k ∘ₘ tau := by
-    exact nested_bind_restrict tau _
+      {z | z.velocity 0 ∈ c.core} = k ∘ₘ tau := nested_bind_restrict tau _
       (Measure.measurable_measure.mpr (fun B hB =>
         stripGreen_measurable_apply hH hLE hlam hLam A H T B hB)) _ hC
   have hm : (stripGreen hH hLE hlam hLam A H T e).restrict {z | z.velocity 0 ∈ c.core} =
       k ∘ₘ tau := by
     rw [hid, Measure.restrict_add, hz, zero_add, hr]
-  exact ⟨G, hG, hG0, hm.trans hGd, hGp, hGn⟩
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

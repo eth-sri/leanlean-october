@@ -11,7 +11,6 @@ corrections for arbitrary smooth signed forcing, without a compact source restri
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Lieberman
 open HypoellipticAleksandrov.Parabolic
 open Filter MeasureTheory Set
@@ -62,8 +61,6 @@ theorem exists_signed_source_classicalInterior_withDrift {d : ℕ} (hd : 0 < d)
     hAs hbs hcs hFs (fun z _ => hlo z.1 z.2) (fun z _ => hhi z.1 z.2)
     (fun _ _ => le_rfl) 0 u g hdu hu
   refine ⟨u, g, hdu, hu, w, hwl, hwslice, hwr, ?_⟩
-  intro z hz
-  simpa only [matrixContraction, coefficientAt, PDE.vecDot, Pi.zero_apply, zero_mul,
-    Finset.sum_const_zero, add_zero, Prod.mk.eta] using hwe z hz
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.Lieberman

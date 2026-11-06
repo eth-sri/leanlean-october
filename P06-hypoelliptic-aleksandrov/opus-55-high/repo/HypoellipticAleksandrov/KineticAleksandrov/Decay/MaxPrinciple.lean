@@ -12,29 +12,28 @@ The transported coordinate remains unrestricted throughout.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Set
 
+variable {d : ℕ} {Ω : Set (PDE.Vec d)}
+
 /-- The source's bounded admissible domains have compact closure. -/
-theorem isCompact_closure_of_maximumPrinciple_domain {d : ℕ}
-    {Ω : Set (PDE.Vec d)}
+theorem isCompact_closure_of_maximumPrinciple_domain 
     (hΩ : (∃ c R, 0 < R ∧ Ω = PDE.euclideanBall c R) ∨
       (∃ hd : d = 1, ∃ a b, a < b ∧ hd ▸ Ω = PDE.oneDimensionalAxisBox a b)) :
     IsCompact (closure Ω) := by
   rcases hΩ with ⟨c, R, hR, rfl⟩ | ⟨hd, a, b, hab, heq⟩
   · exact (Metric.isBounded_ball.subset (PDE.euclideanBall_subset_supBall hR)).isCompact_closure
   · cases hd
-    have heq' : Ω = PDE.oneDimensionalAxisBox a b := by simpa using heq
+    have heq' : Ω = PDE.oneDimensionalAxisBox a b := by omega
     rw [heq']
-    exact (PDE.isBoundedDomain_axisBox (fun _ : Fin 1 => a) (fun _ : Fin 1 => b)).isBounded
+    exact (PDE.isBoundedDomain_axisBox _ _).isBounded
       |>.isCompact_closure
 
 /-- Maximum principle on the entire closed moving tube over a finite subdivision.
 This includes initial, terminal, lateral, and subdivision slices. The source's
 piecewise C¹ curve assumption can be weakened to continuity. -/
-theorem movingDomain_maximumPrinciple {d : ℕ}
-    {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
+theorem movingDomain_maximumPrinciple  {γ : ℝ → PDE.Vec d}
     {B : FullKineticCoefficient d} {drift : PDE.Vec d → PDE.Vec d}
     {u : KineticPoint d → ℝ}
     (hΩ : (∃ c R, 0 < R ∧ Ω = PDE.euclideanBall c R) ∨

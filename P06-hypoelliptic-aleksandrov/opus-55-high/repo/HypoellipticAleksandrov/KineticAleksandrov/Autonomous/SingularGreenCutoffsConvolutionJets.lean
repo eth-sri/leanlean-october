@@ -38,8 +38,10 @@ def barrierConvolutionSecondJet (κ : ℝ → ℝ) (phi : (ℝ × ℝ) → ℝ)
       (κ (q.1 - Y) * bellmanDvv phi (Y, q.2)) • barrierVelocityProjection).smulRight
       barrierVelocityProjection
 
+variable {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
+
 /-- The extension's velocity slice is differentiable at every nonzero position. -/
-theorem barrier_slice_hasFDerivAt {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
+theorem barrier_slice_hasFDerivAt 
     (h : IsBellmanHomogeneous alpha phi) (q : ℝ × ℝ) (Y : ℝ) (hY : Y ≠ 0) :
     HasFDerivAt (fun p : ℝ × ℝ => bellmanOriginExtension phi (Y, p.2))
       (bellmanDv phi (Y, q.2) • barrierVelocityProjection) q := by
@@ -52,7 +54,7 @@ theorem barrier_slice_hasFDerivAt {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
   exact hslice.comp_hasFDerivAt q hasFDerivAt_snd
 
 /-- The first velocity jet has its actual second slice derivative off the position origin. -/
-theorem barrier_dv_slice_hasFDerivAt {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
+theorem barrier_dv_slice_hasFDerivAt 
     (h : IsBellmanHomogeneous alpha phi) (q : ℝ × ℝ) (Y : ℝ) (hY : Y ≠ 0) :
     HasFDerivAt (fun p : ℝ × ℝ => bellmanDv phi (Y, p.2))
       (bellmanDvv phi (Y, q.2) • barrierVelocityProjection) q := by
@@ -62,7 +64,7 @@ theorem barrier_dv_slice_hasFDerivAt {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
   exact (bellman_hasDerivAt_second hd).comp_hasFDerivAt q hasFDerivAt_snd
 
 /-- The displayed first jet is the actual Fréchet derivative of the integrand. -/
-theorem barrierConvolutionIntegrand_hasFDerivAt {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
+theorem barrierConvolutionIntegrand_hasFDerivAt 
     (h : IsBellmanHomogeneous alpha phi) (κ : ℝ → ℝ) (hκ : ContDiff ℝ 2 κ)
     (q : ℝ × ℝ) (Y : ℝ) (hY : Y ≠ 0) :
     HasFDerivAt (fun p => barrierConvolutionIntegrand κ phi p Y)
@@ -74,11 +76,11 @@ theorem barrierConvolutionIntegrand_hasFDerivAt {alpha : ℝ} {phi : (ℝ × ℝ
   · rfl
   · apply ContinuousLinearMap.ext
     intro w
-    simp [barrierConvolutionJet, barrierPositionProjection, barrierVelocityProjection]
+    simp [barrierConvolutionJet, barrierPositionProjection]
     ring
 
 /-- The displayed second jet is the actual derivative of the displayed first jet. -/
-theorem barrierConvolutionJet_hasFDerivAt {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
+theorem barrierConvolutionJet_hasFDerivAt 
     (h : IsBellmanHomogeneous alpha phi) (κ : ℝ → ℝ) (hκ : ContDiff ℝ 2 κ)
     (q : ℝ × ℝ) (Y : ℝ) (hY : Y ≠ 0) :
     HasFDerivAt (fun p => barrierConvolutionJet κ phi p Y)
@@ -97,7 +99,7 @@ theorem barrierConvolutionJet_hasFDerivAt {alpha : ℝ} {phi : (ℝ × ℝ) → 
     intro w
     apply ContinuousLinearMap.ext
     intro u
-    simp [barrierConvolutionSecondJet, barrierPositionProjection, barrierVelocityProjection]
+    simp [barrierConvolutionSecondJet, barrierPositionProjection]
     ring
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

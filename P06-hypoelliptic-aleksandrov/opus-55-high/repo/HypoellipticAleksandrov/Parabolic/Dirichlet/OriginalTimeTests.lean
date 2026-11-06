@@ -22,7 +22,7 @@ abbrev OriginalTimeScalarTest (r₀ r₁ : ℝ) :=
 namespace OriginalTimeScalarTest
 
 /-- The ordinary scalar derivative of an original-time test. -/
-noncomputable def deriv
+def deriv
     {r₀ r₁ : ℝ} (phi : OriginalTimeScalarTest r₀ r₁) : ℝ → ℝ :=
   _root_.deriv (phi : ℝ → ℝ)
 

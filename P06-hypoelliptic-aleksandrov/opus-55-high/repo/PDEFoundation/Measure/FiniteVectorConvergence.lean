@@ -32,13 +32,8 @@ private theorem aestronglyMeasurable_vecEuclideanNorm_of_coord'
     {d : ℕ} {F : α → Vec d}
     (hF : ∀ i, AEStronglyMeasurable (fun x => F x i) μ) :
     AEStronglyMeasurable (fun x => vecEuclideanNorm (F x)) μ := by
-  have hsquare (i : Fin d) :
-      AEStronglyMeasurable (fun x => (F x i) ^ 2) μ := (hF i).pow 2
   have hsum : AEStronglyMeasurable (fun x => ∑ i : Fin d, (F x i) ^ 2) μ := by
-    convert Finset.aestronglyMeasurable_sum Finset.univ
-      (fun i _ => hsquare i) using 1
-    ext x
-    simp
+    fun_prop
   exact Real.continuous_sqrt.comp_aestronglyMeasurable (by
     simpa only [vecEuclideanNorm, vecNormSq_eq_sum_sq] using hsum)
 
@@ -80,9 +75,8 @@ theorem tendsto_eLpNorm_vecEuclideanNorm_sub_zero_of_coordinate
       funext n
       exact
         eLpNorm_abs_eq
-          (fun x => F n x i - G x i) p (hMeas n i)
-    rw [hFunctions]
-    exact hCoordinate i
+          _ p (hMeas n i)
+    simp_all
   have hSum :
       Filter.Tendsto
         (fun n =>
@@ -104,7 +98,7 @@ theorem tendsto_eLpNorm_vecEuclideanNorm_sub_zero_of_coordinate
     intro n
     calc
       eLpNorm
-          (fun x => vecEuclideanNorm (F n x - G x))
+          _
           p μ ≤
         eLpNorm
           (fun x =>
@@ -117,7 +111,7 @@ theorem tendsto_eLpNorm_vecEuclideanNorm_sub_zero_of_coordinate
         have hsumNonneg :
             0 ≤ ∑ i : Fin d, |F n x i - G x i| :=
           Finset.sum_nonneg fun i _hi =>
-            abs_nonneg (F n x i - G x i)
+            abs_nonneg _
         simpa only [Real.norm_eq_abs,
           abs_of_nonneg (vecEuclideanNorm_nonneg _),
           abs_of_nonneg hsumNonneg, Pi.sub_apply] using
@@ -125,7 +119,7 @@ theorem tendsto_eLpNorm_vecEuclideanNorm_sub_zero_of_coordinate
       _ ≤
           ∑ i : Fin d,
             eLpNorm
-              (fun x => |F n x i - G x i|)
+              _
               p μ := by
         rw [← Finset.sum_fn]
         exact

@@ -5,13 +5,14 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.HolderDistance
 /-! # Common cylinders for close pairs, with no top-time dependence -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Set
 open KineticAleksandrov.LocalA
 
+variable {N : ℕ}
+
 /-- A ball closure retains its Euclidean norm bound. -/
-theorem norm_sub_le_of_mem_ball_closure {N : ℕ} (v : PDE.Vec N) {r : ℝ}
+theorem norm_sub_le_of_mem_ball_closure  (v : PDE.Vec N) {r : ℝ}
     (hr : 0 < r) {y : PDE.Vec N} (hy : y ∈ closure (PDE.euclideanBall v r)) :
     PDE.vecEuclideanNorm (y - v) ≤ r := by
   have hc : IsClosed {y : PDE.Vec N | PDE.vecEuclideanNorm (y - v) ≤ r} :=
@@ -21,7 +22,7 @@ theorem norm_sub_le_of_mem_ball_closure {N : ℕ} (v : PDE.Vec N) {r : ℝ}
     ((PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hr).mp hy).le) hc hy
 
 /-- The fixed-radius common cylinder remains inside the outer source cylinder. -/
-theorem pair_base_closed_cylinder_subset {N : ℕ} {z : TimeVelocity N}
+theorem pair_base_closed_cylinder_subset  {z : TimeVelocity N}
     (hz : z ∈ scalarParabolicOpenCylinder (-1 / 4) 0
       (PDE.euclideanBall 0 (1 / 2 : ℝ))) {T : ℝ} (hzt : z.1 < T) (hT : T < 0) :
     scalarParabolicClosedCylinder (T - (1 / 8 : ℝ) ^ 2) T
@@ -38,10 +39,10 @@ theorem pair_base_closed_cylinder_subset {N : ℕ} {z : TimeVelocity N}
     have htri := PDE.vecEuclideanNorm_add_le (y.2 - z.2) z.2
     rw [sub_add_cancel] at htri
     simp only [sub_zero] at hcenter ⊢
-    linarith only [hcenter, hdiff, htri]
+    linarith
 
 /-- Both points fit in a common cylinder of radius at least twice their distance. -/
-theorem pair_mem_common_backward_cylinder {N : ℕ} {z z' : TimeVelocity N}
+theorem pair_mem_common_backward_cylinder  {z z' : TimeVelocity N}
     (hne : z ≠ z') {T r : ℝ} (hT : max z.1 z'.1 < T)
     (hmargin : T - max z.1 z'.1 ≤ parabolicDistance z z' ^ 2)
     (hr : 2 * parabolicDistance z z' ≤ r) :
@@ -53,35 +54,23 @@ theorem pair_mem_common_backward_cylinder {N : ℕ} {z z' : TimeVelocity N}
   have ht := abs_time_sub_le_parabolicDistance_sq z z'
   have hd := abs_le.mp ht
   have hdiff : max z.1 z'.1 - z.1 ≤ δ ^ 2 := by
-    rcases le_total z.1 z'.1 with h | h
-    · rw [max_eq_right h]
-      linarith only [hd.1]
-    · rw [max_eq_left h, sub_self]
-      exact sq_nonneg δ
+    grind
   have hdiff' : max z.1 z'.1 - z'.1 ≤ δ ^ 2 := by
-    rcases le_total z.1 z'.1 with h | h
-    · rw [max_eq_right h, sub_self]
-      exact sq_nonneg δ
-    · rw [max_eq_left h]
-      exact hd.2
+    grind
   have hsq : 2 * δ ^ 2 < r ^ 2 := by
     nlinarith only [hr, hδ, sq_nonneg (r - 2 * δ)]
   have hzt : z.1 < T := (le_max_left _ _).trans_lt hT
   have hz't : z'.1 < T := (le_max_right _ _).trans_lt hT
   constructor
   · constructor
-    · constructor
-      · linarith only [hmargin, hdiff, hsq]
-      · exact hzt
-    · rw [PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hrpos, sub_self]
+    · grind
+    · rw [PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hrpos]
       simpa [PDE.vecEuclideanNorm, PDE.vecNormSq, PDE.vecDot] using hrpos
   · constructor
-    · constructor
-      · linarith only [hmargin, hdiff', hsq]
-      · exact hz't
+    · grind
     · rw [PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hrpos,
         PDE.vecEuclideanNorm_sub_comm]
       have hv := velocity_sub_le_parabolicDistance z z'
-      exact hv.trans_lt (by linarith only [hr, hδ])
+      linarith
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

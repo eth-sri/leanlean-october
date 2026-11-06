@@ -42,9 +42,7 @@ theorem contDiffOn_scalarMRemainder (a : ℝ) (b : Kummer.Pos) :
     unfold scalarMRemainder
     rw [mExpansion_one]
   rw [he]
-  have hp : ContDiffOn ℝ 2 (fun z : ℝ => Real.rpow z (-a)) (Ioi 0) := by
-    simp only [Real.rpow_eq_pow]
-    exact contDiffOn_id.rpow_const_of_ne (fun _ hz => ne_of_gt hz)
+  have hp : ContDiffOn ℝ 2 (fun z : ℝ => Real.rpow z (-a)) (Ioi 0) := contDiffOn_id.rpow_const_of_ne (fun _ hz => ne_of_gt hz)
   exact hm.contDiffOn.sub (contDiffOn_const.mul hp)
 
 section MJet
@@ -79,23 +77,15 @@ theorem scalar_M_tail_derivatives_of_M_jets (a : ℝ) (b : Kummer.Pos)
     unfold scalarMRemainder
     simpa only [Kummer.jet, Function.iterate_succ_apply, Function.iterate_zero_apply,
       Nat.cast_one, Nat.cast_ofNat] using hmjet a b ha hab 1 2 (by norm_num)
-  have h := scalarCubic_remainder_derivatives (scalarMRemainder a b) (-a - 1) 1
+  have h := scalarCubic_remainder_derivatives _ _ 1
     zero_lt_one (contDiffOn_scalarMRemainder a b) h1 h2
-  have hb0 := isBigO_comp_scalar_tail (scalarMRemainder a b) (-a - 1) 9 (by norm_num) h0
+  have hb0 := isBigO_comp_scalar_tail _ _ 9 (by norm_num) h0
   refine ⟨?_, ?_, ?_⟩
   · convert hb0 using 1
     · simp only [scalarCubic, mul_one]
-    · funext s
-      congr 1
-      ring
-  · convert h.1 using 1
-    funext s
-    congr 1
-    ring
-  · convert h.2 using 1
-    funext s
-    congr 1
-    ring
+    · ring
+  · grind
+  grind
 
 /-- The signed second-M prefactor has the same differentiated scalar orders as the first. -/
 theorem scalar_second_M_tail_derivatives_of_M_jets (gamma : ScalarGamma) :
@@ -106,12 +96,12 @@ theorem scalar_second_M_tail_derivatives_of_M_jets (gamma : ScalarGamma) :
       (deriv (deriv (fun s => s *
         scalarMRemainder (1 / 3 - gamma.1) Kummer.b43 (scalarCubic 1 s))))
       (fun s => Real.rpow s (3 * gamma.1 - 5)) := by
-  have ha : -1 < 1 / 3 - gamma.1 := by linarith only [gamma.2.2]
+  have ha : -1 < 1 / 3 - gamma.1 := by grind
   have hab : 1 / 3 - gamma.1 < Kummer.b43.1 := by
     dsimp only [Kummer.b43]
-    linarith only [gamma.2.1]
+    grind
   obtain ⟨h0, h1, h2⟩ := scalar_M_tail_derivatives_of_M_jets hmjet
-    (1 / 3 - gamma.1) Kummer.b43 ha hab
+    _ Kummer.b43 ha hab
   have hf : ContDiffOn ℝ 2
       (fun s => scalarMRemainder (1 / 3 - gamma.1) Kummer.b43 (scalarCubic 1 s))
       (Ioi 0) := by
@@ -125,8 +115,8 @@ theorem scalar_second_M_tail_derivatives_of_M_jets (gamma : ScalarGamma) :
   rw [he0] at h0
   rw [he1] at h1
   rw [he2] at h2
-  have hb := scalar_linear_remainder_derivatives _ (3 * gamma.1 - 4) hf h0 h1 h2
-  simpa only [show 3 * gamma.1 - 4 - 1 = 3 * gamma.1 - 5 by ring] using hb
+  have hb := scalar_linear_remainder_derivatives _ _ hf h0 h1 h2
+  grind
 
 /-- The two differentiated negative-ray scalar remainders, with the full source coefficient. -/
 theorem Fminus_negative_ray_tail_derivatives_of_M_jets (gamma : ScalarGamma) (Lam : ℝ)
@@ -141,16 +131,15 @@ theorem Fminus_negative_ray_tail_derivatives_of_M_jets (gamma : ScalarGamma) (La
         (Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3))) *
           Real.rpow s (3 * gamma.1))))
       (fun s => Real.rpow s (3 * gamma.1 - 5)) := by
-  let f : ℝ → ℝ := fun s => scalarMRemainder (-gamma.1) Kummer.b23 (scalarCubic 1 s)
-  let g : ℝ → ℝ := fun s => s *
+  let f  := fun s => scalarMRemainder (-gamma.1) Kummer.b23 (scalarCubic 1 s)
+  let g  := fun s => s *
     scalarMRemainder (1 / 3 - gamma.1) Kummer.b43 (scalarCubic 1 s)
   let c := gammaA gamma.1
   let d := -(gammaB gamma.1 / Real.rpow (9 * Lam) (1 / 3))
-  have ha : -1 < -gamma.1 := by linarith only [gamma.2.2]
+  have ha : -1 < -gamma.1 := by grind
   have hab : -gamma.1 < Kummer.b23.1 := by
-    dsimp only [Kummer.b23]
-    linarith only [gamma.2.1]
-  have hfirst := scalar_M_tail_derivatives_of_M_jets hmjet (-gamma.1) Kummer.b23 ha hab
+    grind
+  have hfirst := scalar_M_tail_derivatives_of_M_jets hmjet _ Kummer.b23 ha hab
   have hsecond := scalar_second_M_tail_derivatives_of_M_jets hmjet gamma
   have hf : ContDiffOn ℝ 2 f (Ioi 0) := by
     apply (contDiffOn_scalarMRemainder _ _).comp
@@ -164,11 +153,11 @@ theorem Fminus_negative_ray_tail_derivatives_of_M_jets (gamma : ScalarGamma) (La
     intro s hs
     exact div_pos (pow_pos hs 3) (by norm_num)
   have hf1 : IsBigO atTop (deriv f) (fun s => Real.rpow s (3 * gamma.1 - 4)) := by
-    simpa only [f, show -3 * -gamma.1 - 4 = 3 * gamma.1 - 4 by ring] using hfirst.2.1
+    grind
   have hf2 : IsBigO atTop (deriv (deriv f)) (fun s => Real.rpow s (3 * gamma.1 - 5)) := by
-    simpa only [f, show -3 * -gamma.1 - 5 = 3 * gamma.1 - 5 by ring] using hfirst.2.2
-  have hg1 : IsBigO atTop (deriv g) (fun s => Real.rpow s (3 * gamma.1 - 4)) := hsecond.1
-  have hg2 : IsBigO atTop (deriv (deriv g)) (fun s => Real.rpow s (3 * gamma.1 - 5)) := hsecond.2
+    grind
+  have hg1 : IsBigO atTop (deriv g) _ := hsecond.1
+  have hg2 : IsBigO atTop (deriv (deriv g)) _ := hsecond.2
   have hloc (s : ℝ) (hs : 0 < s) : (fun t => c * f t + d * g t) =ᶠ[𝓝 s]
       fun t => Fminus gamma Lam (-t) - Real.rpow 9 (-gamma.1) *
         (Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3))) *
@@ -176,16 +165,15 @@ theorem Fminus_negative_ray_tail_derivatives_of_M_jets (gamma : ScalarGamma) (La
     filter_upwards [Ioi_mem_nhds hs] with t ht
     rw [← scalar_negative_leading gamma Lam t hLam ht]
     dsimp only [f, g, c, d, scalarMRemainder, scalarCubic, Fminus]
-    simp only [mul_one, Kummer.b23, Kummer.b43]
-    rw [show (-t) ^ 3 / 9 = -(t ^ 3 / 9) by ring]
+    simp only [Kummer.b23, Kummer.b43]
     ring
   constructor
   · apply ((hf1.const_mul_left c).add (hg1.const_mul_left d)).congr' _ EventuallyEq.rfl
-    filter_upwards [eventually_gt_atTop (0 : ℝ)] with s hs
+    filter_upwards [eventually_gt_atTop (0)] with s hs
     rw [← (scalar_linear_combination_derivatives f g c d s hf hg hs).1]
     exact (hloc s hs).deriv_eq
   · apply ((hf2.const_mul_left c).add (hg2.const_mul_left d)).congr' _ EventuallyEq.rfl
-    filter_upwards [eventually_gt_atTop (0 : ℝ)] with s hs
+    filter_upwards [eventually_gt_atTop (0)] with s hs
     rw [← (scalar_linear_combination_derivatives f g c d s hf hg hs).2]
     exact (hloc s hs).deriv.deriv_eq
 

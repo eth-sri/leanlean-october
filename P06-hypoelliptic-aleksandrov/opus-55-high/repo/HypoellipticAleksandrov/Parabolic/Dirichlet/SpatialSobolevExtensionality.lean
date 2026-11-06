@@ -15,7 +15,6 @@ injectivity of the value map on the closed spatial `H¹₀` carrier.
 open Filter
 open scoped ENNReal RealInnerProductSpace
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -54,10 +53,10 @@ private theorem weakGradientGraph_snd_eq_of_fst_eq
         ((MeasureTheory.MemLp.ae_eq
           (PDE.coeFn_hilbertVectorLpCoord Ω p i r.2)
           (MeasureTheory.Lp.memLp _)).locallyIntegrable Fact.out)
-    · exact hqWeak
-    · exact hrWeak
+    · omega
+    omega
   filter_upwards [Filter.eventually_all.2 hcoord] with x hx
-  exact PiLp.ext hx
+  aesop
 
 private theorem h1HilbertGraph_valueCLM_injective
     (hΩ : IsOpen Ω) :
@@ -66,13 +65,11 @@ private theorem h1HilbertGraph_valueCLM_injective
   apply PDE.H1HilbertGraph.equivH1Graph.injective
   apply Subtype.ext
   apply Prod.ext
-  · change PDE.H1HilbertGraph.value z = PDE.H1HilbertGraph.value w
-    simpa only [PDE.H1HilbertGraph.valueCLM_apply] using hzw
+  · aesop
   · apply weakGradientGraph_snd_eq_of_fst_eq hΩ
-    · exact (PDE.H1HilbertGraph.toH1Graph z).property
-    · exact (PDE.H1HilbertGraph.toH1Graph w).property
-    · change PDE.H1HilbertGraph.value z = PDE.H1HilbertGraph.value w
-      simpa only [PDE.H1HilbertGraph.valueCLM_apply] using hzw
+    · simp
+    · simp
+    aesop
 
 /-- Equality of scalar `L²` values determines a spatial `H¹₀` graph point. -/
 theorem valueCLM_injective
@@ -81,6 +78,6 @@ theorem valueCLM_injective
   intro u v huv
   apply Subtype.ext
   apply h1HilbertGraph_valueCLM_injective hΩ
-  simpa only [valueCLM_apply, PDE.H1HilbertGraph.valueCLM_apply] using huv
+  simp_all
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

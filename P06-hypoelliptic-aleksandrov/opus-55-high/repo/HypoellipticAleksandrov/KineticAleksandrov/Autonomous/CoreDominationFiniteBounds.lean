@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitRecursi
 /-! # Positive partial bounds from the actual alternating identities -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
@@ -24,11 +23,11 @@ theorem visit_positive_partial_le (mu initial remainder : Measure Point)
       le_add_of_nonneg_left zero_le
     _ ≤ _ := le_add_of_nonneg_right zero_le
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+
 /-- The actual active Green occupations in any finite visit sum are dominated by the outer Green. -/
 theorem visitActiveGreen_partial_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
+     (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
     (P : Point) (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) (N : ℕ) :
     ∑ n ∈ Finset.range N,
       visitUnionGreenKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ
@@ -39,9 +38,7 @@ theorem visitActiveGreen_partial_le
 
 /-- Active outer-face exits in any finite visit sum are dominated by the outer exit. -/
 theorem visitActiveExit_partial_le
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
+     (c : Clock) (J : Interval) (s T : ℝ) (hT : s < T)
     (P : Point) (hP : s < P.time ∧ P.time < T ∧ P.velocity 0 ∈ J.carrier) (N : ℕ) :
     ∑ n ∈ Finset.range N,
       (visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ
@@ -56,6 +53,6 @@ theorem visit_partial_real_mass (mu : ℕ → Measure Point) [∀ n, IsFiniteMea
     (N : ℕ) (B : Set Point) (_hB : MeasurableSet B) :
     ((∑ n ∈ Finset.range N, mu n) B).toReal = ∑ n ∈ Finset.range N, (mu n B).toReal := by
   rw [Measure.finsetSum_apply]
-  exact ENNReal.toReal_sum (fun n _ => measure_ne_top (mu n) B)
+  exact ENNReal.toReal_sum (fun n _ => measure_ne_top _ B)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

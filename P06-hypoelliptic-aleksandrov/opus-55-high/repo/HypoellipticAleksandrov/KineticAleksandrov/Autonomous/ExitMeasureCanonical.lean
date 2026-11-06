@@ -35,6 +35,6 @@ theorem stripExit_measurable
     (A : SmoothAutonomous lam Lam) (H : Interval) (T : ℝ) :
     Measurable (stripExit hH hLE hlam hLam A H T) :=
   stripExitOfRealization_measurable hH hlam hLam A H _
-    (stripEvolution_spec hH hLE hlam hLam A H) T
+    _ T
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -17,14 +17,16 @@ open scoped ENNReal
 def geometricBandPower (delta : ℝ) (j : ℕ) : ℝ :=
   (4 * (7 / 8 : ℝ) ^ j) ^ delta
 
+variable (delta : ℝ)
+
 /-- The geometric band powers are summable exactly in the positive-exponent regime. -/
-theorem geometricBandPower_summable (delta : ℝ) (hd : 0 < delta) :
+theorem geometricBandPower_summable  (hd : 0 < delta) :
     Summable (geometricBandPower delta) := by
   have he (j : ℕ) : geometricBandPower delta j =
-      (4 : ℝ) ^ delta * ((7 / 8 : ℝ) ^ delta) ^ j := by
+      (4) ^ delta * ((7 / 8) ^ delta) ^ j := by
     unfold geometricBandPower
     rw [Real.mul_rpow (by norm_num) (by positivity), ← Real.rpow_natCast,
-      ← Real.rpow_mul (by norm_num), mul_comm (j : ℝ) delta,
+      ← Real.rpow_mul (by norm_num), mul_comm (j : ℝ),
       Real.rpow_mul (by norm_num), Real.rpow_natCast]
   have hefun := funext he
   rw [hefun]
@@ -34,9 +36,8 @@ theorem geometricBandPower_summable (delta : ℝ) (hd : 0 < delta) :
   · exact Real.rpow_lt_one (by norm_num) (by norm_num) hd
 
 /-- The geometric band sum is strictly positive. -/
-theorem geometricBandPower_tsum_pos (delta : ℝ) (hd : 0 < delta) :
-    0 < ∑' j, geometricBandPower delta j := by
-  exact (geometricBandPower_summable delta hd).tsum_pos
+theorem geometricBandPower_tsum_pos  (hd : 0 < delta) :
+    0 < ∑' j, geometricBandPower delta j := (geometricBandPower_summable delta hd).tsum_pos
     (fun j => by unfold geometricBandPower; positivity) 0
     (by unfold geometricBandPower; positivity)
 
@@ -52,7 +53,6 @@ theorem geometricBandPower_sum (C R delta k : ℝ) (hC : 0 ≤ C) (hR : 0 < R)
   simp only [tsum_fintype, Finset.sum_const, Finset.card_univ, Fintype.card_bool, two_nsmul]
   rw [← ENNReal.ofReal_tsum_of_nonneg hn hs, ← ENNReal.ofReal_add (tsum_nonneg hn)
     (tsum_nonneg hn), tsum_mul_left]
-  congr 1
   ring
 
 /-- A finite q-power integral bound yields the source real Lq norm bound. -/
@@ -81,7 +81,6 @@ theorem geometricBandPower_root (C R delta q : ℝ) (hC : 0 ≤ C) (hR : 0 < R)
       (2 * C * (∑' j, geometricBandPower delta j)) ^ (1 / q) * R ^ (6 / q - 4) := by
   have hs := (geometricBandPower_tsum_pos delta hd).le
   rw [Real.mul_rpow (by positivity) (by positivity), ← Real.rpow_mul hR.le]
-  congr 2
-  field_simp
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

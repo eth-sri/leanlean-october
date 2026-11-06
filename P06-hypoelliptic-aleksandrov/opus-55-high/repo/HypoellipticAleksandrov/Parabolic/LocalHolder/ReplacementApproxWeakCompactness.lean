@@ -10,7 +10,6 @@ subsequence choices when passing the derivative relations to a limit.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter
 open scoped Topology BigOperators
@@ -34,6 +33,6 @@ theorem exists_strictMono_tendsto_clm_family_of_sum_norm_sq_le
     Dirichlet.exists_strictMono_tendsto_clm_of_norm_le q C hq
   refine ⟨fun i => v i, σ, hσ, ?_⟩
   intro i ell
-  exact hv (ell.comp (PiLp.proj 2 (fun _ : I => H) i))
+  exact hv (ell.comp (PiLp.proj 2 _ i))
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

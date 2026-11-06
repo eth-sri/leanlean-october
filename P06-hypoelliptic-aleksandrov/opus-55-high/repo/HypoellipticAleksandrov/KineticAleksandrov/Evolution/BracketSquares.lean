@@ -18,7 +18,6 @@ No `z`-derivative falls on `β` in `X_i`, so the identity holds also when `B` de
 @[expose] public section
 
 noncomputable section
-set_option autoImplicit false
 
 open scoped MatrixOrder Matrix
 
@@ -44,19 +43,18 @@ theorem sum_sqrtCoeffAt_mul {lam Lam : ℝ} (hlam : 0 < lam)
     (hell : HasEverywhereLoewnerBounds lam Lam B) (x : EvolutionVec n) (j k : Fin n) :
     ∑ i, sqrtCoeffAt B x i j * sqrtCoeffAt B x i k =
       B (timeCoord n x) (diffusedCoord n x) (transportedCoord n x) j k := by
-  set A := B (timeCoord n x) (diffusedCoord n x) (transportedCoord n x) with hA
+  set A := B _ _ _ with hA
   have hApd : A.PosDef := posDef_of_smul_one_le hlam (hell _ _ _).1
   have hsq : CFC.sqrt A * CFC.sqrt A = A := CFC.sqrt_mul_sqrt_self A hApd.posSemidef.nonneg
   have hsymm : (CFC.sqrt A)ᴴ = CFC.sqrt A := (CFC.sqrt_nonneg A).isSelfAdjoint.star_eq
   have hsymm' : ∀ i j, CFC.sqrt A i j = CFC.sqrt A j i := fun i j => by
     have := congrFun (congrFun hsymm j) i
-    simpa [Matrix.conjTranspose_apply] using this
+    simp_all
   have := congrFun (congrFun hsq j) k
-  rw [Matrix.mul_apply] at this
   rw [← this]
   refine Finset.sum_congr rfl fun i _ => ?_
-  simp only [sqrtCoeffAt, ← hA]
-  rw [hsymm' i j]
+  simp only [sqrtCoeffAt]
+  simp_all
 
 /-- The transported operator `Lop = ∂_σ + B(σ,v,z) : D_v² + b(v) · ∇_z` in packed
 coordinates (`B_ij ∂_{v_i} ∂_{v_j} u`, with the same index convention as

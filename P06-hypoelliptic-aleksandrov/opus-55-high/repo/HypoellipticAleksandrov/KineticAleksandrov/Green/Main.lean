@@ -40,14 +40,14 @@ def greenConstant (d : ℕ) (q : ℝ) (C : ℝ → ℝ≥0) : ℝ≥0 :=
   (((slabConstant d q C : ℝ≥0∞) * (ENNReal.ofReal (Real.log 2))⁻¹ *
     ENNReal.ofReal (1 / greenDelta d q)) ^ (1 / q)).toNNReal
 
-lemma greenDelta_pos {d : ℕ} {q : ℝ} (hq : 1 < q) (hqd : q < 1 + 1 / (2 * (d : ℝ))) :
+variable {d : ℕ}
+
+lemma greenDelta_pos  {q : ℝ} (hq : 1 < q) (hqd : q < 1 + 1 / (2 * (d : ℝ))) :
     0 < greenDelta d q := by
   have hd : 0 < (d : ℝ) := by
-    rcases Nat.eq_zero_or_pos d with h | h
-    · subst h; simp at hqd; linarith
-    · exact_mod_cast h
+    grind
   unfold greenDelta
-  have h1 : q - 1 < 1 / (2 * (d : ℝ)) := by linarith
+  have h1 : q - 1 < 1 / (2 * d) := by linarith
   rw [lt_div_iff₀ (by positivity)] at h1
   linarith
 
@@ -62,19 +62,17 @@ lemma green_arith (a : ℝ≥0) (M : ℝ≥0∞) {S δ q : ℝ} (hS : 0 < S) (h�
   have hS1 : 0 ≤ S ^ δ := (Real.rpow_pos_of_pos hS _).le
   have e1 : ENNReal.ofReal (S ^ δ / δ) = ENNReal.ofReal (1 / δ) * ENNReal.ofReal (S ^ δ) := by
     rw [← ENNReal.ofReal_mul (by positivity)]
-    congr 1
     ring
   have e2 : ENNReal.ofReal (S ^ (δ / q)) = ENNReal.ofReal (S ^ δ) ^ (1 / q) := by
     rw [ENNReal.ofReal_rpow_of_nonneg hS1 h1q, ← Real.rpow_mul hS.le]
-    congr 2
     ring
   have e3 : (M ^ q) ^ (1 / q) = M := by
-    rw [← ENNReal.rpow_mul, mul_one_div_cancel hq0.ne', ENNReal.rpow_one]
-  calc ((a : ℝ≥0∞) * M ^ q * (ENNReal.ofReal (Real.log 2))⁻¹ * ENNReal.ofReal (S ^ δ / δ)) ^
+    aesop
+  calc (a * M ^ q * (ENNReal.ofReal _)⁻¹ * ENNReal.ofReal _) ^
         (1 / q)
-      = (((a : ℝ≥0∞) * (ENNReal.ofReal (Real.log 2))⁻¹ * ENNReal.ofReal (1 / δ)) * M ^ q *
+      = ((a * (ENNReal.ofReal (Real.log 2))⁻¹ * ENNReal.ofReal (1 / δ)) * M ^ q *
           ENNReal.ofReal (S ^ δ)) ^ (1 / q) := by
-        rw [e1]; congr 1; ring
+        rw [e1]; ring
     _ = _ := by
         rw [ENNReal.mul_rpow_of_nonneg _ _ h1q, ENNReal.mul_rpow_of_nonneg _ _ h1q, e3, e2]
 
@@ -86,7 +84,7 @@ Lemma 5.1 on every slab `(T,2T)`, `T > 0`.  Then for every `S > 0` and
 
 The only premise besides the two Green measures ((2.6)) is `hbounds`, which
 Lemma 5.1 must discharge. -/
-theorem green_density_of_slab_marginals {d : ℕ} (C : ℝ → ℝ≥0) (c : ℝ)
+theorem green_density_of_slab_marginals  (C : ℝ → ℝ≥0) (c : ℝ)
     (K : MovingFiberKernel (wholeSpace d) (fun _ => (0 : PDE.Vec d))) (σ₀ : ℝ)
     (μ : Measure (EvolutionState (wholeSpace d) (fun _ => (0 : PDE.Vec d)) σ₀))
     [IsFiniteMeasure μ] (Γ : Measure (GreenCarrier d)) (hΓ : IsGreenMeasure K σ₀ ⊤ μ Γ)
@@ -103,11 +101,9 @@ theorem green_density_of_slab_marginals {d : ℕ} (C : ℝ → ℝ≥0) (c : ℝ
           ENNReal.ofReal (S ^ (greenDelta d q / q)) := by
   have hδ := greenDelta_pos hq hqd
   have hd : 0 < (d : ℝ) := by
-    rcases Nat.eq_zero_or_pos d with h | h
-    · subst h; simp at hqd; linarith
-    · exact_mod_cast h
-  have hqd' : q < 1 + 1 / (d : ℝ) := by
-    have : 1 / (2 * (d : ℝ)) ≤ 1 / (d : ℝ) :=
+    grind
+  have hqd' : q < 1 + 1 / d := by
+    have : 1 / (2 * d) ≤ 1 / (d : ℝ) :=
       one_div_le_one_div_of_le hd (by linarith)
     linarith
   have hq0 : 0 < q := by linarith
@@ -116,21 +112,21 @@ theorem green_density_of_slab_marginals {d : ℕ} (C : ℝ → ℝ≥0) (c : ℝ
       (Measurable G ∧
         Γ.restrict (slabSet T) = ((greenLebesgue d).restrict (slabSet T)).withDensity G ∧
         ∫⁻ p in slabSet T, G p ^ q ∂greenLebesgue d ≤
-          (slabConstant d q C : ℝ≥0∞) * μ univ ^ q *
-            ENNReal.ofReal (T ^ (1 - 2 * (d : ℝ) * (q - 1)))) := by
+          (slabConstant d q C) * μ univ ^ q *
+            ENNReal.ofReal (T ^ (1 - 2 * d * (q - 1)))) := by
     intro T
     by_cases hT : 0 < T
     · obtain ⟨G, h1, h2, h3⟩ :=
         slab_density_of_fourier_marginals C c K σ₀ μ Γ hΓ hq hqd' hT (hbounds T hT)
-      exact ⟨G, fun _ => ⟨h1, h2, h3⟩⟩
-    · exact ⟨0, fun h => absurd h hT⟩
+      grind
+    simp_all
   choose Gl hGl using hloc
   -- gluing
   obtain ⟨G, hGm, hΓG, hGae⟩ := exists_global_density K σ₀ μ Γ hΓ Gl
     (fun T hT => (hGl T hT).1) (fun T hT => (hGl T hT).2.1)
   -- logarithmic integration
   set M := μ univ with hM
-  set Kq : ℝ≥0∞ := (slabConstant d q C : ℝ≥0∞) * M ^ q with hKq
+  set Kq : ℝ≥0∞ := (slabConstant d q C) * M ^ q with hKq
   have hν_slab : ∀ T : ℝ, 0 < T →
       ((greenLebesgue d).withDensity (fun p => G p ^ q)) (slabSet T) ≤
         Kq * ENNReal.ofReal (T ^ greenDelta d q) := by
@@ -149,7 +145,7 @@ theorem green_density_of_slab_marginals {d : ℕ} (C : ℝ → ℝ≥0) (c : ℝ
       ((greenLebesgue d).withDensity (fun p => G p ^ q)) {p : GreenCarrier d | p.1.1 < S} ≤
         Kq * ENNReal.ofReal (S ^ greenDelta d q / greenDelta d q) := by
     refine hlog.trans ?_
-    rw [← lintegral_inv_mul_rpow hS hδ Kq]
+    rw [← lintegral_inv_mul_rpow hS hδ]
     refine setLIntegral_mono' measurableSet_Ioc fun T hT => ?_
     exact mul_le_mul_right (hν_slab T hT.1) _
   -- restriction to the horizon `S`
@@ -158,45 +154,42 @@ theorem green_density_of_slab_marginals {d : ℕ} (C : ℝ → ℝ≥0) (c : ℝ
       measurableSet_Iio
   have hRset : {p : GreenCarrier d | ENNReal.ofReal p.1.1 < ENNReal.ofReal S} =
       {p : GreenCarrier d | p.1.1 < S} := by
-    ext p
-    simp only [mem_ofPred_eq, ENNReal.ofReal_lt_ofReal_iff hS]
-  have hres := greenMeasure_horizonRestriction K σ₀ (ENNReal.ofReal S) ⊤ le_top μ ΓS Γ hΓS hΓ
+    simp_all
+  have hres := greenMeasure_horizonRestriction K σ₀ _ ⊤ le_top μ ΓS Γ hΓS hΓ
   have hemb := measurableEmbedding_horizonInclusion d (ENNReal.ofReal S)
-  have hden : ΓS = ((elapsedVolume (ENNReal.ofReal S)).prod
-      (volume : Measure (EvolutionAmbientState d))).withDensity
-        (fun x => G (horizonInclusion d (ENNReal.ofReal S) x)) := by
+  have hden : ΓS = ((elapsedVolume _).prod
+      volume).withDensity
+        (fun x => G (horizonInclusion d _ x)) := by
     refine eq_withDensity_of_map_eq_emb hemb ?_
-    rw [map_horizonInclusion_lebesgue, ← restrict_withDensity hR, ← hΓG]
-    exact hres
-  have hlint : ∫⁻ x, (G (horizonInclusion d (ENNReal.ofReal S) x)) ^ q
-      ∂((elapsedVolume (ENNReal.ofReal S)).prod (volume : Measure (EvolutionAmbientState d))) =
+    rw [map_horizonInclusion_lebesgue, ← restrict_withDensity hR]
+    aesop
+  have hlint : ∫⁻ x, (G (horizonInclusion d _ x)) ^ q
+      ∂((elapsedVolume (ENNReal.ofReal S)).prod volume) =
         ((greenLebesgue d).withDensity (fun p => G p ^ q)) {p : GreenCarrier d | p.1.1 < S} := by
-    rw [← hRset, withDensity_apply _ hR, ← map_horizonInclusion_lebesgue d (ENNReal.ofReal S),
+    rw [← hRset, withDensity_apply _ hR, ← map_horizonInclusion_lebesgue,
       hemb.lintegral_map]
-  refine ⟨fun x => G (horizonInclusion d (ENNReal.ofReal S) x), hGm.comp hemb.measurable,
+  refine ⟨fun x => G _, hGm.comp hemb.measurable,
     hden, ?_⟩
-  have hp0 : ENNReal.ofReal q ≠ 0 := (ENNReal.ofReal_pos.2 hq0).ne'
-  have hmeasGS : Measurable (fun x => G (horizonInclusion d (ENNReal.ofReal S) x)) :=
+  have hp0  := (ENNReal.ofReal_pos.2 hq0).ne'
+  have hmeasGS : Measurable (fun x => G _) :=
     hGm.comp hemb.measurable
   rw [eLpNorm_eq_lintegral_rpow_enorm_toReal hp0 ENNReal.ofReal_ne_top
     hmeasGS.aestronglyMeasurable, ENNReal.toReal_ofReal hq0.le]
   simp only [enorm_eq_self]
   rw [hlint]
   have hl0 : 0 < Real.log 2 := Real.log_pos one_lt_two
-  have hL0 : ENNReal.ofReal (Real.log 2) ≠ 0 := (ENNReal.ofReal_pos.2 hl0).ne'
+  have hL0  := (ENNReal.ofReal_pos.2 hl0).ne'
   have hν := (ENNReal.mul_le_iff_le_inv hL0 ENNReal.ofReal_ne_top).1 hint
-  have h1q : (0 : ℝ) ≤ 1 / q := by positivity
-  have hcg : (greenConstant d q C : ℝ≥0∞) =
-      ((slabConstant d q C : ℝ≥0∞) * (ENNReal.ofReal (Real.log 2))⁻¹ *
+  have h1q : (0) ≤ 1 / q := by positivity
+  have hcg : (greenConstant d q C) =
+      ((slabConstant d q C) * (ENNReal.ofReal (Real.log 2))⁻¹ *
         ENNReal.ofReal (1 / greenDelta d q)) ^ (1 / q) := by
-    unfold greenConstant
     refine ENNReal.coe_toNNReal (ENNReal.rpow_ne_top_of_nonneg h1q ?_)
     exact ENNReal.mul_ne_top (ENNReal.mul_ne_top ENNReal.coe_ne_top
       (ENNReal.inv_ne_top.2 hL0)) ENNReal.ofReal_ne_top
-  rw [hcg, ← green_arith (slabConstant d q C) M hS hδ hq]
+  rw [hcg, ← green_arith _ M hS hδ hq]
   refine (ENNReal.rpow_le_rpow hν h1q).trans (le_of_eq ?_)
   congr 1
-  rw [hKq]
   ring
 
 end HypoellipticAleksandrov.KineticAleksandrov.Green

@@ -17,7 +17,7 @@ def exitFourierStepPhase {d : ℕ} (P : KineticPoint d) (s : ℝ) (v₀ ξ : PDE
 theorem norm_exitFourierStepPhase {d : ℕ}
     (P : KineticPoint d) (s : ℝ) (v₀ ξ : PDE.Vec d) :
     ‖exitFourierStepPhase P s v₀ ξ‖ = 1 := by
-  simp [exitFourierStepPhase, Complex.norm_exp, Complex.mul_re]
+  simp [exitFourierStepPhase]
 
 /-- Physical centered Fourier tests factor at the true intermediate physical pole. -/
 theorem exitFourierTest_factor {d : ℕ} (P W Q : KineticPoint d)
@@ -33,14 +33,14 @@ theorem exitFourierTest_factor {d : ℕ} (P W Q : KineticPoint d)
     rw [← Finset.sum_neg_distrib, ← Finset.sum_add_distrib, ← Finset.sum_add_distrib]
     apply Finset.sum_congr rfl
     intro i _
-    simp only [Pi.sub_apply, Pi.smul_apply, smul_eq_mul]
+    simp only [Pi.sub_apply, Pi.smul_apply]
     ring
   have hex : -Complex.I *
-      (PDE.vecDot ξ (Q.position - P.position - (Q.time - P.time) • v₀) : ℂ) =
-      Complex.I * (PDE.vecDot ξ ((W.time - P.time) • v₀) : ℂ) +
-        (-Complex.I * (PDE.vecDot ξ (W.position - P.position) : ℂ) +
+      (PDE.vecDot ξ (Q.position - P.position - (Q.time - P.time) • v₀)) =
+      Complex.I * (PDE.vecDot ξ ((W.time - P.time) • v₀)) +
+        (-Complex.I * (PDE.vecDot ξ (W.position - P.position)) +
           -Complex.I *
-            (PDE.vecDot ξ (Q.position - W.position - (Q.time - W.time) • v₀) : ℂ)) := by
+            (PDE.vecDot ξ (Q.position - W.position - (Q.time - W.time) • v₀))) := by
     rw [hd]
     push_cast
     ring
@@ -59,23 +59,25 @@ variable (hH : HormanderHypoellipticityStatement)
   (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
   (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
 
+variable (s T : ℝ) (hsT : s < T) (ξ : PDE.Vec d)
+
 /-- Position covariance identifies later poles with the zero-position Fourier family. -/
-theorem ballLaterExitFourier_eq_state (s T : ℝ) (hsT : s < T) (ξ : PDE.Vec d)
+theorem ballLaterExitFourier_eq_state 
     (w : EvolutionState (PDE.euclideanBall v₀ R) (fun _ => 0) s) :
     ballLaterExitFourier hH hLE hd hlam hLam B hB v₀ hR s T hsT ξ
       ⟨w.1.1, w.2.1⟩ =
       exitFourier (ballExit hH hLE hd hlam hLam B hB v₀ hR
         (ballStateStart s w) ⟨T, hsT⟩) ξ := by
-  let v : EvolutionPosition (PDE.euclideanBall v₀ R) (fun _ => 0) s := ⟨w.1.1, w.2.1⟩
+  let v : EvolutionPosition _ _ s := ⟨w.1.1, w.2.1⟩
   let P := ballStateStart s (positionStateZero _ _ s v)
   have h := ballExit_translation hH hLE hd hlam hLam B hB v₀ hR w.1.2 P ⟨T, hsT⟩
   let F (x : PDE.Vec d) := exitFourier (ballExit hH hLE hd hlam hLam B hB v₀ hR
     ⟨⟨s, x, w.1.1⟩, ball_state_velocity_mem s w⟩ ⟨T, hsT⟩) ξ
   have hh : F 0 = F (0 + w.1.2) := congrArg (fun μ => exitFourier μ ξ) h.symm
-  exact hh.trans (congrArg F (zero_add w.1.2))
+  aesop
 
 /-- The zero-extended scalar test has modulus at most one on every ambient velocity. -/
-theorem norm_ballLaterExitFourierTest_le_one (s T : ℝ) (hsT : s < T) (ξ : PDE.Vec d)
+theorem norm_ballLaterExitFourierTest_le_one 
     (E : Set (TimeVelocity d)) (v : PDE.Vec d) :
     ‖ballLaterExitFourierTest hH hLE hd hlam hLam B hB v₀ hR s T hsT ξ E v‖ ≤ 1 := by
   by_cases hv : v ∈ movingDomain (PDE.euclideanBall v₀ R) (fun _ => 0) s
@@ -90,6 +92,6 @@ theorem norm_ballLaterExitFourierTest_le_one (s T : ℝ) (hsT : s < T) (ξ : PDE
       (by simpa only [Measure.real, ENNReal.toReal_one] using
         ENNReal.toReal_mono ENNReal.one_ne_top he)
   · rw [ballLaterExitFourierTest_invalid hH hLE hd hlam hLam B hB v₀ hR s T hsT ξ E v hv]
-    simp only [norm_zero, zero_le_one]
+    simp
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

@@ -40,7 +40,7 @@ theorem straightenedPullback_dirichlet_sliceRegular
   have hgd := (hg.differentiable (by simp)) p.time
   refine ⟨isSliceRegularAt_straightenedPullback hgd hd hs, ?_⟩
   rw [viscousTransportedOperator_straightenedPullback hgd hd hs]
-  simpa only [scalarParabolicZeroOrderOperator, zero_mul, add_zero] using hu.2.2.1 _ hp
+  simpa using hu.2.2.1 _ hp
 
 /-- The straightening map, with its explicit inverse, is a homeomorphism on the literal
 kinetic and scalar time-spatial carriers. -/
@@ -51,7 +51,6 @@ def straightenedPointHomeomorph {n : ℕ} (g : ℝ → PDE.Vec n) (hg : Continuo
   left_inv p := by
     ext <;> simp [straightenedPoint]
   right_inv q := by
-    rcases q with ⟨t, x⟩
     simp [straightenedPoint]
   continuous_toFun := continuous_straightenedPoint hg
   continuous_invFun := KineticPoint.continuous_mk continuous_fst

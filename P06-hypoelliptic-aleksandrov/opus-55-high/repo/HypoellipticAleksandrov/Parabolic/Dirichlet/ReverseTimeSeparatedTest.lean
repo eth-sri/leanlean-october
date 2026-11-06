@@ -27,7 +27,7 @@ theorem reverseTimeVolume_isFiniteMeasure (T : ℝ) :
   infer_instance
 
 /-- The reverse-time `L²(V)` class represented by `τ ↦ eta τ • v`. -/
-noncomputable def reverseTimeSeparatedVTest
+def reverseTimeSeparatedVTest
     {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
     (hΩ : IsOpen Ω) (eta : ReverseTimeScalarTest T) (v : H10HilbertGraph hΩ) :
     ReverseTimeL2V hΩ T := by
@@ -39,51 +39,47 @@ noncomputable def reverseTimeSeparatedVTest
       ((eta.memLp ∞).toLp eta))
       ((MeasureTheory.Lp.constL (2 : ℝ≥0∞) (reverseTimeVolume T) ℝ) v)
 
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ} (hΩ : IsOpen Ω) (eta : ReverseTimeScalarTest T)
+
 /-- The separated reverse-time test has the literal scalar-multiple representative. -/
 theorem ae_reverseTimeSeparatedVTest
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
-    (hΩ : IsOpen Ω) (eta : ReverseTimeScalarTest T) (v : H10HilbertGraph hΩ) :
+     (v : H10HilbertGraph hΩ) :
     reverseTimeSeparatedVTest hΩ eta v =ᵐ[reverseTimeVolume T]
       fun tau => eta tau • v := by
-  letI : IsFiniteMeasure (reverseTimeVolume T) := reverseTimeVolume_isFiniteMeasure T
-  rw [reverseTimeSeparatedVTest]
+  letI  := reverseTimeVolume_isFiniteMeasure T
   change (ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ]
     H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ).holder
-    (2 : ℝ≥0∞) ((eta.memLp ∞).toLp eta)
-    ((MeasureTheory.Lp.constL (2 : ℝ≥0∞) (reverseTimeVolume T) ℝ) v) =ᵐ[_] _
+    (2) ((eta.memLp ∞).toLp eta)
+    ((MeasureTheory.Lp.constL (2) (reverseTimeVolume T) ℝ) v) =ᵐ[_] _
   filter_upwards [ContinuousLinearMap.coeFn_holder
       (ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ]
         H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
-      (r := (2 : ℝ≥0∞))
+      (r := (2))
       ((eta.memLp ∞).toLp eta)
-    ((MeasureTheory.Lp.constL (2 : ℝ≥0∞) (reverseTimeVolume T) ℝ) v),
+    ((MeasureTheory.Lp.constL (2) _ ℝ) v),
     (eta.memLp ∞).coeFn_toLp,
-    MeasureTheory.Lp.coeFn_const (p := (2 : ℝ≥0∞))
+    MeasureTheory.Lp.coeFn_const (p := (2))
       (μ := reverseTimeVolume T) v] with tau hmul heta hconst
-  rw [MeasureTheory.Lp.constL_apply] at hmul ⊢
-  rw [hmul, heta, hconst]
-  rfl
+  simp_all
 
 /-- Separated reverse-time tests depend continuously on their spatial vector. -/
 theorem tendsto_reverseTimeSeparatedVTest
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ}
-    (hΩ : IsOpen Ω) (eta : ReverseTimeScalarTest T)
+    
     {vN : ℕ → H10HilbertGraph hΩ} {v : H10HilbertGraph hΩ}
     (hv : Tendsto vN atTop (𝓝 v)) :
     Tendsto (fun n => reverseTimeSeparatedVTest hΩ eta (vN n)) atTop
       (𝓝 (reverseTimeSeparatedVTest hΩ eta v)) := by
-  letI : IsFiniteMeasure (reverseTimeVolume T) := reverseTimeVolume_isFiniteMeasure T
+  letI  := reverseTimeVolume_isFiniteMeasure T
   let L : H10HilbertGraph hΩ →L[ℝ] ReverseTimeL2V hΩ T :=
     ((((ContinuousLinearMap.lsmul ℝ ℝ : ℝ →L[ℝ]
       H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)).holderL
-      (reverseTimeVolume T) (∞ : ℝ≥0∞) (2 : ℝ≥0∞) (2 : ℝ≥0∞)
+      _ _ _ (2)
       ((eta.memLp ∞).toLp eta)).comp
-      (MeasureTheory.Lp.constL (2 : ℝ≥0∞) (reverseTimeVolume T) ℝ))
-  change Tendsto (fun n => L (vN n)) atTop (𝓝 (L v))
+      (MeasureTheory.Lp.constL (2) _ ℝ))
   exact L.continuous.tendsto v |>.comp hv
 
 /-- The continuous `L²(V*)`--`L²(V)` pairing over the reverse-time volume. -/
-noncomputable def reverseTimeDualPairingCLM
+def reverseTimeDualPairingCLM
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ) :
     ReverseTimeL2VStar hΩ T →L[ℝ] ReverseTimeL2V hΩ T →L[ℝ] ℝ :=
@@ -100,8 +96,7 @@ theorem reverseTimeDualPairingCLM_apply
     reverseTimeDualPairingCLM hΩ T g z =
       ∫ tau, g tau (z tau) ∂reverseTimeVolume T := by
   unfold reverseTimeDualPairingCLM
-  dsimp only
   rw [ContinuousLinearMap.lpPairing_eq_integral]
-  simp only [ContinuousLinearMap.flip_apply, ContinuousLinearMap.apply_apply]
+  simp
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

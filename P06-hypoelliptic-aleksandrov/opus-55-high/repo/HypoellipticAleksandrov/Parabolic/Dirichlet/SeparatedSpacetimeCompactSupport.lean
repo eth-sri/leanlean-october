@@ -38,9 +38,11 @@ def spacetimeTestSpatialSupportCompact
   ⟨Prod.snd '' tsupport (φ : TimeVelocity d → ℝ),
     φ.hasCompactSupport.isCompact.image continuous_snd⟩
 
+variable {d : ℕ}
+
 /-- A smooth compact spatial cutoff equal to one near the spatial support projection. -/
 theorem exists_spacetimeTest_spatialCutoff
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
+     {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)} (hO : IsOpen O)
     (φ : TestFunction (originalTimeOpenCylinderOpens τ₁ τ₂ O hO) ℝ (⊤ : ℕ∞)) :
     ∃ χ : PDE.Vec d → ℝ,
       ContDiff ℝ (⊤ : ℕ∞) χ ∧
@@ -58,29 +60,28 @@ theorem exists_spacetimeTest_spatialCutoff
   obtain ⟨χ, hχOne, hχZero, _hχRange⟩ :=
     exists_contMDiffMap_one_nhds_of_subset_interior
       (I := 𝓘(ℝ, PDE.Vec d)) hK.isClosed
-      (by simpa only [interior_interior] using hKinterior)
+      (by omega)
   have hsupport : support (χ : PDE.Vec d → ℝ) ⊆ L := by
     intro y hy
     by_contra hyL
-    exact (mem_support.mp hy) (hχZero y hyL)
+    simp_all
   have htsupportL : tsupport χ ⊆ L :=
     closure_minimal hsupport hLclosed
   refine ⟨χ, χ.contMDiff.contDiff, hχOne, ?_, htsupportL.trans hLO⟩
   exact hLcompact.of_isClosed_subset (isClosed_tsupport χ) htsupportL
 
 /-- Every compact set in the coordinate-function model lies in a nondegenerate cube. -/
-theorem IsCompact.exists_subset_pi_Icc_vec {d : ℕ} {K : Set (PDE.Vec d)}
+theorem IsCompact.exists_subset_pi_Icc_vec  {K : Set (PDE.Vec d)}
     (hK : IsCompact K) :
     ∃ R : ℝ, 0 < R ∧ K ⊆ Set.Icc (fun _ => -R) (fun _ => R) := by
   have hcoord : ∀ i : Fin d, ∃ M : ℝ, ∀ y ∈ K, |y i| ≤ M := by
     intro i
     obtain ⟨M, hM⟩ :=
       hK.exists_bound_of_continuousOn (continuous_apply i).continuousOn
-    exact ⟨M, fun y hy => by simpa only [Real.norm_eq_abs] using hM y hy⟩
+    aesop
   choose M hM using hcoord
-  let R : ℝ := 1 + ∑ i : Fin d, |M i|
+  let R  := 1 + ∑ i : Fin d, |M i|
   have hR : 0 < R := by
-    dsimp only [R]
     positivity
   refine ⟨R, hR, ?_⟩
   intro y hy
@@ -90,9 +91,9 @@ theorem IsCompact.exists_subset_pi_Icc_vec {d : ℕ} {K : Set (PDE.Vec d)}
       _ ≤ |M i| := le_abs_self _
       _ ≤ ∑ j : Fin d, |M j| :=
         Finset.single_le_sum (fun j _ => abs_nonneg (M j)) (Finset.mem_univ i)
-      _ ≤ R := by simp only [R]; linarith
+      _ ≤ R := by linarith
   constructor <;> intro i
-  · exact (abs_le.mp (hyR i)).1
-  · exact (abs_le.mp (hyR i)).2
+  · grind
+  grind
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

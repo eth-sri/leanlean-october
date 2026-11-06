@@ -19,9 +19,8 @@ def visitEmptyUnion : FiniteIntervalUnion where
 
 /-- The empty representation has empty physical carrier. -/
 theorem visitEmptyUnion_carrier : visitEmptyUnion.carrier = ∅ := by
-  ext v
-  simp only [FiniteIntervalUnion.carrier, visitEmptyUnion, mem_iUnion, mem_empty_iff_false]
-  exact ⟨fun ⟨i, _⟩ => Fin.elim0 i, False.elim⟩
+  simp only [FiniteIntervalUnion.carrier, visitEmptyUnion]
+  simp
 
 /-- A clipped interval is represented by zero components when its endpoints overlap. -/
 def visitIntervalUnion (lo hi : ℝ) : FiniteIntervalUnion :=
@@ -44,33 +43,24 @@ def visitPairUnion (L R : Interval) (hd : Disjoint L.carrier R.carrier) :
   component := fun i => if i = 0 then L else R
   disjoint := by
     intro i j hij
-    fin_cases i <;> fin_cases j
-    · exact False.elim (hij rfl)
-    · simpa using hd
-    · simpa using hd.symm
-    · exact False.elim (hij rfl)
+    grind
 
 /-- The pair representation contains precisely its two interval carriers. -/
 theorem visitPairUnion_carrier (L R : Interval) (hd : Disjoint L.carrier R.carrier) :
     (visitPairUnion L R hd).carrier = L.carrier ∪ R.carrier := by
   ext v
-  simp only [FiniteIntervalUnion.carrier, visitPairUnion, mem_iUnion, mem_union]
-  constructor
-  · rintro ⟨i, hi⟩
-    fin_cases i
-    · exact Or.inl hi
-    · exact Or.inr hi
-  · rintro (hv | hv)
-    · exact ⟨0, hv⟩
-    · exact ⟨1, hv⟩
+  simp only [FiniteIntervalUnion.carrier, visitPairUnion]
+  simp
 
 /-- The active velocity intersection in the original physical coordinate. -/
 def visitActiveUnion (c : Clock) (J : Interval) : FiniteIntervalUnion :=
   visitIntervalUnion (max (c.vbar - 3 * c.r / 4) J.lo)
     (min (c.vbar + 3 * c.r / 4) J.hi)
 
+variable (c : Clock) (J : Interval)
+
 /-- Exact active-domain geometry, with emptiness handled by the existing union carrier. -/
-theorem visitActiveUnion_carrier (c : Clock) (J : Interval) :
+theorem visitActiveUnion_carrier  :
     (visitActiveUnion c J).carrier = c.active ∩ J.carrier := by
   rw [visitActiveUnion, visitIntervalUnion_carrier]
   ext v
@@ -79,7 +69,7 @@ theorem visitActiveUnion_carrier (c : Clock) (J : Interval) :
   tauto
 
 /-- The two possible waiting components are disjoint, even before clipping to the outer strip. -/
-theorem visitWaiting_components_disjoint (c : Clock) (J : Interval)
+theorem visitWaiting_components_disjoint 
     (hl : J.lo < min J.hi (c.vbar - c.r / 2))
     (hr : max J.lo (c.vbar + c.r / 2) < J.hi) :
     Disjoint (⟨J.lo, min J.hi (c.vbar - c.r / 2), hl⟩ : Interval).carrier
@@ -88,8 +78,6 @@ theorem visitWaiting_components_disjoint (c : Clock) (J : Interval)
   intro v hv hw
   have hlow := le_max_right J.lo (c.vbar + c.r / 2)
   have hhigh := min_le_right J.hi (c.vbar - c.r / 2)
-  change J.lo < v ∧ v < min J.hi (c.vbar - c.r / 2) at hv
-  change max J.lo (c.vbar + c.r / 2) < v ∧ v < J.hi at hw
   linarith only [hv.2, hw.1, hlow, hhigh, c.positive]
 
 /-- The waiting domain has zero, one, or two actual nonempty interval components. -/
@@ -102,8 +90,10 @@ def visitWaitingUnion (c : Clock) (J : Interval) : FiniteIntervalUnion :=
     else (⟨J.lo, min J.hi (c.vbar - c.r / 2), hl⟩ : Interval).toFiniteUnion
   else visitIntervalUnion (max J.lo (c.vbar + c.r / 2)) J.hi
 
+variable (c : Clock) (J : Interval)
+
 /-- Literal scalar carriers of the two waiting pieces. -/
-theorem visitWaitingUnion_components (c : Clock) (J : Interval) :
+theorem visitWaitingUnion_components  :
     (visitWaitingUnion c J).carrier =
       Ioo J.lo (min J.hi (c.vbar - c.r / 2)) ∪
         Ioo (max J.lo (c.vbar + c.r / 2)) J.hi := by
@@ -119,7 +109,7 @@ theorem visitWaitingUnion_components (c : Clock) (J : Interval) :
     rw [visitIntervalUnion_carrier, Ioo_eq_empty_of_le (not_lt.mp hl), empty_union]
 
 /-- The waiting carrier is precisely the outer interval minus the closed entrance interval. -/
-theorem visitWaitingUnion_carrier (c : Clock) (J : Interval) :
+theorem visitWaitingUnion_carrier  :
     (visitWaitingUnion c J).carrier = J.carrier \ closure c.entrance := by
   have ho : c.vbar - c.r / 2 < c.vbar + c.r / 2 := by linarith [c.positive]
   rw [visitWaitingUnion_components, Clock.entrance, closure_Ioo ho.ne]

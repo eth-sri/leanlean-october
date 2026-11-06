@@ -50,23 +50,23 @@ def enlargedOutputCell (c : Clock) (s x : ℝ) (j : ℕ) (k : ℤ) : Set Point :
 theorem measurableSet_enlargedTimeBin (r s : ℝ) (j : ℕ) :
     MeasurableSet (enlargedTimeBin r s j) := by
   unfold enlargedTimeBin
-  split
-  · exact measurableSet_Icc
-  · exact measurableSet_Ioc
+  aesop
 
 /-- Every source position cell is measurable. -/
 theorem measurableSet_enlargedPositionCell (r x : ℝ) (k : ℤ) :
     MeasurableSet (enlargedPositionCell r x k) := measurableSet_Ico
 
+variable (c : Clock) (s x : ℝ) (j : ℕ) (k : ℤ)
+
 /-- Starting cells are measurable in the physical spacetime carrier. -/
-theorem measurableSet_enlargedStartCell (c : Clock) (s x : ℝ) (j : ℕ) (k : ℤ) :
+theorem measurableSet_enlargedStartCell  :
     MeasurableSet (enlargedStartCell c s x j k) :=
   ((measurableSet_enlargedTimeBin c.r s j).preimage continuous_time.measurable).inter
     ((measurableSet_enlargedPositionCell c.r x k).preimage
       ((continuous_apply 0).comp continuous_position).measurable)
 
 /-- Output cells are measurable in physical spacetime. -/
-theorem measurableSet_enlargedOutputCell (c : Clock) (s x : ℝ) (j : ℕ) (k : ℤ) :
+theorem measurableSet_enlargedOutputCell  :
     MeasurableSet (enlargedOutputCell c s x j k) :=
   (measurableSet_enlargedStartCell c s x j k).inter
     (isOpen_Ioo.measurableSet.preimage

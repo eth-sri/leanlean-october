@@ -16,7 +16,6 @@ Integral convergence and locality of the adjoint pass it to the limit.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -93,8 +92,8 @@ theorem integral_regularizedAdjoint_innerBall_dirichlet_limit_eq_zero
       (Ω := PDE.euclideanBall 0 r0) (γ := Γ) (B := B) (b := b)
       (hΩ := hΩ) (hγ := hΓ) (hB_smooth := hBs) (hB_symm := hBsym)
       (hB_ell := hB) (hb_smooth := hbs) (hb_lipschitz := hb) (hb_coercive := hbco)
-      a τ (r0 - β k) (R k) (haα.trans hατ) hk.1 hk.2.1 (g k) (hg k)
-      ε hε F (u k) (hu k)
+      a τ _ _ (haα.trans hατ) hk.1 hk.2.1 _ (hg k)
+      ε hε F _ (hu k)
     have hsD : tsupport ψ ⊆ evolutionHomeomorph n ⁻¹' D := by
       intro x hx
       have hp := hs hx
@@ -105,18 +104,17 @@ theorem integral_regularizedAdjoint_innerBall_dirichlet_limit_eq_zero
       exact hp (by simpa using hsD hx)
     have he := hw.2 ψ hψ hc hsD
     have he' : (∫ p in D, straightenedPullback (g k) (u k) p * φ p) = 0 := by
-      simpa only [straightenedPullback, straightenedPoint, φ, zero_mul, integral_zero]
-        using he
+      aesop
     rw [setIntegral_eq_integral_of_forall_compl_eq_zero
-      (fun p hp => by rw [hzeroK p hp, mul_zero])]
+      (fun p hp => by simp_all)]
     rw [setIntegral_eq_integral_of_forall_compl_eq_zero
-      (fun p hp => by rw [hzeroD p hp, mul_zero])] at he'
+      (fun p hp => by simp_all)] at he'
     exact he'
   have hlim0 : (∫ p in K, limUnder atTop
-      (fun k => straightenedPullback (g k) (u k) p) * φ p) = 0 :=
+      _ * φ p) = 0 :=
     tendsto_nhds_unique hInt (tendsto_const_nhds.congr' (hIz.mono fun k hk => hk.symm))
   rw [setIntegral_eq_integral_of_forall_compl_eq_zero
-    (fun p hp => by rw [hzeroK p hp, mul_zero])] at hlim0
-  exact hlim0
+    (fun p hp => by simp_all)] at hlim0
+  omega
 
 end HypoellipticAleksandrov.KineticAleksandrov

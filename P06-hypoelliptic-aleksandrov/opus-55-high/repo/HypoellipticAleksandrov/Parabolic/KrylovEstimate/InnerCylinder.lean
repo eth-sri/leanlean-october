@@ -18,9 +18,11 @@ def innerMap {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N) (ρ : ℝ) :
     TimeVelocity N → TimeVelocity N :=
   parabolicAffine (t₀ - h + (1 - ρ ^ 2) * h / 2) v₀ ρ
 
+variable {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N)
+
 /-- Strict compression sends the closed reference cylinder into the open source cylinder. -/
 theorem innerMap_mapsTo
-    {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N) (hh : 0 < h)
+     (hh : 0 < h)
     {ρ : ℝ} (hρ : 0 < ρ) (hρ1 : ρ < 1) :
     Set.MapsTo (innerMap t₀ h v₀ ρ)
       (closedParabolicCylinder h (0 : PDE.Vec N))
@@ -28,7 +30,6 @@ theorem innerMap_mapsTo
   intro z hz
   rcases hz with ⟨hztime, hzvel⟩
   have hr2 : ρ ^ 2 < 1 := by nlinarith
-  have hmargin : 0 < (1 - ρ ^ 2) * h / 2 := by positivity
   change (t₀ - h < t₀ - h + (1 - ρ ^ 2) * h / 2 + ρ ^ 2 * z.1 ∧
     t₀ - h + (1 - ρ ^ 2) * h / 2 + ρ ^ 2 * z.1 < t₀) ∧ _
   constructor
@@ -40,11 +41,11 @@ theorem innerMap_mapsTo
         ρ ^ 2 * PDE.euclideanSqDist z.2 0 := by
       simp only [PDE.euclideanSqDist, add_sub_cancel_left, PDE.vecNormSq_smul, sub_zero]
     rw [hd]
-    exact (mul_le_mul_of_nonneg_left hzvel (sq_nonneg ρ)).trans_lt (by simpa using hr2)
+    exact (mul_le_mul_of_nonneg_left hzvel (sq_nonneg ρ)).trans_lt (by simp_all)
 
 /-- At radius one, the forward boundary maps to the original bottom and lateral faces. -/
 theorem innerMap_one_boundary
-    {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N) :
+     :
     Set.MapsTo (innerMap t₀ h v₀ 1)
       (forwardParabolicBoundary h (0 : PDE.Vec N))
       (krylovParabolicBoundary t₀ h v₀) := by
@@ -58,18 +59,18 @@ theorem innerMap_one_boundary
     rcases hz with ⟨ht, hv⟩
     change z.1 = 0 at ht
     refine ⟨?_, ?_⟩
-    · simpa only [ht, add_zero] using (Set.mem_singleton (t₀ - h))
+    · simp_all
     · simpa only [PDE.euclideanClosedBall, PDE.euclideanSqDist, Set.mem_setOf_eq,
         add_sub_cancel_left, sub_zero] using hv
   · right
     rcases hz with ⟨ht, hv⟩
-    refine ⟨⟨by linarith [ht.1], by linarith [ht.2]⟩, ?_⟩
+    refine ⟨⟨by simp_all, by grind⟩, ?_⟩
     simpa only [PDE.euclideanSphere, PDE.euclideanSqDist, Set.mem_setOf_eq,
       add_sub_cancel_left, sub_zero] using hv
 
 /-- Compression can approximate the uncompressed values uniformly on the closed cylinder. -/
 theorem exists_innerMap_value_close
-    {N : ℕ} (t₀ h : ℝ) (v₀ : PDE.Vec N) (hh : 0 < h)
+     (hh : 0 < h)
     (u : TimeVelocity N → ℝ)
     (hu : ContinuousOn u (krylovClosedCylinder t₀ h v₀))
     {ε : ℝ} (hε : 0 < ε) :
@@ -83,35 +84,33 @@ theorem exists_innerMap_value_close
   have hgeq (z : TimeVelocity N) (hz : z ∈ K) : g z = u z := congrFun hg ⟨z, hz⟩
   let K0 := closedParabolicCylinder h (0 : PDE.Vec N)
   have hK0 : IsCompact K0 := isCompact_closedParabolicCylinder h 0
-  letI : CompactSpace K0 := isCompact_iff_compactSpace.mp hK0
+  letI  := isCompact_iff_compactSpace.mp hK0
   let F : ℝ → K0 → ℝ := fun ρ z => g (innerMap t₀ h v₀ ρ z)
   have hc : Continuous (Function.uncurry F) := by
     apply g.continuous.comp
-    dsimp [F, innerMap, parabolicAffine]
+    dsimp [innerMap, parabolicAffine]
     fun_prop
-  have he : ∀ᶠ ρ in 𝓝 (1 : ℝ), ∀ z : K0, dist (F 1 z) (F ρ z) < ε :=
+  have he  :=
     (Metric.tendstoUniformly_iff.mp (hc.tendstoUniformly F 1)) ε hε
-  have he' : ∀ᶠ ρ in 𝓝[<] (1 : ℝ), ∀ z : K0, dist (F 1 z) (F ρ z) < ε :=
+  have he' : ∀ᶠ ρ in 𝓝[<] (1 : ℝ), ∀ z : K0, dist _ _ < ε :=
     he.filter_mono nhdsWithin_le_nhds
   have hp : ∀ᶠ ρ : ℝ in 𝓝[<] 1, 0 < ρ :=
-    (eventually_gt_nhds (by norm_num : (0 : ℝ) < 1)).filter_mono nhdsWithin_le_nhds
+    (eventually_gt_nhds (by norm_num)).filter_mono nhdsWithin_le_nhds
   obtain ⟨ρ, hclose, hpos, hlt⟩ :=
-    (he'.and (hp.and (self_mem_nhdsWithin : ∀ᶠ ρ : ℝ in 𝓝[<] 1, ρ ∈ Iio 1))).exists
+    (he'.and (hp.and self_mem_nhdsWithin)).exists
   refine ⟨ρ, hpos, hlt, fun z hz => ?_⟩
   have hzρ := innerMap_mapsTo t₀ h v₀ hh hpos hlt hz
   have hzρK : innerMap t₀ h v₀ ρ z ∈ K :=
     ⟨⟨hzρ.1.1.le, hzρ.1.2.le⟩, show PDE.euclideanSqDist _ v₀ ≤ 1 ^ 2 from hzρ.2.le⟩
   have hz1K : innerMap t₀ h v₀ 1 z ∈ K := by
     rcases hz with ⟨ht, hv⟩
-    change (t₀ - h ≤ _ ∧ _ ≤ t₀) ∧ _
-    simp only [innerMap, parabolicAffine, one_pow, sub_self, zero_mul, zero_div,
-      add_zero, one_mul, one_smul]
-    refine ⟨⟨by linarith [ht.1], by linarith [ht.2]⟩, ?_⟩
+    simp only [innerMap, parabolicAffine, one_smul]
+    refine ⟨⟨by simp_all, by grind⟩, ?_⟩
     simpa only [PDE.euclideanClosedBall, PDE.euclideanSqDist, Set.mem_setOf_eq,
       add_sub_cancel_left, sub_zero] using hv
   have hdist := hclose ⟨z, hz⟩
   dsimp [F] at hdist
   rw [hgeq _ hzρK, hgeq _ hz1K, Real.dist_eq, abs_sub_comm] at hdist
-  exact hdist.le
+  linarith
 
 end HypoellipticAleksandrov.Parabolic.KrylovEstimate

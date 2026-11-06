@@ -35,15 +35,16 @@ def IsClassicalViscousFiniteSolution {n : ℕ} (Ω : Set (PDE.Vec n))
     (∀ p ∈ movingClosedSlab Ω γ a τ,
       p.position ∈ frontier (movingDomain Ω γ p.time) → u p = 0)
 
+variable {n : ℕ} {Ω : Set (PDE.Vec n)}
+
 /-- The strict finite-slab interior is open. -/
-theorem isOpen_evolutionFiniteInteriorRaw {n : ℕ} {Ω : Set (PDE.Vec n)}
+theorem isOpen_evolutionFiniteInteriorRaw 
     (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) (a τ : ℝ) :
     IsOpen (evolutionFiniteInteriorRaw Ω γ a τ) :=
   (isOpen_lt continuous_const continuous_fst).inter (isOpen_evolutionPastInteriorRaw hΩ hγ τ)
 
 /-- Finite-slab smoothness supplies slice regularity strictly above the lower time. -/
-theorem IsClassicalViscousFiniteSolution.isSliceRegularAt {n : ℕ}
-    {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
+theorem IsClassicalViscousFiniteSolution.isSliceRegularAt  (hΩ : IsOpen Ω) {γ : ℝ → PDE.Vec n} (hγ : Continuous γ)
     {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n} {ε a τ : ℝ}
     {F : BoundedBorel (EvolutionAmbientState n)} {u : KineticPoint n → ℝ}
     (hu : IsClassicalViscousFiniteSolution Ω γ B b ε a τ F u)
@@ -54,10 +55,10 @@ theorem IsClassicalViscousFiniteSolution.isSliceRegularAt {n : ℕ}
     ⟨ha, hp.2⟩
   exact (hu.2.2.1.contDiffAt
     ((isOpen_evolutionFiniteInteriorRaw hΩ hγ a τ).mem_nhds hmem)).of_le
-      (WithTop.coe_le_coe.mpr (le_top : (2 : ℕ∞) ≤ ⊤))
+      (WithTop.coe_le_coe.mpr le_top)
 
 /-- Ordered data give comparison on the common finite past, above both lower endpoints. -/
-theorem finite_classical_comparison {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem finite_classical_comparison  (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
     {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
     {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)
@@ -81,28 +82,26 @@ theorem finite_classical_comparison {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOp
   obtain ⟨C₂, hC₂0, hC₂⟩ := h₂.1
   have hres := growth_comparison (a := p₀.time) (T := τ) (u := fun q => u₁ q - u₂ q)
     hΩ hγ hlam hB hb hε0 hε1 ?_ ?_ ?_ ?_ ?_ ?_ p₀ ⟨le_rfl, hp₀⟩
-  · exact sub_nonpos.mp hres
+  · simp_all
   · refine ⟨C₁ + C₂, fun p hp => ?_⟩
-    have h1 := (abs_le.mp (hC₁ p (hs₁ hp))).2
-    have h2 := (abs_le.mp (hC₂ p (hs₂ hp))).1
-    linarith only [h1, h2]
+    grind
   · exact (h₁.2.1.mono hs₁).sub (h₂.2.1.mono hs₂)
   · exact fun p hp => (hr₁ p hp).sub (hr₂ p hp)
   · intro p hp
     rw [viscousTransportedOperator_sub (hr₁ p hp) (hr₂ p hp),
       h₁.2.2.2.1 p ⟨ha₁.le.trans hp.1, hp.2⟩ (ha₁.trans_le hp.1),
       h₂.2.2.2.1 p ⟨ha₂.le.trans hp.1, hp.2⟩ (ha₂.trans_le hp.1)]
-    simp only [sub_self, le_refl]
+    simp
   · intro p hp hpT
     have ht : p ∈ evolutionTerminalClosure Ω γ τ := ⟨hpT, hpT ▸ hp.2.2⟩
     rw [h₁.2.2.2.2.1 p ht, h₂.2.2.2.2.1 p ht]
     exact sub_nonpos.mpr (hF _ _ ht.2)
   · intro p hp hfr
     rw [h₁.2.2.2.2.2 p (hs₁ hp) hfr, h₂.2.2.2.2.2 p (hs₂ hp) hfr]
-    simp only [sub_self, le_refl]
+    simp
 
 /-- Finite-past uniqueness makes different lower-time constructions compatible. -/
-theorem finite_classical_unique {n : ℕ} {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
+theorem finite_classical_unique  (hΩ : IsOpen Ω)
     {γ : ℝ → PDE.Vec n} (hγ : Continuous γ) {lam Lam : ℝ} (hlam : 0 < lam)
     {B : FullKineticCoefficient n} (hB : HasEverywhereLoewnerBounds lam Lam B)
     {Lb : ℝ} {b : PDE.Vec n → PDE.Vec n} (hb : HasEuclideanLipschitzDrift Lb b)

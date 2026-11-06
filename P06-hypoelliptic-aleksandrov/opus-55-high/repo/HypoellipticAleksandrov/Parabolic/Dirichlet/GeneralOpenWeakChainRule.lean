@@ -28,14 +28,14 @@ theorem hasWeakGradient_comp_contDiff_of_deriv_bounded_of_isOpen
       (fun x i => deriv G (u.toFun x) * u.grad x i) := by
   have hGDiff : Differentiable ℝ G :=
     hG.differentiable (by norm_num)
-  have hGLip : LipschitzWith M.toNNReal G :=
+  have hGLip  :=
     PDE.lipschitzWith_of_abs_deriv_le hM hGDiff hderiv
   have hcompMem :
       MemLp (fun x => G (u.toFun x)) 2 (volume.restrict U) := by
     simpa only [Function.comp_def, PDE.volumeOn] using
       hGLip.comp_memLp hG0 u.memL2
   have hcompLocal :
-      LocallyIntegrableOn (fun x => G (u.toFun x)) U volume :=
+      LocallyIntegrableOn _ U volume :=
     locallyIntegrableOn_of_locallyIntegrable_restrict
       (hcompMem.locallyIntegrable (by norm_num))
   have hderivContinuous : Continuous (deriv G) :=
@@ -49,25 +49,23 @@ theorem hasWeakGradient_comp_contDiff_of_deriv_bounded_of_isOpen
           u.memL2.aestronglyMeasurable).mul
           (u.gradMemL2 i).aestronglyMeasurable
     · filter_upwards with x
-      simp only [norm_mul, Real.norm_eq_abs]
+      simp only [norm_mul]
       exact mul_le_mul_of_nonneg_right
-        (hderiv (u.toFun x)) (abs_nonneg (u.grad x i))
+        (hderiv _) (abs_nonneg _)
   apply PDE.HasWeakGradientOn.of_ballwise hU hcompLocal
     (fun i => locallyIntegrableOn_of_locallyIntegrable_restrict
       ((hgradMem i).locallyIntegrable (by norm_num)))
   intro x hx
   rcases Metric.isOpen_iff.1 hU x hx with ⟨δ, hδ, hball⟩
-  let R : ℝ := δ / 2
+  let R  := δ / 2
   have hR : 0 < R := by
-    dsimp only [R]
     positivity
   have hclosed : PDE.euclideanClosedBall x R ⊆ U :=
     (PDE.euclideanClosedBall_subset_supClosedBall hR.le).trans
       ((Metric.closedBall_subset_ball (by
-        dsimp only [R]
-        linarith)).trans hball)
+        grind)).trans hball)
   refine ⟨R, hR, hclosed, ?_⟩
-  let uR : PDE.H1Function (PDE.euclideanBall x R) :=
+  let uR  :=
     u.restrict (PDE.isOpen_euclideanBall x R)
       ((PDE.euclideanBall_subset_euclideanClosedBall x R).trans hclosed)
   simpa only [uR, restrict_toFun, restrict_grad] using

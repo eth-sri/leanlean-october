@@ -11,7 +11,6 @@ The density proposition remains an explicit unproved hypothesis.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov MeasureTheory Set Autonomous TheoremA Parabolic
 open scoped ENNReal
@@ -22,7 +21,7 @@ theorem autonomous_localised_borel_of_below_four_density
     (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam) (p : ℝ)
     (hp : criticalP ⟨Lam / lam, (le_div_iff₀ hlam).2
-      (by simpa only [one_mul] using hLam)⟩ < p) :
+      (by simpa using hLam)⟩ < p) :
     ∃ C : ℝ, 0 < C ∧ ∀ (a : ℝ → ℝ → ℝ),
       Measurable (Function.uncurry a) → (∀ x v, lam ≤ a x v ∧ a x v ≤ Lam) →
       ∀ (P₀ : Point) (R : ℝ), 0 < R → ∀ (u f : Point → ℝ),
@@ -40,7 +39,7 @@ theorem autonomous_localised_borel_of_below_four_density
   obtain ⟨C, hC, hsm⟩ := autonomous_smooth_localised_of_below_four_density hdensity
     hH hLE lam Lam hlam hLam p hp
   have hcritical := (criticalP_bounds ⟨Lam / lam, (le_div_iff₀ hlam).2
-    (by simpa only [one_mul] using hLam)⟩).1
+    (by simpa using hLam)⟩).1
   have hp1 : 1 ≤ p := by linarith only [hcritical, hp]
   have hsmooth : ∀ a : ℝ → ℝ → ℝ,
       ContDiff ℝ (⊤ : ℕ∞) (Function.uncurry a) →
@@ -62,7 +61,7 @@ theorem autonomous_localised_borel_of_below_four_density
     simpa only [borelSource, ite_true] using hbound
   refine ⟨C, hC, ?_⟩
   intro a ha hb P₀ R hR u f hcont hreg hf hLp hsub
-  exact autonomous_abp_smooth_to_borel lam Lam hlam hLam p hp1 (2 - 6 / p) C true
+  exact autonomous_abp_smooth_to_borel lam Lam hlam hLam p hp1 _ C true
     hsmooth a ha hb P₀ R hR u f hcont hreg hf hLp hsub
 
 
@@ -74,7 +73,7 @@ theorem kinetic_aleksandrov_autonomous_localised_relative_of_below_four_density
     (hLE : LiebermanEllipsoidDirichletStatement)
     (lam Lam p : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
     (hp : 1 + bellmanAdjointExponent (Lam / lam)
-      ((le_div_iff₀ hlam).2 (by simpa only [one_mul] using hLam)) < p) :
+      ((le_div_iff₀ hlam).2 (by simp_all)) < p) :
     ∃ C : ℝ, 0 ≤ C ∧
       ∀ (P₀ : KineticPoint 1) (R : ℝ), 0 < R →
       ∀ (a : ℝ → ℝ → ℝ),
@@ -104,16 +103,13 @@ theorem kinetic_aleksandrov_autonomous_localised_relative_of_below_four_density
   have hmax : (fun P => max (f P) 0) =ᵐ[volume.restrict (backwardCylinder P₀ R)]
       (fun P => max (f₀ P) 0) := by
     filter_upwards [hae] with P hP
-    change max (f P) 0 = max ((backwardCylinder P₀ R).indicator f P) 0
-    rw [hP]
+    grind
   have hLp₀ := hLp.ae_eq hmax
   have hsub₀ : ∀ᵐ P ∂volume.restrict (backwardCylinder P₀ R),
       autonomousScalarOperator a u P ≤ f₀ P := by
     filter_upwards [hsub, hae] with P hsub hEq
-    change autonomousScalarOperator a u P ≤ (backwardCylinder P₀ R).indicator f P
-    rw [hEq]
-    exact hsub
+    linarith
   have hbound := hborel a ha hb P₀ R hR u f₀ hcont hreg hf₀ hLp₀ hsub₀ P hP
-  simpa only [f₀, eLpNorm_localized_source_indicator hQ f u] using hbound
+  simpa only [f₀, eLpNorm_localized_source_indicator hQ] using hbound
 
 end HypoellipticAleksandrov.KineticAleksandrov

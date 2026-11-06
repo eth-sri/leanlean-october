@@ -49,9 +49,11 @@ def IsUniformMeanZeroPoincareConstant (d : ℕ) (C : ℝ) : Prop :=
 
 namespace IsUniformMeanZeroPoincareConstant
 
+variable {d : ℕ} {C : ℝ}
+
 /-- The normalized statement on a bounded open convex domain. This named
 projection is the common theorem used by the shape-specific interfaces. -/
-theorem on_domain {d : ℕ} {C : ℝ}
+theorem on_domain 
     (hC : IsUniformMeanZeroPoincareConstant d C)
     {p : ℝ} (hp : 1 ≤ p) {U : Set (Vec d)}
     {D : ℝ}
@@ -70,7 +72,7 @@ theorem on_domain {d : ℕ} {C : ℝ}
 /-- The unnormalized form on a bounded open convex domain. The same exponent
 appears on both sides, so the exact volume factors cancel without changing
 the constant. -/
-theorem on_domain_unnormalized {d : ℕ} {C : ℝ}
+theorem on_domain_unnormalized 
     (hC : IsUniformMeanZeroPoincareConstant d C)
     {p : ℝ} (hp : 1 ≤ p) {U : Set (Vec d)}
     {D : ℝ}
@@ -91,20 +93,20 @@ theorem on_domain_unnormalized {d : ℕ} {C : ℝ}
       hUPos hUTop]
   calc
     volume U ^ (1 / ENNReal.ofReal p).toReal *
-          eLpMeanNormOn U (ENNReal.ofReal p) u.toFun ≤
+          eLpMeanNormOn U _ u.toFun ≤
         volume U ^ (1 / ENNReal.ofReal p).toReal *
-          (ENNReal.ofReal (C * D) *
+          (ENNReal.ofReal _ *
             euclideanFieldELpMeanNormOn U
-              (ENNReal.ofReal p) u.grad) :=
+              _ u.grad) :=
       mul_le_mul_right hNormalized _
-    _ = ENNReal.ofReal (C * D) *
+    _ = ENNReal.ofReal _ *
         (volume U ^ (1 / ENNReal.ofReal p).toReal *
           euclideanFieldELpMeanNormOn U
-            (ENNReal.ofReal p) u.grad) := by
+            _ u.grad) := by
       ac_rfl
 
 /-- Unnormalized axis-cube specialization. -/
-theorem on_axisCube_unnormalized {d : ℕ} {C : ℝ}
+theorem on_axisCube_unnormalized 
     (hC : IsUniformMeanZeroPoincareConstant d C)
     {p : ℝ} (hp : 1 ≤ p) (z : Vec d)
     {L : ℝ} (hL : 0 < L)

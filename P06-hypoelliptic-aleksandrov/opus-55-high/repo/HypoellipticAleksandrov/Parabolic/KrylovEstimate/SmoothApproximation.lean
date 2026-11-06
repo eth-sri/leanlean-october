@@ -7,7 +7,6 @@ public import HypoellipticAleksandrov.Parabolic.KrylovEstimate.SmoothDerivatives
 /-! # Uniform approximation of the anisotropic scalar jet -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.KrylovEstimate
 open Filter Set
 open scoped Topology
@@ -54,22 +53,14 @@ theorem exists_smooth_scalar_jet_close
   have dh := W.velocityHessian_convolution le_rfl _ (contDiff_parabolicMollifier N n)
     (hasCompactSupport_parabolicMollifier N n)
   refine ⟨w, hw, fun z hz => ⟨?_, ?_, ?_, ?_⟩⟩
-  · rw [← ev hz]
-    exact hn.1 z
+  · grind
   · rw [scalarTimeDerivative_eq_timeDerivative w hw z, ← et hz]
-    change |timeDerivative (parabolicConvolution W.toFun _) z - W.timeDeriv z| ≤ ε
-    rw [dt]
-    exact hn.2.1 z
+    aesop
   · intro i
-    rw [scalarSpatialGradient_eq_velocityGradient w hw z, ← eg hz]
-    change |velocityGradient (parabolicConvolution W.toFun _) z i - W.velocityGrad z i| ≤ ε
-    rw [congrFun (dg i) z]
-    exact hn.2.2.1 i z
+    rw [scalarSpatialGradient_eq_velocityGradient w hw z, ← eg hz, congrFun (dg i) z]
+    simp_all
   · intro i j
-    rw [scalarSpatialHessian_eq_velocityHessian w hw z, ← eh hz]
-    change |velocityHessian (parabolicConvolution W.toFun _) z i j -
-      W.velocityHessian z i j| ≤ ε
-    rw [congrFun (dh i j) z]
-    exact hn.2.2.2 i j z
+    rw [scalarSpatialHessian_eq_velocityHessian w hw z, ← eh hz, congrFun (dh i j) z]
+    simp_all
 
 end HypoellipticAleksandrov.Parabolic.KrylovEstimate

@@ -11,7 +11,6 @@ representative. Interior continuity promotes the resulting almost-everywhere bou
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set Dirichlet
 open scoped ENNReal Topology MatrixOrder Matrix.Norms.Elementwise
@@ -20,14 +19,13 @@ open scoped ENNReal Topology MatrixOrder Matrix.Norms.Elementwise
 theorem sourceTimeReflection_measurePreserving (a T : ℝ) :
     MeasurePreserving (fun t : ℝ => T - t)
       (volume.restrict (Ioo a T)) (reverseTimeVolume (T - a)) := by
-  have hm : MeasurePreserving (fun t : ℝ => T - t) (volume : Measure ℝ) volume := by
+  have hm : MeasurePreserving (fun t : ℝ => T - t) volume volume := by
     simpa only [Function.comp_def, sub_eq_add_neg] using
-      (measurePreserving_add_left (volume : Measure ℝ) T).comp
-        (Measure.measurePreserving_neg (volume : Measure ℝ))
+      (measurePreserving_add_left _ T).comp
+        (Measure.measurePreserving_neg _)
   have hpre : (fun t : ℝ => T - t) ⁻¹' Ioo 0 (T - a) = Ioo a T := by
-    rw [preimage_const_sub_Ioo]
-    congr 1 <;> ring
-  rw [reverseTimeVolume, reverseTimeOpenInterval, ← hpre]
+    simp
+  rw [← hpre]
   exact hm.restrict_preimage isOpen_Ioo.measurableSet
 
 /-- A continuous classical representative of the zero-initial energy correction has
@@ -62,15 +60,15 @@ theorem classicalEnergyRepresentative_abs_le_source_time {d : ℕ}
   have hFs : IsSmoothOnNeighborhood F (scalarParabolicClosedCylinder a T Ω) :=
     ⟨univ, isOpen_univ, subset_univ _, hF.contDiffOn⟩
   have henv := hu.abs_reverseTimeHilbertRepresentative_le_affine a T lam haT hlam
-    hΩ hΩb A (fun _ _ => 0) (fun _ _ => 0) (fun t y => F (t, y)) hAs hbs hcs hFs
+    hΩ hΩb A _ _ _ hAs hbs hcs hFs
     (fun z _ => hlo z.1 z.2) (fun _ _ => le_rfl) 0 M le_rfl hM hFM 0
-    (by filter_upwards [Lp.coeFn_zero ℝ 2 (PDE.volumeOn Ω)] with y hy
-        rw [hy]; simp only [Pi.zero_apply, abs_zero, le_refl]) u g hdu
+    (by filter_upwards [Lp.coeFn_zero ℝ 2 _] with y hy
+        simp_all) u g hdu
   have hraw : ∀ᵐ τ ∂reverseTimeVolume (T - a),
       ∀ hτ : τ ∈ Ioo 0 (T - a),
         ∀ᵐ y ∂PDE.volumeOn Ω, |valueCLM hΩ (u τ) y| ≤ M * τ := by
     filter_upwards [(reverseTimeHilbertRepresentative_spec hΩ (T - a)
-      (sub_pos.mpr haT) u g hdu).1] with τ hrep hτ
+      _ u g hdu).1] with τ hrep hτ
     have hb := henv τ ⟨hτ.1.le, hτ.2.le⟩
     rw [hrep hτ] at hb
     simpa only [zero_add, mul_comm] using hb
@@ -78,10 +76,9 @@ theorem classicalEnergyRepresentative_abs_le_source_time {d : ℕ}
   have hbound : ∀ᵐ t ∂volume.restrict (Ioo a T),
       ∀ᵐ y ∂PDE.volumeOn Ω, |w (t, y)| ≤ M * (T - t) := by
     filter_upwards [hwslice, horig, ae_restrict_mem measurableSet_Ioo] with t hs hr ht
-    have ht' : T - t ∈ Ioo 0 (T - a) := ⟨by linarith [ht.2], by linarith [ht.1]⟩
+    have ht' : T - t ∈ Ioo 0 (T - a) := ⟨by simp_all, by simp_all⟩
     filter_upwards [hs, hr ht'] with y hy hb
-    rw [hy]
-    exact hb
+    simp_all
   exact abs_le_source_time_of_continuousOn_of_ae_slices hΩ a T M w hw hbound
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

@@ -23,8 +23,7 @@ def bellmanPositiveTimeVolume : Measure BellmanPositiveTime :=
 
 /-- The positive-time measure is finite on compact subsets. -/
 instance bellmanPositiveTimeVolume_finiteOnCompacts :
-    IsFiniteMeasureOnCompacts bellmanPositiveTimeVolume := by
-  exact IsFiniteMeasureOnCompacts.comap' _ continuous_subtype_val
+    IsFiniteMeasureOnCompacts bellmanPositiveTimeVolume := IsFiniteMeasureOnCompacts.comap' _ continuous_subtype_val
     (MeasurableEmbedding.subtype_coe measurableSet_Ioi)
 
 /-- The positive-time measure is sigma finite. -/
@@ -48,8 +47,6 @@ def bellmanFundamentalMeasure : Measure BellmanPuncturedPlane :=
 theorem continuous_bellmanGaussianKernel :
     Continuous (fun w : BellmanPositiveTime × (ℝ × ℝ) =>
       bellmanGaussianKernel w.1 w.2) := by
-  have ht : ∀ w : BellmanPositiveTime × (ℝ × ℝ), w.1.val ≠ 0 :=
-    fun w => ne_of_gt w.1.property
   unfold bellmanGaussianKernel bellmanGaussianExponent
   fun_prop (disch := aesop)
 

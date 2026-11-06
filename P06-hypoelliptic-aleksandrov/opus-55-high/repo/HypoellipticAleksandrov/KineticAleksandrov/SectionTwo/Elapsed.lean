@@ -25,23 +25,23 @@ def elapsedQuery {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
     EvolutionQuery Ω γ :=
   ⟨(σ₀, (σ₀ + τ.1, p.1)), le_add_of_nonneg_right τ.2.1.le, p.2⟩
 
+variable (S : ℝ≥0∞)
+
 /-- The elapsed-time carrier is a Borel subset, even at an infinite horizon. -/
-theorem measurableSet_elapsedTime (S : ℝ≥0∞) :
+theorem measurableSet_elapsedTime  :
     MeasurableSet {τ : ℝ | 0 < τ ∧ ENNReal.ofReal τ < S} :=
   measurableSet_Ioi.inter (ENNReal.measurable_ofReal measurableSet_Iio)
 
 /-- Comap on this subtype is ordinary Lebesgue measure of its image. -/
-theorem elapsedVolume_apply (S : ℝ≥0∞) (s : Set (ElapsedTime S))
-    (hs : MeasurableSet s) : elapsedVolume S s = volume (Subtype.val '' s) := by
-  exact (MeasurableEmbedding.subtype_coe (measurableSet_elapsedTime S)).comap_apply volume s
+theorem elapsedVolume_apply  (s : Set (ElapsedTime S))
+    (hs : MeasurableSet s) : elapsedVolume S s = volume (Subtype.val '' s) := (MeasurableEmbedding.subtype_coe (measurableSet_elapsedTime S)).comap_apply volume s
 
 /-- Elapsed Lebesgue measure is sigma finite for every horizon, including infinity. -/
 instance elapsedVolume_sigmaFinite (S : ℝ≥0∞) : SigmaFinite (elapsedVolume S) := by
   apply SigmaFinite.of_map (elapsedVolume S)
-    (f := (Subtype.val : ElapsedTime S → ℝ)) measurable_subtype_coe.aemeasurable
-  have heq : (elapsedVolume S).map (Subtype.val : ElapsedTime S → ℝ) =
-      volume.restrict {τ : ℝ | 0 < τ ∧ ENNReal.ofReal τ < S} := by
-    exact map_comap_subtype_coe (measurableSet_elapsedTime S) volume
+    (f := Subtype.val) measurable_subtype_coe.aemeasurable
+  have heq : (elapsedVolume S).map Subtype.val =
+      volume.restrict {τ : ℝ | 0 < τ ∧ ENNReal.ofReal τ < S} := map_comap_subtype_coe (measurableSet_elapsedTime S) volume
   rw [heq]
   infer_instance
 
@@ -53,12 +53,14 @@ def elapsedInclusion {T S : ℝ≥0∞} (hTS : T ≤ S) : ElapsedTime T → Elap
   fun τ => ⟨τ.1, τ.2.1, τ.2.2.trans_le hTS⟩
 
 
+variable {T S : ℝ≥0∞} (hTS : T ≤ S)
+
 /-- The shorter-horizon inclusion is measurable. -/
-theorem measurable_elapsedInclusion {T S : ℝ≥0∞} (hTS : T ≤ S) :
+theorem measurable_elapsedInclusion  :
     Measurable (elapsedInclusion hTS) := measurable_subtype_coe.subtype_mk
 
 /-- Horizon inclusion pushes Lebesgue measure to its exact time restriction. -/
-theorem elapsedInclusion_map {T S : ℝ≥0∞} (hTS : T ≤ S) :
+theorem elapsedInclusion_map  :
     (elapsedVolume T).map (elapsedInclusion hTS) =
       (elapsedVolume S).restrict {τ | ENNReal.ofReal τ.1 < T} := by
   have ht : MeasurableSet {τ : ElapsedTime S | ENNReal.ofReal τ.1 < T} :=
@@ -72,8 +74,7 @@ theorem elapsedInclusion_map {T S : ℝ≥0∞} (hTS : T ≤ S) :
   constructor
   · rintro ⟨τ, hτ, rfl⟩
     exact ⟨elapsedInclusion hTS τ, ⟨hτ, τ.2.2⟩, rfl⟩
-  · rintro ⟨τ, ⟨hτ, htτ⟩, rfl⟩
-    exact ⟨⟨τ.1, τ.2.1, htτ⟩, hτ, rfl⟩
+  aesop
 
 /-- Finite elapsed-time volume is exactly the unnormalized horizon length. -/
 theorem elapsedVolume_univ (S : ℝ) (hS : 0 < S) :
@@ -81,16 +82,10 @@ theorem elapsedVolume_univ (S : ℝ) (hS : 0 < S) :
   rw [elapsedVolume_apply _ _ MeasurableSet.univ]
   have himage : (Subtype.val : ElapsedTime (ENNReal.ofReal S) → ℝ) '' univ =
       {τ : ℝ | 0 < τ ∧ ENNReal.ofReal τ < ENNReal.ofReal S} := by
-    ext τ
-    constructor
-    · rintro ⟨t, ht, rfl⟩
-      exact t.2
-    · intro ht
-      exact ⟨⟨τ, ht⟩, mem_univ _, rfl⟩
+    simp
   rw [himage]
   have he : {τ : ℝ | 0 < τ ∧ ENNReal.ofReal τ < ENNReal.ofReal S} = Ioo 0 S := by
-    ext τ
-    simp only [mem_ofPred_eq, mem_Ioo, ENNReal.ofReal_lt_ofReal_iff hS]
-  rw [he, Real.volume_Ioo, sub_zero]
+    aesop
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

@@ -18,12 +18,13 @@ restricted-volume `L²` norm.
 open Filter MeasureTheory
 open scoped ENNReal RealInnerProductSpace Topology
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
+variable {d : ℕ} {U K : Set (TimeVelocity d)} (g : TimeVelocity d → ℝ) (χ : C(TimeVelocity d, ℝ))
+
 private theorem continuousCompact_contDiff_eLpNorm_sub_le_with_support_timeVelocity
-    {d : ℕ} {μ : Measure (TimeVelocity d)} [IsFiniteMeasureOnCompacts μ]
+     {μ : Measure (TimeVelocity d)} [IsFiniteMeasureOnCompacts μ]
     {f : TimeVelocity d → ℝ} (hfCompact : HasCompactSupport f)
     (hfCont : Continuous f) {ε : ℝ} (hε : 0 < ε) :
     ∃ g : TimeVelocity d → ℝ,
@@ -34,18 +35,15 @@ private theorem continuousCompact_contDiff_eLpNorm_sub_le_with_support_timeVeloc
   · refine ⟨0, HasCompactSupport.zero, contDiff_const, by simp, ?_⟩
     simp [eLpNorm_congr_ae hf]
   have htsupport : μ (tsupport f) ≠ ∞ := hfCompact.measure_lt_top.ne
-  have hmeasure_pos : 0 < (μ <| tsupport f).toReal := by
-    rw [← Measure.measure_support_eq_zero_iff _] at hf
-    exact ENNReal.toReal_pos
+  have hmeasure_pos : 0 < (μ <| tsupport f).toReal := ENNReal.toReal_pos
       (pos_mono (subset_tsupport f) (pos_of_ne_zero hf)).ne' htsupport
   set ε' := ε * (μ <| tsupport f).toReal ^ (-(1 / (2 : ℝ≥0∞).toReal)) with hε'_def
   have hε' : 0 < ε' := by
-    dsimp [ε']
     positivity
   have hscale : ENNReal.ofReal ε' * μ (tsupport f) ^ (1 / (2 : ℝ≥0∞).toReal) ≤
       ENNReal.ofReal ε := by
     rw [← ENNReal.ofReal_toReal htsupport, ENNReal.ofReal_rpow_of_pos hmeasure_pos,
-      ← ENNReal.ofReal_mul hε'.le, ENNReal.ofReal_le_ofReal_iff hε.le, hε'_def, mul_assoc,
+      ← ENNReal.ofReal_mul hε'.le, mul_assoc,
       ← Real.rpow_add hmeasure_pos, neg_add_cancel, Real.rpow_zero, mul_one]
   obtain ⟨g, hgSmooth, hgDist, hgSupport⟩ :=
     hfCont.exists_contDiff_approx (⊤ : ℕ∞) (ε := fun _ ↦ ε') (by fun_prop)
@@ -60,13 +58,11 @@ private theorem continuousCompact_contDiff_eLpNorm_sub_le_with_support_timeVeloc
   exact (hgDist x).le
 
 private theorem cutoff_error_ae_timeVelocity
-    {d : ℕ} {U K : Set (TimeVelocity d)} (hU : IsOpen U)
+     (hU : IsOpen U)
     (g : TimeVelocity d → ℝ) (χ : C(TimeVelocity d, ℝ))
     (hχone : Set.EqOn χ 1 K) :
     g - (fun x ↦ χ x * g x) =ᵐ[timeVelocityVolumeOn U]
       ((U ∩ tsupport g) \ K).indicator (g - (fun x ↦ χ x * g x)) := by
-  change g - (fun x ↦ χ x * g x) =ᵐ[volume.restrict U]
-    ((U ∩ tsupport g) \ K).indicator (g - (fun x ↦ χ x * g x))
   rw [Filter.EventuallyEq, ae_restrict_iff' hU.measurableSet]
   filter_upwards with x hxU
   by_cases hx : x ∈ (U ∩ tsupport g) \ K
@@ -83,8 +79,7 @@ private theorem cutoff_error_ae_timeVelocity
       simp only [mul_zero, sub_zero]
 
 private theorem cutoff_error_indicator_bound_timeVelocity
-    {d : ℕ} {U K : Set (TimeVelocity d)}
-    (g : TimeVelocity d → ℝ) (χ : C(TimeVelocity d, ℝ))
+    
     (hg : Continuous g)
     {C : ℝ} (hC : ∀ x, ‖g x‖ ≤ C) (hC0 : 0 ≤ C)
     (hχrange : ∀ x, χ x ∈ Set.Icc (0 : ℝ) 1)
@@ -93,7 +88,7 @@ private theorem cutoff_error_indicator_bound_timeVelocity
       (g - (fun x ↦ χ x * g x))) (2 : ℝ≥0∞) (timeVelocityVolumeOn U) ≤
       ENNReal.ofReal C * (timeVelocityVolumeOn U) ((U ∩ tsupport g) \ K) ^
         (1 / (2 : ℝ≥0∞).toReal) := by
-  apply eLpNorm_indicator_sub_le_of_dist_bdd (timeVelocityVolumeOn U) ENNReal.coe_ne_top
+  apply eLpNorm_indicator_sub_le_of_dist_bdd _ ENNReal.coe_ne_top
     hset.nullMeasurableSet hC0
     ((hg.aestronglyMeasurable.sub
       (χ.continuous.mul hg).aestronglyMeasurable).indicator hset)
@@ -105,7 +100,7 @@ private theorem cutoff_error_indicator_bound_timeVelocity
     rw [abs_of_nonneg hsub0]
     linarith
   calc
-    dist (g x) (χ x * g x) = |1 - χ x| * ‖g x‖ := by
+    dist _ (χ x * g x) = |1 - χ x| * ‖g x‖ := by
       rw [dist_eq_norm]
       rw [show g x - χ x * g x = (1 - χ x) * g x by ring, norm_mul,
         Real.norm_eq_abs]
@@ -113,8 +108,7 @@ private theorem cutoff_error_indicator_bound_timeVelocity
     _ ≤ C := by nlinarith [mul_nonneg hC0 (abs_nonneg (1 - χ x))]
 
 private theorem cutoff_error_lt_of_core_timeVelocity
-    {d : ℕ} {U K : Set (TimeVelocity d)}
-    (g : TimeVelocity d → ℝ) (χ : C(TimeVelocity d, ℝ))
+    
     {C r ε : ℝ} (hC0 : 0 ≤ C) (hCpos : 0 < C) (hr : 0 < r) (hε : 0 < ε)
     (hmeasure : (timeVelocityVolumeOn U) ((U ∩ tsupport g) \ K) < ENNReal.ofReal (r ^ 2))
     (herror : g - (fun x ↦ χ x * g x) =ᵐ[timeVelocityVolumeOn U]
@@ -127,46 +121,42 @@ private theorem cutoff_error_lt_of_core_timeVelocity
     eLpNorm (g - (fun x ↦ χ x * g x)) (2 : ℝ≥0∞) (timeVelocityVolumeOn U) <
       ENNReal.ofReal ε := by
   calc
-    eLpNorm (g - (fun x ↦ χ x * g x)) (2 : ℝ≥0∞) (timeVelocityVolumeOn U) =
-        eLpNorm (((U ∩ tsupport g) \ K).indicator
-          (g - (fun x ↦ χ x * g x))) (2 : ℝ≥0∞) (timeVelocityVolumeOn U) :=
+    eLpNorm _ _ _ =
+        eLpNorm _ _ _ :=
       eLpNorm_congr_ae herror
-    _ ≤ ENNReal.ofReal C * (timeVelocityVolumeOn U) ((U ∩ tsupport g) \ K) ^
+    _ ≤ ENNReal.ofReal C * (timeVelocityVolumeOn U) _ ^
         (1 / (2 : ℝ≥0∞).toReal) := hindicator
-    _ < ENNReal.ofReal C * (ENNReal.ofReal (r ^ 2)) ^
-        (1 / (2 : ℝ≥0∞).toReal) := by
-      exact ENNReal.mul_lt_mul_right (ENNReal.ofReal_ne_zero_iff.mpr hCpos)
+    _ < ENNReal.ofReal C * (ENNReal.ofReal _) ^
+        (1 / (2 : ℝ≥0∞).toReal) := ENNReal.mul_lt_mul_right (ENNReal.ofReal_ne_zero_iff.mpr hCpos)
         ENNReal.ofReal_ne_top (ENNReal.rpow_lt_rpow hmeasure (by norm_num))
-    _ = ENNReal.ofReal (C * r) := by
+    _ = ENNReal.ofReal _ := by
       have hrpow : (r ^ 2) ^ (1 / (2 : ℝ)) = r := by
         rw [← Real.sqrt_eq_rpow, Real.sqrt_sq_eq_abs, abs_of_pos hr]
       rw [show 1 / (2 : ℝ≥0∞).toReal = (1 / (2 : ℝ)) by norm_num,
         ENNReal.ofReal_rpow_of_nonneg (sq_nonneg r) (by norm_num), hrpow,
         ← ENNReal.ofReal_mul hC0]
     _ < ENNReal.ofReal ε := by
-      rw [ENNReal.ofReal_lt_ofReal_iff hε]
-      rw [hr_def]
+      rw [ENNReal.ofReal_lt_ofReal_iff hε, hr_def]
       calc
         C * (ε / (C + 1)) = (C / (C + 1)) * ε := by ring
         _ < 1 * ε := mul_lt_mul_of_pos_right
-          ((div_lt_one (by linarith : 0 < C + 1)).mpr (by linarith)) hε
+          ((div_lt_one (by linarith)).mpr (by linarith)) hε
         _ = ε := one_mul _
 
 private theorem compactCore_cutoff_eLpNorm_sub_lt_timeVelocity
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+     {U : Set (TimeVelocity d)} (hU : IsOpen U)
     {g : TimeVelocity d → ℝ} (hgSmooth : ContDiff ℝ (⊤ : ℕ∞) g)
     (hgCompact : HasCompactSupport g) {ε : ℝ} (hε : 0 < ε) :
     ∃ h : TimeVelocity d → ℝ,
       Continuous h ∧ HasCompactSupport h ∧ tsupport h ⊆ U ∧
       eLpNorm (g - h) (2 : ℝ≥0∞) (timeVelocityVolumeOn U) < ENNReal.ofReal ε := by
-  let μ : Measure (TimeVelocity d) := timeVelocityVolumeOn U
-  have hmeas : MeasurableSet (U ∩ tsupport g) :=
+  let μ  := timeVelocityVolumeOn U
+  have hmeas  :=
     hU.measurableSet.inter (isClosed_tsupport g).measurableSet
-  have hfinite : μ (U ∩ tsupport g) ≠ ∞ := by
-    exact (measure_mono Set.inter_subset_right).trans_lt
+  have hfinite : μ (U ∩ tsupport g) ≠ ∞ := (measure_mono Set.inter_subset_right).trans_lt
       hgCompact.isCompact.measure_lt_top |>.ne
   rcases hgSmooth.continuous.bounded_above_of_compact_support hgCompact with ⟨C, hC⟩
-  have hC0 : 0 ≤ C := (norm_nonneg (g 0)).trans (hC 0)
+  have hC0 : 0 ≤ C := (norm_nonneg _).trans (hC 0)
   by_cases hCzero : C = 0
   · have hgzero : g = 0 := by
       funext x
@@ -178,7 +168,6 @@ private theorem compactCore_cutoff_eLpNorm_sub_lt_timeVelocity
   have hCpos : 0 < C := lt_of_le_of_ne hC0 (Ne.symm hCzero)
   let r : ℝ := ε / (C + 1)
   have hr : 0 < r := by
-    dsimp [r]
     positivity
   rcases hmeas.exists_isCompact_diff_lt hfinite
     (ENNReal.ofReal_pos.2 (sq_pos_of_pos hr)).ne' with ⟨K, hKA, hKCompact, hKmeasure⟩
@@ -190,7 +179,7 @@ private theorem compactCore_cutoff_eLpNorm_sub_lt_timeVelocity
     (hmeas.diff hKCompact.isClosed.measurableSet)
   have hcutoff : eLpNorm (g - (fun x ↦ χ x * g x)) (2 : ℝ≥0∞) (timeVelocityVolumeOn U) <
       ENNReal.ofReal ε := by
-    simpa only [μ] using
+    simpa using
       cutoff_error_lt_of_core_timeVelocity g χ hC0 hCpos hr hε hKmeasure herror hindicator rfl
   let h : TimeVelocity d → ℝ := fun x ↦ χ x * g x
   have hhcont : Continuous h := χ.continuous.mul hgSmooth.continuous
@@ -208,12 +197,12 @@ private theorem lp_dist_toLp_toLp_le_timeVelocity
     dist (hf.toLp f) (hg.toLp g) ≤ ε := by
   rw [Lp.dist_def, eLpNorm_congr_ae (hf.coeFn_toLp.sub hg.coeFn_toLp)]
   calc
-    (eLpNorm (f - g) (2 : ℝ≥0∞) μ).toReal ≤ (ENNReal.ofReal ε).toReal :=
+    (eLpNorm _ _ μ).toReal ≤ (ENNReal.ofReal ε).toReal :=
       ENNReal.toReal_mono ENNReal.ofReal_ne_top hfg
     _ = ε := ENNReal.toReal_ofReal hε
 
 private theorem exists_smoothCompactlySupported_toLp_timeVelocity_dist_lt
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U)
+     {U : Set (TimeVelocity d)} (hU : IsOpen U)
     (u : Lp ℝ (2 : ℝ≥0∞) (timeVelocityVolumeOn U))
     {ε : ℝ} (hε : 0 < ε) :
     ∃ (φ : TimeVelocity d → ℝ)
@@ -222,7 +211,7 @@ private theorem exists_smoothCompactlySupported_toLp_timeVelocity_dist_lt
       HasCompactSupport φ ∧
       tsupport φ ⊆ U ∧
       dist u (hφ.toLp φ) < ε := by
-  let μ : Measure (TimeVelocity d) := timeVelocityVolumeOn U
+  let μ  := timeVelocityVolumeOn U
   have hquarter : 0 < ε / 4 := by positivity
   obtain ⟨g, hgCompact, hgSmooth, hug⟩ :=
     (Lp.memLp u).exist_eLpNorm_sub_le ENNReal.coe_ne_top (by norm_num) hquarter
@@ -231,23 +220,21 @@ private theorem exists_smoothCompactlySupported_toLp_timeVelocity_dist_lt
   obtain ⟨q, hqCompact, hqSmooth, hqSupport, hhq⟩ :=
     continuousCompact_contDiff_eLpNorm_sub_le_with_support_timeVelocity
       (μ := timeVelocityVolumeOn U) hhCompact hhCont hquarter
-  have hqTsupport : tsupport q ⊆ U := by
-    rw [tsupport]
-    exact (closure_mono hqSupport).trans
-      (show closure (Function.support h) ⊆ U from hhSupport)
-  let mg : MemLp g (2 : ℝ≥0∞) μ :=
+  have hqTsupport : tsupport q ⊆ U := (closure_mono hqSupport).trans
+      (show closure _ ⊆ U from hhSupport)
+  let mg : MemLp g (2) μ :=
     (hgSmooth.continuous.memLp_of_hasCompactSupport hgCompact).restrict U
-  let mh : MemLp h (2 : ℝ≥0∞) μ :=
+  let mh : MemLp h (2) μ :=
     (hhCont.memLp_of_hasCompactSupport hhCompact).restrict U
-  let mq : MemLp q (2 : ℝ≥0∞) μ :=
+  let mq : MemLp q (2) μ :=
     (hqSmooth.continuous.memLp_of_hasCompactSupport hqCompact).restrict U
-  have hu_toLp : (Lp.memLp u).toLp (u : TimeVelocity d → ℝ) = u := by
+  have hu_toLp : (Lp.memLp u).toLp _ = u := by
     apply Lp.ext
     exact (Lp.memLp u).coeFn_toLp
   have hug' : dist u (mg.toLp g) ≤ ε / 4 := by
     rw [← hu_toLp]
     simpa only [μ] using
-      lp_dist_toLp_toLp_le_timeVelocity (Lp.memLp u) mg hquarter.le hug
+      lp_dist_toLp_toLp_le_timeVelocity _ mg hquarter.le hug
   have hgh' : dist (mg.toLp g) (mh.toLp h) ≤ ε / 4 := by
     simpa only [μ] using
       lp_dist_toLp_toLp_le_timeVelocity mg mh hquarter.le (le_of_lt hgh)
@@ -256,10 +243,10 @@ private theorem exists_smoothCompactlySupported_toLp_timeVelocity_dist_lt
       lp_dist_toLp_toLp_le_timeVelocity mh mq hquarter.le hhq
   refine ⟨q, mq, hqSmooth, hqCompact, hqTsupport, ?_⟩
   calc
-    dist u (mq.toLp q) ≤ dist u (mg.toLp g) + dist (mg.toLp g) (mq.toLp q) :=
+    dist u _ ≤ dist u _ + dist _ _ :=
       dist_triangle _ _ _
-    _ ≤ dist u (mg.toLp g) +
-        (dist (mg.toLp g) (mh.toLp h) + dist (mh.toLp h) (mq.toLp q)) := by
+    _ ≤ dist u _ +
+        (dist (mg.toLp g) _ + dist (mh.toLp h) _) := by
       gcongr
       exact dist_triangle _ _ _
     _ ≤ ε / 4 + (ε / 4 + ε / 4) := by gcongr
@@ -268,7 +255,7 @@ private theorem exists_smoothCompactlySupported_toLp_timeVelocity_dist_lt
 /-- Globally smooth compactly supported functions whose topological support lies
 in an open time--velocity carrier are dense in its restricted real `L²`. -/
 theorem dense_smoothCompactlySupported_toLp_timeVelocity
-    {d : ℕ} {U : Set (TimeVelocity d)} (hU : IsOpen U) :
+     {U : Set (TimeVelocity d)} (hU : IsOpen U) :
     Dense {q : Lp ℝ (2 : ℝ≥0∞) (timeVelocityVolumeOn U) |
       ∃ (φ : TimeVelocity d → ℝ)
           (hφ : ParabolicMemLpOn U (2 : ℝ≥0∞) φ),

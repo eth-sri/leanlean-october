@@ -79,7 +79,9 @@ theorem time_timeInv (σ : ℝ) : Φ.time (Φ.timeInv σ) = σ := by
   rw [mul_div_cancel₀ _ Φ.a_pos.ne']
   ring
 
-theorem timeInv_time (τ : ℝ) : Φ.timeInv (Φ.time τ) = τ := by
+variable (τ : ℝ)
+
+theorem timeInv_time  : Φ.timeInv (Φ.time τ) = τ := by
   unfold time timeInv
   rw [add_sub_cancel_left, mul_div_cancel_left₀ _ Φ.a_pos.ne']
 
@@ -92,13 +94,13 @@ theorem positionInv_position (Y : PDE.Vec d) : Φ.positionInv (Φ.position Y) = 
   unfold position positionInv
   rw [add_sub_cancel_left, smul_smul, inv_mul_cancel₀ Φ.c_pos.ne', one_smul]
 
-theorem transport_transportInv (τ : ℝ) (z : PDE.Vec d) :
+theorem transport_transportInv  (z : PDE.Vec d) :
     Φ.transport τ (Φ.transportInv τ z) = z := by
   unfold transport transportInv
   rw [smul_smul, mul_inv_cancel₀ Φ.e_pos.ne', one_smul]
   abel
 
-theorem transportInv_transport (τ : ℝ) (Z : PDE.Vec d) :
+theorem transportInv_transport  (Z : PDE.Vec d) :
     Φ.transportInv τ (Φ.transport τ Z) = Z := by
   unfold transport transportInv
   have : Φ.z₀ + (Φ.a * τ) • Φ.w + Φ.e • Z - Φ.z₀ - (Φ.a * τ) • Φ.w = Φ.e • Z := by abel
@@ -112,11 +114,11 @@ theorem continuous_positionInv : Continuous Φ.positionInv := by
   unfold positionInv
   fun_prop
 
-theorem continuous_transport (τ : ℝ) : Continuous (Φ.transport τ) := by
+theorem continuous_transport  : Continuous (Φ.transport τ) := by
   unfold transport
   fun_prop
 
-theorem continuous_transportInv (τ : ℝ) : Continuous (Φ.transportInv τ) := by
+theorem continuous_transportInv  : Continuous (Φ.transportInv τ) := by
   unfold transportInv
   fun_prop
 
@@ -144,20 +146,24 @@ def ambientHomeo (τ : ℝ) : EvolutionAmbientState d ≃ₜ EvolutionAmbientSta
   continuous_invFun := (Φ.continuous_positionInv.comp continuous_fst).prodMk
     ((Φ.continuous_transportInv τ).comp continuous_snd)
 
-@[simp] theorem ambientHomeo_apply (τ : ℝ) (x : EvolutionAmbientState d) :
+variable (τ : ℝ) (x : EvolutionAmbientState d)
+
+@[simp] theorem ambientHomeo_apply  :
     Φ.ambientHomeo τ x = (Φ.position x.1, Φ.transport τ x.2) := rfl
 
-@[simp] theorem ambientHomeo_symm_apply (τ : ℝ) (x : EvolutionAmbientState d) :
+@[simp] theorem ambientHomeo_symm_apply  :
     (Φ.ambientHomeo τ).symm x = (Φ.positionInv x.1, Φ.transportInv τ x.2) := rfl
 
 /-- The ambient change of variables as a measurable equivalence. -/
 def ambientEquiv (τ : ℝ) : EvolutionAmbientState d ≃ᵐ EvolutionAmbientState d :=
   (Φ.ambientHomeo τ).toMeasurableEquiv
 
-@[simp] theorem ambientEquiv_apply (τ : ℝ) (x : EvolutionAmbientState d) :
+variable (τ : ℝ) (x : EvolutionAmbientState d)
+
+@[simp] theorem ambientEquiv_apply  :
     Φ.ambientEquiv τ x = (Φ.position x.1, Φ.transport τ x.2) := rfl
 
-@[simp] theorem ambientEquiv_symm_apply (τ : ℝ) (x : EvolutionAmbientState d) :
+@[simp] theorem ambientEquiv_symm_apply  :
     (Φ.ambientEquiv τ).symm x = (Φ.positionInv x.1, Φ.transportInv τ x.2) := rfl
 
 /-! ### The change of variables on kinetic points -/
@@ -171,19 +177,21 @@ def pointInv (p : KineticPoint d) : KineticPoint d :=
   ⟨Φ.timeInv p.time, Φ.positionInv p.position,
     Φ.transportInv (Φ.timeInv p.time) p.velocity⟩
 
-@[simp] theorem point_time (p : KineticPoint d) : (Φ.point p).time = Φ.time p.time := rfl
+variable (p : KineticPoint d)
 
-@[simp] theorem point_position (p : KineticPoint d) :
+@[simp] theorem point_time  : (Φ.point p).time = Φ.time p.time := rfl
+
+@[simp] theorem point_position  :
     (Φ.point p).position = Φ.position p.position := rfl
 
-@[simp] theorem point_velocity (p : KineticPoint d) :
+@[simp] theorem point_velocity  :
     (Φ.point p).velocity = Φ.transport p.time p.velocity := rfl
 
-theorem point_pointInv (p : KineticPoint d) : Φ.point (Φ.pointInv p) = p := by
+theorem point_pointInv  : Φ.point (Φ.pointInv p) = p := by
   simp only [point, pointInv, Φ.time_timeInv, Φ.position_positionInv,
     Φ.transport_transportInv]
 
-theorem pointInv_point (p : KineticPoint d) : Φ.pointInv (Φ.point p) = p := by
+theorem pointInv_point  : Φ.pointInv (Φ.point p) = p := by
   simp only [point, pointInv, Φ.timeInv_time, Φ.positionInv_position,
     Φ.transportInv_transport]
 
@@ -206,18 +214,10 @@ theorem contDiff_rawInv : ContDiff ℝ (⊤ : ℕ∞) Φ.rawInv := by
   unfold rawInv timeInv positionInv transportInv
   fun_prop
 
-theorem continuous_point : Continuous Φ.point := by
-  have h : Φ.point = fun p => (KineticPoint.homeomorphProd d).symm
-      (Φ.raw ((KineticPoint.homeomorphProd d) p)) := rfl
-  rw [h]
-  exact (KineticPoint.homeomorphProd d).symm.continuous.comp
+theorem continuous_point : Continuous Φ.point := (KineticPoint.homeomorphProd d).symm.continuous.comp
     (Φ.contDiff_raw.continuous.comp (KineticPoint.homeomorphProd d).continuous)
 
-theorem continuous_pointInv : Continuous Φ.pointInv := by
-  have h : Φ.pointInv = fun p => (KineticPoint.homeomorphProd d).symm
-      (Φ.rawInv ((KineticPoint.homeomorphProd d) p)) := rfl
-  rw [h]
-  exact (KineticPoint.homeomorphProd d).symm.continuous.comp
+theorem continuous_pointInv : Continuous Φ.pointInv := (KineticPoint.homeomorphProd d).symm.continuous.comp
     (Φ.contDiff_rawInv.continuous.comp (KineticPoint.homeomorphProd d).continuous)
 
 /-! ### Rescaled coefficient and drift -/
@@ -251,24 +251,24 @@ variable {Φ}
 
 theorem MapsDomain.mem_iff (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ) (Y : PDE.Vec d) :
     Y ∈ movingDomain Ω' γ' τ ↔ Φ.position Y ∈ movingDomain Ω γ (Φ.time τ) := by
-  rw [h τ]
+  rw [h]
   rfl
 
 theorem MapsDomain.stateSet_mem_iff (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ)
     (x : EvolutionAmbientState d) :
     x ∈ evolutionStateSet Ω' γ' τ ↔
       Φ.ambientEquiv τ x ∈ evolutionStateSet Ω γ (Φ.time τ) := by
-  simp only [evolutionStateSet, mem_prod, mem_univ, and_true, h.mem_iff, ambientEquiv_apply]
+  simp only [evolutionStateSet, mem_prod, mem_univ, h.mem_iff, ambientEquiv_apply]
 
 theorem MapsDomain.closure_eq (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ) :
     closure (movingDomain Ω' γ' τ) = Φ.position ⁻¹' closure (movingDomain Ω γ (Φ.time τ)) := by
-  rw [h τ]
+  rw [h]
   exact (Φ.positionHomeo.preimage_closure _).symm
 
 theorem MapsDomain.frontier_eq (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ) :
     frontier (movingDomain Ω' γ' τ) =
       Φ.position ⁻¹' frontier (movingDomain Ω γ (Φ.time τ)) := by
-  rw [h τ]
+  rw [h]
   exact (Φ.positionHomeo.preimage_frontier _).symm
 
 end KineticAffineScaling

@@ -11,7 +11,6 @@ Hilbert realization of the zero-boundary Sobolev graph.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 

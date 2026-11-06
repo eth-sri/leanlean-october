@@ -11,41 +11,39 @@ import Mathlib.Tactic
 /-! # Geometry and compact-cylinder drift bounds for the literal ellipsoid -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Lieberman
 open HypoellipticAleksandrov Parabolic Set
 open scoped Matrix Topology BigOperators
 
-private theorem quadratic_continuous {d : ℕ} (Q : PDE.Mat d) :
+variable {d : ℕ} {Q : PDE.Mat d}
+
+private theorem quadratic_continuous  (Q : PDE.Mat d) :
     Continuous (fun x => PDE.vecDot x (Q *ᵥ x)) := by
   unfold PDE.vecDot Matrix.mulVec dotProduct
   fun_prop
 
-private theorem quadratic_smul {d : ℕ} (Q : PDE.Mat d) (c : ℝ) (x : PDE.Vec d) :
+private theorem quadratic_smul  (Q : PDE.Mat d) (c : ℝ) (x : PDE.Vec d) :
     PDE.vecDot (c • x) (Q *ᵥ (c • x)) = c ^ 2 * PDE.vecDot x (Q *ᵥ x) := by
   simp only [Matrix.mulVec_smul, PDE.vecDot, Pi.smul_apply, smul_eq_mul]
   rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro i _
   ring
 
-private theorem quadratic_nonneg {d : ℕ} {Q : PDE.Mat d} (hQ : Q.PosDef)
+private theorem quadratic_nonneg  (hQ : Q.PosDef)
     (x : PDE.Vec d) : 0 ≤ PDE.vecDot x (Q *ᵥ x) := by
   simpa only [PDE.vecDot, dotProduct, star_trivial] using
     hQ.posSemidef.dotProduct_mulVec_nonneg x
 
 /-- Every literal open ellipsoid is open, without a definiteness assumption. -/
-theorem isOpen_openEllipsoid {d : ℕ} (Q : PDE.Mat d) : IsOpen (openEllipsoid Q) :=
+theorem isOpen_openEllipsoid  (Q : PDE.Mat d) : IsOpen (openEllipsoid Q) :=
   isOpen_lt (quadratic_continuous Q) continuous_const
 
-private theorem ellipsoid_bounded {d : ℕ} {Q : PDE.Mat d} (hQ : Q.PosDef) :
+private theorem ellipsoid_bounded  (hQ : Q.PosDef) :
     Bornology.IsBounded (openEllipsoid Q) := by
-  obtain ⟨m, hm, hmin⟩ := (isCompact_sphere (0 : PDE.Vec d) 1).exists_forall_le'
+  obtain ⟨m, hm, hmin⟩ := (isCompact_sphere (0) 1).exists_forall_le'
     (quadratic_continuous Q).continuousOn (a := 0) (by
       intro x hx
       have hxne : x ≠ 0 := by
-        intro he
-        simp [he] at hx
+        aesop
       simpa only [PDE.vecDot, dotProduct, star_trivial] using
         hQ.dotProduct_mulVec_pos hxne)
   apply isBounded_iff_forall_norm_le.mpr
@@ -69,7 +67,7 @@ private theorem ellipsoid_bounded {d : ℕ} {Q : PDE.Mat d} (hQ : Q.PosDef) :
   have hdiv : 0 < 1 / m := one_div_pos.mpr hm
   nlinarith only [hm, hn, hmul, hq, hmdiv, hdiv, sq_nonneg (‖x‖ - 1)]
 
-private theorem ellipsoid_closure {d : ℕ} {Q : PDE.Mat d} (_hQ : Q.PosDef) :
+private theorem ellipsoid_closure  (_hQ : Q.PosDef) :
     closure (openEllipsoid Q) = {x | PDE.vecDot x (Q *ᵥ x) ≤ 1} := by
   apply subset_antisymm
   · exact closure_lt_subset_le (quadratic_continuous Q) continuous_const
@@ -81,15 +79,14 @@ private theorem ellipsoid_closure {d : ℕ} {Q : PDE.Mat d} (_hQ : Q.PosDef) :
       rw [quadratic_smul]
       have hc2 : c ^ 2 < 1 := by nlinarith only [hc'.1, hc'.2]
       exact lt_of_le_of_lt
-        (mul_le_mul_of_nonneg_left hx (sq_nonneg c)) (by simpa using hc2)
+        (mul_le_mul_of_nonneg_left hx (sq_nonneg c)) (by simp_all)
     have h1 : (1 : ℝ) ∈ closure (Ioo (0 : ℝ) 1) := by
-      rw [closure_Ioo (by norm_num : (0 : ℝ) ≠ 1)]
-      exact ⟨by norm_num, le_rfl⟩
+      simp
     have hh := image_closure_subset_closure_image hc (mem_image_of_mem _ h1)
     have ht := closure_mono him hh
-    simpa only [one_smul] using ht
+    simp_all
 
-private theorem quadratic_add {d : ℕ} {Q : PDE.Mat d} (hQ : Q.IsSymm)
+private theorem quadratic_add  (hQ : Q.IsSymm)
     (x y : PDE.Vec d) :
     PDE.vecDot (x + y) (Q *ᵥ (x + y)) = PDE.vecDot x (Q *ᵥ x) +
       2 * PDE.vecDot y (Q *ᵥ x) + PDE.vecDot y (Q *ᵥ y) := by
@@ -100,7 +97,7 @@ private theorem quadratic_add {d : ℕ} {Q : PDE.Mat d} (hQ : Q.IsSymm)
   ring
 
 /-- Positive-definite ellipsoids have bounded closure and Euclidean exterior cones. -/
-theorem openEllipsoid_geometry {d : ℕ} {Q : PDE.Mat d} (hQ : Q.PosDef) :
+theorem openEllipsoid_geometry  (hQ : Q.PosDef) :
     Bornology.IsBounded (openEllipsoid Q) ∧
     closure (openEllipsoid Q) = {x | PDE.vecDot x (Q *ᵥ x) ≤ 1} ∧
     frontier (openEllipsoid Q) = {x | PDE.vecDot x (Q *ᵥ x) = 1} ∧
@@ -110,11 +107,11 @@ theorem openEllipsoid_geometry {d : ℕ} {Q : PDE.Mat d} (hQ : Q.PosDef) :
     rw [(isOpen_openEllipsoid Q).frontier_eq, hcl]
     ext x
     change (_ ≤ 1 ∧ ¬ _ < 1) ↔ _ = 1
-    exact ⟨fun h => le_antisymm h.1 (not_lt.mp h.2), fun h => by simp [h]⟩
+    grind
   refine ⟨ellipsoid_bounded hQ, hcl, hf, 1, 1 / 2, by norm_num, by norm_num,
     by norm_num, ?_⟩
   intro y hy
-  have hyq : PDE.vecDot y (Q *ᵥ y) = 1 := by rwa [hf] at hy
+  have hyq : PDE.vecDot y (Q *ᵥ y) = 1 := by simp_all
   have hyp : Q *ᵥ y ≠ 0 := by
     intro hp
     have hy0 : y = 0 := hQ.mulVec_injective (hp.trans (Matrix.mulVec_zero Q).symm)
@@ -127,21 +124,19 @@ theorem openEllipsoid_geometry {d : ℕ} {Q : PDE.Mat d} (hQ : Q.PosDef) :
     have hdot : PDE.vecDot z ν =
         (PDE.vecEuclideanNorm (Q *ᵥ y))⁻¹ * PDE.vecDot z (Q *ᵥ y) := by
       simp only [ν, PDE.vecDot, Pi.smul_apply, smul_eq_mul, Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro i _
-      ring
+      grind
     rw [hdot] at hangle
     have hpos : 0 < PDE.vecDot z (Q *ᵥ y) := by
-      have hh : 0 < (PDE.vecEuclideanNorm (Q *ᵥ y))⁻¹ *
-          PDE.vecDot z (Q *ᵥ y) := lt_of_lt_of_le (by positivity) hangle
-      exact (mul_pos_iff_of_pos_left (inv_pos.mpr hn)).mp hh
+      have hh : 0 < (PDE.vecEuclideanNorm _)⁻¹ *
+          PDE.vecDot z _ := lt_of_lt_of_le (by positivity) hangle
+      simp_all
     change ¬ PDE.vecDot (y + z) (Q *ᵥ (y + z)) < 1
-    rw [quadratic_add hQ.isHermitian.isSymm, hyq]
+    rw [quadratic_add hQ.isHermitian.isSymm]
     have hzq := quadratic_nonneg hQ z
-    linarith only [hpos, hzq]
+    linarith
 
 /-- A continuous drift is Euclidean-bounded on every bounded closed spatial cylinder. -/
-theorem exists_closedCylinder_drift_bound {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem exists_closedCylinder_drift_bound  {Ω : Set (PDE.Vec d)}
     (hΩ : Bornology.IsBounded Ω) (a T : ℝ) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (hb : Continuous (fun z : TimeVelocity d => b z.1 z.2)) :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ z ∈ scalarParabolicClosedCylinder a T Ω,

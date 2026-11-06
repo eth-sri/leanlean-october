@@ -43,13 +43,11 @@ noncomputable def const [IsFiniteMeasure (volumeOn U)]
       (memLp_const (μ := volumeOn U) (p := p) (c := c))
   gradMemLp := by
     intro i
-    exact
-      memLp_const (μ := volumeOn U) (p := p) (c := (0 : ℝ))
+    simp
   hasWeakGradient := by
     convert HasWeakGradientOn.of_contDiff
       (U := U) (f := fun _ : Vec d => c) contDiff_const using 1
-    funext x i
-    simp
+    aesop
 
 @[simp]
 theorem const_apply [IsFiniteMeasure (volumeOn U)]
@@ -95,7 +93,7 @@ theorem subAverage_apply [Fact (1 ≤ p)]
     [IsFiniteMeasure (volumeOn U)]
     (u : W1pFunction U p) (x : Vec d) :
     u.subAverage x = u x - integralAverage U u.toFun := by
-  simp only [subAverage, addConst_apply, sub_eq_add_neg]
+  aesop
 
 @[simp]
 theorem subAverage_grad [Fact (1 ≤ p)]
@@ -113,9 +111,7 @@ theorem meanZeroOn_subAverage [Fact (1 ≤ p)]
   have hmean :=
     meanZeroOn_sub_integralAverage
       u.integrableOn hUPos hUTop
-  apply hmean.congr_ae
-  exact Filter.Eventually.of_forall fun x => by
-    rw [subAverage_apply]
+  aesop
 
 end W1pFunction
 

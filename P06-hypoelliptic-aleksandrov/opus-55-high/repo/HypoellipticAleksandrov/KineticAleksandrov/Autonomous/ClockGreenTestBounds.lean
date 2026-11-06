@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ClockGreenTe
 /-! # Actual uniform-in-spacetime bounds for a physical clock test -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Parabolic
 open SectionTwo TheoremA Evolution
@@ -39,9 +38,9 @@ theorem clockSourcePotential_pullback_bounded
   apply le_trans _ (le_max_right _ _)
   apply mul_le_mul
   · exact div_le_div_of_nonneg_right (c.active_abs_bounds hp).2 hD.le
-  · exact (hM _).1.trans (le_max_left _ _)
-  · exact abs_nonneg _
-  · exact div_nonneg (by positivity) hD.le
+  · simp_all
+  · positivity
+  positivity
 
 /-- Restrict literal physical C112 regularity to a smaller set. -/
 theorem clock_C112_mono {u : Point → ℝ} {D E : Set Point}

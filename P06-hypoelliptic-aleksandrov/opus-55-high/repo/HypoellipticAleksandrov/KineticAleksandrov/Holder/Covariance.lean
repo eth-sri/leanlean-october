@@ -52,7 +52,6 @@ def pform {d : ℕ} (lam h sigma : ℝ) (y V : PDE.Vec d) : PDE.Vec d :=
 theorem det_ghat (lam theta : ℝ) :
     (ghat lam theta).det = lam ^ 2 *
       (1 / 4096 + theta / 64 + theta ^ 3 / 192 + theta ^ 4 / 12) := by
-  rw [Matrix.det_fin_two]
   simp [ghat]
   ring
 
@@ -68,14 +67,14 @@ theorem gramian_eq_polynomial (lam : ℝ) {h : ℝ} (hh : 0 < h) (sigma : ℝ) :
   have hthree : h ^ (3 / 2 : ℝ) = h * h ^ (1 / 2 : ℝ) := by
     rw [show (3 / 2 : ℝ) = 1 + 1 / 2 by norm_num, Real.rpow_add hh, Real.rpow_one]
   have hhalf2 : (h ^ (1 / 2 : ℝ)) ^ 2 = h := by
-    simpa only [pow_two] using hhalf
+    linarith
   ext i j
   fin_cases i <;> fin_cases j
   all_goals
     simp [gramian, covarianceDilation, ghat, Matrix.mul_apply, Fin.sum_univ_two, hthree]
     ring_nf
     simp only [hhalf2]
-  all_goals field_simp [hh.ne']
+  all_goals grind
   all_goals ring
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

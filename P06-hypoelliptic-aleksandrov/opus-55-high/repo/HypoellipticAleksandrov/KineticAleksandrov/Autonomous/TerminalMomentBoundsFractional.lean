@@ -8,7 +8,6 @@ import Mathlib.Tactic
 /-! # Fractional endpoint moments from the actual terminal second moments -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov MeasureTheory Set Filter
 open scoped ENNReal
@@ -50,10 +49,9 @@ theorem integral_abs_rpow_le_second {Ω : Type*} [MeasurableSpace Ω]
   have hp0 : 0 ≤ a/2 := by linarith
   have hp1 : a/2 ≤ 1 := by linarith
   have he (x : Ω) : ((f x)^2)^(a/2) = |f x|^a := by
-    rw [← sq_abs, ← Real.rpow_natCast_mul (abs_nonneg _) 2]
-    congr 1
+    rw [← sq_abs, ← Real.rpow_natCast_mul (abs_nonneg _)]
     ring
-  simpa only [he] using integral_subunit_rpow_le mu (fun x => (f x)^2)
+  simpa only [he] using integral_subunit_rpow_le mu _
     (hf.pow_const 2) (fun _ => sq_nonneg _) hfi hp0 hp1
 
 /-- Actual canonical velocity fractional moments, with no moment hypothesis. -/
@@ -66,18 +64,17 @@ theorem terminal_velocity_fractional_moment
     Integrable (fun w : Z => |w.2-z.2|^a) (kernelXV E T z) ∧
       (∫ w, |w.2-z.2|^a ∂kernelXV E T z) ≤ (2*Lam*(T : ℝ))^(a/2) := by
   let E := fullSpaceEvolution hH hLE hlam hLam A
-  let : IsProbabilityMeasure (kernelXV E T z) :=
+  let : IsProbabilityMeasure _ :=
     ⟨kernelXV_mass_one hlam A E (fullSpaceEvolution_spec hH hLE hlam hLam A) T z⟩
   have hi := (terminal_second_moments_integrable hH hLE hlam hLam A z T).1
   obtain ⟨hfi, hle⟩ := integral_abs_rpow_le_second (kernelXV E T z)
-    (fun w : Z => w.2-z.2) (by fun_prop) hi ha0 ha2
+    _ (by fun_prop) hi ha0 ha2
   refine ⟨hfi, hle.trans ?_⟩
   apply Real.rpow_le_rpow (integral_nonneg (fun _ => sq_nonneg _)) ?_ (by linarith)
   have h := (terminal_second_moments hH hLE hlam hLam A z T).1
   rw [← ofReal_integral_eq_lintegral_ofReal hi
-    (Eventually.of_forall (fun w : Z => sq_nonneg (w.2-z.2)))] at h
+    (Eventually.of_forall (fun w : Z => sq_nonneg _))] at h
   have hL : 0 ≤ Lam := hlam.le.trans hLam
-  have hT := T.property
   exact (ENNReal.ofReal_le_ofReal_iff (by positivity)).mp h
 
 /-- Actual canonical position fractional moments, with no moment hypothesis. -/
@@ -91,18 +88,17 @@ theorem terminal_position_fractional_moment
       (∫ w, |w.1-z.1|^a ∂kernelXV E T z) ≤
         (2*z.2^2*(T : ℝ)^2+4/3*Lam*(T : ℝ)^3)^(a/2) := by
   let E := fullSpaceEvolution hH hLE hlam hLam A
-  let : IsProbabilityMeasure (kernelXV E T z) :=
+  let : IsProbabilityMeasure _ :=
     ⟨kernelXV_mass_one hlam A E (fullSpaceEvolution_spec hH hLE hlam hLam A) T z⟩
   have hi := (terminal_second_moments_integrable hH hLE hlam hLam A z T).2
   obtain ⟨hfi, hle⟩ := integral_abs_rpow_le_second (kernelXV E T z)
-    (fun w : Z => w.1-z.1) (by fun_prop) hi ha0 ha2
+    _ (by fun_prop) hi ha0 ha2
   refine ⟨hfi, hle.trans ?_⟩
   apply Real.rpow_le_rpow (integral_nonneg (fun _ => sq_nonneg _)) ?_ (by linarith)
   have h := (terminal_second_moments hH hLE hlam hLam A z T).2
   rw [← ofReal_integral_eq_lintegral_ofReal hi
-    (Eventually.of_forall (fun w : Z => sq_nonneg (w.1-z.1)))] at h
+    (Eventually.of_forall (fun w : Z => sq_nonneg _))] at h
   have hL : 0 ≤ Lam := hlam.le.trans hLam
-  have hT := T.property
   exact (ENNReal.ofReal_le_ofReal_iff (by positivity)).mp h
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

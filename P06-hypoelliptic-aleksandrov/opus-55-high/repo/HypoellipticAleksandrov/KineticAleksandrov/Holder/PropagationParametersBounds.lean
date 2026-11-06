@@ -7,12 +7,13 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
+variable {d : ℕ} {lam Lam H T0 T1 kx kv h : ℝ}
+
 /-- The source velocity step restriction gives the half-radius containment bound. -/
-theorem propagation_step_velocity {d : ℕ} {lam Lam H T0 T1 kx kv h : ℝ}
+theorem propagation_step_velocity 
     (hH : 0 ≤ H) (hkv : 0 < kv) (_hh : 0 < h)
     (hhstar : h ≤ stepSize d lam Lam H T0 T1 kx kv) :
     velocityTubeConstant d lam Lam H T1 * Real.sqrt h ≤ kv / 2 := by
@@ -28,7 +29,7 @@ theorem propagation_step_velocity {d : ℕ} {lam Lam H T0 T1 kx kv h : ℝ}
     _ = _ := by field_simp
 
 /-- The source position step restriction gives the half-radius containment bound. -/
-theorem propagation_step_position {d : ℕ} {lam Lam H T0 T1 kx kv h : ℝ}
+theorem propagation_step_position 
     (hH : 0 ≤ H) (hkx : 0 < kx) (hh : 0 < h)
     (hhstar : h ≤ stepSize d lam Lam H T0 T1 kx kv) :
     positionTubeConstant d lam Lam H T1 * h ^ (3 / 2 : ℝ) ≤ kx / 2 := by

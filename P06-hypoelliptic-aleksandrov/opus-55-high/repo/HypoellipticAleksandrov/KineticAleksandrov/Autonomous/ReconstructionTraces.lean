@@ -31,20 +31,15 @@ theorem stripReconstructionCandidate_eqOn_exit (H : Interval)
   intro p hp
   have hz : stripSourcePotential H K T g p = 0 := by
     rcases hp with ht | hv
-    · exact duhamelPotential_eq_zero_of_terminal_le K T (nativeStripSource g)
-        (sectionTwoPoint p) (by change T ≤ p.time; exact ht.1.ge)
+    · exact duhamelPotential_eq_zero_of_terminal_le K T _
+        _ (by aesop)
     · apply duhamelPotential_eq_zero_of_not_mem K T (nativeStripSource g)
         (sectionTwoPoint p)
-      change p.velocity ∉ movingDomain (intervalDomain H) (fun _ => 0) p.time
       rw [movingDomain, PDE.mem_translateSet_iff_sub_mem, sub_zero]
       rw [intervalDomain, PDE.mem_oneDimensionalAxisBox_iff]
       change p.velocity 0 ∉ Set.Ioo H.lo H.hi
-      rcases hv.2.2 with hl | hh
-      · rw [hl]
-        exact fun h => (lt_irrefl H.lo) h.1
-      · rw [hh]
-        exact fun h => (lt_irrefl H.hi) h.2
+      grind
   change phi p - stripSourcePotential H K T g p = phi p
-  rw [hz, sub_zero]
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

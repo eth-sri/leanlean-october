@@ -78,8 +78,7 @@ theorem zCutoffN_mem_Icc (n N : ℕ) (z : PDE.Vec n) : 0 ≤ zCutoffN n N z ∧ 
 theorem zCutoffN_eq_one {n N : ℕ} {z : PDE.Vec n} (hz : ‖z‖ ≤ (N : ℝ) + 1) :
     zCutoffN n N z = 1 := by
   apply zCutoff_eq_one
-  rw [norm_smul, norm_inv, Real.norm_of_nonneg (by positivity)]
-  rw [inv_mul_le_iff₀ (by positivity)]
+  rw [norm_smul, Real.norm_of_nonneg (by positivity), inv_mul_le_iff₀ (by positivity)]
   linarith
 
 /-- The cutoff datum `F(y) χ_N(z)` as a bounded Borel kinetic datum. -/
@@ -101,10 +100,12 @@ def cutoffDatum (F : BoundedBorel (PDE.Vec n)) (N : ℕ) : BoundedBorel (Evoluti
 def lowerDatum (F : BoundedBorel (PDE.Vec n)) : BoundedBorel (EvolutionAmbientState n) :=
   F.pullback Prod.fst measurable_fst
 
-@[simp] theorem cutoffDatum_apply (F : BoundedBorel (PDE.Vec n)) (N : ℕ)
+variable (F : BoundedBorel (PDE.Vec n))
+
+@[simp] theorem cutoffDatum_apply  (N : ℕ)
     (x : EvolutionAmbientState n) : cutoffDatum F N x = F x.1 * zCutoffN n N x.2 := rfl
 
-@[simp] theorem lowerDatum_apply (F : BoundedBorel (PDE.Vec n)) (x : EvolutionAmbientState n) :
+@[simp] theorem lowerDatum_apply  (x : EvolutionAmbientState n) :
     lowerDatum F x = F x.1 := rfl
 
 /-- The cutoff data are smooth compactly supported terminal data in the open fiber. -/
@@ -112,10 +113,10 @@ theorem cutoffDatum_isSmoothCompact {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec
     {F : BoundedBorel (PDE.Vec n)}
     (hF : ParabolicProbe.IsSmoothCompactScalarTerminalDatum Ω γ τ F) (N : ℕ) :
     IsSmoothCompactTerminalDatum Ω γ τ (cutoffDatum F N) := by
-  have hsub : tsupport (cutoffDatum F N : EvolutionAmbientState n → ℝ) ⊆
-      tsupport (F : PDE.Vec n → ℝ) ×ˢ tsupport (zCutoffN n N) := by
-    have h : Function.support (cutoffDatum F N : EvolutionAmbientState n → ℝ) ⊆
-        Function.support (F : PDE.Vec n → ℝ) ×ˢ Function.support (zCutoffN n N) := by
+  have hsub : tsupport (cutoffDatum F N) ⊆
+      tsupport F ×ˢ tsupport (zCutoffN n N) := by
+    have h : Function.support (cutoffDatum F N) ⊆
+        Function.support F ×ˢ Function.support (zCutoffN n N) := by
       intro x hx
       refine ⟨?_, ?_⟩
       · intro h0
@@ -150,7 +151,6 @@ theorem sq_lt_vecNormSq_of_lt_norm {z : PDE.Vec n} {r : ℝ} (hr : 0 ≤ r) (hz 
   have : ‖z‖ ≤ r := by
     rw [pi_norm_le_iff_of_nonneg hr]
     intro i
-    rw [Real.norm_eq_abs]
     exact abs_le_of_sq_le_sq (by linarith [PDE.sq_apply_le_vecNormSq z i]) hr
   linarith
 
@@ -159,8 +159,8 @@ theorem abs_cutoffDatum_sub_le {F : BoundedBorel (PDE.Vec n)} {C : ℝ} (hC : �
     (hC0 : 0 ≤ C) {N M : ℕ} (hNM : N ≤ M) (x : EvolutionAmbientState n) :
     |cutoffDatum F M x - cutoffDatum F N x| ≤
       C / ((N : ℝ) + 1) ^ 2 * (1 + PDE.vecNormSq x.1 + PDE.vecNormSq x.2) := by
-  have hN : (0 : ℝ) < (N : ℝ) + 1 := by positivity
-  have hRHS : 0 ≤ C / ((N : ℝ) + 1) ^ 2 * (1 + PDE.vecNormSq x.1 + PDE.vecNormSq x.2) := by
+  have hN : (0) < (N : ℝ) + 1 := by positivity
+  have hRHS : 0 ≤ C / (N + 1) ^ 2 * (1 + PDE.vecNormSq x.1 + PDE.vecNormSq x.2) := by
     have := PDE.vecNormSq_nonneg x.1
     have := PDE.vecNormSq_nonneg x.2
     positivity
@@ -192,7 +192,7 @@ theorem abs_cutoffDatum_sub_le {F : BoundedBorel (PDE.Vec n)} {C : ℝ} (hC : �
       linarith
     calc |F x.1| * |zCutoffN n M x.2 - zCutoffN n N x.2| ≤ C * 1 :=
           mul_le_mul (hC x.1) h1 (abs_nonneg _) hC0
-      _ ≤ C * ((1 + PDE.vecNormSq x.1 + PDE.vecNormSq x.2) / ((N : ℝ) + 1) ^ 2) :=
+      _ ≤ C * ((1 + PDE.vecNormSq x.1 + PDE.vecNormSq x.2) / (N + 1) ^ 2) :=
           mul_le_mul_of_nonneg_left (h2.trans h3) hC0
       _ = _ := by ring
 
@@ -238,7 +238,6 @@ theorem classical_sub_le_growthBarrier {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
     have h3 := le_abs_self (u₁ p)
     have h4 := neg_abs_le (u₂ p)
     have h5 : 0 ≤ c * growthBarrier C τ p := mul_nonneg hc (growthBarrier_pos C τ p).le
-    show u₁ p - u₂ p - c * growthBarrier C τ p ≤ C₁ + C₂
     linarith
   · exact ((h₁'.2.1.mono (hslab _)).sub (h₂'.2.1.mono (hslab _))).sub
       (continuousOn_const.mul (continuous_growthBarrier C τ).continuousOn)
@@ -264,14 +263,12 @@ theorem classical_sub_le_growthBarrier {Ω : Set (PDE.Vec n)} (hΩ : IsOpen Ω)
     have hΦτ : growthBarrier C τ p = 1 + PDE.vecNormSq p.position + PDE.vecNormSq p.velocity := by
       unfold growthBarrier radialSq
       rw [hpT]
-      simp only [sub_self, mul_zero, Real.exp_zero, one_mul]
+      simp only [sub_self, mul_zero, Real.exp_zero]
       ring
-    show u₁ p - u₂ p - c * growthBarrier C τ p ≤ 0
     rw [hΦτ]
     linarith
   · intro p hp hfr
     have hlat : p ∈ evolutionLateralFrontier Ω γ τ := ⟨hp.2.1, hfr⟩
-    show u₁ p - u₂ p - c * growthBarrier C τ p ≤ 0
     rw [h₁'.2.2.2.2.2 p hlat, h₂'.2.2.2.2.2 p hlat]
     have h5 : 0 ≤ c * growthBarrier C τ p := mul_nonneg hc (growthBarrier_pos C τ p).le
     linarith

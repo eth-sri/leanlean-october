@@ -19,8 +19,7 @@ open scoped CompactlySupported
 def compactProbeDatum {X : Type*} [TopologicalSpace X] [MeasurableSpace X] [BorelSpace X]
     (f : C_c(X, ℝ)) : BoundedBorel X :=
   ⟨f, f.continuous.measurable, ⟨‖f.toBoundedContinuousFunction‖, norm_nonneg _, fun x => by
-    simpa only [CompactlySupportedContinuousMap.toBoundedContinuousFunction_apply,
-      Real.norm_eq_abs] using f.toBoundedContinuousFunction.norm_coe_le_norm x⟩⟩
+    simpa using f.toBoundedContinuousFunction.norm_coe_le_norm x⟩⟩
 
 /-- Ambient smooth compact probes are uniformly dense in continuous compact probes. -/
 theorem exists_smooth_compact_probe_close
@@ -28,7 +27,7 @@ theorem exists_smooth_compact_probe_close
     [MeasurableSpace E] [BorelSpace E]
     (f : C_c(E, ℝ)) (ε : ℝ) (hε : 0 < ε) :
     ∃ g : C_c(E, ℝ), ContDiff ℝ (⊤ : ℕ∞) g ∧ ∀ x, |g x - f x| ≤ ε := by
-  let fu : C_c((univ : Set E), ℝ) := f.comp (Homeomorph.Set.univ E).toCocompactMap
+  let fu  := f.comp (Homeomorph.Set.univ E).toCocompactMap
   obtain ⟨φ, hφ, hc, _, hclose⟩ := exists_smooth_compactSupport_close isOpen_univ fu ε hε
   let g : C_c(E, ℝ) := ⟨⟨φ, hφ.continuous⟩, hc⟩
   exact ⟨g, hφ, fun x => hclose ⟨x, mem_univ _⟩⟩
@@ -46,8 +45,7 @@ theorem measurable_measure_family_of_smooth_tests
   apply measurable_integral_of_dense (T := fun f : P => f.1) ν hmass
   · intro f ε hε
     obtain ⟨g, hg, hclose⟩ := exists_smooth_compact_probe_close f ε hε
-    exact ⟨⟨g, hg⟩, hclose⟩
-  · intro f
-    exact H f.1 f.2
+    aesop
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -50,8 +50,6 @@ theorem map_subtype_val_restrict {α : Type*} [MeasurableSpace α] {U : Set α}
   refine Measure.ext fun A hA => ?_
   rw [Measure.restrict_apply hA, Measure.map_apply measurable_subtype_coe (hA.inter hU),
     Measure.map_apply measurable_subtype_coe hA]
-  congr 1
-  ext x
   simp
 
 end Outside
@@ -163,7 +161,7 @@ theorem eq_map_terminalFiberRieszMeasure (q : EvolutionQuery Ω γ)
   have hU := measurableSet_evolutionStateSet_of_isOpen (γ := γ) (τ := q.1.2.1) hΩo
   set ν' : Measure (EvolutionState Ω γ q.1.2.1) := Measure.comap Subtype.val μ' with hν'
   have hmap : ν'.map Subtype.val = μ' := by
-    rw [hν', map_comap_subtype_coe hU, hres]
+    rw [map_comap_subtype_coe hU, hres]
   have hmassν : ν' univ = μ' univ := by
     conv_rhs => rw [← hmap]
     rw [Measure.map_apply measurable_subtype_coe MeasurableSet.univ]
@@ -172,14 +170,14 @@ theorem eq_map_terminalFiberRieszMeasure (q : EvolutionQuery Ω γ)
   have hreal : ν'.real univ ≤ 1 := by
     rw [Measure.real, hmassν]
     exact ENNReal.toReal_le_of_le_ofReal zero_le_one (by simpa using hmass)
-  let Λ : C_c(EvolutionState Ω γ q.1.2.1, ℝ) →ₚ[ℝ] ℝ :=
+  let Λ  :=
     CompactlySupportedContinuousMap.integralPositiveLinearMap ν'
   have hΛbd : ∀ (f : C_c(EvolutionState Ω γ q.1.2.1, ℝ)) (c : ℝ), 0 ≤ c → (∀ x, |f x| ≤ c) →
       |Λ f| ≤ c := by
     intro f c hc h
     have := norm_integral_le_of_norm_le_const (μ := ν') (f := fun x => f x) (C := c)
       (Filter.Eventually.of_forall fun x => by simpa using h x)
-    calc |Λ f| = ‖∫ x, f x ∂ν'‖ := by simp [Λ, Real.norm_eq_abs]
+    calc |Λ f| = ‖∫ x, f x ∂ν'‖ := by simp [Λ]
       _ ≤ c * ν'.real univ := this
       _ ≤ c * 1 := mul_le_mul_of_nonneg_left hreal hc
       _ = c := mul_one c
@@ -195,7 +193,7 @@ theorem eq_map_terminalFiberRieszMeasure (q : EvolutionQuery Ω γ)
     have h2 := (ℓ_spec q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩).2
       (terminalProbeDatum F) (terminalProbeDatum_isSmoothCompact F)
       (terminalProbeCcLinear F) fun x => rfl
-    exact h1.trans ((hint _ (terminalProbeDatum_isSmoothCompact F)).trans h2.symm)
+    exact h1.trans ((hint _ _).trans h2.symm)
   have hlin := eq_of_bounded_of_dense (terminalProbeCcLinear (Ω := Ω) (γ := γ) (τ := q.1.2.1))
     Λ.toLinearMap (ℓ_ q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩).toLinearMap hΛbd
     (ℓ_spec q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩).1 hagree
@@ -203,7 +201,7 @@ theorem eq_map_terminalFiberRieszMeasure (q : EvolutionQuery Ω γ)
   have hν : ν' = terminalFiberRieszMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
       q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩ :=
-    eq_rieszMeasure_of_integral_eq (ℓ_ q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩) ν'
+    eq_rieszMeasure_of_integral_eq _ ν'
       fun f => by
         have := LinearMap.congr_fun hlin f
         simpa [Λ] using this
@@ -273,8 +271,7 @@ theorem comap_terminalMeasure_eq_rieszMeasure (q : EvolutionQuery Ω γ) :
       terminalFiberRieszMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
         hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
         q.1.1 q.1.2.1 q.property.1 ⟨q.1.2.2, q.property.2⟩ := by
-  rw [terminalMeasure_eq_map_rieszMeasure n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx q]
+  rw [terminalMeasure_eq_map_rieszMeasure]
   exact (MeasurableEmbedding.subtype_coe (measurableSet_evolutionStateSet_of_isOpen
     (isOpen_of_isAdmissibleEvolutionDomain hΩ))).comap_map _
 
@@ -283,18 +280,17 @@ theorem terminalMeasure_eq_dirac (σ : ℝ) (p : EvolutionState Ω γ σ) :
     μ (evolutionQueryOfState Ω γ σ σ le_rfl p) = Measure.dirac p.1 := by
   refine (terminalMeasure_eq_of_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
-    (evolutionQueryOfState Ω γ σ σ le_rfl p) (Measure.dirac p.1) ?_ ?_ ?_).symm
+    _ _ ?_ ?_ ?_).symm
   · simp
   · have hU := measurableSet_evolutionStateSet_of_isOpen (γ := γ) (τ := σ)
       (isOpen_of_isAdmissibleEvolutionDomain hΩ)
     refine Measure.ext fun A hA => ?_
     show (Measure.dirac p.1).restrict (evolutionStateSet Ω γ σ) A = Measure.dirac p.1 A
-    rw [Measure.restrict_apply hA, Measure.dirac_apply' _ (hA.inter hU),
-      Measure.dirac_apply' _ hA]
+    rw [Measure.restrict_apply hA]
     have hp : p.1 ∈ evolutionStateSet Ω γ σ := p.2
     by_cases h : p.1 ∈ A
-    · simp [Set.indicator, h, hp]
-    · simp [Set.indicator, h]
+    · simp [h]
+    · simp [h]
   · intro F hF
     rw [integral_dirac]
     exact (terminalValue_self n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b

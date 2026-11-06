@@ -18,18 +18,18 @@ namespace PDE
 
 namespace HasWeakPartialDerivOn
 
+variable {d : ℕ} {U : Set (Vec d)} {i : Fin d} {u gi : Vec d → ℝ}
+
 /-- Translate a weak partial derivative from `U` to `z + U`. -/
-theorem translate {d : ℕ} {U : Set (Vec d)} {i : Fin d}
-    {u gi : Vec d → ℝ} (h : HasWeakPartialDerivOn U i u gi)
+theorem translate  (h : HasWeakPartialDerivOn U i u gi)
     (z : Vec d) :
     HasWeakPartialDerivOn (translateSet z U) i
       (fun x => u (x - z)) (fun x => gi (x - z)) := by
   intro φ hφSmooth hφCompact hφSubset
-  let V : Set (Vec d) := translateSet z U
-  let ψ : Vec d → ℝ := fun x => φ (x + z)
+  let V  := translateSet z U
+  let ψ  := fun x => φ (x + z)
   have hψSmooth : ContDiff ℝ (⊤ : ℕ∞) ψ := by
-    simpa [ψ] using!
-      hφSmooth.comp (contDiff_id.add contDiff_const)
+    fun_prop
   have hψCompact : HasCompactSupport ψ := by
     show HasCompactSupport (φ ∘ Homeomorph.addRight z)
     simpa [ψ, Function.comp] using
@@ -57,16 +57,8 @@ theorem translate {d : ℕ} {U : Set (Vec d)} {i : Fin d}
             fderiv ℝ φ (x + z) := by
         simpa using
           (fderiv_comp_add_right (𝕜 := ℝ) (f := φ) (x := x) z)
-      simp [ψ, hderiv]
-    calc
-      ∫ x in U, u x * (fderiv ℝ φ (x + z)) (basisVec i)
-          ∂MeasureTheory.volume =
-          ∫ x in U, u x * (fderiv ℝ ψ x) (basisVec i)
-            ∂MeasureTheory.volume := by
-              rw [hfun]
-      _ = -∫ x in U, gi x * ψ x ∂MeasureTheory.volume := hWeak
-      _ = -∫ x in U, gi x * φ (x + z)
-          ∂MeasureTheory.volume := by rfl
+      grind
+    grind
   have hChangeLeft :
       ∫ x in V, u (x - z) * (fderiv ℝ φ x) (basisVec i)
           ∂MeasureTheory.volume =
@@ -75,22 +67,14 @@ theorem translate {d : ℕ} {U : Set (Vec d)} {i : Fin d}
     symm
     simpa [V, sub_eq_add_neg, add_assoc] using
       (setIntegral_comp_addRight_translateSet (d := d) z U
-        (fun x => u (x - z) * (fderiv ℝ φ x) (basisVec i)))
+        (fun x => u (x - z) * (fderiv ℝ φ x) _))
   have hChangeRight :
       ∫ x in U, gi x * φ (x + z) ∂MeasureTheory.volume =
         ∫ x in V, gi (x - z) * φ x ∂MeasureTheory.volume := by
     simpa [V, sub_eq_add_neg, add_assoc] using
       (setIntegral_comp_addRight_translateSet (d := d) z U
         (fun x => gi (x - z) * φ x))
-  calc
-    ∫ x in V, u (x - z) * (fderiv ℝ φ x) (basisVec i)
-        ∂MeasureTheory.volume =
-        ∫ x in U, u x * (fderiv ℝ φ (x + z)) (basisVec i)
-          ∂MeasureTheory.volume := hChangeLeft
-    _ = -∫ x in U, gi x * φ (x + z)
-        ∂MeasureTheory.volume := hMain
-    _ = -∫ x in V, gi (x - z) * φ x
-        ∂MeasureTheory.volume := by rw [hChangeRight]
+  linarith
 
 /-- Push a weak partial derivative to `a • U` by the amplitude-normalized
 dilation
@@ -99,17 +83,16 @@ dilation
 
 The positivity hypothesis fixes the geometric orientation and every
 change-of-variables factor. -/
-theorem dilate_of_pos {d : ℕ} {U : Set (Vec d)} {i : Fin d}
-    {u gi : Vec d → ℝ} (h : HasWeakPartialDerivOn U i u gi)
+theorem dilate_of_pos  (h : HasWeakPartialDerivOn U i u gi)
     {a : ℝ} (ha : 0 < a) :
     HasWeakPartialDerivOn (a • U) i
       (fun x => a * u (a⁻¹ • x))
       (fun x => gi (a⁻¹ • x)) := by
   intro φ hφSmooth hφCompact hφSubset
-  let V : Set (Vec d) := a • U
+  let V  := a • U
   let T : Vec d → Vec d := fun x => a⁻¹ • x
-  have haNe : a ≠ 0 := ha.ne'
-  let ψ : Vec d → ℝ := fun y => φ (a • y)
+  have haNe  := ha.ne'
+  let ψ  := fun y => φ (a • y)
   have hψSmooth : ContDiff ℝ (⊤ : ℕ∞) ψ := by
     simpa [ψ] using! hφSmooth.comp (contDiff_const_smul a)
   have hψCompact : HasCompactSupport ψ := by
@@ -137,7 +120,7 @@ theorem dilate_of_pos {d : ℕ} {U : Set (Vec d)} {i : Fin d}
       simpa [ψ] using
         (fderiv_comp_smul (𝕜 := ℝ) (f := φ) (x := y) a)
     simpa [smul_eq_mul] using
-      congrArg (fun L : Vec d →L[ℝ] ℝ => L (basisVec i)) hderiv
+      congrArg (fun L : Vec d →L[ℝ] ℝ => L _) hderiv
   have hWeakScaled :
       a * ∫ y in U,
           u y * (fderiv ℝ φ (a • y)) (basisVec i)
@@ -148,7 +131,7 @@ theorem dilate_of_pos {d : ℕ} {U : Set (Vec d)} {i : Fin d}
           fun y =>
             a * (u y * (fderiv ℝ φ (a • y)) (basisVec i)) := by
       funext y
-      rw [hDerivψ y]
+      rw [hDerivψ]
       ring
     rw [hfun, MeasureTheory.integral_const_mul] at hWeak
     simpa [ψ] using hWeak
@@ -164,7 +147,7 @@ theorem dilate_of_pos {d : ℕ} {U : Set (Vec d)} {i : Fin d}
       (MeasureTheory.Measure.setIntegral_comp_smul_of_pos
         (μ := MeasureTheory.volume)
         (f := fun x : Vec d =>
-          a * u (T x) * (fderiv ℝ φ x) (basisVec i))
+          a * u (T x) * (fderiv ℝ φ x) _)
         (s := U) ha)
   have hChangeRight :
       ∫ y in U, gi y * φ (a • y) ∂MeasureTheory.volume =
@@ -185,24 +168,24 @@ theorem dilate_of_pos {d : ℕ} {U : Set (Vec d)} {i : Fin d}
             ∂MeasureTheory.volume := by
     rw [MeasureTheory.integral_const_mul]
   calc
-    ∫ x in V, a * u (T x) * (fderiv ℝ φ x) (basisVec i)
+    ∫ x in V, a * u (T x) * (fderiv ℝ φ x) _
         ∂MeasureTheory.volume =
         (a ^ d) * ∫ y in U,
-          a * (u y * (fderiv ℝ φ (a • y)) (basisVec i))
+          a * (u y * (fderiv ℝ φ _) _)
             ∂MeasureTheory.volume := by
           have hpow : a ^ d ≠ 0 := (pow_pos ha d).ne'
           rw [hChangeLeft]
           field_simp [hpow]
     _ = (a ^ d) *
         (a * ∫ y in U,
-          u y * (fderiv ℝ φ (a • y)) (basisVec i)
+          u y * (fderiv ℝ φ _) _
             ∂MeasureTheory.volume) := by
           rw [hScaleLeft]
     _ = (a ^ d) *
-        (-∫ y in U, gi y * φ (a • y)
+        (-∫ y in U, gi y * φ _
           ∂MeasureTheory.volume) := by
           rw [hWeakScaled]
-    _ = -((a ^ d) * ∫ y in U, gi y * φ (a • y)
+    _ = -((a ^ d) * ∫ y in U, gi y * φ _
           ∂MeasureTheory.volume) := by
           ring
     _ = -∫ x in V, gi (T x) * φ x

@@ -9,13 +9,14 @@ import Mathlib.MeasureTheory.Constructions.BorelSpace.ContinuousLinearMap
 /-! # Actual C² regularity of position smoothing, including zero velocity -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Set MeasureTheory Filter
 open scoped Topology
 
+variable {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
+
 /-- Position smoothing is C² on the entire physical plane, without a regularity premise. -/
-theorem positionBarrierConvolution_jet_spec {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
+theorem positionBarrierConvolution_jet_spec 
     (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha) (ha1 : alpha < 1)
     (κ : ℝ → ℝ) (hκ : ContDiff ℝ 2 κ) (hs : HasCompactSupport κ) :
     ∀ q0 : ℝ × ℝ,
@@ -28,11 +29,6 @@ theorem positionBarrierConvolution_jet_spec {alpha : ℝ} {phi : (ℝ × ℝ) �
   let K := Icc (-R) R
   let U := Metric.ball q0 1
   let mu := volume.restrict K
-  have hmu : IsFiniteMeasure mu := by
-    constructor
-    rw [Measure.restrict_apply_univ, Real.volume_Icc]
-    exact ENNReal.ofReal_lt_top
-  let := hmu
   obtain ⟨K0, K1, K2, hK0, hK1, hK2, hbκ0, hbκ1, hbκ2⟩ :=
     barrier_kernel_uniform_bounds κ hκ hs
   obtain ⟨_, _, hv, hvv⟩ := h.origin_jet_bounds
@@ -43,7 +39,6 @@ theorem positionBarrierConvolution_jet_spec {alpha : ℝ} {phi : (ℝ × ℝ) �
     (isCompact_Icc (a := q0.2 - 1) (b := q0.2 + 1))).exists_bound_of_continuousOn
       hψ.continuousOn
   let B := max B0 0
-  have hB : 0 ≤ B := le_max_right _ _
   have hbphi (q : ℝ × ℝ) (hq : q ∈ U) (Y : ℝ) (hY : Y ∈ K) :
       |bellmanOriginExtension phi (Y, q.2)| ≤ B := by
     have hqv := (barrier_parameter_ball_bounds hq).2
@@ -51,7 +46,6 @@ theorem positionBarrierConvolution_jet_spec {alpha : ℝ} {phi : (ℝ × ℝ) �
       have hh := abs_lt.mp hqv
       constructor <;> linarith only [hh.1, hh.2]
     have hh := hB0b (Y, q.2) ⟨hY, hv⟩
-    rw [Real.norm_eq_abs] at hh
     exact hh.trans (le_max_left _ _)
   let p1 := (alpha - 1) / 3
   let p2 := (alpha - 2) / 3
@@ -101,7 +95,6 @@ theorem positionBarrierConvolution_jet_spec {alpha : ℝ} {phi : (ℝ × ℝ) �
       have hvb := barrier_position_fiber_bound (alpha - 1) (by linarith) _ Cv hCv hbv
         Y q.2 hY.2
       apply (barrierConvolutionJet_norm_le κ phi q Y).trans
-      dsimp only [b1, p1]
       calc
         _ ≤ K1 * B + K0 * (Cv * |Y| ^ ((alpha - 1) / 3)) := by
           gcongr
@@ -117,7 +110,6 @@ theorem positionBarrierConvolution_jet_spec {alpha : ℝ} {phi : (ℝ × ℝ) �
       have hvvb := barrier_position_fiber_bound (alpha - 2) (by linarith) _ Cvv hCvv hbvv
         Y q.2 hY.2
       apply (barrierConvolutionSecondJet_norm_le κ phi q Y).trans
-      dsimp only [b2, p1, p2]
       calc
         _ ≤ K2 * B + 2 * K1 * (Cv * |Y| ^ ((alpha - 1) / 3)) +
             K0 * (Cvv * |Y| ^ ((alpha - 2) / 3)) := by
@@ -162,7 +154,7 @@ theorem positionBarrierConvolution_jet_spec {alpha : ℝ} {phi : (ℝ × ℝ) �
     intro w
     apply ContinuousLinearMap.ext
     intro u
-    simp only [add_apply, zero_apply, zero_add]
+    simp
   have hcd := (hs2.1 q0 hq0).contDiffAt (Metric.ball_mem_nhds q0 (by norm_num))
   refine ⟨hcd.congr_of_eventuallyEq he, ?_, ?_⟩
   · rw [he1.eq_of_nhds]
@@ -171,7 +163,7 @@ theorem positionBarrierConvolution_jet_spec {alpha : ℝ} {phi : (ℝ × ℝ) �
     exact (hs2.2.2 q0 hq0).congr_of_eventuallyEq he1
 
 /-- Position smoothing is C² on the entire physical plane, including zero velocity. -/
-theorem positionBarrierConvolution_contDiff {alpha : ℝ} {phi : (ℝ × ℝ) → ℝ}
+theorem positionBarrierConvolution_contDiff 
     (h : IsBellmanHomogeneous alpha phi) (ha : 0 < alpha) (ha1 : alpha < 1)
     (κ : ℝ → ℝ) (hκ : ContDiff ℝ 2 κ) (hs : HasCompactSupport κ) :
     ContDiff ℝ 2 (positionBarrierConvolution κ phi) := by

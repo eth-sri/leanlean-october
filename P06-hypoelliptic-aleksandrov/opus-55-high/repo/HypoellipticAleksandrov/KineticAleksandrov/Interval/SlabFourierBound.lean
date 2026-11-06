@@ -10,7 +10,6 @@ half-time variation bound, retaining the additional exponential killing factor.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open MeasureTheory Set
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
@@ -47,58 +46,57 @@ theorem killed_slab_fourier_density_bound (hd : 0 < d)
   obtain ⟨gξ, hgξ, hnorm⟩ := hocc.2 (halfMeasure K σ₀ T hT.le μ ξ).variation (σ₀ + T / 2)
     (3 * T / 2) (by positivity)
   have hint : Integrable gξ
-      (volume.restrict (Ioo (0 : ℝ) (3 * T / 2) ×ˢ (univ : Set (PDE.Vec d)))) := by
+      (volume.restrict (Ioo (0) (3 * T / 2) ×ˢ univ)) := by
     have := (hnorm 1 le_rfl (one_le_slabGamma0 hd)).1
     rw [ENNReal.ofReal_one] at this
     exact memLp_one_iff_integrable.1 this
   have hkae := slab_fourier_ae_bound K hcov hcomp σ₀ μ Γ hΓ hT ξ gξ hgξ hint k hk hkE
   obtain ⟨hmem, hbd⟩ := hnorm γ hγ1 hγ2
-  have hC0 : 0 ≤ Cocc γ := hocc.1 γ hγ1 hγ2
+  have hC0  := hocc.1 γ hγ1 hγ2
   have hβ := slabBeta_nonneg hd hγ1 hγ2
   -- step 1: domination
   have h1 : eLpNorm k (ENNReal.ofReal γ) (slabBase d T) ≤
       eLpNorm (fun y => ENNReal.ofReal (gξ (slabShift d (T / 2) y))) (ENNReal.ofReal γ)
         (slabBase d T) := by
     refine eLpNorm_mono_enorm_ae (f := k)
-      (g := fun y => ENNReal.ofReal (gξ (slabShift d (T / 2) y))) hk.aestronglyMeasurable ?_
-    filter_upwards [hkae] with y hy
-    rwa [enorm_eq_self]
+      (g := fun y => ENNReal.ofReal _) hk.aestronglyMeasurable ?_
+    omega
   -- step 2: the occupation bound
   set Cn : ℝ := Cocc γ * ((halfMeasure K σ₀ T hT.le μ ξ).variation univ).toReal *
     (3 * T / 2) ^ slabBeta d γ with hCn
   have hbd' : eLpNorm gξ (ENNReal.ofReal γ)
-      (volume.restrict (Ioo (0 : ℝ) (3 * T / 2) ×ˢ (univ : Set (PDE.Vec d)))) ≤
+      (volume.restrict (Ioo (0) (3 * T / 2) ×ˢ univ)) ≤
         ENNReal.ofReal Cn := by
     rw [← ENNReal.ofReal_toReal hmem.eLpNorm_ne_top]
     exact ENNReal.ofReal_le_ofReal hbd
-  have h2 := eLpNorm_slabShift_le gξ hgξ.1 hgξ.2.1 (T / 2) T (3 * T / 2) γ Cn hT.le
+  have h2 := eLpNorm_slabShift_le gξ hgξ.1 hgξ.2.1 (T / 2) T _ γ Cn hT.le
     (by linarith) (by linarith) hbd'
   -- step 3: arithmetic
-  set E : ℝ := Real.exp (-((cdec / 2) * T * (1 + PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3)))) with hE
+  set E : ℝ := Real.exp _ with hE
   have hE0 : 0 ≤ E := (Real.exp_pos _).le
   have hmass := hhalf
   have hrho : ((halfMeasure K σ₀ T hT.le μ ξ).variation univ).toReal ≤
       (μ univ).toReal * (Cdec * E) := by
     have hexp : Real.exp (-(cdec * (T / 2) * (1 + PDE.vecEuclideanNorm ξ ^ ((2 : ℝ) / 3)))) = E :=
       by
-      rw [hE]; congr 1; ring
+      grind
     rw [hexp] at hmass
     have hfin : μ univ * ENNReal.ofReal (Cdec * E) ≠ ⊤ :=
       ENNReal.mul_ne_top (measure_ne_top _ _) ENNReal.ofReal_ne_top
     have := ENNReal.toReal_mono hfin hmass
-    rwa [ENNReal.toReal_mul, ENNReal.toReal_ofReal (by positivity)] at this
-  have hCnle : Cn ≤ (Cocc γ * Cdec * (2 : ℝ) ^ slabBeta d γ) * (μ univ).toReal *
+    simp_all
+  have hCnle : Cn ≤ (Cocc γ * Cdec * (2) ^ slabBeta d γ) * (μ univ).toReal *
       T ^ slabBeta d γ * E :=
     fourier_bound_arith _ _ _ _ _ _ _ hC0 hCdec.le ENNReal.toReal_nonneg hE0 hT hβ hrho
   have hfinal : ENNReal.ofReal Cn ≤
-      ENNReal.ofReal (Cocc γ * Cdec * (2 : ℝ) ^ slabBeta d γ) * μ univ *
+      ENNReal.ofReal (Cocc γ * Cdec * (2) ^ slabBeta d γ) * μ univ *
         ENNReal.ofReal (T ^ slabBeta d γ) * ENNReal.ofReal E := by
     refine (ENNReal.ofReal_le_ofReal hCnle).trans (le_of_eq ?_)
-    have h2pos : 0 ≤ Cocc γ * Cdec * (2 : ℝ) ^ slabBeta d γ :=
+    have h2pos : 0 ≤ Cocc γ * Cdec * (2) ^ slabBeta d γ :=
       mul_nonneg (mul_nonneg hC0 hCdec.le) (Real.rpow_nonneg (by norm_num) _)
     rw [ENNReal.ofReal_mul (by positivity), ENNReal.ofReal_mul (by positivity),
       ENNReal.ofReal_mul h2pos, ENNReal.ofReal_toReal (measure_ne_top _ _)]
-  exact h1.trans (h2.trans hfinal)
+  grind
 
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

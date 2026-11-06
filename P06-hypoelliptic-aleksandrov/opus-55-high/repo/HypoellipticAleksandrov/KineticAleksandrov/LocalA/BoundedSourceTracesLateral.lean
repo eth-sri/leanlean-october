@@ -9,7 +9,6 @@ sources that touch the velocity boundary.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set Filter Evolution
 open scoped Topology
@@ -24,7 +23,7 @@ theorem boundedSourceQuadratic_eq_zero_of_frontier {d : ℕ} (c : PDE.Vec d) (R 
     apply closure_minimal
     · intro y hy
       change PDE.vecNormSq (y - c) < R ^ 2 at hy
-      exact hy.le
+      grind
     · exact isClosed_le (contDiff_vecNormSq_sub c).continuous continuous_const
   have hlo := hs hp.1
   have hhi : R ^ 2 ≤ PDE.vecNormSq (p.position - c) := by
@@ -58,7 +57,7 @@ theorem continuousWithinAt_duhamelPotential_bounded_lateral
     apply duhamelPotential_eq_zero_of_not_mem
     rw [boundedSource_stationary_domain]
     rw [(PDE.isOpen_euclideanBall c R).frontier_eq] at hfront
-    exact hfront.2
+    simp_all
   rw [ContinuousWithinAt, hWp]
   apply tendsto_zero_iff_norm_tendsto_zero.2
   have hQ : Continuous (fun q : KineticPoint d => boundedSourceQuadratic c R lam q * M) :=
@@ -68,7 +67,6 @@ theorem continuousWithinAt_duhamelPotential_bounded_lateral
     simpa only [hQ0, zero_mul] using (hQ.continuousAt (x := p)).continuousWithinAt.tendsto
   apply squeeze_zero' (Eventually.of_forall fun q => norm_nonneg _) ?_ hQt
   filter_upwards [self_mem_nhdsWithin] with q hq
-  rw [Real.norm_eq_abs]
   exact abs_duhamelPotential_le_boundedSourceQuadratic hH hd hR hlam hm B hB hBs hell
     b hb hbounds S K hreal g hg M hM hgb T q hq
 

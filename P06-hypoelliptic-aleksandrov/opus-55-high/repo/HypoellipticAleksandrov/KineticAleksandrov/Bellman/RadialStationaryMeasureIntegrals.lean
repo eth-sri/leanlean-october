@@ -7,13 +7,13 @@ import Mathlib.Tactic
 /-! # Literal integral formulas for the two radial adjoint measures -/
 
 @[expose] public section
-noncomputable section
 open Set MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
+variable {lam Lam : ℝ} (alpha : ℝ) (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam))
+
 /-- Integrating the first radial measure integrates the actual radial density before projection. -/
-theorem integral_radialMu {lam Lam : ℝ} (alpha : ℝ)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi]
+theorem integral_radialMu  [IsFiniteMeasure pi]
     (f : BellmanPuncturedPlane → ℝ) (hf : Continuous f) :
     (∫ q, f q ∂radialMu alpha pi) =
       ∫ w : BellmanPositiveTime × (BellmanSphere × BellmanCoefficient lam Lam),
@@ -37,8 +37,7 @@ theorem integral_radialMu {lam Lam : ℝ} (alpha : ℝ)
     ENNReal.toReal_ofReal (Real.rpow_nonneg w.1.property.le _), smul_eq_mul]
 
 /-- Integrating the second radial measure also retains the literal coefficient weight. -/
-theorem integral_radialEta {lam Lam : ℝ} (alpha : ℝ)
-    (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi]
+theorem integral_radialEta  [IsFiniteMeasure pi]
     (f : BellmanPuncturedPlane → ℝ) (hf : Continuous f) (hlam : 0 ≤ lam) :
     (∫ q, f q ∂radialEta alpha pi) =
       ∫ w : BellmanPositiveTime × (BellmanSphere × BellmanCoefficient lam Lam),

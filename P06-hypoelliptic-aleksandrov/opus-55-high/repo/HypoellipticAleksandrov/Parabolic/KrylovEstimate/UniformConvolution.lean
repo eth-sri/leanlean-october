@@ -8,7 +8,6 @@ public import Mathlib.Topology.UniformSpace.HeineCantor
 /-! # Uniform approximation of compactly supported continuous representatives -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.KrylovEstimate
 open Filter MeasureTheory
 open scoped Topology Convolution
@@ -28,15 +27,12 @@ theorem eventually_uniform_parabolicConvolution_close
       intro x hx
       exact (hd (lt_trans hx hn)).le)
   change dist ((parabolicMollifier N n ⋆[ContinuousLinearMap.lsmul ℝ ℝ,
-    volume] f) z) (f z) ≤ ε at he
+    volume] f) z) _ ≤ ε at he
   have heq : (parabolicMollifier N n ⋆[ContinuousLinearMap.lsmul ℝ ℝ,
       volume] f) z = parabolicConvolution f (parabolicMollifier N n) z := by
     rw [convolution_lsmul_swap]
-    unfold parabolicConvolution convolution
     congr 1
-    funext x
-    change parabolicMollifier N n (z - x) * f x = f x * parabolicMollifier N n (z - x)
     exact mul_comm _ _
-  simpa only [heq, Real.dist_eq] using he
+  aesop
 
 end HypoellipticAleksandrov.Parabolic.KrylovEstimate

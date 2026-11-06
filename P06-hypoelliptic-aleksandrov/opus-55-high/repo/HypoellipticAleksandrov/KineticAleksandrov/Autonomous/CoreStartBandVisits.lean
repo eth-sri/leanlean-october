@@ -8,7 +8,6 @@ import Mathlib.Tactic
 /-! # Source core-start bound for the same enlarged-strip visit measure -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory Filter
 open scoped ENNReal
@@ -17,7 +16,6 @@ open scoped ENNReal
 theorem enlargedEntrance_subset_active (c : Clock) : closure c.entrance ⊆ c.active := by
   rw [Clock.entrance, closure_Ioo (by linarith [c.positive])]
   intro v hv
-  change c.vbar - 3 * c.r / 4 < v ∧ v < c.vbar + 3 * c.r / 4
   constructor <;> linarith [hv.1, hv.2, c.positive]
 
 /-- Cell masses in the source position-visits theorem are the actual starting masses. -/
@@ -59,9 +57,9 @@ theorem core_start_visit_density (hpush : PushforwardStatement) (htail : Restart
   obtain ⟨Cm, _, hm⟩ := hmasses hH hLE lam Lam hlam hLam
   let eta := 1 - (2 - alpha) * (q - 1)
   have hb := bellmanAdjointExponent_range (Lam / lam) ((le_div_iff₀ hlam).2
-    (by simpa only [one_mul] using hLam))
-  have ha0 : 0 < alpha := by dsimp [enlargedAdmissibleAlpha] at ha; linarith [ha.1, hb.1]
-  have heta : 0 ≤ eta := by dsimp [eta]; nlinarith [hq.1, hq.2, ha.2]
+    (by simp_all))
+  have ha0 : 0 < alpha := by linarith [ha.1, hb.1]
+  have heta : 0 ≤ eta := by nlinarith [hq.1, hq.2, ha.2]
   let C := Cd * Cv * 7 ^ eta
   have hC : 0 < C := mul_pos (mul_pos hCd hCv) (Real.rpow_pos_of_pos (by norm_num) _)
   refine ⟨C, hC, ?_⟩
@@ -76,7 +74,7 @@ theorem core_start_visit_density (hpush : PushforwardStatement) (htail : Restart
   rw [enlargedVisit_power_sum_eq nu c P.time q (by linarith) (hp.2.1.mono (fun _ h => h.2.2))]
     at hGi
   have hscale := coreStartBand_scaling c.r R (6 - 4 * q) eta c.positive hR heta hr
-  rw [coreStartBand_exponent alpha q] at hscale
+  rw [coreStartBand_exponent] at hscale
   let K := C * R ^ (6 - 4 * q) * (c.r / R) ^
     (4 - 3 * q + (1 - alpha) * (q - 1))
   have hK : 0 ≤ K :=
@@ -91,8 +89,8 @@ theorem core_start_visit_density (hpush : PushforwardStatement) (htail : Restart
         (Cd * Cv) * (c.r ^ (6 - 4 * q) * (1 + R / c.r) ^ eta) := by ring
     rw [he]
     exact (mul_le_mul_of_nonneg_left hscale (mul_nonneg hCd.le hCv.le)).trans_eq
-      (by dsimp [K, C]; ring)
+      (by ring)
   obtain ⟨_, hnorm⟩ := density_norm_of_power_bound volume G hG q K (by linarith) hK hi
-  exact ⟨G, hG, hG0, hGd, hGp, hnorm⟩
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

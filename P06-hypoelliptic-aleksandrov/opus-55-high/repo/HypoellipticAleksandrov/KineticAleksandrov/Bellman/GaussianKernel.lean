@@ -26,16 +26,17 @@ def bellmanGaussianExponent (t : BellmanPositiveTime) (q : ℝ × ℝ) : ℝ :=
 def bellmanGaussianKernel (t : BellmanPositiveTime) (q : ℝ × ℝ) : ℝ :=
   Real.sqrt 3 / (2 * Real.pi * t.val ^ 2) * Real.exp (bellmanGaussianExponent t q)
 
+variable (t : BellmanPositiveTime) (q : ℝ × ℝ)
+
 /-- Completion of the square identifies the Gaussian decay. -/
-theorem bellmanGaussianExponent_eq (t : BellmanPositiveTime) (q : ℝ × ℝ) :
+theorem bellmanGaussianExponent_eq  :
     bellmanGaussianExponent t q =
       -3 / t.val ^ 3 * (q.1 - t.val * q.2 / 2) ^ 2 - q.2 ^ 2 / (4 * t.val) := by
   dsimp [bellmanGaussianExponent]
-  field_simp [ne_of_gt t.property]
-  ring
+  grind
 
 /-- The exponent is nonpositive. -/
-theorem bellmanGaussianExponent_nonpos (t : BellmanPositiveTime) (q : ℝ × ℝ) :
+theorem bellmanGaussianExponent_nonpos  :
     bellmanGaussianExponent t q ≤ 0 := by
   rw [bellmanGaussianExponent_eq]
   have h₁ : 0 ≤ 3 / t.val ^ 3 :=
@@ -47,17 +48,14 @@ theorem bellmanGaussianExponent_nonpos (t : BellmanPositiveTime) (q : ℝ × ℝ
     (mul_nonneg h₁ (sq_nonneg _))).trans h₂)
 
 /-- The kernel is strictly positive. -/
-theorem bellmanGaussianKernel_pos (t : BellmanPositiveTime) (q : ℝ × ℝ) :
-    0 < bellmanGaussianKernel t q := by
-  unfold bellmanGaussianKernel
-  exact mul_pos (div_pos (Real.sqrt_pos.2 (by norm_num))
+theorem bellmanGaussianKernel_pos  :
+    0 < bellmanGaussianKernel t q := mul_pos (div_pos (Real.sqrt_pos.2 (by norm_num))
     (mul_pos (mul_pos (by norm_num) Real.pi_pos) (pow_pos t.property 2)))
     (Real.exp_pos _)
 
 /-- The kernel is bounded by its Gaussian prefactor. -/
-theorem bellmanGaussianKernel_le (t : BellmanPositiveTime) (q : ℝ × ℝ) :
+theorem bellmanGaussianKernel_le  :
     bellmanGaussianKernel t q ≤ Real.sqrt 3 / (2 * Real.pi * t.val ^ 2) := by
-  unfold bellmanGaussianKernel
   have hc : 0 ≤ Real.sqrt 3 / (2 * Real.pi * t.val ^ 2) := by positivity
   calc
     _ ≤ Real.sqrt 3 / (2 * Real.pi * t.val ^ 2) * 1 :=
@@ -69,21 +67,21 @@ theorem bellmanGaussianKernel_le (t : BellmanPositiveTime) (q : ℝ × ℝ) :
 def bellmanScaledTime (r : ℝ) (hr : 0 < r) (t : BellmanPositiveTime) :
     BellmanPositiveTime := ⟨r ^ 2 * t.val, mul_pos (pow_pos hr 2) t.property⟩
 
+variable (r : ℝ) (hr : 0 < r) (t : BellmanPositiveTime) (q : ℝ × ℝ)
+
 /-- The exponent is invariant under the joint time and kinetic dilation. -/
-theorem bellmanGaussianExponent_scaling (r : ℝ) (hr : 0 < r)
-    (t : BellmanPositiveTime) (q : ℝ × ℝ) :
+theorem bellmanGaussianExponent_scaling  :
     bellmanGaussianExponent (bellmanScaledTime r hr t) (bellmanPlaneDilation r q) =
       bellmanGaussianExponent t q := by
   dsimp [bellmanGaussianExponent, bellmanScaledTime, bellmanPlaneDilation]
-  field_simp [ne_of_gt t.property, ne_of_gt hr]
+  field_simp
 
 /-- The explicit kernel scales with the position-velocity homogeneous dimension four. -/
-theorem bellmanGaussianKernel_scaling (r : ℝ) (hr : 0 < r)
-    (t : BellmanPositiveTime) (q : ℝ × ℝ) :
+theorem bellmanGaussianKernel_scaling  :
     bellmanGaussianKernel (bellmanScaledTime r hr t) (bellmanPlaneDilation r q) =
       r⁻¹ ^ 4 * bellmanGaussianKernel t q := by
   simp only [bellmanGaussianKernel, bellmanGaussianExponent_scaling]
   dsimp [bellmanScaledTime]
-  field_simp [ne_of_gt t.property, ne_of_gt hr]
+  ring
 
 end HypoellipticAleksandrov.KineticAleksandrov

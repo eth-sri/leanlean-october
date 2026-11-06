@@ -31,19 +31,17 @@ theorem classicalEnergyRepresentative_abs_le_continuous_barrier {d : ℕ}
   have hraw : ∀ᵐ τ ∂reverseTimeVolume (T - a), ∀ hτ : τ ∈ Ioo 0 (T - a),
       ∀ᵐ y ∂PDE.volumeOn Ω, |valueCLM hΩ (u τ) y| ≤ q y := by
     filter_upwards [(reverseTimeHilbertRepresentative_spec hΩ (T - a)
-      (sub_pos.mpr haT) u g hdu).1] with τ hrep hτ
+      _ u g hdu).1] with τ hrep hτ
     have hb := henv τ ⟨hτ.1.le, hτ.2.le⟩
-    rw [hrep hτ] at hb
-    exact hb
+    simp_all
   have horig := (sourceTimeReflection_measurePreserving a T).quasiMeasurePreserving.ae hraw
   have hb : ∀ᵐ t ∂volume.restrict (Ioo a T),
       ∀ᵐ y ∂PDE.volumeOn Ω, |w (t, y)| ≤ q y := by
     filter_upwards [hwslice, horig, ae_restrict_mem measurableSet_Ioo] with t hs hr ht
-    have ht' : T - t ∈ Ioo 0 (T - a) := ⟨by linarith [ht.2], by linarith [ht.1]⟩
+    have ht' : T - t ∈ Ioo 0 (T - a) := ⟨by simp_all, by simp_all⟩
     filter_upwards [hs, hr ht'] with y hy hby
-    rw [hy]
-    exact hby
-  exact abs_le_of_continuousOn_of_ae_slices hΩ a T w (fun z => q z.2)
+    simp_all
+  exact abs_le_of_continuousOn_of_ae_slices hΩ a T w _
     (hq.comp continuous_snd) hw hb
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

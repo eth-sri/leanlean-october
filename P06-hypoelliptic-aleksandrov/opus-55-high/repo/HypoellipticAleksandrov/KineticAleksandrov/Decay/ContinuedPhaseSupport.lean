@@ -8,12 +8,13 @@ import Mathlib.Tactic.Linarith
 /-! # Addition of source and continuation phase errors -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open Set MeasureTheory
 
+variable {d : ℕ}
+
 /-- Changing the transported base point splits the phase coordinate additively. -/
-theorem phaseCoordinate_split {d : ℕ} (ξ z0 : PDE.Vec d)
+theorem phaseCoordinate_split  (ξ z0 : PDE.Vec d)
     (x y : EvolutionAmbientState d) :
     phaseCoordinate ξ z0 x = phaseCoordinate ξ z0 y + phaseCoordinate ξ y.2 x := by
   unfold phaseCoordinate PDE.vecDot
@@ -24,7 +25,7 @@ theorem phaseCoordinate_split {d : ℕ} (ξ z0 : PDE.Vec d)
   ring
 
 /-- Source and conditional continuation phase errors add under kernel integration. -/
-theorem continuation_phase_support {d : ℕ} {α : Type*} [MeasurableSpace α]
+theorem continuation_phase_support  {α : Type*} [MeasurableSpace α]
     (sourceState : α → EvolutionAmbientState d) (hsource : Measurable sourceState)
     (ξ z0 : PDE.Vec d) (a c e1 e2 : ℝ)
     (R : Measure α) [IsFiniteMeasure R]
@@ -52,7 +53,6 @@ theorem continuation_phase_support {d : ℕ} {α : Type*} [MeasurableSpace α]
       (phaseCoordinate ξ (sourceState p).2 x - c) := by
     rw [phaseCoordinate_split ξ z0 x (sourceState p)]
     ring
-  rw [he]
-  exact (abs_add_le _ _).trans (add_le_add hp hx)
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

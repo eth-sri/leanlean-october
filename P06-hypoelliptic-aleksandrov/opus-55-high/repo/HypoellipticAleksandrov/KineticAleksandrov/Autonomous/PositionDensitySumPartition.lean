@@ -6,7 +6,6 @@ import Mathlib.Probability.Kernel.Composition.MeasureComp
 /-! # Output-cell partition of the actual positive Green density -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory Filter
 open scoped ENNReal
@@ -18,8 +17,10 @@ theorem positionPositiveNorm_rpow {X : Type*} [MeasurableSpace X]
   rw [positionPositiveNorm, ← ENNReal.rpow_mul,
     one_div_mul_cancel hq.ne', ENNReal.rpow_one]
 
+variable (c : Clock) (s x : ℝ)
+
 /-- The output cells partition the region after the grid origin in the active interval. -/
-theorem enlargedOutputCell_iUnion (c : Clock) (s x : ℝ) :
+theorem enlargedOutputCell_iUnion  :
     (⋃ a : ℕ × ℤ, enlargedOutputCell c s x a.1 a.2) =
       {p | s ≤ p.time ∧ p.velocity 0 ∈ c.active} := by
   unfold enlargedOutputCell
@@ -27,7 +28,7 @@ theorem enlargedOutputCell_iUnion (c : Clock) (s x : ℝ) :
   rfl
 
 /-- The output-cell partition is pairwise disjoint. -/
-theorem enlargedOutputCell_pairwiseDisjoint (c : Clock) (s x : ℝ) :
+theorem enlargedOutputCell_pairwiseDisjoint  :
     Pairwise (fun a b : ℕ × ℤ =>
       Disjoint (enlargedOutputCell c s x a.1 a.2) (enlargedOutputCell c s x b.1 b.2)) := by
   intro a b hab
@@ -45,18 +46,18 @@ theorem positionMixtureDensity_support (hpush : PushforwardStatement)
         s ≤ z.time ∧ z.velocity 0 ∈ c.active := by
   have hm := measurable_positionMixtureDensity hH hLE hlam hLam A c nu
   apply (ae_withDensity_iff hm).mp
-  rw [withDensity_positionMixtureDensity hpush hH hLE hlam hLam]
+  rw [withDensity_positionMixtureDensity hpush]
   have hS : MeasurableSet {z : Point | s ≤ z.time ∧ z.velocity 0 ∈ c.active} :=
     (measurableSet_Ici.preimage continuous_time.measurable).inter
       (isOpen_Ioo.measurableSet.preimage ((continuous_apply 0).comp continuous_velocity).measurable)
   apply Measure.ae_comp_of_ae_ae hS
   filter_upwards [hnu] with e he
-  rw [← withDensity_positionActiveDensity hpush hH hLE hlam hLam]
+  rw [← withDensity_positionActiveDensity hpush]
   apply (ae_withDensity_iff ((measurable_positionActiveDensity hH hLE hlam hLam A c).comp
     (measurable_const.prodMk measurable_id))).mpr
   filter_upwards [positionActiveDensity_support hpush hH hLE hlam hLam A c hc e he.2]
     with z hz hnonzero
-  exact ⟨he.1.trans (hz hnonzero).1.le, (hz hnonzero).2.1⟩
+  grind
 
 /-- Summing output-cell q-power norms recovers the full density power integral. -/
 theorem positionMixtureDensity_power_partition (hpush : PushforwardStatement)
@@ -79,12 +80,12 @@ theorem positionMixtureDensity_power_partition (hpush : PushforwardStatement)
     filter_upwards [positionMixtureDensity_support hpush hH hLE hlam hLam A c hc nu s hnu]
       with z hz
     by_cases h : z ∈ U
-    · simp only [indicator_of_mem h]
-    · have hf : F z = 0 := by by_contra hn; exact h (hz hn)
-      simp only [indicator_of_notMem h, hf, ENNReal.zero_rpow_of_pos hq]
+    · simp_all
+    · have hf : F z = 0 := by grind
+      simp_all
   rw [he]
   dsimp only [U]
-  rw [← enlargedOutputCell_iUnion c s x,
+  rw [← enlargedOutputCell_iUnion,
     lintegral_iUnion (fun a : ℕ × ℤ => measurableSet_enlargedOutputCell c s x a.1 a.2)
       (enlargedOutputCell_pairwiseDisjoint c s x)]
   apply tsum_congr

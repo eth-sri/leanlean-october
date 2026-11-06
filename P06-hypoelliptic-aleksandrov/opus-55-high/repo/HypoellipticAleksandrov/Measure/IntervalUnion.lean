@@ -46,10 +46,12 @@ end HypoellipticAleksandrov.Parabolic
 
 namespace HypoellipticAleksandrov.Parabolic
 
+variable (kappa : ℝ)
+
 /-- Non-strict local-measure companion to
 `volume_sUnion_monotone_interval_enlargement`. -/
 theorem volume_sUnion_monotone_interval_enlargement_of_le
-    (kappa : ℝ) (hkappa : 1 < kappa)
+     (hkappa : 1 < kappa)
     (J : Set ℝ) (hJopen : IsOpen J) (hJord : J.OrdConnected)
     (B : Set (Set ℝ)) (g : Set ℝ → Set ℝ)
     (hB : ∀ I ∈ B, IsOpenSubinterval J I)
@@ -60,19 +62,13 @@ theorem volume_sUnion_monotone_interval_enlargement_of_le
     (hmono : ∀ I₁ I₂, IsOpenSubinterval J I₁ → IsOpenSubinterval J I₂ →
       I₁ ⊆ I₂ → g I₁ ⊆ g I₂) :
     volume (⋃₀ (g '' B)) ≤ ENNReal.ofReal kappa * volume (⋃₀ B) := by
-  have _hkappa : 0 < kappa := lt_trans zero_lt_one hkappa
-  have _hJopen : IsOpen J := hJopen
-  have _hJord : J.OrdConnected := hJord
-  have _hg : ∀ I, IsOpenSubinterval J I → IsOpenSubinterval J (g I) := hg
-  let U : Set ℝ := ⋃₀ B
-  have hUopen : IsOpen U := by
-    exact isOpen_sUnion fun I hI => (hB I hI).2.1
-  have hUJ : U ⊆ J := by
-    exact sUnion_subset fun I hI => (hB I hI).2.2.2
-  let R : Set ℝ := ordConnectedSection U
+  let U  := ⋃₀ B
+  have hUopen : IsOpen U := isOpen_sUnion fun I hI => (hB I hI).2.1
+  have hUJ : U ⊆ J := sUnion_subset fun I hI => (hB I hI).2.2.2
+  let R  := ordConnectedSection U
   have hRsub : R ⊆ U := by
-    simpa only [R] using (ordConnectedSection_subset (s := U))
-  let C : ℝ → Set ℝ := fun x => connectedComponentIn U x
+    simpa using (ordConnectedSection_subset (s := U))
+  let C  := fun x => connectedComponentIn U x
   have hCeligible : ∀ r ∈ R, IsOpenSubinterval J (C r) := by
     intro r hr
     constructor
@@ -92,13 +88,12 @@ theorem volume_sUnion_monotone_interval_enlargement_of_le
       (connectedComponentIn_eq hzr).trans (connectedComponentIn_eq hzs).symm
     have hsCs : s ∈ C s := mem_connectedComponentIn (hRsub hs)
     have hsCr : s ∈ C r := by
-      rw [hCeq]
-      exact hsCs
+      simp_all
     exact hrs (eq_of_mem_ordConnectedSection_of_uIcc_subset hr hs
       ((isPreconnected_connectedComponentIn.ordConnected.uIcc_subset
         (mem_connectedComponentIn (hRsub hr)) hsCr).trans
         (connectedComponentIn_subset U r)))
-  have hRcountable : R.Countable :=
+  have hRcountable  :=
     hRdisjoint.countable_of_isOpen
       (fun r hr => hUopen.connectedComponentIn)
       (fun r hr => connectedComponentIn_nonempty_iff.mpr (hRsub hr))
@@ -106,59 +101,56 @@ theorem volume_sUnion_monotone_interval_enlargement_of_le
     apply Subset.antisymm
     · intro x hx
       let r : ℝ := ordConnectedProj U ⟨x, hx⟩
-      have hrR : r ∈ R := by
-        exact ⟨⟨x, hx⟩, rfl⟩
+      have hrR : r ∈ R := ⟨⟨x, hx⟩, rfl⟩
       have hxOrd : x ∈ ordConnectedComponent U r := by
-        exact mem_ordConnectedComponent_ordConnectedProj U ⟨x, hx⟩
+        aesop
       have hxCr : x ∈ C r := by
         change x ∈ connectedComponentIn U r
         rw [connectedComponentIn_eq_ordConnectedComponent_of_mem U (hRsub hrR)]
-        exact hxOrd
-      exact mem_iUnion.2 ⟨⟨r, hrR⟩, hxCr⟩
+        omega
+      aesop
     · exact iUnion_subset fun r => connectedComponentIn_subset U r
   have htarget_subset : (⋃₀ (g '' B)) ⊆ ⋃ r : R, g (C r) := by
     refine sUnion_subset fun T hT => ?_
     rcases hT with ⟨I, hIB, rfl⟩
-    have hI : IsOpenSubinterval J I := hB I hIB
+    have hI  := hB I hIB
     obtain ⟨x, hxI⟩ := hI.1
     have hxU : x ∈ U := subset_sUnion_of_mem hIB hxI
-    let r : ℝ := ordConnectedProj U ⟨x, hxU⟩
-    have hrR : r ∈ R := by
-      exact ⟨⟨x, hxU⟩, rfl⟩
-    have hxOrd : x ∈ ordConnectedComponent U r := by
-      exact mem_ordConnectedComponent_ordConnectedProj U ⟨x, hxU⟩
+    let r  := ordConnectedProj U ⟨x, hxU⟩
+    have hrR : r ∈ R := ⟨⟨x, hxU⟩, rfl⟩
+    have hxOrd : x ∈ ordConnectedComponent U r := mem_ordConnectedComponent_ordConnectedProj U _
     have hxCr : x ∈ C r := by
       change x ∈ connectedComponentIn U r
       rw [connectedComponentIn_eq_ordConnectedComponent_of_mem U (hRsub hrR)]
-      exact hxOrd
+      omega
     have hCrCx : C r = C x := connectedComponentIn_eq hxCr
     have hIinCx : I ⊆ C x :=
       hI.2.2.1.isPreconnected.subset_connectedComponentIn hxI
         (subset_sUnion_of_mem hIB)
     have hIinCr : I ⊆ C r := by
-      simpa only [hCrCx] using hIinCx
-    exact (hmono I (C r) hI (hCeligible r hrR) hIinCr).trans
+      simp_all
+    exact (hmono I _ hI (hCeligible r hrR) hIinCr).trans
       (subset_iUnion (fun r : R => g (C r)) ⟨r, hrR⟩)
-  letI : Countable R := hRcountable.to_subtype
+  letI  := hRcountable.to_subtype
   have hCpairwise : Pairwise (Disjoint on fun r : R => C r) := by
     intro r s hrs
-    exact hRdisjoint r.property s.property (Subtype.coe_ne_coe.mpr hrs)
+    grind
   have hmeasureU : volume U = ∑' r : R, volume (C r) := by
     rw [hUeq]
     exact measure_iUnion hCpairwise fun r => (hCeligible r r.property).2.1.measurableSet
   calc
-    volume (⋃₀ (g '' B)) ≤ volume (⋃ r : R, g (C r)) := measure_mono htarget_subset
-    _ ≤ ∑' r : R, volume (g (C r)) := measure_iUnion_le _
-    _ ≤ ∑' r : R, ENNReal.ofReal kappa * volume (C r) :=
+    volume _ ≤ volume _ := measure_mono htarget_subset
+    _ ≤ ∑' r : R, volume _ := measure_iUnion_le _
+    _ ≤ ∑' r : R, ENNReal.ofReal kappa * volume _ :=
       ENNReal.tsum_le_tsum fun r =>
-        hmeasure (C r) (hCeligible r r.property) (hCbounded r r.property)
-    _ = ENNReal.ofReal kappa * ∑' r : R, volume (C r) := ENNReal.tsum_mul_left
-    _ = ENNReal.ofReal kappa * volume U := by rw [hmeasureU]
+        hmeasure _ (hCeligible r r.property) (hCbounded r r.property)
+    _ = ENNReal.ofReal kappa * ∑' r : R, volume _ := ENNReal.tsum_mul_left
+    _ = ENNReal.ofReal kappa * volume U := by simp_all
 
 /-- Finite-ambient non-strict local-measure companion to
 `volume_sUnion_monotone_interval_enlargement_Ioo`. -/
 theorem volume_sUnion_monotone_interval_enlargement_Ioo_of_le
-    (kappa : ℝ) (hkappa : 1 < kappa) (t1 t2 : ℝ) (ht : t1 < t2)
+     (hkappa : 1 < kappa) (t1 t2 : ℝ) (ht : t1 < t2)
     (B : Set (Set ℝ)) (g : Set ℝ → Set ℝ)
     (hB : ∀ I ∈ B, IsOpenSubinterval (Ioo t1 t2) I)
     (hg : ∀ I, IsOpenSubinterval (Ioo t1 t2) I →
@@ -168,15 +160,14 @@ theorem volume_sUnion_monotone_interval_enlargement_Ioo_of_le
     (hmono : ∀ I₁ I₂, IsOpenSubinterval (Ioo t1 t2) I₁ →
       IsOpenSubinterval (Ioo t1 t2) I₂ → I₁ ⊆ I₂ → g I₁ ⊆ g I₂) :
     volume (⋃₀ (g '' B)) ≤ ENNReal.ofReal kappa * volume (⋃₀ B) := by
-  have hIoo : IsOpenSubinterval (Ioo t1 t2) (Ioo t1 t2) :=
+  have hIoo : IsOpenSubinterval _ _ :=
     ⟨nonempty_Ioo.mpr ht, isOpen_Ioo, ordConnected_Ioo, subset_rfl⟩
-  apply volume_sUnion_monotone_interval_enlargement_of_le kappa hkappa (Ioo t1 t2)
+  apply volume_sUnion_monotone_interval_enlargement_of_le kappa hkappa _
     hIoo.2.1 hIoo.2.2.1 B g hB
   · exact (Metric.isBounded_Ioo t1 t2).subset
       (sUnion_subset fun I hI => (hB I hI).2.2.2)
   · exact hg
-  · intro I hI _
-    exact hmeasure I hI
-  · exact hmono
+  · simp_all
+  omega
 
 end HypoellipticAleksandrov.Parabolic

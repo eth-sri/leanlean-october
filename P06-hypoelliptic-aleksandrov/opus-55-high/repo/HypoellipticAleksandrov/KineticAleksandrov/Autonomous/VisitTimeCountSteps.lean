@@ -15,8 +15,7 @@ theorem visitTimeQuadratic_le (c : Clock) (b : ℝ) (p : Point) :
   have he := (visitTimeCutoff_properties b c.r c.positive).2 p.time
   have h := mul_le_mul_of_nonneg_left (visitQuadratic_le c (p.velocity 0)) he.1
   have hh := mul_le_mul_of_nonneg_right he.2 (by positivity : 0 ≤ 9 * c.r ^ 2 / 16)
-  simp only [one_mul] at hh
-  exact h.trans hh
+  linarith
 
 /-- Removing the zero internal face bounds the localized exit integral by retained exit mass. -/
 theorem visitTimeQuadratic_retainedExit_integral_le
@@ -29,7 +28,6 @@ theorem visitTimeQuadratic_retainedExit_integral_le
     let B := visitBoundary s T (visitActiveInterval c) J
     (∫ p, visitTimeCutoff b c.r c.positive p.time * visitQuadratic c (p.velocity 0)
       ∂E ∘ₘ mu) ≤ 9 * c.r ^ 2 / 16 * (((E ∘ₘ mu).restrict Bᶜ) univ).toReal := by
-  dsimp only
   let mu := visitEntrancePiece hH hLE hlam hLam A c J s T P n
   let E := visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T
   let B := visitBoundary s T (visitActiveInterval c) J
@@ -38,7 +36,7 @@ theorem visitTimeQuadratic_retainedExit_integral_le
   have hiE : Integrable f (E ∘ₘ mu) :=
     visitTimeQuadratic_integrable_activeExitMixture hH hLE hlam hLam A c J s T b mu
   have hi := integral_mono_ae (hiE.restrict (s := Bᶜ))
-    (integrable_const (9 * c.r ^ 2 / 16))
+    (integrable_const _)
     (Filter.Eventually.of_forall (visitTimeQuadratic_le c b))
   have hx : (∫ p, f p ∂(E ∘ₘ mu).restrict Bᶜ) ≤
       9 * c.r ^ 2 / 16 * (((E ∘ₘ mu).restrict Bᶜ) univ).toReal := by
@@ -46,8 +44,7 @@ theorem visitTimeQuadratic_retainedExit_integral_le
   have hz : (∫ p, f p ∂(E ∘ₘ mu).restrict B) = 0 :=
     visitTimeQuadratic_outgoing_integral_zero hH hLE hlam hLam A c J s T b P n
   have hs := integral_add_compl (measurableSet_visitBoundary s T (visitActiveInterval c) J) hiE
-  rw [hz, zero_add] at hs
-  exact hs.symm.le.trans hx
+  linarith
 
 /-- The true short-time count inequality holds for each actual entrance, with a universal cutoff. -/
 theorem visitTimeQuadratic_entrance_mass_bound : ∃ D : ℝ, 0 ≤ D ∧
@@ -66,16 +63,13 @@ theorem visitTimeQuadratic_entrance_mass_bound : ∃ D : ℝ, 0 ≤ D ∧
   obtain ⟨D, hD, hd⟩ := visitTimeQuadratic_activeGreen_integral_bound
   refine ⟨D, hD, ?_⟩
   intro hH hLE lam Lam hlam hLam A c J s T b P hP n
-  dsimp only
   let mu := visitEntrancePiece hH hLE hlam hLam A c J s T P n
   have hx := visitTimeQuadratic_retainedExit_integral_le hH hLE hlam hLam A c J s T b P n
   have hg := hd hH hLE lam Lam hlam hLam A c J s T b mu inferInstance
   have hh := visitTimeQuadratic_entrance_green_identity hH hLE hlam hLam A c J s T b P hP n
-  dsimp only at hx hg hh
   have hi := (visitTimeQuadratic_entrance_integral_lower
     hH hLE hlam hLam A c J s T b P n).trans hh.le
-  rw [sub_eq_add_neg] at hi
-  exact hi.trans (add_le_add hx hg)
+  linarith
 
 /-- The actual short-time counting inequality sums over any finite number of visits. -/
 theorem visitTimeQuadratic_partial_mass_bound : ∃ D : ℝ, 0 ≤ D ∧
@@ -99,7 +93,6 @@ theorem visitTimeQuadratic_partial_mass_bound : ∃ D : ℝ, 0 ≤ D ∧
   intro hH hLE lam Lam hlam hLam A c J s T b P hP N
   have h := Finset.sum_le_sum (s := Finset.range N)
     (fun n _ => hd hH hLE lam Lam hlam hLam A c J s T b P hP n)
-  dsimp only at h ⊢
   simpa only [Finset.mul_sum, Finset.sum_add_distrib] using h
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

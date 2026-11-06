@@ -19,8 +19,8 @@ theorem bellmanPunctured_sq_pos (q : BellmanPuncturedPlane) :
   intro h
   apply q.property
   have hx : q.val.1 = 0 := by nlinarith only [h, sq_nonneg q.val.2]
-  have hv : q.val.2 = 0 := by nlinarith only [h, sq_nonneg q.val.1]
-  exact Prod.ext hx hv
+  have hv : q.val.2 = 0 := by grind
+  grind
 
 /-- A punctured compact set has a positive uniform squared-distance lower bound. -/
 theorem bellmanPunctured_compact_lower_bound (K : Set BellmanPuncturedPlane)
@@ -45,7 +45,7 @@ instance bellmanFundamentalMeasure_finiteOnCompacts :
     IsFiniteMeasureOnCompacts bellmanFundamentalMeasure where
   lt_top_of_isCompact K hK := by
     obtain ⟨a, ha, hbound⟩ := bellmanPunctured_compact_lower_bound K hK
-    let C : ENNReal := ∫⁻ t : BellmanPositiveTime,
+    let C  := ∫⁻ t : BellmanPositiveTime,
       ENNReal.ofReal (bellmanTimeMajorant a t.val) ∂bellmanPositiveTimeVolume
     have hC : C ≠ ⊤ := bellmanTimeMajorant_lintegral_ne_top a
     calc
@@ -55,7 +55,7 @@ instance bellmanFundamentalMeasure_finiteOnCompacts :
         apply lintegral_mono_ae
         filter_upwards [ae_restrict_mem hK.measurableSet] with q hq
         exact bellmanFundamentalDensity_le_majorant a ha q (hbound q hq)
-      _ = C * bellmanPuncturedVolume K := by rw [lintegral_const, Measure.restrict_apply_univ]
+      _ = C * bellmanPuncturedVolume K := by simp
       _ < ⊤ := ENNReal.mul_lt_top hC.lt_top hK.measure_lt_top
 
 /-- Inner regularity follows from local finiteness on the locally compact punctured plane. -/

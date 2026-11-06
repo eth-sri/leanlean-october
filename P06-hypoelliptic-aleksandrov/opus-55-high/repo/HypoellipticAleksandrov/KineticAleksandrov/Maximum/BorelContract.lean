@@ -34,31 +34,26 @@ abbrev BorelSmoothEstimate {d : ℕ} (lam Lam p alpha C₀ : ℝ) (localised : B
       C₀ * R ^ alpha * (eLpNorm (borelSource localised u f)
         (ENNReal.ofReal p) (volume.restrict (backwardCylinder P₀ R))).toReal
 
+variable {d : ℕ} (localised : Bool) (u f : KineticPoint d → ℝ)
+
 /-- Both source variants are nonnegative pointwise. -/
-theorem borelSource_nonneg {d : ℕ} (localised : Bool) (u f : KineticPoint d → ℝ)
+theorem borelSource_nonneg 
     (P : KineticPoint d) : 0 ≤ borelSource localised u f P := by
   cases localised
-  · exact le_max_right _ _
+  · grind
   · by_cases h : 0 < u P
     · simpa only [borelSource,ite_true,indicator_of_mem (show P ∈ {z | 0 < u z} from h)] using
-        (le_max_right (f P) 0)
+        (le_max_right _ 0)
     · simp only [borelSource,ite_true,indicator_of_notMem (show P ∉ {z | 0 < u z} from h),le_refl]
 
 /-- A nonnegative additive error changes either source variant by at most that error. -/
-theorem borelSource_error_le {d : ℕ} (localised : Bool) (u f : KineticPoint d → ℝ)
+theorem borelSource_error_le 
     {e : KineticPoint d → ℝ} (P : KineticPoint d) (he : 0 ≤ e P) :
     |borelSource localised u (f + e) P - borelSource localised u f P| ≤ e P := by
   have hscalar : |max (f P + e P) 0 - max (f P) 0| ≤ e P := by
-    by_cases hf : 0 ≤ f P
-    · rw [max_eq_left hf,max_eq_left (add_nonneg hf he)]
-      simp only [add_sub_cancel_left,abs_of_nonneg he,le_refl]
-    · rw [max_eq_right (le_of_not_ge hf),sub_zero]
-      by_cases hfe : 0 ≤ f P + e P
-      · rw [max_eq_left hfe,abs_of_nonneg hfe]
-        linarith only [hf]
-      · simpa only [max_eq_right (le_of_not_ge hfe),abs_zero] using he
+    grind
   cases localised
-  · exact hscalar
+  · aesop
   · by_cases h : 0 < u P
     · simpa only [borelSource,ite_true,indicator_of_mem (show P ∈ {z | 0 < u z} from h),
         Pi.add_apply] using

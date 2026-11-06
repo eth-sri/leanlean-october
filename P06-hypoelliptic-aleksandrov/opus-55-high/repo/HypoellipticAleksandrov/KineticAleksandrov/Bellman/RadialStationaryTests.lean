@@ -8,7 +8,6 @@ import Mathlib.Tactic
 /-! # Compact smooth stationary tests and their radial lift identities -/
 
 @[expose] public section
-noncomputable section
 open Set MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -25,9 +24,9 @@ theorem bellman_radial_stationary_test_properties (zeta : (ℝ × ℝ) → ℝ)
   have hv := bellman_contDiff_direction hz (0, 1)
   have hvv := bellman_contDiff_direction hv (0, 1)
   have hts : tsupport (fun q => q.2 * bellmanDx zeta q) ⊆ tsupport zeta :=
-    tsupport_mul_subset_right.trans (tsupport_fderiv_apply_subset ℝ (1, 0))
+    tsupport_mul_subset_right.trans (tsupport_fderiv_apply_subset ℝ _)
   have hrs : tsupport (bellmanDvv zeta) ⊆ tsupport zeta :=
-    (tsupport_fderiv_apply_subset ℝ (0, 1)).trans (tsupport_fderiv_apply_subset ℝ (0, 1))
+    (tsupport_fderiv_apply_subset ℝ _).trans (tsupport_fderiv_apply_subset ℝ _)
   exact ⟨⟨continuous_snd.mul hx.continuous,
     hc.of_isClosed_subset (isClosed_tsupport _) hts, hts.trans hs⟩,
     ⟨hvv.continuous, hc.of_isClosed_subset (isClosed_tsupport _) hrs, hrs.trans hs⟩⟩
@@ -47,13 +46,13 @@ theorem bellman_lift_operator_integral (alpha : ℝ) (zeta : (ℝ × ℝ) → �
   obtain ⟨⟨ht, htc, hts⟩, ⟨hv, hvc, hvs⟩⟩ :=
     bellman_radial_stationary_test_properties zeta hz hc hs
   have hiT := bellman_lift_integrand_integrable (alpha - 2)
-    (fun q => q.2 * bellmanDx zeta q) ht htc hts q hq
+    _ ht htc hts q hq
   have hiV := (bellman_lift_integrand_integrable (alpha - 2)
-    (bellmanDvv zeta) hv hvc hvs q hq).const_mul b
+    _ hv hvc hvs q hq).const_mul b
   have he : -1 - (alpha - 2) = 1 - alpha := by ring
   rw [he] at hiT hiV
   have hiV' : Integrable (fun r : BellmanPositiveTime => r.val ^ (1 - alpha) *
-      (b * bellmanDvv zeta (bellmanPlaneDilation r.val q))) bellmanPositiveTimeVolume :=
+      (b * bellmanDvv zeta _)) bellmanPositiveTimeVolume :=
     hiV.congr (ae_of_all _ (fun r => by ring))
   rw [integral_add hiT hiV', bellmanOperator,
     bellman_lift_dx alpha zeta (hz.of_le (by norm_num)).contDiffOn hc hs q hq,
@@ -67,12 +66,10 @@ theorem bellman_lift_operator_integral (alpha : ℝ) (zeta : (ℝ × ℝ) → �
     dsimp only [bellmanPlaneDilation]
     have hp : r.val ^ (-1 - (alpha - 3)) = r.val ^ (1 - alpha) * r.val := by
       calc
-        r.val ^ (-1 - (alpha - 3)) = r.val ^ ((1 - alpha) + 1) := by congr 1; ring
-        _ = r.val ^ (1 - alpha) * r.val ^ (1 : ℝ) := Real.rpow_add r.property _ _
-        _ = r.val ^ (1 - alpha) * r.val := by rw [Real.rpow_one]
-    rw [hp]
-    ring
-  · apply integral_congr_ae
-    exact ae_of_all _ (fun r => by rw [he]; ring)
+        r.val ^ (-1 - (alpha - 3)) = r.val ^ ((1 - alpha) + 1) := by ring
+        _ = r.val ^ (1 - alpha) * r.val ^ (1) := Real.rpow_add r.property _ _
+        _ = r.val ^ (1 - alpha) * r.val := by simp
+    grind
+  ring
 
 end HypoellipticAleksandrov.KineticAleksandrov

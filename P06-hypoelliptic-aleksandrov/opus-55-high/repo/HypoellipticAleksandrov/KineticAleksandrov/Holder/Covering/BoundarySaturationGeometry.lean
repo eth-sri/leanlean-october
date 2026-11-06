@@ -26,8 +26,10 @@ def saturationCenter {d : ℕ} (X : KineticPoint d) (r : ℝ) : KineticPoint d :
   ⟨(1-r^2)*X.time, X.position+(((1-r^2)*X.time)-X.time) • ((1-r) • X.velocity),
     (1-r) • X.velocity⟩
 
+variable {d : ℕ} {X : KineticPoint d}
+
 /-- Native coordinate inequalities for membership in the unit cylinder. -/
-theorem mem_unitCylinder_iff {d : ℕ} (X : KineticPoint d) :
+theorem mem_unitCylinder_iff  (X : KineticPoint d) :
     X ∈ unitCylinder d ↔ -1 < X.time ∧ X.time < 0 ∧
       PDE.vecEuclideanNorm X.velocity < 1 ∧ PDE.vecEuclideanNorm X.position < 1 := by
   simp only [unitCylinder, mem_backwardCylinder_iff, zero_sub, one_pow,
@@ -35,15 +37,15 @@ theorem mem_unitCylinder_iff {d : ℕ} (X : KineticPoint d) :
     relativePosition, smul_zero]
 
 /-- The point retained by the admissible path has zero relative position. -/
-theorem relativePosition_saturationCenter {d : ℕ} (X : KineticPoint d) (r : ℝ) :
+theorem relativePosition_saturationCenter  (X : KineticPoint d) (r : ℝ) :
     relativePosition (saturationCenter X r) X = 0 := by
   ext i
   simp only [relativePosition, saturationCenter, Pi.sub_apply, Pi.add_apply,
-    Pi.smul_apply, Pi.zero_apply, smul_eq_mul]
+    Pi.smul_apply, Pi.zero_apply]
   ring
 
 /-- Every positive-radius path cylinder contains its point. -/
-theorem self_mem_saturationCylinder {d : ℕ} {X : KineticPoint d}
+theorem self_mem_saturationCylinder 
     (hX : X ∈ unitCylinder d) {r : ℝ} (hr : 0 < r) :
     X ∈ backwardCylinder (saturationCenter X r) r := by
   obtain ⟨htlo, hthi, hv, _⟩ := (mem_unitCylinder_iff X).mp hX
@@ -56,7 +58,7 @@ theorem self_mem_saturationCylinder {d : ℕ} {X : KineticPoint d}
   · rw [PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hr]
     have heq : X.velocity-(saturationCenter X r).velocity = r • X.velocity := by
       ext i
-      simp only [saturationCenter, Pi.sub_apply, Pi.smul_apply, smul_eq_mul]
+      simp only [saturationCenter, Pi.sub_apply, Pi.smul_apply]
       ring
     rw [heq, PDE.vecEuclideanNorm_smul, abs_of_pos hr]
     nlinarith
@@ -64,21 +66,19 @@ theorem self_mem_saturationCylinder {d : ℕ} {X : KineticPoint d}
     exact PDE.center_mem_euclideanBall 0 (pow_pos hr 3)
 
 /-- Points of a path cylinder stay within r² in time of its retained point. -/
-theorem saturationCylinder_time_bound {d : ℕ} {X Y : KineticPoint d}
+theorem saturationCylinder_time_bound  {X Y : KineticPoint d}
     (hX : X ∈ unitCylinder d) {r : ℝ} (hr : 0 < r)
     (hY : Y ∈ backwardCylinder (saturationCenter X r) r) :
     |Y.time-X.time| < r^2 :=
   abs_time_sub_lt_sq hY (self_mem_saturationCylinder hX hr)
 
 /-- The path is contained in the unit cylinder away from a spatial shell. -/
-theorem saturationCylinder_subset_unit {d : ℕ} {X : KineticPoint d}
+theorem saturationCylinder_subset_unit 
     (hX : X ∈ unitCylinder d) {r R : ℝ} (hr : 0 < r) (hrR : r ≤ R)
     (hR : R ≤ 1) (hx : PDE.vecEuclideanNorm X.position < 1-2*R^2) :
     backwardCylinder (saturationCenter X r) r ⊆ unitCylinder d := by
-  have hRp : 0 < R := hr.trans_le hrR
   have hr1 : r ≤ 1 := hrR.trans hR
   obtain ⟨htlo, hthi, hv, _⟩ := (mem_unitCylinder_iff X).mp hX
-  have hv0 := PDE.vecEuclideanNorm_nonneg X.velocity
   have hvc : PDE.vecEuclideanNorm (saturationCenter X r).velocity ≤ 1-r := by
     change PDE.vecEuclideanNorm ((1-r) • X.velocity) ≤ 1-r
     rw [PDE.vecEuclideanNorm_smul, abs_of_nonneg (sub_nonneg.mpr hr1)]
@@ -92,7 +92,6 @@ theorem saturationCylinder_subset_unit {d : ℕ} {X : KineticPoint d}
       nlinarith
     exact hbot.trans_lt hY.1
   · have htop : (saturationCenter X r).time ≤ 0 := by
-      change (1-r^2)*X.time ≤ 0
       apply mul_nonpos_of_nonneg_of_nonpos <;> nlinarith
     exact hY.2.1.trans_le htop
   · have hy := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hr).mp hY.2.2.1
@@ -108,7 +107,7 @@ theorem saturationCylinder_subset_unit {d : ℕ} {X : KineticPoint d}
         (Y.time-X.time) • (saturationCenter X r).velocity := by
       ext i
       simp only [relativePosition, saturationCenter, Pi.sub_apply, Pi.add_apply,
-        Pi.smul_apply, smul_eq_mul]
+        Pi.smul_apply]
       ring
     have hnorm := PDE.vecEuclideanNorm_add_le X.position
       (relativePosition (saturationCenter X r) Y)
@@ -123,16 +122,15 @@ theorem saturationCylinder_subset_unit {d : ℕ} {X : KineticPoint d}
     rw [PDE.vecEuclideanNorm_smul] at hnorm2
     have hs : r^2 ≤ R^2 := by nlinarith
     have hc : r^3 ≤ r^2 := by nlinarith [sq_nonneg r]
-    rw [heq]
-    linarith
+    grind
 
 /-- A path cylinder fits in the centered kinetic cylinder of twice its radius. -/
-theorem saturationCylinder_subset_centered {d : ℕ} {X : KineticPoint d}
+theorem saturationCylinder_subset_centered 
     (hX : X ∈ unitCylinder d) {r : ℝ} (hr : 0 < r) :
     backwardCylinder (saturationCenter X r) r ⊆ centeredCylinder X (2*r) := by
   have hv := ((mem_unitCylinder_iff X).mp hX).2.2.1
   intro Y hY
-  apply (mem_centeredCylinder_iff X Y (by positivity : 0 < 2*r)).mpr
+  apply (mem_centeredCylinder_iff X Y (by positivity)).mpr
   have ht := saturationCylinder_time_bound hX hr hY
   have hyv := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hr).mp hY.2.2.1
   have hyp := (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt
@@ -140,7 +138,7 @@ theorem saturationCylinder_subset_centered {d : ℕ} {X : KineticPoint d}
   rw [sub_zero] at hyp
   have heq : (saturationCenter X r).velocity-X.velocity = (-r) • X.velocity := by
     ext i
-    simp only [saturationCenter, Pi.sub_apply, Pi.smul_apply, smul_eq_mul]
+    simp only [saturationCenter, Pi.sub_apply, Pi.smul_apply]
     ring
   have hvc : PDE.vecEuclideanNorm ((saturationCenter X r).velocity-X.velocity) < r := by
     rw [heq, PDE.vecEuclideanNorm_smul, abs_neg, abs_of_pos hr]
@@ -152,9 +150,9 @@ theorem saturationCylinder_subset_centered {d : ℕ} {X : KineticPoint d}
       (Y.time-X.time) • ((saturationCenter X r).velocity-X.velocity) := by
     ext i
     simp only [relativePosition, saturationCenter, Pi.sub_apply, Pi.add_apply,
-      Pi.smul_apply, smul_eq_mul]
+      Pi.smul_apply]
     ring
-  refine ⟨by nlinarith [sq_pos_of_pos hr], ?_, ?_⟩
+  refine ⟨by grind, ?_, ?_⟩
   · rw [hvsum]
     exact (PDE.vecEuclideanNorm_add_le _ _).trans_lt (by linarith)
   · rw [hpsum]

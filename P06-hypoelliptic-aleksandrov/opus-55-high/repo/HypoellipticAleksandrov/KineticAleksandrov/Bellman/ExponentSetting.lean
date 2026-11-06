@@ -26,13 +26,7 @@ abbrev BellmanPuncturedPlane := {q : ℝ × ℝ // q ≠ (0, 0)}
 def bellmanDilation (r : ℝ) (hr : 0 < r) :
     BellmanPuncturedPlane → BellmanPuncturedPlane := fun q =>
   ⟨(r ^ 3 * q.1.1, r * q.1.2), by
-    intro h
-    have hx : r ^ 3 * q.1.1 = 0 := congrArg Prod.fst h
-    have hv : r * q.1.2 = 0 := congrArg Prod.snd h
-    apply q.2
-    apply Prod.ext
-    · exact (mul_eq_zero.mp hx).resolve_left (pow_ne_zero 3 hr.ne')
-    · exact (mul_eq_zero.mp hv).resolve_left hr.ne'⟩
+    aesop⟩
 
 /-- Literal measure-scaling meaning of density degree; no density is assumed to exist. -/
 def HasBellmanDensityDegree (β : ℝ) (μ : Measure BellmanPuncturedPlane) : Prop :=

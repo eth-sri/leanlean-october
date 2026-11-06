@@ -42,10 +42,8 @@ theorem unifIntegrable_of_ae_norm_le
   refine (eLpNorm_mono_ae ((hF i).indicator hs) ?_).trans (hsmall s hs hμs)
   filter_upwards [hbound i] with x hx
   by_cases hxs : x ∈ s
-  · simp only [Set.indicator_of_mem hxs]
-    exact hx
-  · simp only [Set.indicator_of_notMem hxs, norm_zero]
-    exact le_rfl
+  · simp_all
+  simp_all
 
 /-- Dominated almost-everywhere convergence implies convergence in
 finite-exponent `L^p` on a finite measure space. -/

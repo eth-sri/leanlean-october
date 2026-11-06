@@ -153,16 +153,6 @@ namespace H10Function
 
 variable {u : H10Function U}
 
-@[ext]
-theorem ext {u v : H10Function U}
-    (htoH1Function : u.toH1Function = v.toH1Function)
-    (happrox : u.approx = v.approx) : u = v := by
-  cases u
-  cases v
-  cases htoH1Function
-  cases happrox
-  rfl
-
 /-- Recover the exact supported smooth approximation certificate bundled by an
 `H10Function`. -/
 def supportedSmoothApproximation (u : H10Function U) :
@@ -177,8 +167,7 @@ def supportedSmoothApproximation (u : H10Function U) :
 @[simp]
 theorem supportedSmoothApproximation_toH10Function (u : H10Function U) :
     u.toH1Function.toH10Function u.supportedSmoothApproximation = u := by
-  cases u
-  rfl
+  aesop
 
 /-- The `n`th approximation bundled by an `H10Function`, exposed as an actual
 smooth compactly supported test function. -/
@@ -231,34 +220,28 @@ noncomputable def ofContDiff (hU : IsOpen U)
   tendsto_approx := by
     simpa only [W1pFunction.ofContDiff, W1pFunction.toH1Function_toFun,
       sub_self, MeasureTheory.eLpNorm_fun_zero] using
-      (tendsto_const_nhds :
-        Tendsto (fun _ : ℕ => (0 : ℝ≥0∞)) atTop (𝓝 0))
+      tendsto_const_nhds
   tendsto_approx_grad := by
     intro i
     simpa only [W1pFunction.ofContDiff, W1pFunction.toH1Function_grad,
       sub_self, MeasureTheory.eLpNorm_fun_zero] using
-      (tendsto_const_nhds :
-        Tendsto (fun _ : ℕ => (0 : ℝ≥0∞)) atTop (𝓝 0))
+      tendsto_const_nhds
+
+variable (hU : IsOpen U) {f : Vec d → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f) (hcompact : HasCompactSupport f) (hsub : tsupport f ⊆ U)
 
 @[simp]
-theorem ofContDiff_toFun (hU : IsOpen U)
-    {f : Vec d → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
-    (hcompact : HasCompactSupport f) (hsub : tsupport f ⊆ U) :
+theorem ofContDiff_toFun  :
     (ofContDiff hU hf hcompact hsub).toH1Function.toFun = f :=
   rfl
 
 @[simp]
-theorem ofContDiff_grad (hU : IsOpen U)
-    {f : Vec d → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
-    (hcompact : HasCompactSupport f) (hsub : tsupport f ⊆ U) :
+theorem ofContDiff_grad  :
     (ofContDiff hU hf hcompact hsub).toH1Function.grad =
       fun x i => (fderiv ℝ f x) (basisVec i) :=
   rfl
 
 @[simp]
-theorem ofContDiff_approx (hU : IsOpen U)
-    {f : Vec d → ℝ} (hf : ContDiff ℝ (⊤ : ℕ∞) f)
-    (hcompact : HasCompactSupport f) (hsub : tsupport f ⊆ U)
+theorem ofContDiff_approx 
     (n : ℕ) :
     (ofContDiff hU hf hcompact hsub).approx n = f :=
   rfl
@@ -271,8 +254,7 @@ namespace H1Function
 theorem toH10Function_supportedSmoothApproximation
     (u : H1Function U) (happrox : u.SupportedSmoothApproximation) :
     (u.toH10Function happrox).supportedSmoothApproximation = happrox := by
-  cases happrox
-  rfl
+  aesop
 
 end H1Function
 

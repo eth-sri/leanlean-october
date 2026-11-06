@@ -18,7 +18,6 @@ literal radius dependence.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 
@@ -32,16 +31,14 @@ theorem retention_rate_uniform {d N : ℕ} (hN : 3 ≤ N)
     (hρ : 0 < ρ) (hc : 0 < barrierC d N lam Lam) :
     barrierRate d N lam Lam ρ H ≤
       (2 * N * d * Lam + (N : ℝ) ^ 2 / barrierC d N lam Lam) * (ρ⁻¹ ^ 2 + H ^ 2) := by
-  have _hN := hN
-  have _hρ := hρ
   have hLam : 0 ≤ Lam := (hlam.trans_le hlamLam).le
-  have hA : 0 ≤ 2 * (N : ℝ) * d * Lam := by positivity
-  have hB : 0 ≤ (N : ℝ) ^ 2 / barrierC d N lam Lam := by positivity
-  have h1 : 0 ≤ (2 * (N : ℝ) * d * Lam) * H ^ 2 := mul_nonneg hA (sq_nonneg H)
-  have h2 : 0 ≤ ((N : ℝ) ^ 2 / barrierC d N lam Lam) * ρ⁻¹ ^ 2 :=
+  have hA : 0 ≤ 2 * N * d * Lam := by positivity
+  have hB : 0 ≤ N ^ 2 / barrierC d N lam Lam := by positivity
+  have h1 : 0 ≤ (2 * N * d * Lam) * H ^ 2 := mul_nonneg hA (sq_nonneg H)
+  have h2 : 0 ≤ (N ^ 2 / barrierC d N lam Lam) * ρ⁻¹ ^ 2 :=
     mul_nonneg hB (sq_nonneg _)
   unfold barrierRate
   simp only [div_eq_mul_inv, inv_pow] at h1 h2 ⊢
-  nlinarith only [h1, h2]
+  linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

@@ -16,14 +16,16 @@ open scoped Classical
 def enlargedStoppedPotential (b : ℝ) (u : Point → ℝ) (p : Point) : ℝ :=
   if p.time ≤ b then u p else 0
 
+variable (b : ℝ) (u : Point → ℝ)
+
 /-- A continuous past potential has a measurable stopped extension. -/
-theorem enlargedStoppedPotential_measurable (b : ℝ) (u : Point → ℝ)
+theorem enlargedStoppedPotential_measurable 
     (hc : ContinuousOn u {p | p.time ≤ b}) : Measurable (enlargedStoppedPotential b u) :=
   hc.measurable_piecewise continuousOn_const
     (isClosed_le continuous_time continuous_const).measurableSet
 
 /-- A bounded past potential has integrable stopped action against every finite measure. -/
-theorem enlargedStoppedPotential_integrable (b : ℝ) (u : Point → ℝ)
+theorem enlargedStoppedPotential_integrable 
     (hc : ContinuousOn u {p | p.time ≤ b}) (M : ℝ) (hM : 0 ≤ M)
     (hb : ∀ p, p.time ≤ b → |u p| ≤ M) (mu : Measure Point) [IsFiniteMeasure mu] :
     Integrable (enlargedStoppedPotential b u) mu := by
@@ -33,9 +35,7 @@ theorem enlargedStoppedPotential_integrable (b : ℝ) (u : Point → ℝ)
   intro p
   rw [Real.norm_eq_abs]
   unfold enlargedStoppedPotential
-  split
-  · exact hb p ‹p.time ≤ b›
-  · simpa only [abs_zero] using hM
+  grind
 
 /-- The stopped exit action is bounded by the original homogeneous potential value.
 Its C112 premises are discharged by the supplied full-space classical potential. -/
@@ -57,12 +57,12 @@ theorem enlarged_stripExit_stopped_potential_le
   let E := stripExit hH hLE hlam hLam A H b (stripPoleFinite H e b hb)
   have hs : ∀ᵐ p ∂E, p ∈ S :=
     (stripExitOfRealization_ae_closed_future hH hlam hLam A H
-      (stripEvolution hH hLE hlam hLam A H)
-      (stripEvolution_spec hH hLE hlam hLam A H) b (stripPoleFinite H e b hb)).mono
+      _
+      _ b _).mono
         fun _ hp => hp.2.1
   have hint := enlargedStoppedPotential_integrable b u hc M hM hbound E
   have heq : enlargedStoppedPotential b u =ᵐ[E] u := hs.mono fun p hp => ite_eq_left hp
-  have hu : Integrable u E := hint.congr heq
+  have hu  := hint.congr heq
   have hdom : (stripExit hH hLE hlam hLam A H T
       (stripPoleFinite H e T (hb.trans_le hBT))).restrict S ≤ E := by
     rcases eq_or_lt_of_le hBT with rfl | hlt
@@ -77,20 +77,20 @@ theorem enlarged_stripExit_stopped_potential_le
     exact ⟨hc0.mono hsub, fun p hp => ht p (hsub hp), fun p hp => hx p (hsub hp),
       fun p hp => hv p (hsub hp), htc.mono hsub, hxc.mono hsub, hvc.mono hsub,
       hvvc.mono hsub⟩
-  have hi := strip_identity_C112 hH hLE hlam hLam A H (e.1.time - 1) b
+  have hi := strip_identity_C112 hH hLE hlam hLam A H _ b
     (by linarith) (stripPoleFinite H e b hb) (by change e.1.time - 1 < e.1.time; linarith)
     u hr
       (hc.mono fun p hp => by
         rcases hp with hp | hp
-        · exact hp.2.1.le
+        · grind
         · rcases hp with hp | hp
-          · exact hp.1.le
-          · exact hp.2.1.le)
-      ⟨M, fun p hp => ⟨hbound p hp.2.1.le, by rw [hop p hp.2.1, abs_zero]; exact hM⟩⟩
+          · simp_all
+          grind)
+      ⟨M, fun p hp => ⟨hbound p hp.2.1.le, by grind⟩⟩
   have hz : (∫ p, forwardScalarOperator A.a u p
       ∂stripGreen hH hLE hlam hLam A H b (stripPoleFinite H e b hb)) = 0 := by
     apply integral_eq_zero_of_ae
-    exact (stripGreenOfKernel_ae_mem_stripPast H _ b (stripPoleFinite H e b hb)).mono
+    exact (stripGreenOfKernel_ae_mem_stripPast H _ b _).mono
       fun p hp => hop p hp.1
   rw [hz, sub_zero] at hi
   rw [← hi] at hm

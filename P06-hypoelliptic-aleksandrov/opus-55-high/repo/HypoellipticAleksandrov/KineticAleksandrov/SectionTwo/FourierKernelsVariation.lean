@@ -6,7 +6,6 @@ import Mathlib.MeasureTheory.Integral.Lebesgue.Add
 /-! # Total-variation product bound for Fourier kernel composition -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 open scoped ENNReal ProbabilityTheory
@@ -26,11 +25,7 @@ theorem fourierKernel_totalVariation_composition {d : ℕ}
   let ν' := fourierKernel K σ τ (hσr.trans hrτ) ξ v
   let C := ⨆ v' : PDE.Vec d, totalVariationNorm (fourierKernel K r τ hrτ ξ v')
   have hB : ‖ContinuousLinearMap.mul ℝ ℂ‖ₑ ≤ 1 := by
-    rw [← ofReal_norm]
-    exact (ENNReal.ofReal_le_ofReal
-      (LinearMap.mkContinuous₂_norm_le (LinearMap.mul ℝ ℂ) zero_le_one
-        (fun x y => by simpa only [LinearMap.mul_apply', one_mul] using norm_mul_le x y))).trans_eq
-      ENNReal.ofReal_one
+    simp
   by_contra hn
   have hlt : totalVariationNorm ν * C < ν'.variation univ := lt_of_not_ge hn
   obtain ⟨P, _, hPd, hPm, hPgt⟩ :=
@@ -43,20 +38,18 @@ theorem fourierKernel_totalVariation_composition {d : ℕ}
         rw [fourierKernel_composition K hcomp hcov σ r τ hσr hrτ ξ v E (hPm E hEP)]
         exact (VectorMeasure.enorm_integral_le_lintegral_enorm).trans
           (by
-            simpa only [one_mul] using
-              (mul_le_mul' hB (le_refl
-                (∫⁻ v', ‖fourierKernel K r τ hrτ ξ v' E‖ₑ ∂ν.variation))))
+            aesop)
       _ = ∫⁻ v', ∑ E ∈ P, ‖fourierKernel K r τ hrτ ξ v' E‖ₑ ∂ν.variation := by
         rw [lintegral_finsetSum P (fun E hEP =>
           (measurable_fourierKernel_apply K r τ hrτ ξ E (hPm E hEP)).enorm)]
       _ ≤ ∫⁻ v', C ∂ν.variation := by
         apply lintegral_mono
         intro v'
-        exact (VectorMeasure.le_variation (fourierKernel K r τ hrτ ξ v')
+        exact (VectorMeasure.le_variation _
           MeasurableSet.univ (fun E _ => subset_univ E) hPd).trans
-          (le_iSup (fun x => totalVariationNorm (fourierKernel K r τ hrτ ξ x)) v')
+          (le_iSup (fun x => totalVariationNorm _) v')
       _ = totalVariationNorm ν * C := by
         rw [lintegral_const, mul_comm]
-  exact (not_lt_of_ge hsum) hPgt
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

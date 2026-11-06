@@ -22,8 +22,7 @@ def activeRestartPoint (H : Interval) (s : ℝ)
 
 /-- Restoring physical coordinates on a fixed time slice is measurable. -/
 theorem measurable_activeRestartPoint (H : Interval) (s : ℝ) :
-    Measurable (activeRestartPoint H s) := by
-  exact (KineticPoint.measurable_equivProd_symm 1).comp
+    Measurable (activeRestartPoint H s) := (KineticPoint.measurable_equivProd_symm 1).comp
     (measurable_const.prodMk
       ((measurable_snd.comp measurable_subtype_coe).prodMk
         (measurable_fst.comp measurable_subtype_coe)))
@@ -40,10 +39,11 @@ def activeRestartMeasure
     (stripPoleState c.activeInterval ⊤ ⟨e, WithTop.coe_lt_top _, he⟩)).map
       (activeRestartPoint c.activeInterval (e.time + t))
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+
 /-- The mass of the remaining terminal measure is exactly the surviving killed mass. -/
 theorem activeRestartMeasure_mass
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point)
     (he : e.velocity 0 ∈ c.active) (t : ℝ) (ht : 0 ≤ t) :
     activeRestartMeasure hH hLE hlam hLam A c e he t ht univ =
@@ -53,22 +53,20 @@ theorem activeRestartMeasure_mass
   have hmass := stripSurvivingMass_eq_kernel_mass A c.activeInterval E
     (stripEvolution_spec hH hLE hlam hLam A c.activeInterval)
     e.time (e.time + t) (le_add_of_nonneg_right ht) z
-  change (Measure.map (activeRestartPoint c.activeInterval (e.time + t))
+  change (Measure.map _
     (E.2.fiberKernel (intervalDomain_measurable c.activeInterval)
       e.time (e.time + t) (le_add_of_nonneg_right ht) z)) univ =
     ENNReal.ofReal (stripSurvivingMass c.activeInterval E
       e.time (e.time + t) (le_add_of_nonneg_right ht) z)
-  rw [Measure.map_apply (measurable_activeRestartPoint _ _) MeasurableSet.univ,
-    preimage_univ, hmass]
+  rw [Measure.map_apply (measurable_activeRestartPoint _ _) MeasurableSet.univ, hmass]
   exact (ENNReal.ofReal_toReal
-    ((E.2.fiberKernel_mass_le_one (intervalDomain_measurable c.activeInterval)
-      e.time (e.time + t) (le_add_of_nonneg_right ht) z).trans_lt
+    ((E.2.fiberKernel_mass_le_one _
+      e.time _ _ z).trans_lt
         ENNReal.one_lt_top).ne).symm
 
 /-- Remaining terminal mass obeys the source uniform exponential decay. -/
 theorem activeRestartMeasure_mass_exp
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) :
+     :
     ∃ C c₀ : ℝ, 0 < C ∧ 0 < c₀ ∧ ∀ (A : SmoothAutonomous lam Lam) (c : Clock)
       (e : Point) (he : e.velocity 0 ∈ c.active) (t : ℝ) (ht : 0 ≤ t),
       activeRestartMeasure hH hLE hlam hLam A c e he t ht univ ≤

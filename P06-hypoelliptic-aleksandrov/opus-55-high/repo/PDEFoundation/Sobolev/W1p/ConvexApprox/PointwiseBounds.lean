@@ -29,17 +29,19 @@ open scoped Pointwise Convolution
 
 namespace PDE
 
+variable {d : ℕ} {U : Set (Vec d)} {ρ u : Vec d → ℝ} (hU : IsOpenBoundedConvexDomain U)
+
 /-- Membership in the closed unit ball centered at zero gives the expected
 norm bound. -/
 theorem norm_le_one_of_mem_closedBall_zero_one
-    {d : ℕ} {z : Vec d}
+     {z : Vec d}
     (hz : z ∈ Metric.closedBall (0 : Vec d) 1) :
     ‖z‖ ≤ 1 := by
-  simpa only [Metric.mem_closedBall, dist_zero_right] using hz
+  simp_all
 
 /-- Kernel support points produce samples that remain in the convex domain. -/
 theorem convexApproxSample_mem_of_tsupport_subset_closedBall
-    {d : ℕ} {U : Set (Vec d)}
+    
     (hU : IsOpenBoundedConvexDomain U)
     {ρ : Vec d → ℝ} {x x0 z : Vec d} {r ε : ℝ}
     (hx : x ∈ U)
@@ -58,7 +60,7 @@ theorem convexApproxSample_mem_of_tsupport_subset_closedBall
 /-- The smoothing error is the kernel-weighted average of pointwise
 differences. -/
 theorem convexApproxSmoothing_sub_eq_setIntegral_weightedDiff
-    {d : ℕ} {ρ u : Vec d → ℝ}
+    
     (hρ : IsConvexApproxKernel ρ) (hu : Continuous u)
     (x0 : Vec d) (r ε : ℝ) (x : Vec d) :
     convexApproxSmoothing ρ u x0 r ε x - u x =
@@ -67,15 +69,14 @@ theorem convexApproxSmoothing_sub_eq_setIntegral_weightedDiff
           (u (convexApproxSample x0 z r ε x) - u x) := by
   have hInt1 :
       MeasureTheory.IntegrableOn
-        (fun z =>
-          convexApproxIntegrand ρ u x0 r ε x z)
+        _
         (tsupport ρ) :=
     (integrable_convexApproxIntegrand
       hρ.continuous hρ.compactSupport hu
       x0 r ε x).integrableOn
   have hInt2 :
       MeasureTheory.IntegrableOn
-        (fun z => ρ z * u x) (tsupport ρ) :=
+        _ (tsupport ρ) :=
     (integrable_convexApproxKernelMulConst
       hρ.continuous hρ.compactSupport (u x)).integrableOn
   have hconst :
@@ -87,15 +88,14 @@ theorem convexApproxSmoothing_sub_eq_setIntegral_weightedDiff
         (∫ z in tsupport ρ,
             convexApproxIntegrand ρ u x0 r ε x z) -
           ∫ z in tsupport ρ, ρ z * u x := by
-      rw [convexApproxSmoothing]
-      conv_lhs => rw [← hconst]
+      simp_all
     _ = ∫ z in tsupport ρ,
           convexApproxIntegrand ρ u x0 r ε x z -
             ρ z * u x := by
       rw [MeasureTheory.integral_sub hInt1 hInt2]
     _ = ∫ z in tsupport ρ,
           ρ z *
-            (u (convexApproxSample x0 z r ε x) - u x) := by
+            (u _ - u x) := by
       apply MeasureTheory.integral_congr_ae
       filter_upwards with z
       simp only [convexApproxIntegrand]
@@ -105,7 +105,7 @@ theorem convexApproxSmoothing_sub_eq_setIntegral_weightedDiff
 pointwise oscillation. -/
 theorem
     abs_convexApproxSmoothing_sub_le_setIntegral_weightedOscillation
-    {d : ℕ} {ρ u : Vec d → ℝ}
+    
     (hρ : IsConvexApproxKernel ρ) (hu : Continuous u)
     (x0 : Vec d) (r ε : ℝ) (x : Vec d) :
     |convexApproxSmoothing ρ u x0 r ε x - u x| ≤
@@ -114,24 +114,24 @@ theorem
           |u (convexApproxSample x0 z r ε x) - u x| := by
   rw [
     convexApproxSmoothing_sub_eq_setIntegral_weightedDiff
-      hρ hu x0 r ε x]
+      hρ hu]
   calc
     |∫ z in tsupport ρ,
         ρ z *
-          (u (convexApproxSample x0 z r ε x) - u x)| ≤
+          (u _ - u x)| ≤
         ∫ z in tsupport ρ,
           |ρ z *
-            (u (convexApproxSample x0 z r ε x) - u x)| := by
+            (u _ - u x)| := by
       simpa only using
         (MeasureTheory.abs_integral_le_integral_abs
           (μ :=
-            MeasureTheory.volume.restrict (tsupport ρ))
+            MeasureTheory.volume.restrict _)
           (f := fun z =>
             ρ z *
-              (u (convexApproxSample x0 z r ε x) - u x)))
+              (u _ - u x)))
     _ = ∫ z in tsupport ρ,
           ρ z *
-            |u (convexApproxSample x0 z r ε x) - u x| := by
+            |u _ - u x| := by
       apply MeasureTheory.integral_congr_ae
       filter_upwards with z
       rw [abs_mul, abs_of_nonneg (hρ.nonneg z)]
@@ -139,7 +139,7 @@ theorem
 /-- A pointwise oscillation bound on every kernel sample controls the
 smoothing error with the same constant. -/
 theorem abs_convexApproxSmoothing_sub_le_of_pointwiseOscillation
-    {d : ℕ} {ρ u : Vec d → ℝ}
+    
     (hρ : IsConvexApproxKernel ρ) (hu : Continuous u)
     (x0 : Vec d) (r ε : ℝ) (x : Vec d) {δ : ℝ}
     (hosc :
@@ -148,23 +148,21 @@ theorem abs_convexApproxSmoothing_sub_le_of_pointwiseOscillation
     |convexApproxSmoothing ρ u x0 r ε x - u x| ≤ δ := by
   have hIntLeft :
       MeasureTheory.IntegrableOn
-        (fun z =>
-          ρ z *
-            |u (convexApproxSample x0 z r ε x) - u x|)
+        _
         (tsupport ρ) :=
     (integrable_convexApproxWeightedOscillation
       hρ.continuous hρ.compactSupport hu
       x0 r ε x).integrableOn
   have hIntRight :
       MeasureTheory.IntegrableOn
-        (fun z => ρ z * δ) (tsupport ρ) :=
+        _ (tsupport ρ) :=
     (integrable_convexApproxKernelMulConst
       hρ.continuous hρ.compactSupport δ).integrableOn
   calc
     |convexApproxSmoothing ρ u x0 r ε x - u x| ≤
         ∫ z in tsupport ρ,
           ρ z *
-            |u (convexApproxSample x0 z r ε x) - u x| :=
+            |u _ - u x| :=
       abs_convexApproxSmoothing_sub_le_setIntegral_weightedOscillation
         hρ hu x0 r ε x
     _ ≤ ∫ z in tsupport ρ, ρ z * δ := by
@@ -183,9 +181,7 @@ theorem abs_convexApproxSmoothing_sub_le_of_pointwiseOscillation
 `ε * (2 * Classical.choose hU.isBoundedDomain)` controls the smoothing
 error. -/
 theorem abs_convexApproxSmoothing_sub_le_of_modulus
-    {d : ℕ} {U : Set (Vec d)}
-    {ρ u : Vec d → ℝ}
-    (hU : IsOpenBoundedConvexDomain U)
+    
     (hρ : IsConvexApproxKernel ρ) (hu : Continuous u)
     {x x0 : Vec d} {r ε : ℝ}
     (hx : x ∈ U)
@@ -204,30 +200,23 @@ theorem abs_convexApproxSmoothing_sub_le_of_modulus
     abs_convexApproxSmoothing_sub_le_of_pointwiseOscillation
       hρ hu x0 r ε x
   intro z hz
-  have hy :
-      convexApproxSample x0 z r ε x ∈ U :=
+  have hy  :=
     convexApproxSample_mem_of_tsupport_subset_closedBall
       hU hx hball hρ.support_subset_closedBall hz
       hr hε0 hε1
-  have hdist :
-      ‖convexApproxSample x0 z r ε x - x‖ ≤
-        ε *
-          (2 *
-            Classical.choose hU.isBoundedDomain) :=
+  have hdist  :=
     norm_convexApproxSample_sub_le_two_mul_choose_of_isOpenBoundedConvexDomain
       hU hx hball hr
       (norm_le_one_of_mem_closedBall_zero_one
         (hρ.support_subset_closedBall hz))
       hε0
-  exact hmod _ hy hdist
+  simp_all
 
 /-- Uniform continuity on the closure supplies a positive scale that controls
 the smoothing error uniformly over the whole domain. -/
 theorem
     exists_pos_forall_abs_convexApproxSmoothing_sub_le_of_continuous
-    {d : ℕ} {U : Set (Vec d)}
-    {ρ u : Vec d → ℝ}
-    (hU : IsOpenBoundedConvexDomain U)
+    
     (hρ : IsConvexApproxKernel ρ) (hu : Continuous u)
     {x0 : Vec d} {r : ℝ}
     (hball : Metric.closedBall x0 r ⊆ U)
@@ -247,8 +236,7 @@ theorem
   have hcompact :
       IsCompact (closure U) :=
     hU.isBoundedDomain.isBounded.isCompact_closure
-  have huc :
-      UniformContinuousOn u (closure U) :=
+  have huc  :=
     hcompact.uniformContinuousOn_of_continuous
       hu.continuousOn
   rcases
@@ -260,41 +248,29 @@ theorem
     abs_convexApproxSmoothing_sub_le_of_modulus
       hU hρ hu hx hball hr hε0 hε1
   intro y hy hyx
-  have hxcl : x ∈ closure U :=
+  have hxcl  :=
     subset_closure hx
-  have hycl : y ∈ closure U :=
+  have hycl  :=
     subset_closure hy
   have hdist :
       dist (u y) (u x) ≤ δ := by
     apply hη y hycl x hxcl
     calc
       dist y x = ‖y - x‖ := by
-        simpa only using (dist_eq_norm y x)
+        aesop
       _ ≤ ε *
           (2 *
             Classical.choose hU.isBoundedDomain) :=
         hyx
       _ ≤ η :=
         hεη
-  simpa only [Real.dist_eq, Real.norm_eq_abs] using hdist
-
-/-- The explicit diameter surrogate used in the modulus bound is
-nonnegative. -/
-theorem two_mul_choose_isBoundedDomain_nonneg
-    {d : ℕ} {U : Set (Vec d)}
-    (hU : IsBoundedDomain U) :
-    0 ≤ 2 * Classical.choose hU := by
-  have hchooseNonneg :
-      0 ≤ Classical.choose hU :=
-    (Classical.choose_spec hU).1.le
-  positivity
+  omega
 
 /-- Along any nonnegative scale sequence tending to zero and eventually at
 most one, convex approximation converges uniformly on the domain. -/
 theorem
     eventually_forall_abs_convexApproxSmoothing_sub_le_of_continuous
-    {d : ℕ} {U : Set (Vec d)}
-    {ρ u : Vec d → ℝ}
+    
     (hU : IsOpenBoundedConvexDomain U)
     (hρ : IsConvexApproxKernel ρ) (hu : Continuous u)
     {x0 : Vec d} {r : ℝ}
@@ -316,17 +292,15 @@ theorem
   obtain ⟨η, hηpos, hη⟩ :=
     exists_pos_forall_abs_convexApproxSmoothing_sub_le_of_continuous
       hU hρ hu hball hr hδ
-  let C : ℝ :=
+  let C  :=
     2 * Classical.choose hU.isBoundedDomain
   have hCnonneg : 0 ≤ C := by
-    simpa only [C] using
-      two_mul_choose_isBoundedDomain_nonneg
-        hU.isBoundedDomain
+    grind
   have hscaled :
       Filter.Tendsto
         (fun n : ℕ => ε n * C)
         Filter.atTop (nhds 0) := by
-    simpa only [zero_mul] using hε.mul_const C
+    simpa using hε.mul_const C
   filter_upwards
       [Metric.tendsto_nhds.mp hscaled η hηpos,
         hεNonneg, hεLeOne] with
@@ -334,9 +308,9 @@ theorem
   have hlt : ε n * C < η := by
     have hn' :
         |ε n| * |C| < η := by
-      simpa only [Real.dist_eq, sub_zero, abs_mul] using hn
+      simp_all
     simpa only [abs_of_nonneg hε0,
       abs_of_nonneg hCnonneg] using hn'
-  exact hη hx hε0 hε1 hlt.le
+  grind
 
 end PDE

@@ -8,8 +8,6 @@ public import HypoellipticAleksandrov.Parabolic.ScalarDirichletComparison
 /-! # Ellipsoid Dirichlet solvability assembled from the proved source correction -/
 
 @[expose] public section
-noncomputable section
-set_option autoImplicit false
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic Lieberman Set
 open scoped MatrixOrder Matrix.Norms.Elementwise
@@ -44,7 +42,6 @@ theorem ellipsoidDirichlet_aux
           (fun _ _ => 0) (fun _ _ => 0) φ (fun _ => 0) v →
           Set.EqOn v u
             (scalarParabolicClosedCylinder r₀ r₁ (openEllipsoid Q)) := by
-  have _hcompact := hφCompact
   have hΩ := isOpen_openEllipsoid Q
   have hΩb := (openEllipsoid_geometry hQ).1
   have hlo : HasLowerEllipticity lam a := haLower
@@ -68,7 +65,7 @@ theorem ellipsoidDirichlet_aux
   refine ⟨u, hu, ?_⟩
   intro v hv
   exact eqOn_closedCylinder_of_isClassicalBackwardDirichletSolution hΩ hΩb hr
-    a b (fun _ _ => 0) (fun _ _ => 0) φ (fun _ => 0) v u
+    a b _ _ φ _ v u
     haSmooth.continuous hbSmooth.continuous
     (fun t y => (hlo.posDef hlam t y).posSemidef) (fun _ _ => le_rfl) hv hu
 

@@ -10,7 +10,6 @@ proved local energy and compactness argument establishes the limit's classical e
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 open scoped Topology Matrix.Norms.Elementwise
@@ -49,12 +48,11 @@ theorem exists_continuous_backward_homogeneous_replacement {d : ℕ} (hd : 0 < d
       zero_mul, Finset.sum_const_zero, add_zero] using hveq z hz
   · intro y hy
     have hzK : (T, y) ∈ K := ⟨⟨haT.le, le_rfl⟩, hy⟩
-    change continuousMapZeroExtension V (T, y) = w (T, y)
     rw [continuousMapZeroExtension, dite_eq_left hzK]
-    exact htrace ⟨(T, y), hzK⟩ (Or.inl ⟨mem_singleton T, hy⟩)
+    aesop
   · intro z hz
     have hzK : z ∈ K := ⟨hz.1, frontier_subset_closure hz.2⟩
     rw [continuousMapZeroExtension, dite_eq_left hzK]
-    exact htrace ⟨z, hzK⟩ (Or.inr hz)
+    aesop
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

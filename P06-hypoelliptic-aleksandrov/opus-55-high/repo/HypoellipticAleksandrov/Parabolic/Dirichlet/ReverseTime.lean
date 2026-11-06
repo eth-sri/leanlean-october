@@ -45,31 +45,33 @@ def reverseTimeScalarCoefficient {n : ℕ} (r₁ : ℝ)
     (q : ℝ → PDE.Vec n → ℝ) : ℝ → PDE.Vec n → ℝ :=
   fun τ y => q (r₁ - τ) y
 
+variable {n : ℕ} (r₁ : ℝ)
+
 /-- Evaluation of `reverseTimeMap`. -/
-@[simp] theorem reverseTimeMap_apply {n : ℕ} (r₁ : ℝ) (z : TimeVelocity n) :
+@[simp] theorem reverseTimeMap_apply  (z : TimeVelocity n) :
     reverseTimeMap r₁ z = (r₁ - z.1, z.2) :=
   rfl
 
 /-- Evaluation of the reverse-time scalar pullback. -/
-@[simp] theorem reverseTimeScalar_apply {n : ℕ} (r₁ : ℝ)
+@[simp] theorem reverseTimeScalar_apply 
     (f : TimeVelocity n → ℝ) (z : TimeVelocity n) :
     reverseTimeScalar r₁ f z = f (reverseTimeMap r₁ z) :=
   rfl
 
 /-- Evaluation of the reverse-time matrix-coefficient pullback. -/
-@[simp] theorem reverseTimeCoefficient_apply {n : ℕ} (r₁ : ℝ)
+@[simp] theorem reverseTimeCoefficient_apply 
     (a : CoefficientField n) (τ : ℝ) (y : PDE.Vec n) :
     reverseTimeCoefficient r₁ a τ y = a (r₁ - τ) y :=
   rfl
 
 /-- Evaluation of the reverse-time vector-coefficient pullback. -/
-@[simp] theorem reverseTimeVectorCoefficient_apply {n : ℕ} (r₁ : ℝ)
+@[simp] theorem reverseTimeVectorCoefficient_apply 
     (b : ℝ → PDE.Vec n → PDE.Vec n) (τ : ℝ) (y : PDE.Vec n) :
     reverseTimeVectorCoefficient r₁ b τ y = b (r₁ - τ) y :=
   rfl
 
 /-- Evaluation of the reverse-time scalar-coefficient pullback. -/
-@[simp] theorem reverseTimeScalarCoefficient_apply {n : ℕ} (r₁ : ℝ)
+@[simp] theorem reverseTimeScalarCoefficient_apply 
     (q : ℝ → PDE.Vec n → ℝ) (τ : ℝ) (y : PDE.Vec n) :
     reverseTimeScalarCoefficient r₁ q τ y = q (r₁ - τ) y :=
   rfl

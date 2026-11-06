@@ -6,7 +6,6 @@ import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundaryMeasureUnique
 /-! # Corner-aware short-strip exit decomposition for bounded Borel data -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Parabolic
 
@@ -30,7 +29,7 @@ theorem ballExit_short_strip_measure_decomposition
   have hcont := boundary_probe_continuous φ hφ
   obtain ⟨M, hM⟩ := hc.exists_bound_of_continuous hcont
   have hb : ∃ M : ℝ, ∀ Q, |φ Q| ≤ M :=
-    ⟨M, fun Q => by simpa only [Real.norm_eq_abs] using hM Q⟩
+    ⟨M, fun Q => by simp_all⟩
   rw [integral_add_measure (hcont.integrable_of_hasCompactSupport hc)
     (hcont.integrable_of_hasCompactSupport hc),
     ballExitRestart_integral hH hLE hd hlam hLam B hB v₀ hR P T H φ hcont.measurable hb]

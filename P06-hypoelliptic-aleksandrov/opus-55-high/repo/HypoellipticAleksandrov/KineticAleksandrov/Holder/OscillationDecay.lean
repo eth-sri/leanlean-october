@@ -8,7 +8,6 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -43,14 +42,14 @@ theorem oscillation_decay (d : ℕ) (hd : 1 ≤ d)
   have hiter (n : ℕ) : oscillationOn u (backwardCylinder P0 (theta ^ n * R)) ≤
       q ^ n * oscillationOn u (backwardCylinder P0 R) := by
     induction n with
-    | zero => simp only [pow_zero, one_mul, le_refl]
+    | zero => simp
     | succ n ih =>
       have hc := hcontract A hA O hO P0 (theta ^ n * R) (hrad n)
         ((closure_mono (hsub n)).trans hQ) u hu
-      have he : theta * (theta ^ n * R) = theta ^ (n + 1) * R := by rw [pow_succ]; ring
+      have he : theta * (theta ^ n * R) = theta ^ (n + 1) * R := by ring
       rw [he] at hc
       have hb := hc.trans (mul_le_mul_of_nonneg_left ih hq.le)
-      exact hb.trans_eq (by rw [pow_succ]; ring)
+      exact hb.trans_eq (by ring)
   have hx : 0 < rho / R := div_pos hrho hR
   have hx1 : rho / R ≤ 1 := (div_le_one hR).mpr hrhoR
   obtain ⟨n, hnlo, hnhi⟩ := exists_nat_pow_near_of_lt_one hx hx1 ht ht1

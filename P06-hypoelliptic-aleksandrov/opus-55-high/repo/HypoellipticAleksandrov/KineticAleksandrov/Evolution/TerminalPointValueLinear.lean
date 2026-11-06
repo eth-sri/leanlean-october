@@ -15,7 +15,6 @@ solution (`terminalValue_eq_of_solution`) and use comparison.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -31,14 +30,14 @@ theorem IsSmoothCompactTerminalDatum.add {F G : BoundedBorel (EvolutionAmbientSt
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) (hG : IsSmoothCompactTerminalDatum Ω γ τ G) :
     IsSmoothCompactTerminalDatum Ω γ τ (F + G) :=
   ⟨hF.1.add hG.1, hF.2.1.add hG.2.1,
-    (tsupport_add (F : EvolutionAmbientState n → ℝ) G).trans (union_subset hF.2.2 hG.2.2)⟩
+    (tsupport_add _ G).trans (union_subset hF.2.2 hG.2.2)⟩
 
 /-- Real multiples of smooth compactly supported terminal data are such data. -/
 theorem IsSmoothCompactTerminalDatum.smul (c : ℝ) {F : BoundedBorel (EvolutionAmbientState n)}
     (hF : IsSmoothCompactTerminalDatum Ω γ τ F) :
     IsSmoothCompactTerminalDatum Ω γ τ (c • F) :=
   ⟨contDiff_const.smul hF.1, hF.2.1.smul_left,
-    (tsupport_smul_subset_right (fun _ => c) (F : EvolutionAmbientState n → ℝ)).trans hF.2.2⟩
+    (tsupport_smul_subset_right (fun _ => c) _).trans hF.2.2⟩
 
 /-- Comparison of classical terminal solutions with ordered data. -/
 theorem IsClassicalTerminalSolution.le_of_le {lam Lam : ℝ} (hΩ : IsOpen Ω)
@@ -88,10 +87,10 @@ theorem terminalValue_add
   obtain ⟨v, hv, hv'⟩ := terminalValue_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p G hG
   rw [terminalValue_eq_of_solution n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p (F + G)
-    (hF.add hG) _ (IsClassicalTerminalSolution.add
+    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p _
+    _ _ (IsClassicalTerminalSolution.add
       (isOpen_of_isAdmissibleEvolutionDomain hΩ) hγ.1 hu hv)]
-  simp only [hu', hv']
+  simp_all
 
 /-- The terminal point value is homogeneous in the datum. -/
 theorem terminalValue_smul
@@ -102,10 +101,10 @@ theorem terminalValue_smul
   obtain ⟨u, hu, hu'⟩ := terminalValue_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p F hF
   rw [terminalValue_eq_of_solution n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p (c • F)
-    (hF.smul c) _ (IsClassicalTerminalSolution.smul
+    hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p _
+    _ _ (IsClassicalTerminalSolution.smul
       (isOpen_of_isAdmissibleEvolutionDomain hΩ) hγ.1 c hu)]
-  simp only [hu']
+  simp_all
 
 /-- The terminal point value is nonnegative on nonnegative data. -/
 theorem terminalValue_nonneg
@@ -119,9 +118,8 @@ theorem terminalValue_nonneg
     hγ.1 0 hu
   have hle := IsClassicalTerminalSolution.le_of_le (isOpen_of_isAdmissibleEvolutionDomain hΩ)
     hγ.1 hlam hB_ell hb_lipschitz h0 hu (fun y z _ => by
-      simpa using hpos (y, z)) _ (mk_mem_evolutionPastClosedCylinder hστ p)
-  rw [← hu']
-  simpa using hle
+      simp_all) _ (mk_mem_evolutionPastClosedCylinder hστ p)
+  simp_all
 
 /-- The terminal point value is bounded by every uniform bound of the datum. -/
 theorem abs_terminalValue_le
@@ -145,7 +143,7 @@ theorem terminalValue_self
   rw [terminalValue_eq_of_solution n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ σ le_rfl p F hF
     u hu]
-  exact hu.2.2.2.2.1 ⟨σ, p.1.1, p.1.2⟩ ⟨rfl, subset_closure p.2.1⟩
+  exact hu.2.2.2.2.1 _ ⟨rfl, subset_closure p.2.1⟩
 
 /-- The terminal point value is continuous in the source state. -/
 theorem continuous_terminalValue_source

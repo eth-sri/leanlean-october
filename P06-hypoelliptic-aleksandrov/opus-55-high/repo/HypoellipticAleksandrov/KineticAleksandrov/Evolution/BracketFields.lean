@@ -26,7 +26,6 @@ This module defines these fields as maps `ℝ^{1+2d} → ℝ^{1+2d}` in the coor
 @[expose] public section
 
 noncomputable section
-set_option autoImplicit false
 
 open scoped MatrixOrder
 
@@ -78,13 +77,15 @@ theorem contDiff_packPoint {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E
     ContDiff ℝ m (fun x => packPoint (f x) (g x) (h x)) := by
   refine contDiff_pi.2 fun i => ?_
   refine Fin.cases ?_ (fun j => ?_) i
-  · simpa only [packPoint_zero_apply] using hf
+  · simp_all
   · refine Fin.addCases (fun a => ?_) (fun b => ?_) j
-    · simpa only [packPoint_diffused_apply] using contDiff_pi.1 hg a
+    · simpa using contDiff_pi.1 hg a
     · simpa only [packPoint_transported_apply] using contDiff_pi.1 hh b
 
+variable {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+
 /-- The coefficient matrix, read in packed coordinates, is entrywise smooth. -/
-theorem contDiff_coeffAt_entry {B : FullKineticCoefficient n}
+theorem contDiff_coeffAt_entry 
     (hB : IsSmoothFullKineticCoefficient B) (i j : Fin n) :
     ContDiff ℝ (⊤ : ℕ∞)
       (fun x : EvolutionVec n =>
@@ -102,26 +103,23 @@ theorem contDiff_sqrtCoeffAt_entry {lam Lam : ℝ} {B : FullKineticCoefficient n
     (hell : HasEverywhereLoewnerBounds lam Lam B) (i j : Fin n) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j) :=
   contDiff_sqrt_entry
-    (fun x : EvolutionVec n => B (timeCoord n x) (diffusedCoord n x) (transportedCoord n x))
+    _
     (fun i j => contDiff_coeffAt_entry hB i j)
     (fun _ => posDef_of_smul_one_le hlam (hell _ _ _).1) i j
 
 /-- The drift corrections `c_k` are smooth, as soon as `β` is entrywise smooth. -/
-theorem contDiff_driftCorrection {B : FullKineticCoefficient n}
+theorem contDiff_driftCorrection 
     (hβ : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j)) (k : Fin n) :
     ContDiff ℝ (⊤ : ℕ∞) (fun x => driftCorrection B k x) := by
-  unfold driftCorrection
   refine ContDiff.sum fun i _ => ContDiff.sum fun j _ => ?_
-  have h1 : ContDiff ℝ (⊤ : ℕ∞) (fderiv ℝ (fun y => sqrtCoeffAt B y i k)) :=
-    (hβ i k).fderiv_right (by simp)
-  exact (hβ i j).mul (h1.clm_apply contDiff_const)
+  fun_prop
 
-theorem contDiff_diffusionField {B : FullKineticCoefficient n}
+theorem contDiff_diffusionField 
     (hβ : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j)) (i : Fin n) :
     ContDiff ℝ (⊤ : ℕ∞) (diffusionField B i) :=
   contDiff_packPoint contDiff_const (contDiff_pi.2 fun j => hβ i j) contDiff_const
 
-theorem contDiff_driftField {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+theorem contDiff_driftField 
     (hβ : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j))
     (hb : ContDiff ℝ (⊤ : ℕ∞) b) :
     ContDiff ℝ (⊤ : ℕ∞) (driftField B b) :=
@@ -134,7 +132,7 @@ theorem contDiff_regularizingField (ε : ℝ) (l : Fin n) :
   contDiff_const
 
 /-- The generators of `Lop` are smooth. -/
-theorem contDiff_transportedFields {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+theorem contDiff_transportedFields 
     (hβ : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j))
     (hb : ContDiff ℝ (⊤ : ℕ∞) b) (i : Fin (n + 1)) :
     ContDiff ℝ (⊤ : ℕ∞) (transportedFields B b i) := by
@@ -143,7 +141,7 @@ theorem contDiff_transportedFields {B : FullKineticCoefficient n} {b : PDE.Vec n
   · simpa [transportedFields] using contDiff_diffusionField hβ j
 
 /-- The generators of `L_ε` are smooth. -/
-theorem contDiff_regularizedFields {B : FullKineticCoefficient n} {b : PDE.Vec n → PDE.Vec n}
+theorem contDiff_regularizedFields 
     (hβ : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun x => sqrtCoeffAt B x i j))
     (hb : ContDiff ℝ (⊤ : ℕ∞) b) (ε : ℝ) (i : Fin (n + n + 1)) :
     ContDiff ℝ (⊤ : ℕ∞) (regularizedFields B b ε i) := by

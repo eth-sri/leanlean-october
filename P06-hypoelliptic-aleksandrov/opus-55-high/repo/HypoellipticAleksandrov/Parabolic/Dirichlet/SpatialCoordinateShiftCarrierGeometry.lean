@@ -19,14 +19,16 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 open Set
 open scoped Convex
 
+variable {d : ℕ} {K Ω : Set (PDE.Vec d)}
+
 /-- A compact spatial carrier inside an open set has a positive common signed
 coordinate-shift radius whose literal carrier stays in the open set. -/
 theorem IsCompact.exists_spatialCoordinateShiftCarrier_subset_open
-    {d : ℕ} {K Ω : Set (PDE.Vec d)}
+    
     (hK : IsCompact K) (hΩ : IsOpen Ω) (hKΩ : K ⊆ Ω) :
     ∃ δ : ℝ, 0 < δ ∧
       HypoellipticAleksandrov.Parabolic.Dirichlet.spatialCoordinateShiftCarrier K δ ⊆ Ω := by
-  let K' : Set (TimeVelocity d) := ({0} : Set ℝ) ×ˢ K
+  let K' : Set (TimeVelocity d) := ({0}) ×ˢ K
   let U : Set (TimeVelocity d) := Set.univ ×ˢ Ω
   have hK' : IsCompact K' := isCompact_singleton.prod hK
   have hU : IsOpen U := isOpen_univ.prod hΩ
@@ -43,7 +45,7 @@ theorem IsCompact.exists_spatialCoordinateShiftCarrier_subset_open
 /-- Containment of the coordinate-shift carrier gives the corresponding
 signed coordinate-shift map into the outer set. -/
 theorem mapsTo_add_smul_basisVec_of_spatialCoordinateShiftCarrier_subset
-    {d : ℕ} {K Ω : Set (PDE.Vec d)} {δ h : ℝ}
+     {δ h : ℝ}
     (hcarrier : spatialCoordinateShiftCarrier K δ ⊆ Ω)
     (k : Fin d) (hh : |h| ≤ δ) :
     Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k) K Ω := by
@@ -53,7 +55,7 @@ theorem mapsTo_add_smul_basisVec_of_spatialCoordinateShiftCarrier_subset
 /-- A time--velocity coordinate segment over `K` stays in the closed time slab
 and the literal signed coordinate-shift carrier. -/
 theorem segment_spatialShift_subset_Icc_prod_spatialCoordinateShiftCarrier
-    {d : ℕ} {K : Set (PDE.Vec d)} {T δ h : ℝ}
+     {K : Set (PDE.Vec d)} {T δ h : ℝ}
     (k : Fin d) (z : TimeVelocity d)
     (hh : |h| ≤ δ) (hz : z ∈ Set.Icc 0 T ×ˢ K) :
     [z -[ℝ] spatialShift k h z] ⊆
@@ -64,7 +66,7 @@ theorem segment_spatialShift_subset_Icc_prod_spatialCoordinateShiftCarrier
   have hline : AffineMap.lineMap z (spatialShift k h z) t =
       (z.1, z.2 + (t * h) • PDE.basisVec k) := by
     rcases z with ⟨r, y⟩
-    ext <;> simp [AffineMap.lineMap_apply_module', spatialShift_apply, smul_smul,
+    ext <;> simp [AffineMap.lineMap_apply_module', smul_smul,
       add_comm]
   rw [hline]
   refine ⟨hz.1, mem_spatialCoordinateShiftCarrier_of_mem_of_abs_le hz.2 ?_⟩

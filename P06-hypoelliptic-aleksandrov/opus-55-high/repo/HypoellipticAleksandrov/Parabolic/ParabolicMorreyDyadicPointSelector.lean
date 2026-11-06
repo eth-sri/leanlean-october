@@ -21,10 +21,12 @@ namespace HypoellipticAleksandrov.Parabolic
 
 noncomputable section
 
+variable {d n : Nat}
+
 /-- Every half-open dyadic cell is contained pointwise in its literal closed
 forward box. -/
 theorem parabolicDyadicHalfOpenCell_subset_closedForwardBox
-    {d n : Nat} (index : ParabolicDyadicIndex d n) :
+     (index : ParabolicDyadicIndex d n) :
     parabolicDyadicHalfOpenCell index ⊆
       parabolicClosedBox 1
         (parabolicDyadicSourceBox index).radius
@@ -32,22 +34,17 @@ theorem parabolicDyadicHalfOpenCell_subset_closedForwardBox
         (parabolicDyadicSourceBox index).center := by
   rintro ⟨time, velocity⟩ hcell
   rw [mem_parabolicDyadicHalfOpenCell_iff,
-    mem_parabolicDyadicTimeCell_iff,
     mem_parabolicDyadicVelocityCell_iff] at hcell
-  rw [mem_parabolicClosedBox_iff, mem_velocityClosedCube_iff]
+  rw [mem_parabolicClosedBox_iff]
   refine ⟨hcell.1.1.le, ?_, fun coordinate => ?_⟩
-  · change time ≤
-      (parabolicDyadicTimeCode n index : Real) / (4 : Real) ^ n +
-        1 * (((2 : Real) ^ n)⁻¹) ^ 2
-    have hradiusSq : (((2 : Real) ^ n)⁻¹) ^ 2 = ((4 : Real) ^ n)⁻¹ := by
+  · have hradiusSq : (((2 : Real) ^ n)⁻¹) ^ 2 = ((4 : Real) ^ n)⁻¹ := by
       rw [inv_pow, ← pow_mul, Nat.mul_comm, pow_mul]
       norm_num
     calc
-      time ≤ (parabolicDyadicTimeCode n index + 1 : Real) / (4 : Real) ^ n := hcell.1.2
-      _ = (parabolicDyadicTimeCode n index : Real) / (4 : Real) ^ n +
-          1 * (((2 : Real) ^ n)⁻¹) ^ 2 := by
-        rw [hradiusSq]
-        field_simp
+      time ≤ (parabolicDyadicTimeCode n index + 1) / (4) ^ n := hcell.1.2
+      _ = (parabolicDyadicTimeCode n index) / (4) ^ n +
+          1 * (((2) ^ n)⁻¹) ^ 2 := by
+        grind
   · rw [abs_le]
     have hcoordinate := hcell.2 coordinate
     change -((2 : Real) ^ n)⁻¹ ≤
@@ -57,18 +54,18 @@ theorem parabolicDyadicHalfOpenCell_subset_closedForwardBox
       velocity coordinate -
           (-1 + 2 * (parabolicDyadicVelocityCode n index coordinate : Real) /
             (2 : Real) ^ n + ((2 : Real) ^ n)⁻¹) ≤ ((2 : Real) ^ n)⁻¹
-    constructor <;> field_simp at hcoordinate ⊢ <;> linarith
+    grind
 
 /-- A point of the exact reference carrier belongs to one unique half-open
 dyadic cell at every fixed generation. -/
 theorem existsUnique_parabolicDyadicIndex_mem_halfOpenCell
-    {d n : Nat} (z : TimeVelocity d)
+     (z : TimeVelocity d)
     (hz : z ∈ parabolicDyadicReferenceCell d) :
     ∃! index : ParabolicDyadicIndex d n,
       z ∈ parabolicDyadicHalfOpenCell index := by
   have hcover : z ∈ ⋃ index : ParabolicDyadicIndex d n,
       parabolicDyadicHalfOpenCell index := by
-    rw [iUnion_parabolicDyadicHalfOpenCell_eq_reference d n]
+    rw [iUnion_parabolicDyadicHalfOpenCell_eq_reference]
     exact hz
   obtain ⟨index, hindex⟩ := Set.mem_iUnion.mp hcover
   refine ⟨index, hindex, fun index' hindex' => ?_⟩
@@ -93,20 +90,19 @@ noncomputable def parabolicDyadicAddressContaining
     ParabolicDyadicAddress d :=
   ⟨n, parabolicDyadicIndexContaining d z hz n⟩
 
+variable (d : Nat) (z : TimeVelocity d) (hz : z ∈ parabolicDyadicReferenceCell d) (n : Nat)
+
 /-- The selected fixed-generation index contains the supplied reference point. -/
 theorem parabolicDyadicIndexContaining_mem_halfOpenCell
-    (d : Nat) (z : TimeVelocity d)
-    (hz : z ∈ parabolicDyadicReferenceCell d) (n : Nat) :
+     :
     z ∈ parabolicDyadicHalfOpenCell
-      (parabolicDyadicIndexContaining d z hz n) := by
-  exact Classical.choose_spec
+      (parabolicDyadicIndexContaining d z hz n) := Classical.choose_spec
     (ExistsUnique.exists
       (existsUnique_parabolicDyadicIndex_mem_halfOpenCell (n := n) z hz))
 
 /-- Selected dyadic addresses are prefix-compatible across generations. -/
 theorem parabolicDyadicAddressContaining_prefix
-    (d : Nat) (z : TimeVelocity d)
-    (hz : z ∈ parabolicDyadicReferenceCell d)
+    
     {m n : Nat} (hmn : m ≤ n) :
     parabolicDyadicAddressPrefix
       (parabolicDyadicAddressContaining d z hz m)
@@ -126,8 +122,7 @@ theorem parabolicDyadicAddressContaining_prefix
 
 /-- The supplied point belongs to every selected literal closed forward box. -/
 theorem parabolicDyadicAddressContaining_mem_closedForwardBox
-    (d : Nat) (z : TimeVelocity d)
-    (hz : z ∈ parabolicDyadicReferenceCell d) (n : Nat) :
+     :
     z ∈ parabolicClosedBox 1
       (parabolicDyadicSourceBox
         (parabolicDyadicIndexContaining d z hz n)).radius
@@ -140,16 +135,12 @@ theorem parabolicDyadicAddressContaining_mem_closedForwardBox
 
 /-- The radii of selected dyadic source boxes shrink at the exact dyadic rate. -/
 theorem tendsto_two_mul_parabolicDyadicIndexContaining_radius_atTop
-    (d : Nat) (z : TimeVelocity d)
-    (hz : z ∈ parabolicDyadicReferenceCell d) :
+     :
     Filter.Tendsto
       (fun n : Nat =>
         2 * (parabolicDyadicSourceBox
           (parabolicDyadicIndexContaining d z hz n)).radius)
-      Filter.atTop (nhds 0) := by
-  change Filter.Tendsto (fun n : Nat => 2 * ((2 : Real) ^ n)⁻¹)
-    Filter.atTop (nhds 0)
-  exact tendsto_two_mul_parabolicDyadicSourceBox_radius_atTop
+      Filter.atTop (nhds 0) := tendsto_two_mul_parabolicDyadicSourceBox_radius_atTop
 
 end
 

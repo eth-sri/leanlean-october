@@ -19,7 +19,6 @@ suffices, so the formal statement is slightly more general than the source.
 
 @[expose] public section
 
-noncomputable section
 
 open MeasureTheory ProbabilityTheory Complex Set
 open scoped ENNReal
@@ -28,30 +27,30 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Reconstruction
 
 variable {Y : Type*} [MeasurableSpace Y] {d : ℕ}
 
+variable {m : Measure Y}
+
 /-- The final Hölder step: `∫ H^{q-1} g ≤ (∫ H^γ)^{(q-1)/γ} (∫ g^{q₁})^{1/q₁}`. -/
-lemma lintegral_rpow_mul_le {m : Measure Y} {H g : Y → ℝ≥0∞} (hH : Measurable H)
+lemma lintegral_rpow_mul_le  {H g : Y → ℝ≥0∞} (hH : Measurable H)
     (hg : Measurable g) {q γ q₁ : ℝ} (hq : 1 < q) (hqγ : q < γ)
     (hq₁ : (q - 1) / γ + 1 / q₁ = 1) :
     ∫⁻ y, H y ^ (q - 1) * g y ∂m ≤
       (∫⁻ y, H y ^ γ ∂m) ^ ((q - 1) / γ) * (∫⁻ y, g y ^ q₁ ∂m) ^ (1 / q₁) := by
   have hq0 : 0 < q - 1 := by linarith
-  have hγ0 : 0 < γ := by linarith
   set P : ℝ := γ / (q - 1) with hP
-  have hP1 : 1 < P := by rw [hP, lt_div_iff₀ hq0]; linarith
-  have hPinv : P⁻¹ = (q - 1) / γ := by rw [hP, inv_div]
+  have hP1 : 1 < P := by rw [lt_div_iff₀ hq0]; linarith
+  have hPinv : P⁻¹ = (q - 1) / γ := by simp_all
   have hconj : P.HolderConjugate q₁ :=
-    Real.holderConjugate_iff.2 ⟨hP1, by rw [hPinv, one_div] at *; exact hq₁⟩
+    Real.holderConjugate_iff.2 ⟨hP1, by simp_all⟩
   have h := ENNReal.lintegral_mul_le_Lp_mul_Lq m hconj (hH.pow_const (q - 1)).aemeasurable
     hg.aemeasurable
   have h2 : ∫⁻ y, (H y ^ (q - 1)) ^ P ∂m = ∫⁻ y, H y ^ γ ∂m := by
     refine lintegral_congr fun y => ?_
-    rw [← ENNReal.rpow_mul, hP, mul_div_cancel₀ _ hq0.ne']
-  simp only [Pi.mul_apply, h2] at h
-  rwa [one_div, hPinv] at h
+    rw [← ENNReal.rpow_mul, mul_div_cancel₀ _ hq0.ne']
+  simp_all
 
 
 /-- Lemma Lemma 5.2 for a Borel-measurable density `g`. -/
-theorem reconstruction_of_measurable {m : Measure Y} [SigmaFinite m]
+theorem reconstruction_of_measurable  [SigmaFinite m]
     (Γ : Measure (Y × PDE.Vec d)) [IsFiniteMeasure Γ] {g : Y → ℝ≥0∞} (hg : Measurable g)
     (hΓ : Γ.fst = m.withDensity g) {q γ q₁ : ℝ} (hq : 1 < q) (hqγ : q < γ)
     (hq₁ : (q - 1) / γ + 1 / q₁ = 1) (hgL : eLpNorm g (ENNReal.ofReal q₁) m < ∞)
@@ -72,9 +71,8 @@ theorem reconstruction_of_measurable {m : Measure Y} [SigmaFinite m]
   have hq0 : 0 < q - 1 := by linarith
   have hq₁0 : 0 < q₁ := by
     by_contra hneg
-    have h1 : 0 < (q - 1) / γ := by positivity
     have h2 : (q - 1) / γ < 1 := by rw [div_lt_one hγ0]; linarith
-    have h3 : 1 / q₁ ≤ 0 := by rw [one_div]; exact inv_nonpos.2 (not_lt.1 hneg)
+    have h3 : 1 / q₁ ≤ 0 := by simp_all
     linarith
   obtain ⟨hGm, hΓG, hfib⟩ := fiber_inversion Γ hg hΓ k hk hγ1 hq hH
   have hmink := (fiber_height_minkowski Γ hg hΓ k hk hγ1).1
@@ -88,27 +86,26 @@ theorem reconstruction_of_measurable {m : Measure Y} [SigmaFinite m]
         ∫⁻ ξ, eLpNorm (k ξ) (ENNReal.ofReal γ) m) ^ (q - 1) *
       eLpNorm g (ENNReal.ofReal q₁) m := by
    calc ∫⁻ p, fiberInversionDensity g κ p ^ q ∂(m.prod volume)
-      = ∫⁻ y, ∫⁻ z, fiberInversionDensity g κ (y, z) ^ q ∂volume ∂m :=
+      = ∫⁻ y, ∫⁻ z, fiberInversionDensity g κ _ ^ q ∂volume ∂m :=
         lintegral_prod _ (hGm.pow_const q).aemeasurable
     _ ≤ ∫⁻ y, H y ^ (q - 1) * g y ∂m := lintegral_mono_ae hq1
     _ ≤ (∫⁻ y, H y ^ γ ∂m) ^ ((q - 1) / γ) * (∫⁻ y, g y ^ q₁ ∂m) ^ (1 / q₁) :=
         lintegral_rpow_mul_le hHm hg hq hqγ hq₁
     _ ≤ _ := by
-        have hp0 : ENNReal.ofReal γ ≠ 0 := by simpa using hγ0
-        have hp1 : ENNReal.ofReal q₁ ≠ 0 := by simpa using hq₁0
+        have hp0 : ENNReal.ofReal γ ≠ 0 := by positivity
+        have hp1 : ENNReal.ofReal q₁ ≠ 0 := by positivity
         have hHnorm : eLpNorm H (ENNReal.ofReal γ) m = (∫⁻ y, H y ^ γ ∂m) ^ (1 / γ) := by
           rw [eLpNorm_eq_lintegral_rpow_enorm_toReal hp0 ENNReal.ofReal_ne_top
             hHm.aestronglyMeasurable, ENNReal.toReal_ofReal hγ0.le]
-          simp only [enorm_eq_self]
+          simp
         have hgnorm : eLpNorm g (ENNReal.ofReal q₁) m = (∫⁻ y, g y ^ q₁ ∂m) ^ (1 / q₁) := by
           rw [eLpNorm_eq_lintegral_rpow_enorm_toReal hp1 ENNReal.ofReal_ne_top
             hg.aestronglyMeasurable, ENNReal.toReal_ofReal hq₁0.le]
-          simp only [enorm_eq_self]
+          simp
         rw [← hgnorm]
         refine mul_le_mul' ?_ le_rfl
         have : (∫⁻ y, H y ^ γ ∂m) ^ ((q - 1) / γ) = eLpNorm H (ENNReal.ofReal γ) m ^ (q - 1) := by
           rw [hHnorm, ← ENNReal.rpow_mul]
-          congr 1
           field_simp
         rw [this]
         exact ENNReal.rpow_le_rpow hmink hq0.le
@@ -128,7 +125,7 @@ The paper's `Y` (a Borel subset of a Euclidean space with its Borel `σ`-algebra
 case `Y = ↥S` of an arbitrary measurable space.  Here `ℝ^d` is `PDE.Vec d = Fin d → ℝ` with
 product Lebesgue measure and `ξ·z = PDE.vecDot ξ z`.
 The hypothesis that each `k ξ` lies in `L^γ(m)` is not needed beyond `𝖧 < ∞`. -/
-theorem reconstruction {m : Measure Y} [SigmaFinite m]
+theorem reconstruction  [SigmaFinite m]
     (Γ : Measure (Y × PDE.Vec d)) [IsFiniteMeasure Γ] {g : Y → ℝ≥0∞} (hgm : AEMeasurable g m)
     (hΓ : Γ.fst = m.withDensity g) {q γ q₁ : ℝ} (hq : 1 < q) (hqγ : q < γ)
     (hq₁ : (q - 1) / γ + 1 / q₁ = 1) (hgL : eLpNorm g (ENNReal.ofReal q₁) m < ∞)
@@ -144,8 +141,8 @@ theorem reconstruction {m : Measure Y} [SigmaFinite m]
           ∫⁻ ξ, eLpNorm (k ξ) (ENNReal.ofReal γ) m) ^ (q - 1) *
         eLpNorm g (ENNReal.ofReal q₁) m ∧
       ∫⁻ p, G p ^ q ∂(m.prod volume) < ∞ := by
-  have hae : g =ᵐ[m] hgm.mk g := hgm.ae_eq_mk
-  have hnorm : eLpNorm g (ENNReal.ofReal q₁) m = eLpNorm (hgm.mk g) (ENNReal.ofReal q₁) m :=
+  have hae  := hgm.ae_eq_mk
+  have hnorm : eLpNorm g _ m = eLpNorm _ (ENNReal.ofReal q₁) m :=
     eLpNorm_congr_ae hae
   rw [hnorm] at hgL ⊢
   exact reconstruction_of_measurable Γ hgm.measurable_mk

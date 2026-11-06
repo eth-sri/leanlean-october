@@ -15,15 +15,16 @@ solution and its globally selected value representative.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 open Set MeasureTheory
 open scoped BigOperators ENNReal MatrixOrder Matrix.Norms.Elementwise
 
+variable {d : ℕ} {Ω O₀ O : Set (PDE.Vec d)}
+
 private theorem closure_outerBox_subset_closedCylinder
-    {d : ℕ} {Ω O₀ : Set (PDE.Vec d)} {r₀ q₀ q₁ r₁ : ℝ}
+     {Ω O₀ : Set (PDE.Vec d)} {r₀ q₀ q₁ r₁ : ℝ}
     (hr₀q₀ : r₀ < q₀) (hq₀q₁ : q₀ < q₁) (hq₁r₁ : q₁ < r₁)
     (hO₀Ω : closure O₀ ⊆ Ω) :
     closure (Set.Ioo q₀ q₁ ×ˢ O₀) ⊆
@@ -33,7 +34,7 @@ private theorem closure_outerBox_subset_closedCylinder
   exact ⟨⟨hr₀q₀.le.trans hz.1, hz.2.trans hq₁r₁.le⟩, subset_closure (hO₀Ω hy)⟩
 
 private theorem outerBox_closure_compact
-    {d : ℕ} {O₀ : Set (PDE.Vec d)} {q₀ q₁ : ℝ}
+     {O₀ : Set (PDE.Vec d)} {q₀ q₁ : ℝ}
     (hq₀q₁ : q₀ < q₁) (hO₀compact : IsCompact (closure O₀)) :
     IsCompact (closure (Set.Ioo q₀ q₁ ×ˢ O₀)) := by
   rw [closure_prod_eq, closure_Ioo hq₀q₁.ne]
@@ -58,7 +59,7 @@ private theorem chain_left_le_right_le_spatial_subset_zero
 /-- A supplied local weight-two strong jet bootstraps to the finite
 higher-order weak-derivative family on a larger box around the target. -/
 theorem exists_higherOrderLocalL2WeakDerivativeFamily_of_strongJet
-    {d : ℕ} {Ω O₀ O : Set (PDE.Vec d)}
+    
     (r₀ q₀ s₀ s₁ q₁ r₁ : ℝ)
     (hr₀q₀ : r₀ < q₀) (hq₀s₀ : q₀ < s₀) (hs₀s₁ : s₀ < s₁)
     (hs₁q₁ : s₁ < q₁) (hq₁r₁ : q₁ < r₁)
@@ -141,7 +142,7 @@ theorem exists_higherOrderLocalL2WeakDerivativeFamily_of_strongJet
   have ha : ∀ i j, ContDiffOn ℝ (N + 1)
       (fun z : TimeVelocity d => a z.1 z.2 i j) U := by
     intro i j
-    have hi := (contDiffOn_apply ℝ (Fin d → ℝ) i Set.univ).comp haUa
+    have hi := (contDiffOn_apply ℝ _ i Set.univ).comp haUa
       (fun _ _ => Set.mem_univ _)
     have hij := (contDiffOn_apply ℝ ℝ j Set.univ).comp hi
       (fun _ _ => Set.mem_univ _)
@@ -152,14 +153,14 @@ theorem exists_higherOrderLocalL2WeakDerivativeFamily_of_strongJet
     have hj := (contDiffOn_apply ℝ ℝ j Set.univ).comp hbUb
       (fun _ _ => Set.mem_univ _)
     exact (hj.of_le (by exact_mod_cast le_top)).mono (inter_subset_left.trans inter_subset_right)
-  have hc : ContDiffOn ℝ N (fun z : TimeVelocity d => c z.1 z.2) U :=
+  have hc : ContDiffOn ℝ N _ U :=
     (hcUc.of_le (by exact_mod_cast le_top)).mono inter_subset_right
   obtain ⟨V, Ba, Bb, Bc, _, hQV, _, _, hBa0, hBb0, hBc0, hBa, hBb, hBc⟩ :=
     GenericPreLiftDifferentiatedWeakEquationSupport.exists_precompactOpen_coefficient_majorants
       hU hQcompact hKU a b c ha hb hc
   obtain ⟨Citer, hCiter, hrun⟩ :=
     exists_iterated_genericPrelift_weakDerivativeFamily_estimate d N (by simp [N])
-      (left 0) s₀ s₁ (right 0) Ω (spatial 0) O left right spatial hchain
+      _ s₀ s₁ _ Ω _ O left right spatial hchain
       lam Lam hlam hlamLam
       Ba Bb Bc hBa0 hBb0 hBc0
   refine ⟨Citer, hCiter, ?_⟩
@@ -169,7 +170,7 @@ theorem exists_higherOrderLocalL2WeakDerivativeFamily_of_strongJet
       (scalarParabolicClosedCylinder r₀ r₁ Ω) Q F
       (isOpen_Ioo.prod hO₀open) hQcompact hQK hFSmooth
   have hEll : ∀ z ∈ Set.Ioo (left 0) (right 0) ×ˢ spatial 0,
-      lam • (1 : PDE.Mat d) ≤ a z.1 z.2 ∧ a z.1 z.2 ≤ Lam • (1 : PDE.Mat d) := by
+      lam • (1) ≤ a z.1 z.2 ∧ a z.1 z.2 ≤ Lam • (1) := by
     intro z hz
     exact ⟨hLower z (subset_closure.trans hQK hz),
       hUpper z (subset_closure.trans hQK hz)⟩
@@ -193,8 +194,8 @@ theorem exists_higherOrderLocalL2WeakDerivativeFamily_of_strongJet
     exact subset_closure (hQV (subset_closure hz))
   let Dseed := J.toWeakDerivativeFamily (isOpen_Ioo.prod hO₀open)
   let Eseed : ParabolicWeakDerivativeFamily d N
-      (Set.Ioo (left 0) (right 0) ×ˢ spatial 0)
-      (fun z : TimeVelocity d => F z.1 z.2) := by simpa only [N, Q] using Emax
+      _
+      _ := by simpa only [N, Q] using Emax
   have hrun' := hrun a b c F J.toFun Dseed Eseed
   obtain ⟨Dcore, hDseed, hDnorm⟩ := hrun'
     hEll
@@ -204,17 +205,13 @@ theorem exists_higherOrderLocalL2WeakDerivativeFamily_of_strongJet
     hBaQ hBbQ hBcQ
     (by
       exact ParabolicW12Function.toWeakDerivativeFamily_originalTimeEquation
-        (isOpen_Ioo.prod hO₀open) J a b c F hEq)
-  rcases hsteps (N - 1) (by simp [N]) with ⟨hlN, _, hrN, hsN⟩
+        _ J a b c F hEq)
   rcases hboxes N (by omega) with ⟨hONopen, hONne, hONcompact, _, _⟩
-  have hmonoN := chain_left_le_right_le_spatial_subset_zero hchain
-    (show N ≤ N + 2 by omega)
   have hprev := chain_left_le_right_le_spatial_subset_zero hchain
     (show N - 1 ≤ N + 2 by omega)
   have hprevStep := hchain.step (show N - 1 < N + 2 by omega)
   have hNm1 : N - 1 + 1 = N := by simp [N]
-  have hleft : left 0 < left N := by
-    exact hprev.1.trans_lt (by simpa only [hNm1] using hprevStep.1)
+  have hleft : left 0 < left N := hprev.1.trans_lt (by simpa only [hNm1] using hprevStep.1)
   have hright : right N < right 0 := by
     have hstepRight : right N < right (N - 1) := by
       simpa only [hNm1] using hprevStep.2.2.1
@@ -236,7 +233,7 @@ theorem exists_higherOrderLocalL2WeakDerivativeFamily_of_strongJet
       (subset_closure.trans (hchain.step (show N < N + 2 by omega)).2.2.2.2.2.2.2)
   have hprevSpatial : closure (spatial N) ⊆ spatial (N - 1) := by
     simpa only [hNm1] using hprevStep.2.2.2.2.2.2.2
-  have hONsub : closure (spatial N) ⊆ spatial 0 := hprevSpatial.trans hprev.2.2
+  have hONsub : closure _ ⊆ spatial 0 := hprevSpatial.trans hprev.2.2
   have hN2 : N + 2 = 2 * d + 8 := by dsimp [N]
   refine ⟨left N, right N, spatial N, B, Emax, Dcore,
     hleft, hleftTarget, hrightTarget, hright, hONopen, hONne, hONcompact,
@@ -249,7 +246,7 @@ theorem exists_higherOrderLocalL2WeakDerivativeFamily_of_strongJet
 /-- A selected global value representative admits a compatible local
 higher-order weak-derivative family. -/
 theorem exists_higherOrderLocalL2WeakDerivativeFamily_of_valueRepresentative
-    {d : ℕ} {Ω O₀ O : Set (PDE.Vec d)} (hd : 0 < d)
+     (hd : 0 < d)
     (r₀ q₀ s₀ s₁ q₁ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hr₀q₀ : r₀ < q₀)
     (hq₀s₀ : q₀ < s₀) (hs₀s₁ : s₀ < s₁) (hs₁q₁ : s₁ < q₁) (hq₁r₁ : q₁ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)

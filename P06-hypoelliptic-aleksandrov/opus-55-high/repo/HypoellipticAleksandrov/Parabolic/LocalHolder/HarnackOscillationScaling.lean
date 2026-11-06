@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.Parabolic.LocalHolder.HarnackOscillationGe
 /-! # Structural homogeneous contraction on physical Euclidean cylinders -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Set
 open scoped Matrix.Norms.Elementwise
@@ -51,9 +50,9 @@ theorem exists_homogeneous_range_contraction
     intro z hz
     rw [(hj z (hm hz)).1, (hj z (hm hz)).2, coefficientAt_pullbackCoefficient,
       matrixContraction_smul_right, he _ (hm hz)]
-  have hAc : IsContinuousCoefficientOn (pullbackCoefficient A (T - r ^ 2) v₀ r) U :=
+  have hAc  :=
     IsContinuousCoefficientOn.pullback
-      (hA.continuous.continuousOn : IsContinuousCoefficientOn A D) hm
+      hA.continuous.continuousOn hm
   have hsU : ∀ z ∈ U,
       (coefficientAt (pullbackCoefficient A (T - r ^ 2) v₀ r) z).IsSymm := by
     intro z _
@@ -67,12 +66,12 @@ theorem exists_homogeneous_range_contraction
     intro z _
     exact hhi _ _
   obtain ⟨l', b', hw, hbounds⟩ := hc
-    (pullbackCoefficient A (T - r ^ 2) v₀ r) (v ∘ a) hAc hsU hloU hhiU hvU heU
+    _ _ hAc hsU hloU hhiU hvU heU
     l b (fun z hz => hb _ (hm hz))
   refine ⟨l', b', hw, ?_⟩
   intro z hz
   have hn := backward_half_ball_inverse_mem T v₀ hr hz
   have h := hbounds _ hn
-  simpa only [Function.comp_def, a, parabolicAffine_inverse_apply T v₀ hr z] using h
+  simpa only [Function.comp_def, a, parabolicAffine_inverse_apply T v₀ hr] using h
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

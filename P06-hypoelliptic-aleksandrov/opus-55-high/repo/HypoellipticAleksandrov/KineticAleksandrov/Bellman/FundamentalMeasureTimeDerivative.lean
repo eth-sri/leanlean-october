@@ -24,8 +24,10 @@ def bellmanGaussianTimeCoefficient (s : ℝ) (q : ℝ × ℝ) : ℝ :=
 def bellmanGaussianTimeWeight (q : ℝ × ℝ) : ℝ :=
   9 * q.1 ^ 2 + 6 * |q.1 * q.2| + q.2 ^ 2 + 2
 
+variable (t : BellmanPositiveTime) (q : ℝ × ℝ)
+
 /-- The time chart has the polynomial Gaussian derivative on positive time. -/
-theorem hasDerivAt_bellmanGaussianTimeChart (t : BellmanPositiveTime) (q : ℝ × ℝ) :
+theorem hasDerivAt_bellmanGaussianTimeChart  :
     HasDerivAt (fun s => bellmanGaussianTimeChart s q)
       (bellmanGaussianTimeCoefficient t.val q * bellmanGaussianKernel t q) t.val := by
   convert hasDerivAt_bellmanGaussianKernel_time t q.1 q.2 using 1
@@ -33,7 +35,6 @@ theorem hasDerivAt_bellmanGaussianTimeChart (t : BellmanPositiveTime) (q : ℝ �
   · rw [(hasDerivAt_bellmanGaussianKernel_position t q.1 q.2).deriv,
       (hasDerivAt_deriv_bellmanGaussianKernel_velocity t q.1 q.2).deriv]
     dsimp [bellmanGaussianTimeCoefficient]
-    field_simp [ne_of_gt t.property]
     ring
 
 /-- Sixth-order exponential decay dominates the inverse-power singularity. -/
@@ -44,12 +45,11 @@ theorem bellman_exp_neg_le_inv_six (y : ℝ) (hy : 0 < y) :
   have hexp : Real.exp y * Real.exp (-y) = 1 := by
     rw [← Real.exp_add, add_neg_cancel, Real.exp_zero]
   rw [hexp] at hm
-  norm_num at hm
   apply (le_div_iff₀ (pow_pos hy 6)).mpr
-  nlinarith only [hm]
+  linarith
 
 /-- On sets away from the pole, the small-time Gaussian is bounded by a fourth power. -/
-theorem bellmanGaussianKernel_le_smallTime_four (t : BellmanPositiveTime)
+theorem bellmanGaussianKernel_le_smallTime_four 
     (ht : t.val ≤ 1) (q : ℝ × ℝ) (a : ℝ) (ha : 0 < a)
     (hq : a ≤ q.1 ^ 2 + q.2 ^ 2) :
     bellmanGaussianKernel t q ≤
@@ -65,19 +65,17 @@ theorem bellmanGaussianKernel_le_smallTime_four (t : BellmanPositiveTime)
     exact bellman_exp_neg_le_inv_six _ (by positivity)
   have hm := mul_le_mul_of_nonneg_left he
     (show 0 ≤ Real.sqrt 3 / (2 * Real.pi * t.val ^ 2) by positivity)
-  unfold bellmanGaussianKernel
   refine hm.trans_eq ?_
-  field_simp [ne_of_gt t.property]
-  ring
+  grind
 
 /-- The polynomial weight is nonnegative. -/
-theorem bellmanGaussianTimeWeight_nonneg (q : ℝ × ℝ) :
+theorem bellmanGaussianTimeWeight_nonneg  :
     0 ≤ bellmanGaussianTimeWeight q := by
   unfold bellmanGaussianTimeWeight
   positivity
 
 /-- A small-time coefficient bound after multiplication by the fourth time power. -/
-theorem bellmanGaussianTimeCoefficient_small (t : BellmanPositiveTime)
+theorem bellmanGaussianTimeCoefficient_small 
     (ht : t.val ≤ 1) (q : ℝ × ℝ) :
     |bellmanGaussianTimeCoefficient t.val q| ≤
       bellmanGaussianTimeWeight q / t.val ^ 4 := by
@@ -89,28 +87,22 @@ theorem bellmanGaussianTimeCoefficient_small (t : BellmanPositiveTime)
   have he : bellmanGaussianTimeCoefficient t.val q * t.val ^ 4 =
       9 * q.1 ^ 2 - 6 * q.1 * q.2 * t.val + q.2 ^ 2 * t.val ^ 2 - 2 * t.val ^ 3 := by
     dsimp [bellmanGaussianTimeCoefficient]
-    field_simp [ne_of_gt t.property]
+    grind
   apply (le_div_iff₀ (pow_pos t.property 4)).mpr
   rw [← abs_of_pos (pow_pos t.property 4), ← abs_mul, he]
   calc
     |9 * q.1 ^ 2 - 6 * q.1 * q.2 * t.val + q.2 ^ 2 * t.val ^ 2 - 2 * t.val ^ 3|
         ≤ |9 * q.1 ^ 2| + |6 * q.1 * q.2 * t.val| +
           |q.2 ^ 2 * t.val ^ 2| + |2 * t.val ^ 3| := by
-            have h1 := abs_sub (9 * q.1 ^ 2) (6 * q.1 * q.2 * t.val)
-            have h2 := abs_add_le (9 * q.1 ^ 2 - 6 * q.1 * q.2 * t.val)
-              (q.2 ^ 2 * t.val ^ 2)
-            have h3 := abs_sub
-              (9 * q.1 ^ 2 - 6 * q.1 * q.2 * t.val + q.2 ^ 2 * t.val ^ 2)
-              (2 * t.val ^ 3)
-            linarith only [h1, h2, h3]
+            grind
     _ ≤ bellmanGaussianTimeWeight q := by
       simp only [abs_mul, abs_of_nonneg (sq_nonneg q.1),
         abs_of_nonneg (sq_nonneg q.2), abs_of_pos t.property,
         abs_of_nonneg (pow_nonneg t.property.le 2),
         abs_of_nonneg (pow_nonneg t.property.le 3)]
-      norm_num only [abs_of_nonneg (by norm_num : (0 : ℝ) ≤ 9),
-        abs_of_nonneg (by norm_num : (0 : ℝ) ≤ 6),
-        abs_of_nonneg (by norm_num : (0 : ℝ) ≤ 2)]
+      norm_num only [abs_of_nonneg,
+        abs_of_nonneg,
+        abs_of_nonneg]
       have hx : |q.1| * |q.2| = |q.1 * q.2| := (abs_mul _ _).symm
       dsimp [bellmanGaussianTimeWeight]
       rw [mul_assoc 6, hx]
@@ -118,11 +110,10 @@ theorem bellmanGaussianTimeCoefficient_small (t : BellmanPositiveTime)
         mul_le_mul_of_nonneg_left ht2 (sq_nonneg q.2), ht3]
 
 /-- A large-time coefficient bound by the same polynomial weight. -/
-theorem bellmanGaussianTimeCoefficient_large (t : BellmanPositiveTime)
+theorem bellmanGaussianTimeCoefficient_large 
     (ht : 1 ≤ t.val) (q : ℝ × ℝ) :
     |bellmanGaussianTimeCoefficient t.val q| ≤ bellmanGaussianTimeWeight q := by
   have hp (n : ℕ) : 1 ≤ t.val ^ n := one_le_pow₀ ht
-  unfold bellmanGaussianTimeCoefficient
   calc
     |9 * q.1 ^ 2 / t.val ^ 4 - 6 * q.1 * q.2 / t.val ^ 3 +
         q.2 ^ 2 / t.val ^ 2 - 2 / t.val|
@@ -136,18 +127,17 @@ theorem bellmanGaussianTimeCoefficient_large (t : BellmanPositiveTime)
             have h3 := abs_sub
               (9 * q.1 ^ 2 / t.val ^ 4 - 6 * q.1 * q.2 / t.val ^ 3 +
                 q.2 ^ 2 / t.val ^ 2) (2 / t.val)
-            linarith only [h1, h2, h3]
+            linarith
     _ ≤ bellmanGaussianTimeWeight q := by
       simp only [abs_div, abs_mul, abs_of_nonneg (sq_nonneg q.1),
         abs_of_nonneg (sq_nonneg q.2), abs_of_pos t.property,
         abs_of_nonneg (pow_nonneg t.property.le 2),
         abs_of_nonneg (pow_nonneg t.property.le 3),
         abs_of_nonneg (pow_nonneg t.property.le 4)]
-      norm_num only [abs_of_nonneg (by norm_num : (0 : ℝ) ≤ 9),
-        abs_of_nonneg (by norm_num : (0 : ℝ) ≤ 6),
-        abs_of_nonneg (by norm_num : (0 : ℝ) ≤ 2)]
-      dsimp [bellmanGaussianTimeWeight]
-      rw [mul_assoc 6, ← abs_mul]
+      norm_num only [abs_of_nonneg,
+        abs_of_nonneg,
+        abs_of_nonneg]
+      rw [mul_assoc, ← abs_mul]
       exact add_le_add (add_le_add (add_le_add
         (div_le_self (by positivity) (hp 4))
         (div_le_self (by positivity) (hp 3)))

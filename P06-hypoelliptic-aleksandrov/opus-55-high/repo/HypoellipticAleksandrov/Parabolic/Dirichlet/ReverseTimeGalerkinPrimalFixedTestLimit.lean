@@ -98,18 +98,18 @@ theorem exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal_fixedTests
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial
   refine ⟨U, φ, hφ, hclm, ?_⟩
   intro k eta
-  let hEtaDeriv : MemLp eta.deriv (∞ : ℝ≥0∞) (reverseTimeVolume (r₁ - r₀)) :=
+  let hEtaDeriv  :=
     eta.memLp_deriv ∞
-  let massEll : ReverseTimeL2V hΩ (r₁ - r₀) →L[ℝ] ℝ :=
-    (reverseTimeDualPairingRightCLM hΩ (r₁ - r₀)
+  let massEll  :=
+    (reverseTimeDualPairingRightCLM hΩ _
       (reverseTimeSeparatedVTestOfMemLp hΩ eta.deriv hEtaDeriv
-        (galerkinVector hΩ k))).comp (reverseTimeGelfandCLM hΩ (r₁ - r₀))
-  let formEll : ReverseTimeL2V hΩ (r₁ - r₀) →L[ℝ] ℝ :=
-    (reverseTimeDualPairingRightCLM hΩ (r₁ - r₀)
+        (galerkinVector hΩ k))).comp (reverseTimeGelfandCLM hΩ _)
+  let formEll  :=
+    (reverseTimeDualPairingRightCLM hΩ _
       (reverseTimeSeparatedVTest hΩ eta (galerkinVector hΩ k))).comp
       (reverseTimeSpatialFormBochnerAction r₀ r₁ h₀₁ hΩ hΩbounded
         a b c haSmooth hbSmooth hcSmooth)
-  let source : ℝ := reverseTimeDualPairingRightCLM hΩ (r₁ - r₀)
+  let source  := reverseTimeDualPairingRightCLM hΩ _
     (reverseTimeSeparatedVTest hΩ eta (galerkinVector hΩ k))
     (reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth)
   have hMass := hclm massEll
@@ -127,36 +127,21 @@ theorem exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal_fixedTests
           a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos
           (φ n) initial) := by
     filter_upwards [hIndex] with n hn
-    let v : galerkinSpace hΩ (φ n) := ⟨galerkinVector hΩ k,
+    let v : galerkinSpace hΩ _ := ⟨galerkinVector hΩ k,
       galerkinSpace_mono hΩ hn (by
-        change galerkinVector hΩ k ∈ Submodule.span ℝ
-          (Set.range fun i : Fin (k + 1) => galerkinVector hΩ i)
         apply Submodule.subset_span
         exact ⟨⟨k, Nat.lt_succ_self k⟩, rfl⟩)⟩
     have h := reverseTimeGalerkinPrimal_pairing_identity
       r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos (φ n) initial v eta
-    simpa only [reverseTimeGalerkinPrimal_pairing_identity_prop, massEll, formEll,
-      source, ContinuousLinearMap.comp_apply, v, hEtaDeriv] using h
-  have hMass' : Tendsto
-      (fun n => massEll
-        (reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
-          a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos
-          (φ n) initial)) atTop (𝓝 (massEll U)) := hMass
-  have hForm' : Tendsto
-      (fun n => formEll
-        (reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
-          a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos
-          (φ n) initial)) atTop (𝓝 (formEll U)) := hForm
+      haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos _ initial v eta
+    aesop
+  have hMass'  := hMass
+  have hForm'  := hForm
   have hRight : Tendsto
-      (fun n => -source + formEll
-        (reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
-          a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos
-          (φ n) initial)) atTop (𝓝 (-source + formEll U)) :=
+      _ atTop (𝓝 (-source + formEll U)) :=
     (tendsto_const_nhds.neg).add hForm'
-  have hLimit : massEll U = -source + formEll U :=
+  have hLimit  :=
     tendsto_nhds_unique_of_eventuallyEq hMass' hRight hFinite
-  simpa only [reverseTimeGalerkinPrimal_fixed_test_identity_prop, massEll, formEll,
-    source, ContinuousLinearMap.comp_apply, hEtaDeriv] using hLimit
+  aesop
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

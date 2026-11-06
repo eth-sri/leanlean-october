@@ -29,8 +29,8 @@ theorem exists_clockEvolution
     (A : SmoothAutonomous lam Lam) (c : Clock) (e : Point) :
     ∃ E : StripEvolution clockNormalizedInterval, IsClockEvolution A c e E := by
   have hs := c.extended_sourceSetting hlam hLam A e
-  obtain ⟨hBs, hBsym, hBell⟩ := sectionTwoCoefficient_fullBounds (3 * lam / 5) (3 * Lam)
-    (c.extendedCoefficient lam A.a e) hs.1
+  obtain ⟨hBs, hBsym, hBell⟩ := sectionTwoCoefficient_fullBounds _ _
+    _ hs.1
   obtain ⟨S, K, hc, -, -, -, -, hi, -, -, -, -, he, hcomp, -, -, -⟩ :=
     exists_terminalEvolution_of_classical hLE hH 1 (by omega) (3 * lam / 5) (3 * Lam)
       (9 / 25) 9 (by positivity) (by linarith) (by norm_num) (by norm_num)
@@ -44,11 +44,11 @@ theorem exists_clockEvolution
 theorem clockEvolution_unique {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
     (c : Clock) (e : Point) (E E' : StripEvolution clockNormalizedInterval)
     (hE : IsClockEvolution A c e E) (hE' : IsClockEvolution A c e E') : E = E' := by
-  obtain ⟨hS, hK⟩ := terminalEvolution_unique (intervalDomain clockNormalizedInterval)
-    (fun _ => 0) (intervalDomain_admissible clockNormalizedInterval)
-    (zIndependentCoefficient (c.extendedCoefficient lam A.a e)) c.extendedVectorDrift
+  obtain ⟨hS, hK⟩ := terminalEvolution_unique _
+    _ (intervalDomain_admissible clockNormalizedInterval)
+    _ c.extendedVectorDrift
     E.1 E'.1 E.2 E'.2 hE hE'
-  exact Prod.ext hS hK
+  grind
 
 /-- Existence and uniqueness precede the canonical normalized family. -/
 theorem existsUnique_clockEvolution

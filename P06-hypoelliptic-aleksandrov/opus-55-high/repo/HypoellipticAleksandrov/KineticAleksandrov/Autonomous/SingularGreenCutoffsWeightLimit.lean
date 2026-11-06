@@ -5,26 +5,27 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGree
 /-! # Pointwise extended-weight limits, including the origin -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov MeasureTheory Filter Set
 open scoped Topology ENNReal Convolution
 
+variable (alpha : ℝ)
+
 /-- Away from the physical origin the mollified weight tends to the literal source weight. -/
-theorem regularizedBarrierWeight_punctured_tendsto (alpha : ℝ) (q : Z) (hq : q ≠ (0, 0)) :
+theorem regularizedBarrierWeight_punctured_tendsto  (q : Z) (hq : q ≠ (0, 0)) :
     Tendsto (fun n => ENNReal.ofReal (regularizedBarrierWeight alpha n q))
       atTop (𝓝 (rhoWeight (gamma alpha) q)) := by
   have hr := bellmanGauge_pos q hq
   have hbase : ContinuousAt (fun X : ℝ => bellmanGauge (X, q.2)) q.1 :=
     (bellmanGauge_continuous.comp (continuous_id.prodMk continuous_const)).continuousAt
-  have hc : ContinuousAt (fun X : ℝ => bellmanGauge (X, q.2) ^ (alpha - 2)) q.1 :=
+  have hc : ContinuousAt (fun X : ℝ => bellmanGauge _ ^ (alpha - 2)) q.1 :=
     hbase.rpow_const (Or.inl hr.ne')
   have hm : Measurable (fun X : ℝ => bellmanGauge (X, q.2) ^ (alpha - 2)) :=
     (bellmanGauge_continuous.measurable.comp
       (measurable_id.prodMk measurable_const)).pow_const _
   have hh := ContDiffBump.convolution_tendsto_right (μ := volume)
     (φ := barrierMollifierBump)
-    (g := fun _ : ℕ => fun X : ℝ => bellmanGauge (X, q.2) ^ (alpha - 2))
+    (g := fun _ : ℕ => fun X : ℝ => bellmanGauge _ ^ (alpha - 2))
     (k := fun _ : ℕ => q.1) barrierMollifierRadius_tendsto
     (Eventually.of_forall (fun _ => hm.aestronglyMeasurable))
     (hc.tendsto.comp tendsto_snd) tendsto_const_nhds
@@ -40,7 +41,7 @@ theorem regularizedBarrierWeight_punctured_tendsto (alpha : ℝ) (q : Z) (hq : q
   exact (ENNReal.continuous_ofReal.tendsto _).comp ht
 
 /-- The extended source weight is the pointwise mollifier limit at every point, including atoms. -/
-theorem regularizedBarrierWeight_tendsto (alpha : ℝ) (ha : 0 < alpha) (ha1 : alpha < 1)
+theorem regularizedBarrierWeight_tendsto  (ha : 0 < alpha) (ha1 : alpha < 1)
     (q : Z) :
     Tendsto (fun n => ENNReal.ofReal (regularizedBarrierWeight alpha n q))
       atTop (𝓝 (rhoWeight (gamma alpha) q)) := by

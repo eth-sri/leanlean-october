@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.FourierInteg
 /-! # Fourier composition through the genuine later exit operator -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Parabolic
 
@@ -41,15 +40,15 @@ theorem ballExitRestart_fourier_apply
       H.1 T.1 H.2.2 ξ E v⟩
   rw [exitFourier_map_exitCoordinates_apply _ P.1 v₀ ξ E hE,
     ballExitRestart_integral_complex hH hLE hd hlam hLam B hB v₀ hR P T H
-      (exitFourierTest P.1 v₀ ξ E) (measurable_exitFourierTest _ _ _ hE)
+      _ (measurable_exitFourierTest _ _ _ hE)
       ⟨1, norm_exitFourierTest_le_one _ _ _ _⟩,
     fourierProjection_integral_complex K q ξ _ (fourierProjection_spec K q ξ) f hfm hfb]
   change _ = exitFourierStepPhase P.1 H.1 v₀ ξ *
     ∫ w, f w.1 * fourierPhase ξ P.1.position w
-      ∂K.master (evolutionQueryOfState (PDE.euclideanBall v₀ R) (fun _ => 0)
-        P.1.time H.1 H.2.1.le (ballStartState P))
+      ∂K.master (evolutionQueryOfState _ _
+        P.1.time H.1 H.2.1.le _)
   rw [master_integral_eq_fiber K (PDE.isOpen_euclideanBall v₀ R).measurableSet
-    P.1.time H.1 H.2.1.le (ballStartState P)
+    P.1.time H.1 H.2.1.le _
     (fun w => f w.1 * fourierPhase ξ P.1.position w)
     ((hfm.comp measurable_fst).mul (continuous_fourierPhase ξ _).measurable),
     ← integral_const_mul]
@@ -63,19 +62,13 @@ theorem ballExitRestart_fourier_apply
     funext (fun Q => exitFourierTest_factor P.1 W Q v₀ ξ E)
   rw [heq]
   dsimp only
-  rw [integral_const_mul]
-  change exitFourierStepPhase P.1 H.1 v₀ ξ * fourierPhase ξ P.1.position w.1 *
-      (∫ Q, exitFourierTest W v₀ ξ E Q
-        ∂ballExitRaw hH hLE hd hlam hLam B hB v₀ hR (ballStateStart H.1 w) ⟨T.1, H.2.2⟩) = _
-  rw [← exitFourier_map_exitCoordinates_apply _ W v₀ ξ E hE]
+  rw [integral_const_mul, ← exitFourier_map_exitCoordinates_apply _ W v₀ ξ E hE]
   have hfvalid := ballLaterExitFourierTest_valid hH hLE hd hlam hLam B hB v₀ hR
     H.1 T.1 H.2.2 ξ E ⟨w.1.1, w.2.1⟩
-  rw [ballLaterExitFourier_eq_state hH hLE hd hlam hLam B hB v₀ hR
-    H.1 T.1 H.2.2 ξ w] at hfvalid
-  change _ = exitFourierStepPhase P.1 H.1 v₀ ξ * (f w.1.1 * fourierPhase ξ P.1.position w.1)
+  rw [ballLaterExitFourier_eq_state] at hfvalid
   dsimp only [f]
   rw [hfvalid]
-  dsimp only [ballExit, W]
+  dsimp only [ballExit]
   ring
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

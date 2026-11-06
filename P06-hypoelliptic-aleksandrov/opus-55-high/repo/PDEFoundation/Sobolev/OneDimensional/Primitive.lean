@@ -40,8 +40,7 @@ theorem continuousOn_intervalPrimitive
     (hg : IntegrableOn g (Icc a b) volume) :
     ContinuousOn (intervalPrimitive a g) (Icc a b) := by
   have hg' : IntegrableOn g (uIcc a b) volume := by
-    simpa [uIcc_of_le hab] using hg
-  change ContinuousOn (fun t => ∫ x in a..t, g x) (Icc a b)
+    simp_all
   rw [← uIcc_of_le hab]
   exact intervalIntegral.continuousOn_primitive_interval
     (μ := volume) (f := g) (a := a) (b := b) hg'

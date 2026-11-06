@@ -32,14 +32,10 @@ theorem
     Tendsto
       (fun i => eLpMeanNormOn U p (F i - f))
       l (𝓝 0) := by
-  let C : ℝ≥0∞ :=
+  let C  :=
     (volume U)⁻¹ ^ (1 / p).toReal
   have hCTop : C ≠ ∞ := by
-    dsimp only [C]
-    exact
-      (ENNReal.rpow_lt_top_of_nonneg
-        (by positivity)
-        (ENNReal.inv_ne_top.mpr hUPos.ne')).ne
+    aesop
   have hScaled :=
     ENNReal.Tendsto.const_mul
       (a := C) h (Or.inr hCTop)

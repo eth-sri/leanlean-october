@@ -9,7 +9,6 @@ public import Mathlib.Topology.UniformSpace.UniformApproximation
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -25,7 +24,7 @@ theorem mem_movingBall_of_radialSq_le {n : ℕ} {S r : ℝ} (hS : 0 ≤ S) (hr :
     linarith [PDE.vecNormSq_nonneg p.velocity]
   have hn : PDE.vecEuclideanNorm p.position ≤ S := Real.sqrt_le_iff.mpr ⟨hS, hsq⟩
   apply (mem_movingBall_iff_norm_lt (hS.trans_lt hr)).mpr
-  simpa only [sub_zero] using hn.trans_lt hr
+  simpa using hn.trans_lt hr
 
 section Data
 
@@ -66,13 +65,13 @@ theorem uniformCauchySeqOn_wholeSpace_ball_solutions :
   refine ⟨N, ?_⟩
   intro j hj k hk p hp
   let ix (i : Fin 2) := if i = 0 then j else k
-  have hix (i : Fin 2) : N ≤ ix i := by dsimp [ix]; split_ifs <;> assumption
-  have hpS : p ∈ movingClosedSlab univ (fun _ => 0) α τ ∩
+  have hix (i : Fin 2) : N ≤ ix i := by grind
+  have hpS : p ∈ movingClosedSlab univ _ α τ ∩
       {q | radialSq q ≤ |S| ^ 2} := ⟨hp.1, by
         rw [sq_abs]
-        exact (show radialSq p ≤ S0 ^ 2 from hp.2).trans hS⟩
+        grind⟩
   have hc := abs_sub_le_growth_ball_solutions hlam hB hb hε hε1 (abs_nonneg S) hC
-    F hFC (fun i => r (ix i)) (fun i => hN _ (hix i)) (fun i => v (ix i))
+    F hFC _ (fun i => hN _ (hix i)) _
     (fun i => hv _) p hpS
   have hden : 0 ≤ 1 + S ^ 2 := by positivity
   have hnum : growthBarrier cg τ p / (1 + S ^ 2) ≤ M / (1 + S ^ 2) :=
@@ -81,8 +80,7 @@ theorem uniformCauchySeqOn_wholeSpace_ball_solutions :
     rw [sq_abs]
     exact (mul_le_mul_of_nonneg_left
       (hnum.trans (le_add_of_nonneg_right hw)) (by positivity)).trans_lt herr)
-  have h10 : (1 : Fin 2) ≠ 0 := by decide
-  simpa only [ix, ite_true, h10, ite_false, Real.dist_eq] using hfinal
+  aesop
 
 /-- Actual expanding-ball solutions converge uniformly to one bounded continuous limit
 on every fixed whole-space cylinder. -/
@@ -98,19 +96,19 @@ theorem tendstoUniformlyOn_wholeSpace_ball_solutions :
   have hCau := uniformCauchySeqOn_wholeSpace_ball_solutions (α := α) (S0 := S0)
     hlam hB hb hε hε1 hC F hFC r hrlim v hv
   have hU := hCau.tendstoUniformlyOn_of_tendsto
-    (f := fun p => limUnder atTop (fun j => v j p))
+    (f := fun p => limUnder atTop _)
     (fun p hp => (hCau.cauchySeq hp).tendsto_limUnder)
   have hnear : ∀ᶠ j : ℕ in atTop, |S0| < r j :=
-    hrlim.eventually (eventually_gt_atTop |S0|)
+    hrlim.eventually (eventually_gt_atTop _)
   have hclosed (j : ℕ) (hj : |S0| < r j) :
-      K ⊆ evolutionPastClosedCylinder (PDE.euclideanBall 0 (r j)) (fun _ => 0) τ :=
+      K ⊆ evolutionPastClosedCylinder _ _ τ :=
     fun p hp => ⟨hp.1.2.1, subset_closure (mem_movingBall_of_radialSq_le
-      (abs_nonneg S0) hj (by simpa only [sq_abs] using (show radialSq p ≤ S0 ^ 2 from hp.2)))⟩
+      (abs_nonneg S0) hj (by aesop))⟩
   refine ⟨hU, hU.continuousOn ?_, fun p hp => ?_⟩
   · exact (hnear.mono fun j hj => (hv j).2.1.mono (hclosed j hj)).frequently
   · apply le_of_tendsto (hU.tendsto_at hp |>.abs)
     exact hnear.mono fun j hj => classical_abs_le_const
-      (PDE.isOpen_euclideanBall 0 (r j)) continuous_const hlam hB hb hε hε1
+      (PDE.isOpen_euclideanBall 0 _) continuous_const hlam hB hb hε hε1
       (hv j) hFC p (hclosed j hj hp)
 
 end Data

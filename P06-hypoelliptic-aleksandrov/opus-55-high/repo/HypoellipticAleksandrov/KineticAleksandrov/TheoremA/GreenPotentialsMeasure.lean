@@ -42,11 +42,11 @@ theorem integral_cylinderGreenMeasure
     image_eq_zero_of_notMem_tsupport (fun h => hz (hgQ h)))]
   rw [(measurableEmbedding_greenKineticPoint d P.time _).integral_map]
   symm
-  have hgg : Continuous (g ∘ sectionTwoPoint) := hg.comp (continuous_sectionTwoPoint d)
+  have hgg  := hg.comp (continuous_sectionTwoPoint d)
   have hcc := hasCompactSupport_sectionTwoPoint hgc
   exact duhamelPotential_eq_green K MeasurableSet.univ continuous_const
-    (Z₀.time + R ^ 2) (g ∘ sectionTwoPoint) (fun q => hg0 _) hgg hcc P.time hP
-    (kineticStartState d P) _
+    _ _ (fun q => hg0 _) hgg hcc P.time hP
+    _ _
     (greenMeasure_spec K P.time _ _ (Measure.dirac (kineticStartState d P)))
 
 end HypoellipticAleksandrov.KineticAleksandrov.TheoremA

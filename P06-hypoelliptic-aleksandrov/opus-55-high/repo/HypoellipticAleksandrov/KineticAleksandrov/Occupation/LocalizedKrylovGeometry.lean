@@ -45,17 +45,16 @@ theorem euclideanClosedBall_subset_closure_euclideanBall {x : PDE.Vec d} {R : �
     (hR : 0 < R) : PDE.euclideanClosedBall x R ⊆ closure (PDE.euclideanBall x R) := by
   intro y hy
   have hpath : Tendsto (fun t : ℝ => t • (y - x) + x) (𝓝[<] 1) (𝓝 y) := by
-    have h1 : Tendsto (fun t : ℝ => t • (y - x) + x) (𝓝 1) (𝓝 ((1 : ℝ) • (y - x) + x)) :=
+    have h1 : Tendsto (fun t : ℝ => t • (y - x) + x) _ (𝓝 ((1 : ℝ) • (y - x) + x)) :=
       ((continuous_id.smul continuous_const).add continuous_const).tendsto 1
     simpa using h1.mono_left nhdsWithin_le_nhds
   refine mem_closure_of_tendsto hpath ?_
   filter_upwards [Ioo_mem_nhdsLT (show (0 : ℝ) < 1 by norm_num)] with t ht
-  change PDE.euclideanSqDist (t • (y - x) + x) x < R ^ 2
+  change PDE.euclideanSqDist _ x < R ^ 2
   rw [PDE.euclideanSqDist_affine_center]
   have hy' : PDE.euclideanSqDist y x ≤ R ^ 2 := hy
   have hs : PDE.euclideanSqDist (y - x) 0 = PDE.euclideanSqDist y x := by
     simp [PDE.euclideanSqDist]
-  rw [hs]
   have hR2 : 0 < R ^ 2 := pow_pos hR 2
   have ht2 : t ^ 2 < 1 := by nlinarith [ht.1, ht.2]
   nlinarith [PDE.euclideanSqDist_nonneg y x, sq_nonneg t]
@@ -89,9 +88,8 @@ theorem mem_krylovCylinder_iff_reflectScale (hR : 0 < R) (z : TimeVelocity d) :
   rcases z with ⟨t, y⟩
   rw [mem_krylovCylinder_iff]
   change _ ↔ (1 - R ^ 2 * t, vStar + R • y) ∈
-    scalarParabolicOpenCylinder α 1 (PDE.euclideanBall vStar R)
-  rw [mem_scalarParabolicOpenCylinder_iff, vStar_add_smul_mem_ball_iff hR,
-    sub_self]
+    scalarParabolicOpenCylinder α 1 _
+  rw [mem_scalarParabolicOpenCylinder_iff, vStar_add_smul_mem_ball_iff hR]
   have hR2 : 0 < R ^ 2 := pow_pos hR 2
   have hh : R ^ 2 * localHeight α R = 1 - α := mul_localHeight hR
   constructor
@@ -110,12 +108,10 @@ theorem krylovClosedCylinder_subset_preimage (hR : 0 < R) :
       reflectScale R vStar ⁻¹'
         scalarParabolicClosedCylinder α 1 (PDE.euclideanBall vStar R) := by
   rintro ⟨t, y⟩ ⟨⟨h0, h1⟩, hy⟩
-  rw [sub_self] at h0
   change (1 - R ^ 2 * t, vStar + R • y) ∈
-    scalarParabolicClosedCylinder α 1 (PDE.euclideanBall vStar R)
+    scalarParabolicClosedCylinder α 1 _
   rw [mem_scalarParabolicClosedCylinder_iff]
   have hh : R ^ 2 * localHeight α R = 1 - α := mul_localHeight hR
-  have hR2 : 0 < R ^ 2 := pow_pos hR 2
   refine ⟨by nlinarith, by nlinarith, ?_⟩
   exact euclideanClosedBall_subset_closure_euclideanBall hR
     ((vStar_add_smul_mem_closedBall_iff hR y).mpr hy)
@@ -127,27 +123,24 @@ theorem krylovParabolicBoundary_subset_preimage (hR : 0 < R) :
         (scalarParabolicTerminalFace 1 (PDE.euclideanBall vStar R) ∪
           scalarParabolicLateralFace α 1 (PDE.euclideanBall vStar R)) := by
   have hh : R ^ 2 * localHeight α R = 1 - α := mul_localHeight hR
-  have hR2 : 0 < R ^ 2 := pow_pos hR 2
   rintro ⟨t, y⟩ hz
   change (1 - R ^ 2 * t, vStar + R • y) ∈
-    scalarParabolicTerminalFace 1 (PDE.euclideanBall vStar R) ∪
-      scalarParabolicLateralFace α 1 (PDE.euclideanBall vStar R)
+    scalarParabolicTerminalFace 1 _ ∪
+      scalarParabolicLateralFace α 1 _
   rcases hz with ⟨ht, hy⟩ | ⟨ht, hy⟩
   · have ht' : t = localHeight α R - localHeight α R := ht
-    rw [sub_self] at ht'
     left
     rw [mem_scalarParabolicTerminalFace_iff]
     refine ⟨by rw [ht']; ring, ?_⟩
     exact euclideanClosedBall_subset_closure_euclideanBall hR
       ((vStar_add_smul_mem_closedBall_iff hR y).mpr hy)
   · obtain ⟨h0, h1⟩ := ht
-    rw [sub_self] at h0
     right
     rw [mem_scalarParabolicLateralFace_iff]
     refine ⟨by nlinarith, by nlinarith, ?_⟩
     rw [(PDE.isOpen_euclideanBall vStar R).frontier_eq]
     have hsph : vStar + R • y ∈ PDE.euclideanSphere vStar R := by
-      change PDE.euclideanSqDist (vStar + R • y) vStar = R ^ 2
+      change PDE.euclideanSqDist _ vStar = R ^ 2
       rw [add_comm, PDE.euclideanSqDist_affine_center]
       have : PDE.euclideanSqDist y 0 = 1 ^ 2 := hy
       rw [this]
@@ -180,7 +173,7 @@ theorem exists_mem_krylovCylinder (hR : 0 < R) {w : TimeVelocity d}
     ∃ z ∈ krylovCylinder (localHeight α R) (localHeight α R) (0 : PDE.Vec d),
       reflectScale R vStar z = w := by
   refine ⟨reflectScaleInv R vStar w, ?_, reflectScale_reflectScaleInv hR w⟩
-  rw [mem_krylovCylinder_iff_reflectScale hR (vStar := vStar) (α := α),
+  rw [mem_krylovCylinder_iff_reflectScale hR,
     reflectScale_reflectScaleInv hR]
   exact hw
 
@@ -202,11 +195,11 @@ theorem parabolicAffine_image_krylovCylinder (hR : 0 < R) :
     parabolicAffine 0 vStar R ''
         krylovCylinder (localHeight α R) (localHeight α R) (0 : PDE.Vec d) =
       timeReflection ⁻¹' scalarParabolicOpenCylinder α 1 (PDE.euclideanBall vStar R) := by
-  have hpre : krylovCylinder (localHeight α R) (localHeight α R) (0 : PDE.Vec d) =
+  have hpre : krylovCylinder (localHeight α R) (localHeight α R) (0) =
       parabolicAffine 0 vStar R ⁻¹'
         (timeReflection ⁻¹' scalarParabolicOpenCylinder α 1 (PDE.euclideanBall vStar R)) := by
     ext z
-    rw [mem_krylovCylinder_iff_reflectScale hR (vStar := vStar) (α := α), reflectScale_eq]
+    rw [mem_krylovCylinder_iff_reflectScale hR (vStar := vStar), reflectScale_eq]
     rfl
   rw [hpre]
   exact Set.image_preimage_eq _ (parabolicAffine_surjective hR)
@@ -221,9 +214,7 @@ variable {α R : ℝ} {vStar : PDE.Vec d}
 theorem parabolicELpNormOn_timeReflectedScalar_preimage {F : TimeVelocity d → ℝ}
     (hF : Continuous F) {S : Set (TimeVelocity d)} (hS : MeasurableSet S) :
     parabolicELpNormOn d (timeReflectedScalar F) (timeReflection ⁻¹' S) =
-      parabolicELpNormOn d F S := by
-  unfold parabolicELpNormOn timeReflectedScalar
-  exact eLpNorm_comp_measurePreserving hF.aestronglyMeasurable
+      parabolicELpNormOn d F S := eLpNorm_comp_measurePreserving hF.aestronglyMeasurable
     (timeReflection_measurePreserving.restrict_preimage hS)
 
 /-- The source cylinder is measurable. -/
@@ -239,7 +230,6 @@ def localizedSource (R : ℝ) (vStar : PDE.Vec d) (F : TimeVelocity d → ℝ) :
 theorem localizedSource_eq (R : ℝ) (vStar : PDE.Vec d) (F : TimeVelocity d → ℝ) :
     localizedSource R vStar F =
       fun z => R ^ 2 * timeReflectedScalar F (parabolicAffine 0 vStar R z) := by
-  funext z
   unfold localizedSource
   rw [reflectScale_eq]
   rfl
@@ -273,7 +263,7 @@ theorem memLp_localizedSource (hR : 0 < R) {F : TimeVelocity d → ℝ}
     MemLp (localizedSource R vStar F) (parabolicExponent d)
       (volume.restrict
         (krylovCylinder (localHeight α R) (localHeight α R) (0 : PDE.Vec d))) := by
-  change parabolicELpNormOn d (localizedSource R vStar F) _ < ⊤
+  change parabolicELpNormOn d _ _ < ⊤
   rw [parabolicELpNormOn_localizedSource hR hF]
   have hfin : parabolicELpNormOn d F
       (scalarParabolicOpenCylinder α 1 (PDE.euclideanBall vStar R)) < ⊤ := by

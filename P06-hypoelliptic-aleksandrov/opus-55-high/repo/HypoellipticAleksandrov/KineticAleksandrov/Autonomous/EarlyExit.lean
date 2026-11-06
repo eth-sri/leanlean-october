@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EarlyExitBar
 /-! # The source's quantitative early velocity-face exit estimate -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo TheoremA Evolution
@@ -29,44 +28,35 @@ theorem strip_exit_early_face_of_realization
   let k := d / (2 * Lam * theta)
   have hk : 0 < k := div_pos hd (by positivity)
   have hl := reconstruction_early_face_exponential_bound hH hlam hLam A H E hE sMinus T e he
-    theta k (-k) H.lo d hk.le (by ring)
+    theta k _ H.lo d hk.le (by ring)
     (fun v hv => mul_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr hk.le)
       (sub_nonneg.mpr hv.1))
     (by
-      have hh := mul_le_mul_of_nonneg_left (min_le_left
-        (e.1.velocity 0 - H.lo) (H.hi - e.1.velocity 0)) hk.le
-      change -k * (e.1.velocity 0 - H.lo) ≤ -k * d
-      nlinarith)
+      aesop)
   have hr := reconstruction_early_face_exponential_bound hH hlam hLam A H E hE sMinus T e he
     theta k k H.hi d hk.le rfl
     (fun v hv => mul_nonpos_of_nonneg_of_nonpos hk.le (sub_nonpos.mpr hv.2))
     (by
       have hh := mul_le_mul_of_nonneg_left (min_le_right
         (e.1.velocity 0 - H.lo) (H.hi - e.1.velocity 0)) hk.le
-      change k * (e.1.velocity 0 - H.hi) ≤ -k * d
-      nlinarith)
+      linarith)
   have hfront (v : ℝ) (hv : v ∈ frontier H.carrier) : v = H.lo ∨ v = H.hi := by
     change v ∈ frontier (Ioo H.lo H.hi) at hv
     rw [frontier_Ioo H.ordered] at hv
-    simpa only [mem_insert_iff, mem_singleton_iff] using hv
+    simp_all
   let Ω := stripExitOfRealization hH hlam hLam A H E hE T e
   have hsub : {p : Point | p.velocity 0 ∈ frontier H.carrier ∧ p.time ≤ sMinus + theta} ⊆
       {p | p.velocity 0 = H.lo ∧ p.time ≤ sMinus + theta} ∪
         {p | p.velocity 0 = H.hi ∧ p.time ≤ sMinus + theta} := by
-    intro p hp
-    rcases hfront _ hp.1 with hv | hv
-    · exact Or.inl ⟨hv, hp.2⟩
-    · exact Or.inr ⟨hv, hp.2⟩
+    grind
   have hexp : Lam * k ^ 2 * theta - k * d = -d ^ 2 / (4 * Lam * theta) := by
-    dsimp only [k]
-    field_simp
-    ring
-  calc Ω {p | p.velocity 0 ∈ frontier H.carrier ∧ p.time ≤ sMinus + theta}
-      ≤ Ω {p | p.velocity 0 = H.lo ∧ p.time ≤ sMinus + theta} +
-        Ω {p | p.velocity 0 = H.hi ∧ p.time ≤ sMinus + theta} :=
+    grind
+  calc Ω _
+      ≤ Ω _ +
+        Ω _ :=
           (measure_mono hsub).trans (measure_union_le _ _)
-    _ ≤ ENNReal.ofReal (Real.exp (Lam * k ^ 2 * theta - k * d)) +
-        ENNReal.ofReal (Real.exp (Lam * k ^ 2 * theta - k * d)) := add_le_add hl hr
+    _ ≤ ENNReal.ofReal _ +
+        ENNReal.ofReal _ := add_le_add hl hr
     _ = _ := by rw [← ENNReal.ofReal_add (Real.exp_pos _).le (Real.exp_pos _).le, hexp, ← two_mul]
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

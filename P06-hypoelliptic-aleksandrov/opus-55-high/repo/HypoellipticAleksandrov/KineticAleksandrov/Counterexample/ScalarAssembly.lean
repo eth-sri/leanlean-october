@@ -22,13 +22,13 @@ open MeasureTheory Set
 /-- The actual Appendix C scalar profile satisfies the complete branch interface. -/
 theorem counterProfileOne_exists (alpha : ℝ) (ha : 0 < alpha) (ha1 : alpha < 1) :
     CounterProfileOneStatement alpha := by
-  let gamma : ScalarGamma := ⟨alpha / 3, by constructor <;> linarith⟩
-  have hga : 3 * gamma.1 = alpha := by dsimp only [gamma]; ring
+  let gamma : ScalarGamma := ⟨alpha / 3, by grind⟩
+  have hga : 3 * gamma.1 = alpha := by ring
   obtain ⟨Lam, hLam, hmatch⟩ := exists_matching_ratio gamma.1 gamma.2.1 gamma.2.2
   have hp : 0 < Lam := lt_trans zero_lt_one hLam
   obtain ⟨c, C0, hc, hcC, hcomp⟩ := scalarProfile_comparison gamma Lam hp hmatch
   obtain ⟨Cg, hCg, hgrad⟩ := scalarGv_gauge_bound gamma Lam hp hmatch
-  let C : ℝ := max C0 Cg
+  let C  := max C0 Cg
   have hC0 : C0 ≤ C := le_max_left _ _
   have hCgC : Cg ≤ C := le_max_right _ _
   refine ⟨Lam, c, C, scalarProfile gamma Lam, scalarGx gamma Lam, scalarGv gamma Lam,
@@ -49,7 +49,7 @@ theorem counterProfileOne_exists (alpha : ℝ) (ha : 0 < alpha) (ha1 : alpha < 1
     have hh := hgrad q hq
     rw [hga] at hh
     exact hh.trans (mul_le_mul_of_nonneg_right hCgC
-      (Real.rpow_nonneg (rho_nonneg q) (alpha - 1)))
+      (Real.rpow_nonneg (rho_nonneg q) _))
   · intro r hr q
     simpa only [hga] using And.intro (scalarGx_homogeneous gamma Lam r hp hr q)
       (And.intro (scalarGv_homogeneous gamma Lam r hp hr q)

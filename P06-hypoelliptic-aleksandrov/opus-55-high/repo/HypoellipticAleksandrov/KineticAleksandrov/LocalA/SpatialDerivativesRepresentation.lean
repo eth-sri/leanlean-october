@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.LocalRepresentat
 /-! # The local solution equals its boundary-data convolution at translated inner poles -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic SectionTwo
 open scoped Convolution
@@ -38,7 +37,6 @@ theorem spatial_local_convolution
     let G := exitL1Density ν
     (U (boundaryPositionShift x P.1) - c : ℂ) =
       (f ⋆[spatialDensityPairing (exitMarginal ν), volume] (G ∘ Neg.neg)) x := by
-  dsimp only
   let Px := boundaryStartShift x P
   let μx := ballExitRaw hH hLE hd hlam hLam B hB Z₀.velocity hR Px T
   have : IsFiniteMeasure μx :=
@@ -54,7 +52,7 @@ theorem spatial_local_convolution
   have hre : U Px.1 = (∫ Q, H (KineticPoint.equivProd d Q) ∂μx) + c := by
     calc
       _ = ∫ Q, U Q ∂μx := hr
-      _ = ∫ Q, (H (KineticPoint.equivProd d Q) + c) ∂μx := by
+      _ = ∫ Q, (H _ + c) ∂μx := by
         apply integral_congr_ae
         filter_upwards [hs] with Q hQ
         rw [hHe Q hQ]
@@ -62,13 +60,13 @@ theorem spatial_local_convolution
       _ = _ := by
         rw [integral_add hi (integrable_const c)]
         simp only [integral_const, Measure.real, hm, ENNReal.toReal_one, one_smul]
-  have hre' : (U Px.1 - c : ℂ) =
+  have hre' : (U Px.1 - c) =
       ∫ Q, (H (KineticPoint.equivProd d Q) : ℂ) ∂μx := by
     rw [integral_complex_ofReal, hre, Complex.ofReal_add, add_sub_cancel_right]
   refine hre'.trans ?_
-  change (∫ Q, (H (KineticPoint.equivProd d Q) : ℂ)
+  change (∫ Q, (H _ : ℂ)
     ∂ballExitRaw hH hLE hd hlam hLam B hB Z₀.velocity hR (boundaryStartShift x P) T) = _
-  rw [← ballExitRaw_translation hH hLE hd hlam hLam B hB Z₀.velocity hR x P T]
+  rw [← ballExitRaw_translation]
   refine (integral_map (f := fun Q => (H (KineticPoint.equivProd d Q) : ℂ))
     (boundaryPositionHomeomorph x).measurable.aemeasurable
     (Complex.continuous_ofReal.comp

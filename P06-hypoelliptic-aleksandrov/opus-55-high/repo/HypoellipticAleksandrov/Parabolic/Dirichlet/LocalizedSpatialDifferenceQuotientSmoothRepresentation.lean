@@ -13,18 +13,18 @@ smooth localized energy test into their literal spatial integral formulas.
 
 @[expose] public section
 
-noncomputable section
 
 open Filter MeasureTheory
 open scoped BigOperators ENNReal RealInnerProductSpace
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
+variable {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ} (hΩ : IsOpen Ω) (r₁ τ : ℝ)
+
 /-- The reverse-time spatial form on a smooth input and its localized energy
 test is the literal principal, divergence-drift, and scalar integral sum. -/
 theorem reverseTimeSpatialForm_apply_smooth_localizedSpatialDifferenceQuotientEnergyTest_eq
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : IsOpen Ω) (r₁ τ : ℝ)
+    
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
@@ -53,18 +53,16 @@ theorem reverseTimeSpatialForm_apply_smooth_localizedSpatialDifferenceQuotientEn
   have hinput :
       smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ =
         smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ φ := by
-    apply Subtype.ext
-    rfl
-  rw [localizedSpatialDifferenceQuotientEnergyTestH10CLM_apply_smooth
-      hΩ η k h φ hηΩ hηshift,
+    aesop
+  rw [localizedSpatialDifferenceQuotientEnergyTestH10CLM_apply_smooth,
     reverseTimeSpatialForm_apply, hinput]
   have hprincipal (i j : Fin d) :
       (∫ y in Ω,
         a (r₁ - τ) y i j *
-          (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j
+          (PDE.hilbertVectorLpCoord Ω _ j
             (gradientCLM hΩ
               (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ φ))) y *
-          (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
+          (PDE.hilbertVectorLpCoord Ω _ i
             (gradientCLM hΩ
               (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ
                 (localizedSpatialDifferenceQuotientEnergyWeakTest
@@ -75,11 +73,11 @@ theorem reverseTimeSpatialForm_apply_smooth_localizedSpatialDifferenceQuotientEn
               η k h φ φ.contDiff hηΩ hηshift).partialDeriv i y := by
     apply integral_congr_ae
     filter_upwards
-      [PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j
+      [PDE.coeFn_hilbertVectorLpCoord Ω _ j
           (gradientCLM hΩ
             (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ φ)),
         ae_gradientCoordCLM_smoothCompactlySupportedH1HilbertGraph hΩ φ j,
-        PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) i
+        PDE.coeFn_hilbertVectorLpCoord Ω _ i
           (gradientCLM hΩ
             (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ
               (localizedSpatialDifferenceQuotientEnergyWeakTest
@@ -87,11 +85,11 @@ theorem reverseTimeSpatialForm_apply_smooth_localizedSpatialDifferenceQuotientEn
         ae_gradientCoordCLM_smoothCompactlySupportedH1HilbertGraph hΩ
           (localizedSpatialDifferenceQuotientEnergyWeakTest
             η k h φ φ.contDiff hηΩ hηshift) i] with y hφj hφ hψi hψ
-    rw [hφj, hφ, hψi, hψ]
+    simp_all
   have hdrift (j : Fin d) :
       (∫ y in Ω,
         reverseTimeDivergenceDrift r₁ a b τ y j *
-          (PDE.hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j
+          (PDE.hilbertVectorLpCoord Ω _ j
             (gradientCLM hΩ
               (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ φ))) y *
           (valueCLM hΩ
@@ -104,14 +102,14 @@ theorem reverseTimeSpatialForm_apply_smooth_localizedSpatialDifferenceQuotientEn
               η k h φ φ.contDiff hηΩ hηshift) y := by
     apply integral_congr_ae
     filter_upwards
-      [PDE.coeFn_hilbertVectorLpCoord Ω (2 : ℝ≥0∞) j
+      [PDE.coeFn_hilbertVectorLpCoord Ω _ j
           (gradientCLM hΩ
             (smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ φ)),
         ae_gradientCoordCLM_smoothCompactlySupportedH1HilbertGraph hΩ φ j,
         ae_valueCLM_smoothCompactlySupportedH1HilbertGraph hΩ
           (localizedSpatialDifferenceQuotientEnergyWeakTest
             η k h φ φ.contDiff hηΩ hηshift)] with y hφj hφ hψ
-    rw [hφj, hφ, hψ]
+    simp_all
   have hscalar :
       (∫ y in Ω,
         reverseTimeScalarCoefficient r₁ c τ y *
@@ -131,14 +129,13 @@ theorem reverseTimeSpatialForm_apply_smooth_localizedSpatialDifferenceQuotientEn
         ae_valueCLM_smoothCompactlySupportedH1HilbertGraph hΩ
           (localizedSpatialDifferenceQuotientEnergyWeakTest
             η k h φ φ.contDiff hηΩ hηshift)] with y hφ hψ
-    rw [hφ, hψ]
-  simp_rw [hprincipal, hdrift, hscalar]
+    simp_all
+  simp_all
 
 /-- The reverse-time source functional on a smooth localized energy test is
 the literal negative source integral. -/
 theorem reverseTimeSourceFunctional_apply_smooth_localizedSpatialDifferenceQuotientEnergyTest_eq
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : IsOpen Ω) (r₁ τ : ℝ)
+    
     (F : ℝ → PDE.Vec d → ℝ)
     (hF : MeasureTheory.MemLp
       (fun y : PDE.Vec d => F (r₁ - τ) y)
@@ -158,9 +155,7 @@ theorem reverseTimeSourceFunctional_apply_smooth_localizedSpatialDifferenceQuoti
         (localizedSpatialDifferenceQuotientEnergyWeakTest
           η k h φ φ.contDiff hηΩ hηshift) y ∂volume := by
   rw [reverseTimeSourceFunctional_apply,
-    localizedSpatialDifferenceQuotientEnergyTestH10CLM_apply_smooth
-      hΩ η k h φ hηΩ hηshift,
-    L2.inner_def]
+    localizedSpatialDifferenceQuotientEnergyTestH10CLM_apply_smooth]
   congr 1
   apply integral_congr_ae
   filter_upwards
@@ -168,7 +163,6 @@ theorem reverseTimeSourceFunctional_apply_smooth_localizedSpatialDifferenceQuoti
       ae_valueCLM_smoothCompactlySupportedH1HilbertGraph hΩ
         (localizedSpatialDifferenceQuotientEnergyWeakTest
           η k h φ φ.contDiff hηΩ hηshift)] with y hF hψ
-  rw [hψ, hF]
-  simp only [RCLike.inner_apply, conj_trivial]
+  simp_all
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

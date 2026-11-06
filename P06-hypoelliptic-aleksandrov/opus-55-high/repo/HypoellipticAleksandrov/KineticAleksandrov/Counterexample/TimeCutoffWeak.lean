@@ -16,22 +16,24 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory
 open scoped ENNReal
 
+variable {n : ℕ} {D : Set (PDE.Vec n)} {p : ℝ≥0∞}
+
 /-- A bounded-derivative `C¹` cutoff of two Sobolev representatives has the chain-rule
 weak gradient, including the derivative of the subtracted function. -/
-theorem weakGradient_cutoff_sub {n : ℕ} {D : Set (PDE.Vec n)} {p : ℝ≥0∞}
+theorem weakGradient_cutoff_sub 
     (hD : PDE.IsOpenBoundedConvexDomain D) (hp : 1 ≤ p) (hpTop : p ≠ ∞)
     (u B : PDE.W1pFunction D p) (theta : ℝ → ℝ) (htheta : ContDiff ℝ 1 theta)
     (M : ℝ) (hM : 0 ≤ M) (hbound : ∀ s, |deriv theta s| ≤ M) :
     PDE.HasWeakGradientOn D
       (fun x => theta (u.toFun x - B.toFun x))
       (fun x i => deriv theta (u.toFun x - B.toFun x) * (u.grad x i - B.grad x i)) := by
-  let : Fact (1 ≤ p) := ⟨hp⟩
-  simpa only [PDE.W1pFunction.sub_toFun, PDE.W1pFunction.sub_grad, Pi.sub_apply] using!
+  let : Fact _ := ⟨hp⟩
+  simpa using!
     PDE.W1pFunction.hasWeakGradient_comp_contDiff_of_deriv_bounded
       hD hp hpTop (u - B) htheta hM hbound
 
 /-- The fixed Appendix C cutoff has multiplier bound one in the weak chain rule. -/
-theorem weakGradient_timeCutoff_sub {n : ℕ} {D : Set (PDE.Vec n)} {p : ℝ≥0∞}
+theorem weakGradient_timeCutoff_sub 
     (hD : PDE.IsOpenBoundedConvexDomain D) (hp : 1 ≤ p) (hpTop : p ≠ ∞)
     (u B : PDE.W1pFunction D p) :
     PDE.HasWeakGradientOn D

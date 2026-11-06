@@ -7,7 +7,6 @@ import Mathlib.MeasureTheory.Integral.DominatedConvergence
 /-! # Actual expanding cutoff limits and extended Fatou bounds -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory Filter
 open scoped Topology ENNReal
@@ -15,29 +14,28 @@ open scoped Topology ENNReal
 /-- The literal scalar cutoff equals one throughout its inner unit interval. -/
 theorem barrierCutoff_eq_one {x : ℝ} (hx : |x| ≤ 1) : barrierCutoff x = 1 := by
   apply barrierCutoffBump.one_of_mem_closedBall
-  simpa only [Metric.mem_closedBall, Real.dist_eq, sub_zero, barrierCutoffBump] using hx
+  aesop
 
 /-- At every physical point, the expanding kinetic cutoff is eventually exactly one. -/
 theorem barrierRectCutoff_eventually_one (Y : ℝ) (z : Z) :
     ∀ᶠ n : ℕ in atTop, barrierRectCutoff Y ((n : ℝ) + 1) z = 1 := by
-  have hn : ∀ᶠ n : ℕ in atTop, max |z.1 - Y| |z.2| ≤ (n : ℝ) :=
+  have hn : ∀ᶠ n : ℕ in atTop, max |z.1 - Y| |z.2| ≤ n :=
     tendsto_natCast_atTop_atTop.eventually (eventually_ge_atTop _)
   filter_upwards [hn] with n hn
   have hR : 1 ≤ (n : ℝ) + 1 := by
-    have hn0 : (0 : ℝ) ≤ n := by positivity
-    linarith only [hn0]
+    simp
   have hR0 : 0 < (n : ℝ) + 1 := by positivity
-  have hcube : (n : ℝ) + 1 ≤ ((n : ℝ) + 1) ^ 3 := by
+  have hcube : n + 1 ≤ ((n : ℝ) + 1) ^ 3 := by
     have hh := mul_nonneg hR0.le (show 0 ≤ ((n : ℝ) + 1) ^ 2 - 1 by nlinarith [hR])
-    nlinarith only [hh]
-  have hx : |z.1 - Y| ≤ ((n : ℝ) + 1) ^ 3 :=
+    linarith
+  have hx : |z.1 - Y| ≤ (n + 1) ^ 3 :=
     (le_max_left _ _).trans (hn.trans ((by linarith : (n : ℝ) ≤ n + 1).trans hcube))
-  have hv : |z.2| ≤ (n : ℝ) + 1 :=
+  have hv : |z.2| ≤ n + 1 :=
     (le_max_right _ _).trans (hn.trans (by linarith))
-  have hx' : |(z.1 - Y) / ((n : ℝ) + 1) ^ 3| ≤ 1 := by
+  have hx' : |(z.1 - Y) / (n + 1) ^ 3| ≤ 1 := by
     rw [abs_div, abs_of_pos (pow_pos hR0 3), div_le_iff₀ (pow_pos hR0 3), one_mul]
     exact hx
-  have hv' : |z.2 / ((n : ℝ) + 1)| ≤ 1 := by
+  have hv' : |z.2 / (n + 1)| ≤ 1 := by
     rw [abs_div, abs_of_pos hR0, div_le_iff₀ hR0, one_mul]
     exact hv
   simp only [barrierRectCutoff, barrierCutoff_eq_one hx', barrierCutoff_eq_one hv', one_mul]
@@ -49,21 +47,20 @@ theorem barrierRectCutoff_integral_tendsto (mu : Measure Z) (f : Z → ℝ)
       atTop (𝓝 (∫ z, f z ∂mu)) := by
   apply tendsto_integral_of_dominated_convergence (fun z => |f z|)
   · intro n
-    have hc : Continuous (barrierRectCutoff Y ((n : ℝ) + 1)) := by
-      exact (barrierCutoff_contDiff.continuous.comp
+    have hc : Continuous (barrierRectCutoff Y ((n : ℝ) + 1)) := (barrierCutoff_contDiff.continuous.comp
         ((continuous_fst.sub continuous_const).div_const _)).mul
           (barrierCutoff_contDiff.continuous.comp (continuous_snd.div_const _))
-    exact (hc.measurable.mul hf).aestronglyMeasurable
-  · exact hi.abs
+    fun_prop
+  · fun_prop
   · intro n
     filter_upwards with z
     rw [Real.norm_eq_abs, abs_mul, abs_of_nonneg (barrierRectCutoff_bounds _ _ _).1]
     simpa only [one_mul] using mul_le_mul_of_nonneg_right
-      (barrierRectCutoff_bounds Y ((n : ℝ) + 1) z).2 (abs_nonneg (f z))
+      (barrierRectCutoff_bounds Y _ z).2 (abs_nonneg _)
   · filter_upwards with z
     apply Tendsto.congr' ?_ tendsto_const_nhds
     filter_upwards [barrierRectCutoff_eventually_one Y z] with n hn
-    simp only [hn, one_mul]
+    simp_all
 
 /-- Extended Fatou passes quantitative finite bounds without removing singular atoms. -/
 theorem singular_fatou_of_real_bounds {W : Type*} [MeasurableSpace W]
@@ -73,7 +70,7 @@ theorem singular_fatou_of_real_bounds {W : Type*} [MeasurableSpace W]
     (b : ℕ → ℝ) (B : ℝ) (hb : Tendsto b atTop (𝓝 B))
     (hi : ∀ n, (∫⁻ w, f n w ∂mu) ≤ ENNReal.ofReal (b n)) :
     (∫⁻ w, F w ∂mu) ≤ ENNReal.ofReal B := by
-  have he : (fun w => liminf (fun n => f n w) atTop) = F :=
+  have he : (fun w => liminf _ atTop) = F :=
     funext (fun w => (hp w).liminf_eq)
   rw [← he]
   apply (lintegral_liminf_le hm).trans

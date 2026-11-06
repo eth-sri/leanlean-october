@@ -21,8 +21,10 @@ variable {n : ℕ}
 def truncationPoint (g : ℝ → PDE.Vec n) (x : EvolutionVec n) : TimeVelocity (n + n) :=
   (timeCoord n x, spatialPack (diffusedCoord n x - g (timeCoord n x)) (transportedCoord n x))
 
+variable {g : ℝ → PDE.Vec n} {u : TimeVelocity (n + n) → ℝ} {U : Set (TimeVelocity (n + n))}
+
 /-- The straightening map is smooth when its curve is smooth. -/
-theorem contDiff_truncationPoint {g : ℝ → PDE.Vec n}
+theorem contDiff_truncationPoint 
     (hg : ContDiff ℝ (⊤ : ℕ∞) g) : ContDiff ℝ (⊤ : ℕ∞) (truncationPoint g) :=
   (timeCoord n).contDiff.prodMk (contDiff_spatialPack
     ((diffusedCoord n).contDiff.sub (hg.comp (timeCoord n).contDiff))
@@ -36,14 +38,12 @@ theorem truncationPoint_spatial_line (g : ℝ → PDE.Vec n) (x w : EvolutionVec
         t • spatialPack (diffusedCoord n w) (transportedCoord n w)) := by
   unfold truncationPoint
   simp only [map_add, map_smul, hw, smul_zero, add_zero]
-  congr 1
   rw [show diffusedCoord n x + t • diffusedCoord n w - g (timeCoord n x) =
     (diffusedCoord n x - g (timeCoord n x)) + t • diffusedCoord n w by abel]
   rw [spatialPack_add, spatialPack_smul]
 
 /-- A scalar C1,2 function pulls back with the expected first spatial line derivative. -/
-theorem truncation_hasLineDerivAt_spatial {g : ℝ → PDE.Vec n}
-    {u : TimeVelocity (n + n) → ℝ} {U : Set (TimeVelocity (n + n))}
+theorem truncation_hasLineDerivAt_spatial 
     (hu : IsScalarC12On u U) {x w : EvolutionVec n}
     (hx : truncationPoint g x ∈ U) (hw : timeCoord n w = 0) :
     HasLineDerivAt ℝ (u ∘ truncationPoint g)
@@ -57,8 +57,7 @@ theorem truncation_hasLineDerivAt_spatial {g : ℝ → PDE.Vec n}
     scalarSpatialGradient] using! h
 
 /-- Spatial line derivatives of gradient entries are scalar Hessian entries. -/
-theorem truncation_gradient_hasLineDerivAt {g : ℝ → PDE.Vec n}
-    {u : TimeVelocity (n + n) → ℝ} {U : Set (TimeVelocity (n + n))}
+theorem truncation_gradient_hasLineDerivAt 
     (hu : IsScalarC12On u U) {x w : EvolutionVec n}
     (hx : truncationPoint g x ∈ U) (hw : timeCoord n w = 0)
     (i j : Fin (n + n))
@@ -67,7 +66,7 @@ theorem truncation_gradient_hasLineDerivAt {g : ℝ → PDE.Vec n}
       (scalarSpatialHessian u (truncationPoint g x) i j) x w := by
   have hc2 := hu.spatialSlice_contDiffAt hx
   have hd : DifferentiableAt ℝ (fderiv ℝ (fun y => u ((truncationPoint g x).1, y)))
-      (truncationPoint g x).2 :=
+      _ :=
     (hc2.fderiv_right (m := 1) (by norm_num)).differentiableAt (by norm_num)
   have h := (hd.clm_apply (differentiableAt_const (PDE.basisVec j))).hasFDerivAt
     |>.hasLineDerivAt (PDE.basisVec i)
@@ -75,19 +74,18 @@ theorem truncation_gradient_hasLineDerivAt {g : ℝ → PDE.Vec n}
       (fun y => u ((truncationPoint g x).1, y)) y (PDE.basisVec j))
       (truncationPoint g x).2 (PDE.basisVec i) =
       scalarSpatialHessian u (truncationPoint g x) i j := by
-    have hz : fderiv ℝ (fun _ : PDE.Vec (n + n) => PDE.basisVec j)
+    have hz : fderiv ℝ _
         (truncationPoint g x).2 = 0 := (hasFDerivAt_const (PDE.basisVec j) _).fderiv
-    rw [fderiv_clm_apply hd (differentiableAt_const (PDE.basisVec j))]
+    rw [fderiv_clm_apply hd (differentiableAt_const _)]
     erw [hz]
-    simpa only [ContinuousLinearMap.comp_zero, zero_add,
-      ContinuousLinearMap.flip_apply] using! (scalarSpatialHessian_eq_secondFDeriv hc2 i j).symm
+    simpa using! (scalarSpatialHessian_eq_secondFDeriv hc2 i j).symm
   rw [he] at h
   unfold HasLineDerivAt at h ⊢
   simpa only [truncationPoint_spatial_line g x w hw, hdir,
     scalarSpatialGradient, PDE.classicalGradient] using! h
 
 /-- The time line derivative includes the exact moving-frame correction. -/
-theorem truncation_hasLineDerivAt_time {g : ℝ → PDE.Vec n}
+theorem truncation_hasLineDerivAt_time 
     (hg : ContDiff ℝ (⊤ : ℕ∞) g) {u : TimeVelocity (n + n) → ℝ}
     {U : Set (TimeVelocity (n + n))} (hU : IsOpen U) (hu : IsScalarC12On u U)
     {x : EvolutionVec n} (hx : truncationPoint g x ∈ U) :
@@ -102,7 +100,7 @@ theorem truncation_hasLineDerivAt_time {g : ℝ → PDE.Vec n}
   have h := hd.hasFDerivAt.hasLineDerivAt basisT
   rw [he, ← kineticTimeDerivative_comp (he ▸ hd),
     kineticTimeDerivative_straightenedPullback
-      ((hg.differentiable (by simp)) (timeCoord n x)) hdu] at h
-  simpa only [← he] using! h
+      ((hg.differentiable (by simp)) _) hdu] at h
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.Evolution

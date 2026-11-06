@@ -14,7 +14,6 @@ chosen uniformly before the coefficient, center, radius, and query.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open HypoellipticAleksandrov Parabolic SectionTwo Set MeasureTheory
 
@@ -52,7 +51,7 @@ theorem ballKernel_short_time_fourier
     ballExit_exists_full_evolution hH hLE hd hlam hLam B hB v₀ hR
   let Kb := localBallKernel hH hLE hd hlam hLam B hB v₀ hR
   let qf := wholeSpaceQuery P.1.time T.1 T.2.le P.1.velocity P.1.position
-  have hdef := killedFourier_variation_le_full_add_loss Kb Kf (ballEvolutionQuery P T)
+  have hdef := killedFourier_variation_le_full_add_loss Kb Kf _
     qf rfl (hdom (ballEvolutionQuery P T)) ξ
   have hf := hdecay B hB Sf Kf hreal P.1.time T.1 T.2
     P.1.velocity ξ P.1.position
@@ -64,27 +63,21 @@ theorem ballKernel_short_time_fourier
     (Real.rpow_nonneg (PDE.vecEuclideanNorm_nonneg ξ) _)
   have hs' : 1 - (Kb.master (ballEvolutionQuery P T)).real univ ≤
       Cs * Real.exp (-cs * x) := by
-    change 1 - (Kb.master (ballEvolutionQuery P T)).real univ ≤
-      Cs * Real.exp (-cs * R ^ 2 / (T.1 - P.1.time)) at hs
     have he : -cs * R ^ 2 / (T.1 - P.1.time) = -cs * x := by
-      dsimp only [x]
       ring
     rwa [he] at hs
   have hf' : ((fourierProjection Kf qf ξ).variation univ).toReal ≤
       Cf * Real.exp (-cf * y) := by
-    convert hf using 1
-    congr 2
-    dsimp only [y]
-    ring
+    grind
   calc
     _ ≤ ((fourierProjection Kf qf ξ).variation univ).toReal +
-        (1 - (Kb.master (ballEvolutionQuery P T)).real univ) := by
-      linarith only [hdef]
-    _ ≤ Cs * Real.exp (-cs * x) + Cf * Real.exp (-cf * y) := by
-      exact (add_le_add hf' hs').trans_eq (add_comm _ _)
-    _ ≤ max Cs Cf * (Real.exp (-min cs cf * x) + Real.exp (-min cs cf * y)) :=
+        (1 - (Kb.master _).real univ) := by
+      linarith
+    _ ≤ Cs * Real.exp _ + Cf * Real.exp _ := by
+      linarith
+    _ ≤ max Cs Cf * (Real.exp _ + Real.exp _) :=
       ballExit_combine_exponentials hCs.le hCf.le hx hy
     _ = _ := by
-      congr 2 <;> congr 1 <;> dsimp only [x, y] <;> ring
+      grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGree
 /-! # Derived compact Green identity for the finite actual physical occupation measure -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic SectionTwo Evolution MeasureTheory Set
 
@@ -40,10 +39,9 @@ theorem fullspace_physical_green_compact_c2
   have heTerminal := integral_map nativeToXV_measurable.aemeasurable
     (hf.continuous.measurable.aestronglyMeasurable (μ := kernelXV E T z))
   change (∫ w, f w ∂kernelXV E T z) =
-    ∫ x, f (nativeToXV x) ∂E.2.master (wholeQuery T z) at heTerminal
+    ∫ x, f _ ∂E.2.master _ at heTerminal
   change -(∫ w, physicalSpatialOperator A.a f w ∂physicalOccupationMeasure E z T) =
-    f z - ∫ x, f (nativeToXV x) ∂E.2.master (wholeQuery T z) at hh
-  rw [← heTerminal] at hh
-  linarith only [hh]
+    f z - ∫ x, f _ ∂E.2.master (wholeQuery T z) at hh
+  linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

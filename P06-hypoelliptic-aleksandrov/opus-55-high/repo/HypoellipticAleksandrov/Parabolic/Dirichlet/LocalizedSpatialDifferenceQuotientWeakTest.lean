@@ -17,7 +17,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- The localized forward quotient of a bundled smooth test, supported by the
 cutoff inside the raw carrier. -/
-noncomputable def localizedSpatialDifferenceQuotientWeakTest
+def localizedSpatialDifferenceQuotientWeakTest
     {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
     (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
@@ -29,11 +29,11 @@ noncomputable def localizedSpatialDifferenceQuotientWeakTest
   tsupport_subset :=
     (tsupport_localizedSpatialDifferenceQuotient_subset η k h φ).trans hηΩ
 
+variable {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ} (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d) (h : ℝ)
+
 /-- The bundled localized quotient has the literal pointwise value. -/
 @[simp] theorem localizedSpatialDifferenceQuotientWeakTest_apply
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
+     (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω) (y : PDE.Vec d) :
     localizedSpatialDifferenceQuotientWeakTest η k h φ hηΩ y =
       η y * ((φ (y + h • PDE.basisVec k) - φ y) / h) :=
@@ -42,9 +42,7 @@ noncomputable def localizedSpatialDifferenceQuotientWeakTest
 /-- The coordinate derivative of the bundled localized quotient obeys the
 literal cutoff product rule. -/
 theorem localizedSpatialDifferenceQuotientWeakTest_partialDeriv
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
+     (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
     (j : Fin d) (y : PDE.Vec d) :
     (localizedSpatialDifferenceQuotientWeakTest η k h φ hηΩ).partialDeriv j y =
@@ -53,29 +51,24 @@ theorem localizedSpatialDifferenceQuotientWeakTest_partialDeriv
         η y *
           ((φ.partialDeriv j (y + h • PDE.basisVec k) -
               φ.partialDeriv j y) / h) := by
-  unfold PDE.WeakTestFunction.partialDeriv localizedSpatialDifferenceQuotientWeakTest
   change (fderiv ℝ (fun x : PDE.Vec d =>
-    η x * ((φ (x + h • PDE.basisVec k) - φ x) / h)) y) (PDE.basisVec j) = _
+    η x * ((φ _ - φ x) / h)) y) _ = _
   have hφshift : DifferentiableAt ℝ
       (fun x : PDE.Vec d => φ (x + h • PDE.basisVec k)) y :=
     (φ.contDiff.comp (contDiff_id.add contDiff_const)).contDiffAt.differentiableAt (by simp)
-  have hφ : DifferentiableAt ℝ (φ : PDE.Vec d → ℝ) y :=
+  have hφ : DifferentiableAt ℝ φ y :=
     φ.contDiff.contDiffAt.differentiableAt (by simp)
-  let q : PDE.Vec d → ℝ := fun x =>
+  let q  := fun x =>
     φ (x + h • PDE.basisVec k) - φ x
   have hq : DifferentiableAt ℝ q y := by
-    exact hφshift.sub hφ
+    fun_prop
   have hquotient : DifferentiableAt ℝ
       (fun x : PDE.Vec d => (φ (x + h • PDE.basisVec k) - φ x) / h) y :=
     by
-      convert hq.const_smul h⁻¹ using 1
-      funext x
-      simp only [q, Pi.smul_apply, smul_eq_mul, div_eq_mul_inv]
-      ring
+      fun_prop
   rw [fderiv_fun_mul
     (η.smooth.contDiffAt.differentiableAt (by simp)) hquotient]
-  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply,
-    smul_eq_mul, PDE.classicalGradient_apply]
+  simp only [ContinuousLinearMap.add_apply, ContinuousLinearMap.smul_apply, PDE.classicalGradient_apply]
   have hquotientDeriv :
       (fderiv ℝ (fun x : PDE.Vec d =>
         (φ (x + h • PDE.basisVec k) - φ x) / h) y) (PDE.basisVec j) =
@@ -84,20 +77,15 @@ theorem localizedSpatialDifferenceQuotientWeakTest_partialDeriv
         (φ (x + h • PDE.basisVec k) - φ x) / h) =
         fun x => h⁻¹ • q x := by
       funext x
-      simp only [q, smul_eq_mul, div_eq_mul_inv]
       ring
     rw [hrewrite, fderiv_fun_const_smul hq h⁻¹]
     have hqderiv : (fderiv ℝ q y) (PDE.basisVec j) =
         φ.partialDeriv j (y + h • PDE.basisVec k) - φ.partialDeriv j y := by
-      dsimp only [q]
       rw [fderiv_fun_sub hφshift hφ, fderiv_comp_add_right]
       rfl
     rw [ContinuousLinearMap.smul_apply, hqderiv]
-    simp only [PDE.WeakTestFunction.partialDeriv,
-      PDE.WeakTestFunction.partialDeriv, smul_eq_mul, div_eq_mul_inv]
     ring
   rw [hquotientDeriv]
-  simp only [PDE.WeakTestFunction.partialDeriv]
   ring
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

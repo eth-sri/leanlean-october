@@ -20,8 +20,10 @@ def smoothedZeroExtendedProfile {d : ℕ} {alpha : ℝ}
   spatialMollify phi (fun y => zeroExtendedProfile (profileFunction h) alpha r mu R
     ⟨P.time, y.1, y.2⟩) (P.position, P.velocity)
 
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha) (r mu R : ℝ) (phi : ContDiffBump (0 : XV d)) (P : KineticPoint d)
+
 /-- Smoothness is joint in the native product chart. -/
-theorem smoothedZeroExtendedProfile_contDiff {d : ℕ} {alpha : ℝ}
+theorem smoothedZeroExtendedProfile_contDiff 
     (ha : 0 < alpha) (h : CounterProfileStatement d alpha)
     (r mu R : ℝ) (hr : 0 < r) (hmu : 0 < mu) (hR : 0 < R)
     (hvel : ∀ q, profileFunction h q ≤ 1 → PDE.vecNormSq q.2 < R ^ 2)
@@ -31,30 +33,23 @@ theorem smoothedZeroExtendedProfile_contDiff {d : ℕ} {alpha : ℝ}
   spatial_zeroExtendedProfile_contDiff_of_profile ha h r mu R hr hmu hR hvel phi
 
 /-- Each constructed smooth function is globally nonnegative. -/
-theorem smoothedZeroExtendedProfile_nonneg {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R : ℝ)
-    (phi : ContDiffBump (0 : XV d)) (P : KineticPoint d) :
+theorem smoothedZeroExtendedProfile_nonneg  :
     0 ≤ smoothedZeroExtendedProfile h r mu R phi P :=
   spatialMollify_nonneg phi _
-    (fun y => zeroExtendedProfile_nonneg _ alpha r mu R ⟨P.time, y.1, y.2⟩) _
+    (fun y => zeroExtendedProfile_nonneg _ alpha r mu R _) _
 
 /-- All nonpositive times remain identically zero after spatial smoothing. -/
-theorem smoothedZeroExtendedProfile_eq_zero_of_time {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R : ℝ)
-    (phi : ContDiffBump (0 : XV d)) (P : KineticPoint d) (ht : P.time ≤ 0) :
+theorem smoothedZeroExtendedProfile_eq_zero_of_time  (ht : P.time ≤ 0) :
     smoothedZeroExtendedProfile h r mu R phi P = 0 := by
-  unfold smoothedZeroExtendedProfile spatialMollify
   apply integral_eq_zero_of_ae
   filter_upwards [] with y
-  change phi.normed volume y * zeroExtendedProfile (profileFunction h) alpha r mu R
+  change phi.normed volume y * zeroExtendedProfile _ alpha r mu R
     ⟨P.time, P.position - y.1, P.velocity - y.2⟩ = 0
   rw [zeroExtendedProfile_eq_zero_of_time _ alpha r mu R
     ⟨P.time, P.position - y.1, P.velocity - y.2⟩ ht, mul_zero]
 
 /-- Spatial smoothing leaves a fixed outer collar whenever its radius is small enough. -/
-theorem smoothedZeroExtendedProfile_eq_zero_outside_thickening {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r mu R : ℝ)
-    (phi : ContDiffBump (0 : XV d)) (P : KineticPoint d)
+theorem smoothedZeroExtendedProfile_eq_zero_outside_thickening 
     (hq : (P.position, P.velocity) ∉
       Metric.thickening phi.rOut {q | profileFunction h q ≤ 1}) :
     smoothedZeroExtendedProfile h r mu R phi P = 0 := by

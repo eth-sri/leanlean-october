@@ -10,7 +10,6 @@ for a supplied kernel are obtained from the two analytic hypotheses by uniquenes
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open Set MeasureTheory HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
@@ -29,18 +28,17 @@ private theorem master_mass_eq_marginal_mass {d : ℕ} {Ω : Set (PDE.Vec d)}
   have hq : evolutionQueryOfState Ω γ σ τ hστ
       (evolutionStateOfPosition Ω γ σ ⟨v, hv⟩ z) = movingQuery σ τ hστ v z hv := rfl
   rw [hq] at hmap
-  have h := congrArg (fun μ : Measure (PDE.Vec d) => μ univ) hmap
+  have h := congrArg (fun μ : Measure _ => μ univ) hmap
   rw [Measure.map_apply measurable_subtype_coe MeasurableSet.univ,
     MovingFiberKernel.firstMarginal, ProbabilityTheory.Kernel.fst_apply,
     Measure.map_apply measurable_fst MeasurableSet.univ] at h
-  simpa only [preimage_univ] using h
+  simp_all
 
+
+variable {a c : ℝ} (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c)) (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary) (B : CoefficientField 1)
 
 /-- Scalar marginal mass equals the ambient master mass of the same query. -/
-theorem interval_parabolic_mass_eq_master {a c : ℝ}
-    (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
-    (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
-    (B : CoefficientField 1)
+theorem interval_parabolic_mass_eq_master 
     (hp : HasParabolicMarginalBundle (PDE.oneDimensionalAxisBox a c) stationary hJ
       (zIndependentCoefficient B) K)
     (σ τ : ℝ) (hστ : σ ≤ τ) (v z : PDE.Vec 1)
@@ -49,8 +47,8 @@ theorem interval_parabolic_mass_eq_master {a c : ℝ}
       K.master (movingQuery σ τ hστ v z hv) univ := by
   obtain ⟨Q, hfirst, _⟩ := hp (fun _ _ _ _ => rfl)
   unfold P parabolicMarginalAmbientMeasure
-  rw [Measure.map_apply measurable_subtype_coe MeasurableSet.univ, preimage_univ]
-  exact master_mass_eq_marginal_mass hJ K σ τ hστ v z hv (hfirst σ τ hστ ⟨v, hv⟩ z)
+  rw [Measure.map_apply measurable_subtype_coe MeasurableSet.univ]
+  exact master_mass_eq_marginal_mass hJ K σ τ hστ v z hv (hfirst σ τ hστ _ z)
 
 /-- The positive marginal is bounded by the half-line barrier at the nearer endpoint. -/
 theorem interval_killing
@@ -72,34 +70,22 @@ theorem interval_killing
   have hleft := interval_endpoint_mass_bound hac hστ hsetting.1.1
     (s := 1) (e := a) (by norm_num) B hsetting.1 hJ K hp
     (fun w hw => by
-      have h := PDE.mem_oneDimensionalAxisBox_iff.mp hw
-      simpa only [one_mul, PDE.vecOneCoordinate] using sub_pos.mpr h.1)
+      aesop)
     (fun w hw => by
       simpa only [one_mul] using sub_nonneg.mpr (interval_coordinate_closure hw).1) v hv
   have hright := interval_endpoint_mass_bound hac hστ hsetting.1.1
     (s := -1) (e := c) (by norm_num) B hsetting.1 hJ K hp
     (fun w hw => by
-      have h := PDE.mem_oneDimensionalAxisBox_iff.mp hw
-      change 0 < -1 * (w 0 - c)
-      have hc : w 0 < c := h.2
-      linarith)
+      aesop)
     (fun w hw => by
       have h := (interval_coordinate_closure hw).2
       linarith) v hv
   rcases le_total (v 0 - a) (c - v 0) with hl | hr
-  · rw [min_eq_left hl]
-    simpa only [intervalHeat, one_mul] using hleft
-  · rw [min_eq_right hr]
-    convert hright using 1
-    unfold intervalHeat
-    congr 2
-    ring
+  · aesop
+  aesop
 
 /-- Fourier total variation is bounded by scalar marginal mass on the same kernel. -/
-theorem interval_fourier_tv_le_mass {a c : ℝ}
-    (hJ : MeasurableSet (PDE.oneDimensionalAxisBox a c))
-    (K : MovingFiberKernel (PDE.oneDimensionalAxisBox a c) stationary)
-    (B : CoefficientField 1)
+theorem interval_fourier_tv_le_mass 
     (hp : HasParabolicMarginalBundle (PDE.oneDimensionalAxisBox a c) stationary hJ
       (zIndependentCoefficient B) K)
     (σ τ : ℝ) (hστ : σ ≤ τ) (v z ξ : PDE.Vec 1)
@@ -113,7 +99,7 @@ theorem interval_fourier_tv_le_mass {a c : ℝ}
       K.master (movingQuery σ τ hστ v z hv) univ := by
     rw [MovingFiberKernel.firstMarginal, ProbabilityTheory.Kernel.fst_apply,
       Measure.map_apply measurable_fst MeasurableSet.univ, preimage_univ]
-  rw [hm, ← interval_parabolic_mass_eq_master hJ K B hp σ τ hστ v z hv] at h
+  rw [hm, ← interval_parabolic_mass_eq_master hJ K B hp] at h
   exact ENNReal.toReal_mono (measure_ne_top _ _) h
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

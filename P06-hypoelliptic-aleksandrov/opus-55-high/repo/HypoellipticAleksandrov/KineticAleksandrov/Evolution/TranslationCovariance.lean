@@ -23,7 +23,6 @@ measures.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -42,9 +41,7 @@ theorem measurable_evolutionStateShift' (σ : ℝ) (h : PDE.Vec n) :
 /-- The preimage of the terminal fiber under the ambient shift is the terminal fiber. -/
 theorem preimage_ambientShift_evolutionStateSet (h : PDE.Vec n) :
     evolutionAmbientStateShift h ⁻¹' evolutionStateSet Ω γ τ = evolutionStateSet Ω γ τ := by
-  ext x
-  simp only [evolutionStateSet, evolutionAmbientStateShift, mem_preimage, mem_prod, mem_univ,
-    and_true]
+  aesop
 
 /-- Pulling back along the fiber inclusion intertwines the ambient and the fiber shift. -/
 theorem comap_map_ambientShift (hU : MeasurableSet (evolutionStateSet Ω γ τ))
@@ -58,18 +55,7 @@ theorem comap_map_ambientShift (hU : MeasurableSet (evolutionStateSet Ω γ τ))
   rw [Measure.map_apply (measurable_evolutionStateShift' τ h) hA, he.comap_apply, he.comap_apply,
     Measure.map_apply (measurable_ambientShift h) (he.measurableSet_image.2 hA)]
   congr 1
-  ext x
-  constructor
-  · rintro ⟨a, ha, hax⟩
-    have hxU : x ∈ evolutionStateSet Ω γ τ := by
-      have : evolutionAmbientStateShift h x ∈ evolutionStateSet Ω γ τ := hax ▸ a.2
-      rwa [← mem_preimage, preimage_ambientShift_evolutionStateSet] at this
-    refine ⟨⟨x, hxU⟩, ?_, rfl⟩
-    show evolutionStateShift Ω γ τ h ⟨x, hxU⟩ ∈ A
-    have : evolutionStateShift Ω γ τ h ⟨x, hxU⟩ = a := Subtype.ext hax.symm
-    rwa [this]
-  · rintro ⟨a, ha, rfl⟩
-    exact ⟨evolutionStateShift Ω γ τ h a, ha, rfl⟩
+  aesop
 
 end Outside
 
@@ -113,7 +99,7 @@ theorem terminalValue_shift
     (evolutionStateShift Ω γ σ h p) F hF
   rw [terminalValue_eq_of_solution n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p _
-    (hF.shift h) _ (hu.velocityShift hBz h), ← hu']
+    _ _ (hu.velocityShift hBz h), ← hu']
   rfl
 
 /-- The ambient push-forward of the terminal measure along the shift of the transported coordinate
@@ -131,16 +117,15 @@ theorem terminalMeasure_shift
     (isOpen_of_isAdmissibleEvolutionDomain hΩ)
   refine terminalMeasure_eq_of_spec n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
-    (evolutionQueryOfState Ω γ σ τ hστ (evolutionStateShift Ω γ σ h p)) _ ?_ ?_ ?_
-  · rw [Measure.map_apply hsh MeasurableSet.univ, preimage_univ]
-    exact hspec.1
+    _ _ ?_ ?_ ?_
+  · simp_all
   · show ((μ (evolutionQueryOfState Ω γ σ τ hστ p)).map (evolutionAmbientStateShift h)).restrict
         (evolutionStateSet Ω γ τ) = _
-    rw [Measure.restrict_map hsh hU, preimage_ambientShift_evolutionStateSet]
-    exact congrArg (fun ν => ν.map (evolutionAmbientStateShift h)) hspec.2.1
+    rw [Measure.restrict_map hsh hU]
+    exact congrArg _ hspec.2.1
   · intro F hF
     rw [integral_map hsh.aemeasurable F.measurable.aestronglyMeasurable]
-    exact (hspec.2.2 (terminalDatumShift h F) (hF.shift h)).trans
+    exact (hspec.2.2 _ _).trans
       (terminalValue_shift n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
         hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx hBz
         σ τ hστ h p F hF)
@@ -156,7 +141,7 @@ theorem terminalFiberKernel_translation
     (isOpen_of_isAdmissibleEvolutionDomain hΩ)
   rw [terminalFiberKernel_apply, terminalFiberKernel_apply,
     ← terminalMeasure_shift n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx hBz σ τ hστ h p,
+      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx hBz,
     comap_map_ambientShift hU]
 
 /-- Translation covariance for every moving fiber kernel `K` whose master measures are the

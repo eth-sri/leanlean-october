@@ -19,7 +19,6 @@ distribution identity using joint value and gradient representatives.
 open Filter MeasureTheory Set Topology
 open scoped BigOperators ENNReal RealInnerProductSpace Matrix.Norms.Elementwise MatrixOrder
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -83,7 +82,6 @@ theorem reverseTime_global_separated_product_distribution_of_reverseTimeVariatio
       (∫ z, raw z
         ∂timeVelocityVolumeOn
           (reverseTimeOpenInterval (r₁ - r₀) ×ˢ Ω)) = 0 := by
-  dsimp only
   letI : SFinite (reverseTimeVolume (r₁ - r₀)) := by
     dsimp only [reverseTimeVolume]
     infer_instance
@@ -141,16 +139,15 @@ theorem reverseTime_global_separated_product_distribution_of_reverseTimeVariatio
   rw [← hprod]
   calc
     _ = ∫ τ, ∫ y,
-        U (τ, y) * eta.deriv τ * psi y -
+        U _ * eta.deriv τ * psi y -
           (∑ i : Fin d, ∑ j : Fin d,
-            reverseTimeCoefficient r₁ a τ y i j * G j (τ, y) *
+            reverseTimeCoefficient r₁ a τ y i j * G j _ *
               psi.partialDeriv i y) * eta τ -
           (∑ j : Fin d,
-            reverseTimeDivergenceDrift r₁ a b τ y j * G j (τ, y) * psi y) * eta τ +
-          reverseTimeScalarCoefficient r₁ c τ y * U (τ, y) * psi y * eta τ -
+            reverseTimeDivergenceDrift r₁ a b τ y j * G j _ * psi y) * eta τ +
+          reverseTimeScalarCoefficient r₁ c τ y * U _ * psi y * eta τ -
           reverseTimeScalarCoefficient r₁ F τ y * psi y * eta τ
-        ∂PDE.volumeOn Ω ∂reverseTimeVolume (r₁ - r₀) := by
-      exact integral_prod _ hraw
+        ∂PDE.volumeOn Ω ∂reverseTimeVolume _ := integral_prod _ hraw
     _ = _ := (integral_congr_ae hslice).trans hresidual
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

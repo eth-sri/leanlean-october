@@ -7,14 +7,15 @@ public import Mathlib.MeasureTheory.Function.LpSeminorm.TriangleInequality
 /-! # Positive sources under a fixed-function change of autonomous coefficients -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory HypoellipticAleksandrov.Parabolic
 open scoped ENNReal Matrix.Norms.Elementwise
 
+variable {d : ℕ} (A B : XV d → PDE.Mat d)
+
 /-- Entrywise measurable autonomous coefficients and genuine smooth jets
 give a measurable operator. -/
-theorem measurable_backwardOperator_of_joint_smooth {d : ℕ}
+theorem measurable_backwardOperator_of_joint_smooth 
     (A : XV d → PDE.Mat d) (hA : ∀ i k, Measurable (fun q => A q i k))
     (u : KineticPoint d → ℝ)
     (hu : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × XV d =>
@@ -28,21 +29,17 @@ theorem measurable_backwardOperator_of_joint_smooth {d : ℕ}
       (continuousOn_univ.mp hr.continuousOn_kineticVelocityHessian))).measurable
   have hsp : Measurable (fun P : KineticPoint d => (P.position, P.velocity)) :=
     (continuous_position.prodMk continuous_velocity).measurable
-  have hT : Measurable (fun P => PDE.vecDot P.velocity (kineticPositionGradient u P)) := by
-    unfold PDE.vecDot
-    exact Finset.measurable_sum _ (fun i _ =>
+  have hT : Measurable (fun P => PDE.vecDot P.velocity (kineticPositionGradient u P)) := Finset.measurable_sum _ (fun i _ =>
       ((measurable_pi_apply i).comp continuous_velocity.measurable).mul
         ((measurable_pi_apply i).comp hx))
   have hC : Measurable (fun P => matrixContraction (A (P.position, P.velocity))
-      (kineticVelocityHessian u P)) := by
-    unfold matrixContraction
-    exact Finset.measurable_sum _ (fun i _ => Finset.measurable_sum _ (fun k _ =>
+      (kineticVelocityHessian u P)) := Finset.measurable_sum _ (fun i _ => Finset.measurable_sum _ (fun k _ =>
       ((hA i k).comp hsp).mul
         (hv i k)))
   exact (ht.add hT).sub hC
 
 /-- The full backward-operator change is minus the exact coefficient Hessian error. -/
-theorem backwardOperator_coefficient_change {d : ℕ} (A B : XV d → PDE.Mat d)
+theorem backwardOperator_coefficient_change 
     (u : KineticPoint d → ℝ) (P : KineticPoint d) :
     backwardOperator (fun _t x v => B (x, v)) u P =
       backwardOperator (fun _t x v => A (x, v)) u P -
@@ -53,8 +50,7 @@ theorem backwardOperator_coefficient_change {d : ℕ} (A B : XV d → PDE.Mat d)
   ring
 
 /-- The positive source norm increases by at most the full contraction-error norm. -/
-theorem positive_source_norm_le_coefficient_error {d : ℕ}
-    (A B : XV d → PDE.Mat d)
+theorem positive_source_norm_le_coefficient_error 
     (hA : ∀ i k, Measurable (fun q => A q i k))
     (hB : ∀ i k, Measurable (fun q => B q i k))
     (u : KineticPoint d → ℝ)
@@ -74,18 +70,17 @@ theorem positive_source_norm_le_coefficient_error {d : ℕ}
     convert h using 1
     funext P
     simp only [Pi.sub_apply]
-    rw [backwardOperator_coefficient_change A B u P]
-    dsimp [E]
+    rw [backwardOperator_coefficient_change A B]
     ring
-  have hf := (hmb.max (measurable_const (a := (0 : ℝ)))).aestronglyMeasurable (μ := nu)
+  have hf := (hmb.max (measurable_const (a := (0)))).aestronglyMeasurable (μ := nu)
   have hm := eLpNorm_mono_ae_real (p := p) hf
     (Filter.Eventually.of_forall (fun P => show
-      ‖max (backwardOperator (fun _t x v => B (x, v)) u P) 0‖ ≤
-        max (backwardOperator (fun _t x v => A (x, v)) u P) 0 + ‖E P‖ from by
-      rw [Real.norm_of_nonneg (le_max_right _ _), backwardOperator_coefficient_change A B u P]
+      ‖max _ 0‖ ≤
+        max _ 0 + ‖E P‖ from by
+      rw [Real.norm_of_nonneg (le_max_right _ _), backwardOperator_coefficient_change A]
       simpa only [sub_eq_add_neg, abs_neg, Real.norm_eq_abs] using!
-        positive_part_add_le (backwardOperator (fun _t x v => A (x, v)) u P)
-          (max (backwardOperator (fun _t x v => A (x, v)) u P) 0) (-(E P))
+        positive_part_add_le _
+          _ (-(E P))
           (le_max_right _ _) (le_max_left _ _)))
   exact hm.trans ((eLpNorm_add_le hp).trans_eq
     (by rw [eLpNorm_norm E he.aestronglyMeasurable]))

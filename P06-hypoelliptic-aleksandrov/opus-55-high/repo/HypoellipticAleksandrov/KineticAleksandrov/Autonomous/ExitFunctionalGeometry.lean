@@ -16,8 +16,10 @@ def stripClosedExit (H : Interval) (T : ℝ) : Set Point :=
   {p | p.time = T ∧ p.velocity 0 ∈ Icc H.lo H.hi} ∪
     {p | p.time ≤ T ∧ (p.velocity 0 = H.lo ∨ p.velocity 0 = H.hi)}
 
+variable (H : Interval)
+
 /-- The full exit carrier is closed in physical kinetic spacetime. -/
-theorem isClosed_stripClosedExit (H : Interval) (T : ℝ) : IsClosed (stripClosedExit H T) :=
+theorem isClosed_stripClosedExit  (T : ℝ) : IsClosed (stripClosedExit H T) :=
   ((isClosed_eq continuous_time continuous_const).inter
     (isClosed_Icc.preimage ((continuous_apply 0).comp continuous_velocity))).union
     ((isClosed_le continuous_time continuous_const).inter
@@ -25,7 +27,7 @@ theorem isClosed_stripClosedExit (H : Interval) (T : ℝ) : IsClosed (stripClose
         (isClosed_eq ((continuous_apply 0).comp continuous_velocity) continuous_const)))
 
 /-- Swapping a native closed slab gives interior or prescribed exit points on any lower strip. -/
-theorem reconstruction_closedSlab_mapsTo (H : Interval) {sMinus a T : ℝ}
+theorem reconstruction_closedSlab_mapsTo  {sMinus a T : ℝ}
     (ha : sMinus < a) :
     MapsTo sectionTwoPoint (movingClosedSlab (intervalDomain H) (fun _ => 0) a T)
       (reconstructionStrip H sMinus T ∪ reconstructionExit H sMinus T) := by
@@ -43,14 +45,13 @@ theorem reconstruction_closedSlab_mapsTo (H : Interval) {sMinus a T : ℝ}
       · exact Or.inl ⟨htl, htu, lt_of_le_of_ne hv.1 (Ne.symm hl), lt_of_le_of_ne hv.2 hh⟩
 
 /-- The native interval frontier consists of exactly the two scalar endpoints. -/
-theorem reconstruction_interval_frontier_eq (H : Interval) {v : PDE.Vec 1}
+theorem reconstruction_interval_frontier_eq  {v : PDE.Vec 1}
     (hv : v ∈ frontier (intervalDomain H)) : v 0 = H.lo ∨ v 0 = H.hi := by
   have hb := intervalDomain_closure_bounds H (frontier_subset_closure hv)
-  change v ∈ closure (intervalDomain H) ∧ v ∉ interior (intervalDomain H) at hv
-  have hn : v ∉ interior (intervalDomain H) := hv.2
+  have hn  := hv.2
   rw [(isOpen_of_isAdmissibleEvolutionDomain (intervalDomain_admissible H)).interior_eq] at hn
   by_cases hl : v 0 = H.lo
-  · exact Or.inl hl
+  · simp_all
   · right
     by_contra hh
     apply hn

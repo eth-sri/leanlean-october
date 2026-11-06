@@ -54,10 +54,9 @@ theorem norm_phaseFactor (θ : ℝ) : ‖phaseFactor θ‖ = 1 := by
 /-- The phase factor is a `1`-Lipschitz function of the phase. -/
 theorem norm_phaseFactor_sub_le (θ Φ : ℝ) : ‖phaseFactor θ - phaseFactor Φ‖ ≤ |θ - Φ| := by
   have h : phaseFactor θ - phaseFactor Φ =
-      phaseFactor Φ * (Complex.exp (Complex.I * ((-(θ - Φ) : ℝ) : ℂ)) - 1) := by
+      phaseFactor Φ * (Complex.exp (Complex.I * ((-(θ - Φ) : ℝ))) - 1) := by
     unfold phaseFactor
-    rw [mul_sub, ← Complex.exp_add, mul_one]
-    congr 2
+    rw [mul_sub, ← Complex.exp_add]
     · push_cast; ring
   rw [h, norm_mul, norm_phaseFactor, one_mul]
   have h2 := Real.norm_exp_I_mul_ofReal_sub_one_le (x := -(θ - Φ))
@@ -67,26 +66,27 @@ theorem continuous_phaseFactor : Continuous phaseFactor := by
   unfold phaseFactor
   fun_prop
 
-theorem measurable_phaseFactor_comp {ψ : α × β → ℝ} (hψ : Measurable ψ) :
+variable {N : Measure (α × β)} {E : Set α} {ψ : α × β → ℝ}
+
+theorem measurable_phaseFactor_comp  (hψ : Measurable ψ) :
     Measurable fun x => phaseFactor (ψ x) :=
   continuous_phaseFactor.measurable.comp hψ
 
-theorem integrable_phaseFactor_comp {ψ : α × β → ℝ} (hψ : Measurable ψ)
+theorem integrable_phaseFactor_comp  (hψ : Measurable ψ)
     (N : Measure (α × β)) [IsFiniteMeasure N] :
     Integrable (fun x => phaseFactor (ψ x)) N :=
   Integrable.of_bound (measurable_phaseFactor_comp hψ).aestronglyMeasurable 1
     (Filter.Eventually.of_forall fun _ => (norm_phaseFactor _).le)
 
 /-- The first marginal of a measure of a measurable set is the mass of its cylinder. -/
-theorem map_fst_apply_eq {N : Measure (α × β)} {E : Set α} (hE : MeasurableSet E) :
+theorem map_fst_apply_eq  (hE : MeasurableSet E) :
     (N.map Prod.fst) E = N (E ×ˢ (univ : Set β)) := by
   rw [Measure.map_apply measurable_fst hE]
   congr 1
-  ext x
-  simp
+  grind
 
 /-- The real mass of a cylinder is the real mass of the first marginal. -/
-theorem real_map_fst_apply_eq {N : Measure (α × β)} {E : Set α} (hE : MeasurableSet E) :
+theorem real_map_fst_apply_eq  (hE : MeasurableSet E) :
     (N.map Prod.fst).real E = N.real (E ×ˢ (univ : Set β)) := by
   simp [Measure.real, map_fst_apply_eq hE]
 
@@ -97,18 +97,18 @@ theorem norm_integral_phase_le (ψ : α × β → ℝ) (N : Measure (α × β)) 
   have := norm_setIntegral_le_of_norm_le_const_ae (μ := N) (s := S)
     (f := fun x => phaseFactor (ψ x)) (C := 1) (measure_lt_top N S)
     (Filter.Eventually.of_forall fun x => (norm_phaseFactor _).le)
-  simpa using this
+  simp_all
 
 /-- Setwise phase-error estimate: if `F` is carried by `{|ψ - Φ| ≤ ε}` then on every
 cylinder the phase integral differs from `exp (-iΦ)` times the mass by at most `ε` times
 the mass. -/
-theorem norm_integral_phase_sub_le {ψ : α × β → ℝ} (hψ : Measurable ψ)
+theorem norm_integral_phase_sub_le  (hψ : Measurable ψ)
     {F : Measure (α × β)} [IsFiniteMeasure F] {Φ ε : ℝ}
     (hsupp : ∀ᵐ x ∂F, |ψ x - Φ| ≤ ε) (S : Set (α × β)) :
     ‖(∫ x in S, phaseFactor (ψ x) ∂F) - phaseFactor Φ * (F.real S : ℂ)‖ ≤ ε * F.real S := by
-  have hint : IntegrableOn (fun x => phaseFactor (ψ x)) S F :=
+  have hint : IntegrableOn _ S F :=
     (integrable_phaseFactor_comp hψ F).integrableOn
-  have hconst : (∫ _ in S, phaseFactor Φ ∂F) = phaseFactor Φ * (F.real S : ℂ) := by
+  have hconst : (∫ _ in S, phaseFactor Φ ∂F) = phaseFactor Φ * (F.real S) := by
     rw [setIntegral_const, Complex.real_smul, mul_comm]
   rw [← hconst, ← integral_sub hint (integrableOn_const (measure_lt_top F S).ne)]
   refine norm_setIntegral_le_of_norm_le_const_ae (measure_lt_top F S) ?_

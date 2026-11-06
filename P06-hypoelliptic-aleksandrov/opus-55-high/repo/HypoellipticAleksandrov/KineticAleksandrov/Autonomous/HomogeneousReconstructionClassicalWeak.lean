@@ -11,7 +11,6 @@ discharges the weak equation without requiring extra transported derivatives.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic Evolution SectionTwo MeasureTheory Set
 
@@ -25,27 +24,27 @@ theorem reconstruction_test_isWeakTransportedSolution {lam Lam : ℝ}
   let U := reconstructionPhysicalPoint ⁻¹' D
   have hU : IsOpen U := hD.preimage continuous_reconstructionPhysicalPoint
   have hc {f : Point → ℝ} (hf : ContinuousOn f D) :
-      ContinuousOn (f ∘ reconstructionPhysicalPoint) U :=
+      ContinuousOn _ U :=
     hf.comp continuous_reconstructionPhysicalPoint.continuousOn (fun _ hx => hx)
   have hV (i : Fin 1) : ContinuousOn
-      (fun x => kineticVelocityGradient phi (reconstructionPhysicalPoint x) i) U :=
+      (fun x => kineticVelocityGradient phi _ i) U :=
     hc ((continuous_apply i).comp_continuousOn hphi.continuousOn_kineticVelocityGradient)
   have hZ (i : Fin 1) : ContinuousOn
-      (fun x => kineticPositionGradient phi (reconstructionPhysicalPoint x) i) U :=
+      (fun x => kineticPositionGradient phi _ i) U :=
     hc ((continuous_apply i).comp_continuousOn hphi.continuousOn_kineticPositionGradient)
   have hH (i j : Fin 1) : ContinuousOn
-      (fun x => kineticVelocityHessian phi (reconstructionPhysicalPoint x) j i) U :=
+      (fun x => kineticVelocityHessian phi _ j i) U :=
     hc ((continuous_apply i).comp_continuousOn
       ((continuous_apply j).comp_continuousOn hphi.continuousOn_kineticVelocityHessian))
   refine ⟨(hc hphi.continuousOn).locallyIntegrableOn hU.measurableSet, ?_⟩
   intro ψ hψ hcompact hs
   have h := integral_transportedAdjoint_of_anisotropic_jets
-    (evolutionCoefficient A.a) (identityDrift 1) (evolutionCoefficient_smooth A)
-    (identityDrift_smooth 1) (phi ∘ reconstructionPhysicalPoint)
+    _ _ (evolutionCoefficient_smooth A)
+    (identityDrift_smooth 1) _
     (kineticTimeDerivative phi ∘ reconstructionPhysicalPoint)
-    (fun i x => kineticVelocityGradient phi (reconstructionPhysicalPoint x) i)
-    (fun i x => kineticPositionGradient phi (reconstructionPhysicalPoint x) i)
-    (fun i j x => kineticVelocityHessian phi (reconstructionPhysicalPoint x) j i)
+    _
+    _
+    _
     (hc hphi.continuousOn) (hc hphi.continuousOn_kineticTimeDerivative)
     hV hZ hH
     (fun _ hx => reconstruction_time_hasLineDerivAt hphi hx)

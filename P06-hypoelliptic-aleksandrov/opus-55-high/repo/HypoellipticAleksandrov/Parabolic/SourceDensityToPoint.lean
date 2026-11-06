@@ -44,8 +44,10 @@ def SourceDensityToPoint (d : ℕ) (lam Lam beta g C : ℝ) : Prop :=
       g ≤ u (1, v) + C * parabolicLpNormOn d F
         (parabolicBox 1 1 0 0)
 
+variable {d : ℕ} {lam Lam beta g C : ℝ}
+
 /-- Eliminates a source-aware density-to-point relation at fixed local data. -/
-theorem SourceDensityToPoint.apply {d : ℕ} {lam Lam beta g C : ℝ}
+theorem SourceDensityToPoint.apply 
     (h : SourceDensityToPoint d lam Lam beta g C) (U : Set (TimeVelocity d))
     (B : CoefficientField d) (F u : TimeVelocity d → ℝ) (hU : IsOpen U)
     (hclosed : parabolicClosedBox 1 1 0 0 ⊆ U)
@@ -66,20 +68,20 @@ theorem SourceDensityToPoint.apply {d : ℕ} {lam Lam beta g C : ℝ}
   h U B F u hU hclosed hB hu hF hnonneg hFnonneg hlower hupper hsuper hdensity v hv
 
 /-- Increasing the required density preserves a source-aware relation. -/
-theorem SourceDensityToPoint.mono_density {d : ℕ} {lam Lam beta beta' g C : ℝ}
+theorem SourceDensityToPoint.mono_density  {lam Lam beta beta' g C : ℝ}
     (hbeta : beta ≤ beta') (h : SourceDensityToPoint d lam Lam beta g C) :
     SourceDensityToPoint d lam Lam beta' g C := by
   intro U B F u hU hclosed hB hu hF hnonneg hFnonneg hlower hupper hsuper hdensity v hv
   refine h.apply U B F u hU hclosed hB hu hF hnonneg hFnonneg hlower hupper hsuper ?_ v hv
   calc
-    beta * ((volume : Measure (TimeVelocity d)) (parabolicBox 1 1 0 0)).toReal ≤
-        beta' * ((volume : Measure (TimeVelocity d)) (parabolicBox 1 1 0 0)).toReal := by
+    beta * (volume _).toReal ≤
+        beta' * (volume _).toReal := by
       gcongr
-    _ ≤ ((volume : Measure (TimeVelocity d))
-      (parabolicBox 1 1 0 0 ∩ {z | 1 ≤ u z})).toReal := hdensity
+    _ ≤ (volume
+      _).toReal := hdensity
 
 /-- Decreasing the asserted terminal value preserves a source-aware relation. -/
-theorem SourceDensityToPoint.mono_value {d : ℕ} {lam Lam beta g g' C : ℝ}
+theorem SourceDensityToPoint.mono_value  {lam Lam beta g g' C : ℝ}
     (hg : g' ≤ g) (h : SourceDensityToPoint d lam Lam beta g C) :
     SourceDensityToPoint d lam Lam beta g' C := by
   intro U B F u hU hclosed hB hu hF hnonneg hFnonneg hlower hupper hsuper hdensity v hv
@@ -87,20 +89,19 @@ theorem SourceDensityToPoint.mono_value {d : ℕ} {lam Lam beta g g' C : ℝ}
     hsuper hdensity v hv)
 
 /-- Increasing the source-error coefficient preserves a source-aware relation. -/
-theorem SourceDensityToPoint.mono_error {d : ℕ} {lam Lam beta g C C' : ℝ}
+theorem SourceDensityToPoint.mono_error  {lam Lam beta g C C' : ℝ}
     (hC : C ≤ C') (h : SourceDensityToPoint d lam Lam beta g C) :
     SourceDensityToPoint d lam Lam beta g C' := by
   intro U B F u hU hclosed hB hu hF hnonneg hFnonneg hlower hupper hsuper hdensity v hv
-  have hnorm : 0 ≤ parabolicLpNormOn d F (parabolicBox 1 1 0 0) := by
-    exact ENNReal.toReal_nonneg
+  have hnorm : 0 ≤ parabolicLpNormOn d F (parabolicBox 1 1 0 0) := ENNReal.toReal_nonneg
   calc
-    g ≤ u (1, v) + C * parabolicLpNormOn d F (parabolicBox 1 1 0 0) :=
+    g ≤ u _ + C * parabolicLpNormOn d F _ :=
       h.apply U B F u hU hclosed hB hu hF hnonneg hFnonneg hlower hupper hsuper hdensity v hv
-    _ ≤ u (1, v) + C' * parabolicLpNormOn d F (parabolicBox 1 1 0 0) := by
+    _ ≤ u _ + C' * parabolicLpNormOn d F _ := by
       gcongr
 
-private theorem IsParabolicSupersolutionOn.const_smul_source
-    {d : ℕ} {B : CoefficientField d} {f u : TimeVelocity d → ℝ}
+theorem IsParabolicSupersolutionOn.const_smul_source
+     {B : CoefficientField d} {f u : TimeVelocity d → ℝ}
     {V : Set (TimeVelocity d)} {c : ℝ} (hc : 0 ≤ c)
     (h : IsParabolicSupersolutionOn B f u V) :
     IsParabolicSupersolutionOn B (fun z ↦ c * f z) (c • u) V := by
@@ -110,7 +111,7 @@ private theorem IsParabolicSupersolutionOn.const_smul_source
 
 /-- Parabolic affine scaling preserves the source-aware relation with the
 exact source-norm scaling factor. -/
-theorem SourceDensityToPoint.scaled {d : ℕ} {lam Lam beta g C : ℝ}
+theorem SourceDensityToPoint.scaled 
     (h : SourceDensityToPoint d lam Lam beta g C)
     {R eps t₀ : ℝ} {v₀ : PDE.Vec d}
     (hR : 0 < R) (heps : 0 < eps)
@@ -135,34 +136,30 @@ theorem SourceDensityToPoint.scaled {d : ℕ} {lam Lam beta g C : ℝ}
           parabolicLpNormOn d F (parabolicBox 1 R t₀ v₀) := by
   let a := parabolicAffine t₀ v₀ R
   let V := a ⁻¹' U
-  let uHat : TimeVelocity d → ℝ := eps⁻¹ • pullbackScalar u t₀ v₀ R
-  let FHat : TimeVelocity d → ℝ := fun z ↦ eps⁻¹ * (R ^ 2 * F (a z))
+  let uHat  := eps⁻¹ • pullbackScalar u t₀ v₀ R
+  let FHat  := fun z ↦ eps⁻¹ * (R ^ 2 * F (a z))
   have hmapU : MapsTo a V U := fun _ hz => hz
-  have hmapBox : MapsTo a (parabolicBox 1 1 0 0) (parabolicBox 1 R t₀ v₀) :=
+  have hmapBox : MapsTo a _ (parabolicBox 1 R t₀ v₀) :=
     mapsTo_parabolicAffine_parabolicBox hR
   have hVopen : IsOpen V :=
     hU.preimage (contDiff_parabolicAffine t₀ v₀ R).continuous
   have hVclosed : parabolicClosedBox 1 1 0 0 ⊆ V := by
     intro z hz
     exact hclosed (mapsTo_parabolicAffine_parabolicClosedBox hR hz)
-  have hBpull : IsContinuousCoefficientOn (pullbackCoefficient B t₀ v₀ R) V :=
+  have hBpull  :=
     IsContinuousCoefficientOn.pullback hB hmapU
-  have hupull : ContDiffOn ℝ 2 (pullbackScalar u t₀ v₀ R) V :=
+  have hupull  :=
     ContDiffOn.pullbackScalar hu hmapU
   have hFpull : ContinuousOn (pullbackScalar F t₀ v₀ R) V := by
     simpa only [pullbackScalar, Function.comp_def] using
       hF.comp (contDiff_parabolicAffine t₀ v₀ R).continuous.continuousOn hmapU
-  have hnonnegpull : IsNonnegativeOn (pullbackScalar u t₀ v₀ R)
-      (parabolicBox 1 1 0 0) :=
+  have hnonnegpull  :=
     hnonneg.pullbackScalar hmapBox
-  have hFnonnegpull : IsNonnegativeOn (pullbackScalar F t₀ v₀ R)
-      (parabolicBox 1 1 0 0) :=
+  have hFnonnegpull  :=
     hFnonneg.pullbackScalar hmapBox
-  have hlowerpull : HasLowerEllipticityOn lam (pullbackCoefficient B t₀ v₀ R)
-      (parabolicBox 1 1 0 0) :=
+  have hlowerpull  :=
     hlower.pullback hmapBox
-  have hupperpull : HasUpperEllipticityOn Lam (pullbackCoefficient B t₀ v₀ R)
-      (parabolicBox 1 1 0 0) :=
+  have hupperpull  :=
     hupper.pullback hmapBox
   have hboxU : parabolicBox 1 R t₀ v₀ ⊆ U := by
     rintro ⟨t, v⟩ ⟨⟨ht0, htR⟩, hv⟩
@@ -177,38 +174,33 @@ theorem SourceDensityToPoint.scaled {d : ℕ} {lam Lam beta g C : ℝ}
   have hnormalnonneg : IsNonnegativeOn uHat (parabolicBox 1 1 0 0) := by
     intro z hz
     exact mul_nonneg hinvnonneg (hnonnegpull z hz)
-  have hFHat : ContinuousOn FHat V := by
-    dsimp only [FHat, a]
-    exact continuousOn_const.mul (continuousOn_const.mul hFpull)
+  have hFHat : ContinuousOn FHat V := continuousOn_const.mul (continuousOn_const.mul hFpull)
   have hFHatnonneg : IsNonnegativeOn FHat (parabolicBox 1 1 0 0) := by
     intro z hz
-    dsimp only [FHat, a]
     exact mul_nonneg hinvnonneg (mul_nonneg (sq_nonneg R) (hFnonnegpull z hz))
   have hnormalsuper : IsParabolicSupersolutionOn (pullbackCoefficient B t₀ v₀ R)
       (fun z ↦ -FHat z) uHat (parabolicBox 1 1 0 0) := by
-    dsimp only [uHat, FHat, a]
     simpa only [Pi.smul_apply, smul_eq_mul, mul_neg] using
       hsuperpull.const_smul_source hinvnonneg
-  let c : ℝ≥0∞ := ENNReal.ofReal |LinearMap.det (parabolicLinear (d := d) R :
+  let c  := ENNReal.ofReal |LinearMap.det (parabolicLinear (d := d) R :
     TimeVelocity d →ₗ[ℝ] TimeVelocity d)|
   have hcne : c ≠ 0 := by
     rw [ENNReal.ofReal_ne_zero_iff]
     exact abs_pos.mpr (parabolicLinear_det_ne_zero hR)
-  have hcpos : 0 < c.toReal := ENNReal.toReal_pos hcne ENNReal.ofReal_ne_top
-  have hbox : (volume : Measure (TimeVelocity d)) (parabolicBox 1 R t₀ v₀) =
+  have hcpos  := ENNReal.toReal_pos hcne ENNReal.ofReal_ne_top
+  have hbox : volume (parabolicBox 1 R t₀ v₀) =
       c * (volume : Measure (TimeVelocity d)) (parabolicBox 1 1 0 0) := by
     rw [← parabolicAffine_image_parabolicBox hR]
     exact volume_parabolicAffine_image t₀ v₀ R _
-  have hlevel : (volume : Measure (TimeVelocity d))
+  have hlevel : volume
       (parabolicBox 1 R t₀ v₀ ∩ {z | eps ≤ u z}) =
-      c * (volume : Measure (TimeVelocity d)) (parabolicBox 1 1 0 0 ∩
+      c * volume (parabolicBox 1 1 0 0 ∩
         {z | 1 ≤ uHat z}) := by
-    rw [show uHat = eps⁻¹ • pullbackScalar u t₀ v₀ R by rfl,
-      ← parabolicAffine_image_normalizedSuperlevel hR heps]
+    rw [← parabolicAffine_image_normalizedSuperlevel hR heps]
     exact volume_parabolicAffine_image t₀ v₀ R _
   have hnormaldensity : beta * ((volume : Measure (TimeVelocity d))
       (parabolicBox 1 1 0 0)).toReal ≤
-      ((volume : Measure (TimeVelocity d)) (parabolicBox 1 1 0 0 ∩
+      (volume (parabolicBox 1 1 0 0 ∩
         {z | 1 ≤ uHat z})).toReal := by
     rw [hbox, hlevel, ENNReal.toReal_mul, ENNReal.toReal_mul] at hdensity
     suffices hscaled : c.toReal * (beta * ((volume : Measure (TimeVelocity d))
@@ -217,40 +209,38 @@ theorem SourceDensityToPoint.scaled {d : ℕ} {lam Lam beta g C : ℝ}
           {z | 1 ≤ uHat z})).toReal by
       nlinarith
     calc
-      c.toReal * (beta * ((volume : Measure (TimeVelocity d))
-          (parabolicBox 1 1 0 0)).toReal) =
-          beta * (c.toReal * ((volume : Measure (TimeVelocity d))
-            (parabolicBox 1 1 0 0)).toReal) := by ring
-      _ ≤ c.toReal * ((volume : Measure (TimeVelocity d)) (parabolicBox 1 1 0 0 ∩
-          {z | 1 ≤ uHat z})).toReal := hdensity
+      c.toReal * (beta * (volume
+          _).toReal) =
+          beta * (c.toReal * (volume
+            _).toReal) := by ring
+      _ ≤ c.toReal * (volume _).toReal := hdensity
   have hnorm : parabolicLpNormOn d FHat (parabolicBox 1 1 0 0) =
-      eps⁻¹ * (R ^ ((d : ℝ) / ((d : ℝ) + 1)) *
+      eps⁻¹ * (R ^ (d / ((d : ℝ) + 1)) *
         parabolicLpNormOn d F (parabolicBox 1 R t₀ v₀)) := by
     calc
-      parabolicLpNormOn d FHat (parabolicBox 1 1 0 0) =
+      parabolicLpNormOn d FHat _ =
           eps⁻¹ * parabolicLpNormOn d (fun z ↦ R ^ 2 * F (a z))
             (parabolicBox 1 1 0 0) := by
-        dsimp only [FHat]
         unfold parabolicLpNormOn parabolicELpNormOn
-        change (eLpNorm (eps⁻¹ • fun z ↦ R ^ 2 * F (a z)) (parabolicExponent d)
-          (volume.restrict (parabolicBox 1 1 0 0))).toReal = _
+        change (eLpNorm (eps⁻¹ • fun z ↦ R ^ 2 * F _) _
+          _).toReal = _
         rw [eLpNorm_const_smul, ENNReal.toReal_mul]
         simp only [Real.enorm_of_nonneg hinvnonneg,
           ENNReal.toReal_ofReal hinvnonneg]
-      _ = eps⁻¹ * (R ^ ((d : ℝ) / ((d : ℝ) + 1)) *
-          parabolicLpNormOn d F (parabolicBox 1 R t₀ v₀)) := by
-        rw [parabolicLpNormOn_pullback t₀ v₀ hR F,
+      _ = eps⁻¹ * (R ^ (d / ((d : ℝ) + 1)) *
+          parabolicLpNormOn d F _) := by
+        rw [parabolicLpNormOn_pullback t₀ v₀ hR,
           parabolicAffine_image_parabolicBox hR]
   intro v hv
-  let w : PDE.Vec d := R⁻¹ • (v - v₀)
-  have hw : w ∈ velocityClosedCube (0 : PDE.Vec d) (1 / 2) := by
+  let w  := R⁻¹ • (v - v₀)
+  have hw : w ∈ velocityClosedCube (0) (1 / 2) := by
     intro i
     have hvi := hv i
     dsimp [w]
     simp only [sub_zero]
     rw [abs_mul, abs_inv, abs_of_pos hR]
     exact (inv_mul_le_iff₀ hR).mpr (by simpa only [mul_comm, div_eq_mul_inv, one_mul] using hvi)
-  have hpoint := h.apply V (pullbackCoefficient B t₀ v₀ R) FHat uHat hVopen hVclosed
+  have hpoint := h.apply V _ FHat uHat hVopen hVclosed
     hBpull (hupull.const_smul eps⁻¹) hFHat hnormalnonneg hFHatnonneg hlowerpull hupperpull
     hnormalsuper hnormaldensity w hw
   rw [hnorm] at hpoint
@@ -259,21 +249,21 @@ theorem SourceDensityToPoint.scaled {d : ℕ} {lam Lam beta g C : ℝ}
     ext
     · ring
     · simp only [Pi.add_apply, Pi.smul_apply, Pi.sub_apply, smul_eq_mul]
-      rw [← mul_assoc, mul_inv_cancel₀ hR.ne', one_mul]
+      rw [← mul_assoc, mul_inv_cancel₀ hR.ne']
       ring
   have hdivision : g ≤ u (t₀ + R ^ 2, v) / eps +
-      C * (R ^ ((d : ℝ) / ((d : ℝ) + 1)) *
+      C * (R ^ (d / ((d : ℝ) + 1)) *
         parabolicLpNormOn d F (parabolicBox 1 R t₀ v₀) / eps) := by
     rw [← haeval]
     simpa only [a, uHat, FHat, Pi.smul_apply, pullbackScalar_apply, smul_eq_mul,
       mul_assoc, inv_mul_eq_div] using hpoint
   calc
-    eps * g ≤ eps * (u (t₀ + R ^ 2, v) / eps +
-        C * (R ^ ((d : ℝ) / ((d : ℝ) + 1)) *
-          parabolicLpNormOn d F (parabolicBox 1 R t₀ v₀) / eps)) :=
+    eps * g ≤ eps * (u _ / eps +
+        C * (R ^ (d / ((d : ℝ) + 1)) *
+          parabolicLpNormOn d F _ / eps)) :=
       mul_le_mul_of_nonneg_left hdivision heps.le
-    _ = u (t₀ + R ^ 2, v) + C * R ^ ((d : ℝ) / ((d : ℝ) + 1)) *
-          parabolicLpNormOn d F (parabolicBox 1 R t₀ v₀) := by
+    _ = u _ + C * R ^ (d / ((d : ℝ) + 1)) *
+          parabolicLpNormOn d F _ := by
       field_simp [heps.ne']
 
 end

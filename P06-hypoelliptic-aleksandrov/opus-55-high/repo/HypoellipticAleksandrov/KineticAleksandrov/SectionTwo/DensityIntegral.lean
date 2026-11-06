@@ -6,7 +6,6 @@ import Mathlib.MeasureTheory.Function.SimpleFuncDenseLp
 /-! # Integration against a modulus-one complex density -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 open scoped ENNReal
@@ -15,14 +14,14 @@ open scoped ENNReal
 theorem variation_density_one {α : Type*} [MeasurableSpace α] (μ : Measure α)
     [IsFiniteMeasure μ] (g : α → ℂ) (hg : Measurable g) (hn : ∀ x, ‖g x‖ = 1) :
     (μ.withDensityᵥ g).variation = μ := by
-  have hi : Integrable g μ := Integrable.mono' (integrable_const (1 : ℝ))
+  have hi : Integrable g μ := Integrable.mono' (integrable_const _)
     hg.aestronglyMeasurable (Filter.Eventually.of_forall (fun x => (hn x).le))
   rw [Measure.variation_withDensityᵥ hi]
   have he : (fun x => ‖g x‖ₑ) = 1 := by
     funext x
-    rw [← ofReal_norm, hn x]
+    rw [← ofReal_norm, hn]
     norm_num
-  rw [he, withDensity_one]
+  simp_all
 
 /-- Complex integration against a modulus-one density is ordinary weighted integration. -/
 theorem integral_density_one {α : Type*} [MeasurableSpace α] (μ : Measure α)
@@ -32,8 +31,8 @@ theorem integral_density_one {α : Type*} [MeasurableSpace α] (μ : Measure α)
       ∫ x, f x * g x ∂μ := by
   let ν := μ.withDensityᵥ g
   have hv : ν.variation = μ := variation_density_one μ g hg hn
-  have : IsFiniteMeasure ν.variation := by rw [hv]; infer_instance
-  have hgi : Integrable g μ := Integrable.mono' (integrable_const (1 : ℝ))
+  have : IsFiniteMeasure ν.variation := by simp_all
+  have hgi : Integrable g μ := Integrable.mono' (integrable_const _)
     hg.aestronglyMeasurable (Filter.Eventually.of_forall (fun x => (hn x).le))
   have hm : ∀ f : α → ℂ, Integrable f μ → Integrable (fun x => f x * g x) μ :=
     fun f hf => hf.mul_bdd hg.aestronglyMeasurable
@@ -52,7 +51,6 @@ theorem integral_density_one {α : Type*} [MeasurableSpace α] (μ : Measure α)
         simp only [hx, Pi.smul_apply, smul_mul_assoc, RingHom.id_apply] }
   have hJ : ∀ u, ‖J u‖ ≤ 1 * ‖u‖ := by
     intro u
-    change ‖∫ x, u x * g x ∂μ‖ ≤ 1 * ‖u‖
     calc
       _ ≤ ∫ x, ‖u x * g x‖ ∂μ := norm_integral_le_integral_norm _
       _ = 1 * ‖u‖ := by
@@ -67,21 +65,21 @@ theorem integral_density_one {α : Type*} [MeasurableSpace α] (μ : Measure α)
     have he : (fun x => E.indicator (fun _ => c) x * g x) =
         E.indicator (fun x => c * g x) := by
       funext x
-      by_cases hx : x ∈ E <;> simp only [Set.indicator, hx, ↓reduceIte, zero_mul]
+      by_cases hx : x ∈ E <;> simp_all
     rw [he, integral_indicator hE]
   · intro f₁ f₂ hd h₁ h₂ he₁ he₂
-    have hi₁ : ν.Integrable f₁ := by simpa only [VectorMeasure.Integrable, hv] using h₁
-    have hi₂ : ν.Integrable f₂ := by simpa only [VectorMeasure.Integrable, hv] using h₂
+    have hi₁ : ν.Integrable f₁ := by grind
+    have hi₂ : ν.Integrable f₂ := by grind
     rw [VectorMeasure.integral_add hi₁ hi₂, he₁, he₂, ← integral_add (hm f₁ h₁) (hm f₂ h₂)]
     apply integral_congr_ae
-    exact Filter.Eventually.of_forall (fun x => (add_mul (f₁ x) (f₂ x) (g x)).symm)
+    exact Filter.Eventually.of_forall (fun x => (add_mul _ _ _).symm)
   · apply isClosed_eq _ hc
     have hcv := VectorMeasure.continuous_integral (μ := ν)
       (B := ContinuousLinearMap.mul ℝ ℂ)
     rw [hv] at hcv
     exact hcv
   · intro f₁ f₂ he hi hp
-    have heν : f₁ =ᵐ[ν.variation] f₂ := by simpa only [hv] using he
+    have heν : f₁ =ᵐ[ν.variation] f₂ := by simp_all
     rw [← VectorMeasure.integral_congr_ae heν, hp]
     apply integral_congr_ae
     exact he.mono (fun x hx => congrArg (fun z => z * g x) hx)

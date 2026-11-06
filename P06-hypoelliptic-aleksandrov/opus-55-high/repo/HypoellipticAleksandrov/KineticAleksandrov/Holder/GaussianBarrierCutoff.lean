@@ -23,14 +23,16 @@ theorem contDiff_barrierCutoff : ContDiff ℝ (⊤ : ℕ∞) barrierCutoff :=
 theorem barrierCutoff_bounds (theta : ℝ) : 0 ≤ barrierCutoff theta ∧ barrierCutoff theta ≤ 1 :=
   ⟨Real.smoothTransition.nonneg _, Real.smoothTransition.le_one _⟩
 
+variable {theta : ℝ}
+
 /-- The barrier cutoff vanishes throughout the left cutoff region. -/
-theorem barrierCutoff_zero {theta : ℝ} (htheta : theta ≤ -(1 / 128 : ℝ)) :
+theorem barrierCutoff_zero  (htheta : theta ≤ -(1 / 128 : ℝ)) :
     barrierCutoff theta = 0 :=
-  Real.smoothTransition.zero_of_nonpos (by linarith only [htheta])
+  Real.smoothTransition.zero_of_nonpos (by linarith)
 
 /-- The barrier cutoff is exactly one on all nonnegative times. -/
-theorem barrierCutoff_one {theta : ℝ} (htheta : 0 ≤ theta) : barrierCutoff theta = 1 :=
-  Real.smoothTransition.one_of_one_le (by linarith only [htheta])
+theorem barrierCutoff_one  (htheta : 0 ≤ theta) : barrierCutoff theta = 1 :=
+  Real.smoothTransition.one_of_one_le (by simp_all)
 
 /-- The source damping coefficient, fixed before the block and amplitude. -/
 def Xi (d : ℕ) (lam Lam H h : ℝ) : ℝ :=

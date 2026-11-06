@@ -6,7 +6,6 @@ import Mathlib.Tactic.Linarith
 /-! # A global bound on the second derivative of the fixed cutoff -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 /-- The exact rescaling factor in the second derivative of the cutoff. -/
@@ -26,6 +25,6 @@ theorem timeCutoffTheta_deriv2_abs_bound :
   intro s
   rw [abs_of_nonneg (timeCutoffTheta_deriv2_nonneg s), deriv2_timeCutoffTheta]
   apply mul_le_mul_of_nonneg_left _ (by norm_num)
-  simpa only [funext deriv_flatteningPsi] using hb (16 * s + 1)
+  simpa only [funext deriv_flatteningPsi] using hb _
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

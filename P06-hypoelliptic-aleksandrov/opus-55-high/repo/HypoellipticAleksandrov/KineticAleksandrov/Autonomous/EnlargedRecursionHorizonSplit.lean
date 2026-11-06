@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedRecu
 /-! # A stopped terminal cap and earlier restart exits do not overlap -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
@@ -31,13 +30,11 @@ theorem enlarged_stripExit_cap_and_early_le
   simp only [Measure.restrict_restrict hB, inter_eq_left.mpr hsub] at heB
   rw [heB]
   have hd : Disjoint {p : Point | p.time = b} {p | p.time < b} := by
-    apply Set.disjoint_left.mpr
-    intro p hp ht
-    exact (ne_of_lt ht) hp
+    grind
   calc
-    _ ≤ E.restrict {p | p.time = b} + E.restrict {p | p.time < b} :=
+    _ ≤ E.restrict _ + E.restrict _ :=
       add_le_add le_rfl (Measure.restrict_mono_set E hsub)
-    _ = E.restrict ({p | p.time = b} ∪ {p | p.time < b}) :=
+    _ = E.restrict _ :=
       (Measure.restrict_union hd hpre).symm
     _ ≤ E := Measure.restrict_le_self
 

@@ -55,7 +55,7 @@ private theorem tendstoUniformly_pi
   have hall : ∀ᶠ n in atTop, ∀ i, ∀ x,
       dist (v x i) (u n x i) < ε := by
     simpa using
-      ((Finset.univ : Finset ι).eventually_all.2 (fun i _ => hi i))
+      (Finset.univ.eventually_all.2 (fun i _ => hi i))
   filter_upwards [hall] with n hn
   intro x
   rw [dist_pi_lt_iff hε]
@@ -70,11 +70,10 @@ private def coordinateAssemblerLinearMap
   map_add' a b := by
     apply ContinuousLinearMap.ext
     intro z
-    simp [coordinateContinuousLinearMap, smul_add, Finset.sum_add_distrib]
+    simp [coordinateContinuousLinearMap, Finset.sum_add_distrib]
     abel
   map_smul' r a := by
     apply ContinuousLinearMap.ext
-    intro z
     simp [coordinateContinuousLinearMap, Finset.smul_sum, smul_smul, mul_comm]
 
 private def coordinateAssembler
@@ -84,8 +83,10 @@ private def coordinateAssembler
   { toLinearMap := coordinateAssemblerLinearMap (d := d) (F := F)
     cont := (coordinateAssemblerLinearMap (d := d) (F := F)).continuous_of_finiteDimensional }
 
+variable {d : ℕ} {root : TimeVelocity d → ℝ} (G : ParabolicWeakDerivativeFamily d (2 * (d + 4)) Set.univ root) (rho : ℝ)
+
 private theorem tendstoUniformly_coordinateContinuousLinearMap
-    {d : ℕ} {X F : Type*}
+     {X F : Type*}
     [NormedAddCommGroup F] [NormedSpace ℝ F] [FiniteDimensional ℝ F]
     (u : ℕ → X → TimeVelocityCoord d → F)
     (v : X → TimeVelocityCoord d → F)
@@ -99,7 +100,7 @@ private theorem tendstoUniformly_coordinateContinuousLinearMap
   simpa [coordinateAssembler, coordinateAssemblerLinearMap, Function.comp_def] using hc
 
 private theorem tendstoUniformly_coordinateBilinearOperator
-    {d : ℕ} {X : Type*}
+     {X : Type*}
     (u : ℕ → X → TimeVelocityCoord d → TimeVelocityCoord d → ℝ)
     (v : X → TimeVelocityCoord d → TimeVelocityCoord d → ℝ)
     (h : ∀ c e, TendstoUniformly (fun n x => u n x c e)
@@ -113,9 +114,7 @@ private theorem tendstoUniformly_coordinateBilinearOperator
   exact h c
 
 private theorem exists_uniformLimit_coordinateJet
-    {d : ℕ} {root : TimeVelocity d → ℝ}
-    (G : ParabolicWeakDerivativeFamily d (2 * (d + 4)) Set.univ root)
-    (rho : ℝ) (hrho : 0 < rho)
+     (hrho : 0 < rho)
     (K : Set (TimeVelocity d)) (hK : IsCompact K)
     (hsupp : ∀ ε, 0 < ε → ε < rho →
       ∀ beta : TimeVelocityDerivativeIndex d (d + 4),
@@ -136,9 +135,7 @@ private theorem exists_uniformLimit_coordinateJet
 /-- Uniform limits of the localized mollified coordinate jets through order two
 assemble into one ambient `C²` function. -/
 theorem exists_contDiff_two_uniformLimit_coordinateJet_spacetimeMollification_shrinkingRadius
-    {d : ℕ} {root : TimeVelocity d → ℝ}
-    (G : ParabolicWeakDerivativeFamily d (2 * (d + 4)) Set.univ root)
-    (rho : ℝ) (hrho : 0 < rho)
+     (hrho : 0 < rho)
     (K : Set (TimeVelocity d)) (hK : IsCompact K)
     (hsupp : ∀ ε, 0 < ε → ε < rho →
       ∀ beta : TimeVelocityDerivativeIndex d (d + 4),
@@ -153,9 +150,9 @@ theorem exists_contDiff_two_uniformLimit_coordinateJet_spacetimeMollification_sh
               (G.ordinaryRepresentative
                 (TimeVelocityDerivativeIndex.zero d (d + 4)))))
           (TimeVelocityMultiIndex.coordinateIteratedFDeriv alpha.1 v) atTop := by
-  let u : ℕ → TimeVelocity d → ℝ := fun n =>
+  let u  := fun n =>
     SpacetimeMollifier.spacetimeMollification (shrinkingRadius rho n)
-      (G.ordinaryRepresentative (TimeVelocityDerivativeIndex.zero d (d + 4)))
+      (G.ordinaryRepresentative (TimeVelocityDerivativeIndex.zero d _))
   have hex : ∀ alpha : TimeVelocityDerivativeIndex d 2,
       ∃ w : TimeVelocity d → ℝ,
         TendstoUniformly
@@ -164,49 +161,45 @@ theorem exists_contDiff_two_uniformLimit_coordinateJet_spacetimeMollification_sh
     intro alpha
     exact exists_uniformLimit_coordinateJet G rho hrho K hK hsupp alpha
   choose J hJ using hex
-  let zero : TimeVelocityDerivativeIndex d 2 := TimeVelocityDerivativeIndex.zero d 2
-  let v : TimeVelocity d → ℝ := J zero
+  let zero  := TimeVelocityDerivativeIndex.zero d 2
+  let v  := J zero
   let A : TimeVelocity d → TimeVelocity d →L[ℝ] ℝ := fun z =>
     coordinateContinuousLinearMap (fun c => J (oneCoordinateIndex d c) z)
-  let B : TimeVelocity d → TimeVelocity d →L[ℝ] (TimeVelocity d →L[ℝ] ℝ) := fun z =>
+  let B  := fun z =>
     coordinateBilinearOperator (fun c e => J (twoCoordinateIndex d c e) z)
-  have hu_smooth (n : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (u n) :=
+  have hu_smooth (n : ℕ) : ContDiff ℝ _ (u n) :=
     G.contDiff_spacetimeMollification_ordinaryRepresentative_zero
-      (shrinkingRadius rho n) (shrinkingRadius_pos rho hrho n)
+      _ (shrinkingRadius_pos rho hrho n)
   have hzero : TendstoUniformly u v atTop := by
     convert hJ zero using 1
     funext n z
-    exact (TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero (u n) z).symm
+    exact (TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero _ z).symm
   have hA : TendstoUniformly (fun n z => fderiv ℝ (u n) z) A atTop := by
     have hcoord := tendstoUniformly_coordinateContinuousLinearMap
-      (fun n z c => TimeVelocityMultiIndex.coordinateIteratedFDeriv
-        (Pi.single c 1) (u n) z)
+      _
       (fun z c => J (oneCoordinateIndex d c) z)
-      (fun c => by simpa [oneCoordinateIndex] using hJ (oneCoordinateIndex d c))
+      (fun c => by simpa [oneCoordinateIndex] using hJ _)
     convert hcoord using 1
     funext n z
     exact (coordinateContinuousLinearMap_coordinateIteratedFDeriv_one_eq_fderiv
-      (u n) z ((contDiff_infty.mp (hu_smooth n) 1).contDiffAt)).symm
+      _ z ((contDiff_infty.mp (hu_smooth n) 1).contDiffAt)).symm
   have hB : TendstoUniformly
       (fun n z => fderiv ℝ (fun y => fderiv ℝ (u n) y) z) B atTop := by
     have hcoord := tendstoUniformly_coordinateBilinearOperator
-      (fun n z c e => TimeVelocityMultiIndex.coordinateIteratedFDeriv
-        (Pi.single c 1 + Pi.single e 1) (u n) z)
+      _
       (fun z c e => J (twoCoordinateIndex d c e) z)
-      (fun c e => by simpa [twoCoordinateIndex] using hJ (twoCoordinateIndex d c e))
+      (fun c e => by simpa [twoCoordinateIndex] using hJ _)
     convert hcoord using 1
     funext n z
     exact (coordinateBilinearOperator_coordinateIteratedFDeriv_two_eq
-      (u n) z (hu_smooth n)).symm
+      _ z (hu_smooth n)).symm
   have hvA : ∀ z, HasFDerivAt v (A z) z := by
-    intro z
     apply hasFDerivAt_of_tendstoUniformly hA
     · intro n x
       exact ((contDiff_infty.mp (hu_smooth n) 1).differentiable (by norm_num) x).hasFDerivAt
     · intro x
       exact hzero.tendsto_at x
   have hAB : ∀ z, HasFDerivAt A (B z) z := by
-    intro z
     apply hasFDerivAt_of_tendstoUniformly hB
     · intro n x
       have hderiv : ContDiff ℝ 1 (fderiv ℝ (u n)) :=
@@ -239,13 +232,12 @@ theorem exists_contDiff_two_uniformLimit_coordinateJet_spacetimeMollification_sh
       have hlen : alpha.1.coordinateList.length = 0 := by simpa using h0
       have hl : alpha.1.coordinateList = [] := List.eq_nil_iff_length_eq_zero.mpr hlen
       rw [TimeVelocityMultiIndex.coordinateIteratedFDeriv, hl]
-      simp only [List.length_nil, iteratedFDeriv_zero_apply]
       rfl
     · funext z
       have hlen : alpha.1.coordinateList.length = 0 := by simpa using h0
       have hl : alpha.1.coordinateList = [] := List.eq_nil_iff_length_eq_zero.mpr hlen
       rw [TimeVelocityMultiIndex.coordinateIteratedFDeriv, hl]
-      simp only [List.length_nil, iteratedFDeriv_zero_apply]
+      simp
   · have hlen : alpha.1.coordinateList.length = 1 := by simpa using h1
     obtain ⟨c, hc⟩ := List.length_eq_one_iff.mp hlen
     let q : TimeVelocity d := timeVelocityBasis c
@@ -255,16 +247,13 @@ theorem exists_contDiff_two_uniformLimit_coordinateJet_spacetimeMollification_sh
     · funext n z
       unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
       rw [hc]
-      simp only [List.length_cons, List.length_nil]
-      simp [q, u, Function.comp_apply]
+      simp [q, u]
     · funext z
       unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
       rw [hc]
-      simp only [List.length_cons, List.length_nil]
-      rw [iteratedFDeriv_succ_apply_right]
-      simp only [iteratedFDeriv_zero_apply]
-      rw [hvf]
-      simp [q, Function.comp_apply]
+      simp only [List.length_cons]
+      rw [iteratedFDeriv_succ_apply_right, hvf]
+      simp [q]
   · have hlen : alpha.1.coordinateList.length = 2 := by simpa using h2
     obtain ⟨c, e, hc⟩ := List.length_eq_two.mp hlen
     let q₀ : TimeVelocity d := timeVelocityBasis c
@@ -279,14 +268,13 @@ theorem exists_contDiff_two_uniformLimit_coordinateJet_spacetimeMollification_sh
       rw [hc]
       simp only [List.length_cons, List.length_nil]
       rw [iteratedFDeriv_two_apply]
-      simp [q₀, q₁, u, Function.comp_apply]
+      simp [q₀, q₁, u]
     · funext z
       unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
       rw [hc]
       simp only [List.length_cons, List.length_nil]
-      rw [iteratedFDeriv_two_apply]
-      rw [hvf, hAf]
-      simp [q₀, q₁, Function.comp_apply]
+      rw [iteratedFDeriv_two_apply, hvf, hAf]
+      simp [q₀, q₁]
 
 end
 

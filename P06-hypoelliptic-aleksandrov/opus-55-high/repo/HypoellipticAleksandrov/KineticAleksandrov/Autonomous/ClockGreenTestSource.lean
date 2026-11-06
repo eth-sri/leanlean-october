@@ -41,8 +41,8 @@ theorem clockSourcePotential_regular
           -exitProbePhysical f (sectionTwoPoint p)) := by
   let E := clockEvolution hH hLE hlam hLam A c e
   have hsetting := c.extended_sourceSetting hlam hLam A e
-  obtain ⟨hBs, hBsym, hBell⟩ := sectionTwoCoefficient_fullBounds (3 * lam / 5) (3 * Lam)
-    (c.extendedCoefficient lam A.a e) hsetting.1
+  obtain ⟨hBs, hBsym, hBell⟩ := sectionTwoCoefficient_fullBounds _ _
+    _ hsetting.1
   have hgc := (exitProbePhysical_continuous_compact f).2.comp_homeomorph
     (sectionTwoHomeomorph 1)
   obtain ⟨⟨-, C, hC, hb⟩, -, hsm, -, hop, -, -, -, -⟩ :=
@@ -59,14 +59,14 @@ theorem clockSourcePotential_regular
   have hzero : ∀ p, R ≤ p.time → duhamelPotential E.2 T
       (exitProbePhysical f ∘ sectionTwoPoint) p = 0 := by
     intro p hp
-    exact clock_duhamel_zero_after E.2 T R (exitProbePhysical f ∘ sectionTwoPoint)
+    exact clock_duhamel_zero_after E.2 T R _
       (fun q hq => hz (sectionTwoPoint q) hq) p hp
   refine ⟨⟨C, hC, hb⟩,
     clock_native_smooth_to_scalar _
       (clock_native_smooth_of_zero_after _ R T hRT hsm hzero), hzero, ?_⟩
   intro p hp
   by_cases ht : p.time < T
-  · exact hop p ⟨ht, mem_movingDomain_iff.mpr (by simpa using hp)⟩
+  · exact hop p ⟨ht, mem_movingDomain_iff.mpr (by simp_all)⟩
   · have hRp : R < p.time := hRT.trans_le (not_lt.mp ht)
     exact (clock_transport_operator_zero_after _ _ _ R hzero p hRp).trans
       (by rw [hz (sectionTwoPoint p) hRp.le]; simp)

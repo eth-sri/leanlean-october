@@ -13,7 +13,6 @@ The evolution and unit-block estimates are proved here; only the two analytic hy
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open HypoellipticAleksandrov Parabolic SectionTwo Decay Set MeasureTheory
 
@@ -40,7 +39,7 @@ theorem ballExit_full_fourier_decay
   intro B hB S K hreal σ τ hστ v ξ z
   have hcov := (iteration_evolution_clauses hEvol hd hlam hLam B hB S K hreal).2.2
   rw [fourierKernel_eq_startingPosition K hcov]
-  exact hdecay B hB S K hreal σ τ hστ v ξ (wholeSpaceQuery σ τ hστ.le v 0)
+  exact hdecay B hB S K hreal σ τ hστ v ξ _
     rfl _ (fourierKernel_spec K σ τ hστ.le ξ v)
 
 /-- A full-space evolution dominates the same canonical ball kernel, by the proved
@@ -65,20 +64,19 @@ theorem ballExit_exists_full_evolution
       one_pos le_rfl (wholeSpace d) (fun _ => 0)
       (zIndependentCoefficient B) (identityDrift d) (wholeSpace_admissible d)
       (zeroCurve_piecewiseC1 d) hBs hBsym hBell (identityDrift_smooth d) hb.1 hb.2
-  have hreal : RealizesTerminalEvolution (wholeSpace d) (fun _ => 0) MeasurableSet.univ
-      (zIndependentCoefficient B) (identityDrift d) S K := ⟨hc, hi, he, hcomp⟩
+  have hreal : RealizesTerminalEvolution (wholeSpace d) _ MeasurableSet.univ
+      _ _ S K := ⟨hc, hi, he, hcomp⟩
   refine ⟨S, K, hreal, ?_⟩
   have hsub : ∀ σ, movingDomain (PDE.euclideanBall v₀ R) (fun _ => 0) σ ⊆
       movingDomain (wholeSpace d) (fun _ => 0) σ := by
     intro σ
     simp only [movingDomain, PDE.translateSet_zero]
     exact subset_univ _
-  have hdom := domainMonotone_of_realizes (zIndependentCoefficient B) (identityDrift d)
-    K hmono (PDE.euclideanBall v₀ R) (fun _ => 0) (localBall_admissible v₀ hR)
-    (zeroCurve_piecewiseC1 d) hsub (localBallEvolution hH hLE hd hlam hLam B hB v₀ hR).1
+  have hdom := domainMonotone_of_realizes _ _
+    K hmono _ _ (localBall_admissible v₀ hR)
+    (zeroCurve_piecewiseC1 d) hsub _
     (localBallKernel hH hLE hd hlam hLam B hB v₀ hR)
     (localBallEvolution_realizes hH hLE hd hlam hLam B hB v₀ hR)
-  intro q
-  exact hdom q
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

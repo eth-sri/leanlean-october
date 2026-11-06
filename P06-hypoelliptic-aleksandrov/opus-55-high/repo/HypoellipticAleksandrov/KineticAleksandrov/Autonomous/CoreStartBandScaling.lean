@@ -22,14 +22,14 @@ theorem coreStartBand_scaling (r R a eta : ℝ) (hr : 0 < r) (hR : 0 < R)
   have hbase : 1 + R / r ≤ 7 * (R / r) := by
     have h : 1 ≤ 6 * (R / r) := by
       rw [← mul_div_assoc]
-      exact (le_div_iff₀ hr).2 (by simpa only [one_mul] using hscale)
+      exact (le_div_iff₀ hr).2 (by simp_all)
     linarith
-  have hpower := Real.rpow_le_rpow (by positivity : 0 ≤ 1 + R / r) hbase heta
+  have hpower := Real.rpow_le_rpow (by positivity) hbase heta
   have heq : r ^ a * (7 * (R / r)) ^ eta =
       7 ^ eta * R ^ a * (r / R) ^ (a - eta) := by
     have hrrep : r = R * (r / R) := by field_simp
     have hinv : R / r = (r / R)⁻¹ := by field_simp
-    rw [Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 7) (by positivity), hinv,
+    rw [Real.mul_rpow (by norm_num) (by positivity), hinv,
       Real.inv_rpow hu.le, ← Real.rpow_neg hu.le]
     nth_rw 1 [hrrep]
     rw [Real.mul_rpow hR.le hu.le]
@@ -37,7 +37,7 @@ theorem coreStartBand_scaling (r R a eta : ℝ) (hr : 0 < r) (hR : 0 < R)
       _ = 7 ^ eta * R ^ a * ((r / R) ^ a * (r / R) ^ (-eta)) := by ring
       _ = 7 ^ eta * R ^ a * (r / R) ^ (a - eta) := by
         rw [← Real.rpow_add hu]
-        simp only [sub_eq_add_neg]
+        ring
 
   exact (mul_le_mul_of_nonneg_left hpower (Real.rpow_nonneg hr.le a)).trans_eq heq
 

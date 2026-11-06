@@ -32,7 +32,7 @@ theorem reverseTimePositivePart_memLp
   · exact continuous_h10PositivePart hΩ |>.comp_aestronglyMeasurable
       (Lp.memLp u).aestronglyMeasurable
   · filter_upwards with τ
-    exact norm_h10PositivePart_le hΩ (u τ)
+    exact norm_h10PositivePart_le hΩ _
 
 /-- The pointwise spatial positive part, canonically lifted to reverse-time
 Bochner `L²(V)`. -/
@@ -41,10 +41,12 @@ noncomputable def reverseTimePositivePart
   fun u => (reverseTimePositivePart_memLp hΩ T u).toLp
     (fun τ => h10PositivePart hΩ (u τ))
 
+variable (hΩ : IsOpen Ω) (T : ℝ) (u : ReverseTimeL2V hΩ T)
+
 /-- The reverse-time Bochner positive part agrees almost everywhere with the
 pointwise spatial `H¹₀` positive part. -/
 theorem coeFn_reverseTimePositivePart
-    (hΩ : IsOpen Ω) (T : ℝ) (u : ReverseTimeL2V hΩ T) :
+     :
     reverseTimePositivePart hΩ T u =ᵐ[reverseTimeVolume T]
       fun τ => h10PositivePart hΩ (u τ) :=
   (reverseTimePositivePart_memLp hΩ T u).coeFn_toLp
@@ -52,8 +54,7 @@ theorem coeFn_reverseTimePositivePart
 /-- Pairing a reverse-time `L²(V*)` curve with the pointwise positive part of
 a reverse-time `L²(V)` curve is integrable. -/
 theorem integrable_reverseTimeDualPairing_positivePart
-    (hΩ : IsOpen Ω) (T : ℝ)
-    (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
+     (g : ReverseTimeL2VStar hΩ T) :
     Integrable (fun τ => (g τ) (h10PositivePart hΩ (u τ)))
       (reverseTimeVolume T) := by
   refine (integrable_reverseTimeDualPairing hΩ T

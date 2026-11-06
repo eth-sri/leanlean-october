@@ -15,7 +15,6 @@ combination steps are proved here. The joint statement is not claimed unconditio
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic Holder SectionTwo
 open scoped ContDiff MatrixOrder Matrix.Norms.Elementwise
@@ -73,14 +72,14 @@ theorem smoothLocalRegularityStatement_holds_of_spatial_bounds
       backwardOperatorOfTimeVelocityCoefficient B U P = 0 := by
     filter_upwards [ae_restrict_mem (isOpen_backwardCylinder Z 1 (by norm_num)).measurableSet]
       with P hP
-    exact hUe P hP
+    grind
   have hgrad : ∀ P ∈ backwardCylinder Z (3 / 4),
       ‖fderiv ℝ (physicalPositionSlice U P) P.position‖ ≤
         C_m 1 * oscillationOn U (backwardCylinder Z 1) := by
     intro P hP
     have hg := (hspatial B hBsec Z 1 (by norm_num) U hUc hU hUae).2 1 (by norm_num) P
-      (by simpa only [mul_one] using hP)
-    simpa only [one_pow, one_mul, norm_iteratedFDeriv_one] using hg
+      (by simp_all)
+    simpa using hg
   have hmod := hholder B hB hBs hBlo hBhi U hUc hU hUe hgrad
   intro P hP Q hQ
   let p := kineticAffineInverse P₀ R P
@@ -88,18 +87,16 @@ theorem smoothLocalRegularityStatement_holds_of_spatial_bounds
   have hp : kineticAffine P₀ R p = P := kineticAffine_apply_inverse P₀ hR.ne' P
   have hq : kineticAffine P₀ R q = Q := kineticAffine_apply_inverse P₀ hR.ne' Q
   have hp' : p ∈ backwardCylinder Z (1 / 2) := by
-    apply (kineticAffine_mem_radius P₀ p hR (by norm_num : (0 : ℝ) < 1 / 2)).mp
-    simpa only [hp, mul_one_div] using hP
+    apply (kineticAffine_mem_radius P₀ p hR (by norm_num)).mp
+    grind
   have hq' : q ∈ backwardCylinder Z (1 / 2) := by
-    apply (kineticAffine_mem_radius P₀ q hR (by norm_num : (0 : ℝ) < 1 / 2)).mp
-    simpa only [hq, mul_one_div] using hQ
+    apply (kineticAffine_mem_radius P₀ q hR (by norm_num)).mp
+    grind
   have h := hmod p hp' q hq'
   have hi := kineticIncrement_kineticAffine P₀ p q hR
   rw [hp, hq] at hi
   have ho := oscillationOn_kineticPullback u P₀ hR
-  change |u (kineticAffine P₀ R p) - u (kineticAffine P₀ R q)| ≤ _ at h
-  rw [hp, hq] at h
-  rw [ho, ← hi] at h
-  exact h
+  change |u _ - u _| ≤ _ at h
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

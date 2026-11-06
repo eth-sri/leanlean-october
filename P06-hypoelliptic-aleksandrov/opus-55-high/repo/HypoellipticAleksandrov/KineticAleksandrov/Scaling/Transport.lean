@@ -40,14 +40,14 @@ def fiberOperator {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
               f.measurable.stronglyMeasurable).measurable, by
             obtain ⟨C, hC, hb⟩ := f.exists_bound
             refine ⟨C, hC, fun p => ?_⟩
-            have : IsFiniteMeasure (K.fiberKernel hΩ σ τ hστ p) :=
+            have : IsFiniteMeasure _ :=
               ⟨(K.fiberKernel_mass_le_one hΩ σ τ hστ p).trans_lt ENNReal.one_lt_top⟩
             have h1 := norm_integral_le_of_norm_le_const (μ := K.fiberKernel hΩ σ τ hστ p)
               (f := f) (C := C) (Filter.Eventually.of_forall fun x => by
-                simpa only [Real.norm_eq_abs] using hb x)
+                simp_all)
             have h2 : (K.fiberKernel hΩ σ τ hστ p).real univ ≤ 1 := by
               rw [measureReal_def]
-              simpa only [ENNReal.toReal_one] using ENNReal.toReal_mono ENNReal.one_ne_top
+              simpa using ENNReal.toReal_mono ENNReal.one_ne_top
                 (K.fiberKernel_mass_le_one hΩ σ τ hστ p)
             calc |∫ q, f q ∂K.fiberKernel hΩ σ τ hστ p|
                 = ‖∫ q, f q ∂K.fiberKernel hΩ σ τ hστ p‖ := (Real.norm_eq_abs _).symm
@@ -58,7 +58,7 @@ def fiberOperator {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n}
         intro f g
         apply BoundedBorel.ext
         intro p
-        have : IsFiniteMeasure (K.fiberKernel hΩ σ τ hστ p) :=
+        have : IsFiniteMeasure _ :=
           ⟨(K.fiberKernel_mass_le_one hΩ σ τ hστ p).trans_lt ENNReal.one_lt_top⟩
         exact integral_add (boundedBorel_integrable f _) (boundedBorel_integrable g _)
       map_smul' := by
@@ -90,7 +90,7 @@ theorem exists_datum_of_hat (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ)
     ∃ F : BoundedBorel (EvolutionAmbientState d),
       IsSmoothCompactTerminalDatum Ω γ (Φ.time τ) F ∧
         ∀ x, F' x = F (Φ.ambientEquiv τ x) := by
-  refine ⟨F'.pullback (Φ.ambientEquiv τ).symm (Φ.ambientEquiv τ).symm.measurable, ?_, ?_⟩
+  refine ⟨F'.pullback _ (Φ.ambientEquiv τ).symm.measurable, ?_, ?_⟩
   · refine ⟨?_, ?_, ?_⟩
     · exact hF'.1.comp (Φ.contDiff_ambientSymm τ)
     · exact hF'.2.1.comp_homeomorph (Φ.ambientHomeo τ).symm
@@ -103,9 +103,10 @@ theorem exists_datum_of_hat (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ)
   · intro x
     simp only [BoundedBorel.pullback_apply, MeasurableEquiv.symm_apply_apply]
 
+variable (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω) (hΩ' : MeasurableSet Ω') (τ τ' : ℝ) (hττ' : τ ≤ τ')
+
 /-- The fibre kernels of `K̂` are conjugates of those of `K`. -/
-theorem fiberKernel_pushKernel_eq_conj (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ)
-    (hΩ : MeasurableSet Ω) (hΩ' : MeasurableSet Ω') (τ τ' : ℝ) (hττ' : τ ≤ τ') :
+theorem fiberKernel_pushKernel_eq_conj  :
     (pushKernel h K).fiberKernel hΩ' τ τ' hττ' =
       kernelConj (stateEquiv h τ) (stateEquiv h τ')
         (K.fiberKernel hΩ (Φ.time τ) (Φ.time τ') (Φ.time_le_iff.2 hττ')) := by
@@ -114,19 +115,17 @@ theorem fiberKernel_pushKernel_eq_conj (h : Φ.MapsDomain Ω γ Ω' γ') (K : Mo
   exact fiberKernel_pushKernel h K hΩ hΩ' τ τ' hττ' p
 
 /-- Integrals against the rescaled fibre kernel are integrals against the original one. -/
-theorem integral_fiberKernel_pushKernel (h : Φ.MapsDomain Ω γ Ω' γ')
-    (K : MovingFiberKernel Ω γ) (hΩ : MeasurableSet Ω) (hΩ' : MeasurableSet Ω')
-    (τ τ' : ℝ) (hττ' : τ ≤ τ') (p : EvolutionState Ω' γ' τ)
+theorem integral_fiberKernel_pushKernel  (p : EvolutionState Ω' γ' τ)
     (f : EvolutionState Ω' γ' τ' → ℝ) :
     ∫ q, f q ∂(pushKernel h K).fiberKernel hΩ' τ τ' hττ' p =
       ∫ q, f ((stateEquiv h τ').symm q)
         ∂K.fiberKernel hΩ (Φ.time τ) (Φ.time τ') (Φ.time_le_iff.2 hττ') (stateEquiv h τ p) := by
-  rw [fiberKernel_pushKernel h K hΩ hΩ' τ τ' hττ' p, integral_map_equiv]
+  rw [fiberKernel_pushKernel, integral_map_equiv]
 
 /-- **Realization transport.**  If `(S, K)` realizes the terminal evolution for the data
 `(Ω, γ, B, b)` (`Ω` open, `γ` continuous), then `(Ŝ, K̂)` realizes it for the rescaled data
 `(Ω', γ', Φ.coefficient B, Φ.drift b)`. -/
-theorem realizes_pushKernel (h : Φ.MapsDomain Ω γ Ω' γ') (hΩo : IsOpen Ω)
+theorem realizes_pushKernel  (hΩo : IsOpen Ω)
     (hγ : Continuous γ) (hΩ' : MeasurableSet Ω')
     {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE.Vec d}
     {S : TerminalOperatorFamily Ω γ} {K : MovingFiberKernel Ω γ}
@@ -152,26 +151,21 @@ theorem realizes_pushKernel (h : Φ.MapsDomain Ω γ Ω' γ') (hΩo : IsOpen Ω)
     · intro v' hv'
       have hv : IsClassicalTerminalSolution Ω γ B b (Φ.time τ) F
           (fun p => v' (Φ.pointInv p)) := by
-        rw [← Φ.isClassicalTerminalSolution_comp_point_iff h hΩo hγ B b τ F F' hFF'
-          (fun p => v' (Φ.pointInv p))]
+        rw [← Φ.isClassicalTerminalSolution_comp_point_iff h hΩo hγ B b τ F F' hFF']
         have : (fun p => (fun p => v' (Φ.pointInv p)) (Φ.point p)) = v' := by
-          funext p
           simp only [Φ.pointInv_point]
-        rw [this]
-        exact hv'
+        simp_all
       intro p hp
       have h1 := huniq _ hv ((h.mem_closedCylinder_iff τ p).1 hp)
       simpa only [Φ.pointInv_point] using h1
   · intro σ
-    rw [fiberKernel_pushKernel_eq_conj h K hΩo.measurableSet hΩ']
-    rw [hreal.2.2.1 (Φ.time σ), kernelConj_id (stateEquiv h σ)]
+    rw [fiberKernel_pushKernel_eq_conj h K hΩo.measurableSet hΩ', hreal.2.2.1, kernelConj_id]
   · intro σ r τ hσr hrτ
-    rw [fiberKernel_pushKernel_eq_conj h K hΩo.measurableSet hΩ' σ τ (hσr.trans hrτ),
-      fiberKernel_pushKernel_eq_conj h K hΩo.measurableSet hΩ' r τ hrτ,
-      fiberKernel_pushKernel_eq_conj h K hΩo.measurableSet hΩ' σ r hσr,
-      hreal.2.2.2 (Φ.time σ) (Φ.time r) (Φ.time τ) (Φ.time_le_iff.2 hσr)
-        (Φ.time_le_iff.2 hrτ),
-      kernelConj_comp (stateEquiv h σ) (stateEquiv h r) (stateEquiv h τ)]
+    rw [fiberKernel_pushKernel_eq_conj h K hΩo.measurableSet,
+      fiberKernel_pushKernel_eq_conj,
+      fiberKernel_pushKernel_eq_conj,
+      hreal.2.2.2,
+      kernelConj_comp _ (stateEquiv h r)]
 
 end KineticAffineScaling
 

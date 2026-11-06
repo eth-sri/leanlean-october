@@ -43,8 +43,7 @@ theorem parabolic_harnack_unit_cylinder
             PDE.euclideanBall (0 : PDE.Vec N) (1 / 2 : ℝ),
           ∀ P' ∈ Set.Ioo (3 / 4 : ℝ) 1 ×ˢ
               PDE.euclideanBall (0 : PDE.Vec N) (1 / 2 : ℝ),
-            h * u P ≤ u P' := by
-  exact HypoellipticAleksandrov.Parabolic.parabolic_harnack_unit_cylinder_aux
+            h * u P ≤ u P' := HypoellipticAleksandrov.Parabolic.parabolic_harnack_unit_cylinder_aux
     N hN lam hlam Lam hlamLam
 
 end HypoellipticAleksandrov.Parabolic

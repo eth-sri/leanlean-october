@@ -34,12 +34,14 @@ def HasEuclideanDiameterLE {d : ℕ}
 
 namespace IsSobolevRegularDomain
 
-theorem measurableSet {d : ℕ} {U : Set (Vec d)}
+variable {d : ℕ} {U : Set (Vec d)}
+
+theorem measurableSet 
     (hU : IsSobolevRegularDomain U) :
     MeasurableSet U :=
   hU.1
 
-theorem isBoundedDomain {d : ℕ} {U : Set (Vec d)}
+theorem isBoundedDomain 
     (hU : IsSobolevRegularDomain U) :
     IsBoundedDomain U :=
   hU.2
@@ -47,22 +49,6 @@ theorem isBoundedDomain {d : ℕ} {U : Set (Vec d)}
 end IsSobolevRegularDomain
 
 namespace HasEuclideanDiameterLE
-
-theorem mono {d : ℕ} {U V : Set (Vec d)} {D : ℝ}
-    (hU : HasEuclideanDiameterLE U D) (hVU : V ⊆ U) :
-    HasEuclideanDiameterLE V D := by
-  intro x hx y hy
-  exact hU (hVU hx) (hVU hy)
-
-/-- A diameter bound for a nonempty set is necessarily nonnegative. -/
-theorem nonneg {d : ℕ} {U : Set (Vec d)} {D : ℝ}
-    (hU : HasEuclideanDiameterLE U D) (hU_nonempty : U.Nonempty) :
-    0 ≤ D := by
-  rcases hU_nonempty with ⟨x, hx⟩
-  have hxx := hU hx hx
-  have hzero : vecEuclideanNorm (0 : Vec d) = 0 :=
-    vecEuclideanNorm_eq_zero_iff.2 rfl
-  simpa only [sub_self, hzero] using hxx
 
 /-- Scalar multiplication scales a Euclidean diameter bound by the absolute
 value of the scalar. -/

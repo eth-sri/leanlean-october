@@ -7,7 +7,6 @@ import Mathlib.Topology.MetricSpace.Pseudo.Defs
 /-! # Extension from interior limits and uniform boundary traces -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov Set Filter Classical
 open scoped Topology
@@ -25,11 +24,10 @@ theorem continuousOn_interior_patch {α : Type*} [TopologicalSpace α]
   by_cases hi : p ∈ U
   · have he : (fun q => if q ∈ U then V q else w q) =ᶠ[𝓝 p] V := by
       filter_upwards [hU.mem_nhds hi] with q hq
-      simp only [ite_eq_left hq]
+      simp_all
     exact ((hV p hi).continuousAt (hU.mem_nhds hi)).continuousWithinAt.congr_of_eventuallyEq
       (he.filter_mono nhdsWithin_le_nhds) (by simp [hi])
-  · have _hUS := hUS
-    change Tendsto _ (𝓝[S] p) (𝓝 _)
+  · change Tendsto _ (𝓝[S] p) (𝓝 _)
     simp only [ite_eq_right hi]
     apply Metric.tendsto_nhds.mpr
     intro η hη
@@ -37,8 +35,8 @@ theorem continuousOn_interior_patch {α : Type*} [TopologicalSpace α]
     have hw' := Metric.tendsto_nhds.mp (hw p hp) η hη
     filter_upwards [mem_nhdsWithin_of_mem_nhds (hO.mem_nhds hpO), hw'] with q hq hqw
     by_cases hqi : q ∈ U
-    · rw [ite_eq_left hqi, Real.dist_eq]
+    · rw [ite_eq_left hqi]
       exact (hbound q ⟨hq, hqi⟩).trans_lt (by linarith)
-    · simpa only [ite_eq_right hqi] using hqw
+    simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov

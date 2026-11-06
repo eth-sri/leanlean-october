@@ -133,8 +133,8 @@ theorem exists_genericPrelift_addTwo_weakDerivativeFamily_estimate
       d M hM t₀ t₁ t₂ t₃ ht₀₁ ht₁₂ ht₂₃ O₀ O₁ hO₀ hO₁ hO₁ne
         hO₁compact hO₁O₀ lam Lam hlam hlamLam Ba Bb Bc hBa hBb hBc
   let N : ℝ := Fintype.card (ParabolicDerivativeIndex d (M + 2))
-  let Cnext : ℝ := N * (1 + C_HW)
-  have hN : 0 ≤ N := by dsimp only [N]; positivity
+  let Cnext  := N * (1 + C_HW)
+  have hN : 0 ≤ N := by positivity
   have hCnext : 0 ≤ Cnext := mul_nonneg hN (add_nonneg zero_le_one hC_HW)
   refine ⟨Cnext, hCnext, ?_⟩
   intro a b c F u D E hSymm hEll ha hb hc haBound hbBound hcBound hEq
@@ -151,52 +151,38 @@ theorem exists_genericPrelift_addTwo_weakDerivativeFamily_estimate
         (fun beta => genericPreliftTimeSuccessorResidual a b c D E H beta)
         hHmem (by
           intro beta j i
-          simpa only [ParabolicWeakDerivativeFamily.restrict_representative] using
+          simpa using
             hHweak beta j i)
         hWmem (by
           intro beta
-          simpa only [ParabolicWeakDerivativeFamily.restrict_representative] using
+          simpa using
             hWweak beta)
   refine ⟨H, Dnext, ?_, hDtime, hDvelocity, ?_⟩
   · intro alpha
-    simpa only [ParabolicWeakDerivativeFamily.restrict_representative] using hDold alpha
+    simpa using hDold alpha
   · have hDrestrict :=
       ParabolicWeakDerivativeFamily.squaredL2Norm_restrict_le D hVU
     have hEnorm : 0 ≤ ParabolicWeakDerivativeFamily.squaredL2Norm E :=
       ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg E
-    have htotal : 0 ≤ ParabolicWeakDerivativeFamily.squaredL2Norm D +
-        ParabolicWeakDerivativeFamily.squaredL2Norm E := add_nonneg
-      (ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg D) hEnorm
     calc
       ParabolicWeakDerivativeFamily.squaredL2Norm Dnext ≤
-          N * (ParabolicWeakDerivativeFamily.squaredL2Norm (D.restrict hVU) +
+          N * (ParabolicWeakDerivativeFamily.squaredL2Norm _ +
             ((∑ beta : ParabolicDerivativeIndex d M,
                 ∑ j : Fin d, ∑ i : Fin d,
-                  (ENNReal.toReal (eLpNorm (fun z => H z beta j i) 2
-                    (timeVelocityVolumeOn V))) ^ 2) +
+                  (ENNReal.toReal _) ^ 2) +
               ∑ beta : ParabolicDerivativeIndex d M,
-                (ENNReal.toReal (eLpNorm
-                  (genericPreliftTimeSuccessorResidual a b c D E H beta) 2
-                  (timeVelocityVolumeOn V))) ^ 2)) := by
-        simpa only [N, add_assoc] using hDnorm
+                (ENNReal.toReal _) ^ 2)) := by
+        linarith
       _ ≤ N * (ParabolicWeakDerivativeFamily.squaredL2Norm D +
           C_HW * (ParabolicWeakDerivativeFamily.squaredL2Norm D +
-            ParabolicWeakDerivativeFamily.squaredL2Norm E)) := by
-        exact mul_le_mul_of_nonneg_left (add_le_add hDrestrict hHWnorm) hN
+            ParabolicWeakDerivativeFamily.squaredL2Norm E)) := mul_le_mul_of_nonneg_left (add_le_add hDrestrict hHWnorm) hN
       _ ≤ N * ((1 + C_HW) *
           (ParabolicWeakDerivativeFamily.squaredL2Norm D +
             ParabolicWeakDerivativeFamily.squaredL2Norm E)) := by
         apply mul_le_mul_of_nonneg_left _ hN
-        calc
-          _ ≤ (ParabolicWeakDerivativeFamily.squaredL2Norm D +
-                ParabolicWeakDerivativeFamily.squaredL2Norm E) +
-              C_HW * (ParabolicWeakDerivativeFamily.squaredL2Norm D +
-                ParabolicWeakDerivativeFamily.squaredL2Norm E) :=
-            add_le_add (le_add_of_nonneg_right hEnorm) le_rfl
-          _ = _ := by ring
+        linarith
       _ = Cnext * (ParabolicWeakDerivativeFamily.squaredL2Norm D +
           ParabolicWeakDerivativeFamily.squaredL2Norm E) := by
-        dsimp only [Cnext]
-        rw [mul_assoc]
+        linarith
 
 end HypoellipticAleksandrov.Parabolic

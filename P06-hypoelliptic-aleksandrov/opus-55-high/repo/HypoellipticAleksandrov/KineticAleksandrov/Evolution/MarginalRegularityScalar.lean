@@ -19,7 +19,6 @@ uniqueness a consequence of the kinetic comparison.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -32,8 +31,7 @@ variable {n : ℕ} {Ω : Set (PDE.Vec n)} {γ : ℝ → PDE.Vec n} {B : FullKine
 
 theorem classicalGradient_const_eq_zero (c : ℝ) (x : PDE.Vec n) :
     PDE.classicalGradient (fun _ : PDE.Vec n => c) x = 0 := by
-  ext i
-  simp [PDE.classicalGradient]
+  aesop
 
 /-- A classical scalar terminal solution, lifted along `(σ, y, z) ↦ (σ, y)`, is a classical
 kinetic terminal solution for the `z`-independent datum, when `B` does not depend on `z`. -/
@@ -58,16 +56,12 @@ theorem ParabolicProbe.IsClassicalScalarTerminalSolution.toKinetic
     have hv1 : PDE.vecDot (b p.position) (0 : PDE.Vec n) = 0 := by simp [PDE.vecDot]
     have hv2 : ∀ g : PDE.Vec n,
         PDE.vecDot ((0 : ℝ → PDE.Vec n → PDE.Vec n) p.time p.position) g = 0 := by
-      intro g
       simp [PDE.vecDot]
     rw [transportedForwardOperator_apply, hz, hv1, fullKineticCoefficientAt_apply,
       hBz p.time p.position p.velocity 0, add_zero]
-    rw [scalarParabolicOperator_apply, hv2, add_zero] at h0
-    exact h0
-  · intro p hp
-    exact hterm (p.time, p.position) hp
-  · intro p hp
-    exact hlat (p.time, p.position) hp
+    aesop
+  · aesop
+  aesop
 
 /-- A classical kinetic terminal solution of the `z`-independent datum which does not depend on
 `z` on the past closed cylinder restricts, at `z = 0`, to a classical scalar terminal solution. -/
@@ -80,7 +74,7 @@ theorem IsClassicalTerminalSolution.toScalar
   obtain ⟨⟨C, hC0, hC⟩, hcont, hsmooth, hop, hterm, hlat⟩ := hV
   have hin : ∀ q : TimeVelocity n,
       q ∈ ParabolicProbe.scalarPastClosedCylinder Ω γ τ →
-        (⟨q.1, q.2, 0⟩ : KineticPoint n) ∈ evolutionPastClosedCylinder Ω γ τ :=
+        ⟨q.1, q.2, 0⟩ ∈ evolutionPastClosedCylinder Ω γ τ :=
     fun q hq => hq
   have hemb : Continuous (fun q : TimeVelocity n => (⟨q.1, q.2, 0⟩ : KineticPoint n)) :=
     (KineticPoint.homeomorphProd n).symm.continuous.comp
@@ -95,28 +89,17 @@ theorem IsClassicalTerminalSolution.toScalar
     have h0 := hop ⟨q.1, q.2, 0⟩ hq
     have hconst : (fun v : PDE.Vec n => V ⟨q.1, q.2, v⟩) = fun _ => V ⟨q.1, q.2, 0⟩ := by
       funext v
-      exact hz ⟨q.1, q.2, v⟩ ⟨hq.1.le, subset_closure hq.2⟩
+      exact hz _ ⟨hq.1.le, subset_closure hq.2⟩
     have hg : kineticVelocityGradient V ⟨q.1, q.2, 0⟩ = 0 := by
       show PDE.classicalGradient (fun v : PDE.Vec n => V ⟨q.1, q.2, v⟩) 0 = 0
-      rw [hconst]
-      exact classicalGradient_const_eq_zero _ _
+      aesop
     have hv1 : PDE.vecDot (b q.2) (0 : PDE.Vec n) = 0 := by simp [PDE.vecDot]
     have hv2 : ∀ g : PDE.Vec n,
         PDE.vecDot ((0 : ℝ → PDE.Vec n → PDE.Vec n) q.1 q.2) g = 0 := by
-      intro g
       simp [PDE.vecDot]
-    rw [transportedForwardOperator_apply, hg] at h0
-    change kineticTimeDerivative V ⟨q.1, q.2, 0⟩ +
-      matrixContraction (B q.1 q.2 0) (diffusedHessian V ⟨q.1, q.2, 0⟩) +
-        PDE.vecDot (b q.2) (0 : PDE.Vec n) = 0 at h0
-    rw [hv1, add_zero] at h0
-    rw [scalarParabolicOperator_apply, hv2, add_zero]
-    exact h0
-  · intro q hq
-    have := hterm ⟨q.1, q.2, 0⟩ hq
-    simpa using this
-  · intro q hq
-    exact hlat ⟨q.1, q.2, 0⟩ hq
+    aesop
+  · aesop
+  aesop
 
 end Scalar
 

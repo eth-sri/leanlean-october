@@ -17,7 +17,7 @@ theorem visitUnionExitKernel_comp_ae_exit
     (hmu : ∀ᵐ p ∂mu, p ∈ visitPoleSet H s T) :
     ∀ᵐ p ∂(visitUnionExitKernel hH hLE hlam hLam A H s T ∘ₘ mu),
       p ∈ finiteUnionExitSet H s T := by
-  rw [ae_iff, visitUnionExitKernel_comp_poles hH hLE hlam hLam A H s T mu hmu]
+  rw [visitUnionExitKernel_comp_poles hH hLE hlam hLam A H s T mu hmu]
   exact finiteUnionExitMixture_compl_exit hH hLE hlam hLam A H s T _
     (visitUnionPoleMeasure_ae_time_gt H s T mu hmu)
 
@@ -39,9 +39,7 @@ theorem visitUnionExitKernel_retained_eq_outer
   · intro hn
     have hh := (congrArg (fun S : Set Point => p ∈ S)
       (finiteUnionExitSet_nested_split H1 H2 hsub s T)).mp hp
-    rcases hh with hh | hh
-    · exact hh.2
-    · exact False.elim (hn hh)
+    simp_all
   · intro ho hi
     exact Set.disjoint_left.mp (finiteUnionExitSet_disjoint_internal H1 H2 s T) ho hi
 
@@ -54,10 +52,10 @@ theorem visitActiveExitKernel_retained_eq_outer
     let O := visitUnionExitKernel hH hLE hlam hLam A (visitActiveUnion c J) s T ∘ₘ mu
     O.restrict (visitBoundary s T (visitActiveInterval c) J)ᶜ =
       O.restrict (finiteUnionExitSet J.toFiniteUnion s T) := by
-  rw [← visitActive_internalExit c J s T]
+  rw [← visitActive_internalExit]
   have hsub : (visitActiveUnion c J).carrier ⊆ J.toFiniteUnion.carrier := by
     rw [visitActiveUnion_carrier, Interval.toFiniteUnion_carrier]
-    exact inter_subset_right
+    simp
   exact visitUnionExitKernel_retained_eq_outer hH hLE hlam hLam A _ _ hsub s T mu hmu
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

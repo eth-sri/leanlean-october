@@ -15,14 +15,15 @@ single unit-box norm appearing in the public conclusion.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory Set
 
+variable {d : ℕ}
+
 /-- A genuine source box contained in the unit box has radius at most one. -/
-private theorem inkSpots_radius_le_one {d : ℕ} {q : InkSpotsBox d}
+private theorem inkSpots_radius_le_one  {q : InkSpotsBox d}
     (hR : 0 < q.radius)
     (hq : inkSpotsSourceBox q ⊆ inkSpotsUnitBox d) :
     q.radius ≤ 1 := by
@@ -32,26 +33,20 @@ private theorem inkSpots_radius_le_one {d : ℕ} {q : InkSpotsBox d}
     rw [mem_parabolicClosedBox_iff]
     refine ⟨by linarith [sq_nonneg q.radius], by norm_num, ?_⟩
     intro i
-    simp [hR.le]
+    grind
   have htopUnit := hclosed htop
   rw [mem_parabolicClosedBox_iff] at htopUnit
   have hbottom : (q.baseTime, q.center) ∈
       parabolicClosedBox 1 q.radius q.baseTime q.center := by
-    rw [mem_parabolicClosedBox_iff]
-    refine ⟨le_rfl, by nlinarith [sq_nonneg q.radius], ?_⟩
-    intro i
-    simp [hR.le]
+    aesop
   have hbottomUnit := hclosed hbottom
   rw [mem_parabolicClosedBox_iff] at hbottomUnit
-  have hsquare : q.radius ^ 2 ≤ 1 := by
-    norm_num at htopUnit hbottomUnit
-    linarith [hbottomUnit.1, htopUnit.2.1]
   nlinarith [sq_nonneg (q.radius - 1)]
 
 /-- A closed translated propagation rectangle inside the closed unit box has
 its open rectangle inside the open unit box. -/
 private theorem mapsTo_openRectangle_of_closedRectangle
-    {d : ℕ} {tau t0 : ℝ} {v0 lower upper : PDE.Vec d}
+     {tau t0 : ℝ} {v0 lower upper : PDE.Vec d}
     (htau : 0 < tau)
     (hclosed : parabolicAffine (d := d) t0 v0 1 ''
       parabolicClosedRectangle tau lower upper ⊆ parabolicClosedBox 1 1 0 0) :
@@ -61,22 +56,20 @@ private theorem mapsTo_openRectangle_of_closedRectangle
   rcases z with ⟨t, v⟩
   rw [mem_parabolicRectangle_iff] at hz
   rw [mem_parabolicBox_iff]
-  have hbot : parabolicAffine t0 v0 1 (0, v) ∈
-      parabolicClosedBox 1 1 0 0 :=
+  have hbot  :=
     hclosed ⟨(0, v), by
       rw [mem_parabolicClosedRectangle_iff]
       exact ⟨le_rfl, htau.le, fun i => ⟨(hz.2.2 i).1.le, (hz.2.2 i).2.le⟩⟩, rfl⟩
-  have htop : parabolicAffine t0 v0 1 (tau, v) ∈
-      parabolicClosedBox 1 1 0 0 :=
+  have htop  :=
     hclosed ⟨(tau, v), by
       rw [mem_parabolicClosedRectangle_iff]
       exact ⟨htau.le, le_rfl, fun i => ⟨(hz.2.2 i).1.le, (hz.2.2 i).2.le⟩⟩, rfl⟩
   rw [mem_parabolicClosedBox_iff] at hbot htop
   refine ⟨?_, ?_, ?_⟩
   · dsimp [parabolicAffine] at hbot ⊢
-    linarith [hbot.1]
+    linarith
   · dsimp [parabolicAffine] at htop ⊢
-    linarith [htop.2.1]
+    linarith
   · intro i
     have hlower : parabolicAffine t0 v0 1 (t, lower) ∈
         parabolicClosedBox 1 1 0 0 :=
@@ -98,11 +91,10 @@ private theorem mapsTo_openRectangle_of_closedRectangle
     have hvlower := (hz.2.2 i).1
     have hvupper := (hz.2.2 i).2
     dsimp [parabolicAffine]
-    rw [abs_lt]
-    constructor <;> linarith
+    grind
 
 /-- Strict density gives the squared density required by the source seed. -/
-private theorem inkSpots_squared_density {d : ℕ} {a : ℝ}
+private theorem inkSpots_squared_density  {a : ℝ}
     {u : TimeVelocity d → ℝ} {q : InkSpotsBox d}
     (ha0 : 0 < a) (ha1 : a < 1)
     (hq : inkSpotsStrictDense (inkSpotsUnitBox d ∩ {z | 1 ≤ u z}) a q) :
@@ -113,10 +105,8 @@ private theorem inkSpots_squared_density {d : ℕ} {a : ℝ}
       (inkSpotsUnitBox d ∩ {z | 1 ≤ u z}) =
       inkSpotsSourceBox q ∩ {z | 1 ≤ u z} := by
     ext z
-    simp only [mem_inter_iff]
     constructor
-    · rintro ⟨hz, -, hlevel⟩
-      exact ⟨hz, hlevel⟩
+    · simp_all
     · rintro ⟨hz, hlevel⟩
       exact ⟨hz, hq.2.1 hz, hlevel⟩
   have hstrict := hq.2.2
@@ -128,7 +118,7 @@ private theorem inkSpots_squared_density {d : ℕ} {a : ℝ}
     (le_of_lt (lt_of_le_of_lt (mul_le_mul_of_nonneg_right hsq hvol) hstrict))
 
 /-- An open parabolic box is contained in its closed counterpart. -/
-private theorem parabolicBox_subset_closedBox {d : ℕ}
+theorem parabolicBox_subset_closedBox 
     {vartheta r t0 : ℝ} {v0 : PDE.Vec d} :
     parabolicBox vartheta r t0 v0 ⊆ parabolicClosedBox vartheta r t0 v0 := by
   intro z hz
@@ -137,13 +127,13 @@ private theorem parabolicBox_subset_closedBox {d : ℕ}
 
 /-- Continuous data on a compact collar makes restricted real `Lᵖ` norms
 monotone for nested carriers. -/
-private theorem parabolicLpNormOn_mono_of_continuousOn
-    {d : ℕ} {F : TimeVelocity d → ℝ} {U S T K : Set (TimeVelocity d)}
+theorem parabolicLpNormOn_mono_of_continuousOn
+     {F : TimeVelocity d → ℝ} {U S T K : Set (TimeVelocity d)}
     (hF : ContinuousOn F U) (hKU : K ⊆ U) (hKcompact : IsCompact K)
     (hTK : T ⊆ K) (hST : S ⊆ T) :
     parabolicLpNormOn d F S ≤ parabolicLpNormOn d F T := by
-  have hFK : ContinuousOn F K := hF.mono hKU
-  have hKmeas : MeasurableSet K := hKcompact.measurableSet
+  have hFK  := hF.mono hKU
+  have hKmeas  := hKcompact.measurableSet
   letI : IsFiniteMeasure (volume.restrict K) :=
     ⟨by
       rw [Measure.restrict_apply_univ]
@@ -152,16 +142,15 @@ private theorem parabolicLpNormOn_mono_of_continuousOn
   have hKmem : MemLp F (parabolicExponent d) (volume.restrict K) := by
     refine MemLp.of_bound (hFK.aestronglyMeasurable hKmeas) M ?_
     filter_upwards [ae_restrict_mem hKmeas] with z hz
-    exact hM z hz
-  have hTmem : MemLp F (parabolicExponent d) (volume.restrict T) :=
+    simp_all
+  have hTmem  :=
     hKmem.mono_measure (Measure.restrict_mono_set volume hTK)
-  have hSmem : MemLp F (parabolicExponent d) (volume.restrict S) :=
+  have hSmem  :=
     hTmem.mono_measure (Measure.restrict_mono_set volume hST)
   have hTtop : parabolicELpNormOn d F T ≠ ⊤ := by
     simpa only [parabolicELpNormOn] using hTmem.eLpNorm_ne_top
   have hStop : parabolicELpNormOn d F S ≠ ⊤ := by
     simpa only [parabolicELpNormOn] using hSmem.eLpNorm_ne_top
-  unfold parabolicLpNormOn
   exact (ENNReal.toReal_le_toReal hStop hTtop).mpr
     (eLpNorm_mono_measure F (Measure.restrict_mono_set volume hST))
 
@@ -194,16 +183,13 @@ theorem exists_inkSpotsQ3_source_density_cap
           ∀ z ∈ inkSpotsQ3 eta zeta q ∩ inkSpotsUnitBox d,
             h ≤ u z + C * parabolicLpNormOn d F
               (parabolicBox 1 1 0 0) := by
-  let kappa : ℝ := min (eta / 4) (1 - zeta)
-  have hkappa0 : 0 < kappa := by
-    dsimp [kappa]
-    exact lt_min (by positivity) (by linarith)
-  have hkappa1 : kappa ≤ 1 := by
-    exact (min_le_left _ _).trans (by nlinarith [heta1])
+  let kappa  := min (eta / 4) (1 - zeta)
+  have hkappa0 : 0 < kappa := lt_min (by positivity) (by linarith)
+  have hkappa1 : kappa ≤ 1 := (min_le_left _ _).trans (by nlinarith [heta1])
   obtain ⟨delta, hdelta, m, hm, Cfp, hCfp, hprop⟩ :=
     exists_forward_propagation_source_constants d hd lam Lam kappa hlam hlamLam
       hkappa0 hkappa1
-  refine ⟨min (1 / 4 : ℝ) (delta * (1 / 2 : ℝ) ^ m * (1 / 4 : ℝ)),
+  refine ⟨min (1 / 4) (delta * (1 / 2) ^ m * (1 / 4)),
     max C₀ Cfp, ?_, le_max_of_le_left hC₀, ?_⟩
   · exact lt_min (by norm_num)
       (mul_pos (mul_pos hdelta (pow_pos (by norm_num) _)) (by norm_num))
@@ -217,12 +203,11 @@ theorem exists_inkSpotsQ3_source_density_cap
       (parabolicBox 1 q.radius q.baseTime q.center) ≤
       parabolicLpNormOn d F (parabolicBox 1 1 0 0) := by
     apply parabolicLpNormOn_mono_of_continuousOn hF hunit
-      (isCompact_parabolicClosedBox 1 1 0 (0 : PDE.Vec d))
+      (isCompact_parabolicClosedBox 1 1 0 _)
     · exact parabolicBox_subset_closedBox
     · simpa only [inkSpotsSourceBox, inkSpotsUnitBox] using hq.2.1
   let p : ℝ := (d : ℝ) / ((d : ℝ) + 1)
   have hp0 : 0 ≤ p := by
-    dsimp [p]
     positivity
   have hRpow : q.radius ^ p ≤ 1 :=
     Real.rpow_le_one hR.le hRone hp0
@@ -235,17 +220,16 @@ theorem exists_inkSpotsQ3_source_density_cap
       max C₀ Cfp * parabolicLpNormOn d F (parabolicBox 1 1 0 0) := by
     calc
       C₀ * q.radius ^ p * parabolicLpNormOn d F
-          (parabolicBox 1 q.radius q.baseTime q.center) ≤
+          _ ≤
           C₀ * 1 * parabolicLpNormOn d F
-            (parabolicBox 1 q.radius q.baseTime q.center) := by gcongr
+            _ := by gcongr
       _ = C₀ * parabolicLpNormOn d F
-          (parabolicBox 1 q.radius q.baseTime q.center) := by ring
+          _ := by ring
       _ ≤ max C₀ Cfp * parabolicLpNormOn d F
-          (parabolicBox 1 q.radius q.baseTime q.center) := by
-        exact mul_le_mul_of_nonneg_right (le_max_of_le_left le_rfl)
+          _ := mul_le_mul_of_nonneg_right (le_max_of_le_left le_rfl)
           hsourceNormNonneg
       _ ≤ max C₀ Cfp * parabolicLpNormOn d F
-          (parabolicBox 1 1 0 0) := by gcongr
+          _ := by gcongr
   have hcap := hseed.scaled hR (by norm_num : (0 : ℝ) < 1) U B F u hU
     hsourceClosed hB hu hF
     (by simpa only [inkSpotsSourceBox] using hnonneg.mono hq.2.1)
@@ -256,19 +240,12 @@ theorem exists_inkSpotsQ3_source_density_cap
     (inkSpots_squared_density ha0 ha1 hq)
   by_cases hlarge : (1 / 4 : ℝ) ≤ C₀ * q.radius ^ p *
       parabolicLpNormOn d F (parabolicBox 1 q.radius q.baseTime q.center)
-  · have hunitError : (1 / 4 : ℝ) ≤ max C₀ Cfp *
-        parabolicLpNormOn d F (parabolicBox 1 1 0 0) :=
-      hlarge.trans hseedErrorBound
-    have huzero : 0 ≤ u z := hnonneg z hz.2
+  · have huzero : 0 ≤ u z := hnonneg z hz.2
     exact (min_le_left _ _).trans (by linarith)
-  · have hsmall : C₀ * q.radius ^ p *
-        parabolicLpNormOn d F (parabolicBox 1 q.radius q.baseTime q.center) <
-        (1 / 4 : ℝ) := lt_of_not_ge hlarge
-    have hseedPointwise : ∀ v ∈ velocityClosedCube q.center (q.radius / 2),
+  · have hseedPointwise : ∀ v ∈ velocityClosedCube q.center (q.radius / 2),
         (1 / 4 : ℝ) < u (q.baseTime + q.radius ^ 2, v) := by
       intro v hv
       have hcapPoint := hcap v hv
-      dsimp [p] at hsmall
       linarith
     obtain ⟨lower, upper, htLower, htUpper, hwidth, hbase, htarget, hrect⟩ :=
       exists_inkSpotsQ3_forward_corridor d eta zeta kappa q z heta0 heta1 hzeta0
@@ -278,14 +255,12 @@ theorem exists_inkSpotsQ3_source_density_cap
     let V : Set (TimeVelocity d) := parabolicAffine t0 q.center 1 ⁻¹' U
     have hclosedV : parabolicClosedRectangle tau lower upper ⊆ V := by
       intro y hy
-      change parabolicAffine t0 q.center 1 y ∈ U
       apply hunit
       apply hrect
       exact ⟨y, by simpa [tau, t0] using hy, rfl⟩
     have hmapU : MapsTo (parabolicAffine t0 q.center 1) V U := fun _ hy => hy
     have hV : IsOpen V := hU.preimage (contDiff_parabolicAffine t0 q.center 1).continuous
     have htau0 : 0 < tau := by
-      dsimp [tau, t0]
       nlinarith [htLower]
     have hmapOpen : MapsTo (parabolicAffine t0 q.center 1)
         (parabolicRectangle tau lower upper) (parabolicBox 1 1 0 0) := by
@@ -307,7 +282,7 @@ theorem exists_inkSpotsQ3_source_density_cap
       have hv' : q.center + 1 • v ∈ velocityClosedCube q.center (q.radius / 2) := by
         intro i
         simpa [one_smul, div_eq_mul_inv, mul_comm] using (hv i).le
-      have hpoint := (hseedPointwise (q.center + 1 • v) hv').le
+      have hpoint := (hseedPointwise _ hv').le
       simpa [pullbackScalar, Function.comp_def, parabolicAffine, t0] using hpoint
     have hforward := hprop q.radius (pullbackCoefficient B t0 q.center 1)
       (0 : PDE.Vec d) lower upper tau V (pullbackScalar F t0 q.center 1)
@@ -326,10 +301,10 @@ theorem exists_inkSpotsQ3_source_density_cap
       rw [show pullbackScalar F t0 q.center 1 =
           fun y ↦ 1 ^ 2 * F (parabolicAffine t0 q.center 1 y) by
             funext y; simp [pullbackScalar]]
-      rw [parabolicLpNormOn_pullback t0 q.center (by norm_num : (0 : ℝ) < 1)]
+      rw [parabolicLpNormOn_pullback t0 q.center (by norm_num)]
       simp only [Real.one_rpow, one_mul]
       apply parabolicLpNormOn_mono_of_continuousOn hF hunit
-        (isCompact_parabolicClosedBox 1 1 0 (0 : PDE.Vec d))
+        (isCompact_parabolicClosedBox 1 1 0 _)
       · exact parabolicBox_subset_closedBox
       · rintro y ⟨x, hx, rfl⟩
         exact hmapOpen hx
@@ -341,22 +316,20 @@ theorem exists_inkSpotsQ3_source_density_cap
           (parabolicRectangle tau lower upper) ≤
         max C₀ Cfp * parabolicLpNormOn d F (parabolicBox 1 1 0 0) := by
       calc
-        Cfp * q.radius ^ p * parabolicLpNormOn d (pullbackScalar F t0 q.center 1)
-            (parabolicRectangle tau lower upper) ≤
-            Cfp * 1 * parabolicLpNormOn d (pullbackScalar F t0 q.center 1)
-              (parabolicRectangle tau lower upper) := by gcongr
-        _ = Cfp * parabolicLpNormOn d (pullbackScalar F t0 q.center 1)
-            (parabolicRectangle tau lower upper) := by ring
-        _ ≤ Cfp * parabolicLpNormOn d F (parabolicBox 1 1 0 0) := by gcongr
+        Cfp * q.radius ^ p * parabolicLpNormOn d _
+            _ ≤
+            Cfp * 1 * parabolicLpNormOn d _
+              _ := by gcongr
+        _ = Cfp * parabolicLpNormOn d _
+            _ := by ring
+        _ ≤ Cfp * parabolicLpNormOn d F _ := by gcongr
         _ ≤ max C₀ Cfp * parabolicLpNormOn d F
-            (parabolicBox 1 1 0 0) := by
-          exact mul_le_mul_of_nonneg_right (le_max_of_le_right le_rfl)
+            _ := mul_le_mul_of_nonneg_right (le_max_of_le_right le_rfl)
             hunitNormNonneg
     have hmain : delta * (1 / 2 : ℝ) ^ m * (1 / 4 : ℝ) <
         u z + Cfp * q.radius ^ p *
           parabolicLpNormOn d (pullbackScalar F t0 q.center 1)
             (parabolicRectangle tau lower upper) := by
-      dsimp [p]
       simpa [pullbackScalar, Function.comp_def, parabolicAffine, tau, t0] using hforward
     exact (min_le_right _ _).trans
       (hmain.le.trans (by simpa [add_comm] using
@@ -368,8 +341,10 @@ namespace HypoellipticAleksandrov.Parabolic
 
 open MeasureTheory Set
 
+variable {d : ℕ}
+
 /-- The terminal time of a genuine source box in the unit box is at most one. -/
-private theorem inkSpots_terminal_le_one {d : ℕ} {q : InkSpotsBox d}
+private theorem inkSpots_terminal_le_one  {q : InkSpotsBox d}
     (hR : 0 < q.radius)
     (hq : inkSpotsSourceBox q ⊆ inkSpotsUnitBox d) :
     q.baseTime + q.radius ^ 2 ≤ 1 := by
@@ -379,15 +354,13 @@ private theorem inkSpots_terminal_le_one {d : ℕ} {q : InkSpotsBox d}
     rw [mem_parabolicClosedBox_iff]
     refine ⟨by linarith [sq_nonneg q.radius], by norm_num, ?_⟩
     intro i
-    simp [hR.le]
+    grind
   have htopUnit := hclosed htop
-  rw [mem_parabolicClosedBox_iff] at htopUnit
-  norm_num at htopUnit
-  exact htopUnit.2.1
+  simp_all
 
 /-- Strict density on a source box supplies the corresponding non-strict
 density statement at the same level. -/
-private theorem inkSpots_strict_density_nonneg {d : ℕ} {xi : ℝ}
+private theorem inkSpots_strict_density_nonneg  {xi : ℝ}
     {u : TimeVelocity d → ℝ} {q : InkSpotsBox d}
     (hq : inkSpotsStrictDense (inkSpotsUnitBox d ∩ {z | 1 ≤ u z}) xi q) :
     xi * (volume (parabolicBox 1 q.radius q.baseTime q.center)).toReal ≤
@@ -397,10 +370,8 @@ private theorem inkSpots_strict_density_nonneg {d : ℕ} {xi : ℝ}
       (inkSpotsUnitBox d ∩ {z | 1 ≤ u z}) =
       inkSpotsSourceBox q ∩ {z | 1 ≤ u z} := by
     ext z
-    simp only [mem_inter_iff]
     constructor
-    · rintro ⟨hz, -, hlevel⟩
-      exact ⟨hz, hlevel⟩
+    · simp_all
     · rintro ⟨hz, hlevel⟩
       exact ⟨hz, hq.2.1 hz, hlevel⟩
   have hstrict := hq.2.2
@@ -437,24 +408,18 @@ theorem exists_selected_inkSpots_source_density_cap
           ∀ v ∈ velocityClosedCube (0 : PDE.Vec d) (1 / 2),
             h ≤ u (1, v) + C * parabolicLpNormOn d F
               (parabolicBox 1 1 0 0) := by
-  let alpha : ℝ := (1 + a) ^ (-(1 / ((d : ℝ) + 2)))
-  let R0 : ℝ := Real.sqrt (eta * c / 4)
-  let kappa : ℝ := (1 - alpha ^ 2) * R0 ^ 2
-  have halpha0 : 0 < alpha := by
-    dsimp [alpha]
-    exact Real.rpow_pos_of_pos (by linarith) _
+  let alpha  := (1 + a) ^ (-(1 / ((d : ℝ) + 2)))
+  let R0  := Real.sqrt (eta * c / 4)
+  let kappa  := (1 - alpha ^ 2) * R0 ^ 2
+  have halpha0 : 0 < alpha := Real.rpow_pos_of_pos (by linarith) _
   have halpha1 : alpha < 1 := by
-    dsimp [alpha]
     apply Real.rpow_lt_one_of_one_lt_of_neg
     · linarith
     · exact neg_lt_zero.mpr (one_div_pos.mpr (by positivity))
   have hR0sq : R0 ^ 2 = eta * c / 4 := by
-    dsimp [R0]
     rw [Real.sq_sqrt (by positivity)]
-  have hR0pos : 0 < R0 := by
-    dsimp [R0]
-    exact Real.sqrt_pos.2 (by positivity)
-  let Admissible : Prop := ∃ (U : Set (TimeVelocity d)) (B : CoefficientField d)
+  have hR0pos : 0 < R0 := Real.sqrt_pos.2 (by positivity)
+  let Admissible  := ∃ (U : Set _) (B : CoefficientField d)
     (F u : TimeVelocity d → Real),
     IsOpen U ∧ parabolicClosedBox 1 1 0 0 ⊆ U ∧
     IsContinuousCoefficientOn B U ∧ ContDiffOn Real 2 u U ∧ ContinuousOn F U ∧
@@ -478,25 +443,19 @@ theorem exists_selected_inkSpots_source_density_cap
   have hterminal0 : q0.baseTime + q0.radius ^ 2 ≤ 1 :=
     inkSpots_terminal_le_one hq0.1 hq0.2.1
   have hcrossUpper0 : 1 + c < q0.baseTime + q0.radius ^ 2 +
-      4 * q0.radius ^ 2 / eta := by
-    exact (mem_inkSpotsQ2_iff.mp hcross0).2.1
+      4 * q0.radius ^ 2 / eta := (mem_inkSpotsQ2_iff.mp hcross0).2.1
   have hR0ltSq : R0 ^ 2 < q0.radius ^ 2 := by
-    rw [hR0sq]
     have hspan : c < 4 * q0.radius ^ 2 / eta := by linarith
     rw [lt_div_iff₀ heta0] at hspan
     nlinarith
   have hR0sqLtOne : R0 ^ 2 < 1 := by
     have hq0Rle := inkSpots_radius_le_one hq0.1 hq0.2.1
     have hq0sq : q0.radius ^ 2 ≤ 1 := by
-      simpa using (sq_le_sq₀ hq0.1.le (by norm_num : (0 : ℝ) ≤ 1)).2 hq0Rle
+      simpa using (sq_le_sq₀ hq0.1.le (by norm_num)).2 hq0Rle
     exact hR0ltSq.trans_le hq0sq
-  have hkappa0 : 0 < kappa := by
-    dsimp [kappa]
-    exact mul_pos (by nlinarith [sq_pos_of_pos halpha0]) (sq_pos_of_pos hR0pos)
+  have hkappa0 : 0 < kappa := mul_pos (by nlinarith [sq_pos_of_pos halpha0]) (sq_pos_of_pos hR0pos)
   have hkappa1 : kappa ≤ 1 := by
     dsimp [kappa]
-    have hfactor : 0 < 1 - alpha ^ 2 := by nlinarith [sq_pos_of_pos halpha0]
-    have hfactorOne : 1 - alpha ^ 2 < 1 := by nlinarith [sq_nonneg alpha]
     nlinarith
   obtain ⟨deltaS, hdeltaS, mS, hmS, CfpS, hCfpS, hprop⟩ :=
     exists_forward_propagation_source_constants d hd lam Lam kappa
@@ -527,12 +486,11 @@ theorem exists_selected_inkSpots_source_density_cap
         (inkSpotsShrunkSourceBox alpha q).center) ≤
       parabolicLpNormOn d F (parabolicBox 1 1 0 0) := by
     apply parabolicLpNormOn_mono_of_continuousOn hF hunit
-      (isCompact_parabolicClosedBox 1 1 0 (0 : PDE.Vec d))
+      (isCompact_parabolicClosedBox 1 1 0 _)
     · exact parabolicBox_subset_closedBox
     · simpa only [inkSpotsSourceBox, inkSpotsUnitBox] using hshrink.2.1
   let p : ℝ := (d : ℝ) / ((d : ℝ) + 1)
   have hp0 : 0 ≤ p := by
-    dsimp [p]
     positivity
   have hshrinkRpow : (inkSpotsShrunkSourceBox alpha q).radius ^ p ≤ 1 :=
     Real.rpow_le_one hshrinkR.le hshrinkRone hp0
@@ -550,25 +508,16 @@ theorem exists_selected_inkSpots_source_density_cap
       max C₀ CfpS * parabolicLpNormOn d F (parabolicBox 1 1 0 0) := by
     calc
       C₀ * (inkSpotsShrunkSourceBox alpha q).radius ^ p * parabolicLpNormOn d F
-          (parabolicBox 1 (inkSpotsShrunkSourceBox alpha q).radius
-            (inkSpotsShrunkSourceBox alpha q).baseTime
-            (inkSpotsShrunkSourceBox alpha q).center) ≤
+          _ ≤
           C₀ * 1 * parabolicLpNormOn d F
-            (parabolicBox 1 (inkSpotsShrunkSourceBox alpha q).radius
-              (inkSpotsShrunkSourceBox alpha q).baseTime
-              (inkSpotsShrunkSourceBox alpha q).center) := by gcongr
+            _ := by gcongr
       _ = C₀ * parabolicLpNormOn d F
-          (parabolicBox 1 (inkSpotsShrunkSourceBox alpha q).radius
-            (inkSpotsShrunkSourceBox alpha q).baseTime
-            (inkSpotsShrunkSourceBox alpha q).center) := by ring
+          _ := by ring
       _ ≤ max C₀ CfpS * parabolicLpNormOn d F
-          (parabolicBox 1 (inkSpotsShrunkSourceBox alpha q).radius
-            (inkSpotsShrunkSourceBox alpha q).baseTime
-            (inkSpotsShrunkSourceBox alpha q).center) := by
-        exact mul_le_mul_of_nonneg_right (le_max_of_le_left le_rfl)
+          _ := mul_le_mul_of_nonneg_right (le_max_of_le_left le_rfl)
           hshrinkNormNonneg
       _ ≤ max C₀ CfpS * parabolicLpNormOn d F
-          (parabolicBox 1 1 0 0) := by gcongr
+          _ := by gcongr
   have hcap := hseed.scaled hshrinkR (by norm_num : (0 : ℝ) < 1) U B F u hU
     hsourceClosed hB hu hF
     (by simpa only [inkSpotsSourceBox] using hnonneg.mono hshrink.2.1)
@@ -582,12 +531,8 @@ theorem exists_selected_inkSpots_source_density_cap
         (parabolicBox 1 (inkSpotsShrunkSourceBox alpha q).radius
           (inkSpotsShrunkSourceBox alpha q).baseTime
           (inkSpotsShrunkSourceBox alpha q).center)
-  · have hunitError : (1 / 4 : ℝ) ≤ max C₀ CfpS *
-        parabolicLpNormOn d F (parabolicBox 1 1 0 0) :=
-      hlarge.trans hseedErrorBound
-    have htargetClosed : (1, v) ∈ closure (parabolicBox 1 1 0 (0 : PDE.Vec d)) := by
-      rw [closure_parabolicBox_of_pos (by norm_num) (by norm_num)]
-      rw [mem_parabolicClosedBox_iff]
+  · have htargetClosed : (1, v) ∈ closure (parabolicBox 1 1 0 (0 : PDE.Vec d)) := by
+      rw [closure_parabolicBox_of_pos (by norm_num) (by norm_num), mem_parabolicClosedBox_iff]
       exact ⟨by norm_num, by norm_num, fun i => (hv i).trans (by norm_num)⟩
     have htargetU : (1, v) ∈ U := by
       apply hunit
@@ -603,20 +548,13 @@ theorem exists_selected_inkSpots_source_density_cap
     have huv : 0 ≤ u (1, v) := by
       simpa only [isClosed_Ici.closure_eq, Set.mem_Ici] using huvImage
     exact (min_le_left _ _).trans (by linarith)
-  · have hsmall : C₀ * (inkSpotsShrunkSourceBox alpha q).radius ^ p *
-        parabolicLpNormOn d F
-          (parabolicBox 1 (inkSpotsShrunkSourceBox alpha q).radius
-            (inkSpotsShrunkSourceBox alpha q).baseTime
-            (inkSpotsShrunkSourceBox alpha q).center) < (1 / 4 : ℝ) :=
-      lt_of_not_ge hlarge
-    have hseedPointwise : ∀ x ∈ velocityClosedCube q.center
+  · have hseedPointwise : ∀ x ∈ velocityClosedCube q.center
         ((inkSpotsShrunkSourceBox alpha q).radius / 2),
         (1 / 4 : ℝ) < u
           ((inkSpotsShrunkSourceBox alpha q).baseTime +
             (inkSpotsShrunkSourceBox alpha q).radius ^ 2, x) := by
       intro x hx
       have hcapPoint := hcap x hx
-      dsimp [p] at hsmall
       linarith
     obtain ⟨htLower, htUpper, hwidth, hbase, htarget, hrect⟩ :=
       selected_inkSpots_forward_corridor d a eta c alpha R0 kappa q v w ha0 ha1
@@ -627,14 +565,12 @@ theorem exists_selected_inkSpots_source_density_cap
     have hclosedV : parabolicClosedRectangle tau (fun _ => (-1 : ℝ))
         (fun _ => (1 : ℝ)) ⊆ V := by
       intro y hy
-      change parabolicAffine t0 0 1 y ∈ U
       apply hunit
       apply hrect
       simpa only [tau, t0] using hy
     have hmapU : MapsTo (parabolicAffine t0 (0 : PDE.Vec d) 1) V U := fun _ hy => hy
     have hV : IsOpen V := hU.preimage (contDiff_parabolicAffine t0 0 1).continuous
     have htau0 : 0 < tau := by
-      dsimp [tau, t0]
       nlinarith [htLower]
     have hmapOpen : MapsTo (parabolicAffine t0 (0 : PDE.Vec d) 1)
         (parabolicRectangle tau (fun _ => (-1 : ℝ)) (fun _ => (1 : ℝ)))
@@ -649,7 +585,7 @@ theorem exists_selected_inkSpots_source_density_cap
       simpa only [pullbackScalar, Function.comp_def, one_pow, one_mul, mul_neg] using
         IsParabolicSupersolutionOn.pullback
           (U := parabolicBox 1 1 0 0)
-          (V := parabolicRectangle tau (fun _ => (-1 : ℝ)) (fun _ => (1 : ℝ)))
+          (V := parabolicRectangle tau _ _)
           (isOpen_parabolicBox 1 1 0 0) (hu.mono (fun x hx => hunit
             (parabolicBox_subset_closedBox hx))) hsuper hmapOpen
     have hseedProp : ∀ x ∈ velocityClosedRectangle (fun _ => (-1 : ℝ))
@@ -669,8 +605,7 @@ theorem exists_selected_inkSpots_source_density_cap
       simpa [inkSpotsShrunkSourceBox, mul_pow, pullbackScalar,
         Function.comp_def, parabolicAffine, t0] using hpoint
     have halphaHalf : 0 < alpha / 2 := by positivity
-    have halphaHalfOne : alpha / 2 ≤ 1 := by
-      exact (div_le_iff₀ (by norm_num)).2 (by linarith [halpha1])
+    have halphaHalfOne : alpha / 2 ≤ 1 := (div_le_iff₀ (by norm_num)).2 (by linarith [halpha1])
     have hforward := hprop q.radius (pullbackCoefficient B t0 0 1) q.center
       (fun _ => (-1 : ℝ)) (fun _ => (1 : ℝ)) tau V (pullbackScalar F t0 0 1)
       (pullbackScalar u t0 0 1) (alpha / 2) (1 / 4) tau v hR hRle
@@ -687,10 +622,10 @@ theorem exists_selected_inkSpots_source_density_cap
       rw [show pullbackScalar F t0 0 1 =
           fun y ↦ 1 ^ 2 * F (parabolicAffine t0 0 1 y) by
             funext y; simp [pullbackScalar]]
-      rw [parabolicLpNormOn_pullback t0 0 (by norm_num : (0 : ℝ) < 1)]
+      rw [parabolicLpNormOn_pullback t0 0 (by norm_num)]
       simp only [Real.one_rpow, one_mul]
       apply parabolicLpNormOn_mono_of_continuousOn hF hunit
-        (isCompact_parabolicClosedBox 1 1 0 (0 : PDE.Vec d))
+        (isCompact_parabolicClosedBox 1 1 0 _)
       · exact parabolicBox_subset_closedBox
       · rintro y ⟨x, hx, rfl⟩
         exact hmapOpen hx
@@ -703,24 +638,22 @@ theorem exists_selected_inkSpots_source_density_cap
           (parabolicRectangle tau (fun _ => (-1 : ℝ)) (fun _ => (1 : ℝ))) ≤
         max C₀ CfpS * parabolicLpNormOn d F (parabolicBox 1 1 0 0) := by
       calc
-        CfpS * q.radius ^ p * parabolicLpNormOn d (pullbackScalar F t0 0 1)
-            (parabolicRectangle tau (fun _ => (-1 : ℝ)) (fun _ => (1 : ℝ))) ≤
-            CfpS * 1 * parabolicLpNormOn d (pullbackScalar F t0 0 1)
-              (parabolicRectangle tau (fun _ => (-1 : ℝ)) (fun _ => (1 : ℝ))) := by
+        CfpS * q.radius ^ p * parabolicLpNormOn d _
+            _ ≤
+            CfpS * 1 * parabolicLpNormOn d _
+              _ := by
           gcongr
-        _ = CfpS * parabolicLpNormOn d (pullbackScalar F t0 0 1)
-            (parabolicRectangle tau (fun _ => (-1 : ℝ)) (fun _ => (1 : ℝ))) := by
+        _ = CfpS * parabolicLpNormOn d _
+            _ := by
           ring
-        _ ≤ CfpS * parabolicLpNormOn d F (parabolicBox 1 1 0 0) := by gcongr
+        _ ≤ CfpS * parabolicLpNormOn d F _ := by gcongr
         _ ≤ max C₀ CfpS * parabolicLpNormOn d F
-            (parabolicBox 1 1 0 0) := by
-          exact mul_le_mul_of_nonneg_right (le_max_of_le_right le_rfl)
+            _ := mul_le_mul_of_nonneg_right (le_max_of_le_right le_rfl)
             hunitNormNonneg
     have hmain : deltaS * (alpha / 2) ^ mS * (1 / 4 : ℝ) <
         u (1, v) + CfpS * q.radius ^ p *
           parabolicLpNormOn d (pullbackScalar F t0 0 1)
             (parabolicRectangle tau (fun _ => (-1 : ℝ)) (fun _ => (1 : ℝ))) := by
-      dsimp [p]
       simpa [pullbackScalar, Function.comp_def, parabolicAffine, tau, t0] using hforward
     exact (min_le_right _ _).trans
       (hmain.le.trans (by simpa [add_comm] using

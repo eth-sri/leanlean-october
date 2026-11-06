@@ -24,7 +24,7 @@ theorem memLp_on_of_continuousOn_compact_closure
   have hfin : volume V < ⊤ :=
     lt_of_le_of_lt (measure_mono subset_closure) hcompact.measure_lt_top
   letI : IsFiniteMeasure (timeVelocityVolumeOn V) := ⟨by
-    simpa only [timeVelocityVolumeOn, Measure.restrict_apply_univ] using hfin⟩
+    simp_all⟩
   apply MemLp.of_bound ((hf.mono (subset_closure.trans hVU)).aestronglyMeasurable
     hV.measurableSet) C
   filter_upwards [ae_restrict_mem hV.measurableSet] with z hz

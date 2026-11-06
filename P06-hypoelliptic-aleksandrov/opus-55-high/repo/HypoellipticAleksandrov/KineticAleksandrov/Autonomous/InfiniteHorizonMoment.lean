@@ -7,7 +7,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.StripMassQua
 /-! # Exact first moment of the actual finite-horizon exit time -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Parabolic
 open SectionTwo TheoremA Evolution
@@ -17,16 +16,13 @@ theorem nested_time_operator (a : ℝ → ℝ → ℝ) (p : Point) :
     forwardScalarOperator a (fun p => p.time) p = 1 := by
   have ht : kineticTimeDerivative (fun p : Point => p.time) p = 1 := by
     change deriv (fun t : ℝ => t) p.time = 1
-    exact deriv_id _
+    simp
   have hx : kineticPositionGradient (fun p : Point => p.time) p 0 = 0 := by
     rw [kineticPositionGradient_scalar]
-    exact deriv_const _ _
+    simp
   have hv : kineticVelocityHessian (fun p : Point => p.time) p 0 0 = 0 := by
     rw [kineticVelocityHessian_scalar]
-    have hd : deriv (fun _ : ℝ => p.time) = fun _ => 0 :=
-      funext (fun v => deriv_const v p.time)
-    rw [hd]
-    exact deriv_const _ _
+    simp
   simp only [forwardScalarOperator, ht, hx, hv, mul_zero, add_zero]
 
 /-- The expected exit time is the pole time plus the actual Green mass. -/
@@ -41,15 +37,10 @@ theorem nested_exit_time_integral
     T e (fun p => p.time) (Evolution.timeCoord 1).contDiff (by
       refine ⟨max |e.1.time| |T| + 1, fun p ht hT _ => ?_⟩
       constructor
-      · have hp := abs_le.mpr (show -max |e.1.time| |T| ≤ p.time ∧
-            p.time ≤ max |e.1.time| |T| from
-          ⟨(neg_le_neg (le_max_left _ _)).trans ((neg_abs_le _).trans ht),
-            hT.trans ((le_abs_self _).trans (le_max_right _ _))⟩)
-        linarith
-      · rw [nested_time_operator, abs_one]
-        have hm : 0 ≤ max |e.1.time| |T| := (abs_nonneg _).trans (le_max_left _ _)
-        linarith)
-  simp only [nested_time_operator, integral_const, Measure.real, smul_eq_mul, mul_one] at h
+      · grind
+      · rw [nested_time_operator]
+        simp)
+  simp only [nested_time_operator, integral_const, Measure.real, smul_eq_mul] at h
   linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

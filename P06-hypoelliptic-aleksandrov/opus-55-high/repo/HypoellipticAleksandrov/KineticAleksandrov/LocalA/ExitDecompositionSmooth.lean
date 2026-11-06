@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.ExitDecompositio
 /-! # Exact short-strip decomposition for compact smooth boundary tests -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Parabolic
 
@@ -37,7 +36,7 @@ theorem ballExit_smooth_short_strip_decomposition
   let L : Set (KineticPoint d) := {Q | Q.velocity ∈ frontier (PDE.euclideanBall v₀ R)}
   let κ := (localBallKernel hH hLE hd hlam hLam B hB v₀ hR).fiberKernel
     (PDE.isOpen_euclideanBall v₀ R).measurableSet P.1.time H.1 H.2.1.le (ballStartState P)
-  let j (w : EvolutionState (PDE.euclideanBall v₀ R) (fun _ => 0) H.1) :=
+  let j (w : EvolutionState (PDE.euclideanBall v₀ R) _ H.1) :=
     (ballStateStart H.1 w).1
   have hS : MeasurableSet S :=
     (PDE.isOpen_euclideanBall v₀ R).measurableSet.preimage continuous_velocity.measurable
@@ -53,11 +52,11 @@ theorem ballExit_smooth_short_strip_decomposition
   have hui := ballExit_integrable_closed hH hLE hd hlam hLam B hB v₀ hR
     P ⟨H.1, H.2.1⟩ u (hu.2.2.1.mono hcl) ⟨M, fun Q hQ => hM Q (hcl hQ)⟩
   have hlat : (∫ Q in Sᶜ, u Q ∂μ) = ∫ Q in L, φ Q ∂μ := by
-    rw [ballExit_lateral_restrict hH hLE hd hlam hLam B hB v₀ hR P ⟨H.1, H.2.1⟩]
+    rw [ballExit_lateral_restrict]
     apply integral_congr_ae
     filter_upwards [ae_restrict_mem hL,
       ae_restrict_of_ae (ballExitRaw_ae_trace hH hLE hd hlam hLam B hB v₀ hR
-        P ⟨H.1, H.2.1⟩)] with Q hv hQ
+        P _)] with Q hv hQ
     have hQc := localTrace_subset_closed H.2.1.le v₀ R hQ
     exact hu.2.2.2 (Or.inr ⟨hQc.1, hQc.2.1.trans H.2.2.le, hv⟩)
   have hterminal : (∫ Q in S, u Q ∂μ) =
@@ -78,7 +77,7 @@ theorem ballExit_smooth_short_strip_decomposition
       P.1.time H.1 T.1 H.2.1.le H.2.2 φ hφ hc hpoint
     exact heq.trans
       ((ballExitRaw_spec hH hLE hd hlam hLam B hB v₀ hR
-        (ballStateStart H.1 w) ⟨T.1, H.2.2⟩).2.2 φ hφ hc).symm
+        _ ⟨T.1, H.2.2⟩).2.2 φ hφ hc).symm
   rw [ballExit_smooth_short_strip_representation hH hLE hd hlam hLam B hB v₀ hR
     P T H φ hφ hc, ← integral_add_compl hS hui, hlat, hterminal, add_comm]
 

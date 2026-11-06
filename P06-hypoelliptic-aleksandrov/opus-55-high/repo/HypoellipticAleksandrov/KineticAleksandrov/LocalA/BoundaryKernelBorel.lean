@@ -30,13 +30,12 @@ variable (hH : HormanderHypoellipticityStatement)
 theorem measurable_ballExitRaw_fixedTime (s T : ℝ) (hsT : s < T) :
     Measurable (fun w : EvolutionState (PDE.euclideanBall v₀ R) (fun _ => 0) s =>
       ballExitRaw hH hLE hd hlam hLam B hB v₀ hR (ballStateStart s w) ⟨T, hsT⟩) := by
-  let μ (w : EvolutionState (PDE.euclideanBall v₀ R) (fun _ => 0) s) :=
+  let μ (w : EvolutionState _ _ s) :=
     ballExitRaw hH hLE hd hlam hLam B hB v₀ hR (ballStateStart s w) ⟨T, hsT⟩
   let H := KineticPoint.homeomorphProd d
-  let ν (w : EvolutionState (PDE.euclideanBall v₀ R) (fun _ => 0) s) := (μ w).map H
+  let ν (w : EvolutionState _ _ s) := (μ w).map H
   have hm (w) : ν w univ ≤ 1 := by
-    dsimp only [ν]
-    rw [Measure.map_apply H.measurable MeasurableSet.univ, preimage_univ]
+    rw [Measure.map_apply H.measurable MeasurableSet.univ]
     exact (ballExitRaw_mass hH hLE hd hlam hLam B hB v₀ hR _ _).le
   have ht (f : C_c(ℝ × PDE.Vec d × PDE.Vec d, ℝ))
       (hf : ContDiff ℝ (⊤ : ℕ∞) f) : Measurable (fun w => ∫ x, f x ∂ν w) := by
@@ -47,7 +46,6 @@ theorem measurable_ballExitRaw_fixedTime (s T : ℝ) (hsT : s < T) :
         ballBoundarySolution hH hLE hd hlam hLam B hB v₀ hR s T φ
           (ballStateStart s w).1 := by
       funext w
-      dsimp only [ν]
       have hfm : AEStronglyMeasurable (fun x => f x) ((μ w).map H) :=
         f.continuous.measurable.aestronglyMeasurable
       exact (integral_map H.measurable.aemeasurable hfm).trans
@@ -61,13 +59,10 @@ theorem measurable_ballExitRaw_fixedTime (s T : ℝ) (hsT : s < T) :
   have hh := (Measure.measurable_map H.symm H.symm.measurable).comp hν
   have heq : (fun w => (ν w).map H.symm) = μ := by
     funext w
-    dsimp only [ν]
     rw [Measure.map_map H.symm.measurable H.measurable]
-    have hid : H.symm ∘ H = (id : KineticPoint d → KineticPoint d) :=
-      funext H.symm_apply_apply
-    rw [hid, Measure.map_id]
+    simp
   change Measurable (fun w => (ν w).map H.symm) at hh
-  rwa [heq] at hh
+  grind
 
 /-- The later ambient exit measures form a genuine measurable kernel on valid states. -/
 def ballBoundaryKernel (s T : ℝ) (hsT : s < T) :

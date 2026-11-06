@@ -11,14 +11,14 @@ admissibility statement. The constant is chosen before coefficients, data, times
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic Set MeasureTheory
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
+
 /-- Smooth terminal data satisfy the return comparison at every kinetic scale. -/
 theorem return_time_smooth
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (hp6 : SmoothAutonomousP6Statement lam Lam) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (F : BoundedBorel Z),
       (∀ z, 0 ≤ F z) → ContDiff ℝ (⊤ : ℕ∞) F →
@@ -37,10 +37,10 @@ theorem return_time_smooth
   have hshi : s / t ≤ 3 := (div_le_iff₀ ht).mpr hs1
   have hspos : 0 < s / t := by linarith
   obtain ⟨U, hu, hrep⟩ := exists_return_scaled_solution hH hLE hlam hLam A F hF0 hF r hr X
-  have hstar : point (s / t) 0 (v / r) ∈ returnFutureRegion :=
+  have hstar : point _ 0 _ ∈ returnFutureRegion :=
     ⟨⟨hslo, hshi⟩, by simp [point, return_norm_one],
-      by simpa only [point, return_norm_one] using hvn.trans (by norm_num : (1 : ℝ) ≤ 2)⟩
-  have h := hunit _ U hu (v / r) hvn _ hstar
+      by simpa only [point, return_norm_one] using hvn.trans (by norm_num)⟩
+  have h := hunit _ U hu _ hvn _ hstar
   rw [hrep _ (by norm_num [point]), hrep _ hspos] at h
   have hrv : r * (v / r) = v := by field_simp
   have hst : t * (s / t) = s := by field_simp
@@ -48,8 +48,7 @@ theorem return_time_smooth
 
 /-- Bounded nonnegative Borel data satisfy the same full-space return comparison. -/
 theorem return_time
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ Lam)
+    
     (hp6 : SmoothAutonomousP6Statement lam Lam) :
     ∃ C : ℝ, 0 < C ∧ ∀ (A : SmoothAutonomous lam Lam) (F : BoundedBorel Z),
       (∀ z, 0 ≤ F z) → ∀ t s X v : ℝ,
@@ -59,8 +58,7 @@ theorem return_time
   refine ⟨C, hC, ?_⟩
   intro A F hF0 t s X v ht hs hs1 hv
   apply return_time_borel_of_smooth_tests hH hLE hlam hLam C hC.le A t s ht.le
-    (by linarith) (X, v) ?_ F hF0
-  intro G hG0 hG
-  exact hsmooth A G hG0 hG t s X v ht hs hs1 hv
+    (by linarith) _ ?_ F hF0
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -19,8 +19,8 @@ def velocityRawBand (r : ℝ) : Set (ℝ × EvolutionAmbientState 1) :=
 /-- The raw velocity band is measurable. -/
 theorem velocityRawBand_measurable (r : ℝ) : MeasurableSet (velocityRawBand r) := by
   apply measurableSet_le
-  · exact continuous_abs.measurable.comp ((measurable_pi_apply 0).comp measurable_snd.fst)
-  · exact measurable_const
+  · fun_prop
+  fun_prop
 
 /-- A unit test of restricted band occupation is bounded by its actual convex source. -/
 theorem velocityGreenRaw_band_test_le (hH : HormanderHypoellipticityStatement)
@@ -35,7 +35,7 @@ theorem velocityGreenRaw_band_test_le (hH : HormanderHypoellipticityStatement)
   let mu := velocityGreenRaw E T hT z
   let g := fun q : ℝ × EvolutionAmbientState 1 =>
     f q * (lam * velocityOccupationDensity r (q.2.1 0))
-  have hg : ContDiff ℝ (⊤ : ℕ∞) g := hf.mul
+  have hg : ContDiff ℝ _ g := hf.mul
     (contDiff_const.mul ((velocityOccupationDensity_contDiff hr).comp
       ((contDiff_apply ℝ ℝ 0).comp contDiff_snd.fst)))
   have hgc : HasCompactSupport g := hfc.mul_right
@@ -57,10 +57,9 @@ theorem velocityGreenRaw_band_test_le (hH : HormanderHypoellipticityStatement)
           field_simp
         rw [he]
         simpa only [velocityOccupationDensity, mul_comm] using
-          (div_le_iff₀ (by positivity : 0 < 64 * r)).mp hd
+          (div_le_iff₀ (by positivity)).mp hd
       have hh := mul_le_mul_of_nonneg_left hl (hf01 q).1
-      dsimp only [g]
-      nlinarith only [hh]
+      linarith
     · rw [indicator_of_notMem hq]
       exact mul_nonneg hc0 (mul_nonneg (hf01 q).1
         (mul_nonneg hlam.le (velocityOccupationDensity_nonneg r _)))
@@ -76,14 +75,13 @@ theorem velocityGreenRaw_band_mass_le (hH : HormanderHypoellipticityStatement)
       ENNReal.ofReal ((64 * r / lam) * Real.sqrt (2 * Lam * T)) := by
   let mu := (velocityGreenRaw E T hT z).restrict (velocityRawBand r)
   have hs : mu.restrict {q | q.1 < T} = mu := by
-    dsimp only [mu]
     rw [Measure.restrict_comm, velocityGreenRaw_restrict_past]
     exact measurableSet_lt measurable_fst measurable_const
   have h := measure_mass_le_of_smooth_unit_tests mu
     (isOpen_lt continuous_fst continuous_const) hs
-    ((64 * r / lam) * Real.sqrt (2 * Lam * T))
+    _
     (fun f hf hfc hfU hf01 =>
       velocityGreenRaw_band_test_le hH hlam hLam A E hE hr hT z f hf hfc hfU hf01)
-  simpa only [mu, Measure.restrict_apply MeasurableSet.univ, univ_inter] using h
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

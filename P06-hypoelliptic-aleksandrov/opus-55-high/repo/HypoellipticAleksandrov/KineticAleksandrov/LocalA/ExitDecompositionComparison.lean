@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundaryKernelBo
 /-! # Restricting the actual boundary solution to a shorter time strip -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Parabolic TheoremA
 
@@ -65,10 +64,7 @@ theorem ballBoundarySolution_lowerTime_eq (a b T : ℝ) (hab : a ≤ b) (hbT : b
       rw [hu.2.2.2 (localTrace_lower_subset hab v₀ hQ), hv.2.2.2 hQ]
       simp)
   intro Q hQ
-  have h := he Q hQ
-  have hz : |u Q - v Q| = 0 := le_antisymm (by simpa only [zero_mul] using h)
-    (abs_nonneg _)
-  exact sub_eq_zero.mp (abs_eq_zero.mp hz)
+  grind
 
 /-- Compact boundary tests can be evaluated on the shorter strip using the genuine solution. -/
 theorem ballExit_smooth_short_strip_representation
@@ -93,7 +89,7 @@ theorem ballExit_smooth_short_strip_representation
   have hr := isKineticC112On_of_contDiffOn (isOpen_localStrip P.1.time H.1 v₀ R)
     (boundary_physical_smooth_to_native (hu.1.mono (image_mono hs)))
   exact ((ballExitRaw_spec hH hLE hd hlam hLam B hB v₀ hR P T).2.2 φ hφ hc).trans
-    (ballExit_represents hH hLE hd hlam hLam B hB v₀ hR P ⟨H.1, H.2.1⟩ u
+    (ballExit_represents hH hLE hd hlam hLam B hB v₀ hR P _ u
       (hu.2.2.1.mono hcl) hr ⟨M, fun Q hQ => hM Q (hcl hQ)⟩
       (fun Q hQ => hu.2.1 Q (hs hQ)))
 

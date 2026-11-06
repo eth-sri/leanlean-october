@@ -23,7 +23,6 @@ This does not assert that the supremal degree is attained by an admissible pair.
 theorem bellmanAdjointExponent_characterization (ratio : ℝ) (hRatio : 1 ≤ ratio) :
     IsLUB (bellmanAdmissibleDegrees ratio) (bellmanAdjointExponent ratio hRatio) ∧
       ∀ β : ℝ, IsLUB (bellmanAdmissibleDegrees ratio) β →
-        β = bellmanAdjointExponent ratio hRatio := by
-  exact (existsUnique_bellmanAdjointExponent ratio hRatio).choose_spec
+        β = bellmanAdjointExponent ratio hRatio := (existsUnique_bellmanAdjointExponent ratio hRatio).choose_spec
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -7,12 +7,13 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
+variable {d : ℕ} {lam h : ℝ}
+
 /-- Before the block starts its positive Gaussian height is at most the source loss factor. -/
-theorem gaussianBarrier_initial_upper {d : ℕ} {lam h : ℝ}
+theorem gaussianBarrier_initial_upper 
     (hlam : 0 < lam) (hh : 0 < h) (Lam H L ell tminus sblock : ℝ)
     (hLam : lam ≤ Lam) (hell : 0 ≤ ell)
     (hbudget : Xi d lam Lam H h * h ≤ L ^ 2 / 4)
@@ -32,7 +33,7 @@ theorem gaussianBarrier_initial_upper {d : ℕ} {lam h : ℝ}
           (P.position - x (P.time - tminus)) (P.velocity - v (P.time - tminus))) ≤
         Real.exp (L ^ 2 / 512) := by
       apply Real.exp_le_exp.mpr
-      linarith only [htime, hbudget, hq]
+      linarith
     rw [gaussianBarrier_eq_formula]
     dsimp only [gaussianFormula]
     have hc := barrierCutoff_bounds ((P.time - tminus - sblock) / h)
@@ -41,22 +42,19 @@ theorem gaussianBarrier_initial_upper {d : ℕ} {lam h : ℝ}
           (P.position - x (P.time - tminus)) (P.velocity - v (P.time - tminus))) -
         Real.exp (-L ^ 2) := by
       rw [gaussianBarrier_eq_formula] at hp
-      dsimp only [gaussianFormula] at hp
       exact (pos_of_mul_pos_right hp (mul_nonneg hell hc.1)).le
     calc
-      _ ≤ ell * (Real.exp (-Xi d lam Lam H h * (P.time - tminus - sblock) -
-          qform lam h (P.time - tminus - sblock)
-            (P.position - x (P.time - tminus)) (P.velocity - v (P.time - tminus))) -
-          Real.exp (-L ^ 2)) := by
+      _ ≤ ell * (Real.exp _ -
+          Real.exp _) := by
         have he := mul_le_mul_of_nonneg_right hc.2 hell
         nlinarith only [mul_le_mul_of_nonneg_right he hg]
-      _ ≤ ell * Real.exp (L ^ 2 / 512) :=
+      _ ≤ ell * Real.exp _ :=
         mul_le_mul_of_nonneg_left
           ((sub_le_self _ (Real.exp_pos _).le).trans hexp) hell
   · exact (le_of_not_gt hp).trans (mul_nonneg hell (Real.exp_pos _).le)
 
 /-- In the terminal half-height ellipsoid the Gaussian dominates the source block height. -/
-theorem gaussianBarrier_terminal_lower {d : ℕ} {lam h : ℝ}
+theorem gaussianBarrier_terminal_lower 
     (hh : 0 < h) (Lam H L ell tminus sblock : ℝ) (hell : 0 ≤ ell)
     (hXi : 0 ≤ Xi d lam Lam H h) (hbudget : Xi d lam Lam H h * h ≤ L ^ 2 / 4)
     (x v : ℝ → PDE.Vec d) (P : KineticPoint d)
@@ -68,10 +66,9 @@ theorem gaussianBarrier_terminal_lower {d : ℕ} {lam h : ℝ}
   dsimp only [gaussianFormula]
   rw [barrierCutoff_one (div_nonneg hs hh.le), mul_one]
   apply mul_le_mul_of_nonneg_left _ hell
-  unfold barrierCb
   apply sub_le_sub_right
   apply Real.exp_le_exp.mpr
   have he := (mul_le_mul_of_nonneg_left ht hXi).trans hbudget
-  linarith only [he, hq]
+  linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

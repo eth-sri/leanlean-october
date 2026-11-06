@@ -27,16 +27,13 @@ theorem scalar_position_cutoff_support (test : XV 1 → ℝ) (n : ℕ) (q : XV 1
   have hz : q.1 = 0 := by
     funext i
     have hi : i = 0 := Subsingleton.elim _ _
-    subst i
-    exact hx
-  have ht : Tendsto (Prod.fst : XV 1 → PDE.Vec 1) (𝓝 q) (𝓝 0) := by
+    simp_all
+  have ht : Tendsto Prod.fst (𝓝 q) (𝓝 0) := by
     simpa only [hz] using continuous_fst.tendsto q
   have he := (originCutoff_eventually_zero 1 n).comp_tendsto ht
   apply (notMem_tsupport_iff_eventuallyEq.mpr ?_) hq
   filter_upwards [he] with z hz
-  change originCutoff n z.1 = 0 at hz
-  simp only [hz, mul_zero]
-  rfl
+  simp_all
 
 /-- Velocity integration by parts for a locally integrable jet smooth off the position axis. -/
 theorem scalar_velocity_ibp (f g : XV 1 → ℝ)
@@ -45,8 +42,6 @@ theorem scalar_velocity_ibp (f g : XV 1 → ℝ)
     (hfg : ∀ q : XV 1, q.1 0 ≠ 0 → fderiv ℝ f q (0, Pi.single 0 1) = g q)
     (test : XV 1 → ℝ) (ht : ContDiff ℝ 1 test) (hs : HasCompactSupport test) :
     (∫ q, f q * dv test q 0) = -(∫ q, g q * test q) := by
-  let : Measure.IsAddHaarMeasure (volume : Measure (PDE.Vec 1)) :=
-    isAddHaarMeasure_volume_pi (Fin 1)
   let : Measure.IsAddHaarMeasure (volume : Measure (XV 1)) :=
     Measure.prod.instIsAddHaarMeasure _ _
   have hderiv : ∀ᵐ q ∂volume, fderiv ℝ f q (0, Pi.single 0 1) = g q := by
@@ -56,12 +51,11 @@ theorem scalar_velocity_ibp (f g : XV 1 → ℝ)
     apply hq.1
     funext i
     have hi : i = 0 := Subsingleton.elim _ _
-    subst i
-    exact hz
+    simp_all
   let cut : ℕ → XV 1 → ℝ := fun n q => originCutoff n q.1
   have he (n : ℕ) : (∫ q, (f q * dv test q 0) * cut n q) =
       -(∫ q, (g q * test q) * cut n q) := by
-    let t : XV 1 → ℝ := fun q => test q * cut n q
+    let t  := fun q => test q * cut n q
     have ht1 : ContDiff ℝ 1 t := ht.mul
       (((contDiff_originCutoff 1 n).of_le (by norm_num)).comp contDiff_fst)
     have htc : HasCompactSupport t := hs.mul_right
@@ -75,7 +69,7 @@ theorem scalar_velocity_ibp (f g : XV 1 → ℝ)
       simpa only [smul_eq_mul, mul_comm] using
         hfi.integrable_smul_left_of_hasCompactSupport
           ((ht1.fderiv_right (m := 0) (by norm_num)).clm_apply contDiff_const).continuous
-          (htc.fderiv_apply ℝ (0, Pi.single 0 1))
+          (htc.fderiv_apply ℝ _)
     have hfGT : Integrable (fun q => fderiv ℝ f q (0, Pi.single 0 1) * t q) volume := by
       apply hgT.congr
       filter_upwards [hderiv] with q hq
@@ -90,12 +84,12 @@ theorem scalar_velocity_ibp (f g : XV 1 → ℝ)
     rw [hR] at hIBP
     change (∫ q, f q * dv t q 0) = -(∫ q, g q * t q) at hIBP
     simpa only [t, cut, dv_mul_position_cutoff test n _
-      (ht.differentiable (by norm_num) _) 0, mul_assoc] using hIBP
+      (ht.differentiable (by norm_num) _), mul_assoc] using hIBP
   have hL : Integrable (fun q => f q * dv test q 0) volume := by
     simpa only [smul_eq_mul, mul_comm, dv] using
       hfi.integrable_smul_left_of_hasCompactSupport
         ((ht.fderiv_right (m := 0) (by norm_num)).clm_apply contDiff_const).continuous
-        (hs.fderiv_apply ℝ (0, Pi.single 0 1))
+        (hs.fderiv_apply ℝ _)
   have hR : Integrable (fun q => g q * test q) volume := by
     simpa only [smul_eq_mul, mul_comm] using
       hgi.integrable_smul_left_of_hasCompactSupport ht.continuous hs
@@ -109,8 +103,10 @@ theorem scalar_velocity_ibp (f g : XV 1 → ℝ)
   have hlimR := (integral_mul_cutoff_tendsto _ hR cut hc hb hl).neg
   exact tendsto_nhds_unique hlimL (hlimR.congr (fun n => (he n).symm))
 
+variable (gamma : ScalarGamma) (Lam : ℝ)
+
 /-- The actual scalar profile has its first native velocity weak identity. -/
-theorem scalarProfile_velocity_weak (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+theorem scalarProfile_velocity_weak  (hLam : 0 < Lam)
     (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
       Real.rpow Lam (-gamma.1)) (test : XV 1 → ℝ) (ht : ContDiff ℝ 1 test)
     (hs : HasCompactSupport test) :
@@ -125,10 +121,10 @@ theorem scalarProfile_velocity_weak (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 
   · intro q hq
     simp only [scalarGv, hq, ↓reduceIte, dv]
   · exact ht
-  · exact hs
+  omega
 
 /-- The actual scalar profile has its second native velocity weak identity. -/
-theorem scalarProfile_hessian_weak (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < Lam)
+theorem scalarProfile_hessian_weak  (hLam : 0 < Lam)
     (hmatch : Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3)) =
       Real.rpow Lam (-gamma.1)) (test : XV 1 → ℝ) (ht : ContDiff ℝ 2 test)
     (hs : HasCompactSupport test) :
@@ -136,8 +132,8 @@ theorem scalarProfile_hessian_weak (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 <
       (∫ q, scalarHess gamma Lam q 0 0 * test q) := by
   have hjet := scalarJets_locallyIntegrable gamma Lam hLam hmatch
   have hfirst := scalarProfile_velocity_weak gamma Lam hLam hmatch
-    (fun q => dv test q 0) (contDiff_dv_test test ht 0)
-    (hs.fderiv_apply ℝ (0, Pi.single 0 1))
+    _ (contDiff_dv_test test ht 0)
+    (hs.fderiv_apply ℝ _)
   have hsecond : (∫ q, scalarGv gamma Lam q 0 * dv test q 0) =
       -(∫ q, scalarHess gamma Lam q 0 0 * test q) := by
     apply scalar_velocity_ibp _ _ (hjet.2.1 0) (hjet.2.2 0 0)
@@ -146,9 +142,7 @@ theorem scalarProfile_hessian_weak (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 <
     · intro q hq
       exact (scalarHess_eq_velocity_derivative gamma Lam q hq 0 0).symm
     · exact ht.of_le (by norm_num)
-    · exact hs
-  change (∫ q, scalarProfile gamma Lam q * dvv test q 0 0) =
-    -(∫ q, scalarGv gamma Lam q 0 * dv test q 0) at hfirst
-  simpa only [hsecond, neg_neg] using hfirst
+    omega
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

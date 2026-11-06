@@ -26,17 +26,17 @@ open scoped MatrixOrder Topology
 private def sourceBarrier {n : ℕ} (Phi H Fmax r1 : ℝ) : TimeVelocity n → ℝ :=
   fun z => Phi + H + (r1 - z.1) * Fmax
 
-private theorem sourceBarrier_continuous {n : ℕ} (Phi H Fmax r1 : ℝ) :
-    Continuous (sourceBarrier (n := n) Phi H Fmax r1) := by
-  exact (continuous_const.add continuous_const).add
+variable {n : ℕ} (a : CoefficientField n) (b : ℝ → PDE.Vec n → PDE.Vec n) (c : ℝ → PDE.Vec n → ℝ) {Omega : Set (PDE.Vec n)} {u : TimeVelocity n → ℝ} {D : Set (TimeVelocity n)} (Phi H Fmax r1 : ℝ) (z : TimeVelocity n)
+
+private theorem sourceBarrier_continuous  :
+    Continuous (sourceBarrier (n := n) Phi H Fmax r1) := (continuous_const.add continuous_const).add
     ((continuous_const.sub continuous_fst).mul continuous_const)
 
-private theorem scalarTimeDerivative_sourceBarrier {n : ℕ} (Phi H Fmax r1 : ℝ)
-    (z : TimeVelocity n) :
+private theorem scalarTimeDerivative_sourceBarrier  :
     scalarTimeDerivative (sourceBarrier Phi H Fmax r1) z = -Fmax := by
   have hderiv : HasDerivAt
       (fun r : ℝ => sourceBarrier Phi H Fmax r1 (r, z.2)) (-Fmax) z.1 := by
-    change HasDerivAt (fun r : ℝ => Phi + H + (r1 - r) * Fmax) (-Fmax) z.1
+    change HasDerivAt (fun r : ℝ => Phi + H + (r1 - r) * Fmax) _ z.1
     convert (hasDerivAt_const (x := z.1) (c := Phi + H)).add
       (((hasDerivAt_const (x := z.1) (c := r1)).sub (hasDerivAt_id z.1)).mul
         (hasDerivAt_const (x := z.1) (c := Fmax))) using 1
@@ -45,18 +45,16 @@ private theorem scalarTimeDerivative_sourceBarrier {n : ℕ} (Phi H Fmax r1 : �
     all_goals ring
   exact hderiv.deriv
 
-private theorem scalarSpatialGradient_sourceBarrier {n : ℕ} (Phi H Fmax r1 : ℝ)
-    (z : TimeVelocity n) :
+private theorem scalarSpatialGradient_sourceBarrier  :
     scalarSpatialGradient (sourceBarrier Phi H Fmax r1) z = 0 := by
   ext i
   change fderiv ℝ
-      (Function.const (PDE.Vec n) (Phi + H + (r1 - z.1) * Fmax)) z.2
-      (PDE.basisVec i) = 0
+      (Function.const _ (Phi + H + (r1 - z.1) * Fmax)) z.2
+      _ = 0
   rw [fderiv_const]
   rfl
 
-private theorem scalarSpatialHessian_sourceBarrier {n : ℕ} (Phi H Fmax r1 : ℝ)
-    (z : TimeVelocity n) :
+private theorem scalarSpatialHessian_sourceBarrier  :
     scalarSpatialHessian (sourceBarrier Phi H Fmax r1) z = 0 := by
   have hgradient : (fun y : PDE.Vec n =>
       PDE.classicalGradient
@@ -65,8 +63,8 @@ private theorem scalarSpatialHessian_sourceBarrier {n : ℕ} (Phi H Fmax r1 : �
     funext y
     ext j
     change fderiv ℝ
-        (Function.const (PDE.Vec n) (Phi + H + (r1 - z.1) * Fmax)) y
-        (PDE.basisVec j) = 0
+        (Function.const _ (Phi + H + (r1 - z.1) * Fmax)) y
+        _ = 0
     rw [fderiv_const]
     rfl
   ext i j
@@ -74,14 +72,13 @@ private theorem scalarSpatialHessian_sourceBarrier {n : ℕ} (Phi H Fmax r1 : �
   rw [hgradient]
   simp
 
-private theorem isScalarC12On_sourceBarrier {n : ℕ} {D : Set (TimeVelocity n)}
-    (Phi H Fmax r1 : ℝ) :
+private theorem isScalarC12On_sourceBarrier  :
     IsScalarC12On (sourceBarrier Phi H Fmax r1) D := by
   refine ⟨(sourceBarrier_continuous Phi H Fmax r1).continuousOn, ?_, ?_, ?_, ?_, ?_⟩
   · intro z _
     exact (show HasDerivAt (fun r : ℝ => sourceBarrier Phi H Fmax r1 (r, z.2))
       (-Fmax) z.1 by
-      change HasDerivAt (fun r : ℝ => Phi + H + (r1 - r) * Fmax) (-Fmax) z.1
+      change HasDerivAt (fun r : ℝ => Phi + H + (r1 - r) * Fmax) _ z.1
       convert (hasDerivAt_const (x := z.1) (c := Phi + H)).add
         (((hasDerivAt_const (x := z.1) (c := r1)).sub (hasDerivAt_id z.1)).mul
           (hasDerivAt_const (x := z.1) (c := Fmax))) using 1
@@ -105,9 +102,7 @@ private theorem isScalarC12On_sourceBarrier {n : ℕ} {D : Set (TimeVelocity n)}
     intro z _
     exact scalarSpatialHessian_sourceBarrier Phi H Fmax r1 z
 
-private theorem scalarParabolicZeroOrderOperator_sourceBarrier {n : ℕ}
-    (a : CoefficientField n) (b : ℝ → PDE.Vec n → PDE.Vec n)
-    (c : ℝ → PDE.Vec n → ℝ) (Phi H Fmax r1 : ℝ) (z : TimeVelocity n) :
+private theorem scalarParabolicZeroOrderOperator_sourceBarrier  :
     scalarParabolicZeroOrderOperator a b c (sourceBarrier Phi H Fmax r1) z =
       -Fmax + c z.1 z.2 * sourceBarrier Phi H Fmax r1 z := by
   rw [scalarParabolicZeroOrderOperator_apply,
@@ -116,8 +111,7 @@ private theorem scalarParabolicZeroOrderOperator_sourceBarrier {n : ℕ}
   simp only [HypoellipticAleksandrov.matrixContraction_zero_right, PDE.vecDot,
     Pi.zero_apply, mul_zero, Finset.sum_const_zero, add_zero]
 
-private theorem isClassicalBackwardDirichletSolution_sourceBarrier {n : ℕ}
-    {Omega : Set (PDE.Vec n)} {r0 r1 : ℝ} (a : CoefficientField n)
+private theorem isClassicalBackwardDirichletSolution_sourceBarrier  {r0 r1 : ℝ} (a : CoefficientField n)
     (b : ℝ → PDE.Vec n → PDE.Vec n) (c : ℝ → PDE.Vec n → ℝ)
     (Phi H Fmax : ℝ) :
     IsClassicalBackwardDirichletSolution r0 r1 Omega a b c
@@ -134,80 +128,49 @@ private theorem isClassicalBackwardDirichletSolution_sourceBarrier {n : ℕ}
   · intro z _
     rfl
 
-private theorem sourceBarrier_nonneg_on_closedCylinder {n : ℕ}
-    {Omega : Set (PDE.Vec n)} {r0 r1 : ℝ} {Phi H Fmax : ℝ}
+private theorem sourceBarrier_nonneg_on_closedCylinder  {r0 r1 : ℝ} {Phi H Fmax : ℝ}
     (hPhiNonneg : 0 ≤ Phi) (hHNonneg : 0 ≤ H) (hFmaxNonneg : 0 ≤ Fmax)
     {z : TimeVelocity n} (hz : z ∈ scalarParabolicClosedCylinder r0 r1 Omega) :
     0 ≤ sourceBarrier Phi H Fmax r1 z := by
   rcases hz with ⟨⟨hz0, hz1⟩, _⟩
-  dsimp [sourceBarrier]
   exact add_nonneg (add_nonneg hPhiNonneg hHNonneg)
     (mul_nonneg (sub_nonneg.mpr hz1) hFmaxNonneg)
 
-private theorem scalarTimeDerivative_neg {n : ℕ} {u : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) {z : TimeVelocity n}
+private theorem scalarTimeDerivative_neg  (hu : IsScalarC12On u D) {z : TimeVelocity n}
     (hz : z ∈ D) :
-    scalarTimeDerivative (fun q => -u q) z = -scalarTimeDerivative u z := by
-  exact (hu.timeSlice_hasDerivAt hz).neg.deriv
+    scalarTimeDerivative (fun q => -u q) z = -scalarTimeDerivative u z := (hu.timeSlice_hasDerivAt hz).neg.deriv
 
-private theorem scalarSpatialGradient_neg {n : ℕ} (u : TimeVelocity n → ℝ)
+private theorem scalarSpatialGradient_neg  (u : TimeVelocity n → ℝ)
     (z : TimeVelocity n) :
     scalarSpatialGradient (fun q => -u q) z = -scalarSpatialGradient u z := by
   ext i
-  change fderiv ℝ (-(fun y : PDE.Vec n => u (z.1, y))) z.2 (PDE.basisVec i) = _
+  change fderiv ℝ (-(fun y : PDE.Vec n => u _)) z.2 _ = _
   rw [fderiv_neg]
   rfl
 
-private theorem scalarSpatialHessian_apply_eq_sndFDeriv {n : ℕ}
-    {u : TimeVelocity n → ℝ} {z : TimeVelocity n}
-    (hu : ContDiffAt ℝ 2 (fun y : PDE.Vec n => u (z.1, y)) z.2)
-    (i j : Fin n) :
-    scalarSpatialHessian u z i j =
-      fderiv ℝ (fderiv ℝ (fun y : PDE.Vec n => u (z.1, y))) z.2
-        (PDE.basisVec i) (PDE.basisVec j) := by
-  let g : PDE.Vec n → ℝ := fun y => u (z.1, y)
-  have hsecond : HasFDerivAt (fderiv ℝ g) (fderiv ℝ (fderiv ℝ g) z.2) z.2 :=
-    ((hu.fderiv_right (m := 1) (by norm_num)).differentiableAt
-      (by norm_num)).hasFDerivAt
-  have hdiff : ∀ j : Fin n,
-      DifferentiableAt ℝ (fun y : PDE.Vec n => fderiv ℝ g y (PDE.basisVec j)) z.2 := by
-    intro j
-    exact (hsecond.clm_apply (hasFDerivAt_const (PDE.basisVec j) z.2)).differentiableAt
-  change (fderiv ℝ (fun y : PDE.Vec n => fun j =>
-      fderiv ℝ g y (PDE.basisVec j)) z.2 (PDE.basisVec i)) j = _
-  rw [fderiv_pi hdiff]
-  have hj := (hsecond.clm_apply (hasFDerivAt_const (PDE.basisVec j) z.2)).fderiv
-  have hjApply := congrArg (fun L : PDE.Vec n →L[ℝ] ℝ => L (PDE.basisVec i)) hj
-  simpa [ContinuousLinearMap.flip_apply] using hjApply
-
-private theorem scalarSpatialHessian_neg {n : ℕ} {u : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) {z : TimeVelocity n}
+private theorem scalarSpatialHessian_neg  (hu : IsScalarC12On u D) {z : TimeVelocity n}
     (hz : z ∈ D) :
     scalarSpatialHessian (fun q => -u q) z = -scalarSpatialHessian u z := by
-  let g : PDE.Vec n → ℝ := fun y => u (z.1, y)
+  let g  := fun y => u (z.1, y)
   have hfirst : fderiv ℝ (fun y => -g y) =ᶠ[𝓝 z.2]
       fun y => -fderiv ℝ g y := by
     filter_upwards [(hu.spatialSlice_contDiffAt hz).eventually (by norm_num)] with y hy
     exact fderiv_neg
-  have hsecond : HasFDerivAt (fderiv ℝ g) (fderiv ℝ (fderiv ℝ g) z.2) z.2 :=
-    ((hu.spatialSlice_contDiffAt hz).fderiv_right (m := 1) (by norm_num)).differentiableAt
-      (by norm_num) |>.hasFDerivAt
   have hsecondNeg : fderiv ℝ (fderiv ℝ (fun y => -g y)) z.2 =
       -fderiv ℝ (fderiv ℝ g) z.2 := by
     calc
-      fderiv ℝ (fderiv ℝ (fun y => -g y)) z.2 =
-          fderiv ℝ (fun y => -fderiv ℝ g y) z.2 := hfirst.fderiv_eq
-      _ = -fderiv ℝ (fderiv ℝ g) z.2 := fderiv_neg
+      fderiv ℝ _ z.2 =
+          fderiv ℝ _ z.2 := hfirst.fderiv_eq
+      _ = -fderiv ℝ _ z.2 := fderiv_neg
   ext i j
   rw [Matrix.neg_apply]
   rw [scalarSpatialHessian_apply_eq_sndFDeriv
-      ((hu.spatialSlice_contDiffAt hz).neg) i j,
-    scalarSpatialHessian_apply_eq_sndFDeriv (hu.spatialSlice_contDiffAt hz) i j]
+      ((hu.spatialSlice_contDiffAt hz).neg),
+    scalarSpatialHessian_apply_eq_sndFDeriv (hu.spatialSlice_contDiffAt hz)]
   simpa [g] using congrArg (fun L : PDE.Vec n →L[ℝ] PDE.Vec n →L[ℝ] ℝ =>
-    L (PDE.basisVec i) (PDE.basisVec j)) hsecondNeg
+    L _ _) hsecondNeg
 
-private theorem isScalarC12On_neg {n : ℕ} {u : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) :
+private theorem isScalarC12On_neg  (hu : IsScalarC12On u D) :
     IsScalarC12On (fun q => -u q) D := by
   refine ⟨hu.continuousOn.neg, ?_, ?_, ?_, ?_, ?_⟩
   · intro z hz
@@ -224,20 +187,17 @@ private theorem isScalarC12On_neg {n : ℕ} {u : TimeVelocity n → ℝ}
     intro z hz
     exact scalarSpatialHessian_neg hu hz
 
-private theorem scalarParabolicZeroOrderOperator_neg {n : ℕ}
-    (a : CoefficientField n) (b : ℝ → PDE.Vec n → PDE.Vec n)
-    (c : ℝ → PDE.Vec n → ℝ) {u : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (hu : IsScalarC12On u D) {z : TimeVelocity n}
+private theorem scalarParabolicZeroOrderOperator_neg  (hu : IsScalarC12On u D) {z : TimeVelocity n}
     (hz : z ∈ D) :
     scalarParabolicZeroOrderOperator a b c (fun q => -u q) z =
       -scalarParabolicZeroOrderOperator a b c u z := by
   rw [scalarParabolicZeroOrderOperator_apply, scalarParabolicZeroOrderOperator_apply,
-    scalarTimeDerivative_neg hu hz, scalarSpatialGradient_neg u z,
+    scalarTimeDerivative_neg hu hz, scalarSpatialGradient_neg,
     scalarSpatialHessian_neg hu hz]
   have hHessian : matrixContraction (a z.1 z.2) (-scalarSpatialHessian u z) =
       -matrixContraction (a z.1 z.2) (scalarSpatialHessian u z) := by
     unfold matrixContraction
-    simp only [Matrix.neg_apply, mul_neg, Finset.sum_neg_distrib]
+    simp
   have hGradient : PDE.vecDot (b z.1 z.2) (-scalarSpatialGradient u z) =
       -PDE.vecDot (b z.1 z.2) (scalarSpatialGradient u z) := by
     unfold PDE.vecDot
@@ -245,8 +205,7 @@ private theorem scalarParabolicZeroOrderOperator_neg {n : ℕ}
   rw [hHessian, hGradient]
   ring
 
-private theorem isClassicalBackwardDirichletSolution_neg {n : ℕ}
-    {Omega : Set (PDE.Vec n)} {r0 r1 : ℝ} (a : CoefficientField n)
+private theorem isClassicalBackwardDirichletSolution_neg  {r0 r1 : ℝ} (a : CoefficientField n)
     (b : ℝ → PDE.Vec n → PDE.Vec n) (c F : ℝ → PDE.Vec n → ℝ)
     (phi : PDE.Vec n → ℝ) (h u : TimeVelocity n → ℝ)
     (hu : IsClassicalBackwardDirichletSolution r0 r1 Omega a b c F phi h u) :
@@ -299,7 +258,7 @@ theorem abs_le_terminal_lateral_source_envelope_of_isClassicalBackwardDirichletS
   have huLeB : u z ≤ B z := by
     apply le_on_closedCylinder_of_isClassicalBackwardDirichletSolution
       hOmegaOpen hOmegaBounded hr a b c haContinuous hbContinuous haPsd hc
-      F (fun r y => -Fmax + c r y * B (r, y)) phi (fun _ => Phi + H) h B u B hu hB
+      F _ phi _ h B u B hu hB
     · intro q hq
       have hqClosed : q ∈ scalarParabolicClosedCylinder r0 r1 Omega :=
         ⟨⟨le_of_lt hq.1.1, le_of_lt hq.1.2⟩, subset_closure hq.2⟩
@@ -314,8 +273,7 @@ theorem abs_le_terminal_lateral_source_envelope_of_isClassicalBackwardDirichletS
       have hqClosed : q ∈ scalarParabolicClosedCylinder r0 r1 Omega :=
         ⟨⟨hq.1.1, hq.1.2⟩, frontier_subset_closure hq.2⟩
       have hUpper : h q ≤ H := (le_abs_self (h q)).trans (hH q hq)
-      have hRest : 0 ≤ Phi + (r1 - q.1) * Fmax := by
-        exact add_nonneg hPhiNonneg
+      have hRest : 0 ≤ Phi + (r1 - q.1) * Fmax := add_nonneg hPhiNonneg
           (mul_nonneg (sub_nonneg.mpr hqClosed.1.2) hFmaxNonneg)
       change h q ≤ Phi + H + (r1 - q.1) * Fmax
       linarith
@@ -323,8 +281,8 @@ theorem abs_le_terminal_lateral_source_envelope_of_isClassicalBackwardDirichletS
   have hnegLeB : -u z ≤ B z := by
     apply le_on_closedCylinder_of_isClassicalBackwardDirichletSolution
       hOmegaOpen hOmegaBounded hr a b c haContinuous hbContinuous haPsd hc
-      (fun r y => -F r y) (fun r y => -Fmax + c r y * B (r, y))
-      (fun y => -phi y) (fun _ => Phi + H) (fun q => -h q) B (fun q => -u q) B
+      _ _
+      _ _ _ B _ B
       (isClassicalBackwardDirichletSolution_neg a b c F phi h u hu) hB
     · intro q hq
       have hqClosed : q ∈ scalarParabolicClosedCylinder r0 r1 Omega :=
@@ -340,8 +298,7 @@ theorem abs_le_terminal_lateral_source_envelope_of_isClassicalBackwardDirichletS
       have hqClosed : q ∈ scalarParabolicClosedCylinder r0 r1 Omega :=
         ⟨⟨hq.1.1, hq.1.2⟩, frontier_subset_closure hq.2⟩
       have hLower : -H ≤ h q := (abs_le.mp (hH q hq)).1
-      have hRest : 0 ≤ Phi + (r1 - q.1) * Fmax := by
-        exact add_nonneg hPhiNonneg
+      have hRest : 0 ≤ Phi + (r1 - q.1) * Fmax := add_nonneg hPhiNonneg
           (mul_nonneg (sub_nonneg.mpr hqClosed.1.2) hFmaxNonneg)
       change -h q ≤ Phi + H + (r1 - q.1) * Fmax
       linarith

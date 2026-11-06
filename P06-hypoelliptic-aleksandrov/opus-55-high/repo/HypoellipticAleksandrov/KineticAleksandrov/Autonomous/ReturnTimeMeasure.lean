@@ -10,7 +10,6 @@ Smooth compact nonnegative tests suffice to compare finite terminal measures.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory Filter
 
@@ -25,15 +24,12 @@ theorem return_measure_comparison (μ ν : Measure (ℝ × ℝ))
   let c := ENNReal.ofReal C
   have hc : c ≠ ⊤ := ENNReal.ofReal_ne_top
   let : IsFiniteMeasure (c • ν) := ⟨by
-    rw [Measure.smul_apply, smul_eq_mul]
     exact ENNReal.mul_lt_top hc.lt_top (measure_lt_top ν univ)⟩
   have horder : μ ≤ c • ν := by
     apply measure_le_of_smooth_integral_le isOpen_univ (by simp)
-    intro f hs hf _ hfn
-    simpa only [integral_smul_measure, c, ENNReal.toReal_ofReal hC, smul_eq_mul] using
-      htest f hs hf hfn
+    aesop
   have hmono := integral_mono_measure horder (Eventually.of_forall hF)
-    (integrable_boundedBorel F (c • ν))
-  simpa only [integral_smul_measure, c, ENNReal.toReal_ofReal hC, smul_eq_mul] using hmono
+    (integrable_boundedBorel F _)
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

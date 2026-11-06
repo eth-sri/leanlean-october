@@ -7,7 +7,6 @@ import Mathlib.Tactic
 /-! # Positive compact tests determine the order of Radon measures -/
 
 @[expose] public section
-noncomputable section
 open Set MeasureTheory Filter Topology
 open scoped CompactlySupported ENNReal NNReal
 namespace HypoellipticAleksandrov.KineticAleksandrov
@@ -15,13 +14,15 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 variable {X : Type*} [TopologicalSpace X] [T2Space X] [LocallyCompactSpace X]
   [MeasurableSpace X] [BorelSpace X]
 
+variable (mu nu : Measure X)
+
 /-- Nonnegative compact tests control the mass of every compact subset. -/
-theorem bellman_compact_measure_le_of_positive_tests (mu nu : Measure X)
+theorem bellman_compact_measure_le_of_positive_tests 
     [IsFiniteMeasureOnCompacts mu] [IsFiniteMeasureOnCompacts nu] [nu.OuterRegular]
     (ht : ∀ f : C_c(X, ℝ), (∀ x, 0 ≤ f x) → ∫ x, f x ∂mu ≤ ∫ x, f x ∂nu)
     {K : Set X} (hK : IsCompact K) : mu K ≤ nu K := by
   refine ENNReal.le_of_forall_pos_le_add fun eps heps hnu => ?_
-  have hnuK : nu K ≠ ⊤ := hnu.ne
+  have hnuK  := hnu.ne
   have hmuK : mu K ≠ ⊤ := hK.measure_lt_top.ne
   obtain ⟨V, hKV, hV, hmass⟩ :=
     exists_isOpen_le_add K nu (ne_of_gt (ENNReal.coe_lt_coe.mpr heps))
@@ -34,15 +35,13 @@ theorem bellman_compact_measure_le_of_positive_tests (mu nu : Measure X)
   let g : C_c(X, ℝ) := ⟨f, hfc⟩
   have hgK (x : X) : K.indicator 1 x ≤ g x := by
     by_cases hx : x ∈ K
-    · simp only [indicator_of_mem hx, Pi.one_apply]
+    · simp only [indicator_of_mem hx]
       change 1 ≤ f x
-      have he := hfone hx
-      change f x = 1 at he
-      rw [he]
+      aesop
     · simp only [indicator_of_notMem hx]; exact (hf01 x).1
   have hgV (x : X) : g x ≤ V.indicator 1 x := by
     by_cases hx : x ∈ tsupport g
-    · simp only [indicator_of_mem (hfs hx), Pi.one_apply]; exact (hf01 x).2
+    · simp only [indicator_of_mem (hfs hx)]; exact (hf01 x).2
     · rw [image_eq_zero_of_notMem_tsupport hx]
       exact indicator_nonneg (fun _ _ => zero_le_one) x
   calc mu.real K = ∫ x, K.indicator 1 x ∂mu :=
@@ -55,19 +54,19 @@ theorem bellman_compact_measure_le_of_positive_tests (mu nu : Measure X)
       (IntegrableOn.integrable_indicator integrableOn_const hV.measurableSet) hgV
     _ ≤ nu.real K + eps := by
       rw [integral_indicator_one hV.measurableSet]
-      have hh := ENNReal.toReal_mono (by finiteness : nu K + (eps : ℝ≥0∞) ≠ ∞) hmass
-      rw [ENNReal.toReal_add hnuK ENNReal.coe_ne_top, ENNReal.coe_toReal] at hh
+      have hh := ENNReal.toReal_mono (by finiteness) hmass
+      rw [ENNReal.toReal_add hnuK ENNReal.coe_ne_top] at hh
       exact hh
 
 /-- Inner regularity upgrades positive compact-test order to actual measure order. -/
-theorem bellman_measure_le_of_positive_tests (mu nu : Measure X)
+theorem bellman_measure_le_of_positive_tests 
     [IsFiniteMeasureOnCompacts mu] [IsFiniteMeasureOnCompacts nu]
     [mu.InnerRegular] [nu.OuterRegular]
     (ht : ∀ f : C_c(X, ℝ), (∀ x, 0 ≤ f x) → ∫ x, f x ∂mu ≤ ∫ x, f x ∂nu) :
     mu ≤ nu := by
   apply Measure.le_iff.mpr
   intro E hE
-  rw [hE.measure_eq_iSup_isCompact mu]
+  rw [hE.measure_eq_iSup_isCompact]
   refine iSup_le fun K => iSup_le fun hKE => iSup_le fun hK => ?_
   exact (bellman_compact_measure_le_of_positive_tests mu nu ht hK).trans (measure_mono hKE)
 

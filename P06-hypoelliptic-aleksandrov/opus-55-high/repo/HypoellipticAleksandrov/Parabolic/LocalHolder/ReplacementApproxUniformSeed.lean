@@ -14,13 +14,13 @@ The seed estimate depends only on outer value energy. Neither a bound on boundar
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 open scoped BigOperators MatrixOrder Matrix.Norms.Elementwise
 
-private theorem square_integral_entry_le_sum {d : ℕ}
-    {S : Set (TimeVelocity d)} (G : TimeVelocity d → PDE.Vec d)
+variable {d : ℕ} {S : Set (TimeVelocity d)}
+
+private theorem square_integral_entry_le_sum  (G : TimeVelocity d → PDE.Vec d)
     (hG : ∀ j, MemLp (fun z => G z j) 2 (timeVelocityVolumeOn S)) (j : Fin d) :
     (∫ z in S, G z j ^ 2) ≤ ∫ z in S, ∑ k, G z k ^ 2 := by
   classical
@@ -31,8 +31,7 @@ private theorem square_integral_entry_le_sum {d : ℕ}
   exact Eventually.of_forall (fun z =>
     Finset.single_le_sum (fun k _ => sq_nonneg _) (Finset.mem_univ j))
 
-private theorem square_integral_hessian_entry_le_sum {d : ℕ}
-    {S : Set (TimeVelocity d)} (H : TimeVelocity d → PDE.Mat d)
+private theorem square_integral_hessian_entry_le_sum  (H : TimeVelocity d → PDE.Mat d)
     (hH : ∀ i j, MemLp (fun z => H z i j) 2 (timeVelocityVolumeOn S)) (i j : Fin d) :
     (∫ z in S, H z i j ^ 2) ≤ ∫ z in S, ∑ k, ∑ l, H z k l ^ 2 := by
   classical
@@ -47,7 +46,7 @@ private theorem square_integral_hessian_entry_le_sum {d : ℕ}
       (Finset.mem_univ i)))
 
 /-- The literal weight-two seed is uniformly bounded by outer value energy. -/
-theorem exists_uniform_classical_seed_constant {d : ℕ}
+theorem exists_uniform_classical_seed_constant 
     (a T q₀ s₀ s₁ q₁ : ℝ)
     (hq₀s₀ : q₀ < s₀) (hs₀s₁ : s₀ ≤ s₁) (hs₁q₁ : s₁ < q₁)
     (Ω O₀ O : Set (PDE.Vec d)) (hΩ : IsOpen Ω)
@@ -83,10 +82,9 @@ theorem exists_uniform_classical_seed_constant {d : ℕ}
   obtain ⟨Ch, hCh, hhess⟩ := exists_local_homogeneous_hessian_collar_constant
     q₀ s₀ s₁ q₁ hq₀s₀ hs₀s₁ hs₁q₁ O₀ O hO₀ hO₀c hO hOc hOO₀
     A hA lam Lam hlam hlamLam hlo hhi
-  let Ct := (d : ℝ) ^ 2 * Lam ^ 2
+  let Ct := d ^ 2 * Lam ^ 2
   let B := 1 + Cg + Ch * (1 + Cg) + Ct * Ch * (1 + Cg)
-  refine ⟨(Fintype.card (ParabolicDerivativeIndex d 2) : ℝ) * B, by
-    dsimp [B, Ct]
+  refine ⟨(Fintype.card (ParabolicDerivativeIndex d 2)) * B, by
     positivity, ?_⟩
   intro u hu hq heq
   let Jq := classicalLocalW12Jet u hu hQ hQc hQD
@@ -111,7 +109,7 @@ theorem exists_uniform_classical_seed_constant {d : ℕ}
     simpa only [Jq, classicalLocalW12Jet, matrixContraction, coefficientAt, hentry]
       using heq z (hQD (subset_closure hz))
   have hH := hhess Jq hPDE
-  have hqnorm : (eLpNorm Jq.toFun 2 (timeVelocityVolumeOn Q)).toReal ^ 2 =
+  have hqnorm : (eLpNorm Jq.toFun 2 _).toReal ^ 2 =
       ∫ z in Q, u z ^ 2 := (integral_square_eq_eLpNorm_two_sq u Jq.memLp).symm
   have hgnorm : (∑ j, (eLpNorm (fun z => Jq.velocityGrad z j) 2
       (timeVelocityVolumeOn Q)).toReal ^ 2) =
@@ -139,8 +137,7 @@ theorem exists_uniform_classical_seed_constant {d : ℕ}
     simpa only [Jq, classicalLocalW12Jet, Real.norm_eq_abs, sq_abs,
       timeVelocityVolumeOn, IntegrableOn] using
       (Jq.velocityGrad_memLp j).integrable_norm_pow (by norm_num)
-  have hgV : (∫ z in V, ∑ j, scalarSpatialGradient u z j ^ 2) ≤ Cg * N := by
-    exact (setIntegral_mono_set hgi
+  have hgV : (∫ z in V, ∑ j, scalarSpatialGradient u z j ^ 2) ≤ Cg * N := (setIntegral_mono_set hgi
       (Eventually.of_forall (fun z => Finset.sum_nonneg (fun j _ => sq_nonneg _)))
       (Eventually.of_forall (fun z hz => hVQ (subset_closure hz)))).trans hgQ
   have htime := integral_local_time_derivative_sq_le V hV.measurableSet u A Lam
@@ -154,29 +151,28 @@ theorem exists_uniform_classical_seed_constant {d : ℕ}
     exact Eventually.of_forall (fun z => Finset.sum_comm)
   rw [hswap] at htime
   have htimeB : (∫ z in V, scalarTimeDerivative u z ^ 2) ≤
-      Ct * Ch * (1 + Cg) * N := by
-    exact htime.trans (by
+      Ct * Ch * (1 + Cg) * N := htime.trans (by
       simpa only [Ct, mul_assoc] using
-        mul_le_mul_of_nonneg_left hHbound (show 0 ≤ Ct by dsimp [Ct]; positivity))
+        mul_le_mul_of_nonneg_left hHbound (show 0 ≤ Ct by positivity))
   have hcoef : 0 ≤ Ch * (1 + Cg) := by positivity
-  have htcoef : 0 ≤ Ct * Ch * (1 + Cg) := by dsimp [Ct]; positivity
-  have h1B : 1 ≤ B := by dsimp [B]; linarith only [hCg, hcoef, htcoef]
-  have hgB : Cg ≤ B := by dsimp [B]; linarith only [hcoef, htcoef]
-  have hhB : Ch * (1 + Cg) ≤ B := by dsimp [B]; linarith only [hCg, htcoef]
-  have htB : Ct * Ch * (1 + Cg) ≤ B := by dsimp [B]; linarith only [hCg, hcoef]
+  have htcoef : 0 ≤ Ct * Ch * (1 + Cg) := by positivity
+  have h1B : 1 ≤ B := by linarith
+  have hgB : Cg ≤ B := by linarith
+  have hhB : Ch * (1 + Cg) ≤ B := by linarith
+  have htB : Ct * Ch * (1 + Cg) ≤ B := by linarith
   apply (squaredL2Norm_classical_seed_le hV Jv (B * N) ?_ ?_ ?_ ?_).trans
-  · exact le_of_eq (by ring)
+  · linarith
   · rw [← integral_square_eq_eLpNorm_two_sq _ Jv.memLp]
     exact hqV.trans (by simpa only [one_mul] using mul_le_mul_of_nonneg_right h1B hN)
   · rw [← integral_square_eq_eLpNorm_two_sq _ Jv.timeDeriv_memLp]
     exact htimeB.trans (mul_le_mul_of_nonneg_right htB hN)
   · intro j
     rw [← integral_square_eq_eLpNorm_two_sq _ (Jv.velocityGrad_memLp j)]
-    exact (square_integral_entry_le_sum (scalarSpatialGradient u)
+    exact (square_integral_entry_le_sum _
       Jv.velocityGrad_memLp j).trans (hgV.trans (mul_le_mul_of_nonneg_right hgB hN))
   · intro i j
     rw [← integral_square_eq_eLpNorm_two_sq _ (Jv.velocityHessian_memLp i j)]
-    exact (square_integral_hessian_entry_le_sum (scalarSpatialHessian u)
+    exact (square_integral_hessian_entry_le_sum _
       Jv.velocityHessian_memLp i j).trans
         (hHbound.trans (mul_le_mul_of_nonneg_right hhB hN))
 

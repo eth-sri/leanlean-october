@@ -9,7 +9,6 @@ finite and infinite horizons. No source-time lower endpoint enters the construct
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
@@ -26,12 +25,9 @@ theorem elapsedVolume_absoluteTime_le (R : ℝ≥0∞) (s : ℝ) (J : Set ℝ)
   calc
     _ ≤ volume ((fun t : ℝ => s + t) ⁻¹' J) := by
       apply measure_mono
-      rintro t ⟨τ, hτ, rfl⟩
-      exact hτ
+      grind
     _ = volume J := by
-      rw [← Measure.map_apply
-        (show Measurable (fun t : ℝ => s + t) from measurable_const.add measurable_id) hJ,
-        map_add_left_eq_self]
+      simp
 
 /-- The literal killed kernel has physical-time marginal at most Lebesgue measure. -/
 theorem stripGreenOfKernel_timeMarginal (H : Interval)
@@ -43,15 +39,13 @@ theorem stripGreenOfKernel_timeMarginal (H : Interval)
   rw [stripGreenOfKernel, Measure.map_apply (measurable_elapsedPhysicalPoint _ _)
     (show MeasurableSet {p : Point | p.time ∈ J} from
       hJ.preimage continuous_time.measurable)]
-  change greenMeasure K e.1.time _ _ (Measure.dirac (stripPoleState H T e))
-    (Prod.fst ⁻¹' {τ | e.1.time + τ.1 ∈ J}) ≤ volume J
   calc
-    _ ≤ (Measure.dirac (stripPoleState H T e)) univ *
-        elapsedVolume (stripHorizon T e.1.time) {τ | e.1.time + τ.1 ∈ J} :=
+    _ ≤ (Measure.dirac _) univ *
+        elapsedVolume _ {τ | e.1.time + τ.1 ∈ J} :=
       greenMeasure_timeMarginal_le K e.1.time _ _ _
         (greenMeasure_spec K _ _ _ _) _ (hm hJ)
     _ = elapsedVolume (stripHorizon T e.1.time) {τ | e.1.time + τ.1 ∈ J} := by
-      simp only [Measure.dirac_apply_of_mem (mem_univ _), one_mul]
+      simp
     _ ≤ volume J := elapsedVolume_absoluteTime_le _ _ J hJ
 
 /-- The canonical autonomous strip Green measure has the exact constant-one time bound. -/

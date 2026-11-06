@@ -17,17 +17,17 @@ theorem positionStart_slab_arithmetic (r C n F I : ℝ) (hr : 0 < r) (hC : 0 ≤
   have he : 5 * r ^ 2 / 16 * (9 / 5 * F + (16 * C / 5) * r ^ (-2 : ℤ) * I) =
       9 * r ^ 2 / 16 * F + C * I := by
     rw [zpow_neg, zpow_ofNat]
-    field_simp [hr.ne']
+    grind
   have hn : n ≤ 9 / 5 * F + (16 * C / 5) * r ^ (-2 : ℤ) * I :=
     le_of_mul_le_mul_left (h.trans_eq he.symm) hw
   have hpos : 0 ≤ r ^ (-2 : ℤ) * I := mul_nonneg (zpow_nonneg hr.le _) hI
   calc
-    n ≤ 9 / 5 * F + (16 * C / 5) * r ^ (-2 : ℤ) * I := hn
+    n ≤ 9 / 5 * F + (16 * C / 5) * r ^ (-2) * I := hn
     _ ≤ (9 / 5 + 16 * C / 5) * F +
         (9 / 5 + 16 * C / 5) * (r ^ (-2 : ℤ) * I) := by
       rw [mul_assoc]
       exact add_le_add
-        (mul_le_mul_of_nonneg_right (by linarith only [hC]) hF)
+        (mul_le_mul_of_nonneg_right (by linarith) hF)
         (mul_le_mul_of_nonneg_right (by linarith) hpos)
     _ = _ := by ring
 

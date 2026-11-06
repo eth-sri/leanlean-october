@@ -36,7 +36,7 @@ theorem timeActiveDensity_support (hpush : PushforwardStatement)
     (measurable_positionActiveDensity hH hLE hlam hLam A c).comp
     (measurable_const.prodMk measurable_id)
   apply (ae_withDensity_iff hm).mp
-  rw [withDensity_positionActiveDensity hpush hH hLE hlam hLam,
+  rw [withDensity_positionActiveDensity hpush,
     enlargedActiveGreenKernel_apply hH hLE hlam hLam A c e he]
   obtain ⟨_, _, hd⟩ := (hpush hH hLE lam Lam hlam hLam).2 (5 / 4) (by norm_num)
   obtain ⟨G, _, _, hG, _, _⟩ := hd A c e he
@@ -78,13 +78,8 @@ theorem timeActiveDensity_output_tail (hpush : PushforwardStatement)
   unfold entranceBinDelay
   by_cases h : 0 ≤ (j : ℝ) - (k : ℝ) - 1
   · rw [max_eq_left h]
-    calc
-      _ ≤ ((k : ℝ) + 1) * c.r ^ 2 + ((j : ℝ) - (k : ℝ) - 1) * c.r ^ 2 :=
-        add_le_add heup le_rfl
-      _ = (j : ℝ) * c.r ^ 2 := by ring
-      _ ≤ z.time := hzlo.le
-  · rw [max_eq_right (le_of_not_ge h), zero_mul, add_zero]
-    exact hs.1.le
+    grind
+  grind
 
 /-- Later starting bins cannot contribute to an earlier output bin. -/
 theorem timeActiveDensity_output_zero (hpush : PushforwardStatement)
@@ -99,7 +94,7 @@ theorem timeActiveDensity_output_zero (hpush : PushforwardStatement)
     ae_restrict_mem (measurableSet_entranceOutputBin c j)] with z hz hcell
   by_contra hn
   have hs := (hz hn).1
-  have hcast : (j : ℝ) + 1 ≤ (k : ℝ) := by exact_mod_cast hjk
+  have hcast : j + 1 ≤ (k : ℝ) := by exact_mod_cast hjk
   have hh := mul_le_mul_of_nonneg_right hcast (sq_nonneg c.r)
   have helo := he.1
   have hzup := hcell.1.2

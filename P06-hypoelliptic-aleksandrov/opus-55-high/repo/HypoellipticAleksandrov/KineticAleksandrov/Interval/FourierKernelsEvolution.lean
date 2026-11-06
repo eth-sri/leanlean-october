@@ -9,7 +9,6 @@ supplied realizing kernel, transferring all structural clauses without new premi
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open Set MeasureTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
@@ -34,9 +33,8 @@ theorem interval_evolution_clauses
     IsTranslationCovariantEvolution (PDE.oneDimensionalAxisBox a c) stationary hJ K := by
   obtain ⟨S₀, K₀, hr₀, hm, hp, hc⟩ :=
     exists_interval_evolution hH hLE lam Lam m Lb a c hac B b hs
-  have hK := (terminalEvolution_unique (PDE.oneDimensionalAxisBox a c) stationary
-    (interval_admissible hac) (zIndependentCoefficient B) b S S₀ K K₀ hr hr₀).2
-  subst K₀
-  exact ⟨hm, hp, hc⟩
+  have hK := (terminalEvolution_unique _ stationary
+    (interval_admissible hac) _ b S S₀ K K₀ hr hr₀).2
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

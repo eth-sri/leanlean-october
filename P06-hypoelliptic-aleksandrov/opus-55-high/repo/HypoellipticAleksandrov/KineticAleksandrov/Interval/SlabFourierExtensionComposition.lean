@@ -9,7 +9,6 @@ because every nonzero intermediate transition stays inside the interval.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open Set MeasureTheory HypoellipticAleksandrov
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
@@ -51,6 +50,6 @@ theorem intervalExtension_composition {a c : ℝ}
   · rw [intervalExtension_fiber_outside hJ K σ τ (hσr.trans hrτ) p hp,
       ProbabilityTheory.Kernel.comp_apply' _ _ _ hA,
       intervalExtension_fiber_outside hJ K σ r hσr p hp]
-    simp only [Measure.coe_zero, Pi.zero_apply, lintegral_zero_measure]
+    simp
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

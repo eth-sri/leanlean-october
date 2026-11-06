@@ -16,7 +16,9 @@ private def infinitePoleQuery (H : Interval) (q : StripPole H ⊤ × ElapsedTime
   ⟨(q.1.1.time, (q.1.1.time + q.2.1, (q.1.1.velocity, q.1.1.position))),
     le_add_of_nonneg_right q.2.2.1.le, (stripPoleState H ⊤ q.1).2⟩
 
-private theorem measurable_infinitePoleQuery (H : Interval) :
+variable (H : Interval) (K : MovingFiberKernel (intervalDomain H) (fun _ => 0))
+
+private theorem measurable_infinitePoleQuery  :
     Measurable (infinitePoleQuery H) := by
   have ht : Measurable (fun q : StripPole H ⊤ × ElapsedTime ⊤ => q.1.1.time) :=
     (continuous_time.measurable.comp measurable_subtype_coe).comp measurable_fst
@@ -24,18 +26,14 @@ private theorem measurable_infinitePoleQuery (H : Interval) :
     (continuous_velocity.measurable.comp measurable_subtype_coe).comp measurable_fst
   have hx : Measurable (fun q : StripPole H ⊤ × ElapsedTime ⊤ => q.1.1.position) :=
     (continuous_position.measurable.comp measurable_subtype_coe).comp measurable_fst
-  have hτ : Measurable (fun q : StripPole H ⊤ × ElapsedTime ⊤ => q.2.1) :=
-    measurable_subtype_coe.comp measurable_snd
   apply Measurable.subtype_mk
-  exact ht.prodMk ((ht.add hτ).prodMk (hv.prodMk hx))
+  fun_prop
 
 /-- Set evaluations of the infinite-horizon measure are Borel in the actual valid pole. -/
-theorem stripGreenOfKernel_infinite_measurable_apply (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (E : Set Point)
+theorem stripGreenOfKernel_infinite_measurable_apply  (E : Set Point)
     (hE : MeasurableSet E) :
     Measurable (fun e : StripPole H ⊤ => stripGreenOfKernel H K ⊤ e E) := by
-  let κ := K.master.comap (infinitePoleQuery H) (measurable_infinitePoleQuery H)
-  have : ProbabilityTheory.IsFiniteKernel κ := by dsimp [κ]; infer_instance
+  let κ := K.master.comap _ (measurable_infinitePoleQuery H)
   have ht : Measurable (fun q : (StripPole H ⊤ × ElapsedTime ⊤) × EvolutionAmbientState 1 =>
       q.1.1.1.time + q.1.2.1) :=
     ((continuous_time.measurable.comp measurable_subtype_coe).comp measurable_fst.fst).add
@@ -56,12 +54,10 @@ theorem stripGreenOfKernel_infinite_measurable_apply (H : Interval)
     funext e
     rw [← lintegral_indicator_one hE]
     exact stripGreenOfKernel_spec H K ⊤ e _ (measurable_one.indicator hE)
-  rw [he]
-  exact hi
+  simp_all
 
 /-- Every admitted terminal horizon gives Borel pole dependence, without invalid query branches. -/
-theorem stripGreenOfKernel_measurable_apply (H : Interval)
-    (K : MovingFiberKernel (intervalDomain H) (fun _ => 0)) (T : WithTop ℝ)
+theorem stripGreenOfKernel_measurable_apply  (T : WithTop ℝ)
     (E : Set Point) (hE : MeasurableSet E) :
     Measurable (fun e : StripPole H T => stripGreenOfKernel H K T e E) := by
   cases T with
@@ -76,8 +72,7 @@ theorem stripGreenOfKernel_measurable_apply (H : Interval)
           (E ∩ {p | p.time < t}) := by
       funext e
       rw [stripGreenOfKernel_horizonRestriction, Measure.restrict_apply hE]
-    rw [he]
-    exact hi
+    aesop
 
 /-- The unique autonomous killed family has the source-required Borel pole dependence. -/
 theorem stripGreen_measurable_apply

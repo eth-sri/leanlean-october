@@ -22,37 +22,35 @@ def spatialCoordinateMeasurableEquiv (d : ℕ) : PDE.Vec (d + d) ≃ᵐ XV d :=
   (MeasurableEquiv.piCongrLeft (fun _ : Fin (d + d) => ℝ) finSumFinEquiv).symm.trans
     (MeasurableEquiv.sumPiEquivProdPi (fun _ : Fin d ⊕ Fin d => ℝ))
 
+variable (d : ℕ)
+
 /-- The topological and measurable spatial charts agree exactly. -/
-theorem spatialCoordinateMeasurableEquiv_apply (d : ℕ) (x : PDE.Vec (d + d)) :
+theorem spatialCoordinateMeasurableEquiv_apply  (x : PDE.Vec (d + d)) :
     spatialCoordinateMeasurableEquiv d x = spatialCoordinateCLE d x := rfl
 
 /-- This coordinate chart preserves the native product Lebesgue measure. -/
-theorem measurePreserving_spatialCoordinate (d : ℕ) :
+theorem measurePreserving_spatialCoordinate  :
     MeasurePreserving (spatialCoordinateMeasurableEquiv d) volume volume :=
-  ((volume_measurePreserving_piCongrLeft (fun _ : Fin (d + d) => ℝ)
+  ((volume_measurePreserving_piCongrLeft _
     finSumFinEquiv).symm).trans
-    (volume_measurePreserving_sumPiEquivProdPi (fun _ : Fin d ⊕ Fin d => ℝ))
+    (volume_measurePreserving_sumPiEquivProdPi _)
 
 /-- Position basis directions are unchanged by unpacking. -/
 theorem spatialCoordinate_basis_position {d : ℕ} (i : Fin d) :
     spatialCoordinateCLE d (PDE.basisVec (Fin.castAdd d i)) = (PDE.basisVec i, 0) := by
-  have hi := i.isLt
   ext j
   all_goals have hj := j.isLt
   all_goals simp [spatialCoordinateCLE, PDE.basisVec, LinearEquiv.piCongrLeft,
     LinearEquiv.piCongrLeft', LinearEquiv.sumPiEquivProdPi, Equiv.sumPiEquivProdPi,
     Equiv.piCongrLeft', finSumFinEquiv, Pi.single_apply, Fin.ext_iff]
-  all_goals first | rfl | omega
+  all_goals grind
 
 /-- Velocity basis directions are unchanged by unpacking. -/
 theorem spatialCoordinate_basis_velocity {d : ℕ} (i : Fin d) :
     spatialCoordinateCLE d (PDE.basisVec (Fin.natAdd d i)) = (0, PDE.basisVec i) := by
-  have hi := i.isLt
   ext j
   all_goals have hj := j.isLt
-  all_goals simp [spatialCoordinateCLE, PDE.basisVec, LinearEquiv.piCongrLeft,
-    LinearEquiv.piCongrLeft', LinearEquiv.sumPiEquivProdPi, Equiv.sumPiEquivProdPi,
-    Equiv.piCongrLeft', finSumFinEquiv, Pi.single_apply, Fin.ext_iff]
-  all_goals first | rfl | omega | (split_ifs <;> simp_all)
+  all_goals simp [spatialCoordinateCLE, LinearEquiv.piCongrLeft, Pi.single_apply, Fin.ext_iff]
+  omega
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

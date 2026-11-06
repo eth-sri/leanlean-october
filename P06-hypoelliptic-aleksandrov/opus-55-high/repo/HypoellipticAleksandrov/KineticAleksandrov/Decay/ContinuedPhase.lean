@@ -9,7 +9,6 @@ import Mathlib.Tactic.Linarith
 /-! # Source block phase errors after continuation and trimming -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Decay
 open Set MeasureTheory
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
@@ -83,7 +82,7 @@ theorem block_continued_phase_error {d : ℕ} (hd : 1 ≤ d)
     (∀ᵐ x ∂E2, |phaseCoordinate ξ z0 x - Φ2| ≤ 1 / 4) ∧
     (∀ᵐ x ∂F1, |phaseCoordinate ξ z0 x - Φ1| ≤ 1 / 4) ∧
     (∀ᵐ x ∂F2, |phaseCoordinate ξ z0 x - Φ2| ≤ 1 / 4) := by
-  have hm : 0 < m := hsetting.2.2.1
+  have hm  := hsetting.2.2.1
   have hLb : 0 < Lb := hm.trans_le hsetting.2.2.2.1
   have hρ := blockRho_pos hLb
   have hη := blockEta_pos hm hLb
@@ -91,30 +90,30 @@ theorem block_continued_phase_error {d : ℕ} (hd : 1 ≤ d)
   have hsmall := add_le_add (Lb_mul_blockEta_mul_blockL0_le hm hLb)
     (sixteen_Lb_mul_blockRho_pow_three_le hLb)
   have hbound (γ : ℝ → PDE.Vec d) (hγ : IsContinuousPiecewiseC1 γ)
-      (S : TerminalOperatorFamily (PDE.euclideanBall 0 (blockEta m Lb)) γ)
-      (K : MovingFiberKernel (PDE.euclideanBall 0 (blockEta m Lb)) γ)
-      (hreal : RealizesTerminalEvolution (PDE.euclideanBall 0 (blockEta m Lb)) γ
-        (PDE.isOpen_euclideanBall 0 (blockEta m Lb)).measurableSet
+      (S : TerminalOperatorFamily _ γ)
+      (K : MovingFiberKernel _ γ)
+      (hreal : RealizesTerminalEvolution _ γ
+        (PDE.isOpen_euclideanBall 0 _).measurableSet
         (zIndependentCoefficient B) b S K)
       (q : EvolutionQuery (PDE.euclideanBall 0 (blockEta m Lb)) γ)
       (hq : q.1 = (σ, σ + blockL0 m, v0, z0))
-      (R : Measure (EvolutionState (PDE.euclideanBall v0 (4 * blockRho Lb))
-        stationary (σ + blockL0 m))) [IsFiniteMeasure R]
+      (R : Measure (EvolutionState _
+        stationary _)) [IsFiniteMeasure R]
       (hR : R.map Subtype.val =
         ENNReal.ofReal (blockMass Cstar m Lb / (2 * (K.master q).real univ)) • K.master q)
-      (E : Measure (EvolutionAmbientState d))
+      (E : Measure _)
       (hE : ∀ A, MeasurableSet A → E A =
-        ∫⁻ p, K0.master (movingQuery (σ + blockL0 m) (σ + blockTime m Lb)
+        ∫⁻ p, K0.master (movingQuery _ _
           hsT p.1.1 p.1.2 p.2.1) A ∂R) :
       ∀ᵐ x ∂E, |phaseCoordinate ξ z0 x -
         (phaseCenter ξ b γ σ (σ + blockL0 m) +
           4 * blockRho Lb ^ 2 * PDE.vecDot ξ (b v0))| ≤ 1 / 4 := by
     have hv : v0 ∈ movingDomain (PDE.euclideanBall 0 (blockEta m Lb)) γ σ := by
       have h := q.2.2.1
-      simpa only [hq] using h
-    have hq' : q = movingQuery σ (σ + blockL0 m) hστ v0 z0 hv := Subtype.ext hq
+      simp_all
+    have hq' : q = movingQuery σ _ hστ v0 z0 hv := Subtype.ext hq
     have hphase := phase_localization_of_continuous_curve d lam Lam m Lb D B b
-      hsetting σ (σ + blockL0 m) (blockEta m Lb) γ hη hγ.1 S K hreal ξ z0 v0 hξ hστ hv
+      hsetting σ _ _ γ hη hγ.1 S K hreal ξ z0 v0 hξ hστ hv
     rw [← hq'] at hphase
     have hRphase : ∀ᵐ p ∂R, |phaseCoordinate ξ z0 p.1 -
         phaseCenter ξ b γ σ (σ + blockL0 m)| ≤ Lb * blockEta m Lb * blockL0 m := by
@@ -122,7 +121,7 @@ theorem block_continued_phase_error {d : ℕ} (hd : 1 ≤ d)
         (ENNReal.ofReal (blockMass Cstar m Lb / (2 * (K.master q).real univ)))
       rw [← hR] at h
       have h' := ae_of_ae_map measurable_subtype_coe.aemeasurable h
-      simpa only [add_sub_cancel_left] using h'
+      simp_all
     have hKphase : ∀ᵐ p ∂R, ∀ᵐ x ∂continuationKernel K0 hsT p,
         |phaseCoordinate ξ p.1.2 x -
           (4 * blockRho Lb ^ 2 * PDE.vecDot ξ (b v0))| ≤
@@ -130,30 +129,28 @@ theorem block_continued_phase_error {d : ℕ} (hd : 1 ≤ d)
       apply Filter.Eventually.of_forall
       intro p
       have hp := stationary_phase_localization d lam Lam m Lb D B b hsetting
-        (σ + blockL0 m) (σ + blockTime m Lb) (4 * blockRho Lb) v0
+        _ _ (4 * blockRho Lb) v0
         (mul_pos (by norm_num) hρ) S0 K0 hreal0 ξ p.1.2 p.1.1 hξ hsT p.2.1
       have hc : phaseCenter ξ b (fun _ => v0) (σ + blockL0 m)
           (σ + blockTime m Lb) = 4 * blockRho Lb ^ 2 * PDE.vecDot ξ (b v0) := by
         unfold phaseCenter blockTime
-        rw [intervalIntegral.integral_const]
-        simp only [smul_eq_mul]
-        ring
+        simp
       rw [hc] at hp
       have he : Lb * (4 * blockRho Lb) *
           (σ + blockTime m Lb - (σ + blockL0 m)) = 16 * Lb * blockRho Lb ^ 3 := by
         unfold blockTime
         ring
-      simpa only [he, continuationKernel_apply, evolutionQueryOfState_eq, movingQuery] using hp
+      aesop
     have h := continuation_phase_support Subtype.val measurable_subtype_coe ξ z0
-      (phaseCenter ξ b γ σ (σ + blockL0 m))
-      (4 * blockRho Lb ^ 2 * PDE.vecDot ξ (b v0))
-      (Lb * blockEta m Lb * blockL0 m) (16 * Lb * blockRho Lb ^ 3)
-      R (continuationKernel K0 hsT) hRphase hKphase E hE
-    exact h.mono (fun x hx => hx.trans (by linarith only [hsmall]))
+      _
+      _
+      _ _
+      R _ hRphase hKphase E hE
+    exact h.mono (fun x hx => hx.trans (by linarith))
   have he1 := hbound γ1 hγ1 S1 K1 hreal1 q1 hq1 R1 hR1 E1 hE1
   have he2 := hbound γ2 hγ2 S2 K2 hreal2 q2 hq2 R2 hR2 E2 hE2
   refine ⟨?_, he1, he2, ?_, ?_⟩
-  · linarith only [hphase]
+  · simp_all
   · exact he1.filter_mono (ae_mono hF1)
   · exact he2.filter_mono (ae_mono hF2)
 

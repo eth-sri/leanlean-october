@@ -10,7 +10,6 @@ The conclusion is the time--velocity Theorem A statement (companion paper, Theor
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open Set MeasureTheory
 open scoped ENNReal MatrixOrder

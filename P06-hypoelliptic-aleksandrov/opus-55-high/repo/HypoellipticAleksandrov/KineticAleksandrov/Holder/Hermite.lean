@@ -35,45 +35,46 @@ def hermiteAcceleration {d : ℕ} (T : ℝ) (x0 v0 x1 v1 : PDE.Vec d) (s : ℝ) 
   ((6 - 12 * z) / T ^ 2) • (x1 - x0 - T • v0) +
     ((6 * z - 2) / T) • (v1 - v0)
 
+variable {d : ℕ} {T : ℝ}
+
 /-- Equivalent displacement representation of the literal polynomial. -/
-theorem hermitePosition_eq {d : ℕ} {T : ℝ} (hT : T ≠ 0)
+theorem hermitePosition_eq  (hT : T ≠ 0)
     (x0 v0 x1 v1 : PDE.Vec d) (s : ℝ) :
     hermitePosition T x0 v0 x1 v1 s =
       x0 + s • v0 + (3 * (s / T) ^ 2 - 2 * (s / T) ^ 3) •
         (x1 - x0 - T • v0) + (T * ((s / T) ^ 3 - (s / T) ^ 2)) • (v1 - v0) := by
   ext i
   simp only [hermitePosition, Pi.add_apply, Pi.sub_apply, Pi.smul_apply, smul_eq_mul]
-  field_simp [hT]
-  ring
+  grind
 
 /-- Position takes the prescribed initial endpoint. -/
-theorem hermitePosition_zero {d : ℕ} (T : ℝ) (x0 v0 x1 v1 : PDE.Vec d) :
+theorem hermitePosition_zero  (T : ℝ) (x0 v0 x1 v1 : PDE.Vec d) :
     hermitePosition T x0 v0 x1 v1 0 = x0 := by
   simp [hermitePosition]
 
 /-- Position takes the prescribed terminal endpoint. -/
-theorem hermitePosition_end {d : ℕ} {T : ℝ} (hT : T ≠ 0)
+theorem hermitePosition_end  (hT : T ≠ 0)
     (x0 v0 x1 v1 : PDE.Vec d) : hermitePosition T x0 v0 x1 v1 T = x1 := by
   norm_num [hermitePosition, hT]
 
 /-- Velocity takes the prescribed initial endpoint. -/
-theorem hermiteVelocity_zero {d : ℕ} (T : ℝ) (x0 v0 x1 v1 : PDE.Vec d) :
+theorem hermiteVelocity_zero  (T : ℝ) (x0 v0 x1 v1 : PDE.Vec d) :
     hermiteVelocity T x0 v0 x1 v1 0 = v0 := by
   simp [hermiteVelocity]
 
 /-- Velocity takes the prescribed terminal endpoint. -/
-theorem hermiteVelocity_end {d : ℕ} {T : ℝ} (hT : T ≠ 0)
+theorem hermiteVelocity_end  (hT : T ≠ 0)
     (x0 v0 x1 v1 : PDE.Vec d) : hermiteVelocity T x0 v0 x1 v1 T = v1 := by
   norm_num [hermiteVelocity, hT]
 
 /-- The Hermite velocity polynomial is smooth. -/
-theorem contDiff_hermiteVelocity {d : ℕ} (T : ℝ) (x0 v0 x1 v1 : PDE.Vec d) :
+theorem contDiff_hermiteVelocity  (T : ℝ) (x0 v0 x1 v1 : PDE.Vec d) :
     ContDiff ℝ (⊤ : ℕ∞) (hermiteVelocity T x0 v0 x1 v1) := by
   unfold hermiteVelocity
   fun_prop
 
 /-- The Hermite velocity is the derivative of position. -/
-theorem hasDerivAt_hermitePosition {d : ℕ} {T : ℝ} (hT : T ≠ 0)
+theorem hasDerivAt_hermitePosition  (hT : T ≠ 0)
     (x0 v0 x1 v1 : PDE.Vec d) (s : ℝ) :
     HasDerivAt (hermitePosition T x0 v0 x1 v1)
       (hermiteVelocity T x0 v0 x1 v1 s) s := by
@@ -86,13 +87,12 @@ theorem hasDerivAt_hermitePosition {d : ℕ} {T : ℝ} (hT : T ≠ 0)
   · funext t
     exact hermitePosition_eq hT x0 v0 x1 v1 t
   · ext i
-    simp only [hermiteVelocity, Pi.add_apply, Pi.smul_apply, smul_eq_mul, Pi.zero_apply, id_eq,
-      Nat.cast_ofNat, Nat.reduceSub, pow_one]
-    field_simp [hT]
+    simp only [hermiteVelocity, Pi.add_apply, Pi.smul_apply, Pi.zero_apply, id_eq, Nat.reduceSub]
+    field_simp
     ring
 
 /-- The displayed acceleration is the derivative of Hermite velocity. -/
-theorem hasDerivAt_hermiteVelocity {d : ℕ} {T : ℝ} (hT : T ≠ 0)
+theorem hasDerivAt_hermiteVelocity  (hT : T ≠ 0)
     (x0 v0 x1 v1 : PDE.Vec d) (s : ℝ) :
     HasDerivAt (hermiteVelocity T x0 v0 x1 v1)
       (hermiteAcceleration T x0 v0 x1 v1 s) s := by
@@ -102,16 +102,12 @@ theorem hasDerivAt_hermiteVelocity {d : ℕ} {T : ℝ} (hT : T ≠ 0)
       (x1 - x0 - T • v0))).add
     ((((hz.pow 2).const_mul 3).sub (hz.const_mul 2)).smul_const (v1 - v0))
   convert hp using 1
-  · funext t
-    rfl
-  · ext i
-    simp only [hermiteAcceleration, Pi.add_apply, Pi.smul_apply, smul_eq_mul,
-      Pi.zero_apply, id_eq, Nat.cast_ofNat, Nat.reduceSub, pow_one]
-    field_simp [hT]
+  · rfl
+  · simp only [hermiteAcceleration, id_eq]
     ring
 
 /-- Source acceleration bound, with Euclidean norms and no dimension-dependent loss. -/
-theorem hermiteAcceleration_bound {d : ℕ} {T : ℝ} (hT : 0 < T)
+theorem hermiteAcceleration_bound  (hT : 0 < T)
     (x0 v0 x1 v1 : PDE.Vec d) {s : ℝ} (hs : s ∈ Icc 0 T) :
     PDE.vecEuclideanNorm (hermiteAcceleration T x0 v0 x1 v1 s) ≤
       6 * PDE.vecEuclideanNorm (x1 - x0 - T • v0) / T ^ 2 +
@@ -120,21 +116,20 @@ theorem hermiteAcceleration_bound {d : ℕ} {T : ℝ} (hT : 0 < T)
   have hz1 : s / T ≤ 1 := (div_le_one hT).mpr hs.2
   have h6 : |6 - 12 * (s / T)| ≤ 6 := abs_le.mpr ⟨by linarith, by linarith⟩
   have h4 : |6 * (s / T) - 2| ≤ 4 := abs_le.mpr ⟨by linarith, by linarith⟩
-  unfold hermiteAcceleration
   refine (PDE.vecEuclideanNorm_add_le _ _).trans ?_
   rw [PDE.vecEuclideanNorm_smul, PDE.vecEuclideanNorm_smul, abs_div, abs_div,
     abs_of_pos (sq_pos_of_pos hT), abs_of_pos hT]
   have hx := PDE.vecEuclideanNorm_nonneg (x1 - x0 - T • v0)
   have hv := PDE.vecEuclideanNorm_nonneg (v1 - v0)
   calc
-    _ ≤ (6 / T ^ 2) * PDE.vecEuclideanNorm (x1 - x0 - T • v0) +
-        (4 / T) * PDE.vecEuclideanNorm (v1 - v0) :=
+    _ ≤ (6 / T ^ 2) * PDE.vecEuclideanNorm _ +
+        (4 / T) * PDE.vecEuclideanNorm _ :=
       add_le_add (mul_le_mul_of_nonneg_right (div_le_div_of_nonneg_right h6 (sq_nonneg T)) hx)
         (mul_le_mul_of_nonneg_right (div_le_div_of_nonneg_right h4 hT.le) hv)
     _ = _ := by ring
 
 /-- A continuous derivative bounded in Euclidean norm bounds increments with the same constant. -/
-theorem euclidean_lipschitz_of_derivative {d : ℕ} {v acc : ℝ → PDE.Vec d}
+theorem euclidean_lipschitz_of_derivative  {v acc : ℝ → PDE.Vec d}
     {a b H : ℝ} (ha : Continuous acc)
     (hder : ∀ s, HasDerivAt v (acc s) s)
     (hbound : ∀ s ∈ Icc a b, PDE.vecEuclideanNorm (acc s) ≤ H) :
@@ -146,17 +141,15 @@ theorem euclidean_lipschitz_of_derivative {d : ℕ} {v acc : ℝ → PDE.Vec d}
     rw [← intervalIntegral.integral_eq_sub_of_hasDerivAt
       (fun u _ => hder u) (ha.intervalIntegrable s t)]
     apply vecEuclideanNorm_intervalIntegral_le (ha.intervalIntegrable s t)
-    intro u hu
-    rw [uIoc_of_le hst] at hu
-    exact hbound u ⟨hs.1.trans hu.1.le, hu.2.trans ht.2⟩
+    grind
   intro s hs t ht
   rcases le_total t s with hts | hst
-  · exact hkey t ht s hs hts
+  · simp_all
   · rw [PDE.vecEuclideanNorm_sub_comm, abs_sub_comm]
-    exact hkey s hs t ht hst
+    simp_all
 
 /-- The cubic Hermite path is an admissible skeleton with the source acceleration constant. -/
-theorem hermite_isSkeleton {d : ℕ} {T : ℝ} (hT : 0 < T)
+theorem hermite_isSkeleton  (hT : 0 < T)
     (x0 v0 x1 v1 : PDE.Vec d) :
     IsSkeleton (hermitePosition T x0 v0 x1 v1)
       (hermiteVelocity T x0 v0 x1 v1)

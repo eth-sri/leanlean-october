@@ -7,7 +7,6 @@ import Mathlib.Tactic
 /-! # Compact smooth primitives of zero-mean tests on the real line -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
@@ -32,9 +31,7 @@ theorem bellman_exists_test_primitive (φ : ℝ → ℝ)
       apply image_eq_zero_of_notMem_tsupport
       intro hs
       have hl : a₀ ≤ x := hmin hs
-      have hr := hx.2
-      dsimp [a] at hr
-      linarith
+      grind
     have hright : ∀ t : ℝ, b < t → ψ t = 0 := by
       intro t ht
       change (∫ x in a..t, φ x) = 0
@@ -44,16 +41,15 @@ theorem bellman_exists_test_primitive (φ : ℝ → ℝ)
         have hs := subset_tsupport φ hx
         have hl : a₀ ≤ x := hmin hs
         have hr : x ≤ b₀ := hmax hs
-        dsimp [a, b] at *
-        constructor <;> linarith
+        grind
     have hsupp : Function.support ψ ⊆ Icc a b := by
       intro t ht
       rcases lt_or_ge t a with hta | hta
-      · exact False.elim (ht (hleft t hta))
+      · simp_all
       · have htb : t ≤ b := by
           by_contra hn
-          exact ht (hright t (lt_of_not_ge hn))
-        exact ⟨hta, htb⟩
+          simp_all
+        simp_all
     have hts : tsupport ψ ⊆ Icc a b := closure_minimal hsupp isClosed_Icc
     have hderiv : deriv ψ = φ := by
       funext t
@@ -63,13 +59,10 @@ theorem bellman_exists_test_primitive (φ : ℝ → ℝ)
     refine ⟨?_, ?_⟩
     · intro t
       exact (hφ.continuous.integral_hasStrictDerivAt a t).hasDerivAt.differentiableAt
-    · rw [hderiv]
-      exact hφ
+    simp_all
   · have hz : φ = 0 := by
       funext t
       exact image_eq_zero_of_notMem_tsupport (fun ht => hn ⟨t, ht⟩)
-    refine ⟨0, contDiff_zero_fun, HasCompactSupport.zero, ?_⟩
-    rw [hz]
-    exact deriv_zero
+    aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov

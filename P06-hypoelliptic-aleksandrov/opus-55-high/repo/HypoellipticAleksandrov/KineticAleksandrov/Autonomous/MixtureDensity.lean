@@ -9,7 +9,6 @@ Source: companion paper, Corollary 8.4. Constants precede the coefficient, clock
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open MeasureTheory
 open scoped ENNReal
@@ -27,7 +26,7 @@ theorem enlargedActiveGreen_density
         MemLp g (ENNReal.ofReal q) volume ∧
         (eLpNorm g (ENNReal.ofReal q) volume).toReal ≤
           C * c.r ^ (6 / q - 4) * (nu Set.univ).toReal := by
-  have hpq : q.HolderConjugate (q / (q - 1)) :=
+  have hpq  :=
     (Real.holderConjugate_iff_eq_conjExponent hq).2 rfl
   obtain ⟨C, hC, ht⟩ :=
     mixture_density_conjugate_tests hH hLE hlam hLam q _ hpq hq2
@@ -40,6 +39,6 @@ theorem enlargedActiveGreen_density
     (mul_nonneg (mul_nonneg hC.le (Real.rpow_nonneg c.positive.le _))
       ENNReal.toReal_nonneg)
   intro f hfp hfn
-  simpa only [mul_assoc, mul_comm, mul_left_comm] using ht A c nu f hfp hfn
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

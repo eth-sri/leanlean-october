@@ -10,19 +10,20 @@ This specialization retains the shared kernel, composition, covariance and margi
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open Set MeasureTheory HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open HypoellipticAleksandrov.KineticAleksandrov.Decay
 
+variable {a c : ℝ}
+
 /-- Every nonempty bounded open interval is an admissible evolution domain. -/
-theorem interval_admissible {a c : ℝ} (hac : a < c) :
+theorem interval_admissible  (hac : a < c) :
     IsAdmissibleEvolutionDomain (PDE.oneDimensionalAxisBox a c) :=
   Or.inr (Or.inr ⟨rfl, a, c, hac, rfl⟩)
 
 /-- Literal case-I geometry; the transport conditions are in `SourceSetting`. -/
-theorem sourceCase_interval {a c : ℝ} (hac : a < c)
+theorem sourceCase_interval  (hac : a < c)
     (b : PDE.Vec 1 → PDE.Vec 1) (m Lb : ℝ) :
     SourceCase (PDE.oneDimensionalAxisBox a c) b m Lb :=
   Or.inr ⟨rfl, a, c, hac, rfl⟩
@@ -51,9 +52,8 @@ theorem exists_interval_setting_evolution
       HasParabolicMarginalBundle Ω γ (measurableSet_of_isAdmissibleEvolutionDomain hΩ)
         (zIndependentCoefficient B) K ∧
       IsTranslationCovariantEvolution Ω γ
-        (measurableSet_of_isAdmissibleEvolutionDomain hΩ) K := by
-  exact exists_unitBlock_evolution (exists_terminalEvolution_of_classical hLE hH)
-    (by norm_num) lam Lam m Lb (PDE.oneDimensionalAxisBox a c) B b hs Ω γ hΩ hγ
+        (measurableSet_of_isAdmissibleEvolutionDomain hΩ) K := exists_unitBlock_evolution (exists_terminalEvolution_of_classical hLE hH)
+    (by norm_num) lam Lam m Lb _ B b hs Ω γ hΩ hγ
 
 /-- Stationary interval evolution with all its structural clauses on the same kernel. -/
 theorem exists_interval_evolution
@@ -73,9 +73,8 @@ theorem exists_interval_evolution
         (measurableSet_of_isAdmissibleEvolutionDomain (interval_admissible hac))
         (zIndependentCoefficient B) K ∧
       IsTranslationCovariantEvolution (PDE.oneDimensionalAxisBox a c) stationary
-        (measurableSet_of_isAdmissibleEvolutionDomain (interval_admissible hac)) K := by
-  exact exists_interval_setting_evolution hH hLE lam Lam m Lb a c B b hs
-    (PDE.oneDimensionalAxisBox a c) stationary (interval_admissible hac)
+        (measurableSet_of_isAdmissibleEvolutionDomain (interval_admissible hac)) K := exists_interval_setting_evolution hH hLE lam Lam m Lb a c B b hs
+    _ stationary (interval_admissible hac)
     (zeroCurve_piecewiseC1 1)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

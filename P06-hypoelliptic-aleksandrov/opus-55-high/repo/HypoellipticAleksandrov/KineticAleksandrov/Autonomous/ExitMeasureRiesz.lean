@@ -13,7 +13,6 @@ uncharacterized measure. The functional's PDE construction is separate from this
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open MeasureTheory Set TopologicalSpace
 open scoped CompactlySupported ENNReal
@@ -26,7 +25,6 @@ omit [SecondCountableTopology X] [PseudoMetrizableSpace X] in
 theorem boundaryFunctional_rieszMeasure_mass (ℓ : C_c(X, ℝ) →ₚ[ℝ] ℝ)
     (hbd : ∀ (f : C_c(X, ℝ)) (c : ℝ), 0 ≤ c → (∀ x, |f x| ≤ c) → |ℓ f| ≤ c) :
     RealRMK.rieszMeasure ℓ univ ≤ 1 := by
-  have hreg := RealRMK.regular_rieszMeasure ℓ
   rw [(MeasureTheory.Measure.Regular.innerRegular).measure_eq_iSup isOpen_univ]
   refine iSup_le fun K => iSup_le fun _ => iSup_le fun hKc => ?_
   obtain ⟨f, hf1, hfc, -, hf01⟩ :=
@@ -37,7 +35,7 @@ theorem boundaryFunctional_rieszMeasure_mass (ℓ : C_c(X, ℝ) →ₚ[ℝ] ℝ)
   have hb := hbd g 1 zero_le_one fun x => by
     rw [abs_of_nonneg (hg x)]
     exact (hf01 x).2
-  calc ENNReal.ofReal (ℓ g) ≤ ENNReal.ofReal 1 :=
+  calc ENNReal.ofReal _ ≤ ENNReal.ofReal 1 :=
       ENNReal.ofReal_le_ofReal (le_of_abs_le hb)
     _ = 1 := ENNReal.ofReal_one
 
@@ -52,6 +50,6 @@ theorem existsUnique_boundaryFunctional_measure (ℓ : C_c(X, ℝ) →ₚ[ℝ] �
   intro μ hμ
   let : IsFiniteMeasure μ := ⟨hμ.1.trans_lt (by simp)⟩
   exact Measure.ext_of_integral_eq_on_compactlySupported fun f => by
-    rw [hμ.2 f, RealRMK.integral_rieszMeasure]
+    simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

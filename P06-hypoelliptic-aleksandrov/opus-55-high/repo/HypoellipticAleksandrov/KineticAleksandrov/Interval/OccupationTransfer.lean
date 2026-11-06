@@ -10,7 +10,6 @@ and elapsed Lebesgue measure. No occupation estimate is assumed for the interval
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open Set MeasureTheory HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
@@ -39,15 +38,15 @@ theorem intervalOccupationMeasure_le_density {a c lam Lam : ℝ}
   have hs : (intervalOccupationMeasure σ T K ρ).restrict R =
       intervalOccupationMeasure σ T K ρ :=
     Measure.restrict_eq_self_of_ae_mem (by
-      rw [ae_iff]; exact intervalOccupationMeasure_compl_slab σ T hT K ρ)
-  have hsub : ∀ A : Set (TimeVelocity 1), MeasurableSet A → A ⊆ R →
+      exact intervalOccupationMeasure_compl_slab σ T hT K ρ)
+  have hsub : ∀ A : Set _, MeasurableSet A → A ⊆ R →
       intervalOccupationMeasure σ T K ρ A ≤
         ∫⁻ p in A, ENNReal.ofReal (g p) := by
     intro A hA hAR
     have hm : Measurable (fun v : PDE.Vec 1 =>
         ∫⁻ t in Ioo 0 T, occupationKernel Kw σ t v {w | (t, w) ∈ A}) :=
       ((measurable_occupationKernel_section Kw σ hA).comp measurable_swap).lintegral_prod_right'
-    rw [occupation_set_identity Kw σ T hT (ρ.map Subtype.val) g hg hgi hA hAR,
+    rw [occupation_set_identity Kw σ T hT _ g hg hgi hA hAR,
       lintegral_map hm measurable_subtype_coe]
     rw [intervalOccupationMeasure_apply σ T K ρ A hA]
     apply lintegral_mono
@@ -58,20 +57,17 @@ theorem intervalOccupationMeasure_le_density {a c lam Lam : ℝ}
     intro t
     have hst : σ < σ + t.1 := lt_add_of_pos_right _ t.2.1
     have hv : v.1 ∈ movingDomain (PDE.oneDimensionalAxisBox a c) stationary σ := by
-      simpa only [movingDomain_stationary] using v.2
+      simp
     have ht := interval_parabolic_le_whole hac hst B hB hJ K hp Kw hpw v.1 hv
-    have he := interval_firstMarginal_eq_parabolic hJ K B hp σ (σ + t.1) hst.le v.1 0 hv
-    change K.firstMarginal (movingQuery σ (σ + t.1) hst.le v.1 0 hv) _ ≤ _
+    have he := interval_firstMarginal_eq_parabolic hJ K B hp σ _ hst.le v.1 0 hv
+    change K.firstMarginal (movingQuery σ _ hst.le v.1 0 hv) _ ≤ _
     rw [he]
     dsimp only
     rw [occupationKernel_of_nonneg Kw σ t.1 t.2.1.le]
-    exact Measure.le_iff'.1 ht _
+    aesop
   apply Measure.le_iff.2
   intro A hA
   rw [← hs, Measure.restrict_apply hA, withDensity_apply _ hA]
-  calc
-    _ ≤ ∫⁻ p in A ∩ R, ENNReal.ofReal (g p) :=
-      hsub _ (hA.inter hR) inter_subset_right
-    _ = _ := by rw [Measure.restrict_restrict hA]
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.Interval

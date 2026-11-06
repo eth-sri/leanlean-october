@@ -9,7 +9,6 @@ import Mathlib.Tactic
 /-! # First derivatives pass through the actual radial lift integral -/
 
 @[expose] public section
-noncomputable section
 open Set MeasureTheory Filter Topology
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -28,7 +27,7 @@ theorem bellman_lift_fderiv (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
     bellman_compact_test_local_radius_window zeta hc hs q hq
   let K : Set BellmanPositiveTime := {r | r.val ∈ Icc a b}
   have hK : IsCompact K := bellmanRadiusWindow_isCompact a b ha
-  let : CompactSpace K := isCompact_iff_compactSpace.mp hK
+  let  := isCompact_iff_compactSpace.mp hK
   let mu : Measure K := Measure.comap Subtype.val bellmanPositiveTimeVolume
   let : IsFiniteMeasure mu := bellman_radius_window_volume_finite K hK
   let radius : K → ℝ := fun r => r.val.val
@@ -42,11 +41,11 @@ theorem bellman_lift_fderiv (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
     have hzero : zeta (bellmanPlaneDilation r.val x) = 0 := by
       by_contra hn
       exact hrK (hwindow x hx r (subset_tsupport zeta hn))
-    simp only [hzero, mul_zero]
+    simp_all
   rw [he.fderiv_eq]
   rw [bellman_joint_integral_fderiv mu hU radius hr hrp
-    (bellmanLiftIntegrand alpha zeta) (hf.mono (prod_mono (subset_univ U) Subset.rfl))
-    q hqU e]
+    _ (hf.mono (prod_mono (subset_univ U) Subset.rfl))
+    q hqU]
   simp_rw [bellmanLiftIntegrand_spatial_fderiv alpha zeta hzglobal _ _ (hrp _)]
   symm
   apply bellman_integral_compact_radius_subtype K hK
@@ -54,6 +53,6 @@ theorem bellman_lift_fderiv (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
   have hn : bellmanPlaneDilation r.val q ∉ tsupport zeta :=
     fun ht => hrK (hwindow q hqU r ht)
   rw [fderiv_of_notMem_tsupport ℝ hn]
-  simp only [zero_apply, mul_zero]
+  simp
 
 end HypoellipticAleksandrov.KineticAleksandrov

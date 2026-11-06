@@ -8,12 +8,13 @@ import Mathlib.Tactic
 /-! # Absolute integrability for the sphere-probability radial Fubini calculation -/
 
 @[expose] public section
-noncomputable section
 open Set MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
+variable {lam Lam : ℝ} (alpha : ℝ)
+
 /-- A compact punctured test pulls back to compact radial support uniformly over the sphere. -/
-theorem bellman_radial_test_compactSupport {lam Lam : ℝ} (alpha : ℝ)
+theorem bellman_radial_test_compactSupport 
     (g : (ℝ × ℝ) → ℝ) (hc : HasCompactSupport g) (hs : tsupport g ⊆ bellmanPuncturedSet)
     (weight : BellmanSphere × BellmanCoefficient lam Lam → ℝ) :
     HasCompactSupport (fun w : BellmanPositiveTime ×
@@ -26,15 +27,14 @@ theorem bellman_radial_test_compactSupport {lam Lam : ℝ} (alpha : ℝ)
   apply closure_minimal
   · intro w hw
     have hg : g (sphereRadialPoint w).val ≠ 0 := by
-      intro hz
-      exact hw (by simp only [hz, mul_zero])
+      simp_all
     have hb := hbounds _ (subset_tsupport g hg)
     rw [sphereRadialPoint_gauge] at hb
-    exact ⟨hb, trivial⟩
-  · exact hK.isClosed
+    simp_all
+  grind
 
 /-- Compact radial support proves integrability, including any continuous coefficient weight. -/
-theorem bellman_radial_test_integrable {lam Lam : ℝ} (alpha : ℝ)
+theorem bellman_radial_test_integrable 
     (pi : Measure (BellmanSphere × BellmanCoefficient lam Lam)) [IsFiniteMeasure pi]
     (g : (ℝ × ℝ) → ℝ) (hg : Continuous g) (hc : HasCompactSupport g)
     (hs : tsupport g ⊆ bellmanPuncturedSet)

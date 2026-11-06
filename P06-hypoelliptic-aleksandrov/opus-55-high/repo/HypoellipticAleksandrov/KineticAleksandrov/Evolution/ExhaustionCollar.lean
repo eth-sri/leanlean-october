@@ -14,7 +14,6 @@ The estimate does not require a full-domain solution or Hörmander smoothing.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -54,7 +53,7 @@ theorem abs_le_collar_straightened_dirichlet
   let G := collarSupersolution 0 r d L lam C g
   have hDo : IsOpen D := isOpen_straightenedEllipsoid n hr hR
   have hκ : 0 < collarKappa L lam := div_pos (by linarith) hlam
-  have hcoef : 0 ≤ C / barrierW (collarKappa L lam) d :=
+  have hcoef : 0 ≤ C / barrierW _ d :=
     div_nonneg hC (barrierW_pos hκ hd).le
   have hKc : IsCompact K :=
     (isCompact_straightened_closedCylinder (isBounded_straightenedEllipsoid n hr hR)
@@ -78,23 +77,23 @@ theorem abs_le_collar_straightened_dirichlet
     straightenedPullback_dirichlet_sliceRegular hDo hg hu p
       ⟨⟨haα.trans_le hp.1.1.1, hp.1.1.2⟩, hp.1.2⟩
   have hSpos (p : KineticPoint n) (hp : p ∈ A) :
-      0 < PDE.vecNormSq (p.position - (g p.time + 0)) :=
+      0 < PDE.vecNormSq _ :=
     lt_of_le_of_lt (sq_nonneg _) hp.2
   have hGreg (p : KineticPoint n) (hp : p ∈ A) : IsSliceRegularAt G p :=
-    (isSliceRegularAt_collarBarrier (collarKappa L lam) r
+    (isSliceRegularAt_collarBarrier _ r
       (((hg.differentiable (by simp)) p.time).add_const 0) (hSpos p hp)).const_mul _
   have hGop (p : KineticPoint n) (hp : p ∈ A) :
       viscousTransportedOperator B b ε G p ≤ 0 := by
     have hgd := (hg.differentiable (by simp)) p.time
-    have hm := hgd.hasDerivAt.add_const (0 : PDE.Vec n)
+    have hm := hgd.hasDerivAt.add_const (0)
     have hmL := vecEuclideanNorm_le_of_hasDerivAt_lipschitz hL hgd.hasDerivAt hgL
     have hn := viscousTransportedOperator_collarBarrier_nonpos (b := b) ε hκ hlam.le
       (div_mul_cancel₀ _ hlam.ne') r hm hmL (hSpos p hp) (hB _ _ _).1
     change viscousTransportedOperator B b ε
-      (fun q => C / barrierW (collarKappa L lam) d *
-        collarBarrier (collarKappa L lam) r (fun t => g t + 0) q) p ≤ 0
+      (fun q => C / barrierW _ d *
+        collarBarrier _ r _ q) p ≤ 0
     rw [viscousTransportedOperator_const_mul _
-      (isSliceRegularAt_collarBarrier (collarKappa L lam) r hm.differentiableAt (hSpos p hp))]
+      (isSliceRegularAt_collarBarrier _ r hm.differentiableAt (hSpos p hp))]
     exact mul_nonpos_of_nonneg_of_nonpos hcoef hn
   have side (s : ℝ) (hs : s = 1 ∨ s = -1) : ∀ p ∈ K, s * v p ≤ G p := by
     have hmax := le_zero_of_viscous_nonneg_compact (B := B) (b := b) (ε := ε)
@@ -135,7 +134,6 @@ theorem abs_le_collar_straightened_dirichlet
             ⟨⟨⟨hp.1.1.1, lt_of_le_of_ne hp.1.1.2 ht⟩, hx⟩, h⟩)) hp.2
         have he : G p = C := collarSupersolution_inner hdr hκ hd hS
         have hb := hbound p hp
-        rw [he]
         rcases hs with rfl | rfl <;> linarith [le_abs_self (v p), neg_le_abs (v p)]
       · have hfr : (straightenedPoint g p).2 ∈ frontier D := by
           rw [hDo.frontier_eq]
@@ -147,7 +145,7 @@ theorem abs_le_collar_straightened_dirichlet
         exact sub_nonpos.mpr (hGn p hp)
   intro p hp hS
   have h1 := side 1 (Or.inl rfl) p ⟨hp, hS⟩
-  have h2 := side (-1) (Or.inr rfl) p ⟨hp, hS⟩
+  have h2 := side _ (Or.inr rfl) p ⟨hp, hS⟩
   exact abs_le.mpr ⟨by linarith, by linarith⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -32,8 +32,7 @@ def kernelXV (E : FullSpaceEvolution) (t : NNReal) (z : Z) : Measure Z :=
   (E.2.master (wholeQuery t z)).map nativeToXV
 
 /-- Coordinate projection is measurable. -/
-theorem nativeToXV_measurable : Measurable nativeToXV := by
-  exact (measurable_pi_apply 0 |>.comp measurable_snd).prodMk
+theorem nativeToXV_measurable : Measurable nativeToXV := (measurable_pi_apply 0 |>.comp measurable_snd).prodMk
     (measurable_pi_apply 0 |>.comp measurable_fst)
 
 /-- Scalar kernels have probability mass. -/
@@ -51,8 +50,7 @@ theorem terminalPhysicalPoint_operator (a : ℝ → ℝ → ℝ) (W : Point → 
     transportedForwardOperator (evolutionCoefficient a) (identityDrift 1)
       (W ∘ terminalPhysicalPoint) p = forwardScalarOperator a W (terminalPhysicalPoint p) := by
   rw [transportedForwardOperator_apply, forwardScalarOperator]
-  simp only [matrixContraction, Fin.sum_univ_one, fullKineticCoefficientAt,
-    evolutionCoefficient, PDE.vecDot, identityDrift]
+  simp only [matrixContraction, Fin.sum_univ_one, PDE.vecDot]
   change kineticTimeDerivative W (terminalPhysicalPoint p) +
       a (p.velocity 0) (p.position 0) *
         kineticVelocityHessian W (terminalPhysicalPoint p) 0 0 +
@@ -74,12 +72,12 @@ theorem terminal_polynomial_comparison {lam Lam : ℝ} (hlam : 0 < lam)
     (ht : ∀ p, p.time = tau → F (p.position, p.velocity) ≤ W p)
     (p0 : Point) (hp0 : p0.time ≤ tau) : u p0 ≤ W p0 := by
   have hΩ := isOpen_of_isAdmissibleEvolutionDomain autonomousWholeDomain_admissible
-  have hs : ∀ p ∈ movingClosedSlab autonomousWholeDomain (fun _ => 0) p0.time tau,
+  have hs : ∀ p ∈ movingClosedSlab autonomousWholeDomain _ p0.time tau,
       p ∈ evolutionPastClosedCylinder autonomousWholeDomain (fun _ => 0) tau :=
     fun _ hp => ⟨hp.2.1, hp.2.2⟩
   have hus := (isClassicalViscousTerminalSolution_zero_iff _ _ _ _ _ _ _).2 hu
   have hreg (p : Point) (hp : p ∈ movingActiveSlab autonomousWholeDomain
-      (fun _ => 0) p0.time tau) : IsSliceRegularAt u p :=
+      _ p0.time tau)  :=
     hus.isSliceRegularAt hΩ continuous_const ⟨hp.2.1, hp.2.2⟩
   obtain ⟨C, -, hC⟩ := hu.1
   have h := growth_comparison hΩ continuous_const hlam (evolutionCoefficient_bounds A)
@@ -88,7 +86,7 @@ theorem terminal_polynomial_comparison {lam Lam : ℝ} (hlam : 0 < lam)
     ⟨C, fun p hp => by
       have hb := hC p (hs p hp)
       have hh := hn p hp.2.1
-      linarith [le_abs_self (u p)]⟩
+      grind⟩
     ((hu.2.1.mono hs).sub hc.continuousOn)
     (fun p hp => (hreg p hp).sub (hr p))
     (fun p hp => by
@@ -98,15 +96,15 @@ theorem terminal_polynomial_comparison {lam Lam : ℝ} (hlam : 0 < lam)
       linarith [hop p hp.2.1.le])
     (fun p hp htime => by
       rw [hu.2.2.2.2.1 p ⟨htime, by simpa only [← htime] using hp.2.2⟩]
-      exact sub_nonpos.mpr (ht p htime))
+      simp_all)
     (fun p _ hf => by
-      change p.position ∈ frontier (movingDomain (wholeSpace 1) (fun _ => 0) p.time) at hf
+      change p.position ∈ frontier (movingDomain (wholeSpace 1) _ p.time) at hf
       rw [movingDomain_wholeSpace, frontier_univ] at hf
-      exact False.elim hf)
-  have hm : p0 ∈ movingClosedSlab autonomousWholeDomain (fun _ => 0) p0.time tau :=
+      simp_all)
+  have hm : p0 ∈ movingClosedSlab autonomousWholeDomain _ p0.time tau :=
     ⟨le_rfl, hp0, by
-      change p0.position ∈ closure (movingDomain (wholeSpace 1) (fun _ => 0) p0.time)
+      change p0.position ∈ closure (movingDomain (wholeSpace 1) _ p0.time)
       rw [movingDomain_wholeSpace, closure_univ]; trivial⟩
-  exact sub_nonpos.mp (h p0 hm)
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

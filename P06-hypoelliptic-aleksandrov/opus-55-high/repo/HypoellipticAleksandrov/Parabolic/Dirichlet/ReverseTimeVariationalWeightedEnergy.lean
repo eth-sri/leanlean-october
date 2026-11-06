@@ -15,7 +15,6 @@ timewise reverse-time variational residual evaluation.
 open Filter MeasureTheory
 open scoped ENNReal RealInnerProductSpace Matrix.Norms.Elementwise
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -67,21 +66,21 @@ theorem
           ∂reverseTimeVolume (r₁ - r₀)) := by
   calc
     (∫ t,
-      ‖valueCLM hΩ (A (u t))‖ ^ 2 * eta.deriv t
-        ∂reverseTimeVolume (r₁ - r₀)) =
-        -(∫ t, (2 * (g t) (S (u t))) * eta t
-          ∂reverseTimeVolume (r₁ - r₀)) := by
+      ‖valueCLM hΩ _‖ ^ 2 * eta.deriv t
+        ∂reverseTimeVolume _) =
+        -(∫ t, (2 * (g t) _) * eta t
+          ∂reverseTimeVolume _) := by
       exact
       integral_value_norm_sq_mul_reverseTimeScalarTest_deriv_eq_neg_integral_of_pivot_factorization
-        hΩ (r₁ - r₀) (sub_pos.mpr h₀₁) A S hfactor u g hdu eta
+        hΩ _ _ A S hfactor u g hdu eta
     _ = -(∫ t,
         (2 *
           ((reverseTimeNegativeSource
-              r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth t) (S (u t)) -
+              r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth t) _ -
             (reverseTimeSpatialFormBochnerAction
               r₀ r₁ h₀₁ hΩ hΩbounded a b c
-              haSmooth hbSmooth hcSmooth u t) (S (u t)))) * eta t
-          ∂reverseTimeVolume (r₁ - r₀)) := by
+              haSmooth hbSmooth hcSmooth u t) _)) * eta t
+          ∂reverseTimeVolume _) := by
       congr 1
       apply integral_congr_ae
       filter_upwards

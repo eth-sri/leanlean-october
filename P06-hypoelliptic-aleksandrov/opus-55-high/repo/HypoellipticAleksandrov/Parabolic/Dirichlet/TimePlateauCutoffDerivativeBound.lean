@@ -30,7 +30,6 @@ theorem exists_reverseTimeScalarTest_plateau_with_deriv_bound
     exists_reverseTimeScalarTest_plateau T a b c d ha0 hab hbc hcd hdT
   obtain ⟨C, hC⟩ := ζ.exists_norm_deriv_le
   refine ⟨ζ, max C 0, le_max_right C 0, hζnonneg, hζle_one, hζplateau, hζsupport, ?_⟩
-  intro τ
-  simpa only [Real.norm_eq_abs] using (hC τ).trans (le_max_left C 0)
+  simp_all
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

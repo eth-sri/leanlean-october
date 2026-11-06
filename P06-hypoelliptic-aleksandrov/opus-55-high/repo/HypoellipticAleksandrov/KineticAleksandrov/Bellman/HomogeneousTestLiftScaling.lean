@@ -7,7 +7,6 @@ import Mathlib.Tactic
 /-! # Exact homogeneity of the literal radial test integral -/
 
 @[expose] public section
-noncomputable section
 open MeasureTheory Set
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -23,11 +22,10 @@ theorem bellman_lift_scaling (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
           zeta (bellmanPlaneDilation r.val (bellmanPlaneDilation s q))) := by
     dsimp [F, bellmanRadialScale]
     rw [Real.mul_rpow hs.le r.property.le, bellmanPlaneDilation_comp]
-    rw [mul_comm r.val s]
     ring
   apply mul_left_cancel₀ (Real.rpow_pos_of_pos hs (-1 - alpha)).ne'
   calc
-    s ^ (-1 - alpha) * lift alpha zeta (bellmanPlaneDilation s q) =
+    s ^ (-1 - alpha) * lift alpha zeta _ =
         ∫ r, F (bellmanRadialScale s hs r) ∂bellmanPositiveTimeVolume := by
       simp_rw [he]
       rw [integral_const_mul]
@@ -39,7 +37,7 @@ theorem bellman_lift_scaling (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
       rfl
     _ = s ^ (-1 - alpha) * (s ^ alpha * lift alpha zeta q) := by
       rw [← mul_assoc, ← Real.rpow_add hs]
-      have ha : -1 - alpha + alpha = (-1 : ℝ) := by ring
+      have ha : -1 - alpha + alpha = (-1) := by ring
       rw [ha, Real.rpow_neg_one]
 
 end HypoellipticAleksandrov.KineticAleksandrov

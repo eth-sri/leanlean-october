@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.EnlargedVisi
 /-! # The genuine position-localized Green test on each active visit -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
@@ -16,9 +15,9 @@ theorem positionStartQuadratic_smooth (c : Clock) (eta : ℝ → ℝ)
     ContDiff ℝ (⊤ : ℕ∞)
       ((fun q : Point => eta (q.position 0) * visitQuadratic c (q.velocity 0)) ∘
         (KineticPoint.equivProd 1).symm) :=
-  (heta.comp ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp contDiff_snd.fst)).mul
+  (heta.comp ((contDiff_apply ℝ ℝ _).comp contDiff_snd.fst)).mul
     ((visitQuadratic_smooth c).comp
-      ((contDiff_apply ℝ ℝ (0 : Fin 1)).comp contDiff_snd.snd))
+      ((contDiff_apply ℝ ℝ _).comp contDiff_snd.snd))
 
 /-- The actual position test satisfies the Green identity, with no analytic bridge premise. -/
 theorem positionStartQuadratic_active_identity
@@ -32,8 +31,7 @@ theorem positionStartQuadratic_active_identity
     f e.1 = (∫ p, f p ∂finiteUnionExit hH hLE hlam hLam A (visitActiveUnion c J) T e) -
       ∫ p, forwardScalarOperator A.a f p
         ∂finiteUnionGreen hH hLE hlam hLam A (visitActiveUnion c J) T e := by
-  dsimp only
-  apply visitUnion_identity_bounded_smooth hH hLE hlam hLam A (visitActiveUnion c J) T e
+  apply visitUnion_identity_bounded_smooth hH hLE hlam hLam A _ T e
     (fun q => positionStartCutoff Y c.r c.positive (q.position 0) *
       visitQuadratic c (q.velocity 0))
   · exact positionStartQuadratic_smooth c _
@@ -47,13 +45,12 @@ theorem positionStartQuadratic_active_identity
     constructor
     · rw [abs_mul, abs_of_nonneg hchi.1, abs_of_nonneg hquad]
       exact ((mul_le_mul_of_nonneg_right hchi.2 hquad).trans
-        (by simpa only [one_mul] using visitQuadratic_le c (p.velocity 0))).trans
+        (by simpa only [one_mul] using visitQuadratic_le c _)).trans
           (le_max_left _ _)
     · apply (hb A c Y p hc hv).trans
       by_cases hbox : (p.position 0, p.velocity 0) ∈ box 4 c.r Y
-      · rw [indicator_of_mem hbox, mul_one]
-        exact le_max_right _ _
+      · simp_all
       · rw [indicator_of_notMem hbox, mul_zero]
-        exact hC.le.trans (le_max_right _ _)
+        positivity
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

@@ -29,12 +29,12 @@ def parabolicELpNormPullbackMeasureFactor (d : ℕ) (r : ℝ) : ℝ≥0∞ :=
     (1 / parabolicExponent d).toReal
 
 private theorem parabolicELpNormPullbackMeasureFactor_ne_top (d : ℕ) (r : ℝ) :
-    parabolicELpNormPullbackMeasureFactor d r ≠ ⊤ := by
-  unfold parabolicELpNormPullbackMeasureFactor
-  exact ENNReal.rpow_ne_top_of_nonneg ENNReal.toReal_nonneg ENNReal.ofReal_ne_top
+    parabolicELpNormPullbackMeasureFactor d r ≠ ⊤ := ENNReal.rpow_ne_top_of_nonneg ENNReal.toReal_nonneg ENNReal.ofReal_ne_top
+
+variable {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) {r : ℝ}
 
 private theorem parabolicELpNormOn_pullbackScalar_unamplified
-    {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) {r : ℝ} (hr : 0 < r)
+     (hr : 0 < r)
     (q : TimeVelocity d → ℝ) (s : Set (TimeVelocity d)) :
     parabolicELpNormOn d (pullbackScalar q t₀ v₀ r) s =
       parabolicELpNormPullbackMeasureFactor d r *
@@ -45,47 +45,43 @@ private theorem parabolicELpNormOn_pullbackScalar_unamplified
   have hleft :
       (fun z ↦ r ^ 2 * (((r ^ 2)⁻¹ • q) (parabolicAffine t₀ v₀ r z))) =
         pullbackScalar q t₀ v₀ r := by
-    funext z
-    simp only [Pi.smul_apply, smul_eq_mul, pullbackScalar_apply]
-    rw [← mul_assoc, mul_inv_cancel₀ hrpow, one_mul]
+    aesop
   have hsource :
       parabolicELpNormOn d ((r ^ 2)⁻¹ • q) (parabolicAffine t₀ v₀ r '' s) =
         ‖(r ^ 2)⁻¹‖ₑ *
-          parabolicELpNormOn d q (parabolicAffine t₀ v₀ r '' s) := by
-    unfold parabolicELpNormOn
-    exact eLpNorm_const_smul _ _ _ _
+          parabolicELpNormOn d q (parabolicAffine t₀ v₀ r '' s) := eLpNorm_const_smul _ _ _ _
   rw [hleft, hsource, enorm_inv hrpow] at hraw
   calc
-    parabolicELpNormOn d (pullbackScalar q t₀ v₀ r) s =
+    parabolicELpNormOn d _ s =
         ‖r ^ 2‖ₑ * parabolicELpNormPullbackMeasureFactor d r *
           (‖r ^ 2‖ₑ⁻¹ *
-            parabolicELpNormOn d q (parabolicAffine t₀ v₀ r '' s)) := by
+            parabolicELpNormOn d q _) := by
       simpa only [parabolicELpNormPullbackMeasureFactor] using hraw
     _ = (‖r ^ 2‖ₑ * ‖r ^ 2‖ₑ⁻¹) *
           (parabolicELpNormPullbackMeasureFactor d r *
-            parabolicELpNormOn d q (parabolicAffine t₀ v₀ r '' s)) := by
+            parabolicELpNormOn d q _) := by
       ac_rfl
     _ = parabolicELpNormPullbackMeasureFactor d r *
-          parabolicELpNormOn d q (parabolicAffine t₀ v₀ r '' s) := by
+          parabolicELpNormOn d q _ := by
       rw [ENNReal.mul_inv_cancel henorm_ne_zero enorm_ne_top, one_mul]
 
 private theorem parabolicELpNormOn_const_mul_pullbackScalar
-    {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) {r : ℝ} (hr : 0 < r)
+     (hr : 0 < r)
     (a : ℝ) (q : TimeVelocity d → ℝ) (s : Set (TimeVelocity d)) :
     parabolicELpNormOn d
         (fun z ↦ a * q (parabolicAffine t₀ v₀ r z)) s =
       (‖a‖ₑ * parabolicELpNormPullbackMeasureFactor d r) *
         parabolicELpNormOn d q (parabolicAffine t₀ v₀ r '' s) := by
-  change eLpNorm (a • pullbackScalar q t₀ v₀ r) (parabolicExponent d)
-    (volume.restrict s) = _
+  change eLpNorm (a • pullbackScalar q t₀ v₀ r) _
+    _ = _
   rw [eLpNorm_const_smul]
-  change ‖a‖ₑ * parabolicELpNormOn d (pullbackScalar q t₀ v₀ r) s = _
-  rw [parabolicELpNormOn_pullbackScalar_unamplified t₀ v₀ hr q s]
+  change ‖a‖ₑ * parabolicELpNormOn d _ s = _
+  rw [parabolicELpNormOn_pullbackScalar_unamplified t₀ v₀ hr]
   ac_rfl
 
 /-- Restricted ENNReal norm scaling for the unamplified scalar pullback. -/
 theorem parabolicELpNormOn_pullbackScalar
-    {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) {r : ℝ} (hr : 0 < r)
+     (hr : 0 < r)
     (q : TimeVelocity d → ℝ) (s : Set (TimeVelocity d)) :
     parabolicELpNormOn d (pullbackScalar q t₀ v₀ r) s =
       parabolicELpNormPullbackMeasureFactor d r *
@@ -94,7 +90,7 @@ theorem parabolicELpNormOn_pullbackScalar
 
 /-- Restricted ENNReal norm scaling for the time derivative. -/
 theorem parabolicELpNormOn_timeDerivative_pullbackScalar
-    {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) {r : ℝ} (hr : 0 < r)
+     (hr : 0 < r)
     (q : TimeVelocity d → ℝ) (hq : ContDiff ℝ 2 q)
     (s : Set (TimeVelocity d)) :
     parabolicELpNormOn d (timeDerivative (pullbackScalar q t₀ v₀ r)) s =
@@ -107,12 +103,12 @@ theorem parabolicELpNormOn_timeDerivative_pullbackScalar
     exact timeDerivative_pullbackScalar
       (q := q) (z := z) (t₀ := t₀) (v₀ := v₀) (r := r) hq.contDiffAt
   rw [htime]
-  exact parabolicELpNormOn_const_mul_pullbackScalar t₀ v₀ hr (r ^ 2)
-    (timeDerivative q) s
+  exact parabolicELpNormOn_const_mul_pullbackScalar t₀ v₀ hr _
+    _ s
 
 /-- Restricted ENNReal norm scaling for one ordered velocity-Hessian component. -/
 theorem parabolicELpNormOn_velocityHessian_pullbackScalar
-    {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) {r : ℝ} (hr : 0 < r)
+     (hr : 0 < r)
     (q : TimeVelocity d → ℝ) (hq : ContDiff ℝ 2 q)
     (s : Set (TimeVelocity d)) (i j : Fin d) :
     parabolicELpNormOn d
@@ -126,14 +122,14 @@ theorem parabolicELpNormOn_velocityHessian_pullbackScalar
     funext z
     have h := congrFun (congrFun (velocityHessian_pullbackScalar
       (q := q) (z := z) (t₀ := t₀) (v₀ := v₀) (r := r) hq.contDiffAt) i) j
-    simpa [smul_eq_mul] using h
+    omega
   rw [hhessian]
-  exact parabolicELpNormOn_const_mul_pullbackScalar t₀ v₀ hr (r ^ 2)
+  exact parabolicELpNormOn_const_mul_pullbackScalar t₀ v₀ hr _
     (fun z ↦ velocityHessian q z i j) s
 
 /-- Finite real extraction of unamplified scalar pullback scaling. -/
 theorem parabolicLpNormOn_pullbackScalar_finite
-    {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) {r : ℝ} (hr : 0 < r)
+     (hr : 0 < r)
     (q : TimeVelocity d → ℝ) (s : Set (TimeVelocity d))
     (hfin : parabolicELpNormOn d q (parabolicAffine t₀ v₀ r '' s) ≠ ⊤) :
     parabolicELpNormOn d (pullbackScalar q t₀ v₀ r) s ≠ ⊤ ∧
@@ -145,11 +141,11 @@ theorem parabolicLpNormOn_pullbackScalar_finite
   · rw [hscale]
     exact ENNReal.mul_ne_top (parabolicELpNormPullbackMeasureFactor_ne_top d r) hfin
   · unfold parabolicLpNormOn
-    rw [hscale, ENNReal.toReal_mul]
+    simp_all
 
 /-- Finite real extraction of time-derivative pullback scaling. -/
 theorem parabolicLpNormOn_timeDerivative_pullbackScalar_finite
-    {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) {r : ℝ} (hr : 0 < r)
+     (hr : 0 < r)
     (q : TimeVelocity d → ℝ) (hq : ContDiff ℝ 2 q)
     (s : Set (TimeVelocity d))
     (hfin : parabolicELpNormOn d (timeDerivative q)
@@ -165,11 +161,11 @@ theorem parabolicLpNormOn_timeDerivative_pullbackScalar_finite
     exact ENNReal.mul_ne_top
       (ENNReal.mul_ne_top enorm_ne_top (parabolicELpNormPullbackMeasureFactor_ne_top d r)) hfin
   · unfold parabolicLpNormOn
-    rw [hscale, ENNReal.toReal_mul]
+    simp_all
 
 /-- Finite real extraction of ordered velocity-Hessian pullback scaling. -/
 theorem parabolicLpNormOn_velocityHessian_pullbackScalar_finite
-    {d : ℕ} (t₀ : ℝ) (v₀ : PDE.Vec d) {r : ℝ} (hr : 0 < r)
+     (hr : 0 < r)
     (q : TimeVelocity d → ℝ) (hq : ContDiff ℝ 2 q)
     (s : Set (TimeVelocity d)) (i j : Fin d)
     (hfin : parabolicELpNormOn d (fun z ↦ velocityHessian q z i j)
@@ -187,6 +183,6 @@ theorem parabolicLpNormOn_velocityHessian_pullbackScalar_finite
     exact ENNReal.mul_ne_top
       (ENNReal.mul_ne_top enorm_ne_top (parabolicELpNormPullbackMeasureFactor_ne_top d r)) hfin
   · unfold parabolicLpNormOn
-    rw [hscale, ENNReal.toReal_mul]
+    simp_all
 
 end HypoellipticAleksandrov.Parabolic

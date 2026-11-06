@@ -32,11 +32,10 @@ theorem exists_test_cutoff {K U : Set E} (hK : IsCompact K)
       tsupport χ ⊆ U ∧ (∀ x, 0 ≤ χ x ∧ χ x ≤ 1) ∧ ∀ x ∈ K, χ x = 1 := by
   obtain ⟨δ, hδ, hdouble, χ, hs, h01, h1, h0⟩ := exists_smooth_cutoff hU hK hKU
   have hcompact : IsCompact (cthickening δ K) := hK.cthickening
-  have hc : HasCompactSupport χ := HasCompactSupport.intro hcompact h0
-  have hsupport : tsupport χ ⊆ cthickening δ K := by
-    exact closure_minimal (fun x hx => by
+  have hc  := HasCompactSupport.intro hcompact h0
+  have hsupport : tsupport χ ⊆ cthickening δ K := closure_minimal (fun x hx => by
       by_contra hn
-      exact hx (h0 x hn)) isClosed_cthickening
+      simp_all) isClosed_cthickening
   refine ⟨χ, hs, hc, hsupport.trans ?_, h01, h1⟩
   exact (cthickening_mono (by linarith) K).trans hdouble
 
@@ -57,8 +56,7 @@ theorem exists_continuous_test_approximation (η : Measure E)
     funext x
     by_cases hx : f x = 0
     · simp [hx]
-    · have hxK : x ∈ K := hfK hx
-      simp [h1 x hxK]
+    simp_all
   rw [heq]
   refine (eLpNorm_mono_ae (g := a - f)
     (hs.continuous.aestronglyMeasurable.mul (ha.aestronglyMeasurable.sub
@@ -79,15 +77,13 @@ theorem tendsto_eLpNorm_one_of_finite (μ : Measure E) [IsFiniteMeasure μ]
   let a := μ univ ^ (1 - 1 / p.toReal)
   have ha : a ≠ ∞ := by
     apply ENNReal.rpow_ne_top_of_nonneg
-    · have hpReal : 0 ≤ p.toReal := ENNReal.toReal_nonneg
-      by_cases hpt : p = ∞
-      · simp [hpt]
+    · by_cases hpt : p = ∞
+      · aesop
       · have hpr : 1 ≤ p.toReal := by
           simpa using ENNReal.toReal_mono hpt hp
-        have hi : 1 / p.toReal ≤ 1 := by
-          exact (div_le_one (by linarith)).2 hpr
+        have hi : 1 / p.toReal ≤ 1 := (div_le_one (by linarith)).2 hpr
         linarith
-    · exact measure_ne_top μ univ
+    simp
   have ht := ENNReal.Tendsto.mul_const h (Or.inr ha)
   rw [zero_mul] at ht
   refine tendsto_of_tendsto_of_tendsto_of_le_of_le' tendsto_const_nhds ht

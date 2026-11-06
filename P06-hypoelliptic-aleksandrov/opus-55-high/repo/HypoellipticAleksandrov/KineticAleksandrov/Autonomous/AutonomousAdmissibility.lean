@@ -12,7 +12,6 @@ import Mathlib.Tactic
 /-! # Uniform autonomous admissibility at exponent six -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov Parabolic Autonomous Holder Set MeasureTheory
 open scoped ENNReal
@@ -36,11 +35,11 @@ theorem autonomous_admissibility_of_below_four_density
         IsAdmissibleSolution
           (fun _ x v => fun _ _ => a (x 0) (v 0)) Omega 6 C_A u := by
   have hp : 1 + bellmanAdjointExponent (Lam / lam)
-      ((le_div_iff₀ hlam).2 (by simpa only [one_mul] using hLam)) < 6 := by
+      ((le_div_iff₀ hlam).2 (by simp_all)) < 6 := by
     have hc := (criticalP_bounds ⟨Lam / lam, (le_div_iff₀ hlam).2
-      (by simpa only [one_mul] using hLam)⟩).2
+      (by simp_all)⟩).2
     change 1 + bellmanAdjointExponent _ _ < 4 at hc
-    linarith only [hc]
+    linarith
   obtain ⟨C_A, _hC, hestimate⟩ :=
     kinetic_aleksandrov_autonomous_localised_relative_of_below_four_density
       hdensity hH hLE lam Lam 6 hlam hLam hp
@@ -66,13 +65,11 @@ theorem autonomous_admissibility_of_below_four_density
       have hadd := autonomous_operator_add hpr hneg a hP
       have hmul := autonomous_operator_const_mul hwr (-1) a hP
       simp only [neg_one_mul, ← sub_eq_add_neg] at hadd hmul
-      rw [hadd, hmul, he]
-      simp only [neg_zero, add_zero, le_refl]
+      simp_all
     obtain ⟨hmeas, hLp⟩ := autonomous_test_source hlam ha hb P₀ R hR hpsi
     have hn : {P | 0 < psi P - w P} = {P | w P < psi P} := by
-      ext P
-      exact sub_pos
-    have hbnd := hestimate P₀ R hR a ha hb (autonomousScalarOperator a psi)
+      simp
+    have hbnd := hestimate P₀ R hR a ha hb _
       (fun P => psi P - w P) hmeas
       (hpsi.continuousOn.sub (hw.continuousOn.mono hQ)) hdiff hop hLp
     have hbnd' : ∀ P ∈ closure (backwardCylinder P₀ R), psi P - w P ≤
@@ -84,14 +81,13 @@ theorem autonomous_admissibility_of_below_four_density
         show 4 * (1 : ℝ) + 2 = 6 by norm_num] using hbnd
     apply csSup_le
     · exact (backwardCylinder_nonempty P₀ hR).closure.image _
-    · rintro y ⟨P, hP, rfl⟩
-      simpa only [Nat.cast_one] using hbnd' P hP
+    simp_all
   refine ⟨hsup u hu heq, ?_⟩
   have hneg : IsKineticC112On (fun P => -u P) Omega := by
     simpa only [neg_one_mul] using comparison_regular_const_mul hu (-1)
   apply hsup (fun P => -u P) hneg
   filter_upwards [heq, ae_restrict_mem _hOmega.measurableSet] with P he hP
   have hm := autonomous_operator_const_mul hu (-1) a hP
-  simpa only [neg_one_mul, he, neg_zero] using hm
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov

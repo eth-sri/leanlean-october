@@ -34,20 +34,20 @@ theorem reconstructionUnitBump_properties :
 def reconstructionPositionBump (R : ℝ) (hR : 0 < R) : ContDiffBump (0 : ℝ) :=
   ⟨R, 2 * R, hR, by linarith⟩
 
+variable (x : ℝ) (R : ℝ) (hR : 0 < R)
+
 /-- Radius rescaling agrees with the previously verified scalar cutoff calculus. -/
-theorem reconstructionPositionBump_eq_scaled (R : ℝ) (hR : 0 < R) :
+theorem reconstructionPositionBump_eq_scaled  :
     (reconstructionPositionBump R hR : ℝ → ℝ) =
       scaledScalarCutoff reconstructionUnitBump R := by
   funext x
-  simp only [ContDiffBump.apply, reconstructionPositionBump, reconstructionUnitBump,
-    scaledScalarCutoff, sub_zero, smul_eq_mul]
+  simp only [ContDiffBump.apply, reconstructionPositionBump, reconstructionUnitBump]
   congr 1
   · field_simp
-  · simp only [inv_one, one_mul, div_eq_mul_inv]
-    ring
+  · ring
 
 /-- The cutoff derivative has a uniform inverse-radius bound. -/
-theorem reconstructionPositionBump_deriv_bound (R : ℝ) (hR : 0 < R) (D : ℝ)
+theorem reconstructionPositionBump_deriv_bound  (D : ℝ)
     (hD : ∀ x, |deriv reconstructionUnitBump x| ≤ D) (x : ℝ) :
     |deriv (reconstructionPositionBump R hR) x| ≤ D / R := by
   rw [reconstructionPositionBump_eq_scaled]
@@ -55,29 +55,28 @@ theorem reconstructionPositionBump_deriv_bound (R : ℝ) (hR : 0 < R) (D : ℝ)
     (reconstructionUnitBump_properties.1.of_le (by simp)) hR D hD x
 
 /-- Expanding position cutoffs eventually equal one at every fixed position. -/
-theorem reconstructionPositionBump_tendsto (x : ℝ) :
+theorem reconstructionPositionBump_tendsto  :
     Tendsto (fun n : ℕ => reconstructionPositionBump ((n : ℝ) + 1) (by positivity) x)
       atTop (𝓝 1) := by
   apply tendsto_const_nhds.congr'
-  have hn := (tendsto_natCast_atTop_atTop.eventually_ge_atTop (|x| : ℝ))
+  have hn := (tendsto_natCast_atTop_atTop.eventually_ge_atTop (|x|))
   filter_upwards [hn] with n hn
   symm
-  apply (reconstructionPositionBump ((n : ℝ) + 1) (by positivity)).one_of_mem_closedBall
+  apply (reconstructionPositionBump _ (by positivity)).one_of_mem_closedBall
   rw [mem_closedBall, Real.dist_eq, sub_zero]
-  change |x| ≤ (n : ℝ) + 1
+  change |x| ≤ n + 1
   linarith
 
 /-- The expanding position cutoff derivative converges to zero. -/
-theorem reconstructionPositionBump_deriv_tendsto (x : ℝ) :
+theorem reconstructionPositionBump_deriv_tendsto  :
     Tendsto (fun n : ℕ => deriv
       (reconstructionPositionBump ((n : ℝ) + 1) (by positivity)) x) atTop (𝓝 0) := by
   obtain ⟨D, _, hD⟩ := reconstructionUnitBump_properties.2.2.2
   apply squeeze_zero_norm (fun n => ?_)
-    (show Tendsto (fun n : ℕ => D / ((n : ℝ) + 1)) atTop (𝓝 0) from by
+    (show Tendsto (fun n : ℕ => D / (n + 1)) atTop _ from by
       simpa only [div_eq_mul_inv, one_mul, mul_zero] using
         tendsto_one_div_add_atTop_nhds_zero_nat.const_mul D)
-  rw [Real.norm_eq_abs]
-  exact reconstructionPositionBump_deriv_bound _ (by positivity) D hD x
+  exact reconstructionPositionBump_deriv_bound _ _ D hD x
 
 /-- Coordinatewise smooth cutoffs make an arbitrary smooth test compact. -/
 theorem reconstruction_product_cutoff_compact
@@ -86,27 +85,25 @@ theorem reconstruction_product_cutoff_compact
       bx (transportedCoord 1 x 0) * f x) := by
   let R := max bt.rOut (max bv.rOut bx.rOut)
   have hR : 0 ≤ R := bt.rOut_pos.le.trans (le_max_left _ _)
-  apply IsCompact.of_isClosed_subset (isCompact_closedBall (0 : EvolutionVec 1) R)
+  apply IsCompact.of_isClosed_subset (isCompact_closedBall (0) R)
     (isClosed_tsupport _)
   apply closure_minimal _ isClosed_closedBall
   intro x hx
   have hn : bt (timeCoord 1 x) ≠ 0 ∧ bv (diffusedCoord 1 x 0) ≠ 0 ∧
       bx (transportedCoord 1 x 0) ≠ 0 := by
-    have hh := mul_ne_zero_iff.mp hx
-    have hh' := mul_ne_zero_iff.mp hh.1
-    exact ⟨(mul_ne_zero_iff.mp hh'.1).1, (mul_ne_zero_iff.mp hh'.1).2, hh'.2⟩
+    simp_all
   have ht : |timeCoord 1 x| < bt.rOut := by
     have hh : timeCoord 1 x ∈ Function.support bt := hn.1
     rw [bt.support_eq] at hh
-    simpa only [mem_ball, Real.dist_eq, sub_zero] using hh
+    simp_all
   have hv : |diffusedCoord 1 x 0| < bv.rOut := by
     have hh : diffusedCoord 1 x 0 ∈ Function.support bv := hn.2.1
     rw [bv.support_eq] at hh
-    simpa only [mem_ball, Real.dist_eq, sub_zero] using hh
+    simp_all
   have hz : |transportedCoord 1 x 0| < bx.rOut := by
     have hh : transportedCoord 1 x 0 ∈ Function.support bx := hn.2.2
     rw [bx.support_eq] at hh
-    simpa only [mem_ball, Real.dist_eq, sub_zero] using hh
+    simp_all
   rw [mem_closedBall_zero_iff, pi_norm_le_iff_of_nonneg hR]
   intro i
   fin_cases i

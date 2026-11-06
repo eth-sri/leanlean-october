@@ -33,8 +33,10 @@ def gaussianBarrier {d : ℕ} (lam Lam H h L ell tminus sblock : ℝ)
     gaussianFormula barrierCutoff lam Lam H h L ell tminus sblock x v P
   else 0
 
+variable {d : ℕ} {lam h : ℝ}
+
 /-- Outside the covariance strip the source cutoff kills the entire formula. -/
-theorem gaussianBarrier_eq_formula {d : ℕ} (lam Lam H h L ell tminus sblock : ℝ)
+theorem gaussianBarrier_eq_formula  (lam Lam H h L ell tminus sblock : ℝ)
     (x v : ℝ → PDE.Vec d) (P : KineticPoint d) :
     gaussianBarrier lam Lam H h L ell tminus sblock x v P =
       gaussianFormula barrierCutoff lam Lam H h L ell tminus sblock x v P := by
@@ -46,7 +48,7 @@ theorem gaussianBarrier_eq_formula {d : ℕ} (lam Lam H h L ell tminus sblock : 
     rw [barrierCutoff_zero (le_of_not_gt hs), mul_zero, zero_mul]
 
 /-- Smoothness of the literal formula at each point of the closed definite strip. -/
-theorem contDiffAt_raw_gaussianFormula {d : ℕ} {lam h : ℝ}
+theorem contDiffAt_raw_gaussianFormula 
     (hlam : 0 < lam) (hh : 0 < h) (Lam H L ell tminus sblock : ℝ)
     {x v : ℝ → PDE.Vec d} (hx : ContDiff ℝ (⊤ : ℕ∞) x)
     (hv : ContDiff ℝ (⊤ : ℕ∞) v) (Q : ℝ × (PDE.Vec d × PDE.Vec d))
@@ -55,31 +57,22 @@ theorem contDiffAt_raw_gaussianFormula {d : ℕ} {lam h : ℝ}
       (rawLift (gaussianFormula barrierCutoff lam Lam H h L ell tminus sblock x v)) Q := by
   have hs : -(h / 128) ≤ Q.1 - tminus - sblock := by
     have hz := (le_div_iff₀ hh).mp hQ
-    linarith only [hz]
+    linarith
   have hmap : ContDiff ℝ (⊤ : ℕ∞)
       (fun T : ℝ × (PDE.Vec d × PDE.Vec d) =>
         (T.1 - tminus - sblock, (T.2.1 - x (T.1 - tminus),
           T.2.2 - v (T.1 - tminus)))) := by
-    exact ((contDiff_fst.sub contDiff_const).sub contDiff_const).prodMk
-      ((contDiff_fst.comp contDiff_snd).sub
-        (hx.comp (contDiff_fst.sub contDiff_const)) |>.prodMk
-        ((contDiff_snd.comp contDiff_snd).sub
-          (hv.comp (contDiff_fst.sub contDiff_const))))
+    fun_prop
   have hq := (contDiffAt_qform_raw hlam hh hs
-    (Q.2.1 - x (Q.1 - tminus)) (Q.2.2 - v (Q.1 - tminus))).comp Q hmap.contDiffAt
+    _ _).comp Q hmap.contDiffAt
   have htime : ContDiff ℝ (⊤ : ℕ∞)
       (fun T : ℝ × (PDE.Vec d × PDE.Vec d) => T.1 - tminus - sblock) := by fun_prop
   have hchi := contDiff_barrierCutoff.comp (htime.div_const h)
-  change ContDiffAt ℝ (⊤ : ℕ∞) (fun T : ℝ × (PDE.Vec d × PDE.Vec d) =>
-    ell * barrierCutoff ((T.1 - tminus - sblock) / h) *
-      (Real.exp (-Xi d lam Lam H h * (T.1 - tminus - sblock) -
-        qform lam h (T.1 - tminus - sblock)
-          (T.2.1 - x (T.1 - tminus)) (T.2.2 - v (T.1 - tminus))) - Real.exp (-L ^ 2))) Q
   exact (contDiffAt_const.mul hchi.contDiffAt).mul
     (((contDiffAt_const.mul htime.contDiffAt).sub hq).exp.sub contDiffAt_const)
 
 /-- Global smoothness follows by gluing to zero, without a global inverse smoothness claim. -/
-theorem contDiff_raw_gaussianBarrier {d : ℕ} {lam h : ℝ}
+theorem contDiff_raw_gaussianBarrier 
     (hlam : 0 < lam) (hh : 0 < h) (Lam H L ell tminus sblock : ℝ)
     {x v : ℝ → PDE.Vec d} (hx : ContDiff ℝ (⊤ : ℕ∞) x)
     (hv : ContDiff ℝ (⊤ : ℕ∞) v) :
@@ -97,9 +90,6 @@ theorem contDiff_raw_gaussianBarrier {d : ℕ} {lam h : ℝ}
       ht.continuousAt.eventually (gt_mem_nhds (lt_of_not_ge hs))
     apply (contDiffAt_const (c := (0 : ℝ))).congr_of_eventuallyEq
     filter_upwards [he] with T hT
-    change gaussianBarrier lam Lam H h L ell tminus sblock x v
-      ⟨T.1, T.2.1, T.2.2⟩ = 0
-    unfold gaussianBarrier
     exact ite_eq_right (not_lt.mpr hT.le)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

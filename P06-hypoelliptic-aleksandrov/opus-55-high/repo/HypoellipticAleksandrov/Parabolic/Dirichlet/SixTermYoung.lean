@@ -25,22 +25,7 @@ private theorem young_eps
 
 private theorem abs_six_terms_le (s a b c e f : ℝ) :
     |(-s) - a - b - c + e + f| ≤ |s| + |a| + |b| + |c| + |e| + |f| := by
-  calc
-    |(-s) - a - b - c + e + f| ≤ |(-s) - a - b - c + e| + |f| :=
-      abs_add_le _ _
-    _ ≤ (|(-s) - a - b - c| + |e|) + |f| := by
-      gcongr
-      exact abs_add_le _ _
-    _ ≤ ((|(-s) - a - b| + |c|) + |e|) + |f| := by
-      gcongr
-      exact abs_sub _ _
-    _ ≤ (((|(-s) - a| + |b|) + |c|) + |e|) + |f| := by
-      gcongr
-      exact abs_sub _ _
-    _ ≤ ((((|-s| + |a|) + |b|) + |c|) + |e|) + |f| := by
-      gcongr
-      exact abs_sub _ _
-    _ = |s| + |a| + |b| + |c| + |e| + |f| := by rw [abs_neg]
+  grind
 
 /-- A scalar six-term estimate with the two mixed terms absorbed by Young's
 inequality. -/

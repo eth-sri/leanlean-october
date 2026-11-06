@@ -13,7 +13,6 @@ in this library, so the statement carries no extra hypotheses.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open Set MeasureTheory Holder
 open scoped MatrixOrder
@@ -36,8 +35,7 @@ theorem kinetic_holder_timeVelocity
         (∀ P ∈ K, closure (backwardCylinder P (2 * R₀)) ⊆ Omega) →
       ∀ P ∈ K, ∀ P' ∈ K,
         |u P - u P'| ≤ C * oscillationOn u (holderNeighbourhood R₀ K) *
-          (quasiDistance P P' / R₀) ^ alpha := by
-  exact HypoellipticAleksandrov.KineticAleksandrov.kinetic_holder_timeVelocity_proof
+          (quasiDistance P P' / R₀) ^ alpha := HypoellipticAleksandrov.KineticAleksandrov.kinetic_holder_timeVelocity_proof
     d hd lam Lam hlam hLam
 
 end HypoellipticAleksandrov.KineticAleksandrov

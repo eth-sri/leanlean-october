@@ -88,31 +88,31 @@ def HasCurveSpeedOn {d : ℕ} (H : ℝ) (γ : ℝ → PDE.Vec d) (σ τ : ℝ) :
   ∀ r ∈ Ioo σ τ, DifferentiableAt ℝ γ r → PDE.vecEuclideanNorm (deriv γ r) ≤ H
 
 /-- The source phase center `∫_σ^τ ξ · b(γ(r)) dr`. -/
-noncomputable def phaseCenter {d : ℕ} (ξ : PDE.Vec d) (b : PDE.Vec d → PDE.Vec d)
+def phaseCenter {d : ℕ} (ξ : PDE.Vec d) (b : PDE.Vec d → PDE.Vec d)
     (γ : ℝ → PDE.Vec d) (σ τ : ℝ) : ℝ :=
   ∫ r in σ..τ, PDE.vecDot ξ (b (γ r))
 
 /-- The source tent profile `𝖿(t) = min {t, 1, L₀ - t}`. -/
-noncomputable def tent (L0 t : ℝ) : ℝ := min t (min 1 (L0 - t))
+def tent (L0 t : ℝ) : ℝ := min t (min 1 (L0 - t))
 
 /-- The source duration `L₀ = 2 + 2π / m` of the two opposite tubes. -/
-noncomputable def blockL0 (m : ℝ) : ℝ := 2 + 2 * Real.pi / m
+def blockL0 (m : ℝ) : ℝ := 2 + 2 * Real.pi / m
 
 /-- The source radius `ρ = min {1, (128 L_b)^(-1/3)}`. -/
-noncomputable def blockRho (Lb : ℝ) : ℝ := min 1 ((128 * Lb) ^ (-(1 / 3 : ℝ)))
+def blockRho (Lb : ℝ) : ℝ := min 1 ((128 * Lb) ^ (-(1 / 3 : ℝ)))
 
 /-- The source tube radius `η = min {ρ / 4, 1 / (8 L_b L₀)}`. -/
-noncomputable def blockEta (m Lb : ℝ) : ℝ :=
+def blockEta (m Lb : ℝ) : ℝ :=
   min (blockRho Lb / 4) (1 / (8 * Lb * blockL0 m))
 
 /-- The source block length `L = L₀ + 4ρ²`. -/
-noncomputable def blockTime (m Lb : ℝ) : ℝ := blockL0 m + 4 * blockRho Lb ^ 2
+def blockTime (m Lb : ℝ) : ℝ := blockL0 m + 4 * blockRho Lb ^ 2
 
 /-- The source fitting radius `R_* = 1 + 4ρ`. -/
-noncomputable def blockOuter (Lb : ℝ) : ℝ := 1 + 4 * blockRho Lb
+def blockOuter (Lb : ℝ) : ℝ := 1 + 4 * blockRho Lb
 
 /-- The source retained mass `m₀ = exp (-C_* (η⁻² + 1/4) L₀)`. -/
-noncomputable def blockMass (Cstar m Lb : ℝ) : ℝ :=
+def blockMass (Cstar m Lb : ℝ) : ℝ :=
   Real.exp (-Cstar * ((blockEta m Lb)⁻¹ ^ 2 + 1 / 4) * blockL0 m)
 
 /-- The signed source phase comparison barrier. -/
@@ -131,23 +131,23 @@ def infinityBarrier {d : ℕ} (η M τ : ℝ) (z0 : PDE.Vec d)
 def swapDiffusedTransported {d : ℕ} (p : KineticPoint d) : KineticPoint d :=
   ⟨p.time, p.velocity, p.position⟩
 
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d} (σ τ : ℝ) (hστ : σ ≤ τ)
+
 /-- The query lift preserves the two times and both source coordinates. -/
 @[simp]
-theorem movingQuery_val {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (σ τ : ℝ) (hστ : σ ≤ τ) (v z : PDE.Vec d)
+theorem movingQuery_val  (v z : PDE.Vec d)
     (hv : v ∈ movingDomain Ω γ σ) :
     (movingQuery σ τ hστ v z hv).val = (σ, τ, v, z) := rfl
 
 /-- The scalar query lift preserves the two times and source position. -/
 @[simp]
-theorem scalarQuery_val {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Vec d}
-    (σ τ : ℝ) (hστ : σ ≤ τ) (v : PDE.Vec d)
+theorem scalarQuery_val  (v : PDE.Vec d)
     (hv : v ∈ movingDomain Ω γ σ) :
     (scalarQuery σ τ hστ v hv).val = (σ, τ, v) := rfl
 
 /-- The coordinate interchange is an involution. -/
 @[simp]
-theorem swapDiffusedTransported_swap {d : ℕ} (p : KineticPoint d) :
+theorem swapDiffusedTransported_swap  (p : KineticPoint d) :
     swapDiffusedTransported (swapDiffusedTransported p) = p := rfl
 
 end HypoellipticAleksandrov.KineticAleksandrov.Decay

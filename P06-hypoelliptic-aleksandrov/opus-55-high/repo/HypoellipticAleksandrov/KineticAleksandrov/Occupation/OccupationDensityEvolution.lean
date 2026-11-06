@@ -122,11 +122,10 @@ theorem evolution_clauses_of_realization
     hEvol n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b hΩ hγ hBs hBsym hBell
       hbs hbl hbc
   have hr₀ : RealizesTerminalEvolution Ω γ
-      (measurableSet_of_isAdmissibleEvolutionDomain hΩ) B b S₀ K₀ :=
+      _ B b S₀ K₀ :=
     ⟨hc, hi, he, hcomp⟩
   have hunique := terminalEvolution_unique Ω γ hΩ B b S S₀ K K₀ hreal hr₀
-  rw [hunique.2]
-  exact ⟨hcov, hdom, hpar⟩
+  grind
 
 /-- The full evolution premise supplies the marginal bundle for every whole-space realization. -/
 theorem wholeSpace_marginalBundle_of_evolution
@@ -141,8 +140,8 @@ theorem wholeSpace_marginalBundle_of_evolution
   obtain ⟨hBs, hBsym, hBell⟩ := sectionTwoCoefficient_fullBounds lam Lam B hB
   have hb := identityDrift_bounds d
   exact (evolution_clauses_of_realization hEvol d hd lam Lam 1 1 hB.1 hB.2.1
-    one_pos le_rfl (wholeSpace d) (fun _ => 0) (zIndependentCoefficient B)
-    (identityDrift d) (wholeSpace_admissible d) (zeroCurve_piecewiseC1 d)
+    one_pos le_rfl _ _ _
+    _ (wholeSpace_admissible d) (zeroCurve_piecewiseC1 d)
     hBs hBsym hBell (identityDrift_smooth d) hb.1 hb.2 S K hreal).2.2
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

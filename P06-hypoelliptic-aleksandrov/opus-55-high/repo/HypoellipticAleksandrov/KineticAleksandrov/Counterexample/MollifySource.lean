@@ -10,7 +10,6 @@ These are scalar convolution facts, to be applied after the operator identity is
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory ContinuousLinearMap
 open scoped Convolution
@@ -22,17 +21,13 @@ omit [BorelSpace G] [Measure.IsAddHaarMeasure (volume : Measure G)] in
 /-- Nonnegative spatial data remain nonnegative after normalized convolution. -/
 theorem spatialMollify_nonneg (phi : ContDiffBump (0 : G)) (f : G → ℝ)
     (hf : ∀ y, 0 ≤ f y) (q : G) : 0 ≤ spatialMollify phi f q := by
-  unfold spatialMollify
   apply integral_nonneg
   intro y
-  exact mul_nonneg (phi.nonneg_normed y) (hf (q - y))
+  exact mul_nonneg (phi.nonneg_normed y) (hf _)
 
 /-- The scalar positive-part estimate used to absorb an operator commutator. -/
 theorem positive_part_add_le (a f e : ℝ) (hf : 0 ≤ f) (haf : a ≤ f) :
     max (a + e) 0 ≤ f + |e| := by
-  apply max_le
-  · have he := le_abs_self e
-    linarith
-  · exact add_nonneg hf (abs_nonneg e)
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

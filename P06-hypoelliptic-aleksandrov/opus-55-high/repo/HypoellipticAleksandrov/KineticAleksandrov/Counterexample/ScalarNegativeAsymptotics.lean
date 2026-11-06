@@ -41,33 +41,29 @@ theorem scalar_negative_leading (gamma : ScalarGamma) (Lam s : ℝ)
   simp only [Real.rpow_eq_pow]
   have hpow : (9 : ℝ) ^ (-(gamma.1 - 1 / 3)) =
       9 ^ (1 / 3 : ℝ) * 9 ^ (-gamma.1) := by
-    rw [← Real.rpow_add (by norm_num : (0 : ℝ) < 9)]
-    congr 1
+    rw [← Real.rpow_add (by norm_num)]
     ring
   have hsprod : s * s ^ (3 * (gamma.1 - 1 / 3)) = s ^ (3 * gamma.1) := by
-    rw [mul_comm s, ← Real.rpow_add_one hs.ne']
-    congr 1
+    rw [mul_comm, ← Real.rpow_add_one hs.ne']
     ring
   have hroot : (9 * Lam) ^ (1 / 3 : ℝ) = 9 ^ (1 / 3 : ℝ) * Lam ^ (1 / 3 : ℝ) :=
     Real.mul_rpow (by norm_num) hLam.le
   have ha := gammaA_leading_ratio gamma
   have hb := gammaB_leading_ratio gamma
   rw [hpow, hroot, Real.rpow_neg hLam.le]
-  have h9 : (9 : ℝ) ^ (1 / 3 : ℝ) ≠ 0 := (Real.rpow_pos_of_pos (by norm_num) _).ne'
-  have hL : Lam ^ (1 / 3 : ℝ) ≠ 0 := (Real.rpow_pos_of_pos hLam _).ne'
   have he : gammaA gamma.1 *
       (Real.Gamma (2 / 3) / Real.Gamma (2 / 3 + gamma.1)) = Pgamma gamma.1 := by
-    simpa only [mul_div_assoc] using ha
+    grind
   have he' : gammaB gamma.1 *
       (Real.Gamma (4 / 3) / Real.Gamma (1 + gamma.1)) = Qgamma gamma.1 := by
-    simpa only [mul_div_assoc] using hb
+    grind
   calc
-    _ = (gammaA gamma.1 * (Real.Gamma (2 / 3) / Real.Gamma (2 / 3 + gamma.1))) *
+    _ = (gammaA gamma.1 * (Real.Gamma _ / Real.Gamma (2 / 3 + gamma.1))) *
           9 ^ (-gamma.1) * s ^ (3 * gamma.1) -
         (gammaB gamma.1 * (Real.Gamma (4 / 3) / Real.Gamma (1 + gamma.1))) *
           9 ^ (-gamma.1) / Lam ^ (1 / 3 : ℝ) *
             (s * s ^ (3 * (gamma.1 - 1 / 3))) := by field_simp
-    _ = _ := by rw [he, he', hsprod]; ring
+    _ = _ := by grind
 
 section MExpansion
 
@@ -87,35 +83,30 @@ theorem scalar_M_remainders_of_M_expansion (gamma : ScalarGamma) :
       (fun s => s * (Kummer.M (1 / 3 - gamma.1) Kummer.b43 (-(s ^ 3 / 9)) -
         Kummer.mExpansion (1 / 3 - gamma.1) (4 / 3) 1 (s ^ 3 / 9)))
       (fun s => Real.rpow s (3 * gamma.1 - 3)) := by
-  have ha1 : -1 < -gamma.1 := by linarith only [gamma.2.2]
+  have ha1 : -1 < -gamma.1 := by grind
   have hb1 : -gamma.1 < Kummer.b23.1 := by
-    dsimp only [Kummer.b23]
-    linarith only [gamma.2.1]
-  have ha2 : -1 < 1 / 3 - gamma.1 := by linarith only [gamma.2.2]
+    grind
+  have ha2 : -1 < 1 / 3 - gamma.1 := by linarith
   have hb2 : 1 / 3 - gamma.1 < Kummer.b43.1 := by
     dsimp only [Kummer.b43]
-    linarith only [gamma.2.1]
-  have hm1 := hm (-gamma.1) Kummer.b23 ha1 hb1 1
-  have hm2 := hm (1 / 3 - gamma.1) Kummer.b43 ha2 hb2 1
-  simp only [neg_neg, Nat.cast_one, Kummer.b23] at hm1
-  simp only [Nat.cast_one, Kummer.b43] at hm2
+    grind
+  have hm1 := hm _ Kummer.b23 ha1 hb1 1
+  have hm2 := hm _ Kummer.b43 ha2 hb2 1
+  simp only [Nat.cast_one] at hm2
   rw [show -(1 / 3 - gamma.1) - 1 = gamma.1 - 4 / 3 by ring] at hm2
-  have h1 := isBigO_comp_scalar_tail _ (gamma.1 - 1) 9 (by norm_num) hm1
-  have h2 := isBigO_comp_scalar_tail _ (gamma.1 - 4 / 3) 9 (by norm_num) hm2
+  have h1 := isBigO_comp_scalar_tail _ _ 9 (by norm_num) hm1
+  have h2 := isBigO_comp_scalar_tail _ _ 9 (by norm_num) hm2
   have hi : IsBigO atTop (fun s : ℝ => s) (fun s => Real.rpow s 1) := by
-    simpa only [Real.rpow_eq_pow, Real.rpow_one] using (isBigO_refl (fun s : ℝ => s) atTop)
+    aesop
   have hprod := hi.mul h2
   have he : (fun s : ℝ => Real.rpow s 1 * Real.rpow s (3 * (gamma.1 - 4 / 3)))
       =ᶠ[atTop] fun s => Real.rpow s (3 * gamma.1 - 3) := by
-    filter_upwards [eventually_gt_atTop (0 : ℝ)] with s hs
+    filter_upwards [eventually_gt_atTop (0)] with s hs
     simp only [Real.rpow_eq_pow]
     rw [← Real.rpow_add hs]
-    congr 1
     ring
   constructor
   · convert h1 using 1
-    congr 1
-    funext s
     congr 1
     ring
   · exact hprod.congr' (EventuallyEq.refl _ _) he
@@ -132,10 +123,9 @@ theorem Fminus_negative_ray_asymptotic_of_M_expansion (gamma : ScalarGamma) (Lam
   have h := (h1.const_mul_left (gammaA gamma.1)).sub
     (h2.const_mul_left (gammaB gamma.1 / Real.rpow (9 * Lam) (1 / 3)))
   apply h.congr' _ EventuallyEq.rfl
-  filter_upwards [eventually_gt_atTop (0 : ℝ)] with s hs
+  filter_upwards [eventually_gt_atTop (0)] with s hs
   rw [← scalar_negative_leading gamma Lam s hLam hs]
   unfold Fminus
-  rw [show (-s) ^ 3 / 9 = -(s ^ 3 / 9) by ring]
   ring
 
 end MExpansion
@@ -148,7 +138,6 @@ theorem scalar_matching_trace_coefficient (gamma : ScalarGamma) (Lam : ℝ) (hLa
       (Pgamma gamma.1 - Qgamma gamma.1 * Real.rpow Lam (-(1 / 3))) =
         Real.rpow (9 * Lam) (-gamma.1) := by
   rw [hmatch]
-  simp only [Real.rpow_eq_pow]
   exact (Real.mul_rpow (by norm_num) hLam.le).symm
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

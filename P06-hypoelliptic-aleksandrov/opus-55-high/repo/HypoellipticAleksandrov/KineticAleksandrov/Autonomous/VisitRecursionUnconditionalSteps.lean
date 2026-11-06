@@ -7,7 +7,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.VisitRecursi
 /-! # Unconditional active and waiting steps of the physical visit recursion -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
@@ -28,9 +27,9 @@ theorem visitEntrance_nested
         visitUnionExitKernel hH hLE hlam hLam A J.toFiniteUnion s T ∘ₘ beta := by
   have hsub : (visitActiveUnion c J).carrier ⊆ J.toFiniteUnion.carrier := by
     rw [visitActiveUnion_carrier, Interval.toFiniteUnion_carrier]
-    exact inter_subset_right
-  have h := visitUnion_nested hH hLE hlam hLam A (visitActiveUnion c J) J.toFiniteUnion
-    hsub s T hT (visitEntrancePiece hH hLE hlam hLam A c J s T P n)
+    simp
+  have h := visitUnion_nested hH hLE hlam hLam A _ J.toFiniteUnion
+    hsub s T hT _
     (visitEntrancePiece_ae_activePole hH hLE hlam hLam A c J s T P hP n)
   simpa only [visitActive_internalExit, visitOutgoingPiece, visitBeta,
     visitEntrancePiece] using h
@@ -52,9 +51,9 @@ theorem visitOutgoing_nested
         visitUnionExitKernel hH hLE hlam hLam A J.toFiniteUnion s T ∘ₘ gamma := by
   have hsub : (visitWaitingUnion c J).carrier ⊆ J.toFiniteUnion.carrier := by
     rw [visitWaitingUnion_carrier, Interval.toFiniteUnion_carrier]
-    exact sdiff_subset
-  have h := visitUnion_nested hH hLE hlam hLam A (visitWaitingUnion c J) J.toFiniteUnion
-    hsub s T hT (visitOutgoingPiece hH hLE hlam hLam A c J s T P n)
+    simp
+  have h := visitUnion_nested hH hLE hlam hLam A _ J.toFiniteUnion
+    hsub s T hT _
     (visitOutgoingPiece_ae_waitingPole hH hLE hlam hLam A c J s T P n)
   simpa only [visitWaiting_internalExit, visitEntrancePiece, visitGamma,
     visitOutgoingPiece, visitBeta] using h

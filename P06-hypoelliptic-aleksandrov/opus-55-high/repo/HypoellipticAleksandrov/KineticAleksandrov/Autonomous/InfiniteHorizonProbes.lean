@@ -48,20 +48,21 @@ def infiniteExitProbeCc (H : Interval) (f : exitProbeSubmodule) :
 def infiniteExitProbeCcLinear (H : Interval) :
     exitProbeSubmodule →ₗ[ℝ] C_c(stripInfiniteFace H, ℝ) where
   toFun := infiniteExitProbeCc H
-  map_add' f g := by ext p; rfl
-  map_smul' c f := by ext p; rfl
+  map_add' f g := by aesop
+  map_smul' c f := by aesop
+
+variable (H : Interval)
 
 /-- The dense restriction family is closed under squaring. -/
-theorem infiniteExitProbeCc_sq (H : Interval) (f : exitProbeSubmodule) :
+theorem infiniteExitProbeCc_sq  (f : exitProbeSubmodule) :
     ∃ g : exitProbeSubmodule,
       infiniteExitProbeCcLinear H g = infiniteExitProbeCcLinear H f * infiniteExitProbeCcLinear H
         f := by
   refine ⟨⟨fun x => f.1 x * f.1 x, f.2.1.mul f.2.1, f.2.2.mul_left⟩, ?_⟩
-  ext p
-  rfl
+  aesop
 
 /-- Smooth compact ambient restrictions uniformly approximate every compact exit datum. -/
-theorem infiniteExitProbeCc_dense (H : Interval) (g : C_c(stripInfiniteFace H, ℝ))
+theorem infiniteExitProbeCc_dense  (g : C_c(stripInfiniteFace H, ℝ))
     (ε : ℝ) (hε : 0 < ε) :
     ∃ f : exitProbeSubmodule, ∀ p, |infiniteExitProbeCcLinear H f p - g p| ≤ ε := by
   let j : stripInfiniteFace H → EvolutionVec 1 :=
@@ -70,23 +71,21 @@ theorem infiniteExitProbeCc_dense (H : Interval) (g : C_c(stripInfiniteFace H, �
     (isClosed_stripInfiniteFace H).isClosedEmbedding_subtypeVal
   obtain ⟨G, -, hG⟩ := BoundedContinuousFunction.exists_extension_norm_eq_of_isClosedEmbedding
     g.toBoundedContinuousFunction hj
-  have hK : IsCompact (j '' tsupport (g : stripInfiniteFace H → ℝ)) :=
+  have hK  :=
     g.hasCompactSupport.isCompact.image hj.continuous
   obtain ⟨χ, hχ, hc, -, -, hone⟩ :=
     exists_smooth_bump_of_isCompact_subset_isOpen hK isOpen_univ (subset_univ _)
   let F : C_c(EvolutionVec 1, ℝ) :=
     ⟨⟨fun x => χ x * G x, hχ.continuous.mul G.continuous⟩, hc.mul_right⟩
   have hFg (p : stripInfiniteFace H) : F (j p) = g p := by
-    have hh : G (j p) = g p := congrFun hG p
+    have hh : G _ = g p := congrFun hG p
     by_cases hp : g p = 0
-    · change χ (j p) * G (j p) = g p
-      rw [hh, hp, mul_zero]
+    · aesop
     · change χ (j p) * G (j p) = g p
       rw [hone _ ⟨p, subset_tsupport _ hp, rfl⟩, one_mul, hh]
   obtain ⟨f, hf, hclose⟩ := exists_smooth_compact_probe_close F ε hε
   refine ⟨⟨f, hf, f.hasCompactSupport⟩, fun p => ?_⟩
   have hh := hclose (j p)
-  rw [hFg p] at hh
-  exact hh
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

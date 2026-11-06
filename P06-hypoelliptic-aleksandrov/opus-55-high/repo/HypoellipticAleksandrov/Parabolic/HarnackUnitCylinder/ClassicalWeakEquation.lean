@@ -49,9 +49,6 @@ theorem IsScalarC12On.isWeakParabolicEquationLoc
       hasWeakVelocitySecondPartialDeriv :=
         IsScalarC12On.hasWeakVelocitySecondPartialDerivOn hV hlocal }
   refine ⟨w, Filter.EventuallyEq.rfl, ?_⟩
-  change ∀ᵐ z ∂timeVelocityVolumeOn V,
-    scalarTimeDerivative u z -
-      matrixContraction (coefficientAt B z) (scalarSpatialHessian u z) = 0
   exact ae_restrict_of_forall_mem hV.measurableSet (fun z hz =>
     sub_eq_zero.mpr (heq z (hsub hz)))
 

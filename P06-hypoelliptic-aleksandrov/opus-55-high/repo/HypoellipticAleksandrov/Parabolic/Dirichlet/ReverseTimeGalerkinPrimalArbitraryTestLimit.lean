@@ -101,60 +101,37 @@ theorem exists_strictMono_tendsto_clm_reverseTimeGalerkinPrimal_arbitraryTests
   intro v eta
   have hvClosure : v ∈ closure (Set.range (galerkinVector hΩ)) := by
     rw [(denseRange_galerkinVector hΩ).closure_range]
-    exact Set.mem_univ v
+    simp
   obtain ⟨vN, hvN, hv⟩ := mem_closure_iff_seq_limit.mp hvClosure
   choose k hk using hvN
-  let G := reverseTimeGelfandCLM hΩ (r₁ - r₀) U
+  let G := reverseTimeGelfandCLM hΩ _ U
   let S := reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth
   let A := reverseTimeSpatialFormBochnerAction r₀ r₁ h₀₁ hΩ hΩbounded a b c
     haSmooth hbSmooth hcSmooth U
-  let mass : H10HilbertGraph hΩ → ℝ := fun w =>
-    reverseTimeDualPairingRightCLM hΩ (r₁ - r₀)
+  let mass  := fun w =>
+    reverseTimeDualPairingRightCLM hΩ _
       (reverseTimeSeparatedVTestOfMemLp hΩ eta.deriv (eta.memLp_deriv ∞) w) G
-  let source : H10HilbertGraph hΩ → ℝ := fun w =>
-    reverseTimeDualPairingRightCLM hΩ (r₁ - r₀)
+  let source  := fun w =>
+    reverseTimeDualPairingRightCLM hΩ _
       (reverseTimeSeparatedVTest hΩ eta w) S
-  let form : H10HilbertGraph hΩ → ℝ := fun w =>
-    reverseTimeDualPairingRightCLM hΩ (r₁ - r₀)
+  let form  := fun w =>
+    reverseTimeDualPairingRightCLM hΩ _
       (reverseTimeSeparatedVTest hΩ eta w) A
-  have hMass : Tendsto (fun n => mass (vN n)) atTop (𝓝 (mass v)) := by
-    change Tendsto
-      (fun n => reverseTimeDualPairingCLM hΩ (r₁ - r₀) G
-        (reverseTimeSeparatedVTestOfMemLp hΩ eta.deriv (eta.memLp_deriv ∞) (vN n)))
-      atTop
-      (𝓝 (reverseTimeDualPairingCLM hΩ (r₁ - r₀) G
-        (reverseTimeSeparatedVTestOfMemLp hΩ eta.deriv (eta.memLp_deriv ∞) v)))
-    exact (reverseTimeDualPairingCLM hΩ (r₁ - r₀) G).continuous.tendsto _ |>.comp
+  have hMass : Tendsto (fun n => mass (vN n)) atTop (𝓝 (mass v)) := (reverseTimeDualPairingCLM hΩ _ G).continuous.tendsto _ |>.comp
       (tendsto_reverseTimeSeparatedVTestOfMemLp hΩ eta.deriv
-        (eta.memLp_deriv ∞) hv)
-  have hSource : Tendsto (fun n => source (vN n)) atTop (𝓝 (source v)) := by
-    change Tendsto
-      (fun n => reverseTimeDualPairingCLM hΩ (r₁ - r₀) S
-        (reverseTimeSeparatedVTest hΩ eta (vN n)))
-      atTop
-      (𝓝 (reverseTimeDualPairingCLM hΩ (r₁ - r₀) S
-        (reverseTimeSeparatedVTest hΩ eta v)))
-    exact (reverseTimeDualPairingCLM hΩ (r₁ - r₀) S).continuous.tendsto _ |>.comp
+        _ hv)
+  have hSource : Tendsto (fun n => source (vN n)) atTop (𝓝 (source v)) := (reverseTimeDualPairingCLM hΩ _ S).continuous.tendsto _ |>.comp
       (tendsto_reverseTimeSeparatedVTest hΩ eta hv)
-  have hForm : Tendsto (fun n => form (vN n)) atTop (𝓝 (form v)) := by
-    change Tendsto
-      (fun n => reverseTimeDualPairingCLM hΩ (r₁ - r₀) A
-        (reverseTimeSeparatedVTest hΩ eta (vN n)))
-      atTop
-      (𝓝 (reverseTimeDualPairingCLM hΩ (r₁ - r₀) A
-        (reverseTimeSeparatedVTest hΩ eta v)))
-    exact (reverseTimeDualPairingCLM hΩ (r₁ - r₀) A).continuous.tendsto _ |>.comp
+  have hForm : Tendsto (fun n => form (vN n)) atTop (𝓝 (form v)) := (reverseTimeDualPairingCLM hΩ _ A).continuous.tendsto _ |>.comp
       (tendsto_reverseTimeSeparatedVTest hΩ eta hv)
   have hFixed : ∀ n, mass (vN n) = -source (vN n) + form (vN n) := by
     intro n
     simpa only [reverseTimeGalerkinPrimal_fixed_test_identity_prop, mass, source, form, G, S,
-      A, hk n] using hfixed (k n) eta
-  have hRight : Tendsto (fun n => -source (vN n) + form (vN n)) atTop
-      (𝓝 (-source v + form v)) :=
+      A, hk] using hfixed (k n) eta
+  have hRight  :=
     hSource.neg.add hForm
-  have hLimit : mass v = -source v + form v :=
+  have hLimit  :=
     tendsto_nhds_unique_of_eventuallyEq hMass hRight (Eventually.of_forall hFixed)
-  simpa only [reverseTimeGalerkinPrimal_arbitrary_test_identity_prop, mass, source, form, G,
-    S, A] using hLimit
+  aesop
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

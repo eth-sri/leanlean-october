@@ -40,7 +40,7 @@ theorem exists_intermediateSpatialCutoff_signedCollar
     exists_quantitativeSmoothCutoff_tsupport_subset
       hO₁compact hO₂open hO₁O₂
   have hKeta : 0 ≤ Keta :=
-    (PDE.vecEuclideanNorm_nonneg (PDE.classicalGradient η.toFun 0)).trans
+    (PDE.vecEuclideanNorm_nonneg _).trans
       (η.gradient_bound 0)
   obtain ⟨δ, hδ, hcarrier⟩ :=
     Dirichlet.IsCompact.exists_spatialCoordinateShiftCarrier_subset_open

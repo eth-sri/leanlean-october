@@ -11,7 +11,6 @@ premise is used: canonical finiteness is proved by the enlarged recursion.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
@@ -68,24 +67,22 @@ theorem positionVisitsStatement_holds_of_start_time
     let F := (1 + 1 / (1 - (1 + g * (q - 1)) / 2)) *
       (3 : ℝ) ^ (1 - (1 + g * (q - 1)) / 2)
     have hprod : g * (q - 1) < 1 := by
-      have hh := mul_lt_mul_of_pos_right hg.2 (by linarith [hq.1] : 0 < q - 1)
-      change (2 - alpha) * (q - 1) < 1
-      linarith [hq.2]
+      have hh := mul_lt_mul_of_pos_right hg.2 (by simp_all : 0 < q - 1)
+      linarith
     have hb : 0 < 1 - (1 + g * (q - 1)) / 2 := by linarith
-    have hF : 0 < F := by dsimp only [F]; positivity
     refine ⟨Cp ^ (q - 1) * Ct * F, by positivity, ?_⟩
     intro A c J R T P hR hT hTR hbar hJ hvel
     have : IsFiniteMeasure (visitsFromZero hH hLE hlam hLam A c J T P) :=
       visitsFromZero_isFiniteMeasure hH hLE hlam hLam A c J T P hbar hJ hT hvel
     apply enlargedPositionVisitMass_power_sum_horizon_le
       (visitsFromZero hH hLE hlam hLam A c J T P) c P.time 0 R T hR hT hTR
-    · exact (enlargedVisitStarts_ae_support hH hLE hlam hLam A c J P.time (P.time + T)
+    · exact (enlargedVisitStarts_ae_support hH hLE hlam hLam A c J P.time _
         P le_rfl (by linarith)).mono fun _ hp => hp.2.1
-    · exact hCt.le
-    · exact hCp.le
+    · linarith
+    · linarith
     · exact hg
     · exact hq
-    · exact htime A c J T P hbar hJ hT hvel
-    · exact hcell A c J T P hbar hJ hT hvel
+    · simp_all
+    grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

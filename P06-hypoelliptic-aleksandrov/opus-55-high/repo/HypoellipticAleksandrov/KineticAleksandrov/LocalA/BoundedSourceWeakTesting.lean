@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelWeak
 /-! # Smooth testing discharges the finite-measure determination premise -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 open Evolution Occupation
@@ -41,7 +40,7 @@ theorem duhamel_smooth_product_identity (hΩa : IsAdmissibleEvolutionDomain Ω)
   let g := φ ∘ KineticPoint.equivProd d
   have hg : Continuous g := hφ.continuous.comp (KineticPoint.homeomorphProd d).continuous
   have hgc : HasCompactSupport g := hφc.comp_homeomorph (KineticPoint.homeomorphProd d)
-  have hgs : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × EvolutionAmbientState d =>
+  have hgs : ContDiff ℝ _ (fun q : ℝ × EvolutionAmbientState d =>
       g ⟨q.1, q.2.1, q.2.2⟩) := hφ
   have hgn : ∀ p, 0 ≤ g p := fun p => (hφr _).1
   have hgU : tsupport g ⊆ evolutionPastOpenCylinder Ω γ T := by
@@ -56,12 +55,10 @@ theorem duhamel_smooth_product_identity (hΩa : IsAdmissibleEvolutionDomain Ω)
       duhamelPotential K T g ⟨q.1, q.2.1, q.2.2⟩) =
       ∫ q, duhamelPotential K T g ⟨q.1, q.2.1, q.2.2⟩ *
         transportedAdjoint B b ψ (packQ d q) := by
-    apply integral_congr_ae
-    exact Filter.Eventually.of_forall fun q => mul_comm _ _
+    grind
   have hright : (∫ q, φ q * ψ (packQ d q)) = ∫ q, ψ (packQ d q) * φ q := by
-    apply integral_congr_ae
-    exact Filter.Eventually.of_forall fun q => mul_comm _ _
-  exact hleft.trans (h.trans (congrArg Neg.neg hright))
+    grind
+  aesop
 
 /-- The transported adjoint's support is contained in the support of its test. -/
 theorem boundedSourceAdjoint_support {B : FullKineticCoefficient d}
@@ -79,8 +76,8 @@ theorem exists_boundedSource_test_floor (Λ : ℝ × EvolutionAmbientState d →
     ∃ a : ℝ, a < T ∧ ∀ q, Λ q ≠ 0 → a ≤ q.1 := by
   obtain ⟨lower, hLower⟩ := (hc.image continuous_fst).bddBelow
   refine ⟨min lower (T - 1), ?_, ?_⟩
-  · exact (min_le_right lower (T - 1)).trans_lt (by linarith)
+  · simp
   · intro q hq
-    exact (min_le_left lower (T - 1)).trans (hLower ⟨q, subset_tsupport Λ hq, rfl⟩)
+    exact (min_le_left lower _).trans (hLower ⟨q, subset_tsupport Λ hq, rfl⟩)
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

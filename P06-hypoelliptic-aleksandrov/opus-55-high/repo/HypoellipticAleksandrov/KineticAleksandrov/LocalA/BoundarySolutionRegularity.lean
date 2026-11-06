@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.BoundarySolution
 /-! # Pointwise smoothness from the actual continuous weak source equation -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Evolution Occupation Parabolic TheoremA
 open scoped Topology
@@ -54,15 +53,11 @@ theorem boundary_native_smooth_to_physical {d : ℕ}
   have hm : MapsTo a ((KineticPoint.equivProd d) '' D)
       (evolutionHomeomorph d ⁻¹' (sectionTwoPoint '' D)) := by
     rintro q ⟨P, hP, rfl⟩
-    refine ⟨P, hP, ?_⟩
-    simpa only [Equiv.symm_apply_apply] using (haeq ((KineticPoint.equivProd d) P)).symm
+    grind
   have h := hu.comp ha.contDiffOn hm
   have heq : ((u ∘ sectionTwoPoint) ∘ evolutionHomeomorph d) ∘ a =
       u ∘ (KineticPoint.equivProd d).symm := by
-    funext q
-    simp only [Function.comp_apply, haeq]
-    rfl
-  rw [heq] at h
-  exact h
+    aesop
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

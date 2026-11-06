@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.NestedStripK
 /-! # Integrating and telescoping stopped kernel inequalities -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory ProbabilityTheory
 
@@ -47,10 +46,10 @@ theorem enlarged_terminal_values_telescope (U R D : ℕ → ℝ)
   have hh : ∀ N, (∑ n ∈ Finset.range N, D n) + U N ≤ U 0 := by
     intro N
     induction N with
-    | zero => simp only [Finset.range_zero, Finset.sum_empty, zero_add, le_refl]
+    | zero => simp
     | succ N ih =>
       rw [Finset.sum_range_succ]
-      linarith [ha N, hw N]
-  linarith [hh N, hU N]
+      grind
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

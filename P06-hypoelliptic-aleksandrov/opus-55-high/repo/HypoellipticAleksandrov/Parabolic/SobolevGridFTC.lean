@@ -6,6 +6,7 @@ public import Mathlib.MeasureTheory.Integral.IntegralEqImproper
 public import Mathlib.Analysis.Calculus.Deriv.Pi
 public import Mathlib.MeasureTheory.Constructions.Pi
 public import Mathlib.MeasureTheory.Integral.Bochner.Basic
+public import HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamilyPairing
 
 /-!
 # The all-coordinate grid fundamental theorem of calculus
@@ -77,7 +78,9 @@ private def timeVelocityPiEquiv (d : ℕ) :
     ((ContinuousLinearEquiv.funUnique Unit ℝ ℝ).prodCongr
       (ContinuousLinearEquiv.refl ℝ (Fin d → ℝ)))
 
-@[simp] private theorem timeVelocityPiEquiv_apply_time (d : ℕ)
+variable (d : ℕ)
+
+@[simp] private theorem timeVelocityPiEquiv_apply_time 
     (x : TimeVelocityCoord d → ℝ) :
     (timeVelocityPiEquiv d x).1 = x (timeCoord d) := rfl
 
@@ -85,13 +88,12 @@ private def timeVelocityPiEquiv (d : ℕ) :
     (x : TimeVelocityCoord d → ℝ) (i : Fin d) :
     (timeVelocityPiEquiv d x).2 i = x (velocityCoord i) := rfl
 
-private theorem timeVelocityPiEquiv_single (d : ℕ) (c : TimeVelocityCoord d) :
+private theorem timeVelocityPiEquiv_single  (c : TimeVelocityCoord d) :
     timeVelocityPiEquiv d (Pi.single c 1) = timeVelocityBasis c := by
   rcases c with (_ | i)
+  · aesop
   · ext <;> simp [timeVelocityPiEquiv, ContinuousLinearEquiv.sumPiEquivProdPi,
-      LinearEquiv.sumPiEquivProdPi, timeVelocityBasis]
-  · ext <;> simp [timeVelocityPiEquiv, ContinuousLinearEquiv.sumPiEquivProdPi,
-      LinearEquiv.sumPiEquivProdPi, timeVelocityBasis, PDE.basisVec, Pi.single_apply]
+      LinearEquiv.sumPiEquivProdPi, timeVelocityBasis, Pi.single_apply]
 
 private theorem coordinateIteratedFDeriv_contDiff_infty
     {d : ℕ} (gamma : TimeVelocityMultiIndex d)
@@ -100,28 +102,13 @@ private theorem coordinateIteratedFDeriv_contDiff_infty
       (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma f) := by
   rw [contDiff_infty]
   intro m
-  unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
   have hi := (contDiff_infty.mp hf (m + gamma.order)).iteratedFDeriv_right
     (m := m) (i := gamma.coordinateList.length) (by simp)
   exact (contDiff_const (c := ContinuousMultilinearMap.apply ℝ _ _
-    (fun i => timeVelocityBasis (gamma.coordinateList.get i)))).clm_apply hi
+    _)).clm_apply hi
 
-private theorem coordinateIteratedFDeriv_hasCompactSupport
-    {d : ℕ} (gamma : TimeVelocityMultiIndex d)
-    (f : TimeVelocity d → ℝ) (hf : HasCompactSupport f) :
-    HasCompactSupport
-      (TimeVelocityMultiIndex.coordinateIteratedFDeriv gamma f) := by
-  apply hf.of_isClosed_subset isClosed_closure
-  apply closure_minimal _ isClosed_closure
-  intro z hz
-  apply support_iteratedFDeriv_subset (f := f) (𝕜 := ℝ) gamma.coordinateList.length
-  intro hzero
-  exact hz (by
-    unfold TimeVelocityMultiIndex.coordinateIteratedFDeriv
-    rw [hzero]
-    exact ContinuousMultilinearMap.zero_apply _)
 
-private theorem timeVelocityPiEquiv_measurePreserving (d : ℕ) :
+private theorem timeVelocityPiEquiv_measurePreserving  :
     MeasurePreserving (timeVelocityPiEquiv d)
       (volume : Measure (TimeVelocityCoord d → ℝ))
       (volume : Measure (TimeVelocity d)) := by
@@ -138,7 +125,7 @@ private theorem timeVelocityPiEquiv_measurePreserving (d : ℕ) :
 /-- A compactly supported smooth function is bounded pointwise by the `L¹`
 norm of the derivative which differentiates once in every coordinate. -/
 theorem abs_le_integral_abs_coordinateIteratedFDeriv_allOnes
-    (d : ℕ)
+    
     (f : TimeVelocity d → ℝ)
     (hf : ContDiff ℝ (⊤ : ℕ∞) f)
     (hfsupp : HasCompactSupport f)
@@ -149,34 +136,33 @@ theorem abs_le_integral_abs_coordinateIteratedFDeriv_allOnes
           (TimeVelocityMultiIndex.allOnes d) f x|
         ∂(volume : Measure (TimeVelocity d)) := by
   classical
-  let beta : Finset (TimeVelocityCoord d) → TimeVelocityMultiIndex d :=
+  let beta : Finset _ → TimeVelocityMultiIndex d :=
     fun s c => if c ∈ s then 1 else 0
-  let g : Finset (TimeVelocityCoord d) → (TimeVelocityCoord d → ℝ) → ℝ :=
+  let g  :=
     fun s x => TimeVelocityMultiIndex.coordinateIteratedFDeriv (beta s) f
       (timeVelocityPiEquiv d x)
-  have hbeta_insert (s : Finset (TimeVelocityCoord d)) (c : TimeVelocityCoord d)
+  have hbeta_insert (s : Finset _) (c : TimeVelocityCoord d)
       (hc : c ∉ s) : beta (insert c s) = beta s + Pi.single c 1 := by
     funext a
     by_cases hca : a = c
-    · subst a
-      simp [beta, hc]
-    · simp [beta, hca]
+    · aesop
+    aesop
   have hg : ∀ s, ContDiff ℝ 1 (g s) := by
     intro s
-    exact (coordinateIteratedFDeriv_contDiff_infty (beta s) f hf).of_le
+    exact (coordinateIteratedFDeriv_contDiff_infty _ f hf).of_le
       (by simp) |>.comp (timeVelocityPiEquiv d).contDiff
   have hgsupp : ∀ s, HasCompactSupport (g s) := by
     intro s
-    exact (coordinateIteratedFDeriv_hasCompactSupport (beta s) f hfsupp).comp_homeomorph
+    exact (coordinateIteratedFDeriv_hasCompactSupport _ f hfsupp).comp_homeomorph
       (timeVelocityPiEquiv d).toHomeomorph
-  have hstep : ∀ (s : Finset (TimeVelocityCoord d)) (c : TimeVelocityCoord d),
+  have hstep : ∀ (s : Finset _) (c : TimeVelocityCoord d),
       c ∉ s → ∀ x, g (insert c s) x =
         fderiv ℝ (g s) x (Pi.single c 1) := by
     intro s c hc x
     rw [show g (insert c s) x =
       TimeVelocityMultiIndex.coordinateIteratedFDeriv
         (beta s + Pi.single c 1) f (timeVelocityPiEquiv d x) by
-          simp only [g, hbeta_insert s c hc]]
+          grind]
     rw [TimeVelocityMultiIndex.coordinateIteratedFDeriv_add_single]
     change (fderiv ℝ (TimeVelocityMultiIndex.coordinateIteratedFDeriv (beta s) f)
       (timeVelocityPiEquiv d x)) (timeVelocityBasis c) =
@@ -193,15 +179,14 @@ theorem abs_le_integral_abs_coordinateIteratedFDeriv_allOnes
       (fun v => (fderiv ℝ (TimeVelocityMultiIndex.coordinateIteratedFDeriv (beta s) f)
         (timeVelocityPiEquiv d x)) v) hb.symm
     apply hf.of_le
-    exact_mod_cast (show (beta s).order + 1 ≤ (⊤ : ℕ∞) by simp)
+    simp
   let xz := (timeVelocityPiEquiv d).symm z
   have hgrid := enorm_le_lmarginal_coordinateFTC g hg hgsupp hstep
     Finset.univ xz
   rw [lmarginal_univ] at hgrid
-  have hzero : beta ∅ = 0 := by ext c; simp [beta]
+  have hzero : beta ∅ = 0 := by aesop
   have hone : beta Finset.univ = TimeVelocityMultiIndex.allOnes d := by
-    ext c
-    simp [beta, TimeVelocityMultiIndex.allOnes]
+    aesop
   simp only [g, hzero, hone, TimeVelocityMultiIndex.coordinateIteratedFDeriv_zero] at hgrid
   have hlin :
       (∫⁻ x : TimeVelocity d,
@@ -210,8 +195,7 @@ theorem abs_le_integral_abs_coordinateIteratedFDeriv_allOnes
       (∫⁻ x : TimeVelocityCoord d → ℝ,
         ‖TimeVelocityMultiIndex.coordinateIteratedFDeriv
           (TimeVelocityMultiIndex.allOnes d) f (timeVelocityPiEquiv d x)‖ₑ
-          ∂(Measure.pi fun _ => volume)) := by
-    exact (timeVelocityPiEquiv_measurePreserving d).lintegral_map_equiv _
+          ∂(Measure.pi fun _ => volume)) := (timeVelocityPiEquiv_measurePreserving d).lintegral_map_equiv _
       (timeVelocityPiEquiv d).toHomeomorph.toMeasurableEquiv
   rw [← hlin] at hgrid
   simp only [xz, ContinuousLinearEquiv.apply_symm_apply] at hgrid
@@ -221,7 +205,6 @@ theorem abs_le_integral_abs_coordinateIteratedFDeriv_allOnes
     (coordinateIteratedFDeriv_contDiff_infty _ f hf).continuous.abs
       |>.integrable_of_hasCompactSupport
         (coordinateIteratedFDeriv_hasCompactSupport _ f hfsupp).abs
-  rw [← ofReal_norm_eq_enorm] at hgrid
   rw [← ENNReal.ofReal_le_ofReal_iff (integral_nonneg fun _ => abs_nonneg _)]
   rw [MeasureTheory.ofReal_integral_eq_lintegral_ofReal hint
     (ae_of_all _ fun _ => abs_nonneg _)]

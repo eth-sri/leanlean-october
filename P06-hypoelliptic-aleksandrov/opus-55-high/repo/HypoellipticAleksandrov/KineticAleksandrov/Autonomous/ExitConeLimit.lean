@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ExitConeStri
 /-! # Removing the strict speed margin from the actual transport cone -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Filter
 open SectionTwo TheoremA Evolution
@@ -23,12 +22,12 @@ theorem reconstruction_transport_cone_ae
     (∀ᵐ p ∂stripExitOfRealization hH hlam hLam A H E hE T e,
       reconstructionConeCoordinate alpha beta gamma p ≤ 0) ∧
     ∀ᵐ p ∂stripGreenOfKernel H E.2 T e, reconstructionConeCoordinate alpha beta gamma p ≤ 0 := by
-  let r (n : ℕ) : ℝ := 1 / ((n : ℝ) + 1)
-  have hr (n : ℕ) : 0 < r n := by dsimp only [r]; positivity
+  let r (n : ℕ)  := 1 / ((n : ℝ) + 1)
+  have hr (n : ℕ) : 0 < r n := by positivity
   have hn (n : ℕ) := reconstruction_strict_transport_cone_ae hH hlam hLam A H E hE T e
-    (alpha - r n) beta (gamma + r n * e.1.time) (r n) (hr n)
+    (alpha - r n) beta (gamma + r n * e.1.time) _ (hr n)
     (by dsimp only [reconstructionConeCoordinate] at he ⊢; nlinarith)
-    (fun v hv => by have hh := hdir v hv; linarith)
+    (fun v hv => by grind)
   have hlimit (μ : Measure Point)
       (ha : ∀ n, ∀ᵐ p ∂μ,
         reconstructionConeCoordinate (alpha - r n) beta (gamma + r n * e.1.time) p ≤ 0) :
@@ -49,6 +48,6 @@ theorem reconstruction_transport_cone_ae
       dsimp only [reconstructionConeCoordinate]
       ring
     exact le_of_tendsto hρ (Filter.Eventually.of_forall hp)
-  exact ⟨hlimit _ (fun n => (hn n).1), hlimit _ (fun n => (hn n).2)⟩
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

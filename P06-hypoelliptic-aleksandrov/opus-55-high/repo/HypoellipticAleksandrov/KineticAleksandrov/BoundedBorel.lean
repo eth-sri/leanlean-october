@@ -13,7 +13,6 @@ a `Submodule` of all real-valued functions.
 
 @[expose] public section
 
-set_option autoImplicit false
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -23,8 +22,8 @@ def boundedBorelSubmodule (α : Type*) [MeasurableSpace α] :
   carrier := {f | Measurable f ∧ ∃ C : ℝ, 0 ≤ C ∧ ∀ x, abs (f x) ≤ C}
   zero_mem' := by
     constructor
-    · exact measurable_const
-    · exact ⟨0, le_rfl, fun x => by simp⟩
+    · fun_prop
+    aesop
   add_mem' := by
     intro f g hf hg
     constructor
@@ -41,7 +40,7 @@ def boundedBorelSubmodule (α : Type*) [MeasurableSpace α] :
     · rcases hf.2 with ⟨C, hC, hf⟩
       refine ⟨abs c * C, mul_nonneg (abs_nonneg _) hC, ?_⟩
       intro x
-      simpa only [Pi.smul_apply, smul_eq_mul, abs_mul] using
+      simpa using
         mul_le_mul_of_nonneg_left (hf x) (abs_nonneg c)
 
 /-- The literal bounded-Borel real-function carrier. -/
@@ -58,9 +57,7 @@ namespace BoundedBorel
 @[ext]
 theorem ext {α : Type*} [MeasurableSpace α]
     {f g : BoundedBorel α} (h : ∀ x, f x = g x) : f = g := by
-  apply Subtype.ext
-  funext x
-  exact h x
+  aesop
 
 /-- The underlying function of a bounded-Borel function is measurable. -/
 theorem measurable {α : Type*} [MeasurableSpace α]
@@ -115,15 +112,7 @@ def supFn {α : Type*} [MeasurableSpace α]
     · exact f.measurable.max g.measurable
     · rcases f.exists_bound with ⟨Cf, hCf, hf⟩
       rcases g.exists_bound with ⟨Cg, hCg, hg⟩
-      refine ⟨max Cf Cg, hCf.trans (le_max_left _ _), ?_⟩
-      intro x
-      rcases le_total (f x) (g x) with h | h
-      · change abs (max (f x) (g x)) ≤ max Cf Cg
-        rw [max_eq_right h]
-        exact (hg x).trans (le_max_right _ _)
-      · change abs (max (f x) (g x)) ≤ max Cf Cg
-        rw [max_eq_left h]
-        exact (hf x).trans (le_max_left _ _)⟩
+      grind⟩
 
 /-- The pointwise minimum of two bounded-Borel functions. -/
 def infFn {α : Type*} [MeasurableSpace α]
@@ -133,15 +122,7 @@ def infFn {α : Type*} [MeasurableSpace α]
     · exact f.measurable.min g.measurable
     · rcases f.exists_bound with ⟨Cf, hCf, hf⟩
       rcases g.exists_bound with ⟨Cg, hCg, hg⟩
-      refine ⟨max Cf Cg, hCf.trans (le_max_left _ _), ?_⟩
-      intro x
-      rcases le_total (f x) (g x) with h | h
-      · change abs (min (f x) (g x)) ≤ max Cf Cg
-        rw [min_eq_left h]
-        exact (hf x).trans (le_max_left _ _)
-      · change abs (min (f x) (g x)) ≤ max Cf Cg
-        rw [min_eq_right h]
-        exact (hg x).trans (le_max_right _ _)⟩
+      grind⟩
 
 /-- Pointwise order and lattice operations on bounded-Borel functions. -/
 instance {α : Type*} [MeasurableSpace α] : Lattice (BoundedBorel α) where
@@ -181,7 +162,7 @@ def pullback {α β : Type*} [MeasurableSpace α] [MeasurableSpace β]
     constructor
     · exact f.measurable.comp hg
     · rcases f.exists_bound with ⟨C, hC, hf⟩
-      exact ⟨C, hC, fun x => hf (g x)⟩⟩
+      grind⟩
 
 @[simp]
 theorem pullback_apply {α β : Type*} [MeasurableSpace α]

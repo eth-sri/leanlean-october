@@ -19,11 +19,10 @@ claim for that extension.
 open Filter MeasureTheory Set Topology
 open scoped ENNReal
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
-private theorem sqNorm_integral_eq_norm_sq_toLp
+theorem sqNorm_integral_eq_norm_sq_toLp
     {E : Type*} [NormedAddCommGroup E]
     {μ : Measure ℝ} (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) μ) :
     ∫ t, ‖F t‖ ^ 2 ∂μ = ‖hF.toLp F‖ ^ 2 := by
@@ -40,8 +39,8 @@ private theorem tendsto_sqNorm_integral_translate_add_on_of_memLp_two
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [CompleteSpace E]
     (F : ℝ → E) (hF : MemLp F (2 : ℝ≥0∞) volume) (s : Set ℝ) :
     Tendsto (fun h : ℝ => ∫ t in s, ‖F (t + h) - F t‖ ^ 2) (𝓝 0) (𝓝 0) := by
-  let f : Lp (α := ℝ) E (2 : ℝ≥0∞) volume := hF.toLp F
-  letI : Fact ((2 : ℝ≥0∞) ≠ ∞) := ⟨by norm_num⟩
+  let f  := hF.toLp F
+  letI : Fact ((2) ≠ ∞) := ⟨by norm_num⟩
   have hcont : Continuous (fun h : ℝ => DomAddAct.mk h +ᵥ f) :=
     continuous_vadd.comp (DomAddAct.continuous_mk.prodMk continuous_const)
   have hzero : DomAddAct.mk (0 : ℝ) +ᵥ f = f := by
@@ -49,37 +48,36 @@ private theorem tendsto_sqNorm_integral_translate_add_on_of_memLp_two
   have hcontsub : Continuous (fun h : ℝ => (DomAddAct.mk h +ᵥ f) - f) :=
     hcont.sub continuous_const
   have hvalue : (DomAddAct.mk (0 : ℝ) +ᵥ f) - f = 0 := by
-    rw [hzero, sub_self]
+    simp
   have hsub : Tendsto (fun h : ℝ => (DomAddAct.mk h +ᵥ f) - f) (𝓝 0) (𝓝 0) := by
-    have hat : Tendsto (fun h : ℝ => (DomAddAct.mk h +ᵥ f) - f) (𝓝 0)
+    have hat : Tendsto (fun h : ℝ => (DomAddAct.mk h +ᵥ f) - f) _
         (𝓝 ((DomAddAct.mk (0 : ℝ) +ᵥ f) - f)) :=
       hcontsub.continuousAt
-    rw [hvalue] at hat
-    exact hat
+    simp_all
   have hnorm : Tendsto (fun h : ℝ => ‖(DomAddAct.mk h +ᵥ f) - f‖ ^ 2)
       (𝓝 0) (𝓝 0) := by
     simpa using hsub.norm.pow 2
   refine squeeze_zero (g := fun h : ℝ => ‖(DomAddAct.mk h +ᵥ f) - f‖ ^ 2)
     (fun _ => integral_nonneg fun _ => sq_nonneg _) (fun h => ?_) hnorm
-  let htrans : MemLp (fun t : ℝ => F (h + t)) (2 : ℝ≥0∞) volume :=
+  let htrans : MemLp (fun t : ℝ => F (h + t)) _ volume :=
     hF.comp_measurePreserving (measurePreserving_add_left volume h)
-  let hdiff : MemLp (fun t : ℝ => F (h + t) - F t) (2 : ℝ≥0∞) volume :=
+  let hdiff : MemLp (fun t : ℝ => F _ - F t) _ volume :=
     htrans.sub hF
-  let q : Lp (α := ℝ) E (2 : ℝ≥0∞) volume := hdiff.toLp _
-  let qS : Lp (α := ℝ) E (2 : ℝ≥0∞) (volume.restrict s) :=
+  let q  := hdiff.toLp _
+  let qS  :=
     ((Lp.memLp q).restrict s).toLp q
   have hq : q =ᵐ[volume] fun t : ℝ => F (h + t) - F t := by
     simpa [q] using hdiff.coeFn_toLp
   have hqS : qS =ᵐ[volume.restrict s] q := by
-    simpa [qS] using MemLp.coeFn_toLp ((Lp.memLp q).restrict s)
+    simpa [qS] using MemLp.coeFn_toLp _
   have hsq : (∫ t in s, ‖F (t + h) - F t‖ ^ 2) = ‖qS‖ ^ 2 := by
-    change (∫ t, ‖F (t + h) - F t‖ ^ 2 ∂volume.restrict s) = _
-    have hqSsq := sqNorm_integral_eq_norm_sq_toLp (qS : ℝ → E) (Lp.memLp qS)
-    rw [Lp.toLp_coeFn qS (Lp.memLp qS)] at hqSsq
+    
+    have hqSsq := sqNorm_integral_eq_norm_sq_toLp qS (Lp.memLp qS)
+    rw [Lp.toLp_coeFn] at hqSsq
     rw [← hqSsq]
     apply integral_congr_ae
     filter_upwards [hqS, ae_restrict_of_ae hq] with t htS ht
-    rw [htS, ht, add_comm]
+    grind
   rw [hsq]
   exact pow_le_pow_left₀ (norm_nonneg _) (norm_Lp_toLp_restrict_le s q) 2
 
@@ -95,20 +93,18 @@ theorem tendsto_sqNorm_integral_forward_translate_on_Icc
   let S : Set ℝ := Ioo 0 T
   let F : ℝ → E := S.indicator f
   have hS : MeasurableSet S := by
-    simp only [S]
-    exact measurableSet_Ioo
-  have hF : MemLp F (2 : ℝ≥0∞) volume := by
-    simpa only [F, S, reverseTimeVolume, reverseTimeOpenInterval] using
+    aesop
+  have hF : MemLp F (2) volume := by
+    simpa using
       (memLp_indicator_iff_restrict hS).mpr (Lp.memLp f)
   have hmax : max a b < T := by
-    rw [max_eq_right hab]
-    exact hb
+    simp_all
   have hglobal := tendsto_sqNorm_integral_translate_add_on_of_memLp_two F hF (Icc a b)
   have hlocal : Tendsto
       (fun h : ℝ => ∫ t in Icc a b, ‖F (t + h) - F t‖ ^ 2)
       (𝓝[Ioi 0] 0) (𝓝 0) :=
     hglobal.mono_left (by
-      exact nhdsWithin_le_nhds (a := (0 : ℝ)) (s := Ioi (0 : ℝ)))
+      exact nhdsWithin_le_nhds (a := (0)) (s := Ioi (0)))
   apply Filter.Tendsto.congr' ?_ hlocal
   have hpos : ∀ᶠ h : ℝ in 𝓝[>] 0, 0 < h := self_mem_nhdsWithin
   have hsmall : ∀ᶠ h : ℝ in 𝓝[>] 0, h < T - b :=
@@ -117,25 +113,9 @@ theorem tendsto_sqNorm_integral_forward_translate_on_Icc
   apply setIntegral_congr_fun measurableSet_Icc
   intro t ht
   have htS : t ∈ S := by
-    change 0 < t ∧ t < T
-    constructor
-    · exact lt_of_lt_of_le ha ht.1
-    · calc
-        t ≤ b := ht.2
-        _ ≤ max a b := le_max_right _ _
-        _ < T := hmax
+    grind
   have hthS : t + h ∈ S := by
-    change 0 < t + h ∧ t + h < T
-    constructor
-    · exact add_pos (lt_of_lt_of_le ha ht.1) hh
-    · have hbh : b + h < T := by
-        rw [add_comm]
-        exact lt_sub_iff_add_lt.mp hsmall
-      calc
-        t + h = h + t := add_comm _ _
-        _ ≤ h + b := add_le_add_right ht.2 _
-        _ = b + h := add_comm _ _
-        _ < T := hbh
-  simp only [F, Set.indicator_of_mem hthS, Set.indicator_of_mem htS]
+    grind
+  aesop
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

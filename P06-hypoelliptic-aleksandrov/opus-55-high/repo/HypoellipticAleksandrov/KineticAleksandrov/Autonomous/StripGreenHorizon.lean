@@ -34,9 +34,9 @@ theorem stripGreenOfKernel_horizonRestriction (H : Interval)
   have hs : {q : ElapsedTime ⊤ × EvolutionAmbientState 1 | ENNReal.ofReal q.1.1 < R} =
       elapsedPhysicalPoint e.1.time ⁻¹' {p : Point | p.time < T} := by
     ext q
-    change ENNReal.ofReal q.1.1 < ENNReal.ofReal (T - e.1.time) ↔ e.1.time + q.1.1 < T
+    change ENNReal.ofReal q.1.1 < ENNReal.ofReal _ ↔ e.1.time + q.1.1 < T
     rw [ENNReal.ofReal_lt_ofReal_iff hR]
-    constructor <;> intro h <;> linarith
+    grind
   have hh' := congrArg (fun μ => μ.map (elapsedPhysicalPoint e.1.time)) hh
   rw [Measure.map_map (measurable_elapsedPhysicalPoint _ _) hm, hs,
     ← Measure.restrict_map (measurable_elapsedPhysicalPoint _ _)

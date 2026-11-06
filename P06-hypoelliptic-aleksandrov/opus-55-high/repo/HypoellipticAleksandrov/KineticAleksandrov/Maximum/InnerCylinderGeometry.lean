@@ -20,7 +20,6 @@ def relativeHomeomorph {d : ℕ} (Z₀ : KineticPoint d) :
   left_inv P := by
     ext i <;> simp [relativePosition, relativeVelocity] <;> ring
   right_inv q := by
-    rcases q with ⟨s,Y,V⟩
     apply Prod.ext
     · rfl
     · apply Prod.ext <;> ext i <;> simp [relativePosition, relativeVelocity] <;> ring
@@ -38,8 +37,10 @@ def relativeClosedBox {d : ℕ} (Z₀ : KineticPoint d) (a b rv rx : ℝ) :
   (relativeHomeomorph Z₀) ⁻¹'
     (Icc a b ×ˢ (PDE.euclideanClosedBall 0 rx ×ˢ PDE.euclideanClosedBall 0 rv))
 
+variable {d : ℕ} (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) (δ : ℝ) (hδ0 : 0 < δ)
+
 /-- Closed relative-coordinate rectangles are compact for nonnegative radii. -/
-theorem isCompact_relativeClosedBox {d : ℕ} (Z₀ : KineticPoint d)
+theorem isCompact_relativeClosedBox 
     (a b rv rx : ℝ) (hv : 0 ≤ rv) (hx : 0 ≤ rx) :
     IsCompact (relativeClosedBox Z₀ a b rv rx) := by
   have hc := (isCompact_Icc : IsCompact (Icc a b)).prod
@@ -49,8 +50,7 @@ theorem isCompact_relativeClosedBox {d : ℕ} (Z₀ : KineticPoint d)
     hc.image (relativeHomeomorph Z₀).symm.continuous
 
 /-- Positivity and the exact squared-radius identity for inner scaling. -/
-theorem innerRatio_spec (R : ℝ) (hR : 0 < R) (δ : ℝ)
-    (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+theorem innerRatio_spec  (hδlt : δ < R ^ 2 / 2) :
     0 < innerRatio R hR δ hδ0 hδlt ∧ innerRatio R hR δ hδ0 hδlt < 1 ∧
       (innerRatio R hR δ hδ0 hδlt) ^ 2 * R ^ 2 = R ^ 2 - 2 * δ := by
   have hr2 : 0 < R ^ 2 := sq_pos_of_pos hR
@@ -59,12 +59,11 @@ theorem innerRatio_spec (R : ℝ) (hR : 0 < R) (δ : ℝ)
   have hb : 0 < 1 - 2 * δ / R ^ 2 := by linarith
   unfold innerRatio
   refine ⟨Real.sqrt_pos.2 hb, ?_, ?_⟩
-  · exact (Real.sqrt_lt' (by norm_num : (0:ℝ)<1)).2 (by linarith)
-  · rw [Real.sq_sqrt hb.le]
-    field_simp
+  · exact (Real.sqrt_lt' (by norm_num)).2 (by linarith)
+  grind
 
 /-- Shifting to the inner centre does not change the relative coordinates. -/
-theorem innerCentre_relative {d : ℕ} (Z₀ P : KineticPoint d) (δ : ℝ) :
+theorem innerCentre_relative  (Z₀ P : KineticPoint d) (δ : ℝ) :
     relativePosition (innerCentre Z₀ δ) P = relativePosition Z₀ P ∧
       relativeVelocity (innerCentre Z₀ δ) P = relativeVelocity Z₀ P := by
   constructor
@@ -74,9 +73,7 @@ theorem innerCentre_relative {d : ℕ} (Z₀ P : KineticPoint d) (δ : ℝ) :
   · rfl
 
 /-- Inner cylinder identification, with radius positivity supplied as part of the result. -/
-theorem innerCylinder_eq_forwardCylinder {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+theorem innerCylinder_eq_forwardCylinder  (hδlt : δ < R ^ 2 / 2) :
     ∃ hr : 0 < innerRatio R hR δ hδ0 hδlt * R,
       innerCylinder Z₀ R hR δ hδ0 hδlt =
         forwardCylinder (innerCentre Z₀ δ) (innerRatio R hR δ hδ0 hδlt * R) hr := by
@@ -88,16 +85,14 @@ theorem innerCylinder_eq_forwardCylinder {d : ℕ}
       (innerRatio R hR δ hδ0 hδlt * R) ↔
       relativeVelocity Z₀ P ∈ PDE.euclideanBall 0 (innerRatio R hR δ hδ0 hδlt * R) := by
     simp [PDE.euclideanBall, PDE.euclideanSqDist, relativeVelocity, innerCentre]
-  rw [hv, mul_pow]
+  rw [hv]
   simp only [innerCentre]
   have ht : Z₀.time + δ + (innerRatio R hR δ hδ0 hδlt)^2 * R^2 =
       Z₀.time + R^2 - δ := by linarith
   simp only [ht, mul_pow]
 
 /-- Inner closures obey the explicit weak coordinate bounds. -/
-theorem closure_innerCylinder_bounds {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+theorem closure_innerCylinder_bounds  (hδlt : δ < R ^ 2 / 2) :
     closure (innerCylinder Z₀ R hR δ hδ0 hδlt) ⊆
       relativeClosedBox Z₀ (Z₀.time+δ) (Z₀.time+R^2-δ)
         (innerRatio R hR δ hδ0 hδlt * R)
@@ -112,9 +107,7 @@ theorem closure_innerCylinder_bounds {d : ℕ}
       (mul_nonneg (pow_nonneg hρ.le 3) (pow_nonneg hR.le 3))).isClosed
 
 /-- Inner-cylinder closure is contained in the original open cylinder. -/
-theorem closure_innerCylinder_subset {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+theorem closure_innerCylinder_subset  (hδlt : δ < R ^ 2 / 2) :
     closure (innerCylinder Z₀ R hR δ hδ0 hδlt) ⊆ forwardCylinder Z₀ R hR := by
   obtain ⟨hρ,hρ1,hs⟩ := innerRatio_spec R hR δ hδ0 hδlt
   intro P hP
@@ -122,21 +115,18 @@ theorem closure_innerCylinder_subset {d : ℕ}
   change Z₀.time + δ ≤ P.time at h1
   change P.time ≤ Z₀.time + R^2 - δ at h2
   change relativeVelocity Z₀ P ∈ PDE.euclideanClosedBall 0
-    (innerRatio R hR δ hδ0 hδlt * R) at hv
+    _ at hv
   refine ⟨by linarith,by linarith,?_,?_⟩
   · have hb := PDE.euclideanClosedBall_subset_euclideanBall (mul_pos hρ hR).le
       (show innerRatio R hR δ hδ0 hδlt * R < R by nlinarith) hv
     simpa [PDE.euclideanBall, PDE.euclideanSqDist, relativeVelocity] using hb
   · apply PDE.euclideanClosedBall_subset_euclideanBall
       (mul_nonneg (pow_nonneg hρ.le 3) (pow_nonneg hR.le 3)) _ hx
-    have hp : (innerRatio R hR δ hδ0 hδlt)^3 < 1 := by
-      exact pow_lt_one₀ hρ.le hρ1 (by norm_num)
+    have hp : (innerRatio R hR δ hδ0 hδlt)^3 < 1 := pow_lt_one₀ hρ.le hρ1 (by norm_num)
     nlinarith [pow_pos hR 3]
 
 /-- Inner closures are compact in the existing finite-dimensional coordinate topology. -/
-theorem isCompact_closure_innerCylinder {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)
-    (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2) :
+theorem isCompact_closure_innerCylinder  (hδlt : δ < R ^ 2 / 2) :
     IsCompact (closure (innerCylinder Z₀ R hR δ hδ0 hδlt)) := by
   have hρ := (innerRatio_spec R hR δ hδ0 hδlt).1
   exact (isCompact_relativeClosedBox Z₀ _ _ _ _ (mul_pos hρ hR).le
@@ -144,8 +134,7 @@ theorem isCompact_closure_innerCylinder {d : ℕ}
       isClosed_closure (closure_innerCylinder_bounds Z₀ R hR δ hδ0 hδlt)
 
 /-- Original forward closures satisfy the weak coordinate bounds. -/
-theorem closure_forwardCylinder_bounds {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+theorem closure_forwardCylinder_bounds  :
     closure (forwardCylinder Z₀ R hR) ⊆
       relativeClosedBox Z₀ Z₀.time (Z₀.time + R^2) R (R^3) := by
   apply closure_minimal
@@ -158,24 +147,22 @@ theorem closure_forwardCylinder_bounds {d : ℕ}
   · exact (isCompact_relativeClosedBox Z₀ _ _ _ _ hR.le (pow_nonneg hR.le 3)).isClosed
 
 /-- Original forward closures are compact in the coordinate topology. -/
-theorem isCompact_closure_forwardCylinder {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+theorem isCompact_closure_forwardCylinder  :
     IsCompact (closure (forwardCylinder Z₀ R hR)) :=
   (isCompact_relativeClosedBox Z₀ _ _ _ _ hR.le (pow_nonneg hR.le 3)).of_isClosed_subset
     isClosed_closure (closure_forwardCylinder_bounds Z₀ R hR)
 
 /-- Every interior point lies in all sufficiently near-to-original inner cylinders. -/
-theorem innerCylinder_exhaustion {d : ℕ}
-    (Z₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+theorem innerCylinder_exhaustion  :
     ∀ P ∈ forwardCylinder Z₀ R hR, ∃ η : ℝ, 0 < η ∧
       ∀ (δ : ℝ) (hδ0 : 0 < δ) (hδlt : δ < R ^ 2 / 2), δ < η →
         P ∈ innerCylinder Z₀ R hR δ hδ0 hδlt := by
   intro P hP
-  let ρ : ℝ → ℝ := fun δ => Real.sqrt (1 - 2 * δ / R^2)
+  let ρ  := fun δ => Real.sqrt (1 - 2 * δ / R^2)
   have hc : Continuous ρ :=
     Real.continuous_sqrt.comp (continuous_const.sub
       ((continuous_const.mul continuous_id).div_const _))
-  let E : Set ℝ := {δ | Z₀.time + δ < P.time ∧ P.time < Z₀.time + R^2 - δ ∧
+  let E  := {δ | Z₀.time + δ < P.time ∧ P.time < Z₀.time + R^2 - δ ∧
     PDE.euclideanSqDist (relativeVelocity Z₀ P) 0 < (ρ δ * R)^2 ∧
     PDE.euclideanSqDist (relativePosition Z₀ P) 0 < ((ρ δ)^3 * R^3)^2}
   have ho : IsOpen E :=
@@ -184,11 +171,11 @@ theorem innerCylinder_exhaustion {d : ℕ}
         continuous_id)).inter
       ((isOpen_lt continuous_const ((hc.mul continuous_const).pow 2)).inter
         (isOpen_lt continuous_const (((hc.pow 3).mul continuous_const).pow 2))))
-  have h0 : (0 : ℝ) ∈ E := by
+  have h0 : (0) ∈ E := by
     rcases hP with ⟨h1,h2,hv,hx⟩
     have hv' : PDE.euclideanSqDist (relativeVelocity Z₀ P) 0 < R^2 := by
       simpa [PDE.euclideanBall, PDE.euclideanSqDist, relativeVelocity] using hv
-    change PDE.euclideanSqDist (relativePosition Z₀ P) 0 < (R^3)^2 at hx
+    change PDE.euclideanSqDist _ 0 < (R^3)^2 at hx
     simpa [E,ρ] using And.intro h1 (And.intro h2 (And.intro hv' hx))
   obtain ⟨η,hη,he⟩ := Metric.mem_nhds_iff.mp (ho.mem_nhds h0)
   refine ⟨η,hη,?_⟩

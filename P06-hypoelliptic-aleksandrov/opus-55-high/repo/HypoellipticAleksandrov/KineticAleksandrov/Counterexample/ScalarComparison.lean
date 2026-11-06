@@ -30,9 +30,7 @@ theorem scalarProfile_comparison (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < L
     (isClosed_eq (continuous_rho 1) continuous_const) (fun _ h => le_of_eq h)
   have hKnz : ∀ q ∈ K, q ≠ 0 := by
     intro q hq hz
-    have hh : rho q = 1 := hq
-    simp only [hz, rho_zero] at hh
-    norm_num at hh
+    aesop
   obtain ⟨c, C, hc, hcC, hbound⟩ := exists_positive_bounds_on_compact K hK
     (scalarProfile gamma Lam) (scalarProfile_continuous gamma Lam hLam hmatch).continuousOn
     (fun q hq => scalarProfile_pos gamma Lam hLam hmatch q (hKnz q hq))
@@ -46,7 +44,7 @@ theorem scalarProfile_comparison (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < L
   · have hr : 0 < rho q := (rho_nonneg q).lt_of_ne' ((rho_eq_zero_iff q).not.mpr hq)
     let p := dilate (rho q)⁻¹ q
     have hp : p ∈ K := by
-      change rho (dilate (rho q)⁻¹ q) = 1
+      change rho (dilate _ q) = 1
       rw [rho_dilate _ (inv_pos.mpr hr), inv_mul_cancel₀ hr.ne']
     have hpH := scalarProfile_homogeneous gamma Lam (rho q)⁻¹ (inv_pos.mpr hr) q
     have hpR : Real.rpow (rho q) (3 * gamma.1) *
@@ -55,8 +53,7 @@ theorem scalarProfile_comparison (gamma : ScalarGamma) (Lam : ℝ) (hLam : 0 < L
       rw [Real.inv_rpow hr.le, mul_inv_cancel₀ (Real.rpow_pos_of_pos hr _).ne']
     have hH : scalarProfile gamma Lam q =
         Real.rpow (rho q) (3 * gamma.1) * scalarProfile gamma Lam p := by
-      dsimp only [p]
-      rw [hpH, ← mul_assoc, hpR, one_mul]
+      grind
     obtain ⟨hlo, hhi⟩ := hbound p hp
     rw [hH]
     have hnonneg := (Real.rpow_pos_of_pos hr (3 * gamma.1)).le

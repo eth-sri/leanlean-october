@@ -16,8 +16,7 @@ theorem visit_mass_quadratic_bound {lam Lam R r M : ℝ} (hlam : 0 < lam)
   have hp : 0 < 5 / 16 * r ^ 2 := by positivity
   have he : (5 / 16 * r ^ 2) * (9 / 5 + 96 * Lam / (5 * lam) * (R / r)) =
       9 / 16 * r ^ 2 + 6 * Lam / lam * R * r := by
-    field_simp
-    ring
+    grind
   rw [← he] at h
   nlinarith only [h, hp]
 
@@ -32,8 +31,7 @@ theorem exists_visit_mass_arithmetic_constant {lam Lam : ℝ}
   refine ⟨9 / 5 + K, by linarith, ?_⟩
   intro R r M hR hr h
   have hb := visit_mass_quadratic_bound hlam hr h
-  change M ≤ 9 / 5 + K * (R / r) at hb
   have hp : 0 < R / r := div_pos hR hr
-  nlinarith only [hb, hp, hK]
+  linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

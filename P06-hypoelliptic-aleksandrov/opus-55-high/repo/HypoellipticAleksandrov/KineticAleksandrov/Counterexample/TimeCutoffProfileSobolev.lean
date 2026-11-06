@@ -18,8 +18,10 @@ def spatialPackedGradient {d : ℕ} (gx gv : XV d → PDE.Vec d)
     (x : PDE.Vec (d + d)) : PDE.Vec (d + d) :=
   Fin.addCases (gx (spatialCoordinateCLE d x)) (gv (spatialCoordinateCLE d x))
 
+variable {d : ℕ}
+
 /-- Native weak first jets supply the full weak gradient in the existing Sobolev chart. -/
-theorem weakGradient_spatialCoordinate {d : ℕ} (D : Set (PDE.Vec (d + d)))
+theorem weakGradient_spatialCoordinate  (D : Set (PDE.Vec (d + d)))
     (u : XV d → ℝ) (gx gv : XV d → PDE.Vec d)
     (hweak : ∀ test : XV d → ℝ, ContDiff ℝ 2 test → HasCompactSupport test →
       (∀ i, (∫ q, u q * dx test q i) = -(∫ q, gx q i * test q)) ∧
@@ -31,24 +33,24 @@ theorem weakGradient_spatialCoordinate {d : ℕ} (D : Set (PDE.Vec (d + d)))
   · simp only [spatialPackedGradient, Fin.addCases_left]
     apply weakPartial_on_of_global
     intro test ht hs
-    exact weak_directional_spatialCoordinate u (fun q => gx q j)
-      (PDE.basisVec j, 0) (PDE.basisVec (Fin.castAdd d j))
+    exact weak_directional_spatialCoordinate u _
+      _ _
       (spatialCoordinate_basis_position j)
       (fun test ht hs => (hweak test (ht.of_le (by simp)) hs).1 j) test ht hs
   · simp only [spatialPackedGradient, Fin.addCases_right]
     apply weakPartial_on_of_global
     intro test ht hs
-    exact weak_directional_spatialCoordinate u (fun q => gv q j)
-      (0, PDE.basisVec j) (PDE.basisVec (Fin.natAdd d j))
+    exact weak_directional_spatialCoordinate u _
+      _ _
       (spatialCoordinate_basis_velocity j)
       (fun test ht hs => (hweak test (ht.of_le (by simp)) hs).2 j) test ht hs
 
 /-- Compact bounds and measurability imply finite-exponent membership after chart pullback. -/
-theorem memLp_spatialCoordinate_of_compact_bound {d : ℕ} {D : Set (PDE.Vec (d + d))}
+theorem memLp_spatialCoordinate_of_compact_bound  {D : Set (PDE.Vec (d + d))}
     (hD : PDE.IsOpenBoundedConvexDomain D) (f : XV d → ℝ) (hf : Measurable f)
     (hb : ∀ K : Set (XV d), IsCompact K → ∃ C : ℝ, ∀ q ∈ K, ‖f q‖ ≤ C)
     (p : ℝ≥0∞) : PDE.MemLpOn D p (fun x => f (spatialCoordinateCLE d x)) := by
-  have : IsFiniteMeasure (PDE.volumeOn D) :=
+  have  :=
     hD.isBoundedDomain.isFiniteMeasure_volumeOn
   have hK : IsCompact (spatialCoordinateCLE d '' closure D) :=
     hD.isBoundedDomain.isBounded.isCompact_closure.image (spatialCoordinateCLE d).continuous
@@ -76,7 +78,7 @@ def flatProfileW1p_of_flatProfile_source
   · apply memLp_spatialCoordinate_of_compact_bound hD _ hc.measurable
     intro K hK
     obtain ⟨C, hC⟩ := hK.bddAbove_image hc.norm.continuousOn
-    exact ⟨C, fun q hq => hC ⟨q, hq, rfl⟩⟩
+    aesop
   · intro i
     refine Fin.addCases (fun j => ?_) (fun j => ?_) i
     · simp only [spatialPackedGradient, Fin.addCases_left]
@@ -106,11 +108,11 @@ theorem weak_velocityJet_spatialCoordinate_of_flatProfile_source
   apply weakPartial_on_of_global
   intro test ht hs
   apply weak_directional_spatialCoordinate (fun q => flatProfileVelocityJet h r q k)
-    (fun q => flatProfileHessian h r q i k) (0, PDE.basisVec i)
-    (PDE.basisVec (Fin.natAdd d i)) (spatialCoordinate_basis_velocity i) _ test ht hs
+    (fun q => flatProfileHessian h r q i k) _
+    _ (spatialCoordinate_basis_velocity i) _ test ht hs
   intro test ht hs
   apply weak_first_jet_of_second (selectedFlatProfile h r) _ _
-    (0, PDE.basisVec k) (0, PDE.basisVec i) _ _ test ht hs
+    (0, PDE.basisVec k) _ _ _ test ht hs
   · intro test ht hs
     exact (hw test (ht.of_le (by simp)) hs).2.1 k
   · intro test ht hs
@@ -132,6 +134,6 @@ theorem memLp_flatProfileHessian_spatialCoordinate_of_flatProfile_source
   apply memLp_spatialCoordinate_of_compact_bound hD _ (hm i k)
   intro K hK
   obtain ⟨M, _, hM⟩ := hb K hK
-  exact ⟨M, fun q hq => by simpa only [Real.norm_eq_abs] using (hM q hq).2.2 i k⟩
+  exact ⟨M, fun q hq => by simp_all⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

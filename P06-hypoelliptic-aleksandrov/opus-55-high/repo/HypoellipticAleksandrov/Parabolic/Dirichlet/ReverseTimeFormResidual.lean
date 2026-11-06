@@ -20,7 +20,7 @@ noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- The reverse-time residual candidate in the Bochner dual carrier. -/
-noncomputable def reverseTimeFormResidual
+def reverseTimeFormResidual
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
@@ -90,7 +90,7 @@ theorem ae_reverseTimeFormResidual_apply
         haSmooth hbSmooth hcSmooth u)] with τ hSource hAction hSub
   intro hτ v
   rw [reverseTimeFormResidual, hSub, Pi.sub_apply, ContinuousLinearMap.sub_apply,
-    hSource hτ, hAction v]
+    hSource hτ, hAction]
   abel
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

@@ -9,14 +9,15 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Set MeasureTheory
 
+variable {d : ℕ}
+
 /-- The globally smooth glued Gaussian is smooth near every set. -/
-theorem gaussianBarrier_isSmoothNear {d : ℕ} {lam h : ℝ}
+theorem gaussianBarrier_isSmoothNear  {lam h : ℝ}
     (hlam : 0 < lam) (hh : 0 < h) (Lam H L ell tminus sblock : ℝ)
     {x v : ℝ → PDE.Vec d} (hx : ContDiff ℝ (⊤ : ℕ∞) x)
     (hv : ContDiff ℝ (⊤ : ℕ∞) v) (E : Set (KineticPoint d)) :
@@ -25,7 +26,7 @@ theorem gaussianBarrier_isSmoothNear {d : ℕ} {lam h : ℝ}
   exact (contDiff_raw_gaussianBarrier hlam hh Lam H L ell tminus sblock hx hv).contDiffOn
 
 /-- Initial-strip comparison and the multiplied sign annihilate the localized source. -/
-theorem gaussianBarrier_localizedSource_zero {d : ℕ} {lam h R : ℝ}
+theorem gaussianBarrier_localizedSource_zero  {lam h R : ℝ}
     (hlam : 0 < lam) (hh : 0 < h) (hR : 0 < R) (Lam H L ell tminus sblock : ℝ)
     (hLam : lam ≤ Lam) (hH : 0 ≤ H) (hell : 0 ≤ ell)
     (A : FullKineticCoefficient d) (hA : FullElliptic lam Lam A)
@@ -51,24 +52,22 @@ theorem gaussianBarrier_localizedSource_zero {d : ℕ} {lam h R : ℝ}
     (gaussianBarrier_sign hlam hh Lam H L ell tminus sblock hLam hH hell A hA
       hx hv hkin hLip)
   let Q := backwardCylinder
-    (⟨tminus + sblock + h, x (sblock + h), v (sblock + h)⟩ : KineticPoint d) R
+    ⟨tminus + sblock + h, x (sblock + h), v (sblock + h)⟩ R
   have hQ : MeasurableSet Q := (isOpen_backwardCylinder _ R hR).measurableSet
   filter_upwards [hs.filter_mono (ae_restrict_le (μ := volume) (s := Q)),
     ae_restrict_mem hQ] with P hsign hP
   by_cases hp : u P < gaussianBarrier lam Lam H h L ell tminus sblock x v P
   · have hc := subset_closure hP
     have hpositive : 0 < P.time - tminus - sblock := by
-      by_contra hn
-      exact (not_lt_of_ge (hinit P hc (le_of_not_gt hn))) hp
+      grind
     have hupper := (closure_backwardCylinder_bounds
       (⟨tminus + sblock + h, x (sblock + h), v (sblock + h)⟩ : KineticPoint d)
       hR hc).2.1
-    have hmem : P ∈ S := ⟨hpositive, by change P.time ≤ tminus + sblock + h at hupper
-                                        linarith only [hupper]⟩
+    have hmem : P ∈ S := ⟨hpositive, by linarith⟩
     have hnonpos := (hsign hmem).1.trans (hsign hmem).2
     rw [localizedSource, Set.indicator_of_mem (show P ∈ {Q | u Q <
       gaussianBarrier lam Lam H h L ell tminus sblock x v Q} from hp)]
-    exact max_eq_right hnonpos
+    simp_all
   · rw [localizedSource, Set.indicator_of_notMem (show P ∉ {Q | u Q <
       gaussianBarrier lam Lam H h L ell tminus sblock x v Q} from hp)]
     rfl

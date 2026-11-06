@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.Parabolic.ABP
 /-! # The scalar parabolic Aleksandrov estimate on the Krylov cylinders -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic
 open MeasureTheory Set
 open scoped MatrixOrder Matrix.Norms.Elementwise
@@ -33,20 +32,19 @@ theorem parabolic_aleksandrov_aux
   refine ⟨C, hC.le, ?_⟩
   intro t₀ v₀ h hh hh1 a f u ha _hsym hell hf hu hsub hb z hz
   let Z : TimeVelocity N := (z.1 - (t₀ - h), z.2 - v₀)
-  have hZ : Z ∈ closedParabolicCylinder h (0 : PDE.Vec N) := by
-    refine ⟨⟨by dsimp [Z]; linarith [hz.1.1],
-      by dsimp [Z]; linarith [hz.1.2]⟩, ?_⟩
+  have hZ : Z ∈ closedParabolicCylinder h (0) := by
+    refine ⟨⟨by linarith [hz.1.1],
+      by linarith [hz.1.2]⟩, ?_⟩
     change PDE.euclideanSqDist (z.2 - v₀) 0 ≤ 1 ^ 2
     have hv : PDE.euclideanSqDist z.2 v₀ ≤ 1 ^ 2 :=
       (show PDE.euclideanSqDist z.2 v₀ < 1 ^ 2 from hz.2).le
     simpa only [PDE.euclideanSqDist, Pi.sub_apply, sub_zero] using hv
   have hmap : KrylovEstimate.innerMap t₀ h v₀ 1 Z = z := by
     apply Prod.ext
-    · simp only [KrylovEstimate.innerMap, parabolicAffine, Z, one_pow,
-        sub_self, zero_mul, zero_div, add_zero, one_mul]
+    · simp only [KrylovEstimate.innerMap, parabolicAffine]
       ring
-    · simp only [KrylovEstimate.innerMap, parabolicAffine, Z, one_smul]
-      exact add_sub_cancel _ _
+    · simp only [KrylovEstimate.innerMap, parabolicAffine, one_smul]
+      ring
   apply le_of_forall_pos_le_add
   intro ε hε
   let δ := ε / (C + 1)
@@ -58,7 +56,6 @@ theorem parabolic_aleksandrov_aux
   have hvalue := hclose Z hZ
   rw [hmap] at hvalue
   have hupper := (neg_le_abs (w Z - u z)).trans hvalue
-  have hsource := mul_le_mul_of_nonneg_left hnorm hC.le
   have herror : δ * (C + 1) = ε := div_mul_cancel₀ ε (by linarith)
   nlinarith
 

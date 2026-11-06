@@ -17,8 +17,6 @@ HÃ¶rmander regularity theorem (`ContDiffOn` of every generator on an open set `Î
 
 @[expose] public section
 
-noncomputable section
-set_option autoImplicit false
 
 open scoped MatrixOrder
 

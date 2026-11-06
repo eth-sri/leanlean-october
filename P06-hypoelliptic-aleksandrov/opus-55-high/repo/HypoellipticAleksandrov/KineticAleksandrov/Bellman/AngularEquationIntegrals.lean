@@ -9,7 +9,6 @@ import Mathlib.Tactic
 /-! # Integrating the actual homogeneous angular representation -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
@@ -21,16 +20,16 @@ theorem bellmanRadialWeight_integral (β : ℝ) (f : ℝ → ℝ) :
       ENNReal.ofReal (s.val ^ (3 - β))) := by fun_prop
   rw [bellmanRadialWeight, integral_withDensity_eq_integral_toReal_smul hm]
   · have hw (s : BellmanPositiveTime) :
-        (ENNReal.ofReal (s.val ^ (3 - β))).toReal = s.val ^ (3 - β) :=
+        (ENNReal.ofReal _).toReal = s.val ^ (3 - β) :=
       ENNReal.toReal_ofReal (Real.rpow_nonneg s.property.le _)
-    simp only [hw, smul_eq_mul]
+    simp only [hw]
     have hem : MeasurableEmbedding (Subtype.val : BellmanPositiveTime → ℝ) :=
       MeasurableEmbedding.subtype_coe measurableSet_Ioi
     have he := hem.integral_map
       (fun s : ℝ => s ^ (3 - β) * f s) (μ := bellmanPositiveTimeVolume)
     rw [map_bellmanPositiveTimeVolume_coe] at he
-    exact he.symm
-  · exact ae_of_all _ fun _ => ENNReal.ofReal_lt_top
+    simp_all
+  simp
 
 /-- A test supported in positive position integrates against precisely that restriction. -/
 theorem bellman_integral_positive_restrict (μ : Measure BellmanPuncturedPlane)
@@ -39,6 +38,6 @@ theorem bellman_integral_positive_restrict (μ : Measure BellmanPuncturedPlane)
   apply setIntegral_eq_integral_of_forall_compl_eq_zero
   intro q hq
   apply image_eq_zero_of_notMem_tsupport
-  exact fun h => hq (hs h)
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov

@@ -22,7 +22,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- The six nonprincipal terms in the fixed-time localized reverse-time
 commutator, with the scalar time test deliberately factored out. -/
-noncomputable def localizedSpatialDifferenceQuotientH10NonprincipalRemainder
+def localizedSpatialDifferenceQuotientH10NonprincipalRemainder
     {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
     (r₁ : ℝ) (hΩ : IsOpen Ω)
     (a : CoefficientField d)

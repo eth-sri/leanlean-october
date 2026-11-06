@@ -35,7 +35,6 @@ theorem exists_sigmaFinite_bounded_weak_subsequence
         Tendsto (fun j => ∫ x, v (ν j) x * ψ x ∂μ)
           atTop (nhds (∫ x, u x * ψ x ∂μ)) := by
   obtain ⟨ρ, hρ, hμρ, hρμ⟩ := exists_isFiniteMeasure_absolutelyContinuous μ
-  let : IsFiniteMeasure ρ := hρ
   obtain ⟨u, ν, hν, hu, hub, ht⟩ := exists_finite_bounded_weak_subsequence ρ v C hC
     (fun j => (hv j).mono_ac hρμ) (fun j => hρμ.ae_le (hb j))
   refine ⟨u, ν, hν, hu.mono_ac hμρ, hμρ.ae_le hub, ?_⟩
@@ -48,15 +47,13 @@ theorem exists_sigmaFinite_bounded_weak_subsequence
     have h := (integrable_withDensity_iff_integrable_smul'
       (Measure.measurable_rnDeriv μ ρ) (Measure.rnDeriv_lt_top μ ρ)).mp
       (hmeasure.symm ▸ hψ)
-    simpa only [smul_eq_mul] using h
+    omega
   have he (f : α → ℝ) : (∫ x, f x * ψ x ∂μ) = ∫ x, f x * Ψ x ∂ρ := by
     rw [← hmeasure, integral_withDensity_eq_integral_toReal_smul
       (Measure.measurable_rnDeriv μ ρ) (Measure.rnDeriv_lt_top μ ρ)]
     congr 1
     funext x
-    dsimp only [Ψ]
-    simp only [smul_eq_mul]
     ring
-  simpa only [← he] using ht Ψ hΨ
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov

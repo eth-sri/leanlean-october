@@ -12,15 +12,17 @@ namespace HypoellipticAleksandrov.KineticAleksandrov
 open HypoellipticAleksandrov.Parabolic MeasureTheory Set
 open scoped ENNReal
 
+variable {d : ℕ}
+
 /-- Backward cylinders are open in the existing physical coordinate topology. -/
-theorem isOpen_backwardCylinder {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
+theorem isOpen_backwardCylinder  (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R) :
     IsOpen (backwardCylinder P₀ R) := by
   have ho := isOpen_forwardCylinder (kineticReflection P₀) R hR
-  rw [← kineticReflection_image_backwardCylinder P₀ R hR] at ho
+  rw [← kineticReflection_image_backwardCylinder] at ho
   exact (kineticReflectionHomeomorph d).isOpen_image.mp ho
 
 /-- Local continuity of the solution suffices for its positive-set source localisation. -/
-theorem borelSource_memLp {d : ℕ} {D : Set (KineticPoint d)} (hD : IsOpen D)
+theorem borelSource_memLp  {D : Set (KineticPoint d)} (hD : IsOpen D)
     (localised : Bool) (u f : KineticPoint d → ℝ) (hu : ContinuousOn u D)
     {p : ℝ≥0∞} (hf : MemLp (fun P => max (f P) 0) p (volume.restrict D)) :
     MemLp (borelSource localised u f) p (volume.restrict D) := by
@@ -31,12 +33,12 @@ theorem borelSource_memLp {d : ℕ} {D : Set (KineticPoint d)} (hD : IsOpen D)
     have heq : (D ∩ {P | 0 < u P}).indicator (fun P => max (f P) 0) =ᵐ[volume.restrict D]
         borelSource true u f := by
       filter_upwards [ae_restrict_mem hD.measurableSet] with P hP
-      simp only [indicator,mem_inter_iff,mem_ofPred_eq,hP,true_and,borelSource,
+      simp only [indicator,mem_inter_iff,hP,true_and,borelSource,
         ite_true]
     exact (hf.indicator hS).ae_eq heq
 
 /-- The operator change is precisely minus the coefficient Hessian contraction. -/
-theorem borel_backwardOperator_sub {d : ℕ} (C A : CoefficientField d)
+theorem borel_backwardOperator_sub  (C A : CoefficientField d)
     (u : KineticPoint d → ℝ) (P : KineticPoint d) :
     backwardOperatorOfTimeVelocityCoefficient C u P -
       backwardOperatorOfTimeVelocityCoefficient A u P =

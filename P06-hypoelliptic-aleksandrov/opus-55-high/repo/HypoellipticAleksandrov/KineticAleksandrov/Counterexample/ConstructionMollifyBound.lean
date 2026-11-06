@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Counterexample.MollifyA
 /-! # Essential bounds suffice for normalized spatial convolution -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory
 open scoped Convolution
@@ -23,16 +22,12 @@ theorem construction_spatialMollify_norm_le_ae {G : Type*}
     (aemeasurable_const.max (hg.aemeasurable.min aemeasurable_const)).aestronglyMeasurable
   have he : f =ᵐ[volume] g := by
     filter_upwards [hb] with x hx
-    have hh := abs_le.mp hx
-    simp only [f, min_eq_left hh.2, max_eq_right hh.1]
+    grind
   have hfB : ∀ x, ‖f x‖ ≤ C := by
     intro x
     rw [Real.norm_eq_abs, abs_le]
-    constructor
-    · exact le_max_left _ _
-    · exact max_le (neg_le_self hC) (min_le_right _ _)
-  have hc : spatialMollify phi f = spatialMollify phi g := by
-    exact convolution_congr (ContinuousLinearMap.lsmul ℝ ℝ)
+    grind
+  have hc : spatialMollify phi f = spatialMollify phi g := convolution_congr _
       (Filter.Eventually.of_forall (fun _ => rfl)) he
   rw [← hc]
   exact spatialMollify_norm_le phi f hf C hC hfB q

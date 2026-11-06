@@ -15,7 +15,6 @@ proved results. This intermediate export retains the evolution conclusion explic
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open Set MeasureTheory
 open scoped ENNReal MatrixOrder

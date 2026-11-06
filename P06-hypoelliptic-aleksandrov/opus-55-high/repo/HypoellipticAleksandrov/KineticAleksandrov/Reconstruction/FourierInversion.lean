@@ -37,21 +37,20 @@ section Peak
 variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
 
 /-- The Gaussian profile `π^{d/2} e^{-π²‖w‖²}` of integral one. -/
-noncomputable def peakProfile (V : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V]
+def peakProfile (V : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V]
     (w : V) : ℝ :=
   Real.pi ^ (finrank ℝ V / 2 : ℝ) * Real.exp (-Real.pi ^ 2 * ‖w‖ ^ 2)
 
 /-- Gaussian peak kernel `c^d π^{d/2} e^{-π² c² ‖u‖²}`. -/
-noncomputable def gaussPeak (V : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V]
+def gaussPeak (V : Type*) [NormedAddCommGroup V] [InnerProductSpace ℝ V]
     (c : ℝ) (u : V) : ℝ :=
   c ^ finrank ℝ V * peakProfile V (c • u)
 
 /-- Damping parameter. -/
-noncomputable def dampingParam (c : ℝ) : ℝ := (4 * Real.pi ^ 2 * c ^ 2)⁻¹
+def dampingParam (c : ℝ) : ℝ := (4 * Real.pi ^ 2 * c ^ 2)⁻¹
 
 /-- The damping parameter is positive for `c > 0`. -/
 lemma dampingParam_pos {c : ℝ} (hc : 0 < c) : 0 < dampingParam c := by
-  have := Real.pi_pos
   unfold dampingParam
   positivity
 
@@ -62,25 +61,19 @@ lemma peak_const (n : ℕ) {c : ℝ} (hc : 0 < c) :
   have hpi := Real.pi_pos
   have h1 : Real.pi / dampingParam c = (2 * Real.pi * c) ^ 2 * Real.pi := by
     unfold dampingParam
-    field_simp
-    norm_num
+    grind
   have h2 : ((2 * Real.pi * c) ^ 2 * Real.pi) ^ (n / 2 : ℝ) =
       (2 * Real.pi * c) ^ n * Real.pi ^ (n / 2 : ℝ) := by
     rw [Real.mul_rpow (by positivity) hpi.le, ← Real.rpow_natCast (2 * Real.pi * c) 2,
       ← Real.rpow_mul (by positivity), ← Real.rpow_natCast (2 * Real.pi * c) n]
-    congr 2
-    push_cast
     ring
   rw [h1, h2]
-  have : (2 * Real.pi) ^ n ≠ 0 := by positivity
   field_simp
   ring
 
 /-- The damping parameter tends to zero as `c → ∞`. -/
 lemma tendsto_dampingParam : Tendsto dampingParam atTop (𝓝 0) := by
-  have h : Tendsto (fun c : ℝ => 4 * Real.pi ^ 2 * c ^ 2) atTop atTop := by
-    have := Real.pi_pos
-    exact Tendsto.const_mul_atTop (by positivity) (tendsto_pow_atTop two_ne_zero)
+  have h : Tendsto (fun c : ℝ => 4 * Real.pi ^ 2 * c ^ 2) atTop atTop := Tendsto.const_mul_atTop (by positivity) (tendsto_pow_atTop two_ne_zero)
   exact tendsto_inv_atTop_zero.comp h
 
 /-- The Gaussian damping factor has modulus at most one. -/
@@ -88,7 +81,6 @@ lemma norm_damp_le_one {V : Type*} [NormedAddCommGroup V] {c : ℝ} (hc : 0 < c)
     ‖cexp (-((dampingParam c : ℝ) : ℂ) * (‖ξ‖ : ℂ) ^ 2)‖ ≤ 1 := by
   rw [Complex.norm_exp]
   have := dampingParam_pos hc
-  simp only [Real.exp_le_one_iff]
   simp [← Complex.ofReal_pow]
   positivity
 
@@ -104,11 +96,9 @@ lemma peakProfile_nonneg (w : V) : 0 ≤ peakProfile V w := by
 /-- The Gaussian peak kernel is bounded by its value at the origin. -/
 lemma gaussPeak_le {c : ℝ} (hc : 0 ≤ c) (u : V) :
     gaussPeak V c u ≤ c ^ finrank ℝ V * Real.pi ^ (finrank ℝ V / 2 : ℝ) := by
-  unfold gaussPeak peakProfile
   have hpi := Real.pi_pos
   have h : Real.exp (-Real.pi ^ 2 * ‖c • u‖ ^ 2) ≤ 1 := by
-    rw [Real.exp_le_one_iff]; nlinarith [sq_nonneg ‖c • u‖, sq_nonneg Real.pi]
-  have h0 : 0 ≤ Real.pi ^ (finrank ℝ V / 2 : ℝ) := by positivity
+    simp_all
   calc c ^ finrank ℝ V * (Real.pi ^ (finrank ℝ V / 2 : ℝ) * Real.exp (-Real.pi ^ 2 * ‖c • u‖ ^ 2))
       ≤ c ^ finrank ℝ V * (Real.pi ^ (finrank ℝ V / 2 : ℝ) * 1) := by gcongr
     _ = _ := by ring
@@ -126,7 +116,7 @@ variable {V : Type*} [NormedAddCommGroup V] [InnerProductSpace ℝ V]
   [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V]
 
 /-- Fourier transform of a finite measure with the convention `e^{-i⟨ξ,x⟩}`. -/
-noncomputable def measureFourier (μ : Measure V) (ξ : V) : ℂ :=
+def measureFourier (μ : Measure V) (ξ : V) : ℂ :=
   ∫ x, cexp (-((⟪ξ, x⟫ : ℝ) * I)) ∂μ
 
 /-- The Fourier transform of the damping Gaussian is the Gaussian peak kernel. -/
@@ -134,32 +124,26 @@ lemma gaussian_inner_integral {c : ℝ} (hc : 0 < c) (w : V) :
     ∫ ξ : V, cexp (-((dampingParam c : ℝ) : ℂ) * (‖ξ‖ : ℂ) ^ 2 + I * ((⟪w, ξ⟫ : ℝ) : ℂ)) =
       (((2 * Real.pi) ^ finrank ℝ V * gaussPeak V c w : ℝ) : ℂ) := by
   have hpi := Real.pi_pos
-  have hb : 0 < (((dampingParam c : ℝ) : ℂ)).re := by
-    rw [Complex.ofReal_re]; exact dampingParam_pos hc
+  have hb : 0 < (((dampingParam c) : ℂ)).re := dampingParam_pos hc
   rw [GaussianFourier.integral_cexp_neg_mul_sq_norm_add hb I w]
-  have h1 : ((Real.pi : ℂ) / ((dampingParam c : ℝ) : ℂ)) ^ ((finrank ℝ V : ℂ) / 2) =
+  have h1 : (Real.pi / ((dampingParam c : ℝ))) ^ ((finrank ℝ V : ℂ) / 2) =
       (((Real.pi / dampingParam c) ^ ((finrank ℝ V : ℝ) / 2) : ℝ) : ℂ) := by
     rw [Complex.ofReal_cpow (div_nonneg hpi.le (dampingParam_pos hc).le)]
-    push_cast
-    rfl
-  have h2 : I ^ 2 * (‖w‖ : ℂ) ^ 2 / (4 * ((dampingParam c : ℝ) : ℂ)) =
-      ((-Real.pi ^ 2 * ‖c • w‖ ^ 2 : ℝ) : ℂ) := by
-    have : (c : ℂ) ≠ 0 := by exact_mod_cast hc.ne'
-    have : (Real.pi : ℂ) ≠ 0 := by exact_mod_cast hpi.ne'
+    simp
+  have h2 : I ^ 2 * (‖w‖) ^ 2 / (4 * ((dampingParam c : ℝ))) =
+      ((-Real.pi ^ 2 * ‖c • w‖ ^ 2 : ℝ)) := by
     rw [norm_smul, Real.norm_eq_abs, abs_of_pos hc]
     unfold dampingParam
     push_cast
     field_simp
     simp
   rw [h1, h2, ← Complex.ofReal_exp, ← Complex.ofReal_mul]
-  congr 1
   unfold gaussPeak peakProfile
   have hk := peak_const (finrank ℝ V) hc
   have hA : (Real.pi / dampingParam c) ^ ((finrank ℝ V : ℝ) / 2) =
       (2 * Real.pi) ^ finrank ℝ V * (c ^ finrank ℝ V * Real.pi ^ ((finrank ℝ V : ℝ) / 2)) := by
     rw [← hk, mul_inv_cancel_left₀ (by positivity)]
-  rw [hA]
-  ring
+  grind
 
 /-- Fubini: the Gaussian-damped inversion integral is `(2π)^d` times the Gaussian
 regularisation `∫ gaussPeak c (z - x) dμ(x)` of `μ`. -/
@@ -167,45 +151,41 @@ lemma regularized_eq (μ : Measure V) [IsFiniteMeasure μ] {c : ℝ} (hc : 0 < c
     ∫ ξ : V, cexp (-((dampingParam c : ℝ) : ℂ) * (‖ξ‖ : ℂ) ^ 2) *
         (cexp (I * ((⟪ξ, z⟫ : ℝ) : ℂ)) * measureFourier μ ξ) =
       ((2 * Real.pi) ^ finrank ℝ V : ℝ) * ∫ x, ((gaussPeak V c (z - x) : ℝ) : ℂ) ∂μ := by
-  set b : ℂ := ((dampingParam c : ℝ) : ℂ) with hb
-  have step_a : ∀ ξ : V, cexp (-b * (‖ξ‖ : ℂ) ^ 2) *
-        (cexp (I * ((⟪ξ, z⟫ : ℝ) : ℂ)) * measureFourier μ ξ) =
-      ∫ x, cexp (-b * (‖ξ‖ : ℂ) ^ 2 + I * ((⟪z - x, ξ⟫ : ℝ) : ℂ)) ∂μ := by
+  set b : ℂ := ((dampingParam c) : ℂ) with hb
+  have step_a : ∀ ξ : V, cexp (-b * (‖ξ‖) ^ 2) *
+        (cexp (I * ((⟪ξ, z⟫ : ℝ))) * measureFourier μ ξ) =
+      ∫ x, cexp (-b * (‖ξ‖) ^ 2 + I * ((⟪z - x, ξ⟫ : ℝ))) ∂μ := by
     intro ξ
     unfold measureFourier
     rw [← integral_const_mul, ← integral_const_mul]
     refine integral_congr_ae (Filter.Eventually.of_forall fun x => ?_)
     simp only
-    rw [← Complex.exp_add, ← Complex.exp_add, inner_sub_left, real_inner_comm ξ z,
+    rw [← Complex.exp_add, ← Complex.exp_add, inner_sub_left, real_inner_comm,
       real_inner_comm ξ x]
-    congr 1
     push_cast
     ring
   simp_rw [step_a]
-  have hb0 : 0 < b.re := by rw [hb, Complex.ofReal_re]; exact dampingParam_pos hc
-  have hG : Integrable (fun ξ : V => ‖cexp (-b * (‖ξ‖ : ℂ) ^ 2 + 0 * ((⟪(0 : V), ξ⟫ : ℝ) : ℂ))‖) :=
+  have hb0 : 0 < b.re := by exact dampingParam_pos hc
+  have hG : Integrable (fun ξ : V => ‖cexp (-b * (‖ξ‖) ^ 2 + 0 * ((⟪(0 : V), ξ⟫ : ℝ)))‖) :=
     (GaussianFourier.integrable_cexp_neg_mul_sq_norm_add hb0 0 0).norm
-  have hint : Integrable (Function.uncurry fun (ξ : V) (x : V) =>
-      cexp (-b * (‖ξ‖ : ℂ) ^ 2 + I * ((⟪z - x, ξ⟫ : ℝ) : ℂ))) (volume.prod μ) := by
+  have hint : Integrable (Function.uncurry fun ξ x =>
+      cexp (-b * (‖ξ‖) ^ 2 + I * ((⟪z - x, ξ⟫ : ℝ)))) (volume.prod μ) := by
     have h2 : Integrable (fun p : V × V =>
-        ‖cexp (-b * (‖p.1‖ : ℂ) ^ 2 + 0 * ((⟪(0 : V), p.1⟫ : ℝ) : ℂ))‖ * (1 : ℝ))
-        (volume.prod μ) := hG.mul_prod (integrable_const (1 : ℝ))
+        ‖cexp (-b * (‖p.1‖) ^ 2 + 0 * ((⟪(0 : V), p.1⟫ : ℝ)))‖ * (1))
+        (volume.prod μ) := hG.mul_prod (integrable_const (1))
     refine h2.mono' ?_ (Filter.Eventually.of_forall fun p => ?_)
-    · exact (by fun_prop : Continuous fun p : V × V => cexp (-b * (‖p.1‖ : ℂ) ^ 2 +
-          I * ((⟪z - p.2, p.1⟫ : ℝ) : ℂ))).aestronglyMeasurable
+    · fun_prop
     · show ‖cexp (-b * (‖p.1‖ : ℂ) ^ 2 + I * ((⟪z - p.2, p.1⟫ : ℝ) : ℂ))‖ ≤
         ‖cexp (-b * (‖p.1‖ : ℂ) ^ 2 + 0 * ((⟪(0 : V), p.1⟫ : ℝ) : ℂ))‖ * 1
-      rw [Complex.norm_exp, Complex.norm_exp, mul_one]
-      apply le_of_eq
-      congr 1
-      simp [hb, sq]
+      rw [Complex.norm_exp, Complex.norm_exp]
+      simp
   rw [integral_integral_swap hint, ← integral_const_mul]
   refine integral_congr_ae (Filter.Eventually.of_forall fun x => ?_)
   simp only
-  rw [hb, gaussian_inner_integral hc (z - x), Complex.ofReal_mul]
+  rw [gaussian_inner_integral hc (z - x), Complex.ofReal_mul]
 
 /-- The Gaussian-regularised density `μ * (Gaussian)`. -/
-noncomputable def regDensity (μ : Measure V) (c : ℝ) (z : V) : ℝ :=
+def regDensity (μ : Measure V) (c : ℝ) (z : V) : ℝ :=
   ∫ x, gaussPeak V c (z - x) ∂μ
 
 omit [FiniteDimensional ℝ V] [BorelSpace V] in
@@ -214,11 +194,11 @@ lemma regDensity_nonneg (μ : Measure V) {c : ℝ} (hc : 0 ≤ c) (z : V) : 0 �
   integral_nonneg fun _ => gaussPeak_nonneg hc _
 
 /-- The Fourier-inversion integral `∫ e^{i⟨ξ,z⟩} φ(ξ) dξ`. -/
-noncomputable def invIntegral (φ : V → ℂ) (z : V) : ℂ :=
+def invIntegral (φ : V → ℂ) (z : V) : ℂ :=
   ∫ ξ, cexp (I * ((⟪ξ, z⟫ : ℝ) : ℂ)) * φ ξ
 
 /-- The candidate density `(2π)^{-d} Re ∫ e^{i⟨ξ,z⟩} φ(ξ) dξ`. -/
-noncomputable def invDensity (μ : Measure V) (z : V) : ℝ :=
+def invDensity (μ : Measure V) (z : V) : ℝ :=
   ((2 * Real.pi) ^ finrank ℝ V)⁻¹ * (invIntegral (measureFourier μ) z).re
 
 /-- The regularised density is the real part of the damped inversion integral. -/
@@ -226,7 +206,7 @@ lemma two_pi_pow_mul_regDensity (μ : Measure V) [IsFiniteMeasure μ] {c : ℝ} 
     ((2 * Real.pi) ^ finrank ℝ V : ℝ) * regDensity μ c z =
       (∫ ξ : V, cexp (-((dampingParam c : ℝ) : ℂ) * (‖ξ‖ : ℂ) ^ 2) *
         (cexp (I * ((⟪ξ, z⟫ : ℝ) : ℂ)) * measureFourier μ ξ)).re := by
-  rw [regularized_eq μ hc z, integral_complex_ofReal, ← Complex.ofReal_mul, Complex.ofReal_re]
+  rw [regularized_eq μ hc z, integral_complex_ofReal, ← Complex.ofReal_mul]
   rfl
 
 /-- The damped inversion integral converges to the inversion integral (dominated
@@ -238,19 +218,18 @@ lemma tendsto_regularized (μ : Measure V) (hφ : Integrable (measureFourier μ)
   refine tendsto_integral_filter_of_dominated_convergence (fun ξ => ‖measureFourier μ ξ‖)
     ?_ ?_ hφ.norm ?_
   · refine Filter.Eventually.of_forall fun c => ?_
-    exact (Continuous.aestronglyMeasurable (by fun_prop)).mul
-      ((Continuous.aestronglyMeasurable (by fun_prop)).mul hφ.1)
-  · filter_upwards [Ioi_mem_atTop (0 : ℝ)] with c hc
+    fun_prop
+  · filter_upwards [Ioi_mem_atTop (0)] with c hc
     refine Filter.Eventually.of_forall fun ξ => ?_
     rw [norm_mul, norm_mul, Complex.norm_exp (I * _)]
-    simp only [Complex.mul_re, Complex.I_re, Complex.I_im, Complex.ofReal_re, Complex.ofReal_im,
-      zero_mul, mul_zero, Real.exp_zero, one_mul, sub_self]
+    simp only [Complex.mul_re, Complex.I_re, Complex.ofReal_im,
+      zero_mul, mul_zero, Real.exp_zero, sub_self]
     nlinarith [norm_damp_le_one (V := V) hc ξ, norm_nonneg (measureFourier μ ξ)]
   · refine Filter.Eventually.of_forall fun ξ => ?_
     have h1 : Tendsto (fun c : ℝ => cexp (-((dampingParam c : ℝ) : ℂ) * (‖ξ‖ : ℂ) ^ 2)) atTop
         (𝓝 1) := by
-      have : Tendsto (fun c : ℝ => -((dampingParam c : ℝ) : ℂ) * (‖ξ‖ : ℂ) ^ 2) atTop
-          (𝓝 (-((0 : ℝ) : ℂ) * (‖ξ‖ : ℂ) ^ 2)) :=
+      have : Tendsto (fun c : ℝ => -((dampingParam c : ℝ)) * (‖ξ‖ : ℂ) ^ 2) atTop
+          (𝓝 (-((0 : ℝ)) * (‖ξ‖) ^ 2)) :=
         ((Complex.continuous_ofReal.tendsto _).comp tendsto_dampingParam).neg.mul_const _
       simpa using this.cexp
     simpa [invIntegral] using h1.mul_const _
@@ -263,26 +242,23 @@ lemma integral_peakProfile : ∫ w : V, peakProfile V w = 1 := by
   nth_rewrite 2 [← pow_one Real.pi]
   rw [← Real.rpow_natCast, ← Real.rpow_natCast, ← Real.rpow_sub hpi, ← Real.rpow_mul hpi.le,
     ← Real.rpow_add hpi]
-  ring_nf
-  exact Real.rpow_zero _
+  norm_num
 
 omit [FiniteDimensional ℝ V] [MeasurableSpace V] [BorelSpace V] in
 /-- The Gaussian profile decays faster than any power at infinity. -/
 lemma tendsto_norm_pow_mul_peakProfile :
     Tendsto (fun w : V => ‖w‖ ^ finrank ℝ V * peakProfile V w) (Bornology.cobounded V) (𝓝 0) := by
-  have hpi := Real.pi_pos
-  have A : Tendsto (fun (w : V) ↦ Real.pi ^ 2 * ‖w‖ ^ 2) (Bornology.cobounded V) atTop := by
+  have A : Tendsto (fun w ↦ Real.pi ^ 2 * ‖w‖ ^ 2) (Bornology.cobounded V) atTop := by
     rw [tendsto_const_mul_atTop_of_pos (by positivity)]
     apply (tendsto_pow_atTop two_ne_zero).comp tendsto_norm_cobounded_atTop
   have B := tendsto_rpow_mul_exp_neg_mul_atTop_nhds_zero (finrank ℝ V / 2) 1
     zero_lt_one |>.comp A |>.const_mul (Real.pi ^ (-finrank ℝ V / 2 : ℝ))
   rw [mul_zero] at B
   convert! B using 2 with x
-  simp only [neg_mul, one_mul, Function.comp_apply, ← mul_assoc, ← Real.rpow_natCast, peakProfile]
-  congr 1
+  simp only [Function.comp_apply, ← mul_assoc, ← Real.rpow_natCast, peakProfile]
   rw [Real.mul_rpow (by positivity) (by positivity), ← Real.rpow_mul Real.pi_pos.le,
-    ← Real.rpow_mul (norm_nonneg _), ← mul_assoc, ← Real.rpow_add Real.pi_pos, mul_comm]
-  congr <;> ring
+    ← Real.rpow_mul (norm_nonneg _), ← mul_assoc, ← Real.rpow_add Real.pi_pos]
+  ring
 
 /-- The shifted Gaussian peak kernel has integral one. -/
 lemma integral_gaussPeak_sub {c : ℝ} (hc : 0 < c) (x : V) :
@@ -290,14 +266,14 @@ lemma integral_gaussPeak_sub {c : ℝ} (hc : 0 < c) (x : V) :
   unfold gaussPeak
   rw [integral_sub_right_eq_self (fun z : V => c ^ finrank ℝ V * peakProfile V (c • z)) x,
     integral_const_mul,
-    Measure.integral_comp_smul (volume : Measure V) (fun z : V => peakProfile V z) c,
+    Measure.integral_comp_smul volume (fun z : V => peakProfile V z) c,
     integral_peakProfile, smul_eq_mul, mul_one, abs_of_pos (by positivity), mul_inv_cancel₀]
   positivity
 
 /-- Approximate identity: Gaussian peaks converge on bounded continuous integrable functions. -/
 lemma tendsto_peak_conv {ψ : V → ℝ} (hψ : Integrable ψ) (hψc : Continuous ψ) (x : V) :
     Tendsto (fun c : ℝ => ∫ z : V, gaussPeak V c (z - x) * ψ z) atTop (𝓝 (ψ x)) := by
-  have := tendsto_integral_comp_smul_smul_of_integrable' (μ := (volume : Measure V))
+  have := tendsto_integral_comp_smul_smul_of_integrable' (μ := volume)
     (φ := peakProfile V) peakProfile_nonneg integral_peakProfile
     tendsto_norm_pow_mul_peakProfile hψ hψc.continuousAt (x₀ := x)
   refine this.congr fun c => ?_
@@ -310,7 +286,6 @@ omit [FiniteDimensional ℝ V] in
 /-- The regularised density is continuous. -/
 lemma continuous_regDensity (μ : Measure V) [IsFiniteMeasure μ] {c : ℝ} (hc : 0 ≤ c) :
     Continuous (regDensity μ c) := by
-  unfold regDensity
   refine continuous_of_dominated
     (bound := fun _ => c ^ finrank ℝ V * Real.pi ^ (finrank ℝ V / 2 : ℝ))
     (fun z => ?_) (fun z => Filter.Eventually.of_forall fun x => ?_) (integrable_const _)
@@ -334,7 +309,7 @@ lemma integral_mul_regDensity (μ : Measure V) [IsFiniteMeasure μ] {c : ℝ} (h
     simp only
     rw [norm_mul, Real.norm_eq_abs (gaussPeak V c (z - x)),
       abs_of_nonneg (gaussPeak_nonneg hc.le _)]
-  have hint : Integrable (Function.uncurry fun (z : V) (x : V) => ψ z * gaussPeak V c (z - x))
+  have hint : Integrable (Function.uncurry fun z x => ψ z * gaussPeak V c (z - x))
       (volume.prod μ) := by
     rw [integrable_prod_iff]
     · refine ⟨Filter.Eventually.of_forall fun z => ?_, ?_⟩
@@ -350,18 +325,15 @@ lemma integral_mul_regDensity (μ : Measure V) [IsFiniteMeasure μ] {c : ℝ} (h
         simp_rw [hnorm]
         exact (hψ.norm.mul (continuous_regDensity μ hc.le)).integrable_of_hasCompactSupport
           (hψs.norm.mul_right)
-    · exact (by fun_prop : Continuous fun p : V × V =>
-        ψ p.1 * gaussPeak V c (p.1 - p.2)).aestronglyMeasurable
+    fun_prop
   have := integral_integral_swap hint
-  unfold regDensity
   calc ∫ z, ψ z * ∫ x, gaussPeak V c (z - x) ∂μ
       = ∫ z, ∫ x, ψ z * gaussPeak V c (z - x) ∂μ := by
         refine integral_congr_ae (Filter.Eventually.of_forall fun z => ?_)
         exact (integral_const_mul _ _).symm
     _ = ∫ x, (∫ z, ψ z * gaussPeak V c (z - x)) ∂μ := this
     _ = _ := by
-        refine integral_congr_ae (Filter.Eventually.of_forall fun x => ?_)
-        exact integral_congr_ae (Filter.Eventually.of_forall fun z => mul_comm _ _)
+        grind
 
 /-- The regularised density converges weakly to `μ` against compactly supported
 continuous test functions. -/
@@ -370,7 +342,6 @@ lemma tendsto_integral_mul_regDensity (μ : Measure V) [IsFiniteMeasure μ]
     Tendsto (fun c : ℝ => ∫ z, ψ z * regDensity μ c z) atTop (𝓝 (∫ x, ψ x ∂μ)) := by
   have hψi : Integrable ψ := hψ.integrable_of_hasCompactSupport hψs
   obtain ⟨B, hB⟩ := hψs.exists_bound_of_continuous hψ
-  have hB0 : 0 ≤ B := le_trans (norm_nonneg _) (hB 0)
   have hlim : Tendsto (fun c : ℝ => ∫ x, (∫ z, gaussPeak V c (z - x) * ψ z) ∂μ) atTop
       (𝓝 (∫ x, ψ x ∂μ)) := by
     refine tendsto_integral_filter_of_dominated_convergence (fun _ => B) ?_ ?_
@@ -379,9 +350,8 @@ lemma tendsto_integral_mul_regDensity (μ : Measure V) [IsFiniteMeasure μ]
       have hK := continuous_gaussPeak (V := V) c
       exact (StronglyMeasurable.integral_prod_right
         (f := fun x z : V => gaussPeak V c (z - x) * ψ z)
-        (by exact (by fun_prop : Continuous fun p : V × V =>
-          gaussPeak V c (p.2 - p.1) * ψ p.2).stronglyMeasurable)).aestronglyMeasurable
-    · filter_upwards [Ioi_mem_atTop (0 : ℝ)] with c hc
+        (by fun_prop)).aestronglyMeasurable
+    · filter_upwards [Ioi_mem_atTop (0)] with c hc
       refine Filter.Eventually.of_forall fun x => ?_
       have hI : Integrable (fun z : V => gaussPeak V c (z - x)) :=
         integrable_of_integral_eq_one (integral_gaussPeak_sub hc x)
@@ -394,7 +364,7 @@ lemma tendsto_integral_mul_regDensity (μ : Measure V) [IsFiniteMeasure μ]
         _ = B := by rw [integral_const_mul, integral_gaussPeak_sub hc x, mul_one]
     · exact Filter.Eventually.of_forall fun x => tendsto_peak_conv hψi hψ x
   refine hlim.congr' ?_
-  filter_upwards [Ioi_mem_atTop (0 : ℝ)] with c hc
+  filter_upwards [Ioi_mem_atTop (0)] with c hc
   exact (integral_mul_regDensity μ hc hψ hψs).symm
 
 omit [FiniteDimensional ℝ V] [BorelSpace V] in
@@ -403,22 +373,21 @@ lemma norm_regularized_integrand_le (μ : Measure V) {c : ℝ} (hc : 0 < c) (z �
     ‖cexp (-((dampingParam c : ℝ) : ℂ) * (‖ξ‖ : ℂ) ^ 2) *
         (cexp (I * ((⟪ξ, z⟫ : ℝ) : ℂ)) * measureFourier μ ξ)‖ ≤ ‖measureFourier μ ξ‖ := by
   rw [norm_mul, norm_mul, Complex.norm_exp (I * _)]
-  simp only [Complex.mul_re, Complex.I_re, Complex.I_im, Complex.ofReal_re, Complex.ofReal_im,
-    zero_mul, mul_zero, Real.exp_zero, one_mul, sub_self]
+  simp only [Complex.mul_re, Complex.I_re, Complex.ofReal_im,
+    zero_mul, mul_zero, Real.exp_zero, sub_self]
   nlinarith [norm_damp_le_one (V := V) hc ξ, norm_nonneg (measureFourier μ ξ)]
 
 /-- Uniform bound `(2π)^{-d} ‖μ̂‖₁` for the regularised density. -/
 lemma regDensity_le (μ : Measure V) [IsFiniteMeasure μ] (hφ : Integrable (measureFourier μ))
     {c : ℝ} (hc : 0 < c) (z : V) :
     regDensity μ c z ≤ ((2 * Real.pi) ^ finrank ℝ V)⁻¹ * ∫ ξ, ‖measureFourier μ ξ‖ := by
-  have hpos : 0 < (2 * Real.pi) ^ finrank ℝ V := by have := Real.pi_pos; positivity
+  have hpos : 0 < (2 * Real.pi) ^ finrank ℝ V := by positivity
   have h1 := two_pi_pow_mul_regDensity μ hc z
-  have h2 : (∫ ξ : V, cexp (-((dampingParam c : ℝ) : ℂ) * (‖ξ‖ : ℂ) ^ 2) *
-        (cexp (I * ((⟪ξ, z⟫ : ℝ) : ℂ)) * measureFourier μ ξ)).re ≤ ∫ ξ, ‖measureFourier μ ξ‖ :=
+  have h2 : (∫ ξ : V, cexp (-((dampingParam c : ℝ)) * (‖ξ‖) ^ 2) *
+        (cexp (I * ((⟪ξ, z⟫ : ℝ))) * measureFourier μ ξ)).re ≤ ∫ ξ, ‖measureFourier μ ξ‖ :=
     (Complex.re_le_norm _).trans
       (norm_integral_le_of_norm_le hφ.norm
         (Filter.Eventually.of_forall fun ξ => norm_regularized_integrand_le μ hc z ξ))
-  rw [← h1] at h2
   rw [inv_mul_eq_div, le_div_iff₀ hpos]
   linarith
 
@@ -428,8 +397,8 @@ lemma tendsto_regDensity (μ : Measure V) [IsFiniteMeasure μ] (hφ : Integrable
   have h := ((Complex.continuous_re.tendsto _).comp (tendsto_regularized μ hφ z)).const_mul
     (((2 * Real.pi) ^ finrank ℝ V)⁻¹)
   refine h.congr' ?_
-  filter_upwards [Ioi_mem_atTop (0 : ℝ)] with c hc
-  have hpos : 0 < (2 * Real.pi) ^ finrank ℝ V := by have := Real.pi_pos; positivity
+  filter_upwards [Ioi_mem_atTop (0)] with c hc
+  have hpos : 0 < (2 * Real.pi) ^ finrank ℝ V := by positivity
   simp only [Function.comp_apply]
   rw [← two_pi_pow_mul_regDensity μ hc z, inv_mul_cancel_left₀ hpos.ne']
 
@@ -437,31 +406,27 @@ lemma tendsto_regDensity (μ : Measure V) [IsFiniteMeasure μ] (hφ : Integrable
 lemma invDensity_nonneg (μ : Measure V) [IsFiniteMeasure μ] (hφ : Integrable (measureFourier μ))
     (z : V) : 0 ≤ invDensity μ z :=
   ge_of_tendsto (tendsto_regDensity μ hφ z)
-    (by filter_upwards [Ioi_mem_atTop (0 : ℝ)] with c hc using regDensity_nonneg μ hc.le z)
+    (by filter_upwards [Ioi_mem_atTop (0)] with c hc using regDensity_nonneg μ hc.le z)
 
 /-- The inversion density is bounded by `(2π)^{-d} ‖μ̂‖₁`. -/
 lemma invDensity_le (μ : Measure V) [IsFiniteMeasure μ] (hφ : Integrable (measureFourier μ))
     (z : V) : invDensity μ z ≤ ((2 * Real.pi) ^ finrank ℝ V)⁻¹ * ∫ ξ, ‖measureFourier μ ξ‖ :=
   le_of_tendsto (tendsto_regDensity μ hφ z)
-    (by filter_upwards [Ioi_mem_atTop (0 : ℝ)] with c hc using regDensity_le μ hφ hc z)
+    (by filter_upwards [Ioi_mem_atTop (0)] with c hc using regDensity_le μ hφ hc z)
 
 /-- The inversion integral is continuous. -/
 lemma continuous_invIntegral (μ : Measure V) (hφ : Integrable (measureFourier μ)) :
     Continuous (invIntegral (measureFourier μ)) := by
-  unfold invIntegral
   refine continuous_of_dominated (bound := fun ξ => ‖measureFourier μ ξ‖) (fun z => ?_)
     (fun z => Filter.Eventually.of_forall fun ξ => ?_) hφ.norm
     (Filter.Eventually.of_forall fun ξ => ?_)
-  · exact (Continuous.aestronglyMeasurable (by fun_prop)).mul hφ.1
-  · rw [norm_mul, Complex.norm_exp]
-    simp
   · fun_prop
+  · simp
+  fun_prop
 
 /-- The inversion density is continuous. -/
 lemma continuous_invDensity (μ : Measure V) (hφ : Integrable (measureFourier μ)) :
-    Continuous (invDensity μ) := by
-  unfold invDensity
-  exact continuous_const.mul (Complex.continuous_re.comp (continuous_invIntegral μ hφ))
+    Continuous (invDensity μ) := continuous_const.mul (Complex.continuous_re.comp (continuous_invIntegral μ hφ))
 
 /-- The regularised density converges to the inversion density against compactly
 supported test functions (dominated convergence). -/
@@ -474,9 +439,9 @@ lemma tendsto_integral_mul_regDensity_inv (μ : Measure V) [IsFiniteMeasure μ]
   refine tendsto_integral_filter_of_dominated_convergence
     (fun z => ‖ψ z‖ * (((2 * Real.pi) ^ finrank ℝ V)⁻¹ * ∫ ξ, ‖measureFourier μ ξ‖)) ?_ ?_
     (hψi.norm.mul_const _) ?_
-  · filter_upwards [Ioi_mem_atTop (0 : ℝ)] with c hc
+  · filter_upwards [Ioi_mem_atTop (0)] with c hc
     exact (hψ.mul (continuous_regDensity μ hc.le)).aestronglyMeasurable
-  · filter_upwards [Ioi_mem_atTop (0 : ℝ)] with c hc
+  · filter_upwards [Ioi_mem_atTop (0)] with c hc
     refine Filter.Eventually.of_forall fun z => ?_
     rw [norm_mul, Real.norm_eq_abs (regDensity μ c z),
       abs_of_nonneg (regDensity_nonneg μ hc.le z)]
@@ -503,19 +468,19 @@ theorem eq_withDensity_invDensity (μ : Measure V) [IsFiniteMeasure μ]
     refine ⟨fun K hK => ?_⟩
     calc ν K ≤ ∫⁻ z in K, ENNReal.ofReal (((2 * Real.pi) ^ finrank ℝ V)⁻¹ *
           ∫ ξ, ‖measureFourier μ ξ‖) := by
-          rw [hν, withDensity_apply _ hK.measurableSet]
+          rw [withDensity_apply _ hK.measurableSet]
           exact setLIntegral_mono measurable_const fun z _ =>
             ENNReal.ofReal_le_ofReal (invDensity_le μ hφ z)
       _ < ∞ := by
           rw [setLIntegral_const]
           exact ENNReal.mul_lt_top ENNReal.ofReal_lt_top hK.measure_lt_top
   refine Measure.ext_of_integral_eq_on_compactlySupported fun f => ?_
-  rw [hν, integral_withDensity_eq_integral_toReal_smul (hmeas.ennreal_ofReal)
+  rw [integral_withDensity_eq_integral_toReal_smul (hmeas.ennreal_ofReal)
     (Filter.Eventually.of_forall fun z => ENNReal.ofReal_lt_top)]
   simp_rw [ENNReal.toReal_ofReal (invDensity_nonneg μ hφ _), smul_eq_mul]
   have := integral_mul_invDensity_eq μ hφ f.continuous f.hasCompactSupport
   simp only [mul_comm (invDensity μ _)]
-  exact this
+  omega
 
 end Main
 

@@ -7,7 +7,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelBarri
 /-! # The kinetic Duhamel lemma for a supplied terminal evolution -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
 open MeasureTheory Set
 open Evolution
@@ -23,7 +22,7 @@ theorem duhamelPotential_eq_greenMeasure (K : MovingFiberKernel Ω γ)
       ∫ q, g ⟨s + q.1.1, q.2.1, q.2.2⟩ ∂greenMeasure K s (ENNReal.ofReal (T - s))
         (ENNReal.ofReal_pos.mpr (sub_pos.mpr hs)) (Measure.dirac p) :=
   duhamelPotential_eq_green K hΩ hγ T g hgn hg hc s hs p _
-    (greenMeasure_spec K s _ _ (Measure.dirac p))
+    (greenMeasure_spec K s _ _ _)
 
 /-- The full kinetic Duhamel lemma (Lemma 2.3), relative to the named Hörmander hypothesis
 and the supplied terminal evolution, with source normalization and zero traces. -/
@@ -64,7 +63,6 @@ theorem kinetic_duhamel (hH : HormanderHypoellipticityStatement) (_hd : 1 ≤ d)
   have hΩm := measurableSet_of_isAdmissibleEvolutionDomain hΩ
   have hg : Continuous g := by
     convert hgs.continuous.comp (KineticPoint.homeomorphProd d).continuous using 1
-    funext p
     rfl
   have hbdd : BddAbove (range g) := by
     obtain ⟨C, hC⟩ := hg.bddAbove_range_of_hasCompactSupport hgc
@@ -84,6 +82,6 @@ theorem kinetic_duhamel (hH : HormanderHypoellipticityStatement) (_hd : 1 ≤ d)
     fun p hp => duhamelPotential_eq_zero_of_not_mem K T g p ?_,
     fun s hs p => duhamelPotential_eq_greenMeasure K hΩm hγ.1 T g hgn hg hgc s hs p⟩
   rw [(isOpen_movingDomain_of_isAdmissibleEvolutionDomain γ hΩ p.time).frontier_eq] at hp
-  exact hp.2
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

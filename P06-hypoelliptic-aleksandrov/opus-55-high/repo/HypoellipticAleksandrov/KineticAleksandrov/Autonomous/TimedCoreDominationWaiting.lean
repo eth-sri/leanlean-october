@@ -9,17 +9,17 @@ import Mathlib.Tactic
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov ProbabilityTheory
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+
 /-- Every actual waiting Green kernel gives zero occupation to the core. -/
 theorem enlargedWaitingGreenKernel_core_zero
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ) (p : Point) :
+     (c : Clock) (J : Interval) (T : ℝ) (p : Point) :
     enlargedVisitGreenKernel hH hLE hlam hLam A (visitWaitingUnion c J) T p
       {q | q.velocity 0 ∈ c.core} = 0 := by
   classical
-  change (if hp : p ∈ enlargedVisitPoleSet (visitWaitingUnion c J) T then
-    finiteUnionGreen hH hLE hlam hLam A (visitWaitingUnion c J) T
-      (enlargedVisitPole _ T ⟨p, hp⟩) else 0) {q | q.velocity 0 ∈ c.core} = 0
+  change (if hp : p ∈ enlargedVisitPoleSet _ T then
+    finiteUnionGreen hH hLE hlam hLam A _ T
+      _ else 0) _ = 0
   split
   · rename_i hp
     have hae := visitUnionGreen_ae_velocity hH hLE hlam hLam A (visitWaitingUnion c J) T
@@ -33,9 +33,7 @@ theorem enlargedWaitingGreenKernel_core_zero
 
 /-- Integrating any starting measure against the actual waiting kernel still avoids the core. -/
 theorem enlargedWaitingGreenMixture_core_zero
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (T : ℝ) (mu : Measure Point) :
+     (c : Clock) (J : Interval) (T : ℝ) (mu : Measure Point) :
     (enlargedVisitGreenKernel hH hLE hlam hLam A (visitWaitingUnion c J) T ∘ₘ mu)
       {q | q.velocity 0 ∈ c.core} = 0 := by
   have hC : MeasurableSet {q : Point | q.velocity 0 ∈ c.core} :=

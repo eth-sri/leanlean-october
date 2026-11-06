@@ -76,7 +76,7 @@ omit hH hLE hd hlam hLam B hB v₀ hR in
 /-- The literal exit phase has modulus one. -/
 theorem norm_exitPhase (ξ : PDE.Vec d) (Q : PDE.Vec d × Parabolic.TimeVelocity d) :
     ‖exitPhase ξ Q‖ = 1 := by
-  simp [exitPhase, Complex.norm_exp, Complex.mul_re]
+  simp [exitPhase, Complex.norm_exp]
 
 omit hH hLE hd hlam hLam B hB v₀ hR in
 /-- The literal exit phase is continuous. -/

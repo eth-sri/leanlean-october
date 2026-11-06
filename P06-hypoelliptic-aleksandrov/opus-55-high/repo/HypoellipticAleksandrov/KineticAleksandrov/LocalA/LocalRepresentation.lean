@@ -6,7 +6,6 @@ import HypoellipticAleksandrov.KineticAleksandrov.TheoremA.GreenPotentialsRegula
 /-! # Exit representation for a solution defined only on its kinetic cylinder -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Filter MeasureTheory Parabolic SectionTwo
 
@@ -31,10 +30,10 @@ theorem local_cone_representation
   let V := localCutoffSolution Z₀ χ U
   let F := (localStrip P.1.time T.1 Z₀.velocity R).indicator
     (fun Q => localCutoffTransport Z₀ χ Q * U Q)
-  have ha : Z₀.time < P.1.time := hP.1
+  have ha  := hP.1
   have htop : T.1 < Z₀.time + R ^ 2 := by
     have hpt := hP.2.1
-    nlinarith only [hpt, hT, sq_pos_of_pos hR]
+    linarith
   have hrel : Continuous (relativePosition Z₀) :=
     (continuous_position.sub continuous_const).sub
       ((continuous_time.sub continuous_const).smul continuous_const)
@@ -42,30 +41,30 @@ theorem local_cone_representation
   have hUb := localRepresentation_supported_mul_bounded Z₀ hR ha.le htop.le U hUc χ hs
     (localPositionCutoff Z₀ χ) (hχ.continuous.comp hrel)
     (fun Q hx => by
-      change χ (relativePosition Z₀ Q) = 0
+      change χ _ = 0
       exact image_eq_zero_of_notMem_tsupport hx)
   obtain ⟨L, _hL, hVb⟩ := hUb
   have hsm := mass_classical_homogeneous_smooth hH B hB
     (isOpen_forwardCylinder Z₀ R hR) U hUs hUe
   have hVs := localCutoffSolution_contDiffOn Z₀ hR ha htop U hsm χ hχ hs
-  have hVr : IsKineticC112On V (localStrip P.1.time T.1 Z₀.velocity R) :=
+  have hVr : IsKineticC112On V _ :=
     TheoremA.isKineticC112On_of_contDiffOn (isOpen_localStrip P.1.time T.1 Z₀.velocity R)
       (boundary_physical_smooth_to_native hVs)
   have hfc := localRepresentation_supported_mul_continuousOn Z₀ hR ha.le htop.le U hUc
-    χ hs (localCutoffTransport Z₀ χ) (continuous_localCutoffTransport Z₀ hχ)
+    χ hs _ (continuous_localCutoffTransport Z₀ hχ)
     (fun Q hx => localCutoffTransport_zero Z₀ Q χ hx)
   have hFm : Measurable F := localRepresentation_indicator_measurable _ _ _ _ _
     (hfc.mono (localStrip_subset_closed P.1.time T.1 Z₀.velocity R))
   obtain ⟨M, hM, hFb⟩ := localRepresentation_supported_mul_bounded Z₀ hR ha.le htop.le
-    U hUc χ hs (localCutoffTransport Z₀ χ) (continuous_localCutoffTransport Z₀ hχ)
+    U hUc χ hs _ (continuous_localCutoffTransport Z₀ hχ)
     (fun Q hx => localCutoffTransport_zero Z₀ Q χ hx)
   have hFe : ∀ Q ∈ localStrip P.1.time T.1 Z₀.velocity R,
       forwardKineticOperator (ofTimeVelocityCoefficient B) V Q = F Q := by
     intro Q hQ
-    change forwardKineticOperator (ofTimeVelocityCoefficient B)
+    change forwardKineticOperator _
       (localCutoffSolution Z₀ χ U) Q =
       (localStrip P.1.time T.1 Z₀.velocity R).indicator
-        (fun Q => localCutoffTransport Z₀ χ Q * U Q) Q
+        _ Q
     rw [indicator_of_mem hQ]
     by_cases hx : relativePosition Z₀ Q ∈ tsupport χ
     · have houter : Q ∈ forwardCylinder Z₀ R hR :=
@@ -77,32 +76,29 @@ theorem local_cone_representation
   have hFbound : ∀ Q ∈ localStrip P.1.time T.1 Z₀.velocity R, |F Q| ≤ M := by
     intro Q hQ
     change |(localStrip P.1.time T.1 Z₀.velocity R).indicator
-      (fun Q => localCutoffTransport Z₀ χ Q * U Q) Q| ≤ M
+      _ Q| ≤ M
     rw [indicator_of_mem hQ]
     exact hFb Q (localStrip_subset_closed _ _ _ _ hQ)
   have hid := localRepresentation_bounded_source_formula hH hLE hd hlam hLam B hB
     Z₀.velocity hR P T V hVr hVc ⟨L, hVb⟩ F hFm hFe M hM hFbound
   have hz := ballSourcePotential_local_cutoff_zero hH hLE hd hlam hLam B hB
     Z₀ hR P hP T hT χ hχone U
-  change V P.1 + ballSourcePotential hH hLE hd hlam hLam B hB Z₀.velocity hR
-    P.1.time T.1 F P.1 = _ at hid
   rw [hz, add_zero] at hid
   have hstart : V P.1 = U P.1 := by
     have hx := local_cone_cutoff_mem Z₀ P.1 P.1 hR hP le_rfl
-      (by nlinarith only [sq_nonneg R]) (by
+      (by linarith) (by
         have hz : PDE.vecEuclideanNorm (0 : PDE.Vec d) = 0 :=
           PDE.vecEuclideanNorm_eq_zero_iff.mpr rfl
-        simp only [sub_self, zero_smul, hz, mul_zero]
-        exact le_rfl)
-    change χ (relativePosition Z₀ P.1) * U P.1 = U P.1
+        simp_all)
+    change χ _ * U P.1 = U P.1
     rw [hχone _ (PDE.euclideanBall_subset_euclideanClosedBall _ _ hx), one_mul]
   rw [hstart] at hid
   refine hid.trans (integral_congr_ae ?_)
   filter_upwards [ballExitRaw_cone hH hLE hd hlam hLam B hB Z₀.velocity hR P T]
     with Q hQ
-  have ht : Q.time ≤ P.1.time + R ^ 2 / 8 := by linarith only [hQ.2.1, hT]
+  have ht : Q.time ≤ P.1.time + R ^ 2 / 8 := by linarith
   have hx := local_cone_cutoff_mem Z₀ P.1 Q hR hP hQ.1 ht hQ.2.2
-  change χ (relativePosition Z₀ Q) * U Q = U Q
+  change χ _ * U Q = U Q
   rw [hχone _ (PDE.euclideanBall_subset_euclideanClosedBall _ _ hx), one_mul]
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

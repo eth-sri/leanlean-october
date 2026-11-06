@@ -6,7 +6,6 @@ import Mathlib.MeasureTheory.Integral.DominatedConvergence
 /-! # Closed-velocity bounds for smooth physical tests -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set HypoellipticAleksandrov
 open SectionTwo TheoremA Evolution
@@ -16,11 +15,7 @@ theorem reconstruction_smooth_physical_continuous (phi : Point → ℝ)
     (hphi : ContDiff ℝ (⊤ : ℕ∞) (phi ∘ reconstructionPhysicalHomeomorph)) :
     Continuous phi := by
   have hh := hphi.continuous.comp reconstructionPhysicalHomeomorph.symm.continuous
-  have heq : (phi ∘ reconstructionPhysicalHomeomorph) ∘
-      reconstructionPhysicalHomeomorph.symm = phi := by
-    funext p
-    exact congrArg phi (reconstructionPhysicalHomeomorph.apply_symm_apply p)
-  rwa [heq] at hh
+  simp_all
 
 /-- The same endpoint bound needs only the physical time and position slice at the point. -/
 theorem reconstruction_closed_velocity_slice_bound
@@ -28,7 +23,7 @@ theorem reconstruction_closed_velocity_slice_bound
     (p : Point) (hp : p.velocity 0 ∈ Icc H.lo H.hi)
     (hb : ∀ v ∈ H.carrier, |phi ⟨p.time, p.position, fun _ => v⟩| ≤ M) :
     |phi p| ≤ M := by
-  let f : ℝ → ℝ := fun v => |phi ⟨p.time, p.position, fun _ => v⟩|
+  let f  := fun v => |phi ⟨p.time, p.position, fun _ => v⟩|
   have hf : Continuous f :=
     (hc.comp ((KineticPoint.homeomorphProd 1).symm.continuous.comp
       (continuous_const.prodMk (continuous_const.prodMk
@@ -41,6 +36,6 @@ theorem reconstruction_closed_velocity_slice_bound
   have he : (fun _ : Fin 1 => p.velocity 0) = p.velocity := by
     ext i
     rw [Fin.eq_zero i]
-  simpa only [f, he] using hh
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

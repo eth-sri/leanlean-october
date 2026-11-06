@@ -21,28 +21,27 @@ def zeroExtendedProfile {d : ℕ} (H : XV d → ℝ) (alpha r mu R : ℝ)
   if 0 < P.time ∧ H (P.position, P.velocity) < 1 then
     timeCutoffProfile H alpha r mu R P else 0
 
+variable {d : ℕ} (H : XV d → ℝ) (alpha r mu R : ℝ) (P : KineticPoint d)
+
 /-- The extension is globally nonnegative. -/
-theorem zeroExtendedProfile_nonneg {d : ℕ} (H : XV d → ℝ) (alpha r mu R : ℝ)
-    (P : KineticPoint d) : 0 ≤ zeroExtendedProfile H alpha r mu R P := by
+theorem zeroExtendedProfile_nonneg  : 0 ≤ zeroExtendedProfile H alpha r mu R P := by
   unfold zeroExtendedProfile
   split
   · exact timeCutoffProfile_nonneg H alpha r mu R P
-  · exact le_refl 0
+  positivity
 
 /-- The extension vanishes at every nonpositive time. -/
-theorem zeroExtendedProfile_eq_zero_of_time {d : ℕ} (H : XV d → ℝ)
-    (alpha r mu R : ℝ) (P : KineticPoint d) (ht : P.time ≤ 0) :
+theorem zeroExtendedProfile_eq_zero_of_time  (ht : P.time ≤ 0) :
     zeroExtendedProfile H alpha r mu R P = 0 := by
   simp only [zeroExtendedProfile, not_lt.mpr ht, false_and, ite_false]
 
 /-- The extension vanishes everywhere outside the profile domain. -/
-theorem zeroExtendedProfile_eq_zero_of_profile {d : ℕ} (H : XV d → ℝ)
-    (alpha r mu R : ℝ) (P : KineticPoint d) (hH : 1 ≤ H (P.position, P.velocity)) :
+theorem zeroExtendedProfile_eq_zero_of_profile  (hH : 1 ≤ H (P.position, P.velocity)) :
     zeroExtendedProfile H alpha r mu R P = 0 := by
   simp only [zeroExtendedProfile, not_lt.mpr hH, and_false, ite_false]
 
 /-- The flattened profile never exceeds one, independently of the profile value. -/
-theorem flatProfile_le_one {d : ℕ} (H : XV d → ℝ) (alpha r : ℝ) (hr : 0 < r)
+theorem flatProfile_le_one  (alpha r : ℝ) (hr : 0 < r)
     (q : XV d) : flatProfile H flatteningPsi flatteningOffset alpha r q ≤ 1 := by
   have hpow := (Real.rpow_pos_of_pos hr alpha).le
   have hc : 0 ≤ flatteningOffset := (by linarith [flatteningOffset_bounds.1])

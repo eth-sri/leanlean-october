@@ -8,7 +8,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.Deterministi
 /-! # Actual regularized Bellman occupation, with every cutoff input discharged -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov MeasureTheory Set Filter
 open scoped ENNReal
@@ -37,17 +36,16 @@ theorem deterministic_regularized_barrier_green
   let w := fun q : Z => positionConvolution eta
     (fun u => bellmanGauge u ^ (alpha - 2)) (q.1 - Y, q.2)
   have hE := fullSpaceEvolution_spec hH hLE hlam hLam A
-  let : IsProbabilityMeasure (kernelXV E T z) := ⟨kernelXV_mass_one hlam A E hE T z⟩
+  let : IsProbabilityMeasure _ := ⟨kernelXV_mass_one hlam A E hE T z⟩
   have hPhi := barrier_position_regularization_joint h ha ha1 eta heta
   have hf : ContDiff ℝ 2 f := hPhi.comp
     ((contDiff_fst.sub contDiff_const).prodMk contDiff_snd)
   obtain ⟨D, hD, hm⟩ := BarrierRegularization.barrier_coordinate_modulus h ha ha1
-  have hconvmod := positionConvolution_modulus eta heta (bellmanOriginExtension phi)
+  have hconvmod := positionConvolution_modulus eta heta _
     (h.origin_extension_continuous ha) alpha D hD hm
   have hfm (q u : Z) : |f q - f u| ≤
       D * (|q.1 - u.1| ^ (alpha / 3) + |q.2 - u.2| ^ alpha) := by
-    have he : q.1 - Y - (u.1 - Y) = q.1 - u.1 := by ring
-    simpa only [f, Prod.fst, Prod.snd, he] using hconvmod (q.1 - Y, q.2) (u.1 - Y, u.2)
+    grind
   obtain ⟨Bv, hBv, hbv⟩ := barrier_smoothed_velocity_bounded h ha ha1 eta heta
   have hfbv (q : Z) : |deriv (fun v => f (q.1, v)) q.2| ≤ Bv := hbv (q.1 - Y, q.2)
   have hw : Measurable w := (positionConvolution_measurable eta heta.1.continuous.measurable
@@ -61,10 +59,7 @@ theorem deterministic_regularized_barrier_green
     ha.le ha1.le hD Phi hPhi.continuous hconvmod A z T Y).1
   have hfi : Integrable f (kernelXV E T z) := by
     convert hdiff.add (integrable_const (Phi (z.1 - Y, z.2))) using 1
-    funext q
-    simp only [Pi.add_apply, f]
-    rw [show q.1 - Y = -Y + q.1 by ring]
-    ring
+    aesop
   exact barrier_green_cutoff_removal hH hlam hLam A E hE f hf alpha D Bv
     ha.le ha1.le hD hBv hfm hfbv c hc w hw hwn hfbound Y z T hT hfi
 

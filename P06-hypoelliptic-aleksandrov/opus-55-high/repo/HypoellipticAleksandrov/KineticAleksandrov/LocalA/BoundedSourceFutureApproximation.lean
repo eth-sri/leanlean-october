@@ -54,40 +54,36 @@ theorem exists_duhamelFuture_approximating_sequence
   have hU := isOpen_boundedSourceFutureSet (isOpen_of_isAdmissibleEvolutionDomain hΩa)
     hγ s T
   obtain ⟨φ, hφ, hφb, hφlim⟩ := exists_boundedSourceSmoothApproximation μ
-    (boundedSourceFutureSet Ω γ s T) hU G hG M hM (fun q => hFb _) (by
-      intro q hq
-      exact hFz _ hq)
+    _ hU G hG M hM (fun q => hFb _) (by
+      aesop)
   let f (n : ℕ) := φ n ∘ KineticPoint.equivProd d
   have hfc (n : ℕ) : Continuous (f n) :=
     (hφ n).1.continuous.comp (KineticPoint.homeomorphProd d).continuous
-  have hfs (n : ℕ) : ContDiff ℝ (⊤ : ℕ∞) (fun q : ℝ × EvolutionAmbientState d =>
+  have hfs (n : ℕ) : ContDiff ℝ _ (fun q : ℝ × EvolutionAmbientState d =>
       f n ⟨q.1, q.2.1, q.2.2⟩) := (hφ n).1
   have hfn (n : ℕ) : ∀ p, 0 ≤ f n p := fun p => (hφb n _).1
   have hfb (n : ℕ) : ∀ p, |f n p| ≤ M + 2 := fun p => by
-    rw [abs_of_nonneg (hfn n p)]
-    exact (hφb n _).2
+    grind
   have hfsup (n : ℕ) : tsupport (f n) ⊆ evolutionPastOpenCylinder Ω γ T := by
     intro p hp
-    change p ∈ tsupport (φ n ∘ KineticPoint.equivProd d) at hp
     rw [boundedSourceTest_support] at hp
     exact ((hφ n).2.2 hp).2
   have hzero (n : ℕ) : ∀ p : KineticPoint d, p.time < s → f n p = 0 := by
     intro p hp
     apply image_eq_zero_of_notMem_tsupport
     intro hm
-    change p ∈ tsupport (φ n ∘ KineticPoint.equivProd d) at hm
     rw [boundedSourceTest_support] at hm
     have hs := ((hφ n).2.2 hm).1
     exact (not_lt_of_gt hp) hs
   refine ⟨f, fun n => (hfc n).measurable, fun n p => hφb n _, ?_, ?_, ?_⟩
   · intro n
-    exact continuousOn_duhamelPotential hΩa hΩ hγ B b S K hreal (f n) (hfn n)
+    exact continuousOn_duhamelPotential hΩa hΩ hγ B b S K hreal _ (hfn n)
       (hfc n) ((hφ n).2.1.comp_homeomorph (KineticPoint.homeomorphProd d))
       (hfs n) T (hfsup n)
   · intro n
     exact duhamelPotential_weak_before_source hΩa hΩ hγ B b S K hreal hB hBs hb
-      (f n) (hfc n).measurable (M + 2) (by linarith) (hfb n) s T hsT (hzero n)
+      _ (hfc n).measurable _ (by linarith) (hfb n) s T hsT (hzero n)
   · exact ae_tendsto_duhamelPotential_of_action_ae K hΩ hγ ν a T hfloor f
-      (fun n => (hfc n).measurable) F hF (M + 2) (by linarith) hfb hφlim
+      (fun n => (hfc n).measurable) F hF _ (by linarith) hfb hφlim
 
 end HypoellipticAleksandrov.KineticAleksandrov.SectionTwo

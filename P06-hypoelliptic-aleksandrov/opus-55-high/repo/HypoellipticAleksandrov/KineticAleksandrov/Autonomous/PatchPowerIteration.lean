@@ -18,14 +18,16 @@ def returnExpandedCenter (z : Point) (ell : ℝ) (n : ℕ) : Point :=
   let dt := (8 / 3 : ℝ) * ((returnExpandedRadius ell n) ^ 2 - ell ^ 2)
   ⟨z.time + dt, z.position + dt • z.velocity, z.velocity⟩
 
+variable (z : Point) (ell : ℝ) (n : ℕ)
+
 /-- Radius doubling is multiplication by two. -/
-theorem returnExpandedRadius_succ (ell : ℝ) (n : ℕ) :
+theorem returnExpandedRadius_succ  :
     returnExpandedRadius ell (n + 1) = 2 * returnExpandedRadius ell n := by
   simp only [returnExpandedRadius, pow_succ]
   ring
 
 /-- The explicit geometric sum agrees with the one-step transported centre. -/
-theorem returnExpandedCenter_succ (z : Point) (ell : ℝ) (n : ℕ) :
+theorem returnExpandedCenter_succ  :
     returnExpandedCenter z ell (n + 1) =
       returnDoubleCenter (returnExpandedCenter z ell n) (returnExpandedRadius ell n) := by
   rw [returnExpandedCenter, returnExpandedRadius_succ]
@@ -34,11 +36,10 @@ theorem returnExpandedCenter_succ (z : Point) (ell : ℝ) (n : ℕ) :
 
 /-- The expanded radius never decreases. -/
 theorem returnExpandedRadius_mono {ell : ℝ} (hell : 0 ≤ ell) {m n : ℕ} (hmn : m ≤ n) :
-    returnExpandedRadius ell m ≤ returnExpandedRadius ell n := by
-  exact mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num) hmn) hell
+    returnExpandedRadius ell m ≤ returnExpandedRadius ell n := mul_le_mul_of_nonneg_right (pow_le_pow_right₀ (by norm_num) hmn) hell
 
 /-- All intermediate centres stay later than the initial centre. -/
-theorem returnExpandedCenter_time_ge (z : Point) {ell : ℝ} (hell : 0 ≤ ell) (n : ℕ) :
+theorem returnExpandedCenter_time_ge  {ell : ℝ} (hell : 0 ≤ ell) (n : ℕ) :
     z.time ≤ (returnExpandedCenter z ell n).time := by
   have h := returnExpandedRadius_mono hell (Nat.zero_le n)
   rw [show returnExpandedRadius ell 0 = ell by simp [returnExpandedRadius]] at h
@@ -68,8 +69,7 @@ theorem return_patch_doublings (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤ 
     induction n with
     | zero =>
       intro _ p hp
-      simpa only [returnExpandedCenter, returnExpandedRadius, pow_zero, one_mul,
-        sub_self, mul_zero, add_zero, zero_smul] using hpatch p (by simpa only
+      simpa using hpatch p (by simpa only
           [returnExpandedCenter, returnExpandedRadius, pow_zero, one_mul, sub_self,
             mul_zero, add_zero, zero_smul] using hp)
     | succ n ih =>

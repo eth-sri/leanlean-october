@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.SingularGree
 /-! # Compact support and continuity of actual spatial generators -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic SectionTwo Evolution Occupation Set MeasureTheory
 
@@ -26,10 +25,7 @@ theorem compact_spatial_generator {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
   have hfraw : ContDiff ℝ 2 fraw := hF.comp
     ((diffusedCoord 1).contDiff.prodMk (transportedCoord 1).contDiff)
   have hfeq : f ∘ evolutionHomeomorph 1 = fraw := by
-    funext x
-    simp [f, fraw, π, evolutionHomeomorph, KineticPoint.homeomorphProd,
-      KineticPoint.isometryEquivProd, KineticPoint.equivProd]
-    rfl
+    aesop
   let H := fun x : EvolutionAmbientState 1 =>
     transportedForwardOperator (evolutionCoefficient A.a) (identityDrift 1) f ⟨0, x.1, x.2⟩
   let x0 := fun x : EvolutionAmbientState 1 => (evolutionProdCLE 1).symm (0, x)
@@ -39,14 +35,11 @@ theorem compact_spatial_generator {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
       ∘ x0 := by
     funext x
     have hh := transportedOperator_comp (B := evolutionCoefficient A.a)
-      (b := identityDrift 1) (u := f) (x := x0 x) (by rw [hfeq]; exact hfraw.contDiffAt)
-    rw [hfeq] at hh
+      (b := identityDrift 1) (u := f) (x := x0 x) (by rw [hfeq]; fun_prop)
     have hx : evolutionHomeomorph 1 (x0 x) = ⟨0, x.1, x.2⟩ := by
-      simp [x0, evolutionHomeomorph, KineticPoint.homeomorphProd,
-        KineticPoint.isometryEquivProd, KineticPoint.equivProd]
+      simp [x0, evolutionHomeomorph]
       rfl
-    rw [hx] at hh
-    exact hh.symm
+    grind
   have hHc : Continuous H := by
     rw [hHeq]
     exact (continuous_transportedOperator_c2 A hfraw).comp hx0
@@ -58,15 +51,10 @@ theorem compact_spatial_generator {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
     have hnx : x0 x ∉ tsupport fraw := by
       intro hh
       have hhit := tsupport_comp_subset_preimage F hπ hh
-      apply hn
-      change π (x0 x) ∈ tsupport F at hhit
-      have hpx : π (x0 x) = x := by
-        have hh := (evolutionProdCLE 1).apply_symm_apply (0, x)
-        exact congrArg Prod.snd hh
-      rwa [hpx] at hhit
+      aesop
     have hz := transportedOperator_eq_zero_of_notMem_tsupport hnx
       (evolutionCoefficient A.a) (identityDrift 1)
-    exact hx (by rw [hHeq]; exact hz)
-  exact ⟨hHc, hHk⟩
+    simp_all
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

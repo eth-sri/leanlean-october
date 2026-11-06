@@ -23,12 +23,7 @@ open scoped Topology Convolution ENNReal
 
 /-- Native spatial volume is the product of the two coordinate Lebesgue Haar measures. -/
 instance nativeSpatialVolume_isAddHaarMeasure (d : ℕ) :
-    Measure.IsAddHaarMeasure (volume : Measure (PDE.Vec d × PDE.Vec d)) := by
-  change Measure.IsAddHaarMeasure
-    ((volume : Measure (PDE.Vec d)).prod (volume : Measure (PDE.Vec d)))
-  let : Measure.IsAddHaarMeasure (volume : Measure (PDE.Vec d)) :=
-    isAddHaarMeasure_volume_pi (Fin d)
-  exact Measure.prod.instIsAddHaarMeasure _ _
+    Measure.IsAddHaarMeasure (volume : Measure (PDE.Vec d × PDE.Vec d)) := Measure.prod.instIsAddHaarMeasure _ _
 
 /-- Bounded almost-everywhere convergence implies finite-exponent norm convergence. -/
 theorem bounded_convergence_eLpNorm {X : Type*} [MeasurableSpace X]
@@ -37,13 +32,13 @@ theorem bounded_convergence_eLpNorm {X : Type*} [MeasurableSpace X]
     (C : ℝ) (hbound : ∀ n, ∀ᵐ x ∂ν, ‖F n x‖ ≤ C)
     (hlim : ∀ᵐ x ∂ν, Tendsto (fun n => F n x) atTop (𝓝 0)) :
     Tendsto (fun n => eLpNorm (F n) p ν) atTop (𝓝 0) := by
-  have hpow : 0 < p.toReal := ENNReal.toReal_pos hp0 hp
+  have hpow  := ENNReal.toReal_pos hp0 hp
   have hi : Tendsto (fun n => ∫⁻ x, ‖F n x‖ₑ ^ p.toReal ∂ν) atTop (𝓝 0) := by
     have hh := tendsto_lintegral_of_dominated_convergence'
       (μ := ν) (F := fun n x => ‖F n x‖ₑ ^ p.toReal) (f := fun _ => 0)
       (fun _ => ENNReal.ofReal C ^ p.toReal)
       (fun n => (hF n).enorm.pow_const p.toReal) ?_ ?_ ?_
-    · simpa only [lintegral_zero] using! hh
+    · simp_all
     · intro n
       filter_upwards [hbound n] with x hx
       apply ENNReal.rpow_le_rpow _ hpow.le
@@ -54,14 +49,14 @@ theorem bounded_convergence_eLpNorm {X : Type*} [MeasurableSpace X]
     · filter_upwards [hlim] with x hx
       have hn : Tendsto (fun n => ‖F n x‖ₑ) atTop (𝓝 0) := by
         simpa only [Function.comp_apply, enorm_zero] using!
-          (continuous_enorm.tendsto (0 : ℝ)).comp hx
+          (continuous_enorm.tendsto _).comp hx
       simpa only [Function.comp_apply, ENNReal.zero_rpow_of_pos hpow] using!
-        (ENNReal.continuous_rpow_const (y := p.toReal).tendsto (0 : ℝ≥0∞)).comp hn
+        (ENNReal.continuous_rpow_const (y := p.toReal).tendsto _).comp hn
   have hr := (ENNReal.continuous_rpow_const (y := 1 / p.toReal).tendsto
-    (0 : ℝ≥0∞)).comp hi
+    _).comp hi
   have hresult : Tendsto (fun n =>
       (∫⁻ x, ‖F n x‖ₑ ^ p.toReal ∂ν) ^ (1 / p.toReal)) atTop (𝓝 0) := by
-    simpa only [Function.comp_apply, ENNReal.zero_rpow_of_pos (one_div_pos.mpr hpow)] using! hr
+    aesop
   apply hresult.congr
   intro n
   exact (eLpNorm_eq_lintegral_rpow_enorm_toReal hp0 hp (hF n)).symm
@@ -89,7 +84,7 @@ theorem standardMollifierSequence_rOut_tendsto :
 theorem standardMollifierSequence_radius_ratio (n : ℕ) :
     (standardMollifierSequence (G := G) n).rOut ≤
       2 * (standardMollifierSequence (G := G) n).rIn := by
-  change 1 / ((n : ℝ) + 1) ≤ 2 * (1 / ((n : ℝ) + 1) / 2)
+  change 1 / (n + 1) ≤ 2 * (1 / ((n : ℝ) + 1) / 2)
   linarith
 
 end Kernels
@@ -102,20 +97,22 @@ variable {G : Type*} [NormedAddCommGroup G] [NormedSpace ℝ G]
 def spatialMollify (φ : ContDiffBump (0 : G)) (g : G → ℝ) : G → ℝ :=
   φ.normed volume ⋆[lsmul ℝ ℝ, volume] g
 
+variable (φ : ContDiffBump (0 : G)) (g : G → ℝ)
+
 /-- Bounded input gives the same uniform bound after normalized convolution. -/
-theorem spatialMollify_norm_le (φ : ContDiffBump (0 : G)) (g : G → ℝ)
+theorem spatialMollify_norm_le 
     (hg : AEStronglyMeasurable g volume) (C : ℝ) (hC : 0 ≤ C)
     (hbound : ∀ x, ‖g x‖ ≤ C) (x : G) : ‖spatialMollify φ g x‖ ≤ C := by
-  have h := dist_convolution_le (μ := volume) (x₀ := x) (z₀ := (0 : ℝ)) hC
+  have h := dist_convolution_le (μ := volume) (x₀ := x) (z₀ := (0)) hC
     φ.support_normed_eq.subset φ.nonneg_normed φ.integral_normed hg
-    (fun y _ => by simpa only [dist_zero_right] using! hbound y)
-  simpa only [spatialMollify, dist_zero_right] using! h
+    (fun y _ => by simp_all)
+  aesop
 
 /-- Spatial convolution is smooth; this does not assert joint time smoothness. -/
-theorem spatialMollify_contDiff (φ : ContDiffBump (0 : G)) (g : G → ℝ)
+theorem spatialMollify_contDiff 
     (hg : LocallyIntegrable g volume) :
     ContDiff ℝ (⊤ : ℕ∞) (spatialMollify φ g) :=
-  φ.hasCompactSupport_normed.contDiff_convolution_left (lsmul ℝ ℝ)
+  φ.hasCompactSupport_normed.contDiff_convolution_left _
     φ.contDiff_normed hg
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

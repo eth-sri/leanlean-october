@@ -8,7 +8,6 @@ import Mathlib.Tactic
 /-! # Uniform preliminary cylinder density at exponent six fifths -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory
 

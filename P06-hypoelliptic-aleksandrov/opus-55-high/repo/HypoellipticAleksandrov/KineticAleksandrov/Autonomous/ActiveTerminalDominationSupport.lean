@@ -18,8 +18,7 @@ theorem enlarged_terminal_family_ae_time
     ∀ᵐ q ∂enlargedActiveTerminalFamily hH hLE hlam hLam A c J b p, q.time = b := by
   unfold enlargedActiveTerminalFamily
   split
-  · rename_i hp
-    exact (ae_dirac_iff (isClosed_eq continuous_time continuous_const).measurableSet).mpr hp.1
+  · simp_all
   · exact ae_restrict_mem (isClosed_eq continuous_time continuous_const).measurableSet
 
 /-- Every finite sum of actual enlarged terminal pieces is finite. -/

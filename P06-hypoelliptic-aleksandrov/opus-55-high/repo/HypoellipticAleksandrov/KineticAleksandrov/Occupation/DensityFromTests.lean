@@ -29,13 +29,12 @@ omit [MeasurableSpace E] [BorelSpace E] in
 theorem exists_compact_interior_exhaustion {U : Set E} (hU : IsOpen U) :
     ∃ K : ℕ → Set E, (∀ n, IsCompact (K n)) ∧ (∀ n, K n ⊆ U) ∧
       ∀ x ∈ U, ∀ᶠ n in atTop, x ∈ K n := by
-  let : LocallyCompactSpace U := hU.locallyCompactSpace
-  let k : CompactExhaustion U := CompactExhaustion.choice U
-  let K : ℕ → Set E := fun n => Subtype.val '' k n
+  let  := hU.locallyCompactSpace
+  let k  := CompactExhaustion.choice U
+  let K  := fun n => Subtype.val '' k n
   refine ⟨K, fun n => (k.isCompact n).image continuous_subtype_val,
     fun n x hx => ?_, ?_⟩
-  · obtain ⟨y, _, rfl⟩ := hx
-    exact y.property
+  · grind
   · intro x hx
     have hxall : (⟨x, hx⟩ : U) ∈ ⋃ n, k n := by rw [k.iUnion_eq]; trivial
     obtain ⟨N, hN⟩ := mem_iUnion.mp hxall
@@ -72,13 +71,13 @@ theorem exists_density_of_smooth_tests (ν μ : Measure E)
         ENNReal.ofReal C := by
     rw [eLpNorm_indicator_eq_eLpNorm_restrict (hK n).measurableSet]
     exact (ENNReal.toReal_le_toReal (hlocal n).1.eLpNorm_ne_top
-      ENNReal.ofReal_ne_top).mp (by simpa only [ENNReal.toReal_ofReal hC] using (hlocal n).2)
+      ENNReal.ofReal_ne_top).mp (by simp_all)
   have hlim : ∀ᵐ x ∂ν.restrict U,
       Tendsto (fun n => (K n).indicator g x) atTop (𝓝 (g x)) := by
     filter_upwards [ae_restrict_mem hU.measurableSet] with x hx
     apply tendsto_const_nhds.congr'
     filter_upwards [hcover x hx] with n hn
-    exact (indicator_of_mem hn g).symm
+    simp_all
   have hglobal : eLpNorm g (ENNReal.ofReal r) (ν.restrict U) ≤ ENNReal.ofReal C := by
     refine (Lp.eLpNorm_lim_le_liminf_eLpNorm
       (fun n => hprops.1.aestronglyMeasurable.indicator (hK n).measurableSet)

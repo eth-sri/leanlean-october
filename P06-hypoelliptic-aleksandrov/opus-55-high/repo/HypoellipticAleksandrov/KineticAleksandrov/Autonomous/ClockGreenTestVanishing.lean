@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.SectionTwo.DuhamelTheor
 /-! # Literal late-time vanishing of actual compact-source Duhamel potentials -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open SectionTwo TheoremA Evolution
@@ -24,9 +23,8 @@ theorem clock_duhamel_zero_after {Ω : Set (PDE.Vec 1)} {γ : ℝ → PDE.Vec 1}
   · unfold duhamelSourceIntegral
     have hz : (fun w : EvolutionAmbientState 1 => g ⟨r, w.1, w.2⟩) = 0 := by
       funext w
-      exact hg ⟨r, w.1, w.2⟩ (hp.trans hr.1.le)
-    rw [hz]
-    exact integral_zero' _ _
+      exact hg _ (hp.trans hr.1.le)
+    simp_all
   · rfl
 
 /-- Smoothness below a terminal time and exact vanishing on an earlier half-space imply

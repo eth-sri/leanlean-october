@@ -14,7 +14,6 @@ strong convergence of the root identifies its zero entry with the prescribed lim
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.LocalHolder
 open Filter MeasureTheory Set
 open scoped Topology ENNReal BigOperators
@@ -32,18 +31,13 @@ theorem exists_weakDerivativeFamily_testing_limit_of_tendsto_toLp {d L : ℕ}
         ContDiff ℝ (⊤ : ℕ∞) φ → HasCompactSupport φ → tsupport φ ⊆ U →
         Tendsto (fun n => ∫ z in U, (D (σ n)).representative β z * φ z) atTop
           (𝓝 (∫ z in U, E.representative β z * φ z)) := by
-  let μ : Measure (TimeVelocity d) := timeVelocityVolumeOn U
-  let : IsLocallyFiniteMeasure μ :=
-    Measure.isLocallyFiniteMeasure_of_le Measure.restrict_le_self
-  let : Fact (1 ≤ (2 : ℝ≥0∞)) := ⟨by norm_num⟩
-  let : Fact ((2 : ℝ≥0∞) ≠ ∞) := ⟨by norm_num⟩
-  let : IsSeparable μ := by infer_instance
-  let H := Lp ℝ (2 : ℝ≥0∞) μ
+  let μ  := timeVelocityVolumeOn U
+  let : Fact ((2) ≠ ∞) := ⟨by norm_num⟩
+  let H := Lp ℝ (2) μ
   let q : ℕ → ParabolicDerivativeIndex d L → H := fun n β =>
     ((D n).memLp β).toLp ((D n).representative β)
   have hqbound (n : ℕ) : ∑ β, ‖q n β‖ ^ 2 ≤ C ^ 2 := by
-    rw [← (D n).squaredL2Norm_eq_sum_norm_toLp_sq]
-    exact hb n
+    aesop
   obtain ⟨g, σ, hσ, hweak⟩ :=
     exists_strictMono_tendsto_clm_family_of_sum_norm_sq_le q C hC hqbound
   have hgzero : g (ParabolicDerivativeIndex.zero d L) = hv.toLp v := by
@@ -51,17 +45,16 @@ theorem exists_weakDerivativeFamily_testing_limit_of_tendsto_toLp {d L : ℕ}
     intro ell
     have hlim := (ell.continuous.tendsto (hv.toLp v)).comp
       (hstrong.comp hσ.tendsto_atTop)
-    have hqzero (n : ℕ) : q n (ParabolicDerivativeIndex.zero d L) =
-        (hu n).toLp (u n) :=
+    have hqzero (n : ℕ) : q n _ =
+        (hu n).toLp _ :=
       MemLp.toLp_congr _ _ (D n).zero_ae
     have hlim' : Tendsto (fun n => ell (q (σ n) (ParabolicDerivativeIndex.zero d L)))
-        atTop (𝓝 (ell (hv.toLp v))) := by
-      exact hlim.congr'
-        (Eventually.of_forall (fun n => congrArg ell (hqzero (σ n)).symm))
+        atTop (𝓝 (ell (hv.toLp v))) := hlim.congr'
+        (Eventually.of_forall (fun n => congrArg ell (hqzero _).symm))
     exact tendsto_nhds_unique (hweak _ ell) hlim'
   let raw : ParabolicDerivativeIndex d L → TimeVelocity d → ℝ := fun β => g β
   have hrawzero : raw (ParabolicDerivativeIndex.zero d L) =ᵐ[μ] v := by
-    change (g (ParabolicDerivativeIndex.zero d L) : TimeVelocity d → ℝ) =ᵐ[μ] v
+    change (g _) =ᵐ[μ] v
     rw [hgzero]
     exact hv.coeFn_toLp
   have hpair (β : ParabolicDerivativeIndex d L) (φ : TimeVelocity d → ℝ)
@@ -71,27 +64,20 @@ theorem exists_weakDerivativeFamily_testing_limit_of_tendsto_toLp {d L : ℕ}
         (𝓝 (∫ z in U, raw β z * φ z)) := by
     let φLp : H := (hφ.continuous.memLp_of_hasCompactSupport hc).toLp φ
     let ell : H →L[ℝ] ℝ := InnerProductSpace.toDual ℝ H φLp
-    have hφae : (φLp : TimeVelocity d → ℝ) =ᵐ[μ] φ :=
+    have hφae : φLp =ᵐ[μ] φ :=
       (hφ.continuous.memLp_of_hasCompactSupport hc).coeFn_toLp
     have hleft (n : ℕ) : ell (q n β) =
         ∫ z in U, (D n).representative β z * φ z := by
-      change inner ℝ φLp (q n β) = _
-      rw [L2.inner_def]
       apply integral_congr_ae
       filter_upwards [((D n).memLp β).coeFn_toLp, hφae] with z hq hφz
-      rw [hq, hφz]
-      simp only [RCLike.inner_apply, conj_trivial, mul_comm]
+      aesop
     have hright : ell (g β) = ∫ z in U, raw β z * φ z := by
-      change inner ℝ φLp (g β) = _
-      rw [L2.inner_def]
       apply integral_congr_ae
       filter_upwards [hφae] with z hφz
-      rw [hφz]
-      simp only [RCLike.inner_apply, conj_trivial, mul_comm, raw]
-    rw [← hright]
-    exact (hweak β ell).congr' (Eventually.of_forall (fun n => hleft (σ n)))
-  exact ⟨weakDerivativeFamily_of_tendsto_integral_mul U (fun n => u (σ n))
-    (fun n => D (σ n)) v raw (fun β => Lp.memLp (g β)) hrawzero hpair,
+      aesop
+    grind
+  exact ⟨weakDerivativeFamily_of_tendsto_integral_mul U _
+    _ v raw (fun β => Lp.memLp _) hrawzero hpair,
     σ, hσ, hpair⟩
 
 end HypoellipticAleksandrov.Parabolic.LocalHolder

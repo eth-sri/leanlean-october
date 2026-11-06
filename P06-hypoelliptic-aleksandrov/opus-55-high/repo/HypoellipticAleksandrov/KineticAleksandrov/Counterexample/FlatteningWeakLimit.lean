@@ -27,7 +27,7 @@ theorem integral_mul_test_tendsto {d : ℕ} (F : ℕ → XV d → ℝ) (f : XV d
       by_cases hq : q ∈ K
       · exact mul_le_mul_of_nonneg_right (hn q hq) (norm_nonneg _)
       · have hz : test q = 0 := image_eq_zero_of_notMem_tsupport (fun hmem => hq (hsub hmem))
-        simp only [hz, norm_zero, mul_zero, le_refl])
+        simp_all)
   · exact (ht.integrable_of_hasCompactSupport hs).norm.const_mul C
   · filter_upwards [hl] with q hq
     exact hq.mul tendsto_const_nhds

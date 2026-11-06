@@ -7,7 +7,6 @@ import Mathlib.Tactic
 /-! # Transferring source real density bounds to the canonical positive density -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory Filter
 open scoped ENNReal
@@ -24,22 +23,19 @@ theorem positionPositiveNorm_of_density_le {X : Type*} [MeasurableSpace X]
     positionPositiveNorm (m.restrict E) q F ≤ ENNReal.ofReal K := by
   have heq : m.withDensity F =
       m.withDensity (S.indicator (fun x => ENNReal.ofReal (G x))) := by
-    rwa [withDensity_indicator hS]
+    rwa [withDensity_indicator]
   have he := (withDensity_eq_iff_of_sigmaFinite hF.aemeasurable
     (hG.ennreal_ofReal.indicator hS).aemeasurable).mp heq
   have hle : ∀ᵐ x ∂m.restrict E, F x ≤ ENNReal.ofReal (G x) := by
     filter_upwards [ae_restrict_of_ae he] with x hx
     rw [hx]
     by_cases hxS : x ∈ S
-    · rw [indicator_of_mem hxS]
-    · rw [indicator_of_notMem hxS]
-      exact zero_le
+    · simp_all
+    simp_all
   have hnorm : positionPositiveNorm (m.restrict E) q F ≤
       eLpNorm G (ENNReal.ofReal q) (m.restrict E) := by
     rw [eLpNorm_eq_eLpNorm' (by positivity) ENNReal.ofReal_ne_top
-      hp.aestronglyMeasurable, ENNReal.toReal_ofReal hq.le,
-      eLpNorm'_eq_lintegral_enorm]
-    unfold positionPositiveNorm
+      hp.aestronglyMeasurable, ENNReal.toReal_ofReal hq.le]
     apply ENNReal.rpow_le_rpow _ (one_div_nonneg.mpr hq.le)
     apply lintegral_mono_ae
     filter_upwards [hle] with x hx
@@ -62,7 +58,7 @@ theorem positionActiveDensity_tail (hpush : PushforwardStatement)
         (volume.restrict {p | e.time + t ≤ p.time ∧ p.velocity 0 ∈ c.active}) q
         (positionActiveDensity hH hLE hlam hLam A c e) ≤
           ENNReal.ofReal (C * Real.exp (-c₀ * t / c.r ^ 2) * c.r ^ (6 / q - 4)) := by
-  have : SigmaFinite (volume : Measure Point) := density_volume_sigmaFinite
+  have  := density_volume_sigmaFinite
   obtain ⟨C, c₀, hC, hc, hd⟩ := htail hH hLE lam Lam hlam hLam q hq
   refine ⟨C, c₀, hC, hc, ?_⟩
   intro A c e he t ht
@@ -71,12 +67,12 @@ theorem positionActiveDensity_tail (hpush : PushforwardStatement)
     ((enlargedActiveGreenKernel_apply hH hLE hlam hLam A c e he).trans hG.2.2)
   apply positionPositiveNorm_of_density_le volume _
     ((measurable_positionActiveDensity hH hLE hlam hLam A c).comp
-      (measurable_const.prodMk measurable_id)) (densityClockStrip c e) _
+      (measurable_const.prodMk measurable_id)) _ _
       (by
         exact (isOpen_lt continuous_const continuous_time).measurableSet.inter
           (isOpen_Ioo.measurableSet.preimage
             ((continuous_apply 0).comp continuous_velocity).measurable))
-      G hG.1 hG.2.1 hdens q _ (by linarith [hq.1])
+      G hG.1 hG.2.1 hdens q _ (by linarith)
       (mul_nonneg (mul_nonneg hC.le (Real.exp_pos _).le)
         (Real.rpow_nonneg c.positive.le _))
       (hGt t ht).1 (hGt t ht).2

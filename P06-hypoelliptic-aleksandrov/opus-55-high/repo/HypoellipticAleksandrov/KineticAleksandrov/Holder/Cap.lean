@@ -26,8 +26,10 @@ def closedCap (d : ℕ) : Set (KineticPoint d) :=
       (PDE.euclideanClosedBall (0 : PDE.Vec d) ((8 : ℝ)⁻¹ ^ 3) ×ˢ
         PDE.euclideanClosedBall (0 : PDE.Vec d) (1 / 8)))
 
+variable (d : ℕ)
+
 /-- The closed cap envelope is compact in the physical coordinate topology. -/
-theorem isCompact_closedCap (d : ℕ) : IsCompact (closedCap d) := by
+theorem isCompact_closedCap  : IsCompact (closedCap d) := by
   apply (KineticPoint.homeomorphProd d).isCompact_preimage.mpr
   exact (isCompact_Icc.prod
     ((PDE.isCompact_euclideanClosedBall (0 : PDE.Vec d)
@@ -36,40 +38,38 @@ theorem isCompact_closedCap (d : ℕ) : IsCompact (closedCap d) := by
         (show 0 ≤ (1 / 8 : ℝ) by norm_num))))
 
 /-- The cap is contained in its closed envelope. -/
-theorem cap_subset_closedCap (d : ℕ) : cap d ⊆ closedCap d := by
+theorem cap_subset_closedCap  : cap d ⊆ closedCap d := by
   intro P hP
   rcases hP with ⟨ht, ht', hx, hv⟩
   exact ⟨⟨ht.le, ht'.le⟩, PDE.euclideanBall_subset_euclideanClosedBall 0 _ hx,
     PDE.euclideanBall_subset_euclideanClosedBall 0 _ hv⟩
 
 /-- Every limit point of the cap remains in its compact closed envelope. -/
-theorem closure_cap_subset_closedCap (d : ℕ) : closure (cap d) ⊆ closedCap d :=
+theorem closure_cap_subset_closedCap  : closure (cap d) ⊆ closedCap d :=
   closure_minimal (cap_subset_closedCap d) (isCompact_closedCap d).isClosed
 
 /-- The cap closure is compact. -/
-theorem isCompact_closure_cap (d : ℕ) : IsCompact (closure (cap d)) :=
+theorem isCompact_closure_cap  : IsCompact (closure (cap d)) :=
   (isCompact_closedCap d).of_isClosed_subset isClosed_closure
     (closure_cap_subset_closedCap d)
 
 /-- The closed envelope lies strictly inside the unit backward cylinder. -/
-theorem closedCap_subset_unitCylinder (d : ℕ) :
+theorem closedCap_subset_unitCylinder  :
     closedCap d ⊆ backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1 := by
   intro P hP
-  change P.time ∈ Icc (-(1 / 4 : ℝ)) (-(1 / 8 : ℝ)) ∧
+  change P.time ∈ Icc (-(1 / 4 : ℝ)) (-(1 / 8)) ∧
     P.position ∈ PDE.euclideanClosedBall 0 ((8 : ℝ)⁻¹ ^ 3) ∧
-    P.velocity ∈ PDE.euclideanClosedBall 0 (1 / 8) at hP
+    P.velocity ∈ PDE.euclideanClosedBall 0 _ at hP
   rcases hP with ⟨⟨ht, ht'⟩, hx, hv⟩
   refine ⟨?_, ?_, ?_, ?_⟩
-  · norm_num at *
-    linarith
-  · norm_num at *
-    linarith
+  · linarith
+  · linarith
   · exact PDE.euclideanClosedBall_subset_euclideanBall (by norm_num) (by norm_num) hv
   · simpa only [relativePosition, sub_zero, smul_zero, one_pow] using
       PDE.euclideanClosedBall_subset_euclideanBall (by norm_num) (by norm_num) hx
 
 /-- The source cap is compactly contained in the unit backward cylinder. -/
-theorem cap_compact_inside (d : ℕ) :
+theorem cap_compact_inside  :
     IsCompact (closure (cap d)) ∧
       closure (cap d) ⊆ backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1 :=
   ⟨isCompact_closure_cap d,

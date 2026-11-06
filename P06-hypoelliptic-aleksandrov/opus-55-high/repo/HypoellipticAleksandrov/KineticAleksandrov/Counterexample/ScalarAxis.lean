@@ -17,25 +17,26 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Filter Set
 open scoped Topology
 
+variable (gamma : ScalarGamma)
+
 /-- The similarity leading power cancels the position prefactor exactly. -/
-theorem scalar_similarity_power_cancel (gamma : ScalarGamma) (x v : ℝ) (hx : 0 < x) :
+theorem scalar_similarity_power_cancel  (x v : ℝ) (hx : 0 < x) :
     Real.rpow x gamma.1 * Real.rpow |scalarSimilarity x v| (3 * gamma.1) =
       Real.rpow |v| (3 * gamma.1) := by
   simp only [scalarSimilarity, Real.rpow_eq_pow, abs_div, abs_neg,
-    abs_of_pos (Real.rpow_pos_of_pos hx (1 / 3 : ℝ))]
+    abs_of_pos (Real.rpow_pos_of_pos hx (1 / 3))]
   rw [Real.div_rpow (abs_nonneg _) (Real.rpow_nonneg hx.le _),
-    ← Real.rpow_mul hx.le, show (1 / 3 : ℝ) * (3 * gamma.1) = gamma.1 by ring]
-  have hp := (Real.rpow_pos_of_pos hx gamma.1).ne'
+    ← Real.rpow_mul hx.le]
   field_simp
 
 /-- The ansatz equals its normalized tail times the velocity leading power. -/
-theorem scalarAnsatz_normalized (gamma : ScalarGamma) (Lam x v : ℝ)
+theorem scalarAnsatz_normalized  (Lam x v : ℝ)
     (hx : 0 < x) (hv : v ≠ 0) :
     scalarAnsatz gamma Lam x v = Real.rpow |v| (3 * gamma.1) *
       (F gamma Lam (scalarSimilarity x v) /
         Real.rpow |scalarSimilarity x v| (3 * gamma.1)) := by
   have hs : scalarSimilarity x v ≠ 0 :=
-    div_ne_zero (neg_ne_zero.mpr hv) (Real.rpow_pos_of_pos hx (1 / 3 : ℝ)).ne'
+    div_ne_zero (neg_ne_zero.mpr hv) (Real.rpow_pos_of_pos hx _).ne'
   have hp := (Real.rpow_pos_of_pos (abs_pos.mpr hs) (3 * gamma.1)).ne'
   rw [← scalar_similarity_power_cancel gamma x v hx]
   unfold scalarAnsatz scalarSimilarity
@@ -83,12 +84,11 @@ theorem scalarAnsatz_tendsto_axis {ι : Type*} (l : Filter ι)
       (𝓝 (Real.rpow |v| (3 * gamma.1))) := by
     have hp : 0 ≤ 3 * gamma.1 := (mul_pos (by norm_num) gamma.2.1).le
     simpa only [Real.rpow_eq_pow, Function.comp_def] using
-      ((Real.continuous_rpow_const hp).tendsto |v|).comp hV.abs
+      ((Real.continuous_rpow_const hp).tendsto _).comp hV.abs
   have h := hRatio.mul hPow
-  change Tendsto _ l (𝓝 (scalarTrace gamma Lam v)) at h
   apply h.congr'
   filter_upwards [hXp, hV.eventually_ne hv] with i hi hvi
-  rw [scalarAnsatz_normalized gamma Lam (X i) (V i) hi hvi]
+  rw [scalarAnsatz_normalized gamma Lam _ _ hi hvi]
   ring
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

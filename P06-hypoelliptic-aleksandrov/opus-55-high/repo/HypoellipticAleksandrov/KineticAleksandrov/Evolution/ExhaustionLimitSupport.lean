@@ -7,7 +7,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.BoundedBorel
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -36,9 +35,7 @@ theorem exists_innerBall_terminal_support_margin {n : ℕ} {Γ : ℝ → PDE.Vec
     refine ⟨d, hd, hdr, fun q hq => ?_⟩
     have hqm : PDE.vecEuclideanNorm (q.1 - Γ τ) ≤
         PDE.vecEuclideanNorm (q0.1 - Γ τ) := hmax hq
-    have hdm : d ≤ gap / 8 := min_le_right _ _
-    dsimp only [gap] at hgap hdm
-    linarith
+    grind
   · refine ⟨r0 / 8, by positivity, by linarith, fun q hq => ?_⟩
     exact (hne ⟨q, hq⟩).elim
 

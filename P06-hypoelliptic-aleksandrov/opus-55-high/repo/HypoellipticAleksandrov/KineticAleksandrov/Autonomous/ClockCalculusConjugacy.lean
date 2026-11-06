@@ -10,23 +10,23 @@ noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov.Parabolic
 
-private theorem directional_smul (f : (Fin 3 → ℝ) → ℝ) (d q : Fin 3 → ℝ)
-    (k : ℝ) : directional f (k • d) q = k * directional f d q := by
+variable (f : (Fin 3 → ℝ) → ℝ) (d q : Fin 3 → ℝ) (k : ℝ)
+
+private theorem directional_smul  : directional f (k • d) q = k * directional f d q := by
   simp only [directional, map_smul, smul_eq_mul]
 
-private theorem second_directional_smul (f : (Fin 3 → ℝ) → ℝ) (d q : Fin 3 → ℝ)
-    (k : ℝ) (hf : ContDiffAt ℝ 2 f q) :
+private theorem second_directional_smul  (hf : ContDiffAt ℝ 2 f q) :
     directional (directional f (k • d)) (k • d) q =
       k ^ 2 * directional (directional f d) d q := by
   have hd : DifferentiableAt ℝ (directional f d) q :=
     ((hf.fderiv_right (m := 1) (by norm_num)).clm_apply contDiffAt_const).differentiableAt
       (by norm_num)
-  have heq : directional f (k • d) = fun q => k * directional f d q :=
+  have heq  :=
     funext (fun q => directional_smul f d q k)
   rw [heq, directional_smul]
-  change k * (fderiv ℝ (fun q => k * directional f d q) q) d = _
-  rw [fderiv_const_mul hd k]
-  simp only [smul_apply, smul_eq_mul, directional]
+  change k * (fderiv ℝ _ q) d = _
+  rw [fderiv_const_mul hd]
+  simp only [smul_apply, directional]
   ring
 
 /-- The normalized forward operator in clock field order `(sigma,z,y)`. -/
@@ -44,7 +44,7 @@ theorem Clock.conjugacy_at (c : Clock) (a : ℝ → ℝ → ℝ) (e p : Point)
       |p.velocity 0| / (|c.vbar| * c.r ^ 2) *
         c.normalizedOperator a e h (c.map e p) := by
   have ht := c.pullback_derivatives e p h hh
-  have hn := kinetic_derivatives_directional h (c.map e p) hh
+  have hn := kinetic_derivatives_directional h _ hh
   rw [forwardScalarOperator, Clock.normalizedOperator, ht.1, ht.2.1, ht.2.2,
     hn.1, hn.2.1, hn.2.2]
   have hx : directional (h ∘ scalarPoint) c.positionDirection
@@ -63,31 +63,23 @@ theorem Clock.conjugacy_at (c : Clock) (a : ℝ → ℝ → ℝ) (e p : Point)
   have hvel : c.vbar + c.r * (c.map e p).velocity 0 = p.velocity 0 := by
     have he := congrArg (fun q : Point => q.velocity 0) (c.inverse_map e p)
     exact he
-  simp only [Clock.diffusion, Clock.drift, hpos, hvel]
+  simp only [Clock.diffusion, Clock.drift, hvel]
   have hr := ne_of_gt c.positive
   have hv := c.nonzero
   have hpne : p.velocity 0 ≠ 0 := by
     have hb := (c.active_abs_bounds hp).1
-    have hbpos := abs_pos.mpr c.nonzero
-    apply abs_pos.mp
-    linarith only [hb, hbpos]
+    grind
   have hs := c.active_distance hp
   rcases lt_or_gt_of_ne c.nonzero with hc | hc
   · have hpneg : p.velocity 0 < 0 := by
-      rw [abs_of_neg hc] at hs
-      have hh' := (abs_lt.mp hs).2
-      linarith only [hh', hc]
+      grind
     rw [abs_of_neg hc, abs_of_neg hpneg]
     simp only [Clock.map]
     field_simp [hr, hv, hpne]
     ring
   · have hppos : 0 < p.velocity 0 := by
-      rw [abs_of_pos hc] at hs
-      have hh' := (abs_lt.mp hs).1
-      linarith only [hh', hc]
+      grind
     rw [abs_of_pos hc, abs_of_pos hppos]
-    simp only [Clock.map]
-    field_simp [hr, hv, hpne]
-    ring
+    grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

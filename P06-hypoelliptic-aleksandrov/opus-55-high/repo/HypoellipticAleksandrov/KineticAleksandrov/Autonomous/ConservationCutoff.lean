@@ -23,27 +23,27 @@ def conservationVelocityDatum (N : ℕ) : BoundedBorel (PDE.Vec 1) :=
 def conservationDatum (N : ℕ) : BoundedBorel (EvolutionAmbientState 1) :=
   cutoffDatum (conservationVelocityDatum N) N
 
+variable (N : ℕ) (x : EvolutionAmbientState 1)
+
 /-- Conservation cutoffs take values in the unit interval. -/
-theorem conservationDatum_bounds (N : ℕ) (x : EvolutionAmbientState 1) :
-    0 ≤ conservationDatum N x ∧ conservationDatum N x ≤ 1 := by
-  change 0 ≤ zCutoffN 1 N x.1 * zCutoffN 1 N x.2 ∧ _
-  exact ⟨mul_nonneg (zCutoffN_mem_Icc 1 N x.1).1 (zCutoffN_mem_Icc 1 N x.2).1,
+theorem conservationDatum_bounds  :
+    0 ≤ conservationDatum N x ∧ conservationDatum N x ≤ 1 := ⟨mul_nonneg (zCutoffN_mem_Icc 1 N x.1).1 (zCutoffN_mem_Icc 1 N x.2).1,
     (mul_le_mul (zCutoffN_mem_Icc 1 N x.1).2 (zCutoffN_mem_Icc 1 N x.2).2
       (zCutoffN_mem_Icc 1 N x.2).1 zero_le_one).trans (by norm_num)⟩
 
 /-- The cutoffs are admitted compact terminal data on the full domain. -/
-theorem conservationDatum_smoothCompact (N : ℕ) (τ : ℝ) :
+theorem conservationDatum_smoothCompact  (τ : ℝ) :
     IsSmoothCompactTerminalDatum autonomousWholeDomain (fun _ => 0) τ
       (conservationDatum N) := by
   apply cutoffDatum_isSmoothCompact
   refine ⟨contDiff_zCutoffN 1 N, hasCompactSupport_zCutoffN 1 N, ?_⟩
   intro v _
-  change v ∈ movingDomain (wholeSpace 1) (fun _ => 0) τ
+  change v ∈ movingDomain (wholeSpace 1) _ τ
   rw [movingDomain_wholeSpace]
   trivial
 
 /-- The terminal deficit has a vanishing quadratic-tail bound. -/
-theorem conservationDatum_deficit (N : ℕ) (x : EvolutionAmbientState 1) :
+theorem conservationDatum_deficit  :
     1 - conservationDatum N x ≤ ((N : ℝ) + 1)⁻¹ ^ 2 *
       (1 + PDE.vecNormSq x.1 + PDE.vecNormSq x.2) := by
   have hR : 0 < (N : ℝ) + 1 := by positivity
@@ -76,7 +76,7 @@ theorem fullspace_constant_solution (B : FullKineticCoefficient 1)
   · intro p hp
     have h := hp.2
     change p.position ∈ frontier (movingDomain (wholeSpace 1) (fun _ => 0) p.time) at h
-    rw [movingDomain_wholeSpace, frontier_univ] at h
-    exact False.elim h
+    rw [movingDomain_wholeSpace] at h
+    simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

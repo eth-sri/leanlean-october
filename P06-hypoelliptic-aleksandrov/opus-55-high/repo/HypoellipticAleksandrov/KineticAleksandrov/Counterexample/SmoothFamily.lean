@@ -10,7 +10,6 @@ scale is chosen separately after fixing each function.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Filter MeasureTheory HypoellipticAleksandrov.Parabolic
 open scoped Topology ENNReal MatrixOrder Matrix.Norms.Elementwise
@@ -25,16 +24,16 @@ theorem smoothFamily_of_measurable {d : ℕ} {p lam Lam : ℝ}
   obtain ⟨A, U, hA, hb, hU, hnonneg, hboundary, hheight, hsource⟩ := h
   have hpn : ENNReal.ofReal p ≠ 0 := (ENNReal.ofReal_pos.mpr (by linarith)).ne'
   have hp1 : 1 ≤ ENNReal.ofReal p := by
-    simpa only [ENNReal.ofReal_one] using ENNReal.ofReal_le_ofReal hp
+    simp_all
   have hchoose : ∀ j : ℕ, ∃ k : ℕ,
       eLpNorm (fun P => matrixContraction
         (mollifiedMatrix (standardMollifierSequence k) A (P.position, P.velocity) -
           A (P.position, P.velocity)) (kineticVelocityHessian (U j) P))
         (ENNReal.ofReal p) (volume.restrict (backwardCylinder P₀ R)) <
-        ENNReal.ofReal (1 / ((j : ℝ) + 1)) := by
+        ENNReal.ofReal (1 / (j + 1)) := by
     intro j
-    have he := smooth_coefficient_error_tendsto A lam Lam hA hb (U j) (hU j)
-      P₀ R hR (ENNReal.ofReal p) hpn ENNReal.ofReal_ne_top
+    have he := smooth_coefficient_error_tendsto A lam Lam hA hb _ (hU j)
+      P₀ R hR _ hpn ENNReal.ofReal_ne_top
     exact (he.eventually (Iio_mem_nhds (ENNReal.ofReal_pos.mpr (by positivity)))).exists
   choose k hk using hchoose
   let B : ℕ → XV d → PDE.Mat d := fun j => mollifiedMatrix (standardMollifierSequence (k j)) A
@@ -46,13 +45,12 @@ theorem smoothFamily_of_measurable {d : ℕ} {p lam Lam : ℝ}
   · intro j i l
     exact (ContinuousLinearMap.proj l).contDiff.comp
       ((ContinuousLinearMap.proj i).contDiff.comp (hB j).1)
-  · intro j q
-    exact (hB j).2 q
+  · grind
   · let E := fun j P => matrixContraction
       (B j (P.position, P.velocity) - A (P.position, P.velocity))
       (kineticVelocityHessian (U j) P)
     have heps : Tendsto (fun j : ℕ => ENNReal.ofReal (1 / ((j : ℝ) + 1))) atTop (𝓝 0) := by
-      simpa only [Function.comp_apply, ENNReal.ofReal_zero] using!
+      simpa using!
         ENNReal.continuous_ofReal.continuousAt.tendsto.comp
           tendsto_one_div_add_atTop_nhds_zero_nat
     have he : Tendsto (fun j => eLpNorm (E j) (ENNReal.ofReal p)
@@ -65,11 +63,11 @@ theorem smoothFamily_of_measurable {d : ℕ} {p lam Lam : ℝ}
           (ENNReal.ofReal p) (volume.restrict (backwardCylinder P₀ R)) +
         eLpNorm (E j) (ENNReal.ofReal p) (volume.restrict (backwardCylinder P₀ R)))
         atTop (𝓝 0) := by
-      simpa only [add_zero] using! hlim
+      simp_all
     apply tendsto_of_tendsto_of_tendsto_of_le_of_le tendsto_const_nhds hlim0
       (fun j => bot_le)
     intro j
-    exact positive_source_norm_le_coefficient_error A (B j) hA (hBm j) (U j) (hU j)
-      (volume.restrict (backwardCylinder P₀ R)) (ENNReal.ofReal p) hp1
+    exact positive_source_norm_le_coefficient_error A _ hA (hBm j) _ (hU j)
+      _ _ hp1
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

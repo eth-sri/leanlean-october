@@ -12,7 +12,6 @@ For a smooth function `χ` of the time coordinate alone,
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 
@@ -29,32 +28,34 @@ theorem fderiv_cutoff_mul {χ : ℝ → ℝ} (hχ : Differentiable ℝ χ) {f : 
     fderiv ℝ (fun y => χ (Evolution.timeCoord d y) * f y) x v =
       χ (Evolution.timeCoord d x) * fderiv ℝ f x v +
         deriv χ (Evolution.timeCoord d x) * Evolution.timeCoord d v * f x := by
-  have hc : HasFDerivAt (fun y => χ (Evolution.timeCoord d y))
+  have hc : HasFDerivAt (fun y => χ _)
       (deriv χ (Evolution.timeCoord d x) • Evolution.timeCoord d) x :=
     (hχ _).hasDerivAt.comp_hasFDerivAt x (Evolution.timeCoord d).hasFDerivAt
   rw [(hc.fun_mul hf.hasFDerivAt).fderiv]
-  simp only [add_apply, smul_apply, smul_eq_mul]
+  simp only [add_apply, smul_apply]
   ring
 
+variable {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE.Vec d}
+
 /-- The cutoff commutation formula for the transported adjoint. -/
-theorem transportedAdjoint_cutoff_mul {B : FullKineticCoefficient d} {b : PDE.Vec d → PDE.Vec d}
+theorem transportedAdjoint_cutoff_mul 
     (hB : IsSmoothFullKineticCoefficient B) {χ : ℝ → ℝ} (hχ : ContDiff ℝ (⊤ : ℕ∞) χ)
     {ψ : EvolutionVec d → ℝ} (hψ : ContDiff ℝ (⊤ : ℕ∞) ψ) (x : EvolutionVec d) :
     transportedAdjoint B b (fun y => χ (Evolution.timeCoord d y) * ψ y) x =
       χ (Evolution.timeCoord d x) * transportedAdjoint B b ψ x -
         deriv χ (Evolution.timeCoord d x) * ψ x := by
   have hχd : Differentiable ℝ χ := hχ.differentiable (by simp)
-  have hA : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun w : EvolutionVec d =>
+  have hA : ∀ i j, ContDiff ℝ _ (fun w : EvolutionVec d =>
       B (Evolution.timeCoord d w) (diffusedCoord d w) (transportedCoord d w) i j) :=
     fun i j => (hB i j).comp (evolutionProdCLE d).contDiff
-  have hF : ∀ i j, ContDiff ℝ (⊤ : ℕ∞) (fun w : EvolutionVec d =>
-      B (Evolution.timeCoord d w) (diffusedCoord d w) (transportedCoord d w) i j * ψ w) :=
+  have hF : ∀ i j, ContDiff ℝ _ (fun w : EvolutionVec d =>
+      B _ _ _ i j * ψ w) :=
     fun i j => (hA i j).mul hψ
-  have hG : ∀ i j, ContDiff ℝ (⊤ : ℕ∞)
+  have hG : ∀ i j, ContDiff ℝ _
       (fun y : EvolutionVec d => fderiv ℝ (fun w : EvolutionVec d =>
-      B (Evolution.timeCoord d w) (diffusedCoord d w) (transportedCoord d w) i j * ψ w) y
+      B _ _ _ i j * ψ w) y
         (basisV j)) := fun i j => contDiff_fderiv_apply (hF i j) _
-  have hψd : ∀ y, DifferentiableAt ℝ ψ y := fun y => differentiableAt_of_contDiff hψ y
+  have hψd  := fun y => differentiableAt_of_contDiff hψ y
   unfold transportedAdjoint
   have t1 := fderiv_cutoff_mul (d := d) hχd (hψd x) basisT
   have t3 : ∀ l, fderiv ℝ (fun y => χ (Evolution.timeCoord d y) * ψ y) x (basisZ l) =
@@ -81,18 +82,17 @@ theorem transportedAdjoint_cutoff_mul {B : FullKineticCoefficient d} {b : PDE.Ve
             (χ (Evolution.timeCoord d w) * ψ w)) =
           fun w => χ (Evolution.timeCoord d w) * (B (Evolution.timeCoord d w)
             (diffusedCoord d w) (transportedCoord d w) i j * ψ w) := by
-        funext w; ring
+        grind
       rw [hfun, fderiv_cutoff_mul hχd ((hF i j).differentiable (by simp) y), timeCoord_basisV]
       ring
     rw [hin, fderiv_cutoff_mul hχd (((hG i j).differentiable (by simp)) x), timeCoord_basisV]
     ring
   simp only [t2, t3, t1, timeCoord_basisT]
-  simp only [mul_left_comm _ (χ (Evolution.timeCoord d x)), ← Finset.mul_sum]
+  simp only [mul_left_comm, ← Finset.mul_sum]
   ring
 
 /-- The transported adjoint vanishes off the topological support of the test. -/
-theorem transportedAdjoint_eq_zero_of_notMem_tsupport {B : FullKineticCoefficient d}
-    {b : PDE.Vec d → PDE.Vec d} (ψ : EvolutionVec d → ℝ) {x : EvolutionVec d}
+theorem transportedAdjoint_eq_zero_of_notMem_tsupport  (ψ : EvolutionVec d → ℝ) {x : EvolutionVec d}
     (hx : x ∉ tsupport ψ) : transportedAdjoint B b ψ x = 0 := by
   have hz : ∀ (φ : EvolutionVec d → ℝ) (v : EvolutionVec d), tsupport φ ⊆ tsupport ψ →
       fderiv ℝ φ x v = 0 := fun φ v hφ =>
@@ -106,9 +106,9 @@ theorem transportedAdjoint_eq_zero_of_notMem_tsupport {B : FullKineticCoefficien
     intro i j
     refine hz _ _ ?_
     intro y hy
-    have hy1 := tsupport_evolution_fderiv_apply _ (basisV j) hy
+    have hy1 := tsupport_evolution_fderiv_apply _ _ hy
     exact tsupport_mul_subset_right hy1
   unfold transportedAdjoint
-  simp only [h1, h2, h3, mul_zero, Finset.sum_const_zero, neg_zero, add_zero, sub_zero]
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

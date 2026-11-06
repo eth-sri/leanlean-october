@@ -51,14 +51,15 @@ def scalarAffine {d : ℕ} (α a : ℝ) (c : PDE.Vec d) (e : ℝ) (z : TimeVeloc
     TimeVelocity d :=
   (α + a * z.1, c + e • z.2)
 
-theorem contDiff_scalarAffine {d : ℕ} (α a : ℝ) (c : PDE.Vec d) (e : ℝ) :
+variable {d : ℕ} {V : TimeVelocity d → ℝ} {α a : ℝ} {c : PDE.Vec d} {e : ℝ} {z : TimeVelocity d} {Ω : Set (PDE.Vec d)} {τ : ℝ} {p : TimeVelocity d}
+
+theorem contDiff_scalarAffine  (α a : ℝ) (c : PDE.Vec d) (e : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (scalarAffine α a c e) := by
   unfold scalarAffine
   fun_prop
 
 /-- Time derivative under an affine change of variables. -/
-theorem scalarTimeDerivative_comp_scalarAffine {d : ℕ} {V : TimeVelocity d → ℝ}
-    {α a : ℝ} {c : PDE.Vec d} {e : ℝ} {z : TimeVelocity d}
+theorem scalarTimeDerivative_comp_scalarAffine 
     (hV : DifferentiableAt ℝ (fun r : ℝ => V (r, c + e • z.2)) (α + a * z.1)) :
     scalarTimeDerivative (fun p => V (scalarAffine α a c e p)) z =
       a * scalarTimeDerivative V (scalarAffine α a c e z) := by
@@ -72,50 +73,43 @@ theorem scalarTimeDerivative_comp_scalarAffine {d : ℕ} {V : TimeVelocity d →
   ring
 
 /-- Spatial Hessian under an affine change of variables. -/
-theorem scalarSpatialHessian_comp_scalarAffine {d : ℕ} {V : TimeVelocity d → ℝ}
-    {α a : ℝ} {c : PDE.Vec d} {e : ℝ} {z : TimeVelocity d}
+theorem scalarSpatialHessian_comp_scalarAffine 
     (hV : ContDiffAt ℝ 2 (fun y : PDE.Vec d => V (α + a * z.1, y)) (c + e • z.2)) :
     scalarSpatialHessian (fun p => V (scalarAffine α a c e p)) z =
-      e ^ 2 • scalarSpatialHessian V (scalarAffine α a c e z) := by
-  exact sliceHessian_affine (g := fun y : PDE.Vec d => V (α + a * z.1, y)) hV
+      e ^ 2 • scalarSpatialHessian V (scalarAffine α a c e z) := sliceHessian_affine (g := fun y : PDE.Vec d => V _) hV
 
 /-! ### Geometry of the stationary scalar cylinders -/
 
 /-- The stationary curve does not move the domain. -/
 @[simp]
-theorem movingDomain_stationary {d : ℕ} (Ω : Set (PDE.Vec d)) (σ : ℝ) :
+theorem movingDomain_stationary  (Ω : Set (PDE.Vec d)) (σ : ℝ) :
     movingDomain Ω stationary σ = Ω := by
-  ext y
-  simp [movingDomain, stationary, PDE.translateSet]
+  simp [movingDomain, stationary]
 
 @[simp]
-theorem mem_scalarPastClosedCylinder_stationary {d : ℕ} {Ω : Set (PDE.Vec d)} {τ : ℝ}
-    {p : TimeVelocity d} :
+theorem mem_scalarPastClosedCylinder_stationary  :
     p ∈ ParabolicProbe.scalarPastClosedCylinder Ω stationary τ ↔
       p.1 ≤ τ ∧ p.2 ∈ closure Ω := by
   simp [ParabolicProbe.scalarPastClosedCylinder]
 
 @[simp]
-theorem mem_scalarPastOpenCylinder_stationary {d : ℕ} {Ω : Set (PDE.Vec d)} {τ : ℝ}
-    {p : TimeVelocity d} :
+theorem mem_scalarPastOpenCylinder_stationary  :
     p ∈ ParabolicProbe.scalarPastOpenCylinder Ω stationary τ ↔ p.1 < τ ∧ p.2 ∈ Ω := by
   simp [ParabolicProbe.scalarPastOpenCylinder]
 
 @[simp]
-theorem mem_scalarTerminalClosure_stationary {d : ℕ} {Ω : Set (PDE.Vec d)} {τ : ℝ}
-    {p : TimeVelocity d} :
+theorem mem_scalarTerminalClosure_stationary  :
     p ∈ ParabolicProbe.scalarTerminalClosure Ω stationary τ ↔ p.1 = τ ∧ p.2 ∈ closure Ω := by
   simp [ParabolicProbe.scalarTerminalClosure]
 
 @[simp]
-theorem mem_scalarLateralFrontier_stationary {d : ℕ} {Ω : Set (PDE.Vec d)} {τ : ℝ}
-    {p : TimeVelocity d} :
+theorem mem_scalarLateralFrontier_stationary  :
     p ∈ ParabolicProbe.scalarLateralFrontier Ω stationary τ ↔
       p.1 ≤ τ ∧ p.2 ∈ frontier Ω := by
   simp [ParabolicProbe.scalarLateralFrontier]
 
 /-- The stationary open past cylinder of an open domain is open. -/
-theorem isOpen_scalarPastOpenCylinder_stationary {d : ℕ} {Ω : Set (PDE.Vec d)}
+theorem isOpen_scalarPastOpenCylinder_stationary 
     (hΩ : IsOpen Ω) (τ : ℝ) :
     IsOpen (ParabolicProbe.scalarPastOpenCylinder Ω stationary τ) := by
   have : ParabolicProbe.scalarPastOpenCylinder Ω stationary τ =
@@ -129,13 +123,15 @@ def parabolicAffineHomeo {d : ℕ} (v0 : PDE.Vec d) {ρ : ℝ} (hρ : 0 < ρ) :
     PDE.Vec d ≃ₜ PDE.Vec d :=
   (Homeomorph.smulOfNeZero ρ hρ.ne').trans (Homeomorph.addLeft v0)
 
-theorem contDiff_parabolicAffine {d : ℕ} (v0 : PDE.Vec d) (ρ : ℝ) :
+variable {d : ℕ} (v0 : PDE.Vec d) {ρ : ℝ}
+
+theorem contDiff_parabolicAffine  (ρ : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (parabolicAffine v0 ρ) := by
   unfold parabolicAffine
   fun_prop
 
 /-- The preimage of the big ball under the scaling is the normalized ball. -/
-theorem parabolicAffine_preimage_ball {d : ℕ} (v0 : PDE.Vec d) {ρ : ℝ} (hρ : 0 < ρ) :
+theorem parabolicAffine_preimage_ball  (hρ : 0 < ρ) :
     parabolicAffine v0 ρ ⁻¹' PDE.euclideanBall v0 (4 * ρ) = PDE.euclideanBall 0 4 := by
   ext y
   change PDE.euclideanSqDist (v0 + ρ • y) v0 < (4 * ρ) ^ 2 ↔ PDE.euclideanSqDist y 0 < 4 ^ 2
@@ -144,13 +140,13 @@ theorem parabolicAffine_preimage_ball {d : ℕ} (v0 : PDE.Vec d) {ρ : ℝ} (hρ
   constructor <;> intro h <;> nlinarith
 
 /-- Closures commute with the scaling preimage. -/
-theorem parabolicAffine_preimage_closure {d : ℕ} (v0 : PDE.Vec d) {ρ : ℝ} (hρ : 0 < ρ)
+theorem parabolicAffine_preimage_closure  (hρ : 0 < ρ)
     (S : Set (PDE.Vec d)) :
     parabolicAffine v0 ρ ⁻¹' closure S = closure (parabolicAffine v0 ρ ⁻¹' S) :=
   (parabolicAffineHomeo v0 hρ).preimage_closure S
 
 /-- Frontiers commute with the scaling preimage. -/
-theorem parabolicAffine_preimage_frontier {d : ℕ} (v0 : PDE.Vec d) {ρ : ℝ} (hρ : 0 < ρ)
+theorem parabolicAffine_preimage_frontier  (hρ : 0 < ρ)
     (S : Set (PDE.Vec d)) :
     parabolicAffine v0 ρ ⁻¹' frontier S = frontier (parabolicAffine v0 ρ ⁻¹' S) :=
   (parabolicAffineHomeo v0 hρ).preimage_frontier S
@@ -167,7 +163,7 @@ instance isFiniteMeasure_P {d : ℕ} {Ω : Set (PDE.Vec d)} {γ : ℝ → PDE.Ve
     parabolicMarginalKernel_apply, MovingFiberKernel.fiberFirstMarginal,
     ProbabilityTheory.Kernel.map_apply _ (MovingFiberKernel.measurable_firstPosition Ω γ q.1.2.1),
     Measure.map_apply (MovingFiberKernel.measurable_firstPosition Ω γ q.1.2.1)
-      MeasurableSet.univ, preimage_univ]
+      MeasurableSet.univ]
   exact lt_of_le_of_lt (K.fiberKernel_mass_le_one hΩ _ _ _ _) ENNReal.one_lt_top
 
 /-- The scalar marginal measure of a stationary problem gives no mass outside `Ω`. -/
@@ -191,14 +187,16 @@ def smoothTestBorel {d : ℕ} (φ : PDE.Vec d → ℝ) (hφ : Continuous φ)
     exact ⟨max C 0, le_max_right _ _, fun y => by
       simpa only [Real.norm_eq_abs] using (hC y).trans (le_max_left _ _)⟩⟩
 
+variable {d : ℕ}
+
 @[simp]
-theorem smoothTestBorel_apply {d : ℕ} (φ : PDE.Vec d → ℝ) (hφ : Continuous φ)
+theorem smoothTestBorel_apply  (φ : PDE.Vec d → ℝ) (hφ : Continuous φ)
     (hc : HasCompactSupport φ) (y : PDE.Vec d) : smoothTestBorel φ hφ hc y = φ y := rfl
 
 /-- **Scalar probe.**  The supplied parabolic marginal bundle gives, for every smooth compactly
 supported test supported in `Ω`, a classical scalar terminal solution, unique on the closed
 past cylinder, whose values are the integrals of the test against the marginal measures. -/
-theorem exists_scalar_probe {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : MeasurableSet Ω)
+theorem exists_scalar_probe  {Ω : Set (PDE.Vec d)} (hΩ : MeasurableSet Ω)
     (B : CoefficientField d) (K : MovingFiberKernel Ω stationary)
     (hpar : HasParabolicMarginalBundle Ω stationary hΩ (zIndependentCoefficient B) K)
     (φ : PDE.Vec d → ℝ) (hφ : ContDiff ℝ (⊤ : ℕ∞) φ) (hc : HasCompactSupport φ)
@@ -216,10 +214,10 @@ theorem exists_scalar_probe {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : MeasurableSe
   obtain ⟨V, hV, hVQ, huniq⟩ := hsolve τ (smoothTestBorel φ hφ.continuous hc)
     ⟨hφ, hc, by
       have h : tsupport φ ⊆ movingDomain Ω stationary τ := by
-        simpa only [movingDomain_stationary] using hsupp
+        simpa using hsupp
       exact h⟩
   refine ⟨V, hV, huniq, fun σ hστ y hy => ?_⟩
-  rw [hVQ σ hστ ⟨y, hy⟩, hrepr σ τ hστ ⟨y, hy⟩ _]
+  rw [hVQ σ hστ ⟨y, hy⟩, hrepr]
   unfold P parabolicMarginalAmbientMeasure
   rw [integral_map measurable_subtype_coe.aemeasurable hφ.continuous.aestronglyMeasurable]
   rfl
@@ -230,14 +228,16 @@ theorem exists_scalar_probe {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : MeasurableSe
 abbrev minorantAffine {d : ℕ} (T ρ : ℝ) (v0 : PDE.Vec d) : TimeVelocity d → TimeVelocity d :=
   scalarAffine T (ρ ^ 2) v0 ρ
 
-private theorem matrixContraction_smul_right {d : ℕ} (A H : PDE.Mat d) (c : ℝ) :
+variable {d : ℕ}
+
+private theorem matrixContraction_smul_right  (A H : PDE.Mat d) (c : ℝ) :
     matrixContraction A (c • H) = c * matrixContraction A H := by
-  simp only [matrixContraction, Matrix.smul_apply, smul_eq_mul, Finset.mul_sum]
+  simp only [matrixContraction, Matrix.smul_apply, Finset.mul_sum]
   refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun j _ => ?_
   ring
 
 /-- The scalar parabolic operator of the rescaled problem is `ρ²` times the original one. -/
-theorem scalarParabolicOperator_comp_minorantAffine {d : ℕ} (B : CoefficientField d)
+theorem scalarParabolicOperator_comp_minorantAffine  (B : CoefficientField d)
     (T ρ : ℝ) (v0 : PDE.Vec d) {V : TimeVelocity d → ℝ} {p : TimeVelocity d}
     (htime : DifferentiableAt ℝ (fun r : ℝ => V (r, (minorantAffine T ρ v0 p).2))
       (minorantAffine T ρ v0 p).1)
@@ -258,13 +258,13 @@ theorem scalarParabolicOperator_comp_minorantAffine {d : ℕ} (B : CoefficientFi
   rw [scalarParabolicOperator_apply, scalarParabolicOperator_apply, hgrad, hgrad',
     scalarTimeDerivative_comp_scalarAffine htime, scalarSpatialHessian_comp_scalarAffine hspace,
     matrixContraction_smul_right]
-  simp only [zIndependentCoefficient, normalizedParabolicCoefficient, minorantAffine,
+  simp only [zIndependentCoefficient, normalizedParabolicCoefficient,
     scalarAffine]
   ring
 
 /-- **Scaled solutions.**  Composing a classical scalar terminal solution with the parabolic
 scaling gives a classical scalar terminal solution of the rescaled problem. -/
-theorem isClassicalScalarTerminalSolution_comp_minorantAffine {d : ℕ}
+theorem isClassicalScalarTerminalSolution_comp_minorantAffine 
     {Ω Ω' : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (B : CoefficientField d) (T : ℝ)
     (v0 : PDE.Vec d) {ρ : ℝ} (hρ : 0 < ρ) (hΩ' : Ω' = parabolicAffine v0 ρ ⁻¹' Ω)
     (τ' : ℝ) (F F' : BoundedBorel (PDE.Vec d))

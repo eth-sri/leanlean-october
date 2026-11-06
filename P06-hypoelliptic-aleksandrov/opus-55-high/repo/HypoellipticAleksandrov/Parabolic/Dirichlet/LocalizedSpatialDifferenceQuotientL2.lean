@@ -21,17 +21,17 @@ open scoped ENNReal
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
+variable {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ} (η : PDE.QuantitativeSmoothCutoff inner outer K)
+
 /-- A smooth cutoff is almost everywhere strongly measurable on restricted volume. -/
 theorem cutoff_aestronglyMeasurable
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K) :
+     :
     AEStronglyMeasurable η.toFun (PDE.volumeOn Ω) :=
   η.smooth.continuous.aestronglyMeasurable
 
 /-- A quantitative smooth cutoff has norm at most one almost everywhere. -/
 theorem cutoff_norm_le_one
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (η : PDE.QuantitativeSmoothCutoff inner outer K) :
+     :
     ∀ᵐ y ∂PDE.volumeOn Ω, ‖η.toFun y‖ ≤ (1 : ℝ) :=
   ae_of_all _ fun y => by
     rw [Real.norm_eq_abs, abs_of_nonneg (η.nonneg y)]
@@ -39,7 +39,7 @@ theorem cutoff_norm_le_one
 
 /-- The representative-independent cutoff-weighted forward spatial difference
 quotient on restricted-volume scalar `L²`. -/
-noncomputable def localizedSpatialDifferenceQuotientL2
+def localizedSpatialDifferenceQuotientL2
     {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
     (hΩ : MeasurableSet Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
@@ -66,13 +66,12 @@ noncomputable def localizedSpatialDifferenceQuotientL2
       (cutoff_norm_le_one η)
   h⁻¹ • M.comp (R.comp (P.comp E - E))
 
+variable {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ} (hΩ : MeasurableSet Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d)
+
 /-- The restricted-space quotient agrees almost everywhere with the canonical
 zero-extension representative formula. -/
 theorem localizedSpatialDifferenceQuotientL2_apply_ae
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : MeasurableSet Ω)
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+     (h : ℝ) (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     ⇑(localizedSpatialDifferenceQuotientL2 hΩ η k h f) =ᵐ[PDE.volumeOn Ω]
       fun y => localizedSpatialDifferenceQuotient η k h
         (⇑(MeasureTheory.Lp.zeroExtendLinearIsometry hΩ f)) y := by
@@ -80,70 +79,59 @@ theorem localizedSpatialDifferenceQuotientL2_apply_ae
   dsimp
   have hP :
       ⇑((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
-        (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-        (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+        _
+        (measurePreserving_add_right volume
           (h • PDE.basisVec k)))
         ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)) =ᵐ[volume]
         (⇑((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) ∘
-          fun y : PDE.Vec d => y + h • PDE.basisVec k) := by
-    change MeasureTheory.Lp.compMeasurePreserving
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (measurePreserving_add_right (volume : Measure (PDE.Vec d))
-        (h • PDE.basisVec k)) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) =ᵐ[volume]
-        (⇑((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) ∘
-          fun y : PDE.Vec d => y + h • PDE.basisVec k)
-    exact MeasureTheory.Lp.coeFn_compMeasurePreserving
-      ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)
-      (measurePreserving_add_right (volume : Measure (PDE.Vec d))
-        (h • PDE.basisVec k))
+          fun y : PDE.Vec d => y + h • PDE.basisVec k) := MeasureTheory.Lp.coeFn_compMeasurePreserving
+      _
+      _
   have hR := LpToLpRestrictCLM_coeFn ℝ Ω
     ((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+      _
+      (measurePreserving_add_right volume
         (h • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
       (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)
   have hM := scalarL2Multiplier_apply_ae η.toFun
     (cutoff_aestronglyMeasurable η) 1 zero_le_one
     (cutoff_norm_le_one η)
-    ((LpToLpRestrictCLM (PDE.Vec d) ℝ ℝ volume 2 Ω)
+    ((LpToLpRestrictCLM _ ℝ ℝ volume 2 Ω)
       ((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
-        (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-        (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+        _
+        (measurePreserving_add_right volume
           (h • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
         (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f))
   have hsub := MeasureTheory.Lp.coeFn_sub
     ((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+      _
+      (measurePreserving_add_right volume
         (h • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f))
     ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)
   have hsmul := MeasureTheory.Lp.coeFn_smul h⁻¹
     ((scalarL2Multiplier η.toFun (cutoff_aestronglyMeasurable η) 1 zero_le_one
       (cutoff_norm_le_one η)
-      ((LpToLpRestrictCLM (PDE.Vec d) ℝ ℝ volume 2 Ω)
+      ((LpToLpRestrictCLM _ ℝ ℝ volume 2 Ω)
         ((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
-          (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-          (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+          _
+          (measurePreserving_add_right volume
             (h • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
           (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f))))
   filter_upwards [hsmul, hM, hR, hsub.restrict, hP.restrict] with y hsmul hM hR hsub hP
   simp only [smul_apply, ContinuousLinearMap.comp_apply,
     sub_apply, LinearIsometry.coe_toContinuousLinearMap]
   rw [hsmul]
-  simp only [Pi.smul_apply, smul_eq_mul]
+  simp only [Pi.smul_apply]
   rw [hM, hR, hsub]
   simp only [Pi.sub_apply]
   rw [hP]
-  simp only [Function.comp_apply, div_eq_mul_inv]
+  simp only [Function.comp_apply]
   ring
 
 /-- A supplied restricted-space representative may replace the canonical zero
 extension on the cutoff's forward active collar. -/
 theorem localizedSpatialDifferenceQuotientL2_apply_ae_of_ae_eq
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : MeasurableSet Ω)
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (f : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+     (h : ℝ) (f : PDE.ScalarLp Ω (2 : ℝ≥0∞))
     (g : PDE.Vec d → ℝ)
     (hfg : ⇑f =ᵐ[PDE.volumeOn Ω] g)
     (hηshift : Set.MapsTo
@@ -158,7 +146,7 @@ theorem localizedSpatialDifferenceQuotientL2_apply_ae_of_ae_eq
     filter_upwards [hzero, hfg'] with y hzero hfg hy
     rw [hzero, Set.indicator_of_mem hy]
     exact hfg hy
-  have hshifted := (measurePreserving_add_right (volume : Measure (PDE.Vec d))
+  have hshifted := (measurePreserving_add_right volume
     (h • PDE.basisVec k)).quasiMeasurePreserving.ae hambient
   have hambientOn : ∀ᵐ y : PDE.Vec d ∂PDE.volumeOn Ω,
       y ∈ Ω → ⇑(MeasureTheory.Lp.zeroExtendLinearIsometry hΩ f) y = g y :=
@@ -166,7 +154,7 @@ theorem localizedSpatialDifferenceQuotientL2_apply_ae_of_ae_eq
   have hshiftedOn : ∀ᵐ y : PDE.Vec d ∂PDE.volumeOn Ω,
       y + h • PDE.basisVec k ∈ Ω →
         ⇑(MeasureTheory.Lp.zeroExtendLinearIsometry hΩ f)
-          (y + h • PDE.basisVec k) = g (y + h • PDE.basisVec k) :=
+          _ = g _ :=
     (ae_restrict_iff' hΩ).mpr (hshifted.mono fun _ hy _ => hy)
   have hmem : ∀ᵐ y : PDE.Vec d ∂PDE.volumeOn Ω, y ∈ Ω :=
     (ae_restrict_iff' hΩ).mpr (ae_of_all _ fun y hy => hy)
@@ -183,17 +171,13 @@ theorem localizedSpatialDifferenceQuotientL2_apply_ae_of_ae_eq
 
 /-- The localized quotient has the sharp totalized `L²` application bound. -/
 theorem norm_localizedSpatialDifferenceQuotientL2_apply_le
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : MeasurableSet Ω)
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+     (h : ℝ) (f : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     ‖localizedSpatialDifferenceQuotientL2 hΩ η k h f‖ ≤
       (2 / |h|) * ‖f‖ := by
   by_cases hh : h = 0
   · subst h
     simp [localizedSpatialDifferenceQuotientL2]
   unfold localizedSpatialDifferenceQuotientL2
-  dsimp
   have hM := norm_scalarL2Multiplier_apply_le η.toFun
     (cutoff_aestronglyMeasurable η) 1 zero_le_one (cutoff_norm_le_one η)
     ((LpToLpRestrictCLM (PDE.Vec d) ℝ ℝ volume 2 Ω)
@@ -212,8 +196,7 @@ theorem norm_localizedSpatialDifferenceQuotientL2_apply_le
         (fun y : PDE.Vec d => y + h • PDE.basisVec k)
         (measurePreserving_add_right (volume : Measure (PDE.Vec d))
           (h • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
-        (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f‖ := by
-    exact norm_Lp_toLp_restrict_le Ω _
+        (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f‖ := norm_Lp_toLp_restrict_le Ω _
   have hD : ‖(MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
       (fun y : PDE.Vec d => y + h • PDE.basisVec k)
       (measurePreserving_add_right (volume : Measure (PDE.Vec d))
@@ -221,16 +204,14 @@ theorem norm_localizedSpatialDifferenceQuotientL2_apply_le
       (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f‖ ≤ 2 * ‖f‖ := by
     calc
       _ ≤ ‖(MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
-          (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-          (measurePreserving_add_right (volume : Measure (PDE.Vec d))
-            (h • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)‖ +
+          _
+          _) _‖ +
           ‖(MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f‖ := norm_sub_le _ _
       _ = 2 * ‖f‖ := by
         rw [LinearIsometry.norm_map, LinearIsometry.norm_map]
         ring
-  simp only [smul_apply, ContinuousLinearMap.comp_apply,
-    sub_apply, LinearIsometry.coe_toContinuousLinearMap]
-  rw [norm_smul, norm_inv, Real.norm_eq_abs]
+  simp only [smul_apply]
+  rw [norm_smul, norm_inv]
   have hM' : ‖(scalarL2Multiplier η.toFun (cutoff_aestronglyMeasurable η)
       1 zero_le_one (cutoff_norm_le_one η)
       ((LpToLpRestrictCLM (PDE.Vec d) ℝ ℝ volume 2 Ω)
@@ -248,17 +229,12 @@ theorem norm_localizedSpatialDifferenceQuotientL2_apply_le
     simpa using hM
   have hR' := hR.trans hD
   calc
-    _ ≤ |h|⁻¹ * ‖(LpToLpRestrictCLM (PDE.Vec d) ℝ ℝ volume 2 Ω)
-        ((MeasureTheory.Lp.compMeasurePreservingₗᵢ ℝ
-          (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-          (measurePreserving_add_right (volume : Measure (PDE.Vec d))
-            (h • PDE.basisVec k))) ((MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f) -
-          (MeasureTheory.Lp.zeroExtendLinearIsometry hΩ) f)‖ :=
+    _ ≤ |h|⁻¹ * ‖(LpToLpRestrictCLM _ ℝ ℝ volume 2 Ω)
+        _‖ :=
       mul_le_mul_of_nonneg_left hM' (inv_nonneg.mpr (abs_nonneg h))
     _ ≤ |h|⁻¹ * (2 * ‖f‖) :=
       mul_le_mul_of_nonneg_left hR' (inv_nonneg.mpr (abs_nonneg h))
     _ = (2 / |h|) * ‖f‖ := by
-      rw [div_eq_mul_inv]
       ring
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

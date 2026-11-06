@@ -32,8 +32,7 @@ def bellmanCompactIntegral (mu : Measure X) [IsFiniteMeasure mu] : C(X, ℝ) →
       map_smul' := fun c f => integral_smul c f } : C(X, ℝ) →ₗ[ℝ] ℝ)
     (mu.real univ) (fun f => by
       have hb := (BoundedContinuousFunction.mkOfCompact f).norm_integral_le_mul_norm mu
-      rw [BoundedContinuousFunction.norm_mkOfCompact] at hb
-      convert! hb using 1)
+      simp_all)
 
 /-- Local mass bounds give the corresponding dual norm bounds. -/
 theorem bellmanCompactIntegral_norm_le (mu : Measure X) [IsFiniteMeasure mu]
@@ -41,9 +40,7 @@ theorem bellmanCompactIntegral_norm_le (mu : Measure X) [IsFiniteMeasure mu]
     ‖bellmanCompactIntegral mu‖ ≤ C := by
   apply ContinuousLinearMap.opNorm_le_bound _ hC
   intro f
-  change ‖∫ x, f x ∂mu‖ ≤ C * ‖f‖
   have hb := (BoundedContinuousFunction.mkOfCompact f).norm_integral_le_mul_norm mu
-  simp only [BoundedContinuousFunction.norm_mkOfCompact] at hb
   convert! hb.trans (mul_le_mul_of_nonneg_right hm (norm_nonneg _)) using 1
 
 /-- One common subsequence for every compact-exhaustion coordinate and every measure lane. -/
@@ -60,12 +57,12 @@ theorem bellman_compact_functionals_subsequence {iota : Type*} [Countable iota]
         ∀ f : C(Y i, ℝ), Tendsto (fun n => ∫ x, f x ∂mu (k n) i) atTop (𝓝 (ell f)) := by
   let B (i : iota) : Set (WeakDual ℝ C(Y i, ℝ)) :=
     WeakDual.toStrongDual ⁻¹' Metric.closedBall 0 (C i)
-  have hb (i : iota) : IsCompact (B i) := WeakDual.isCompact_closedBall 0 (C i)
-  let (i : iota) : CompactSpace (B i) := isCompact_iff_compactSpace.mp (hb i)
+  have hb (i : iota) : IsCompact (B i) := WeakDual.isCompact_closedBall 0 _
+  let (i : iota)  := isCompact_iff_compactSpace.mp (hb i)
   let (i : iota) : TopologicalSpace.MetrizableSpace (B i) :=
-    WeakDual.metrizable_of_isCompact ℝ C(Y i, ℝ) (B i) (hb i)
+    WeakDual.metrizable_of_isCompact ℝ _ _ (hb i)
   let u (n : ℕ) : ∀ i, B i := fun i =>
-    ⟨StrongDual.toWeakDual (bellmanCompactIntegral (mu n i)), by
+    ⟨StrongDual.toWeakDual (bellmanCompactIntegral _), by
       change dist (bellmanCompactIntegral (mu n i)) 0 ≤ C i
       have he : dist (bellmanCompactIntegral (mu n i)) 0 =
           ‖bellmanCompactIntegral (mu n i)‖ := by
@@ -79,6 +76,6 @@ theorem bellman_compact_functionals_subsequence {iota : Type*} [Countable iota]
   intro f
   have hi := (continuous_apply i).tendsto ell |>.comp ht
   have hv := continuous_subtype_val.tendsto (ell i) |>.comp hi
-  convert! (WeakDual.eval_continuous f).tendsto (ell i).val |>.comp hv using 1
+  convert! (WeakDual.eval_continuous f).tendsto _ |>.comp hv using 1
 
 end HypoellipticAleksandrov.KineticAleksandrov

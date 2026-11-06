@@ -13,8 +13,7 @@ open Set MeasureTheory HypoellipticAleksandrov
 theorem measurableSet_finiteUnionPole (H : FiniteIntervalUnion) (T : ℝ) :
     MeasurableSet {p : Point | (p.time : WithTop ℝ) < T ∧ p.velocity 0 ∈ H.carrier} := by
   have ht : {p : Point | (p.time : WithTop ℝ) < T} = {p | p.time < T} := by
-    ext p
-    exact WithTop.coe_lt_coe
+    simp
   rw [show {p : Point | (p.time : WithTop ℝ) < T ∧ p.velocity 0 ∈ H.carrier} =
     {p | (p.time : WithTop ℝ) < T} ∩ {p | p.velocity 0 ∈ H.carrier} from rfl, ht]
   exact (measurableSet_lt continuous_time.measurable measurable_const).inter

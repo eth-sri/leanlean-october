@@ -11,7 +11,6 @@ coefficients. The band test is the literal bounded Borel indicator under the act
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Set MeasureTheory
 
@@ -30,9 +29,9 @@ theorem velocity_occupation_le (hH : HormanderHypoellipticityStatement)
       (∫ t in Ioc 0 T, (velocityBandProbability E r z t).toReal) := by
     apply integral_congr_ae
     exact Filter.Eventually.of_forall fun t => velocityBandAction_eq_probability A E hE r t z
-  rw [ha, velocity_band_integral_eq_green E hT r z]
+  rw [ha, velocity_band_integral_eq_green E hT]
   apply hb.trans_eq
-  rw [Real.sqrt_mul (by positivity : 0 ≤ 2 * Lam)]
+  rw [Real.sqrt_mul (by positivity)]
   ring
 
 /-- Uniform constant, actual measurable band occupation, and sharp real quadratic moment.

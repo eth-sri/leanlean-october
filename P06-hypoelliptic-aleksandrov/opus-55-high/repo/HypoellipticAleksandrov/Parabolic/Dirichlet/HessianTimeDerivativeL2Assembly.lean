@@ -17,12 +17,13 @@ equation carrier assembled from a Hessian, gradient, value, and source.
 open MeasureTheory Set
 open scoped ENNReal Matrix.Norms.Elementwise
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
+variable {d : ℕ}
+
 private theorem memLp_mul_of_continuousOn_of_bound
-    {d : ℕ} {S : Set (TimeVelocity d)} {f g : TimeVelocity d → ℝ} {M : ℝ}
+     {S : Set (TimeVelocity d)} {f g : TimeVelocity d → ℝ} {M : ℝ}
     (hS : MeasurableSet S) (hf : ContinuousOn f S)
     (hbound : ∀ z ∈ S, |f z| ≤ M)
     (hg : ParabolicMemLpOn S (2 : ℝ≥0∞) g) :
@@ -30,13 +31,13 @@ private theorem memLp_mul_of_continuousOn_of_bound
   refine MemLp.of_le_mul (c := M) hg ?_ ?_
   · exact (hf.aestronglyMeasurable hS).mul hg.aestronglyMeasurable
   · filter_upwards [ae_restrict_mem hS] with z hz
-    rw [norm_mul, Real.norm_eq_abs, Real.norm_eq_abs]
+    rw [norm_mul]
     exact mul_le_mul_of_nonneg_right (hbound z hz) (abs_nonneg _)
 
 /-- The literal coefficient--Hessian, drift--gradient, zeroth-order, and source
 combination in the reverse-time equation is locally square-integrable. -/
 theorem hessianTimeDerivative_memLp
-    {d : ℕ} {Ω O : Set (PDE.Vec d)}
+     {Ω O : Set (PDE.Vec d)}
     (r₀ r₁ τ₁ τ₂ : ℝ)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (hO : IsOpen O) (hOΩ : O ⊆ Ω)
@@ -100,7 +101,7 @@ theorem hessianTimeDerivative_memLp
   obtain ⟨MF, hMF⟩ :=
     (isCompact_scalarParabolicClosedCylinder r₀ r₁ hΩbounded).exists_bound_of_continuousOn
       (hVF.continuousOn.mono hKVF)
-  have hAH (i j : Fin d) : ParabolicMemLpOn Qin (2 : ℝ≥0∞)
+  have hAH (i j : Fin d) : ParabolicMemLpOn Qin (2)
       (fun z => reverseTimeCoefficient r₁ a z.1 z.2 i j * H z j i) := by
     obtain ⟨MA, hMA⟩ :=
       (isCompact_scalarParabolicClosedCylinder r₀ r₁ hΩbounded).exists_bound_of_continuousOn
@@ -110,11 +111,9 @@ theorem hessianTimeDerivative_memLp
       ((continuous_apply j).comp_continuousOn
         ((continuous_apply i).comp_continuousOn hcontA)) _ (hH j i)
     intro z hz
-    change |a (r₁ - z.1) z.2 i j| ≤ MA
     have h := hMA _ (hrevMaps hz)
-    change |a (r₁ - z.1) z.2 i j| ≤ MA at h
     exact h
-  have hBG (j : Fin d) : ParabolicMemLpOn Qin (2 : ℝ≥0∞)
+  have hBG (j : Fin d) : ParabolicMemLpOn Qin (2)
       (fun z => reverseTimeVectorCoefficient r₁ b z.1 z.2 j * G j z) := by
     obtain ⟨MB, hMB⟩ :=
       (isCompact_scalarParabolicClosedCylinder r₀ r₁ hΩbounded).exists_bound_of_continuousOn
@@ -122,31 +121,27 @@ theorem hessianTimeDerivative_memLp
     apply memLp_mul_of_continuousOn_of_bound (M := MB) hQin
       ((continuous_apply j).comp_continuousOn hcontB) _ (hG j)
     intro z hz
-    change |b (r₁ - z.1) z.2 j| ≤ MB
     simpa only [Real.norm_eq_abs, Function.comp_def, rev] using hMB _ (hrevMaps hz)
-  have hCU : ParabolicMemLpOn Qin (2 : ℝ≥0∞)
+  have hCU : ParabolicMemLpOn Qin (2)
       (fun z => reverseTimeScalarCoefficient r₁ c z.1 z.2 * U z) := by
     apply memLp_mul_of_continuousOn_of_bound (M := MC) hQin hcontC _ hU
     intro z hz
     exact hMC _ (hrevMaps hz)
-  have hQinBounded : Bornology.IsBounded Qin := by
-    exact (Metric.isBounded_Ioo τ₁ τ₂).prod (hΩbounded.subset hOΩ)
+  have hQinBounded : Bornology.IsBounded Qin := (Metric.isBounded_Ioo τ₁ τ₂).prod (hΩbounded.subset hOΩ)
   letI : IsFiniteMeasure (timeVelocityVolumeOn Qin) :=
     isFiniteMeasure_restrict.mpr hQinBounded.measure_lt_top.ne
-  have hF : ParabolicMemLpOn Qin (2 : ℝ≥0∞)
+  have hF : ParabolicMemLpOn Qin (2)
       (fun z => reverseTimeScalarCoefficient r₁ F z.1 z.2) := by
     refine MemLp.of_bound (hcontF.aestronglyMeasurable hQin) MF ?_
     filter_upwards [ae_restrict_mem hQin] with z hz
     exact hMF _ (hrevMaps hz)
-  have hsumAH : ParabolicMemLpOn Qin (2 : ℝ≥0∞)
+  have hsumAH : ParabolicMemLpOn Qin (2)
       (fun z => ∑ i : Fin d, ∑ j : Fin d,
-        reverseTimeCoefficient r₁ a z.1 z.2 i j * H z j i) := by
-    exact memLp_finset_sum Finset.univ fun i _ =>
+        reverseTimeCoefficient r₁ a z.1 z.2 i j * H z j i) := memLp_finset_sum Finset.univ fun i _ =>
       memLp_finset_sum Finset.univ fun j _ => hAH i j
-  have hsumBG : ParabolicMemLpOn Qin (2 : ℝ≥0∞)
+  have hsumBG : ParabolicMemLpOn Qin (2)
       (fun z => ∑ j : Fin d,
-        reverseTimeVectorCoefficient r₁ b z.1 z.2 j * G j z) := by
-    exact memLp_finset_sum Finset.univ fun j _ => hBG j
+        reverseTimeVectorCoefficient r₁ b z.1 z.2 j * G j z) := memLp_finset_sum Finset.univ fun j _ => hBG j
   exact ((hsumAH.add hsumBG).add hCU).sub hF
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

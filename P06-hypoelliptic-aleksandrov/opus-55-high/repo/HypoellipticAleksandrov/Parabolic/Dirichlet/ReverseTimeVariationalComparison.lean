@@ -27,20 +27,21 @@ private theorem comparison_scalar_energy
     2 * (g₁ - g₂) + lam * G ≤ 2 * K * V := by
   linarith
 
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T) (w : ReverseTimeL2V hΩ T)
+
 private theorem comparison_energy_increment
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+    
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hd : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (t : ℝ) (ht : t ∈ Icc 0 T) :
     ‖Lp.posPart (reverseTimeHilbertRepresentative hΩ T hT u g hd ⟨t, ht⟩)‖ ^ 2 -
       ‖Lp.posPart (reverseTimeHilbertRepresentative hΩ T hT u g hd
         ⟨0, ⟨le_rfl, hT.le⟩⟩)‖ ^ 2 =
-      2 * ∫ r in Ioc 0 t, (g r) (h10PositivePart hΩ (u r)) ∂reverseTimeVolume T := by
-  exact reverseTimeHilbertRepresentative_posPart_norm_sq_increment hΩ T hT u g hd
-    0 t ⟨le_rfl, hT.le⟩ ht ht.1
+      2 * ∫ r in Ioc 0 t, (g r) (h10PositivePart hΩ (u r)) ∂reverseTimeVolume T := reverseTimeHilbertRepresentative_posPart_norm_sq_increment hΩ T hT u g hd
+    0 t _ ht ht.1
 
 private theorem comparison_initialTrace_sub
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+    
     (u₁ u₂ : ReverseTimeL2V hΩ T) (g₁ g₂ : ReverseTimeL2VStar hΩ T)
     (hd₁ : HasGelfandWeakTimeDerivative hΩ T hT u₁ g₁)
     (hd₂ : HasGelfandWeakTimeDerivative hΩ T hT u₂ g₂)
@@ -50,21 +51,20 @@ private theorem comparison_initialTrace_sub
         reverseTimeInitialTrace hΩ T hT u₂ g₂ hd₂ := by
   have hr := reverseTimeHilbertRepresentative_sub_eq hΩ T hT
     u₁ g₁ hd₁ u₂ g₂ hd₂ hd
-  have he := congrArg (fun Q : C(Icc 0 T, PDE.ScalarLp Ω (2 : ℝ≥0∞)) =>
+  have he := congrArg (fun Q : C(Icc 0 T, PDE.ScalarLp Ω _) =>
     Q ⟨0,⟨le_rfl,hT.le⟩⟩) hr
   convert he using 1 <;> rfl
 
 private def comparisonClamp (T r : ℝ) := min T (max 0 r)
 
 private theorem comparisonClamp_mem {T : ℝ} (hT : 0 < T) (r : ℝ) :
-    comparisonClamp T r ∈ Icc 0 T := by
-  exact ⟨le_min hT.le (le_max_left _ _), min_le_left _ _⟩
+    comparisonClamp T r ∈ Icc 0 T := ⟨le_min hT.le (le_max_left _ _), min_le_left _ _⟩
 
 private theorem comparisonClamp_eq {T r : ℝ} (hr : r ∈ Icc 0 T) :
     comparisonClamp T r = r := by
   simp only [comparisonClamp, max_eq_right hr.1, min_eq_right hr.2]
 
-private theorem comparisonClamp_continuous (T : ℝ) : Continuous (comparisonClamp T) :=
+private theorem comparisonClamp_continuous  : Continuous (comparisonClamp T) :=
   continuous_const.min (continuous_const.max continuous_id)
 
 private theorem comparison_clamped_energy_zero
@@ -78,13 +78,12 @@ private theorem comparison_clamped_energy_zero
   norm_num
 
 private theorem comparison_posPart_clamped_energy_zero
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {T : ℝ} (hT : 0 < T)
+     {T : ℝ} (hT : 0 < T)
     (W : C(Icc 0 T, PDE.ScalarLp Ω (2 : ℝ≥0∞)))
     (hW0 : Lp.posPart (W ⟨0,⟨le_rfl,hT.le⟩⟩) = 0) :
-    ‖Lp.posPart (W ⟨comparisonClamp T 0, comparisonClamp_mem hT 0⟩)‖^2 = 0 := by
-  exact comparison_clamped_energy_zero hT
-    ⟨fun q => Lp.posPart (W q), Lp.continuous_posPart.comp W.continuous⟩
-    (by change ‖Lp.posPart (W ⟨0,⟨le_rfl,hT.le⟩⟩)‖ = 0; rw [hW0, norm_zero])
+    ‖Lp.posPart (W ⟨comparisonClamp T 0, comparisonClamp_mem hT 0⟩)‖^2 = 0 := comparison_clamped_energy_zero hT
+    ⟨fun q => Lp.posPart _, Lp.continuous_posPart.comp W.continuous⟩
+    (by change ‖Lp.posPart _‖ = 0; rw [hW0, norm_zero])
 
 private theorem comparison_setIntegral_eq
     (f : ℝ → ℝ) {T t : ℝ} (ht : t ∈ Icc 0 T) :
@@ -95,8 +94,7 @@ private theorem comparison_setIntegral_eq
   exact inter_eq_left.mpr (Ioc_subset_Icc_self.trans fun r hr => ⟨hr.1, hr.2.trans ht.2⟩)
 
 private theorem comparison_value_integral
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (w : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+     (g : ReverseTimeL2VStar hΩ T)
     (hd : HasGelfandWeakTimeDerivative hΩ T hT w g) (t : ℝ) (ht : t ∈ Icc 0 T) :
     (∫ r in Ioc 0 t, ‖valueCLM hΩ (h10PositivePart hΩ (w r))‖ ^ 2
       ∂reverseTimeVolume T) =
@@ -105,8 +103,7 @@ private theorem comparison_value_integral
   let W := reverseTimeHilbertRepresentative hΩ T hT w g hd
   have hW := (reverseTimeHilbertRepresentative_spec hΩ T hT w g hd).1
   calc
-    _ = ∫ r in Ioc 0 t, ‖Lp.posPart (W
-        ⟨comparisonClamp T r, comparisonClamp_mem hT r⟩)‖ ^ 2
+    _ = ∫ r in Ioc 0 t, ‖Lp.posPart _‖ ^ 2
         ∂reverseTimeVolume T := by
       apply integral_congr_ae
       filter_upwards [ae_restrict_of_ae hW,
@@ -118,8 +115,7 @@ private theorem comparison_value_integral
     _ = _ := comparison_setIntegral_eq _ ht
 
 private theorem comparison_posPart_zero
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
-    (w : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
+     (g : ReverseTimeL2VStar hΩ T)
     (hd : HasGelfandWeakTimeDerivative hΩ T hT w g) (K : ℝ) (hK : 0 ≤ K)
     (hrate : ∀ᵐ τ ∂reverseTimeVolume T,
       2 * (g τ) (h10PositivePart hΩ (w τ)) +
@@ -130,52 +126,49 @@ private theorem comparison_posPart_zero
     ∀ t : ℝ, ∀ ht : t ∈ Icc 0 T,
       Lp.posPart (reverseTimeHilbertRepresentative hΩ T hT w g hd ⟨t,ht⟩) = 0 := by
   let W := reverseTimeHilbertRepresentative hΩ T hT w g hd
-  let E : ℝ → ℝ := fun t => ‖Lp.posPart
+  let E  := fun t => ‖Lp.posPart
     (W ⟨comparisonClamp T t, comparisonClamp_mem hT t⟩)‖^2
   have hEc : ContinuousOn E (Icc 0 T) :=
     (((Lp.continuous_posPart.comp W.continuous).norm.pow 2).comp
       ((comparisonClamp_continuous T).subtype_mk _)).continuousOn
   have hEn : ∀ t ∈ Icc 0 T, 0 ≤ E t := fun _ _ => sq_nonneg _
-  have hE0 : E 0 = 0 := by
-    exact comparison_posPart_clamped_energy_zero hT W hW0
+  have hE0 : E 0 = 0 := comparison_posPart_clamped_energy_zero hT W hW0
   have hEle : ∀ t ∈ Icc 0 T, E t ≤ (2*K) * ∫ r in Ioc 0 t, E r := by
     intro t ht
     have hi := comparison_energy_increment hΩ T hT w g hd t ht
-    have hpair : Integrable (fun r => (g r) (h10PositivePart hΩ (w r)))
-        (reverseTimeVolume T) :=
-      (integrable_reverseTimeDualPairing hΩ T (reverseTimePositivePart hΩ T w) g).congr (by
+    have hpair : Integrable _
+        _ :=
+      (integrable_reverseTimeDualPairing hΩ T _ g).congr (by
         filter_upwards [coeFn_reverseTimePositivePart hΩ T w] with r hr
         rw [hr])
     have hm := (Lp.memLp (reverseTimePositivePart hΩ T w)).continuousLinearMap_comp
       (valueCLM hΩ)
-    have hv : Integrable (fun r => ‖valueCLM hΩ (h10PositivePart hΩ (w r))‖^2)
-        (reverseTimeVolume T) :=
+    have hv : Integrable (fun r => ‖valueCLM hΩ _‖^2)
+        _ :=
       ((memLp_two_iff_integrable_sq_norm hm.aestronglyMeasurable).mp hm).congr (by
         filter_upwards [coeFn_reverseTimePositivePart hΩ T w] with r hr
         rw [hr])
-    have hint : (∫ r in Ioc 0 t, 2 * (g r) (h10PositivePart hΩ (w r))
+    have hint : (∫ r in Ioc 0 t, 2 * (g r) _
         ∂reverseTimeVolume T) ≤
-        ∫ r in Ioc 0 t, 2*K*‖valueCLM hΩ (h10PositivePart hΩ (w r))‖^2
+        ∫ r in Ioc 0 t, 2*K*‖valueCLM hΩ _‖^2
           ∂reverseTimeVolume T :=
       setIntegral_mono_ae_restrict (hpair.const_mul 2).integrableOn
-      (hv.const_mul (2*K)).integrableOn (ae_restrict_of_ae (by
+      (hv.const_mul _).integrableOn (ae_restrict_of_ae (by
         filter_upwards [hrate] with r hr
-        simpa only [mul_zero, add_zero] using hr))
+        simpa using hr))
     rw [integral_const_mul, integral_const_mul] at hint
     have hval := comparison_value_integral hΩ T hT w g hd t ht
     have hh : (⟨comparisonClamp T t,comparisonClamp_mem hT t⟩ : Icc 0 T) =
         ⟨t,ht⟩ := Subtype.ext (comparisonClamp_eq ht)
-    dsimp only [E]
-    rw [hW0, norm_zero, zero_pow (by norm_num), sub_zero] at hi
+    rw [hW0, norm_zero] at hi
     have hbound : ‖Lp.posPart (W ⟨t,ht⟩)‖^2 ≤
         2*K * ∫ r in Ioc 0 t, ‖Lp.posPart
           (W ⟨comparisonClamp T r, comparisonClamp_mem hT r⟩)‖^2 := by
-      dsimp only [W]
       rw [← hval]
       linarith
     calc
-      _ = ‖Lp.posPart (W ⟨t,ht⟩)‖^2 :=
-        congrArg (fun q : Icc 0 T => ‖Lp.posPart (W q)‖^2) hh
+      _ = ‖Lp.posPart _‖^2 :=
+        congrArg (fun q : Icc 0 T => ‖Lp.posPart _‖^2) hh
       _ ≤ _ := hbound
   have hz := eq_zero_on_Icc_of_nonneg_le_mul_integral hT
     (mul_nonneg (by norm_num) hK) E hEc hEn hE0 hEle
@@ -188,8 +181,7 @@ private theorem comparison_posPart_zero
   nlinarith [norm_nonneg (Lp.posPart (W ⟨t,ht⟩))]
 
 private theorem comparison_ae_rate
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
+     (hlam : 0 < lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F₁ F₂ : ℝ → PDE.Vec d → ℝ)
@@ -229,7 +221,7 @@ private theorem comparison_ae_rate
   rcases hu₂ with ⟨_,heq₂⟩
   filter_upwards [heq₁,heq₂,Lp.coeFn_sub u₁ u₂,Lp.coeFn_sub g₁ g₂,
     ae_restrict_mem measurableSet_Ioo] with τ heq₁τ heq₂τ huτ hgτ hτ
-  have hτcc : τ ∈ Icc 0 (r₁-r₀) := ⟨hτ.1.le,hτ.2.le⟩
+  have hτcc : τ ∈ Icc 0 _ := ⟨hτ.1.le,hτ.2.le⟩
   let w := u₁ τ-u₂ τ
   let wp := h10PositivePart hΩ w
   let f₁ := reverseTimeSourceSlice r₁ τ F₁
@@ -260,15 +252,12 @@ private theorem comparison_ae_rate
   have hBp := reverseTimeSpatialForm_apply_positivePart_eq hΩ r₁ τ a b c w
   have hG := hGard τ hτcc wp
   rw [huτ,hgτ]
-  change 2*((g₁ τ) wp-(g₂ τ) wp)+lam*‖gradientCLM hΩ wp‖^2 ≤
-    2*K*‖valueCLM hΩ wp‖^2
   exact comparison_scalar_energy _ _ _ _ _ _ _ _ _ _ _ _ e₁ e₂ hB hBp hS hG
 
 /-- Reverse-time variational comparison: ordered initial data and the original-source
 orientation `F₂ ≤ F₁` imply spatial almost-everywhere order at every closed time. -/
 theorem reverseTimeVariationalEnergySolution_le
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
+     (hlam : 0 < lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F₁ F₂ : ℝ → PDE.Vec d → ℝ)
@@ -309,9 +298,7 @@ theorem reverseTimeVariationalEnergySolution_le
   let hT : 0 < r₁ - r₀ := sub_pos.mpr h₀₁
   let hd : HasGelfandWeakTimeDerivative hΩ (r₁ - r₀) hT
       (u₁ - u₂) (g₁ - g₂) := by
-    change HasGelfandWeakTimeDerivative hΩ (r₁ - r₀) (sub_pos.mpr h₀₁)
-      (u₁ - u₂) (g₁ - g₂)
-    simpa [sub_eq_add_neg] using hdu₁.add (hdu₂.smul (-1 : ℝ))
+    simpa [sub_eq_add_neg] using hdu₁.add (hdu₂.smul (-1))
   obtain ⟨K,hK,hrate⟩ := comparison_ae_rate r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
     a b c F₁ F₂ haSmooth hbSmooth hcSmooth hF₁Smooth hF₂Smooth hLower hcNonpos
     hF₂leF₁ initial₁ initial₂ u₁ g₁ hdu₁ hu₁ u₂ g₂ hdu₂ hu₂
@@ -335,10 +322,9 @@ theorem reverseTimeVariationalEnergySolution_le
     rw [htrace, ht1, ht2]
     apply Lp.ext
     filter_upwards [Lp.coeFn_posPart (initial₁-initial₂), Lp.coeFn_sub initial₁ initial₂,
-      Lp.coeFn_zero ℝ (2 : ℝ≥0∞) (PDE.volumeOn Ω), hinitial]
+      Lp.coeFn_zero ℝ (2) (PDE.volumeOn Ω), hinitial]
       with y hp hs hz hi
     rw [hp, hs, hz]
-    simp only [Pi.sub_apply]
     exact max_eq_right (sub_nonpos.mpr hi)
   intro τ hτ
   have hrate0 : ∀ᵐ r ∂reverseTimeVolume (r₁-r₀),
@@ -348,19 +334,17 @@ theorem reverseTimeVariationalEnergySolution_le
     filter_upwards [hrate'] with r hr
     have hg : 0 ≤ lam * ‖gradientCLM hΩ (h10PositivePart hΩ (wd r))‖^2 :=
       mul_nonneg hlam.le (sq_nonneg _)
-    simpa only [mul_zero, add_zero] using (show
+    simpa using (show
       2 * (gd r) (h10PositivePart hΩ (wd r)) ≤
         2*K*‖valueCLM hΩ (h10PositivePart hΩ (wd r))‖^2 by linarith)
   have hp := comparison_posPart_zero hΩ (r₁-r₀) hT wd gd hdd K hK hrate0 hW0 τ hτ
   have hw : ∀ᵐ y ∂PDE.volumeOn Ω, W ⟨τ,hτ⟩ y ≤ 0 := by
     filter_upwards [Lp.ext_iff.mp hp, Lp.coeFn_posPart (W ⟨τ,hτ⟩),
-      Lp.coeFn_zero ℝ (2 : ℝ≥0∞) (PDE.volumeOn Ω)] with y hy hpy hz
+      Lp.coeFn_zero ℝ (2) (PDE.volumeOn Ω)] with y hy hpy hz
     rw [hpy, hz] at hy
     exact max_eq_right_iff.mp hy
   have hrepW : W = reverseTimeHilbertRepresentative hΩ (r₁-r₀) hT u₁ g₁ hdu₁ -
-      reverseTimeHilbertRepresentative hΩ (r₁-r₀) hT u₂ g₂ hdu₂ := by
-    dsimp only [W, wd, gd, hdd]
-    exact hrep
+      reverseTimeHilbertRepresentative hΩ (r₁-r₀) hT u₂ g₂ hdu₂ := hrep
   rw [hrepW] at hw
   filter_upwards [hw, Lp.coeFn_sub
     (reverseTimeHilbertRepresentative hΩ (r₁-r₀) hT u₁ g₁ hdu₁ ⟨τ,hτ⟩)

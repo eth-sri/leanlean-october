@@ -12,7 +12,6 @@ The trace itself is never passed to `hEx`.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -41,9 +40,8 @@ theorem IsClassicalTerminalSolution.exists_compact_slice_approximation
     dsimp only [g]
     by_cases hx : x ∈ U
     · rw [indicator_of_mem hx]
-      exact hC ⟨r, x.1, x.2⟩ ⟨hrτ.le, subset_closure hx.1⟩
-    · rw [indicator_of_notMem hx, abs_zero]
-      exact hC0
+      exact hC _ ⟨hrτ.le, subset_closure hx.1⟩
+    simp_all
   obtain ⟨χ, hχ, hc, hs, hr, herr⟩ := exists_smooth_cutoff_weighted_error hU g
     (fun x => 1 + ‖x‖ ^ 2) hg (continuous_const.add (continuous_norm.pow 2))
     (fun x => le_add_of_nonneg_right (sq_nonneg _))
@@ -52,10 +50,10 @@ theorem IsClassicalTerminalSolution.exists_compact_slice_approximation
     funext x
     dsimp only [g]
     by_cases hx : x ∈ U
-    · rw [indicator_of_mem hx]
+    · simp_all
     · have hz : χ x = 0 := notMem_support.mp
         (fun hxχ => hx (hs (subset_closure hxχ)))
-      rw [hz, zero_mul, zero_mul]
+      simp_all
   have hprod : ContDiff ℝ (⊤ : ℕ∞) (fun x => χ x * g x) := by
     rw [heq]
     exact contDiff_mul_of_tsupport_subset hU hχ (hu.contDiffOn_slice hrτ) hs
@@ -63,8 +61,8 @@ theorem IsClassicalTerminalSolution.exists_compact_slice_approximation
     intro x
     rw [abs_mul, abs_of_nonneg (hr x).1]
     exact (mul_le_mul_of_nonneg_right (hr x).2 (abs_nonneg _)).trans
-      (by simpa only [one_mul] using hgb x)
-  let G : BoundedBorel (EvolutionAmbientState n) :=
+      (by simp_all)
+  let G : BoundedBorel _ :=
     ⟨fun x => χ x * g x, hprod.continuous.measurable, ⟨C, hC0, hbound⟩⟩
   refine ⟨G, ⟨hprod, hc.mul_right, tsupport_mul_subset_left.trans hs⟩, hbound, ?_⟩
   intro p hp
@@ -85,10 +83,7 @@ theorem IsClassicalTerminalSolution.exists_compact_slice_approximation
   have hh := herr (p.position, p.velocity)
   rw [hgp] at hh
   have hw := quadratic_state_weight_le_radial r (p.position, p.velocity)
-  have hpident : (⟨r, p.position, p.velocity⟩ : KineticPoint n) = p :=
-    KineticPoint.ext hp.1.symm rfl rfl
-  rw [hpident] at hw
-  change |u p - χ (p.position, p.velocity) * g (p.position, p.velocity)| ≤ _
+  change |u p - χ _ * g _| ≤ _
   rw [hgp]
   exact hh.trans (mul_le_mul_of_nonneg_left hw hε.le)
 

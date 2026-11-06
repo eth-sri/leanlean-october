@@ -8,7 +8,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Occupation.LocalizedKry
 /-! # The whole-space occupation source bound -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Occupation
 open HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic SectionTwo Set
 open scoped Matrix.Norms.Elementwise
@@ -42,28 +41,24 @@ theorem occupation_whole_space_bound
             (2 * d * Lam * (1 - α)) / R ^ 2 ≤ 1 / 2) ∧
         H ≤ C * parabolicLpNorm d F := by
   obtain ⟨C, hC0, hbound⟩ := localizedBound_direct hd hlam hLam
-  let R := Real.sqrt (max 1 (4 * (d : ℝ) * Lam))
-  have hm : 0 < max 1 (4 * (d : ℝ) * Lam) := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
+  let R := Real.sqrt (max 1 (4 * d * Lam))
+  have hm : 0 < max 1 (4 * d * Lam) := lt_of_lt_of_le zero_lt_one (le_max_left _ _)
   have hR : 0 < R := Real.sqrt_pos.mpr hm
-  have hRsq : R ^ 2 = max 1 (4 * (d : ℝ) * Lam) := Real.sq_sqrt hm.le
-  let M := C * R ^ ((d : ℝ) / ((d : ℝ) + 1))
-  have hM : 0 ≤ M := mul_nonneg hC0 (Real.rpow_nonneg hR.le _)
+  have hRsq : R ^ 2 = max 1 _ := Real.sq_sqrt hm.le
+  let M := C * R ^ (d / ((d : ℝ) + 1))
   refine ⟨2 * M, by positivity, ?_⟩
   intro B hB S K _hreal hP F hF0 hFs hFc hFsupp
-  dsimp only
   let W := parabolicDuhamelPotential K MeasurableSet.univ 1 F
-  let H := sSup (W '' (Icc (0 : ℝ) 1 ×ˢ univ))
+  let H := sSup (W '' (Icc (0) 1 ×ˢ univ))
   have hloc := wholeSpace_localization_direct hH hd hB K hP F hF0 hFs hFc hFsupp
   refine ⟨?_, ?_⟩
-  · intro α hα0 hα1 vStar R' hR' hRsq'
-    simpa only [occupationQuadratic] using hloc α hα0 hα1 vStar R' hR' hRsq'
+  · aesop
   · have hnorm : 0 ≤ parabolicLpNorm d F := ENNReal.toReal_nonneg
     have hpoint : ∀ q ∈ Icc (0 : ℝ) 1 ×ˢ univ,
         W q ≤ M * parabolicLpNorm d F + H / 2 := by
       intro q hq
       by_cases ht : q.1 = 1
-      · have hzero : W q = 0 := by
-          exact parabolicDuhamelPotential_eq_zero_of_terminal_le K MeasurableSet.univ
+      · have hzero : W q = 0 := parabolicDuhamelPotential_eq_zero_of_terminal_le K MeasurableSet.univ
             1 F q ht.ge
         have hpot := occupation_potential hH hB K hP F hF0 hFs hFc hFsupp
         have hH0 : 0 ≤ H := (hpot.1 (0, 0)).trans
@@ -75,7 +70,7 @@ theorem occupation_whole_space_bound
         have hqball : q.2 ∈ closure (PDE.euclideanBall q.2 R) := by
           apply subset_closure
           change PDE.euclideanSqDist q.2 q.2 < R ^ 2
-          simpa [PDE.euclideanSqDist, PDE.vecNormSq_eq_sum_sq] using sq_pos_of_pos hR
+          simp_all
         have hqc : q ∈ scalarParabolicClosedCylinder q.1 1
             (PDE.euclideanBall q.2 R) := ⟨⟨le_rfl, hq.1.2⟩, hqball⟩
         have hc := hcmp q hqc
@@ -88,13 +83,10 @@ theorem occupation_whole_space_bound
         have hh := mul_le_mul_of_nonneg_left hhalf hH0
         simp only [occupationQuadratic, sub_self, zero_pow (by norm_num : 2 ≠ 0),
           Finset.sum_const_zero, zero_add] at hc
-        rw [mul_div_assoc] at hc
-        dsimp [M] at hv ⊢
-        linarith
+        grind
     have hsup := wholeSpace_absorb
       (show (Icc (0 : ℝ) 1 ×ˢ (univ : Set (PDE.Vec d))).Nonempty from
         ⟨(0, 0), ⟨⟨le_rfl, zero_le_one⟩, mem_univ _⟩⟩) hpoint
-    change H ≤ (2 * M) * parabolicLpNorm d F
-    nlinarith [hsup]
+    linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Occupation

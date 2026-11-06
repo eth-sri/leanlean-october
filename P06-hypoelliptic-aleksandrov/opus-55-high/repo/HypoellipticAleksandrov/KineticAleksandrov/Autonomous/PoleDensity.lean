@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PoleDensityN
 /-! # Uniform one-sign pole density of the actual physical infinite Green measure -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open scoped ENNReal NNReal
@@ -34,6 +33,6 @@ theorem one_sign_pole_density
     clock_physical_green_density hH hLE hlam hLam A c e he F hFm hFn hFd,
     polePhysicalDensity_eLpNorm_bound c e F hFm hFn q C (by linarith) hC.le hFN,
     stripGreen_infinite_ae_future_carrier hH hLE hlam hLam A c.activeInterval
-      ⟨e, WithTop.coe_lt_top _, he⟩⟩
+      _⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

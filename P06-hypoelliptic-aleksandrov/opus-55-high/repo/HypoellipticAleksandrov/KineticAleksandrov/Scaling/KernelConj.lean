@@ -30,17 +30,19 @@ variable {α β γ α' β' γ' : Type*} [MeasurableSpace α] [MeasurableSpace β
 def kernelConj (e : α ≃ᵐ α') (f : β ≃ᵐ β') (κ : Kernel α' β') : Kernel α β :=
   (κ.comap e e.measurable).map f.symm
 
-theorem kernelConj_apply (e : α ≃ᵐ α') (f : β ≃ᵐ β') (κ : Kernel α' β') (a : α) :
+variable (e : α ≃ᵐ α') (f : β ≃ᵐ β')
+
+theorem kernelConj_apply  (κ : Kernel α' β') (a : α) :
     kernelConj e f κ a = (κ (e a)).map f.symm := by
   rw [kernelConj, Kernel.map_apply _ f.symm.measurable, Kernel.comap_apply]
 
-theorem kernelConj_id (e : α ≃ᵐ α') :
+theorem kernelConj_id  :
     kernelConj e e (Kernel.id : Kernel α' α') = Kernel.id := by
   ext a : 1
   rw [kernelConj_apply, Kernel.id_apply, Kernel.id_apply]
-  exact (Measure.map_dirac' e.symm.measurable (e a)).trans (by rw [e.symm_apply_apply])
+  exact (Measure.map_dirac' e.symm.measurable _).trans (by simp)
 
-theorem kernelConj_comp (e : α ≃ᵐ α') (f : β ≃ᵐ β') (g : γ ≃ᵐ γ')
+theorem kernelConj_comp  (g : γ ≃ᵐ γ')
     (κ : Kernel α' β') (η : Kernel β' γ') :
     kernelConj e g (η ∘ₖ κ) = kernelConj f g η ∘ₖ kernelConj e f κ := by
   ext a S hS

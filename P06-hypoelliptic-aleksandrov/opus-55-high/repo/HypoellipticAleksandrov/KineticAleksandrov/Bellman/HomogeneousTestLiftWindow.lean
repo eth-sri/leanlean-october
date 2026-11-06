@@ -7,7 +7,6 @@ import Mathlib.Tactic
 /-! # Compact positive-radius windows and their literal integral restrictions -/
 
 @[expose] public section
-noncomputable section
 open Set MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -19,8 +18,7 @@ theorem bellmanRadiusWindow_isCompact (a b : ℝ) (ha : 0 < a) :
       Icc a b := by
     ext r
     constructor
-    · rintro ⟨s, hs, rfl⟩
-      exact hs
+    · simp_all
     · intro hr
       exact ⟨⟨r, lt_of_lt_of_le ha hr.1⟩, hr, rfl⟩
   rw [he]
@@ -43,7 +41,6 @@ theorem bellman_radius_window_volume_finite (K : Set BellmanPositiveTime)
       bellmanPositiveTimeVolume) := by
   have hm : IsFiniteMeasure (bellmanPositiveTimeVolume.restrict K) :=
     ⟨by rw [Measure.restrict_apply_univ]; exact hK.measure_lt_top⟩
-  let := hm
   have he : Measure.comap (Subtype.val : K → BellmanPositiveTime)
       bellmanPositiveTimeVolume = Measure.comap Subtype.val
       (bellmanPositiveTimeVolume.restrict K) := by

@@ -35,14 +35,12 @@ theorem comp_convexApproxSample
       (fun x => u (convexApproxSample x0 z r ε x))
       (fun x =>
         (1 - ε) * gi (convexApproxSample x0 z r ε x)) := by
-  let a : ℝ := 1 - ε
-  let b : Vec d := ε • (x0 - r • z)
-  let V : Set (Vec d) := translateSet b (a • U)
+  let a  := 1 - ε
+  let b  := ε • (x0 - r • z)
+  let V  := translateSet b (a • U)
   have ha : 0 < a := by
-    dsimp only [a]
-    linarith
-  have hmap :
-      Set.MapsTo (convexApproxSample x0 z r ε) U U :=
+    positivity
+  have hmap  :=
     convexApproxSample_mapsTo_of_isOpenBoundedConvexDomain
       hU hball hr hz hε0 hε1.le
   have hVU : V ⊆ U := by
@@ -53,8 +51,7 @@ theorem comp_convexApproxSample
       IsOpenBoundedConvexDomain V := by
     simpa only [V] using
       (hU.smul_of_pos ha).translateSet b
-  have hRestricted :
-      HasWeakPartialDerivOn V i u gi :=
+  have hRestricted  :=
     hu.restrict hV.isOpen hVU
   have hTranslated :
       HasWeakPartialDerivOn (a • U) i
@@ -73,8 +70,8 @@ theorem comp_convexApproxSample
   have hScaled := hDilated.smul a
   change
     HasWeakPartialDerivOn U i
-      (fun x => a * (a⁻¹ * u (a • x + b)))
-      (fun x => a * gi (a • x + b)) at hScaled
+      (fun x => a * (a⁻¹ * u _))
+      (fun x => a * gi _) at hScaled
   simpa only [Pi.smul_apply, smul_eq_mul, ← mul_assoc,
     mul_inv_cancel₀ ha.ne', one_mul, a, b,
     convexApproxSample] using hScaled

@@ -16,7 +16,6 @@ reverse-time `L²(V*)` and `L²(V)` Bochner representatives.
 open MeasureTheory Set
 open scoped ENNReal
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -32,8 +31,8 @@ theorem integrable_reverseTimeDualPairing
       H10HilbertGraph hΩ →L[ℝ] ℝ :=
     ContinuousLinearMap.flip (ContinuousLinearMap.apply ℝ ℝ)
   have hpair : MeasureTheory.MemLp
-      (fun tau => pairing (g tau) (u tau)) (1 : ℝ≥0∞)
-      (reverseTimeVolume T) :=
+      (fun tau => pairing _ _) _
+      _ :=
     pairing.memLp_of_bilin 1 (MeasureTheory.Lp.memLp g)
       (MeasureTheory.Lp.memLp u)
   simpa only [pairing, ContinuousLinearMap.flip_apply,

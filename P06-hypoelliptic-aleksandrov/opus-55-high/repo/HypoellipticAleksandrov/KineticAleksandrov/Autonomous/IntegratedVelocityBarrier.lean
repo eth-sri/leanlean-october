@@ -27,7 +27,6 @@ def velocityOccupationBarrier (r Lam T : ℝ) (p : Point) : ℝ :=
 /-- The cancellation barrier is continuous, including the terminal slice. -/
 theorem velocityOccupationBarrier_continuous (r Lam T : ℝ) :
     Continuous (velocityOccupationBarrier r Lam T) := by
-  unfold velocityOccupationBarrier velocityHeatProfile velocityConvexProfile
   apply Continuous.sub <;> apply Real.continuous_sqrt.comp <;>
     exact (continuous_const.add (continuous_const.mul
       (continuous_const.sub continuous_time))).add
@@ -43,11 +42,9 @@ theorem velocityOccupationBarrier_regular {r Lam : ℝ} (hr : 0 < r) (hLam : 0 �
       Real.sqrt (r ^ 2 + 2 * 0 * (T - q.1) + (q.2.1 0) ^ 2)) _
   apply ContDiffAt.sub
   · apply ContDiffAt.sqrt (by fun_prop)
-    have hh := mul_nonneg (mul_nonneg (by norm_num : (0 : ℝ) ≤ 2) hLam)
-      (sub_nonneg.mpr hp)
-    exact ne_of_gt (by nlinarith [sq_pos_of_pos hr, sq_nonneg (p.position 0)])
+    positivity
   · apply ContDiffAt.sqrt (by fun_prop)
-    exact ne_of_gt (by nlinarith [sq_pos_of_pos hr, sq_nonneg (p.position 0)])
+    positivity
 
 /-- The cancellation is nonnegative and uniformly bounded by the square-root time scale. -/
 theorem velocityOccupationBarrier_bounds {r Lam : ℝ} (_hr : 0 < r) (hLam : 0 ≤ Lam)
@@ -60,8 +57,10 @@ theorem velocityOccupationBarrier_bounds {r Lam : ℝ} (_hr : 0 < r) (hLam : 0 �
   simpa only [velocityOccupationBarrier, velocityHeatProfile, terminalPhysicalPoint,
     mul_zero, zero_mul, add_zero] using h
 
+variable {R Lam T : ℝ} (p : Point)
+
 /-- Exact operator of the expanding regularized absolute value. -/
-theorem velocityHeatProfile_operator {R Lam T : ℝ} (p : Point)
+theorem velocityHeatProfile_operator 
     (hR : 0 < R + 2 * Lam * (T - p.time)) (a : ℝ → ℝ → ℝ) :
     forwardScalarOperator a (velocityHeatProfile R Lam T) p =
       -Lam / Real.sqrt (R + 2 * Lam * (T - p.time) + (p.velocity 0) ^ 2) +
@@ -76,8 +75,7 @@ theorem velocityHeatProfile_operator {R Lam T : ℝ} (p : Point)
         (-2 * Lam) p.time := by
       convert (((hasDerivAt_const p.time T).sub (hasDerivAt_id p.time)).const_mul
         (2 * Lam) |>.const_add R |>.add_const ((p.velocity 0) ^ 2)) using 1
-      · funext t
-        rfl
+      · rfl
       · ring
     have hh := hd.sqrt (ne_of_gt hp)
     unfold kineticTimeDerivative velocityHeatProfile velocityConvexProfile
@@ -85,8 +83,8 @@ theorem velocityHeatProfile_operator {R Lam T : ℝ} (p : Point)
     field_simp
   have hx : kineticPositionGradient (velocityHeatProfile R Lam T) p 0 = 0 := by
     rw [kineticPositionGradient_scalar]
-    change deriv (fun _ : ℝ => velocityHeatProfile R Lam T p) (p.position 0) = 0
-    exact deriv_const _ _
+    change deriv (fun _ : ℝ => velocityHeatProfile R Lam T p) _ = 0
+    simp
   have hv : kineticVelocityHessian (velocityHeatProfile R Lam T) p 0 0 =
       (R + 2 * Lam * (T - p.time)) /
         Real.sqrt (R + 2 * Lam * (T - p.time) + (p.velocity 0) ^ 2) ^ 3 := by
@@ -100,36 +98,28 @@ theorem velocityHeatProfile_native_regular (R Lam T : ℝ) (p : Point)
     (hR : 0 < R + 2 * Lam * (T - p.time)) :
     IsSliceRegularAt (velocityHeatProfile R Lam T ∘ terminalPhysicalPoint) p := by
   apply IsSliceRegularAt.of_contDiffAt
-  change ContDiffAt ℝ 2 (fun q : ℝ × (PDE.Vec 1 × PDE.Vec 1) =>
-    Real.sqrt (R + 2 * Lam * (T - q.1) + (q.2.1 0) ^ 2)) _
   apply ContDiffAt.sqrt (by fun_prop)
-  exact ne_of_gt (add_pos_of_pos_of_nonneg hR (sq_nonneg _))
+  positivity
 
 /-- The expanding convex profile is a supersolution under the coefficient upper bound. -/
-theorem velocityHeatProfile_operator_nonpos {R Lam T : ℝ} (p : Point)
+theorem velocityHeatProfile_operator_nonpos 
     (hR : 0 < R + 2 * Lam * (T - p.time)) (hLam : 0 ≤ Lam)
     (a : ℝ → ℝ → ℝ) (ha : a (p.position 0) (p.velocity 0) ≤ Lam) :
     forwardScalarOperator a (velocityHeatProfile R Lam T) p ≤ 0 := by
   rw [velocityHeatProfile_operator p hR]
   let Q := R + 2 * Lam * (T - p.time)
   have hp : 0 < Q + (p.velocity 0) ^ 2 := add_pos_of_pos_of_nonneg hR (sq_nonneg _)
-  have hs : 0 < Real.sqrt (Q + (p.velocity 0) ^ 2) := Real.sqrt_pos.2 hp
   have hsq := Real.sq_sqrt hp.le
   have he : -Lam / Real.sqrt (Q + (p.velocity 0) ^ 2) +
       a (p.position 0) (p.velocity 0) * Q /
         Real.sqrt (Q + (p.velocity 0) ^ 2) ^ 3 =
       (a (p.position 0) (p.velocity 0) * Q - Lam * (Q + (p.velocity 0) ^ 2)) /
         Real.sqrt (Q + (p.velocity 0) ^ 2) ^ 3 := by
-    field_simp
-    nlinarith
-  change -Lam / Real.sqrt (Q + (p.velocity 0) ^ 2) +
-    a (p.position 0) (p.velocity 0) * Q /
-      Real.sqrt (Q + (p.velocity 0) ^ 2) ^ 3 ≤ 0
+    grind
   rw [he]
   apply div_nonpos_of_nonpos_of_nonneg
-  · have hh := mul_le_mul_of_nonneg_right ha hR.le
-    nlinarith [mul_nonneg hLam (sq_nonneg (p.velocity 0))]
-  · positivity
+  · nlinarith [mul_nonneg hLam (sq_nonneg (p.velocity 0))]
+  positivity
 
 /-- The bounded cancellation has a strictly negative forcing on the velocity band. -/
 theorem velocityOccupationBarrier_operator {lam Lam r : ℝ} (hlam : 0 < lam)
@@ -142,22 +132,22 @@ theorem velocityOccupationBarrier_operator {lam Lam r : ℝ} (hlam : 0 < lam)
   have hR : 0 < r ^ 2 + 2 * Lam * (T - p.time) :=
     add_pos_of_pos_of_nonneg (sq_pos_of_pos hr)
       (mul_nonneg (mul_nonneg (by norm_num) hLam) (sub_nonneg.mpr hp))
-  have h0 : 0 < r ^ 2 + 2 * 0 * (T - p.time) := by simpa using sq_pos_of_pos hr
+  have h0 : 0 < r ^ 2 + 2 * 0 * (T - p.time) := by positivity
   have he : velocityOccupationBarrier r Lam T =
-      (fun p => (velocityHeatProfile (r ^ 2) Lam T ∘ terminalPhysicalPoint) p -
-        (velocityHeatProfile (r ^ 2) 0 T ∘ terminalPhysicalPoint) p) := rfl
+      (fun p => (velocityHeatProfile _ Lam T ∘ terminalPhysicalPoint) p -
+        (velocityHeatProfile _ 0 T ∘ terminalPhysicalPoint) p) := rfl
   rw [← viscousTransportedOperator_zero, he,
     viscousTransportedOperator_sub (velocityHeatProfile_native_regular _ _ _ p hR)
       (velocityHeatProfile_native_regular _ _ _ p h0),
     viscousTransportedOperator_zero, viscousTransportedOperator_zero,
     terminalPhysicalPoint_operator, terminalPhysicalPoint_operator,
-    velocityHeatProfile_operator (terminalPhysicalPoint p) h0 A.a]
+    velocityHeatProfile_operator (terminalPhysicalPoint p) h0]
   have hh := velocityHeatProfile_operator_nonpos (terminalPhysicalPoint p) hR hLam
     A.a (A.bounds _ _).2
   have hl := (A.bounds (p.velocity 0) (p.position 0)).1
   have hd : 0 ≤ r ^ 2 / Real.sqrt (r ^ 2 + (p.position 0) ^ 2) ^ 3 := by positivity
   dsimp only [terminalPhysicalPoint] at hh ⊢
-  simp only [mul_zero, zero_mul, add_zero, neg_zero, zero_div, zero_add]
+  simp only [mul_zero, zero_mul, add_zero, neg_zero, zero_div]
   rw [mul_div_assoc]
   have hm := mul_le_mul_of_nonneg_right hl hd
   linarith

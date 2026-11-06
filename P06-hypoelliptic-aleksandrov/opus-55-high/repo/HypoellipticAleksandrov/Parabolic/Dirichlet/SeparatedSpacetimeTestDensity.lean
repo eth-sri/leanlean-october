@@ -17,7 +17,6 @@ approximated in squared integral by finite sums of separated time--space tests.
 open Filter Function MeasureTheory Set Topology
 open scoped Topology
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -52,46 +51,40 @@ theorem exists_finiteSeparatedSpacetimeTest_tendsto_integral_sq
     HypoellipticAleksandrov.Parabolic.Dirichlet.IsCompact.exists_subset_pi_Icc_vec hχcompact
   let Kt := spacetimeTestTimeSupportCompact φ
   let Ksp : Set (PDE.Vec d) := spacetimeTestSpatialSupportCompact φ
-  let Ky : TopologicalSpace.Compacts (PDE.Vec d) := ⟨tsupport χ, hχcompact⟩
+  let Ky : TopologicalSpace.Compacts _ := ⟨tsupport χ, hχcompact⟩
   choose q hqval hqderiv hqsupport using fun n =>
     exists_finiteSeparatedSpacetimeTest_cutoffPiBernstein
       (n := n) hO φ χ hχ hχcompact hχO R hR
   have hplateau : Set.EqOn χ 1 Ksp := by
     intro y hy
     have hone : χ y = 1 := (subset_of_mem_nhdsSet hχone) hy
-    simpa only [Pi.one_apply] using hone
-  have hφsupport : tsupport (φ : TimeVelocity d → ℝ) ⊆
-      (Kt : Set ℝ) ×ˢ Ksp := by
+    omega
+  have hφsupport : tsupport φ ⊆
+      Kt ×ˢ Ksp := by
     intro z hz
     exact ⟨⟨z, hz, rfl⟩, ⟨z, hz, rfl⟩⟩
-  have hdφcont : Continuous (timeDerivative (φ : TimeVelocity d → ℝ)) := by
+  have hdφcont : Continuous (timeDerivative φ) := by
     unfold timeDerivative
     simpa using (φ.contDiff.continuous_fderiv (by simp)).clm_apply continuous_const
-  have hdφsupport : tsupport (timeDerivative (φ : TimeVelocity d → ℝ)) ⊆
-      (Kt : Set ℝ) ×ˢ Ksp := by
+  have hdφsupport : tsupport (timeDerivative φ) ⊆
+      Kt ×ˢ Ksp := by
     apply Subset.trans _ hφsupport
     unfold timeDerivative
-    change closure (support (fun z => fderiv ℝ φ z (1, 0))) ⊆ tsupport (φ : TimeVelocity d → ℝ)
     refine (closure_mono ?_).trans (tsupport_fderiv_subset ℝ)
-    intro z hz
-    rw [mem_support] at hz ⊢
-    intro hzero
-    apply hz
-    simp [hzero]
+    aesop
   let μ := timeVelocityVolumeOn (Set.Ioo τ₁ τ₂ ×ˢ O)
   have hval := tendsto_integral_sq_cutoffPiBernsteinApproximation
     (Kt := Kt) (Ksp := Ksp) χ hχ.continuous hχcompact hplateau R hR hcube
-    (φ : TimeVelocity d → ℝ) φ.contDiff.continuous hφsupport (μ := μ)
+    _ φ.contDiff.continuous hφsupport (μ := μ)
   have hderiv := tendsto_integral_sq_cutoffPiBernsteinApproximation
     (Kt := Kt) (Ksp := Ksp) χ hχ.continuous hχcompact hplateau R hR hcube
-    (timeDerivative (φ : TimeVelocity d → ℝ)) hdφcont hdφsupport (μ := μ)
+    _ hdφcont hdφsupport (μ := μ)
   refine ⟨Kt, Ky, q, ?_, hχO, ?_, ?_, ?_⟩
   · intro τ hτ
     rcases hτ with ⟨z, hz, rfl⟩
     exact (φ.tsupport_subset hz).1
-  · intro n m
-    exact hqsupport n m
-  · simpa only [μ, hqval] using hval
-  · simpa only [μ, hqderiv] using hderiv
+  · omega
+  · aesop
+  aesop
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

@@ -20,20 +20,12 @@ def scalarPoint (x v : ℝ) : XV 1 := (fun _ => x, fun _ => v)
 def scalarNativeCoordinates : XV 1 ≃ᵐ ℝ × ℝ :=
   (MeasurableEquiv.funUnique (Fin 1) ℝ).prodCongr (MeasurableEquiv.funUnique (Fin 1) ℝ)
 
-/-- The inverse coordinate map is exactly the literal native point constructor. -/
-theorem scalarNativeCoordinates_symm_apply (p : ℝ × ℝ) :
-    scalarNativeCoordinates.symm p = scalarPoint p.1 p.2 := rfl
-
 /-- Coordinate evaluation preserves precisely the native product volume normalization. -/
 theorem scalarNativeCoordinates_measurePreserving :
     MeasurePreserving scalarNativeCoordinates volume volume := by
   have hh := (volume_preserving_funUnique (Fin 1) ℝ).prod
     (volume_preserving_funUnique (Fin 1) ℝ)
-  rw [Measure.volume_eq_prod, Measure.volume_eq_prod]
-  convert hh using 1
-  · funext q
-    rfl
-  · rfl
+  aesop
 
 /-- The inverse coordinate map also preserves the exact product volume normalization. -/
 theorem scalarNativeCoordinates_symm_measurePreserving :

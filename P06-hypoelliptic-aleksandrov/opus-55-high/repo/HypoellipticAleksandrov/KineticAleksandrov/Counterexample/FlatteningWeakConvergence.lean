@@ -16,12 +16,11 @@ noncomputable def mollifiedFlatProfile {d : ℕ} {alpha : ℝ}
     (h : CounterProfileStatement d alpha) (r : ℝ) (n : ℕ) : XV d → ℝ :=
   flatProfile (mollifiedProfile h n) flatteningPsi flatteningOffset alpha r
 
+variable {d : ℕ} {alpha : ℝ} (h : CounterProfileStatement d alpha) (r : ℝ)
+
 /-- Every flattened approximation is globally smooth. -/
-theorem contDiff_mollifiedFlatProfile {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (n : ℕ) :
-    ContDiff ℝ (⊤ : ℕ∞) (mollifiedFlatProfile h r n) := by
-  unfold mollifiedFlatProfile flatProfile
-  exact contDiff_const.sub (contDiff_const.mul
+theorem contDiff_mollifiedFlatProfile  (n : ℕ) :
+    ContDiff ℝ (⊤ : ℕ∞) (mollifiedFlatProfile h r n) := contDiff_const.sub (contDiff_const.mul
     (contDiff_flatteningPsi.comp ((contDiff_mollifiedProfile h n).div_const _)))
 
 /-- The fixed slope composed with division is continuous. -/
@@ -37,8 +36,7 @@ theorem continuous_flatSecond (alpha r : ℝ) :
   exact (contDiff_flatteningSlope.continuous_deriv (by simp)).comp (continuous_id.div_const _)
 
 /-- The flattened approximation values converge almost everywhere to the literal flattening. -/
-theorem mollifiedFlatProfile_ae_tendsto {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) :
+theorem mollifiedFlatProfile_ae_tendsto  :
     ∀ᵐ q ∂volume, Tendsto (fun n => mollifiedFlatProfile h r n q) atTop
       (nhds (selectedFlatProfile h r q)) := by
   have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
@@ -50,8 +48,7 @@ theorem mollifiedFlatProfile_ae_tendsto {d : ℕ} {alpha : ℝ}
   exact hc.continuousAt.tendsto.comp hq
 
 /-- The position jets converge to the explicit selected flattened position jet. -/
-theorem dx_mollifiedFlatProfile_ae_tendsto {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) (i : Fin d) :
+theorem dx_mollifiedFlatProfile_ae_tendsto  (hr : 0 < r) (i : Fin d) :
     ∀ᵐ q ∂volume, Tendsto (fun n => dx (mollifiedFlatProfile h r n) q i) atTop
       (nhds (flatProfilePositionJet h r q i)) := by
   have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
@@ -71,8 +68,7 @@ theorem dx_mollifiedFlatProfile_ae_tendsto {d : ℕ} {alpha : ℝ}
   · rfl
 
 /-- The velocity jets converge to the explicit selected flattened velocity jet. -/
-theorem dv_mollifiedFlatProfile_ae_tendsto {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) (i : Fin d) :
+theorem dv_mollifiedFlatProfile_ae_tendsto  (hr : 0 < r) (i : Fin d) :
     ∀ᵐ q ∂volume, Tendsto (fun n => dv (mollifiedFlatProfile h r n) q i) atTop
       (nhds (flatProfileVelocityJet h r q i)) := by
   have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
@@ -92,8 +88,7 @@ theorem dv_mollifiedFlatProfile_ae_tendsto {d : ℕ} {alpha : ℝ}
   · rfl
 
 /-- The Hessian jets converge, including the nonlinear product of the two first jets. -/
-theorem dvv_mollifiedFlatProfile_ae_tendsto {d : ℕ} {alpha : ℝ}
-    (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) (i k : Fin d) :
+theorem dvv_mollifiedFlatProfile_ae_tendsto  (hr : 0 < r) (i k : Fin d) :
     ∀ᵐ q ∂volume, Tendsto (fun n => dvv (mollifiedFlatProfile h r n) q i k) atTop
       (nhds (flatProfileHessian h r q i k)) := by
   have hH := (selectedProfile_spec h).2.2.2.2.2.2.1
@@ -105,7 +100,7 @@ theorem dvv_mollifiedFlatProfile_ae_tendsto {d : ℕ} {alpha : ℝ}
   have hp := (continuous_flatSlope alpha r).continuousAt.tendsto.comp hq
   have hp2 := (continuous_flatSecond alpha r).continuousAt.tendsto.comp hq
   have hconst : Tendsto (fun _ : ℕ => Real.rpow r (-alpha)) atTop
-      (nhds (Real.rpow r (-alpha))) := tendsto_const_nhds
+      _ := tendsto_const_nhds
   have hc := (hp.neg.mul hhq).sub (((hconst.mul hp2).mul hi).mul hk)
   convert hc using 1
   · funext n

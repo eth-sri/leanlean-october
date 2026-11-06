@@ -35,11 +35,9 @@ def slopeInterceptWedge (d : ℕ) (M : ℝ) : Set (TimeVelocity d) :=
 @[simp] theorem mem_slopeInterceptWedge_iff {d : ℕ} {M h : ℝ} {p : PDE.Vec d} :
     (h, p) ∈ slopeInterceptWedge d M ↔
       M / 2 < h ∧ h < 3 * M / 4 ∧ p ∈ PDE.euclideanBall (0 : PDE.Vec d) (M / 4) := by
-  change (M / 2 < h ∧ h < 3 * M / 4) ∧ p ∈ PDE.euclideanBall (0 : PDE.Vec d) (M / 4) ↔
-    M / 2 < h ∧ h < 3 * M / 4 ∧ p ∈ PDE.euclideanBall (0 : PDE.Vec d) (M / 4)
   constructor
   · rintro ⟨⟨hlower, hupper⟩, hp⟩
-    exact ⟨hlower, hupper, hp⟩
+    simp_all
   · rintro ⟨hlower, hupper, hp⟩
     exact ⟨⟨hlower, hupper⟩, hp⟩
 
@@ -62,40 +60,40 @@ def parabolicSignSet {d : ℕ} (T : ℝ) (y₀ : PDE.Vec d) (u : TimeVelocity d 
   {z | z ∈ parabolicInterior T y₀ ∧ 0 < u z ∧
     0 ≤ timeDerivative u z ∧ (-velocityHessian u z).PosSemidef}
 
+variable {d : ℕ} {u : TimeVelocity d → ℝ}
+
 /-- Membership in the parabolic sign set. -/
-@[simp] theorem mem_parabolicSignSet_iff {d : ℕ} {T : ℝ} {y₀ : PDE.Vec d}
+@[simp] theorem mem_parabolicSignSet_iff  {T : ℝ} {y₀ : PDE.Vec d}
     {u : TimeVelocity d → ℝ} {z : TimeVelocity d} :
     z ∈ parabolicSignSet T y₀ u ↔
       z ∈ parabolicInterior T y₀ ∧ 0 < u z ∧
         0 ≤ timeDerivative u z ∧ (-velocityHessian u z).PosSemidef :=
   Iff.rfl
 
-private theorem isClosed_isHermitian (d : ℕ) :
+theorem isClosed_isHermitian (d : ℕ) :
     IsClosed {H : PDE.Mat d | H.IsHermitian} := by
   have hset :
       {H : PDE.Mat d | H.IsHermitian} =
         ⋂ i : Fin d, ⋂ j : Fin d, {H : PDE.Mat d | H j i = H i j} := by
     ext H
-    simp only [Set.mem_ofPred_eq, Set.mem_iInter]
+    simp only [Set.mem_iInter]
     constructor
     · intro h i j
       simpa using h.apply i j
     · intro h
       apply Matrix.IsHermitian.ext
-      intro i j
-      simpa using h i j
+      simp_all
   rw [hset]
   refine isClosed_iInter fun i => isClosed_iInter fun j => ?_
   exact isClosed_eq (continuous_id.matrix_elem j i) (continuous_id.matrix_elem i j)
 
-private theorem isClosed_posSemidef (d : ℕ) :
+theorem isClosed_posSemidef (d : ℕ) :
     IsClosed {H : PDE.Mat d | H.PosSemidef} := by
   have hset :
       {H : PDE.Mat d | H.PosSemidef} =
         {H : PDE.Mat d | H.IsHermitian} ∩
           ⋂ q : PDE.Vec d, {H : PDE.Mat d | 0 ≤ q ⬝ᵥ (H *ᵥ q)} := by
     ext H
-    simp only [Set.mem_ofPred_eq, Set.mem_inter_iff, Set.mem_iInter]
     simpa using (Matrix.posSemidef_iff_dotProduct_mulVec (M := H))
   rw [hset]
   refine (isClosed_isHermitian d).inter (isClosed_iInter fun q => ?_)
@@ -104,42 +102,32 @@ private theorem isClosed_posSemidef (d : ℕ) :
   exact isClosed_le continuous_const hquad
 
 /-- A globally `C²` scalar function has continuous time derivative. -/
-theorem continuous_timeDerivative {d : ℕ} {u : TimeVelocity d → ℝ}
-    (hu : ContDiff ℝ 2 u) : Continuous (timeDerivative u) := by
-  change Continuous (fun z : TimeVelocity d ↦ fderiv ℝ u z (1, 0))
-  exact ((hu.contDiff_fderiv_apply (m := 0) (by norm_num)).comp
+theorem continuous_timeDerivative 
+    (hu : ContDiff ℝ 2 u) : Continuous (timeDerivative u) := ((hu.contDiff_fderiv_apply (m := 0) (by norm_num)).comp
     (contDiff_id.prodMk contDiff_const)).continuous
 
 /-- A globally `C²` scalar function has continuous velocity Hessian. -/
-theorem continuous_velocityHessian {d : ℕ} {u : TimeVelocity d → ℝ}
+theorem continuous_velocityHessian 
     (hu : ContDiff ℝ 2 u) : Continuous (velocityHessian u) := by
   apply continuous_matrix
   intro i j
-  change Continuous (fun z : TimeVelocity d ↦
-    fderiv ℝ (fderiv ℝ u) z (0, Pi.single i 1) (0, Pi.single j 1))
   have hdu : ContDiff ℝ 1 (fderiv ℝ u) :=
     hu.fderiv_right (m := 1) (by norm_num)
   exact (((hdu.contDiff_fderiv_apply (m := 0) (by norm_num)).comp
     (contDiff_id.prodMk contDiff_const)).clm_apply contDiff_const).continuous
 
 /-- The parabolic sign set of a globally `C²` scalar function is measurable. -/
-theorem measurableSet_parabolicSignSet {d : ℕ} {u : TimeVelocity d → ℝ}
+theorem measurableSet_parabolicSignSet 
     (hu : ContDiff ℝ 2 u) (T : ℝ) (y₀ : PDE.Vec d) :
     MeasurableSet (parabolicSignSet T y₀ u) := by
-  have htime : Continuous (timeDerivative u) := continuous_timeDerivative hu
-  have hhess : Continuous (velocityHessian u) := continuous_velocityHessian hu
+  have htime  := continuous_timeDerivative hu
+  have hhess  := continuous_velocityHessian hu
   have hpsd : MeasurableSet {z : TimeVelocity d | (-velocityHessian u z).PosSemidef} :=
     ((isClosed_posSemidef d).preimage hhess.neg).measurableSet
   rw [show parabolicSignSet T y₀ u =
       parabolicInterior T y₀ ∩ {z | 0 < u z} ∩ {z | 0 ≤ timeDerivative u z} ∩
         {z | (-velocityHessian u z).PosSemidef} by
-    ext z
-    simp only [Set.mem_ofPred_eq, Set.mem_inter_iff, mem_parabolicSignSet_iff]
-    constructor
-    · rintro ⟨hinterior, hpositive, htime, hpsd⟩
-      exact ⟨⟨⟨hinterior, hpositive⟩, htime⟩, hpsd⟩
-    · rintro ⟨⟨⟨hinterior, hpositive⟩, htime⟩, hpsd⟩
-      exact ⟨hinterior, hpositive, htime, hpsd⟩]
+    aesop]
   exact (((measurableSet_parabolicInterior T y₀).inter
     (isOpen_lt continuous_const hu.continuous).measurableSet).inter
       (isClosed_le continuous_const htime).measurableSet).inter hpsd

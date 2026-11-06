@@ -15,7 +15,6 @@ trace, literal residual equation, and inherited uniform Bochner-radius bound.
 open Set Topology
 open scoped ENNReal Matrix.Norms.Elementwise MatrixOrder RealInnerProductSpace
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 

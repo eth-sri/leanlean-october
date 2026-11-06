@@ -8,14 +8,15 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth
 
 open Set
 
+variable {d : ℕ}
+
 /-- The free-transport center at the bottom time belongs to the cylinder closure. -/
-theorem bottom_mem_closure_cylinder {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr : 0 < r) :
+theorem bottom_mem_closure_cylinder  (P : KineticPoint d) {r : ℝ} (hr : 0 < r) :
     (⟨P.time - r ^ 2, P.position + (-r ^ 2) • P.velocity, P.velocity⟩ : KineticPoint d) ∈
       closure (backwardCylinder P r) := by
   let f : ℝ → KineticPoint d := fun t =>
@@ -27,9 +28,7 @@ theorem bottom_mem_closure_cylinder {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr
     rintro _ ⟨t, ht, rfl⟩
     refine ⟨ht.1, ht.2, PDE.center_mem_euclideanBall _ hr, ?_⟩
     have heq : relativePosition P (f t) = 0 := by
-      ext i
-      simp only [relativePosition, f, Pi.sub_apply, Pi.add_apply, Pi.smul_apply,
-        Pi.zero_apply, smul_eq_mul]
+      simp only [relativePosition]
       ring
     rw [heq]
     exact PDE.center_mem_euclideanBall 0 (pow_pos hr 3)
@@ -38,10 +37,10 @@ theorem bottom_mem_closure_cylinder {d : ℕ} (P : KineticPoint d) {r : ℝ} (hr
     exact ⟨le_rfl, sub_le_self _ (sq_nonneg r)⟩
   have h := closure_mono hsub
     (hf.continuousOn.image_closure (mem_image_of_mem f ht))
-  simpa only [f, sub_sub_cancel_left] using h
+  aesop
 
 /-- Subcylinders have radius at most one and centers in the bounded sampling closure. -/
-theorem sampling_subcylinder_bounds {d : ℕ} (m : ℕ) (P : KineticPoint d) {r : ℝ}
+theorem sampling_subcylinder_bounds  (m : ℕ) (P : KineticPoint d) {r : ℝ}
     (hr : 0 < r) (hsub : backwardCylinder P r ⊆ samplingCylinder d m) :
     r ≤ 1 ∧ -((m : ℝ) + 3) ≤ P.time ∧ P.time ≤ -((m : ℝ) + 2) ∧
       PDE.vecEuclideanNorm P.position ≤ 1 ∧ PDE.vecEuclideanNorm P.velocity ≤ 1 := by
@@ -50,7 +49,7 @@ theorem sampling_subcylinder_bounds {d : ℕ} (m : ℕ) (P : KineticPoint d) {r 
   have hb := sampling_closure_bounds d m P hc
   have hbottom := (sampling_closure_bounds d m _
     (closure_mono hsub (bottom_mem_closure_cylinder P hr))).1
-  have hr2 : r ^ 2 ≤ 1 := by linarith only [hbottom, hb.2.1]
+  have hr2 : r ^ 2 ≤ 1 := by linarith
   exact ⟨by nlinarith only [hr2, hr], hb⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder.Growth

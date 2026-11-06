@@ -25,12 +25,13 @@ theorem nestedSwapPacked_contDiff : ContDiff ℝ (⊤ : ℕ∞) nestedSwapPacked
 /-- The packed linear exchange is exactly the established physical coordinate exchange. -/
 theorem nestedSwapPacked_physical (x : EvolutionVec 1) :
     evolutionHomeomorph 1 (nestedSwapPacked x) = sectionTwoPoint (evolutionHomeomorph 1 x) := by
-  simp [nestedSwapPacked, evolutionHomeomorph, sectionTwoPoint, KineticPoint.homeomorphProd,
-    KineticPoint.isometryEquivProd, KineticPoint.equivProd]
+  simp [nestedSwapPacked, evolutionHomeomorph]
   rfl
 
+variable {u : Point → ℝ} {D : Set Point}
+
 /-- Native smoothness transfers to physical smoothness on the exchanged open set. -/
-theorem nested_physical_contDiffOn {u : Point → ℝ} {D : Set Point}
+theorem nested_physical_contDiffOn 
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ evolutionHomeomorph 1)
       (evolutionHomeomorph 1 ⁻¹' D)) :
     ContDiffOn ℝ (⊤ : ℕ∞) ((u ∘ sectionTwoPoint) ∘ evolutionHomeomorph 1)
@@ -39,20 +40,20 @@ theorem nested_physical_contDiffOn {u : Point → ℝ} {D : Set Point}
       (evolutionHomeomorph 1 ⁻¹' (sectionTwoPoint ⁻¹' D))
       (evolutionHomeomorph 1 ⁻¹' D) := by
     intro x hx
-    change evolutionHomeomorph 1 (nestedSwapPacked x) ∈ D
+    change evolutionHomeomorph 1 _ ∈ D
     rw [nestedSwapPacked_physical]
     exact hx
   have hs := hu.comp nestedSwapPacked_contDiff.contDiffOn hm
   have heq : (u ∘ evolutionHomeomorph 1) ∘ nestedSwapPacked =
       (u ∘ sectionTwoPoint) ∘ evolutionHomeomorph 1 := by
     funext x
-    change u (evolutionHomeomorph 1 (nestedSwapPacked x)) = _
+    change u _ = _
     rw [nestedSwapPacked_physical]
     rfl
-  rwa [heq] at hs
+  simp_all
 
 /-- The same physical smoothness supplies the literal anisotropic C112 interface. -/
-theorem nested_physical_isKineticC112On {u : Point → ℝ} {D : Set Point}
+theorem nested_physical_isKineticC112On 
     (hD : IsOpen D)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ evolutionHomeomorph 1)
       (evolutionHomeomorph 1 ⁻¹' D)) :
@@ -61,7 +62,7 @@ theorem nested_physical_isKineticC112On {u : Point → ℝ} {D : Set Point}
     (nested_physical_contDiffOn hu)
 
 /-- Raw physical smoothness on an open set supplies the literal C112 interface. -/
-theorem nested_raw_isKineticC112On {u : Point → ℝ} {D : Set Point}
+theorem nested_raw_isKineticC112On 
     (hD : IsOpen D)
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ (KineticPoint.equivProd 1).symm)
       (KineticPoint.equivProd 1 '' D)) : IsKineticC112On u D := by
@@ -69,7 +70,7 @@ theorem nested_raw_isKineticC112On {u : Point → ℝ} {D : Set Point}
   have hm : MapsTo (evolutionProdCLE 1) (evolutionHomeomorph 1 ⁻¹' D)
       (KineticPoint.equivProd 1 '' D) := by
     intro x hx
-    exact ⟨evolutionHomeomorph 1 x, hx, rfl⟩
+    aesop
   exact hu.comp (evolutionProdCLE 1).contDiff.contDiffOn hm
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

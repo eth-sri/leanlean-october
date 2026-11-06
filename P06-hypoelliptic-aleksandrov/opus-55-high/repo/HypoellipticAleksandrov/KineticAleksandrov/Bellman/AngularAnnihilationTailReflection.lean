@@ -7,7 +7,6 @@ import Mathlib.Tactic
 /-! # Reflection of the finite angular tail -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set
 
@@ -18,18 +17,16 @@ theorem bellmanAngularTail_reflect (β : ℝ) (f : ℝ → ℝ)
   have hi := ((Measure.measurePreserving_neg (volume : Measure ℝ)).integrableOn_comp_preimage
     (Homeomorph.neg ℝ).measurableEmbedding).mpr ht
   have he : (fun y : ℝ => -y) ⁻¹' {y : ℝ | 2 < |y|} = {y : ℝ | 2 < |y|} := by
-    ext y
-    simp only [mem_preimage, mem_ofPred_eq, abs_neg]
+    simp
   rw [he] at hi
   apply hi.congr_fun _ (by measurability)
   intro y _
-  change f (-y) * |-y| ^ (β - 4) = f (-y) * |y| ^ (β - 4)
-  rw [abs_neg]
+  simp
 
 /-- An almost everywhere comparison on the real line holds after reflection. -/
 theorem bellmanAngularComparison_reflect (R : ℝ) (f h : ℝ → ℝ)
     (hc : ∀ᵐ y ∂volume, h y ≤ R * f y) :
     ∀ᵐ y ∂volume, h (-y) ≤ R * f (-y) :=
-  (Measure.measurePreserving_neg (volume : Measure ℝ)).quasiMeasurePreserving.ae hc
+  (Measure.measurePreserving_neg _).quasiMeasurePreserving.ae hc
 
 end HypoellipticAleksandrov.KineticAleksandrov

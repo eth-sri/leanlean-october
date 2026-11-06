@@ -144,7 +144,7 @@ theorem mem_innerExitBoundary_iff {d : ℕ}
             (ρ ^ 3 * R ^ 3) ∧
             0 ≤ PDE.vecDot (relativeVelocity Z₀ P) (relativePosition Z₀ P))) := by
   dsimp only [innerExitBoundary]
-  simp only [mem_inter_iff, mem_union, mem_ofPred_eq, or_assoc]
+  grind
 
 /-- Literal conjugate reflection of the source affine inner retraction. -/
 def reflectedInnerRetraction {d : ℕ} (P₀ : KineticPoint d) (R : ℝ) (hR : 0 < R)

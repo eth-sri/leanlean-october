@@ -24,7 +24,7 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 /-- The real mass of the literal positive reverse-time interval. -/
 theorem reverseTimeVolume_real_univ (T : ℝ) (hT : 0 < T) :
     (reverseTimeVolume T).real Set.univ = T := by
-  change (volume.restrict (Ioo (0 : ℝ) T)).real univ = T
+  change (volume.restrict (Ioo _ T)).real univ = T
   rw [MeasureTheory.measureReal_restrict_apply_univ,
     Real.volume_real_Ioo_of_le (le_of_lt hT)]
   norm_num
@@ -57,26 +57,22 @@ theorem memLp_two_reverseTime_of_continuousOn
     have hKmeas : MeasurableSet K := measurableSet_Icc
     letI : IsFiniteMeasure (volume.restrict K) :=
       ⟨by
-        rw [Measure.restrict_apply_univ]
-        exact hKcompact.measure_lt_top⟩
+        aesop⟩
     obtain ⟨C, hC⟩ := hKcompact.exists_bound_of_continuousOn hw
     have hKmem : MemLp w (2 : ℝ≥0∞) (volume.restrict K) := by
       refine MemLp.of_bound (hw.aestronglyMeasurable_of_isCompact hKcompact hKmeas) C ?_
       filter_upwards [ae_restrict_mem hKmeas] with t ht
-      exact hC t ht
+      simp_all
     simpa only [K, reverseTimeVolume, reverseTimeOpenInterval] using
       hKmem.mono_measure (Measure.restrict_mono_set volume Ioo_subset_Icc_self)
   · have hTle : T ≤ 0 := le_of_not_gt hT
     have hIoo : Ioo (0 : ℝ) T = ∅ := by
-      ext t
-      simp only [mem_Ioo, mem_empty_iff_false, iff_false]
-      intro ht
-      exact (not_lt_of_ge hTle) (lt_trans ht.1 ht.2)
+      simp_all
     rw [reverseTimeVolume, reverseTimeOpenInterval, hIoo, Measure.restrict_empty]
-    exact memLp_measure_zero
+    simp
 
 /-- The quotient-valued reverse-time Bochner `L²` class of a continuous curve. -/
-noncomputable def reverseTimeL2OfContinuousOn
+def reverseTimeL2OfContinuousOn
     {E : Type*} [NormedAddCommGroup E]
     (T : ℝ) (w : ℝ → E) (hw : ContinuousOn w (Set.Icc 0 T)) :
     MeasureTheory.Lp E (2 : ℝ≥0∞) (reverseTimeVolume T) :=

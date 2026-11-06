@@ -24,26 +24,26 @@ open scoped ENNReal RealInnerProductSpace
 variable {d : ℕ} {Ω : Set (PDE.Vec d)}
 
 /-- The `L²` image of the finite actual-test Galerkin space. -/
-noncomputable def galerkinValueSpace
+def galerkinValueSpace
     (hΩ : IsOpen Ω) (N : ℕ) :
     Submodule ℝ (PDE.ScalarLp Ω (2 : ℝ≥0∞)) :=
   (galerkinSpace hΩ N).map (valueCLM hΩ).toLinearMap
 
 /-- The finite Galerkin value space is finite dimensional. -/
-noncomputable instance galerkinValueSpace_finiteDimensional
+instance galerkinValueSpace_finiteDimensional
     (hΩ : IsOpen Ω) (N : ℕ) :
     FiniteDimensional ℝ (galerkinValueSpace hΩ N) := by
   unfold galerkinValueSpace
   infer_instance
 
 /-- The finite Galerkin value space is complete. -/
-noncomputable instance galerkinValueSpace_completeSpace
+instance galerkinValueSpace_completeSpace
     (hΩ : IsOpen Ω) (N : ℕ) :
     CompleteSpace (galerkinValueSpace hΩ N) :=
   FiniteDimensional.complete ℝ (galerkinValueSpace hΩ N)
 
 /-- The `L²` mass Gram matrix of the finite actual-test Galerkin basis. -/
-noncomputable def galerkinMassGram
+def galerkinMassGram
     (hΩ : IsOpen Ω) (N : ℕ) :
     Matrix
       (Fin (Module.finrank ℝ (galerkinSpace hΩ N)))
@@ -51,12 +51,14 @@ noncomputable def galerkinMassGram
   Matrix.gram ℝ (fun i =>
     valueCLM hΩ (galerkinSpaceBasis hΩ N i : H10HilbertGraph hΩ))
 
+variable (hΩ : IsOpen Ω) (N : ℕ)
+
 /-- The finite `L²` mass Gram matrix is positive definite. -/
 theorem galerkinMassGram_posDef
-    (hΩ : IsOpen Ω) (N : ℕ) :
+     :
     (galerkinMassGram hΩ N).PosDef := by
   let E := galerkinSpace hΩ N
-  let L : E →ₗ[ℝ] PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
+  let L  :=
     (valueCLM hΩ).toLinearMap.comp E.subtype
   have hL : Function.Injective L := by
     intro u v huv
@@ -71,48 +73,47 @@ theorem galerkinMassGram_posDef
 
 /-- The finite `L²` mass Gram matrix is invertible, including at `N = 0`. -/
 theorem isUnit_galerkinMassGram
-    (hΩ : IsOpen Ω) (N : ℕ) :
+     :
     IsUnit (galerkinMassGram hΩ N) :=
   (galerkinMassGram_posDef hΩ N).isUnit
 
 /-- A chosen preimage of the finite Galerkin value-space projection. -/
-noncomputable def galerkinInitialProjectionPreimage
+def galerkinInitialProjectionPreimage
     (hΩ : IsOpen Ω) (N : ℕ)
     (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     H10HilbertGraph hΩ :=
   Classical.choose <| Submodule.mem_map.mp
     (Submodule.starProjection_apply_mem (galerkinValueSpace hΩ N) initial)
 
+variable (hΩ : IsOpen Ω) (N : ℕ) (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+
 /-- The chosen projection preimage lies in the finite Galerkin space. -/
 theorem galerkinInitialProjectionPreimage_mem
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
-    galerkinInitialProjectionPreimage hΩ N initial ∈ galerkinSpace hΩ N := by
-  exact (Classical.choose_spec <| Submodule.mem_map.mp
-    (Submodule.starProjection_apply_mem (galerkinValueSpace hΩ N) initial)).1
+     :
+    galerkinInitialProjectionPreimage hΩ N initial ∈ galerkinSpace hΩ N := (Classical.choose_spec <| Submodule.mem_map.mp
+    (Submodule.starProjection_apply_mem _ initial)).1
 
 private theorem value_galerkinInitialProjectionPreimage
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+     :
     valueCLM hΩ (galerkinInitialProjectionPreimage hΩ N initial) =
-      (galerkinValueSpace hΩ N).starProjection initial := by
-  exact (Classical.choose_spec <| Submodule.mem_map.mp
-    (Submodule.starProjection_apply_mem (galerkinValueSpace hΩ N) initial)).2
+      (galerkinValueSpace hΩ N).starProjection initial := (Classical.choose_spec <| Submodule.mem_map.mp
+    (Submodule.starProjection_apply_mem _ initial)).2
 
 /-- The lift to the finite Galerkin space of the `L²` orthogonal projection
 of an initial datum. -/
-noncomputable def galerkinInitialProjection
+def galerkinInitialProjection
     (hΩ : IsOpen Ω) (N : ℕ)
     (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
     galerkinSpace hΩ N :=
   ⟨galerkinInitialProjectionPreimage hΩ N initial,
     galerkinInitialProjectionPreimage_mem hΩ N initial⟩
 
+variable (hΩ : IsOpen Ω) (N : ℕ) (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
+
 /-- Applying the spatial value map to the lifted initial datum recovers its
 `L²` orthogonal projection onto the finite Galerkin value space. -/
 theorem value_galerkinInitialProjection
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+     :
     valueCLM hΩ (galerkinInitialProjection hΩ N initial :
       H10HilbertGraph hΩ) =
     (galerkinValueSpace hΩ N).starProjection initial :=
@@ -120,8 +121,7 @@ theorem value_galerkinInitialProjection
 
 /-- The finite Galerkin `L²` initial projection is contractive. -/
 theorem norm_value_galerkinInitialProjection_le
-    (hΩ : IsOpen Ω) (N : ℕ)
-    (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) :
+     :
     ‖valueCLM hΩ (galerkinInitialProjection hΩ N initial :
       H10HilbertGraph hΩ)‖ ≤ ‖initial‖ := by
   rw [value_galerkinInitialProjection]

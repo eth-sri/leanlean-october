@@ -7,7 +7,6 @@ import Mathlib.Order.ConditionallyCompleteLattice.Basic
 /-! # The unique real supremum of genuine Bellman adjoint degrees -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
 /-- Proof of the existence and uniqueness of the real least upper bound. -/
@@ -18,6 +17,6 @@ theorem existsUnique_bellmanAdjointExponent_aux (ratio : ℝ) (hRatio : 1 ≤ ra
   have hb : BddAbove (bellmanAdmissibleDegrees ratio) :=
     ⟨3, fun β hβ => (admissible_degree_lt_three ratio hRatio β hβ).le⟩
   have hsup := isLUB_csSup hn hb
-  exact ⟨sSup (bellmanAdmissibleDegrees ratio), hsup, fun _ h => h.unique hsup⟩
+  exact ⟨sSup _, hsup, fun _ h => h.unique hsup⟩
 
 end HypoellipticAleksandrov.KineticAleksandrov

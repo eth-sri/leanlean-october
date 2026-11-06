@@ -81,24 +81,20 @@ theorem exists_open_plateau
   refine ⟨O, ?_, ?_, ?_, ?_, ?_, ?_, ?_⟩
   · exact hObOpen.inter (hOtoFunOpen.inter
       (hOtimeOpen.inter (hOgradOpen.inter hOhessianOpen)))
-  · intro z hz
-    exact ⟨hclosureOb hz, hclosureOtoFun hz,
-      hclosureOtime hz, hclosureOgrad hz, hclosureOhessian hz⟩
+  · grind
   · intro z hz
     have hbz : J.b z = 1 := hbOb z hz.1
     have hsupport : z ∈ Function.support J.b := by
-      change J.b z ≠ 0
-      rw [hbz]
-      exact one_ne_zero
+      simp_all
     exact J.b_tsupport_subset_W (subset_tsupport (f := J.b) hsupport)
   · intro z hz
-    exact hgOtoFun z hz.2.1
+    grind
   · intro z hz
-    exact hgOtime z hz.2.2.1
+    grind
   · intro z hz
-    exact hgOgrad z hz.2.2.2.1
+    grind
   · intro z hz
-    exact hgOhessian z hz.2.2.2.2
+    grind
 
 end LocalizedParabolicJet
 
@@ -125,7 +121,7 @@ theorem exists_localizedJet_mollifications_tendstoUniformlyOn
     exists_open_compact_closure_collar hU hVOpen hVCompact hclosureVU
   obtain ⟨w, hwu⟩ :=
     hu.exists_parabolicW12Function hWOpen hWCompact hclosureWU
-  have hp : (1 : ENNReal) ≤ parabolicExponent d := by
+  have hp : (1) ≤ parabolicExponent d := by
     simp [parabolicExponent]
   obtain ⟨b, hbSmooth, hbCompact, hbOne, hbW, htoFun, htime, hgrad, hhessian⟩ :=
     exists_smooth_compact_cutoff_mul_eventuallyEq_jet hVCompact hWOpen hWCompact
@@ -136,7 +132,7 @@ theorem exists_localizedJet_mollifications_tendstoUniformlyOn
       w := w
       b := b
       g := w.mulContDiffHasCompactSupport_univ
-        (by simp [parabolicExponent]) hbSmooth hbCompact hWOpen hbW
+        (by omega) hbSmooth hbCompact hWOpen hbW
       V_open := hVOpen
       V_closure_compact := hVCompact
       K_subset_V := hKV
@@ -151,22 +147,21 @@ theorem exists_localizedJet_mollifications_tendstoUniformlyOn
       b_one_near_closure_V := hbOne
       g_is_cutoff := by rfl
       g_toFun_eq_near_closure_V := by
-        simpa only [ParabolicW12Function.mulContDiffHasCompactSupport_univ] using! htoFun
+        aesop
       g_timeDeriv_eq_near_closure_V := by
-        simpa only [ParabolicW12Function.mulContDiffHasCompactSupport_univ] using! htime
+        aesop
       g_velocityGrad_eq_near_closure_V := by
-        simpa only [ParabolicW12Function.mulContDiffHasCompactSupport_univ] using! hgrad
+        aesop
       g_velocityHessian_eq_near_closure_V := by
-        simpa only [ParabolicW12Function.mulContDiffHasCompactSupport_univ] using! hhessian }
+        aesop }
   have hJCompact : HasCompactSupport J.g.toFun := by
-    change IsCompact (tsupport J.g.toFun)
     refine IsCompact.of_isClosed_subset J.b_compact (isClosed_tsupport (f := J.g.toFun)) ?_
     rw [J.g_is_cutoff]
-    simpa only [ParabolicW12Function.mulContDiffHasCompactSupport_univ_toFun] using
+    simpa using
       (tsupport_mul_subset_left (f := J.b) (g := J.w.toFun))
   obtain ⟨r, hrContinuous, hrUniform, hrg⟩ :=
     J.g.exists_continuousOn_tendstoUniformlyOn_ae_eq_toFun_parabolicConvolution
-      hd hJCompact (closure J.V) J.V_closure_compact
+      hd hJCompact _ J.V_closure_compact
   obtain ⟨O, hOOpen, hclosureVO, hOW, hgwo, -, -, -⟩ := J.exists_open_plateau
   have hrgV : r =ᵐ[timeVelocityVolumeOn J.V] J.g.toFun :=
     hrg.filter_mono <| ae_mono <|
@@ -184,9 +179,9 @@ theorem exists_localizedJet_mollifications_tendstoUniformlyOn
   have hquV : q =ᵐ[timeVelocityVolumeOn J.V] u :=
     hqu.filter_mono <| ae_mono <|
       Measure.restrict_mono_set volume hVU
-  have hrquV : r =ᵐ[timeVelocityVolumeOn J.V] q :=
+  have hrquV  :=
     (hrgV.trans hgwV).trans (hwuV.trans hquV.symm)
-  have hrq : EqOn r q J.V :=
+  have hrq  :=
     Measure.eqOn_open_of_ae_eq hrquV J.V_open
       (hrContinuous.mono subset_closure) (hq.mono hVU)
   refine ⟨J, ?_⟩

@@ -13,7 +13,6 @@ sufficiently small inner-ball error preserves the compact terminal support margi
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -27,7 +26,7 @@ theorem exists_transportedRadius_common_innerCylinder
       (ρ + η) ^ 2 / r ^ 2 + S ^ 2 / R ^ 2 < 1 := by
   have hrmin : 0 < rmin := lt_trans (by linarith) hgap
   obtain ⟨R0, hR0, hR⟩ := exists_transportedRadius_terminal_window hrmin
-    (sub_pos.mpr hgap) (by linarith : rmin - (ρ + η) < rmin) S
+    (sub_pos.mpr hgap) (by linarith) S
   refine ⟨R0, hR0, fun r R hr hRR => ?_⟩
   have hsize := hR R hRR
   have he : rmin - (rmin - (ρ + η)) = ρ + η := by ring
@@ -48,7 +47,7 @@ theorem terminal_support_margin_of_innerBall_close
     ∀ q ∈ tsupport (F : EvolutionAmbientState n → ℝ),
       2 * d ≤ (r0 - α) - PDE.vecEuclideanNorm (q.1 - g τ) := by
   intro q hq
-  have hclose := vecEuclideanNorm_sub_add_le (c := (0 : PDE.Vec n)) hc q.1
+  have hclose := vecEuclideanNorm_sub_add_le (c := (0)) hc q.1
   simp only [add_zero] at hclose
   have hs := hsupp q hq
   have hα0 : 0 ≤ α := by

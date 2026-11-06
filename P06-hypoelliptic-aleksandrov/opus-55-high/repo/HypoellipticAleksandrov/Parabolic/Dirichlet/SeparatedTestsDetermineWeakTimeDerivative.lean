@@ -15,12 +15,13 @@ identity on arbitrary smooth compactly supported spacetime tests.
 open Filter Function MeasureTheory Set Topology
 open scoped BigOperators ENNReal Topology
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
+variable {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)} (q : FiniteSeparatedSpacetimeTest τ₁ τ₂ O)
+
 private theorem memLp_two_separatedProduct
-    {d : ℕ} {S : Set (TimeVelocity d)}
+     {S : Set (TimeVelocity d)}
     (a : ℝ → ℝ) (ha : Continuous a) (haK : HasCompactSupport a)
     (b : PDE.Vec d → ℝ) (hb : Continuous b) (hbK : HasCompactSupport b) :
     MemLp (fun z : TimeVelocity d => a z.1 * b z.2) 2 (timeVelocityVolumeOn S) := by
@@ -29,13 +30,12 @@ private theorem memLp_two_separatedProduct
   have hcompact : HasCompactSupport (fun z : TimeVelocity d => a z.1 * b z.2) := by
     apply HasCompactSupport.of_support_subset_isCompact (haK.isCompact.prod hbK.isCompact)
     intro z hz
-    rw [mem_support] at hz
     exact ⟨subset_tsupport a (fun h => hz (by simp [h])),
       subset_tsupport b (fun h => hz (by simp [h]))⟩
   exact (hcont.memLp_of_hasCompactSupport hcompact).restrict S
 
 private theorem finiteSeparated_identity
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
+    
     {U W : TimeVelocity d → ℝ}
     (hU : ParabolicMemLpOn (Ioo τ₁ τ₂ ×ˢ O) 2 U)
     (hW : ParabolicMemLpOn (Ioo τ₁ τ₂ ×ˢ O) 2 W)
@@ -87,48 +87,41 @@ private theorem finiteSeparated_identity
   intro m _
   simpa only [μ, timeVelocityVolumeOn, Measure.restrict_restrict,
     MeasurableSet.univ, Measure.restrict_univ] using
-    hseparated (q.timeFactor m) (q.spatialFactor m)
+    hseparated _ _
 
 private theorem finiteSeparated_toFun_continuous
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
-    (q : FiniteSeparatedSpacetimeTest τ₁ τ₂ O) : Continuous q.toFun := by
-  unfold FiniteSeparatedSpacetimeTest.toFun
+     : Continuous q.toFun := by
   apply continuous_finset_sum Finset.univ
   intro m _
   exact ((q.timeFactor m).contDiff.continuous.comp continuous_fst).mul
     ((q.spatialFactor m).contDiff.continuous.comp continuous_snd)
 
 private theorem finiteSeparated_timeDeriv_continuous
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
-    (q : FiniteSeparatedSpacetimeTest τ₁ τ₂ O) : Continuous q.timeDeriv := by
-  unfold FiniteSeparatedSpacetimeTest.timeDeriv
+     : Continuous q.timeDeriv := by
   apply continuous_finset_sum Finset.univ
   intro m _
   exact ((contDiff_infty_iff_deriv.mp (q.timeFactor m).contDiff).2.continuous.comp
     continuous_fst).mul ((q.spatialFactor m).contDiff.continuous.comp continuous_snd)
 
 private theorem finiteSeparated_hasCompactSupport_of_commonCompact
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
-    (q : FiniteSeparatedSpacetimeTest τ₁ τ₂ O)
+    
     (Kt : TopologicalSpace.Compacts ℝ) (Ky : TopologicalSpace.Compacts (PDE.Vec d))
     (hq : ∀ m, tsupport (q.timeFactor m : ℝ → ℝ) ×ˢ
       tsupport (q.spatialFactor m : PDE.Vec d → ℝ) ⊆ (Kt : Set ℝ) ×ˢ (Ky : Set (PDE.Vec d))) :
     HasCompactSupport q.toFun ∧ HasCompactSupport q.timeDeriv := by
-  have hvalue : support q.toFun ⊆ (Kt : Set ℝ) ×ˢ (Ky : Set (PDE.Vec d)) := by
+  have hvalue : support q.toFun ⊆ Kt ×ˢ Ky := by
     intro z hz
     by_contra hn
     apply hz
-    unfold FiniteSeparatedSpacetimeTest.toFun
     apply Finset.sum_eq_zero
     intro m _
     by_contra hm
     exact hn (hq m ⟨subset_tsupport _ (fun ht => hm (by simp [ht])),
       subset_tsupport _ (fun hs => hm (by simp [hs]))⟩)
-  have hderiv : support q.timeDeriv ⊆ (Kt : Set ℝ) ×ˢ (Ky : Set (PDE.Vec d)) := by
+  have hderiv : support q.timeDeriv ⊆ Kt ×ˢ Ky := by
     intro z hz
     by_contra hn
     apply hz
-    unfold FiniteSeparatedSpacetimeTest.timeDeriv
     apply Finset.sum_eq_zero
     intro m _
     by_contra hm
@@ -136,7 +129,7 @@ private theorem finiteSeparated_hasCompactSupport_of_commonCompact
       subset_tsupport _ (fun h => by
         apply hm
         rw [h, zero_mul])
-    have ht' : z.1 ∈ tsupport (q.timeFactor m : ℝ → ℝ) :=
+    have ht' : z.1 ∈ tsupport (q.timeFactor m) :=
       (closure_minimal support_deriv_subset (isClosed_tsupport _)) ht
     exact hn (hq m ⟨ht', subset_tsupport _ (fun hs => hm (by simp [hs]))⟩)
   exact ⟨HasCompactSupport.of_support_subset_isCompact (Kt.isCompact.prod Ky.isCompact) hvalue,
@@ -144,7 +137,7 @@ private theorem finiteSeparated_hasCompactSupport_of_commonCompact
 
 /-- An identity against every separated test determines the weak time derivative. -/
 theorem hasWeakTimeDerivOn_of_forall_separatedProduct
-    {d : ℕ} {τ₁ τ₂ : ℝ} {O : Set (PDE.Vec d)}
+    
     (hO : IsOpen O)
     {U W : TimeVelocity d → ℝ}
     (hU : ParabolicMemLpOn (Ioo τ₁ τ₂ ×ˢ O) (2 : ℝ≥0∞) U)
@@ -157,32 +150,32 @@ theorem hasWeakTimeDerivOn_of_forall_separatedProduct
             W z * (eta z.1 * psi z.2) ∂(volume : Measure (TimeVelocity d))) :
     HasWeakTimeDerivOn (Ioo τ₁ τ₂ ×ˢ O) U W := by
   intro φ hφ hφcompact hφsubset
-  let Kφ : TopologicalSpace.Compacts (TimeVelocity d) := ⟨tsupport φ, hφcompact.isCompact⟩
-  let φsupported : ContDiffMapSupportedIn (TimeVelocity d) ℝ (⊤ : ℕ∞) Kφ :=
+  let Kφ : TopologicalSpace.Compacts _ := ⟨tsupport φ, hφcompact.isCompact⟩
+  let φsupported : ContDiffMapSupportedIn _ ℝ _ Kφ :=
     { toFun := φ
       contDiff' := hφ
       zero_on_compl' := fun z hz => image_eq_zero_of_notMem_tsupport hz }
-  let Φ : TestFunction (originalTimeOpenCylinderOpens τ₁ τ₂ O hO) ℝ (⊤ : ℕ∞) :=
+  let Φ : TestFunction (originalTimeOpenCylinderOpens τ₁ τ₂ O hO) ℝ _ :=
     TestFunction.ofSupportedIn hφsubset φsupported
   obtain ⟨Kt, Ky, q, _hKt, _hKy, hqsupport, hval, hderiv⟩ :=
     exists_finiteSeparatedSpacetimeTest_tendsto_integral_sq hO Φ
   let μ := timeVelocityVolumeOn (Ioo τ₁ τ₂ ×ˢ O)
-  have hΦ : (Φ : TimeVelocity d → ℝ) = φ := rfl
-  have hdΦ : timeDerivative (Φ : TimeVelocity d → ℝ) = timeDerivative φ := by rw [hΦ]
+  have hΦ : Φ = φ := rfl
+  have hdΦ : timeDerivative Φ = timeDerivative φ := by rw [hΦ]
   have hφdcont : Continuous (timeDerivative φ) := by
     unfold timeDerivative
     simpa using (hφ.continuous_fderiv (by simp)).clm_apply continuous_const
   have hφdcompact : HasCompactSupport (timeDerivative φ) := by
     unfold timeDerivative
-    simpa using hφcompact.fderiv_apply (𝕜 := ℝ) ((1, 0) : TimeVelocity d)
-  have hqcompact (n : ℕ) : HasCompactSupport (q n).toFun ∧ HasCompactSupport (q n).timeDeriv :=
-    finiteSeparated_hasCompactSupport_of_commonCompact (q n) Kt Ky (hqsupport n)
+    simpa using hφcompact.fderiv_apply (𝕜 := ℝ) _
+  have hqcompact (n : ℕ)  :=
+    finiteSeparated_hasCompactSupport_of_commonCompact _ Kt Ky (hqsupport n)
   have hvalLp (n : ℕ) : MemLp (fun z => (q n).toFun z - φ z) 2 μ :=
-    ((finiteSeparated_toFun_continuous (q n)).sub hφ.continuous).memLp_of_hasCompactSupport
+    ((finiteSeparated_toFun_continuous _).sub hφ.continuous).memLp_of_hasCompactSupport
       ((hqcompact n).1.sub hφcompact)
   have hderivLp (n : ℕ) : MemLp
       (fun z => (q n).timeDeriv z - timeDerivative φ z) 2 μ :=
-    ((finiteSeparated_timeDeriv_continuous (q n)).sub hφdcont).memLp_of_hasCompactSupport
+    ((finiteSeparated_timeDeriv_continuous _).sub hφdcont).memLp_of_hasCompactSupport
       ((hqcompact n).2.sub hφdcompact)
   have hpVal := tendsto_integral_mul_of_memLp_two_of_tendsto_integral_sq
     hW hvalLp (by simpa only [μ, hΦ] using hval)
@@ -193,7 +186,7 @@ theorem hasWeakTimeDerivOn_of_forall_separatedProduct
   have hleft : Tendsto (fun n => ∫ z, U z * (q n).timeDeriv z ∂μ)
       atTop (nhds (∫ z, U z * timeDerivative φ z ∂μ)) := by
     have hconst : Tendsto (fun _ : ℕ => ∫ z, U z * timeDerivative φ z ∂μ) atTop
-        (nhds (∫ z, U z * timeDerivative φ z ∂μ)) := tendsto_const_nhds
+        _ := tendsto_const_nhds
     have hsum := hconst.add hpDeriv
     have hsum' : Tendsto (fun n => (∫ z, U z * timeDerivative φ z ∂μ) +
         ∫ z, U z * ((q n).timeDeriv z - timeDerivative φ z) ∂μ) atTop
@@ -201,7 +194,6 @@ theorem hasWeakTimeDerivOn_of_forall_separatedProduct
       simpa only [add_zero] using hsum
     apply hsum'.congr'
     filter_upwards with n
-    symm
     have hbase : Integrable (fun z => U z * timeDerivative φ z) μ := by
       simpa only [Pi.mul_def] using hU.integrable_mul hφdLp
     have herr : Integrable
@@ -214,7 +206,7 @@ theorem hasWeakTimeDerivOn_of_forall_separatedProduct
   have hright : Tendsto (fun n => ∫ z, W z * (q n).toFun z ∂μ)
       atTop (nhds (∫ z, W z * φ z ∂μ)) := by
     have hconst : Tendsto (fun _ : ℕ => ∫ z, W z * φ z ∂μ) atTop
-        (nhds (∫ z, W z * φ z ∂μ)) := tendsto_const_nhds
+        _ := tendsto_const_nhds
     have hsum := hconst.add hpVal
     have hsum' : Tendsto (fun n => (∫ z, W z * φ z ∂μ) +
         ∫ z, W z * ((q n).toFun z - φ z) ∂μ) atTop
@@ -222,7 +214,6 @@ theorem hasWeakTimeDerivOn_of_forall_separatedProduct
       simpa only [add_zero] using hsum
     apply hsum'.congr'
     filter_upwards with n
-    symm
     have hbase : Integrable (fun z => W z * φ z) μ := by
       simpa only [Pi.mul_def] using hW.integrable_mul hφLp
     have herr : Integrable (fun z => W z * ((q n).toFun z - φ z)) μ := by
@@ -235,7 +226,7 @@ theorem hasWeakTimeDerivOn_of_forall_separatedProduct
       atTop (nhds (-∫ z, W z * φ z ∂μ)) := by
     apply hright.neg.congr'
     filter_upwards with n
-    exact (finiteSeparated_identity hU hW hseparated (q n)).symm
+    exact (finiteSeparated_identity hU hW hseparated _).symm
   simpa only [μ, timeVelocityVolumeOn] using tendsto_nhds_unique hleft hnegRight
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

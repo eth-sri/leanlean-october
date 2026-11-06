@@ -12,12 +12,13 @@ keeps almost-everywhere regularity separate from the pointwise Green formula.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 open Evolution Occupation SectionTwo
 
-private theorem integrableOn_weak_mul_test {U : Set (EvolutionVec 1)}
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam) {U : Set (EvolutionVec 1)}
+
+private theorem integrableOn_weak_mul_test 
     {u ψ : EvolutionVec 1 → ℝ} (hu : LocallyIntegrableOn u U volume)
     (hψ : Continuous ψ) (hc : HasCompactSupport ψ) (hs : tsupport ψ ⊆ U) :
     IntegrableOn (fun x => u x * ψ x) U volume := by
@@ -30,7 +31,7 @@ private theorem integrableOn_weak_mul_test {U : Set (EvolutionVec 1)}
   exact hglobal.integrableOn
 
 /-- Weak transported equations restrict to any smaller domain. -/
-theorem weak_solution_restrict {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+theorem weak_solution_restrict 
     {U D : Set (EvolutionVec 1)} (hDU : D ⊆ U) {u g : EvolutionVec 1 → ℝ}
     (hu : IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) U u g) :
     IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) D u g := by
@@ -53,8 +54,7 @@ theorem weak_solution_restrict {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
   exact heq
 
 /-- Two weak transported solutions with the same source have homogeneous difference. -/
-theorem weak_same_source_sub {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
-    {U : Set (EvolutionVec 1)} {u v g : EvolutionVec 1 → ℝ}
+theorem weak_same_source_sub  {u v g : EvolutionVec 1 → ℝ}
     (hu : IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) U u g)
     (hv : IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) U v g) :
     IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) U
@@ -75,7 +75,7 @@ theorem weak_same_source_sub {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
   have hiv := integrableOn_weak_mul_test hv.1 hLc hLk hLs
   simp_rw [sub_mul]
   rw [integral_sub hiu hiv, hu.2 ψ hψ hc hs, hv.2 ψ hψ hc hs, sub_self]
-  simp only [zero_mul, integral_zero]
+  simp
 
 /-- The homogeneous weak difference has a smooth almost-everywhere representative. -/
 theorem homogeneous_weak_smooth_representative
@@ -85,8 +85,7 @@ theorem homogeneous_weak_smooth_representative
     (hu : IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) U
       u (fun _ => 0)) :
     ∃ f : EvolutionVec 1 → ℝ, ContDiffOn ℝ (⊤ : ℕ∞) f U ∧
-      u =ᵐ[volume.restrict U] f := by
-  exact exists_smooth_representative_transported_source hH hlam
+      u =ᵐ[volume.restrict U] f := exists_smooth_representative_transported_source hH hlam
     (evolutionCoefficient_smooth A) (evolutionCoefficient_bounds A)
     (identityDrift_smooth 1) zero_lt_one (identityDrift_bounds 1).2 hU hu
     contDiffOn_const

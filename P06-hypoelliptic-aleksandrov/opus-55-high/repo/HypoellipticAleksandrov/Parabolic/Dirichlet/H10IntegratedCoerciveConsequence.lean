@@ -22,8 +22,10 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 namespace IsReverseTimeVariationalEnergySolution
 
+variable {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ} (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
+
 private theorem eta_tsupport_subset_chi
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+    
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
     (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ) :
     tsupport η.toFun ⊆ tsupport χ.toFun := by
@@ -31,11 +33,10 @@ private theorem eta_tsupport_subset_chi
   apply subset_tsupport
   change χ y ≠ 0
   rw [χ.eq_one_on_inner y hy]
-  exact one_ne_zero
+  positivity
 
 private def parentFixedSlice
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
+     (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c F : ℝ → PDE.Vec d → ℝ)
     (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
@@ -51,7 +52,7 @@ private def parentFixedSlice
     apply subset_tsupport
     change χ y ≠ 0
     rw [χ.eq_one_on_inner y hy]
-    exact one_ne_zero
+    positivity
   let hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
       (tsupport η.toFun) Ω := hχshift.mono_left hηχ
   let A : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ :=
@@ -67,28 +68,27 @@ private def parentFixedSlice
   Q + ζ τ * (lam * ‖Gv‖ ^ 2 - Lam * ‖Wv‖ ^ 2) ≤
     ζ τ * (ε * ‖Gv‖ ^ 2 + Cε * (1 + ‖u‖ ^ 2))
 
-private theorem integrable_norm_sq_timewise_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+theorem integrable_norm_sq_timewise_apply
+     {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
     {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
     (L : H10HilbertGraph hΩ →L[ℝ] E) (u : ReverseTimeL2V hΩ T) :
     Integrable (fun τ => ‖L (u τ)‖ ^ 2) (reverseTimeVolume T) := by
-  let Lu := L.compLpL (2 : ℝ≥0∞) (reverseTimeVolume T) u
-  have hLu : Lu =ᵐ[reverseTimeVolume T] fun τ => L (u τ) :=
+  let Lu := L.compLpL (2) (reverseTimeVolume T) u
+  have hLu : Lu =ᵐ[reverseTimeVolume T] fun τ => L _ :=
     ContinuousLinearMap.coeFn_compLpL L u
   refine (show Integrable (fun τ => ‖Lu τ‖ ^ 2) (reverseTimeVolume T) by
-    simpa only [real_inner_self_eq_norm_sq] using L2.integrable_inner (𝕜 := ℝ) Lu Lu).congr ?_
+    simpa using L2.integrable_inner (𝕜 := ℝ) Lu Lu).congr ?_
   filter_upwards [hLu] with τ hτ
   rw [hτ]
 
-private theorem integrable_weighted
+theorem integrable_weighted
     {T : ℝ} (ζ : ReverseTimeScalarTest T) (hζunit : ∀ τ : ℝ, ‖ζ τ‖ ≤ 1)
     {f : ℝ → ℝ} (hf : Integrable f (reverseTimeVolume T)) :
-    Integrable (fun τ => ζ τ * f τ) (reverseTimeVolume T) := by
-  exact hf.bdd_mul ζ.contDiff.continuous.aestronglyMeasurable
+    Integrable (fun τ => ζ τ * f τ) (reverseTimeVolume T) := hf.bdd_mul ζ.contDiff.continuous.aestronglyMeasurable
     (Filter.Eventually.of_forall hζunit)
 
 private theorem integral_energy_term_eq_integral_residual
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {Kη : ℝ}
+     {Ω : Set (PDE.Vec d)} {Kη : ℝ}
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
@@ -132,119 +132,40 @@ private theorem integral_energy_term_eq_integral_residual
     r₀ r₁ h₀₁ hΩ hΩbounded a b c ha hb hc F hF initial u g hdu hu
       η k h η.tsupport_subset hηshift ζ
   calc
-    -(1 / 2 : ℝ) *
+    -(1 / 2) *
         (∫ τ, ‖valueCLM hΩ
-          (localizedSpatialDifferenceQuotientH10CLM hΩ η k h η.tsupport_subset hηshift
-            (u τ))‖ ^ 2 * ζ.deriv τ ∂reverseTimeVolume (r₁ - r₀)) =
-        (1 / 2 : ℝ) *
+          _‖ ^ 2 * ζ.deriv τ ∂reverseTimeVolume _) =
+        (1 / 2) *
           ∫ τ, (2 *
             ((reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hF τ)
-              (localizedSpatialDifferenceQuotientEnergyTestH10CLM
-                hΩ η k h η.tsupport_subset hηshift (u τ)) -
+              _ -
               (reverseTimeSpatialFormBochnerAction r₀ r₁ h₀₁ hΩ hΩbounded a b c
                 ha hb hc u τ)
-                (localizedSpatialDifferenceQuotientEnergyTestH10CLM
-                  hΩ η k h η.tsupport_subset hηshift (u τ)))) * ζ τ
-            ∂reverseTimeVolume (r₁ - r₀) := by
+                _)) * ζ τ
+            ∂reverseTimeVolume _ := by
           rw [henergy]
           ring
-    _ = ∫ τ, (1 / 2 : ℝ) * ((2 *
+    _ = ∫ τ, (1 / 2) * ((2 *
           ((reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hF τ)
-            (localizedSpatialDifferenceQuotientEnergyTestH10CLM
-              hΩ η k h η.tsupport_subset hηshift (u τ)) -
+            _ -
             (reverseTimeSpatialFormBochnerAction r₀ r₁ h₀₁ hΩ hΩbounded a b c
               ha hb hc u τ)
-              (localizedSpatialDifferenceQuotientEnergyTestH10CLM
-                hΩ η k h η.tsupport_subset hηshift (u τ)))) * ζ τ)
-          ∂reverseTimeVolume (r₁ - r₀) := by
+              _)) * ζ τ)
+          ∂reverseTimeVolume _ := by
       rw [integral_const_mul]
     _ = ∫ τ, ζ τ *
         ((reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hF τ)
-          (localizedSpatialDifferenceQuotientEnergyTestH10CLM
-            hΩ η k h η.tsupport_subset hηshift (u τ)) -
+          _ -
           (reverseTimeSpatialFormBochnerAction r₀ r₁ h₀₁ hΩ hΩbounded a b c
             ha hb hc u τ)
-            (localizedSpatialDifferenceQuotientEnergyTestH10CLM
-              hΩ η k h η.tsupport_subset hηshift (u τ)))
-          ∂reverseTimeVolume (r₁ - r₀) := by
+            _)
+          ∂reverseTimeVolume _ := by
       apply integral_congr_ae
       filter_upwards with τ
       ring
 
-/-- The reducible exact output proposition of the unabsorbed integrated H10
-coercive consequence.  This names a conclusion and is not an assumption package. -/
-abbrev integratedH10CoerciveConsequenceOutput
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
-    (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
-    (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
-    (_haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (_hbSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => b z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (_hcSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => c z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (F : ℝ → PDE.Vec d → ℝ)
-    (hFSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => F z.1 z.2)
-      (scalarParabolicClosedCylinder r₀ r₁ Ω))
-    (ζ : ReverseTimeScalarTest (r₁ - r₀))
-    (_hζunit : ∀ τ : ℝ, ‖ζ τ‖ ≤ 1)
-    (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
-    (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ) : Prop :=
-    ∃ δ : ℝ, 0 < δ ∧
-      ∀ ε : ℝ, 0 < ε →
-        ∃ Cε : ℝ, 0 ≤ Cε ∧
-          ∀ (lam Lam : ℝ)
-            (hLower : ∀ z : TimeVelocity d,
-              z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
-                lam • (1 : PDE.Mat d) ≤ a z.1 z.2)
-            (hUpper : ∀ z : TimeVelocity d,
-              z ∈ scalarParabolicClosedCylinder r₀ r₁ Ω →
-                a z.1 z.2 ≤ Lam • (1 : PDE.Mat d)),
-            ∀ (k : Fin d) (h : ℝ), |h| ≤ δ →
-              ∃ hχshift : Set.MapsTo
-                (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-                (tsupport χ.toFun) Ω,
-              ∀ (hζnonneg :
-                  ∀ᵐ τ ∂reverseTimeVolume (r₁ - r₀), 0 ≤ ζ τ)
-                (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞))
-                (u : ReverseTimeL2V hΩ (r₁ - r₀))
-                (g : ReverseTimeL2VStar hΩ (r₁ - r₀))
-                (hdu : HasGelfandWeakTimeDerivative hΩ (r₁ - r₀)
-                  (sub_pos.mpr h₀₁) u g)
-                (hu : IsReverseTimeVariationalEnergySolution
-                  r₀ r₁ h₀₁ hΩ hΩbounded a b c F hFSmooth initial u g hdu),
-                let hηχ : tsupport η.toFun ⊆ tsupport χ.toFun := by
-                  intro y hy
-                  apply subset_tsupport
-                  change χ y ≠ 0
-                  rw [χ.eq_one_on_inner y hy]
-                  exact one_ne_zero
-                let hηshift : Set.MapsTo
-                    (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-                    (tsupport η.toFun) Ω :=
-                  hχshift.mono_left hηχ
-                let A : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ :=
-                  localizedSpatialDifferenceQuotientH10CLM
-                    hΩ η k h η.tsupport_subset hηshift
-                let Gv : ℝ → PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) :=
-                  fun τ => gradientCLM hΩ (A (u τ))
-                let Wv : ℝ → PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) :=
-                  fun τ =>
-                    cutoffGradientSpatialDifferenceQuotientH10CLM hΩ η k h (u τ)
-                (-(1 / 2 : ℝ) *
-                    (∫ τ, ‖valueCLM hΩ (A (u τ))‖ ^ 2 * ζ.deriv τ
-                      ∂reverseTimeVolume (r₁ - r₀)) +
-                  (∫ τ, ζ τ *
-                    (lam * ‖Gv τ‖ ^ 2 - Lam * ‖Wv τ‖ ^ 2)
-                    ∂reverseTimeVolume (r₁ - r₀)) ≤
-                  (∫ τ, ζ τ *
-                    (ε * ‖Gv τ‖ ^ 2 + Cε * (1 + ‖u τ‖ ^ 2))
-                    ∂reverseTimeVolume (r₁ - r₀)))
-
 private def integratedH10Leaf
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
+    
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (_haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -274,7 +195,7 @@ private def integratedH10Leaf
     apply subset_tsupport
     change χ y ≠ 0
     rw [χ.eq_one_on_inner y hy]
-    exact one_ne_zero
+    positivity
   let hηshift : Set.MapsTo
       (fun y : PDE.Vec d => y + h • PDE.basisVec k)
       (tsupport η.toFun) Ω := hχshift.mono_left hηχ
@@ -305,12 +226,10 @@ private theorem integratedH10Pointwise_fixedTime_scalar
     (hraw : raw = q) (hsource : source = q) (hform : bochner = form) :
     z * (source - bochner) + z * (lam * gSq - Lam * wSq) ≤
       z * (ε * gSq + Cε * (1 + uSq)) := by
-  rw [hraw, ← hsource, ← hform] at hslice
-  exact hslice
+  simp_all
 
 private theorem ae_integratedH10Pointwise_of_parent
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
+    
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -354,7 +273,7 @@ private theorem ae_integratedH10Pointwise_of_parent
     ae_reverseTimeNegativeSource_apply r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth,
     ae_reverseTimeSpatialFormBochnerAction_apply r₀ r₁ h₀₁ hΩ hΩbounded a b c
       haSmooth hbSmooth hcSmooth u] with τ hτ hζτ hsource hform
-  have hτIcc : τ ∈ Icc 0 (r₁ - r₀) := ⟨le_of_lt hτ.1, le_of_lt hτ.2⟩
+  have hτIcc : τ ∈ Icc 0 _ := ⟨le_of_lt hτ.1, le_of_lt hτ.2⟩
   have hraw := reverseTimeNegativeSourceRaw_eq_sourceFunctional_of_mem_Icc
     r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth τ hτIcc
   subst B
@@ -363,7 +282,6 @@ private theorem ae_integratedH10Pointwise_of_parent
   subst S
   subst R
   have hslice := hparent τ hτIcc hζτ (u τ)
-  dsimp only [parentFixedSlice] at hslice
   exact integratedH10Pointwise_fixedTime_scalar hslice
     (congrArg (fun L => L
       (localizedSpatialDifferenceQuotientEnergyTestH10CLM hΩ η k h
@@ -372,14 +290,12 @@ private theorem ae_integratedH10Pointwise_of_parent
       (localizedSpatialDifferenceQuotientEnergyTestH10CLM hΩ η k h
         η.tsupport_subset (hχshift.mono_left (eta_tsupport_subset_chi η χ)) (u τ)))
       (hsource hτ))
-    (hform (localizedSpatialDifferenceQuotientEnergyTestH10CLM hΩ η k h
-      η.tsupport_subset (hχshift.mono_left (eta_tsupport_subset_chi η χ)) (u τ)))
+    (hform _)
 
 /-- An almost-everywhere nonnegative reverse-time test turns the fixed-slice
 H10 coercive commutator inequality into its unabsorbed variational integral form. -/
 private theorem integratedH10Leaf_proof
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
+    
     (hΩbounded : Bornology.IsBounded Ω) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -411,56 +327,49 @@ private theorem integratedH10Leaf_proof
       r₀ r₁ h₀₁ hΩ hΩbounded a b c F hFSmooth initial u g hdu) :
     integratedH10Leaf r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth F hFSmooth
       ζ hζunit η χ ε Cε lam Lam k h hχshift hζnonneg initial u g hdu hu := by
-  let hηχ : tsupport η.toFun ⊆ tsupport χ.toFun := eta_tsupport_subset_chi η χ
-  let hηshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport η.toFun) Ω := hχshift.mono_left hηχ
-  let A : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ :=
+  let hηχ  := eta_tsupport_subset_chi η χ
+  let hηshift  := hχshift.mono_left hηχ
+  let A  :=
     localizedSpatialDifferenceQuotientH10CLM hΩ η k h η.tsupport_subset hηshift
-  let B : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ :=
+  let B  :=
     localizedSpatialDifferenceQuotientEnergyTestH10CLM hΩ η k h η.tsupport_subset hηshift
-  let G : H10HilbertGraph hΩ →L[ℝ] PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) :=
+  let G  :=
     (gradientCLM hΩ).comp A
-  let W : H10HilbertGraph hΩ →L[ℝ] PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) :=
+  let W  :=
     cutoffGradientSpatialDifferenceQuotientH10CLM hΩ η k h
-  let S : ReverseTimeL2VStar hΩ (r₁ - r₀) :=
+  let S  :=
     reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth
-  let R : ReverseTimeL2VStar hΩ (r₁ - r₀) :=
+  let R  :=
     reverseTimeSpatialFormBochnerAction r₀ r₁ h₀₁ hΩ hΩbounded a b c
       haSmooth hbSmooth hcSmooth u
   have hQbase : Integrable (fun τ => (S τ) (B (u τ)) - (R τ) (B (u τ)))
-      (reverseTimeVolume (r₁ - r₀)) := by
-    exact (integrable_reverseTimeDualPairing_timewiseCLM hΩ (r₁ - r₀) B u S).sub
-      (integrable_reverseTimeDualPairing_timewiseCLM hΩ (r₁ - r₀) B u R)
-  have hQ : Integrable (fun τ => ζ τ * ((S τ) (B (u τ)) - (R τ) (B (u τ))))
-      (reverseTimeVolume (r₁ - r₀)) :=
+      (reverseTimeVolume (r₁ - r₀)) := (integrable_reverseTimeDualPairing_timewiseCLM hΩ _ B u S).sub
+      (integrable_reverseTimeDualPairing_timewiseCLM hΩ _ B u R)
+  have hQ  :=
     integrable_weighted ζ hζunit hQbase
-  have hGsq : Integrable (fun τ => ‖G (u τ)‖ ^ 2)
-      (reverseTimeVolume (r₁ - r₀)) :=
-    integrable_norm_sq_timewise_apply hΩ (r₁ - r₀) G u
-  have hWsq : Integrable (fun τ => ‖W (u τ)‖ ^ 2)
-      (reverseTimeVolume (r₁ - r₀)) :=
-    integrable_norm_sq_timewise_apply hΩ (r₁ - r₀) W u
+  have hGsq : Integrable (fun τ => ‖G _‖ ^ 2)
+      _ :=
+    integrable_norm_sq_timewise_apply hΩ _ G u
+  have hWsq : Integrable (fun τ => ‖W _‖ ^ 2)
+      _ :=
+    integrable_norm_sq_timewise_apply hΩ _ W u
   have hUsq : Integrable (fun τ => ‖u τ‖ ^ 2) (reverseTimeVolume (r₁ - r₀)) := by
-    simpa only [real_inner_self_eq_norm_sq] using L2.integrable_inner (𝕜 := ℝ) u u
+    simpa using L2.integrable_inner (𝕜 := ℝ) u u
   have hcoerciveBase : Integrable (fun τ =>
-      lam * ‖G (u τ)‖ ^ 2 - Lam * ‖W (u τ)‖ ^ 2) (reverseTimeVolume (r₁ - r₀)) :=
+      lam * ‖G _‖ ^ 2 - Lam * ‖W _‖ ^ 2) _ :=
     (hGsq.const_mul lam).sub (hWsq.const_mul Lam)
-  have hcoercive : Integrable (fun τ => ζ τ *
-      (lam * ‖G (u τ)‖ ^ 2 - Lam * ‖W (u τ)‖ ^ 2))
-      (reverseTimeVolume (r₁ - r₀)) :=
+  have hcoercive  :=
     integrable_weighted ζ hζunit hcoerciveBase
   letI : IsFiniteMeasure (reverseTimeVolume (r₁ - r₀)) := by
-    change IsFiniteMeasure (volume.restrict (Ioo (0 : ℝ) (r₁ - r₀)))
+    change IsFiniteMeasure (volume.restrict (Ioo (0) (r₁ - r₀)))
     infer_instance
   have hOne : Integrable (fun _ : ℝ => (1 : ℝ)) (reverseTimeVolume (r₁ - r₀)) :=
     integrable_const _
   have hYoungBase : Integrable (fun τ =>
-      ε * ‖G (u τ)‖ ^ 2 + Cε * (1 + ‖u τ‖ ^ 2))
-      (reverseTimeVolume (r₁ - r₀)) :=
+      ε * ‖G _‖ ^ 2 + Cε * (1 + ‖u τ‖ ^ 2))
+      _ :=
     (hGsq.const_mul ε).add ((hOne.add hUsq).const_mul Cε)
-  have hYoung : Integrable (fun τ => ζ τ *
-      (ε * ‖G (u τ)‖ ^ 2 + Cε * (1 + ‖u τ‖ ^ 2)))
-      (reverseTimeVolume (r₁ - r₀)) :=
+  have hYoung  :=
     integrable_weighted ζ hζunit hYoungBase
   have hpoint := ae_integratedH10Pointwise_of_parent
     r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth F hFSmooth ζ η χ
@@ -469,37 +378,28 @@ private theorem integratedH10Leaf_proof
     r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth F hFSmooth initial u g
       hdu hu (inner := inner) η k h hηshift ζ A B rfl rfl
   have hmono := integral_mono_ae (hQ.add hcoercive) hYoung hpoint
-  change -(1 / 2 : ℝ) *
-      (∫ τ, ‖valueCLM hΩ (A (u τ))‖ ^ 2 * ζ.deriv τ
-        ∂reverseTimeVolume (r₁ - r₀)) +
-    (∫ τ, ζ τ * (lam * ‖G (u τ)‖ ^ 2 - Lam * ‖W (u τ)‖ ^ 2)
-      ∂reverseTimeVolume (r₁ - r₀)) ≤
-    ∫ τ, ζ τ * (ε * ‖G (u τ)‖ ^ 2 + Cε * (1 + ‖u τ‖ ^ 2))
-      ∂reverseTimeVolume (r₁ - r₀)
   calc
-    -(1 / 2 : ℝ) *
-        (∫ τ, ‖valueCLM hΩ (A (u τ))‖ ^ 2 * ζ.deriv τ
-          ∂reverseTimeVolume (r₁ - r₀)) +
-      (∫ τ, ζ τ * (lam * ‖G (u τ)‖ ^ 2 - Lam * ‖W (u τ)‖ ^ 2)
-        ∂reverseTimeVolume (r₁ - r₀)) =
-        (∫ τ, ζ τ * ((S τ) (B (u τ)) - (R τ) (B (u τ)))
-          ∂reverseTimeVolume (r₁ - r₀)) +
-        (∫ τ, ζ τ * (lam * ‖G (u τ)‖ ^ 2 - Lam * ‖W (u τ)‖ ^ 2)
-          ∂reverseTimeVolume (r₁ - r₀)) := by rw [henergy]
-    _ = ∫ τ, ζ τ * ((S τ) (B (u τ)) - (R τ) (B (u τ))) + ζ τ *
-        (lam * ‖G (u τ)‖ ^ 2 - Lam * ‖W (u τ)‖ ^ 2)
-        ∂reverseTimeVolume (r₁ - r₀) := by
-      exact integral_add_of_integrable _ hQ hcoercive
-    _ ≤ ∫ τ, ζ τ * (ε * ‖G (u τ)‖ ^ 2 + Cε * (1 + ‖u τ‖ ^ 2))
-        ∂reverseTimeVolume (r₁ - r₀) := hmono
+    -(1 / 2) *
+        (∫ τ, ‖valueCLM hΩ _‖ ^ 2 * ζ.deriv τ
+          ∂reverseTimeVolume _) +
+      (∫ τ, ζ τ * (lam * ‖G _‖ ^ 2 - Lam * ‖W _‖ ^ 2)
+        ∂reverseTimeVolume _) =
+        (∫ τ, ζ τ * ((S τ) _ - (R τ) _)
+          ∂reverseTimeVolume _) +
+        (∫ τ, ζ τ * (lam * ‖G _‖ ^ 2 - Lam * ‖W _‖ ^ 2)
+          ∂reverseTimeVolume _) := by rw [henergy]
+    _ = ∫ τ, ζ τ * ((S τ) _ - (R τ) _) + ζ τ *
+        (lam * ‖G _‖ ^ 2 - Lam * ‖W _‖ ^ 2)
+        ∂reverseTimeVolume _ := integral_add_of_integrable _ hQ hcoercive
+    _ ≤ ∫ τ, ζ τ * (ε * ‖G _‖ ^ 2 + Cε * (1 + ‖u τ‖ ^ 2))
+        ∂reverseTimeVolume _ := hmono
 
 /-- The integrated full H10 coercive inequality has a Young constant uniform
 in the reverse-time scalar test and all data satisfying the supplied literal
 majorants. -/
 theorem
   exists_uniform_timeTest_integral_h10Commutator_add_coerciveTerm_le_nonprincipalYoung_of_majorants
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
+    
     (hΩbounded : Bornology.IsBounded Ω)
     (η : PDE.QuantitativeSmoothCutoff inner Ω Kη)
     (χ : PDE.QuantitativeSmoothCutoff (tsupport η.toFun) Ω Kχ)
@@ -602,9 +502,7 @@ theorem
   refine ⟨Cepsilon, hCepsilon, ?_⟩
   intro zeta hzetaunit lam Lam a b c F haSmooth hbSmooth hcSmooth hFSmooth hLower hUpper
     hA hB hBD hq hqD hfD k h hh hζnonneg initial u g hdu hu
-  let hχshift : Set.MapsTo
-      (fun y : PDE.Vec d => y + h • PDE.basisVec k)
-      (tsupport χ.toFun) Ω :=
+  let hχshift  :=
     mapsTo_add_smul_basisVec_of_spatialCoordinateShiftCarrier_subset hcarrier k hh
   change integratedH10Leaf r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth
     F hFSmooth zeta hzetaunit η χ epsilon Cepsilon lam Lam k h hχshift hζnonneg initial u g

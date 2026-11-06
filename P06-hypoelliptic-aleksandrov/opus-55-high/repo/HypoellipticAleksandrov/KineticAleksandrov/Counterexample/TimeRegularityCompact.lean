@@ -9,7 +9,6 @@ import Mathlib.Analysis.SpecialFunctions.ExpDeriv
 /-! # Mixed smoothness of the explicit cutoff integral on a compact spatial carrier -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open MeasureTheory
 
@@ -34,11 +33,10 @@ theorem compact_cutoff_mollification_contDiff {d : ℕ} {A : Type}
     contDiff_snd.snd
   have hv : ContDiff ℝ (⊤ : ℕ∞) (fun z : (ℝ × XV d) × (XV d × ℝ) => z.2.1.2) :=
     contDiff_snd.fst.snd
-  have hf : ContDiff ℝ (⊤ : ℕ∞) f := by
-    exact (phi.contDiff_normed.comp (hq.sub contDiff_snd.fst)).mul
+  have hf : ContDiff ℝ (⊤ : ℕ∞) f := (phi.contDiff_normed.comp (hq.sub contDiff_snd.fst)).mul
       (contDiff_timeCutoffTheta.comp (hs.sub
         ((Real.contDiff_exp.comp (contDiff_const.mul ht)).mul
-          (contDiff_const.sub ((PDE.contDiff_vecNormSq.comp hv).div_const (R ^ 2))))))
-  exact compact_parameter_contDiff nu (fun a => (y a, u a)) (hy.prodMk hu) f hf
+          (contDiff_const.sub ((PDE.contDiff_vecNormSq.comp hv).div_const _)))))
+  exact compact_parameter_contDiff nu _ (hy.prodMk hu) f hf
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

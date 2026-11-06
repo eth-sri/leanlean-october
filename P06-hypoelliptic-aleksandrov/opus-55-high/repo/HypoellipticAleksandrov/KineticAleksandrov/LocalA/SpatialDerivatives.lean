@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.SpatialDerivativ
 /-! # The exact uniform spatial derivative theorem for smooth time-velocity coefficients -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory Parabolic SectionTwo
 
@@ -39,23 +38,23 @@ theorem smooth_timeVelocity_spatial_bounds
   refine ⟨?_, ?_⟩
   · intro P hP
     have hp : kineticReflection P ∈ forwardCylinder Z₀ R hR := by
-      rw [← kineticReflection_image_backwardCylinder P₀ R hR]
-      exact ⟨P, hP, rfl⟩
+      rw [← kineticReflection_image_backwardCylinder]
+      grind
     have hs := spatial_forward_slice_smooth hH B hB Z₀ hR U hUs hUe
       (kineticReflection P) hp
     rw [spatial_slice_reflection]
-    exact hs.comp P.position contDiffAt_id.neg
+    fun_prop
   · intro m hm P hP
     have hri : 0 < 3 * R / 4 := by positivity
     have hQi : kineticReflection P ∈ forwardCylinder Z₀ (3 * R / 4) hri := by
-      rw [← kineticReflection_image_backwardCylinder P₀ (3 * R / 4) hri]
-      exact ⟨P, hP, rfl⟩
+      rw [← kineticReflection_image_backwardCylinder]
+      grind
     let Q := kineticReflection P
     have hQo := spatial_inner_subset_outer Z₀ hR hQi
     let p : LocalBallStart Z₀.velocity R := ⟨Q, hQo.2.2.1⟩
     let T : {t : ℝ // p.1.time < t} :=
-      ⟨p.1.time + R ^ 2 / 8, by nlinarith only [sq_pos_of_pos hR]⟩
-    have hT : T.1 - p.1.time = R ^ 2 / 8 := by dsimp only [T]; ring
+      ⟨p.1.time + R ^ 2 / 8, by simp_all⟩
+    have hT : T.1 - p.1.time = R ^ 2 / 8 := by ring
     have hfb := spatial_forward_derivative_bound hH hLE hd hlam hLam B hB Z₀ hR
       U hUc hUs hUe p hQi T hT m hm
     have hki := hkernel B hB Z₀.velocity R hR p T hQi.2.2.1 hT m
@@ -63,17 +62,16 @@ theorem smooth_timeVelocity_spatial_bounds
       (spatialData_local_extension Z₀ Q hR hQo U hUc).1
     have hbound := hfb.trans (mul_le_mul_of_nonneg_left hki hM)
     have hscale : R ^ (3 * m) * R ^ (-3 * (m : ℝ)) = 1 := by
-      rw [← Real.rpow_natCast R (3 * m), ← Real.rpow_add hR]
-      have he : ((3 * m : ℕ) : ℝ) + -3 * (m : ℝ) = 0 := by push_cast; ring
-      rw [he, Real.rpow_zero]
+      rw [← Real.rpow_natCast, ← Real.rpow_add hR]
+      simp
     rw [spatial_derivative_norm_reflection]
     calc
-      _ ≤ R ^ (3 * m) * (Holder.oscillationOn U (forwardCylinder Z₀ R hR) *
+      _ ≤ R ^ (3 * m) * (Holder.oscillationOn U _ *
           (C m * R ^ (-3 * (m : ℝ)))) :=
         mul_le_mul_of_nonneg_left hbound (pow_nonneg hR.le _)
-      _ = (C m * Holder.oscillationOn U (forwardCylinder Z₀ R hR)) *
+      _ = (C m * Holder.oscillationOn U _) *
           (R ^ (3 * m) * R ^ (-3 * (m : ℝ))) := by ring
-      _ = C m * Holder.oscillationOn u (backwardCylinder P₀ R) := by
-        rw [hscale, mul_one, spatial_oscillation_reflection P₀ hR u]
+      _ = C m * Holder.oscillationOn u _ := by
+        rw [hscale, mul_one, spatial_oscillation_reflection]
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

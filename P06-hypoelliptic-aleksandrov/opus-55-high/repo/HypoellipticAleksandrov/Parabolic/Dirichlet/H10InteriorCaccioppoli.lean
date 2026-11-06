@@ -2,12 +2,12 @@ module
 
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.H10IntegratedCutoffControl
 public import HypoellipticAleksandrov.Parabolic.Dirichlet.ReverseTimeVariationalEnergyArbitrarySolutionBound
+public import HypoellipticAleksandrov.Parabolic.Dirichlet.H10IntegratedCoerciveConsequence
 
 /-! The uniform weighted interior spatial difference-quotient Caccioppoli estimate. -/
 
 @[expose] public section
 
-noncomputable section
 
 open Filter MeasureTheory Set
 open scoped ENNReal RealInnerProductSpace MatrixOrder Matrix.Norms.Elementwise
@@ -16,32 +16,14 @@ namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 namespace IsReverseTimeVariationalEnergySolution
 
-private theorem integrable_norm_sq_timewise_apply
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
-    {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
-    (L : H10HilbertGraph hΩ →L[ℝ] E) (u : ReverseTimeL2V hΩ T) :
-    Integrable (fun τ => ‖L (u τ)‖ ^ 2) (reverseTimeVolume T) := by
-  let Lu := L.compLpL (2 : ℝ≥0∞) (reverseTimeVolume T) u
-  have hLu : Lu =ᵐ[reverseTimeVolume T] fun τ => L (u τ) :=
-    ContinuousLinearMap.coeFn_compLpL L u
-  refine (show Integrable (fun τ => ‖Lu τ‖ ^ 2) (reverseTimeVolume T) by
-    simpa only [real_inner_self_eq_norm_sq] using L2.integrable_inner (𝕜 := ℝ) Lu Lu).congr ?_
-  filter_upwards [hLu] with τ hτ
-  rw [hτ]
-
-private theorem integrable_weighted
-    {T : ℝ} (ζ : ReverseTimeScalarTest T) (hζunit : ∀ τ : ℝ, ‖ζ τ‖ ≤ 1)
-    {f : ℝ → ℝ} (hf : Integrable f (reverseTimeVolume T)) :
-    Integrable (fun τ => ζ τ * f τ) (reverseTimeVolume T) := by
-  exact hf.bdd_mul ζ.contDiff.continuous.aestronglyMeasurable
-    (Filter.Eventually.of_forall hζunit)
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
 
 private theorem integral_norm_sq_toLp
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
+    
     (u : ReverseTimeL2V hΩ T) :
     (∫ τ, ‖u τ‖ ^ 2 ∂reverseTimeVolume T) = ‖u‖ ^ 2 := by
   have h := integral_norm_sq_eq_norm_sq_toLp (fun τ => u τ) (Lp.memLp u)
-  rw [Lp.toLp_coeFn u (Lp.memLp u)] at h
+  rw [Lp.toLp_coeFn] at h
   exact h
 
 private theorem integral_weighted_const_mul
@@ -71,13 +53,13 @@ private theorem caccioppoli_scalar_closure
       _ ≤ C * (T + R) + K * (T + R) + P * (T + R) := by linarith only [hCU, hKU, hPU]
       _ = (C + K + P) * (T + R) := by ring
   calc
-    J = (2 / lam) * ((lam / 2) * J) := by field_simp [ne_of_gt hlam]
+    J = (2 / lam) * ((lam / 2) * J) := by field_simp [ne_of_gt]
     _ ≤ (2 / lam) * ((C + K + P) * (T + R)) :=
       mul_le_mul_of_nonneg_left hscaled (div_nonneg (by norm_num) hlam.le)
     _ = (2 / lam) * (C + K + P) * (T + R) := by ring
 
 private theorem temporal_measure_radius_closure
-    {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) {T : ℝ} (hT : 0 < T)
+     {T : ℝ} (hT : 0 < T)
     (ζ : ReverseTimeScalarTest T) (Kζ lam Lam Kη C R : ℝ)
     (hlam : 0 < lam) (hKζ : 0 ≤ Kζ) (hLam : 0 ≤ Lam) (hC : 0 ≤ C)
     (u : ReverseTimeL2V hΩ T)
@@ -100,11 +82,9 @@ private theorem temporal_measure_radius_closure
     (∫ τ, ζ τ * ‖Gv τ‖ ^ 2 ∂reverseTimeVolume T) ≤
       (2 / lam) * (C + Kζ / 2 + Lam * Kη ^ 2) * (T + R ^ 2) := by
   have hVsq : Integrable (fun τ => ‖valueCLM hΩ (A (u τ))‖ ^ 2)
-      (reverseTimeVolume T) := by
-    exact integrable_norm_sq_timewise_apply hΩ T ((valueCLM hΩ).comp A) u
+      (reverseTimeVolume T) := integrable_norm_sq_timewise_apply hΩ T ((valueCLM hΩ).comp A) u
   have hGradUsq : Integrable (fun τ => ‖gradientCLM hΩ (u τ)‖ ^ 2)
-      (reverseTimeVolume T) := by
-    exact integrable_norm_sq_timewise_apply hΩ T (gradientCLM hΩ) u
+      (reverseTimeVolume T) := integrable_norm_sq_timewise_apply hΩ T _ u
   have hUsq : Integrable (fun τ => ‖u τ‖ ^ 2) (reverseTimeVolume T) := by
     simpa only [real_inner_self_eq_norm_sq] using L2.integrable_inner (𝕜 := ℝ) u u
   have hUenergy := integral_norm_sq_toLp hΩ T u
@@ -113,59 +93,57 @@ private theorem temporal_measure_radius_closure
     rw [← hUenergy]
     apply integral_mono_ae hGradUsq hUsq
     filter_upwards with τ
-    rw [norm_sq_h10HilbertGraph hΩ]
+    rw [norm_sq_h10HilbertGraph]
     linarith [sq_nonneg (‖valueCLM hΩ (u τ)‖)]
   have hderivInt : Integrable (fun τ => ‖valueCLM hΩ (A (u τ))‖ ^ 2 * ζ.deriv τ)
       (reverseTimeVolume T) := by
     have hmul := hVsq.bdd_mul
       (ζ.contDiff.continuous_deriv (by norm_num)).aestronglyMeasurable
       (Filter.Eventually.of_forall fun τ => by
-        rw [Real.norm_eq_abs]
         exact hζderiv τ)
     simpa only [ReverseTimeScalarTest.deriv_apply, mul_comm] using hmul
-  have htimeInt : Integrable (fun τ => (1 / 2 : ℝ) *
-      (‖valueCLM hΩ (A (u τ))‖ ^ 2 * ζ.deriv τ)) (reverseTimeVolume T) :=
-    hderivInt.const_mul (1 / 2 : ℝ)
+  have htimeInt : Integrable (fun τ => (1 / 2) *
+      (‖valueCLM hΩ _‖ ^ 2 * ζ.deriv τ)) _ :=
+    hderivInt.const_mul _
   have htimePoint : ∀ᵐ τ ∂reverseTimeVolume T,
-      (1 / 2 : ℝ) * (‖valueCLM hΩ (A (u τ))‖ ^ 2 * ζ.deriv τ) ≤
+      (1 / 2) * (‖valueCLM hΩ (A (u τ))‖ ^ 2 * ζ.deriv τ) ≤
         (Kζ / 2) * ‖gradientCLM hΩ (u τ)‖ ^ 2 := by
     filter_upwards with τ
     have hv : 0 ≤ ‖valueCLM hΩ (A (u τ))‖ ^ 2 := sq_nonneg _
     have hd : ζ.deriv τ ≤ Kζ := (le_abs_self _).trans (hζderiv τ)
     have hmul := mul_le_mul_of_nonneg_left hd hv
-    have hKg : Kζ * ‖valueCLM hΩ (A (u τ))‖ ^ 2 ≤
-        Kζ * ‖gradientCLM hΩ (u τ)‖ ^ 2 :=
+    have hKg : Kζ * ‖valueCLM hΩ _‖ ^ 2 ≤
+        Kζ * ‖gradientCLM hΩ _‖ ^ 2 :=
       mul_le_mul_of_nonneg_left (hValueBound τ) hKζ
     calc
-      (1 / 2 : ℝ) * (‖valueCLM hΩ (A (u τ))‖ ^ 2 * ζ.deriv τ) =
-          (1 / 2 : ℝ) * (ζ.deriv τ * ‖valueCLM hΩ (A (u τ))‖ ^ 2) := by ring
-      _ ≤ (1 / 2 : ℝ) * (Kζ * ‖valueCLM hΩ (A (u τ))‖ ^ 2) := by
+      (1 / 2) * (‖valueCLM hΩ _‖ ^ 2 * ζ.deriv τ) =
+          (1 / 2) * (ζ.deriv τ * ‖valueCLM hΩ _‖ ^ 2) := by ring
+      _ ≤ (1 / 2) * (Kζ * ‖valueCLM hΩ _‖ ^ 2) := by
         apply mul_le_mul_of_nonneg_left
         simpa only [ReverseTimeScalarTest.deriv_apply, mul_comm] using hmul
         positivity
-      _ ≤ (1 / 2 : ℝ) * (Kζ * ‖gradientCLM hΩ (u τ)‖ ^ 2) :=
+      _ ≤ (1 / 2) * (Kζ * ‖gradientCLM hΩ _‖ ^ 2) :=
         mul_le_mul_of_nonneg_left hKg (by positivity)
-      _ = (Kζ / 2) * ‖gradientCLM hΩ (u τ)‖ ^ 2 := by ring
-  have htime : (1 / 2 : ℝ) *
+      _ = (Kζ / 2) * ‖gradientCLM hΩ _‖ ^ 2 := by ring
+  have htime : (1 / 2) *
       (∫ τ, ‖valueCLM hΩ (A (u τ))‖ ^ 2 * ζ.deriv τ ∂reverseTimeVolume T) ≤
         (Kζ / 2) * ‖u‖ ^ 2 := by
     calc
-      (1 / 2 : ℝ) * (∫ τ, ‖valueCLM hΩ (A (u τ))‖ ^ 2 * ζ.deriv τ
-          ∂reverseTimeVolume T) = ∫ τ, (1 / 2 : ℝ) *
-          (‖valueCLM hΩ (A (u τ))‖ ^ 2 * ζ.deriv τ) ∂reverseTimeVolume T :=
+      (1 / 2) * (∫ τ, ‖valueCLM hΩ _‖ ^ 2 * ζ.deriv τ
+          ∂reverseTimeVolume T) = ∫ τ, (1 / 2) *
+          (‖valueCLM hΩ _‖ ^ 2 * ζ.deriv τ) ∂reverseTimeVolume T :=
         (integral_const_mul _ _).symm
-      _ ≤ ∫ τ, (Kζ / 2) * ‖gradientCLM hΩ (u τ)‖ ^ 2 ∂reverseTimeVolume T :=
-        integral_mono_ae htimeInt (hGradUsq.const_mul (Kζ / 2)) htimePoint
-      _ = (Kζ / 2) * ∫ τ, ‖gradientCLM hΩ (u τ)‖ ^ 2 ∂reverseTimeVolume T :=
+      _ ≤ ∫ τ, (Kζ / 2) * ‖gradientCLM hΩ _‖ ^ 2 ∂reverseTimeVolume T :=
+        integral_mono_ae htimeInt (hGradUsq.const_mul _) htimePoint
+      _ = (Kζ / 2) * ∫ τ, ‖gradientCLM hΩ _‖ ^ 2 ∂reverseTimeVolume T :=
         integral_const_mul _ _
       _ ≤ (Kζ / 2) * ‖u‖ ^ 2 :=
         mul_le_mul_of_nonneg_left hGradEnergy (by positivity)
-  let Lcut : ℝ := Lam * Kη ^ 2
+  let Lcut  := Lam * Kη ^ 2
   have hLcut : 0 ≤ Lcut := by
-    dsimp only [Lcut]
     positivity
-  have hcutInt : Integrable (fun τ => ζ τ * (Lcut * ‖gradientCLM hΩ (u τ)‖ ^ 2))
-      (reverseTimeVolume T) :=
+  have hcutInt : Integrable (fun τ => ζ τ * (Lcut * ‖gradientCLM hΩ _‖ ^ 2))
+      _ :=
     integrable_weighted ζ hζunit (hGradUsq.const_mul Lcut)
   have hcutoff' : (∫ τ, ζ τ * (Lcut * ‖gradientCLM hΩ (u τ)‖ ^ 2)
       ∂reverseTimeVolume T) ≤ Lcut * ‖u‖ ^ 2 := by
@@ -176,10 +154,10 @@ private theorem temporal_measure_radius_closure
       simpa only [one_mul] using mul_le_mul_of_nonneg_right (hζleOne τ)
         (mul_nonneg hLcut (sq_nonneg _))
     calc
-      (∫ τ, ζ τ * (Lcut * ‖gradientCLM hΩ (u τ)‖ ^ 2) ∂reverseTimeVolume T) ≤
-          ∫ τ, Lcut * ‖gradientCLM hΩ (u τ)‖ ^ 2 ∂reverseTimeVolume T :=
+      (∫ τ, ζ τ * (Lcut * ‖gradientCLM hΩ _‖ ^ 2) ∂reverseTimeVolume T) ≤
+          ∫ τ, Lcut * ‖gradientCLM hΩ _‖ ^ 2 ∂reverseTimeVolume T :=
         integral_mono_ae hcutInt (hGradUsq.const_mul Lcut) hpoint
-      _ = Lcut * ∫ τ, ‖gradientCLM hΩ (u τ)‖ ^ 2 ∂reverseTimeVolume T :=
+      _ = Lcut * ∫ τ, ‖gradientCLM hΩ _‖ ^ 2 ∂reverseTimeVolume T :=
         integral_const_mul _ _
       _ ≤ Lcut * ‖u‖ ^ 2 := mul_le_mul_of_nonneg_left hGradEnergy hLcut
   have hcutoff : (∫ τ, ζ τ *
@@ -187,12 +165,11 @@ private theorem temporal_measure_radius_closure
       Lam * Kη ^ 2 * ‖u‖ ^ 2 := by
     simpa only [Lcut] using hcutoff'
   letI : IsFiniteMeasure (reverseTimeVolume T) := by
-    change IsFiniteMeasure (volume.restrict (Ioo (0 : ℝ) T))
+    change IsFiniteMeasure (volume.restrict (Ioo _ T))
     infer_instance
   have hsourceBase : Integrable (fun τ => C * (1 + ‖u τ‖ ^ 2)) (reverseTimeVolume T) := by
-    simpa only [Pi.add_apply] using ((integrable_const (1 : ℝ)).add hUsq).const_mul C
-  have hsourceInt : Integrable (fun τ => ζ τ * (C * (1 + ‖u τ‖ ^ 2)))
-      (reverseTimeVolume T) := integrable_weighted ζ hζunit hsourceBase
+    simpa only [Pi.add_apply] using ((integrable_const _).add hUsq).const_mul C
+  have hsourceInt  := integrable_weighted ζ hζunit hsourceBase
   have hsource : (∫ τ, ζ τ * (C * (1 + ‖u τ‖ ^ 2)) ∂reverseTimeVolume T) ≤
       C * (T + ‖u‖ ^ 2) := by
     have hpoint : ∀ᵐ τ ∂reverseTimeVolume T,
@@ -206,12 +183,12 @@ private theorem temporal_measure_radius_closure
         integral_mono_ae hsourceInt hsourceBase hpoint
       _ = C * (T + ‖u‖ ^ 2) := by
         rw [show (fun τ : ℝ => C * (1 + ‖u τ‖ ^ 2)) =
-            (fun τ => C * 1 + C * ‖u τ‖ ^ 2) by funext τ; ring,
-          integral_add (integrable_const _) (hUsq.const_mul C), integral_const, smul_eq_mul,
+            (fun τ => C * 1 + C * ‖u τ‖ ^ 2) by ring,
+          integral_add (integrable_const _) (hUsq.const_mul C), integral_const,
           reverseTimeVolume_real_univ _ hT, integral_const_mul, hUenergy]
         ring
   have hhalfInt : Integrable (fun τ => ζ τ * ((lam / 2) * ‖Gv τ‖ ^ 2))
-      (reverseTimeVolume T) := integrable_weighted ζ hζunit (hGsq.const_mul (lam / 2))
+      _ := integrable_weighted ζ hζunit (hGsq.const_mul _)
   have hbulk : (∫ τ, ζ τ * ((lam / 2) * ‖Gv τ‖ ^ 2 -
       Lam * Kη ^ 2 * ‖gradientCLM hΩ (u τ)‖ ^ 2) ∂reverseTimeVolume T) =
       (lam / 2) * (∫ τ, ζ τ * ‖Gv τ‖ ^ 2 ∂reverseTimeVolume T) -
@@ -223,9 +200,8 @@ private theorem temporal_measure_radius_closure
           ζ τ * (Lam * Kη ^ 2 * ‖gradientCLM hΩ (u τ)‖ ^ 2)) := by
       funext τ
       ring
-    rw [hsub]
-    rw [integral_sub hhalfInt hcutInt]
-    rw [integral_weighted_const_mul (a := lam / 2) ζ (fun τ => ‖Gv τ‖ ^ 2)]
+    rw [hsub, integral_sub hhalfInt hcutInt]
+    rw [integral_weighted_const_mul]
   rw [hbulk] at hbridge
   have hRnonneg : 0 ≤ R := (norm_nonneg u).trans hRadius
   have huSq : ‖u‖ ^ 2 ≤ R ^ 2 :=
@@ -236,7 +212,7 @@ private theorem temporal_measure_radius_closure
 /-- Uniform weighted interior Caccioppoli control for localized spatial difference quotients
 of supplied reverse-time variational energy solutions. -/
 theorem exists_uniform_interiorSpatialDifferenceQuotient_caccioppoli
-    {d : ℕ} {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
+     {Ω inner : Set (PDE.Vec d)} {Kη Kχ : ℝ}
     (hd : 0 < d)
     (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (hΩbounded : Bornology.IsBounded Ω)
@@ -339,7 +315,7 @@ theorem exists_uniform_interiorSpatialDifferenceQuotient_caccioppoli
                     r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
                     haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos
                     initial) ^ 2) := by
-  have hχcompact : IsCompact (tsupport χ.toFun) := χ.hasCompactSupport
+  have hχcompact : IsCompact _ := χ.hasCompactSupport
   obtain ⟨delta, hdelta, hcarrier⟩ :=
     IsCompact.exists_spatialCoordinateShiftCarrier_subset_open hχcompact hΩ χ.tsupport_subset
   refine ⟨delta, hdelta, hcarrier, ?_⟩
@@ -353,7 +329,6 @@ theorem exists_uniform_interiorSpatialDifferenceQuotient_caccioppoli
     exact mul_nonneg (by positivity) hsum
   intro ζ hζnonneg hζleOne hζderiv a b c F haSmooth hbSmooth hcSmooth hFSmooth
     hLower hUpper hcNonpos hA hB hBD hq hqD hfD initial u g hdu hu k h habs hh
-  dsimp
   let hχshift : Set.MapsTo (fun y : PDE.Vec d => y + h • PDE.basisVec k)
       (tsupport χ.toFun) Ω :=
     mapsTo_add_smul_basisVec_of_spatialCoordinateShiftCarrier_subset hcarrier k hh
@@ -371,7 +346,6 @@ theorem exists_uniform_interiorSpatialDifferenceQuotient_caccioppoli
     fun τ => gradientCLM hΩ (A (u τ))
   have hζunit : ∀ τ : ℝ, ‖ζ τ‖ ≤ 1 := by
     intro τ
-    rw [Real.norm_eq_abs]
     exact abs_le.2 ⟨by linarith [hζnonneg τ], hζleOne τ⟩
   have hζae : ∀ᵐ τ ∂reverseTimeVolume (r₁ - r₀), 0 ≤ ζ τ :=
     Filter.Eventually.of_forall hζnonneg
@@ -383,16 +357,15 @@ theorem exists_uniform_interiorSpatialDifferenceQuotient_caccioppoli
   let R := reverseTimeGalerkinPrimalRadius r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
     haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial
   have hRadiusR : ‖u‖ ≤ R := by
-    simpa only [R] using hRadius
-  have hGsq : Integrable (fun τ => ‖Gv τ‖ ^ 2) (reverseTimeVolume (r₁ - r₀)) := by
-    exact integrable_norm_sq_timewise_apply hΩ (r₁ - r₀) ((gradientCLM hΩ).comp A) u
+    simpa using hRadius
+  have hGsq : Integrable (fun τ => ‖Gv τ‖ ^ 2) (reverseTimeVolume (r₁ - r₀)) := integrable_norm_sq_timewise_apply hΩ _ ((gradientCLM hΩ).comp A) u
   have hValueBound : ∀ τ : ℝ,
       ‖valueCLM hΩ (A (u τ))‖ ^ 2 ≤ ‖gradientCLM hΩ (u τ)‖ ^ 2 := by
     intro τ
     exact (sq_le_sq₀ (norm_nonneg _) (norm_nonneg _)).mpr
       (norm_valueCLM_localizedSpatialDifferenceQuotientH10CLM_apply_le_gradient
-        hΩ η k h η.tsupport_subset hηshift (u τ))
-  simpa only [R, Gv, A, gradientCLM_apply] using!
+        hΩ η k h η.tsupport_subset hηshift _)
+  simpa using!
     temporal_measure_radius_closure hΩ (sub_pos.mpr h₀₁) ζ Kζ lam Lam Kη C_lam R
       hlam hKζ ((le_of_lt hlam).trans hlamLam) hC_lam u A Gv hGsq hζunit hζleOne hζderiv
       hValueBound hbridge' hRadiusR

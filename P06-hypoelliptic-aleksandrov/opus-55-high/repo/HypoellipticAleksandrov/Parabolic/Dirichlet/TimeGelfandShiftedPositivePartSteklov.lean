@@ -8,7 +8,6 @@ public import HypoellipticAleksandrov.Parabolic.Dirichlet.TimeGelfandShiftedPosi
 
 open MeasureTheory Set
 open scoped ENNReal NNReal
-noncomputable section
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
 /-- Fixed-window forward Steklov shifted-positive-part energy identity. -/

@@ -30,7 +30,7 @@ theorem stripExitOfRealization_mass_one
       simp only [abs_one, le_refl, reconstruction_forwardScalarOperator_const, abs_zero,
         zero_le_one, and_self])
   simp only [reconstruction_forwardScalarOperator_const, integral_zero, sub_zero,
-    integral_const, smul_eq_mul, mul_one, Measure.real] at hi
+    integral_const, smul_eq_mul, mul_one] at hi
   exact (ENNReal.toReal_eq_one_iff _).mp hi.symm
 
 /-- The actual exit measure carries the probability instance with no extra hypothesis. -/

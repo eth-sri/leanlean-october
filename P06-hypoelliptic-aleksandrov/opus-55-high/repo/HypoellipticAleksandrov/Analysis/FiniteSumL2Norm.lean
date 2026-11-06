@@ -12,7 +12,6 @@ seminorm of a finite sum.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Analysis
 
@@ -30,22 +29,20 @@ theorem eLpNorm_sum_toReal_sq_le_card_mul
   have hnorm : eLpNorm (∑ i, f i) 2 μ ≤ ∑ i, eLpNorm (f i) 2 μ := by
     simpa only [Finset.sum_const_zero, Finset.sum_sub_distrib] using
       (eLpNorm_sum_le (s := Finset.univ)
-        (by norm_num : (1 : ℝ≥0∞) ≤ 2))
+        (by norm_num))
   have htop : (∑ i, eLpNorm (f i) 2 μ) ≠ ∞ :=
     ENNReal.sum_ne_top.mpr fun i _ => (hf i).eLpNorm_ne_top
   have hreal := ENNReal.toReal_mono htop hnorm
-  rw [ENNReal.toReal_sum (fun i (_hi : i ∈ Finset.univ) =>
+  rw [ENNReal.toReal_sum (fun i _hi =>
     (hf i).eLpNorm_ne_top)] at hreal
-  have hsum0 : 0 ≤ ∑ i, ENNReal.toReal (eLpNorm (f i) 2 μ) :=
-    Finset.sum_nonneg fun i _ => ENNReal.toReal_nonneg
   calc
-    (ENNReal.toReal (eLpNorm (∑ i, f i) 2 μ)) ^ 2 ≤
-        (∑ i, ENNReal.toReal (eLpNorm (f i) 2 μ)) ^ 2 := by
+    (ENNReal.toReal _) ^ 2 ≤
+        (∑ i, ENNReal.toReal _) ^ 2 := by
       nlinarith [ENNReal.toReal_nonneg (a := eLpNorm (∑ i, f i) 2 μ)]
-    _ ≤ (Fintype.card ι : ℝ) *
-        ∑ i, (ENNReal.toReal (eLpNorm (f i) 2 μ)) ^ 2 := by
+    _ ≤ (Fintype.card ι) *
+        ∑ i, (ENNReal.toReal _) ^ 2 := by
       simpa using (sq_sum_le_card_mul_sum_sq
         (s := Finset.univ)
-        (f := fun i => ENNReal.toReal (eLpNorm (f i) 2 μ)))
+        (f := fun i => ENNReal.toReal _))
 
 end HypoellipticAleksandrov.Analysis

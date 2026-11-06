@@ -18,8 +18,10 @@ def nestedProbeDatum {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
     obtain ⟨M, hM⟩ := exitProbePhysical_bounded_source A f
     exact ⟨max M 0, le_max_right _ _, fun p => (hM p).1.trans (le_max_left _ _)⟩⟩
 
+variable {lam Lam : ℝ}
+
 /-- Every valid pole has the same actual Green integral as its compact-source Duhamel value. -/
-theorem nestedSourcePotential_eq_green {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+theorem nestedSourcePotential_eq_green  (A : SmoothAutonomous lam Lam)
     (H : Interval) (E : StripEvolution H) (T : ℝ) (f : exitProbeSubmodule)
     (e : StripPole H (T : WithTop ℝ)) :
     nestedSourcePotential H E T f e.1 =
@@ -28,21 +30,20 @@ theorem nestedSourcePotential_eq_green {lam Lam : ℝ} (A : SmoothAutonomous lam
 
 /-- The actual compact-source potential is globally Borel before any regularity argument. -/
 theorem nestedSourcePotential_measurable (H : Interval) (E : StripEvolution H) (T : ℝ)
-    (f : exitProbeSubmodule) : Measurable (nestedSourcePotential H E T f) := by
-  exact (measurable_duhamelPotential E.2 (intervalDomain_measurable H) continuous_const T
-    (exitProbePhysical f ∘ sectionTwoPoint)
+    (f : exitProbeSubmodule) : Measurable (nestedSourcePotential H E T f) := (measurable_duhamelPotential E.2 (intervalDomain_measurable H) continuous_const T
+    _
     ((exitProbePhysical_continuous_compact f).1.measurable.comp
       (continuous_sectionTwoPoint 1).measurable)).comp
         (continuous_sectionTwoPoint 1).measurable
 
 /-- Compact probes are integrable for every finite physical measure used in decomposition. -/
-theorem nestedProbe_integrable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+theorem nestedProbe_integrable  (A : SmoothAutonomous lam Lam)
     (f : exitProbeSubmodule) (μ : Measure Point) [IsFiniteMeasure μ] :
     Integrable (exitProbePhysical f) μ := by
   obtain ⟨M, hM⟩ := exitProbePhysical_bounded_source A f
   apply Integrable.mono' (integrable_const M)
     (exitProbePhysical_continuous_compact f).1.measurable.aestronglyMeasurable
-  exact Filter.Eventually.of_forall (fun p => by rw [Real.norm_eq_abs]; exact (hM p).1)
+  simp_all
 
 /-- Smaller-strip interior points lie in the physical closed past of the larger interval. -/
 theorem nested_strip_union_exit_subset_closed (H1 H2 : Interval)
@@ -58,7 +59,7 @@ theorem nested_strip_union_exit_subset_closed (H1 H2 : Interval)
   · have hv := hsub hp.2.2
     exact ⟨hp.2.1.le, hv.1.le, hv.2.le⟩
   · rcases hp with hp | hp
-    · exact ⟨hp.1.le, hcl hp.2⟩
+    · grind
     · refine ⟨hp.2.1.le, hcl ?_⟩
       rcases hp.2.2 with hv | hv <;> rw [hv]
       · exact ⟨le_rfl, H1.ordered.le⟩

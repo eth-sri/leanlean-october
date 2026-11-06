@@ -22,8 +22,10 @@ def boundedBallSourcePotential {d : ℕ} {v₀ : PDE.Vec d} {R : ℝ}
   duhamelPotential K T ((localStrip a T v₀ R).indicator F ∘ sectionTwoPoint)
     (sectionTwoPoint P)
 
+variable {d : ℕ}
+
 /-- Strip-bounded sources have a globally bounded measurable literal zero extension. -/
-theorem boundedBallSource_extension {d : ℕ} (a T M : ℝ) (v₀ : PDE.Vec d) (R : ℝ)
+theorem boundedBallSource_extension  (a T M : ℝ) (v₀ : PDE.Vec d) (R : ℝ)
     (hM : 0 ≤ M) (F : KineticPoint d → ℝ) (hF : Measurable F)
     (hb : ∀ P ∈ localStrip a T v₀ R, |F P| ≤ M) :
     Measurable ((localStrip a T v₀ R).indicator F ∘ sectionTwoPoint) ∧
@@ -31,22 +33,19 @@ theorem boundedBallSource_extension {d : ℕ} (a T M : ℝ) (v₀ : PDE.Vec d) (
   refine ⟨(hF.indicator (measurableSet_localStrip a T v₀ R)).comp
     (continuous_sectionTwoPoint d).measurable, fun Q => ?_⟩
   by_cases hQ : sectionTwoPoint Q ∈ localStrip a T v₀ R
-  · rw [indicator_of_mem hQ]
-    exact hb _ hQ
-  · rw [indicator_of_notMem hQ, abs_zero]
-    exact hM
+  · simp_all
+  simp_all
 
 /-- The finite strip swaps into the existing past evolution domain. -/
-theorem boundedBallSource_strip_subset_past {d : ℕ} (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ) :
+theorem boundedBallSource_strip_subset_past  (a T : ℝ) (v₀ : PDE.Vec d) (R : ℝ) :
     sectionTwoPoint '' localStrip a T v₀ R ⊆
       evolutionPastOpenCylinder (PDE.euclideanBall v₀ R) (fun _ => 0) T := by
   rintro Q ⟨P, hP, rfl⟩
   refine ⟨hP.2.1, ?_⟩
-  rw [boundedSource_stationary_domain]
-  exact hP.2.2
+  aesop
 
 /-- Bounded physical strip sources satisfy the exact signed kinetic weak equation. -/
-theorem boundedBallSourcePotential_weak {d : ℕ} {lam Lam : ℝ}
+theorem boundedBallSourcePotential_weak  {lam Lam : ℝ}
     (B : CoefficientField d) (hB : IsSectionTwoCoefficient lam Lam B)
     (v₀ : PDE.Vec d) {R : ℝ} (hR : 0 < R)
     (S : TerminalOperatorFamily (PDE.euclideanBall v₀ R) (fun _ => 0))
@@ -64,25 +63,20 @@ theorem boundedBallSourcePotential_weak {d : ℕ} {lam Lam : ℝ}
   obtain ⟨hgm, hgb⟩ := boundedBallSource_extension a T M v₀ R hM F hF hb
   let g := (localStrip a T v₀ R).indicator F ∘ sectionTwoPoint
   have hw := duhamel_bounded_isKineticWeakTransportedSolution (localBall_admissible v₀ hR)
-    (PDE.isOpen_euclideanBall v₀ R).measurableSet continuous_const
-    (zIndependentCoefficient B) (identityDrift d) S K hreal hBs hBsym
+    _ continuous_const
+    _ _ S K hreal hBs hBsym
     (identityDrift_smooth d) g hgm M hM hgb T
   have hsub := boundedBallSource_strip_subset_past a T v₀ R
-  have hr := boundedSource_weak_restrict hsub (zIndependentCoefficient B) (identityDrift d)
-    (duhamelPotential K T g) (fun Q => -g Q) hw
+  have hr := boundedSource_weak_restrict hsub _ _
+    _ _ hw
   have hU : MeasurableSet (sectionTwoPoint '' localStrip a T v₀ R) :=
     ((sectionTwoHomeomorph d).isOpenMap _ (isOpen_localStrip a T v₀ R)).measurableSet
   have hfg : EqOn (fun Q => -g Q) (fun Q => -F (sectionTwoPoint Q))
       (sectionTwoPoint '' localStrip a T v₀ R) := by
     rintro Q ⟨P, hP, rfl⟩
-    change -(localStrip a T v₀ R).indicator F (sectionTwoPoint (sectionTwoPoint P)) =
-      -F (sectionTwoPoint (sectionTwoPoint P))
-    rw [sectionTwoPoint_involutive P, indicator_of_mem hP]
-  have heq : boundedBallSourcePotential K a T F ∘ sectionTwoPoint = duhamelPotential K T g := by
-    funext Q
-    change duhamelPotential K T g (sectionTwoPoint (sectionTwoPoint Q)) = _
-    rw [sectionTwoPoint_involutive Q]
-  rw [heq]
+    change -(localStrip a T v₀ R).indicator F _ =
+      -F _
+    rw [sectionTwoPoint_involutive, indicator_of_mem hP]
   exact boundedSource_weak_source_congr hU _ _ _ _ _ hfg hr
 
 /-- The physical finite-strip source potential has the exact time/quadratic minimum bound. -/
@@ -105,25 +99,24 @@ theorem boundedBallSourcePotential_abs_le
   have hp : sectionTwoPoint P ∈
       evolutionPastClosedCylinder (PDE.euclideanBall v₀ R) (fun _ => 0) T := by
     refine ⟨hP.2.1, ?_⟩
-    rw [boundedSource_stationary_domain]
-    exact hP.2.2
+    aesop
   have h := abs_duhamelPotential_le_time_min_quadratic hH (lt_of_lt_of_le Nat.zero_lt_one hd)
-    hR hB.1 zero_lt_one (zIndependentCoefficient B) hBs hBsym hell (identityDrift d)
+    hR hB.1 zero_lt_one _ hBs hBsym hell _
     (identityDrift_smooth d) (identityDrift_bounds d) S K hreal
-    ((localStrip a T v₀ R).indicator F ∘ sectionTwoPoint) hgm M hM hgb T (sectionTwoPoint P) hp
+    _ hgm M hM hgb T _ hp
   simpa only [boundedBallSourcePotential, boundedSourceQuadratic, sectionTwoPoint, mul_comm] using h
 
 /-- The finite-strip literal potential vanishes on both trace faces, including their corner. -/
-theorem boundedBallSourcePotential_trace_zero {d : ℕ} {v₀ : PDE.Vec d} {R : ℝ}
+theorem boundedBallSourcePotential_trace_zero  {v₀ : PDE.Vec d} {R : ℝ}
     (K : MovingFiberKernel (PDE.euclideanBall v₀ R) (fun _ => 0))
     (a T : ℝ) (F : KineticPoint d → ℝ) (P : KineticPoint d)
     (hp : P ∈ localTrace a T v₀ R) : boundedBallSourcePotential K a T F P = 0 := by
   rcases hp with hterm | hlat
-  · exact duhamelPotential_eq_zero_of_terminal_le K T _ (sectionTwoPoint P) hterm.1.ge
+  · exact duhamelPotential_eq_zero_of_terminal_le K T _ _ hterm.1.ge
   · apply duhamelPotential_eq_zero_of_not_mem
     rw [boundedSource_stationary_domain]
     rw [(PDE.isOpen_euclideanBall v₀ R).frontier_eq] at hlat
-    exact hlat.2.2.2
+    aesop
 
 /-- The physical potential is continuous within the closed strip at either trace face. -/
 theorem boundedBallSourcePotential_continuousWithinAt_trace
@@ -150,8 +143,7 @@ theorem boundedBallSourcePotential_continuousWithinAt_trace
         (evolutionPastClosedCylinder (PDE.euclideanBall v₀ R) (fun _ => 0) T) := by
       intro Q hQ
       refine ⟨hQ.2.1, ?_⟩
-      rw [boundedSource_stationary_domain]
-      exact hQ.2.2
+      aesop
     have hc := continuousWithinAt_duhamelPotential_bounded_lateral hH
       (lt_of_lt_of_le Nat.zero_lt_one hd) hR hB.1 zero_lt_one
       (zIndependentCoefficient B) hBs hBsym hell (identityDrift d)

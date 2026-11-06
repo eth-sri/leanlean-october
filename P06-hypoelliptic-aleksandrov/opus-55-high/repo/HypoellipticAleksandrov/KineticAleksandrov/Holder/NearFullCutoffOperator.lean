@@ -11,38 +11,32 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
 open Set MeasureTheory Parabolic
 open scoped MatrixOrder
 
+variable {d : ℕ} {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
+
 /-- The unit jet expression is jointly continuous in point and matrix entries. -/
-theorem continuous_unitCutoffJet {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
+theorem continuous_unitCutoffJet 
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) :
     Continuous (fun z : KineticPoint d × PDE.Mat d =>
       fderiv ℝ f (KineticPoint.equivProd d z.1) (1, (z.1.velocity, 0)) -
         matrixContraction z.2 (sliceHessian (unitCutoffVelocitySlice f z.1) z.1.velocity)) := by
   have hD : Continuous (fun z : KineticPoint d × PDE.Mat d =>
-      fderiv ℝ f (KineticPoint.equivProd d z.1) (1, (z.1.velocity, 0))) :=
+      fderiv ℝ f _ _) :=
     (continuous_unitCutoffTransport hf).comp continuous_fst
   apply hD.sub
   have hH : Continuous (fun z : KineticPoint d × PDE.Mat d =>
-      sliceHessian (unitCutoffVelocitySlice f z.1) z.1.velocity) :=
+      sliceHessian _ z.1.velocity) :=
     (continuous_unitCutoffVelocityHessian hf).comp continuous_fst
-  unfold matrixContraction
   apply continuous_finsetSum
-  intro i _
-  apply continuous_finsetSum
-  intro j _
-  exact ((continuous_apply j).comp ((continuous_apply i).comp continuous_snd)).mul
-    ((continuous_apply j).comp ((continuous_apply i).comp hH))
+  fun_prop
 
 /-- Compact unit geometry gives a matrix-entry-uniform bound on the cutoff jet. -/
-theorem exists_unitCutoffJet_bound {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
+theorem exists_unitCutoffJet_bound 
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (Lam : ℝ) :
     ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ Q ∈ closure
       (backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1),
@@ -58,13 +52,10 @@ theorem exists_unitCutoffJet_bound {d : ℕ}
     (continuous_unitCutoffJet hf).continuousOn
   refine ⟨max M 0, le_max_right _ _, fun Q hQ B hB => ?_⟩
   have hBS : B ∈ S := fun i j => abs_le.mp (hB i j)
-  exact (show |fderiv ℝ f (KineticPoint.equivProd d Q) (1, (Q.velocity, 0)) -
-    matrixContraction B (sliceHessian (unitCutoffVelocitySlice f Q) Q.velocity)| ≤ M by
-      simpa only [Real.norm_eq_abs] using hM (Q, B) ⟨hQ, hBS⟩).trans (le_max_left _ _)
+  aesop
 
 /-- Ellipticity and exact affine jets yield the source cutoff bound with uniform constants. -/
-theorem exists_scaledUnitCutoff_operator_bound {d : ℕ}
-    {f : ℝ × (PDE.Vec d × PDE.Vec d) → ℝ}
+theorem exists_scaledUnitCutoff_operator_bound 
     (hf : ContDiff ℝ (⊤ : ℕ∞) f) (Lam : ℝ) :
     ∃ C₀ : ℝ, 0 ≤ C₀ ∧ ∀ lam : ℝ, 0 < lam →
       ∀ A : FullKineticCoefficient d, FullElliptic lam Lam A →
@@ -77,9 +68,9 @@ theorem exists_scaledUnitCutoff_operator_bound {d : ℕ}
   filter_upwards [ae_restrict_mem hQ.measurableSet,
     ae_restrict_of_ae hA.2.2.1, ae_restrict_of_ae hA.2.2.2] with P hP hl hu
   have hunit : kineticAffineInverse P₀ R P ∈
-      backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1 := by
+      backwardCylinder ⟨0, 0, 0⟩ 1 := by
     apply (kineticAffine_mem_cylinder P₀ _ hR).mp
-    simpa only [kineticAffine_apply_inverse P₀ hR.ne' P] using hP
+    simpa only [kineticAffine_apply_inverse P₀ hR.ne'] using hP
   have hB : ∀ i j, |fullKineticCoefficientAt A P i j| ≤ |Lam| :=
     fun i j =>
       (HypoellipticAleksandrov.abs_apply_le_of_loewner hlam hl hu i j).trans (le_abs_self Lam)

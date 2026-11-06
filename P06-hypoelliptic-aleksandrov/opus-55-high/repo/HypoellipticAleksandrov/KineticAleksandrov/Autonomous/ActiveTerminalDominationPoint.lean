@@ -5,17 +5,16 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.ActiveTermin
 /-! # Stopped potential inequalities including observation-time entrance atoms -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov Parabolic
 open SectionTwo TheoremA Evolution
 open scoped Classical
 
+variable (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement) {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam) (A : SmoothAutonomous lam Lam)
+
 /-- An active piece spends its potential on its terminal value and strictly earlier exits. -/
 theorem enlarged_active_stopped_step
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (c : Clock) (J : Interval) (b T : ℝ) (hBT : b ≤ T)
+     (c : Clock) (J : Interval) (b T : ℝ) (hBT : b ≤ T)
     (hJ : closure c.active ⊆ J.carrier) (u : Point → ℝ)
     (hphi : IsKineticC112On u {p | p.time < b})
     (hc : ContinuousOn u {p | p.time ≤ b}) (M : ℝ) (hM : 0 ≤ M)
@@ -38,7 +37,7 @@ theorem enlarged_active_stopped_step
         0 := by
       apply integral_eq_zero_of_ae
       apply (ae_restrict_of_ae
-        (enlargedVisitExitKernel_ae_time_gt hH hLE hlam hLam A (visitActiveUnion c J) T p)).mono
+        (enlargedVisitExitKernel_ae_time_gt hH hLE hlam hLam A _ T p)).mono
       intro q hq
       exact ite_eq_right (not_le_of_gt ((le_of_not_gt hb).trans_lt hq))
     rw [hz, add_zero]
@@ -49,26 +48,24 @@ theorem enlarged_active_stopped_step
       have hterm : enlargedActiveTerminalFamily hH hLE hlam hLam A c J b p =
           Measure.dirac p := by
         unfold enlargedActiveTerminalFamily
-        exact ite_eq_left ⟨he, hvJ⟩
-      rw [hterm, integral_dirac]
+        simp_all
+      simp_all
     · have hp : p ∉ enlargedVisitPoleSet (visitActiveUnion c J) b :=
         fun hp => hb hp.1
       have hterm : enlargedActiveTerminalFamily hH hLE hlam hLam A c J b p = 0 := by
         unfold enlargedActiveTerminalFamily
         rw [ite_eq_right (fun h => he h.1)]
-        change (if ht : p ∈ enlargedVisitPoleSet (visitActiveUnion c J) b then
-          finiteUnionExit hH hLE hlam hLam A _ b (enlargedVisitPole _ _ ⟨p, ht⟩)
-            else 0).restrict {q | q.time = b} = 0
-        rw [dite_eq_right hp, Measure.restrict_zero]
+        change (if ht : p ∈ enlargedVisitPoleSet _ b then
+          finiteUnionExit hH hLE hlam hLam A _ b _
+            else 0).restrict _ = 0
+        simp_all
       rw [hterm, integral_zero_measure]
       rw [show enlargedStoppedPotential b u p = 0 from
         ite_eq_right (fun h => he (le_antisymm h (le_of_not_gt hb)))]
 
 /-- A waiting piece returns only the potential carried by poles strictly before observation. -/
 theorem enlarged_waiting_stopped_step
-    (hH : HormanderHypoellipticityStatement) (hLE : LiebermanEllipsoidDirichletStatement)
-    {lam Lam : ℝ} (hlam : 0 < lam) (hLam : lam ≤ Lam)
-    (A : SmoothAutonomous lam Lam) (H : FiniteIntervalUnion) (b T : ℝ) (hBT : b ≤ T)
+     (H : FiniteIntervalUnion) (b T : ℝ) (hBT : b ≤ T)
     (u : Point → ℝ) (hphi : IsKineticC112On u {p | p.time < b})
     (hc : ContinuousOn u {p | p.time ≤ b}) (M : ℝ) (hM : 0 ≤ M)
     (hbound : ∀ p, p.time ≤ b → |u p| ≤ M)
@@ -87,9 +84,7 @@ theorem enlarged_waiting_stopped_step
     have hnV : 0 ≤ᵐ[enlargedVisitExitKernel hH hLE hlam hLam A H T p]
         enlargedStoppedPotential b u := Filter.Eventually.of_forall fun q => by
       unfold enlargedStoppedPotential
-      split
-      · exact hn q ‹q.time ≤ b›
-      · exact le_rfl
+      aesop
     exact (integral_mono_measure Measure.restrict_le_self hnV hi).trans
       (enlarged_exit_stopped_integral_le hH hLE hlam hLam A H b T hBT u hphi hc M hM
         hbound hop hn p)

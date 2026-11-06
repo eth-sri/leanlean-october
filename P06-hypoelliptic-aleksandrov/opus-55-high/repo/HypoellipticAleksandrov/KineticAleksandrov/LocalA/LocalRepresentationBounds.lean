@@ -5,14 +5,14 @@ public import HypoellipticAleksandrov.KineticAleksandrov.LocalA.LocalRepresentat
 /-! # Continuity, boundedness and measurability of supported local residuals -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set Filter MeasureTheory Parabolic
 open scoped Topology
 
+variable {d : ℕ} (Z₀ : KineticPoint d) {R a T : ℝ} (hR : 0 < R)
+
 /-- A continuous multiplier supported inside the position face preserves closed-strip continuity. -/
-theorem localRepresentation_supported_mul_continuousOn {d : ℕ} (Z₀ : KineticPoint d)
-    {R a T : ℝ} (hR : 0 < R) (ha : Z₀.time ≤ a) (hT : T ≤ Z₀.time + R ^ 2)
+theorem localRepresentation_supported_mul_continuousOn  (ha : Z₀.time ≤ a) (hT : T ≤ Z₀.time + R ^ 2)
     (u : KineticPoint d → ℝ)
     (hu : ContinuousOn u (closure (forwardCylinder Z₀ R hR)))
     (χ : PDE.Vec d → ℝ) (hs : tsupport χ ⊆ PDE.euclideanBall 0 (R ^ 3))
@@ -28,7 +28,7 @@ theorem localRepresentation_supported_mul_continuousOn {d : ℕ} (Z₀ : Kinetic
     have hmem : closure (forwardCylinder Z₀ R hR) ∈
         𝓝[localClosedStrip a T Z₀.velocity R] P := by
       have hpos := hrel.continuousAt.preimage_mem_nhds
-        ((PDE.isOpen_euclideanBall 0 (R ^ 3)).mem_nhds (hs hx))
+        ((PDE.isOpen_euclideanBall 0 _).mem_nhds (hs hx))
       apply mem_of_superset (inter_mem (mem_nhdsWithin_of_mem_nhds hpos)
         self_mem_nhdsWithin)
       intro Q hQ
@@ -39,12 +39,11 @@ theorem localRepresentation_supported_mul_continuousOn {d : ℕ} (Z₀ : Kinetic
       have hmem := hrel.continuousAt.preimage_mem_nhds
         ((isClosed_tsupport χ).isOpen_compl.mem_nhds hx)
       filter_upwards [hmem] with Q hQ
-      rw [hz Q hQ, zero_mul]
+      simp_all
     exact (continuousAt_const.congr_of_eventuallyEq hzero).continuousWithinAt
 
 /-- Compact outer-cylinder data bound every position-supported strip multiplier. -/
-theorem localRepresentation_supported_mul_bounded {d : ℕ} (Z₀ : KineticPoint d)
-    {R a T : ℝ} (hR : 0 < R) (ha : Z₀.time ≤ a) (hT : T ≤ Z₀.time + R ^ 2)
+theorem localRepresentation_supported_mul_bounded  (ha : Z₀.time ≤ a) (hT : T ≤ Z₀.time + R ^ 2)
     (u : KineticPoint d → ℝ)
     (hu : ContinuousOn u (closure (forwardCylinder Z₀ R hR)))
     (χ : PDE.Vec d → ℝ) (hs : tsupport χ ⊆ PDE.euclideanBall 0 (R ^ 3))
@@ -57,11 +56,10 @@ theorem localRepresentation_supported_mul_bounded {d : ℕ} (Z₀ : KineticPoint
   by_cases hx : relativePosition Z₀ Q ∈ tsupport χ
   · exact (hM ⟨Q, local_closed_strip_mem_outer Z₀ Q hR ha hT hQ (hs hx), rfl⟩).trans
       (le_max_left _ _)
-  · rw [hz Q hx, zero_mul, abs_zero]
-    exact le_max_right _ _
+  simp_all
 
 /-- A continuous strip residual has a measurable literal zero extension. -/
-theorem localRepresentation_indicator_measurable {d : ℕ} (a T : ℝ)
+theorem localRepresentation_indicator_measurable  (a T : ℝ)
     (v₀ : PDE.Vec d) (R : ℝ) (F : KineticPoint d → ℝ)
     (hF : ContinuousOn F (localStrip a T v₀ R)) :
     Measurable ((localStrip a T v₀ R).indicator F) := by

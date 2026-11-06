@@ -25,9 +25,10 @@ noncomputable def classicalGradient {d : ℕ}
     (f : Vec d → ℝ) (x : Vec d) : Vec d :=
   fun i => (fderiv ℝ f x) (basisVec i)
 
+variable {d : ℕ} (f : Vec d → ℝ)
+
 @[simp]
-theorem classicalGradient_apply {d : ℕ}
-    (f : Vec d → ℝ) (x : Vec d) (i : Fin d) :
+theorem classicalGradient_apply  (x : Vec d) (i : Fin d) :
     classicalGradient f x i =
       (fderiv ℝ f x) (basisVec i) :=
   rfl
@@ -35,30 +36,29 @@ theorem classicalGradient_apply {d : ℕ}
 /-- A continuous linear functional on native vectors is reconstructed from
 its values on the coordinate basis. -/
 theorem ContinuousLinearMap.apply_eq_vecDot_basisValues
-    {d : ℕ} (L : Vec d →L[ℝ] ℝ) (v : Vec d) :
+     (L : Vec d →L[ℝ] ℝ) (v : Vec d) :
     L v = vecDot (fun i => L (basisVec i)) v := by
   calc
     L v = L (∑ i : Fin d, v i • basisVec i) := by
       rw [sum_smul_basisVec]
     _ = ∑ i : Fin d, v i * L (basisVec i) := by
       simp
-    _ = ∑ i : Fin d, L (basisVec i) * v i := by
+    _ = ∑ i : Fin d, L _ * v i := by
       apply Finset.sum_congr rfl
       intro i _hi
       ring
-    _ = vecDot (fun i => L (basisVec i)) v := by
+    _ = vecDot _ v := by
       rfl
 
 /-- Directional derivatives are Euclidean dot products with the coordinate
 gradient. -/
-theorem fderiv_apply_eq_vecDot_classicalGradient {d : ℕ}
-    (f : Vec d → ℝ) (x v : Vec d) :
+theorem fderiv_apply_eq_vecDot_classicalGradient  (x v : Vec d) :
     (fderiv ℝ f x) v = vecDot (classicalGradient f x) v :=
   PDE.ContinuousLinearMap.apply_eq_vecDot_basisValues
-    (fderiv ℝ f x) v
+    _ v
 
 /-- The coordinate gradient of a `C¹` function is continuous. -/
-theorem ContDiff.continuous_classicalGradient {d : ℕ}
+theorem ContDiff.continuous_classicalGradient 
     {f : Vec d → ℝ} (hf : ContDiff ℝ 1 f) :
     Continuous (classicalGradient f) := by
   apply continuous_pi

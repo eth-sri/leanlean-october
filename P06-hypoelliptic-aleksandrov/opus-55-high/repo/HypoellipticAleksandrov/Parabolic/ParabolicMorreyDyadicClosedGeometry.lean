@@ -36,19 +36,18 @@ theorem parabolicDyadicClosedForwardBox_child_subset
         (parabolicDyadicSourceBox index).radius
         (parabolicDyadicSourceBox index).baseTime
         (parabolicDyadicSourceBox index).center := by
-  have hchildRadius : 0 <
-      (parabolicDyadicSourceBox (parabolicDyadicChildIndex index child)).radius :=
+  have hchildRadius  :=
     parabolicDyadicSourceBox_radius_pos (parabolicDyadicChildIndex index child)
-  have hparentRadius : 0 < (parabolicDyadicSourceBox index).radius :=
+  have hparentRadius  :=
     parabolicDyadicSourceBox_radius_pos index
-  rw [← closure_parabolicBox_of_pos (d := d) (vartheta := (1 : Real))
+  rw [← closure_parabolicBox_of_pos (d := d) (vartheta := (1))
         (r := (parabolicDyadicSourceBox
-          (parabolicDyadicChildIndex index child)).radius)
+          _).radius)
         (t0 := (parabolicDyadicSourceBox
-          (parabolicDyadicChildIndex index child)).baseTime)
+          _).baseTime)
         (v0 := (parabolicDyadicSourceBox
-          (parabolicDyadicChildIndex index child)).center) (by norm_num) hchildRadius,
-    ← closure_parabolicBox_of_pos (d := d) (vartheta := (1 : Real))
+          _).center) (by norm_num) hchildRadius,
+    ← closure_parabolicBox_of_pos (d := d) (vartheta := (1))
         (r := (parabolicDyadicSourceBox index).radius)
         (t0 := (parabolicDyadicSourceBox index).baseTime)
         (v0 := (parabolicDyadicSourceBox index).center) (by norm_num) hparentRadius]

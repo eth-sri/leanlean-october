@@ -10,7 +10,6 @@ import Mathlib.Tactic
 /-! # Annihilation of homogeneous images gives the literal stationary radial adjoint pair -/
 
 @[expose] public section
-noncomputable section
 open Set MeasureTheory
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -34,31 +33,31 @@ theorem radial_bellman_pair_stationary (lam Lam alpha : ℝ) (hlam : 0 < lam)
     fun w => w.1.val ^ (1 - alpha) *
       (w.2.2.val * bellmanDvv zeta (sphereRadialPoint w).val)
   have hFT : Integrable FT (bellmanPositiveTimeVolume.prod pi) := by
-    simpa only [one_mul] using bellman_radial_test_integrable alpha pi
-      (fun q => q.2 * bellmanDx zeta q) ht htc hts (fun _ => 1) continuous_const
-  have hFV : Integrable FV (bellmanPositiveTimeVolume.prod pi) :=
-    bellman_radial_test_integrable alpha pi (bellmanDvv zeta) hv hvc hvs
-      (fun w => w.2.val) (continuous_subtype_val.comp continuous_snd)
-  have hMT : (∫ q, q.val.2 * fderiv ℝ zeta q.val (1, 0) ∂radialMu alpha pi) =
+    simpa using bellman_radial_test_integrable alpha pi
+      _ ht htc hts (fun _ => 1) continuous_const
+  have hFV : Integrable FV _ :=
+    bellman_radial_test_integrable alpha pi _ hv hvc hvs
+      _ (continuous_subtype_val.comp continuous_snd)
+  have hMT : (∫ q, q.val.2 * fderiv ℝ zeta q.val _ ∂radialMu alpha pi) =
       ∫ w, FT w ∂bellmanPositiveTimeVolume.prod pi :=
-    integral_radialMu alpha pi (fun q => q.val.2 * bellmanDx zeta q.val)
+    integral_radialMu alpha pi _
       (ht.comp continuous_subtype_val)
-  have hMV : (∫ q, fderiv ℝ (fun z => fderiv ℝ zeta z (0, 1)) q.val (0, 1)
+  have hMV : (∫ q, fderiv ℝ (fun z => fderiv ℝ zeta z _) q.val _
       ∂radialEta alpha pi) = ∫ w, FV w ∂bellmanPositiveTimeVolume.prod pi :=
-    integral_radialEta alpha pi (fun q => bellmanDvv zeta q.val)
+    integral_radialEta alpha pi _
       (hv.comp continuous_subtype_val) hlam.le
   rw [hMT, hMV, ← integral_add hFT hFV,
     integral_prod_symm (fun w => FT w + FV w) (hFT.add hFV)]
-  have hLift : IsBellmanHomogeneous alpha (lift alpha zeta) :=
+  have hLift : IsBellmanHomogeneous alpha _ :=
     (bellman_test_lift alpha ha ha1 zeta (hz.of_le (by norm_num)).contDiffOn hc hs).1
   calc
-    (∫ w, ∫ r, FT (r, w) + FV (r, w) ∂bellmanPositiveTimeVolume ∂pi) =
-        ∫ w, bellmanOperator w.2.val (lift alpha zeta) w.1.val ∂pi := by
+    (∫ w, ∫ r, FT _ + FV _ ∂bellmanPositiveTimeVolume ∂pi) =
+        ∫ w, bellmanOperator w.2.val _ w.1.val ∂pi := by
       apply integral_congr_ae
       apply ae_of_all
       intro w
       exact (bellman_lift_operator_integral alpha zeta hz hc hs w.1.val w.1.ne_zero
         w.2.val).symm
-    _ = 0 := hann (lift alpha zeta) hLift
+    _ = 0 := hann _ hLift
 
 end HypoellipticAleksandrov.KineticAleksandrov

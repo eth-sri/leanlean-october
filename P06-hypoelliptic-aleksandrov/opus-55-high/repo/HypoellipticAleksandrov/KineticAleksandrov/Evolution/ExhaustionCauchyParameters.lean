@@ -12,7 +12,6 @@ chooses the common inner cylinder before choosing approximation indices.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -27,7 +26,7 @@ theorem exists_small_dirichlet_comparison_parameters
     ∃ δ A S : ℝ, 0 < δ ∧ δ ≤ δ0 ∧ δ < r0 ∧ 0 < A ∧ A ≤ d ∧
       3 / 2 * A < δ ∧ S0 ^ 2 ≤ S ^ 2 ∧
       2 * C * (M / (1 + S ^ 2) + barrierW κ (δ + 3 / 2 * A) / barrierW κ d) < e := by
-  let q (j : ℕ) : ℝ := 1 / ((j : ℝ) + 1)
+  let q (j : ℕ)  := 1 / ((j : ℝ) + 1)
   have hq : Tendsto q atTop (𝓝 0) := tendsto_one_div_add_atTop_nhds_zero_nat
   have hw : Continuous (barrierW κ) := by unfold barrierW; fun_prop
   have harg : Tendsto (fun j => q j + 3 / 2 * (q j / 4)) atTop (𝓝 0) := by
@@ -41,7 +40,7 @@ theorem exists_small_dirichlet_comparison_parameters
         (barrierW κ d)))
     simpa only [Function.comp_def, barrierW, mul_zero, Real.exp_zero, sub_self,
       zero_div, add_zero] using h
-  have hjS : ∀ᶠ j : ℕ in atTop, |S0| < (j : ℝ) + 1 :=
+  have hjS : ∀ᶠ j : ℕ in atTop, |S0| < j + 1 :=
     (tendsto_natCast_atTop_atTop.eventually (eventually_gt_atTop |S0|)).mono
       fun j hj => by linarith
   obtain ⟨j, hjδ, hjr, hjd, hjS, hje⟩ :=
@@ -49,14 +48,12 @@ theorem exists_small_dirichlet_comparison_parameters
       ((hq.eventually (gt_mem_nhds hr0)).and
         ((hq.eventually (gt_mem_nhds hd)).and (hjS.and
           (herr.eventually (gt_mem_nhds he))))) |>.exists
-  have hj0 : 0 ≤ (j : ℝ) := Nat.cast_nonneg j
-  have hqpos : 0 < q j := by dsimp [q]; positivity
-  have hden : (j : ℝ) + 1 ≤ 1 + ((j : ℝ) + 1) ^ 2 := by nlinarith
-  have hsmall : M / (1 + ((j : ℝ) + 1) ^ 2) ≤ M * q j := by
-    dsimp only [q]
+  have hqpos : 0 < q j := by positivity
+  have hden : j + 1 ≤ 1 + ((j : ℝ) + 1) ^ 2 := by nlinarith
+  have hsmall : M / (1 + (j + 1) ^ 2) ≤ M * q j := by
     rw [mul_one_div]
     exact div_le_div_of_nonneg_left hM (by positivity) hden
-  refine ⟨q j, q j / 4, (j : ℝ) + 1, hqpos, hjδ.le, hjr,
+  refine ⟨q j, q j / 4, j + 1, hqpos, hjδ.le, hjr,
     (by positivity), (by linarith), (by linarith), ?_, ?_⟩
   · nlinarith [sq_abs S0, abs_nonneg S0]
   · exact (mul_le_mul_of_nonneg_left (add_le_add hsmall (le_refl _))

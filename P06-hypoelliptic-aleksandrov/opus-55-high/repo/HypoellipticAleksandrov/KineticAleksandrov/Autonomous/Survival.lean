@@ -35,20 +35,18 @@ theorem active_survival_exp
       (e : Point) (he : e.velocity 0 ∈ c.active) (t : ℝ) (ht : 0 ≤ t),
       activeSurvivingMass hH hLE hlam hLam A c e he t ht ≤
         C * Real.exp (-c₀ * t / c.r ^ 2) := by
-  have hlog : 0 < Real.log (2 : ℝ) := Real.log_pos (by norm_num)
   refine ⟨2, 16 * lam * Real.log 2 / 9, by norm_num, by positivity, ?_⟩
   intro A c e he t ht
   let E := stripEvolution hH hLE hlam hLam A c.activeInterval
   have hE := stripEvolution_spec hH hLE hlam hLam A c.activeInterval
   have hb := stripSurvivingMass_exp_of_half_mass A c.activeInterval E hE
-    (activeHalfMassTime lam c) (activeHalfMassTime_pos hlam c)
+    _ (activeHalfMassTime_pos hlam c)
     (active_survival_half_mass hH hLE hlam hLam A c) e.time t ht
     (stripPoleState c.activeInterval ⊤ ⟨e, WithTop.coe_lt_top _, he⟩)
   have heq : -Real.log 2 * t / activeHalfMassTime lam c =
       -(16 * lam * Real.log 2 / 9) * t / c.r ^ 2 := by
     unfold activeHalfMassTime
-    field_simp [hlam.ne', c.positive.ne']
-  rw [heq] at hb
-  exact hb
+    grind
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

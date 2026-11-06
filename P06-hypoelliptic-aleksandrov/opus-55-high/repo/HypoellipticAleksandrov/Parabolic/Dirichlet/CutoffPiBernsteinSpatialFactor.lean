@@ -15,7 +15,6 @@ supported cutoff as a spatial weak test function.
 
 open scoped BigOperators
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -30,7 +29,6 @@ theorem exists_cutoffPiBernsteinSpatialFactor
       (∀ y, ψ y = χ y *
         ∏ i : Fin d, (bernsteinPolynomial ℝ n (k i)).eval (((y i / R) + 1) / 2)) ∧
       tsupport (ψ : PDE.Vec d → ℝ) ⊆ tsupport χ := by
-  have _hRne : R ≠ 0 := hR.ne'
   let p : PDE.Vec d → ℝ := fun y =>
     ∏ i : Fin d, (bernsteinPolynomial ℝ n (k i)).eval (((y i / R) + 1) / 2)
   have hp : ContDiff ℝ (⊤ : ℕ∞) p := by
@@ -40,8 +38,8 @@ theorem exists_cutoffPiBernsteinSpatialFactor
       (((contDiff_apply ℝ ℝ i).div_const R).add contDiff_const).div_const 2
     simpa only [Polynomial.aeval_def, Algebra.algebraMap_self, Polynomial.eval₂_id,
       Function.comp_def] using
-      (Polynomial.contDiff_aeval (𝕜 := ℝ) (bernsteinPolynomial ℝ n (k i))
-        (↑(⊤ : ℕ∞) : WithTop ℕ∞)).comp hcoordinate
+      (Polynomial.contDiff_aeval (𝕜 := ℝ) (bernsteinPolynomial ℝ n _)
+        _).comp hcoordinate
   let ψ : PDE.WeakTestFunction O :=
     { toFun := fun y => χ y * p y
       contDiff := hχ.mul hp
@@ -49,8 +47,7 @@ theorem exists_cutoffPiBernsteinSpatialFactor
         IsCompact.of_isClosed_subset hχcompact (isClosed_tsupport _) tsupport_mul_subset_left
       tsupport_subset := tsupport_mul_subset_left.trans hχO }
   refine ⟨ψ, ?_, ?_⟩
-  · intro y
-    rfl
+  · grind
   · exact tsupport_mul_subset_left
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

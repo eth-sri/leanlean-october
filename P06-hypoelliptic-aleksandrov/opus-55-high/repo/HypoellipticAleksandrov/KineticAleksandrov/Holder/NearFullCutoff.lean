@@ -44,7 +44,7 @@ theorem exists_unit_cutoff (d : ℕ) :
         backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1 := by
   let e := KineticPoint.homeomorphProd d
   have hK := (isCompact_closure_cap d).image e.continuous
-  have hQ : IsOpen (e '' backwardCylinder (⟨0, 0, 0⟩ : KineticPoint d) 1) :=
+  have hQ : IsOpen (e '' backwardCylinder ⟨0, 0, 0⟩ 1) :=
     e.isOpen_image.mpr (isOpen_backwardCylinder _ _ (by norm_num))
   have hKQ := image_mono (f := e) (cap_compact_inside d).2
   obtain ⟨U, hU, hKU, hUQ, hUc⟩ :=
@@ -54,11 +54,7 @@ theorem exists_unit_cutoff (d : ℕ) :
   refine ⟨f, hf, fun z => hrange (mem_range_self z), ?_, ?_, ?_⟩
   · intro P hP
     exact (hone _).mp (mem_image_of_mem e hP)
-  · change IsCompact (closure (Function.support f))
-    rw [hsupport]
-    exact hUc
-  · change closure (Function.support f) ⊆ _
-    rw [hsupport]
-    exact hUQ
+  · aesop
+  aesop
 
 end HypoellipticAleksandrov.KineticAleksandrov.Holder

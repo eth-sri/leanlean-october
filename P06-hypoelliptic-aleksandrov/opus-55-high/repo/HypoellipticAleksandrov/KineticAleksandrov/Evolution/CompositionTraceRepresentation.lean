@@ -11,7 +11,6 @@ This is the shared-witness clause of the shared witness, independent of kernel c
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -54,11 +53,10 @@ theorem terminalOperators_apply_smooth
         hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx
         σ τ hστ p F hF := by
   let q := evolutionQueryOfState Ω γ σ τ hστ p
-  rw [terminalOperators_apply, terminalFiberKernel_apply]
+  rw [terminalOperators_apply]
   have hc := comap_terminalMeasure_eq_rieszMeasure n hn lam Lam m L_b
     hlam hlamLam hm hmLb Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell
     hb_smooth hb_lipschitz hb_coercive hEx q
-  dsimp only [q, evolutionQueryOfState] at hc
   have hi := congrArg (fun ν : Measure (EvolutionState Ω γ τ) =>
     ∫ x, terminalStateDatum F x ∂ν) hc
   apply hi.trans
@@ -70,7 +68,7 @@ theorem terminalOperators_apply_smooth
   rw [hmap, (MeasurableEmbedding.subtype_coe
     (measurableSet_evolutionStateSet_of_isOpen
       (isOpen_of_isAdmissibleEvolutionDomain hΩ))).integral_map] at hint
-  exact hint
+  aesop
 
 /-- One classical solution represents every evaluation of the operator family. -/
 theorem terminalOperators_classical

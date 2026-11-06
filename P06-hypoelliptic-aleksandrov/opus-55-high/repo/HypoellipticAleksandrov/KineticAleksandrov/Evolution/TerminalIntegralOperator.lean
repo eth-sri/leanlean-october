@@ -40,9 +40,7 @@ theorem abs_integral_boundedBorel_le {Y : Type*} [MeasurableSpace Y] (f : Bounde
     (μ : Measure Y) (hμ : μ univ ≤ 1) {C : ℝ} (hC0 : 0 ≤ C) (hC : ∀ y, |f y| ≤ C) :
     |∫ y, f y ∂μ| ≤ C := by
   have : IsFiniteMeasure μ := ⟨hμ.trans_lt ENNReal.one_lt_top⟩
-  have hreal : μ.real univ ≤ 1 := by
-    rw [Measure.real]
-    exact ENNReal.toReal_le_of_le_ofReal zero_le_one (by simpa using hμ)
+  have hreal : μ.real univ ≤ 1 := ENNReal.toReal_le_of_le_ofReal zero_le_one (by simpa using hμ)
   have := norm_integral_le_of_norm_le_const (μ := μ) (f := fun y => f y) (C := C)
     (Filter.Eventually.of_forall fun y => by simpa using hC y)
   calc |∫ y, f y ∂μ| = ‖∫ y, f y ∂μ‖ := (Real.norm_eq_abs _).symm
@@ -90,14 +88,6 @@ def terminalIntegralDatum (σ τ : ℝ) (hστ : σ ≤ τ) (f : BoundedBorel (E
       (terminalFiberKernel_univ_le_one n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
         hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p) hC0 hC⟩⟩
 
-/-- Evaluation of `terminalIntegralDatum`. -/
-theorem terminalIntegralDatum_apply (σ τ : ℝ) (hστ : σ ≤ τ)
-    (f : BoundedBorel (EvolutionState Ω γ τ)) (p : EvolutionState Ω γ σ) :
-    terminalIntegralDatum n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ f p =
-        ∫ x, f x ∂(κ σ τ hστ p) :=
-  rfl
-
 /-- The integral operator against the fiber kernel is the unique real-linear map of
 bounded Borel functions with the integral formula. -/
 theorem exists_unique_terminalIntegralOperator
@@ -107,19 +97,16 @@ theorem exists_unique_terminalIntegralOperator
         T f p = ∫ x, f x ∂(κ σ τ hστ p) := by
   have hfin := isFiniteKernel_terminalFiberKernel n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
     hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ
-  let T : BoundedBorel (EvolutionState Ω γ τ) →ₗ[ℝ] BoundedBorel (EvolutionState Ω γ σ) :=
+  let T : BoundedBorel _ →ₗ[ℝ] BoundedBorel _ :=
     { toFun := terminalIntegralDatum n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
         hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ
       map_add' := fun f g => BoundedBorel.ext fun p => by
-        simp only [terminalIntegralDatum_apply, BoundedBorel.add_apply]
         exact integral_add (integrable_boundedBorel f _) (integrable_boundedBorel g _)
       map_smul' := fun c f => BoundedBorel.ext fun p => by
-        simp only [terminalIntegralDatum_apply, BoundedBorel.smul_apply, RingHom.id_apply,
-          smul_eq_mul]
         exact integral_const_mul c _ }
   refine ⟨T, fun f p => rfl, fun T' hT' => ?_⟩
   exact LinearMap.ext fun f => BoundedBorel.ext fun p => by
-    rw [hT' f p]; rfl
+    rw [hT']; rfl
 
 /-- The full family of integral operators `P₀ σ τ hστ`, chosen from the `∃!`
 statements `exists_unique_terminalIntegralOperator`. -/
@@ -147,18 +134,16 @@ theorem terminalFiberKernel_self (σ : ℝ) :
       ProbabilityTheory.Kernel (EvolutionState Ω γ σ) (EvolutionState Ω γ σ)) := by
   refine ProbabilityTheory.Kernel.ext fun p => ?_
   rw [terminalFiberKernel_apply, ProbabilityTheory.Kernel.id_apply,
-    terminalMeasure_eq_dirac n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
-      hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ p]
+    terminalMeasure_eq_dirac]
   have hU := measurableSet_evolutionStateSet_of_isOpen (γ := γ) (τ := σ)
     (isOpen_of_isAdmissibleEvolutionDomain hΩ)
   have hemb := MeasurableEmbedding.subtype_coe hU
   refine Measure.ext fun A hA => ?_
-  rw [hemb.comap_apply, Measure.dirac_apply' _ (hemb.measurableSet_image.2 hA),
-    Measure.dirac_apply' _ hA]
+  rw [hemb.comap_apply]
   have hiff : p.1 ∈ Subtype.val '' A ↔ p ∈ A := Subtype.val_injective.mem_set_image
   by_cases h : p ∈ A
-  · simp [Set.indicator, h, hiff.2 h]
-  · simp [Set.indicator, h, mt hiff.1 h]
+  · simp [h]
+  · simp [h]
 
 /-- Endpoint identity, positivity, subprobability contraction, and the identity kernel at
 equal times, all for the same `μ`-derived `κ` and `P₀`. -/
@@ -181,7 +166,7 @@ theorem terminalOperators_basic :
         hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx,
       ProbabilityTheory.Kernel.id_apply, integral_dirac' _ _ f.measurable.stronglyMeasurable]
     rfl
-  · rw [BoundedBorel.zero_apply, terminalOperators_apply n hn lam Lam m L_b hlam hlamLam hm hmLb
+  · rw [terminalOperators_apply n hn lam Lam m L_b hlam hlamLam hm hmLb
       Ω γ B b hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx]
     exact integral_nonneg fun x => hf x
   · rw [terminalOperators_apply n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
@@ -189,7 +174,6 @@ theorem terminalOperators_basic :
     simp only [BoundedBorel.one_apply, integral_const, smul_eq_mul, mul_one]
     have hmass := terminalFiberKernel_univ_le_one n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ τ hστ p
-    rw [Measure.real]
     exact ENNReal.toReal_le_of_le_ofReal zero_le_one (by simpa using hmass)
   · exact terminalFiberKernel_self n hn lam Lam m L_b hlam hlamLam hm hmLb Ω γ B b
       hΩ hγ hB_smooth hB_symm hB_ell hb_smooth hb_lipschitz hb_coercive hEx σ

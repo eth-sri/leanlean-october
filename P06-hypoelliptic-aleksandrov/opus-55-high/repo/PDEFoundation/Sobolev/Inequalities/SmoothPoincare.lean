@@ -21,10 +21,12 @@ namespace PDE
 open MeasureTheory
 open scoped ENNReal
 
+variable {d : ℕ} {U : Set (Vec d)} {D : ℝ}
+
 /-- For a fixed point, the `p`th power of the smooth pairwise oscillation is
 integrable on a bounded Sobolev-regular domain. -/
 theorem integrableOn_abs_sub_rpow_of_contDiff
-    {d : ℕ} {U : Set (Vec d)}
+    
     (hU : IsSobolevRegularDomain U)
     {u : Vec d → ℝ} (hu : ContDiff ℝ 0 u)
     {p : ℝ} (hp : 0 ≤ p) (x : Vec d) :
@@ -45,7 +47,7 @@ theorem integrableOn_abs_sub_rpow_of_contDiff
 /-- The smooth mean-subtracted `p`th power is integrable on a bounded
 Sobolev-regular domain. -/
 theorem integrableOn_abs_sub_integralAverage_rpow_of_contDiff
-    {d : ℕ} {U : Set (Vec d)}
+    
     (hU : IsSobolevRegularDomain U)
     {u : Vec d → ℝ} (hu : ContDiff ℝ 0 u)
     {p : ℝ} (hp : 0 ≤ p) :
@@ -68,7 +70,7 @@ theorem integrableOn_abs_sub_integralAverage_rpow_of_contDiff
 /-- The `p`th power of pairwise smooth oscillation is integrable on the
 product of a bounded Sobolev-regular domain with itself. -/
 theorem integrableOn_prod_abs_sub_rpow_of_contDiff
-    {d : ℕ} {U : Set (Vec d)}
+    
     (hU : IsSobolevRegularDomain U)
     {u : Vec d → ℝ} (hu : ContDiff ℝ 0 u)
     {p : ℝ} (hp : 0 ≤ p) :
@@ -94,7 +96,7 @@ theorem integrableOn_prod_abs_sub_rpow_of_contDiff
       IntegrableOn
         (fun z : Vec d × Vec d =>
           |u z.1 - u z.2| ^ p)
-        (closure U ×ˢ closure U)
+        _
         (volume.prod volume) :=
     hcont.continuousOn.integrableOn_compact
       hclosureCompact
@@ -103,7 +105,7 @@ theorem integrableOn_prod_abs_sub_rpow_of_contDiff
 /-- Integrated Jensen inequality comparing oscillation about the arithmetic
 mean with the normalized pairwise oscillation. -/
 theorem setIntegral_abs_sub_integralAverage_rpow_le
-    {d : ℕ} {U : Set (Vec d)}
+    
     (hU : IsOpenBoundedConvexDomain U)
     {u : Vec d → ℝ} (hu : ContDiff ℝ (⊤ : ℕ∞) u)
     {p : ℝ} (hp : 1 ≤ p)
@@ -123,7 +125,7 @@ theorem setIntegral_abs_sub_integralAverage_rpow_le
         hclosureCompact).mono_set subset_closure
   have hleft :
       IntegrableOn
-        (fun x => |u x - integralAverage U u| ^ p)
+        _
         U volume :=
     integrableOn_abs_sub_integralAverage_rpow_of_contDiff
       hU.isSobolevRegularDomain (hu.of_le (by simp)) hpNonneg
@@ -148,7 +150,7 @@ theorem setIntegral_abs_sub_integralAverage_rpow_le
           (volume U).toReal⁻¹ *
             ∫ y in U, |u x - u y| ^ p ∂volume)
         U volume :=
-    hinner.const_mul (volume U).toReal⁻¹
+    hinner.const_mul _
   calc
     (∫ x in U,
         |u x - integralAverage U u| ^ p ∂volume) ≤
@@ -176,7 +178,7 @@ theorem setIntegral_abs_sub_integralAverage_rpow_le
 /-- Smooth pairwise oscillation is controlled by the diameter and the
 Euclidean gradient, with a constant independent of `p`. -/
 theorem setIntegral_setIntegral_abs_sub_rpow_le
-    {d : ℕ} {U : Set (Vec d)} {D : ℝ}
+    
     (hU : IsOpenBoundedConvexDomain U)
     (hUDiameter : HasEuclideanDiameterLE U D)
     (hD : 0 ≤ D)
@@ -190,19 +192,19 @@ theorem setIntegral_setIntegral_abs_sub_rpow_le
             ∂volume) := by
   have hpNonneg : 0 ≤ p :=
     zero_le_one.trans hp
-  let g : Vec d → ℝ :=
+  let g  :=
     fun z =>
       vecEuclideanNorm (classicalGradient u z) ^ p
   let μU : Measure (Vec d) :=
     volumeOn U
-  let μPair : Measure (Vec d × Vec d) :=
+  let μPair  :=
     μU.prod μU
   let F : ℝ → Vec d × Vec d → ℝ :=
     fun t z => g (segmentBlend z.1 t z.2)
   have hgradCont :
-      Continuous (classicalGradient u) :=
+      Continuous _ :=
     PDE.ContDiff.continuous_classicalGradient
-      (hu.of_le (by norm_num) : ContDiff ℝ 1 u)
+      (hu.of_le (by norm_num))
   have hgCont : Continuous g := by
     exact
       Real.continuous_rpow_const hpNonneg
@@ -219,27 +221,25 @@ theorem setIntegral_setIntegral_abs_sub_rpow_le
           (fun z : Vec d × Vec d =>
             segmentBlend z.1 t z.2) := by
       simpa only [segmentBlend_eq_smul_add] using!
-        (((continuous_const_smul (1 - t)).comp
+        (((continuous_const_smul _).comp
           continuous_snd).add
             ((continuous_const_smul t).comp continuous_fst))
     have hOnClosure :
         IntegrableOn (F t)
-          (closure U ×ˢ closure U)
+          _
           (volume.prod volume) :=
       (hgCont.comp hsegmentCont).continuousOn
         |>.integrableOn_compact
           (hclosureCompact.prod hclosureCompact)
-    have hOnProduct :
-        IntegrableOn (F t) (U ×ˢ U)
-          (volume.prod volume) :=
+    have hOnProduct  :=
       hOnClosure.mono_set
         (Set.prod_mono subset_closure subset_closure)
     change
-      Integrable (F t)
+      Integrable _
         ((volume.restrict U).prod
           (volume.restrict U))
     rw [Measure.prod_restrict]
-    exact hOnProduct
+    aesop
   have hFCont :
       Continuous (Function.uncurry F) := by
     have hsegmentCont :
@@ -251,43 +251,34 @@ theorem setIntegral_setIntegral_abs_sub_rpow_le
           (continuous_snd.comp continuous_snd)).add
             (continuous_fst.smul
               (continuous_fst.comp continuous_snd)))
-    exact hgCont.comp hsegmentCont
+    fun_prop
   have hTriple :
       Integrable (Function.uncurry F)
-        ((volume.restrict (Set.Ioc (0 : ℝ) 1)).prod
+        ((volume.restrict (Set.Ioc (0) 1)).prod
           μPair) := by
     have hOnClosure :
         IntegrableOn (Function.uncurry F)
-          (Set.Icc (0 : ℝ) 1 ×ˢ
+          (Set.Icc (0) 1 ×ˢ
             (closure U ×ˢ closure U))
           (volume.prod (volume.prod volume)) :=
       hFCont.continuousOn.integrableOn_compact
         (isCompact_Icc.prod
           (hclosureCompact.prod hclosureCompact))
-    have hOnProduct :
-        IntegrableOn (Function.uncurry F)
-          (Set.Ioc (0 : ℝ) 1 ×ˢ (U ×ˢ U))
-          (volume.prod (volume.prod volume)) :=
+    have hOnProduct  :=
       hOnClosure.mono_set
         (Set.prod_mono Set.Ioc_subset_Icc_self
           (Set.prod_mono subset_closure subset_closure))
     change
-      Integrable (Function.uncurry F)
-        ((volume.restrict (Set.Ioc (0 : ℝ) 1)).prod
+      Integrable _
+        ((volume.restrict _).prod
           ((volume.restrict U).prod
             (volume.restrict U)))
     rw [Measure.prod_restrict, Measure.prod_restrict]
-    exact hOnProduct
+    aesop
   have hPairOscillation :
       Integrable
         (fun z : Vec d × Vec d =>
           |u z.1 - u z.2| ^ p) μPair := by
-    change
-      Integrable
-        (fun z : Vec d × Vec d =>
-          |u z.1 - u z.2| ^ p)
-        ((volume.restrict U).prod
-          (volume.restrict U))
     simpa only [← Measure.prod_restrict, IntegrableOn] using
       integrableOn_prod_abs_sub_rpow_of_contDiff
         hU.isSobolevRegularDomain
@@ -295,28 +286,28 @@ theorem setIntegral_setIntegral_abs_sub_rpow_le
   have hIntervalSection :
       Integrable
         (fun z =>
-          ∫ t in (0 : ℝ)..1, F t z) μPair := by
+          ∫ t in (0)..1, F t z) μPair := by
     have hsection :=
       hTriple.integral_prod_right
     simpa only [
       intervalIntegral.integral_of_le zero_le_one]
       using! hsection
-  have hDiameterPowNonneg : 0 ≤ D ^ p :=
+  have hDiameterPowNonneg  :=
     Real.rpow_nonneg hD p
   have hRight :
       Integrable
         (fun z =>
-          D ^ p * (∫ t in (0 : ℝ)..1, F t z))
+          D ^ p * (∫ t in (0)..1, F t z))
         μPair :=
-    hIntervalSection.const_mul (D ^ p)
+    hIntervalSection.const_mul _
   have hPairBound :
       (∫ z, |u z.1 - u z.2| ^ p ∂μPair) ≤
         ∫ z,
-          D ^ p * (∫ t in (0 : ℝ)..1, F t z)
+          D ^ p * (∫ t in (0)..1, F t z)
             ∂μPair := by
     refine integral_mono_ae
       hPairOscillation hRight ?_
-    have hmeas : MeasurableSet (U ×ˢ U) :=
+    have hmeas  :=
       hU.measurableSet.prod hU.measurableSet
     change
       (fun z : Vec d × Vec d =>
@@ -324,7 +315,7 @@ theorem setIntegral_setIntegral_abs_sub_rpow_le
           (volume.restrict U).prod
             (volume.restrict U)]
         (fun z =>
-          D ^ p * (∫ t in (0 : ℝ)..1, F t z))
+          D ^ p * (∫ t in (0)..1, F t z))
     rw [Measure.prod_restrict]
     filter_upwards [ae_restrict_mem hmeas] with z hz
     exact
@@ -337,32 +328,29 @@ theorem setIntegral_setIntegral_abs_sub_rpow_le
     rw [intervalIntegrable_iff_integrableOn_Ioc_of_le
       zero_le_one]
     exact hTriple.integral_prod_left
-  let C : ℝ :=
-    (2 : ℝ) ^ d * (volume U).toReal *
+  let C  :=
+    (2) ^ d * (volume U).toReal *
       ∫ z in U, g z ∂volume
   have hConstInterval :
       IntervalIntegrable (fun _ : ℝ => C)
         volume 0 1 :=
     intervalIntegrable_const
   have hIntervalBound :
-      (∫ t in (0 : ℝ)..1,
+      (∫ t in (0)..1,
         ∫ z, F t z ∂μPair) ≤ C := by
     calc
-      (∫ t in (0 : ℝ)..1,
+      (∫ t in (0)..1,
           ∫ z, F t z ∂μPair) ≤
-          ∫ _t in (0 : ℝ)..1, C := by
+          ∫ _t in (0)..1, C := by
         refine intervalIntegral.integral_mono_on
           zero_le_one hIntervalPair hConstInterval ?_
         intro t ht
         have hFubini :=
-          integral_prod (F t) (hPairIntegrable t)
+          integral_prod _ (hPairIntegrable t)
         have hSegment :=
           setIntegral_setIntegral_comp_segmentBlend_le_two_pow_mul
             hU hgCont hgNonneg t ht
-        change (∫ z, F t z ∂μPair) ≤ C
-        rw [hFubini]
-        simpa only [F, g, μPair, μU, volumeOn, C] using
-          hSegment
+        linarith
       _ = C := by
         simp
   calc
@@ -372,32 +360,30 @@ theorem setIntegral_setIntegral_abs_sub_rpow_le
       symm
       simpa only [μPair, μU, volumeOn] using
         integral_prod
-          (fun z : Vec d × Vec d =>
-            |u z.1 - u z.2| ^ p)
+          _
           hPairOscillation
     _ ≤ ∫ z,
-        D ^ p * (∫ t in (0 : ℝ)..1, F t z)
+        D ^ p * (∫ t in (0)..1, F t z)
           ∂μPair :=
       hPairBound
     _ = D ^ p *
-        ∫ z, (∫ t in (0 : ℝ)..1, F t z) ∂μPair := by
+        ∫ z, (∫ t in (0)..1, F t z) ∂μPair := by
       rw [integral_const_mul]
     _ = D ^ p *
-        ∫ t in (0 : ℝ)..1,
+        ∫ t in (0)..1,
           ∫ z, F t z ∂μPair := by
       have hTripleInterval :
           Integrable (Function.uncurry F)
-            ((volume.restrict (Set.uIoc (0 : ℝ) 1)).prod
+            ((volume.restrict (Set.uIoc (0) 1)).prod
               μPair) := by
-        simpa only [Set.uIoc_of_le zero_le_one] using
-          hTriple
+        simp_all
       rw [intervalIntegral_integral_swap hTripleInterval]
     _ ≤ D ^ p * C :=
       mul_le_mul_of_nonneg_left hIntervalBound
         hDiameterPowNonneg
-    _ = D ^ p * ((2 : ℝ) ^ d * (volume U).toReal *
+    _ = D ^ p * ((2) ^ d * (volume U).toReal *
         ∫ z in U,
-          vecEuclideanNorm (classicalGradient u z) ^ p
+          vecEuclideanNorm _ ^ p
             ∂volume) := by
       rfl
 
@@ -405,7 +391,7 @@ theorem setIntegral_setIntegral_abs_sub_rpow_le
 
 The constant `2 ^ d` is independent of the real exponent `p ≥ 1`. -/
 theorem setIntegral_abs_sub_integralAverage_rpow_le_two_pow_mul
-    {d : ℕ} {U : Set (Vec d)} {D : ℝ}
+    
     (hU : IsOpenBoundedConvexDomain U)
     (hUDiameter : HasEuclideanDiameterLE U D)
     (hD : 0 ≤ D)
@@ -418,7 +404,7 @@ theorem setIntegral_abs_sub_integralAverage_rpow_le_two_pow_mul
         ∫ z in U,
           vecEuclideanNorm (classicalGradient u z) ^ p
             ∂volume := by
-  have hvolReal : (volume U).toReal ≠ 0 :=
+  have hvolReal  :=
     (ENNReal.toReal_pos hUPos.ne' hUTop.ne).ne'
   have hvolInvNonneg : 0 ≤ (volume U).toReal⁻¹ := by
     positivity
@@ -436,16 +422,16 @@ theorem setIntegral_abs_sub_integralAverage_rpow_le_two_pow_mul
             |u x - u y| ^ p ∂volume ∂volume :=
       hJensen
     _ ≤ (volume U).toReal⁻¹ *
-        (D ^ p * ((2 : ℝ) ^ d * (volume U).toReal *
+        (D ^ p * ((2) ^ d * (volume U).toReal *
           ∫ z in U,
-            vecEuclideanNorm (classicalGradient u z) ^ p
+            vecEuclideanNorm _ ^ p
               ∂volume)) :=
       mul_le_mul_of_nonneg_left hPairwise
         hvolInvNonneg
-    _ = (2 : ℝ) ^ d * D ^ p *
+    _ = (2) ^ d * D ^ p *
         ∫ z in U,
-          vecEuclideanNorm (classicalGradient u z) ^ p
+          vecEuclideanNorm _ ^ p
             ∂volume := by
-      field_simp [hvolReal]
+      grind
 
 end PDE

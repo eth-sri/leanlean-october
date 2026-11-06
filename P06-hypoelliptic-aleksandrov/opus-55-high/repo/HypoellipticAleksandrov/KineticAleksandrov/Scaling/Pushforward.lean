@@ -107,18 +107,20 @@ def pushKernel (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ) :
       ext x
       rw [mem_preimage, h.stateSet_mem_iff, MeasurableEquiv.apply_symm_apply]
     rw [(Φ.ambientEquiv q.1.2.1).symm.measurableEmbedding.restrict_map, hset]
-    exact congrArg (Measure.map _) (K.terminal_support (queryMap h q))
+    exact congrArg _ (K.terminal_support _)
   mass_le_one := by
     intro q
     rw [pushMaster_apply, Measure.map_apply (Φ.ambientEquiv q.1.2.1).symm.measurable
-      MeasurableSet.univ, preimage_univ]
-    exact K.mass_le_one (queryMap h q)
+      MeasurableSet.univ]
+    exact K.mass_le_one _
 
-@[simp] theorem pushKernel_master (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ) :
+variable (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ)
+
+@[simp] theorem pushKernel_master  :
     (pushKernel h K).master = pushMaster h K := rfl
 
 /-- **Master pushforward**: `K̂.master q' = (K.master (Φ q')).map (Φ_{τ'})⁻¹`. -/
-theorem pushKernel_master_apply (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ)
+theorem pushKernel_master_apply 
     (q : EvolutionQuery Ω' γ') :
     (pushKernel h K).master q =
       (K.master (queryMap h q)).map (Φ.ambientEquiv q.1.2.1).symm :=
@@ -129,25 +131,21 @@ def stateEquiv (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ) :
     EvolutionState Ω' γ' τ ≃ᵐ EvolutionState Ω γ (Φ.time τ) :=
   measurableEquivSubtype (Φ.ambientEquiv τ) (h.stateSet_mem_iff τ)
 
-@[simp] theorem coe_stateEquiv (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ)
+variable (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ)
+
+@[simp] theorem coe_stateEquiv 
     (p : EvolutionState Ω' γ' τ) :
     ((stateEquiv h τ p : EvolutionState Ω γ (Φ.time τ)) : EvolutionAmbientState d) =
       Φ.ambientEquiv τ p.1 := rfl
 
-@[simp] theorem coe_stateEquiv_symm (h : Φ.MapsDomain Ω γ Ω' γ') (τ : ℝ)
+@[simp] theorem coe_stateEquiv_symm 
     (p : EvolutionState Ω γ (Φ.time τ)) :
     (((stateEquiv h τ).symm p : EvolutionState Ω' γ' τ) : EvolutionAmbientState d) =
       (Φ.ambientEquiv τ).symm p.1 := rfl
 
-theorem queryMap_queryOfState (h : Φ.MapsDomain Ω γ Ω' γ') {τ τ' : ℝ} (hττ' : τ ≤ τ')
-    (p : EvolutionState Ω' γ' τ) :
-    queryMap h (evolutionQueryOfState Ω' γ' τ τ' hττ' p) =
-      evolutionQueryOfState Ω γ (Φ.time τ) (Φ.time τ') (Φ.time_le_iff.2 hττ')
-        (stateEquiv h τ p) := rfl
-
 /-- **Fibre pushforward**: the fixed-time fibre kernel of `K̂` is the conjugate of that of
 `K` by the state equivalences. -/
-theorem fiberKernel_pushKernel (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFiberKernel Ω γ)
+theorem fiberKernel_pushKernel  (K : MovingFiberKernel Ω γ)
     (hΩ : MeasurableSet Ω) (hΩ' : MeasurableSet Ω') (τ τ' : ℝ) (hττ' : τ ≤ τ')
     (p : EvolutionState Ω' γ' τ) :
     (pushKernel h K).fiberKernel hΩ' τ τ' hττ' p =
@@ -155,9 +153,8 @@ theorem fiberKernel_pushKernel (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFibe
         (stateEquiv h τ p)).map (stateEquiv h τ').symm := by
   have hemb := MeasurableEmbedding.subtype_coe (measurableSet_evolutionStateSet (γ := γ') hΩ' τ')
   rw [← hemb.comap_map ((pushKernel h K).fiberKernel hΩ' τ τ' hττ' p),
-    ← hemb.comap_map ((K.fiberKernel hΩ (Φ.time τ) (Φ.time τ') (Φ.time_le_iff.2 hττ')
-      (stateEquiv h τ p)).map (stateEquiv h τ').symm)]
-  congr 1
+    ← hemb.comap_map ((K.fiberKernel hΩ _ _ _
+      _).map _)]
   rw [MovingFiberKernel.map_fiberKernel_eq_master, Measure.map_map measurable_subtype_coe
     (stateEquiv h τ').symm.measurable]
   have hcomp : ((↑) : EvolutionState Ω' γ' τ' → EvolutionAmbientState d) ∘
@@ -165,8 +162,7 @@ theorem fiberKernel_pushKernel (h : Φ.MapsDomain Ω γ Ω' γ') (K : MovingFibe
       (Φ.ambientEquiv τ').symm ∘ ((↑) : EvolutionState Ω γ (Φ.time τ') →
         EvolutionAmbientState d) := rfl
   rw [hcomp, ← Measure.map_map (Φ.ambientEquiv τ').symm.measurable measurable_subtype_coe,
-    MovingFiberKernel.map_fiberKernel_eq_master, pushKernel_master_apply,
-    queryMap_queryOfState]
+    MovingFiberKernel.map_fiberKernel_eq_master, pushKernel_master_apply]
   rfl
 
 end KineticAffineScaling

@@ -15,39 +15,28 @@ their literal closed boxes contain the evaluation point.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
 open Filter MeasureTheory Set
 open scoped BigOperators ENNReal Topology
 
-private theorem isProbabilityMeasure_parabolicNormalizedVolumeOn
-    {d : Nat} {Q : Set (TimeVelocity d)}
-    (hQpos : 0 < volume Q) (hQtop : volume Q < ∞) :
-    IsProbabilityMeasure (parabolicNormalizedVolumeOn Q) := by
-  refine ⟨?_⟩
-  rw [parabolicNormalizedVolumeOn, Measure.smul_apply,
-    Measure.restrict_apply_univ]
-  exact ENNReal.inv_mul_cancel hQpos.ne' hQtop.ne
+variable {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (u : TimeVelocity d → Real)
 
-private theorem parabolicExponent_one_le (d : Nat) :
-    (1 : ENNReal) ≤ parabolicExponent d := by
-  unfold parabolicExponent
-  exact le_add_of_nonneg_left bot_le
+
 
 /-- The parabolic-coordinate diameter of a literal closed unit-height forward
 box is at most twice its radius. -/
 theorem parabolicCoordinateDist_le_two_mul_radius_of_mem_parabolicClosedBox
-    {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r)
+     (hr : 0 < r)
     {z w : TimeVelocity d}
     (hz : z ∈ parabolicClosedBox 1 r t₀ v₀)
     (hw : w ∈ parabolicClosedBox 1 r t₀ v₀) :
     parabolicCoordinateDist z w ≤ 2 * r := by
   have hzBox : t₀ ≤ z.1 ∧ z.1 ≤ t₀ + r ^ 2 ∧ z.2 ∈ velocityClosedCube v₀ r := by
-    simpa only [one_mul] using (mem_parabolicClosedBox_iff.mp hz)
+    simpa using (mem_parabolicClosedBox_iff.mp hz)
   have hwBox : t₀ ≤ w.1 ∧ w.1 ≤ t₀ + r ^ 2 ∧ w.2 ∈ velocityClosedCube v₀ r := by
-    simpa only [one_mul] using (mem_parabolicClosedBox_iff.mp hw)
+    simpa using (mem_parabolicClosedBox_iff.mp hw)
   have htimeAbs : |z.1 - w.1| ≤ r ^ 2 := by
     rw [abs_le]
     constructor <;> linarith [hzBox.1, hzBox.2.1, hwBox.1, hwBox.2.1]
@@ -57,7 +46,7 @@ theorem parabolicCoordinateDist_le_two_mul_radius_of_mem_parabolicClosedBox
   have hvelocity : ‖z.2 - w.2‖ ≤ 2 * r := by
     rw [pi_norm_le_iff_of_nonneg (by positivity)]
     intro i
-    simp only [Pi.sub_apply, Real.norm_eq_abs]
+    simp only [Real.norm_eq_abs]
     rw [abs_le]
     have hzi := (mem_velocityClosedCube_iff.mp hzBox.2.2) i
     have hwi := (mem_velocityClosedCube_iff.mp hwBox.2.2) i
@@ -65,16 +54,15 @@ theorem parabolicCoordinateDist_le_two_mul_radius_of_mem_parabolicClosedBox
       |z.2 i - w.2 i| = |(z.2 i - v₀ i) - (w.2 i - v₀ i)| := by ring_nf
       _ ≤ |z.2 i - v₀ i| + |w.2 i - v₀ i| := by
         simpa only [sub_zero, zero_sub, abs_neg] using
-          (abs_sub_le (z.2 i - v₀ i) (0 : Real) (w.2 i - v₀ i))
+          (abs_sub_le _ (0 : Real) _)
       _ ≤ r + r := add_le_add hzi hwi
       _ = 2 * r := by ring)
-  unfold parabolicCoordinateDist
   apply max_le
   · linarith
   · exact hvelocity
 
 private theorem parabolicLpMeanNormOn_le_of_memLp_of_forall_mem_parabolicClosedBox
-    {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r)
+     (hr : 0 < r)
     (f : TimeVelocity d → Real)
     (hf : MemLp f (parabolicExponent d)
       (parabolicNormalizedVolumeOn (parabolicBox 1 r t₀ v₀)))
@@ -83,19 +71,14 @@ private theorem parabolicLpMeanNormOn_le_of_memLp_of_forall_mem_parabolicClosedB
     (hbound : ∀ w : TimeVelocity d, w ∈ parabolicClosedBox 1 r t₀ v₀ →
       |f w| ≤ δ) :
     parabolicLpMeanNormOn d f (parabolicBox 1 r t₀ v₀) hf ≤ δ := by
-  have hδ : 0 ≤ δ := by
-    exact (abs_nonneg (f z)).trans (hbound z hz)
-  let Q : Set (TimeVelocity d) := parabolicBox 1 r t₀ v₀
-  let μ : Measure (TimeVelocity d) := parabolicNormalizedVolumeOn Q
-  have hQpos : 0 < volume Q := by
-    exact volume_parabolicMorreyBox_pos t₀ v₀ hr
-  have hQtop : volume Q < ∞ := by
-    exact volume_parabolicMorreyBox_lt_top t₀ v₀ hr
+  have hδ : 0 ≤ δ := (abs_nonneg _).trans (hbound z hz)
+  let Q  := parabolicBox 1 r t₀ v₀
+  let μ  := parabolicNormalizedVolumeOn Q
+  have hQpos : 0 < volume Q := volume_parabolicMorreyBox_pos t₀ v₀ hr
+  have hQtop : volume Q < ∞ := volume_parabolicMorreyBox_lt_top t₀ v₀ hr
   letI : IsProbabilityMeasure μ :=
     isProbabilityMeasure_parabolicNormalizedVolumeOn hQpos hQtop
-  have hQae : ∀ᵐ w ∂μ, w ∈ Q := by
-    change ∀ᵐ w ∂((volume Q)⁻¹ • volume.restrict Q), w ∈ Q
-    exact Measure.ae_smul_measure
+  have hQae : ∀ᵐ w ∂μ, w ∈ Q := Measure.ae_smul_measure
       (ae_restrict_mem (measurableSet_parabolicBox 1 r t₀ v₀)) _
   have hae : ∀ᵐ w ∂μ, ‖f w‖ ≤ δ := by
     filter_upwards [hQae] with w hw
@@ -103,16 +86,16 @@ private theorem parabolicLpMeanNormOn_le_of_memLp_of_forall_mem_parabolicClosedB
       rcases mem_parabolicBox_iff.mp hw with ⟨hwLeft, hwRight, hwv⟩
       exact mem_parabolicClosedBox_iff.mpr
         ⟨hwLeft.le, hwRight.le, fun i => (hwv i).le⟩
-    simpa only [Real.norm_eq_abs] using hbound w hwClosed
+    simpa using hbound w hwClosed
   have hnormμ : eLpNorm f (parabolicExponent d) μ ≤ ENNReal.ofReal δ := by
     calc
-      eLpNorm f (parabolicExponent d) μ ≤
+      eLpNorm f _ μ ≤
           μ univ ^ (parabolicExponent d).toReal⁻¹ * ENNReal.ofReal δ :=
         eLpNorm_le_of_ae_bound hf.aestronglyMeasurable hae
       _ = ENNReal.ofReal δ := by simp
   have hnorm : eLpNorm f (parabolicExponent d)
       (parabolicNormalizedVolumeOn (parabolicBox 1 r t₀ v₀)) ≤ ENNReal.ofReal δ := by
-    simpa only [μ, Q] using hnormμ
+    simpa using hnormμ
   have hreal := ENNReal.toReal_mono ENNReal.ofReal_ne_top hnorm
   simpa only [parabolicLpMeanNormOn_eq_toReal, parabolicELpMeanNormOn,
     ENNReal.toReal_ofReal hδ] using hreal
@@ -120,7 +103,7 @@ private theorem parabolicLpMeanNormOn_le_of_memLp_of_forall_mem_parabolicClosedB
 /-- A canonical affine moment projection is bounded at a point of the literal
 closed forward box by a uniform closed-box bound on an integrable input. -/
 theorem abs_parabolicMorreyBoxAffineProjection_apply_le_of_memLp_of_forall_mem_parabolicClosedBox
-    {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r)
+     (hr : 0 < r)
     (f : TimeVelocity d → Real)
     (hf : MemLp f (parabolicExponent d)
       (parabolicNormalizedVolumeOn (parabolicBox 1 r t₀ v₀)))
@@ -134,8 +117,7 @@ theorem abs_parabolicMorreyBoxAffineProjection_apply_le_of_memLp_of_forall_mem_p
     t₀ v₀ hr f hf z hz δ hbound
   have hcoeff := parabolicMorreyBoxCoefficientBound_le_parabolicLpMeanNormOn
     t₀ v₀ hr f hf
-  have hzVelocity : ∀ i : Fin d, |z.2 i - v₀ i| ≤ r := by
-    exact mem_velocityClosedCube_iff.mp (mem_parabolicClosedBox_iff.mp hz).2.2
+  have hzVelocity : ∀ i : Fin d, |z.2 i - v₀ i| ≤ r := mem_velocityClosedCube_iff.mp (mem_parabolicClosedBox_iff.mp hz).2.2
   have hsum : |∑ i : Fin d, parabolicMorreyBoxVelocitySlope t₀ v₀ r f i *
       (z.2 i - v₀ i)| ≤
       r * ∑ i : Fin d, |parabolicMorreyBoxVelocitySlope t₀ v₀ r f i| := by
@@ -151,8 +133,7 @@ theorem abs_parabolicMorreyBoxAffineProjection_apply_le_of_memLp_of_forall_mem_p
           mul_le_mul_of_nonneg_left (hzVelocity i) (abs_nonneg _)
       _ = r * ∑ i : Fin d, |parabolicMorreyBoxVelocitySlope t₀ v₀ r f i| := by
         rw [Finset.mul_sum]
-        simp_rw [mul_comm r]
-  rw [parabolicMorreyBoxAffineProjection]
+        simp_rw [mul_comm]
   calc
     |parabolicMorreyBoxAverage t₀ v₀ r f +
         ∑ i : Fin d, parabolicMorreyBoxVelocitySlope t₀ v₀ r f i *
@@ -161,30 +142,28 @@ theorem abs_parabolicMorreyBoxAffineProjection_apply_le_of_memLp_of_forall_mem_p
           r * ∑ i : Fin d, |parabolicMorreyBoxVelocitySlope t₀ v₀ r f i| :=
       (abs_add_le _ _).trans (by
         simpa only [add_comm] using
-          (add_le_add_left hsum |parabolicMorreyBoxAverage t₀ v₀ r f|))
-    _ ≤ (1 + 3 * (d : Real)) * parabolicLpMeanNormOn d f
-        (parabolicBox 1 r t₀ v₀) hf := hcoeff
-    _ ≤ (1 + 3 * (d : Real)) * δ := by
+          (add_le_add_left hsum _))
+    _ ≤ (1 + 3 * d) * parabolicLpMeanNormOn d f
+        _ hf := hcoeff
+    _ ≤ (1 + 3 * d) * δ := by
       gcongr
 
 private theorem normalized_memLp_sub_const_of_continuous
-    {d : Nat} (u : TimeVelocity d → Real) (hu : Continuous u)
+     (hu : Continuous u)
     (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r) (c : Real) :
     MemLp (fun w => u w - c) (parabolicExponent d)
       (parabolicNormalizedVolumeOn (parabolicBox 1 r t₀ v₀)) := by
-  have hpull : Continuous (pullbackScalar (fun w => u w - c) t₀ v₀ r) := by
-    exact (hu.sub continuous_const).comp
+  have hpull : Continuous (pullbackScalar (fun w => u w - c) t₀ v₀ r) := (hu.sub continuous_const).comp
       (contDiff_parabolicAffine t₀ v₀ r).continuous
   have hraw := Continuous.memLp_parabolicMorreyUnitBox hpull
   have hunit : MemLp (pullbackScalar (fun w => u w - c) t₀ v₀ r)
       (parabolicExponent d)
-      (parabolicNormalizedVolumeOn (parabolicMorreyUnitBox d)) := by
-    exact memLp_parabolicNormalizedVolumeOn_of_memLp
+      (parabolicNormalizedVolumeOn (parabolicMorreyUnitBox d)) := memLp_parabolicNormalizedVolumeOn_of_memLp
       (ENNReal.toReal_pos_iff.mp (volume_parabolicMorreyUnitBox_toReal_pos d)).1 hraw
   exact (memLp_parabolicNormalizedVolumeOn_parabolicBox_iff t₀ v₀ hr _).mpr hunit
 
 private theorem parabolicMorreyBoxAffineProjection_sub_const_apply_of_continuous
-    {d : Nat} (u : TimeVelocity d → Real) (hu : Continuous u)
+     (hu : Continuous u)
     (t₀ : Real) (v₀ : PDE.Vec d) {r : Real} (hr : 0 < r)
     (c : Real) (z : TimeVelocity d) :
     parabolicMorreyBoxAffineProjection t₀ v₀ r (fun w => u w - c) z =
@@ -194,13 +173,11 @@ private theorem parabolicMorreyBoxAffineProjection_sub_const_apply_of_continuous
   have hcontU : Continuous (pullbackScalar u t₀ v₀ r) :=
     hu.comp (contDiff_parabolicAffine t₀ v₀ r).continuous
   have hcontC : Continuous (fun _ : TimeVelocity d => -c) := continuous_const
-  letI : Fact (volume (parabolicMorreyUnitBox d) < ∞) :=
+  letI : Fact (volume _ < ∞) :=
     ⟨lt_top_iff_ne_top.mpr (volume_parabolicMorreyUnitBox_ne_top d)⟩
-  have hU : Integrable (pullbackScalar u t₀ v₀ r)
-      (volume.restrict (parabolicMorreyUnitBox d)) :=
+  have hU  :=
     (Continuous.memLp_parabolicMorreyUnitBox hcontU).integrable (parabolicExponent_one_le d)
-  have hC : Integrable (fun _ : TimeVelocity d => -c)
-      (volume.restrict (parabolicMorreyUnitBox d)) :=
+  have hC  :=
     (Continuous.memLp_parabolicMorreyUnitBox hcontC).integrable (parabolicExponent_one_le d)
   have hUV : ∀ i : Fin d, Integrable (fun y =>
       pullbackScalar u t₀ v₀ r y * y.2 i)
@@ -224,7 +201,7 @@ private theorem parabolicMorreyBoxAffineProjection_sub_const_apply_of_continuous
   have hconstant : parabolicMorreyUnitAffineProjection (fun _ : TimeVelocity d => -c) w =
       -c := by
     simpa using congrFun
-      (parabolicMorreyUnitAffineProjection_reproduces_velocity_affine (-c) 0) w
+      (parabolicMorreyUnitAffineProjection_reproduces_velocity_affine _ 0) w
   rw [parabolicMorreyBoxAffineProjection_parabolicAffine t₀ v₀ hr]
   simp only [Pi.add_apply]
   rw [hconstant]
@@ -234,7 +211,7 @@ private theorem parabolicMorreyBoxAffineProjection_sub_const_apply_of_continuous
 affine projection at a closed-box point. -/
 theorem
   abs_parabolicMorreyBoxAffineProjection_sub_apply_le_of_continuous_of_forall_mem_parabolicClosedBox
-    {d : Nat} (u : TimeVelocity d → Real) (hu : Continuous u)
+     (hu : Continuous u)
     (z : TimeVelocity d) (t₀ : Real) (v₀ : PDE.Vec d) {r : Real}
     (hr : 0 < r) (hz : z ∈ parabolicClosedBox 1 r t₀ v₀)
     (δ : Real)
@@ -242,17 +219,17 @@ theorem
       |u w - u z| ≤ δ) :
     |parabolicMorreyBoxAffineProjection t₀ v₀ r u z - u z| ≤
       (1 + 3 * (d : Real)) * δ := by
-  let f : TimeVelocity d → Real := fun w => u w - u z
+  let f  := fun w => u w - u z
   have hf := normalized_memLp_sub_const_of_continuous u hu t₀ v₀ hr (u z)
   have hcore :=
     abs_parabolicMorreyBoxAffineProjection_apply_le_of_memLp_of_forall_mem_parabolicClosedBox
       t₀ v₀ hr f hf z hz δ hbound
   rw [parabolicMorreyBoxAffineProjection_sub_const_apply_of_continuous
-    u hu t₀ v₀ hr (u z) z] at hcore
+    u hu t₀ v₀ hr] at hcore
   exact hcore
 
 private theorem dist_lt_of_mem_parabolicClosedBox_of_two_mul_radius_lt
-    {d : Nat} (t₀ : Real) (v₀ : PDE.Vec d) {r η : Real}
+     {r η : Real}
     (hr : 0 < r) (hrsmall : r ≤ 1 / 2)
     {z w : TimeVelocity d}
     (hz : z ∈ parabolicClosedBox 1 r t₀ v₀)
@@ -261,13 +238,12 @@ private theorem dist_lt_of_mem_parabolicClosedBox_of_two_mul_radius_lt
     dist w z < η := by
   have hcoord := parabolicCoordinateDist_le_two_mul_radius_of_mem_parabolicClosedBox
     t₀ v₀ hr hz hw
-  have htimeRoot : Real.sqrt |z.1 - w.1| ≤ 2 * r :=
+  have htimeRoot : Real.sqrt _ ≤ 2 * r :=
     (le_max_left _ _).trans hcoord
   have htimeSq : |z.1 - w.1| ≤ (2 * r) ^ 2 := by
     have hnonneg : 0 ≤ 2 * r := by positivity
     have hsquare := (sq_le_sq₀ (Real.sqrt_nonneg _) hnonneg).mpr htimeRoot
     rwa [Real.sq_sqrt (abs_nonneg _)] at hsquare
-  have htwo : 2 * r ≤ 1 := by linarith
   have htime : |w.1 - z.1| ≤ 2 * r := by
     rw [abs_sub_comm]
     calc
@@ -276,7 +252,6 @@ private theorem dist_lt_of_mem_parabolicClosedBox_of_two_mul_radius_lt
   have hvelocity : ‖w.2 - z.2‖ ≤ 2 * r := by
     rw [norm_sub_rev]
     exact (le_max_right _ _).trans hcoord
-  rw [Prod.dist_eq]
   apply max_lt
   · simpa only [Real.dist_eq] using htime.trans_lt hsmall
   · exact hvelocity.trans_lt hsmall
@@ -284,7 +259,7 @@ private theorem dist_lt_of_mem_parabolicClosedBox_of_two_mul_radius_lt
 /-- Canonical affine moment projections on literal forward boxes shrinking to
 a point recover a continuous function at that point. -/
 theorem tendsto_parabolicMorreyBoxAffineProjection_apply_of_continuous
-    {d : Nat} (u : TimeVelocity d → Real) (hu : Continuous u)
+     (hu : Continuous u)
     (z : TimeVelocity d) (t : Nat → Real) (v : Nat → PDE.Vec d)
     (r : Nat → Real) (hr : ∀ n : Nat, 0 < r n)
     (hz : ∀ n : Nat, z ∈ parabolicClosedBox 1 (r n) (t n) (v n))
@@ -313,7 +288,7 @@ theorem tendsto_parabolicMorreyBoxAffineProjection_apply_of_continuous
     nlinarith [hηpos]
   have hosc : ∀ w : TimeVelocity d,
       w ∈ parabolicClosedBox 1 (r n) (t n) (v n) →
-      |u w - u z| ≤ ε / (2 * (1 + 3 * (d : Real))) := by
+      |u w - u z| ≤ ε / (2 * (1 + 3 * d)) := by
     intro w hw
     have hdist := dist_lt_of_mem_parabolicClosedBox_of_two_mul_radius_lt
       (t n) (v n) (hr n) hnr (hz n) hw hnη
@@ -321,26 +296,24 @@ theorem tendsto_parabolicMorreyBoxAffineProjection_apply_of_continuous
     simpa only [Real.dist_eq] using hvalue.le
   have hprojection :=
   abs_parabolicMorreyBoxAffineProjection_sub_apply_le_of_continuous_of_forall_mem_parabolicClosedBox
-      u hu z (t n) (v n) (hr n) (hz n)
-      (ε / (2 * (1 + 3 * (d : Real)))) hosc
-  rw [Real.dist_eq]
+      u hu z _ _ (hr n) (hz n)
+      _ hosc
   calc
-    |parabolicMorreyBoxAffineProjection (t n) (v n) (r n) u z - u z| ≤
-        (1 + 3 * (d : Real)) * (ε / (2 * (1 + 3 * (d : Real)))) := hprojection
+    |parabolicMorreyBoxAffineProjection _ _ _ u z - u z| ≤
+        (1 + 3 * d) * (ε / (2 * (1 + 3 * d))) := hprojection
     _ = ε / 2 := by field_simp [hCpos.ne']
     _ < ε := half_lt_self hε
 
 /-- Smooth shrinking-box recovery, as the direct `ContDiff` specialization. -/
 theorem tendsto_parabolicMorreyBoxAffineProjection_apply_of_contDiff
-    {d : Nat} (u : TimeVelocity d → Real) (hu : ContDiff Real 2 u)
+     (hu : ContDiff Real 2 u)
     (z : TimeVelocity d) (t : Nat → Real) (v : Nat → PDE.Vec d)
     (r : Nat → Real) (hr : ∀ n : Nat, 0 < r n)
     (hz : ∀ n : Nat, z ∈ parabolicClosedBox 1 (r n) (t n) (v n))
     (hr0 : Tendsto r atTop (nhds 0)) :
     Tendsto
       (fun n => parabolicMorreyBoxAffineProjection (t n) (v n) (r n) u z)
-      atTop (nhds (u z)) := by
-  exact tendsto_parabolicMorreyBoxAffineProjection_apply_of_continuous
+      atTop (nhds (u z)) := tendsto_parabolicMorreyBoxAffineProjection_apply_of_continuous
     u hu.continuous z t v r hr hz hr0
 
 end HypoellipticAleksandrov.Parabolic

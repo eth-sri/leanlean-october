@@ -7,7 +7,6 @@ import Mathlib.Tactic
 /-! # The last fixed-width path in return-time propagation -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic Set Holder Holder.Growth
 
@@ -36,13 +35,11 @@ theorem return_fixed_patch_path (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤
   let xh := hermitePosition T x0 z.velocity P.position P.velocity
   let vh := hermiteVelocity T x0 z.velocity P.position P.velocity
   have hr2 : r ^ 2 ≤ 1 / 64 := by nlinarith
-  have ha : 0 < a := by dsimp [a]; positivity
-  have hT : 0 < T := by dsimp [T, tminus]; linarith
-  have hTlo : 1 / 2 ≤ T := by dsimp [T, tminus]; linarith
-  have hThi : T ≤ 4 := by dsimp [T, tminus, a]; linarith
+  have ha : 0 < a := by positivity
+  have hT : 0 < T := by linarith
+  have hThi : T ≤ 4 := by grind
   have hres : P.position - x0 - T • z.velocity =
       P.position - z.position - (P.time - z.time) • z.velocity := by
-    dsimp [x0, T, tminus]
     module
   have hacc : 6 * PDE.vecEuclideanNorm (P.position - x0 - T • z.velocity) / T ^ 2 +
       4 * PDE.vecEuclideanNorm (P.velocity - z.velocity) / T ≤ 1000 := by
@@ -64,8 +61,8 @@ theorem return_fixed_patch_path (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤
       (sq_nonneg T))
       (div_nonneg (mul_nonneg (by norm_num) (PDE.vecEuclideanNorm_nonneg _)) hT.le)
   have hsk : IsSkeleton x v 1000 (-a) T := by
-    apply skeleton_mono_bound (extendPosition_isSkeleton hT.le hacc0 hs (-a) T)
-    exact hacc
+    apply skeleton_mono_bound (extendPosition_isSkeleton hT.le hacc0 hs _ T)
+    omega
   have hleft (s : ℝ) (hs : s ≤ 0) : x s = x0 + s • z.velocity ∧ v s = z.velocity := by
     constructor
     · dsimp only [x]
@@ -83,37 +80,31 @@ theorem return_fixed_patch_path (lam Lam : ℝ) (hlam : 0 < lam) (hLam : lam ≤
   have htube : corridor tminus (-a) T (r ^ 3 / 2) (r / 2) x v ⊆
       {q | 0 < q.time} := by
     intro q hq
-    change 0 < q.time
     have hqt := hq.1.1
-    dsimp [tminus, a] at hqt
-    linarith
+    grind
   apply hprop 6 C_A (by norm_num) _ (autonomous_fullElliptic A)
     _ (isOpen_lt continuous_const continuous_time) tminus P
-    (by change 0 < P.time; linarith) (by dsimp [T, tminus]; linarith) hThi
+    (by grind) (by linarith) hThi
     x v hsk hxend hvend htube k hk u (fun q hq => hu.2.1 q hq) (hadm A u hu).1
   intro q hq hqt
   change q.time - tminus ∈ Icc (-a) T ∧
-    PDE.vecEuclideanNorm (q.position - x (q.time - tminus)) ≤ r ^ 3 / 2 ∧
-    PDE.vecEuclideanNorm (q.velocity - v (q.time - tminus)) ≤ r / 2 at hq
+    PDE.vecEuclideanNorm _ ≤ r ^ 3 / 2 ∧
+    PDE.vecEuclideanNorm _ ≤ r / 2 at hq
   have hs0 : q.time - tminus ≤ 0 := sub_nonpos.mpr hqt
-  obtain ⟨hxq, hvq⟩ := hleft (q.time - tminus) hs0
+  obtain ⟨hxq, hvq⟩ := hleft _ hs0
   apply hpatch q
   refine ⟨?_, ?_, ?_, ?_⟩
-  · have ht := hq.1.1
-    dsimp [tminus, a] at ht
-    nlinarith [sq_pos_of_pos hr]
-  · dsimp [tminus] at hqt
-    linarith
+  · grind
+  · linarith
   · apply (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt hr).mpr
-    rw [hvq] at hq
-    exact hq.2.2.trans_lt (by linarith)
+    grind
   · apply (PDE.mem_euclideanBall_iff_vecEuclideanNorm_lt (pow_pos hr 3)).mpr
     simp only [sub_zero]
     have he : relativePosition z q = q.position - x (q.time - tminus) := by
       rw [hxq]
-      dsimp [relativePosition, x0, tminus]
+      dsimp [relativePosition]
       module
     rw [he]
-    exact hq.2.1.trans_lt (by nlinarith [pow_pos hr 3])
+    exact hq.2.1.trans_lt (by simp_all)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

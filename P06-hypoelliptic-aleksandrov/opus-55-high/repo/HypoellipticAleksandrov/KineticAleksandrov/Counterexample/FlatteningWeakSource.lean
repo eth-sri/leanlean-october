@@ -17,19 +17,21 @@ namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 
 open MeasureTheory Filter Set
 
+variable {d : ℕ}
+
 /-- Smooth functions have the three classical punctured distributional identities. -/
-theorem smooth_punctured_weak_identities {d : ℕ} (H : XV d → ℝ)
+theorem smooth_punctured_weak_identities  (H : XV d → ℝ)
     (hs : ContDiff ℝ (⊤ : ℕ∞) H)
     (test : XV d → ℝ) (ht : ContDiff ℝ 2 test) (hc : HasCompactSupport test)
     (hz : (0 : XV d) ∉ tsupport test) :
     (∀ i, (∫ q, H q * dx test q i) = -(∫ q, dx H q i * test q)) ∧
     (∀ i, (∫ q, H q * dv test q i) = -(∫ q, dv H q i * test q)) ∧
     (∀ i k, (∫ q, H q * dvv test q i k) = (∫ q, dvv H q i k * test q)) := by
-  have hx (i : Fin d) : ContDiff ℝ (⊤ : ℕ∞) (fun q => dx H q i) :=
+  have hx (i : Fin d) : ContDiff ℝ _ (fun q => dx H q i) :=
     (hs.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).clm_apply contDiff_const
-  have hv (i : Fin d) : ContDiff ℝ (⊤ : ℕ∞) (fun q => dv H q i) :=
+  have hv (i : Fin d) : ContDiff ℝ _ (fun q => dv H q i) :=
     (hs.fderiv_right (m := (⊤ : ℕ∞)) (by simp)).clm_apply contDiff_const
-  have hh (i k : Fin d) : ContDiff ℝ (⊤ : ℕ∞) (fun q => dvv H q i k) :=
+  have hh (i k : Fin d) : ContDiff ℝ _ (fun q => dvv H q i k) :=
     ((hv k).fderiv_right (m := (⊤ : ℕ∞)) (by simp)).clm_apply contDiff_const
   exact classical_punctured_weak_from_jets H hs.continuous hs.contDiffOn
     (fun i => (hx i).continuous.locallyIntegrable)
@@ -37,7 +39,7 @@ theorem smooth_punctured_weak_identities {d : ℕ} (H : XV d → ℝ)
     (fun i k => (hh i k).continuous.locallyIntegrable) test ht hc hz
 
 /-- The literal flattened function has all weak test identities away from the origin. -/
-theorem flatProfile_punctured_weak_of_profile {d : ℕ} {alpha : ℝ}
+theorem flatProfile_punctured_weak_of_profile  {alpha : ℝ}
     (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
     (test : XV d → ℝ) (ht : ContDiff ℝ 2 test) (hs : HasCompactSupport test)
     (hz : (0 : XV d) ∉ tsupport test) :
@@ -51,11 +53,9 @@ theorem flatProfile_punctured_weak_of_profile {d : ℕ} {alpha : ℝ}
   obtain ⟨C, hC, hb⟩ := mollifiedFlatProfile_eventually_bounded h r hr K hs hz
   have hnorm : ∀ᶠ n in atTop, ∀ q ∈ K, ‖mollifiedFlatProfile h r n q‖ ≤ C := by
     filter_upwards [hb] with n hn
-    exact fun q hq => (hn q hq).1
+    simp_all
   have hvalue (t : XV d → ℝ) (hc : Continuous t) (hsc : HasCompactSupport t)
-      (hsub : tsupport t ⊆ K) :
-      Tendsto (fun n => ∫ q, mollifiedFlatProfile h r n q * t q) atTop
-        (nhds (∫ q, selectedFlatProfile h r q * t q)) :=
+      (hsub : tsupport t ⊆ K)  :=
     integral_mul_test_tendsto _ _
       (fun n => (contDiff_mollifiedFlatProfile h r n).continuous.aestronglyMeasurable)
       (mollifiedFlatProfile_ae_tendsto h r) t hc hsc K hsub C hC hnorm
@@ -67,8 +67,7 @@ theorem flatProfile_punctured_weak_of_profile {d : ℕ} {alpha : ℝ}
       (hs.fderiv_apply ℝ (Pi.single i 1, 0)) (tsupport_fderiv_apply_subset ℝ (Pi.single i 1, 0))
     have hbound : ∀ᶠ n in atTop, ∀ q ∈ K, ‖dx (mollifiedFlatProfile h r n) q i‖ ≤ C := by
       filter_upwards [hb] with n hn
-      intro q hq
-      simpa only [Real.norm_eq_abs] using (hn q hq).2.1 i
+      simp_all
     have hright := integral_mul_test_tendsto _ _
       (fun n => (measurable_fderiv_apply_const ℝ (mollifiedFlatProfile h r n)
         (Pi.single i 1, 0)).aestronglyMeasurable)
@@ -79,8 +78,7 @@ theorem flatProfile_punctured_weak_of_profile {d : ℕ} {alpha : ℝ}
       (hs.fderiv_apply ℝ (0, Pi.single i 1)) (tsupport_fderiv_apply_subset ℝ (0, Pi.single i 1))
     have hbound : ∀ᶠ n in atTop, ∀ q ∈ K, ‖dv (mollifiedFlatProfile h r n) q i‖ ≤ C := by
       filter_upwards [hb] with n hn
-      intro q hq
-      simpa only [Real.norm_eq_abs] using (hn q hq).2.2.1 i
+      simp_all
     have hright := integral_mul_test_tendsto _ _
       (fun n => (measurable_fderiv_apply_const ℝ (mollifiedFlatProfile h r n)
         (0, Pi.single i 1)).aestronglyMeasurable)
@@ -94,8 +92,7 @@ theorem flatProfile_punctured_weak_of_profile {d : ℕ} {alpha : ℝ}
       ((hs.fderiv_apply ℝ (0, Pi.single k 1)).fderiv_apply ℝ (0, Pi.single i 1)) hsub
     have hbound : ∀ᶠ n in atTop, ∀ q ∈ K, ‖dvv (mollifiedFlatProfile h r n) q i k‖ ≤ C := by
       filter_upwards [hb] with n hn
-      intro q hq
-      simpa only [Real.norm_eq_abs] using (hn q hq).2.2.2 i k
+      simp_all
     have hright := integral_mul_test_tendsto _ _
       (fun n => (measurable_dvv (mollifiedFlatProfile h r n) i k).aestronglyMeasurable)
       (dvv_mollifiedFlatProfile_ae_tendsto h r hr i k)
@@ -103,7 +100,7 @@ theorem flatProfile_punctured_weak_of_profile {d : ℕ} {alpha : ℝ}
     exact tendsto_nhds_unique (hleft.congr (fun n => (hclassic n).2.2 i k)) hright
 
 /-- The literal flattened function has the three weak identities on the entire carrier. -/
-theorem flatProfile_weak_of_profile {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ}
+theorem flatProfile_weak_of_profile  (hd : 1 ≤ d) {alpha : ℝ}
     (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r) :
     ∀ test : XV d → ℝ, ContDiff ℝ 2 test → HasCompactSupport test →
       (∀ i, (∫ q, selectedFlatProfile h r q * dx test q i) =
@@ -113,8 +110,8 @@ theorem flatProfile_weak_of_profile {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ}
       (∀ i k, (∫ q, selectedFlatProfile h r q * dvv test q i k) =
         (∫ q, flatProfileHessian h r q i k * test q)) := by
   obtain ⟨hx, hv, hh⟩ := flatProfile_jets_locallyIntegrable_of_profile h r hr
-  exact profile_weak_identities_extend d hd (selectedFlatProfile h r)
-    (flatProfilePositionJet h r) (flatProfileVelocityJet h r) (flatProfileHessian h r)
+  exact profile_weak_identities_extend d hd _
+    _ _ _
     (continuous_selectedFlatProfile h r) hx hv hh (flatProfile_punctured_weak_of_profile h r hr)
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

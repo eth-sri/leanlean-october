@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Maximum.BorelBoundary
 /-! # The source smooth-to-Borel passage for autonomous scalar coefficient class (b) -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov.Parabolic MeasureTheory Set
 
@@ -48,14 +47,14 @@ theorem autonomous_abp_smooth_to_borel
   obtain ⟨C,hC,hc⟩ := scalar_borel_coefficient_approximation hlam a ha hb
   apply borel_boundary_limit p hp alpha C₀ localised P₀ R hR u f hcont hLp
   intro n P hP
-  have hk := isCompact_closure_reflected_innerCylinder P₀ R hR (borelInnerDelta R n)
+  have hk := isCompact_closure_reflected_innerCylinder P₀ R hR _
     (borelInnerDelta_valid R hR n).1 (borelInnerDelta_valid R hR n).2
-  have hKD := closure_reflected_innerCylinder_subset P₀ R hR (borelInnerDelta R n)
+  have hKD := closure_reflected_innerCylinder_subset P₀ R hR _
     (borelInnerDelta_valid R hR n).1 (borelInnerDelta_valid R hR n).2
   rw [kineticReflection_image_innerCylinder] at hk hKD
   have hμ := Measure.restrict_mono_set volume (subset_closure.trans hKD)
   exact scalar_borel_smooth_inner_limit lam Lam hlam hLam p hp alpha C₀ localised hsmoothEstimate
-    a ha hb C hC hc u f hreg (borelInnerCentre P₀ R n) (borelInnerRadius R hR n)
+    a ha hb C hC hc u f hreg _ _
     (borelInnerRadius_pos R hR n) hk hKD hf (hLp.mono_measure hμ)
     (hsub.filter_mono (ae_mono hμ)) P hP
 

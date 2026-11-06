@@ -8,7 +8,6 @@ import Mathlib.Tactic
 /-! # Vanishing of the actual angular densities on the positive half-line -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov
 open MeasureTheory Set Filter
 open scoped Topology
@@ -42,8 +41,6 @@ theorem angular_positive_vanishes (R β : ℝ) (hR : 1 ≤ R) (hβ : 3 ≤ β)
   have h0 := bellmanAngularDensity_zero_at_origin R β hR hβ f h (hh 0) hcomp hlower htail
   have hj0 := bellmanAngularFlux_zero_at_origin β f h J hf hn hh h0 he
   have hL0 : L = 0 := by
-    have hc : 0 < (β - 2) / 3 := by linarith
-    rw [hj0] at hj
     nlinarith
   have hi := bellmanAngularFirstMoment_integrable β f h J hβ hf hn hh he
   have htotal : (∫ z in Ioi 0, z * f z) = 0 := by
@@ -58,8 +55,7 @@ theorem angular_positive_vanishes (R β : ℝ) (hR : 1 ≤ R) (hβ : 3 ≤ β)
     exact (mul_eq_zero.mp hz).resolve_left hpos.ne'
   have hhzero : h =ᵐ[volume.restrict (Ioi 0)] (fun _ => 0) := by
     filter_upwards [hfzero, ae_restrict_of_ae hcomp] with z hz hc
-    rw [hz, mul_zero] at hc
-    exact le_antisymm hc (hh z)
+    grind
   have heq := Measure.eqOn_open_of_ae_eq hhzero isOpen_Ioi
     (bellman_locallyAC_continuous hac).continuousOn continuous_const.continuousOn
   exact ⟨h0, hj0, hfzero, fun y hy => heq hy⟩

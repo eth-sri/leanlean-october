@@ -11,7 +11,6 @@ representative. Interior continuity promotes the resulting almost-everywhere bou
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Lieberman
 open HypoellipticAleksandrov.Parabolic
 open Filter MeasureTheory Set
@@ -53,15 +52,15 @@ theorem classical_abs_le_source_time_withDrift {d : ℕ}
   have hFs : IsSmoothOnNeighborhood F (scalarParabolicClosedCylinder a T Ω) :=
     ⟨univ, isOpen_univ, subset_univ _, hF.contDiffOn⟩
   have henv := hu.abs_reverseTimeHilbertRepresentative_le_affine a T lam haT hlam
-    hΩ hΩb A b (fun _ _ => 0) (fun t y => F (t, y)) hAs hbs hcs hFs
+    hΩ hΩb A b _ _ hAs hbs hcs hFs
     (fun z _ => hlo z.1 z.2) (fun _ _ => le_rfl) 0 M le_rfl hM hFM 0
-    (by filter_upwards [Lp.coeFn_zero ℝ 2 (PDE.volumeOn Ω)] with y hy
-        rw [hy]; simp only [Pi.zero_apply, abs_zero, le_refl]) u g hdu
+    (by filter_upwards [Lp.coeFn_zero ℝ 2 _] with y hy
+        simp_all) u g hdu
   have hraw : ∀ᵐ τ ∂reverseTimeVolume (T - a),
       ∀ hτ : τ ∈ Ioo 0 (T - a),
         ∀ᵐ y ∂PDE.volumeOn Ω, |valueCLM hΩ (u τ) y| ≤ M * τ := by
     filter_upwards [(reverseTimeHilbertRepresentative_spec hΩ (T - a)
-      (sub_pos.mpr haT) u g hdu).1] with τ hrep hτ
+      _ u g hdu).1] with τ hrep hτ
     have hb := henv τ ⟨hτ.1.le, hτ.2.le⟩
     rw [hrep hτ] at hb
     simpa only [zero_add, mul_comm] using hb
@@ -69,10 +68,9 @@ theorem classical_abs_le_source_time_withDrift {d : ℕ}
   have hbound : ∀ᵐ t ∂volume.restrict (Ioo a T),
       ∀ᵐ y ∂PDE.volumeOn Ω, |w (t, y)| ≤ M * (T - t) := by
     filter_upwards [hwslice, horig, ae_restrict_mem measurableSet_Ioo] with t hs hr ht
-    have ht' : T - t ∈ Ioo 0 (T - a) := ⟨by linarith [ht.2], by linarith [ht.1]⟩
+    have ht' : T - t ∈ Ioo 0 (T - a) := ⟨by simp_all, by simp_all⟩
     filter_upwards [hs, hr ht'] with y hy hb
-    rw [hy]
-    exact hb
+    simp_all
   exact abs_le_source_time_of_continuousOn_of_ae_slices hΩ a T M w hw hbound
 
 end HypoellipticAleksandrov.KineticAleksandrov.Lieberman

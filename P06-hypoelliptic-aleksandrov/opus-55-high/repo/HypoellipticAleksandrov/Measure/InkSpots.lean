@@ -41,15 +41,15 @@ theorem volume_Gamma_le_inkSpotsD3
   have hxi_nonneg : 0 ≤ xi := hxi.1.le
   have hone_eta_nonneg : 0 ≤ 1 + eta := (add_pos_of_pos_of_nonneg zero_lt_one heta.1.le).le
   calc
-    (volume Gamma).toReal ≤ xi * (volume (inkSpotsD1 Gamma xi)).toReal := hD1
-    _ ≤ xi * ((1 + eta) * (volume (inkSpotsD2 Gamma xi eta)).toReal) :=
+    (volume Gamma).toReal ≤ xi * (volume _).toReal := hD1
+    _ ≤ xi * ((1 + eta) * (volume _).toReal) :=
       mul_le_mul_of_nonneg_left hwind hxi_nonneg
     _ ≤ xi * ((1 + eta) * (zeta ^ (-((d : Int) + 2)) *
-        (volume (inkSpotsD3 Gamma xi eta zeta)).toReal)) :=
+        (volume _).toReal)) :=
       mul_le_mul_of_nonneg_left (mul_le_mul_of_nonneg_left hhot hone_eta_nonneg) hxi_nonneg
     _ = xi * (1 + eta) * zeta ^ (-((d : Int) + 2)) *
-        (volume (inkSpotsD3 Gamma xi eta zeta)).toReal := by
-      simp only [mul_assoc]
+        (volume _).toReal := by
+      linarith
 
 end
 

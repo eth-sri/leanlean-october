@@ -29,7 +29,7 @@ theorem measurable_positionKernelDensity {X Y : Type*}
     (k : Kernel X Y) (m : Measure Y) [SigmaFinite m] :
     Measurable (fun p : X × Y => positionKernelDensity k m p.1 p.2) :=
   ((Measure.measurable_rnDeriv m.toFinite m).comp measurable_snd).mul
-    (Kernel.measurable_rnDeriv k (Kernel.const X m.toFinite))
+    (Kernel.measurable_rnDeriv k _)
 
 /-- Absolute continuity identifies the joint density with each actual kernel measure. -/
 theorem withDensity_positionKernelDensity {X Y : Type*}
@@ -43,7 +43,6 @@ theorem withDensity_positionKernelDensity {X Y : Type*}
       hx.trans (absolutelyContinuous_toFinite m)
   have hk := Kernel.withDensity_rnDeriv_eq (κ := k) (η := eta) hxe
   rw [Kernel.withDensity_apply _ (Kernel.measurable_rnDeriv k eta)] at hk
-  change m.toFinite.withDensity (k.rnDeriv eta x) = k x at hk
   change m.withDensity (m.toFinite.rnDeriv m * k.rnDeriv eta x) = k x
   rw [withDensity_mul m (Measure.measurable_rnDeriv m.toFinite m)
     (Kernel.measurable_rnDeriv_right k eta x),

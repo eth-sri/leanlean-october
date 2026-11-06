@@ -5,7 +5,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.PositionStar
 /-! # The literal position-start Green identity on a half-open observation slab -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory HypoellipticAleksandrov
 
@@ -30,18 +29,14 @@ theorem positionStartQuadratic_slab_identity
   have hg : Integrable (fun q => forwardScalarOperator A.a f q) G :=
     positionStartQuadratic_operator_integrable hlam hLam A c Y hc G
       ((stripGreen_infinite_ae_future_carrier hH hLE hlam hLam A c.activeInterval
-        (densityClockPole c p hv)).mono fun _ hq => hq.2)
+        _).mono fun _ hq => hq.2)
   have hid := positionStartQuadratic_cumulative_identity
     hH hLE hlam hLam A c J Y b hc hJ p hv
   have hia := positionStartQuadratic_cumulative_identity
     hH hLE hlam hLam A c J Y a hc hJ p hv
-  change ({q : Point | q.time ≤ b}.indicator f) p = _ at hid
-  change ({q : Point | q.time ≤ a}.indicator f) p = _ at hia
   have hd : {q : Point | a < q.time ∧ q.time ≤ b} =
       {q : Point | q.time ≤ b} \ {q : Point | q.time ≤ a} := by
-    ext q
-    simp only [mem_ofPred_eq, mem_sdiff, not_le]
-    exact and_comm
+    aesop
   have hi : (∫ q in {q : Point | a < q.time ∧ q.time ≤ b},
       forwardScalarOperator A.a f q ∂G) =
       (∫ q in {q : Point | q.time ≤ b}, forwardScalarOperator A.a f q ∂G) -
@@ -61,13 +56,8 @@ theorem positionStartQuadratic_slab_identity
         indicator_of_mem (show p ∈ {q : Point | q.time ≤ a} from hpa), sub_self]
     · rw [indicator_of_notMem (show p ∉ {q : Point | q.time ≤ a} from hpa), sub_zero]
       by_cases hpb : p.time ≤ b
-      · rw [indicator_of_mem (show p ∈ {q : Point | a < q.time ∧ q.time ≤ b} from
-          ⟨lt_of_not_ge hpa, hpb⟩),
-          indicator_of_mem (show p ∈ {q : Point | q.time ≤ b} from hpb)]
-      · rw [indicator_of_notMem (show p ∉ {q : Point | a < q.time ∧ q.time ≤ b} from
-          fun h => hpb h.2),
-          indicator_of_notMem (show p ∉ {q : Point | q.time ≤ b} from hpb)]
-  rw [he, hid, hia]
-  ring
+      · simp_all
+      simp_all
+  linarith
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

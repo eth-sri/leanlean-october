@@ -6,7 +6,6 @@ import Mathlib.MeasureTheory.VectorMeasure.Variation.Basic
 /-! # Total variation contraction through the actual later boundary operator -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.LocalA
 open Set MeasureTheory SectionTwo Parabolic
 open scoped ENNReal
@@ -30,14 +29,10 @@ theorem ballExitRestart_fourier_variation_le
     (ballEvolutionQuery P ⟨H.1, H.2.1⟩) ξ
   let η := exitFourier ((ballExitRestart hH hLE hd hlam hLam B hB v₀ hR P T H).map
     (exitCoordinates P.1 v₀)) ξ
-  let f (E : Set (TimeVelocity d)) :=
+  let f (E : Set _) :=
     ballLaterExitFourierTest hH hLE hd hlam hLam B hB v₀ hR H.1 T.1 H.2.2 ξ E
   have hmulNorm : ‖ContinuousLinearMap.mul ℝ ℂ‖ₑ ≤ 1 := by
-    rw [← ofReal_norm]
-    exact (ENNReal.ofReal_le_ofReal
-      (LinearMap.mkContinuous₂_norm_le (LinearMap.mul ℝ ℂ) zero_le_one
-        (fun x y => by simpa only [LinearMap.mul_apply', one_mul] using norm_mul_le x y))).trans_eq
-      ENNReal.ofReal_one
+    simp
   by_contra hn
   have hlt : ν.variation univ < η.variation univ := lt_of_not_ge hn
   obtain ⟨partition, _, hpartitiond, hpartitionm, hpartitiongt⟩ :=
@@ -47,18 +42,16 @@ theorem ballExitRestart_fourier_variation_le
       _ ≤ ∑ E ∈ partition, ∫⁻ v, ‖f E v‖ₑ ∂ν.variation := by
         apply Finset.sum_le_sum
         intro E hE
-        dsimp only [η]
         rw [ballExitRestart_fourier_apply hH hLE hd hlam hLam B hB v₀ hR P T H ξ E
           (hpartitionm E hE), enorm_mul, ← ofReal_norm, norm_exitFourierStepPhase,
           ENNReal.ofReal_one, one_mul]
         exact VectorMeasure.enorm_integral_le_lintegral_enorm |>.trans
-          (by simpa only [one_mul] using
-            (mul_le_mul' hmulNorm (le_refl (∫⁻ v, ‖f E v‖ₑ ∂ν.variation))))
+          (by aesop)
       _ = ∫⁻ v, ∑ E ∈ partition, ‖f E v‖ₑ ∂ν.variation := by
         rw [lintegral_finsetSum partition (fun E hE =>
           (measurable_ballLaterExitFourierTest hH hLE hd hlam hLam B hB v₀ hR
             H.1 T.1 H.2.2 ξ E (hpartitionm E hE)).enorm)]
-      _ ≤ ∫⁻ _v, (1 : ℝ≥0∞) ∂ν.variation := by
+      _ ≤ ∫⁻ _v, (1) ∂ν.variation := by
         apply lintegral_mono
         intro v
         dsimp only
@@ -75,16 +68,15 @@ theorem ballExitRestart_fourier_variation_le
           exact (VectorMeasure.le_variation _ MeasurableSet.univ
             (fun E _ => subset_univ E) hpartitiond).trans
             (ballLaterExitFourier_variation_le_one hH hLE hd hlam hLam B hB v₀ hR
-              H.1 T.1 H.2.2 ξ ⟨v, hv⟩)
+              H.1 T.1 H.2.2 ξ _)
         · have heq : (∑ E ∈ partition, ‖f E v‖ₑ) = 0 := by
             apply Finset.sum_eq_zero
             intro E _
             dsimp only [f]
             rw [ballLaterExitFourierTest_invalid hH hLE hd hlam hLam B hB v₀ hR
               H.1 T.1 H.2.2 ξ E v hv, enorm_zero]
-          rw [heq]
-          exact zero_le
-      _ = ν.variation univ := by simp only [lintegral_const, one_mul]
-  exact (not_lt_of_ge hsum) hpartitiongt
+          simp_all
+      _ = ν.variation univ := by simp
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.LocalA

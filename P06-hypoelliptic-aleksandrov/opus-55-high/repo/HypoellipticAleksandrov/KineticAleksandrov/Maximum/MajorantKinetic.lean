@@ -43,22 +43,20 @@ theorem exists_smooth_majorant_kinetic {d : ℕ} {U K : Set (KineticPoint d)}
   have := isAddHaarMeasure_volume_coordinates d
   let e := KineticPoint.homeomorphProd d
   have hmp : MeasurePreserving e volume volume := KineticPoint.measurePreserving_equivProd d
-  have hemb : MeasurableEmbedding e := e.measurableEmbedding
-  have hpre : ∀ s : Set (KineticPoint d), e ⁻¹' (e.symm ⁻¹' s) = s := fun s => by
-    ext z
-    simp
+  have hemb  := e.measurableEmbedding
+  have hpre : ∀ s : Set _, e ⁻¹' (e.symm ⁻¹' s) = s := fun s => by
+    aesop
   have hmpU : MeasurePreserving e (volume.restrict U) (volume.restrict (e.symm ⁻¹' U)) := by
     simpa only [hpre] using hmp.restrict_preimage_emb hemb (e.symm ⁻¹' U)
-  have hU' : IsOpen (e.symm ⁻¹' U) := hU.preimage e.symm.continuous
-  have hK' : IsCompact (e.symm ⁻¹' K) := e.symm.isCompact_preimage.2 hK
+  have hU'  := hU.preimage e.symm.continuous
+  have hK'  := e.symm.isCompact_preimage.2 hK
   have hKU' : e.symm ⁻¹' K ⊆ e.symm ⁻¹' U := preimage_mono hKU
-  have hcont' : ContinuousOn (h ∘ e.symm) (e.symm ⁻¹' U) :=
+  have hcont' : ContinuousOn _ (e.symm ⁻¹' U) :=
     hcont.comp e.symm.continuous.continuousOn (fun x hx => hx)
   have hnn' : ∀ x ∈ e.symm ⁻¹' U, 0 ≤ (h ∘ e.symm) x := fun x hx => hnn _ hx
   have hF' : ∀ᵐ x ∂(volume.restrict (e.symm ⁻¹' U)), (h ∘ e.symm) x ≤ (F ∘ e.symm) x := by
     have hsymm : MeasurePreserving e.symm (volume.restrict (e.symm ⁻¹' U))
-        (volume.restrict U) := by
-      exact MeasurePreserving.symm e.toMeasurableEquiv hmpU
+        (volume.restrict U) := MeasurePreserving.symm e.toMeasurableEquiv hmpU
     exact hsymm.quasiMeasurePreserving.ae hF
   obtain ⟨g₀, hg1, hg2, hg3, hg4, hg5, hg6⟩ := exists_smooth_majorant_eLpNorm_le
     (E := ℝ × (PDE.Vec d × PDE.Vec d)) volume hU' hK'
@@ -69,22 +67,14 @@ theorem exists_smooth_majorant_kinetic {d : ℕ} {U K : Set (KineticPoint d)}
     rw [← hmpU.map_eq, hemb.eLpNorm_map_measure]
   have hnormEq : eLpNorm (F ∘ e.symm) p (volume.restrict (e.symm ⁻¹' U)) =
       eLpNorm F p (volume.restrict U) := by
-    rw [hnormEq']
-    congr 1
+    aesop
   refine ⟨g₀ ∘ e, ?_, ?_, ?_, ?_, ?_, ?_⟩
-  · have : (fun x => (g₀ ∘ e) ((KineticPoint.equivProd d).symm x)) = g₀ := by
-      funext x
-      exact congrArg g₀ (e.apply_symm_apply x)
-    rw [this]
-    exact hg1
+  · exact hg1
   · exact hg2.comp_homeomorph e
   · rw [tsupport_comp_eq_preimage g₀ e]
-    exact fun z hz => hg3 hz
-  · exact fun z => hg4 _
-  · intro z hz
-    have := hg5 (e z) (by simpa using hz)
-    simpa using this
-  · rw [← hnormEq, ← hnormEq']
-    exact hg6
+    grind
+  · simp_all
+  · aesop
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov

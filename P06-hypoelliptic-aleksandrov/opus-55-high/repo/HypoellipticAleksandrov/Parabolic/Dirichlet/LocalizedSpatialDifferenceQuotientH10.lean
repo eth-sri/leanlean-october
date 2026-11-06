@@ -33,7 +33,7 @@ private theorem exists_localizedSpatialDifferenceQuotientSmoothCore_bound
       ‖localizedSpatialDifferenceQuotientSmoothCoreLinearMap
           hΩ η k h hηΩ φ‖ ≤ C *
         ‖smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ‖ := by
-  refine ⟨2 * (1 + (d : ℝ) * (K + 1)) / |h|, ?_⟩
+  refine ⟨2 * (1 + d * (K + 1)) / |h|, ?_⟩
   intro φ
   exact norm_localizedSpatialDifferenceQuotientSmoothCoreLinearMap_apply_le
     hΩ η k h φ hηΩ hηshift
@@ -43,7 +43,7 @@ set_option linter.unusedVariables false in
 the complete zero-boundary Sobolev graph. The forward collar fixes the
 regime in which the advertised core agreement and norm bound hold. -/
 @[nolint unusedArguments]
-noncomputable def localizedSpatialDifferenceQuotientH10CLM
+def localizedSpatialDifferenceQuotientH10CLM
     {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
     (hΩ : IsOpen Ω)
     (η : PDE.QuantitativeSmoothCutoff inner outer K)
@@ -57,13 +57,12 @@ noncomputable def localizedSpatialDifferenceQuotientH10CLM
     hΩ η k h hηΩ).extendOfNorm
       (smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ)
 
+variable {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ} (hΩ : IsOpen Ω) (η : PDE.QuantitativeSmoothCutoff inner outer K) (k : Fin d)
+
 /-- The extended quotient agrees with the literal bounded map on every
 actual bundled smooth test. -/
 theorem localizedSpatialDifferenceQuotientH10CLM_apply_smooth
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : IsOpen Ω)
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ) (φ : PDE.WeakTestFunction Ω)
+     (h : ℝ) (φ : PDE.WeakTestFunction Ω)
     (hηΩ : tsupport η.toFun ⊆ Ω)
     (hηshift : Set.MapsTo
       (fun y : PDE.Vec d => y + h • PDE.basisVec k)
@@ -72,9 +71,7 @@ theorem localizedSpatialDifferenceQuotientH10CLM_apply_smooth
         hΩ η k h hηΩ hηshift
         (smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ) =
       localizedSpatialDifferenceQuotientSmoothCoreLinearMap
-        hΩ η k h hηΩ φ := by
-  unfold localizedSpatialDifferenceQuotientH10CLM
-  exact LinearMap.extendOfNorm_eq
+        hΩ η k h hηΩ φ := LinearMap.extendOfNorm_eq
     (denseRange_smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ)
     (exists_localizedSpatialDifferenceQuotientSmoothCore_bound
       hΩ η k h hηΩ hηshift) φ
@@ -82,10 +79,7 @@ theorem localizedSpatialDifferenceQuotientH10CLM_apply_smooth
 /-- The value component of the extended quotient is exactly the
 quotient-level scalar operator. -/
 theorem valueCLM_comp_localizedSpatialDifferenceQuotientH10CLM
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : IsOpen Ω)
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ)
+     (h : ℝ)
     (hηΩ : tsupport η.toFun ⊆ Ω)
     (hηshift : Set.MapsTo
       (fun y : PDE.Vec d => y + h • PDE.basisVec k)
@@ -95,39 +89,33 @@ theorem valueCLM_comp_localizedSpatialDifferenceQuotientH10CLM
           hΩ η k h hηΩ hηshift) =
       (localizedSpatialDifferenceQuotientL2
         hΩ.measurableSet η k h).comp (valueCLM hΩ) := by
-  let e : PDE.WeakTestFunction Ω →ₗ[ℝ] H10HilbertGraph hΩ :=
+  let e  :=
     smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ
-  let q : H10HilbertGraph hΩ →L[ℝ] PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
+  let q  :=
     (valueCLM hΩ).comp
       (localizedSpatialDifferenceQuotientH10CLM hΩ η k h hηΩ hηshift)
-  let r : H10HilbertGraph hΩ →L[ℝ] PDE.ScalarLp Ω (2 : ℝ≥0∞) :=
+  let r  :=
     (localizedSpatialDifferenceQuotientL2 hΩ.measurableSet η k h).comp
       (valueCLM hΩ)
-  change q = r
   apply ContinuousLinearMap.ext
   exact fun x => congrFun
     ((denseRange_smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ).equalizer
       q.continuous r.continuous (by
       funext φ
-      dsimp only [Function.comp_apply, q, r, e]
       change valueCLM hΩ
           (localizedSpatialDifferenceQuotientH10CLM hΩ η k h hηΩ hηshift
-            (smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ)) =
+            _) =
         localizedSpatialDifferenceQuotientL2 hΩ.measurableSet η k h
           (valueCLM hΩ
-            (smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ))
-      rw [localizedSpatialDifferenceQuotientH10CLM_apply_smooth
-        hΩ η k h φ hηΩ hηshift]
+            _)
+      rw [localizedSpatialDifferenceQuotientH10CLM_apply_smooth]
       exact valueCLM_localizedSpatialDifferenceQuotientSmoothCoreLinearMap_apply
         hΩ η k h φ hηΩ hηshift)) x
 
 /-- The gradient component of the extended quotient is exactly the
 assembled quotient-level vector operator. -/
 theorem gradientCLM_comp_localizedSpatialDifferenceQuotientH10CLM
-    {d : ℕ} {Ω inner outer : Set (PDE.Vec d)} {K : ℝ}
-    (hΩ : IsOpen Ω)
-    (η : PDE.QuantitativeSmoothCutoff inner outer K)
-    (k : Fin d) (h : ℝ)
+     (h : ℝ)
     (hηΩ : tsupport η.toFun ⊆ Ω)
     (hηshift : Set.MapsTo
       (fun y : PDE.Vec d => y + h • PDE.basisVec k)
@@ -136,29 +124,24 @@ theorem gradientCLM_comp_localizedSpatialDifferenceQuotientH10CLM
         (localizedSpatialDifferenceQuotientH10CLM
           hΩ η k h hηΩ hηshift) =
       localizedSpatialDifferenceQuotientSmoothGradientCLM hΩ η k h := by
-  let e : PDE.WeakTestFunction Ω →ₗ[ℝ] H10HilbertGraph hΩ :=
+  let e  :=
     smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ
-  let q : H10HilbertGraph hΩ →L[ℝ]
-      PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) :=
+  let q  :=
     (gradientCLM hΩ).comp
       (localizedSpatialDifferenceQuotientH10CLM hΩ η k h hηΩ hηshift)
-  let r : H10HilbertGraph hΩ →L[ℝ]
-      PDE.HilbertVectorLp Ω (2 : ℝ≥0∞) :=
+  let r  :=
     localizedSpatialDifferenceQuotientSmoothGradientCLM hΩ η k h
-  change q = r
   apply ContinuousLinearMap.ext
   exact fun x => congrFun
     ((denseRange_smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ).equalizer
       q.continuous r.continuous (by
       funext φ
-      dsimp only [Function.comp_apply, q, r, e]
       change gradientCLM hΩ
           (localizedSpatialDifferenceQuotientH10CLM hΩ η k h hηΩ hηshift
-            (smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ)) =
+            _) =
         localizedSpatialDifferenceQuotientSmoothGradientCLM hΩ η k h
-          (smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ)
-      rw [localizedSpatialDifferenceQuotientH10CLM_apply_smooth
-        hΩ η k h φ hηΩ hηshift]
+          _
+      rw [localizedSpatialDifferenceQuotientH10CLM_apply_smooth]
       exact gradientCLM_localizedSpatialDifferenceQuotientSmoothCoreLinearMap_apply
         hΩ η k h φ hηΩ hηshift)) x
 

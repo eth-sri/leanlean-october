@@ -27,12 +27,12 @@ local instance instReverseTimeL2VStarModuleEnergy
     Module ℝ (ReverseTimeL2VStar hΩ T) :=
   MeasureTheory.Lp.instModule
 
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+
 /-- A literal common-event weak variational solution of the reversed,
 homogeneous-lateral Dirichlet energy problem. -/
 def IsReverseTimeVariationalEnergySolution
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+     (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F : ℝ → PDE.Vec d → ℝ)
     (hFSmooth : IsSmoothOnNeighborhood
@@ -56,7 +56,7 @@ def IsReverseTimeVariationalEnergySolution
 
 /-- The literal closed-time Gårding difference-energy inequality. -/
 def HasReverseTimeDifferenceEnergyBound
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (r₀ r₁ lam K : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (u : ReverseTimeL2V hΩ (r₁ - r₀))
     (g : ReverseTimeL2VStar hΩ (r₁ - r₀))
@@ -84,8 +84,7 @@ def HasReverseTimeDifferenceEnergyBound
           ∂reverseTimeVolume (r₁ - r₀))
 
 private theorem exists_reverseTimeSpatialForm_sliceEvidence_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -117,20 +116,19 @@ private theorem exists_reverseTimeSpatialForm_sliceEvidence_of_smoothOnNeighborh
       (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
     rcases haSmooth with ⟨V, hVopen, hKV, hV⟩
     have hrow : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i) V := by
-      exact (contDiffOn_apply ℝ (Fin d → ℝ) i Set.univ).comp hV
-        (by intro z hz; exact Set.mem_univ _)
+      fun_prop
     exact ((contDiffOn_apply ℝ ℝ j Set.univ).comp hrow
-      (by intro z hz; exact Set.mem_univ _)).continuousOn.mono hKV
+      (by simp)).continuousOn.mono hKV
   choose ca hca using fun i j =>
     (isCompact_scalarParabolicClosedCylinder r₀ r₁ hΩbounded).exists_bound_of_continuousOn
       (haCont i j)
-  let Ca : Fin d → Fin d → ℝ := fun i j => max (ca i j) 0
+  let Ca  := fun i j => max (ca i j) 0
   have hCa (i j : Fin d) : 0 ≤ Ca i j := le_max_right _ _
   have hCaBound (i j : Fin d) : ∀ᵐ y ∂PDE.volumeOn Ω,
       ‖a (r₁ - τ) y i j‖ ≤ Ca i j := by
     filter_upwards [ae_restrict_mem hΩ.measurableSet] with y hy
     have htime : r₀ ≤ r₁ - τ ∧ r₁ - τ ≤ r₁ := by
-      constructor <;> linarith [hτ.1, hτ.2]
+      grind
     exact (hca i j (r₁ - τ, y) ⟨htime, subset_closure hy⟩).trans (le_max_left _ _)
   have hCdCont (j : Fin d) : ContinuousOn
       (fun z : TimeVelocity d => scalarSpatialCoefficientDivergence a z j - b z.1 z.2 j)
@@ -141,18 +139,18 @@ private theorem exists_reverseTimeSpatialForm_sliceEvidence_of_smoothOnNeighborh
       (continuous_apply j).continuousOn
     rcases hbSmooth with ⟨V, hVopen, hKV, hV⟩
     have hbj : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2 j) V := by
-      exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hV (by intro z hz; exact Set.mem_univ _)
-    exact heval.comp hdiv (by intro z hz; exact Set.mem_univ _) |>.sub (hbj.continuousOn.mono hKV)
+      fun_prop
+    exact heval.comp hdiv (by simp) |>.sub (hbj.continuousOn.mono hKV)
   choose cd hcd using fun j =>
     (isCompact_scalarParabolicClosedCylinder r₀ r₁ hΩbounded).exists_bound_of_continuousOn
       (hCdCont j)
-  let Cd : Fin d → ℝ := fun j => max (cd j) 0
+  let Cd  := fun j => max (cd j) 0
   have hCd (j : Fin d) : 0 ≤ Cd j := le_max_right _ _
   have hCdBound (j : Fin d) : ∀ᵐ y ∂PDE.volumeOn Ω,
       ‖reverseTimeDivergenceDrift r₁ a b τ y j‖ ≤ Cd j := by
     filter_upwards [ae_restrict_mem hΩ.measurableSet] with y hy
     have htime : r₀ ≤ r₁ - τ ∧ r₁ - τ ≤ r₁ := by
-      constructor <;> linarith [hτ.1, hτ.2]
+      grind
     simpa only [reverseTimeDivergenceDrift,
       scalarSpatialCoefficientDivergence_reverseTimeCoefficient,
       reverseTimeMap_apply, reverseTimeVectorCoefficient_apply, Pi.sub_apply] using
@@ -161,25 +159,18 @@ private theorem exists_reverseTimeSpatialForm_sliceEvidence_of_smoothOnNeighborh
     exists_reverseTimeScalarCoefficient_bound_of_smoothOnNeighborhood r₀ r₁ hΩbounded c hcSmooth
   refine ⟨Ca, Cd, Cc, hCa, ?_, hCaBound, hCd, ?_, hCdBound, hCc, ?_, ?_⟩
   · intro i j
-    rcases haSmooth with ⟨V, hVopen, hKV, hV⟩
-    have hrow : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i) V := by
-      exact (contDiffOn_apply ℝ (Fin d → ℝ) i Set.univ).comp hV
-        (by intro z hz; exact Set.mem_univ _)
-    have hentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => a z.1 z.2 i j) V := by
-      exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hrow (by intro z hz; exact Set.mem_univ _)
     have htime : r₀ ≤ r₁ - τ ∧ r₁ - τ ≤ r₁ := by
-      constructor <;> linarith [hτ.1, hτ.2]
+      grind
     have hmap : MapsTo (fun y : PDE.Vec d => (r₁ - τ, y)) Ω
         (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
       intro y hy
       exact ⟨htime, subset_closure hy⟩
     have hslice : ContinuousOn (fun y : PDE.Vec d => a (r₁ - τ) y i j) Ω := by
-      simpa only [Function.comp_def] using (hentry.continuousOn.mono hKV).comp
-        (Continuous.prodMk_right _).continuousOn hmap
+      fun_prop
     exact hslice.aestronglyMeasurable hΩ.measurableSet
   · intro j
     have htime : r₀ ≤ r₁ - τ ∧ r₁ - τ ≤ r₁ := by
-      constructor <;> linarith [hτ.1, hτ.2]
+      grind
     have hmap : MapsTo (fun y : PDE.Vec d => (r₁ - τ, y)) Ω
         (scalarParabolicClosedCylinder r₀ r₁ Ω) := by
       intro y hy
@@ -190,15 +181,11 @@ private theorem exists_reverseTimeSpatialForm_sliceEvidence_of_smoothOnNeighborh
         r₀ r₁ a haSmooth
       have hvec : ContinuousOn (fun y : PDE.Vec d =>
           scalarSpatialCoefficientDivergence a (r₁ - τ, y)) Ω := by
-        simpa only [Function.comp_def] using
-          hcont.comp (Continuous.prodMk_right _).continuousOn hmap
-      have heval : ContinuousOn (fun x : PDE.Vec d => x j) Set.univ :=
-        (continuous_apply j).continuousOn
-      simpa only [scalarSpatialCoefficientDivergence_reverseTimeCoefficient,
-        reverseTimeMap_apply, Function.comp_def] using heval.comp hvec (by intro y hy; simp)
+        fun_prop
+      fun_prop
     rcases hbSmooth with ⟨V, hVopen, hKV, hV⟩
     have hentry : ContDiffOn ℝ (⊤ : ℕ∞) (fun z : TimeVelocity d => b z.1 z.2 j) V := by
-      exact (contDiffOn_apply ℝ ℝ j Set.univ).comp hV (by intro z hz; exact Set.mem_univ _)
+      fun_prop
     have hbcont : ContinuousOn (fun y : PDE.Vec d => b (r₁ - τ) y j) Ω := by
       simpa only [Function.comp_def] using (hentry.continuousOn.mono hKV).comp
         (Continuous.prodMk_right _).continuousOn hmap
@@ -210,11 +197,10 @@ private theorem exists_reverseTimeSpatialForm_sliceEvidence_of_smoothOnNeighborh
   · exact (continuousOn_reverseTimeScalarCoefficient_slice_of_smoothOnNeighborhood
       r₀ r₁ τ c hcSmooth hτ).aestronglyMeasurable hΩ.measurableSet
   · filter_upwards [ae_restrict_mem hΩ.measurableSet] with y hy
-    simpa only [Real.norm_eq_abs] using hCcBound τ hτ y hy
+    simp_all
 
-private noncomputable def reverseTimeSpatialFormMultiplierExpression
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (r₁ τ : ℝ) (a : CoefficientField d)
+private def reverseTimeSpatialFormMultiplierExpression
+     (r₁ τ : ℝ) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (Ca : Fin d → Fin d → ℝ) (Cd : Fin d → ℝ) (Cc : ℝ)
     (hCa : ∀ i j, 0 ≤ Ca i j)
@@ -250,8 +236,7 @@ private noncomputable def reverseTimeSpatialFormMultiplierExpression
       (valueCLM hΩ v)
 
 private theorem reverseTimeSpatialForm_eq_multiplierExpression
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (r₁ τ : ℝ) (a : CoefficientField d)
+     (r₁ τ : ℝ) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (Ca : Fin d → Fin d → ℝ) (Cd : Fin d → ℝ) (Cc : ℝ)
     (hCa : ∀ i j, 0 ≤ Ca i j)
@@ -271,13 +256,11 @@ private theorem reverseTimeSpatialForm_eq_multiplierExpression
     (u v : H10HilbertGraph hΩ) :
     reverseTimeSpatialForm hΩ r₁ τ a b c u v =
       reverseTimeSpatialFormMultiplierExpression hΩ r₁ τ a b c Ca Cd Cc hCa hAMeas hABound
-        hCd hDriftMeas hDriftBound hCc hScalarMeas hScalarBound u v := by
-  exact reverseTimeSpatialForm_eq_multiplierInner_of_sliceEvidence hΩ r₁ τ a b c u v
+        hCd hDriftMeas hDriftBound hCc hScalarMeas hScalarBound u v := reverseTimeSpatialForm_eq_multiplierInner_of_sliceEvidence hΩ r₁ τ a b c u v
     Ca hCa hAMeas hABound Cd hCd hDriftMeas hDriftBound Cc hCc hScalarMeas hScalarBound
 
 private theorem reverseTimeSpatialForm_sub_left_of_sliceEvidence
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (r₁ τ : ℝ) (a : CoefficientField d)
+     (r₁ τ : ℝ) (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d) (c : ℝ → PDE.Vec d → ℝ)
     (Ca : Fin d → Fin d → ℝ) (Cd : Fin d → ℝ) (Cc : ℝ)
     (hCa : ∀ i j, 0 ≤ Ca i j)
@@ -309,8 +292,7 @@ private theorem reverseTimeSpatialForm_sub_left_of_sliceEvidence
   ring
 
 private theorem reverseTimeSpatialForm_sub_left_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+     (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -332,8 +314,7 @@ private theorem reverseTimeSpatialForm_sub_left_of_smoothOnNeighborhood
     hABound hCd hDriftMeas hDriftBound hCc hScalarMeas hScalarBound u₁ u₂ v
 
 private theorem reverseTimeSpatialForm_sub_left_diagonal_of_smoothOnNeighborhood
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+     (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -349,20 +330,18 @@ private theorem reverseTimeSpatialForm_sub_left_diagonal_of_smoothOnNeighborhood
         reverseTimeSpatialForm hΩ r₁ τ a b c (u - v) (u - v) := by
   simpa using
     (reverseTimeSpatialForm_sub_left_of_smoothOnNeighborhood
-      r₀ r₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth τ hτ u v (u - v)).symm
+      r₀ r₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth τ hτ u v _).symm
 
 private theorem hasGelfandWeakTimeDerivative_sub
-    {d : ℕ} {Ω : Set (PDE.Vec d)} {hΩ : IsOpen Ω} {T : ℝ} {hT : 0 < T}
+     {hΩ : IsOpen Ω} {T : ℝ} {hT : 0 < T}
     {u v : ReverseTimeL2V hΩ T} {g k : ReverseTimeL2VStar hΩ T}
     (hu : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (hv : HasGelfandWeakTimeDerivative hΩ T hT v k) :
     HasGelfandWeakTimeDerivative hΩ T hT (u - v) (g - k) := by
-  simpa [sub_eq_add_neg] using hu.add (hv.smul (-1 : ℝ))
+  simpa [sub_eq_add_neg] using hu.add (hv.smul (-1))
 
 private theorem ae_reverseTimeVariationalEnergy_difference_equation
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+     (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c F : ℝ → PDE.Vec d → ℝ)
     (haSmooth : IsSmoothOnNeighborhood (fun z : TimeVelocity d => a z.1 z.2)
@@ -392,7 +371,7 @@ private theorem ae_reverseTimeVariationalEnergy_difference_equation
   rcases hv with ⟨_, hvEq⟩
   filter_upwards [huEq, hvEq, Lp.coeFn_sub u v, Lp.coeFn_sub g k] with τ huτ hvτ huv hgk
   intro hτ
-  have hτcc : τ ∈ Set.Icc 0 (r₁ - r₀) := ⟨le_of_lt hτ.1, le_of_lt hτ.2⟩
+  have hτcc : τ ∈ Set.Icc 0 _ := ⟨le_of_lt hτ.1, le_of_lt hτ.2⟩
   have huTest := huτ hτ (u τ - v τ)
   have hvTest := hvτ hτ (u τ - v τ)
   have hform := reverseTimeSpatialForm_sub_left_diagonal_of_smoothOnNeighborhood
@@ -404,8 +383,7 @@ private theorem ae_reverseTimeVariationalEnergy_difference_equation
   linarith
 
 private theorem reverseTimeHilbertRepresentative_sub_eq
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+    
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T)
     (hdu : HasGelfandWeakTimeDerivative hΩ T hT u g)
     (v : ReverseTimeL2V hΩ T) (k : ReverseTimeL2VStar hΩ T)
@@ -419,17 +397,7 @@ private theorem reverseTimeHilbertRepresentative_sub_eq
   obtain ⟨hW, _⟩ := reverseTimeHilbertRepresentative_spec hΩ T hT (u - v) (g - k) hdiff
   apply ReverseTimeHilbertRepresentativeAgrees.unique hW hT
   filter_upwards [hU, hV, Lp.coeFn_sub u v] with τ hUτ hVτ huv
-  intro hτ
-  let hτcc : τ ∈ Set.Icc 0 T := ⟨le_of_lt hτ.1, le_of_lt hτ.2⟩
-  change
-    (reverseTimeHilbertRepresentative hΩ T hT u g hdu -
-      reverseTimeHilbertRepresentative hΩ T hT v k hdv) ⟨τ, hτcc⟩ =
-      valueCLM hΩ ((u - v) τ)
-  change reverseTimeHilbertRepresentative hΩ T hT u g hdu ⟨τ, hτcc⟩ -
-      reverseTimeHilbertRepresentative hΩ T hT v k hdv ⟨τ, hτcc⟩ =
-        valueCLM hΩ ((u - v) τ)
-  rw [hUτ hτ, hVτ hτ, huv]
-  exact (valueCLM hΩ).map_sub _ _
+  aesop
 
 private theorem setIntegral_garding_of_ae
     {μ : Measure ℝ} (p G V : ℝ → ℝ) (lam K s t : ℝ)
@@ -440,7 +408,7 @@ private theorem setIntegral_garding_of_ae
   have hl : Integrable (fun r => 2 * p r + lam * G r) μ :=
     (hp.const_mul 2).add (hG.const_mul lam)
   have hr : Integrable (fun r => 2 * K * V r) μ := by
-    simpa only [mul_assoc] using hV.const_mul (2 * K)
+    fun_prop
   have h := setIntegral_mono_ae_restrict hl.integrableOn hr.integrableOn
     (ae_restrict_of_ae hae : ∀ᵐ r ∂μ.restrict (Set.Ioc s t),
       2 * p r + lam * G r ≤ 2 * K * V r)
@@ -449,7 +417,7 @@ private theorem setIntegral_garding_of_ae
   exact h
 
 private theorem hasReverseTimeDifferenceEnergyBound_of_pointwise
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (r₀ r₁ lam K : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω)
     (u : ReverseTimeL2V hΩ (r₁ - r₀)) (g : ReverseTimeL2VStar hΩ (r₁ - r₀))
     (hdu : HasGelfandWeakTimeDerivative hΩ (r₁ - r₀) (sub_pos.mpr h₀₁) u g)
@@ -461,29 +429,28 @@ private theorem hasReverseTimeDifferenceEnergyBound_of_pointwise
         2 * K * ‖valueCLM hΩ ((u - v) τ)‖ ^ 2) :
     HasReverseTimeDifferenceEnergyBound r₀ r₁ lam K h₀₁ hΩ u g hdu v k hdv := by
   intro s t hs ht hst
-  have hrep := reverseTimeHilbertRepresentative_sub_eq hΩ (r₁ - r₀) (sub_pos.mpr h₀₁)
+  have hrep := reverseTimeHilbertRepresentative_sub_eq hΩ (r₁ - r₀) _
     u g hdu v k hdv hdiff
-  have henergy := (reverseTimeHilbertRepresentative_spec hΩ (r₁ - r₀) (sub_pos.mpr h₀₁)
-    (u - v) (g - k) hdiff).2 s t hs ht hst
-  have hpair : Integrable (fun τ => ((g - k) τ) ((u - v) τ))
-      (reverseTimeVolume (r₁ - r₀)) :=
-    integrable_reverseTimeDualPairing hΩ (r₁ - r₀) (u - v) (g - k)
-  have hgradMem : MemLp (fun τ => gradientCLM hΩ ((u - v) τ)) (2 : ℝ≥0∞)
-      (reverseTimeVolume (r₁ - r₀)) :=
-    (Lp.memLp (u - v)).continuousLinearMap_comp (gradientCLM hΩ)
-  have hvalueMem : MemLp (fun τ => valueCLM hΩ ((u - v) τ)) (2 : ℝ≥0∞)
-      (reverseTimeVolume (r₁ - r₀)) :=
-    (Lp.memLp (u - v)).continuousLinearMap_comp (valueCLM hΩ)
-  have hgrad : Integrable (fun τ => ‖gradientCLM hΩ ((u - v) τ)‖ ^ 2)
-      (reverseTimeVolume (r₁ - r₀)) :=
+  have henergy := (reverseTimeHilbertRepresentative_spec hΩ (r₁ - r₀) _
+    _ _ hdiff).2 s t hs ht hst
+  have hpair  :=
+    integrable_reverseTimeDualPairing hΩ _ (u - v) (g - k)
+  have hgradMem : MemLp (fun τ => gradientCLM hΩ _) (2)
+      _ :=
+    (Lp.memLp (u - v)).continuousLinearMap_comp _
+  have hvalueMem : MemLp (fun τ => valueCLM hΩ _) (2)
+      _ :=
+    (Lp.memLp (u - v)).continuousLinearMap_comp _
+  have hgrad : Integrable (fun τ => ‖gradientCLM hΩ _‖ ^ 2)
+      _ :=
     (memLp_two_iff_integrable_sq_norm hgradMem.aestronglyMeasurable).mp hgradMem
-  have hvalue : Integrable (fun τ => ‖valueCLM hΩ ((u - v) τ)‖ ^ 2)
-      (reverseTimeVolume (r₁ - r₀)) :=
+  have hvalue : Integrable (fun τ => ‖valueCLM hΩ _‖ ^ 2)
+      _ :=
     (memLp_two_iff_integrable_sq_norm hvalueMem.aestronglyMeasurable).mp hvalueMem
   have hint := setIntegral_garding_of_ae
-    (fun τ => ((g - k) τ) ((u - v) τ))
-    (fun τ => ‖gradientCLM hΩ ((u - v) τ)‖ ^ 2)
-    (fun τ => ‖valueCLM hΩ ((u - v) τ)‖ ^ 2)
+    _
+    _
+    _
     lam K s t hpair hgrad hvalue hpoint
   have hgradIoc :
       (∫ τ in Set.Ioc s t, ‖gradientCLM hΩ ((u - v) τ)‖ ^ 2
@@ -492,8 +459,7 @@ private theorem hasReverseTimeDifferenceEnergyBound_of_pointwise
         ∂reverseTimeVolume (r₁ - r₀) := by
     apply integral_congr_ae
     filter_upwards [ae_restrict_of_ae (Lp.coeFn_sub u v)] with τ hτ
-    rw [hτ]
-    simp only [Pi.sub_apply]
+    simp_all
   have hvalueIoc :
       (∫ τ in Set.Ioc s t, ‖valueCLM hΩ ((u - v) τ)‖ ^ 2
         ∂reverseTimeVolume (r₁ - r₀)) =
@@ -503,22 +469,12 @@ private theorem hasReverseTimeDifferenceEnergyBound_of_pointwise
     filter_upwards [ae_restrict_of_ae (Lp.coeFn_sub u v)] with τ hτ
     rw [hτ]
     simp only [Pi.sub_apply]
-  rw [hrep] at henergy
-  change
-    ‖reverseTimeHilbertRepresentative hΩ (r₁ - r₀) (sub_pos.mpr h₀₁) u g hdu ⟨t, ht⟩ -
-        reverseTimeHilbertRepresentative hΩ (r₁ - r₀) (sub_pos.mpr h₀₁) v k hdv ⟨t, ht⟩‖ ^ 2 -
-      ‖reverseTimeHilbertRepresentative hΩ (r₁ - r₀) (sub_pos.mpr h₀₁) u g hdu ⟨s, hs⟩ -
-        reverseTimeHilbertRepresentative hΩ (r₁ - r₀) (sub_pos.mpr h₀₁) v k hdv ⟨s, hs⟩‖ ^ 2 =
-      2 * (∫ r in Set.Ioc s t, ((g - k) r) ((u - v) r)
-        ∂reverseTimeVolume (r₁ - r₀)) at henergy
-  rw [hgradIoc, hvalueIoc] at hint
-  rw [henergy]
-  exact hint
+  simp_all
 
 /-- Smooth coefficient data supply a difference-energy constant before the
 forcing, initial datum, solution curves, and time endpoints are chosen. -/
 theorem exists_reverseTimeVariationalEnergy_difference_constant
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -566,7 +522,7 @@ theorem exists_reverseTimeVariationalEnergy_difference_constant
       2 * ((g - k) τ) ((u - v) τ) + lam * ‖gradientCLM hΩ ((u - v) τ)‖ ^ 2 ≤
         2 * K * ‖valueCLM hΩ ((u - v) τ)‖ ^ 2 := by
     filter_upwards [hpde, ae_restrict_mem measurableSet_Ioo] with τ hpdeτ hτ
-    have hτcc : τ ∈ Set.Icc 0 (r₁ - r₀) := ⟨le_of_lt hτ.1, le_of_lt hτ.2⟩
+    have hτcc : τ ∈ Set.Icc 0 _ := ⟨le_of_lt hτ.1, le_of_lt hτ.2⟩
     have hgarding := hGarding τ hτcc ((u - v) τ)
     have heq := hpdeτ hτ
     linarith
@@ -580,42 +536,29 @@ private theorem setIntegral_Ioc_reverseTimeVolume_eq_volume
   rw [reverseTimeVolume, reverseTimeOpenInterval, restrict_Ioo_eq_restrict_Icc,
     Measure.restrict_restrict measurableSet_Ioc]
   congr 2
-  exact inter_eq_left.mpr (Set.Ioc_subset_Icc_self.trans fun r hr =>
-    ⟨hr.1, hr.2.trans ht.2⟩)
+  grind
 
 private def clampTime (T r : ℝ) : ℝ := min T (max 0 r)
 
 private theorem clampTime_mem_Icc {T : ℝ} (hT : 0 < T) (r : ℝ) :
     clampTime T r ∈ Set.Icc 0 T := by
   dsimp only [clampTime]
-  constructor
-  · exact le_min hT.le (le_max_left _ _)
-  · exact min_le_left _ _
+  grind
 
 private theorem clampTime_eq_of_mem {T r : ℝ} (hr : r ∈ Set.Icc 0 T) :
     clampTime T r = r := by
   dsimp only [clampTime]
-  rw [max_eq_right hr.1, min_eq_right hr.2]
+  simp_all
 
-private theorem continuous_clampTime (T : ℝ) : Continuous (clampTime T) := by
-  exact continuous_const.min (continuous_const.max continuous_id)
+private theorem continuous_clampTime  : Continuous (clampTime T) := continuous_const.min (continuous_const.max continuous_id)
 
 private theorem continuous_clamped_normSq
     {E : Type*} [NormedAddCommGroup E] {T : ℝ} (hT : 0 < T)
     (W : C(↥(Set.Icc 0 T), E)) :
-    Continuous (fun r : ℝ => ‖W ⟨clampTime T r, clampTime_mem_Icc hT r⟩‖ ^ 2) := by
-  exact (W.continuous.comp ((continuous_clampTime T).subtype_mk _)).norm.pow 2
-
-private theorem eq_zero_of_norm_sq_eq_zero
-    {E : Type*} [NormedAddCommGroup E] (x : E) (h : ‖x‖ ^ 2 = 0) :
-    x = 0 := by
-  have hnorm : ‖x‖ = 0 := by
-    nlinarith [norm_nonneg x]
-  exact norm_eq_zero.mp hnorm
+    Continuous (fun r : ℝ => ‖W ⟨clampTime T r, clampTime_mem_Icc hT r⟩‖ ^ 2) := (W.continuous.comp ((continuous_clampTime T).subtype_mk _)).norm.pow 2
 
 private theorem reverseTime_value_sq_integral_eq_clamped_energy
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
+    
     (w : ReverseTimeL2V hΩ T)
     (W : C(↥(Set.Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞)))
     (hW : ReverseTimeHilbertRepresentativeAgrees hΩ T w W)
@@ -625,22 +568,20 @@ private theorem reverseTime_value_sq_integral_eq_clamped_energy
   have hIoo : ∀ᵐ r ∂reverseTimeVolume T, r ∈ Set.Ioo 0 T :=
     ae_restrict_mem measurableSet_Ioo
   calc
-    (∫ r in Set.Ioc 0 t, ‖valueCLM hΩ (w r)‖ ^ 2 ∂reverseTimeVolume T) =
-        ∫ r in Set.Ioc 0 t, ‖W ⟨clampTime T r, clampTime_mem_Icc hT r⟩‖ ^ 2
+    (∫ r in Set.Ioc 0 t, ‖valueCLM hΩ _‖ ^ 2 ∂reverseTimeVolume T) =
+        ∫ r in Set.Ioc 0 t, ‖W _‖ ^ 2
           ∂reverseTimeVolume T := by
       apply integral_congr_ae
       filter_upwards [ae_restrict_of_ae hW, ae_restrict_of_ae hIoo]
         with r hWr hr
       have hrcc : r ∈ Set.Icc 0 T := ⟨le_of_lt hr.1, le_of_lt hr.2⟩
-      have hclamp : clampTime T r = r := clampTime_eq_of_mem hrcc
-      have hWr' : W ⟨clampTime T r, clampTime_mem_Icc hT r⟩ = valueCLM hΩ (w r) := by
-        simpa only [hclamp] using hWr hr
-      rw [← hWr']
-    _ = ∫ r in Set.Ioc 0 t, ‖W ⟨clampTime T r, clampTime_mem_Icc hT r⟩‖ ^ 2 :=
+      have hclamp  := clampTime_eq_of_mem hrcc
+      simp_all
+    _ = ∫ r in Set.Ioc 0 t, ‖W _‖ ^ 2 :=
       setIntegral_Ioc_reverseTimeVolume_eq_volume _ ht
 
 private theorem reverseTimeHilbertRepresentative_eq_zero_of_clamped_energy_bound
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (_hΩ : IsOpen Ω) (T K : ℝ) (hT : 0 < T) (hK : 0 ≤ K)
     (W : C(↥(Set.Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞)))
     (hWzero : W ⟨0, ⟨le_rfl, hT.le⟩⟩ = 0)
@@ -648,47 +589,34 @@ private theorem reverseTimeHilbertRepresentative_eq_zero_of_clamped_energy_bound
       ‖W ⟨t, ht⟩‖ ^ 2 ≤ (2 * K) *
         (∫ r in Set.Ioc 0 t, ‖W ⟨clampTime T r, clampTime_mem_Icc hT r⟩‖ ^ 2)) :
     ∀ t : ℝ, ∀ ht : t ∈ Set.Icc 0 T, W ⟨t, ht⟩ = 0 := by
-  let E : ℝ → ℝ := fun t => ‖W ⟨clampTime T t, clampTime_mem_Icc hT t⟩‖ ^ 2
-  have hEcont : ContinuousOn E (Set.Icc 0 T) := by
-    exact (continuous_clamped_normSq hT W).continuousOn
+  let E  := fun t => ‖W ⟨clampTime T t, clampTime_mem_Icc hT t⟩‖ ^ 2
+  have hEcont : ContinuousOn E (Set.Icc 0 T) := (continuous_clamped_normSq hT W).continuousOn
   have hEnonneg : ∀ t ∈ Set.Icc 0 T, 0 ≤ E t := by
-    intro t ht
-    exact sq_nonneg _
+    aesop
   have hEzero : E 0 = 0 := by
     dsimp only [E]
     have hsub : (⟨clampTime T 0, clampTime_mem_Icc hT 0⟩ : Set.Icc 0 T) =
         ⟨0, ⟨le_rfl, hT.le⟩⟩ := by
       apply Subtype.ext
       exact clampTime_eq_of_mem ⟨le_rfl, hT.le⟩
-    rw [hsub, hWzero]
-    norm_num
+    simp_all
   have hEineq : ∀ t ∈ Set.Icc 0 T, E t ≤ (2 * K) * (∫ r in Set.Ioc 0 t, E r) := by
     intro t ht
     have hsub : (⟨clampTime T t, clampTime_mem_Icc hT t⟩ : Set.Icc 0 T) = ⟨t, ht⟩ := by
       apply Subtype.ext
       exact clampTime_eq_of_mem ht
-    calc
-      E t = ‖W ⟨t, ht⟩‖ ^ 2 := by
-        dsimp only [E]
-        exact congrArg (fun s : Set.Icc 0 T => ‖W s‖ ^ 2) hsub
-      _ ≤ (2 * K) * (∫ r in Set.Ioc 0 t,
-          ‖W ⟨clampTime T r, clampTime_mem_Icc hT r⟩‖ ^ 2) := hbound t ht
-      _ = (2 * K) * (∫ r in Set.Ioc 0 t, E r) := rfl
+    grind
   have hEzeroOn := eq_zero_on_Icc_of_nonneg_le_mul_integral hT
     (mul_nonneg (by norm_num) hK) E hEcont hEnonneg hEzero hEineq
   intro t ht
-  have hsq' : ‖W ⟨clampTime T t, clampTime_mem_Icc hT t⟩‖ ^ 2 = 0 := hEzeroOn t ht
+  have hsq' : ‖W _‖ ^ 2 = 0 := hEzeroOn t ht
   have hsub : (⟨clampTime T t, clampTime_mem_Icc hT t⟩ : Set.Icc 0 T) = ⟨t, ht⟩ := by
     apply Subtype.ext
     exact clampTime_eq_of_mem ht
-  have hsq : ‖W ⟨t, ht⟩‖ ^ 2 = 0 := by
-    rw [← hsub]
-    exact hsq'
-  exact eq_zero_of_norm_sq_eq_zero _ hsq
+  simp_all
 
 private theorem reverseTimeL2V_eq_of_hilbertRepresentative_eq_zero
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ)
+    
     (u v : ReverseTimeL2V hΩ T)
     (W : C(↥(Set.Icc 0 T), PDE.ScalarLp Ω (2 : ℝ≥0∞)))
     (hW : ReverseTimeHilbertRepresentativeAgrees hΩ T (u - v) W)
@@ -705,10 +633,10 @@ private theorem reverseTimeL2V_eq_of_hilbertRepresentative_eq_zero
     apply valueCLM_injective hΩ
     simpa only [ContinuousLinearMap.map_zero] using hvaluezero
   rw [huv] at hdiffzero
-  simpa only [Pi.sub_apply] using sub_eq_zero.mp hdiffzero
+  simpa using sub_eq_zero.mp hdiffzero
 
 private theorem reverseTimeL2V_eq_of_differenceEnergyBound
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (r₀ r₁ lam K : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam) (hK : 0 ≤ K)
     (hΩ : IsOpen Ω)
     (u : ReverseTimeL2V hΩ (r₁ - r₀)) (g : ReverseTimeL2VStar hΩ (r₁ - r₀))
@@ -721,21 +649,20 @@ private theorem reverseTimeL2V_eq_of_differenceEnergyBound
       u g hdu v k hdv) :
     u = v := by
   let hT : 0 < r₁ - r₀ := sub_pos.mpr h₀₁
-  let hdiff : HasGelfandWeakTimeDerivative hΩ (r₁ - r₀) hT (u - v) (g - k) :=
+  let hdiff : HasGelfandWeakTimeDerivative hΩ _ hT _ _ :=
     hasGelfandWeakTimeDerivative_sub hdu hdv
-  let W := reverseTimeHilbertRepresentative hΩ (r₁ - r₀) hT (u - v) (g - k) hdiff
-  have hW := (reverseTimeHilbertRepresentative_spec hΩ (r₁ - r₀) hT
-    (u - v) (g - k) hdiff).1
-  have hrep := reverseTimeHilbertRepresentative_sub_eq hΩ (r₁ - r₀) hT
+  let W := reverseTimeHilbertRepresentative hΩ _ hT _ _ hdiff
+  have hW := (reverseTimeHilbertRepresentative_spec hΩ _ hT
+    _ _ hdiff).1
+  have hrep := reverseTimeHilbertRepresentative_sub_eq hΩ _ hT
     u g hdu v k hdv hdiff
   have hWzero : W ⟨0, ⟨le_rfl, hT.le⟩⟩ = 0 := by
-    change reverseTimeHilbertRepresentative hΩ (r₁ - r₀) hT (u - v) (g - k) hdiff
-      ⟨0, ⟨le_rfl, hT.le⟩⟩ = 0
+    change reverseTimeHilbertRepresentative hΩ _ hT _ _ hdiff
+      _ = 0
     rw [hrep]
-    change reverseTimeInitialTrace hΩ (r₁ - r₀) hT u g hdu -
-      reverseTimeInitialTrace hΩ (r₁ - r₀) hT v k hdv = 0
-    rw [htrace]
-    exact sub_self _
+    change reverseTimeInitialTrace hΩ _ hT u g hdu -
+      reverseTimeInitialTrace hΩ _ hT v k hdv = 0
+    simp_all
   have hvalueIoc (t : ℝ) (ht : t ∈ Set.Icc 0 (r₁ - r₀)) :
       (∫ τ in Set.Ioc 0 t, ‖valueCLM hΩ (u τ - v τ)‖ ^ 2
         ∂reverseTimeVolume (r₁ - r₀)) =
@@ -745,64 +672,47 @@ private theorem reverseTimeL2V_eq_of_differenceEnergyBound
     filter_upwards [ae_restrict_of_ae (Lp.coeFn_sub u v)] with τ hτ
     rw [hτ]
     simp only [Pi.sub_apply]
-  have hclampedEnergyBound : ∀ t : ℝ, ∀ ht : t ∈ Set.Icc 0 (r₁ - r₀),
+  have hclampedEnergyBound : ∀ t : ℝ, ∀ ht : t ∈ Set.Icc 0 _,
       ‖W ⟨t, ht⟩‖ ^ 2 ≤ (2 * K) *
         (∫ r in Set.Ioc 0 t,
-          ‖W ⟨clampTime (r₁ - r₀) r, clampTime_mem_Icc hT r⟩‖ ^ 2) := by
+          ‖W ⟨clampTime _ r, clampTime_mem_Icc hT r⟩‖ ^ 2) := by
     intro t ht
     have henergy := hbound 0 t ⟨le_rfl, hT.le⟩ ht ht.1
     have hrep_t : W ⟨t, ht⟩ =
-        reverseTimeHilbertRepresentative hΩ (r₁ - r₀) hT u g hdu ⟨t, ht⟩ -
-          reverseTimeHilbertRepresentative hΩ (r₁ - r₀) hT v k hdv ⟨t, ht⟩ := by
-      change reverseTimeHilbertRepresentative hΩ (r₁ - r₀) hT (u - v) (g - k) hdiff
-        ⟨t, ht⟩ = _
-      exact congrArg (fun z => z ⟨t, ht⟩) hrep
+        reverseTimeHilbertRepresentative hΩ _ hT u g hdu ⟨t, ht⟩ -
+          reverseTimeHilbertRepresentative hΩ _ hT v k hdv ⟨t, ht⟩ := congrArg (fun z => z ⟨t, ht⟩) hrep
     have hrep_zero : W ⟨0, ⟨le_rfl, hT.le⟩⟩ =
-        reverseTimeHilbertRepresentative hΩ (r₁ - r₀) hT u g hdu ⟨0, ⟨le_rfl, hT.le⟩⟩ -
-          reverseTimeHilbertRepresentative hΩ (r₁ - r₀) hT v k hdv ⟨0, ⟨le_rfl, hT.le⟩⟩ := by
-      change reverseTimeHilbertRepresentative hΩ (r₁ - r₀) hT (u - v) (g - k) hdiff
-        ⟨0, ⟨le_rfl, hT.le⟩⟩ = _
-      exact congrArg (fun z => z ⟨0, ⟨le_rfl, hT.le⟩⟩) hrep
-    rw [← hrep_t, ← hrep_zero] at henergy
-    rw [hWzero] at henergy
-    have henergy' : ‖W ⟨t, ht⟩‖ ^ 2 + lam *
-        (∫ τ in Set.Ioc 0 t, ‖gradientCLM hΩ (u τ - v τ)‖ ^ 2
-          ∂reverseTimeVolume (r₁ - r₀)) ≤
-        2 * K * (∫ τ in Set.Ioc 0 t, ‖valueCLM hΩ (u τ - v τ)‖ ^ 2
-          ∂reverseTimeVolume (r₁ - r₀)) := by
+        reverseTimeHilbertRepresentative hΩ _ hT u g hdu ⟨0, ⟨le_rfl, hT.le⟩⟩ -
+          reverseTimeHilbertRepresentative hΩ _ hT v k hdv ⟨0, ⟨le_rfl, hT.le⟩⟩ := congrArg (fun z => z ⟨0, ⟨le_rfl, hT.le⟩⟩) hrep
+    rw [← hrep_t, ← hrep_zero, hWzero] at henergy
+    have henergy'  := by
       have hzero : ‖(0 : PDE.ScalarLp Ω (2 : ℝ≥0∞))‖ ^ 2 = 0 := by
         norm_num
       rw [hzero, sub_zero] at henergy
       exact henergy
     have hgrad : 0 ≤ ∫ τ in Set.Ioc 0 t, ‖gradientCLM hΩ (u τ - v τ)‖ ^ 2
-        ∂reverseTimeVolume (r₁ - r₀) := by
-      exact integral_nonneg fun τ => sq_nonneg _
-    have hdrop : ‖W ⟨t, ht⟩‖ ^ 2 ≤
-        2 * K * (∫ τ in Set.Ioc 0 t, ‖valueCLM hΩ (u τ - v τ)‖ ^ 2
-          ∂reverseTimeVolume (r₁ - r₀)) := by
-      have hterm : 0 ≤ lam *
-          (∫ τ in Set.Ioc 0 t, ‖gradientCLM hΩ (u τ - v τ)‖ ^ 2
-            ∂reverseTimeVolume (r₁ - r₀)) := mul_nonneg (le_of_lt hlam) hgrad
+        ∂reverseTimeVolume (r₁ - r₀) := integral_nonneg fun τ => sq_nonneg _
+    have hdrop  := by
+      have hterm  := mul_nonneg (le_of_lt hlam) hgrad
       exact (le_add_of_nonneg_right hterm).trans henergy'
     calc
-      ‖W ⟨t, ht⟩‖ ^ 2 ≤ 2 * K * (∫ τ in Set.Ioc 0 t, ‖valueCLM hΩ (u τ - v τ)‖ ^ 2
-          ∂reverseTimeVolume (r₁ - r₀)) := hdrop
-      _ = 2 * K * (∫ τ in Set.Ioc 0 t, ‖valueCLM hΩ ((u - v) τ)‖ ^ 2
-          ∂reverseTimeVolume (r₁ - r₀)) :=
-        congrArg (fun x : ℝ => 2 * K * x) (hvalueIoc t ht)
+      ‖W _‖ ^ 2 ≤ 2 * K * (∫ τ in Set.Ioc 0 t, ‖valueCLM hΩ _‖ ^ 2
+          ∂reverseTimeVolume _) := hdrop
+      _ = 2 * K * (∫ τ in Set.Ioc 0 t, ‖valueCLM hΩ _‖ ^ 2
+          ∂reverseTimeVolume _) :=
+        congrArg _ (hvalueIoc t ht)
       _ = (2 * K) * (∫ r in Set.Ioc 0 t,
-          ‖W ⟨clampTime (r₁ - r₀) r, clampTime_mem_Icc hT r⟩‖ ^ 2) := by
-        exact congrArg (fun x : ℝ => 2 * K * x)
-          (reverseTime_value_sq_integral_eq_clamped_energy hΩ (r₁ - r₀) hT
-            (u - v) W hW t ht)
+          ‖W _‖ ^ 2) := congrArg _
+          (reverseTime_value_sq_integral_eq_clamped_energy hΩ _ hT
+            _ W hW t ht)
   have hWzeroOn := reverseTimeHilbertRepresentative_eq_zero_of_clamped_energy_bound
-    hΩ (r₁ - r₀) K hT hK W hWzero hclampedEnergyBound
-  exact reverseTimeL2V_eq_of_hilbertRepresentative_eq_zero hΩ (r₁ - r₀)
+    hΩ _ K hT hK W hWzero hclampedEnergyBound
+  exact reverseTimeL2V_eq_of_hilbertRepresentative_eq_zero hΩ _
     u v W hW hWzeroOn
 
 /-- Two reverse-time variational energy solutions with common initial trace are equal. -/
 theorem reverseTimeVariationalEnergySolution_unique
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
+    
     (r₀ r₁ lam : ℝ) (h₀₁ : r₀ < r₁) (hlam : 0 < lam)
     (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
     (a : CoefficientField d) (b : ℝ → PDE.Vec d → PDE.Vec d)
@@ -838,13 +748,12 @@ theorem reverseTimeVariationalEnergySolution_unique
     exists_reverseTimeVariationalEnergy_difference_constant r₀ r₁ lam h₀₁ hlam hΩ hΩbounded
       a b c haSmooth hbSmooth hcSmooth hLower hcNonpos
   have hbound := hboundAll F hFSmooth initial u g hdu hu v k hdv hv
-  have htrace : reverseTimeInitialTrace hΩ (r₁ - r₀) (sub_pos.mpr h₀₁) u g hdu =
-      reverseTimeInitialTrace hΩ (r₁ - r₀) (sub_pos.mpr h₀₁) v k hdv := by
+  have htrace  := by
     calc
-      reverseTimeInitialTrace hΩ (r₁ - r₀) (sub_pos.mpr h₀₁) u g hdu = initial := hu.1
-      _ = reverseTimeInitialTrace hΩ (r₁ - r₀) (sub_pos.mpr h₀₁) v k hdv := hv.1.symm
-  have huv : u = v := reverseTimeL2V_eq_of_differenceEnergyBound r₀ r₁ lam K h₀₁ hlam hK
+      reverseTimeInitialTrace hΩ _ _ u g hdu = initial := hu.1
+      _ = reverseTimeInitialTrace hΩ _ _ v k hdv := hv.1.symm
+  have huv  := reverseTimeL2V_eq_of_differenceEnergyBound r₀ r₁ lam K h₀₁ hlam hK
     hΩ u g hdu v k hdv htrace hbound
-  have hdv' : HasGelfandWeakTimeDerivative hΩ (r₁ - r₀) (sub_pos.mpr h₀₁) u k :=
+  have hdv'  :=
     hdv.congr huv.symm rfl
   exact ⟨huv, hdu.unique hdv'⟩

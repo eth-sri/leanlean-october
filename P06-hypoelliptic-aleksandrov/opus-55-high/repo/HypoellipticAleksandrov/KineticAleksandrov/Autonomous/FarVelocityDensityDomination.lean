@@ -7,15 +7,12 @@ public import Mathlib.MeasureTheory.Function.LpSeminorm.Indicator
 /-! # Transfer of real densities and Lp bounds through positive measure domination -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set MeasureTheory Filter HypoellipticAleksandrov
 open scoped ENNReal
 
 /-- Kinetic volume is sigma finite through its literal product-coordinate equivalence. -/
-theorem density_volume_sigmaFinite : SigmaFinite (volume : Measure Point) := by
-  change SigmaFinite (Measure.map (KineticPoint.equivProd 1).symm volume)
-  exact (KineticPoint.homeomorphProd 1).symm.measurableEmbedding.sigmaFinite_map
+theorem density_volume_sigmaFinite : SigmaFinite (volume : Measure Point) := (KineticPoint.homeomorphProd 1).symm.measurableEmbedding.sigmaFinite_map
 
 /-- A finite dominated measure inherits a nonnegative measurable density and its Lp norm. -/
 theorem density_of_le_withDensity {X : Type*} [MeasurableSpace X]
@@ -26,7 +23,7 @@ theorem density_of_le_withDensity {X : Type*} [MeasurableSpace X]
     ∃ g : X → ℝ, Measurable g ∧ (∀ x, 0 ≤ g x) ∧
       ν = m.withDensity (fun x => ENNReal.ofReal (g x)) ∧
       MemLp g p m ∧ eLpNorm g p m ≤ eLpNorm f p m := by
-  have hac : ν ≪ m := hle.absolutelyContinuous.trans (withDensity_absolutelyContinuous _ _)
+  have hac  := hle.absolutelyContinuous.trans (withDensity_absolutelyContinuous _ _)
   let g := fun x => (ν.rnDeriv m x).toReal
   have hgm : Measurable g := (Measure.measurable_rnDeriv ν m).ennreal_toReal
   have hrle : ∀ᵐ x ∂m, ν.rnDeriv m x ≤ ENNReal.ofReal (f x) := by
@@ -71,11 +68,11 @@ theorem density_restrict_of_le_withDensity {X : Type*} [MeasurableSpace X]
     rw [← withDensity_indicator hD]
     congr 1
     ext x
-    by_cases hx : x ∈ D <;> simp [F, hx]
+    by_cases hx : x ∈ D <;> aesop
   obtain ⟨g, hgm, hg0, hgd, hgp, hgn⟩ :=
     density_of_le_withDensity m ν F hFm hF0 p hFp (hd.symm ▸ hle)
   refine ⟨g, hgm, hg0, ?_, hgp.restrict Q, ?_⟩
-  · rw [hgd, restrict_withDensity hQ]
+  · aesop
   · exact (eLpNorm_restrict_le g p m Q).trans
       (hgn.trans_eq (eLpNorm_indicator_eq_eLpNorm_restrict hD))
 

@@ -12,7 +12,6 @@ generic pre-lift gradient from the uniform spatial difference-quotient bound.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic
 
@@ -117,12 +116,12 @@ theorem exists_genericPrelift_gradient_velocityPartialDeriv_family_estimate
     exists_genericPrelift_gradient_spatialDifferenceQuotient_estimate
       d M hM t₀ t₁ t₂ t₃ ht₀₁ ht₁₂ ht₂₃ O₀ O₁ hO₀ hO₁ hO₁ne
         hO₁compact hO₁O₀ lam Lam hlam hlamLam Ba Bb Bc hBa hBb hBc
-  let C_H : ℝ :=
-    (Fintype.card (ParabolicDerivativeIndex d M) : ℝ) * (d : ℝ) ^ 2 * C_DQ
+  let C_H  :=
+    (Fintype.card (ParabolicDerivativeIndex d M)) * d ^ 2 * C_DQ
   refine ⟨C_H, mul_nonneg (mul_nonneg (by positivity) (by positivity)) hC_DQ, ?_⟩
   intro a b c F u D E hSymm hEll ha hb hc haBound hbBound hcBound hEq
   let V : Set (TimeVelocity d) := Set.Ioo t₁ t₂ ×ˢ O₁
-  let Etotal : ℝ := ParabolicWeakDerivativeFamily.squaredL2Norm D +
+  let Etotal  := ParabolicWeakDerivativeFamily.squaredL2Norm D +
     ParabolicWeakDerivativeFamily.squaredL2Norm E
   have hEtotal : 0 ≤ Etotal := add_nonneg
     (ParabolicWeakDerivativeFamily.squaredL2Norm_nonneg D)
@@ -135,8 +134,7 @@ theorem exists_genericPrelift_gradient_velocityPartialDeriv_family_estimate
             (ParabolicDerivativeIndex.castLE (Nat.le_succ M) beta) j
             (by
               change beta.1.parabolicWeight + 1 ≤ M + 1
-              omega)) z) := by
-    exact (D.memLp _).mono_measure
+              omega)) z) := (D.memLp _).mono_measure
       (Measure.restrict_mono_set volume (Set.prod_mono
         (Set.Ioo_subset_Ioo ht₀₁.le ht₂₃.le) (subset_closure.trans hO₁O₀)))
   have hclose : ∀ beta : ParabolicDerivativeIndex d M, ∀ j i : Fin d,
@@ -159,9 +157,9 @@ theorem exists_genericPrelift_gradient_velocityPartialDeriv_family_estimate
     have hmem : ∀ h : ℝ, 0 < h → h < δ → ParabolicMemLpOn V 2
         (spatialDifferenceQuotient i h G) := by
       intro h hh hhd
-      simpa only [G] using (hDQ h hh hhd).1 beta j i
+      simpa using (hDQ h hh hhd).1 beta j i
     have hsq : ∀ (h : ℝ) (hh : 0 < h) (hhd : h < δ),
-        ‖(hmem h hh hhd).toLp (spatialDifferenceQuotient i h G)‖ ^ 2 ≤
+        ‖(hmem h hh hhd).toLp _‖ ^ 2 ≤
           C_DQ * Etotal := by
       intro h hh hhd
       have hjoint := (hDQ h hh hhd).2
@@ -175,37 +173,37 @@ theorem exists_genericPrelift_gradient_velocityPartialDeriv_family_estimate
                   change beta.1.parabolicWeight + 1 ≤ M + 1
                   omega)))) 2 (timeVelocityVolumeOn V))) ^ 2
       have hi : q beta j i ≤ ∑ i : Fin d, q beta j i :=
-        Finset.single_le_sum (fun i _ => by dsimp [q]; positivity) (Finset.mem_univ i)
+        Finset.single_le_sum (fun i _ => by positivity) (Finset.mem_univ i)
       have hj : (∑ i : Fin d, q beta j i) ≤
           ∑ j : Fin d, ∑ i : Fin d, q beta j i :=
         Finset.single_le_sum
-          (fun j _ => Finset.sum_nonneg fun i _ => by dsimp [q]; positivity)
+          (fun j _ => Finset.sum_nonneg fun i _ => by positivity)
           (Finset.mem_univ j)
       have hbeta : (∑ j : Fin d, ∑ i : Fin d, q beta j i) ≤
           ∑ beta : ParabolicDerivativeIndex d M,
             ∑ j : Fin d, ∑ i : Fin d, q beta j i :=
         Finset.single_le_sum
           (fun beta _ => Finset.sum_nonneg fun j _ =>
-            Finset.sum_nonneg fun i _ => by dsimp [q]; positivity)
+            Finset.sum_nonneg fun i _ => by positivity)
           (Finset.mem_univ beta)
       rw [Lp.norm_toLp]
       exact (hi.trans (hj.trans hbeta)).trans (by
-        simpa only [q, V, Etotal] using hjoint)
+        simpa using hjoint)
     have hnorm : ∀ (h : ℝ) (hh : 0 < h) (hhd : h < δ),
-        ‖(hmem h hh hhd).toLp (spatialDifferenceQuotient i h G)‖ ≤
+        ‖(hmem h hh hhd).toLp _‖ ≤
           Real.sqrt (C_DQ * Etotal) := by
       intro h hh hhd
       calc
         _ = Real.sqrt
-            (‖(hmem h hh hhd).toLp (spatialDifferenceQuotient i h G)‖ ^ 2) :=
+            _ :=
           (Real.sqrt_sq (norm_nonneg _)).symm
-        _ ≤ Real.sqrt (C_DQ * Etotal) := Real.sqrt_le_sqrt (hsq h hh hhd)
-    simpa only [G] using
+        _ ≤ Real.sqrt _ := Real.sqrt_le_sqrt (hsq h hh hhd)
+    simpa using
       exists_hasWeakVelocityPartialDerivOn_norm_le_of_uniform_spatialDifferenceQuotient
         V (isOpen_Ioo.prod hO₁) i G (hlocal beta j) δ
-          (Real.sqrt (C_DQ * Etotal)) hδ hmem hnorm
+          _ hδ hmem hnorm
   choose g hg hweak hnorm using hclose
-  let H : TimeVelocity d → ParabolicDerivativeIndex d M → Fin d → Fin d → ℝ :=
+  let H  :=
     fun z beta j i => g beta j i z
   refine ⟨H, (fun beta j i => hg beta j i), (fun beta j i => hweak beta j i), ?_⟩
   have hentry : ∀ beta j i,

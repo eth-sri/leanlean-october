@@ -20,7 +20,6 @@ Dirichlet solvability theorem (Lieberman, Theorem 5.14).  No new vector carrier 
 @[expose] public section
 
 noncomputable section
-set_option autoImplicit false
 
 open scoped MatrixOrder ContDiff Matrix
 
@@ -39,7 +38,7 @@ def spatialPack {n : ℕ} (y z : PDE.Vec n) : PDE.Vec (n + n) :=
   Fin.append y z
 
 /-- The block matrix `diag(A, ε I)` on `PDE.Vec (n + n)`. -/
-noncomputable def viscousBlockMatrix {n : ℕ} (A : PDE.Mat n) (ε : ℝ) :
+def viscousBlockMatrix {n : ℕ} (A : PDE.Mat n) (ε : ℝ) :
     PDE.Mat (n + n) :=
   Matrix.reindex finSumFinEquiv finSumFinEquiv
     (Matrix.fromBlocks A 0 0 (ε • (1 : PDE.Mat n)))
@@ -57,24 +56,26 @@ variable {n : ℕ}
   rw [← Fin.natAdd_eq_addNat]
   rfl
 
-@[simp] theorem spatialPack_castAdd (y z : PDE.Vec n) (i : Fin n) :
+variable {m : WithTop ℕ∞} (c : ℝ) (y z : PDE.Vec n) (i : Fin n) (x x' : PDE.Vec (n + n))
+
+@[simp] theorem spatialPack_castAdd  :
     spatialPack y z (Fin.castAdd n i) = y i :=
   Fin.append_left y z i
 
-theorem spatialPack_natAdd (y z : PDE.Vec n) (i : Fin n) :
+theorem spatialPack_natAdd  :
     spatialPack y z (Fin.natAdd n i) = z i :=
   Fin.append_right y z i
 
-@[simp] theorem spatialPack_addNat (y z : PDE.Vec n) (i : Fin n) :
+@[simp] theorem spatialPack_addNat  :
     spatialPack y z (i.addNat n) = z i := by
   rw [← Fin.natAdd_eq_addNat]
   exact spatialPack_natAdd y z i
 
-@[simp] theorem spatialY_spatialPack (y z : PDE.Vec n) : spatialY (spatialPack y z) = y := by
+@[simp] theorem spatialY_spatialPack  : spatialY (spatialPack y z) = y := by
   funext i
   simp
 
-@[simp] theorem spatialZ_spatialPack (y z : PDE.Vec n) : spatialZ (spatialPack y z) = z := by
+@[simp] theorem spatialZ_spatialPack  : spatialZ (spatialPack y z) = z := by
   funext i
   exact spatialPack_natAdd y z i
 
@@ -85,19 +86,19 @@ theorem spatialPack_natAdd (y z : PDE.Vec n) (i : Fin n) :
   · rw [spatialPack_castAdd]; rfl
   · rw [spatialPack_natAdd]; rfl
 
-@[simp] theorem spatialY_add (x x' : PDE.Vec (n + n)) :
+@[simp] theorem spatialY_add  :
     spatialY (x + x') = spatialY x + spatialY x' :=
   rfl
 
-@[simp] theorem spatialZ_add (x x' : PDE.Vec (n + n)) :
+@[simp] theorem spatialZ_add  :
     spatialZ (x + x') = spatialZ x + spatialZ x' :=
   rfl
 
-@[simp] theorem spatialY_sub (x x' : PDE.Vec (n + n)) :
+@[simp] theorem spatialY_sub  :
     spatialY (x - x') = spatialY x - spatialY x' :=
   rfl
 
-@[simp] theorem spatialZ_sub (x x' : PDE.Vec (n + n)) :
+@[simp] theorem spatialZ_sub  :
     spatialZ (x - x') = spatialZ x - spatialZ x' :=
   rfl
 
@@ -107,11 +108,11 @@ theorem spatialPack_natAdd (y z : PDE.Vec n) (i : Fin n) :
 @[simp] theorem spatialZ_neg (x : PDE.Vec (n + n)) : spatialZ (-x) = -spatialZ x :=
   rfl
 
-@[simp] theorem spatialY_smul (c : ℝ) (x : PDE.Vec (n + n)) :
+@[simp] theorem spatialY_smul  (x : PDE.Vec (n + n)) :
     spatialY (c • x) = c • spatialY x :=
   rfl
 
-@[simp] theorem spatialZ_smul (c : ℝ) (x : PDE.Vec (n + n)) :
+@[simp] theorem spatialZ_smul  (x : PDE.Vec (n + n)) :
     spatialZ (c • x) = c • spatialZ x :=
   rfl
 
@@ -126,29 +127,29 @@ theorem spatialPack_add (y z y' z' : PDE.Vec n) :
   rw [← spatialPack_spatialY_spatialZ (spatialPack y z + spatialPack y' z')]
   simp
 
-theorem spatialPack_smul (c : ℝ) (y z : PDE.Vec n) :
+theorem spatialPack_smul  :
     spatialPack (c • y) (c • z) = c • spatialPack y z := by
   rw [← spatialPack_spatialY_spatialZ (c • spatialPack y z)]
   simp
 
 @[simp] theorem spatialPack_zero : spatialPack (0 : PDE.Vec n) 0 = 0 := by
-  simpa using spatialPack_smul 0 (0 : PDE.Vec n) 0
+  simpa using spatialPack_smul 0 (0) 0
 
 /-- The Euclidean dot product splits along the block decomposition. -/
-theorem vecDot_eq_spatial (x x' : PDE.Vec (n + n)) :
+theorem vecDot_eq_spatial  :
     PDE.vecDot x x' = PDE.vecDot (spatialY x) (spatialY x') +
       PDE.vecDot (spatialZ x) (spatialZ x') := by
   simp only [PDE.vecDot, Fin.sum_univ_add, spatialY, spatialZ]
 
 /-- The first block projection is smooth. -/
-theorem contDiff_spatialY {m : WithTop ℕ∞} :
+theorem contDiff_spatialY  :
     ContDiff ℝ m (spatialY : PDE.Vec (n + n) → PDE.Vec n) :=
-  contDiff_pi.2 fun i => contDiff_apply ℝ ℝ (Fin.castAdd n i)
+  contDiff_pi.2 fun i => contDiff_apply ℝ ℝ _
 
 /-- The second block projection is smooth. -/
-theorem contDiff_spatialZ {m : WithTop ℕ∞} :
+theorem contDiff_spatialZ  :
     ContDiff ℝ m (spatialZ : PDE.Vec (n + n) → PDE.Vec n) :=
-  contDiff_pi.2 fun i => contDiff_apply ℝ ℝ (Fin.natAdd n i)
+  contDiff_pi.2 fun i => contDiff_apply ℝ ℝ _
 
 /-- Packing two smooth block maps is smooth. -/
 theorem contDiff_spatialPack {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -167,41 +168,43 @@ section BlockMatrix
 
 variable {n : ℕ}
 
-@[simp] theorem viscousBlockMatrix_castAdd_castAdd (A : PDE.Mat n) (ε : ℝ) (i j : Fin n) :
+variable (A : PDE.Mat n) (ε : ℝ) (x : PDE.Vec (n + n)) (i j : Fin n)
+
+@[simp] theorem viscousBlockMatrix_castAdd_castAdd  :
     viscousBlockMatrix A ε (Fin.castAdd n i) (Fin.castAdd n j) = A i j := by
   simp only [viscousBlockMatrix, Matrix.reindex_apply, Matrix.submatrix_apply,
     finSumFinEquiv_symm_apply_castAdd, Matrix.fromBlocks_apply₁₁]
 
-theorem viscousBlockMatrix_castAdd_natAdd (A : PDE.Mat n) (ε : ℝ) (i j : Fin n) :
+theorem viscousBlockMatrix_castAdd_natAdd  :
     viscousBlockMatrix A ε (Fin.castAdd n i) (Fin.natAdd n j) = 0 := by
   simp only [viscousBlockMatrix, Matrix.reindex_apply, Matrix.submatrix_apply,
     finSumFinEquiv_symm_apply_castAdd, finSumFinEquiv_symm_apply_natAdd,
     Matrix.fromBlocks_apply₁₂, Matrix.zero_apply]
 
-theorem viscousBlockMatrix_natAdd_castAdd (A : PDE.Mat n) (ε : ℝ) (i j : Fin n) :
+theorem viscousBlockMatrix_natAdd_castAdd  :
     viscousBlockMatrix A ε (Fin.natAdd n i) (Fin.castAdd n j) = 0 := by
   simp only [viscousBlockMatrix, Matrix.reindex_apply, Matrix.submatrix_apply,
     finSumFinEquiv_symm_apply_castAdd, finSumFinEquiv_symm_apply_natAdd,
     Matrix.fromBlocks_apply₂₁, Matrix.zero_apply]
 
-theorem viscousBlockMatrix_natAdd_natAdd (A : PDE.Mat n) (ε : ℝ) (i j : Fin n) :
+theorem viscousBlockMatrix_natAdd_natAdd  :
     viscousBlockMatrix A ε (Fin.natAdd n i) (Fin.natAdd n j) =
       ε * (1 : PDE.Mat n) i j := by
   simp only [viscousBlockMatrix, Matrix.reindex_apply, Matrix.submatrix_apply,
     finSumFinEquiv_symm_apply_natAdd, Matrix.fromBlocks_apply₂₂, Matrix.smul_apply,
     smul_eq_mul]
 
-@[simp] theorem viscousBlockMatrix_castAdd_addNat (A : PDE.Mat n) (ε : ℝ) (i j : Fin n) :
+@[simp] theorem viscousBlockMatrix_castAdd_addNat  :
     viscousBlockMatrix A ε (Fin.castAdd n i) (j.addNat n) = 0 := by
   rw [← Fin.natAdd_eq_addNat]
   exact viscousBlockMatrix_castAdd_natAdd A ε i j
 
-@[simp] theorem viscousBlockMatrix_addNat_castAdd (A : PDE.Mat n) (ε : ℝ) (i j : Fin n) :
+@[simp] theorem viscousBlockMatrix_addNat_castAdd  :
     viscousBlockMatrix A ε (i.addNat n) (Fin.castAdd n j) = 0 := by
   rw [← Fin.natAdd_eq_addNat]
   exact viscousBlockMatrix_natAdd_castAdd A ε i j
 
-@[simp] theorem viscousBlockMatrix_addNat_addNat (A : PDE.Mat n) (ε : ℝ) (i j : Fin n) :
+@[simp] theorem viscousBlockMatrix_addNat_addNat  :
     viscousBlockMatrix A ε (i.addNat n) (j.addNat n) = ε * (1 : PDE.Mat n) i j := by
   rw [← Fin.natAdd_eq_addNat, ← Fin.natAdd_eq_addNat]
   exact viscousBlockMatrix_natAdd_natAdd A ε i j
@@ -222,21 +225,18 @@ theorem matrix_ext_blocks {M M' : PDE.Mat (n + n)}
   · exact h₂₂ i j
 
 /-- The block matrix applied to a vector acts blockwise. -/
-theorem viscousBlockMatrix_mulVec (A : PDE.Mat n) (ε : ℝ) (x : PDE.Vec (n + n)) :
+theorem viscousBlockMatrix_mulVec  :
     viscousBlockMatrix A ε *ᵥ x = spatialPack (A *ᵥ spatialY x) (ε • spatialZ x) := by
   funext k
   refine Fin.addCases (fun i => ?_) (fun i => ?_) k
-  · rw [spatialPack_castAdd]
-    simp [Matrix.mulVec, dotProduct, Fin.sum_univ_add]
-  · rw [spatialPack_natAdd]
-    simp [Matrix.mulVec, dotProduct, Fin.sum_univ_add, Matrix.one_apply]
+  · simp [Matrix.mulVec, dotProduct, Fin.sum_univ_add]
+  · simp [Matrix.mulVec, dotProduct, Fin.sum_univ_add, Matrix.one_apply]
 
 /-- The block quadratic form. -/
-theorem vecDot_viscousBlockMatrix_mulVec (A : PDE.Mat n) (ε : ℝ) (x : PDE.Vec (n + n)) :
+theorem vecDot_viscousBlockMatrix_mulVec  :
     PDE.vecDot x (viscousBlockMatrix A ε *ᵥ x) =
       PDE.vecDot (spatialY x) (A *ᵥ spatialY x) + ε * PDE.vecNormSq (spatialZ x) := by
   rw [viscousBlockMatrix_mulVec, vecDot_eq_spatial]
-  simp only [spatialY_spatialPack, spatialZ_spatialPack]
   simp [PDE.vecDot, PDE.vecNormSq, Finset.mul_sum, mul_left_comm]
 
 theorem viscousBlockMatrix_sub (A A' : PDE.Mat n) (ε ε' : ℝ) :
@@ -246,7 +246,7 @@ theorem viscousBlockMatrix_sub (A A' : PDE.Mat n) (ε ε' : ℝ) :
 theorem viscousBlockMatrix_smul_one (c : ℝ) :
     viscousBlockMatrix (c • (1 : PDE.Mat n)) c = c • (1 : PDE.Mat (n + n)) := by
   refine matrix_ext_blocks ?_ ?_ ?_ ?_ <;> intro i j
-  · simp [Matrix.one_apply, Fin.castAdd_inj]
+  · simp [Matrix.one_apply]
   · simp only [viscousBlockMatrix_castAdd_natAdd, Matrix.smul_apply, Matrix.one_apply,
       smul_eq_mul]
     have hne : ¬ Fin.castAdd n i = Fin.natAdd n j := by
@@ -268,7 +268,6 @@ theorem viscousBlockMatrix_smul_one (c : ℝ) :
 theorem viscousBlockMatrix_isSymm {A : PDE.Mat n} (hA : A.IsSymm) (ε : ℝ) :
     (viscousBlockMatrix A ε).IsSymm := by
   ext k l
-  rw [Matrix.transpose_apply]
   refine Fin.addCases (fun i => ?_) (fun i => ?_) k <;>
     refine Fin.addCases (fun j => ?_) (fun j => ?_) l
   · simp [hA.apply]
@@ -280,12 +279,10 @@ theorem viscousBlockMatrix_posSemidef {A : PDE.Mat n} (hA : A.PosSemidef) {ε : 
     (hε : 0 ≤ ε) : (viscousBlockMatrix A ε).PosSemidef := by
   rw [Matrix.posSemidef_iff_dotProduct_mulVec]
   refine ⟨?_, fun x => ?_⟩
-  · rw [Matrix.isHermitian_iff_isSymm]
-    exact viscousBlockMatrix_isSymm hA.isHermitian.isSymm ε
+  · exact viscousBlockMatrix_isSymm hA.isHermitian.isSymm ε
   · have h := vecDot_viscousBlockMatrix_mulVec A ε x
     have hA' := hA.dotProduct_mulVec_nonneg (spatialY x)
     have hz := PDE.vecNormSq_nonneg (spatialZ x)
-    simp only [star_trivial] at hA' ⊢
     change 0 ≤ PDE.vecDot x (viscousBlockMatrix A ε *ᵥ x)
     rw [h]
     exact add_nonneg hA' (mul_nonneg hε hz)
@@ -294,8 +291,7 @@ theorem viscousBlockMatrix_posDef {A : PDE.Mat n} (hA : A.PosDef) {ε : ℝ}
     (hε : 0 < ε) : (viscousBlockMatrix A ε).PosDef := by
   rw [Matrix.posDef_iff_dotProduct_mulVec] at hA ⊢
   refine ⟨?_, fun x hx => ?_⟩
-  · rw [Matrix.isHermitian_iff_isSymm]
-    exact viscousBlockMatrix_isSymm hA.1.isSymm ε
+  · exact viscousBlockMatrix_isSymm hA.1.isSymm ε
   · have h := vecDot_viscousBlockMatrix_mulVec A ε x
     change 0 < PDE.vecDot x (viscousBlockMatrix A ε *ᵥ x)
     rw [h]
@@ -319,7 +315,6 @@ theorem viscousBlockMatrix_posDef {A : PDE.Mat n} (hA : A.PosDef) {ε : ℝ}
         zero_add]
       exact mul_pos hε hzpos
     · have hA' := hA.2 hy
-      simp only [star_trivial] at hA'
       have hz := PDE.vecNormSq_nonneg (spatialZ x)
       exact add_pos_of_pos_of_nonneg hA' (mul_nonneg hε.le hz)
 

@@ -33,36 +33,29 @@ def fourierKernel {d : ℕ} (K : MovingFiberKernel (wholeSpace d) (fun _ => 0))
     (σ τ : ℝ) (hστ : σ ≤ τ) (ξ v : PDE.Vec d) : ComplexMeasure (PDE.Vec d) :=
   fourierProjection K (wholeSpaceQuery σ τ hστ v 0) ξ
 
+variable {d : ℕ} (K : MovingFiberKernel (wholeSpace d) (fun _ => 0)) (σ τ : ℝ) (hστ : σ ≤ τ) (ξ v : PDE.Vec d)
+
 /-- The whole-space Fourier kernel satisfies the displacement integral characterization. -/
-theorem fourierKernel_spec {d : ℕ}
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => 0))
-    (σ τ : ℝ) (hστ : σ ≤ τ) (ξ v : PDE.Vec d) :
+theorem fourierKernel_spec  :
     IsFourierProjection K (wholeSpaceQuery σ τ hστ v 0) ξ
       (fourierKernel K σ τ hστ ξ v) :=
   fourierProjection_spec K _ ξ
 
 /-- Whole-space Fourier kernels are Borel in their starting velocity. -/
-theorem measurable_fourierKernel_apply {d : ℕ}
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => 0))
-    (σ τ : ℝ) (hστ : σ ≤ τ) (ξ : PDE.Vec d)
+theorem measurable_fourierKernel_apply  (ξ : PDE.Vec d)
     (E : Set (PDE.Vec d)) (hE : MeasurableSet E) :
-    Measurable (fun v => fourierKernel K σ τ hστ ξ v E) := by
-  exact (measurable_fourierProjection_apply K ξ E hE).comp
+    Measurable (fun v => fourierKernel K σ τ hστ ξ v E) := (measurable_fourierProjection_apply K ξ E hE).comp
     ((measurable_const.prodMk (measurable_const.prodMk
       (measurable_id.prodMk measurable_const))).subtype_mk)
 
 /-- Total variation is dominated by the positive velocity marginal as a measure. -/
-theorem fourierKernel_variation_le {d : ℕ}
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => 0))
-    (σ τ : ℝ) (hστ : σ ≤ τ) (ξ v : PDE.Vec d) :
+theorem fourierKernel_variation_le  :
     (fourierKernel K σ τ hστ ξ v).variation ≤
       K.firstMarginal (wholeSpaceQuery σ τ hστ v 0) :=
   fourierProjection_variation_le K _ ξ _ (fourierKernel_spec K σ τ hστ ξ v)
 
 /-- Sub-Markov contraction bounds the Fourier kernel's total variation by one. -/
-theorem fourierKernel_totalVariation_le_one {d : ℕ}
-    (K : MovingFiberKernel (wholeSpace d) (fun _ => 0))
-    (σ τ : ℝ) (hστ : σ ≤ τ) (ξ v : PDE.Vec d) :
+theorem fourierKernel_totalVariation_le_one  :
     totalVariationNorm (fourierKernel K σ τ hστ ξ v) ≤ 1 :=
   fourierProjection_totalVariation_le_one K _ ξ _ (fourierKernel_spec K σ τ hστ ξ v)
 

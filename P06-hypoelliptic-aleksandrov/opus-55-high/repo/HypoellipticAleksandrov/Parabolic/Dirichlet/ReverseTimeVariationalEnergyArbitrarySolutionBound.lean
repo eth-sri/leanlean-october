@@ -14,7 +14,6 @@ reverse-time variational energy solution with the same data.
 open Topology
 open scoped ENNReal Matrix.Norms.Elementwise MatrixOrder
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
 
@@ -67,6 +66,6 @@ theorem IsReverseTimeVariationalEnergySolution.norm_le_reverseTimeGalerkinPrimal
       r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
       haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial
       U G hU hSolU u g hdu hu
-  simpa only [hUeq] using hNorm
+  simp_all
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

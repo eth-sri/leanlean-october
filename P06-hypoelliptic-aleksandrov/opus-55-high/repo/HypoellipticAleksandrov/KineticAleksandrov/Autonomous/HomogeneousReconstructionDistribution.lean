@@ -10,11 +10,12 @@ Hörmander's theorem. Almost-everywhere equality is not asserted to be pointwise
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic Evolution SectionTwo MeasureTheory Set
 
-private theorem source_congr {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+variable {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+
+private theorem source_congr 
     {U : Set (EvolutionVec 1)} (hU : IsOpen U) {u g f : EvolutionVec 1 → ℝ}
     (hu : IsWeakTransportedSolution (evolutionCoefficient A.a) (identityDrift 1) U u g)
     (hg : EqOn g f U) :
@@ -23,10 +24,9 @@ private theorem source_congr {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
   intro ψ hψ hc hs
   refine (hu.2 ψ hψ hc hs).trans (setIntegral_congr_fun hU.measurableSet ?_)
   intro x hx
-  change g x * ψ x = f x * ψ x
-  rw [hg hx]
+  grind
 
-private theorem candidate_weak {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
+private theorem candidate_weak 
     (H : Interval) (E : StripEvolution H) (hE : IsStripEvolution A H E)
     (sMinus T : ℝ) (phi : Point → ℝ)
     (hphi : IsKineticC112On phi (reconstructionStrip H sMinus T))
@@ -42,13 +42,12 @@ private theorem candidate_weak {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
     continuous_reconstructionPhysicalPoint
   have htest := reconstruction_test_isWeakTransportedSolution A
     (isOpen_reconstructionStrip H sMinus T) hphi
-  have hw := (isWeakTransportedSolution_comp_iff (evolutionCoefficient A.a)
-    (identityDrift 1) _ _ _).mpr (stripSourcePotential_weak A H E hE T g)
+  have hw := (isWeakTransportedSolution_comp_iff _
+    _ _ _ _).mpr (stripSourcePotential_weak A H E hE T g)
   have hsub : U ⊆ evolutionHomeomorph 1 ⁻¹'
       evolutionPastOpenCylinder (intervalDomain H) (fun _ => 0) T := by
     intro x hx
     refine ⟨hx.2.1, ?_⟩
-    change diffusedCoord 1 x ∈ movingDomain (intervalDomain H) (fun _ => 0) _
     rw [movingDomain, PDE.mem_translateSet_iff_sub_mem, sub_zero, intervalDomain,
       PDE.mem_oneDimensionalAxisBox_iff]
     exact hx.2.2
@@ -58,8 +57,7 @@ private theorem candidate_weak {lam Lam : ℝ} (A : SmoothAutonomous lam Lam)
       (forwardScalarOperator A.a phi ∘ reconstructionPhysicalPoint) U := by
     intro x hx
     change -g (reconstructionPhysicalPoint x) = _
-    rw [hg _ hx, neg_neg]
-    rfl
+    grind
   have hws := source_congr A hU hwr hsource
   exact weak_same_source_sub A htest hws
 
@@ -86,6 +84,6 @@ theorem exists_reconstruction_smooth_ae
   obtain ⟨f, hf, hae, heq⟩ := homogeneous_weak_smooth_solution hH hlam A
     ((isOpen_reconstructionStrip H sMinus T).preimage continuous_reconstructionPhysicalPoint)
     (candidate_weak A H E hE sMinus T phi hphi g hg)
-  exact ⟨g, f, hg, hg0, hf, hae, heq⟩
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

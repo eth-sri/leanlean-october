@@ -9,7 +9,6 @@ interval density is extended by zero, preserving every occupation norm bound.
 -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Interval
 open Set MeasureTheory HypoellipticAleksandrov HypoellipticAleksandrov.Parabolic
 open HypoellipticAleksandrov.KineticAleksandrov.SectionTwo
@@ -38,14 +37,13 @@ theorem intervalExtension_occupation
   intro ρ _ σ T hT
   let ρj : Measure (PDE.oneDimensionalAxisBox a c) := Measure.comap Subtype.val ρ
   have hρj : ρj univ ≤ ρ univ := intervalInitial_comap_mass_le hJ ρ
-  have : IsFiniteMeasure ρj := ⟨hρj.trans_lt (measure_lt_top ρ univ)⟩
   obtain ⟨g, hgm, hg0, hchar, hb⟩ :=
     hocc m Lb hm hmLb a c hac B b hs hJ S K hr σ T hT ρj
   have hp := (interval_evolution_clauses hH hLE hac B b hs hJ S K hr).2.1
   let U : Set (TimeVelocity 1) := Ioo 0 T ×ˢ PDE.oneDimensionalAxisBox a c
   let gw := U.indicator g
   have hU : MeasurableSet U := measurableSet_Ioo.prod hJ
-  have hUR : U ⊆ Ioo (0 : ℝ) T ×ˢ univ := prod_mono Subset.rfl (subset_univ _)
+  have hUR : U ⊆ Ioo _ T ×ˢ univ := prod_mono Subset.rfl (subset_univ _)
   have hgw : Measurable gw := hgm.indicator hU
   have hgw0 : ∀ p, 0 ≤ gw p := fun p => by
     by_cases hp : p ∈ U
@@ -67,12 +65,10 @@ theorem intervalExtension_occupation
       dsimp only [F]
       simp_rw [intervalExtension_first_outside hJ K σ _ _ v hv]
       simp only [integral_zero_measure, integral_zero]
-    change _ = ∫ v, F v ∂ρ
     rw [← setIntegral_eq_integral_of_forall_compl_eq_zero hFzero,
       ← integral_subtype_comap hJ F]
     apply integral_congr_ae
     refine Filter.Eventually.of_forall fun v => ?_
-    dsimp only [F]
     apply integral_congr_ae
     refine Filter.Eventually.of_forall fun t => ?_
     dsimp only
@@ -84,7 +80,6 @@ theorem intervalExtension_occupation
     have hnorm : eLpNorm gw (ENNReal.ofReal γ)
         (volume.restrict (Ioo (0 : ℝ) T ×ˢ univ)) =
         eLpNorm g (ENNReal.ofReal γ) (volume.restrict U) := by
-      dsimp only [gw]
       rw [eLpNorm_indicator_eq_eLpNorm_restrict hU,
         Measure.restrict_restrict_of_subset hUR]
     have hgwLp : MemLp gw (ENNReal.ofReal γ)

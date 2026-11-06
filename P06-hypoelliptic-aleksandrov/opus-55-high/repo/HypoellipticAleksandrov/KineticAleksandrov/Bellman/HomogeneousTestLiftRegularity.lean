@@ -21,20 +21,21 @@ def bellmanLiftIntegrand (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
 theorem bellmanLiftIntegrand_contDiffOn_order (n : WithTop ℕ∞)
     (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ) (hz : ContDiff ℝ n zeta) :
     ContDiffOn ℝ n (bellmanLiftIntegrand alpha zeta) (univ ×ˢ Ioi 0) := by
-  have hd : ContDiff ℝ n (fun w : (ℝ × ℝ) × ℝ => bellmanPlaneDilation w.2 w.1) := by
-    exact ((contDiff_snd.pow 3).mul (contDiff_fst.fst)).prodMk
+  have hd : ContDiff ℝ n (fun w : (ℝ × ℝ) × ℝ => bellmanPlaneDilation w.2 w.1) := ((contDiff_snd.pow 3).mul (contDiff_fst.fst)).prodMk
       (contDiff_snd.mul (contDiff_fst.snd))
   exact (contDiffOn_snd.rpow_const_of_ne (fun w hw => ne_of_gt hw.2)).mul
     (hz.comp hd).contDiffOn
 
+variable (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
+
 /-- The compact test gives joint C² regularity wherever the radial variable is positive. -/
-theorem bellmanLiftIntegrand_contDiffOn (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
+theorem bellmanLiftIntegrand_contDiffOn 
     (hz : ContDiff ℝ 2 zeta) :
     ContDiffOn ℝ 2 (bellmanLiftIntegrand alpha zeta) (univ ×ˢ Ioi 0) :=
   bellmanLiftIntegrand_contDiffOn_order 2 alpha zeta hz
 
 /-- Compact support makes the radial integral C² on the entire punctured plane. -/
-theorem bellman_lift_contDiffOn (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
+theorem bellman_lift_contDiffOn 
     (hz : ContDiffOn ℝ 2 zeta bellmanPuncturedSet) (hc : HasCompactSupport zeta)
     (hs : tsupport zeta ⊆ bellmanPuncturedSet) :
     ContDiffOn ℝ 2 (lift alpha zeta) bellmanPuncturedSet := by
@@ -45,16 +46,16 @@ theorem bellman_lift_contDiffOn (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
     bellman_compact_test_local_radius_window zeta hc hs q hq
   let K : Set BellmanPositiveTime := {r | r.val ∈ Icc a b}
   have hK : IsCompact K := bellmanRadiusWindow_isCompact a b ha
-  let : CompactSpace K := isCompact_iff_compactSpace.mp hK
+  let  := isCompact_iff_compactSpace.mp hK
   let mu : Measure K := Measure.comap Subtype.val bellmanPositiveTimeVolume
   let : IsFiniteMeasure mu := bellman_radius_window_volume_finite K hK
   let radius : K → ℝ := fun r => r.val.val
   have hr : Continuous radius := continuous_subtype_val.comp continuous_subtype_val
   have hrp : ∀ r : K, 0 < radius r := fun r => r.val.property
   have hI : ContDiffOn ℝ 2
-      (fun x => ∫ r : K, bellmanLiftIntegrand alpha zeta (x, radius r) ∂mu) U :=
+      _ U :=
     bellman_joint_contDiff_integral mu hU radius hr hrp
-      (bellmanLiftIntegrand alpha zeta) (hf.mono (prod_mono (subset_univ U) Subset.rfl))
+      _ (hf.mono (prod_mono (subset_univ U) Subset.rfl))
   have he : lift alpha zeta =ᶠ[𝓝 q]
       fun x => ∫ r : K, bellmanLiftIntegrand alpha zeta (x, radius r) ∂mu := by
     filter_upwards [hU.mem_nhds hqU] with x hx
@@ -63,9 +64,9 @@ theorem bellman_lift_contDiffOn (alpha : ℝ) (zeta : (ℝ × ℝ) → ℝ)
     have hzero : zeta (bellmanPlaneDilation r.val x) = 0 := by
       by_contra hn
       exact hrK (hwindow x hx r (subset_tsupport zeta hn))
-    simp only [hzero, mul_zero]
-  have hAt : ContDiffAt ℝ 2 (lift alpha zeta) q :=
+    simp_all
+  have hAt  :=
     ((hI q hqU).contDiffAt (hU.mem_nhds hqU)).congr_of_eventuallyEq he
-  exact hAt.contDiffWithinAt
+  fun_prop
 
 end HypoellipticAleksandrov.KineticAleksandrov

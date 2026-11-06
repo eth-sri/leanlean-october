@@ -16,16 +16,15 @@ Bochner residual and evaluates that identity against a bounded spatial operator.
 open Filter MeasureTheory Set
 open scoped BigOperators ENNReal RealInnerProductSpace Matrix.Norms.Elementwise MatrixOrder
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.Parabolic.Dirichlet
+
+variable {d : ℕ} {Ω : Set (PDE.Vec d)} (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁) (hΩ : IsOpen Ω) (T : ℝ) (hΩbounded : Bornology.IsBounded Ω)
 
 /-- The declared reverse-time variational derivative is the canonical Bochner
 source-minus-form residual. -/
 theorem IsReverseTimeVariationalEnergySolution.g_eq_reverseTimeFormResidual
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+    
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
@@ -61,8 +60,7 @@ theorem IsReverseTimeVariationalEnergySolution.g_eq_reverseTimeFormResidual
   linarith
 
 private theorem ae_sub_apply_timewiseCLM
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ)
+    
     (source action : ReverseTimeL2VStar hΩ T)
     (u : ReverseTimeL2V hΩ T)
     (Q : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ) :
@@ -70,17 +68,12 @@ private theorem ae_sub_apply_timewiseCLM
       ((source - action) τ) (Q (u τ)) =
         (source τ) (Q (u τ)) - (action τ) (Q (u τ)) := by
   filter_upwards [Lp.coeFn_sub source action] with τ hsub
-  calc
-    ((source - action) τ) (Q (u τ)) = (source τ - action τ) (Q (u τ)) :=
-      congrArg (fun ell => ell (Q (u τ))) hsub
-    _ = (source τ) (Q (u τ)) - (action τ) (Q (u τ)) := rfl
+  simp_all
 
 /-- The declared derivative evaluated on a timewise bounded spatial image is
 the totalized negative-source evaluation minus the totalized form action. -/
 theorem ae_reverseTimeVariationalEnergySolution_apply_timewiseCLM
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (r₀ r₁ : ℝ) (h₀₁ : r₀ < r₁)
-    (hΩ : IsOpen Ω) (hΩbounded : Bornology.IsBounded Ω)
+    
     (a : CoefficientField d)
     (b : ℝ → PDE.Vec d → PDE.Vec d)
     (c : ℝ → PDE.Vec d → ℝ)
@@ -116,22 +109,20 @@ theorem ae_reverseTimeVariationalEnergySolution_apply_timewiseCLM
     r₀ r₁ h₀₁ hΩ hΩbounded a b c haSmooth hbSmooth hcSmooth F hFSmooth initial
     u g hdu hu]
   simpa only [reverseTimeFormResidual] using
-    (ae_sub_apply_timewiseCLM hΩ (r₁ - r₀)
-      (reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth)
-      (reverseTimeSpatialFormBochnerAction r₀ r₁ h₀₁ hΩ hΩbounded a b c
-        haSmooth hbSmooth hcSmooth u) u Q)
+    (ae_sub_apply_timewiseCLM hΩ _
+      _
+      _ u Q)
 
 /-- Pairing a dual Bochner curve with a bounded timewise spatial image is
 integrable on the reverse-time volume. -/
 theorem integrable_reverseTimeDualPairing_timewiseCLM
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ)
+    
     (Q : H10HilbertGraph hΩ →L[ℝ] H10HilbertGraph hΩ)
     (u : ReverseTimeL2V hΩ T) (g : ReverseTimeL2VStar hΩ T) :
     MeasureTheory.Integrable (fun τ => (g τ) (Q (u τ)))
       (reverseTimeVolume T) := by
-  let Qu := Q.compLpL (2 : ℝ≥0∞) (reverseTimeVolume T) u
-  have hQu : Qu =ᵐ[reverseTimeVolume T] fun τ => Q (u τ) :=
+  let Qu := Q.compLpL (2) _ u
+  have hQu : Qu =ᵐ[reverseTimeVolume T] fun τ => Q _ :=
     ContinuousLinearMap.coeFn_compLpL Q u
   refine (integrable_reverseTimeDualPairing hΩ T Qu g).congr ?_
   filter_upwards [hQu] with τ hQ

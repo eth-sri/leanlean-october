@@ -37,33 +37,24 @@ private def timePlateau (a b c d : ℝ) : ℝ → ℝ :=
   fun tau => timePlateauLeft a b tau * timePlateauRight c d tau
 
 private theorem timePlateauLeft_contDiff (a b : ℝ) :
-    ContDiff ℝ (⊤ : ℕ∞) (timePlateauLeft a b) := by
-  unfold timePlateauLeft
-  exact PDE.smoothTransitionProfile.smooth.comp
+    ContDiff ℝ (⊤ : ℕ∞) (timePlateauLeft a b) := PDE.smoothTransitionProfile.smooth.comp
     ((contDiff_id.sub contDiff_const).div_const _)
 
 private theorem timePlateauRight_contDiff (c d : ℝ) :
-    ContDiff ℝ (⊤ : ℕ∞) (timePlateauRight c d) := by
-  unfold timePlateauRight
-  exact PDE.smoothTransitionProfile.smooth.comp
+    ContDiff ℝ (⊤ : ℕ∞) (timePlateauRight c d) := PDE.smoothTransitionProfile.smooth.comp
     ((contDiff_const.sub contDiff_id).div_const _)
 
 private theorem timePlateau_contDiff (a b c d : ℝ) :
     ContDiff ℝ (⊤ : ℕ∞) (timePlateau a b c d) := by
-  unfold timePlateau
   exact
     (timePlateauLeft_contDiff a b).mul (timePlateauRight_contDiff c d)
 
 private theorem timePlateau_nonneg (a b c d tau : ℝ) :
-    0 ≤ timePlateau a b c d tau := by
-  unfold timePlateau timePlateauLeft timePlateauRight
-  exact mul_nonneg (PDE.smoothTransitionProfile.nonneg _)
+    0 ≤ timePlateau a b c d tau := mul_nonneg (PDE.smoothTransitionProfile.nonneg _)
     (PDE.smoothTransitionProfile.nonneg _)
 
 private theorem timePlateau_le_one (a b c d tau : ℝ) :
-    timePlateau a b c d tau ≤ 1 := by
-  unfold timePlateau timePlateauLeft timePlateauRight
-  exact mul_le_one₀ (PDE.smoothTransitionProfile.le_one _)
+    timePlateau a b c d tau ≤ 1 := mul_le_one₀ (PDE.smoothTransitionProfile.le_one _)
     (PDE.smoothTransitionProfile.nonneg _)
     (PDE.smoothTransitionProfile.le_one _)
 
@@ -94,7 +85,7 @@ private theorem timePlateau_eq_one_on
   have hvalue : timePlateau a b c d tau = 1 := by
     simp only [timePlateau, timePlateauLeft_eq_one hab htau.1,
       timePlateauRight_eq_one hcd htau.2, one_mul]
-  exact (show b ≤ c ∧ timePlateau a b c d tau = 1 from ⟨hbc, hvalue⟩).2
+  omega
 
 private theorem timePlateauLeft_eq_zero_of_lt_ell
     {a b tau : ℝ} (hab : a < b) (htau : tau < timePlateauEll a b) :
@@ -114,12 +105,13 @@ private theorem timePlateauRight_eq_zero_of_r_lt
   apply le_of_lt
   apply div_neg_of_neg_of_pos <;> linarith
 
+variable {a b c d : ℝ}
+
 private theorem timePlateau_support_subset
-    {a b c d : ℝ} (hab : a < b) (hcd : c < d) :
+     (hab : a < b) (hcd : c < d) :
     support (timePlateau a b c d) ⊆
       Icc (timePlateauEll a b) (timePlateauR c d) := by
   intro tau hsupport
-  change timePlateau a b c d tau ≠ 0 at hsupport
   constructor
   · by_contra hnot
     have hlt : tau < timePlateauEll a b := lt_of_not_ge hnot
@@ -131,37 +123,34 @@ private theorem timePlateau_support_subset
     exact hsupport (by simp only [timePlateau, hzero, mul_zero])
 
 private theorem timePlateau_tsupport_subset
-    {a b c d : ℝ} (hab : a < b) (hcd : c < d) :
+     (hab : a < b) (hcd : c < d) :
     tsupport (timePlateau a b c d) ⊆
-      Icc (timePlateauEll a b) (timePlateauR c d) := by
-  rw [tsupport]
-  exact closure_minimal (timePlateau_support_subset hab hcd) isClosed_Icc
+      Icc (timePlateauEll a b) (timePlateauR c d) := closure_minimal (timePlateau_support_subset hab hcd) isClosed_Icc
 
 private theorem timePlateau_hasCompactSupport
-    {a b c d : ℝ} (hab : a < b) (hcd : c < d) :
+     (hab : a < b) (hcd : c < d) :
     HasCompactSupport (timePlateau a b c d) := by
   apply HasCompactSupport.of_support_subset_isCompact isCompact_Icc
   exact timePlateau_support_subset hab hcd
 
 private theorem timePlateau_Icc_subset_outer
-    {a b c d : ℝ} (hab : a < b) (hcd : c < d) :
+     (hab : a < b) (hcd : c < d) :
     Icc (timePlateauEll a b) (timePlateauR c d) ⊆ Ioo a d := by
   intro tau htau
   constructor
   · have hell : a < timePlateauEll a b := by
       unfold timePlateauEll
       linarith
-    exact hell.trans_le htau.1
+    grind
   · have hr : timePlateauR c d < d := by
       unfold timePlateauR
       linarith
-    exact lt_of_le_of_lt htau.2 hr
+    grind
 
 private theorem timePlateau_outer_subset_reverseTime
     {T a d : ℝ} (ha0 : 0 ≤ a) (hdT : d ≤ T) :
     Ioo a d ⊆ reverseTimeOpenInterval T := by
   intro tau htau
-  change tau ∈ Ioo 0 T
   exact ⟨lt_of_le_of_lt ha0 htau.1, lt_of_lt_of_le htau.2 hdT⟩
 
 /-- A smooth reverse-time test with values in `[0, 1]`, a closed inner
@@ -184,16 +173,12 @@ theorem exists_reverseTimeScalarTest_plateau
           (timePlateau_outer_subset_reverseTime ha0 hdT)) }
   refine ⟨eta, ?_, ?_, ?_, ?_⟩
   · intro tau
-    change 0 ≤ timePlateau a b c d tau
     exact timePlateau_nonneg a b c d tau
   · intro tau
-    change timePlateau a b c d tau ≤ 1
     exact timePlateau_le_one a b c d tau
   · intro tau htau
-    change timePlateau a b c d tau = 1
     exact timePlateau_eq_one_on hab hbc hcd htau
-  · change tsupport (timePlateau a b c d) ⊆ Ioo a d
-    exact (timePlateau_tsupport_subset hab hcd).trans
+  · exact (timePlateau_tsupport_subset hab hcd).trans
       (timePlateau_Icc_subset_outer hab hcd)
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

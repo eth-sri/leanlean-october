@@ -33,28 +33,23 @@ theorem squaredL2Norm_truncate_le
     (hML : M ≤ L) :
     squaredL2Norm (F.truncate hML) ≤ squaredL2Norm F := by
   classical
-  unfold squaredL2Norm
   let e : ParabolicDerivativeIndex d M ↪ ParabolicDerivativeIndex d L :=
     castLEEmbedding hML
-  let component : ParabolicDerivativeIndex d L → ℝ := fun beta ↦
+  let component  := fun beta ↦
     (ENNReal.toReal
       (eLpNorm (F.representative beta) 2 (timeVelocityVolumeOn U))) ^ 2
   calc
     ∑ beta : ParabolicDerivativeIndex d M,
         (ENNReal.toReal
-          (eLpNorm ((F.truncate hML).representative beta) 2
-            (timeVelocityVolumeOn U))) ^ 2 =
+          _) ^ 2 =
         ∑ beta ∈ Finset.univ.map e, component beta := by
-          rw [Finset.sum_map]
-          rfl
+          aesop
     _ ≤ ∑ beta ∈ Finset.univ, component beta := by
       apply Finset.sum_le_sum_of_subset_of_nonneg
-      · exact Finset.subset_univ _
-      · intro beta _ _
-        exact sq_nonneg _
+      · simp
+      aesop
     _ = ∑ beta : ParabolicDerivativeIndex d L,
         (ENNReal.toReal
-          (eLpNorm (F.representative beta) 2
-            (timeVelocityVolumeOn U))) ^ 2 := rfl
+          _) ^ 2 := rfl
 
 end HypoellipticAleksandrov.Parabolic.ParabolicWeakDerivativeFamily

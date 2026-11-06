@@ -8,7 +8,6 @@ import Mathlib.Tactic
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov.Holder
 
@@ -55,20 +54,20 @@ theorem gaussianBarrier_sign {d : ℕ} {lam h : ℝ} (hlam : 0 < lam) (hh : 0 < 
   let B := fullKineticCoefficientAt A P
   let G := Real.exp (-Xi d lam Lam H h * sigma - qform lam h sigma y V)
   have hs : 0 < sigma ∧ sigma ≤ h := hP
-  have hstrip : -(h / 128) ≤ sigma := by linarith only [hh, hs.1]
+  have hstrip : -(h / 128) ≤ sigma := by linarith
   have hR : 0 ≤ R := gramian_inv_velocity_nonneg hlam hh hstrip
   have hLam0 : 0 ≤ Lam := (hlam.trans_le hLam).le
   have hquad := loewner_quadratic_lower hl pvec
   have htrA := loewner_trace_upper hu
   have htrR := gramian_velocity_trace_le d hlam hh hs.1.le hs.2
   rw [Matrix.trace_smul, Matrix.trace_one] at htrR
-  simp only [Fintype.card_fin, smul_eq_mul] at htrR
-  have htrace : 2 * R * B.trace ≤ 2 * Lam * (128 * (d : ℝ) / lam) / h := by
+  simp only [Fintype.card_fin] at htrR
+  have htrace : 2 * R * B.trace ≤ 2 * Lam * (128 * d / lam) / h := by
     calc
-      _ ≤ 2 * R * ((d : ℝ) * Lam) :=
+      _ ≤ 2 * R * (d * Lam) :=
         mul_le_mul_of_nonneg_left htrA (mul_nonneg (by norm_num) hR)
-      _ = (2 * Lam) * (R * (d : ℝ)) := by ring
-      _ ≤ (2 * Lam) * ((128 * (d : ℝ) / lam) / h) :=
+      _ = (2 * Lam) * (R * d) := by ring
+      _ ≤ (2 * Lam) * ((128 * d / lam) / h) :=
         mul_le_mul_of_nonneg_left htrR (mul_nonneg (by norm_num) hLam0)
       _ = _ := by ring
   have hyoung := acceleration_young hlam (deriv v (P.time - tminus)) pvec
@@ -77,14 +76,13 @@ theorem gaussianBarrier_sign {d : ℕ} {lam h : ℝ} (hlam : 0 < lam) (hh : 0 < 
       2 * PDE.vecDot (deriv v (P.time - tminus)) pvec + 2 * R * B.trace -
       4 * PDE.vecDot pvec (B.mulVec pvec) ≤ -(3 * lam / 2) * PDE.vecNormSq pvec := by
     unfold Xi
-    linarith only [hquad, htrace, hyoung]
+    linarith
   have hG : 0 ≤ ell * G := mul_nonneg hell (Real.exp_pos _).le
   have hsign := mul_le_mul_of_nonneg_left hfactor hG
   rw [gaussianBarrier_backwardOperator A hlam hh Lam H L ell tminus sblock hx hv hkin P hs.1]
   constructor
-  · convert hsign using 1; ring
-  · change -(3 * lam / 2) * ell * G * PDE.vecNormSq pvec ≤ 0
-    exact mul_nonpos_of_nonpos_of_nonneg
+  · linarith
+  · exact mul_nonpos_of_nonpos_of_nonneg
       (mul_nonpos_of_nonpos_of_nonneg
         (mul_nonpos_of_nonpos_of_nonneg (neg_nonpos.mpr (by positivity)) hell)
         (Real.exp_pos _).le) (PDE.vecNormSq_nonneg pvec)

@@ -46,48 +46,46 @@ def scalarParabolicTerminalLateralBoundary {n : ℕ} (r₀ r₁ : ℝ) (Ω : Set
     Set (TimeVelocity n) :=
   scalarParabolicTerminalFace r₁ Ω ∪ scalarParabolicLateralFace r₀ r₁ Ω
 
+variable {n : ℕ} {r₀ r₁ r : ℝ} {Ω : Set (PDE.Vec n)} {y : PDE.Vec n}
+
 /-- Membership in an open scalar parabolic cylinder. -/
-@[simp] theorem mem_scalarParabolicOpenCylinder_iff {n : ℕ} {r₀ r₁ r : ℝ}
-    {Ω : Set (PDE.Vec n)} {y : PDE.Vec n} :
+@[simp] theorem mem_scalarParabolicOpenCylinder_iff  :
     (r, y) ∈ scalarParabolicOpenCylinder r₀ r₁ Ω ↔
       r₀ < r ∧ r < r₁ ∧ y ∈ Ω := by
   constructor
   · rintro ⟨⟨hr₀, hr₁⟩, hy⟩
-    exact ⟨hr₀, hr₁, hy⟩
+    simp_all
   · rintro ⟨hr₀, hr₁, hy⟩
     exact ⟨⟨hr₀, hr₁⟩, hy⟩
 
 /-- Membership in a closed scalar parabolic cylinder. -/
-@[simp] theorem mem_scalarParabolicClosedCylinder_iff {n : ℕ} {r₀ r₁ r : ℝ}
-    {Ω : Set (PDE.Vec n)} {y : PDE.Vec n} :
+@[simp] theorem mem_scalarParabolicClosedCylinder_iff  :
     (r, y) ∈ scalarParabolicClosedCylinder r₀ r₁ Ω ↔
       r₀ ≤ r ∧ r ≤ r₁ ∧ y ∈ closure Ω := by
   constructor
   · rintro ⟨⟨hr₀, hr₁⟩, hy⟩
-    exact ⟨hr₀, hr₁, hy⟩
+    simp_all
   · rintro ⟨hr₀, hr₁, hy⟩
     exact ⟨⟨hr₀, hr₁⟩, hy⟩
 
 /-- Membership in the terminal face of a scalar parabolic cylinder. -/
-@[simp] theorem mem_scalarParabolicTerminalFace_iff {n : ℕ} {r₁ r : ℝ}
+@[simp] theorem mem_scalarParabolicTerminalFace_iff  {r₁ r : ℝ}
     {Ω : Set (PDE.Vec n)} {y : PDE.Vec n} :
     (r, y) ∈ scalarParabolicTerminalFace r₁ Ω ↔ r = r₁ ∧ y ∈ closure Ω := by
-  simp [scalarParabolicTerminalFace]
+  aesop
 
 /-- Membership in the lateral face of a scalar parabolic cylinder. -/
-@[simp] theorem mem_scalarParabolicLateralFace_iff {n : ℕ} {r₀ r₁ r : ℝ}
-    {Ω : Set (PDE.Vec n)} {y : PDE.Vec n} :
+@[simp] theorem mem_scalarParabolicLateralFace_iff  :
     (r, y) ∈ scalarParabolicLateralFace r₀ r₁ Ω ↔
       r₀ ≤ r ∧ r ≤ r₁ ∧ y ∈ frontier Ω := by
   constructor
   · rintro ⟨⟨hr₀, hr₁⟩, hy⟩
-    exact ⟨hr₀, hr₁, hy⟩
+    simp_all
   · rintro ⟨hr₀, hr₁, hy⟩
     exact ⟨⟨hr₀, hr₁⟩, hy⟩
 
 /-- Membership in the terminal-lateral boundary of a scalar parabolic cylinder. -/
-@[simp] theorem mem_scalarParabolicTerminalLateralBoundary_iff {n : ℕ}
-    {r₀ r₁ r : ℝ} {Ω : Set (PDE.Vec n)} {y : PDE.Vec n} :
+@[simp] theorem mem_scalarParabolicTerminalLateralBoundary_iff  :
     (r, y) ∈ scalarParabolicTerminalLateralBoundary r₀ r₁ Ω ↔
       (r = r₁ ∧ y ∈ closure Ω) ∨ (r₀ ≤ r ∧ r ≤ r₁ ∧ y ∈ frontier Ω) := by
   simp [scalarParabolicTerminalLateralBoundary]
@@ -123,50 +121,45 @@ def IsScalarC12On {n : ℕ} (u : TimeVelocity n → ℝ) (D : Set (TimeVelocity 
 
 namespace IsScalarC12On
 
+variable {n : ℕ} {u : TimeVelocity n → ℝ} {D : Set (TimeVelocity n)}
+
 /-- The function itself is continuous on the specified set. -/
-theorem continuousOn {n : ℕ} {u : TimeVelocity n → ℝ} {D : Set (TimeVelocity n)}
+theorem continuousOn 
     (h : IsScalarC12On u D) :
     ContinuousOn u D :=
   h.1
 
 /-- Each fixed-velocity time slice is differentiable at points of the set. -/
-theorem timeSlice_differentiableAt {n : ℕ} {u : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (h : IsScalarC12On u D) {z : TimeVelocity n}
+theorem timeSlice_differentiableAt  (h : IsScalarC12On u D) {z : TimeVelocity n}
     (hz : z ∈ D) :
     DifferentiableAt ℝ (fun r : ℝ => u (r, z.2)) z.1 :=
   h.2.1 z hz
 
 /-- Each fixed-time spatial slice is `C²` at points of the set. -/
-theorem spatialSlice_contDiffAt {n : ℕ} {u : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (h : IsScalarC12On u D) {z : TimeVelocity n}
+theorem spatialSlice_contDiffAt  (h : IsScalarC12On u D) {z : TimeVelocity n}
     (hz : z ∈ D) :
     ContDiffAt ℝ 2 (fun y : PDE.Vec n => u (z.1, y)) z.2 :=
   h.2.2.1 z hz
 
 /-- The scalar time derivative is continuous on the specified set. -/
-theorem continuousOn_scalarTimeDerivative {n : ℕ} {u : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (h : IsScalarC12On u D) :
+theorem continuousOn_scalarTimeDerivative  (h : IsScalarC12On u D) :
     ContinuousOn (scalarTimeDerivative u) D :=
   h.2.2.2.1
 
 /-- The scalar spatial gradient is continuous on the specified set. -/
-theorem continuousOn_scalarSpatialGradient {n : ℕ} {u : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (h : IsScalarC12On u D) :
+theorem continuousOn_scalarSpatialGradient  (h : IsScalarC12On u D) :
     ContinuousOn (scalarSpatialGradient u) D :=
   h.2.2.2.2.1
 
 /-- The scalar spatial Hessian is continuous on the specified set. -/
-theorem continuousOn_scalarSpatialHessian {n : ℕ} {u : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (h : IsScalarC12On u D) :
+theorem continuousOn_scalarSpatialHessian  (h : IsScalarC12On u D) :
     ContinuousOn (scalarSpatialHessian u) D :=
   h.2.2.2.2.2
 
 /-- The fixed-velocity time slice has derivative `scalarTimeDerivative`. -/
-theorem timeSlice_hasDerivAt {n : ℕ} {u : TimeVelocity n → ℝ}
-    {D : Set (TimeVelocity n)} (h : IsScalarC12On u D) {z : TimeVelocity n}
+theorem timeSlice_hasDerivAt  (h : IsScalarC12On u D) {z : TimeVelocity n}
     (hz : z ∈ D) :
-    HasDerivAt (fun r : ℝ => u (r, z.2)) (scalarTimeDerivative u z) z.1 := by
-  exact (h.timeSlice_differentiableAt hz).hasDerivAt
+    HasDerivAt (fun r : ℝ => u (r, z.2)) (scalarTimeDerivative u z) z.1 := (h.timeSlice_differentiableAt hz).hasDerivAt
 
 end IsScalarC12On
 

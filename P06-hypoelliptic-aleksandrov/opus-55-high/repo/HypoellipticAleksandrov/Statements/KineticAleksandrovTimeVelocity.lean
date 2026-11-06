@@ -18,7 +18,6 @@ Theorem 5.14) is proved in this library, so the statement carries no extra hypot
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov
 
@@ -48,8 +47,7 @@ theorem kinetic_aleksandrov_timeVelocity
           u P ≤ sSup ((fun P => max (u P) 0) '' kineticBoundary P₀ R) +
             C * R ^ (2 - (4 * (d : ℝ) + 2) / p) *
               (eLpNorm (fun P => max (f P) 0) (ENNReal.ofReal p)
-                (volume.restrict (backwardCylinder P₀ R))).toReal := by
-  exact HypoellipticAleksandrov.KineticAleksandrov.kinetic_aleksandrov_timeVelocity_proof
+                (volume.restrict (backwardCylinder P₀ R))).toReal := HypoellipticAleksandrov.KineticAleksandrov.kinetic_aleksandrov_timeVelocity_proof
     d hd lam Lam p hlam hLam hp
 
 end KineticAleksandrov

@@ -7,7 +7,6 @@ import Mathlib.Topology.TietzeExtension
 /-! # Genuine smooth compact approximation of bounded continuous future slab traces -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set HypoellipticAleksandrov Topology
 open SectionTwo TheoremA Evolution
@@ -28,10 +27,10 @@ theorem exists_reconstruction_smooth_trace_probe
   have hD : IsClosed D := by
     change IsClosed (reconstructionClosedSlab H a T)
     rw [← closure_reconstructionStrip H a T ha]
-    exact isClosed_closure
+    simp
   let f : BoundedContinuousFunction D ℝ := BoundedContinuousFunction.ofNormedAddCommGroup
     (fun p => u p.1) (continuousOn_iff_continuous_domRestrict.mp hc) M
-    (fun p => by rw [Real.norm_eq_abs]; exact hb p.1 p.2)
+    (fun p => by simp_all)
   let j : D → EvolutionVec 1 := fun p => reconstructionPhysicalHomeomorph.symm p.1
   have hj : IsClosedEmbedding j := reconstructionPhysicalHomeomorph.symm.isClosedEmbedding.comp
     hD.isClosedEmbedding_subtypeVal
@@ -40,13 +39,11 @@ theorem exists_reconstruction_smooth_trace_probe
       (fun p => abs_le.mp (hb p.1 p.2)) (by linarith) hj
   let pack (q : ℝ × ℝ × ℝ) : EvolutionVec 1 :=
     packPoint q.1 (fun _ => q.2.2) (fun _ => q.2.1)
-  let K : Set (EvolutionVec 1) := pack '' (Icc a T ×ˢ (Icc (-R) R ×ˢ Icc H.lo H.hi))
+  let K  := pack '' (Icc a T ×ˢ (Icc (-R) R ×ˢ Icc H.lo H.hi))
   have hp : Continuous pack := by
     change Continuous (fun q : ℝ × ℝ × ℝ =>
       (evolutionProdCLE 1).symm (q.1, (fun _ => q.2.2), (fun _ => q.2.1)))
-    exact (evolutionProdCLE 1).symm.continuous.comp
-      (continuous_fst.prodMk ((continuous_pi fun _ => continuous_snd.snd).prodMk
-        (continuous_pi fun _ => continuous_snd.fst)))
+    fun_prop
   have hK : IsCompact K := (isCompact_Icc.prod (isCompact_Icc.prod isCompact_Icc)).image hp
   obtain ⟨chi, hchi, hcc, _, hcb, hone⟩ :=
     exists_smooth_bump_of_isCompact_subset_isOpen hK isOpen_univ (subset_univ _)
@@ -60,13 +57,8 @@ theorem exists_reconstruction_smooth_trace_probe
     exact (mul_le_of_le_one_left (abs_nonneg _) (hcb x).2).trans (abs_le.mpr (hGb x))
   refine ⟨F, ?_, ?_⟩
   · intro p
-    have hh := (abs_add_le (s (reconstructionPhysicalHomeomorph.symm p) -
-      g (reconstructionPhysicalHomeomorph.symm p)) (g (reconstructionPhysicalHomeomorph.symm
-        p))).trans
-        (add_le_add (hclose _) (hg _))
     change |s (reconstructionPhysicalHomeomorph.symm p)| ≤ _
-    rw [sub_add_cancel] at hh
-    exact hh.trans_eq (add_comm eps M)
+    grind
   · intro p hpd hpr
     have hpk : reconstructionPhysicalHomeomorph.symm p ∈ K := by
       refine ⟨(p.time, p.position 0, p.velocity 0),
@@ -77,9 +69,8 @@ theorem exists_reconstruction_smooth_trace_probe
       congrFun hG ⟨p, hpd⟩
     have hgp : g (reconstructionPhysicalHomeomorph.symm p) = u p := by
       change chi _ * G _ = _
-      rw [hone _ hpk, one_mul, hGp]
+      simp_all
     change |s (reconstructionPhysicalHomeomorph.symm p) - u p| ≤ _
-    rw [← hgp]
-    exact hclose _
+    grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

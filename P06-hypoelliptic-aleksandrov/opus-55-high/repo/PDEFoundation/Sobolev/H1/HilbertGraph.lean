@@ -57,20 +57,15 @@ namespace H1HilbertGraph
 
 variable {d : ℕ} {U : Set (Vec d)}
 
-noncomputable instance : SeminormedAddCommGroup (H1HilbertGraph U) := by
-  exact inferInstanceAs (SeminormedAddCommGroup (h1HilbertSubmodule U))
+instance : SeminormedAddCommGroup (H1HilbertGraph U) := inferInstanceAs (SeminormedAddCommGroup (h1HilbertSubmodule U))
 
-noncomputable instance : NormedAddCommGroup (H1HilbertGraph U) := by
-  exact inferInstanceAs (NormedAddCommGroup (h1HilbertSubmodule U))
+instance : NormedAddCommGroup (H1HilbertGraph U) := inferInstanceAs (NormedAddCommGroup (h1HilbertSubmodule U))
 
-noncomputable instance : NormedSpace ℝ (H1HilbertGraph U) := by
-  exact inferInstanceAs (NormedSpace ℝ (h1HilbertSubmodule U))
+instance : NormedSpace ℝ (H1HilbertGraph U) := inferInstanceAs (NormedSpace ℝ (h1HilbertSubmodule U))
 
-noncomputable instance : InnerProductSpace ℝ (H1HilbertGraph U) := by
-  exact inferInstanceAs (InnerProductSpace ℝ (h1HilbertSubmodule U))
+instance : InnerProductSpace ℝ (H1HilbertGraph U) := inferInstanceAs (InnerProductSpace ℝ (h1HilbertSubmodule U))
 
-noncomputable instance : CompleteSpace (H1HilbertGraph U) := by
-  exact (h1HilbertClosedSubmodule U).isClosed.completeSpace_coe
+instance : CompleteSpace (H1HilbertGraph U) := (h1HilbertClosedSubmodule U).isClosed.completeSpace_coe
 
 /-- Forget the Hilbert product norm while retaining the same graph pair. -/
 def toH1Graph (z : H1HilbertGraph U) : H1Graph U :=
@@ -80,24 +75,17 @@ def toH1Graph (z : H1HilbertGraph U) : H1Graph U :=
 product norm. -/
 def ofH1Graph (z : H1Graph U) : H1HilbertGraph U :=
   ⟨(h1HilbertAmbientEquiv U).symm z.1, by
-    change
-      h1HilbertAmbientEquiv U
-          ((h1HilbertAmbientEquiv U).symm z.1) ∈
-        weakGradientGraph U (2 : ℝ≥0∞)
-    rw [(h1HilbertAmbientEquiv U).apply_symm_apply]
-    exact z.2⟩
+    simp⟩
 
 @[simp]
 theorem toH1Graph_ofH1Graph (z : H1Graph U) :
     toH1Graph (ofH1Graph z) = z := by
-  apply Subtype.ext
-  exact (h1HilbertAmbientEquiv U).apply_symm_apply z.1
+  aesop
 
 @[simp]
 theorem ofH1Graph_toH1Graph (z : H1HilbertGraph U) :
     ofH1Graph (toH1Graph z) = z := by
-  apply Subtype.ext
-  exact (h1HilbertAmbientEquiv U).symm_apply_apply z.1
+  aesop
 
 /-- The max-norm and Hilbert-norm graph carriers have exactly the same
 elements. Their norms remain intentionally distinct. -/

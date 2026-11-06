@@ -13,14 +13,14 @@ open Set MeasureTheory HypoellipticAleksandrov
 theorem FiniteIntervalUnion.frontier_component_subset (H : FiniteIntervalUnion)
     (i : Fin H.count) : frontier (H.component i).carrier ⊆ frontier H.carrier := by
   intro v hv
-  rw [frontier, mem_sdiff, H.isOpen_carrier.interior_eq]
+  rw [frontier, H.isOpen_carrier.interior_eq]
   refine ⟨closure_mono (H.component_subset i) (frontier_subset_closure hv), ?_⟩
   intro hmem
   obtain ⟨j, hj⟩ := mem_iUnion.mp hmem
   by_cases hji : j = i
   · subst j
     exact Set.disjoint_left.mp
-      (disjoint_frontier_iff_isOpen.mpr (show IsOpen (H.component i).carrier
+      (disjoint_frontier_iff_isOpen.mpr (show IsOpen _
         from isOpen_Ioo)) hv hj
   · have hd := (H.disjoint (Ne.symm hji)).closure_left (show IsOpen (H.component j).carrier
       from isOpen_Ioo)
@@ -31,8 +31,10 @@ def finiteUnionExitSet (H : FiniteIntervalUnion) (sMinus T : ℝ) : Set Point :=
   {p | p.time = T ∧ p.velocity 0 ∈ closure H.carrier} ∪
     {p | sMinus < p.time ∧ p.time < T ∧ p.velocity 0 ∈ frontier H.carrier}
 
+variable (H : FiniteIntervalUnion)
+
 /-- Each interval exit lies on the union's prescribed exit. -/
-theorem reconstructionExit_subset_finiteUnionExitSet (H : FiniteIntervalUnion)
+theorem reconstructionExit_subset_finiteUnionExitSet 
     (i : Fin H.count) (sMinus T : ℝ) :
     reconstructionExit (H.component i) sMinus T ⊆ finiteUnionExitSet H sMinus T := by
   intro p hp
@@ -40,16 +42,15 @@ theorem reconstructionExit_subset_finiteUnionExitSet (H : FiniteIntervalUnion)
   · refine Or.inl ⟨hp.1, closure_mono (H.component_subset i) ?_⟩
     change p.velocity 0 ∈ closure (Ioo (H.component i).lo (H.component i).hi)
     rw [closure_Ioo (H.component i).ordered.ne]
-    exact hp.2
+    grind
   · refine Or.inr ⟨hp.1, hp.2.1, H.frontier_component_subset i ?_⟩
     change p.velocity 0 ∈ frontier (Ioo (H.component i).lo (H.component i).hi)
     rw [frontier_Ioo (H.component i).ordered]
-    simpa only [mem_insert_iff, mem_singleton_iff] using hp.2.2
+    simp_all
 
 /-- The genuine union exit is Borel. -/
-theorem measurableSet_finiteUnionExitSet (H : FiniteIntervalUnion) (sMinus T : ℝ) :
+theorem measurableSet_finiteUnionExitSet  (sMinus T : ℝ) :
     MeasurableSet (finiteUnionExitSet H sMinus T) := by
-  unfold finiteUnionExitSet
   apply MeasurableSet.union
   · exact (isClosed_eq continuous_time continuous_const).measurableSet.inter
       (isClosed_closure.measurableSet.preimage
@@ -70,7 +71,7 @@ theorem finiteUnionExit_compl_exit
     (e : FiniteUnionPole H (T : WithTop ℝ)) (he : sMinus ≤ e.1.time) :
     finiteUnionExit hH hLE hlam hLam A H T e (finiteUnionExitSet H sMinus T)ᶜ = 0 := by
   have hp := (strip_exit_probability hH hLE hlam hLam A
-    (H.component (finiteUnionPoleIndex H T e)) sMinus T
+    _ sMinus T
     (finiteUnionComponentPole H T e) he).2.1
   apply le_antisymm _ (zero_le)
   apply (measure_mono (compl_subset_compl.mpr

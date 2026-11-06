@@ -6,7 +6,6 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Bellman.HomogeneousTest
 /-! # The homogeneous-test-lift node with its literal operator chain rule -/
 
 @[expose] public section
-noncomputable section
 open Set
 namespace HypoellipticAleksandrov.KineticAleksandrov
 

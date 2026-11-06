@@ -15,7 +15,6 @@ finite-slab steps. The gluing lemma gives the whole past solution.
 
 @[expose] public section
 
-noncomputable section
 
 namespace HypoellipticAleksandrov.KineticAleksandrov
 
@@ -51,11 +50,11 @@ theorem exists_finite_viscous_innerBall_solution
     exists_innerBall_dirichlet_sequence hLE hlam hlamLam hBs hBsym hB hbs hΓ
       (show a - 1 < τ by linarith) hd hdr hε F hF.1 hF.2.1 hsupp
   have hRlim : Tendsto R atTop atTop :=
-    tendsto_atTop_mono (fun k => (le_add_of_nonneg_right (by norm_num : (0 : ℝ) ≤ 1)).trans
+    tendsto_atTop_mono (fun k => (le_add_of_nonneg_right (by norm_num)).trans
       (hR k)) tendsto_natCast_atTop_atTop
   have hc (k : ℕ) (s : ℝ) (hs : s ∈ Icc a τ) :
-      PDE.vecEuclideanNorm (g k s - Γ s) ≤ β k / 2 :=
-    hclose k s ⟨by linarith [hs.1], hs.2⟩
+      PDE.vecEuclideanNorm _ ≤ β k / 2 :=
+    hclose k s ⟨by grind, hs.2⟩
   have hv := isClassicalViscousFiniteSolution_innerBallDirichletLimit
     hH hn hlam hlamLam hm hmLb hB hBs hBsym hbs hb hbco
     (show a - 1 < a by linarith) haτ hd hdr hL hε hε1 hC hΓ F hFC hsupp

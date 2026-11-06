@@ -12,7 +12,6 @@ element of the zero-boundary spatial Sobolev graph.
 
 @[expose] public section
 
-noncomputable section
 
 open scoped ENNReal
 
@@ -37,20 +36,13 @@ theorem norm_valueCLM_localizedSpatialDifferenceQuotientH10CLM_apply_le_gradient
   refine (denseRange_smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ).induction_on u ?_ ?_
   · exact isClosed_le
       (((valueCLM hΩ).comp
-        (localizedSpatialDifferenceQuotientH10CLM
-          hΩ η k h hηΩ hηshift)).continuous.norm)
+        _).continuous.norm)
       ((gradientCLM hΩ).continuous.norm)
   · intro φ
     rw [localizedSpatialDifferenceQuotientH10CLM_apply_smooth
       hΩ η k h φ hηΩ hηshift,
       valueCLM_localizedSpatialDifferenceQuotientSmoothCoreLinearMap_apply
         hΩ η k h φ hηΩ hηshift]
-    have hinput :
-        smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ φ =
-          smoothCompactlySupportedH1HilbertGraphToH10HilbertGraph hΩ φ := by
-      apply Subtype.ext
-      rfl
-    rw [hinput]
     exact norm_localizedSpatialDifferenceQuotientL2_apply_smooth_le_gradient
       hΩ η k h φ
 

@@ -24,22 +24,22 @@ theorem entranceSlab_mass_arithmetic {r Lam M p g : ℝ}
     (hM : 5 * r ^ 2 / 16 * M ≤ 9 * r ^ 2 / 16 * p + 2 * Lam * g) :
     M ≤ entranceSlabConstant Lam * (p + r ^ (-2 : ℤ) * g) := by
   have hinv : r ^ (-2 : ℤ) = 1 / r ^ 2 := by
-    norm_num only [zpow_neg, zpow_ofNat, one_div]
+    simp
   rw [hinv]
   have hd : M ≤ (9 * r ^ 2 / 16 * p + 2 * Lam * g) / (5 * r ^ 2 / 16) :=
-    (le_div_iff₀ (by positivity : 0 < 5 * r ^ 2 / 16)).mpr
-      (by simpa only [mul_comm] using hM)
+    (le_div_iff₀ (by positivity)).mpr
+      (by linarith)
   have he : (9 * r ^ 2 / 16 * p + 2 * Lam * g) / (5 * r ^ 2 / 16) =
       9 / 5 * p + (32 * Lam / 5) * (1 / r ^ 2 * g) := by
     field_simp
     ring
   rw [he] at hd
-  have hC1 : (9 / 5 : ℝ) ≤ entranceSlabConstant Lam := by
+  have hC1 : (9 / 5) ≤ entranceSlabConstant Lam := by
     unfold entranceSlabConstant
-    exact le_add_of_nonneg_right (by positivity)
+    linarith
   have hC2 : 32 * Lam / 5 ≤ entranceSlabConstant Lam := by
     unfold entranceSlabConstant
-    exact le_add_of_nonneg_left (by norm_num)
+    linarith
   exact hd.trans (by
     rw [mul_add]
     exact add_le_add (mul_le_mul_of_nonneg_right hC1 hp)

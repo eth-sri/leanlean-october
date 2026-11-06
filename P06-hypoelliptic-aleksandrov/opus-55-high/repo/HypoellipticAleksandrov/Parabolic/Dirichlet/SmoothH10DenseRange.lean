@@ -30,9 +30,8 @@ theorem denseRange_smoothCompactlySupportedH1HilbertGraphToH10LinearMap
       (fun n => smoothCompactlySupportedH1HilbertGraphToH10LinearMap hΩ (φ n))
       atTop (𝓝 u) := by
     apply tendsto_subtype_rng.mpr
-    simpa only [coe_smoothCompactlySupportedH1HilbertGraphToH10LinearMap_apply] using hφ
+    simp_all
   apply mem_closure_of_tendsto hT
-  filter_upwards with n
-  exact ⟨φ n, rfl⟩
+  simp
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

@@ -5,19 +5,20 @@ public import HypoellipticAleksandrov.KineticAleksandrov.Autonomous.GreenTestExt
 /-! # Native slice regularity of the actual smooth physical homogeneous reconstruction -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open Set HypoellipticAleksandrov Parabolic
 open SectionTwo TheoremA Evolution
 
+variable (H : Interval) (lower T : ℝ) (u : Point → ℝ)
+
 /-- Smoothness in raw physical coordinates transfers to the fixed packed kinetic coordinates. -/
 theorem reconstruction_physical_smooth_to_packed
-    (H : Interval) (lower T : ℝ) (u : Point → ℝ)
+    
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ (KineticPoint.equivProd 1).symm)
       (KineticPoint.equivProd 1 '' reconstructionStrip H lower T)) :
     ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ reconstructionPhysicalHomeomorph)
       (reconstructionPhysicalHomeomorph ⁻¹' reconstructionStrip H lower T) := by
-  let c : EvolutionVec 1 → ℝ × PDE.Vec 1 × PDE.Vec 1 := fun x =>
+  let c  := fun x =>
     ((evolutionProdCLE 1 x).1, (evolutionProdCLE 1 x).2.2, (evolutionProdCLE 1 x).2.1)
   have hc : ContDiff ℝ (⊤ : ℕ∞) c :=
     (evolutionProdCLE 1).contDiff.fst.prodMk
@@ -25,13 +26,13 @@ theorem reconstruction_physical_smooth_to_packed
   have hmaps : MapsTo c (reconstructionPhysicalHomeomorph ⁻¹' reconstructionStrip H lower T)
       (KineticPoint.equivProd 1 '' reconstructionStrip H lower T) := by
     intro x hx
-    exact ⟨reconstructionPhysicalHomeomorph x, hx, rfl⟩
+    aesop
   have hh := hu.comp hc.contDiffOn hmaps
   exact hh
 
 /-- Actual physical joint smoothness gives native slice regularity at every interior point. -/
 theorem reconstruction_physical_slice_regular
-    (H : Interval) (lower T : ℝ) (u : Point → ℝ)
+    
     (hu : ContDiffOn ℝ (⊤ : ℕ∞) (u ∘ (KineticPoint.equivProd 1).symm)
       (KineticPoint.equivProd 1 '' reconstructionStrip H lower T))
     (p : Point) (hp : sectionTwoPoint p ∈ reconstructionStrip H lower T) :

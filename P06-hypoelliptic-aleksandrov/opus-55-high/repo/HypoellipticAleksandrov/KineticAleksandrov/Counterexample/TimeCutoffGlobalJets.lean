@@ -67,15 +67,17 @@ theorem spatialPackedCutoff_velocityJet_weak_of_flatProfile_source
     (∫ x, spatialPackedCutoffGradient h r mu R t x (Fin.natAdd d k) *
       fderiv ℝ test x (PDE.basisVec (Fin.natAdd d i))) =
       -(∫ x, spatialPackedCutoffVelocityHessian h r mu R t x i k * test x) := by
-  apply weakPartial_global_of_locals (Fin.natAdd d i) _ _ _ test ht hs
+  apply weakPartial_global_of_locals _ _ _ _ test ht hs
   intro D hD
   simpa only [spatialPackedCutoffGradient, spatialPackedCutoffVelocityHessian,
     spatialPackedGradient, Fin.addCases_right] using!
     weakSecond_timeCutoffProfile_of_flatProfile_source hflat hd ha ha1 h r hr hD mu R t i k
 
+variable {d : ℕ}
+
 /-- The proved flattened-profile theorem discharges the complete source interface. -/
 theorem spatialPackedCutoff_weak_first_of_profile
-    {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
+     (hd : 1 ≤ d) {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
     (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
     (mu R t : ℝ) (i : Fin (d + d)) (test : PDE.Vec (d + d) → ℝ)
     (ht : ContDiff ℝ (⊤ : ℕ∞) test) (hs : HasCompactSupport test) :
@@ -86,7 +88,7 @@ theorem spatialPackedCutoff_weak_first_of_profile
 
 /-- The proved flattened-profile theorem discharges the complete source interface. -/
 theorem spatialPackedCutoff_velocityJet_weak_of_profile
-    {d : ℕ} (hd : 1 ≤ d) {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
+     (hd : 1 ≤ d) {alpha : ℝ} (ha : 0 < alpha) (ha1 : alpha < 1)
     (h : CounterProfileStatement d alpha) (r : ℝ) (hr : 0 < r)
     (mu R t : ℝ) (i k : Fin d) (test : PDE.Vec (d + d) → ℝ)
     (ht : ContDiff ℝ (⊤ : ℕ∞) test) (hs : HasCompactSupport test) :

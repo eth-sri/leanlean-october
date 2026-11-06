@@ -32,20 +32,22 @@ theorem euclideanBall_eq_movingDomain_const {n : ℕ} (x : PDE.Vec n) {R : ℝ} 
 /-- The geometric radii `α k = r / 2 · (1/4)ᵏ`. -/
 noncomputable def innerBallRadius (r : ℝ) (k : ℕ) : ℝ := r / 2 * (1 / 4) ^ k
 
-theorem innerBallRadius_pos {r : ℝ} (hr : 0 < r) (k : ℕ) : 0 < innerBallRadius r k := by
+variable {r : ℝ}
+
+theorem innerBallRadius_pos  (hr : 0 < r) (k : ℕ) : 0 < innerBallRadius r k := by
   unfold innerBallRadius; positivity
 
-theorem innerBallRadius_lt {r : ℝ} (hr : 0 < r) (k : ℕ) : innerBallRadius r k < r := by
+theorem innerBallRadius_lt  (hr : 0 < r) (k : ℕ) : innerBallRadius r k < r := by
   unfold innerBallRadius
   have : (1 / 4 : ℝ) ^ k ≤ 1 := pow_le_one₀ (by norm_num) (by norm_num)
   nlinarith
 
 theorem innerBallRadius_succ (r : ℝ) (k : ℕ) :
     innerBallRadius r (k + 1) = innerBallRadius r k / 4 := by
-  unfold innerBallRadius; rw [pow_succ]; ring
+  unfold innerBallRadius; ring
 
 theorem tendsto_innerBallRadius (r : ℝ) : Tendsto (innerBallRadius r) atTop (𝓝 0) := by
-  have := (tendsto_pow_atTop_nhds_zero_of_lt_one (r := (1 / 4 : ℝ)) (by norm_num)
+  have := (tendsto_pow_atTop_nhds_zero_of_lt_one (r := (1 / 4)) (by norm_num)
     (by norm_num)).const_mul (r / 2)
   rw [mul_zero] at this
   exact this
@@ -71,9 +73,9 @@ theorem exists_nested_smooth_inner_balls
   have hext := slabExtension_lipschitz haτ.le hL0 hL
   have hcont := continuous_slabExtension hγ.1 a τ
   have hα := innerBallRadius_pos hr
-  have hex : ∀ k, ∃ g : ℝ → PDE.Vec n, ContDiff ℝ (⊤ : ℕ∞) g ∧
-      (∀ s t, PDE.vecEuclideanNorm (g s - g t) ≤ L * |s - t|) ∧
-      ∀ s, PDE.vecEuclideanNorm (g s - slabExtension γ a τ s) ≤ innerBallRadius r k / 2 :=
+  have hex : ∀ k, ∃ g : ℝ → PDE.Vec n, ContDiff ℝ _ g ∧
+      (∀ s t, PDE.vecEuclideanNorm _ ≤ L * |s - t|) ∧
+      ∀ s, PDE.vecEuclideanNorm _ ≤ innerBallRadius r k / 2 :=
     fun k => exists_smooth_lipschitz_approx hcont hL0 hext (half_pos (hα k))
   choose g hg hgL hgε using hex
   have hclose : ∀ k s, s ∈ Icc a τ →
@@ -87,16 +89,15 @@ theorem exists_nested_smooth_inner_balls
     have hk' : 0 < r - innerBallRadius r (k + 1) := by
       linarith [innerBallRadius_lt hr (k + 1)]
     rw [euclideanBall_eq_movingDomain_const _ hk, euclideanBall_eq_movingDomain_const _ hk']
-    exact movingDomain_approx_mono (innerBallRadius_lt hr k) (hα (k + 1)).le
+    exact movingDomain_approx_mono (innerBallRadius_lt hr k) (hα _).le
       (innerBallRadius_succ r k).le (γ := fun _ => γ s) (γ₁ := fun _ => g k s)
-      (γ₂ := fun _ => g (k + 1) s) (fun _ => hclose k s hs) (fun _ => hclose (k + 1) s hs) 0
+      (γ₂ := fun _ => g _ s) (fun _ => hclose k s hs) (fun _ => hclose _ s hs) 0
   · have hk : ∀ k, 0 < r - innerBallRadius r k := fun k => by
       linarith [innerBallRadius_lt hr k]
     have := iUnion_movingDomain_approx (c := (0 : PDE.Vec n)) (r₀ := r) (hα) (innerBallRadius_lt hr)
       (tendsto_innerBallRadius r) (γ := fun _ => γ s) (γs := fun k _ => g k s)
       (fun k _ => hclose k s hs) 0
-    rw [euclideanBall_eq_movingDomain_const (γ s) hr]
-    rw [← this]
+    rw [euclideanBall_eq_movingDomain_const (γ s) hr, ← this]
     refine iUnion_congr fun k => ?_
     exact euclideanBall_eq_movingDomain_const _ (hk k)
 

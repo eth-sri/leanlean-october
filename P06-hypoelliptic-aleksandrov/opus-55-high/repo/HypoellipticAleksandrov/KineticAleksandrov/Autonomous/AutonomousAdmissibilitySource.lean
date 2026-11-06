@@ -11,7 +11,6 @@ import Mathlib.Tactic
 /-! # Finite Borel comparison sources on compactly contained cylinders -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Autonomous
 open HypoellipticAleksandrov Parabolic Holder Set MeasureTheory
 
@@ -51,29 +50,26 @@ theorem autonomous_test_source {a : ℝ → ℝ → ℝ} {lam Lam : ℝ}
   have hF : ContinuousOn F (closure Q) := ht.abs.add (hv.mul hx0).abs |>.add
     (continuousOn_const.mul hh0.abs)
   have hk := isCompact_closure_backwardCylinder P₀ R hR
-  obtain ⟨B, hB⟩ := (hk.bddAbove_image hF).exists_ge (0 : ℝ)
+  obtain ⟨B, hB⟩ := (hk.bddAbove_image hF).exists_ge (0)
   have hbound (P : Point) (hP : P ∈ Q) : |autonomousScalarOperator a psi P| ≤ B := by
     have hab : |a (P.position 0) (P.velocity 0)| ≤ Lam := by
-      rw [abs_of_nonneg (hlam.le.trans (hb _ _).1)]
-      exact (hb _ _).2
-    have he : |autonomousScalarOperator a psi P| ≤ F P := by
-      unfold autonomousScalarOperator F
-      exact (abs_sub _ _).trans (add_le_add
+      grind
+    have he : |autonomousScalarOperator a psi P| ≤ F P := (abs_sub _ _).trans (add_le_add
         (abs_add_le _ _) (by simpa only [abs_mul] using
-          mul_le_mul_of_nonneg_right hab (abs_nonneg (kineticVelocityHessian psi P 0 0))))
+          mul_le_mul_of_nonneg_right hab (abs_nonneg _)))
     exact he.trans (hB.2 _ (mem_image_of_mem F (hq hP)))
   have hmmax : AEStronglyMeasurable (fun P => max (autonomousScalarOperator a psi P) 0)
       (volume.restrict Q) := by
     have hQ := (isOpen_backwardCylinder P₀ R hR).measurableSet
     have hz := TheoremA.measurable_source_indicator hQ
-      (fun P => max (autonomousScalarOperator a psi P) 0) (hm.max measurable_const)
+      (fun P => max _ 0) (hm.max measurable_const)
     apply hz.aestronglyMeasurable.restrict.congr
     exact TheoremA.source_indicator_ae_eq hQ _
   let : IsFiniteMeasure (volume.restrict Q) :=
     ⟨by simpa only [Measure.restrict_apply_univ] using volume_backwardCylinder_lt_top P₀ hR⟩
   apply MemLp.of_bound hmmax B
   filter_upwards [ae_restrict_mem (isOpen_backwardCylinder P₀ R hR).measurableSet] with P hP
-  rw [Real.norm_eq_abs, abs_of_nonneg (le_max_right _ _)]
-  exact max_le ((le_abs_self _).trans (hbound P hP)) hB.1
+  rw [Real.norm_eq_abs]
+  grind
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

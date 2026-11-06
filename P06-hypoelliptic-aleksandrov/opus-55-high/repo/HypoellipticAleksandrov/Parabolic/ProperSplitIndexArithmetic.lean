@@ -18,14 +18,16 @@ open scoped BigOperators
 
 namespace TimeVelocityMultiIndex
 
+variable {d : ℕ}
+
 /-- A nonzero time--velocity multi-index has positive parabolic weight. -/
 theorem parabolicWeight_pos_of_ne_zero
-    {d : ℕ} {alpha : TimeVelocityMultiIndex d}
+     {alpha : TimeVelocityMultiIndex d}
     (halpha : alpha ≠ 0) :
     0 < alpha.parabolicWeight := by
   by_contra hweight
   apply halpha
-  have hweight_zero : alpha.parabolicWeight = 0 :=
+  have hweight_zero  :=
     Nat.eq_zero_of_not_pos hweight
   have htime : alpha.timeOrder = 0 := by
     unfold TimeVelocityMultiIndex.parabolicWeight at hweight_zero
@@ -37,15 +39,13 @@ theorem parabolicWeight_pos_of_ne_zero
     omega
   funext c
   rcases c with _ | i
-  · exact htime
-  · have hle : alpha.velocity i ≤ alpha.velocity.order := by
-      unfold VelocityMultiIndex.order
-      exact Finset.single_le_sum (fun _ _ => Nat.zero_le _) (Finset.mem_univ i)
-    exact Nat.eq_zero_of_le_zero (hvelocity_order ▸ hle)
+  · aesop
+  · have hle : alpha.velocity i ≤ alpha.velocity.order := Finset.single_le_sum (fun _ _ => Nat.zero_le _) (Finset.mem_univ i)
+    aesop
 
 /-- A proper split loses at least one parabolic weight on its right side. -/
 theorem Split.parabolicWeight_right_add_one_le
-    {d : ℕ} {beta : TimeVelocityMultiIndex d}
+     {beta : TimeVelocityMultiIndex d}
     (gamma : TimeVelocityMultiIndex.Split beta)
     (hproper : gamma.left ≠ 0) :
     gamma.right.parabolicWeight + 1 ≤ beta.parabolicWeight := by
@@ -97,12 +97,11 @@ def properSplitRightValue
     have hloss := gamma.parabolicWeight_right_add_one_le hproper
     omega⟩
 
+variable {d M : ℕ} (beta : ParabolicDerivativeIndex d M) (gamma : TimeVelocityMultiIndex.Split beta.1) (hproper : gamma.left ≠ 0)
+
 /-- The proper two-velocity right factor has the prescribed ordered underlying index. -/
 @[simp] theorem coe_properSplitRightVelocityTwo
-    {d M : ℕ}
-    (beta : ParabolicDerivativeIndex d M)
-    (gamma : TimeVelocityMultiIndex.Split beta.1)
-    (hproper : gamma.left ≠ 0)
+    
     (j i : Fin d) :
     (properSplitRightVelocityTwo beta gamma hproper j i).1 =
       gamma.right + Pi.single (velocityCoord j) 1 +
@@ -111,10 +110,7 @@ def properSplitRightValue
 
 /-- The proper one-velocity right factor has the prescribed underlying index. -/
 @[simp] theorem coe_properSplitRightVelocity
-    {d M : ℕ}
-    (beta : ParabolicDerivativeIndex d M)
-    (gamma : TimeVelocityMultiIndex.Split beta.1)
-    (hproper : gamma.left ≠ 0)
+    
     (j : Fin d) :
     (properSplitRightVelocity beta gamma hproper j).1 =
       gamma.right + Pi.single (velocityCoord j) 1 :=
@@ -122,10 +118,7 @@ def properSplitRightValue
 
 /-- The proper value right factor has the split's right underlying index. -/
 @[simp] theorem coe_properSplitRightValue
-    {d M : ℕ}
-    (beta : ParabolicDerivativeIndex d M)
-    (gamma : TimeVelocityMultiIndex.Split beta.1)
-    (hproper : gamma.left ≠ 0) :
+     :
     (properSplitRightValue beta gamma hproper).1 = gamma.right :=
   rfl
 

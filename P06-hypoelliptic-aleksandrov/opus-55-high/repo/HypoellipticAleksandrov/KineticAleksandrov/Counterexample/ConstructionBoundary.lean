@@ -7,13 +7,14 @@ import Mathlib.Topology.MetricSpace.Thickening
 /-! # The fixed full boundary is preserved by sufficiently small spatial kernels -/
 
 @[expose] public section
-noncomputable section
 namespace HypoellipticAleksandrov.KineticAleksandrov.Counterexample
 open Set Filter
 open scoped Topology
 
+variable {d : ℕ} {alpha : ℝ}
+
 /-- A single positive collar works for every flattening scale and every time. -/
-theorem construction_exists_smoothing_collar {d : ℕ} {alpha : ℝ}
+theorem construction_exists_smoothing_collar 
     (ha : 0 < alpha) (h : CounterProfileStatement d alpha) (T S : ℝ)
     (hS : 0 < S) (hTS : T < S ^ 2)
     (hgeom : ∀ q, profileFunction h q ≤ 1 →
@@ -32,7 +33,6 @@ theorem construction_exists_smoothing_collar {d : ℕ} {alpha : ℝ}
     have hh := hgeom q hq
     have hx := PDE.vecEuclideanNorm_nonneg q.1
     have hv := PDE.vecEuclideanNorm_nonneg q.2
-    have hs3 := pow_pos hS 3
     change PDE.vecNormSq q.1 < (S ^ 3) ^ 2 ∧ PDE.vecNormSq q.2 < S ^ 2
     rw [← PDE.vecEuclideanNorm_sq, ← PDE.vecEuclideanNorm_sq]
     constructor <;> nlinarith
@@ -47,23 +47,23 @@ theorem construction_exists_smoothing_collar {d : ℕ} {alpha : ℝ}
       mem_union, mem_ofPred_eq, or_assoc] using hP.2
   rcases hfaces with ht | hv | hx
   · apply smoothedZeroExtendedProfile_eq_zero_of_time
-    change P.time = T - S ^ 2 at ht
+    
     linarith
   · apply smoothedZeroExtendedProfile_eq_zero_outside_thickening
     intro hq
     have hh := hb (Metric.thickening_mono hphi.le _ hq)
     have he : PDE.vecNormSq P.velocity = S ^ 2 := by
       simpa only [PDE.euclideanSphere, PDE.euclideanSqDist, sub_zero, mem_ofPred_eq] using hv
-    exact (ne_of_lt hh.2) he
+    grind
   · apply smoothedZeroExtendedProfile_eq_zero_outside_thickening
     intro hq
     have hh := hb (Metric.thickening_mono hphi.le _ hq)
     have he : PDE.vecNormSq P.position = (S ^ 3) ^ 2 := by
       simpa only [PDE.euclideanSphere, PDE.euclideanSqDist, sub_zero, mem_ofPred_eq] using hx
-    exact (ne_of_lt hh.1) he
+    aesop
 
 /-- Every sufficiently late concrete mollifier preserves the complete boundary. -/
-theorem construction_smoothed_boundary_eventually {d : ℕ} {alpha : ℝ}
+theorem construction_smoothed_boundary_eventually 
     (ha : 0 < alpha) (h : CounterProfileStatement d alpha) (T S : ℝ)
     (hS : 0 < S) (hTS : T < S ^ 2)
     (hgeom : ∀ q, profileFunction h q ≤ 1 →
@@ -75,6 +75,6 @@ theorem construction_smoothed_boundary_eventually {d : ℕ} {alpha : ℝ}
   obtain ⟨delta, hd, hb⟩ := construction_exists_smoothing_collar ha h T S hS hTS hgeom
   have hr := standardMollifierSequence_rOut_tendsto (G := XV d)
   filter_upwards [hr.eventually (Iio_mem_nhds hd)] with n hn
-  exact hb r mu R (standardMollifierSequence n) hn
+  simp_all
 
 end HypoellipticAleksandrov.KineticAleksandrov.Counterexample

@@ -62,36 +62,32 @@ theorem exists_localizedHigherJetMollification
       B, hB, hbBound, Dloc, hDlocRep, hDlocSupport,
       ρloc, hρloc, hρlocδ, hDlocEq⟩ :=
     exists_localizedHigherJetFamily hU hC hCU D
-  have hDlocSupportU : ∀ beta, tsupport (Dloc.representative beta) ⊆ U :=
+  have hDlocSupportU : ∀ beta, tsupport _ ⊆ U :=
     fun beta ↦ (hDlocSupport beta).trans hbSupport
   let G₀ := Dloc.compactSupportGlobalize hU hDlocSupportU
   have hrootSupport : Function.support (fun z ↦ b z * u z) ⊆ U := by
     intro z hz
     apply hbSupport
-    exact subset_tsupport b (fun hbz ↦ hz (by simp [hbz]))
-  have hzero : Dloc.representative (ParabolicDerivativeIndex.zero d (2 * m))
-      =ᵐ[(volume : Measure (TimeVelocity d))] (fun z ↦ b z * u z) :=
+    exact subset_tsupport b (fun hbz ↦ hz (by grind))
+  have hzero  :=
     Dloc.zero_representative_ae_eq_of_support_subset hU.measurableSet
-      (hDlocSupportU (ParabolicDerivativeIndex.zero d (2 * m))) hrootSupport
-  let G : ParabolicWeakDerivativeFamily d (2 * m) Set.univ
-      (fun z ↦ b z * u z) :=
+      (hDlocSupportU _) hrootSupport
+  let G : ParabolicWeakDerivativeFamily d _ Set.univ
+      _ :=
     { representative := G₀.representative
       memLp := G₀.memLp
       zero_ae := by
-        change Dloc.representative (ParabolicDerivativeIndex.zero d (2 * m))
-          =ᵐ[(volume : Measure (TimeVelocity d)).restrict Set.univ]
-            (fun z ↦ b z * u z)
-        simpa only [Measure.restrict_univ] using hzero
+        aesop
       hasWeakTimeSucc := G₀.hasWeakTimeSucc
       hasWeakVelocitySucc := G₀.hasWeakVelocitySucc }
-  let ρ : ℝ := min ρloc 1
-  let K : Set (TimeVelocity d) := Metric.cthickening 1 (tsupport b)
+  let ρ  := min ρloc 1
+  let K  := Metric.cthickening 1 (tsupport b)
   have hρ : 0 < ρ := lt_min hρloc zero_lt_one
   have hρρloc : ρ ≤ ρloc := min_le_left _ _
   have hρone : ρ ≤ 1 := min_le_right _ _
   have hKCompact : IsCompact K := hbCompact.cthickening
-  have hKMeasurable : MeasurableSet K := hKCompact.isClosed.measurableSet
-  have hKFinite : (volume : Measure (TimeVelocity d)) K < ∞ :=
+  have hKMeasurable  := hKCompact.isClosed.measurableSet
+  have hKFinite : volume K < ∞ :=
     hKCompact.measure_lt_top
   refine ⟨ρ, hρ, K, hKCompact, hKMeasurable, hKFinite,
     b, hbSmooth, hbCompact, hbSupport, G, ?_, ?_, ?_⟩
@@ -106,10 +102,8 @@ theorem exists_localizedHigherJetMollification
         (f := G.ordinaryRepresentative beta) hε).trans
           ((Metric.cthickening_subset_of_subset ε
             ((hDlocSupport beta.toParabolic).trans (by rfl))).trans
-            (Metric.cthickening_mono (hερ.le.trans hρone) (tsupport b)))
+            (Metric.cthickening_mono (hερ.le.trans hρone) _))
     · apply SpacetimeMollifier.spacetimeMollification_congr_on_of_eqOn_thickening hε
-      change Set.EqOn (Dloc.ordinaryRepresentative beta)
-        (D.ordinaryRepresentative beta) (Metric.thickening ε C)
       exact (hDlocEq beta).mono
         (Metric.thickening_subset_cthickening_of_le
           (hερ.le.trans hρρloc) C)

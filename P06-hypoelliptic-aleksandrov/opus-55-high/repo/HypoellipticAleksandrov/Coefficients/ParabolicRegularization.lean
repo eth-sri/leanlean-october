@@ -32,19 +32,19 @@ variable {d : Nat}
 
 /-- The scalar midpoint of the lower and upper ellipticity bounds, times the
 identity matrix. -/
-noncomputable def ellipticityMidpoint (d : Nat) (lam Lam : Real) : PDE.Mat d :=
+def ellipticityMidpoint (d : Nat) (lam Lam : Real) : PDE.Mat d :=
   ((lam + Lam) / 2) • (1 : PDE.Mat d)
 
 /-- A coefficient field obtained by assigning a fixed matrix on a prescribed
 exceptional set. -/
-noncomputable def modifyCoefficientOnNullSet
+def modifyCoefficientOnNullSet
     (A : CoefficientField d) (N : Set (TimeVelocity d)) (M : PDE.Mat d) :
     CoefficientField d := by
   classical
   exact fun t v => if (t, v) ∈ N then M else A t v
 
 /-- A coefficient field extended by a fixed matrix outside a prescribed set. -/
-noncomputable def extendCoefficientByMidpoint
+def extendCoefficientByMidpoint
     (A : CoefficientField d) (U : Set (TimeVelocity d)) (M : PDE.Mat d) :
     CoefficientField d := by
   classical
@@ -52,50 +52,46 @@ noncomputable def extendCoefficientByMidpoint
 
 /-- The entrywise right convolution of a coefficient field with the
 native-norm parabolic mollifier. -/
-noncomputable def parabolicMollifyCoefficient
+def parabolicMollifyCoefficient
     (A : CoefficientField d) (n : Nat) : CoefficientField d :=
   fun t v i j => parabolicConvolution
     (fun z : TimeVelocity d => coefficientAt A z i j)
     (parabolicMollifier d n) (t, v)
 
+variable (A : CoefficientField d)
+
 /-- Evaluation of a null-set modification. -/
 @[simp] theorem coefficientAt_modifyCoefficientOnNullSet
-    (A : CoefficientField d) (N : Set (TimeVelocity d)) (M : PDE.Mat d)
+     (N : Set (TimeVelocity d)) (M : PDE.Mat d)
     (z : TimeVelocity d) :
     coefficientAt (modifyCoefficientOnNullSet A N M) z =
       if z ∈ N then M else coefficientAt A z :=
   by
-    classical
-    rfl
+    aesop
 
 /-- Evaluation of a midpoint extension. -/
 @[simp] theorem coefficientAt_extendCoefficientByMidpoint
-    (A : CoefficientField d) (U : Set (TimeVelocity d)) (M : PDE.Mat d)
+     (U : Set (TimeVelocity d)) (M : PDE.Mat d)
     (z : TimeVelocity d) :
     coefficientAt (extendCoefficientByMidpoint A U M) z =
       if z ∈ U then coefficientAt A z else M :=
   by
-    classical
-    rfl
+    aesop
 
 /-- Evaluation of an entrywise parabolic coefficient mollification. -/
 @[simp] theorem coefficientAt_parabolicMollifyCoefficient
-    (A : CoefficientField d) (n : Nat) (z : TimeVelocity d) (i j : Fin d) :
+     (n : Nat) (z : TimeVelocity d) (i j : Fin d) :
     coefficientAt (parabolicMollifyCoefficient A n) z i j =
       parabolicConvolution (fun y : TimeVelocity d => coefficientAt A y i j)
         (parabolicMollifier d n) z :=
   rfl
 
 private theorem midpoint_isSymm (d : Nat) (lam Lam : Real) :
-    (ellipticityMidpoint d lam Lam).IsSymm := by
-  unfold ellipticityMidpoint
-  exact Matrix.isSymm_one.smul _
+    (ellipticityMidpoint d lam Lam).IsSymm := Matrix.isSymm_one.smul _
 
 private theorem isHermitian_of_isSymm {d : Nat} {M : PDE.Mat d} (hM : M.IsSymm) :
     M.IsHermitian := by
-  apply Matrix.IsHermitian.ext
-  intro i j
-  simpa using hM.apply i j
+  simp_all
 
 private theorem vecDot_smul_right (c : Real) (x : PDE.Vec d) :
     PDE.vecDot x (c • x) = c * PDE.vecNormSq x := by
@@ -104,51 +100,47 @@ private theorem vecDot_smul_right (c : Real) (x : PDE.Vec d) :
   rw [Finset.mul_sum]
   apply Finset.sum_congr rfl
   intro i _hi
-  simp only [Pi.smul_apply, smul_eq_mul]
+  simp only [Pi.smul_apply]
   ring
 
 private theorem quadratic_lower_of_loewner {d : Nat} {lam : Real} {M : PDE.Mat d}
     (hLower : lam • (1 : PDE.Mat d) ≤ M) (x : PDE.Vec d) :
     lam * PDE.vecNormSq x ≤ PDE.vecDot x (Matrix.mulVec M x) := by
-  have hgap : (M - lam • (1 : PDE.Mat d)).PosSemidef := Matrix.le_iff.mp hLower
+  have hgap : (M - lam • (1)).PosSemidef := Matrix.le_iff.mp hLower
   have hquad := hgap.dotProduct_mulVec_nonneg x
-  simp only [star_trivial, Matrix.sub_mulVec, Matrix.smul_mulVec,
-    Matrix.one_mulVec, dotProduct_sub, dotProduct_smul, smul_eq_mul] at hquad
-  simpa only [PDE.vecNormSq, PDE.vecDot, dotProduct, mul_comm] using sub_nonneg.mp hquad
+  simp only [Matrix.sub_mulVec, Matrix.smul_mulVec] at hquad
+  aesop
 
 private theorem quadratic_upper_of_loewner {d : Nat} {Lam : Real} {M : PDE.Mat d}
     (hUpper : M ≤ Lam • (1 : PDE.Mat d)) (x : PDE.Vec d) :
     PDE.vecDot x (Matrix.mulVec M x) ≤ Lam * PDE.vecNormSq x := by
-  have hgap : (Lam • (1 : PDE.Mat d) - M).PosSemidef := Matrix.le_iff.mp hUpper
+  have hgap : (Lam • (1) - M).PosSemidef := Matrix.le_iff.mp hUpper
   have hquad := hgap.dotProduct_mulVec_nonneg x
-  simp only [star_trivial, Matrix.sub_mulVec, Matrix.smul_mulVec,
-    Matrix.one_mulVec, dotProduct_sub, dotProduct_smul, smul_eq_mul] at hquad
-  simpa only [PDE.vecNormSq, PDE.vecDot, dotProduct, mul_comm] using sub_nonneg.mp hquad
+  simp only [Matrix.sub_mulVec, Matrix.smul_mulVec] at hquad
+  aesop
 
 private theorem isSymm_of_lower_ellipticity {d : Nat} {lam : Real} {M : PDE.Mat d}
     (hLower : lam • (1 : PDE.Mat d) ≤ M) : M.IsSymm := by
-  have hgap : (M - lam • (1 : PDE.Mat d)).PosSemidef := Matrix.le_iff.mp hLower
+  have hgap : (M - lam • (1)).PosSemidef := Matrix.le_iff.mp hLower
   apply Matrix.IsSymm.ext
   intro i j
   have hherm := hgap.isHermitian.apply i j
   by_cases hij : i = j
-  · subst j
-    rfl
+  · simp_all
   · have hji : j ≠ i := Ne.symm hij
-    simpa [Matrix.sub_apply, Matrix.smul_apply, Matrix.one_apply, hij, hji] using hherm
+    simp_all
 
 private theorem sum_single_mul {d : Nat} (i : Fin d) (f : Fin d → Real) :
     ∑ x : Fin d, (Pi.single i (1 : Real) : PDE.Vec d) x * f x = f i := by
   rw [Finset.sum_eq_single i]
   · simp
-  · intro b _hb hbi
-    simp [hbi]
+  · simp_all
   · simp
 
 private theorem quadratic_single {d : Nat} (M : PDE.Mat d) (i : Fin d) :
     PDE.vecDot (Pi.single i 1) (Matrix.mulVec M (Pi.single i 1)) = M i i := by
-  simp only [PDE.vecDot, Matrix.mulVec_single_one]
-  exact sum_single_mul i fun x => M x i
+  simp only [Matrix.mulVec_single_one]
+  exact sum_single_mul i _
 
 private theorem quadratic_single_add {d : Nat} (M : PDE.Mat d) (i j : Fin d) :
     PDE.vecDot (Pi.single i 1 + Pi.single j 1)
@@ -156,7 +148,7 @@ private theorem quadratic_single_add {d : Nat} (M : PDE.Mat d) (i j : Fin d) :
         M i i + M i j + M j i + M j j := by
   simp only [PDE.vecDot, Matrix.mulVec_add, Matrix.mulVec_single_one, Pi.add_apply,
     mul_add, add_mul, Finset.sum_add_distrib]
-  rw [sum_single_mul i, sum_single_mul i, sum_single_mul j, sum_single_mul j]
+  rw [sum_single_mul, sum_single_mul i, sum_single_mul, sum_single_mul]
   simp only [Matrix.col_apply]
   ring
 
@@ -164,10 +156,10 @@ private theorem vecNormSq_single_add_le_four {d : Nat} (i j : Fin d) :
     PDE.vecNormSq (Pi.single i 1 + Pi.single j 1) ≤ 4 := by
   by_cases hij : i = j
   · subst j
-    simp [PDE.vecNormSq, PDE.vecDot, Pi.add_apply, add_mul, mul_add,
+    simp [PDE.vecNormSq, PDE.vecDot, add_mul,
       Finset.sum_add_distrib, sum_single_mul]
     norm_num
-  · simp [PDE.vecNormSq, PDE.vecDot, Pi.add_apply, add_mul, mul_add,
+  · simp [PDE.vecNormSq, PDE.vecDot, add_mul,
       Finset.sum_add_distrib, sum_single_mul, hij]
     norm_num
 
@@ -179,7 +171,7 @@ private theorem coefficient_entry_abs_le {d : Nat} {lam Lam : Real} {M : PDE.Mat
     (i j : Fin d) :
     |M i j| ≤ 3 * (|lam| + |Lam|) := by
   let q : PDE.Vec d := Pi.single i 1 + Pi.single j 1
-  have hqnonneg : 0 ≤ PDE.vecNormSq q := PDE.vecNormSq_nonneg q
+  have hqnonneg  := PDE.vecNormSq_nonneg q
   have hqle : PDE.vecNormSq q ≤ 4 := vecNormSq_single_add_le_four i j
   have hquadLower := quadratic_lower_of_loewner hLower q
   have hquadUpper := quadratic_upper_of_loewner hUpper q
@@ -191,7 +183,7 @@ private theorem coefficient_entry_abs_le {d : Nat} {lam Lam : Real} {M : PDE.Mat
       have hmul' : |lam| * PDE.vecNormSq q ≤ |lam| * 4 :=
         mul_le_mul_of_nonneg_left hqle (abs_nonneg lam)
       nlinarith
-    exact hfour.trans (hmul.trans hquadLower)
+    linarith
   have hquadUpper' : PDE.vecDot q (Matrix.mulVec M q) ≤ 4 * |Lam| := by
     have hLam : Lam ≤ |Lam| := le_abs_self Lam
     have hmul : Lam * PDE.vecNormSq q ≤ |Lam| * PDE.vecNormSq q :=
@@ -200,30 +192,20 @@ private theorem coefficient_entry_abs_le {d : Nat} {lam Lam : Real} {M : PDE.Mat
       have hmul' : |Lam| * PDE.vecNormSq q ≤ |Lam| * 4 :=
         mul_le_mul_of_nonneg_left hqle (abs_nonneg Lam)
       nlinarith
-    exact hquadUpper.trans (hmul.trans hfour)
+    linarith
   have hdiagLower (k : Fin d) : -|lam| ≤ M k k := by
     have h := quadratic_lower_of_loewner hLower (Pi.single k 1)
     rw [quadratic_single, vecNormSq_single] at h
-    have hk : lam ≤ M k k := by simpa only [mul_one] using h
-    exact (neg_abs_le lam).trans hk
+    grind
   have hdiagUpper (k : Fin d) : M k k ≤ |Lam| := by
     have h := quadratic_upper_of_loewner hUpper (Pi.single k 1)
     rw [quadratic_single, vecNormSq_single] at h
-    have hk : M k k ≤ Lam := by simpa only [mul_one] using h
-    exact hk.trans (le_abs_self Lam)
+    grind
   have hsymm := isSymm_of_lower_ellipticity hLower
   have hquad : PDE.vecDot q (Matrix.mulVec M q) = M i i + 2 * M i j + M j j := by
-    dsimp only [q]
     rw [quadratic_single_add, hsymm.apply i j]
     ring
-  rw [abs_le]
-  constructor
-  · rw [hquad] at hquadLower'
-    have hsum : 0 ≤ |lam| + |Lam| := add_nonneg (abs_nonneg _) (abs_nonneg _)
-    nlinarith [hdiagUpper i, hdiagUpper j, abs_nonneg lam, abs_nonneg Lam]
-  · rw [hquad] at hquadUpper'
-    have hsum : 0 ≤ |lam| + |Lam| := add_nonneg (abs_nonneg _) (abs_nonneg _)
-    nlinarith [hdiagLower i, hdiagLower j, abs_nonneg lam, abs_nonneg Lam]
+  grind
 
 private theorem locallyIntegrable_coefficient_entry
     {d : Nat} {lam Lam : Real} {A : CoefficientField d}
@@ -233,7 +215,7 @@ private theorem locallyIntegrable_coefficient_entry
   have hmeas : Measurable (fun z : TimeVelocity d => coefficientAt A z i j) :=
     (measurable_pi_iff.mp (measurable_pi_iff.mp hA i) j)
   intro z
-  rcases (volume : Measure (TimeVelocity d)).finiteAt_nhds z with ⟨V, hV, hVfinite⟩
+  rcases volume.finiteAt_nhds z with ⟨V, hV, hVfinite⟩
   refine ⟨V, hV, IntegrableOn.of_bound hVfinite hmeas.aestronglyMeasurable
     (3 * (|lam| + |Lam|)) ?_⟩
   filter_upwards with y
@@ -266,27 +248,24 @@ private theorem midpoint_lower (d : Nat) (lam Lam : Real) (hLam : lam ≤ Lam) :
   intro x
   unfold ellipticityMidpoint
   rw [Matrix.smul_mulVec, Matrix.one_mulVec, vecDot_smul_right]
-  have hx : 0 ≤ PDE.vecNormSq x := PDE.vecNormSq_nonneg x
-  have hmid : lam ≤ (lam + Lam) / 2 := by linarith
+  have hx  := PDE.vecNormSq_nonneg x
   nlinarith
 
 private theorem midpoint_upper (d : Nat) (lam Lam : Real) (hLam : lam ≤ Lam) :
     ellipticityMidpoint d lam Lam ≤ Lam • (1 : PDE.Mat d) := by
-  rw [Matrix.le_iff]
   apply Matrix.PosSemidef.of_dotProduct_mulVec_nonneg
   · exact isHermitian_of_isSymm <|
       (Matrix.isSymm_one.smul Lam).sub (midpoint_isSymm d lam Lam)
   · intro x
     unfold ellipticityMidpoint
-    rw [Matrix.sub_mulVec, Matrix.smul_mulVec, Matrix.one_mulVec,
+    rw [Matrix.sub_mulVec, Matrix.smul_mulVec,
       Matrix.smul_mulVec, Matrix.one_mulVec, dotProduct_sub]
     have hx : 0 ≤ PDE.vecNormSq x := PDE.vecNormSq_nonneg x
-    have hmid : (lam + Lam) / 2 ≤ Lam := by linarith
     have hcalc : 0 ≤ PDE.vecDot x (Lam • x) -
         PDE.vecDot x (((lam + Lam) / 2) • x) := by
       rw [vecDot_smul_right, vecDot_smul_right]
       nlinarith
-    simpa only [PDE.vecDot, dotProduct, star_trivial] using hcalc
+    positivity
 
 /-- Midpoint extension preserves exact lower and upper ellipticity and
 symmetry globally. -/
@@ -308,7 +287,7 @@ theorem extendCoefficientByMidpoint_global_ellipticity
     by_cases hUV : (t, v) ∈ U
     · simpa only [extendCoefficientByMidpoint, if_pos hUV, coefficientAt,
         Function.uncurry_def] using
-        hAbarSymm (t, v) hUV
+        hAbarSymm _ hUV
     · simpa only [extendCoefficientByMidpoint, if_neg hUV] using
         midpoint_isSymm d lam Lam
   constructor
@@ -316,14 +295,14 @@ theorem extendCoefficientByMidpoint_global_ellipticity
     by_cases hUV : (t, v) ∈ U
     · simpa only [extendCoefficientByMidpoint, if_pos hUV, coefficientAt,
         Function.uncurry_def] using
-        hAbarLower (t, v) hUV
+        hAbarLower _ hUV
     · simpa only [extendCoefficientByMidpoint, if_neg hUV] using
         midpoint_lower d lam Lam hLam
   · intro t v
     by_cases hUV : (t, v) ∈ U
     · simpa only [extendCoefficientByMidpoint, if_pos hUV, coefficientAt,
         Function.uncurry_def] using
-        hAbarUpper (t, v) hUV
+        hAbarUpper _ hUV
     · simpa only [extendCoefficientByMidpoint, if_neg hUV] using
         midpoint_upper d lam Lam hLam
 
@@ -334,14 +313,12 @@ theorem isSmoothCoefficient_parabolicMollifyCoefficient
     (hLower : HasLowerEllipticity lam A)
     (hUpper : HasUpperEllipticity Lam A) (n : Nat) :
     IsSmoothCoefficient (parabolicMollifyCoefficient A n) := by
-  change ContDiff Real (⊤ : ℕ∞)
-    (fun z i j => coefficientAt (parabolicMollifyCoefficient A n) z i j)
+  change ContDiff Real _
+    (fun z i j => coefficientAt _ z i j)
   rw [contDiff_pi]
   intro i
   rw [contDiff_pi]
   intro j
-  change ContDiff Real (⊤ : ℕ∞) (parabolicConvolution
-    (fun z : TimeVelocity d => coefficientAt A z i j) (parabolicMollifier d n))
   exact contDiff_parabolicConvolution
     (locallyIntegrable_coefficient_entry hA hLower hUpper i j)
     (contDiff_parabolicMollifier d n) (hasCompactSupport_parabolicMollifier d n)
@@ -351,8 +328,6 @@ theorem isSymmetricCoefficient_parabolicMollifyCoefficient
     (d : Nat) (lam Lam : Real) (A : CoefficientField d)
     (hSymm : IsSymmetricCoefficient A) (n : Nat) :
     IsSymmetricCoefficient (parabolicMollifyCoefficient A n) := by
-  let _ := lam
-  let _ := Lam
   intro t v
   apply Matrix.IsSymm.ext
   intro i j
@@ -361,7 +336,7 @@ theorem isSymmetricCoefficient_parabolicMollifyCoefficient
     funext z
     exact hSymm z.1 z.2 |>.apply i j
   simp only [parabolicMollifyCoefficient]
-  rw [hentries]
+  simp_all
 
 private theorem locallyIntegrable_coefficient_quadratic
     {d : Nat} {lam Lam : Real} {A : CoefficientField d}
@@ -374,21 +349,17 @@ private theorem locallyIntegrable_coefficient_quadratic
     (locallyIntegrable_coefficient_entry hA hLower hUpper i j).smul (x i * x j)
   have hrow (i : Fin d) : LocallyIntegrable
       (fun z : TimeVelocity d => ∑ j : Fin d, (x i * x j) • coefficientAt A z i j) volume := by
-    simpa only [Finset.sum_const_zero, Finset.sum_apply] using
+    simpa using
       locallyIntegrable_finset_sum Finset.univ (fun j _hj => hterm i j)
   have hsum : LocallyIntegrable
       (fun z : TimeVelocity d => ∑ i : Fin d, ∑ j : Fin d,
         (x i * x j) • coefficientAt A z i j) volume := by
-    simpa only [Finset.sum_const_zero, Finset.sum_apply] using
+    simpa using
       locallyIntegrable_finset_sum Finset.univ (fun i _hi => hrow i)
   convert hsum using 1
   ext z
   simp only [PDE.vecDot, Matrix.mulVec, dotProduct, Finset.mul_sum, smul_eq_mul]
-  apply Finset.sum_congr rfl
-  intro i _hi
-  apply Finset.sum_congr rfl
-  intro j _hj
-  ring
+  grind
 
 private theorem quadratic_parabolicMollifyCoefficient_eq
     {d : Nat} {lam Lam : Real} {A : CoefficientField d}
@@ -401,14 +372,10 @@ private theorem quadratic_parabolicMollifyCoefficient_eq
         (fun y : TimeVelocity d =>
           PDE.vecDot x.2 (Matrix.mulVec (coefficientAt A y) x.2))
         (parabolicMollifier d n) z := by
-  let rhoz : TimeVelocity d → Real := fun y => parabolicMollifier d n (z - y)
-  have hrhozCont : Continuous rhoz := by
-    dsimp only [rhoz]
-    exact (contDiff_parabolicMollifier d n).continuous.comp
+  let rhoz  := fun y => parabolicMollifier d n (z - y)
+  have hrhozCont : Continuous rhoz := (contDiff_parabolicMollifier d n).continuous.comp
       (continuous_const.sub continuous_id)
-  have hrhozCompact : HasCompactSupport rhoz := by
-    dsimp only [rhoz]
-    exact (hasCompactSupport_parabolicMollifier d n).comp_homeomorph (Homeomorph.subLeft z)
+  have hrhozCompact : HasCompactSupport rhoz := (hasCompactSupport_parabolicMollifier d n).comp_homeomorph (Homeomorph.subLeft z)
   have hint (i j : Fin d) : Integrable
       (fun y : TimeVelocity d => (x.2 i * x.2 j) * coefficientAt A y i j * rhoz y) volume := by
     have hloc :=
@@ -434,9 +401,7 @@ private theorem quadratic_parabolicMollifyCoefficient_eq
             rw [Finset.sum_mul]
       _ = ∑ j : Fin d, x.2 i * x.2 j * coefficientAt A y i j * rhoz y := by
             rw [Finset.mul_sum]
-            apply Finset.sum_congr rfl
-            intro j _hj
-            ring
+            grind
   rw [hsum, integral_finset_sum Finset.univ]
   · rw [show (fun i : Fin d => ∫ y, ∑ j : Fin d,
         (x.2 i * x.2 j) * coefficientAt A y i j * rhoz y) =
@@ -444,21 +409,15 @@ private theorem quadratic_parabolicMollifyCoefficient_eq
           (x.2 i * x.2 j) * coefficientAt A y i j * rhoz y by
       funext i
       rw [integral_finset_sum Finset.univ]
-      intro j _hj
-      exact hint i j]
+      fun_prop]
     apply Finset.sum_congr rfl
     intro i _hi
     rw [Finset.mul_sum]
     apply Finset.sum_congr rfl
     intro j _hj
     rw [← integral_mul_const, ← integral_const_mul]
-    apply integral_congr_ae
-    filter_upwards with y
-    ring
-  · intro i _hi
-    apply integrable_finset_sum
-    intro j _hj
-    exact hint i j
+    grind
+  fun_prop
 
 private theorem parabolicConvolution_eq_normed_left
     {d : Nat} (f : TimeVelocity d → Real) (n : Nat) (z : TimeVelocity d) :
@@ -466,10 +425,9 @@ private theorem parabolicConvolution_eq_normed_left
       (parabolicMollifier d n ⋆[ContinuousLinearMap.lsmul Real Real,
         (volume : Measure (TimeVelocity d))] f) z := by
   rw [← convolution_flip]
-  simp only [parabolicConvolution, convolution_def]
   apply integral_congr_ae
   filter_upwards with y
-  change f y * parabolicMollifier d n (z - y) =
+  change f y * parabolicMollifier d n _ =
     parabolicMollifier d n (z - y) * f y
   ring
 
@@ -490,7 +448,7 @@ theorem hasLowerEllipticity_parabolicMollifyCoefficient
   let q : TimeVelocity d := (t, v)
   let quad : TimeVelocity d → Real := fun y =>
     PDE.vecDot x (Matrix.mulVec (coefficientAt A y) x)
-  let c : Real := lam * PDE.vecNormSq x
+  let c  := lam * PDE.vecNormSq x
   have hquadLoc : LocallyIntegrable quad volume :=
     locallyIntegrable_coefficient_quadratic hA hLower hUpper x
   have hconstLoc : LocallyIntegrable (fun _ : TimeVelocity d => c) volume :=
@@ -506,25 +464,20 @@ theorem hasLowerEllipticity_parabolicMollifyCoefficient
     (parabolicMollifier_nonneg d n) hpoint
   have hconst :
       (parabolicMollifier d n ⋆[ContinuousLinearMap.lsmul Real Real, volume]
-        (fun _ : TimeVelocity d => c)) q = c := by
-    exact ContDiffBump.normed_convolution_eq_right
+        (fun _ : TimeVelocity d => c)) q = c := ContDiffBump.normed_convolution_eq_right
       (φ := parabolicMollifierBump d n) (μ := volume) (fun _ _ => rfl)
   have hquad :
       PDE.vecDot x (Matrix.mulVec
         (coefficientAt (parabolicMollifyCoefficient A n) q) x) =
         (parabolicMollifier d n ⋆[ContinuousLinearMap.lsmul Real Real, volume] quad) q := by
     calc
-      PDE.vecDot x (Matrix.mulVec
-          (coefficientAt (parabolicMollifyCoefficient A n) q) x) =
-          parabolicConvolution quad (parabolicMollifier d n) q := by
-            simpa only [quad] using
+      PDE.vecDot x _ =
+          parabolicConvolution quad _ q := by
+            simpa using
               (quadratic_parabolicMollifyCoefficient_eq hA hLower hUpper n (0, x) q)
       _ = (parabolicMollifier d n ⋆[ContinuousLinearMap.lsmul Real Real, volume] quad) q :=
         parabolicConvolution_eq_normed_left quad n q
-  change c ≤ PDE.vecDot x (Matrix.mulVec
-    (coefficientAt (parabolicMollifyCoefficient A n) q) x)
-  rw [hquad]
-  exact hconst.symm.le.trans hmono
+  aesop
 
 /-- Entrywise mollification preserves the exact upper Loewner ellipticity
 bound. -/
@@ -537,7 +490,6 @@ theorem hasUpperEllipticity_parabolicMollifyCoefficient
     HasUpperEllipticity Lam (parabolicMollifyCoefficient A n) := by
   intro t v
   have hMollSymm := isSymmetricCoefficient_parabolicMollifyCoefficient d lam Lam A hSymm n
-  rw [Matrix.le_iff]
   apply Matrix.PosSemidef.of_dotProduct_mulVec_nonneg
   · exact isHermitian_of_isSymm <|
       (Matrix.isSymm_one.smul Lam).sub
@@ -562,33 +514,29 @@ theorem hasUpperEllipticity_parabolicMollifyCoefficient
       (parabolicMollifier_nonneg d n) hpoint
     have hconst :
         (parabolicMollifier d n ⋆[ContinuousLinearMap.lsmul Real Real, volume]
-          (fun _ : TimeVelocity d => c)) q = c := by
-      exact ContDiffBump.normed_convolution_eq_right
+          (fun _ : TimeVelocity d => c)) q = c := ContDiffBump.normed_convolution_eq_right
         (φ := parabolicMollifierBump d n) (μ := volume) (fun _ _ => rfl)
     have hquad :
         PDE.vecDot x (Matrix.mulVec
           (coefficientAt (parabolicMollifyCoefficient A n) q) x) =
           (parabolicMollifier d n ⋆[ContinuousLinearMap.lsmul Real Real, volume] quad) q := by
       calc
-        PDE.vecDot x (Matrix.mulVec
-            (coefficientAt (parabolicMollifyCoefficient A n) q) x) =
-            parabolicConvolution quad (parabolicMollifier d n) q := by
-              simpa only [quad] using
+        PDE.vecDot x _ =
+            parabolicConvolution quad _ q := by
+              simpa using
                 (quadratic_parabolicMollifyCoefficient_eq hA hLower hUpper n (0, x) q)
         _ = (parabolicMollifier d n ⋆[ContinuousLinearMap.lsmul Real Real, volume] quad) q :=
           parabolicConvolution_eq_normed_left quad n q
     have hupperQuad : PDE.vecDot x (Matrix.mulVec
         (coefficientAt (parabolicMollifyCoefficient A n) q) x) ≤ c := by
-      rw [hquad]
-      exact hmono.trans hconst.le
+      simp_all
     have hcalc : 0 ≤ star x ⬝ᵥ
         (Matrix.mulVec (Lam • (1 : PDE.Mat d) -
           coefficientAt (parabolicMollifyCoefficient A n) q) x) := by
-      simp only [star_trivial, Matrix.sub_mulVec, Matrix.smul_mulVec,
-        Matrix.one_mulVec, dotProduct_sub, dotProduct_smul, smul_eq_mul]
-      simpa only [c, PDE.vecNormSq, PDE.vecDot, dotProduct, mul_comm] using
-        sub_nonneg.mpr hupperQuad
-    exact hcalc
+      simp only [Matrix.sub_mulVec, Matrix.smul_mulVec,
+        Matrix.one_mulVec, dotProduct_sub, dotProduct_smul]
+      positivity
+    aesop
 
 /-- The right parabolic convolution converges almost everywhere for
 every locally integrable scalar function. -/
@@ -602,10 +550,8 @@ theorem tendsto_ae_parabolicConvolution_of_locallyIntegrable
   have hratio : ∀ᶠ n : Nat in atTop,
       (parabolicMollifierBump d n).rOut ≤ 2 * (parabolicMollifierBump d n).rIn :=
     Filter.Eventually.of_forall fun n => by
-      rw [parabolicMollifierBump_rOut]
       change parabolicMollifierScale n ≤ 2 * (parabolicMollifierScale n / 2)
-      ring_nf
-      exact le_rfl
+      linarith
   have hleft := ContDiffBump.ae_convolution_tendsto_right_of_locallyIntegrable
     (φ := fun n : Nat => parabolicMollifierBump d n)
     tendsto_parabolicMollifierScale_zero hratio hf

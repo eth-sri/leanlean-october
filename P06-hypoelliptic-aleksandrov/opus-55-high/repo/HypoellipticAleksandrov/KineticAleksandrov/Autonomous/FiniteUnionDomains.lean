@@ -21,16 +21,18 @@ structure FiniteIntervalUnion where
 def FiniteIntervalUnion.carrier (H : FiniteIntervalUnion) : Set ℝ :=
   ⋃ i, (H.component i).carrier
 
+variable (H : FiniteIntervalUnion)
+
 /-- Every component is contained in the velocity union. -/
-theorem FiniteIntervalUnion.component_subset (H : FiniteIntervalUnion) (i : Fin H.count) :
+theorem FiniteIntervalUnion.component_subset  (i : Fin H.count) :
     (H.component i).carrier ⊆ H.carrier := subset_iUnion (fun j => (H.component j).carrier) i
 
 /-- The union is open in the physical scalar velocity coordinate. -/
-theorem FiniteIntervalUnion.isOpen_carrier (H : FiniteIntervalUnion) : IsOpen H.carrier :=
+theorem FiniteIntervalUnion.isOpen_carrier  : IsOpen H.carrier :=
   isOpen_iUnion (fun _ => isOpen_Ioo)
 
 /-- A velocity in the union belongs to exactly one component. -/
-theorem FiniteIntervalUnion.existsUnique_component (H : FiniteIntervalUnion)
+theorem FiniteIntervalUnion.existsUnique_component 
     {v : ℝ} (hv : v ∈ H.carrier) : ∃! i, v ∈ (H.component i).carrier := by
   obtain ⟨i, hi⟩ := mem_iUnion.mp hv
   refine ⟨i, hi, ?_⟩
@@ -43,13 +45,15 @@ def FiniteIntervalUnion.componentIndex (H : FiniteIntervalUnion)
     (v : ℝ) (hv : v ∈ H.carrier) : Fin H.count :=
   (H.existsUnique_component hv).exists.choose
 
+variable (H : FiniteIntervalUnion)
+
 /-- The selected component contains the given physical velocity. -/
-theorem FiniteIntervalUnion.mem_componentIndex (H : FiniteIntervalUnion)
+theorem FiniteIntervalUnion.mem_componentIndex 
     (v : ℝ) (hv : v ∈ H.carrier) : v ∈ (H.component (H.componentIndex v hv)).carrier :=
   (H.existsUnique_component hv).exists.choose_spec
 
 /-- Any certified component gives the same selected index; there is no choice dependence. -/
-theorem FiniteIntervalUnion.componentIndex_eq (H : FiniteIntervalUnion)
+theorem FiniteIntervalUnion.componentIndex_eq 
     {v : ℝ} (hv : v ∈ H.carrier) (i : Fin H.count) (hi : v ∈ (H.component i).carrier) :
     H.componentIndex v hv = i := by
   obtain ⟨j, hj, hu⟩ := H.existsUnique_component hv
@@ -89,10 +93,6 @@ def Interval.toFiniteUnion (H : Interval) : FiniteIntervalUnion where
 theorem Interval.toFiniteUnion_carrier (H : Interval) : H.toFiniteUnion.carrier = H.carrier := by
   ext v
   simp only [FiniteIntervalUnion.carrier, Interval.toFiniteUnion, mem_iUnion]
-  constructor
-  · rintro ⟨i, hi⟩
-    exact hi
-  · intro hv
-    exact ⟨0, hv⟩
+  simp
 
 end HypoellipticAleksandrov.KineticAleksandrov.Autonomous

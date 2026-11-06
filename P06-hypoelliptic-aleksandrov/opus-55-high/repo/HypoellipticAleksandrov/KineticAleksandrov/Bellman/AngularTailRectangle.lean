@@ -28,8 +28,8 @@ theorem bellmanAngularTailRectangle_isCompact : IsCompact bellmanAngularTailRect
   have hK : IsCompact (Icc (0 : ℝ) 1 ×ˢ {v : ℝ | 1 ≤ |v| ∧ |v| ≤ 2}) :=
     isCompact_Icc.prod bellman_velocity_annulus_compact
   have he : bellmanAngularTailRectangle =
-      (Subtype.val : BellmanPuncturedPlane → ℝ × ℝ) ⁻¹'
-        (Icc (0 : ℝ) 1 ×ˢ {v : ℝ | 1 ≤ |v| ∧ |v| ≤ 2}) := by
+      Subtype.val ⁻¹'
+        (Icc (0) 1 ×ˢ {v : ℝ | 1 ≤ |v| ∧ |v| ≤ 2}) := by
     ext q
     simp only [bellmanAngularTailRectangle, mem_ofPred_eq, mem_preimage,
       mem_prod, mem_Icc, and_assoc]
@@ -38,9 +38,7 @@ theorem bellmanAngularTailRectangle_isCompact : IsCompact bellmanAngularTailRect
   intro q hq
   refine ⟨⟨q, ?_⟩, rfl⟩
   intro hz
-  have hv := hq.2.1
-  rw [hz] at hv
-  norm_num at hv
+  grind
 
 /-- In radial coordinates the source rectangle contains the full velocity strips at large
 angle. -/
@@ -49,9 +47,6 @@ theorem bellmanAngularTail_strip_subset :
       1 ≤ |w.1.val * w.2| ∧ |w.1.val * w.2| ≤ 2} ⊆
       bellmanAngularPoint ⁻¹' bellmanAngularTailRectangle := by
   intro w hw
-  change 2 < |w.2| ∧ 1 ≤ |w.1.val * w.2| ∧ |w.1.val * w.2| ≤ 2 at hw
-  change 0 ≤ w.1.val ^ 3 ∧ w.1.val ^ 3 ≤ 1 ∧
-    1 ≤ |w.1.val * w.2| ∧ |w.1.val * w.2| ≤ 2
   have hs : w.1.val ≤ 1 := by
     have hv := hw.2.2
     rw [abs_mul, abs_of_pos w.1.property] at hv
@@ -73,7 +68,7 @@ theorem bellmanAngularTail_strip_finite (β : ℝ) (μ : Measure BellmanPuncture
     rw [hrep, bellmanAngularRep, Measure.map_apply continuous_bellmanAngularPoint.measurable hm]
   calc
     _ ≤ (bellmanRadialWeight β).prod F
-        (bellmanAngularPoint ⁻¹' bellmanAngularTailRectangle) :=
+        _ :=
       measure_mono bellmanAngularTail_strip_subset
     _ = _ := he
     _ ≤ μ bellmanAngularTailRectangle := Measure.restrict_le_self _

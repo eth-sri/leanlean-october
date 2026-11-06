@@ -32,30 +32,30 @@ private def affineReverseTimeDerivative (T : ℝ) : ℝ → ℝ := fun _tau => -
 private theorem memLp_affine_reverseTime_multiplier {T : ℝ} (hT : 0 < T) :
     MemLp (affineReverseTimeMultiplier T) (∞ : ℝ≥0∞) (reverseTimeVolume T) := by
   letI : IsFiniteMeasure (reverseTimeVolume T) := by
-    change IsFiniteMeasure (volume.restrict (Ioo (0 : ℝ) T))
+    change IsFiniteMeasure (volume.restrict (Ioo _ T))
     infer_instance
   apply memLp_of_bounded (a := 0) (b := 1) ?_ ?_ _
   · filter_upwards [ae_restrict_mem measurableSet_Ioo] with tau ht
     change 1 - tau / T ∈ Icc 0 1
     have hquotient_nonneg : 0 ≤ tau / T := le_of_lt (div_pos ht.1 hT)
     have hquotient_le_one : tau / T ≤ 1 := (div_le_one₀ hT).2 ht.2.le
-    constructor <;> linarith
+    simp_all
   · exact (continuous_const.sub (continuous_id.div_const T)).aestronglyMeasurable
 
 private theorem memLp_affine_reverseTime_deriv {T : ℝ} (_hT : 0 < T) :
     MemLp (affineReverseTimeDerivative T) (∞ : ℝ≥0∞) (reverseTimeVolume T) := by
   letI : IsFiniteMeasure (reverseTimeVolume T) := by
-    change IsFiniteMeasure (volume.restrict (Ioo (0 : ℝ) T))
+    change IsFiniteMeasure (volume.restrict (Ioo _ T))
     infer_instance
   exact memLp_const _
 
-private noncomputable def affineReverseTimeVTest
+private def affineReverseTimeVTest
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
     (hT : 0 < T) (v : H10HilbertGraph hΩ) : ReverseTimeL2V hΩ T :=
   reverseTimeSeparatedVTestOfMemLp hΩ (affineReverseTimeMultiplier T)
     (memLp_affine_reverseTime_multiplier hT) v
 
-private noncomputable def affineReverseTimeDerivativeVTest
+private def affineReverseTimeDerivativeVTest
     {d : ℕ} {Ω : Set (PDE.Vec d)} (hΩ : IsOpen Ω) (T : ℝ)
     (hT : 0 < T) (v : H10HilbertGraph hΩ) : ReverseTimeL2V hΩ T :=
   reverseTimeSeparatedVTestOfMemLp hΩ (affineReverseTimeDerivative T)
@@ -71,17 +71,17 @@ private theorem reverseTimeDualPairingRightCLM_ofMemLp_eq_integral
       ∫ tau, (g tau) v * q tau ∂reverseTimeVolume T := by
   calc
     reverseTimeDualPairingRightCLM hΩ T
-        (reverseTimeSeparatedVTestOfMemLp hΩ q hq v) g =
+        _ g =
         reverseTimeDualPairingCLM hΩ T g
-          (reverseTimeSeparatedVTestOfMemLp hΩ q hq v) :=
+          _ :=
       reverseTimeDualPairingRightCLM_apply hΩ T _ g
-    _ = ∫ tau, g tau (reverseTimeSeparatedVTestOfMemLp hΩ q hq v tau)
+    _ = ∫ tau, g tau _
         ∂reverseTimeVolume T := reverseTimeDualPairingCLM_apply hΩ T g _
     _ = _ := by
       apply integral_congr_ae
       filter_upwards [ae_reverseTimeSeparatedVTestOfMemLp hΩ q hq v] with tau hz
       rw [hz, ContinuousLinearMap.map_smul]
-      exact mul_comm _ _
+      ring
 
 private theorem reverseTimeNegativeSource_pairing_ofMemLp_eq_integral_raw
     {d : ℕ} {Ω : Set (PDE.Vec d)}
@@ -100,9 +100,9 @@ private theorem reverseTimeNegativeSource_pairing_ofMemLp_eq_integral_raw
         ∂reverseTimeVolume (r₁ - r₀) := by
   let S := reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth
   calc
-    reverseTimeDualPairingRightCLM hΩ (r₁ - r₀)
-        (reverseTimeSeparatedVTestOfMemLp hΩ q hq v) S =
-        ∫ tau, S tau v * q tau ∂reverseTimeVolume (r₁ - r₀) :=
+    reverseTimeDualPairingRightCLM hΩ _
+        _ S =
+        ∫ tau, S tau v * q tau ∂reverseTimeVolume _ :=
       reverseTimeDualPairingRightCLM_ofMemLp_eq_integral hΩ S q hq v
     _ = _ := by
       apply integral_congr_ae
@@ -139,15 +139,15 @@ private theorem reverseTimeSpatialForm_pairing_ofMemLp_eq_integral
   let A := reverseTimeSpatialFormBochnerAction r₀ r₁ h₀₁ hΩ hΩbounded a b c
     haSmooth hbSmooth hcSmooth u
   calc
-    reverseTimeDualPairingRightCLM hΩ (r₁ - r₀)
-        (reverseTimeSeparatedVTestOfMemLp hΩ q hq v) A =
-        ∫ tau, A tau v * q tau ∂reverseTimeVolume (r₁ - r₀) :=
+    reverseTimeDualPairingRightCLM hΩ _
+        _ A =
+        ∫ tau, A tau v * q tau ∂reverseTimeVolume _ :=
       reverseTimeDualPairingRightCLM_ofMemLp_eq_integral hΩ A q hq v
     _ = _ := by
       apply integral_congr_ae
       filter_upwards [ae_reverseTimeSpatialFormBochnerAction_apply r₀ r₁ h₀₁ hΩ hΩbounded
         a b c haSmooth hbSmooth hcSmooth u] with tau hA
-      exact congrArg (fun s : ℝ => s * q tau) (hA v)
+      aesop
 
 private theorem integrable_source_raw_mul_multiplier
     {d : ℕ} {Ω : Set (PDE.Vec d)}
@@ -164,13 +164,13 @@ private theorem integrable_source_raw_mul_multiplier
       (reverseTimeVolume (r₁ - r₀)) := by
   let S := reverseTimeNegativeSource r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth
   let z := reverseTimeSeparatedVTestOfMemLp hΩ q hq v
-  refine (integrable_reverseTimeDualPairing hΩ (r₁ - r₀) z S).congr ?_
+  refine (integrable_reverseTimeDualPairing hΩ _ z S).congr ?_
   filter_upwards [(memLp_reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth).coeFn_toLp,
     ae_reverseTimeSeparatedVTestOfMemLp hΩ q hq v] with tau hS hz
   rw [hz, ContinuousLinearMap.map_smul]
   change q tau *
       ((memLp_reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth).toLp
-        (reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth) tau) v = _
+        _ tau) v = _
   rw [hS]
   ring
 
@@ -197,13 +197,11 @@ private theorem integrable_form_raw_mul_multiplier
   let A := reverseTimeSpatialFormBochnerAction r₀ r₁ h₀₁ hΩ hΩbounded a b c
     haSmooth hbSmooth hcSmooth u
   let z := reverseTimeSeparatedVTestOfMemLp hΩ q hq v
-  refine (integrable_reverseTimeDualPairing hΩ (r₁ - r₀) z A).congr ?_
+  refine (integrable_reverseTimeDualPairing hΩ _ z A).congr ?_
   filter_upwards [ae_reverseTimeSpatialFormBochnerAction_apply r₀ r₁ h₀₁ hΩ hΩbounded
     a b c haSmooth hbSmooth hcSmooth u, ae_reverseTimeSeparatedVTestOfMemLp hΩ q hq v]
     with tau hA hz
-  rw [hz, ContinuousLinearMap.map_smul]
-  change q tau * A tau v = _
-  rw [hA v]
+  rw [hz, ContinuousLinearMap.map_smul, hA]
   ring
 
 private theorem canonical_affine_mass_eq_gelfand_mass
@@ -230,14 +228,14 @@ private theorem canonical_affine_mass_eq_gelfand_mass
     have htIcc : tau ∈ Icc 0 T := ⟨le_of_lt ht.1, le_of_lt ht.2⟩
     rw [Set.IccExtend_of_mem hT.le _ htIcc, hrepTau ht]
   calc
-    (∫ tau, inner ℝ (valueCLM hΩ v)
-      (Set.IccExtend hT.le (reverseTimeHilbertRepresentative hΩ T hT u g hdu) tau) * qDeriv tau
+    (∫ tau, inner ℝ _
+      _ * qDeriv tau
       ∂reverseTimeVolume T) =
-        ∫ tau, inner ℝ (valueCLM hΩ v) (valueCLM hΩ (u tau)) * qDeriv tau
+        ∫ tau, inner ℝ _ _ * qDeriv tau
           ∂reverseTimeVolume T := integral_congr_ae hcanonical
     _ = _ := (reverseTimeGelfand_pairing_multiplier_eq_integral hΩ u qDeriv hqDeriv v).symm
 
-private noncomputable def affineReverseTimeMassPairing
+private def affineReverseTimeMassPairing
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (u : ReverseTimeL2V hΩ T) (v : H10HilbertGraph hΩ) : ℝ :=
@@ -245,14 +243,14 @@ private noncomputable def affineReverseTimeMassPairing
     (affineReverseTimeDerivativeVTest hΩ T hT v)
     (reverseTimeGelfandCLM hΩ T u)
 
-private noncomputable def affineReverseTimeSourcePairing
+private def affineReverseTimeSourcePairing
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (S : ReverseTimeL2VStar hΩ T) (v : H10HilbertGraph hΩ) : ℝ :=
   reverseTimeDualPairingRightCLM hΩ T
     (affineReverseTimeVTest hΩ T hT v) S
 
-private noncomputable def affineReverseTimeFormPairing
+private def affineReverseTimeFormPairing
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (A : ReverseTimeL2V hΩ T →L[ℝ] ReverseTimeL2VStar hΩ T)
@@ -260,13 +258,13 @@ private noncomputable def affineReverseTimeFormPairing
   reverseTimeDualPairingRightCLM hΩ T
     (affineReverseTimeVTest hΩ T hT v) (A u)
 
-private noncomputable def affineReverseTimeInitialPairing
+private def affineReverseTimeInitialPairing
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (v : H10HilbertGraph hΩ)
     (initial : PDE.ScalarLp Ω (2 : ℝ≥0∞)) : ℝ :=
   inner ℝ (valueCLM hΩ v) initial
 
-private noncomputable def affineReverseTimeResidualPairing
+private def affineReverseTimeResidualPairing
     {d : ℕ} {Ω : Set (PDE.Vec d)}
     (hΩ : IsOpen Ω) (T : ℝ) (hT : 0 < T)
     (g : ReverseTimeL2VStar hΩ T) (v : H10HilbertGraph hΩ) : ℝ :=
@@ -276,16 +274,8 @@ private theorem neg_add_sub_of_pairing_eq
     (source sourceRaw form formRaw initial : ℝ)
     (hSource : source = sourceRaw) (hForm : form = formRaw) :
     -sourceRaw + formRaw - initial = -source + form - initial := by
-  rw [← hSource, ← hForm]
+  simp_all
 
-private theorem reverseTimeDualPairingRightCLM_sub
-    {d : ℕ} {Ω : Set (PDE.Vec d)}
-    (hΩ : IsOpen Ω) (T : ℝ) (z : ReverseTimeL2V hΩ T)
-    (f g : ReverseTimeL2VStar hΩ T) :
-    reverseTimeDualPairingRightCLM hΩ T z (f - g) =
-      reverseTimeDualPairingRightCLM hΩ T z f -
-        reverseTimeDualPairingRightCLM hΩ T z g :=
-  (reverseTimeDualPairingRightCLM hΩ T z).map_sub f g
 
 private theorem reverseTimeHilbertRepresentative_affine_initial_pairing_wrapped
     {d : ℕ} {Ω : Set (PDE.Vec d)}
@@ -301,16 +291,16 @@ private theorem reverseTimeHilbertRepresentative_affine_initial_pairing_wrapped
           (reverseTimeInitialTrace hΩ T hT u g hdu) := by
   have hBoundary := reverseTimeHilbertRepresentative_affine_initial_pairing hΩ T hT u g hdu v
   have hPair := reverseTimeDualPairingRightCLM_ofMemLp_eq_integral hΩ g
-    (affineReverseTimeMultiplier T) (memLp_affine_reverseTime_multiplier hT) v
+    _ (memLp_affine_reverseTime_multiplier hT) v
   calc
     _ = -(∫ tau, g tau v * affineReverseTimeMultiplier T tau ∂reverseTimeVolume T) -
-          inner ℝ (valueCLM hΩ v) (reverseTimeInitialTrace hΩ T hT u g hdu) := by
+          inner ℝ _ _ := by
           simpa only [affineReverseTimeMultiplier, affineReverseTimeDerivative] using hBoundary
     _ = -reverseTimeDualPairingRightCLM hΩ T
-          (reverseTimeSeparatedVTestOfMemLp hΩ (affineReverseTimeMultiplier T)
-            (memLp_affine_reverseTime_multiplier hT) v) g -
-          inner ℝ (valueCLM hΩ v) (reverseTimeInitialTrace hΩ T hT u g hdu) := by
-          rw [← hPair]
+          (reverseTimeSeparatedVTestOfMemLp hΩ _
+            _ v) g -
+          inner ℝ _ _ := by
+          simp_all
     _ = _ := rfl
 
 
@@ -362,21 +352,13 @@ private theorem finite_affine_boundary_pairing_wrapped
     haSmooth hbSmooth hcSmooth
   let v : galerkinSpace hΩ N := ⟨galerkinVector hΩ k,
     galerkinSpace_mono hΩ hNk (by
-      change galerkinVector hΩ k ∈ Submodule.span ℝ
-        (Set.range fun i : Fin (k + 1) => galerkinVector hΩ i)
       apply Submodule.subset_span
       exact ⟨⟨k, Nat.lt_succ_self k⟩, rfl⟩)⟩
   let vk : galerkinSpace hΩ (k + 1) := ⟨galerkinVector hΩ k, by
-    change galerkinVector hΩ k ∈ Submodule.span ℝ
-      (Set.range fun i : Fin (k + 1) => galerkinVector hΩ i)
     apply Submodule.subset_span
     exact ⟨⟨k, Nat.lt_succ_self k⟩, rfl⟩⟩
   let UN := reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
     haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial
-  change affineReverseTimeMassPairing hΩ T (sub_pos.mpr h₀₁) UN (galerkinVector hΩ k) =
-    -affineReverseTimeSourcePairing hΩ T (sub_pos.mpr h₀₁) S (galerkinVector hΩ k) +
-      affineReverseTimeFormPairing hΩ T (sub_pos.mpr h₀₁) A UN (galerkinVector hΩ k) -
-      affineReverseTimeInitialPairing hΩ (galerkinVector hΩ k) initial
   have hT : 0 < T := by
     simpa only [T] using sub_pos.mpr h₀₁
   have hEtaDerivWithin : ∀ tau ∈ Icc 0 T,
@@ -385,8 +367,8 @@ private theorem finite_affine_boundary_pairing_wrapped
     dsimp only [eta, etaDeriv]
     unfold affineReverseTimeMultiplier affineReverseTimeDerivative
     simpa only [div_eq_mul_inv, zero_sub, one_mul, Pi.sub_def, id_eq] using
-      (hasDerivAt_const (x := tau) (1 : ℝ)).sub
-        ((hasDerivAt_id (x := tau)).mul_const T⁻¹) |>.hasDerivWithinAt
+      (hasDerivAt_const (x := tau) _).sub
+        ((hasDerivAt_id (x := tau)).mul_const _) |>.hasDerivWithinAt
   have hEtaTerminal : eta T = 0 := by
     dsimp only [eta, affineReverseTimeMultiplier]
     rw [div_self hT.ne']
@@ -407,10 +389,10 @@ private theorem finite_affine_boundary_pairing_wrapped
             haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial tau)) * etaDeriv tau
         ∂reverseTimeVolume T := by
     calc
-      _ = ∫ tau, inner ℝ (valueCLM hΩ (galerkinVector hΩ k)) (valueCLM hΩ (UN tau)) *
+      _ = ∫ tau, inner ℝ _ _ *
           etaDeriv tau ∂reverseTimeVolume T :=
         reverseTimeGelfand_pairing_multiplier_eq_integral hΩ UN etaDeriv hEtaDeriv
-          (galerkinVector hΩ k)
+          _
       _ = _ := by
         apply integral_congr_ae
         filter_upwards [hUNraw] with tau hUNtau
@@ -429,21 +411,14 @@ private theorem finite_affine_boundary_pairing_wrapped
       affineReverseTimeSourcePairing hΩ T (sub_pos.mpr h₀₁) S (galerkinVector hΩ k) =
         ∫ tau, reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth tau
           (galerkinVector hΩ k) * eta tau ∂reverseTimeVolume T := by
-    change reverseTimeDualPairingRightCLM hΩ T
-        (affineReverseTimeVTest hΩ T (sub_pos.mpr h₀₁) (galerkinVector hΩ k)) S = _
-    simpa only [T, eta, hEta, affineReverseTimeVTest] using hSource
+    aesop
   have hForm' :
       affineReverseTimeFormPairing hΩ T (sub_pos.mpr h₀₁) A UN (galerkinVector hΩ k) =
         ∫ tau, reverseTimeSpatialForm hΩ r₁ tau a b c (UN tau) (galerkinVector hΩ k) * eta tau
           ∂reverseTimeVolume T := by
-    change reverseTimeDualPairingRightCLM hΩ T
-        (affineReverseTimeVTest hΩ T (sub_pos.mpr h₀₁) (galerkinVector hΩ k)) (A UN) = _
-    simpa only [T, eta, hEta, affineReverseTimeVTest] using hForm
+    aesop
   have hInitial := inner_value_galerkinInitialProjection_eq hΩ hNk initial vk
-  have hInitial' :
-      inner ℝ (valueCLM hΩ (galerkinVector hΩ k))
-        (valueCLM hΩ (galerkinInitialProjection hΩ N initial : H10HilbertGraph hΩ)) =
-      inner ℝ (valueCLM hΩ (galerkinVector hΩ k)) initial := by
+  have hInitial'  := by
     simpa only [vk] using hInitial
   have hRaw :
       (∫ tau, inner ℝ (valueCLM hΩ (galerkinVector hΩ k))
@@ -458,21 +433,20 @@ private theorem finite_affine_boundary_pairing_wrapped
     calc
       _ = -(∫ tau,
           (reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth tau
-            (galerkinVector hΩ k) -
+            _ -
           reverseTimeSpatialForm hΩ r₁ tau a b c
-            (reverseTimeGalerkinPrimalRaw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-              haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial tau)
-            (galerkinVector hΩ k)) * eta tau ∂reverseTimeVolume T) -
-          inner ℝ (valueCLM hΩ (galerkinVector hΩ k))
-            (valueCLM hΩ (galerkinInitialProjection hΩ N initial : H10HilbertGraph hΩ)) *
+            _
+            _) * eta tau ∂reverseTimeVolume T) -
+          inner ℝ _
+            _ *
               eta 0 := by
           simpa only [T, v, UN] using hBoundary
       _ = -(∫ tau, reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth tau
-          (galerkinVector hΩ k) * eta tau -
-          reverseTimeSpatialForm hΩ r₁ tau a b c (UN tau) (galerkinVector hΩ k) * eta tau
+          _ * eta tau -
+          reverseTimeSpatialForm hΩ r₁ tau a b c (UN tau) _ * eta tau
             ∂reverseTimeVolume T) -
-          inner ℝ (valueCLM hΩ (galerkinVector hΩ k))
-            (valueCLM hΩ (galerkinInitialProjection hΩ N initial : H10HilbertGraph hΩ)) *
+          inner ℝ _
+            _ *
               eta 0 := by
           congr 2
           apply integral_congr_ae
@@ -480,32 +454,28 @@ private theorem finite_affine_boundary_pairing_wrapped
           rw [hUNtau]
           ring
       _ = -(∫ tau, reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth tau
-          (galerkinVector hΩ k) * eta tau ∂reverseTimeVolume T -
-          ∫ tau, reverseTimeSpatialForm hΩ r₁ tau a b c (UN tau) (galerkinVector hΩ k) * eta tau
+          _ * eta tau ∂reverseTimeVolume T -
+          ∫ tau, reverseTimeSpatialForm hΩ r₁ tau a b c _ _ * eta tau
             ∂reverseTimeVolume T) -
-          inner ℝ (valueCLM hΩ (galerkinVector hΩ k)) initial := by
-          rw [integral_sub hSourceInt hFormInt]
-          rw [hInitial']
+          inner ℝ _ initial := by
+          rw [integral_sub hSourceInt hFormInt, hInitial']
           dsimp only [eta, affineReverseTimeMultiplier]
           ring
       _ = _ := by ring
   calc
-    affineReverseTimeMassPairing hΩ T (sub_pos.mpr h₀₁) UN (galerkinVector hΩ k) =
-        ∫ tau, inner ℝ (valueCLM hΩ (galerkinVector hΩ k))
-          (valueCLM hΩ
-            (reverseTimeGalerkinPrimalRaw r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-              haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos N initial tau)) * etaDeriv tau
+    affineReverseTimeMassPairing hΩ T _ UN _ =
+        ∫ tau, inner ℝ _
+          _ * etaDeriv tau
           ∂reverseTimeVolume T := by
         simpa only [affineReverseTimeMassPairing, affineReverseTimeDerivativeVTest, T, etaDeriv,
           hEtaDeriv, UN] using hMass
     _ = -(∫ tau, reverseTimeNegativeSourceRaw r₀ r₁ h₀₁ hΩ hΩbounded F hFSmooth tau
-          (galerkinVector hΩ k) * eta tau ∂reverseTimeVolume T) +
-        ∫ tau, reverseTimeSpatialForm hΩ r₁ tau a b c (UN tau) (galerkinVector hΩ k) * eta tau
-          ∂reverseTimeVolume T - inner ℝ (valueCLM hΩ (galerkinVector hΩ k)) initial := hRaw
-    _ = -affineReverseTimeSourcePairing hΩ T (sub_pos.mpr h₀₁) S (galerkinVector hΩ k) +
-        affineReverseTimeFormPairing hΩ T (sub_pos.mpr h₀₁) A UN (galerkinVector hΩ k) -
-        affineReverseTimeInitialPairing hΩ (galerkinVector hΩ k) initial := by
-        exact neg_add_sub_of_pairing_eq _ _ _ _ _ hSource' hForm'
+          _ * eta tau ∂reverseTimeVolume T) +
+        ∫ tau, reverseTimeSpatialForm hΩ r₁ tau a b c _ _ * eta tau
+          ∂reverseTimeVolume T - inner ℝ _ initial := hRaw
+    _ = -affineReverseTimeSourcePairing hΩ T _ S _ +
+        affineReverseTimeFormPairing hΩ T _ A UN _ -
+        affineReverseTimeInitialPairing hΩ _ initial := neg_add_sub_of_pairing_eq _ _ _ _ _ hSource' hForm'
 
 
 variable {d : ℕ} {Ω : Set (PDE.Vec d)}
@@ -561,20 +531,18 @@ private theorem reverseTimeGalerkinPrimal_initialTrace_pairing
     haSmooth hbSmooth hcSmooth
   let g := reverseTimeFormResidual r₀ r₁ h₀₁ hΩ hΩbounded a b c
     haSmooth hbSmooth hcSmooth F hFSmooth U
-  let trace := reverseTimeInitialTrace hΩ T (sub_pos.mpr h₀₁) U g hdu
-  change inner ℝ (valueCLM hΩ (galerkinVector hΩ k)) trace =
-    inner ℝ (valueCLM hΩ (galerkinVector hΩ k)) initial
-  let massEll : ReverseTimeL2V hΩ T →L[ℝ] ℝ :=
+  let trace := reverseTimeInitialTrace hΩ T _ U g hdu
+  let massEll  :=
     (reverseTimeDualPairingRightCLM hΩ T
       (reverseTimeSeparatedVTestOfMemLp hΩ etaDeriv hEtaDeriv (galerkinVector hΩ k))).comp
       (reverseTimeGelfandCLM hΩ T)
   let formEll : ReverseTimeL2V hΩ T →L[ℝ] ℝ :=
     (reverseTimeDualPairingRightCLM hΩ T
       (reverseTimeSeparatedVTestOfMemLp hΩ eta hEta (galerkinVector hΩ k))).comp A
-  let source : ℝ := reverseTimeDualPairingRightCLM hΩ T
+  let source  := reverseTimeDualPairingRightCLM hΩ T
     (reverseTimeSeparatedVTestOfMemLp hΩ eta hEta (galerkinVector hΩ k)) S
   have hIndex : ∀ᶠ n in atTop, k + 1 ≤ phi n := by
-    filter_upwards [eventually_ge_atTop (k + 1)] with n hn
+    filter_upwards [eventually_ge_atTop _] with n hn
     exact hn.trans (hphi.id_le n)
   have hFinite :
       (fun n => massEll
@@ -591,46 +559,38 @@ private theorem reverseTimeGalerkinPrimal_initialTrace_pairing
       affineReverseTimeInitialPairing, affineReverseTimeVTest,
       affineReverseTimeDerivativeVTest] using
         finite_affine_boundary_pairing_wrapped r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-          haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial (phi n) k hn
+          haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial _ k hn
   have hMass := hclm massEll
   have hForm := hclm formEll
   have hRight : Tendsto
       (fun n => -source + formEll
-        (reverseTimeGalerkinPrimal r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
-          haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos (phi n) initial) -
-        inner ℝ (valueCLM hΩ (galerkinVector hΩ k)) initial)
+        _ -
+        inner ℝ _ initial)
       atTop (𝓝 (-source + formEll U -
         inner ℝ (valueCLM hΩ (galerkinVector hΩ k)) initial)) :=
     ((tendsto_const_nhds.neg.add hForm).sub tendsto_const_nhds)
   have hLimit : massEll U = -source + formEll U -
-      inner ℝ (valueCLM hΩ (galerkinVector hΩ k)) initial :=
+      inner ℝ _ initial :=
     tendsto_nhds_unique_of_eventuallyEq hMass hRight hFinite
   have hResidual : reverseTimeDualPairingRightCLM hΩ T
       (reverseTimeSeparatedVTestOfMemLp hΩ eta hEta (galerkinVector hΩ k)) g =
-      source - formEll U := by
-    exact reverseTimeDualPairingRightCLM_sub hΩ T
-      (reverseTimeSeparatedVTestOfMemLp hΩ eta hEta (galerkinVector hΩ k)) S (A U)
-  have hBoundary := reverseTimeHilbertRepresentative_affine_initial_pairing hΩ T
-    (sub_pos.mpr h₀₁) U g hdu (galerkinVector hΩ k)
-  have hCanonical := canonical_affine_mass_eq_gelfand_mass hΩ T (sub_pos.mpr h₀₁) U g hdu
+      source - formEll U := reverseTimeDualPairingRightCLM_sub hΩ T
+      _ S _
+  have hCanonical := canonical_affine_mass_eq_gelfand_mass hΩ T _ U g hdu
     (galerkinVector hΩ k) etaDeriv hEtaDeriv
-  have hTrace : massEll U =
-      -affineReverseTimeResidualPairing hΩ T (sub_pos.mpr h₀₁) g (galerkinVector hΩ k) -
-      affineReverseTimeInitialPairing hΩ (galerkinVector hΩ k) trace := by
+  have hTrace  := by
     calc
       massEll U =
-          (∫ tau, inner ℝ (valueCLM hΩ (galerkinVector hΩ k))
-            (Set.IccExtend (sub_pos.mpr h₀₁).le
-              (reverseTimeHilbertRepresentative hΩ T (sub_pos.mpr h₀₁) U g hdu) tau) *
+          (∫ tau, inner ℝ _
+            _ *
               etaDeriv tau ∂reverseTimeVolume T) := hCanonical.symm
-      _ = -affineReverseTimeResidualPairing hΩ T (sub_pos.mpr h₀₁) g (galerkinVector hΩ k) -
-            affineReverseTimeInitialPairing hΩ (galerkinVector hΩ k) trace := by
-            simpa only [etaDeriv] using
+      _ = -affineReverseTimeResidualPairing hΩ T _ g _ -
+            affineReverseTimeInitialPairing hΩ _ trace := by
+            simpa using
               reverseTimeHilbertRepresentative_affine_initial_pairing_wrapped hΩ T
-                (sub_pos.mpr h₀₁) U g hdu (galerkinVector hΩ k)
-  dsimp only [massEll, formEll, source, affineReverseTimeResidualPairing,
-    affineReverseTimeInitialPairing, affineReverseTimeVTest, eta, hEta,
-    affineReverseTimeMultiplier] at hLimit hTrace hResidual
+                _ U g hdu _
+  dsimp only [affineReverseTimeResidualPairing,
+    affineReverseTimeInitialPairing, affineReverseTimeVTest] at hLimit hTrace hResidual
   linarith
 
 
@@ -651,7 +611,7 @@ theorem exists_reverseTimeGalerkinPrimal_initialTrace
   let T := r₁ - r₀
   let g := reverseTimeFormResidual r₀ r₁ h₀₁ hΩ hΩbounded a b c
     haSmooth hbSmooth hcSmooth F hFSmooth U
-  let trace := reverseTimeInitialTrace hΩ T (sub_pos.mpr h₀₁) U g hdu
+  let trace := reverseTimeInitialTrace hΩ T _ U g hdu
   refine ⟨U, hdu, ?_⟩
   apply scalarLpToH10HilbertGraphDual_injective hΩ
   apply ContinuousLinearMap.ext
@@ -665,22 +625,22 @@ theorem exists_reverseTimeGalerkinPrimal_initialTrace
       inner ℝ (valueCLM hΩ (galerkinVector hΩ k)) trace =
         inner ℝ (valueCLM hΩ (galerkinVector hΩ k)) initial := by
     intro k
-    simpa only [T, g, trace] using
+    simpa using
       reverseTimeGalerkinPrimal_initialTrace_pairing r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
         haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial U phi hphi hclm hdu k
   have hLeft : Tendsto (fun n =>
-      scalarLpToH10HilbertGraphDual hΩ trace (vN n)) atTop
+      scalarLpToH10HilbertGraphDual hΩ trace _) atTop
       (𝓝 (scalarLpToH10HilbertGraphDual hΩ trace v)) :=
     (scalarLpToH10HilbertGraphDual hΩ trace).continuous.tendsto v |>.comp hv
   have hRight : Tendsto (fun n =>
-      scalarLpToH10HilbertGraphDual hΩ initial (vN n)) atTop
+      scalarLpToH10HilbertGraphDual hΩ initial _) atTop
       (𝓝 (scalarLpToH10HilbertGraphDual hΩ initial v)) :=
     (scalarLpToH10HilbertGraphDual hΩ initial).continuous.tendsto v |>.comp hv
   have hRange : ∀ n,
       scalarLpToH10HilbertGraphDual hΩ trace (vN n) =
         scalarLpToH10HilbertGraphDual hΩ initial (vN n) := by
     intro n
-    simpa only [scalarLpToH10HilbertGraphDual_apply, hk n] using hPair (k n)
+    simpa only [scalarLpToH10HilbertGraphDual_apply, hk] using hPair (k n)
   exact tendsto_nhds_unique_of_eventuallyEq hLeft hRight (Eventually.of_forall hRange)
 
 
@@ -704,7 +664,7 @@ theorem reverseTimeGalerkinPrimal_initialTrace_of_strictMono_tendsto_clm
   let T := r₁ - r₀
   let g := reverseTimeFormResidual r₀ r₁ h₀₁ hΩ hΩbounded a b c
     haSmooth hbSmooth hcSmooth F hFSmooth U
-  let trace := reverseTimeInitialTrace hΩ T (sub_pos.mpr h₀₁) U g hdu
+  let trace := reverseTimeInitialTrace hΩ T _ U g hdu
   apply scalarLpToH10HilbertGraphDual_injective hΩ
   apply ContinuousLinearMap.ext
   intro v
@@ -717,22 +677,22 @@ theorem reverseTimeGalerkinPrimal_initialTrace_of_strictMono_tendsto_clm
       inner ℝ (valueCLM hΩ (galerkinVector hΩ k)) trace =
         inner ℝ (valueCLM hΩ (galerkinVector hΩ k)) initial := by
     intro k
-    simpa only [T, g, trace] using
+    simpa using
       reverseTimeGalerkinPrimal_initialTrace_pairing r₀ r₁ lam h₀₁ hlam hΩ hΩbounded a b c F
         haSmooth hbSmooth hcSmooth hFSmooth hLower hcNonpos initial U phi hphi hclm hdu k
   have hLeft : Tendsto (fun n =>
-      scalarLpToH10HilbertGraphDual hΩ trace (vN n)) atTop
+      scalarLpToH10HilbertGraphDual hΩ trace _) atTop
       (𝓝 (scalarLpToH10HilbertGraphDual hΩ trace v)) :=
     (scalarLpToH10HilbertGraphDual hΩ trace).continuous.tendsto v |>.comp hv
   have hRight : Tendsto (fun n =>
-      scalarLpToH10HilbertGraphDual hΩ initial (vN n)) atTop
+      scalarLpToH10HilbertGraphDual hΩ initial _) atTop
       (𝓝 (scalarLpToH10HilbertGraphDual hΩ initial v)) :=
     (scalarLpToH10HilbertGraphDual hΩ initial).continuous.tendsto v |>.comp hv
   have hRange : ∀ n,
       scalarLpToH10HilbertGraphDual hΩ trace (vN n) =
         scalarLpToH10HilbertGraphDual hΩ initial (vN n) := by
     intro n
-    simpa only [scalarLpToH10HilbertGraphDual_apply, hk n] using hPair (k n)
+    simpa only [scalarLpToH10HilbertGraphDual_apply, hk] using hPair (k n)
   exact tendsto_nhds_unique_of_eventuallyEq hLeft hRight (Eventually.of_forall hRange)
 
 end HypoellipticAleksandrov.Parabolic.Dirichlet

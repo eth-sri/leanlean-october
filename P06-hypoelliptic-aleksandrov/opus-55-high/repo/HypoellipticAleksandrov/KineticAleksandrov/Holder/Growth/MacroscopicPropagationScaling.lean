@@ -29,8 +29,10 @@ def physicalPathVelocity {d : ℕ} (P0 : KineticPoint d) (scale : ℝ)
     (v : ℝ → PDE.Vec d) (s : ℝ) : PDE.Vec d :=
   P0.velocity + scale • v (s / scale ^ 2)
 
+variable {d : ℕ} (P0 : KineticPoint d) {scale H : ℝ}
+
 /-- Physical transport preserves position-velocity derivative compatibility. -/
-theorem physicalPath_derivative {d : ℕ} (P0 : KineticPoint d) {scale : ℝ}
+theorem physicalPath_derivative  {scale : ℝ}
     (_hscale : scale ≠ 0) (start : ℝ) {x v : ℝ → PDE.Vec d}
     (hkin : ∀ s, HasDerivAt x (v s) s) (s : ℝ) :
     HasDerivAt (physicalPathPosition P0 scale start x)
@@ -44,18 +46,14 @@ theorem physicalPath_derivative {d : ℕ} (P0 : KineticPoint d) {scale : ℝ}
     (hasDerivAt_id s)).mul_const (P0.velocity i)
   have h := hfirst.add hlast
   have hd : scale ^ 3 * (v (s / scale ^ 2) i * (1 / scale ^ 2)) +
-      (0 + 1 : ℝ) * P0.velocity i = physicalPathVelocity P0 scale v s i := by
-    simp only [physicalPathVelocity, Pi.add_apply, Pi.smul_apply, smul_eq_mul, zero_add]
+      (0 + 1) * P0.velocity i = physicalPathVelocity P0 scale v s i := by
+    simp only [physicalPathVelocity, Pi.add_apply, Pi.smul_apply]
     field_simp
     ring
-  rw [hd] at h
-  apply h.congr_of_eventuallyEq
-  exact Filter.Eventually.of_forall (fun t => by
-    simp only [physicalPathPosition, Pi.add_apply, Pi.smul_apply, smul_eq_mul,
-      Function.comp_def, id_eq])
+  aesop
 
 /-- Physical transport divides the Euclidean acceleration bound by the length scale. -/
-theorem physicalPath_velocity_lipschitz {d : ℕ} (P0 : KineticPoint d) {scale H : ℝ}
+theorem physicalPath_velocity_lipschitz 
     (hscale : 0 < scale) {v : ℝ → PDE.Vec d}
     (hLip : ∀ s t, PDE.vecEuclideanNorm (v s - v t) ≤ H * |s - t|) (s t : ℝ) :
     PDE.vecEuclideanNorm (physicalPathVelocity P0 scale v s -
@@ -71,16 +69,16 @@ theorem physicalPath_velocity_lipschitz {d : ℕ} (P0 : KineticPoint d) {scale H
   field_simp
 
 /-- The physically transported velocity is continuous. -/
-theorem physicalPath_velocity_continuous {d : ℕ} (P0 : KineticPoint d) (scale : ℝ)
+theorem physicalPath_velocity_continuous  (scale : ℝ)
     {v : ℝ → PDE.Vec d} (hv : Continuous v) :
     Continuous (physicalPathVelocity P0 scale v) := by
   have ht : Continuous (fun s : ℝ => s / scale ^ 2) := continuous_id.div_const _
-  have hc : Continuous (fun s : ℝ => P0.velocity + scale • v (s / scale ^ 2)) :=
+  have hc : Continuous (fun s : ℝ => P0.velocity + scale • v _) :=
     (continuous_const (y := P0.velocity)).add ((hv.comp ht).const_smul scale)
   exact hc
 
 /-- The transported path is a source skeleton on any required closed interval. -/
-theorem physicalPath_isSkeleton {d : ℕ} (P0 : KineticPoint d) {scale H : ℝ}
+theorem physicalPath_isSkeleton 
     (hscale : 0 < scale) (start a b : ℝ) {x v : ℝ → PDE.Vec d} (hv : Continuous v)
     (hkin : ∀ s, HasDerivAt x (v s) s)
     (hLip : ∀ s t, PDE.vecEuclideanNorm (v s - v t) ≤ H * |s - t|) :
