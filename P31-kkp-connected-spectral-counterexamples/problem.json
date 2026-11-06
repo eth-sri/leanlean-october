@@ -1,0 +1,80 @@
+{
+  "problem_idx": 31,
+  "id": "PALOMAR-2026-10-16-000012-v1",
+  "title": "Connected counterexamples to the exact color-critical two-eigenvalue bound",
+  "abstract": "For F=K5 minus one edge, a color-critical graph of chromatic number four, the graph formed from K(s,s,s) and K4 by one bridge is connected and F-free for every integer s at least three. It has 3s squared plus 7 edges, and the sum of squares of its two largest ordered adjacency eigenvalues exceeds 4m/3 by at least (656s squared-1366s+62)/(3(37s-1) squared)>0. The family has arbitrarily large edge counts, refuting the exact assertion in KKP Conjecture 1.16 and Li–Liu–Zhang Conjecture 5.4.",
+  "authors": [
+    "Idris Ali Shaik"
+  ],
+  "repository": "shaikidris/kkp-connected-spectral-counterexamples",
+  "repository_url": "https://github.com/shaikidris/kkp-connected-spectral-counterexamples",
+  "commit": "c611a4a733fe796809cd941f96ff8f2c294fd1ef",
+  "license": "Apache-2.0",
+  "lean_toolchain": "leanprover/lean4:v4.35.0-rc3",
+  "lake_root": "",
+  "mathlib": true,
+  "size_category": "S",
+  "baseline_tokens": 14983,
+  "lean_files": 12,
+  "protected_theorem_names": [
+    "KKP.connected_counterexample_family",
+    "KKP.unbounded_connected_counterexamples"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "challenge_module": "Challenge",
+  "challenge_path": "Challenge.lean",
+  "solution_module": "Solution",
+  "solution_path": "Solution.lean",
+  "comparator_path": "comparator.json",
+  "arxiv_tags": [
+    "math.CO"
+  ],
+  "msc2020": [
+    "05C50",
+    "05C35"
+  ],
+  "mathematical_sources": [
+    {
+      "title": "Asymptotic rank two spectral bounds and a color critical counterexample",
+      "authors": [],
+      "type": "other",
+      "identifier": null,
+      "location": "https://chatgpt.com/space/page_53853a02ae28819196935cd71f513605",
+      "relationship": "formalizes"
+    },
+    {
+      "title": "Localization of spectral Turán-type theorems",
+      "authors": [
+        "M. Rajesh Kannan",
+        "Hitesh Kumar",
+        "Shivaramakrishna Pragada"
+      ],
+      "type": "paper",
+      "identifier": "arXiv:2512.01409v2",
+      "location": "https://arxiv.org/html/2512.01409v2",
+      "relationship": "background"
+    },
+    {
+      "title": "Edge-spectral Turán theorems for color-critical graphs with applications",
+      "authors": [
+        "Yongtao Li",
+        "Hong Liu",
+        "Shengtong Zhang"
+      ],
+      "type": "paper",
+      "identifier": "arXiv:2511.15431v3",
+      "location": "https://arxiv.org/html/2511.15431v3",
+      "relationship": "background"
+    }
+  ],
+  "dependency_graph_nodes": 116,
+  "dependency_graph_edges": 325,
+  "project_path": "repos/PALOMAR-2026-10-16-000012-v1/project",
+  "dependency_graph_path": "repos/PALOMAR-2026-10-16-000012-v1/dependency-graph.json",
+  "license_path": "repos/PALOMAR-2026-10-16-000012-v1/LICENSE"
+}
