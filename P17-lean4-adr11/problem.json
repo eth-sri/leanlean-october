@@ -1,0 +1,114 @@
+{
+  "problem_idx": 17,
+  "id": "PALOMAR-2026-10-04-000005-v1",
+  "title": "Identifying the rooted species tree from unrooted gene trees under the coalescent",
+  "abstract": "A formalization of E. S. Allman, J. H. Degnan and J. A. Rhodes, \"Identifying the rooted species tree from the distribution of unrooted gene trees under the coalescent\", J. Math. Biol. 62 (2011) 833-862. The multispecies coalescent is defined from Kingman's coalescent on forests of gene lineages (its generator, the matrix exponential, and a recursion over the species tree).\n\nProved: the distribution of unrooted topological gene trees, with one lineage sampled per taxon, determines the rooted species tree and its internal branch lengths when there are at least five taxa (Theorem 9); on four taxa it determines exactly the unrooted metric species tree (Proposition 3); with several lineages per taxon it also determines the corresponding pendant branch lengths (Corollary 10); and all of this holds for nonbinary species trees (Proposition 11). Every other result of the paper is proved too, with the explicit gene tree distributions, linear invariants and inequalities for five taxa, and the cited results that the proofs use: Tavare's formula, the reconstruction of trees from quartets, and Cayley's count of tree shapes.",
+  "authors": [
+    "The-Anh Vu-Le"
+  ],
+  "repository": "vltanh/lean4-adr11",
+  "repository_url": "https://github.com/vltanh/lean4-adr11",
+  "commit": "2db7f81359758bc49f52bc13c51f2640f8f2a7fd",
+  "license": "Apache-2.0",
+  "lean_toolchain": "leanprover/lean4:v4.35.0-rc3",
+  "lake_root": "",
+  "mathlib": true,
+  "size_category": "M",
+  "baseline_tokens": 175441,
+  "lean_files": 62,
+  "protected_theorem_names": [
+    "ADR11.Challenge.unrootedDist_nonneg",
+    "ADR11.Challenge.unrootedDist_sum",
+    "ADR11.Challenge.fourTaxa_balanced",
+    "ADR11.Challenge.fourTaxa_caterpillar",
+    "ADR11.Challenge.theorem9",
+    "ADR11.Challenge.theorem9_four",
+    "ADR11.Challenge.proposition3",
+    "ADR11.Challenge.corollary10",
+    "ADR11.Challenge.proposition11_theorem9",
+    "ADR11.Challenge.proposition11_theorem9_four",
+    "ADR11.Challenge.proposition11_corollary10"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "challenge_module": "Challenge",
+  "challenge_path": "Challenge.lean",
+  "solution_module": "Solution",
+  "solution_path": "Solution.lean",
+  "comparator_path": "comparator.json",
+  "arxiv_tags": [
+    "q-bio.PE",
+    "math.PR"
+  ],
+  "msc2020": [
+    "92D15",
+    "60J90",
+    "60J27",
+    "05C05",
+    "62P10"
+  ],
+  "mathematical_sources": [
+    {
+      "title": "Identifying the rooted species tree from the distribution of unrooted gene trees under the coalescent",
+      "authors": [
+        "Elizabeth S. Allman",
+        "James H. Degnan",
+        "John A. Rhodes"
+      ],
+      "type": "article",
+      "identifier": "arXiv:0912.4472v2",
+      "location": "J. Math. Biol. 62 (2011) 833-862, https://doi.org/10.1007/s00285-010-0355-7",
+      "relationship": "formalizes"
+    },
+    {
+      "title": "Line-of-descent and genealogical processes, and their applications in population genetics models",
+      "authors": [
+        "Simon Tavaré"
+      ],
+      "type": "article",
+      "identifier": null,
+      "location": "Theoretical Population Biology 26 (1984) 119-164",
+      "relationship": "background"
+    },
+    {
+      "title": "The complexity of reconstructing trees from qualitative characters and subtrees",
+      "authors": [
+        "Mike Steel"
+      ],
+      "type": "article",
+      "identifier": null,
+      "location": "Journal of Classification 9 (1992) 91-116",
+      "relationship": "background"
+    },
+    {
+      "title": "Reconstructing the shape of a tree from observed dissimilarity data",
+      "authors": [
+        "Hans-Jürgen Bandelt",
+        "Andreas Dress"
+      ],
+      "type": "article",
+      "identifier": null,
+      "location": "Advances in Applied Mathematics 7 (1986) 309-343",
+      "relationship": "background"
+    },
+    {
+      "title": "On the theory of the analytical forms called trees",
+      "authors": [
+        "Arthur Cayley"
+      ],
+      "type": "article",
+      "identifier": null,
+      "location": "Philosophical Magazine 13 (1857) 172-176",
+      "relationship": "background"
+    }
+  ],
+  "dependency_graph_nodes": 1106,
+  "dependency_graph_edges": 6761,
+  "project_path": "repos/PALOMAR-2026-10-04-000005-v1/project",
+  "dependency_graph_path": "repos/PALOMAR-2026-10-04-000005-v1/dependency-graph.json",
+  "license_path": "repos/PALOMAR-2026-10-04-000005-v1/LICENSE"
+}
