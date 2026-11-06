@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT1SeamAmplitude
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT1SeamPhase
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT1ZipperFinalStep
@@ -33,24 +34,16 @@ theorem zeroRootRegularizedWordTerm_zipper_seam {N n : ℕ} {c : ℝ}
   let σ' := σ * Equiv.swap u 0
   let w' := Function.update w u false
   have hu0 : u ≠ (0 : Fin (n + 1)) := by
-    intro h
-    have hv := congrArg Fin.val h
-    simp [u] at hv
-    omega
+    measurability
   have hσ0 : σ' 0 = l := by
-    change σ (Equiv.swap u 0 0) = l
-    rw [Equiv.swap_apply_right]
-    exact hσ
+    measurability
   have hσ'u : σ' u = σ 0 := by
-    change σ (Equiv.swap u 0 u) = σ 0
-    rw [Equiv.swap_apply_left]
+    measurability
   have hσswap : σ' * Equiv.swap u 0 = σ := by
-    ext k
-    simp [σ', u]
+    measurability
   have hzero' : p (σ' 0) = 0 := by rw [hσ0, hpl]
   have hσ0ne : σ 0 ≠ l := by
-    intro h
-    exact hu0 (σ.injective (h.trans hσ.symm)).symm
+    measurability
   have hpσ0 : p (σ 0) ≠ 0 := by
     intro h
     exact hσ0ne (hinj (h.trans hpl.symm))
@@ -104,8 +97,7 @@ theorem zeroRootRegularizedWordTerm_zipper_seam {N n : ℕ} {c : ℝ}
     have hσk : σ' k = σ k := by simp [σ', Equiv.Perm.mul_apply, hswap]
     simp [σ', w', zeroRootLetterWeight, Function.update_of_ne hku, hσk]
   have hroot : σ.symm l = u := by
-    apply σ.injective
-    simpa using hσ.symm
+    measurability
   have hroot' : σ'.symm l = 0 := by
     apply σ'.injective
     simpa using hσ0.symm
@@ -132,9 +124,7 @@ theorem zeroRootRegularizedWordTerm_zipper_seam {N n : ℕ} {c : ℝ}
     unfold zeroRootRegularizedProduct
     rw [hroot']
     have hset : (univ.erase 0).erase u = S := by
-      ext k
-      simp only [S, Finset.mem_erase, Finset.mem_univ]
-      constructor <;> rintro ⟨h1, h2, _⟩ <;> exact ⟨h2, h1, trivial⟩
+      measurability
     calc
       (∏ k ∈ univ.erase 0, zeroRootLetterWeight c p σ' w' k) =
           zeroRootLetterWeight c p σ' w' u *
@@ -179,8 +169,7 @@ theorem zeroRootRegularizedWordTerm_zipper_cyclic {N n : ℕ} {c : ℝ}
       have hflip := zeroRootRegularizedWordTerm_flipRoot (N := N) (n := 0) (c := c) x p l σ w
         0 hσ hpl
       have hperm : σ * Equiv.swap (Fin.last 0) (finRotate 1 (Fin.last 0)) = σ := by
-        ext k
-        simp
+        measurability
       rw [hperm]
       exact hflip
   · let b : Fin n := ⟨a.val, by
@@ -191,7 +180,6 @@ theorem zeroRootRegularizedWordTerm_zipper_cyclic {N n : ℕ} {c : ℝ}
         exact Fin.ext h
       omega⟩
     have hbc : b.castSucc = a := by
-      apply Fin.ext
       rfl
     have hbs : b.succ = finRotate (n + 1) a := by
       rw [← hbc]

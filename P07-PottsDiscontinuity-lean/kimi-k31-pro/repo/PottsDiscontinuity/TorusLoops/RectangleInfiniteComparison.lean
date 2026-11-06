@@ -1,5 +1,6 @@
 module
 
+public import PottsDiscontinuity.FK.EmbeddedBoundaryUpper
 public import PottsDiscontinuity.FK.FreeBoxPositiveAssociation
 
 /-!
@@ -24,8 +25,6 @@ noncomputable section
 local instance rectangleInfiniteComparisonGenericEdgeFintype
     {V : Type*} [Finite V] {G : SimpleGraph V} : Fintype G.edgeSet := Fintype.ofFinite _
 
-local instance rectangleInfiniteComparisonGenericEdgeDecidableEq
-    {V : Type*} [Finite V] {G : SimpleGraph V} : DecidableEq G.edgeSet := Classical.decEq _
 
 private theorem originBoxEdgeEmbedding_compatible {r s : ℕ}
     (hrs : r ≤ s)
@@ -65,22 +64,6 @@ private theorem boxConfiguration_restriction_le {r s : ℕ} (hrs : r ≤ s)
       boxEdgeEmbedding (0, 0) r a := originBoxEdgeEmbedding_compatible hrs hGH a
     _ = e := hae
 
-private theorem fkLaw_measure_toReal_eq_expectation
-    {V : Type*} [Finite V] {G : SimpleGraph V}
-    (q : Parameters) (ξ : BoundaryCondition V)
-    (S : Set (Configuration G)) :
-    (measure G q ξ S).toReal =
-      FiniteProbability.expectation (law G q ξ)
-        (S.indicator (fun _ => (1 : ℝ))) := by
-  rw [measure_toReal_eq_indicator_sum]
-  unfold FiniteProbability.expectation
-  apply Finset.sum_congr rfl
-  intro A hA
-  by_cases h : A ∈ S
-  · simp [Set.indicator, h, law_apply,
-      ENNReal.toReal_ofReal (configurationProbability_pos G q ξ A).le]
-  · simp [Set.indicator, h]
-
 private theorem boxProbabilityMeasure_event_eq_expectation (q : Parameters)
     (r : ℕ) (E : Set LatticeConfiguration) (hE : MeasurableSet E) :
     (((boxProbabilityMeasure q (0, 0) r : ProbabilityMeasure LatticeConfiguration) E : NNReal) : ℝ) =
@@ -98,7 +81,7 @@ private theorem boxProbabilityMeasure_event_eq_expectation (q : Parameters)
   rw [← ProbabilityMeasure.measureReal_eq_coe_coeFn]
   rw [Measure.real_def]
   rw [hpre]
-  exact fkLaw_measure_toReal_eq_expectation q (BoundaryCondition.free ∅) _
+  exact FK.fkLaw_measure_toReal_eq_expectation _ q (BoundaryCondition.free ∅) _
 
 /-- The free origin-box laws are increasing on every clopen increasing event
 of the actual whole-lattice configuration space. -/

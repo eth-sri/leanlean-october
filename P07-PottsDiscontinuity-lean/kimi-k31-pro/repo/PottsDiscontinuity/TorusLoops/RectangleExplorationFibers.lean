@@ -1,5 +1,6 @@
 module
 
+public import PottsDiscontinuity.RCInfinite.FiniteConditioning
 public import Mathlib
 public import PottsDiscontinuity.FK.Expectation
 
@@ -30,85 +31,20 @@ variable {α β : Type*} [Fintype α] [Fintype β]
   [MeasurableSingletonClass α] [MeasurableSingletonClass β]
 
 private theorem pmf_measureReal_eq_expectation (p : PMF α) (A : Set α) :
-    (p.toMeasure A).toReal = expectation p (A.indicator (fun _ => (1 : ℝ))) := by
-  classical
-  rw [PMF.toMeasure_apply_fintype]
-  rw [ENNReal.toReal_sum (fun a _ => by
-    by_cases ha : a ∈ A <;> simp [Set.indicator, ha, p.apply_ne_top])]
-  apply Finset.sum_congr rfl
-  intro a ha
-  by_cases ha : a ∈ A <;> simp [Set.indicator, ha]
-
+    (p.toMeasure A).toReal = expectation p (A.indicator (fun _ => (1 : ℝ))) :=
+  RCInfinite.pmf_measureReal_eq_expectation p A
 omit [MeasurableSpace α] [MeasurableSpace β] [MeasurableSingletonClass α] [MeasurableSingletonClass β] in
 private theorem pmf_eq_bind_fiber_filter (p : PMF α) (f : α → β)
     (hf : ∀ b, ∃ a ∈ {x | f x = b}, a ∈ p.support) :
-    p = (p.map f).bind (fun b => p.filter {x | f x = b} (hf b)) := by
-  classical
-  have hden (b : β) : (∑' x, ({x | f x = b} : Set α).indicator p x) = (p.map f) b := by
-    rw [PMF.map_apply]
-    apply tsum_congr
-    intro x
-    simp [Set.indicator, eq_comm]
-  ext a
-  symm
-  rw [PMF.bind_apply]
-  have hterm (b : β) : (p.map f) b * (p.filter {x | f x = b} (hf b)) a =
-      if b = f a then p a else 0 := by
-    rw [PMF.filter_apply, hden]
-    by_cases hb : b = f a
-    · subst b
-      obtain ⟨x, hx, hxp⟩ := hf (f a)
-      have hpos : (p.map f) (f a) ≠ 0 :=
-        (PMF.mem_support_map_iff f p (f a)).2 ⟨x, hxp, hx⟩
-      simp only [Set.indicator_of_mem (show a ∈ {x | f x = f a} from rfl), ite_true]
-      calc
-        (p.map f) (f a) * (p a * ((p.map f) (f a))⁻¹) =
-            p a * ((p.map f) (f a) * ((p.map f) (f a))⁻¹) := by ac_rfl
-        _ = p a := by rw [ENNReal.mul_inv_cancel hpos ((p.map f).apply_ne_top (f a)), mul_one]
-    · have hab : a ∉ {x | f x = b} := fun h => hb h.symm
-      simp [Set.indicator_of_notMem hab, hb]
-  simp_rw [hterm]
-  simp
-
+    p = (p.map f).bind (fun b => p.filter {x | f x = b} (hf b)) :=
+  RCInfinite.pmf_eq_bind_fiber_filter p f hf
 omit [MeasurableSpace β] [MeasurableSingletonClass β] in
 private theorem pmf_joint_fiber_sum (p : PMF α) (f : α → β)
     (hf : ∀ b, ∃ a ∈ {x | f x = b}, a ∈ p.support) (S : Set α) (T : Set β) :
     (p.toMeasure (S ∩ f ⁻¹' T)).toReal =
       ∑ b, ((p.map f) b).toReal *
-        (if b ∈ T then ((p.filter {x | f x = b} (hf b)).toMeasure S).toReal else 0) := by
-  classical
-  rw [pmf_measureReal_eq_expectation]
-  conv_lhs => rw [pmf_eq_bind_fiber_filter p f hf, expectation_bind]
-  unfold expectation
-  apply Finset.sum_congr rfl
-  intro b hb
-  congr 1
-  change expectation (p.filter {x | f x = b} (hf b))
-      ((S ∩ f ⁻¹' T).indicator (fun _ => (1 : ℝ))) = _
-  rw [← pmf_measureReal_eq_expectation]
-  by_cases hbT : b ∈ T
-  · simp only [hbT, ite_true]
-    apply congrArg ENNReal.toReal
-    apply PMF.toMeasure_apply_eq_of_inter_support_eq _
-      (Set.toFinite _).measurableSet (Set.toFinite _).measurableSet
-    ext a
-    constructor
-    · rintro ⟨⟨ha, _⟩, hp⟩
-      exact ⟨ha, hp⟩
-    · rintro ⟨ha, hp⟩
-      have hfib := (PMF.mem_support_filter_iff _).mp hp
-      have hfb : f a = b := hfib.1
-      have hfa : f a ∈ T := by rw [hfb]; exact hbT
-      exact ⟨⟨ha, hfa⟩, hp⟩
-  · simp only [hbT, ite_false]
-    rw [ENNReal.toReal_eq_zero_iff]
-    left
-    apply (PMF.toMeasure_apply_eq_zero_iff _ (Set.toFinite _).measurableSet).2
-    apply Set.disjoint_left.mpr
-    intro a hp ha
-    have hfib := (PMF.mem_support_filter_iff _).mp hp
-    exact hbT (hfib.1 ▸ ha.2)
-
+        (if b ∈ T then ((p.filter {x | f x = b} (hf b)).toMeasure S).toReal else 0) :=
+  RCInfinite.pmf_joint_fiber_sum p f hf S T
 omit [MeasurableSpace β] [MeasurableSingletonClass β] in
 /-- A joint event is bounded by a uniform conditional estimate on every selected fiber.
 Only fibers whose index belongs to `T` need satisfy the conditional bound. -/
@@ -143,8 +79,7 @@ private theorem pmf_single_fiber_joint_sum (p : PMF α) (f : α → β)
       ((p.map f) b).toReal *
         ((p.filter {x | f x = b} (hf b)).toMeasure S).toReal := by
   have hset : (S ∩ {x | f x = b}) = S ∩ f ⁻¹' ({b} : Set β) := by
-    ext x
-    simp
+    rfl
   rw [hset, pmf_joint_fiber_sum p f hf S {b}]
   simp
 

@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Bethe.AsymptoticPartition
 
 /-! # Quadrature on the interior root cells
@@ -121,8 +122,7 @@ theorem root_mesh_consequences {k : ℕ} {p : Fin (k + 1) → ℝ}
   have hfirst := hmesh 0
   have hlast := hmesh (Fin.last (k + 1))
   have h0 : rootPartitionPoint (k + 1) p (by omega) (0 : Fin (k + 2)).succ = p 0 := by
-    convert rootPartitionPoint_root p (by omega) (0 : Fin (k + 1)) using 1
-    congr 1
+    rfl
   have hend : rootPartitionPoint (k + 1) p (by omega)
       (Fin.last (k + 1)).castSucc = p (Fin.last k) := by
     convert rootPartitionPoint_root p (by omega) (Fin.last k) using 1

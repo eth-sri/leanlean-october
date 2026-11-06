@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Torus.LoopReorientation
 public import PottsDiscontinuity.Torus.LoopTurning
 public import PottsDiscontinuity.Torus.LoopHomology
@@ -61,7 +62,7 @@ private theorem arrowDart_eq_dart_if_direction (ω : ArrowConfig N M) (d : Dart 
   · simpa [hd] using arrowDart_dartEdge ω ⟨d, hd⟩
   · have hdF : dartOut ω d = false := Bool.eq_false_iff.mpr hd
     have hr : dartOut ω (edgeReverse d) = true := by
-      simp [dartOut_edgeReverse, hdF]
+      simp_all
     have h := arrowDart_dartEdge ω ⟨edgeReverse d, hr⟩
     rw [dartEdge_edgeReverse] at h
     simpa [hdF] using h
@@ -84,7 +85,7 @@ theorem loopTurn_reorient (ω₀ ω₁ : ArrowConfig N M) (s : Smoothing N M)
         if b then strandTurn (s d.val.1) d.val.2
         else strandTurn (s (edgeReverse d.val).1) (edgeReverse d.val).2 := by
     have horient : dartOut ω₁ d.val = b := by
-      rw [← loopOrientation_apply ω₀ s h₀ ω₁ h₁ d, hd]
+      measurability
     rw [arrowDart_eq_dart_if_direction ω₁ d.val, horient]
     cases b <;> rfl
   have hsum :

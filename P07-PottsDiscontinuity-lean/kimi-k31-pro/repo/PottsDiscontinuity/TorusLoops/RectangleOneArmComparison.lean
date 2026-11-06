@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.CorrLength.ConnectionEvents
 public import PottsDiscontinuity.Zhang.BoundaryLimit
 
@@ -86,8 +87,7 @@ theorem iUnion_freeOneArmApprox (k : ℕ) :
     rcases Set.mem_iUnion.mp hω with ⟨n, hn⟩
     rcases Set.mem_iUnion.mp hn with ⟨i, hi⟩
     have hk : k ≤ boxRadius (oneArmWitnessEnumeration i).1 := by
-      by_contra h
-      simp [h] at hi
+      simp_all
     have hconn : ω ∈ finiteConnectionEvent (0, 0)
         (oneArmWitnessEnumeration i).1 (oneArmWitnessEnumeration i).2 := by
       simpa [hk] using hi
@@ -106,7 +106,7 @@ theorem iUnion_freeOneArmApprox (k : ℕ) :
     apply Set.mem_iUnion.mpr
     refine ⟨⟨i, le_rfl⟩, ?_⟩
     have hk : k ≤ boxRadius (oneArmWitnessEnumeration i).1 := by
-      simpa [hi] using hy
+      simp_all
     have hfin : ω ∈ finiteConnectionEvent (0, 0)
         (oneArmWitnessEnumeration i).1 (oneArmWitnessEnumeration i).2 := by
       simpa [hi] using (show ω ∈ finiteConnectionEvent (0, 0) y F from

@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Bethe.RatioMidpointLimit
 public import PottsDiscontinuity.Bethe.RatioOddSums
 
@@ -64,7 +65,7 @@ theorem ratio_odd_log_correction (c : ℝ) (s N : ℕ) (h4 : 4 ∣ N)
     rw [hidx₀, hidx₁]
     rfl
   have hA' : (∑ j, ratioEll c (alignedRoot N (2 * s + 1) hr p j)) = 2 * ∑ j, g j := by
-    simpa only [hmid] using hA
+    measurability
   have hft : f ⟨t, by omega⟩ = ratioEll c (p ⟨s, by omega⟩) := by
     have hidx : Fin.rev (⟨m + t, by omega⟩ : Fin (N / 2)) = ⟨s, by omega⟩ := by
       apply Fin.ext

@@ -77,11 +77,11 @@ theorem integer_mem_diagonal_segment {p q z : ℤ × ℤ}
   have hqmax : (0:ℝ) ≤ (max p.1 q.1:ℤ)-(q.1:ℝ) := by exact_mod_cast sub_nonneg.mpr (le_max_right _ _)
   have hzlo : (min p.1 q.1:ℤ) ≤ z.1 := by
     have h : ((min p.1 q.1:ℤ):ℝ) ≤ z.1 := by
-      nlinarith [mul_nonneg (sub_nonneg.mpr ht1) hpmin,mul_nonneg ht0 hqmin]
+      nlinarith
     exact_mod_cast h
   have hzhi : z.1 ≤ (max p.1 q.1:ℤ) := by
     have h : (z.1:ℝ) ≤ (max p.1 q.1:ℤ) := by
-      nlinarith [mul_nonneg (sub_nonneg.mpr ht1) hpmax,mul_nonneg ht0 hqmax]
+      nlinarith
     exact_mod_cast h
   have hcoord : z.1 = p.1 ∨ z.1 = q.1 := by
     have h := abs_le.mp (le_of_eq hx)

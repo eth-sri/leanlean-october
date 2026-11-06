@@ -15,8 +15,7 @@ namespace PottsDiscontinuity.Bethe
 
 theorem rootPartitionPoint_zero {n : ℕ} (p : Fin n → ℝ) (hn : 0 < n) :
     rootPartitionPoint n p hn ⟨0, by omega⟩ = p ⟨n - 1, by omega⟩ - 2 * Real.pi := by
-  simp [rootPartitionPoint]
-
+  rfl
 theorem rootPartitionPoint_end {n : ℕ} (p : Fin n → ℝ) (hn : 0 < n) :
     rootPartitionPoint n p hn ⟨n + 1, by omega⟩ = p ⟨0, hn⟩ + 2 * Real.pi := by
   simp [rootPartitionPoint]

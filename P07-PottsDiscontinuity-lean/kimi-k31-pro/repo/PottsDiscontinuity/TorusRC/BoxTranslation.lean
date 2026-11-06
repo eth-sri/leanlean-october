@@ -48,8 +48,6 @@ def liftedBoxRecenterIso (c d : RotatedVertex) (R : ℕ) :
 
 noncomputable local instance recenterBoxEdges (c : RotatedVertex) (R : ℕ) :
     Fintype (liftedBoxGraph c R).edgeSet := Fintype.ofFinite _
-noncomputable local instance recenterBoxEdgeDecidableEq (c : RotatedVertex) (R : ℕ) :
-    DecidableEq (liftedBoxGraph c R).edgeSet := Classical.decEq _
 
 noncomputable section
 

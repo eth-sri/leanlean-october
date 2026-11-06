@@ -19,7 +19,6 @@ variable {V : Type*} [Finite V] (G : SimpleGraph V)
 noncomputable section
 open scoped Classical
 local instance conditionalConnectionEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
-local instance conditionalConnectionEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 
 lemma expectation_le_on_support {α : Type*} [Fintype α] (p : PMF α) (F H : α → ℝ)
     (h : ∀ a, a ∈ p.support → F a ≤ H a) : expectation p F ≤ expectation p H := by

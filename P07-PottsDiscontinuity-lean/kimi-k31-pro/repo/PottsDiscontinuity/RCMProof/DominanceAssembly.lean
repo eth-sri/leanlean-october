@@ -33,22 +33,14 @@ private theorem upperLoopFactor_eq_densityWeight {N M : ℕ}
   unfold upperLoopFactor TorusLoops.windingLoopDensityWeight TorusLoops.windingLoopDensityBase
   let k := TorusLoops.windingLoopCount hN hM ⟨0, hNp⟩ ⟨0, hMp⟩ A
   let s := Torus.rcNetIndicator hN hM A
-  have hneg : Real.rpow q.val (-(s : ℝ)) = (q.val ^ s)⁻¹ := by
-    calc
-      Real.rpow q.val (-(s : ℝ)) = (Real.rpow q.val (s : ℝ))⁻¹ :=
-        Real.rpow_neg (le_trans (by norm_num) q.property) (s : ℝ)
-      _ = (q.val ^ s)⁻¹ := congrArg Inv.inv (Real.rpow_natCast q.val s)
   change Real.rpow (2 / Real.sqrt q.val) (k : ℝ) *
     Real.rpow q.val (-(s : ℝ)) = (2 / Real.sqrt q.val) ^ k / q.val ^ s
-  calc
-    Real.rpow (2 / Real.sqrt q.val) (k : ℝ) * Real.rpow q.val (-(s : ℝ)) =
-        (2 / Real.sqrt q.val) ^ k * Real.rpow q.val (-(s : ℝ)) := by
-      exact congrArg (fun x : ℝ => x * Real.rpow q.val (-(s : ℝ)))
-        (Real.rpow_natCast (2 / Real.sqrt q.val) k)
-    _ = (2 / Real.sqrt q.val) ^ k * (q.val ^ s)⁻¹ :=
-      congrArg (fun x : ℝ => (2 / Real.sqrt q.val) ^ k * x) hneg
-    _ = (2 / Real.sqrt q.val) ^ k / q.val ^ s :=
-      (div_eq_mul_inv _ _).symm
+  rw [show Real.rpow (2 / Real.sqrt q.val) (k : ℝ) = (2 / Real.sqrt q.val) ^ k from
+      Real.rpow_natCast _ _,
+    show Real.rpow q.val (-(s : ℝ)) = (q.val ^ s)⁻¹ from
+      (Real.rpow_neg (le_trans (by norm_num) q.property) _).trans
+        (congrArg Inv.inv (Real.rpow_natCast q.val s))]
+  exact (div_eq_mul_inv _ _).symm
 
 private theorem upperLoopFactor_le_one {N M : ℕ} (hN : Even N) (hM : Even M)
     (q : Set.Ici (1 : ℝ)) (hq : 4 < q.val) (hNp : 0 < N) (hMp : 0 < M)
@@ -87,41 +79,6 @@ private theorem upperTailRateE_inner_limsup_nonpos
     (f := atTop) (u := fun m => upperTailRateE q r n m)
     (v := fun _ : ℕ => (0 : EReal)) (Filter.Eventually.of_forall (upperTailRateE_nonpos q r n))
   simpa using h
-
-private theorem upperTailRateEventually
-    (hW21 : contract_eq316) (q : Set.Ici (1 : ℝ))
-    (μ : MeasureTheory.Measure FK.LatticeConfiguration)
-    (hμ : IsRCInfiniteVolumeLimit (FK.criticalParameters q).toP
-      (FK.criticalParameters q).toQ 0 μ)
-    (ξinv : ℝ)
-    (hRate : Tendsto (fun n : ℕ => -Real.log
-      (μ.real (CorrLength.connectionEvent (0, 0) (diagonalSite n))) / (n : ℝ))
-      atTop (𝓝 ξinv))
-    (hξ : 0 < ξinv) :
-    ∀ᶠ n : ℕ in atTop, ∀ᶠ m : ℕ in atTop,
-      TorusRC.positiveEvenVerticalTailRate q 2 n m < -3 * ξinv / 4 := by
-  let u : ℕ → EReal := fun n => Filter.limsup
-    (fun m => upperTailRateE q 2 n m) atTop
-  have huPoint (n : ℕ) : u n ≤ 0 := upperTailRateE_inner_limsup_nonpos q 2 n
-  have huBounded : Filter.IsBoundedUnder (· ≤ ·) atTop u := by
-    apply Filter.isBoundedUnder_of_eventually_le
-    exact Filter.Eventually.of_forall huPoint
-  have houter := hW21 q μ hμ ξinv hRate 2 (by norm_num)
-  have houter' : Filter.limsup u atTop ≤ (-ξinv : EReal) := by
-    simpa [u, upperTailRateE] using houter
-  have htarget : (-ξinv : ℝ) < -3 * ξinv / 4 := by nlinarith
-  have houterStrict : Filter.limsup u atTop < ((-3 * ξinv / 4 : ℝ) : EReal) := by
-    exact lt_of_le_of_lt houter' (EReal.coe_lt_coe_iff.mpr htarget)
-  have hn : ∀ᶠ n : ℕ in atTop, u n < ((-3 * ξinv / 4 : ℝ) : EReal) :=
-    Filter.eventually_lt_of_limsup_lt houterStrict huBounded
-  filter_upwards [hn] with n hn
-  have hmBounded : Filter.IsBoundedUnder (· ≤ ·) atTop
-      (fun m => upperTailRateE q 2 n m) := by
-    apply Filter.isBoundedUnder_of_eventually_le
-    exact Filter.Eventually.of_forall (upperTailRateE_nonpos q 2 n)
-  have hm := Filter.eventually_lt_of_limsup_lt hn hmBounded
-  filter_upwards [hm] with m hm
-  exact EReal.coe_lt_coe_iff.mp hm
 
 private theorem upperTailRateEventually_general
     (hW21 : contract_eq316) (q : Set.Ici (1 : ℝ))
@@ -162,6 +119,24 @@ private theorem upperTailRateEventually_general
   have hm := Filter.eventually_lt_of_limsup_lt hn hmBounded
   filter_upwards [hm] with m hm
   exact EReal.coe_lt_coe_iff.mp hm
+
+private theorem upperTailRateEventually
+    (hW21 : contract_eq316) (q : Set.Ici (1 : ℝ))
+    (μ : MeasureTheory.Measure FK.LatticeConfiguration)
+    (hμ : IsRCInfiniteVolumeLimit (FK.criticalParameters q).toP
+      (FK.criticalParameters q).toQ 0 μ)
+    (ξinv : ℝ)
+    (hRate : Tendsto (fun n : ℕ => -Real.log
+      (μ.real (CorrLength.connectionEvent (0, 0) (diagonalSite n))) / (n : ℝ))
+      atTop (𝓝 ξinv))
+    (hξ : 0 < ξinv) :
+    ∀ᶠ n : ℕ in atTop, ∀ᶠ m : ℕ in atTop,
+      TorusRC.positiveEvenVerticalTailRate q 2 n m < -3 * ξinv / 4 := by
+  have h := upperTailRateEventually_general hW21 q μ hμ ξinv hRate
+    (r := 2) (by norm_num) (ξinv / 4) (by linarith)
+  have heq : -((2 - 1 : ℕ) : ℝ) * ξinv + ξinv / 4 = -3 * ξinv / 4 := by
+    norm_num; ring
+  simpa only [heq] using h
 
 noncomputable def upperTailProbability
     {N M : ℕ} (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ))
@@ -211,11 +186,25 @@ private theorem upperLoopExpectation_abs_log_rate_eventually
   filter_upwards [hevent] with m hm
   simpa [upperLoopExpectation_rate_eq] using hm.le
 
+private theorem upperLoopExpectation_eq_sum_div {N M : ℕ}
+    (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ))
+    (hNp : 0 < N) (hMp : 0 < M) :
+    upperLoopExpectation hN hM q hNp hMp =
+      (∑ A : RCConfig N M, Torus.torusRCWeight hN hM q A *
+        upperLoopFactor hN hM q hNp hMp A) / TorusRC.torusRCPartition hN hM q := by
+  classical
+  unfold upperLoopExpectation
+  rw [Finset.sum_div]
+  apply Finset.sum_congr rfl
+  intro A _
+  simp only [TorusRC.torusRCMass]
+  field_simp [(TorusRC.torusRCPartition_pos hN hM q).ne']
+
 private theorem upperTailFactorization
     (hW12i : contract_cor313_i) (hW12iii : contract_cor313_iii)
     (q : Set.Ici (1 : ℝ)) (hq : 4 < q.val) (N M : ℕ)
     (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M)
-    {r : ℕ} (hr : r ≤ N / 2) (hr1 : 1 ≤ r) :
+    {r : ℕ} (hr1 : 1 ≤ r) :
     SixVertex.Z6Vr (Real.sqrt (2 + Real.sqrt q.val)) N M r ≤
       SixVertex.Z6V (Real.sqrt (2 + Real.sqrt q.val)) N M *
         (upperTailProbability hN hM q hMp r / upperLoopExpectation hN hM q hNp hMp) := by
@@ -234,12 +223,6 @@ private theorem upperTailFactorization
     · dsimp [c]; positivity
     · exact hNp
     · exact hMp
-  have hZr : 0 < SixVertex.Z6Vr c N M r := by
-    apply SixVertex.Z6Vr_pos
-    · dsimp [c]; positivity
-    · exact hNp
-    · exact hMp
-    · exact hr
   have htotalContract := hW12i q hq N M hN hM hNp hMp
   change (∑ A : RCConfig N M, w A * f A) =
     C * SixVertex.Z6V c N M at htotalContract
@@ -291,18 +274,7 @@ private theorem upperTailFactorization
         TorusRC.torusRCProbability hN hM q E := hsectorContract.trans htailMass
   have hsumNormalized : upperLoopExpectation hN hM q hNp hMp =
       (∑ A : RCConfig N M, w A * f A) / TorusRC.torusRCPartition hN hM q := by
-    unfold upperLoopExpectation
-    calc
-      (∑ A : RCConfig N M, TorusRC.torusRCMass hN hM q A *
-          upperLoopFactor hN hM q hNp hMp A) =
-        ∑ A : RCConfig N M, (w A * f A) /
-          TorusRC.torusRCPartition hN hM q := by
-        apply Finset.sum_congr rfl
-        intro A hA
-        simp only [TorusRC.torusRCMass, w, f]
-        field_simp [ne_of_gt hpartitionPos]
-      _ = (∑ A : RCConfig N M, w A * f A) /
-          TorusRC.torusRCPartition hN hM q := by rw [Finset.sum_div]
+    simpa [w, f] using upperLoopExpectation_eq_sum_div hN hM q hNp hMp
   have htotalNormalized : upperLoopExpectation hN hM q hNp hMp *
       TorusRC.torusRCPartition hN hM q = C * SixVertex.Z6V c N M := by
     rw [hsumNormalized, htotalContract]
@@ -359,18 +331,7 @@ private theorem upperLoopExpectation_pos
     C * SixVertex.Z6V (Real.sqrt (2 + Real.sqrt q.val)) N M at hcontract
   have hsum : upperLoopExpectation hN hM q hNp hMp =
       (∑ A : RCConfig N M, w A * f A) / TorusRC.torusRCPartition hN hM q := by
-    unfold upperLoopExpectation
-    calc
-      (∑ A : RCConfig N M, TorusRC.torusRCMass hN hM q A *
-          upperLoopFactor hN hM q hNp hMp A) =
-        ∑ A : RCConfig N M, (w A * f A) /
-          TorusRC.torusRCPartition hN hM q := by
-        apply Finset.sum_congr rfl
-        intro A hA
-        simp only [TorusRC.torusRCMass, w, f]
-        field_simp [ne_of_gt hP]
-      _ = (∑ A : RCConfig N M, w A * f A) /
-          TorusRC.torusRCPartition hN hM q := by rw [Finset.sum_div]
+    simpa [w, f] using upperLoopExpectation_eq_sum_div hN hM q hNp hMp
   rw [hsum, hcontract]
   exact div_pos (mul_pos hC hZ) hP
 
@@ -386,7 +347,7 @@ private theorem upperTailProbability_pos
   have hZr : 0 < SixVertex.Z6Vr (Real.sqrt (2 + Real.sqrt q.val)) N M r := by
     exact SixVertex.Z6Vr_pos (by positivity) hNp hMp hr
   have hfactor := upperTailFactorization hW12i hW12iii q hq N M hN hM hNp hMp
-    (r := r) hr hr1
+    (r := r) hr1
   have hpnonneg : 0 ≤ upperTailProbability hN hM q hMp r :=
     TorusRC.torusRCProbability_nonneg hN hM q _
   by_contra hnot
@@ -478,7 +439,7 @@ private theorem upperDominanceGap_fixedIndex
     have hMp : 0 < M := by dsimp [M]; exact TorusRC.positiveEvenPeriod_pos m
     have htrace := SixVertex.Lambda_pow_le_Z6Vr_even hc hNp hMp hr hM
     have hsector := upperTailFactorization hW12i hW12iii q hq N M hN hM hNp hMp
-      (r := r) hr (by omega)
+      (r := r) (by omega)
     have htailMono : upperTailProbability hN hM q hMp r ≤
         upperTailProbability hN hM q hMp 2 := by
       apply TorusRC.torusRCProbability_mono hN hM q
@@ -703,7 +664,7 @@ private theorem sectorLogRate_le_of_eventual_tail
       have := (abs_le.mp hloop').1
       simpa [neg_div] using neg_le_neg this
     have hsector := upperTailFactorization hW12i hW12iii q hq N M
-      (TorusRC.positiveEvenPeriod_even n) hM hNpos hMp hr (by exact hr1)
+      (TorusRC.positiveEvenPeriod_even n) hM hNpos hMp hr1
     have hratio : SixVertex.Z6Vr c N M r / SixVertex.Z6V c N M ≤
         p m / e m := by
       apply (div_le_iff₀ (hZV m)).2
@@ -734,15 +695,7 @@ private theorem sectorLogRate_le_of_eventual_tail
         have hloopUpper' : -(Real.log (e m) / (M : ℝ)) ≤ δ / 2 := by
           convert hloopUpper using 1; ring
         linarith [htailRate, hloopUpper']
-  by_contra hnot
-  have hlt : -((r - 1 : ℕ) : ℝ) * ξinv + δ <
-      Real.log (SixVertex.Lambda c N r / SixVertex.Lambda c N 0) := lt_of_not_ge hnot
-  have hlarge := hlimit.eventually (Ioi_mem_nhds hlt)
-  have hfalse : ∀ᶠ m : ℕ in atTop, False := by
-    filter_upwards [hlarge, hrateBound] with m hlargeM hrateM
-    exact (not_lt_of_ge hrateM.le) hlargeM
-  rcases hfalse.exists with ⟨m, hm⟩
-  exact hm
+  exact le_of_tendsto hlimit (hrateBound.mono fun _ => le_of_lt)
 
 /-- The fixed-sector estimate used to take `r → ∞` in the inverse correlation
 length upper bound. -/

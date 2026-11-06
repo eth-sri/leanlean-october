@@ -42,8 +42,7 @@ theorem exists_uniform_Xi_lower_bound {Δ₀ : ℝ} (hΔ₀ : Δ₀ < -1) :
   have hlam₀ : 0 < lam₀ := lamOf_pos hΔ₀
   have hexp : 1 < Real.exp lam₀ := by simpa using hlam₀
   have hm : 0 < m := by
-    dsimp [m]
-    exact div_pos (by linarith) (by linarith)
+    positivity
   refine ⟨m, hm, fun Δ hΔ α => ?_⟩
   have hΔ' : Δ < -1 := lt_of_le_of_lt hΔ hΔ₀
   have hlam : 0 < lamOf Δ := lamOf_pos hΔ'

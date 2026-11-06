@@ -14,7 +14,6 @@ noncomputable section
 
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 
-local instance adaptiveDomainMarkovEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 local instance adaptiveDomainMarkovEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 
 /-- The record produced by a revealed edge set stores both which edges were

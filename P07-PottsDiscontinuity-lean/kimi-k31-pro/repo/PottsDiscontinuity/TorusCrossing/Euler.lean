@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.FK.ComponentMerge
 public import PottsDiscontinuity.FK.Parameters
 public import PottsDiscontinuity.Frozen.Defs.RCCriticalParameter
@@ -113,7 +114,7 @@ theorem euler_step (hh : 0 < R.h) (A₀ : Finset Cell) (hA₀ : A₀ ⊆ R.inner
       · exact Or.inl hxm
       · exact Or.inr ⟨h1, hxm, h2⟩
   have hmD : m ∈ R.inner \ insert m A₀ → False := by
-    intro h; rw [Finset.mem_sdiff] at h; exact h.2 (Finset.mem_insert_self _ _)
+    simp_all
   have hinsA : insert m A₀ ⊆ R.inner := Finset.insert_subset hm hA₀
   have hDsub : R.inner \ insert m A₀ ⊆ R.inner := Finset.sdiff_subset
   have hkD0 : R.kD A₀ = FK.componentCount R.dG R.dualBC

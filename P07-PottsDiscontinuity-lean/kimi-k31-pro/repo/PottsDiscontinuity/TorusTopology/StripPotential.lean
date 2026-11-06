@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusTopology.StripCover
 public import PottsDiscontinuity.Torus.DiamondSeamWinding
 
@@ -114,8 +115,7 @@ theorem exists_horizontal_seam_potential_of_no_strip_crossing
       have hr := stripRightSide_congr_of_reachable hN hM A K hf ht
         (strip_endpoints_reachable hN hM A K e hx hf ht)
       have hg : g (faceEndpoint hN hM true e.val false) = g (faceEndpoint hN hM true e.val true) := by
-        dsimp [g]
-        rw [propext hr]
+        measurability
       rw [hg,sub_self]
       simp [diamondSeamCrossX,hx]
     · have hf : K ≤ (faceEndpoint hN hM true e.val false).val.1.val := by

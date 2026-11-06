@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.BetheAnsatz.Amplitude
 public import PottsDiscontinuity.BetheAnsatz.Cyclic
 
@@ -35,10 +36,7 @@ theorem amplitude_seam_swap {N n : ℕ} {c : ℝ} (hc : 2 < c)
     apply Fin.ext
     simp [j, Nat.mod_eq_of_lt (show 1 < n + 1 by omega)]
   have hzeroRotate : τ 0 = 1 := by
-    change finRotate (n + 1) j.castSucc = (1 : Fin (n + 1))
-    calc
-      finRotate (n + 1) j.castSucc = j.succ := finRotate_of_lt j.isLt
-      _ = 1 := hjsucc
+    measurability
   have hinvzero : τ.symm 0 = Fin.last n :=
     (Equiv.symm_apply_eq _).mpr hlast.symm
   have hinvone : τ.symm 1 = 0 :=
@@ -59,23 +57,18 @@ theorem amplitude_seam_swap {N n : ℕ} {c : ℝ} (hc : 2 < c)
     rw [← hconj]
     simp [ρ, mul_assoc]
   have hρzero : ρ 0 = σ (Fin.last n) := by
-    simp [ρ, Equiv.Perm.mul_apply, hinvzero]
+    rfl
   have hρone : ρ 1 = σ 0 := by
-    simp [ρ, Equiv.Perm.mul_apply, hinvone]
+    measurability
   have hρswapzero : (ρ * Equiv.swap (0 : Fin (n + 1)) 1) 0 = σ 0 := by
-    simp [Equiv.Perm.mul_apply, hρone]
+    assumption
   have hrot : amplitude (anisotropy c) p (ρ * τ) =
       (z (p (ρ 0)) ^ N)⁻¹ * amplitude (anisotropy c) p ρ :=
     amplitude_rotate (anisotropy_lt_neg_one hc) p hBE ρ
   have hτinv : τ.symm * τ = 1 := by
-    ext k
-    simp
+    measurability
   have hρτ : ρ * τ = σ := by
-    calc
-      ρ * τ = (σ * τ.symm) * τ := rfl
-      _ = σ * (τ.symm * τ) := by rw [mul_assoc]
-      _ = σ * 1 := by rw [hτinv]
-      _ = σ := by rw [mul_one]
+    measurability
   have hρamp : amplitude (anisotropy c) p ρ =
       z (p (σ (Fin.last n))) ^ N * amplitude (anisotropy c) p σ := by
     have hz : z (p (σ (Fin.last n))) ^ N ≠ 0 :=

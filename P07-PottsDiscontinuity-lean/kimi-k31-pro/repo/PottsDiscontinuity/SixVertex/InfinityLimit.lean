@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.SixVertex.Interlace
 
 /-!
@@ -60,8 +61,7 @@ theorem infinityBlock_eq_one_iff (hn : 0 < n) (x y : State N n) :
   by_cases hxy : x = y
   · subst y
     have hx : ¬ Disjoint x.1 x.1 := by
-      simp only [disjoint_self, Finset.bot_eq_empty, ← card_eq_zero, x.2]
-      omega
+      measurability
     simp only [infinityBlock_apply_self, Nat.ne_of_gt hn, ↓reduceIte, hx, and_false]
     norm_num
   · simp only [infinityBlock, hxy, ↓reduceIte]

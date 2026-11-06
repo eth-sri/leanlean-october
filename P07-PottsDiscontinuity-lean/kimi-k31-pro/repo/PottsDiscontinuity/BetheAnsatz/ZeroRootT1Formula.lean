@@ -189,73 +189,27 @@ theorem t0_t1_pairLimits_eq_eigenvalueZero {N n : ℕ} {c : ℝ}
     · intro h
       have h' := congrArg σ.symm h
       simpa using h'.symm
-  have hcoef (σ : Equiv.Perm (Fin (n + 1))) :
-      ((2 - (c : ℂ)^2) +
-          if σ.symm l = Fin.last n then (c : ℂ)^2 * (N : ℂ) else 0) +
-        (c : ℂ)^2 *
-          (D + if σ (Fin.last n) = l then 0 else (N : ℂ)) =
-        (2 + (c : ℂ)^2 * ((N : ℂ) - 1) + (c : ℂ)^2 * D) := by
-    by_cases hs : σ (Fin.last n) = l
-    · simp [hseam σ, hs]
-      ring
-    · simp [hseam σ, hs]
-      ring
   have ht1 := tendsto_sum_t1PairLimit_eq_sum_t1SigmaLimitTerm
     (N := N) (n := n) hc x p hp hinj l hpl hBE
   rw [ht1]
   rw [t0RegularizedSum_zero]
   simp only [coordinateWave]
-  calc
-    _ = (∏ j ∈ (univ : Finset (Fin (n + 1))).erase l,
-          M c (z (p j))) *
-          ∑ σ : Equiv.Perm (Fin (n + 1)),
-            amplitude (anisotropy c) p σ * planeWave p σ x *
-              ((2 - (c : ℂ)^2) +
-                if σ.symm l = Fin.last n then (c : ℂ)^2 * (N : ℂ) else 0) +
-        ((c : ℂ)^2 *
-          (∏ j ∈ (univ : Finset (Fin (n + 1))).erase l,
-            M c (z (p j)))) *
-          ∑ σ : Equiv.Perm (Fin (n + 1)),
-            amplitude (anisotropy c) p σ * planeWave p σ x *
-              (D + if σ (Fin.last n) = l then 0 else (N : ℂ)) := by
-      rw [sum_t1SigmaLimitTerm_formula]
-    _ = ∑ σ : Equiv.Perm (Fin (n + 1)),
-          ((∏ j ∈ (univ : Finset (Fin (n + 1))).erase l,
-            M c (z (p j))) *
-            (amplitude (anisotropy c) p σ * planeWave p σ x) *
-            ((2 - (c : ℂ)^2) +
-              if σ.symm l = Fin.last n then (c : ℂ)^2 * (N : ℂ) else 0) +
-          (∏ j ∈ (univ : Finset (Fin (n + 1))).erase l,
-            M c (z (p j))) *
-            (amplitude (anisotropy c) p σ * planeWave p σ x) *
-            ((c : ℂ)^2 *
-              (D + if σ (Fin.last n) = l then 0 else (N : ℂ)))) := by
-      rw [Finset.mul_sum, Finset.mul_sum]
-      rw [← Finset.sum_add_distrib]
-      apply Finset.sum_congr rfl
-      intro σ hσ
-      ring
-    _ = ∑ σ : Equiv.Perm (Fin (n + 1)),
-          (∏ j ∈ (univ : Finset (Fin (n + 1))).erase l,
-            M c (z (p j))) *
-            (amplitude (anisotropy c) p σ * planeWave p σ x) *
-            (2 + (c : ℂ)^2 * ((N : ℂ) - 1) + (c : ℂ)^2 * D) := by
-      apply Finset.sum_congr rfl
-      intro σ hσ
-      rw [← hcoef σ]
-      ring
-    _ = eigenvalueZero N c p l * coordinateWave (anisotropy c) p x := by
-      have hD : D =
-          ∑ j ∈ (univ : Finset (Fin (n + 1))).erase l,
-            deriv (fun t : ℝ =>
-              (Bethe.theta (anisotropy c) t (p j) : ℂ)) 0 := by
-        dsimp [D]
-        exact t1RootDerivativeSum_eq_erase (N := N) hc p l
-      rw [hD]
-      simp only [eigenvalueZero, coordinateWave]
-      conv_rhs => rw [Finset.mul_sum]
-      apply Finset.sum_congr rfl
-      intro σ hσ
-      ring
+  rw [sum_t1SigmaLimitTerm_formula]
+  have hD : D =
+      ∑ j ∈ (univ : Finset (Fin (n + 1))).erase l,
+        deriv (fun t : ℝ => (Bethe.theta (anisotropy c) t (p j) : ℂ)) 0 := by
+    dsimp [D]
+    exact t1RootDerivativeSum_eq_erase (N := N) hc p l
+  simp only [eigenvalueZero, coordinateWave]
+  conv_rhs => rw [Finset.mul_sum]
+  rw [Finset.mul_sum, Finset.mul_sum, ← Finset.sum_add_distrib]
+  apply Finset.sum_congr rfl
+  intro σ hσ
+  by_cases hs : σ (Fin.last n) = l
+  · simp [hseam σ, hs, show t1RootDerivativeSum (N := N) (anisotropy c) p l = _ from hD]
+    ring
+  · simp [hseam σ, hs, show t1RootDerivativeSum (N := N) (anisotropy c) p l = _ from hD]
+    ring
+
 
 end PottsDiscontinuity.BetheAnsatz

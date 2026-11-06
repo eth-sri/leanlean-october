@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Torus.DiamondChains
 
 /-!
@@ -49,9 +50,7 @@ theorem exists_diamondPotential_of_cycle_annihilator (hN : Even N) (hM : Even M)
     (h : ∀ f : diamondCycleSpace hN hM A, ∑ e, c e * f.val e = 0) :
     ∃ g : FaceVertex N M true → ℚ, diamondCoboundary hN hM A g = c := by
   have ht : edgePairFunctional A c ∈ (LinearMap.ker (diamondBoundary hN hM A)).dualAnnihilator := by
-    rw [Submodule.mem_dualAnnihilator]
-    intro f hf
-    exact h ⟨f, hf⟩
+    measurability
   rw [← LinearMap.range_dualMap_eq_dualAnnihilator_ker] at ht
   obtain ⟨H, hH⟩ := ht
   refine ⟨fun u => H (Pi.single u 1), ?_⟩

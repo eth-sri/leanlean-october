@@ -89,8 +89,7 @@ def stepPerm (s : Smoothing N M) : Equiv.Perm (Dart N M) :=
 /-- Edge reversal conjugates a path step into its inverse. -/
 theorem edgeReverse_step (s : Smoothing N M) (d : Dart N M) :
     edgeReverse (stepPerm s d) = (stepPerm s).symm (edgeReverse d) := by
-  simp
-
+  rfl
 /-- Whether a local edge slot points out of its vertex. -/
 def localOut (l r d u : Bool) : Port → Bool
   | .west => !l

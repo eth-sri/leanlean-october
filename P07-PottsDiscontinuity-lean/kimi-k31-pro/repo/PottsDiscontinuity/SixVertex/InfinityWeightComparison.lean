@@ -90,6 +90,5 @@ theorem defectGroundWeight_upper_eq_lift (hN : 0 < N) {x : Finset (Fin N)}
 /-- The original candidate agrees with the sine product on its canonical integer lift. -/
 theorem defectGroundWeight_eq_lift (x : Finset (Fin N)) :
     defectGroundWeight x = sineLiftWeight ((N : ℝ) + (defects x).card) (orderedDefectLift x) := by
-  simp only [defectGroundWeight, sineLiftWeight, orderedDefectLift, Int.cast_natCast]
-
+  rfl
 end PottsDiscontinuity.SixVertex

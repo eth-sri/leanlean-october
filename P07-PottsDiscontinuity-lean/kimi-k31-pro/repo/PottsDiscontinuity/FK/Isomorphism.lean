@@ -21,8 +21,6 @@ def boundaryConditionIso (e : G ≃g H) (ξ : BoundaryCondition V) : BoundaryCon
   · exact Or.inr ⟨⟨e.symm x,hx,e.apply_symm_apply x⟩,⟨e.symm y,hy,e.apply_symm_apply y⟩⟩
 def configurationIsoEdgeEquiv (e : G ≃g H) : G.edgeSet ≃ H.edgeSet := SimpleGraph.Iso.mapEdgeSet e
 def configurationIso (e : G ≃g H) : Configuration G ≃ Configuration H := (configurationIsoEdgeEquiv e).finsetCongr
-@[simp] theorem configurationIso_val (e : G ≃g H) (A : Configuration G) :
- (configurationIso e A).val = A.val.map (configurationIsoEdgeEquiv e).toEmbedding := rfl
 
 @[simp] theorem card_configurationIso (e : G ≃g H) (A : Configuration G) :
     (configurationIso e A).card = A.card := by
@@ -142,7 +140,6 @@ def componentQuotientIso (e : G ≃g H) (ξ : BoundaryCondition V) (A : Configur
 
 section Finite
 variable [Finite V] [Finite W]
-local instance isomorphismOriginalEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 local instance isomorphismTargetEdgeFintype : Fintype H.edgeSet := Fintype.ofFinite _
 
 theorem componentCount_configurationIso (e : G ≃g H) (ξ : BoundaryCondition V)

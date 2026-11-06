@@ -14,7 +14,6 @@ noncomputable section
 attribute [local instance] FK.configurationMeasurableSpace
 local instance connectionBoundaryFintype (n : ℕ) : Fintype (BoundaryVertex (box n)) := Fintype.ofFinite _
 local instance connectionOuterEdgeFintype (n : ℕ) : Fintype (OuterBoxEdge n) := Fintype.ofFinite _
-local instance connectionShellFintype (n : ℕ) : Fintype (OuterShellEdge n) := Fintype.ofFinite _
 
 /-- Every state in the conditioning event has a unique literal/shell decomposition. -/
 theorem outerClosed_eq_restore (n : ℕ) (hn : 0 < n) (Ω : OuterBoxEdge n → Bool)

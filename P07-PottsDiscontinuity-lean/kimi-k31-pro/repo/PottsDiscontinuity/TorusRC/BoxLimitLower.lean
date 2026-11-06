@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusRC.SquareBoxComparison
 public import PottsDiscontinuity.TorusRC.FiniteEventMeasure
 
@@ -48,7 +49,6 @@ theorem liftedBoxFreeDiagonalProbability_eventually_gt (θ : Parameters) (n : �
   let v : BoxVertex (0,0) r := ⟨((n:ℤ),(n:ℤ)),hv⟩
   have hprob := boxProbabilityMeasure_connection_eq θ (0,0) r u v
   have hru : squareToRotatedVertex u.val = rotatedLatticeOrigin := by
-    apply Subtype.ext
     rfl
   have hrv : squareToRotatedVertex v.val = rotatedDiagonalSite n := by
     apply Subtype.ext

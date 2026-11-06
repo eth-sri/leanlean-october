@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.FK.PositiveAssociation
 public import PottsDiscontinuity.Potts.ClusterColoring
 public import PottsDiscontinuity.Potts.FiniteExpansion
@@ -70,9 +71,7 @@ theorem card_edgeAgreement (ω : G.edgeSet → Bool) :
   rw [card_clusterColoring, FK.componentCount, FK.componentSetoid_free]
 
 @[simp] theorem card_pottsColors (q : ℕ) : Nat.card (Set.Icc 1 q) = q := by
-  rw [Nat.card_eq_fintype_card, Fintype.card_Icc, Nat.card_Icc]
-  omega
-
+  simp_all
 /-- The free random-cluster weight is the Bernoulli bond weight times the
 number of compatible Potts colourings. -/
 theorem fk_weight_eq_bernoulli (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β)

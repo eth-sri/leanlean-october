@@ -152,13 +152,6 @@ theorem parafermionicCoverFiniteFaceTopEdgeBox_mem_boundaryGraph {n : ℕ}
   rw [parafermionicCoverFiniteFaceBoundaryGraph_edgeSet]
   simp [parafermionicCoverFiniteFaceTopEdgeBox, coverFaceB2, coverFaceB3]
 
-@[simp] theorem parafermionicCoverFiniteFaceTopEdgeBox_map {n : ℕ}
-    (f : ParafermionicCoverVertex)
-    (hf : f ∈ parafermionicCoverFiniteOrdinaryFaces n) :
-    Sym2.map Subtype.val (parafermionicCoverFiniteFaceTopEdgeBox f hf) =
-      parafermionicCoverFiniteFaceTopEdge f := by
-  simp [parafermionicCoverFiniteFaceTopEdgeBox, parafermionicCoverFiniteFaceTopEdge,
-    Sym2.map_mk]
 
 @[irreducible] noncomputable def parafermionicCoverFiniteFaceBoundaryDegree {n : ℕ} (f : ParafermionicCoverVertex)
     (hf : f ∈ parafermionicCoverFiniteOrdinaryFaces n)

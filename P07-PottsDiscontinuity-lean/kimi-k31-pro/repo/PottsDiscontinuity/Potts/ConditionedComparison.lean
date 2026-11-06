@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Potts.FiniteEnergyBounds
 
 /-! Conditional comparisons for the literal boundary correction. -/
@@ -54,7 +55,7 @@ theorem conditioned_squeeze_bounds {u c g b δ : ℝ}
   have h2 : δ * (u - g) ≤ c - u := by
     have ha := mul_le_mul_of_nonneg_right hδb (sub_nonneg.mpr hgu)
     have hright : (1 - b) * (c - u) ≤ c - u := by
-      nlinarith [mul_nonneg hb0.le (sub_nonneg.mpr hcu)]
+      nlinarith
     linarith
   constructor
   · have := (le_div_iff₀ hδ).mpr (by nlinarith : (u - g) * δ ≤ c - u)

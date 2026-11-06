@@ -30,7 +30,7 @@ theorem ext_of_cylinders {ι S : Type*} [MeasurableSpace S] [MeasurableSingleton
   have hmeas : ∀ (A : Finset ι) (ξ : ι → S), MeasurableSet {σ : ι → S | ∀ x ∈ A, σ x = ξ x} := by
     intro A ξ
     have : {σ : ι → S | ∀ x ∈ A, σ x = ξ x} = ⋂ x ∈ A, {σ | σ x = ξ x} := by
-      ext σ; simp
+      measurability
     rw [this]
     refine MeasurableSet.biInter A.countable_toSet fun x _ => ?_
     have hx : MeasurableSet ((fun f : ι → S => f x) ⁻¹' {ξ x}) :=
@@ -42,7 +42,7 @@ theorem ext_of_cylinders {ι S : Type*} [MeasurableSpace S] [MeasurableSingleton
       refine MeasurableSpace.comap_le_iff_le_map.2 ?_
       intro T hT
       have : (fun σ : ι → S => σ i) ⁻¹' T = ⋃ t : T, {σ : ι → S | σ i = t} := by
-        ext σ; simp
+        measurability
       show MeasurableSet[MeasurableSpace.generateFrom C] ((fun σ : ι → S => σ i) ⁻¹' T)
       rw [this]
       refine MeasurableSet.iUnion fun t => ?_

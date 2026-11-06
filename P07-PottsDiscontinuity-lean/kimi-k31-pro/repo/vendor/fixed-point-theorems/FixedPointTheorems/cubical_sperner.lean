@@ -776,7 +776,7 @@ theorem strong_cubical_sperner (k: ℕ ) : ∀ (SC : SpernerCube), k = SC.n →
     {
       intro I hI
       have hI' : complete_simplex SC2 k I := by
-        simpa only [Finset.mem_coe, Finset.mem_filter, Finset.mem_univ, true_and] using hI
+        simp_all
       simpa only [Finset.mem_coe, Finset.mem_filter, Finset.mem_univ, true_and]
         using (hcomp I).mpr hI'
     }

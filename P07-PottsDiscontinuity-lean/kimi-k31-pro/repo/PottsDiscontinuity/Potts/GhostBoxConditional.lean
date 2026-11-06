@@ -14,7 +14,6 @@ open Classical MeasureTheory
 noncomputable section
 attribute [local instance] FK.configurationMeasurableSpace
 local instance conditionalBoundaryFintype (n : ℕ) : Fintype (BoundaryVertex (box n)) := Fintype.ofFinite _
-local instance conditionalOuterEdgeFintype (n : ℕ) : Fintype (OuterBoxEdge n) := Fintype.ofFinite _
 local instance conditionalGhostMeasurable (n : ℕ) : MeasurableSpace (LiteralBond (box n) → Bool) := ⊤
 local instance conditionalGhostDiscrete (n : ℕ) : DiscreteMeasurableSpace (LiteralBond (box n) → Bool) :=
   ⟨fun _ => trivial⟩

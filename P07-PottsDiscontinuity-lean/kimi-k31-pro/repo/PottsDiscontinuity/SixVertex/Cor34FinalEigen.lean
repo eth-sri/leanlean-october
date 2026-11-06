@@ -71,7 +71,7 @@ theorem cor34_final_even_block_eigen {N n : ℕ} {c Δ : ℝ}
   · have hfull' : (transferMatrix N c).map (algebraMap ℝ ℂ) *ᵥ
         BetheAnsatz.betheVector Δ p =
       BetheAnsatz.eigenvalueRegular c p • BetheAnsatz.betheVector Δ p := by
-        simpa only [hΔ] using hfull
+        simp_all
     exact cor34_final_restrict_full_eigen hfull'
   · exact (cor34_even_S_n_roots_nonzero hp hn l hl).elim
 

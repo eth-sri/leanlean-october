@@ -31,7 +31,6 @@ private theorem cycleFlow_zero_sum_on_neighborPair
     exact p.adj_of_mem_edges ((p.adj_toSubgraph_iff_mem_edges).1 hw)
   have hout : ∀ w ∈ ambient, w ∉ cycle → c v w = 0 := by
     intro w hw hnot
-    have hG : G.Adj v w := by simpa [ambient] using hw
     have hnotAdj : ¬p.toSubgraph.Adj v w := by simpa [cycle] using hnot
     apply hsupport
     intro hedge

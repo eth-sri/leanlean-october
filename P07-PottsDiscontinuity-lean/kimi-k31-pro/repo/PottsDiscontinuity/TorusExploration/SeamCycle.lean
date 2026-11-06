@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.SixVertex.InfinityEndpointOrder
 public import PottsDiscontinuity.Torus.RibbonConnectivity
 
@@ -74,8 +75,7 @@ lemma seamCycleVertex_eq_top (hN : Even N) (hM : Even M) (hMp : 0 < M)
   have hp := checker_prv_y hM u.val.1 (⟨0,hMp⟩ : Fin M)
   have ht : checker (u.val.1,prv (⟨0,hMp⟩ : Fin M))=true := by simpa [←hy] using u.property
   have hc : checker (u.val.1,(⟨0,hMp⟩ : Fin M))=false := by
-    rw [ht] at hp
-    cases h : checker (u.val.1,(⟨0,hMp⟩ : Fin M)) <;> simp_all
+    simp_all
   apply Subtype.ext
   simp only [seamCycleVertex,hc,ite_true,faceEndpoint,faceEndpointRaw]
   exact Prod.ext rfl hy.symm

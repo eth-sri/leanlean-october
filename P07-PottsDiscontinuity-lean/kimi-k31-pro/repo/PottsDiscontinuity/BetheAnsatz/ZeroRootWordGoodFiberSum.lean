@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootWordFiniteSum
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootWordGoodFiber
 
@@ -32,10 +33,7 @@ noncomputable def rootSlotWordFiberEquiv {n : ℕ} (l : Fin (n + 1)) :
     cases q with
     | mk s w => exact congrArg (fun t => (t, w)) ((rootSlotFiberEquiv l).left_inv s)
   right_inv := by
-    intro q
-    cases q with
-    | mk σ w => exact congrArg (fun t => (t, w)) ((rootSlotFiberEquiv l).right_inv σ)
-
+    tauto
 /-- The word value associated with the root-slot good-fiber condition. -/
 def rootSlotWordGood {n : ℕ} (l : Fin (n + 1))
     (i : RootSlotWordFiberIndex n l) : Prop :=
@@ -115,16 +113,9 @@ noncomputable def rootSlotWordConstantSubtypeEquiv {n : ℕ} {l : Fin (n + 1)} :
   toFun i := (i.1.1, ⟨i.1.2, i.2⟩)
   invFun q := ⟨(q.1, q.2.1), q.2.2⟩
   left_inv := by
-    intro i
-    apply Subtype.ext
-    rfl
+    tauto
   right_inv := by
-    intro q
-    apply Prod.ext
-    · rfl
-    · apply Subtype.ext
-      rfl
-
+    tauto
 /-- Reindex constant root-slot terms by the permutation and constant-word bit. -/
 noncomputable def rootSlotWordConstantEquiv {n : ℕ} {l : Fin (n + 1)} :
     {i : RootSlotWordFiberIndex n l // rootSlotWordConstant i} ≃
@@ -137,25 +128,16 @@ noncomputable def rootSlotWordGoodEquiv {n : ℕ} {l : Fin (n + 1)} :
     {i : RootSlotWordFiberIndex n l // rootSlotWordGood l i} ≃
       RootIncidentFiberTermIndex n l where
   toFun i := by
-    let d : RootFiberRawData n := (i.1.1.val.1, (i.1.1.val.2, i.1.2))
-    exact ⟨d, i.2⟩
+    measurability
   invFun j := by
     rcases j with ⟨d, hd⟩
     rcases d with ⟨r, sw⟩
     rcases sw with ⟨σ, w⟩
     exact ⟨(⟨(r, σ), hd.1⟩, w), hd⟩
   left_inv := by
-    rintro ⟨⟨s, w⟩, hi⟩
-    apply Subtype.ext
-    apply Prod.ext
-    · apply Subtype.ext
-      rfl
-    · rfl
+    tauto
   right_inv := by
-    intro j
-    apply Subtype.ext
-    rfl
-
+    tauto
 /-- A nonconstant word with a selected ML edge disjoint from the root slot. -/
 def RootSlotBadWord {n : ℕ} (r : Fin (n + 1)) :=
   {w : Fin (n + 1) → Bool //
@@ -222,22 +204,9 @@ noncomputable def rootSlotWordBadEquiv {n : ℕ} {l : Fin (n + 1)} :
       exact hw.2.2 hAll
     exact ⟨i, hconst, hgood⟩
   left_inv := by
-    intro i
-    apply Subtype.ext
-    rfl
+    tauto
   right_inv := by
-    intro j
-    cases j with
-    | mk r rest =>
-      rcases rest with ⟨w, σ⟩
-      apply Sigma.ext
-      · rfl
-      · apply heq_of_eq
-        apply Prod.ext
-        · apply Subtype.ext
-          rfl
-        · rfl
-
+    tauto
 /-- The complement of the survivor indices is exactly the bad subtype. -/
 noncomputable def rootSlotWordSurvivorComplementEquiv {n : ℕ} {l : Fin (n + 1)} :
     {i : RootSlotWordFiberIndex n l // ¬ rootSlotWordSurvivor l i} ≃
@@ -277,8 +246,6 @@ theorem sum_rootSlotWordBadFiberTerm_eq_zero {N n : ℕ} {c : ℝ}
     _ = ∑ i : {i : RootSlotWordFiberIndex n l //
         ¬ rootSlotWordConstant i ∧ ¬ rootSlotWordGood l i},
         g (rootSlotWordBadEquiv (l := l) i) := by
-          apply Finset.sum_congr rfl
-          intro i hi
           rfl
     _ = ∑ i : RootSlotBadFiberIndex l, g i := Equiv.sum_comp
       (rootSlotWordBadEquiv (l := l)) g
@@ -364,9 +331,9 @@ theorem rootSlotWordGoodFiberTerm_eq_incidentTerm {N n : ℕ} {c : ℝ}
   have hσ := congrArg (fun d : RootFiberRawData n => d.2.1) hraw
   have hw := congrArg (fun d : RootFiberRawData n => d.2.2) hraw
   have hσ' : j.σ.1 = i.1.1.val.2 := by
-    simpa [rootIncidentFiberUnderlying, rootSlotWordGoodEquiv] using hσ
+    assumption
   have hw' : j.w = i.1.2 := by
-    simpa [rootIncidentFiberUnderlying, rootSlotWordGoodEquiv] using hw
+    assumption
   unfold rootSlotWordFiberTerm rootIncidentTermTerm
   change fixedAmplitudeWordTerm (N := N) c x p q i.1.1.val.2 i.1.2 =
     fixedAmplitudeWordTerm (N := N) c x p q j.σ.1 j.w
@@ -431,8 +398,6 @@ theorem sum_rootSlotWordFiberTerm_eq_constant_good_bad {N n : ℕ} {c : ℝ}
     calc
       _ = ∑ i : {i : RootSlotWordSurvivorIndex n l // rootSlotWordConstant i.1},
           f (e i).1 := by
-            apply Finset.sum_congr rfl
-            intro i hi
             rfl
       _ = ∑ i : RootSlotWordConstantIndex n l, f i.1 :=
         Equiv.sum_comp e (fun i => f i.1)
@@ -443,8 +408,6 @@ theorem sum_rootSlotWordFiberTerm_eq_constant_good_bad {N n : ℕ} {c : ℝ}
     calc
       _ = ∑ i : {i : RootSlotWordSurvivorIndex n l // ¬ rootSlotWordConstant i.1},
           f (e i).1 := by
-            apply Finset.sum_congr rfl
-            intro i hi
             rfl
       _ = ∑ i : RootSlotWordGoodIndex n l, f i.1 :=
         Equiv.sum_comp e (fun i => f i.1)
@@ -455,8 +418,6 @@ theorem sum_rootSlotWordFiberTerm_eq_constant_good_bad {N n : ℕ} {c : ℝ}
     calc
       _ = ∑ i : {i : RootSlotWordFiberIndex n l // ¬ rootSlotWordSurvivor l i},
           f (e i).1 := by
-            apply Finset.sum_congr rfl
-            intro i hi
             rfl
       _ = ∑ i : RootSlotWordBadIndex n l, f i.1 :=
         Equiv.sum_comp e (fun i => f i.1)

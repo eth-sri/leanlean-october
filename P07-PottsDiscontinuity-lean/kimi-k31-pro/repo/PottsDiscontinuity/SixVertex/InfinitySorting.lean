@@ -19,10 +19,7 @@ noncomputable def orderedSiteLift (s : Finset (Fin N)) (hs : s.card = k) : Fin k
 
 theorem defectGroundWeight_eq_orderedSiteLift (x : Finset (Fin N)) (hs : (defects x).card = k) :
     defectGroundWeight x = sineLiftWeight ((N : ℝ) + k) (orderedSiteLift (defects x) hs) := by
-  subst k
-  simp only [defectGroundWeight, sineLiftWeight, orderedSiteLift, defectCoordinate,
-    Int.cast_add, Int.cast_natCast, Nat.cast_add]
-
+  aesop
 private theorem strictMono_snoc {A : Type*} [Preorder A] {k : ℕ}
     {f : Fin k → A} {a : A} (hf : StrictMono f) (ha : ∀ i, f i < a) :
     StrictMono (Fin.snoc f a) := by

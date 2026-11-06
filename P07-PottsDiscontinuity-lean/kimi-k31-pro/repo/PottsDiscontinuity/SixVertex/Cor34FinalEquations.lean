@@ -29,9 +29,7 @@ theorem cor34_discreteBethe_phase (n : ℕ) (j : Fin n) :
     push_cast [Nat.cast_sub hn]
     ring
   have hperiod : Complex.exp ((j.val : ℂ) * (2 * Real.pi * I)) = 1 := by
-    have hj : (j.val : ℂ) = (j.val : ℤ) := by norm_cast
-    rw [hj]
-    convert Complex.exp_int_mul_two_pi_mul_I (j.val : ℤ) using 1
+    simp_all
   have hsign : Complex.exp (((n - 1 : ℕ) : ℂ) * (-(Real.pi * I))) =
       (-1 : ℂ) ^ (n - 1) := by
     rw [Complex.exp_nat_mul]
@@ -68,8 +66,7 @@ theorem cor34_discreteBetheEquation_to_betheEquations
             Complex.exp_add]
     _ = (-1 : ℂ) ^ (n - 1) *
         Complex.exp (- (I * ((∑ k : Fin n, Bethe.theta Δ (p j) (p k) : ℝ) : ℂ))) := by
-          rw [hphase]
-
+          simp_all
 /-- The strict ordering in `S_n` makes all momenta distinct. -/
 theorem cor34_S_n_injective {n : ℕ} {p : Fin n → ℝ} (hp : p ∈ Bethe.S_n n) :
     Function.Injective p :=

@@ -31,8 +31,7 @@ theorem centered_anchor_bound {n N : ℕ} {C : ℝ} {u : ℕ → ℝ}
     rw [hs, show -u (n / 2) - u (n / 2) = -(2 * u (n / 2)) by ring,
       abs_neg, abs_mul, abs_of_pos (by norm_num : (0 : ℝ) < 2)] at hd
     have hu : |u (n / 2)| ≤ 1 := by
-      have := mul_le_mul_of_nonneg_right hq1 (by positivity : 0 ≤ |u (n / 2)| + 1)
-      linarith
+      nlinarith
     have := mul_le_mul_of_nonneg_left (show |u (n / 2)| + 1 ≤ 2 by linarith) hq
     linarith
 

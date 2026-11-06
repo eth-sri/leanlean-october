@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Bethe.RatioSecondDerivative
 
 /-! # Summable bounds for the logarithms of odd midpoint factors -/
@@ -53,7 +54,6 @@ theorem ratio_midpoint_second_difference (f f' f'' : ℝ → ℝ) {a b L : ℝ}
   rw [ham] at ha
   rw [hbm] at hb
   have he : 2 * f m - f a - f b = -(g a - g m) - (g b - g m) := by
-    dsimp [g, m]
     ring
   change |2 * f m - f a - f b| ≤ _
   rw [he]
@@ -99,7 +99,7 @@ theorem ratio_midpoint_rank_bound {c B M D a b : ℝ} {N k : ℕ}
   have hNp : (0 : ℝ) < N := Nat.cast_pos.mpr hN
   have hkpos : (0 : ℝ) < (k : ℝ) + 1 := by positivity
   have hrank' : (k : ℝ) + 1 ≤ 2 * (M * N) * a := by
-    nlinarith only [hrank, (Nat.cast_nonneg k : (0 : ℝ) ≤ k)]
+    linarith
   have hgap' : (b - a) * (N : ℝ) ≤ D := (le_div_iff₀ hNp).mp hgap
   have h₁ := mul_le_mul_of_nonneg_right hrank' (sub_nonneg.mpr hab)
   have h₂ := mul_le_mul_of_nonneg_left hgap' (mul_nonneg (mul_nonneg (by norm_num : (0 : ℝ) ≤ 2) hM) ha.le)

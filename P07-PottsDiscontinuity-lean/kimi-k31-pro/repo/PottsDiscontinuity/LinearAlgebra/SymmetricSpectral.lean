@@ -99,7 +99,7 @@ theorem mulVec_eq_of_dotProduct_mulVec_eq (hA : A.IsHermitian) {ρ : ℝ}
     (hx : x ⬝ᵥ (A *ᵥ x) = ρ * (x ⬝ᵥ x)) : A *ᵥ x = ρ • x := by
   rw [dotProduct_mulVec_eq_sum hA, dotProduct_self_eq_sum hA, Finset.mul_sum] at hx
   have h0 : ∑ i, (ρ * (eigvec hA i ⬝ᵥ x) ^ 2 - hA.eigenvalues i * (eigvec hA i ⬝ᵥ x) ^ 2) = 0 := by
-    rw [Finset.sum_sub_distrib]; linarith
+    simp_all
   have hnn : ∀ i ∈ Finset.univ, 0 ≤ ρ * (eigvec hA i ⬝ᵥ x) ^ 2
       - hA.eigenvalues i * (eigvec hA i ⬝ᵥ x) ^ 2 := fun i _ => by
     nlinarith [hρ i, sq_nonneg (eigvec hA i ⬝ᵥ x)]

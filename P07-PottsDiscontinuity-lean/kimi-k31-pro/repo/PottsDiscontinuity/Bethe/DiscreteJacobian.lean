@@ -49,7 +49,7 @@ theorem hasDerivAt_theta_affine {Δ : ℝ} (hΔ : Δ < -1) (x y a b : ℝ) :
     exact h₂.unique (HasFDerivAt.comp_hasDerivAt (f := fun t : ℝ => ((x, t) : ℝ × ℝ))
       y hF h₂path)
   have hvec : (a, b) = a • (1, 0) + b • (0, 1) := by
-    ext <;> simp
+    simp_all
   have hfd : fderiv ℝ F (x, y) (a, b) =
       a * thetaPartialFirst Δ x y + b * thetaPartialSecond Δ x y := by
     calc
@@ -64,7 +64,6 @@ theorem hasDerivAt_theta_affine {Δ : ℝ} (hΔ : Δ < -1) (x y a b : ℝ) :
     have hm := (hasDerivAt_id 0).mul_const a
     have hadd := (hasDerivAt_const 0 x).add hm
     have heq : (fun t : ℝ => x + t * a) = (fun t => x) + fun t => t * a := by
-      funext t
       rfl
     rw [heq]
     simpa using hadd
@@ -72,13 +71,12 @@ theorem hasDerivAt_theta_affine {Δ : ℝ} (hΔ : Δ < -1) (x y a b : ℝ) :
     have hm := (hasDerivAt_id 0).mul_const b
     have hadd := (hasDerivAt_const 0 y).add hm
     have heq : (fun t : ℝ => y + t * b) = (fun t => y) + fun t => t * b := by
-      funext t
       rfl
     rw [heq]
     simpa using hadd
   have hpath := hxa.prodMk hyb
   have hF0 : HasFDerivAt F (fderiv ℝ F (x, y)) (x + 0 * a, y + 0 * b) := by
-    simpa using hF
+    simp_all
   have hcomp := HasFDerivAt.comp_hasDerivAt (f := fun t : ℝ =>
       ((x + t * a, y + t * b) : ℝ × ℝ)) 0 hF0 hpath
   rw [hfd] at hcomp
@@ -187,10 +185,7 @@ theorem discreteSymBasis_mem_R_n_sym {n : ℕ} (k : Fin (n / 2)) :
         have h'' : j = Fin.rev a := by simpa using h'
         exact h₂ h''
       have hr₂ : Fin.rev j ≠ Fin.rev a := by
-        intro h
-        have h' := congrArg Fin.rev h
-        have h'' : j = a := by simpa using h'
-        exact h₁ h''
+        simp_all
       simp [discreteSymBasis, a, h₁, h₂, hr₁, hr₂]
 
 /-- The source's explicit symmetric-coordinate matrix `A` for `d(I-T)`. -/
@@ -467,8 +462,7 @@ theorem discreteBetheMatrixATilde_offdiag_nonneg {Δ : ℝ} {N n : ℕ}
   have hyhi : p (discreteHalfIndex n k) < 0 := discreteS_n_half_coord_neg hp k
   have hgap : 0 ≤ p (discreteHalfNextIndex n k) - p (discreteHalfIndex n k) := by
     have hidx : discreteHalfIndex n k < discreteHalfNextIndex n k := by
-      simp only [discreteHalfIndex, discreteHalfNextIndex, Fin.mk_lt_mk]
-      omega
+      tauto
     exact le_of_lt (sub_pos.mpr (hp.2.1 hidx))
   have hG : 0 ≤ deriv (fun y => discreteBetheG Δ (p (discreteHalfIndex n i)) y)
       (p (discreteHalfIndex n k)) :=

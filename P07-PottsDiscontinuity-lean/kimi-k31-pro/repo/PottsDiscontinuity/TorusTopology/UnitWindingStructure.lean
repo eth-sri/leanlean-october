@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusTopology.PositiveLoops
 public import PottsDiscontinuity.TorusTopology.VerticalSupport
 
@@ -71,22 +72,11 @@ theorem U_one_vertical_loop_structure
   have hq0 := (hmem q).mp hq
   have hr0 := (hmem r).mp hr
   have hqabs : (f q).natAbs = 1 := by
-    have := Int.natAbs_pos.mpr hq0
-    have := Int.natAbs_pos.mpr hr0
     omega
   have hqpm : f q = 1 ∨ f q = -1 := by
-    have ha := Int.natCast_natAbs (f q)
-    rw [hqabs] at ha
-    rcases le_total 0 (f q) with hp | hn
-    · left
-      rw [abs_of_nonneg hp] at ha
-      exact ha.symm
-    · right
-      rw [abs_of_nonpos hn] at ha
-      omega
+    omega
   have hsupp (t) : f t ≠ 0 ↔ t = q ∨ t = r := by
-    rw [← hmem,he]
-    simp
+    simp_all
   rcases hqpm with hp | hn
   · exact ⟨q,r,hqr,hsupp,hp,by change f r = -1; omega⟩
   · refine ⟨r,q,hqr.symm,?_,by change f r = 1; omega,hn⟩

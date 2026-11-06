@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Duality.ScreenBridge
 public import PottsDiscontinuity.FK.FreeBoxPositiveAssociation
 public import PottsDiscontinuity.FK.LimitTranslation
@@ -75,9 +76,9 @@ theorem connectionEvent_eq_iUnion_connectionApprox (u v : LatticeVertex) :
     obtain ⟨i, hi⟩ := finiteEdgeSetEnumeration_surjective F
     refine Set.mem_iUnion.mpr ⟨i, ?_⟩
     have hconn' : ActualConnected squareLattice (finiteEdgeSetEnumeration i) u v := by
-      simpa [hi] using hconn
+      simp_all
     have hopen' : ω ∈ LatticeConfiguration.allOpen (finiteEdgeSetEnumeration i) := by
-      simpa [hi] using hopen
+      simp_all
     exact (mem_connectionApprox_iff u v i ω).mpr ⟨i, le_rfl, hconn', hopen'⟩
   · intro h
     rcases Set.mem_iUnion.mp h with ⟨n, hn⟩
@@ -173,14 +174,11 @@ private theorem openGraph_subset_rcInfiniteOpenGraph (ω : LatticeConfiguration)
   intro u v huv
   obtain ⟨e, heF, heq⟩ := (openGraph_adj squareLattice F u v).mp huv
   have hEdge : s(u, v) ∈ squareLattice.edgeSet := by
-    rw [← heq]
-    exact e.property
+    measurability
   have he : (⟨s(u, v), hEdge⟩ : squareLattice.edgeSet) = e := by
-    apply Subtype.ext
-    exact heq.symm
+    measurability
   have hω : ω ⟨s(u, v), hEdge⟩ = true := by
-    rw [he]
-    exact hopen e heF
+    measurability
   rw [PottsDiscontinuity.rcInfiniteOpenGraph, SimpleGraph.fromEdgeSet_adj]
   refine ⟨⟨hEdge, hω⟩, ?_⟩
   exact squareLattice.not_isDiag_of_mem_edgeSet hEdge
@@ -259,7 +257,7 @@ def rcInfiniteOpenGraphTranslationIso (a : LatticeVertex)
         apply Subtype.ext
         simp [e', e, latticeTranslationIso, latticeTranslate]
       have hOpen' : latticeConfigurationTranslate a ω e' = ω e := by
-        rw [latticeConfigurationTranslate_apply, he]
+        simp_all
       refine ⟨⟨hBack, ?_⟩, fun heq => hne (congrArg (latticeTranslate a) heq)⟩
       simpa [e', e] using hOpen'.symm.trans hOpen
     · rintro ⟨hmem, hne⟩
@@ -277,7 +275,7 @@ def rcInfiniteOpenGraphTranslationIso (a : LatticeVertex)
         apply Subtype.ext
         simp [e', e, latticeTranslationIso, latticeTranslate]
       have hOpen' : latticeConfigurationTranslate a ω e' = ω e := by
-        rw [latticeConfigurationTranslate_apply, he]
+        simp_all
       refine ⟨⟨hFwd, ?_⟩, fun heq => hne ((latticeTranslationIso a).injective heq)⟩
       simpa [e', e, latticeTranslationIso, latticeTranslate] using hOpen'.trans hOpen
 

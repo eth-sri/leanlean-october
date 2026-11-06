@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT1OutputIndex
 
 /-!
@@ -84,8 +85,6 @@ theorem t1OutputWord_right {n : ℕ} {l : Fin (n + 1)}
 theorem t1OutputWord_left {n : ℕ} {l : Fin (n + 1)}
     (o : T1OutputIndex n l) : t1OutputWord o (t1EdgeLeft o.edge) = false := by
   have he := t1OutputEndCoordinate_ne_last o
-  have hlt : t1OutputCoordinate o.edge (o.σ.symm l) < Fin.last n :=
-    Fin.lt_last_iff_ne_last.mpr he
   have hleft : t1OutputCoordinate o.edge (t1EdgeLeft o.edge) = Fin.last n := by
     unfold t1OutputCoordinate
     rw [← t1OutputShift_last o.edge]
@@ -177,7 +176,6 @@ theorem t1OutputPath_last {n : ℕ} {l : Fin (n + 1)}
   have hlast := List.getLast_ofFn_succ
     (fun q : Fin (e.val + 1) => t1OutputShift o.edge (t1RunPathIndex e q))
   have hindex : t1RunPathIndex e (Fin.last e.val) = e := by
-    apply Fin.ext
     rfl
   unfold t1OutputPath
   rw [hlast, hindex]

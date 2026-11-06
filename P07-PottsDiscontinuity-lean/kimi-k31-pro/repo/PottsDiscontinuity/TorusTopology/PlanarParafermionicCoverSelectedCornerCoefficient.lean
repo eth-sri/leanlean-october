@@ -2,6 +2,7 @@
 Adaptation: Namespace and import relocation only. -/
 module
 
+public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFaceOrientedBoundary
 public import Mathlib.Tactic
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFaceCornerCompass
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverSelectedCorners
@@ -15,18 +16,8 @@ open PottsDiscontinuity.TorusTopology.Planar
 private theorem selectedCornerCoeff_positiveDartCount_le_one {n : ℕ}
     (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
     (u v : ParafermionicCoverBoxVertex n) :
-    parafermionicCoverFacePositiveDartCount S u v ≤ 1 := by
-  classical
-  unfold parafermionicCoverFacePositiveDartCount
-  apply Finset.card_le_one.mpr
-  intro i hi j hj
-  have hdi : (u.1,v.1) ∈ parafermionicCoverFiniteFaceDarts i.1 :=
-    (Finset.mem_filter.mp hi).2
-  have hdj : (u.1,v.1) ∈ parafermionicCoverFiniteFaceDarts j.1 :=
-    (Finset.mem_filter.mp hj).2
-  have hfaces := parafermionicCoverFiniteFaceDart_unique n i.2 j.2 hdi hdj
-  exact Subtype.ext hfaces
-
+    parafermionicCoverFacePositiveDartCount S u v ≤ 1 :=
+  coverFacePositiveDartCount_le_one S u v
 private theorem selectedCornerCoeff_forward_count_one_iff {n : ℕ}
     (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
     (v w : ParafermionicCoverBoxVertex n) (d : Fin 4)

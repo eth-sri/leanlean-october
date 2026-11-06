@@ -72,8 +72,7 @@ private theorem parafermionicCoverPrimalCycleRotate_isCycle {n : ℕ}
     (p : (parafermionicCoverBoxGraph n).Walk x x) (hp : p.IsCycle)
     (v : ParafermionicCoverBoxVertex n) (hv : v ∈ p.support) :
     (p.rotate v hv).IsCycle := by
-  simpa using hp.rotate hv
-
+  simp_all
 private theorem parafermionicCoverPrimalCycleRotate_not_nil {n : ℕ}
     {x : ParafermionicCoverBoxVertex n}
     (p : (parafermionicCoverBoxGraph n).Walk x x) (hp : p.IsCycle)

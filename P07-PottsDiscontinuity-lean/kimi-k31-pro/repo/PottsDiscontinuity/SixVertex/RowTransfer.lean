@@ -27,18 +27,14 @@ variable {N : ℕ} {c : ℝ}
 /-! ### Cyclic successor/predecessor on `Fin (n + 1)` -/
 
 theorem nxt_castSucc {n : ℕ} (i : Fin n) : nxt (Fin.castSucc i) = Fin.succ i := by
-  simp [nxt]
-
+  simp_all
 theorem prv_succ {n : ℕ} (i : Fin n) : prv (Fin.succ i) = Fin.castSucc i := by
   simp only [prv]
   rw [Equiv.symm_apply_eq]
   exact (nxt_castSucc i).symm
 
 theorem prv_zero {n : ℕ} : prv (0 : Fin (n + 1)) = Fin.last n := by
-  simp only [prv]
-  rw [Equiv.symm_apply_eq]
-  simp
-
+  rfl
 /-! ### Counting functions along the cycle -/
 
 theorem cnt_zero {n : ℕ} (x : Finset (Fin (n + 1))) :

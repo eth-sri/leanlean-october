@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Bethe.Theorem23GKernel
 public import PottsDiscontinuity.Bethe.Theorem23Comparison
 
@@ -46,8 +47,7 @@ theorem exists_betheCountingDerivative_half_mean {Δ : ℝ} (hΔ : Δ < -1)
       betheCountingDerivative Δ N n p ξ =
         1 / ((N : ℝ) * (p (discreteHalfNextIndex n i) - p (discreteHalfIndex n i))) := by
   have hlt : discreteHalfIndex n i < discreteHalfNextIndex n i := by
-    change i.val < i.val + 1
-    omega
+    tauto
   have hcont : Continuous (betheCountingFunction Δ N n p) :=
     continuous_iff_continuousAt.2 fun x =>
       (hasDerivAt_betheCountingFunction hΔ N n p x).continuousAt

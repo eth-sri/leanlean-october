@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Potts.CylinderColoring
 public import PottsDiscontinuity.Potts.GraphCoupling
 
@@ -67,8 +68,7 @@ theorem wired_one_point_kernel (q : ℕ) (c : Set.Icc 1 q) (R : Setoid (Option P
   have hid : markedMap some none = (id : Option PUnit → Option PUnit) := by
     funext a; cases a <;> rfl
   have hcount : observedClassCount R (markedMap some none) = Nat.card (Quotient R) := by
-    rw [hid]
-    rfl
+    tauto
   rw [hcount]
   have hcover : ∀ a : Option PUnit, a = some PUnit.unit ∨ a = none := by
     intro a; cases a with

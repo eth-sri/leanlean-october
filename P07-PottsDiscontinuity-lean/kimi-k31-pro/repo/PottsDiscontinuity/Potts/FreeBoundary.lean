@@ -62,11 +62,6 @@ theorem freeGibbsProbability_eq_pottsProb (q : ℕ) (V : Finset (ℤ × ℤ)) (�
   intro τ _
   rfl
 
-/-- The free finite joint mass, using only the actual induced lattice edges. -/
-abbrev freeJointProbability (q : ℕ) (V : Finset (ℤ × ℤ)) (β : ℝ)
-    (σ : SpinConfiguration q V)
-    (ω : (squareLattice.induce (V : Set (ℤ × ℤ))).edgeSet → Bool) : ℝ :=
-  constraintJointProbability β (edgeAgreement (squareLattice.induce (V : Set (ℤ × ℤ)))) σ ω
 
 theorem freeConfigurationProbability_eq_rcProb (q : ℕ) (hq : 2 ≤ q)
     (V : Finset (ℤ × ℤ)) (β : ℝ) (hβ : 0 < β)
@@ -76,20 +71,7 @@ theorem freeConfigurationProbability_eq_rcProb (q : ℕ) (hq : 2 ≤ q)
       rcProb V (fkParameters q hq β hβ).toP (fkParameters q hq β hβ).toQ 0 ω :=
   FK.configurationProbability_eq_rcProb (fkParameters q hq β hβ) V 0 ω
 
-/-- The finite free coupling is a genuine probability mass function. -/
-def freeJointLaw (q : ℕ) (hq : 2 ≤ q) (V : Finset (ℤ × ℤ)) (β : ℝ) (hβ : 0 < β) :
-    PMF (SpinConfiguration q V × ((squareLattice.induce (V : Set (ℤ × ℤ))).edgeSet → Bool)) := by
-  let : Nonempty (Set.Icc 1 q) := ⟨⟨1, le_rfl, by omega⟩⟩
-  exact PMF.ofFintype (fun z => ENNReal.ofReal (freeJointProbability q V β z.1 z.2)) (by
-    rw [← ENNReal.ofReal_sum_of_nonneg (fun z _ =>
-      constraintJointProbability_nonneg hβ _ z.1 z.2), Fintype.sum_prod_type]
-    simp only [freeJointProbability, 
-      sum_constraintJointProbability, ENNReal.ofReal_one])
 
-@[simp] theorem freeJointLaw_apply (q : ℕ) (hq : 2 ≤ q) (V : Finset (ℤ × ℤ))
-    (β : ℝ) (hβ : 0 < β) (σ : SpinConfiguration q V)
-    (ω : (squareLattice.induce (V : Set (ℤ × ℤ))).edgeSet → Bool) :
-    freeJointLaw q hq V β hβ (σ, ω) = ENNReal.ofReal (freeJointProbability q V β σ ω) := rfl
 
 theorem pottsProb_free_event_eq_clusterMixture (q : ℕ) (hq : 2 ≤ q)
     (V : Finset (ℤ × ℤ)) (β : ℝ) (hβ : 0 < β) (s : Set (SpinConfiguration q V)) :

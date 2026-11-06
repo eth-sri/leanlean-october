@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.BetheAnsatz.Amplitude
 public import PottsDiscontinuity.BetheAnsatz.Perturbation
 public import PottsDiscontinuity.BetheAnsatz.WordSwap
@@ -41,8 +42,7 @@ theorem perturbedWordTerm_adjacent_pair {N n : ℕ} {c : ℝ} (hc : 2 < c)
   let q := perturbedMomenta p l t
   have hslots : a.castSucc ≠ a.succ := Fin.castSucc_lt_succ.ne
   have hσa : σ a.castSucc ≠ l := by
-    intro h
-    exact hslots (σ.injective (h.trans hsig.symm))
+    measurability
   have hrootne (j : Fin (n + 1)) (hj : j ≠ l) : p j ≠ 0 := by
     intro hz
     apply hj
@@ -50,7 +50,7 @@ theorem perturbedWordTerm_adjacent_pair {N n : ℕ} {c : ℝ} (hc : 2 < c)
   have hqa : q (σ a.castSucc) = p (σ a.castSucc) :=
     perturbedMomenta_of_ne p l (σ a.castSucc) t hσa
   have hqb : q (σ a.succ) = t := by
-    simp [q, hsig, perturbedMomenta, hpl]
+    measurability
   have hqa_ne : z (q (σ a.castSucc)) ≠ 1 := by
     rw [hqa]
     exact z_ne_one (hp (σ a.castSucc)) (hrootne _ hσa)

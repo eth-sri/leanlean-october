@@ -93,7 +93,7 @@ theorem abs_dotProduct_mulVec_le_opNorm
   have hinnerBound : |x ⬝ᵥ (D *ᵥ x)| ≤ ‖v‖ * ‖Matrix.toEuclideanCLM (𝕜 := ℝ) D v‖ := by
     calc
       |x ⬝ᵥ (D *ᵥ x)| = ‖⟪v, Matrix.toEuclideanCLM (𝕜 := ℝ) D v⟫‖ := by
-        rw [hinner, Real.norm_eq_abs]
+        simp_all
       _ ≤ ‖v‖ * ‖Matrix.toEuclideanCLM (𝕜 := ℝ) D v‖ := norm_inner_le_norm _ _
   have hop : ‖Matrix.toEuclideanCLM (𝕜 := ℝ) D v‖ ≤ ‖D‖ * ‖v‖ := by
     simpa [Matrix.cstar_norm_def] using

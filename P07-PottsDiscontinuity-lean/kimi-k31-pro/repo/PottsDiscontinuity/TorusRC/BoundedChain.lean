@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusRC.BlockChain
 public import PottsDiscontinuity.TorusRC.BoundedPaths
 
@@ -36,10 +37,7 @@ theorem rectangleBlockEvent_bounded_connection (hNp : 0 < N) (hMp : 0 < M)
     rw [hv]
     ext <;> dsimp [t,liftedChainSite,liftedColumnSite]; ring
   have hend : F u = liftedChainSite i.val hi n (j + 1) := by
-    apply Subtype.ext
-    change (u.val.1,t-u.val.2) = _
-    rw [hu]
-    ext <;> dsimp [t,liftedChainSite,liftedColumnSite]; ring
+    measurability
   have hconn : liftedBoundedConnection hNp hMp A 0 (3 * (n : ℤ))
       (2 * (n : ℤ) * j) t (F v) (F u) := by
     refine ⟨(w.map F).reverse,?_⟩
@@ -76,8 +74,7 @@ theorem rectangleBlocks_subset_boundedChain (hNp : 0 < N) (hMp : 0 < M)
       rcases List.mem_append.mp hz with hz | hz
       · have h := hw z hz
         have hmul : 2 * (n : ℤ) * l ≤ 2 * (n : ℤ) * (l + 1) := by
-          have hn : 0 ≤ (n : ℤ) := by omega
-          nlinarith
+          linarith
         constructor <;> push_cast <;> omega
       · have h := hp z (List.mem_of_mem_tail hz)
         have hlo : 0 ≤ 2 * (n : ℤ) * l := by positivity

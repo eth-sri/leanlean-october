@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.BetheAnsatz.Scattering
 
 /-!
@@ -33,9 +34,7 @@ private theorem pair_product_last (n : ℕ) (f : Fin (n + 1) → Fin (n + 1) →
     simp only [Fin.castSucc_lt_last, ↓reduceIte, Fin.castSucc_lt_castSucc_iff]
     rw [← Finset.prod_filter, Finset.filter_lt_eq_Ioi]
   have hl : Ioi (Fin.last n) = ∅ := by
-    ext j
-    simp only [mem_Ioi, notMem_empty, iff_false]
-    exact not_lt_of_ge (Fin.le_last j)
+    measurability
   rw [Fin.prod_univ_castSucc]
   simp only [hl, Finset.prod_empty, mul_one]
   simp_rw [hi]

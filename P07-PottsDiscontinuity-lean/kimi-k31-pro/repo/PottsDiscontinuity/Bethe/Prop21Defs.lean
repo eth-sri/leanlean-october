@@ -54,7 +54,7 @@ theorem exp_I_mul_kInv {lam : ℝ} (hlam : 0 < lam) (x : ℝ) :
   have hts' : t * (Real.exp lam + Real.cos x) = Real.sin x := by
     rw [ht]; field_simp
   have hts : (t : ℂ) * ((Real.exp lam : ℂ) + (Real.cos x : ℂ)) = (Real.sin x : ℂ) := by
-    exact_mod_cast hts'
+    simp_all
   have hu : Complex.exp (I * x) = (Real.cos x : ℂ) + (Real.sin x : ℂ) * I := exp_I_mul_ofReal x
   have hub : Complex.exp (-(I * x)) = (Real.cos x : ℂ) - (Real.sin x : ℂ) * I :=
     exp_neg_I_mul_ofReal x
@@ -78,7 +78,7 @@ theorem exp_I_mul_kInv {lam : ℝ} (hlam : 0 < lam) (x : ℝ) :
   have hne2 : (1 + (t : ℂ) * I) ≠ 0 := by
     intro h; have := congrArg Complex.re h; simp at this
   have hne3 : (Real.exp lam : ℂ) + Complex.exp (I * x) ≠ 0 := by
-    rw [hE1]; exact mul_ne_zero ha' hne2
+    simp_all
   have h3 : (1 - (t : ℂ) * I) / (1 + (t : ℂ) * I) =
       ((Real.exp lam : ℂ) + Complex.exp (-(I * x))) / ((Real.exp lam : ℂ) + Complex.exp (I * x)) := by
     rw [hE1, hE2]
@@ -102,7 +102,7 @@ theorem kMap_kInv {lam : ℝ} (hlam : 0 < lam) (x : ℝ) : kMap lam (kInv lam x)
         intro h
         have : (Real.exp lam : ℂ) = -Complex.exp (I * x) := by linear_combination h
         have h2 : ‖(Real.exp lam : ℂ)‖ = ‖Complex.exp (I * (x : ℂ))‖ := by
-          rw [this, norm_neg]
+          simp_all
         rw [hw, Complex.norm_real, Real.norm_eq_abs, abs_of_pos (by linarith)] at h2
         linarith
       show Complex.exp ((kMap lam (kInv lam x) : ℂ) * I) = Complex.exp ((x : ℂ) * I)
@@ -111,9 +111,9 @@ theorem kMap_kInv {lam : ℝ} (hlam : 0 < lam) (x : ℝ) : kMap lam (kInv lam x)
       set E : ℂ := (Real.exp lam : ℂ)
       have hne3' : E + u ≠ 0 := hne3
       have : E - (u * E + 1) / (E + u) = (E ^ 2 - 1) / (E + u) := by
-        field_simp; ring
+        field
       have h2 : E * ((u * E + 1) / (E + u)) - 1 = u * (E ^ 2 - 1) / (E + u) := by
-        field_simp; ring
+        field
       rw [h2, this]
       field_simp
     · simp [kInv, kMap]
@@ -270,7 +270,7 @@ theorem cBE_at_iff {Δ : ℝ} (hΔ : Δ < -1) (ρ : ℝ → ℝ) (α : ℝ) :
   constructor
   · intro h
     have : 2 * π * P * Xi (lamOf Δ) α = (1 - (2 * π * Xi (lamOf Δ) α)⁻¹ * J) * Xi (lamOf Δ) α := by
-      rw [h]
+      simp_all
     field_simp at this ⊢
     linarith
   · intro h

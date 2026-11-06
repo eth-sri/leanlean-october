@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
 public import Mathlib.Topology.Homotopy.Path
@@ -65,8 +66,7 @@ theorem wired_origin_pos_of_free_exponential_decay (θ : Parameters)
   have hz : μ₁ (existsInfiniteCluster)ᶜ = 0 := ae_iff.1 hae
   have hmeas : MeasurableSet existsInfiniteCluster := RCInfinite.measurableSet_infiniteClusterEvent
   have hone : μ₁ existsInfiniteCluster = 1 := by
-    have h := measure_add_measure_compl (μ := μ₁) hmeas
-    simpa only [hz,add_zero,measure_univ] using h
+    simp_all
   apply (existsInfiniteCluster_pos_iff_origin_pos (dualParameters θ) 1 μ₁ hμ₁).1
   rw [hone]
   exact zero_lt_one

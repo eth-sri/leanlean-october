@@ -36,7 +36,7 @@ theorem cor34_base_z_eq_halfRoot_zpow {N n : ℕ} (hnN : n < N) (j : Fin n) :
       cor34_halfRoot (N - n) ^ (2 * (j.val : ℤ) + 1 - (n : ℤ)) := by
   have hmNat : 0 < N - n := Nat.sub_pos_of_lt hnN
   have hm : ((N - n : ℕ) : ℝ) ≠ 0 := by
-    exact_mod_cast (Nat.ne_of_gt hmNat)
+    positivity
   have hp : Bethe.discreteBaseSolution N n j =
       Real.pi * ((2 * (j.val : ℤ) + 1 - (n : ℤ) : ℤ) : ℝ) /
         ((N - n : ℕ) : ℝ) := by

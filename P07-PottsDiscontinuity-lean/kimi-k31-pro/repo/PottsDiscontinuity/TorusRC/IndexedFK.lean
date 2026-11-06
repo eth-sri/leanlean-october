@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.FK.ComponentSupermodular
 public import PottsDiscontinuity.Torus.RibbonConnectivity
 
@@ -65,11 +66,7 @@ theorem simpleConfiguration_mono (hN : Even N) (hM : Even M)
   intro e he
   obtain ⟨i, hi, hie⟩ := (mem_filter.mp he).2
   have hbi : B i = true := by
-    have h := hAB i
-    rw [hi] at h
-    cases hB : B i
-    · exact False.elim ((by decide : ¬ (true ≤ false)) (by simpa [hB] using h))
-    · rfl
+    tauto
   exact mem_filter.mpr ⟨mem_univ _, ⟨i, hbi, hie⟩⟩
 
 theorem simpleConfiguration_sup (hN : Even N) (hM : Even M)
@@ -82,7 +79,7 @@ theorem simpleConfiguration_sup (hN : Even N) (hM : Even M)
   constructor
   · rintro ⟨i, hi, he⟩
     have hior : A i = true ∨ B i = true := by
-      cases hA : A i <;> cases hB : B i <;> simp_all
+      simp_all
     exact hior.elim (fun h => Or.inl ⟨i, h, he⟩) (fun h => Or.inr ⟨i, h, he⟩)
   · rintro (⟨i, hi, he⟩ | ⟨i, hi, he⟩)
     · refine ⟨i, ?_, he⟩

@@ -109,8 +109,6 @@ def isolatedExtensionEdgeEquiv : G.edgeSet ≃ (G.map f).edgeSet :=
       obtain ⟨a, ha, rfl⟩ := he
       exact ⟨⟨a, ha⟩, rfl⟩)
 
-@[simp] theorem isolatedExtensionEdgeEquiv_coe (e : G.edgeSet) :
-    (isolatedExtensionEdgeEquiv G f e).val = f.sym2Map e.val := rfl
 
 /-- Transport precisely the sampled original edges, not the added vertices. -/
 def isolatedExtensionConfigurationEquiv : Configuration G ≃ Configuration (G.map f) :=

@@ -81,7 +81,7 @@ theorem log_growth_le_of_eventually_factorized
         (1 / (M : ℝ)) * Real.log (C * Λ ^ M) ≤
             (1 / (M : ℝ)) * Real.log (Y M) +
               (1 / (M : ℝ)) * Real.log (Z M) := by
-                simpa [mul_add] using hscaled
+                linarith
         _ ≤ Real.log Λmax + a + b + 2 * ε := by linarith
     linarith
   rcases hfalse.exists with ⟨M, hM⟩

@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Bethe.AsymptoticPartition
 
 /-! # Spatial control of the offset step function -/
@@ -54,8 +55,7 @@ theorem exists_interior_root_cell {n : ℕ} (hn : 0 < n) (q : Fin n → ℝ)
   refine ⟨j, hjnext, hjx, ?_⟩
   by_contra h
   have hm : (⟨j.val + 1, hjnext⟩ : Fin n) ∈ s := by
-    simp only [s, Finset.mem_filter, Finset.mem_univ, true_and]
-    exact le_of_not_gt h
+    measurability
   have hb := s.le_max' ⟨j.val + 1, hjnext⟩ hm
   change j.val + 1 ≤ j.val at hb
   omega

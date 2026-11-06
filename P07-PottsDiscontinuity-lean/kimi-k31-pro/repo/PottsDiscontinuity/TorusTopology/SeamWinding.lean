@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Torus.DiamondSeamWinding
 public import PottsDiscontinuity.TorusLoops.LoopClusterProjection
 public import PottsDiscontinuity.TorusLoops.DualTranslation
@@ -75,9 +76,7 @@ theorem loop_winding_of_single_open_seam (hN : Even N) (hM : Even M)
       intro hy
       have hey : e.val.2 = (⟨0,hMp⟩ : Fin M) := Fin.ext hy
       have hx : e.val.1 ≠ i₀ := by
-        intro hx
-        apply hne
-        exact Subtype.ext (Prod.ext hx hey)
+        measurability
       have h := honly e.val.1 hx
       rw [← hey, e.property] at h
       cases h

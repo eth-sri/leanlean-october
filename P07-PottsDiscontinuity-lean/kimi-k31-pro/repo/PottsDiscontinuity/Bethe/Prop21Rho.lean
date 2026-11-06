@@ -116,7 +116,7 @@ theorem Rsech_add_xiConv {lam : ℝ} (hlam : 0 < lam) (α : ℝ) :
   have h3 := h1.add h2
   have h4 := hasSum_Xi_cos hlam α
   have e1 : Rsech lam α = 1 / 2 + ∑' n, trigTerm (secCoeff lam) (fun _ => 0) n α := by
-    rw [Rsech_eq_trigSeries hlam]; rfl
+    tauto
   have e2 : xiConv (2 * lam) (Rsech lam) α = 1 / 2 +
       ∑' n, trigTerm (fun n => Real.exp (-(2 * lam)) ^ (n + 1) * secCoeff lam n)
         (fun n => Real.exp (-(2 * lam)) ^ (n + 1) * 0) n α := by

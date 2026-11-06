@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Torus.WindingReorientation
 public import PottsDiscontinuity.TorusRC.ElementaryTail
 
@@ -16,9 +17,7 @@ pointing in the negative coordinate direction. -/
 def negativeArrows (N M : ℕ) : ArrowConfig N M := ⟨fun _ => false,fun _ => false⟩
 
 lemma negativeArrows_ice : (negativeArrows N M).IceRule := by
-  intro v
-  rfl
-
+  tauto
 lemma negativeArrows_absUp : (negativeArrows N M).absUp=0 := by
   unfold ArrowConfig.absUp
   split_ifs <;> simp [ArrowConfig.rowUp,negativeArrows]
@@ -30,7 +29,7 @@ theorem windingTail_nonempty (hN : Even N) (hM : Even M) (j : Fin M)
   obtain ⟨s,hs⟩ := (exists_compatibleConfig_iff (negativeArrows N M)).2 negativeArrows_ice
   let A := smoothingRC s
   have hA : CompatibleConfig (negativeArrows N M) (rcSmoothing A) := by
-    simpa only [A,rcSmoothing_smoothingRC] using hs
+    measurability
   have hU := sector_le_rcVerticalWinding hN hM j A (negativeArrows N M) hA
     (r := N/2) (by rw [negativeArrows_absUp,zero_add])
   exact ⟨A,hr.trans hU⟩

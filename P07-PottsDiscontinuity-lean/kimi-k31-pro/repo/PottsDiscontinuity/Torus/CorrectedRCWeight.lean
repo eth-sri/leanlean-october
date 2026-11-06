@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Torus.RCWeight
 public import PottsDiscontinuity.TorusLoops.WindingLoopCount
 
@@ -57,7 +58,7 @@ theorem torusCorrectedRCWeight_eq_loopFactors
   have hqpow : q.val ^ s = t ^ (2 * s) := by
     rw [← ht2, pow_mul]
   have hratio : (2 / t) ^ ell₀ = (2 : ℝ) ^ ell₀ / t ^ ell₀ := by
-    rw [div_pow]
+    ring
   have hsplit : ell + 2 * s = (ell - ell₀) + (ell₀ + 2 * s) := by omega
   unfold torusCorrectedRCWeight
   change (torusRCWeight hN hM q A * (2 / t) ^ ell₀ / q.val ^ s) =

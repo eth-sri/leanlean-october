@@ -100,13 +100,6 @@ def wholePlaneDualConfigurationHomeomorph :
     rfl
   rw [hidx]
 
-@[simp] theorem wholePlaneDualConfigurationHomeomorph_symm_apply
-    (ω : LatticeConfiguration) (e : squareLattice.edgeSet) :
-    wholePlaneDualConfigurationHomeomorph.symm ω e =
-      Bool.not (ω (wholePlaneDualCrossingEdgeEquiv.symm e)) := by
-  simp [wholePlaneDualConfigurationHomeomorph,
-    Homeomorph.piCongrLeft, Homeomorph.piCongrRight, Equiv.piCongrLeft,
-    Equiv.piCongrRight, boolComplementHomeomorph, boolComplementEquiv]
 
 private theorem bond_endpoints_of_toSym2_eq (b : LatticeBond) (u v : LatticeVertex)
     (h : b.toSym2 = s(u, v)) :
@@ -158,14 +151,6 @@ theorem wholePlaneOpenPrimalGraph_dualConfiguration_eq (ω : LatticeConfiguratio
     · simpa [huv.1, huv.2] using hbond
     · simpa [huv.1, huv.2] using hbond.symm
 
-@[simp] theorem wholePlaneOpenCluster_dualConfiguration (ω : LatticeConfiguration)
-    (u : LatticeVertex) :
-    wholePlaneOpenCluster (wholePlaneDualConfigurationHomeomorph ω) u =
-      wholePlaneClosedDualCluster ω u := by
-  change {v | Relation.EqvGen
-      (wholePlaneOpenPrimalGraph (wholePlaneDualConfigurationHomeomorph ω)).Adj u v} =
-    {v | Relation.EqvGen (wholePlaneClosedDualGraph ω).Adj u v}
-  rw [wholePlaneOpenPrimalGraph_dualConfiguration_eq]
 
 theorem wholePlaneDualConfigurationHomeomorph_measurable :
     Measurable wholePlaneDualConfigurationHomeomorph :=

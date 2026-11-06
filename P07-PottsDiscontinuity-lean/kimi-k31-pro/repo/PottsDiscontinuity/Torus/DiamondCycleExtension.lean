@@ -29,19 +29,12 @@ def fullDiamondEdgeEquiv (N M : ℕ) : OpenDiamondEdge (openRCConfig N M) ≃ Fi
 def fullDiamondChainExtension (A : RCConfig N M) (f : OpenDiamondEdge A → ℚ) :
     OpenDiamondEdge (openRCConfig N M) → ℚ := fun e => extendDiamondChain A f e.val
 
-@[simp] theorem extendDiamondChain_fullExtension (A : RCConfig N M)
-    (f : OpenDiamondEdge A → ℚ) (v : Fin N × Fin M) :
-    extendDiamondChain (openRCConfig N M) (fullDiamondChainExtension A f) v =
-      extendDiamondChain A f v := by
-  rw [extendDiamondChain_open _ _ v rfl]
-  rfl
 
 theorem ribbonHalfFlow_fullExtension (hN : Even N) (hM : Even M) (A : RCConfig N M)
     (f : OpenDiamondEdge A → ℚ) (d : DirectedDart (checkerArrows N M)) :
     ribbonHalfFlow hN hM (openRCConfig N M) (fullDiamondChainExtension A f) d =
       ribbonHalfFlow hN hM A f d := by
-  rw [ribbonHalfFlow_raw, ribbonHalfFlow_raw, extendDiamondChain_fullExtension]
-
+  rfl
 theorem fullDiamondChainExtension_mem (hN : Even N) (hM : Even M) (A : RCConfig N M)
     (f : diamondCycleSpace hN hM A) :
     fullDiamondChainExtension A f.val ∈ diamondCycleSpace hN hM (openRCConfig N M) := by
@@ -59,12 +52,7 @@ theorem ribbonCornerPrimitive_fullExtension (hN : Even N) (hM : Even M) (A : RCC
     (f : diamondCycleSpace hN hM A) (d : DirectedDart (checkerArrows N M)) :
     ribbonCornerPrimitive hN hM (openRCConfig N M) (fullDiamondCycleExtension hN hM A f) d =
       ribbonCornerPrimitive hN hM A f d := by
-  obtain ⟨⟨v, p⟩, rfl⟩ := (ribbonCornerEquiv hN hM).surjective d
-  rw [ribbonCornerPrimitive_corner, ribbonCornerPrimitive_corner]
-  change cornerPrimitiveValue (fun q => ribbonHalfFlow hN hM (openRCConfig N M)
-    (fullDiamondChainExtension A f.val) (ribbonCornerEquiv hN hM (v, q))) p = _
-  simp_rw [ribbonHalfFlow_fullExtension]
-
+  rfl
 theorem ribbonIntersectionCoefficient_fullExtension (hN : Even N) (hM : Even M) (A : RCConfig N M)
     (f : diamondCycleSpace hN hM A) (e : OpenDiamondEdge A) :
     ribbonIntersectionCoefficient hN hM (openRCConfig N M)

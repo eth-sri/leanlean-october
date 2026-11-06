@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.SixVertex.Cor34Spectral
 
 /-!
@@ -25,13 +26,9 @@ theorem cnt_compl_add_cnt (x : Finset (Fin N)) (t : Fin N) :
   have h := Finset.card_filter_add_card_filter_not
     (s := Finset.Iic t) (p := fun i : Fin N => i ∈ x)
   have h₁ : (Finset.Iic t).filter (fun i => i ∈ x) = x.filter (· ≤ t) := by
-    ext i
-    simp only [mem_filter, mem_Iic]
-    tauto
+    measurability
   have h₂ : (Finset.Iic t).filter (fun i => ¬ i ∈ x) = xᶜ.filter (· ≤ t) := by
-    ext i
-    simp only [mem_filter, mem_Iic, mem_compl]
-    tauto
+    measurability
   rw [h₁, h₂, Fin.card_Iic] at h
   simpa [cnt, Nat.add_comm] using h
 
@@ -117,7 +114,7 @@ theorem transferMatrix_compl (c : ℝ) (x y : Finset (Fin N)) :
       ext i
       have heq := congrArg (fun s : Finset (Fin N) => i ∈ s) h
       have hi' : (i ∉ x) ↔ (i ∉ y) := by
-        simpa only [mem_compl] using Iff.of_eq heq
+        simp_all
       simpa only [not_not] using not_congr hi'
     simp only [hxy, hcompl, ↓reduceIte]
     have hinter : Interlaced xᶜ yᶜ ↔ Interlaced x y := interlaced_compl_iff x y

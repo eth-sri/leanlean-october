@@ -32,14 +32,7 @@ theorem verticalDiamondCycle_primitive (hN : Even N) (hM : Even M)
     (d : DirectedDart (checkerArrows N M)) :
     ribbonCornerPrimitive hN hM (openRCConfig N M) (verticalDiamondCycle hN hM) d =
       cornerPrimitiveValue verticalCornerFlow d.val.2 := by
-  obtain ⟨⟨v, p⟩, rfl⟩ := (ribbonCornerEquiv hN hM).surjective d
-  rw [ribbonCornerPrimitive_corner]
-  change cornerPrimitiveValue (fun q => ribbonHalfFlow hN hM (openRCConfig N M)
-    (verticalDiamondFlow N M) (ribbonCornerEquiv hN hM (v, q))) p =
-      cornerPrimitiveValue verticalCornerFlow (faceCorner v.val p).2
-  simp_rw [verticalDiamondFlow_corner]
-  cases p <;> rfl
-
+  rfl
 theorem horizontalDiamondCycle_primitive (hN : Even N) (hM : Even M)
     (d : DirectedDart (checkerArrows N M)) :
     ribbonCornerPrimitive hN hM (openRCConfig N M) (horizontalDiamondCycle hN hM) d =

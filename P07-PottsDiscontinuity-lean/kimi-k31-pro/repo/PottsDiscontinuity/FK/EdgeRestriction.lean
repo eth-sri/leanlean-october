@@ -84,9 +84,7 @@ theorem edgeRestrictionConfigurationEquiv_le_iff (R : Configuration G)
     (A B : Configuration (edgeRestriction G R)) :
     (edgeRestrictionConfigurationEquiv G R A).val ⊆
       (edgeRestrictionConfigurationEquiv G R B).val ↔ A ⊆ B := by
-  rw [edgeRestrictionConfigurationEquiv_val, edgeRestrictionConfigurationEquiv_val]
-  exact Finset.map_subset_map
-
+  simp_all
 /-- The configuration bijection is an order isomorphism for open-edge inclusion. -/
 def edgeRestrictionConfigurationOrderIso (R : Configuration G) :
     Configuration (edgeRestriction G R) ≃o RemainingConfiguration G R where
@@ -145,7 +143,6 @@ theorem weight_edgeRestriction [Finite V] (q : Parameters) (ξ : BoundaryConditi
 section Finite
 
 variable [Finite V]
-local instance edgeRestrictionOriginalEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 local instance edgeRestrictionRemainingEdgeFintype (R : Configuration G) :
     Fintype (edgeRestriction G R).edgeSet := Fintype.ofFinite _
 local instance edgeRestrictionConfigurationFintype (R : Configuration G) :

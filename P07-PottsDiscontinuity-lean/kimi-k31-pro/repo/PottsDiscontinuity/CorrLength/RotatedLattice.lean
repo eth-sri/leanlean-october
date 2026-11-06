@@ -17,13 +17,7 @@ The map to square-lattice coordinates sends `(i,j)` to
 namespace PottsDiscontinuity.CorrLength
 
 private theorem int_abs_eq_one_iff (z : ℤ) : |z| = 1 ↔ z = 1 ∨ z = -1 := by
-  by_cases hz : 0 ≤ z
-  · rw [abs_of_nonneg hz]
-    omega
-  · have hz' : z < 0 := lt_of_not_ge hz
-    rw [abs_of_neg hz']
-    omega
-
+  grind
 /-- Vertices of the rotated lattice: pairs of integers with even sum. -/
 abbrev RotatedVertex := {z : ℤ × ℤ // Even (z.1 + z.2)}
 

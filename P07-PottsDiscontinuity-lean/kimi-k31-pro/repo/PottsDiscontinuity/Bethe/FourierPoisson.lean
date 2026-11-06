@@ -47,8 +47,7 @@ theorem Xi_sub_one_eq {μ : ℝ} (hμ : 0 < μ) (α : ℝ) :
   unfold Xi
   rw [hsinh, hcosh]
   have e : (r⁻¹ + r) / 2 - Real.cos α = (1 - 2 * r * Real.cos α + r ^ 2) / (2 * r) := by
-    field_simp
-    ring
+    field
   rw [e]
   have h2 : 1 - 2 * r * Real.cos α + r ^ 2 ≠ 0 := hden.ne'
   have h3 : (r⁻¹ - r) / 2 / ((1 - 2 * r * Real.cos α + r ^ 2) / (2 * r)) =
@@ -62,9 +61,9 @@ theorem re_geom_Xi (r α : ℝ) (hr : 0 < r) (hr1 : r < 1) (z : ℂ)
     (hz : z = (r : ℂ) * Complex.exp (α * Complex.I)) :
     (z * (1 - z)⁻¹).re = (r * Real.cos α - r ^ 2) / (1 - 2 * r * Real.cos α + r ^ 2) := by
   have hzre : z.re = r * Real.cos α := by
-    rw [hz, Complex.re_ofReal_mul, Complex.exp_ofReal_mul_I_re]
+    simp_all
   have hzim : z.im = r * Real.sin α := by
-    rw [hz, Complex.im_ofReal_mul, Complex.exp_ofReal_mul_I_im]
+    simp_all
   have hs := Real.sin_sq_add_cos_sq α
   have hc := Real.cos_le_one α
   have hden : 0 < 1 - 2 * r * Real.cos α + r ^ 2 := by nlinarith [sq_nonneg (1 - r), mul_pos hr hr]
@@ -116,13 +115,7 @@ theorem continuous_Xi {μ : ℝ} (hμ : 0 < μ) : Continuous (Xi μ) := by
 /-! ### Orthogonality on `[-π, π]` -/
 
 theorem integral_cos_int_mul {k : ℤ} (hk : k ≠ 0) : ∫ x in (-π)..π, Real.cos (k * x) = 0 := by
-  have hk' : (k : ℝ) ≠ 0 := by exact_mod_cast hk
-  rw [intervalIntegral.integral_comp_mul_left (fun x => Real.cos x) hk', integral_cos]
-  have h1 : Real.sin (k * π) = 0 := by exact_mod_cast Real.sin_int_mul_pi k
-  have h2 : Real.sin (k * -π) = 0 := by
-    rw [mul_neg, Real.sin_neg, h1, neg_zero]
-  rw [h1, h2]; simp
-
+  simp_all
 theorem integral_sin_int_mul (k : ℤ) : ∫ x in (-π)..π, Real.sin (k * x) = 0 := by
   by_cases hk : k = 0
   · simp [hk]
@@ -205,8 +198,7 @@ theorem integral_sin_mul_cos_nat (m n : ℕ) :
   simp
 
 theorem integral_cos_nat_mul {m : ℕ} (hm : m ≠ 0) : ∫ x in (-π)..π, Real.cos (m * x) = 0 := by
-  simpa using integral_cos_int_mul (k := (m : ℤ)) (by exact_mod_cast hm)
-
+  simp_all
 theorem integral_sin_nat_mul (m : ℕ) : ∫ x in (-π)..π, Real.sin (m * x) = 0 := by
   simpa using integral_sin_int_mul (m : ℤ)
 
@@ -290,7 +282,7 @@ theorem hasSum_xiConv {μ : ℝ} (hμ : 0 < μ) {g : ℝ → ℝ}
   · intro n
     refine Filter.Eventually.of_forall fun β _ => ?_
     have hF : F n β = (2 * r ^ (n + 1)) * (Real.cos (((n + 1 : ℕ) : ℝ) * (α - β)) * g β) := by
-      simp only [F]; ring
+      ring
     rw [hF, norm_mul (2 * r ^ (n + 1)) _, norm_mul (Real.cos _) _, Real.norm_of_nonneg (by positivity : (0:ℝ) ≤ 2 * r ^ (n + 1)),
       Real.norm_eq_abs (Real.cos _)]
     have h3 : |Real.cos (((n + 1 : ℕ) : ℝ) * (α - β))| ≤ 1 := Real.abs_cos_le_one _
@@ -364,17 +356,12 @@ theorem abs_xiConvTerm_le {μ : ℝ} {g : ℝ → ℝ} (hg : IntervalIntegrable 
         Real.sin (((n + 1 : ℕ) : ℝ) * α) * sinCoeff g (n + 1)|
       ≤ |Real.cos (((n + 1 : ℕ) : ℝ) * α) * cosCoeff g (n + 1)| +
         |Real.sin (((n + 1 : ℕ) : ℝ) * α) * sinCoeff g (n + 1)| := abs_add_le _ _
+    _ ≤ 1 * |cosCoeff g (n + 1)| + 1 * |sinCoeff g (n + 1)| := by
+      rw [abs_mul, abs_mul]
+      gcongr
     _ ≤ L + L := by
-        rw [abs_mul, abs_mul]
-        have := abs_nonneg (cosCoeff g (n + 1))
-        have := abs_nonneg (sinCoeff g (n + 1))
-        gcongr
-        · calc |Real.cos (((n + 1 : ℕ) : ℝ) * α)| * |cosCoeff g (n + 1)|
-              ≤ 1 * |cosCoeff g (n + 1)| := by gcongr
-            _ ≤ L := by rw [one_mul]; exact h1
-        · calc |Real.sin (((n + 1 : ℕ) : ℝ) * α)| * |sinCoeff g (n + 1)|
-              ≤ 1 * |sinCoeff g (n + 1)| := by gcongr
-            _ ≤ L := by rw [one_mul]; exact h2
+      rw [one_mul, one_mul]
+      exact add_le_add h1 h2
     _ = 2 * L := by ring
 
 theorem continuous_xiConvTerm (μ : ℝ) (g : ℝ → ℝ) (n : ℕ) : Continuous (xiConvTerm μ g n) := by

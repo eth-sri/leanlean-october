@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.CorrLength.RotatedLattice
 public import PottsDiscontinuity.Torus.DiamondGraph
 
@@ -56,13 +57,7 @@ private theorem checker_periodicCoordinate (hNeven : Even N) (hMeven : Even M)
     simp [hp, hq]
 
 private theorem int_abs_eq_one_iff (z : ℤ) : |z| = 1 ↔ z = 1 ∨ z = -1 := by
-  by_cases hz : 0 ≤ z
-  · rw [abs_of_nonneg hz]
-    omega
-  · have hz' : z < 0 := lt_of_not_ge hz
-    rw [abs_of_neg hz']
-    omega
-
+  grind
 private theorem periodicCoordinate_prev (hp : 0 < N) (z : ℤ) :
     periodicCoordinate hp (z - 1) = prv (periodicCoordinate hp z) := by
   have : NeZero N := ⟨Nat.ne_of_gt hp⟩
@@ -72,12 +67,10 @@ private theorem periodicCoordinate_prev (hp : 0 < N) (z : ℤ) :
     ((prv (periodicCoordinate hp z)).val : ℤ)
   rw [periodicCoordinate_val]
   have hmod : (z - 1) % (N : ℤ) = (z % (N : ℤ) - 1) % (N : ℤ) := by
-    have h := (Int.mod_modEq z (N : ℤ)).sub_right 1
-    exact h.eq.symm
+    simp_all
   rw [hmod]
   have hprv : prv (periodicCoordinate hp z) = periodicCoordinate hp z - 1 := by
-    change (finRotate N).symm (periodicCoordinate hp z) = _
-    exact finRotate_symm_apply _
+    simp_all
   rw [hprv, Fin.coe_int_sub_eq_mod]
   rw [periodicCoordinate_val]
   norm_num
@@ -116,8 +109,7 @@ def liftedFaceVertex (hNeven : Even N) (hMeven : Even M)
       rw [← Int.cast_add, hk]
       exact (ZMod.intCast_zmod_eq_zero_iff_dvd (k + k) 2).2 ⟨k, by ring⟩
     have hcast : ((i.val + j.val : ℕ) : ZMod 2) = 0 := by
-      rw [Nat.cast_add, hxZ, hyZ]
-      exact hsumZ
+      simp_all
     exact Nat.mod_eq_zero_of_dvd (ZMod.natCast_eq_zero_iff_even.mp hcast).two_dvd⟩
 
 /-- The indexed edge at the midpoint of a lifted diamond edge. -/
@@ -154,7 +146,7 @@ theorem liftedFaceEndpoints_eq (hNeven : Even N) (hMeven : Even M)
       simp
       omega
     have hcheckerIdx : checker (liftedEdgeIndex hN hM u v) = true := by
-      simpa only [liftedEdgeIndex] using hchecker
+      assumption
     rw [Sym2.eq_iff]
     right
     constructor
@@ -185,7 +177,7 @@ theorem liftedFaceEndpoints_eq (hNeven : Even N) (hMeven : Even M)
       simp
       omega
     have hcheckerIdx : checker (liftedEdgeIndex hN hM u v) = false := by
-      simpa only [liftedEdgeIndex] using hchecker
+      assumption
     rw [Sym2.eq_iff]
     left
     constructor
@@ -218,7 +210,7 @@ theorem liftedFaceEndpoints_eq (hNeven : Even N) (hMeven : Even M)
       simp
       omega
     have hcheckerIdx : checker (liftedEdgeIndex hN hM u v) = false := by
-      simpa only [liftedEdgeIndex] using hchecker
+      assumption
     rw [Sym2.eq_iff]
     right
     constructor
@@ -251,7 +243,7 @@ theorem liftedFaceEndpoints_eq (hNeven : Even N) (hMeven : Even M)
       simp
       omega
     have hcheckerIdx : checker (liftedEdgeIndex hN hM u v) = true := by
-      simpa only [liftedEdgeIndex] using hchecker
+      assumption
     rw [Sym2.eq_iff]
     left
     constructor
@@ -281,8 +273,7 @@ def liftedStripGraph (hN : 0 < N) (hM : 0 < M) (A : RCConfig N M)
     exact ⟨h.1.symm, (liftedEdgeIndex_comm hN hM v u).symm ▸ h.2.1,
       h.2.2.2, h.2.2.1⟩
   loopless.irrefl u h := by
-    exact rotatedLattice.loopless.irrefl u h.1
-
+    simp_all
 theorem liftedStripGraph_mono (hN : 0 < N) (hM : 0 < M)
     {A B : RCConfig N M} (a b : ℤ) (hAB : A ≤ B) :
     liftedStripGraph hN hM A a b ≤ liftedStripGraph hN hM B a b := by
@@ -290,9 +281,7 @@ theorem liftedStripGraph_mono (hN : 0 < N) (hM : 0 < M)
   have hval := hAB (liftedEdgeIndex hN hM u v)
   rw [huv.2.1] at hval
   have hout : B (liftedEdgeIndex hN hM u v) = true := by
-    cases hb : B (liftedEdgeIndex hN hM u v)
-    · exact False.elim ((by decide : ¬ (true ≤ false)) (by simpa [hb] using hval))
-    · rfl
+    tauto
   exact ⟨huv.1, hout, huv.2.2⟩
 
 private theorem walk_mono_support {V : Type*} {G H : SimpleGraph V}

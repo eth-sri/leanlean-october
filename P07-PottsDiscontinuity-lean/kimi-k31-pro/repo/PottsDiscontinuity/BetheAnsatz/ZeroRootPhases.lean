@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.BetheAnsatz.GapGeometric
 public import PottsDiscontinuity.BetheAnsatz.Perturbation
 
@@ -27,22 +28,15 @@ theorem planeWave_perturbed_zero {n : ℕ} (p : Fin (n + 1) → ℝ) (l : Fin (n
   let g : Fin (n + 1) → ℂ := fun j =>
     Complex.exp (I * (perturbedMomenta p l t (σ j) : ℂ) * (x j : ℂ))
   have hgk : g k = positionPhase t (x k) := by
-    dsimp [g, k]
-    rw [Equiv.apply_symm_apply, perturbedMomenta_at, hpl]
-    simp only [positionPhase, zero_add]
+    measurability
   have hfk : f k = 1 := by
-    dsimp [f, k]
-    rw [Equiv.apply_symm_apply, hpl]
-    simp
+    measurability
   have hrest : ∏ j ∈ univ.erase k, g j = ∏ j ∈ univ.erase k, f j := by
     apply Finset.prod_congr rfl
     intro j hj
     have hjk : j ≠ k := (mem_erase.mp hj).1
     have hσ : σ j ≠ l := by
-      intro h
-      apply hjk
-      apply σ.injective
-      simpa [k] using h
+      measurability
     have hq := perturbedMomenta_of_ne p l (σ j) t hσ
     dsimp [g, f]
     rw [hq]

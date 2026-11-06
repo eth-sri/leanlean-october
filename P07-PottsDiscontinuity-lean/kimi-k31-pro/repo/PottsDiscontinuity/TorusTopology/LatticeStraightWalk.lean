@@ -40,11 +40,6 @@ def straightWalk (z : ℤ × ℤ) (p : Torus.Port) :
   | 0 => (Walk.nil : FK.squareLattice.Walk z z).copy rfl (by simp [straightPosition])
   | n+1 => (straightWalk z p n).concat (straightPosition_adj z p n)
 
-@[simp] lemma straightWalk_length (z : ℤ × ℤ) (p : Torus.Port) (n : ℕ) :
-    (straightWalk z p n).length = n := by
-  induction n with
-  | zero => simp only [straightWalk,Walk.length_copy,Walk.length_nil]
-  | succ n ih => simp [straightWalk,ih]
 
 lemma straightWalk_support (z : ℤ × ℤ) (p : Torus.Port) (n : ℕ) :
     (straightWalk z p n).support = (List.range (n+1)).map (straightPosition z p) := by

@@ -14,8 +14,6 @@ open Torus CorrLength
 
 variable {N M : ℕ}
 
-noncomputable local instance cPrimeEstimateEdges (hN : Even N) (hM : Even M) :
-    Fintype (fullDiamondGraph hN hM).edgeSet := Fintype.ofFinite _
 noncomputable local instance cPrimeEstimateEdgeDecidableEq (hN : Even N) (hM : Even M) :
     DecidableEq (fullDiamondGraph hN hM).edgeSet := Classical.decEq _
 noncomputable local instance cPrimeEstimateRemaining (hN : Even N) (hM : Even M)

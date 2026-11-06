@@ -291,7 +291,6 @@ theorem corollary_313_i
         Z6V (Real.sqrt (2 + Real.sqrt q.val)) N M := by
   classical
   let lam := Real.arcosh (Real.sqrt q.val / 2)
-  have hLam := exp_add_exp_neg_arcosh q.val hq
   calc
     _ = ∑ A : RCConfig N M,
           torusNormalization q N M *

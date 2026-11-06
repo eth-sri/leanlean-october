@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.LinearAlgebra.PerronFrobeniusIrreducible
 
 /-!
@@ -68,9 +69,7 @@ theorem IsRowCover.mulVec {A : Matrix S S ℝ} {B : Matrix T T ℝ} {f : S → T
   change (∑ y, A x y * v (f y)) = ∑ t, B (f x) t * v t
   calc
     (∑ y, A x y * v (f y)) = ∑ y, ∑ t, if f y = t then A x y * v t else 0 := by
-      apply sum_congr rfl
-      intro y _
-      simp
+      simp_all
     _ = ∑ t, ∑ y, if f y = t then A x y * v t else 0 := sum_comm
     _ = ∑ t, (∑ y ∈ univ.filter (fun y => f y = t), A x y) * v t := by
       apply sum_congr rfl

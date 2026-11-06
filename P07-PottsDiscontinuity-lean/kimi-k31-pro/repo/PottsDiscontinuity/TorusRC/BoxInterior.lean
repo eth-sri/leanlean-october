@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.FK.SubgraphComparison
 public import PottsDiscontinuity.TorusRC.LiftedBoxes
 public import PottsDiscontinuity.TorusRC.RightHalf
@@ -28,9 +29,7 @@ theorem liftedBox_edge_rightHalfInterior (hNp : 0 < N) (hMp : 0 < M)
   have hvy := abs_le.mp v.property.2
   have hdist : |u.val.val.1 - v.val.val.1| = 1 := huv.1
   have hne : u.val.val.1 ≠ v.val.val.1 := by
-    intro heq
-    rw [heq, sub_self, abs_zero] at hdist
-    norm_num at hdist
+    measurability
   have hxlo : (N / 2 : ℤ) < max u.val.val.1 v.val.val.1 := by omega
   have hxhi : max u.val.val.1 v.val.val.1 ≤ (N : ℤ) := by omega
   have hylo : 0 < max u.val.val.2 v.val.val.2 := by omega
@@ -76,8 +75,7 @@ theorem liftedBoxGraph_map_projection_le_rightHalf (hN : Even N) (hM : Even M)
   have hsite : rightHalfInteriorSite idx :=
     liftedBox_edge_rightHalfInterior hNp hMp c R hleft hright hbottom htop huv
   have hnot : e ∉ rightHalfFrozenEdges hN hM hN4 hM4 := by
-    intro he
-    exact ((mem_rightHalfFrozenEdges hN hM hN4 hM4 idx).mp he) hsite
+    measurability
   have hpair : e.val = s(liftedFaceVertex hN hM hNp hMp u.val,
       liftedFaceVertex hN hM hNp hMp v.val) := by
     change s(faceEndpoint hN hM true idx false, faceEndpoint hN hM true idx true) = _
@@ -91,14 +89,8 @@ theorem liftedBoxGraph_map_projection_le_rightHalf (hN : Even N) (hM : Even M)
 
 noncomputable section
 
-local instance interiorGraphFintype (hN : Even N) (hM : Even M) :
-    Fintype (fullDiamondGraph hN hM).edgeSet := Fintype.ofFinite _
 
-local instance interiorGraphDecidableEq (hN : Even N) (hM : Even M) :
-    DecidableEq (fullDiamondGraph hN hM).edgeSet := Classical.decEq _
 
-local instance interiorBoxFintype (c : RotatedVertex) (R : ℕ) :
-    Fintype (liftedBoxGraph c R).edgeSet := Fintype.ofFinite _
 
 local instance interiorDeletedFintype (hN : Even N) (hM : Even M)
     (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) :
@@ -161,8 +153,7 @@ theorem embeddedBox_connection_lifts (hN : Even N) (hM : Even M)
             s(faceEndpoint hN hM true idx false, faceEndpoint hN hM true idx true)
           exact liftedFaceEndpoints_eq hN hM hNp hMp u.val w.val hlat
         have heA : torusIndexedEdgeEquiv hN hM hN4 hM4 idx ∈ A.val := by
-          rw [FK.edgeRestrictionConfigurationEquiv_val]
-          exact Finset.mem_map.mpr ⟨_, heC, heq⟩
+          measurability
         have hu := abs_le.mp u.property.1
         have hw := abs_le.mp w.property.1
         exact ⟨hlat, (rightHalfRestore_true_iff hN hM hN4 hM4 H A idx).mpr (Or.inl heA),

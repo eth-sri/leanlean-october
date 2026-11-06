@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.SixVertex.Defs
 
 /-!
@@ -42,7 +43,7 @@ theorem orderEmbOfFin_le_iff {x : Finset (Fin N)} {n : ℕ} (h : x.card = n) (k 
       intro a ha
       rw [mem_filter] at ha
       have : a ∈ Set.range (x.orderEmbOfFin h) := by
-        rw [Finset.range_orderEmbOfFin]; exact ha.1
+        simp_all
       obtain ⟨m, rfl⟩ := this
       refine mem_image.2 ⟨m, mem_Iio.2 ?_, rfl⟩
       exact (x.orderEmbOfFin h).lt_iff_lt.1 (lt_of_le_of_lt ha.2 hlt)

@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import Mathlib.Probability.ProbabilityMassFunction.Constructions
 public import PottsDiscontinuity.FK.Expectation
 
@@ -22,7 +23,7 @@ lemma pmf_le_filter_of_mem (p : PMF α) (T : Set α)
     intro b
     by_cases hb : b ∈ T <;> simp [hb]
   have hinv : (1 : ENNReal) ≤ (∑' b, T.indicator p b)⁻¹ := by
-    simpa using ENNReal.inv_le_inv.mpr hden
+    simp_all
   simpa only [mul_one] using mul_le_mul' (le_refl (p a)) hinv
 
 /-- No independence is asserted: conditioning divides by a probability ≤1. -/

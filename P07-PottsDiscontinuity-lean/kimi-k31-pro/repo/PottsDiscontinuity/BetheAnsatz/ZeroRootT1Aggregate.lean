@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT1OutputEquivalence
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT1RegularizedResidue
 
@@ -136,11 +137,7 @@ theorem sum_t1OutputSeam_slots {N n : ℕ} (l : Fin (n + 1))
         (if m.1 = Fin.last n then (N : ℂ) else 0) = 0 := by
       intro m
       have hm : m.1 ≠ Fin.last n := by
-        intro heq
-        apply m.2
-        calc
-          m.1 = Fin.last n := heq
-          _ = σ.symm l := hroot.symm
+        omega
       simp [hm]
     have hsum : (∑ m : {m : Fin (n + 1) // m ≠ σ.symm l},
         (if m.1 = Fin.last n then (N : ℂ) else 0)) = 0 := by
@@ -155,21 +152,13 @@ theorem sum_t1OutputSeam_slots {N n : ℕ} (l : Fin (n + 1))
         m ≠ m₀ → (if m.1 = Fin.last n then (N : ℂ) else 0) = 0 := by
       intro m hm hne
       have hlast : m.1 ≠ Fin.last n := by
-        intro heq
-        apply hne
-        apply Subtype.ext
-        exact heq
+        measurability
       simp [hlast]
     have hmem : m₀ ∈ (Finset.univ : Finset {m : Fin (n + 1) // m ≠ σ.symm l}) :=
       Finset.mem_univ _
     have hsum := Finset.sum_eq_single_of_mem m₀ hmem hzero
     have hσne : σ (Fin.last n) ≠ l := by
-      intro h
-      apply hroot
-      apply σ.injective
-      calc
-        σ (σ.symm l) = l := σ.apply_symm_apply l
-        _ = σ (Fin.last n) := h.symm
+      measurability
     simpa [m₀, hσne] using hsum
 
 theorem sum_t1OutputSlope_slots {N n : ℕ} (Δ : ℝ)
@@ -192,16 +181,12 @@ theorem t1PairLimit_eq_t1OutputLimitTerm {N n : ℕ} {c : ℝ}
       t1OutputLimitTerm (N := N) c x p l (t1PairOutputIndex i) := by
   let o := t1PairOutputIndex i
   have hoedge : o.edge = i.edge := rfl
-  have hword : (zeroRootZipperRun (t1PairZipperPath i) (i.σ, i.w)).2 =
-      (fun _ => false) := by
-    funext k
-    exact t1PairZipperRun_word_eq_false i k
   have hreg := t1PairZipperRun_preserves hc x p hp hinj l hpl hBE i
   have hσout : o.σ = (zeroRootZipperRun (t1PairZipperPath i) (i.σ, i.w)).1 := rfl
   have hreg' : zeroRootRegularizedWordTerm (N := N) c x p l o.σ (fun _ => false) =
       zeroRootRegularizedWordTerm (N := N) c x p l i.σ i.w := by
     rw [hσout]
-    simpa [hword] using hreg
+    simpa [funext (fun k => by exact t1PairZipperRun_word_eq_false i k)] using hreg
   have hlabel : p (o.σ (t1EdgeLeft i.edge)) =
       p (i.σ (t1EdgeLeft i.edge)) := by
     exact congrArg p (t1PairOutputIndex_left i)
@@ -212,14 +197,14 @@ theorem t1PairLimit_eq_t1OutputLimitTerm {N n : ℕ} {c : ℝ}
   cases hEdge : i.edge with
   | none =>
       have hlabel' : p (o.σ (Fin.last n)) = p (i.σ (Fin.last n)) := by
-        simpa [hEdge, t1EdgeLeft] using hlabel
+        measurability
       rw [hlim, ← hreg']
       simp only [hEdge, zeroRootPhaseDerivative]
       rw [← hlabel']
       simp [t1OutputSlope, t1EdgeLeft, hoedge, hEdge, zeroRootPhaseDerivative]
   | some a =>
       have hlabel' : p (o.σ a.castSucc) = p (i.σ a.castSucc) := by
-        simpa [hEdge, t1EdgeLeft] using hlabel
+        measurability
       rw [hlim, ← hreg']
       simp only [hEdge, zeroRootPhaseDerivative]
       rw [← hlabel']

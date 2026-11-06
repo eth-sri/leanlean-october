@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
 public import Mathlib.Topology.Homotopy.Path
@@ -59,11 +60,9 @@ lemma rayIndex_horizontal_invariant (x y : ℤ) {u w : LatticeVertex}
   | nil => rfl
   | @cons u z w h p ih =>
     have hhead : s(u,z) ≠ s((x,y-1),(x,y)) := by
-      intro he
-      exact hne (by simp [SimpleGraph.Walk.edges_cons, he])
+      measurability
     have htail : s((x,y-1),(x,y)) ∉ p.edges := by
-      intro he
-      exact hne (by simp [SimpleGraph.Walk.edges_cons, he])
+      simp_all
     simp only [rayIndex, rayStep_horizontal_invariant x y u z h hhead, ih htail]
 
 lemma rayIndex_vertical_difference (x y : ℤ) {u w : LatticeVertex}
@@ -74,11 +73,9 @@ lemma rayIndex_vertical_difference (x y : ℤ) {u w : LatticeVertex}
   | nil => simp [rayIndex]
   | @cons u z w h p ih =>
     have hhead : s(u,z) ≠ s((x-1,y),(x,y)) := by
-      intro he
-      exact hne (by simp [SimpleGraph.Walk.edges_cons, he])
+      measurability
     have htail : s((x-1,y),(x,y)) ∉ p.edges := by
-      intro he
-      exact hne (by simp [SimpleGraph.Walk.edges_cons, he])
+      simp_all
     have hl := rayStep_vertical_difference x y u z h hhead
     have ht := ih htail
     simp only [rayIndex]

@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Bethe.RatioOddCoefficient
 public import PottsDiscontinuity.Bethe.RatioOddLogCorrection
 
@@ -36,7 +37,6 @@ theorem ratio_odd_quotient_factors {c : ℝ} (hc : 2 < c) (s N : ℕ) (h4 : 4 �
         Real.exp (∑ j : Fin (N / 4 - s - 1), ratioMidpointLog c N h4 p s j) *
         Real.exp (∑ j, (ratioEll c (q j) - ratioEll c (alignedRoot N (2 * s + 1) hr p j))) : ℝ) : ℂ) := by
   have hfirstBound : 0 < N / 4 := by
-    obtain ⟨m, hm⟩ := h4
     omega
   let first : Fin (N / 4) := ⟨0, hfirstBound⟩
   have hsBound : s < N / 2 := by omega

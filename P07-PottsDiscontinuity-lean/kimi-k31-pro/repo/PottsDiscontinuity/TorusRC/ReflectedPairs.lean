@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusRC.Association
 public import PottsDiscontinuity.TorusRC.ReflectionLaw
 
@@ -99,8 +100,7 @@ theorem rectangleDouble_probability_ge_pair_sq (hN : Even N) (hM : Even M)
   have hE : ∀ ⦃A B⦄, A ≤ B → A ∈ E → B ∈ E :=
     fun {_ _} hAB hA => rectanglePairConnection_mono hNp hMp n i j hAB hA
   have hT : ∀ ⦃A B : RCConfig N M⦄, A ≤ B → T A ≤ T B := by
-    intro A B hAB e
-    exact hAB _
+    tauto
   have h := torusRCProbability_inter_ge_mul hN hM q E (T ⁻¹' E)
     hE (fun {_ _} hAB hA => hE (hT hAB) hA)
   have heq := torusRCProbability_reflect hN hM hNp hMp (2 * (n : ℤ))

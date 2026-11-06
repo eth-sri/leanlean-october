@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusCrossing.TorusEvents
 public import PottsDiscontinuity.TorusRC.ReflectionGraph
 
@@ -193,11 +194,6 @@ theorem clusterCount_translate (A : RCConfig N M) :
     clusterCount hN hM true (translRC hNp hMp a b A) = clusterCount hN hM true A :=
   Nat.card_congr (translateIso hN hM hNp hMp a b hab A).connectedComponentEquiv
 
-theorem periodicShift_neg (hp : 0 < N) (a : ℤ) : periodicShift hp (-a) = (periodicShift hp a).symm := by
-  refine Equiv.ext fun j => ?_
-  show periodicCoordinate hp ((j.val : ℤ) + -a) = periodicCoordinate hp ((j.val : ℤ) - a)
-  rw [sub_eq_add_neg]
-
 theorem openCount_translate (A : RCConfig N M) :
     openCount (translRC hNp hMp a b A) = openCount A := by
   unfold openCount
@@ -228,17 +224,13 @@ def translRCEquiv : RCConfig N M ≃ RCConfig N M where
     funext v
     change A (shiftIdx hNp hMp a b (shiftIdx hNp hMp (-a) (-b) v)) = A v
     have : shiftIdx hNp hMp (-a) (-b) = (shiftIdx hNp hMp a b).symm := by
-      unfold shiftIdx
-      rw [periodicShift_neg, periodicShift_neg]
-      rfl
+      measurability
     rw [this, Equiv.apply_symm_apply]
   right_inv A := by
     funext v
     change A (shiftIdx hNp hMp (-a) (-b) (shiftIdx hNp hMp a b v)) = A v
     have : shiftIdx hNp hMp (-a) (-b) = (shiftIdx hNp hMp a b).symm := by
-      unfold shiftIdx
-      rw [periodicShift_neg, periodicShift_neg]
-      rfl
+      measurability
     rw [this, Equiv.symm_apply_apply]
 
 include hab in

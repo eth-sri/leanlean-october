@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.CorrLength.Positivity
 public import PottsDiscontinuity.CorrLength.SubadditiveRate
 public import PottsDiscontinuity.CorrLength.RotatedLattice
@@ -91,11 +92,11 @@ theorem diagonalSite_correlation_rate_exists (θ : Parameters)
     -Real.log (μ.real (connectionEvent (0, 0)
       (PottsDiscontinuity.diagonalSite n)))
   have hEven (m : ℕ) : b (2 * m) = a m := by
-    simp [a, b, diagonalConnectionProbability, diagonalSite_even]
+    measurability
   have hOdd (m : ℕ) : b (2 * m + 1) = a m := by
-    simp [a, b, diagonalConnectionProbability, diagonalSite_odd]
+    measurability
   have hrate' : Tendsto (fun m : ℕ => a m / (m : ℝ)) atTop (𝓝 aInf) := by
-    simpa [a] using hrate
+    assumption
   have hdiag := tendsto_rate_of_even_odd_subsequence a b aInf hrate' hEven hOdd
   refine ⟨aInf, haInf, ?_⟩
   simpa [b] using hdiag

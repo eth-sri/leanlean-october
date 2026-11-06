@@ -85,9 +85,9 @@ theorem abs_tauCoeff_le (lam : ℝ) (n : ℕ) :
   have h2 := secCoeff_pos lam n
   have h3 := secCoeff_le_one lam n
   have h4 : 0 ≤ 1 - Real.tanh (lam * ((n + 1 : ℕ) : ℝ)) := by
-    rw [h1]; positivity
+    nlinarith
   have h5 : 1 - Real.tanh (lam * ((n + 1 : ℕ) : ℝ)) ≤ Real.exp (-lam) ^ (n + 1) := by
-    rw [h1]; nlinarith
+    simp_all
   unfold tauCoeff
   have hn : (0 : ℝ) < (n : ℝ) + 1 := by positivity
   rw [abs_div, abs_of_pos hn, abs_mul, abs_mul, abs_pow, abs_neg, abs_one, one_pow,

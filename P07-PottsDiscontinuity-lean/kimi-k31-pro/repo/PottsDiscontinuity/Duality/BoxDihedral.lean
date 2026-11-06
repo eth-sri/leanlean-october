@@ -16,8 +16,6 @@ def latticeQuarterTurn (v : LatticeVertex) : LatticeVertex := (-v.2, v.1)
 /-- The inverse quarter-turn `(x,y) ↦ (y,-x)`. -/
 def latticeQuarterTurnInv (v : LatticeVertex) : LatticeVertex := (v.2, -v.1)
 
-/-- The literal reflection `(x,y) ↦ (-x,y)`. -/
-def latticeReflection (v : LatticeVertex) : LatticeVertex := (-v.1, v.2)
 
 @[simp] theorem latticeQuarterTurnInv_quarterTurn (v : LatticeVertex) :
     latticeQuarterTurnInv (latticeQuarterTurn v) = v := by
@@ -27,9 +25,6 @@ def latticeReflection (v : LatticeVertex) : LatticeVertex := (-v.1, v.2)
     latticeQuarterTurn (latticeQuarterTurnInv v) = v := by
   ext <;> simp [latticeQuarterTurn, latticeQuarterTurnInv]
 
-@[simp] theorem latticeReflection_involutive (v : LatticeVertex) :
-    latticeReflection (latticeReflection v) = v := by
-  ext <;> simp [latticeReflection]
 
 lemma squareLattice_adj_quarterTurn_iff (u v : LatticeVertex) :
     squareLattice.Adj (latticeQuarterTurn u) (latticeQuarterTurn v) ↔

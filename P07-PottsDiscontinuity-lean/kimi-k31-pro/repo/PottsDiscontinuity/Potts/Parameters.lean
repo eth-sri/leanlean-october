@@ -39,11 +39,7 @@ def fkParameters (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β) : FK.Paramet
   property := by exact_mod_cast (show 1 ≤ q by omega)
   edgeProbability := ⟨bondProbability β, bondProbability_pos hβ, bondProbability_lt_one β⟩
 
-@[simp] theorem fkParameters_val (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β) :
-    (fkParameters q hq β hβ).val = q := rfl
 
-@[simp] theorem fkParameters_edgeParameter (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β) :
-    FK.edgeParameter (fkParameters q hq β hβ) = 1 - Real.exp (-β) := rfl
 
 /-- The explicit critical parameters satisfy the corrected identity `p_c = 1 - e^{-β_c}`
 (the source prints `p_c = 1 - e^{β_c}` in consequence 1 of Theorem 3.19). -/

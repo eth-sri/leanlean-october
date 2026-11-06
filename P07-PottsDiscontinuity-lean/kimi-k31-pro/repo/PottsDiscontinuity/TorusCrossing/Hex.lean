@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusCrossing.SelfDual
 
 /-!
@@ -142,7 +143,7 @@ theorem cnt_parity (X : Cell → Prop) (k : ℕ) :
         by_cases h3 : X (R.wcell (R.y0 + ((k + 1 : ℕ) : ℤ))) <;> simp_all
     · rw [ite_eq_right hc]
       have : (X (R.wcell (R.y0 + ((k + 1 : ℕ) : ℤ))) ↔ X (R.wcell (R.y0 + (k : ℤ)))) := by
-        by_contra hn; exact hc (hlast.2 hn)
+        simp_all
       rw [ih]
       by_cases h1 : X (R.wcell R.y0) <;> by_cases h2 : X (R.wcell (R.y0 + (k : ℤ))) <;>
         by_cases h3 : X (R.wcell (R.y0 + ((k + 1 : ℕ) : ℤ))) <;> simp_all

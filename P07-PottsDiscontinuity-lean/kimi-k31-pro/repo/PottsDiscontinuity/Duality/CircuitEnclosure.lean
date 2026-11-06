@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
 public import Mathlib.Topology.Homotopy.Path
@@ -39,12 +40,7 @@ theorem openGraph_le_circuitAvoidance (ω : LatticeConfiguration) {z : LatticeVe
   refine ⟨hadj, ?_⟩
   intro b hb he
   have hbopen : latticeConfigurationBondState ω b = true := by
-    change ω (latticeBondEdge b) = true
-    have heq : latticeBondEdge b =
-        (⟨s(u,w), squareLattice.mem_edgeSet.2 hadj⟩ : squareLattice.edgeSet) :=
-      Subtype.ext hb
-    rw [heq]
-    exact hopen
+    simp_all
   have hd := hclosed (dualBondOfPrimal b).source (dualBondOfPrimal b).target he
   have hc := closedDual_bond_state ω (dualBondOfPrimal b) hd
   rw [primalBondOfDual_dualBondOfPrimal, hbopen] at hc
@@ -57,11 +53,7 @@ lemma cellBoundary_adj_fst_le (S : Finset LatticeVertex) (M : ℤ)
     (h : (latticeCellBoundaryGraph S).Adj u w) : u.1 ≤ M+1 ∧ w.1 ≤ M+1 := by
   obtain ⟨_, d, hd, hdiff⟩ := (latticeCellBoundaryGraph_adj_iff _ _ _).1 h
   have hf : d.faceBase true ∈ S ∨ d.faceBase false ∈ S := by
-    by_cases ht : d.faceBase true ∈ S
-    · exact Or.inl ht
-    · right
-      by_contra hn
-      exact hdiff (propext (by simp [ht, hn]))
+    tauto
   have hend : (u = d.source ∧ w = d.target) ∨ (u = d.target ∧ w = d.source) := by
     rcases Sym2.eq_iff.1 hd with h | h
     · exact Or.inl ⟨h.1.symm,h.2.symm⟩
@@ -111,9 +103,7 @@ theorem cellBoundary_outer_cycle_nonzero (S : Finset LatticeVertex) (hS : S.None
   have hr : rayIndex (x.1+1+1,x.2+1) q = 0 :=
     rayIndex_zero_of_right _ q (fun t ht => by have := hbound t ht; dsimp; omega)
   have he' : s((x.1+1,(x.2+1)-1),(x.1+1,x.2+1)) ∈ q.edges := by
-    change s((x.1+1,(x.2+1)-1),(x.1+1,x.2+1)) ∈
-      (p.mapLe (latticeCellBoundaryGraph_le S)).edges
-    simpa only [SimpleGraph.Walk.edges_mapLe_eq_edges, add_sub_cancel_right] using he
+    measurability
   have hj := rayIndex_jump_of_vertical_edge (x.1+1) (x.2+1) q (hp.isTrail.mapLe _) he'
   rw [hr] at hj
   exact ⟨x,hx,z,p,hp,hj⟩

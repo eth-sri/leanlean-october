@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusCrossing.Fiber
 public import PottsDiscontinuity.TorusCrossing.Ivt
 public import PottsDiscontinuity.TorusCrossing.TorusDict
@@ -105,9 +106,7 @@ theorem lifted_adj_of_step (hNp : 0 < N) (hMp : 0 < M) (Q : Rect) (A : RCConfig 
     (liftedStripGraph hNp hMp A a b).Adj u v := by
   obtain ⟨m, hm, hmeq⟩ := h
   have hu1 : u.1 = (primalEnds m).1 ∨ u.1 = (primalEnds m).2 := by
-    rcases hmeq with h | h
-    · exact Or.inl (congrArg Prod.fst h).symm
-    · exact Or.inr (congrArg Prod.snd h).symm
+    measurability
   rcases hmeq with h | h
   · have hu : u = toRV (primalEnds m).1 (primalEnds_fst_primal m) :=
       Subtype.ext (congrArg Prod.fst h).symm

@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT1RunShape
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT1ZipperRun
 
@@ -116,11 +117,9 @@ theorem t1PairZipperPath_covers {n : ℕ} {l : Fin (n + 1)}
   let q' : Fin ((t1ShiftedRunEnd i).val + 1) :=
     ⟨q.val, by have := Fin.le_iff_val_le_val.mp hle; omega⟩
   have hindex : t1RunPathIndex (t1ShiftedRunEnd i) q' = q := by
-    apply Fin.ext
     rfl
   have hmap : t1RunShift i (t1RunPathIndex (t1ShiftedRunEnd i) q') = k := by
-    rw [hindex]
-    exact (t1RunShift i).apply_symm_apply k
+    measurability
   exact (List.mem_ofFn' (fun q : Fin ((t1ShiftedRunEnd i).val + 1) =>
     t1RunShift i (t1RunPathIndex (t1ShiftedRunEnd i) q)) k).2
       (Set.mem_range.mpr ⟨q', hmap⟩)
@@ -161,9 +160,9 @@ theorem zeroRootZipperRun_root_at_last {n : ℕ}
           let σ' := σ * Equiv.swap a b
           let w' := Function.update w a false
           have hroot' : σ' ((b :: rest).headD 0) = l := by
-            simpa [σ', Equiv.Perm.mul_apply] using hroot
+            measurability
           have hlast : (a :: b :: rest).getLast hne = (b :: rest).getLast htailNe := by
-            simp
+            rfl
           change (zeroRootZipperRun (b :: rest) (σ', w')).1
             ((b :: rest).getLast htailNe) = l
           rw [← hlast]
@@ -181,7 +180,6 @@ theorem t1PairZipperPathLast_eq_runEnd {n : ℕ} {l : Fin (n + 1)}
   have hlast := List.getLast_ofFn_succ
     (fun q : Fin (e.val + 1) => t1RunShift i (t1RunPathIndex e q))
   have hindex : t1RunPathIndex e (Fin.last e.val) = e := by
-    apply Fin.ext
     rfl
   unfold t1PairZipperPathLast t1PairZipperPath
   rw [hlast, hindex]

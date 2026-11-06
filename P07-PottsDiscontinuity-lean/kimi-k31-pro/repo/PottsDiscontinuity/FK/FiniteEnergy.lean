@@ -21,8 +21,6 @@ local instance finiteEnergyEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite G
 local instance finiteEnergyEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 local instance finiteEnergyRemainingFintype (R : Configuration G) :
     Fintype (RemainingConfiguration G R) := Fintype.ofFinite _
-local instance finiteEnergyRemovedFintype (R : Configuration G) :
-    Fintype (RemovedConfiguration G R) := Fintype.ofFinite _
 
 def edgeRemovedBoolEquiv (e : G.edgeSet) :
     RemovedConfiguration G ({e} : Configuration G) ≃ Bool where
@@ -96,12 +94,6 @@ theorem configurationProbability_edge_finite_energy
       insert e A.val ∈ s ↔ A.val ∈ s := by
     have hh := hstable (insert e A.val)
     simpa [e, habsent A] using hh
-  have hbaseIndicator (A : RemainingConfiguration G {e}) :
-      eventIndicator s A.val = if A.val ∈ s then 1 else 0 := by
-    simp [eventIndicator, Set.indicator]
-  have hinsertIndicator (A : RemainingConfiguration G {e}) :
-      eventIndicator s (insert e A.val) = if A.val ∈ s then 1 else 0 := by
-    simp [eventIndicator, Set.indicator, hstableInsert A]
   have hmass : (measure G q ξ s).toReal =
       ∑ A : RemainingConfiguration G {e},
         if A.val ∈ s then P A.val + P (insert e A.val) else 0 := by

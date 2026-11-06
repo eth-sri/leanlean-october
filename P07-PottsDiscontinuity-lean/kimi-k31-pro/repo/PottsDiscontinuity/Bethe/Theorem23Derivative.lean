@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Bethe.Theorem23Coordinates
 
 /-! # The coordinate residual and its Frechet derivative -/
@@ -63,7 +64,7 @@ theorem discreteCoordinateResidual_stateDerivative_column {Δ : ℝ} (hΔ : Δ <
   have hF : HasFDerivAt F (fderiv ℝ F (Δ, q)) (Δ, q) :=
     (analyticAt_discreteCoordinateResidual hΔ N n q).differentiableAt.hasFDerivAt
   have hF0 : HasFDerivAt F (fderiv ℝ F (Δ, q)) (Δ, q + (0 : ℝ) • e) := by
-    simpa only [zero_smul, add_zero] using hF
+    simp_all
   have hcomp := hF0.comp_hasDerivAt (0 : ℝ) hpath
   have hscalar := ((ContinuousLinearMap.proj i :
     (Fin (n / 2) → ℝ) →L[ℝ] ℝ).hasFDerivAt).comp_hasDerivAt (0 : ℝ) hcomp

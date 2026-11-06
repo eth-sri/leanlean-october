@@ -128,10 +128,10 @@ theorem logistic2_integrand (ω t : ℝ) :
     push_cast; rw [e2']
   have hc : ((Real.cosh t : ℝ) : ℂ) ≠ 0 := by exact_mod_cast (Real.cosh_pos t).ne'
   have hne : 1 + (Complex.exp t)⁻¹ ^ 2 ≠ 0 := by
-    rw [← e5]; exact_mod_cast ha0.ne'
+    measurability
   rw [e4] at hc
   have hne2 : Complex.exp t + (Complex.exp t)⁻¹ ≠ 0 := by
-    intro h; apply hc; rw [h]; simp
+    simp_all
   rw [e6, e3, e5, e4]
   field_simp
 
@@ -304,7 +304,7 @@ theorem periodic_sech_eq_cos_series {lam : ℝ} (hlam : 0 < lam) (α : ℝ) :
     refine tsum_congr fun n => ?_
     simp only [hfdef]
     have : b * (x + (n : ℝ)) = π * (2 * π * n + α) / (2 * lam) := by
-      rw [hbdef, hx]; field_simp; ring
+      field
     rw [this, mul_one_div]
   -- right side: real parts
   have hterm : ∀ n : ℤ, (𝓕 f n * fourier n (x : UnitAddCircle)).re =

@@ -21,12 +21,8 @@ namespace PottsDiscontinuity.FK
 open MeasureTheory FiniteProbability
 noncomputable section
 
-local instance boxComparisonSmallEdgeFintype (c : LatticeVertex) (r : ℕ) :
-    Fintype (boxGraph c r).edgeSet := Fintype.ofFinite _
 local instance boxComparisonLargeEdgeFintype (c : LatticeVertex) (r : ℕ) :
     Fintype (boxGraph c r).edgeSet := Fintype.ofFinite _
-local instance boxComparisonSmallEdgeDecidableEq (c : LatticeVertex) (r : ℕ) :
-    DecidableEq (boxGraph c r).edgeSet := Classical.decEq _
 
 /-- The actual inclusion of vertex carriers induced by containment of boxes. -/
 def boxVertexEmbedding {c d : LatticeVertex} {r s : ℕ}

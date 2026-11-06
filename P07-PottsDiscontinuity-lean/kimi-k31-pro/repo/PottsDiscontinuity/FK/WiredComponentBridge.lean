@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.FK.Graph
 public import Mathlib.Data.Fintype.Option
 public import Mathlib.Tactic
@@ -45,8 +46,7 @@ private theorem wiredComponentLabel_eq_of_connected (H : SimpleGraph V) (W : Set
 private theorem wiredComponentLabel_eq_none (H : SimpleGraph V) (W : Set V)
     {x : V} (hx : x ∈ W) : wiredComponentLabel H W x = none := by
   have hn : ¬ ∀ y, H.connectedComponentMk y = H.connectedComponentMk x → y ∉ W := by
-    intro h
-    exact h x rfl hx
+    tauto
   simp only [wiredComponentLabel, componentBoundaryLabel, dite_eq_right hn]
 
 private theorem wiredComponentSetoid_eq_ker (H : SimpleGraph V) (W : Set V) :
@@ -149,10 +149,7 @@ theorem componentCount_wired_eq_boundary_avoiding [Finite V]
   · have hWe : W = ∅ := Set.not_nonempty_iff_eq_empty.mp hW
     subst W
     have hp : (BoundaryCondition.wired (∅ : Set V)).partition = ⊥ := by
-      apply Setoid.ext
-      intro x y
-      change (x = y ∨ x ∈ (∅ : Set V) ∧ y ∈ (∅ : Set V)) ↔ x = y
-      simp
+      measurability
     simp only [componentCount, componentSetoid, hp, sup_bot_eq,
       Set.mem_empty_iff_false, not_false_eq_true, implies_true, Nat.card_subtype_true,
       Set.not_nonempty_empty, ite_false, add_zero]

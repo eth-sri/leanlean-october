@@ -49,10 +49,7 @@ theorem pi_coth_eq (a : ℝ) (ha : 0 < a) :
       show (π : ℂ) * ((a : ℂ) * Complex.I) = ((π * a : ℝ) : ℂ) * Complex.I by push_cast; ring,
       Complex.cos_mul_I, Complex.sin_mul_I]
     have hs' : Complex.sinh ((π : ℂ) * a) ≠ 0 := by
-      have := hs
-      rw [Complex.ofReal_sinh] at this
-      push_cast at this
-      exact this
+      simp_all
     push_cast
     field_simp
     simp [Complex.I_sq]
@@ -84,9 +81,7 @@ theorem pi_coth_eq (a : ℝ) (ha : 0 < a) :
     rw [Complex.ofReal_tsum, tsum_neg, tsum_mul_left]
   rw [h4] at h
   have h5 : (1 : ℂ) / ((a : ℂ) * Complex.I) = -(Complex.I * ((1 / a : ℝ) : ℂ)) := by
-    push_cast
-    field_simp
-    simp [Complex.I_sq]
+    simp_all
   rw [h5] at h
   have h6 : (π : ℂ) * -(Complex.I * ((Real.cosh (π * a) / Real.sinh (π * a) : ℝ) : ℂ)) -
       -(Complex.I * ((1 / a : ℝ) : ℂ)) =

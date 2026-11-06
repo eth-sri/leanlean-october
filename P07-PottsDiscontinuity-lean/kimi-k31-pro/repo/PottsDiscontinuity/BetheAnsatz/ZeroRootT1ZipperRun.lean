@@ -104,10 +104,6 @@ theorem zeroRootZipperRun_preserves {N n : ℕ} {c : ℝ}
               hσa hpl)
       | cons b rest =>
           have hnd := List.nodup_cons.mp hnodup
-          have hab : a ≠ b := by
-            intro he
-            subst b
-            exact hnd.1 (by simp)
           have htailNodup : (b :: rest).Nodup := hnd.2
           have hpathShape : b = finRotate (n + 1) a ∧
               zipperPathAdjacent (b :: rest) := by

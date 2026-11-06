@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
 public import Mathlib.Topology.Homotopy.Path
@@ -62,8 +63,7 @@ lemma reachable_support_of_edge_relation {G : SimpleGraph LatticeVertex}
     · exact .refl _
     · have hh := hG u z (by simp)
       have htail : ∀ a b, s(a,b) ∈ p.edges → G.Adj a b := by
-        intro a b he
-        exact hG a b (by simp [he])
+        simp_all
       exact hh.reachable.trans (ih htail t ht)
 
 lemma closedDualGraph_opening_le (F : Finset squareLattice.edgeSet) (ω : LatticeConfiguration) :
@@ -117,14 +117,13 @@ theorem no_infinite_cluster_implies_opposite_connections (ω : LatticeConfigurat
   rcases huy with huy | huy
   · refine ⟨k,1,w,hRk,hwx,?_⟩
     have heq : ((k : ℤ),-((1 : Fin 2).val : ℤ)) = u := by
-      ext <;> simp only [hk,Fin.val_one,Int.natCast_one]; dsimp at huy ⊢; omega
+      measurability
     change (rcInfiniteOpenGraph (wholePlaneDualConfigurationHomeomorph ω)).Reachable _ w
     rw [heq]
     exact hconn
   · refine ⟨k,0,w,hRk,hwx,?_⟩
     have heq : ((k : ℤ),-((0 : Fin 2).val : ℤ)) = u := by
-      ext <;> simp only [hk,Fin.val_zero,Int.natCast_zero,neg_zero]
-      dsimp at huy ⊢; omega
+      measurability
     change (rcInfiniteOpenGraph (wholePlaneDualConfigurationHomeomorph ω)).Reachable _ w
     rw [heq]
     exact hconn

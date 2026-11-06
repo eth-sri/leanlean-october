@@ -16,10 +16,6 @@ local instance freeObservationVertexDecidableEq (V : Finset (ℤ × ℤ)) :
     DecidableEq ↥(V : Set (ℤ × ℤ)) := fun _ _ => Classical.propDecidable _
 local instance freeObservationVertexFintype (V : Finset (ℤ × ℤ)) :
     Fintype ↥(V : Set (ℤ × ℤ)) := Fintype.ofFinite _
-local instance freeObservationEdgeDecidableEq (V : Finset (ℤ × ℤ)) :
-    DecidableEq (squareLattice.induce (V : Set (ℤ × ℤ))).edgeSet := fun _ _ => Classical.propDecidable _
-local instance freeObservationEdgeFintype (V : Finset (ℤ × ℤ)) :
-    Fintype (squareLattice.induce (V : Set (ℤ × ℤ))).edgeSet := Fintype.ofFinite _
 
 /-- The colouring formula holds for any finite family of observations, including
 repeated vertices, under any frozen free Potts box limit. -/

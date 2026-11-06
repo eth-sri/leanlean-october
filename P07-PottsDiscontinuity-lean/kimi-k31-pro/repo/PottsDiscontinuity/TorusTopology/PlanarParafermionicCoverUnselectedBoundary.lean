@@ -2,6 +2,7 @@
 Adaptation: Namespace and import relocation only. -/
 module
 
+public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFaceOrientedBoundary
 public import Mathlib.Tactic
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFaceAdjacency
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverSelectedFaceIncidence
@@ -15,31 +16,13 @@ open PottsDiscontinuity.TorusTopology.Planar
 private theorem coverFaceSetPositiveDartCount_le_one {n : ℕ}
     (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
     (u v : ParafermionicCoverBoxVertex n) :
-    parafermionicCoverFacePositiveDartCount S u v ≤ 1 := by
-  classical
-  unfold parafermionicCoverFacePositiveDartCount
-  apply Finset.card_le_one.mpr
-  intro i hi j hj
-  have hdi : (u.1,v.1) ∈ parafermionicCoverFiniteFaceDarts i.1 :=
-    (Finset.mem_filter.mp hi).2
-  have hdj : (u.1,v.1) ∈ parafermionicCoverFiniteFaceDarts j.1 :=
-    (Finset.mem_filter.mp hj).2
-  have hfaces := parafermionicCoverFiniteFaceDart_unique n i.2 j.2 hdi hdj
-  exact Subtype.ext hfaces
-
+    parafermionicCoverFacePositiveDartCount S u v ≤ 1 :=
+  coverFacePositiveDartCount_le_one S u v
 private theorem coverFaceSetDarts_no_opposite {f : ParafermionicCoverVertex}
     {u v : ParafermionicCoverVertex}
     (huv : (u,v) ∈ parafermionicCoverFiniteFaceDarts f)
-    (hvu : (v,u) ∈ parafermionicCoverFiniteFaceDarts f) : False := by
-  rcases f with ⟨⟨x,y⟩,k⟩
-  simp only [parafermionicCoverFiniteFaceDarts, Finset.mem_insert,
-    Finset.mem_singleton, parafermionicCoverFaceRightLift_formula,
-    parafermionicCoverFaceRightUpLift_formula,
-    parafermionicCoverFaceRightUpLeftLift_formula] at huv hvu
-  rcases huv with h1 | h2 | h3 | h4 <;>
-    rcases hvu with h1' | h2' | h3' | h4' <;>
-    simp_all
-
+    (hvu : (v,u) ∈ parafermionicCoverFiniteFaceDarts f) : False :=
+  coverFaceDarts_no_opposite huv hvu
 private theorem coverFaceSet_exists_dart {n : ℕ}
     (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
     (u v : ParafermionicCoverBoxVertex n)

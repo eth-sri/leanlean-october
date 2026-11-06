@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT1ZipperStep
 
 /-!
@@ -26,8 +27,7 @@ theorem zeroRootRegularizedWordTerm_flipRoot {N n : ℕ} {c : ℝ}
       (Function.update w a false) =
     zeroRootRegularizedWordTerm (N := N) c x p l σ w := by
   have hroot : σ.symm l = a := by
-    apply σ.injective
-    simpa using hσ.symm
+    measurability
   have hprod : zeroRootRegularizedProduct c p l σ (Function.update w a false) =
       zeroRootRegularizedProduct c p l σ w := by
     unfold zeroRootRegularizedProduct

@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.FK.WiredRemoval
 public import PottsDiscontinuity.TorusRC.CylinderEvents
 public import PottsDiscontinuity.TorusRC.IndexedGraphBridge
@@ -28,9 +29,7 @@ theorem leftStrip_edge_index_range (hN : 0 < N) (hM : 0 < M)
       (liftedEdgeIndex hN hM u v).1.val ≤ K := by
   have hdist : |u.val.1 - v.val.1| = 1 := huv.1.1
   have hne : u.val.1 ≠ v.val.1 := by
-    intro heq
-    rw [heq, sub_self, abs_zero] at hdist
-    norm_num at hdist
+    measurability
   have hmax1 : 1 ≤ max u.val.1 v.val.1 := by
     have hu := huv.2.2.1.1
     have hv := huv.2.2.2.1

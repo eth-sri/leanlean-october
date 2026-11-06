@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Bethe.AsymptoticGeometry
 public import PottsDiscontinuity.Bethe.RatioBoundary
 
@@ -36,9 +37,7 @@ theorem ratio_rootIndex_on_cell {n : ℕ} (hn : 0 < n) (q : Fin n → ℝ)
       intro i hi
       by_contra h
       have hle : (⟨j.val + 1, hj⟩ : Fin n) ≤ i := by
-        change j.val + 1 ≤ i.val
-        have : j.val < i.val := lt_of_not_ge h
-        omega
+        measurability
       have hqi : q i ≤ x := (mem_filter.mp hi).2
       have := hq.monotone hle
       linarith [hx.2]

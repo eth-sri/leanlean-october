@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusRC.CylinderFiberBridge
 public import PottsDiscontinuity.FK.VolumeComparison
 
@@ -13,13 +14,7 @@ open Torus
 
 variable {N M : ℕ}
 
-noncomputable local instance torusFiberComparisonGraphFintype
-    (hN : Even N) (hM : Even M) :
-    Fintype (fullDiamondGraph hN hM).edgeSet := Fintype.ofFinite _
 
-noncomputable local instance torusFiberComparisonGraphDecidableEq
-    (hN : Even N) (hM : Even M) :
-    DecidableEq (fullDiamondGraph hN hM).edgeSet := Classical.decEq _
 
 noncomputable local instance torusFiberComparisonRemainingFintype
     (hN : Even N) (hM : Even M)
@@ -171,8 +166,7 @@ theorem torusRCFiberEventProbability_finset_inter_ge_prod
           (torusRCFiberEventProbability_ge_free hN hM hN4 hM4 q R H
             (E i) (hE i))
       have hs0 : ∀ j ∈ s, 0 ≤ p j := by
-        intro j hj
-        exact hp0 j (Finset.mem_insert_of_mem hj)
+        simp_all
       have hsF : ∀ j ∈ s, p j ≤ torusRCFiberEventProbability
           (FK.remainingLaw (fullDiamondGraph hN hM) (torusRCBridgeParameters q)
             (FK.BoundaryCondition.free ∅) R) (E j) := by

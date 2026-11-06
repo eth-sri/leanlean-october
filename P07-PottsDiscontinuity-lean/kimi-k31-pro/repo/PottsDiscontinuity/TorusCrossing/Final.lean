@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusCrossing.Mixture
 public import PottsDiscontinuity.TorusCrossing.TorusBarrier
 public import PottsDiscontinuity.TorusCrossing.TorusTranslate
@@ -125,9 +126,7 @@ theorem core_bound (q : Set.Ici (1 : ℝ)) (hN : Even N) (hM : Even M) (hNp : 0 
   · nlinarith [sq_nonneg q.val]
   · push Not at hcase
     have h1 : 1 / (1 + q.val) * (1 - 2 * (q.val ^ 2 * p₀)) ≤ κ * Pbar := by
-      calc _ ≤ κ * (1 - 2 * (q.val ^ 2 * p₀)) :=
-            mul_le_mul_of_nonneg_right hκ hcase.le
-        _ ≤ κ * Pbar := mul_le_mul_of_nonneg_left hPbar (hc0.le.trans hκ)
+      nlinarith
     have h2 : 1 / (1 + q.val) * (1 - 2 * (q.val ^ 2 * p₀)) ≤ p₀ := h1.trans hmain
     have h3 : 1 - 2 * (q.val ^ 2 * p₀) ≤ (1 + q.val) * p₀ := by
       have := mul_le_mul_of_nonneg_left h2 (show (0 : ℝ) ≤ 1 + q.val by positivity)

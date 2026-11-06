@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusLoops.LoopDensityLogBounds
 public import PottsDiscontinuity.TorusLoops.LoopTailBoundaryDecay
 
@@ -101,7 +102,7 @@ theorem lemma_3_14_corrected_limsup
       have hden : 2 * ((Kε + 1 : ℕ) : ℝ) ≤
           2 * ((n + 1 : ℕ) : ℝ) := by
         have hncast : ((Kε + 1 : ℕ) : ℝ) ≤ ((n + 1 : ℕ) : ℝ) := by
-          exact_mod_cast Nat.succ_le_succ hnKε
+          simp_all
         nlinarith
       have hrem : (C₀ + C₁) / (2 * ((n + 1 : ℕ) : ℝ)) < ε / 2 := by
         have hdenN : 0 < 2 * ((n + 1 : ℕ) : ℝ) := by positivity
@@ -112,12 +113,7 @@ theorem lemma_3_14_corrected_limsup
           exact mul_le_mul_of_nonneg_left hden hC
         exact hmono.trans_lt (by simpa [C] using hKεbound)
       have hrate' : |windingLoopDensityLogRate hN hNp q n| < ε := by
-        calc
-          |windingLoopDensityLogRate hN hNp q n| ≤
-              C₁ / (2 * (r : ℝ)) +
-                (C₀ + C₁) / (2 * ((n + 1 : ℕ) : ℝ)) := hrate
-          _ < ε / 2 + ε / 2 := add_lt_add hfirst hrem
-          _ = ε := by ring
+        linarith
       exact hrate'.le
     have hCob : IsCoboundedUnder (· ≤ ·) atTop
         (fun n => abs (windingLoopDensityLogRate hN hNp q n)) :=

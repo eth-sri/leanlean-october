@@ -21,14 +21,7 @@ def recordConditional (p : PMF α) (hp : ∀ a, a ∈ p.support) (f : α → β)
 
 lemma recordMass_ne_zero (p : PMF α) (hp : ∀ a, a ∈ p.support) (f : α → β) (a : α) :
     (∑ b : α, if f b=f a then p b else 0) ≠ 0 := by
-  intro hz
-  have ha : p a ≤ ∑ b : α, if f b=f a then p b else 0 := by
-    simpa only [ite_true] using
-      (Finset.single_le_sum (f := fun b : α => if f b=f a then p b else 0)
-        (fun b _ => bot_le) (Finset.mem_univ a) :
-        (if f a=f a then p a else 0) ≤ ∑ b : α, if f b=f a then p b else 0)
-  exact hp a (le_zero_iff.mp (hz ▸ ha))
-
+  simp_all
 lemma recordMass_ne_top (p : PMF α) (f : α → β) (a : α) :
     (∑ b : α, if f b=f a then p b else 0) ≠ ⊤ := by
   have h := p.tsum_coe_indicator_ne_top {b | f b=f a}

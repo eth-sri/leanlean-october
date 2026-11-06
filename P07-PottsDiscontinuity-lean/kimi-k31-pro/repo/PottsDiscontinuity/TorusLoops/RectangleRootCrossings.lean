@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusLoops.RectangleTranslatedOneArm
 public import PottsDiscontinuity.TorusLoops.RectangleBoxComparison
 
@@ -83,8 +84,7 @@ private theorem rectangleFaceBox_horizontal_distance (hN : Even N) (hM : Even M)
   have htri : ((N - 1 : ℕ) : ℤ) ≤ |y.1 - x.1| + |y.2 - x.2| := by
     calc
       ((N - 1 : ℕ) : ℤ) = |((N - 1 : ℕ) : ℤ)| := by
-        rw [abs_of_nonneg]
-        omega
+        norm_num
       _ = |(y.1 - x.1) - (y.2 - x.2)| := by rw [hdiff]
       _ ≤ |y.1 - x.1| + |y.2 - x.2| := by
         simpa [abs_sub_comm] using abs_sub_le (y.1 - x.1) 0 (y.2 - x.2)
@@ -123,7 +123,7 @@ theorem rectangleBoxRestriction_rootCrossing_subset_oneArm
   let hGH := rectangleBaseGraph_map_rectangleFaceBoxEmbedding hN hM
   let C := embeddedConfigurationRestriction G H f hGH B
   have hC : C ∈ rectangleRootCrossingEvent hN hM u := by
-    simpa [C, G, H, f, hGH, rectangleBoxRestrictionEvent] using hB
+    assumption
   obtain ⟨v, hv, hreach⟩ := hC
   let D := embeddedConfigurationEmbedding G H f hGH C
   have hDC : D ⊆ B := by

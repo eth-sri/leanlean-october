@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusRC.MeasureFacts
 public import PottsDiscontinuity.TorusTopology.BarrierEvent
 
@@ -20,15 +21,7 @@ private theorem exactOneWitnessConfig_isolatedSeamIndex {N M : ℕ}
     (hNdiv : 8 ∣ N) (hNlarge : 8 ≤ N) :
     ∀ j : Fin M,
       exactOneWitnessConfig N M (⟨1, by omega⟩, j) = false := by
-  intro j
-  obtain ⟨k, hk⟩ := hNdiv
-  have hkpos : 1 ≤ k := by omega
-  have hcol : 1 ≠ 3 * (N / 4) + 1 := by
-    rw [hk]
-    omega
-  change decide (1 ≠ 1) = false
-  simp
-
+  aesop
 private theorem exactOneWitnessConfig_seam_all_but_one {N M : ℕ}
     (hNdiv : 8 ∣ N) (hNlarge : 8 ≤ N) (hM : 0 < M) :
     TorusRC.torusRCSeamAllButOneOpen hM (exactOneWitnessConfig N M) := by
@@ -97,11 +90,9 @@ private theorem exactOneWitnessConfig_in_CPrime {N M : ℕ}
   have hxEven : Even (TorusRC.sourceRightColumn N) :=
     TorusRC.sourceRightColumn_even hNdiv
   have hstripLo : (N / 2 : ℤ) ≤ TorusRC.sourceRightColumn N := by
-    rw [hx]
-    exact_mod_cast (show N / 2 ≤ 3 * (N / 4) by omega)
+    omega
   have hstripHi : TorusRC.sourceRightColumn N + 1 ≤ (N : ℤ) := by
-    rw [hx]
-    exact_mod_cast (show 3 * (N / 4) + 1 ≤ N by omega)
+    omega
   have hcolumnOpen (j : Fin M) :
       exactOneWitnessConfig N M
         (⟨3 * (N / 4) + 1, hcolLt⟩, j) = true := by
@@ -133,13 +124,10 @@ private theorem exactOneWitnessConfig_in_CPrime {N M : ℕ}
     have hzx : z.val.1 = TorusRC.sourceRightColumn N + 1 := by rfl
     have hvx : v.val.1 = TorusRC.sourceRightColumn N := by rfl
     have huy : u.val.2 = t := by
-      change 2 * (1 : ℤ) * (j : ℤ) = t
-      simp [t]
+      rfl
     have hzy : z.val.2 = t + 1 := by rfl
     have hvy : v.val.2 = t + 2 := by
-      change 2 * (1 : ℤ) * ((j + 1 : ℕ) : ℤ) = t + 2
-      simp [t]
-      ring
+      rfl
     have hindex1 : TorusRC.liftedEdgeIndex hNpos hMpos u z =
         (⟨3 * (N / 4) + 1, hcolLt⟩,
           TorusRC.periodicCoordinate hMpos (t + 1)) := by
@@ -202,7 +190,7 @@ private theorem exactOneWitnessConfig_in_CPrime {N M : ℕ}
           omega
     refine ⟨SimpleGraph.Walk.cons hAdj1 (SimpleGraph.Walk.cons hAdj2 .nil), ?_⟩
     have hR : 2 ≤ (N / 4 : ℤ) := by
-      exact_mod_cast (show 2 ≤ N / 4 by omega)
+      omega
     have hboxU : TorusRC.inLiftedBox (N / 4) u u := by
       simp [TorusRC.inLiftedBox]
       positivity

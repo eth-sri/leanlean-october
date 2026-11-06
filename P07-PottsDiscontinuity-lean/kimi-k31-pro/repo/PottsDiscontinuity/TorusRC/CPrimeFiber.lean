@@ -14,16 +14,11 @@ open Torus CorrLength
 
 variable {N M : ℕ}
 
-noncomputable local instance cPrimeFiberEdges (hN : Even N) (hM : Even M) :
-    Fintype (fullDiamondGraph hN hM).edgeSet := Fintype.ofFinite _
 noncomputable local instance cPrimeFiberEdgeDecidableEq (hN : Even N) (hM : Even M) :
     DecidableEq (fullDiamondGraph hN hM).edgeSet := Classical.decEq _
 noncomputable local instance cPrimeFiberRemaining (hN : Even N) (hM : Even M)
     (F : FK.Configuration (fullDiamondGraph hN hM)) :
     Fintype (FK.RemainingConfiguration (fullDiamondGraph hN hM) F) := Fintype.ofFinite _
-noncomputable local instance cPrimeFiberDeletedEdges (hN : Even N) (hM : Even M)
-    (F : FK.Configuration (fullDiamondGraph hN hM)) :
-    Fintype (FK.edgeRestriction (fullDiamondGraph hN hM) F).edgeSet := Fintype.ofFinite _
 noncomputable local instance cPrimeFiberBoxEdges (c : RotatedVertex) (R : ℕ) :
     Fintype (liftedBoxGraph c R).edgeSet := Fintype.ofFinite _
 

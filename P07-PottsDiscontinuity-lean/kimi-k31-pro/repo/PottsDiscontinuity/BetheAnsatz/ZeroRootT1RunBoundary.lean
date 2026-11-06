@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT1FinitePairs
 
 /-!
@@ -33,8 +34,7 @@ theorem t1TransitionCounts_eq {n : ℕ} (w : Fin (n + 1) → Bool) :
   have hcycle : (∑ k, b (finRotate (n + 1) k)) = ∑ k, b k :=
     Equiv.sum_comp (finRotate (n + 1)) b
   have hzero : (∑ k, (b (finRotate (n + 1) k) - b k)) = 0 := by
-    rw [Finset.sum_sub_distrib, hcycle]
-    simp
+    simp_all
   have hpoint (k : Fin (n + 1)) :
       b (finRotate (n + 1) k) - b k =
         (if w k = false ∧ w (finRotate (n + 1) k) = true then (1 : ℤ) else 0) -
@@ -55,8 +55,7 @@ theorem t1TransitionCounts_eq {n : ℕ} (w : Fin (n + 1) → Bool) :
         rw [Finset.sum_sub_distrib]
         simp [t1MLBoundarySet, t1LMBoundarySet, Finset.sum_boole]
   have hcardCast : ((t1MLBoundarySet w).card : ℤ) = (t1LMBoundarySet w).card := by
-    have := hsum.symm.trans hzero
-    exact sub_eq_zero.mp this
+    omega
   exact_mod_cast hcardCast
 
 /-- A canonical T₁ word has a unique LM edge. -/

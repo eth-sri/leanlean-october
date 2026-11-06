@@ -158,7 +158,7 @@ theorem Xi_le_exp_ratio {lam : ℝ} (hlam : 0 < lam) (α : ℝ) :
   rw [Real.sinh_eq, Real.cosh_eq, Real.exp_neg]
   have hd : (Real.exp lam + (Real.exp lam)⁻¹) / 2 - 1 ≠ 0 := by
     have : (Real.exp lam + (Real.exp lam)⁻¹) / 2 - 1 = (Real.exp lam - 1) ^ 2 / (2 * Real.exp lam) := by
-      field_simp; ring
+      field
     rw [this]; positivity
   rw [div_eq_div_iff hd hE1]
   field_simp
@@ -194,7 +194,7 @@ theorem rho_uniform_lower_bound {Δ₀ : ℝ} (hΔ₀ : Δ₀ < -1) :
   have hX0pos : 0 < X0 := by rw [hX0]; apply div_pos <;> linarith
   set mR := min (1 / 4) ((π / 6) * (1 / Real.cosh (π ^ 2 / (2 * lam0)))) with hmR
   have hmR : 0 < mR := by
-    rw [hmR]; apply lt_min (by norm_num); positivity
+    positivity
   refine ⟨mR / (2 * π * X0), by positivity, fun Δ hΔ x hx => ?_⟩
   have hΔ1 : Δ < -1 := lt_of_le_of_lt hΔ hΔ₀
   have hlam := lamOf_pos hΔ1
@@ -262,7 +262,7 @@ theorem Xi_ge_exp_ratio {lam : ℝ} (hlam : 0 < lam) (α : ℝ) :
   rw [Real.sinh_eq, Real.cosh_eq, Real.exp_neg]
   have hd : (Real.exp lam + (Real.exp lam)⁻¹) / 2 + 1 ≠ 0 := by
     have : (Real.exp lam + (Real.exp lam)⁻¹) / 2 + 1 = (Real.exp lam + 1) ^ 2 / (2 * Real.exp lam) := by
-      field_simp; ring
+      field
     rw [this]; positivity
   rw [div_eq_div_iff hE1 hd]
   field_simp
@@ -289,7 +289,6 @@ theorem rho_uniform_upper_bound {Δ₀ : ℝ} (hΔ₀ : Δ₀ < -1) :
   have hY0pos : 0 < Y0 := by rw [hY0]; apply div_pos <;> linarith
   set B := 1 / 2 + 2 * Real.exp (-lam0) / (1 - Real.exp (-lam0)) with hB
   have hBpos : 0 < B := by
-    rw [hB]; have : 0 < 1 - Real.exp (-lam0) := by linarith
     positivity
   refine ⟨B / (2 * π * Y0), fun Δ hΔ x => ?_⟩
   have hΔ1 : Δ < -1 := lt_of_le_of_lt hΔ hΔ₀

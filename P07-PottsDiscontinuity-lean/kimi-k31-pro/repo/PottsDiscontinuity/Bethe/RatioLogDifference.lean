@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Bethe.RatioProfile
 
 /-! # Mean-value control of the singular logarithmic differences -/
@@ -102,7 +103,7 @@ theorem ratio_scaled_ell_difference_bound {c x y C : ℝ} {N : ℕ}
     div_nonneg (mul_nonneg (by norm_num : (0 : ℝ) ≤ 2) hB) hxpos.le
   have hs := mul_le_mul_of_nonneg_left hshift hfac
   have he : (2 * B / |x|) * (C * |x| / (N : ℝ)) = (2 * B * C) / N := by
-    field_simp
+    field
   have hb : |ratioEll c y - ratioEll c x| ≤ (2 * B * C) / N := hh.trans (hs.trans_eq he)
   rw [abs_mul, abs_of_pos hNp]
   calc

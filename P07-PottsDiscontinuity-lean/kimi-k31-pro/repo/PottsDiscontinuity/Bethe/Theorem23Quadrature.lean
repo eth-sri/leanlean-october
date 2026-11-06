@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Bethe.Theorem23Kernel
 public import PottsDiscontinuity.Bethe.AsymptoticQuadrature
 
@@ -149,8 +150,7 @@ theorem root_step_boundary_integral_bounds {N k r : ℕ} {p : Fin (k + 1) → �
       p (Fin.last k) - 2 * Real.pi := by
     convert rootPartitionPoint_zero p (by omega) using 1 <;> congr 1
   have hfirst : rootPartitionPoint (k + 1) p (by omega) (0 : Fin (k + 2)).succ = p 0 := by
-    convert rootPartitionPoint_root p (by omega) (0 : Fin (k + 1)) using 1
-    congr 1
+    rfl
   have hlast : rootPartitionPoint (k + 1) p (by omega) (Fin.last (k + 1)).castSucc =
       p (Fin.last k) := by
     convert rootPartitionPoint_root p (by omega) (Fin.last k) using 1

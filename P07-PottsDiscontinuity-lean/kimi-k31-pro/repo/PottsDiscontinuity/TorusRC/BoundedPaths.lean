@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Torus.RibbonAttachment
 public import PottsDiscontinuity.TorusRC.LiftedPaths
 
@@ -30,8 +31,7 @@ theorem liftedEdgeIndex_row_ne_zero (hNp : 0 < N) (hMp : 0 < M)
   have hmax : 0 < max u.val.2 v.val.2 := by
     have hd := huv.2
     have hne : u.val.2 ≠ v.val.2 := by
-      intro heq
-      simp [heq] at hd
+      measurability
     omega
   have hval := periodicCoordinate_val hMp (max u.val.2 v.val.2)
   rw [Int.emod_eq_of_lt hmax.le (max_lt hu.2 hv.2)] at hval

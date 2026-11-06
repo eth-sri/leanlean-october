@@ -324,8 +324,7 @@ private theorem rectangleCutFace_neighborFinset_eq (a : LatticeVertex) (w h : �
 
 private theorem boolNe_eq_true_symm (b c : Bool) :
     (b != c) = true ↔ (c != b) = true := by
-  cases b <;> cases c <;> decide
-
+  aesop
 theorem rectangleLabelCutDual_interior_degree_even (a : LatticeVertex) (w h : ℕ)
     (σ : RectangleVertex a w h → Bool) (x y : ℤ)
     (hx : a.1 ≤ x) (hxw : x < a.1 + (w : ℤ))

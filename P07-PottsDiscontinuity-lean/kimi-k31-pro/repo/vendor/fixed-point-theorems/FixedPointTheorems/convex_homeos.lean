@@ -65,7 +65,7 @@ lemma unit_cube_homeo_unit_ball {n}
     : Nonempty (Set.Icc (0 : Fin n → ℝ) 1 ≃ₜ Metric.closedBall (0 : Fin n → ℝ) 1 ) := by
   apply homeo_unit_ball _ (convex_Icc 0 1) isCompact_Icc
   have h1 : Set.Icc (0 : Fin n → ℝ) 1 = Set.univ.pi (fun _ => Set.Icc (0 : ℝ) 1) := by
-    ext x; simp [Set.mem_Icc, Pi.le_def]
+    measurability
   rw [h1, interior_pi_set Set.finite_univ]
   exact Set.univ_pi_nonempty_iff.mpr fun _ => by
     rw [interior_Icc]; exact ⟨1/2, by norm_num, by norm_num⟩

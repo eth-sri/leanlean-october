@@ -20,7 +20,6 @@ noncomputable section
 
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 
-local instance eventEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite G.edgeSet
 
 attribute [local instance] configurationMeasurableSpace
 

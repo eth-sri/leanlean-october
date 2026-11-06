@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Torus.PermutationInvariantSpace
 public import Mathlib.LinearAlgebra.Dual.Lemmas
 
@@ -22,7 +23,7 @@ theorem permutationCycleCount_swap_ne (p : Perm α) {a b : α} (hab : a ≠ b) :
     permutationCycleCount (swap a b * p) ≠ permutationCycleCount p := by
   intro hc
   have hs : (swap a b * p).sign = -p.sign := by
-    rw [map_mul, sign_swap hab, neg_one_mul]
+    simp_all
   have he : (swap a b * p).sign = p.sign := by
     rw [sign_eq_pow_permutationCycleCount, hc, ← sign_eq_pow_permutationCycleCount]
   have hv : (p.sign : ℤ) = -(p.sign : ℤ) := congrArg Units.val (he.symm.trans hs)

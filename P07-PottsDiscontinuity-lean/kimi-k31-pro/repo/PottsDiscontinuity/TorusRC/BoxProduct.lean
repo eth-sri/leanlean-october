@@ -15,11 +15,7 @@ variable {N M : ℕ}
 noncomputable local instance boxProductNativeEdgeFintype (c : RotatedVertex) (R : ℕ) :
     Fintype (liftedBoxGraph c R).edgeSet := Fintype.ofFinite _
 
-noncomputable local instance boxProductEdgeFintype (hN : Even N) (hM : Even M) :
-    Fintype (fullDiamondGraph hN hM).edgeSet := Fintype.ofFinite _
 
-noncomputable local instance boxProductEdgeDecidableEq (hN : Even N) (hM : Even M) :
-    DecidableEq (fullDiamondGraph hN hM).edgeSet := Classical.decEq _
 
 noncomputable local instance boxProductRemainingFintype (hN : Even N) (hM : Even M)
     (R : FK.Configuration (fullDiamondGraph hN hM)) :

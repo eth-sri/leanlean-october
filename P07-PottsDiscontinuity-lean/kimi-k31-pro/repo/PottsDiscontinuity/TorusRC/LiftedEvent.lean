@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusRC.LiftedPaths
 
 /-! # Event C prime with a lifted end segment -/
@@ -55,8 +56,7 @@ theorem liftedCPrime_vertical_connection (hN : 0 < N) (hM : 0 < M)
   let y := liftedChainSite x hx n
   have hchain := liftedChainEvent_reachable hN hM a b R y k A hA.1
   have hstart : y 0 = liftedColumnSite x 0 hx ⟨0, rfl⟩ := by
-    apply Subtype.ext
-    simp [y, liftedChainSite, liftedColumnSite]
+    rfl
   rw [hstart] at hchain
   obtain ⟨w, _hw⟩ := hA.2
   exact hchain.trans ⟨w⟩

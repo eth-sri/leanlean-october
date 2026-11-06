@@ -26,10 +26,7 @@ theorem local_prop (a b d n X1 X2 Y1 Y2 : Prop) :
       (X2 ∧ Y2 ∧ (n ∧ d))) →
     ((X1 ∧ Y1 ∧ (a ↔ ¬ b)) ∨ (X2 ∧ Y1 ∧ (d ↔ ¬ b)) ∨ (X1 ∧ Y2 ∧ (n ↔ ¬ a)) ∨
       (X2 ∧ Y2 ∧ (n ↔ ¬ d))) := by
-  by_cases ha : a <;> by_cases hb : b <;> by_cases hd : d <;> by_cases hn : n <;>
-    by_cases hX1 : X1 <;> by_cases hX2 : X2 <;> by_cases hY1 : Y1 <;> by_cases hY2 : Y2 <;>
-    simp [ha, hb, hd, hn, hX1, hX2, hY1, hY2]
-
+  grind
 theorem local_vbd (R : Rect) (ℓ : Cell → Prop) (c : Cell) (hc : IsPrimal c) (hcc : c ∈ R.cells)
     (hbot : c.2 = R.y0 → (ℓ (c.1 - 1, c.2) ↔ ℓ (c.1 + 1, c.2)))
     (htop : c.2 = R.y0 + R.h → (ℓ (c.1 - 1, c.2) ↔ ℓ (c.1 + 1, c.2)))

@@ -14,7 +14,6 @@ open FK
 variable {V : Type*} [Finite V] {G H : SimpleGraph V}
 noncomputable section
 open scoped Classical
-local instance closedSubgraphSmallEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 local instance closedSubgraphLargeEdgeFintype : Fintype H.edgeSet := Fintype.ofFinite _
 local instance closedSubgraphLargeEdgeDecidableEq : DecidableEq H.edgeSet := Classical.decEq _
 

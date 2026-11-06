@@ -16,7 +16,6 @@ open FK MeasureTheory Filter Topology
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 noncomputable section
 open scoped Classical
-local instance finiteFreeComparisonEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 
 /-- The free law on any finite embedded graph is dominated by the actual free
 limit on the increasing cylinder events of its original edges. -/

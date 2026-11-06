@@ -188,7 +188,6 @@ private theorem rectangle_labelCutEdge_closed_of_actualReachability
   have hstates := (mem_rectangleLabelCutEdgeCarrier a w h
     (actualReachabilityLabel (rectangleGraph a w h) A L) e).mp he
   let b := rectanglePrimalEdgeBond a w h e
-  have hends := rectanglePrimalEdgeBond_endpoints_mem_public a w h e
   let p := e.1.out
   have hrepr : s(p.1,p.2) = e.1 := Quot.out_eq _
   have hG : s(p.1,p.2) ∈ (rectangleGraph a w h).edgeSet := by rw [hrepr]; exact e.2

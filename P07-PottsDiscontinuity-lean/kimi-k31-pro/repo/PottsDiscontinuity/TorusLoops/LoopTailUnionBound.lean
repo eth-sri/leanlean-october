@@ -1,5 +1,6 @@
 module
 
+public import PottsDiscontinuity.TorusLoops.RectangleLaw
 public import PottsDiscontinuity.TorusLoops.LoopTailRectangleFK
 public import PottsDiscontinuity.TorusLoops.RectangleExplorationProductBound
 
@@ -26,11 +27,7 @@ variable {N M : ℕ}
 
 noncomputable section
 
-local instance rectangleUnionEdgeFintype (hN : Even N) (hM : Even M) :
-    Fintype (rectangleBaseGraph hN hM).edgeSet := Fintype.ofFinite _
 
-local instance rectangleUnionEdgeDecidableEq (hN : Even N) (hM : Even M) :
-    DecidableEq (rectangleBaseGraph hN hM).edgeSet := Classical.decEq _
 
 /-- Left-boundary face vertices of the cut rectangle. -/
 abbrev RectangleLeftRoot (N M : ℕ) :=
@@ -199,20 +196,6 @@ theorem rectangleLeftRoot_card_le (N M : ℕ) :
     Fintype.card (RectangleLeftRoot N M) ≤ Fintype.card (Fin M) :=
       Fintype.card_le_of_injective f hf
     _ = M := Fintype.card_fin M
-
-private theorem rectangleFKEventProbability_eq_measure
-    (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ))
-    (E : Set (Configuration (rectangleBaseGraph hN hM))) :
-    rectangleFKEventProbability hN hM q E =
-      (measure (rectangleBaseGraph hN hM) (rectangleFKParameters q)
-        (BoundaryCondition.free ∅) E).toReal := by
-  rw [measure_toReal_eq_indicator_sum]
-  unfold rectangleFKEventProbability rectangleFKEventWeight
-  rw [Finset.sum_div]
-  apply Finset.sum_congr rfl
-  intro C hC
-  by_cases h : C ∈ E <;> simp [Set.indicator, h, configurationProbability,
-    mul_comm]
 
 /-- The free-rectangle probability of at least `k` horizontal crossing
 components is at most the number of left-root sets times the exploration

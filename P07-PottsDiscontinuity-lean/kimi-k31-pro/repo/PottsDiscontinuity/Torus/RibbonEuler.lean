@@ -45,9 +45,7 @@ theorem attachmentHandleCount_cons (hN : Even N) (hM : Even M)
     (v : Fin N × Fin M) (L : List (Fin N × Fin M)) :
     attachmentHandleCount hN hM (v :: L) = attachmentHandleCount hN hM L +
       if v ∈ L then 0 else if IsHandleAttachment hN hM (configOfList L) v then 1 else 0 := by
-  classical
   rfl
-
 /-- The cellular Euler identity for any duplicate-free ribbon attachment order. -/
 theorem euler_attachmentHandleCount (hN : Even N) (hM : Even M)
     (L : List (Fin N × Fin M)) (hL : L.Nodup) :

@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import FixedPointTheorems.brouwer
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
@@ -57,8 +58,7 @@ theorem freeColoringMap_isFreeESC (q : ℕ) (hq : 4 < q)
   have hCyl : MeasurableSet (spinCylinder q A ξ) :=
     (spinCylinder_isClopen q A ξ).isOpen.measurableSet
   have hE : MeasurableSet E := by
-    rw [hEq]
-    exact hF hCyl
+    measurability
   have hfinite_ae : ∀ᵐ ω ∂φ.toMeasure, ∀ x, (RCInfinite.cluster ω x).Finite := by
     have hnot : ∀ᵐ ω ∂φ.toMeasure, ω ∉ Duality.existsInfiniteCluster := by
       exact ae_iff.mpr (by simpa using hno)
@@ -127,8 +127,7 @@ theorem wiredColoringMap_isWiredESC (q : ℕ) (hq : 4 < q)
   have hCyl : MeasurableSet (spinCylinder q A ξ) :=
     (spinCylinder_isClopen q A ξ).isOpen.measurableSet
   have hE : MeasurableSet E := by
-    rw [hEq]
-    exact hF hCyl
+    measurability
   let r : LatticeConfiguration → Setoid (Option ↥A) :=
     fun ω => infiniteWiredPartition (Option.map (fun a : ↥A => a.val)) ω
   let K : Setoid (Option ↥A) → ℝ := fun R =>

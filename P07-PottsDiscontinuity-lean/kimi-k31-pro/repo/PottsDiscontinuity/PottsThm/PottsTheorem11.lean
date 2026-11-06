@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
 public import Mathlib.Topology.Homotopy.Path
@@ -169,7 +170,7 @@ theorem potts_theorem_1_1_of_rc_rate (q : ℕ) (hq : 4 < q)
       (criticalFKParameters q hq) 0 φ₀.toMeasure hRC₀
       (⟨1, le_rfl, by omega⟩ : Set.Icc 1 q)
     have hmeasure : samplerPM.toMeasure = μ 0 := by
-      simpa [μ] using congrArg ProbabilityMeasure.toMeasure hPM
+      tauto
     rw [← hmeasure]
     simpa [samplerPM, samplerMeasure] using hfactor
   have hergp (k : Fin q) : IsTranslationErgodic (μ k.succ) := by
@@ -192,7 +193,7 @@ theorem potts_theorem_1_1_of_rc_rate (q : ℕ) (hq : 4 < q)
     have hfactor := clusterColoring_map_ergodic_of_RCmixing
       (criticalFKParameters q hq) 1 (φp k).toMeasure (hRCp k) c₀
     have hmeasure : samplerPM.toMeasure = μ k.succ := by
-      simpa [μ] using congrArg ProbabilityMeasure.toMeasure hPM
+      tauto
     rw [← hmeasure]
     simpa [samplerPM, samplerMeasure, c₀] using hfactor
   have hErgodic (i : Fin (q + 1)) : IsTranslationErgodic (μ i) := by

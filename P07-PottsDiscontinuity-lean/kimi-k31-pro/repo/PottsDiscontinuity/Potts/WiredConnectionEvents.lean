@@ -13,7 +13,6 @@ namespace PottsDiscontinuity.Potts
 open Classical MeasureTheory Filter Topology
 noncomputable section
 
-local instance eventBoundaryFintype (n : ℕ) : Fintype (BoundaryVertex (box n)) := Fintype.ofFinite _
 
 /-- The frozen infinite open graph retains exactly the sampled lattice bonds. -/
 theorem infiniteOpenGraph_adj_iff (ω : FK.LatticeConfiguration) (x y : ℤ × ℤ) :

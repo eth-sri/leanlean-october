@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusRC.IndexedFK
 public import PottsDiscontinuity.TorusRC.RectanglePairs
 
@@ -104,13 +105,9 @@ theorem torusRCProbability_inter_ge_mul (hN : Even N) (hM : Even M)
   let f : RCConfig N M → ℝ := fun A => if A ∈ E then 1 else 0
   let g : RCConfig N M → ℝ := fun A => if A ∈ F then 1 else 0
   have hf0 : ∀ A, 0 ≤ f A := by
-    intro A
-    unfold f
-    split_ifs <;> norm_num
+    measurability
   have hg0 : ∀ A, 0 ≤ g A := by
-    intro A
-    unfold g
-    split_ifs <;> norm_num
+    measurability
   have hf : Monotone f := by
     intro A B hAB
     by_cases hA : A ∈ E
@@ -172,24 +169,13 @@ theorem torusRCProbability_finset_inter_ge_prod
   classical
   let F (t : Finset ι) : Set (RCConfig N M) := {A | ∀ i ∈ t, A ∈ E i}
   have hFmono (t : Finset ι) : ∀ ⦃A B⦄, A ≤ B → A ∈ F t → B ∈ F t := by
-    intro A B hAB hA i hi
-    exact hE i hAB (hA i hi)
+    tauto
   induction s using Finset.induction_on with
   | empty =>
       simp [torusRCProbability_univ]
   | @insert a s ha ih =>
       have hEq : F (insert a s) = F s ∩ E a := by
-        ext A
-        constructor
-        · intro hA
-          constructor
-          · intro i hi
-            exact hA i (Finset.mem_insert_of_mem hi)
-          · exact hA a (Finset.mem_insert_self a s)
-        · rintro ⟨hA, haA⟩ i hi
-          rcases Finset.mem_insert.mp hi with rfl | hi
-          · exact haA
-          · exact hA i hi
+        measurability
       have hstep := torusRCProbability_inter_ge_mul hN hM q (F s) (E a)
         (hFmono s) (hE a)
       calc

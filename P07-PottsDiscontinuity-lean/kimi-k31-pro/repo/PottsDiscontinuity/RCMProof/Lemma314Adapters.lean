@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
 public import Mathlib.Topology.Homotopy.Path
@@ -47,13 +48,11 @@ theorem lemma314_square_boundary_decay_of_nonpercolation
   have hν : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 ν.toMeasure :=
     FK.isRCInfiniteVolumeLimit_of_freeBox_tendsto θ ν hweak
   have hμ' : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ := by
-    simpa only [hθ] using hμ
+    assumption
   have hμν : μ = ν.toMeasure :=
     PottsDiscontinuity.rc_limit_unique θ.toP θ.toQ 0 μ ν.toMeasure hμ' hν
   have hnoν : ν.toMeasure (RCInfinite.infiniteAt (0, 0)) = 0 := by
-    rw [← hμν]
-    simpa [Duality.infiniteClusterAt, Duality.cluster,
-      RCInfinite.infiniteAt, RCInfinite.cluster] using hno
+    measurability
   have hzeroENN : Filter.Tendsto
       (fun n => ν.toMeasure (Zhang.boundaryConnectionEvent n))
       Filter.atTop (nhds 0) :=
@@ -106,8 +105,7 @@ theorem windingLoopDensityLogRate_abs_bounded
     have hfirst : C₁ / (2 * (1 : ℝ)) = C₁ / 2 := by norm_num
     rw [hfirst] at hrate'
     have hden : 2 ≤ 2 * ((n + 1 : ℕ) : ℝ) := by
-      have hn1 : (1 : ℝ) ≤ ((n + 1 : ℕ) : ℝ) := by exact_mod_cast (Nat.le_add_left 1 n)
-      nlinarith
+      simp_all
     have hrem : (C₀ + C₁) / (2 * ((n + 1 : ℕ) : ℝ)) ≤ (C₀ + C₁) / 2 :=
       div_le_div_of_nonneg_left hC (by norm_num) hden
     calc

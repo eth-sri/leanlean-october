@@ -85,9 +85,6 @@ theorem openCount_add_closedCount (A : RCConfig N M) :
 /-- The closed dual edge is open exactly when the primal edge is closed. -/
 def dualConfig (A : RCConfig N M) : RCConfig N M := fun v => !A v
 
-@[simp] theorem dualConfig_dualConfig (A : RCConfig N M) : dualConfig (dualConfig A) = A := by
-  funext v
-  exact Bool.not_not _
 
 /-- The open/closed-to-pairing dictionary at a primal/dual crossing. -/
 def rcSmoothing (A : RCConfig N M) : Smoothing N M := fun v => Bool.xor (checker v) (A v)

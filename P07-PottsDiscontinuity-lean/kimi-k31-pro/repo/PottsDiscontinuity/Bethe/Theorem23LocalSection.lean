@@ -45,9 +45,7 @@ theorem local_section_of_analytic_regular_interior_zero
     (hψanalytic.continuousAt.comp hsub).congr_of_eventuallyEq hφeq
   have hφcont : ContinuousAt φ t := tendsto_subtype_rng.mpr hvalcont
   have hφbase : φ t = x := by
-    apply Subtype.ext
-    have hC : ψ t.val ∈ C := hψbase ▸ x.property
-    simp only [φ, dite_eq_left hC, hψbase]
+    measurability
   let f : P × C → ℝ × E := fun z => (z.1.val, z.2.val)
   have hf : Continuous f := by fun_prop
   refine ⟨φ, hφcont, hφbase, ?_, f ⁻¹' W, hWopen.preimage hf, hWbase, ?_⟩

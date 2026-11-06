@@ -18,8 +18,6 @@ variable (A : Configuration (rectangleGraph a w h))
 
 local instance rectangleOpenIndexFintype :
     Fintype (OpenEdgeIndex (rectangleGraph a w h) A) := Fintype.ofFinite _
-local instance rectangleOpenIndexDecidableEq :
-    DecidableEq (OpenEdgeIndex (rectangleGraph a w h) A) := Classical.decEq _
 
 local instance rectangleOpenFlowCarrierFintype :
     Fintype (rectanglePrimalEdgeCarrier a w h) := by

@@ -29,9 +29,7 @@ theorem parafermionicCoverFiniteFaceTopPivot_map (n : ℕ)
     (f : ParafermionicCoverFiniteFaceTopIndex n) :
     Sym2.map Subtype.val (parafermionicCoverFiniteFaceTopPivot n f) =
       parafermionicCoverFiniteFaceTopEdge f.1 := by
-  simp [parafermionicCoverFiniteFaceTopPivot, parafermionicCoverFiniteFaceTopEdge,
-    Sym2.map_mk]
-
+  rfl
 theorem parafermionicCoverFiniteFaceTopPivot_injective (n : ℕ) :
     Function.Injective (parafermionicCoverFiniteFaceTopPivot n) := by
   intro f g h

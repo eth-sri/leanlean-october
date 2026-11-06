@@ -97,11 +97,7 @@ theorem outerEdgeCoordinates_injective (n : ℕ) : Function.Injective (outerEdge
   exact Sym2.map.injective (f := fun x : ↥(box (n + 1) : Set (ℤ × ℤ)) => x.val)
     Subtype.val_injective h
 
-@[simp] theorem outerEdgeCoordinates_ghost (n : ℕ) (x : BoundaryVertex (box n)) :
-    outerEdgeCoordinates n (ghostOutwardEdge n x) = s(x.val.val, ghostOutwardNeighbor n x) := rfl
 
-@[simp] theorem outerEdgeCoordinates_corner (n : ℕ) (b : Bool × Bool) :
-    outerEdgeCoordinates n (cornerCutEdge n b) = s(cornerPoint n b, cornerOutwardPoint n b) := rfl
 
 theorem literalBondOuterEdge_has_inner (n : ℕ) (b : LiteralBond (box n)) :
     ∃ x ∈ (literalBondOuterEdge n b).val, x.val ∈ box n := by

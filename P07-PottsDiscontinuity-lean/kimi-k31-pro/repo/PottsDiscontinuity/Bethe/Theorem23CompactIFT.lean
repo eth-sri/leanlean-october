@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Bethe.Theorem23Continuation
 public import PottsDiscontinuity.Bethe.Theorem23LocalSection
 
@@ -73,8 +74,7 @@ theorem exists_analytic_implicit_family_on_open_interval
     exact (hηroot t ht).2
   let ψ : ℝ → E := fun t => if ht : t ∈ Icc a b then (q ⟨t, ht⟩).val else η t
   have hψC (t) (ht : t ∈ Icc a b) : ψ t ∈ C ∧ F (t, ψ t) = 0 := by
-    simp only [ψ, dite_eq_left ht]
-    exact ⟨(q ⟨t, ht⟩).property, hq ⟨t, ht⟩⟩
+    measurability
   have hηψ : η =ᶠ[𝓝 b] ψ := by
     filter_upwards [hηC, hηzero] with t ht hzero
     by_cases hmem : t ∈ Icc a b

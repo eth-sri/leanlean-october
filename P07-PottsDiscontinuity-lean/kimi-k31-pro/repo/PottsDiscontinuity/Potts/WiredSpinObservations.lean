@@ -12,9 +12,6 @@ namespace PottsDiscontinuity.Potts
 
 open Classical MeasureTheory Filter Topology
 noncomputable section
-local instance wiredObservationLiteralDecidable (n : ℕ) : DecidableEq (LiteralBond (box n)) :=
-  fun _ _ => Classical.propDecidable _
-local instance wiredObservationBoundary (n : ℕ) : Fintype (BoundaryVertex (box n)) := Fintype.ofFinite _
 
 theorem wired_spin_observation_formula {A : Type*} [Fintype A]
     (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β) (i : Fin (q + 1)) (hi : 1 ≤ (i : ℕ))

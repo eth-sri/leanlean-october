@@ -33,9 +33,7 @@ theorem inDegree_eq_two_iff_isSome (l r d u : Bool) :
 private theorem numType_eq_sum (ω : ArrowConfig N M) (t : VertexType) :
     ω.numType t = ∑ v : Fin N × Fin M,
       (if vertexType? (ω.left v) (ω.right v) (ω.below v) (ω.above v) = some t then 1 else 0) := by
-  unfold ArrowConfig.numType
-  rw [Finset.card_filter]
-
+  aesop
 private theorem localWeight_eq_pow (a b c : ℝ) (l r d u : Bool)
     (h : vertexType? l r d u ≠ none) :
     localWeight a b c l r d u =

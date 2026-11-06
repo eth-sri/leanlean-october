@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.SixVertex.InfinitySupport
 
 /-!
@@ -58,7 +59,7 @@ theorem defectGroundWeight_pos (hN : 0 < N) (x : Finset (Fin N)) :
   have ha := Nat.zero_le (defectCoordinate x a)
   have hden : (0 : ℝ) < N + (defects x).card := by positivity
   have hdiff : (0 : ℝ) < (defectCoordinate x b : ℝ) - defectCoordinate x a := by
-    exact sub_pos.mpr (Nat.cast_lt.mpr hp)
+    simp_all
   have hbound : (defectCoordinate x b : ℝ) - defectCoordinate x a <
       (N : ℝ) + (defects x).card := by
     have hcast : (defectCoordinate x b : ℝ) < (N : ℝ) + (defects x).card := by

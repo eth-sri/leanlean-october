@@ -27,8 +27,7 @@ namespace Rect
 variable (R : Rect)
 
 theorem prop_ne_iff (P Q : Prop) : (P ≠ Q) ↔ (P ↔ ¬ Q) := by
-  by_cases hP : P <;> by_cases hQ : Q <;> simp [hP, hQ]
-
+  aesop
 theorem mem_expBd_iff {p₁ p₂ : ℤ} {A : Finset Cell} {m : Cell} :
     m ∈ R.expBd p₁ p₂ A ↔
       m ∈ R.inner ∧ IsSep (fun z => z ∈ R.expU p₁ p₂ A) m := by

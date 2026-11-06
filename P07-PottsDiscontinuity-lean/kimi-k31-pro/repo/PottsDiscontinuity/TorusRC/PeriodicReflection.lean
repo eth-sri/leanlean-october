@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusRC.LiftedPaths
 
 /-! # Reflection of the actual lifted lattice and its indexed torus edges -/
@@ -69,8 +70,7 @@ theorem liftedHorizontalReflect_index (hNp : 0 < N) (hMp : 0 < M)
   have hsum : max (t - u.val.2) (t - v.val.2) = t + 1 - max u.val.2 v.val.2 := by
     have hle := abs_le.mp (le_of_eq hdist)
     have hne : u.val.2 ≠ v.val.2 := by
-      intro heq
-      simp [heq] at hdist
+      measurability
     omega
   apply Prod.ext
   · rfl

@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import Mathlib.Probability.UniformOn
 public import Mathlib.MeasureTheory.Measure.MeasuredSets
 public import Mathlib.Probability.Independence.InfinitePi
@@ -35,7 +36,7 @@ theorem eventually_latticeShift_disjoint (F G : Finset LatticeVertex) :
     apply Finset.mem_image.mpr
     refine ⟨(y, x), Finset.mem_product.mpr ⟨hyG, hxF⟩, ?_⟩
     have heq : y - a = x := by
-      simpa [latticeShiftEquiv] using hyx
+      assumption
     apply Prod.ext
     · have hcoord := congrArg Prod.fst heq
       change y.1 - a.1 = x.1 at hcoord

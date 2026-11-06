@@ -162,12 +162,10 @@ primal cell strictly between the lines `x0` and `x0 + w`, then the left-ray pote
 primitive of `f` at every medial vertex with abscissa in `(x0, x0 + w]`. -/
 theorem zmod2_aux1 (R1' R1 R2 C1 C2 D F : ZMod 2) (h1 : R1 + R2 = D) (hcc : C1 + C2 = D)
     (h2 : R1 = R1' + F) : (R1' + C1) + (R2 + C2) = F := by
-  subst h2; revert R1' R2 C1 C2 D F; decide
-
+  grind
 theorem zmod2_aux2 (R1' R2' C1 C2 D F : ZMod 2) (h1 : R1' + R2' = D) (hcc : C1 + C2 = D) :
     (R1' + F + C1) + (R2' + C2) = F := by
-  revert R1' R2' C1 C2 D F; decide
-
+  grind
 theorem leftPotential_primitive (x0 y0 w : ℤ) (f : Cell → ZMod 2)
     (hx0 : ∀ m : Cell, m.1 ≤ x0 → f m = 0)
     (hy0 : ∀ m : Cell, m.2 ≤ y0 → f m = 0)

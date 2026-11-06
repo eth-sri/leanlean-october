@@ -109,10 +109,7 @@ theorem embeddedEdge_endEdge {m : Cell} (hm : m ∈ Q.unx Ex) :
     FK.embeddedEdgeEmbedding (Q.subG Ex) Q.pG (Q.subEmb Ex) (Q.subLe Ex)
       (endEdgeEquiv (Q.subData Ex) ⟨m, hm⟩) =
         endEdgeEquiv Q.pData ⟨m, unx_subset_inner Q Ex hm⟩ := by
-  apply Subtype.ext
-  rw [FK.embeddedEdgeEmbedding_coe, endEdgeEquiv_val, endEdgeEquiv_val]
   rfl
-
 theorem openMedials_restr (C : FK.Configuration Q.pG) :
     openMedials (Q.subData Ex)
       (FK.embeddedConfigurationRestriction (Q.subG Ex) Q.pG (Q.subEmb Ex) (Q.subLe Ex) C) =

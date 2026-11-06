@@ -111,7 +111,6 @@ theorem parafermionicCoverSimpleCycleSectorProfile {n : ℕ}
       (parafermionicCoverFiniteFaceSelectedCorners S v) d =
     if d = dout then k else if d = din + 2 then -k else 0
   have hnil := primalCycleRotate_not_nil p hp v hv
-  have hcycle := primalCycleRotate_isCycle p hp v hv
   have hout : parafermionicCoverCompassNeighbor v.1 dout = r.snd.1 := by
     simpa [dout, r, parafermionicCoverPrimalCycleRotate] using
       parafermionicCoverPrimalCycleOutgoingDirection_neighbor p hp v hv
@@ -172,12 +171,6 @@ theorem parafermionicCoverSimpleCycleSectorProfile {n : ℕ}
             _ = parafermionicCoverCompassNeighbor v.1 (din + 2) := by rw [hdin]
             _ = r.penultimate.1 := hhin
         rw [hsector, hweq, hprevCoeff]
-        have hdirNe : d ≠ dout := by
-          intro h
-          apply hdoutNe
-          calc
-            dout = d := h.symm
-            _ = din + 2 := hdin
         simp [hdin, Ne.symm hdoutNe]
       · have hcoeffzero : parafermionicCoverFaceBoundaryCoefficient S v w = 0 := by
           by_contra hnonzero

@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusRC.CylinderEvents
 public import PottsDiscontinuity.TorusTopology.LiftedEdgeCover
 
@@ -33,8 +34,7 @@ theorem seamZigzagSite_index (hN : 0 < N) (hM : 0 < M) (k : ℕ)
   have hx : max (k : ℤ) ((k + 1 : ℕ) : ℤ) = (k + 1 : ℕ) :=
     max_eq_right (by omega)
   have hy : max (-((k % 2 : ℕ) : ℤ)) (-(((k + 1) % 2 : ℕ) : ℤ)) = 0 := by
-    have hk2 : k % 2 = 0 ∨ k % 2 = 1 := by omega
-    rcases hk2 with hk2 | hk2 <;> norm_num [Nat.add_mod, hk2]
+    omega
   change (periodicCoordinate hN (max (k : ℤ) ((k + 1 : ℕ) : ℤ)),
     periodicCoordinate hM (max (-((k % 2 : ℕ) : ℤ)) (-(((k + 1) % 2 : ℕ) : ℤ)))) = _
   rw [hx, hy]

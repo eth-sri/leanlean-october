@@ -113,8 +113,7 @@ def downwardChoice (z : ℤ) : Bool := if z = 1 then false else true
 
 private theorem downwardChoice_turn {z : ℤ} (hz : z = 1 ∨ z = -1) :
     (if downwardChoice z then z else -z) = -1 := by
-  rcases hz with hz | hz <;> simp [downwardChoice, hz]
-
+  aesop
 /-- For a configuration with `U = 1`, fixing the two vertical loop directions to
 downward leaves exactly one quarter of its equal-weight orientation assignments.
 Every such assignment lies in the six-vertex sector `|ω| = N/2 - 1`. -/

@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Bethe.AsymptoticEndpoint
 public import PottsDiscontinuity.BetheAnsatz.Defs
 
@@ -57,7 +58,7 @@ theorem ratio_tendsto_root_left_of_eventual_mesh {ι : Type*} {f : Filter ι}
     abs_of_nonneg (by have := ((hp i).1 (j i)).1; linarith)]
   have he := (root_distance_from_boundary (hp i) (hn i) hi (j i)).1
   have hr : ((j i).val : ℝ) + 1 ≤ (J : ℝ) + 1 := by
-    exact_mod_cast Nat.add_le_add_right (hrank i) 1
+    simp_all
   exact he.trans_lt ((mul_le_mul_of_nonneg_right hr (hdnonneg i)).trans_lt hbi)
 
 /-- Fixed-rank roots under the source density-convergence hypotheses. -/

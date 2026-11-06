@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Bethe.AsymptoticPartition
 public import PottsDiscontinuity.Bethe.Theorem23Coordinates
 
@@ -36,8 +37,7 @@ theorem mem_S_n_of_positive_cyclic_gaps {k : ℕ} (p : Fin (k + 1) → ℝ)
       p (Fin.last k) - 2 * Real.pi := by
     convert rootPartitionPoint_zero p (by omega) using 1 <;> congr 1
   have hb : rootPartitionPoint (k + 1) p (by omega) (0 : Fin (k + 2)).succ = p 0 := by
-    convert rootPartitionPoint_root p (by omega) (0 : Fin (k + 1)) using 1
-    congr 1
+    rfl
   rw [ha, hb] at hfirst
   have hsym0 : p (Fin.last k) = -p 0 := by simpa using hsym 0
   have hlo : -Real.pi < p 0 := by linarith

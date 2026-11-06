@@ -268,11 +268,6 @@ theorem pottsProb_event_eq_ghostMixture (q : ℕ) (hq : 2 ≤ q)
       by_cases hs : σ ∈ s <;> simp only [hs, ↓reduceIte, mul_zero, Finset.sum_const_zero]
     _ = _ := by rw [Finset.sum_comm]; simp only [Finset.mul_sum]
 
-@[simp] theorem literalJointLaw_apply (q : ℕ) (hq : 2 ≤ q) (V : Finset (ℤ × ℤ))
-    (β : ℝ) (hβ : 0 < β) (i : Fin (q + 1))
-    (σ : SpinConfiguration q V) (ω : LiteralBond V → Bool) :
-    literalJointLaw q hq V β hβ i (σ, ω) =
-      ENNReal.ofReal (literalJointProbability q V β i σ ω) := rfl
 
 end
 

@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.FK.Graph
 public import PottsDiscontinuity.TorusCrossing.Lattice
 
@@ -32,8 +33,7 @@ variable {ends P M}
 theorem endGraph_adj (c d : P) :
     (endGraph ends P M).Adj c d ↔
       c ≠ d ∧ ((∃ m ∈ M, ends m = (c.1, d.1)) ∨ (∃ m ∈ M, ends m = (d.1, c.1))) := by
-  unfold endGraph; rw [SimpleGraph.fromRel_adj]
-
+  norm_cast
 /-- Structural hypotheses making `m ↦ ends m` an honest edge indexing. -/
 structure EndData (ends : Cell → Cell × Cell) (P M : Finset Cell) : Prop where
   mem : ∀ m ∈ M, (ends m).1 ∈ P ∧ (ends m).2 ∈ P

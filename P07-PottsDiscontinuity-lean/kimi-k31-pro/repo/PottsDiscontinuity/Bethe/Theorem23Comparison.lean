@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Bethe.Theorem23MeanValue
 public import PottsDiscontinuity.Bethe.Theorem23StabilityEstimate
 
@@ -32,7 +33,7 @@ theorem exists_rootPartition_cell {k : ℕ} {p : Fin (k + 1) → ℝ}
   let q := rootPartitionPoint (k + 1) p (by omega)
   have hleft : q 0 ≤ t := by
     have heq : q 0 = p (Fin.last k) - 2 * Real.pi := by
-      convert rootPartitionPoint_zero p (by omega) using 1 <;> congr 1
+      rfl
     rw [heq]
     linarith [ht.1, (hp.1 (Fin.last k)).2]
   have hright : t < q (Fin.last (k + 2)) := by
@@ -42,8 +43,7 @@ theorem exists_rootPartition_cell {k : ℕ} {p : Fin (k + 1) → ℝ}
     linarith [ht.2, (hp.1 0).1]
   by_contra h
   have hstep (j : Fin (k + 2)) (hj : q j.castSucc ≤ t) : q j.succ ≤ t := by
-    by_contra hlt
-    exact h ⟨j, hj, lt_of_not_ge hlt⟩
+    measurability
   have hall (i : Fin (k + 3)) : q i ≤ t := Fin.induction hleft hstep i
   exact (not_le.mpr hright) (hall _)
 

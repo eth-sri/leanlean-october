@@ -31,7 +31,6 @@ theorem Xi_le_of_cos_le {μ a b : ℝ} (hμ : 0 < μ)
     have := Real.cos_le_one a
     linarith
   have hdb : 0 < Real.cosh μ - Real.cos b := by
-    have := Real.cos_le_one b
     linarith
   have hden : Real.cosh μ - Real.cos a ≤ Real.cosh μ - Real.cos b := by linarith
   unfold Xi
@@ -83,8 +82,6 @@ theorem discreteBetheG_endpoint_formula {Δ : ℝ} (hΔ : Δ < -1)
     have hc := Real.neg_one_le_cos x
     linarith
   have hdp : 0 < dp := by
-    dsimp [dp]
-    have hc := Real.neg_one_le_cos x
     linarith
   have hraw : discreteBetheG Δ x 0 - discreteBetheG Δ x (-Real.pi) =
       4 * (Real.arctan (Real.sin x / dp) - Real.arctan (Real.sin x / dm)) := by
@@ -115,8 +112,7 @@ theorem discreteBetheG_endpoint_formula {Δ : ℝ} (hΔ : Δ < -1)
       have hc := Real.neg_one_le_cos x
       linarith
     have hden : 2 * (-Δ) * (Real.cos x - Δ) ≠ 0 := by
-      exact mul_ne_zero (mul_ne_zero (by norm_num)
-        (ne_of_gt (by linarith : 0 < -Δ))) hcos.ne'
+      nlinarith
     have hden2 : dm * dp + t ^ 2 ≠ 0 := by positivity
     have hdenid : dm * dp + t ^ 2 = 4 * (-Δ) * (Real.cos x - Δ) := by
       dsimp [dm, dp, t]
@@ -163,14 +159,13 @@ theorem discreteBetheG_endpoint_bound {Δ Δ₀ : ℝ} (hΔ₀ : Δ₀ < -1)
     rw [mul_pow, Real.sq_sqrt hs.le]
     nlinarith [sq_nonneg (Real.cos x * d + 1), Real.sin_sq_add_cos_sq x]
   have hroot : t * w ≤ c + d := by
-    have hn : 0 ≤ t * w := mul_nonneg ht hw.le
     nlinarith
   have harg : t / (2 * d * (c + d)) ≤ 1 / (2 * d₀ * w₀) := by
     have hleft : t / (c + d) ≤ 1 / w :=
       (div_le_div_iff₀ hcd hw).2 (by nlinarith [hroot])
     have hdpos : 0 < d := lt_of_lt_of_le (by linarith : 0 < d₀) hd
     have hprod : d₀ * w₀ ≤ d * w := by
-      exact mul_le_mul hd hwle (le_of_lt hw₀) (le_of_lt hdpos)
+      nlinarith
     have hden₀ : 0 < 2 * d₀ * w₀ := by positivity
     have hden : 0 < 2 * d * w := by positivity
     calc

@@ -84,8 +84,7 @@ theorem cor34_final_odd_center_zero_on_analytic_domain {n q : ℕ}
     intro d hd
     exact cor34_final_analyticAt_coordinate hpAnalytic hd l
   have hzero : AnalyticOnNhd ℝ (fun _ : ℝ => (0 : ℝ)) (Iio d₁) := by
-    intro d hd
-    exact analyticAt_const
+    fun_prop
   have heq : EqOn (fun d => p d l) (fun _ => (0 : ℝ)) (Iio d₀) := by
     intro d hd
     exact cor34_odd_S_n_center_zero (hp d hd.le) hnq

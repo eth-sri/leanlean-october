@@ -17,11 +17,6 @@ abbrev edgeTranslate (a : LatticeVertex) : LatticeConfiguration ≃ LatticeConfi
 theorem edgeTranslate_measurable (a : LatticeVertex) : Measurable (edgeTranslate a) :=
   latticeConfigurationTranslate_measurable a
 
-@[simp] theorem edgeTranslate_zero (ω : LatticeConfiguration) : edgeTranslate 0 ω = ω := by
-  funext e
-  have hz : latticeTranslate (0 : LatticeVertex) = id := funext latticeTranslate_zero
-  simp [edgeTranslate, latticeConfigurationTranslate_apply, latticeTranslationIso,
-    SimpleGraph.Iso.mapEdgeSet, SimpleGraph.Hom.mapEdgeSet, hz]
 
 /-- Translation invariance and the null-or-conull property for measurable
 strictly invariant events of the original bond configuration. -/

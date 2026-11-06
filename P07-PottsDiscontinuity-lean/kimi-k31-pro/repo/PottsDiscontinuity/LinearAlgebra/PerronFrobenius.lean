@@ -44,18 +44,13 @@ theorem finrank_eigenspace_pfRoot_eq_one (hA : A.IsHermitian) (hirr : A.IsIrredu
   obtain ⟨hnn, hirr'⟩ := nonneg_and_exists_pow_pos_of_isIrreducible hirr
   obtain ⟨v, hv, hv'⟩ := exists_pos_eigenvector hnn hirr' hA
   have hmem : v ∈ Module.End.eigenspace (Matrix.toLin' A) (pfRoot A) := by
-    rw [Module.End.mem_eigenspace_iff, Matrix.toLin'_apply]
-    exact hv'
+    simp_all
   have hne : (⟨v, hmem⟩ : Module.End.eigenspace (Matrix.toLin' A) (pfRoot A)) ≠ 0 := by
-    intro h
-    have := congrArg (fun z : Module.End.eigenspace (Matrix.toLin' A) (pfRoot A) => (z : ι → ℝ)) h
-    have h0 : v (Classical.arbitrary ι) = 0 := congrFun this (Classical.arbitrary ι)
-    exact (hv _).ne' h0
+    measurability
   rw [finrank_eq_one_iff_of_nonzero' _ hne]
   intro w
   have hw : A *ᵥ (w : ι → ℝ) = pfRoot A • (w : ι → ℝ) := by
-    have := w.2
-    rwa [Module.End.mem_eigenspace_iff, Matrix.toLin'_apply] at this
+    measurability
   obtain ⟨c, hc⟩ := eigenspace_pfRoot_eq hnn hirr' hA hv hv' hw
   exact ⟨c, Subtype.ext hc.symm⟩
 

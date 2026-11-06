@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.FK.FiniteEnergy
 
 /-!
@@ -43,8 +44,7 @@ theorem measure_allClosedEdges_lower_bound (q : FK.Parameters)
         exact ⟨u, v, G.mem_edgeSet.mp hz, rfl⟩
       obtain ⟨u, v, huv, hev⟩ := hrepr e.1 e.2
       have heq : e = ⟨s(u, v), G.mem_edgeSet.mpr huv⟩ := by
-        apply Subtype.ext
-        exact hev
+        measurability
       subst e
       have hstable : ∀ A : FK.Configuration G,
           A ∈ allClosedEdges F ↔
@@ -60,9 +60,7 @@ theorem measure_allClosedEdges_lower_bound (q : FK.Parameters)
           apply Finset.disjoint_left.mpr
           intro a haF haA
           have hne : a ≠ (⟨s(u, v), G.mem_edgeSet.mpr huv⟩ : G.edgeSet) := by
-            intro hEq
-            subst a
-            exact he haF
+            measurability
           exact (Finset.disjoint_left.mp h) haF (Finset.mem_erase.mpr ⟨hne, haA⟩)
       have hFE := FK.configurationProbability_edge_finite_energy_closed q ξ
         (allClosedEdges F) huv hstable

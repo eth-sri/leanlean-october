@@ -38,10 +38,9 @@ theorem cor34_deriv_theta_at_zero {Δ y : ℝ} (hΔ : Δ < -1) :
       (fun t : ℝ => Real.cos t + Real.cos y - 2 * Δ) 0 0 := by
     convert (hcos.add hcosY).sub_const (2 * Δ) using 1; ring
   have hdenPos : 0 < Real.cos 0 + Real.cos y - 2 * Δ := by
-    rw [Real.cos_zero]
-    simpa [d] using hd
+    measurability
   have hDpos : 0 < 1 + Real.cos y - 2 * Δ := by
-    simpa [d] using hd
+    assumption
   have hfrac : HasDerivAt
       (fun t : ℝ => (Real.sin t - Real.sin y) /
         (Real.cos t + Real.cos y - 2 * Δ)) (1 / d) 0 := by
@@ -269,8 +268,7 @@ theorem cor34_normalizedZeroEigenvalue_tendsto {N n : ℕ} {p : ℝ → Fin n �
       tendsto_const_nhds
     have h := hconst.add hSum
     have hlim : (N : ℝ) - 1 + -((n - 1 : ℕ) : ℝ) = (N : ℝ) - n := by
-      rw [Nat.cast_sub (by omega : 1 ≤ n)]
-      ring
+      simp_all
     simpa only [hlim] using h
   have hcast : Tendsto
       (fun ε : ℝ => (((N : ℝ) - 1 +

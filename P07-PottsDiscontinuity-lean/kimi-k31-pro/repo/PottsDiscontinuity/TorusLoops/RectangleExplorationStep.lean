@@ -1,5 +1,8 @@
 module
 
+public import PottsDiscontinuity.TorusLoops.RectangleLaw
+public import PottsDiscontinuity.FK.EmbeddedBoundaryUpper
+public import Mathlib
 public import PottsDiscontinuity.TorusLoops.RectangleClusterBoundary
 public import PottsDiscontinuity.TorusLoops.RectangleRootCrossings
 
@@ -28,9 +31,6 @@ local instance explorationGenericEdgeFintype
     {V : Type*} [Finite V] {G : SimpleGraph V} : Fintype G.edgeSet :=
   Fintype.ofFinite _
 
-local instance explorationGenericEdgeDecidableEq
-    {V : Type*} [Finite V] {G : SimpleGraph V} : DecidableEq G.edgeSet :=
-  Classical.decEq _
 
 variable {N M : ℕ}
 
@@ -84,36 +84,6 @@ private theorem actualConnected_embeddedConfigurationEmbedding
       (f u) (f v)
   rw [openGraph_subgraphConfigurationEmbedding, openGraph_isolatedExtension]
   exact (reachable_isolatedExtension_apply (openGraph G A) f u v).2 h
-
-private theorem fkLaw_measure_toReal_eq_expectation
-    {V : Type*} [Finite V] {G : SimpleGraph V}
-    (q : Parameters) (ξ : BoundaryCondition V)
-    (S : Set (Configuration G)) :
-    (measure G q ξ S).toReal =
-      FiniteProbability.expectation (law G q ξ)
-        (S.indicator (fun _ => (1 : ℝ))) := by
-  rw [measure_toReal_eq_indicator_sum]
-  unfold FiniteProbability.expectation
-  apply Finset.sum_congr rfl
-  intro A hA
-  by_cases h : A ∈ S
-  · simp [Set.indicator, h, law_apply,
-      ENNReal.toReal_ofReal (configurationProbability_pos G q ξ A).le]
-  · simp [Set.indicator, h]
-
-private theorem rectangleFKEventProbability_eq_measure
-    (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ))
-    (E : Set (Configuration (rectangleBaseGraph hN hM))) :
-    rectangleFKEventProbability hN hM q E =
-      (measure (rectangleBaseGraph hN hM) (rectangleFKParameters q)
-        (BoundaryCondition.free ∅) E).toReal := by
-  rw [measure_toReal_eq_indicator_sum]
-  unfold rectangleFKEventProbability rectangleFKEventWeight
-  rw [Finset.sum_div]
-  apply Finset.sum_congr rfl
-  intro C hC
-  by_cases h : C ∈ E <;> simp [Set.indicator, h, configurationProbability,
-    mul_comm]
 
 /-- Conditional one-step exploration bound. The exact outside state `K` may
 have arbitrary closed edges; its open edges must stay inside the explored set
@@ -178,15 +148,13 @@ theorem rectangleConditionalRootCrossing_le_freeOneArm
       actualConnected_embeddedConfigurationEmbedding I G f hIG _ _ _ hconn
     have hconnA : ActualConnected G A (f ⟨u, huU⟩) (f v) :=
       actualConnected_mono hDA hconnG
-    have hfu : f ⟨u, huU⟩ = u := rfl
     have hconnA' : ActualConnected G A u (f v) := by
-      rw [← hfu]
-      exact hconnA
+      assumption
     exact ⟨f v, hv, hconnA'⟩
   have hfreeCompare : (measure I θ (BoundaryCondition.free ∅) E).toReal ≤
       (measure G θ (BoundaryCondition.free ∅) T).toReal := by
-    rw [fkLaw_measure_toReal_eq_expectation (G := I) θ (BoundaryCondition.free ∅) E,
-      fkLaw_measure_toReal_eq_expectation (G := G) θ (BoundaryCondition.free ∅) T]
+    rw [FK.fkLaw_measure_toReal_eq_expectation (G := I) θ (BoundaryCondition.free ∅) E,
+      FK.fkLaw_measure_toReal_eq_expectation (G := G) θ (BoundaryCondition.free ∅) T]
     let ind := E.indicator (fun _ => (1 : ℝ))
     have hind0 : ∀ A, 0 ≤ ind A := by
       intro A

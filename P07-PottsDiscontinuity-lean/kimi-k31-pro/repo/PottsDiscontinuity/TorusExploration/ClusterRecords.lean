@@ -12,7 +12,6 @@ open FK
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 noncomputable section
 open scoped Classical
-local instance clusterRecordEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 local instance clusterRecordEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 
 /-- The revealed edge set together with all its recorded open edges. -/

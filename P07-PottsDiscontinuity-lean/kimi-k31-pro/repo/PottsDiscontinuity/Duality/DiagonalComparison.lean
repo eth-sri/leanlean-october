@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
 public import Mathlib.Topology.Homotopy.Path
@@ -80,13 +81,11 @@ theorem free_exponential_decay_of_diagonal_bound (θ : Parameters)
   let s : ℝ := |(x.1 : ℝ)| + |(x.2 : ℝ)|
   have hm₁ : |(x.1 : ℝ)| ≤ (m : ℝ) := by
     have hi : |x.1| ≤ (m : ℤ) := by
-      rw [← Int.natCast_natAbs]
-      exact_mod_cast (show x.1.natAbs ≤ m from le_max_left _ _)
+      measurability
     exact_mod_cast hi
   have hm₂ : |(x.2 : ℝ)| ≤ (m : ℝ) := by
     have hi : |x.2| ≤ (m : ℤ) := by
-      rw [← Int.natCast_natAbs]
-      exact_mod_cast (show x.2.natAbs ≤ m from le_max_right _ _)
+      measurability
     exact_mod_cast hi
   have hs : s ≤ 2 * (m : ℝ) := by dsimp [s]; linarith
   have hcoeff : C ≤ (C + 1) ^ 4 := by

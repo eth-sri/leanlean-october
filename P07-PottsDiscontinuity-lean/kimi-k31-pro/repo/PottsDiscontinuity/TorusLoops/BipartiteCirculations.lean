@@ -91,8 +91,6 @@ abbrev SupportPrimal (p : E → P) (f : E → ℚ) := {v : P // ∃ e, f e ≠ 0
 abbrev SupportDual (d : E → D) (f : E → ℚ) := {v : D // ∃ e, f e ≠ 0 ∧ d e = v}
 
 local instance supportEdgeFintype (f : E → ℚ) : Fintype (SupportEdge f) := Fintype.ofFinite _
-local instance supportPrimalFintype (p : E → P) (f : E → ℚ) :
-    Fintype (SupportPrimal p f) := Fintype.ofFinite _
 local instance supportDualFintype (d : E → D) (f : E → ℚ) :
     Fintype (SupportDual d f) := Fintype.ofFinite _
 

@@ -95,16 +95,12 @@ proof appears in an exported statement. -/
 theorem half_pos_of_half_sub_pos {ι : Type*} (N : ι → ℕ) (r : ℕ) (hn : ∀ i, 0 < N i / 2 - r)
     (i : ι) :
     0 < N i / 2 := by
-  have := hn i
-  omega
-
+  grind
 /-- Size side condition `2 * (N i / 2) ≤ N i` for the root step densities of Theorem 2.9. -/
 theorem two_mul_half_le {ι : Type*} (N : ι → ℕ) (i : ι) : 2 * (N i / 2) ≤ N i := by
   omega
-
 /-- Size side condition `2 * (N i / 2 - r) ≤ N i` for the root step densities of Theorem 2.9. -/
 theorem two_mul_half_sub_le {ι : Type*} (N : ι → ℕ) (r : ℕ) (i : ι) :
     2 * (N i / 2 - r) ≤ N i := by
   omega
-
 end PottsDiscontinuity.Bethe

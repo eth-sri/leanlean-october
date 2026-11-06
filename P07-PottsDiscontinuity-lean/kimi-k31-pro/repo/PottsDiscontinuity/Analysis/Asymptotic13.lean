@@ -43,8 +43,7 @@ theorem term_le {c : ℝ} (hc : 1 ≤ c) (k : ℕ) :
     Real.exp c * (4 / ((2 * (k : ℝ) + 1) * Real.sinh ((2 * (k : ℝ) + 1) * c))) ≤
       16 * Real.exp (-(2 * (k : ℝ) * c)) := by
   have hk1 : (1 : ℝ) ≤ 2 * (k : ℝ) + 1 := by
-    have : (0 : ℝ) ≤ k := Nat.cast_nonneg k
-    linarith
+    simp_all
   have hy : 1 ≤ (2 * (k : ℝ) + 1) * c := by nlinarith
   have hs := exp_div_four_le_sinh hy
   have hepos := Real.exp_pos ((2 * (k : ℝ) + 1) * c)
@@ -68,9 +67,7 @@ theorem term_le {c : ℝ} (hc : 1 ≤ c) (k : ℕ) :
 
 theorem term_nonneg {c : ℝ} (hc : 0 < c) (k : ℕ) :
     0 ≤ Real.exp c * (4 / ((2 * (k : ℝ) + 1) * Real.sinh ((2 * (k : ℝ) + 1) * c))) := by
-  have : 0 < Real.sinh ((2 * (k : ℝ) + 1) * c) := Real.sinh_pos_iff.2 (by positivity)
   positivity
-
 theorem tendsto_term_zero :
     Tendsto (fun c : ℝ => Real.exp c * (4 / ((2 * ((0 : ℕ) : ℝ) + 1) *
       Real.sinh ((2 * ((0 : ℕ) : ℝ) + 1) * c)))) atTop (𝓝 8) := by
@@ -89,8 +86,7 @@ theorem tendsto_term_zero :
     rw [Real.sinh_eq, Real.exp_neg]
   have hgt : 1 < Real.exp c := Real.one_lt_exp_iff.2 hc
   have hne : Real.exp c - (Real.exp c)⁻¹ ≠ 0 := by
-    have : (Real.exp c)⁻¹ < 1 := inv_lt_one_of_one_lt₀ hgt
-    linarith
+    measurability
   have hne2 : 1 - (Real.exp c)⁻¹ * (Real.exp c)⁻¹ ≠ 0 := by
     have h0 : (Real.exp c)⁻¹ < 1 := inv_lt_one_of_one_lt₀ hgt
     have h00 : 0 < (Real.exp c)⁻¹ := inv_pos.2 hpos
@@ -120,8 +116,7 @@ theorem tendsto_exp_mul_hyperbolic_series :
     Tendsto (fun c : ℝ => Real.exp c *
       ∑' k : ℕ, 4 / ((2 * (k : ℝ) + 1) * Real.sinh ((2 * (k : ℝ) + 1) * c))) atTop (𝓝 8) := by
   have hlt : Real.exp (-2) < 1 := by
-    rw [Real.exp_lt_one_iff]
-    norm_num
+    simp_all
   have hsum : Summable (fun k : ℕ => 16 * (Real.exp (-2)) ^ k) :=
     (summable_geometric_of_lt_one (Real.exp_pos _).le hlt).mul_left 16
   have hT := tendsto_tsum_of_dominated_convergence (𝓕 := (atTop : Filter ℝ))
@@ -144,8 +139,7 @@ theorem tendsto_exp_mul_hyperbolic_series :
         nlinarith
       linarith)
   have hg : ∑' k : ℕ, (if k = 0 then (8 : ℝ) else 0) = 8 := by
-    rw [tsum_eq_single 0 (fun b hb => by simp [hb])]
-    simp
+    simp_all
   rw [hg] at hT
   refine hT.congr fun c => ?_
   rw [tsum_mul_left]
@@ -178,7 +172,7 @@ theorem inv_sub_inv_sinh_le {x : ℝ} (hx : 0 < x) :
   have hc1 : 1 ≤ Real.cosh x := Real.one_le_cosh x
   have hsc := sinh_le_mul_cosh hx.le
   have e : 1 / x - 1 / Real.sinh x = (Real.sinh x - x) / (x * Real.sinh x) := by
-    field_simp
+    field
   rw [e]
   constructor
   · apply div_nonneg <;> nlinarith

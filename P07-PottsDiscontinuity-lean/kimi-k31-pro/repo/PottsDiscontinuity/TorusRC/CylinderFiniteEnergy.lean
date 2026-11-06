@@ -101,9 +101,7 @@ theorem torusRCVerticalTail_subset_seamClosedCrossings
     (hhUr : hUr hN hM hMpos r) :
     torusRCVerticalTail hN hM ⟨0, hMpos⟩ r ⊆
       torusRCSeamClosedCrossingEvent hN hM r := by
-  intro A hA
-  exact hhUr A hA
-
+  assumption
 /-- Under the premise `hUr`, the winding tail is bounded by the probability of
 the distinct-crossing event with the seam closed, up to its finite-energy
 cost. This is the seam-cut step in the reduction to (3.21). -/

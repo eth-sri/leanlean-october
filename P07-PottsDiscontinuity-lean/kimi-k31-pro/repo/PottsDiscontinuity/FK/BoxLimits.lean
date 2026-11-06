@@ -22,22 +22,12 @@ theorem latticeBox_origin_eq_box (n : ℕ) : latticeBox (0, 0) n = box n := by
 theorem frozenExtendedProbabilityMeasure_free (θ : Parameters) (c : LatticeVertex) (r : ℕ) :
     frozenExtendedProbabilityMeasure θ (latticeBox c r) 0 (boxConfiguration c r) =
       boxProbabilityMeasure θ c r := by
-  apply ProbabilityMeasure.toMeasure_injective
-  change ((law (boxGraph c r) θ (frozenBoundaryCondition (latticeBox c r) 0)).map
-    (boxConfiguration c r)).toMeasure =
-    ((law (boxGraph c r) θ (BoundaryCondition.free ∅)).map (boxConfiguration c r)).toMeasure
-  have hlaw : law (boxGraph c r) θ (frozenBoundaryCondition (latticeBox c r) 0) =
-      law (boxGraph c r) θ (BoundaryCondition.free ∅) := by
-    apply law_eq_of_boundary_partition_eq
-    simp [frozenBoundaryCondition, BoundaryCondition.free]
-  rw [hlaw]
-
+  rfl
 /-- The generic frozen-law extension agrees with the ported wired finite-box law. -/
 theorem frozenExtendedProbabilityMeasure_wired (θ : Parameters) (c : LatticeVertex) (r : ℕ) :
     frozenExtendedProbabilityMeasure θ (latticeBox c r) 1 (wiredBoxConfiguration c r) =
       wiredBoxProbabilityMeasure θ c r := by
   rfl
-
 /-- Every weak limit of the ported free origin-box laws has the exact frozen characterization. -/
 theorem isRCInfiniteVolumeLimit_of_freeBox_tendsto (θ : Parameters)
     (μ : ProbabilityMeasure LatticeConfiguration)

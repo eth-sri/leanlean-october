@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.CorrLength.RotatedFreeLimit
 public import PottsDiscontinuity.TorusRC.ColumnZigzag
 public import PottsDiscontinuity.TorusRC.LiftedBoxes
@@ -58,7 +59,6 @@ theorem liftedBoxFreeDiagonalProbability_pos (θ : FK.Parameters)
       exact ⟨⟨s(z k (by omega),z (k+1) hk),(liftedBoxGraph rotatedLatticeOrigin R).mem_edgeSet.mpr hadj⟩,
         Finset.mem_univ _,rfl⟩
   have hzero : columnZigzagSite 0 ⟨0,rfl⟩ 0 = rotatedLatticeOrigin := by
-    apply Subtype.ext
     rfl
   have hend : columnZigzagSite 0 ⟨0,rfl⟩ (2*n) = rotatedDiagonalSite n := by
     apply Subtype.ext
@@ -67,7 +67,7 @@ theorem liftedBoxFreeDiagonalProbability_pos (θ : FK.Parameters)
       rotatedLatticeOrigin (rotatedDiagonalSite n) := by
     have h := hreach (2*n) le_rfl
     have hu : inLiftedBox R rotatedLatticeOrigin rotatedLatticeOrigin := by
-      simpa only [hzero] using hz 0 (by omega)
+      tauto
     have hv : inLiftedBox R rotatedLatticeOrigin (rotatedDiagonalSite n) := by
       simpa only [hend] using hz (2*n) le_rfl
     have hzu : z 0 (by omega) = ⟨rotatedLatticeOrigin,hu⟩ := Subtype.ext hzero

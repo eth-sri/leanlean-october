@@ -185,7 +185,7 @@ theorem fourierP_eq_log_norm {lam c α : ℝ} (hlam : 0 < lam)
 
 /-- Jordan's sine inequality gives a quadratic lower bound for the denominator of `P` on the
 fundamental interval. -/
-private theorem fourier_one_sub_cos_lower {α : ℝ} (hα : α ∈ Icc (-π) π) :
+theorem fourier_one_sub_cos_lower {α : ℝ} (hα : α ∈ Icc (-π) π) :
     2 * α ^ 2 / π ^ 2 ≤ 1 - Real.cos α := by
   have hx : |α / 2| ≤ π / 2 := by
     rw [abs_div, abs_of_pos (by norm_num : (0 : ℝ) < 2)]
@@ -444,24 +444,10 @@ private theorem fourier_sin_kernel_integral {μ : ℝ} (hμ : 0 < μ) (n : ℕ) 
     simpa [mul_comm] using hXiCosInt2.const_mul (1 / 2 : ℝ)
   have hprodInt :
       ∫ α in (-π)..π, Bethe.Xi μ α * Real.sin α *
-          Real.sin (((n + 1 : ℕ) : ℝ) * α) =
-        π * (r ^ n - r ^ (n + 2)) := by
-    calc
-      ∫ α in (-π)..π, Bethe.Xi μ α * Real.sin α *
-          Real.sin (((n + 1 : ℕ) : ℝ) * α) =
-          ∫ α in (-π)..π, (1 / 2 : ℝ) *
-            (Bethe.Xi μ α * Real.cos ((n : ℝ) * α)) -
-              (1 / 2 : ℝ) *
-                (Bethe.Xi μ α * Real.cos (((n + 2 : ℕ) : ℝ) * α)) := by rw [hprod]
-      _ = (∫ α in (-π)..π, (1 / 2 : ℝ) *
-              (Bethe.Xi μ α * Real.cos ((n : ℝ) * α))) -
-            ∫ α in (-π)..π, (1 / 2 : ℝ) *
-              (Bethe.Xi μ α * Real.cos (((n + 2 : ℕ) : ℝ) * α)) :=
-          intervalIntegral.integral_sub hscaledInt0 hscaledInt2
-      _ = (1 / 2 : ℝ) * (2 * π * r ^ n) - (1 / 2 : ℝ) * (2 * π * r ^ (n + 2)) := by
-          rw [intervalIntegral.integral_const_mul, intervalIntegral.integral_const_mul,
-            hcos0, hcos2]
-      _ = π * (r ^ n - r ^ (n + 2)) := by ring
+          Real.sin (((n + 1 : ℕ) : ℝ) * α) = π * (r ^ n - r ^ (n + 2)) := by
+    rw [hprod, intervalIntegral.integral_sub hscaledInt0 hscaledInt2,
+      intervalIntegral.integral_const_mul, intervalIntegral.integral_const_mul, hcos0, hcos2]
+    ring
   have hsinh : 1 - r ^ 2 = 2 * r * Real.sinh μ := by
     dsimp [r]
     rw [Real.sinh_eq, Real.exp_neg]
@@ -481,14 +467,7 @@ private theorem fourier_sin_kernel_integral {μ : ℝ} (hμ : 0 < μ) (n : ℕ) 
     rw [Bethe.Xi]
     have hsinhPos : 0 < Real.sinh μ := Real.sinh_pos_iff.mpr hμ
     field_simp [hsinhPos.ne', (hdenPos α).ne']
-  have hfun :
-      (fun α : ℝ => Real.sin α * Real.sin (((n + 1 : ℕ) : ℝ) * α) /
-        (Real.cosh μ - Real.cos α)) =
-      (fun α => (Real.sinh μ)⁻¹ *
-        (Bethe.Xi μ α * Real.sin α * Real.sin (((n + 1 : ℕ) : ℝ) * α))) := by
-    funext α
-    exact hkernel α
-  rw [hfun, intervalIntegral.integral_const_mul, hprodInt]
+  rw [funext hkernel, intervalIntegral.integral_const_mul, hprodInt]
   have hsinhNe : Real.sinh μ ≠ 0 := (Real.sinh_pos_iff.mpr hμ).ne'
   rw [hpowdiff, hsinh]
   rw [pow_succ]
@@ -542,22 +521,8 @@ theorem fourierP_prime_sine_integral {lam : ℝ} (hlam : 0 < lam)
       ∫ α in (-π)..π, fourierPPrime lam α *
           Real.sin (((n + 1 : ℕ) : ℝ) * α) =
         (1 / 2 : ℝ) * (2 * π * Real.exp (-μ) ^ (n + 1) - 2 * π) := by
-    calc
-      ∫ α in (-π)..π, fourierPPrime lam α *
-          Real.sin (((n + 1 : ℕ) : ℝ) * α) =
-          ∫ α in (-π)..π, (1 / 2 : ℝ) *
-            (Real.sin α * Real.sin (((n + 1 : ℕ) : ℝ) * α) /
-                (Real.cosh μ - Real.cos α) - fourierCotSin n α) :=
-          intervalIntegral.integral_congr_ae_restrict hEq
-      _ = (1 / 2 : ℝ) *
-            ((∫ α in (-π)..π,
-                Real.sin α * Real.sin (((n + 1 : ℕ) : ℝ) * α) /
-                  (Real.cosh μ - Real.cos α)) -
-              ∫ α in (-π)..π, fourierCotSin n α) := by
-          rw [intervalIntegral.integral_const_mul,
-            intervalIntegral.integral_sub hratioInt hcot.1]
-      _ = (1 / 2 : ℝ) * (2 * π * Real.exp (-μ) ^ (n + 1) - 2 * π) := by
-          rw [hfirst, hcot.2]
+    rw [intervalIntegral.integral_congr_ae_restrict hEq, intervalIntegral.integral_const_mul,
+      intervalIntegral.integral_sub hratioInt hcot.1, hfirst, hcot.2]
   have hExp : Real.exp (-2 * lam * ((n + 1 : ℕ) : ℝ)) =
       Real.exp (-μ) ^ (n + 1) := by
     rw [← Real.exp_nat_mul]

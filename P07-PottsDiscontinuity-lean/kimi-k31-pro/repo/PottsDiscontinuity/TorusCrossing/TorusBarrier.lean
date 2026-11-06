@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Torus.DiamondDualTranslation
 public import PottsDiscontinuity.TorusCrossing.TorusEvents
 
@@ -165,16 +166,14 @@ theorem dual_lifted_adj_of_step (hNp : 0 < N) (hMp : 0 < M) (Q : Rect) (A : RCCo
       congr 1
       exact (congrArg Prod.fst h).symm
     have hv : toRVd v.1 v.2 = toRVd (dualEnds m).2 (dualEnds_snd_not_primal m) := by
-      congr 1
-      exact (congrArg Prod.snd h).symm
+      simp_all
     rw [hu, hv]
     exact dual_adj_oriented hNp hMp Q A a b hcol (hS hm) (hSA m hm)
   · have hu : toRVd u.1 u.2 = toRVd (dualEnds m).2 (dualEnds_snd_not_primal m) := by
       congr 1
       exact (congrArg Prod.snd h).symm
     have hv : toRVd v.1 v.2 = toRVd (dualEnds m).1 (dualEnds_fst_not_primal m) := by
-      congr 1
-      exact (congrArg Prod.fst h).symm
+      simp_all
     rw [hu, hv]
     exact (dual_adj_oriented hNp hMp Q A a b hcol (hS hm) (hSA m hm)).symm
 

@@ -25,9 +25,7 @@ noncomputable def cor34_normalizedBlockWave {N n : ℕ} (ε : ℝ)
 private theorem cor34_scalar_mulVec_eq_smul {ι : Type*} [Fintype ι] [DecidableEq ι]
     {K : Type*} [Semiring K] (z : K) (v : ι → K) :
     Matrix.scalar ι z *ᵥ v = z • v := by
-  ext i
-  simp [Matrix.scalar, Matrix.diagonal, Matrix.mulVec, dotProduct]
-
+  simp_all
 private theorem cor34_det_eq_zero_of_mulVec_eq_zero
     {ι : Type*} [Fintype ι] [DecidableEq ι] {K : Type*} [Field K]
     {M : Matrix ι ι K} {v : ι → K} (hv : v ≠ 0) (hMv : M *ᵥ v = 0) : M.det = 0 := by
@@ -216,7 +214,7 @@ theorem cor34_bethe_eigenbranch_eventually_pfRoot {N n : ℕ}
 
 /-- The even normalized eigenvalue is the physical Bethe eigenvalue multiplied by
 `(-ε/2)^n = (-2/ε)^(-n)`. -/
-private theorem cor34_normalizedRegularEigenvalue_scale {n : ℕ} (ε : ℝ)
+theorem cor34_normalizedRegularEigenvalue_scale {n : ℕ} (ε : ℝ)
     (hε : ε < 0) (p : Fin n → ℝ) :
     cor34_normalizedRegularEigenvalue ε p =
       (((-ε / 2 : ℝ) : ℂ) ^ n) *
@@ -272,7 +270,7 @@ private theorem cor34_normalizedRegularEigenvalue_scale {n : ℕ} (ε : ℝ)
   simp only [q]
   ring
 
-private theorem cor34_derivativeCorrection_eq_rational {ε y : ℝ} (hε : ε < 0) :
+theorem cor34_derivativeCorrection_eq_rational {ε y : ℝ} (hε : ε < 0) :
     cor34_derivativeCorrection ε y =
       2 * (1 + Real.cos y - 2 / ε) /
         ((1 + Real.cos y - 2 / ε) ^ 2 + (Real.sin y) ^ 2) := by
@@ -299,7 +297,7 @@ private theorem cor34_derivativeCorrection_eq_rational {ε y : ℝ} (hε : ε < 
 
 /-- The odd normalized zero-root eigenvalue is the physical expression multiplied by
 `(-ε/2)^n` on the negative side where the phase derivative formula applies. -/
-private theorem cor34_normalizedZeroEigenvalue_scale {N n : ℕ} (l : Fin n)
+theorem cor34_normalizedZeroEigenvalue_scale {N n : ℕ} (l : Fin n)
     (ε : ℝ) (hεlo : -1 < ε) (hεhi : ε < 0) (p : Fin n → ℝ) :
     cor34_normalizedZeroEigenvalue (N := N) ε p l =
       (((-ε / 2 : ℝ) : ℂ) ^ n) *

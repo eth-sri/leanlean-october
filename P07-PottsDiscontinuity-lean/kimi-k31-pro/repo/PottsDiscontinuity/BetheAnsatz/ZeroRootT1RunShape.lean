@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT1RunBoundary
 
 /-!
@@ -73,7 +74,7 @@ theorem t1ShiftedWord_no_ordinaryML {n : ℕ} {l : Fin (n + 1)}
   rintro ⟨hfalse, htrue⟩
   have hrot := finRotate_of_lt k.isLt
   have hsucc : finRotate (n + 1) k.castSucc = k.succ := by
-    simp
+    assumption
   have hnext : i.w (finRotate (n + 1) (t1RunShift i k.castSucc)) = true := by
     rw [← t1RunShift_commute, hsucc]
     exact htrue

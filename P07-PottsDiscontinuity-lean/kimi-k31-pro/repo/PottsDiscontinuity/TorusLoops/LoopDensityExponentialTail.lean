@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusLoops.LoopDensityObservable
 public import PottsDiscontinuity.TorusLoops.LoopTailProbability
 
@@ -79,7 +80,6 @@ theorem phi_T_windingLoopDensityWeightedTail_le_pow
   have hB : 1 ≤ B := by dsimp [B]; exact windingLoopTailAmplification_ge_one q
   have hB0 : 0 ≤ B := le_trans (by norm_num) hB
   have hθ0 : 0 < θ := by
-    dsimp [θ]
     positivity
   have hθ1 : θ ≤ 1 := by
     dsimp [θ]
@@ -91,13 +91,9 @@ theorem phi_T_windingLoopDensityWeightedTail_le_pow
     unfold rectangleFreeOneArmProbability
     exact NNReal.coe_nonneg _
   have hρle : ρ ≤ θ ^ (3 * r) := by
-    dsimp [ρ, θ, B, U] at harm ⊢
-    exact harm
+    assumption
   have hmlarge : 9 * N ≤ m := by simpa [m] using hthreshold
   have hklarge : m ≤ 3 * k := by
-    have hdiv := Nat.mod_add_div (m - 3 * N + 1) 2
-    have hmod := Nat.mod_lt (m - 3 * N + 1) (by norm_num : 0 < 2)
-    dsimp [k]
     omega
   have hnr : n ≤ r * m := by
     have hmod := Nat.mod_lt n hr

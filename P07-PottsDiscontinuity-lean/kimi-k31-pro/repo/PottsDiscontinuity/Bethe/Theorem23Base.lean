@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Bethe.Theorem23Inverse
 public import PottsDiscontinuity.Bethe.Theorem23StrictGaps
 
@@ -143,7 +144,6 @@ theorem discreteBaseCoordinates_strict_gaps {N k r : ℕ} (hN : 0 < N)
     push_cast
     linarith
   have hdenN : (N : ℝ) - (k + 1 : ℕ) ≤ N := by
-    have hh : (0 : ℝ) ≤ (k + 1 : ℕ) := Nat.cast_nonneg _
     linarith
   have hm := one_le_rootGapMultiplicity hs j
   have hmcap := rootGapMultiplicity_le_offset hs hcount j

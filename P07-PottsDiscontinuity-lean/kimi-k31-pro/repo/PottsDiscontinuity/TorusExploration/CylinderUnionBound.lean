@@ -14,9 +14,6 @@ open Torus FK CorrLength MeasureTheory
 variable {N M : ℕ}
 noncomputable section
 open scoped Classical
-local instance cylinderUnionEdgeDecidableEq (hN : Even N) (hM : Even M) :
-    DecidableEq (fullCylinderGraph hN hM).edgeSet := Classical.decEq _
-local instance cylinderUnionVertexDecidableEq : DecidableEq (FaceVertex N M true) := Classical.decEq _
 
 abbrev BottomVertex (N M : ℕ) := {v : FaceVertex N M true // v.val.2.val=0}
 abbrev TopVertex (N M : ℕ) := {v : FaceVertex N M true // v.val.2.val+1=M}

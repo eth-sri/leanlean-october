@@ -62,7 +62,7 @@ theorem differentiableOn_RsechC {lam : ℝ} (hlam : 0 < lam) :
       have h1 := norm_cos_le_exp_abs_im (((n + 1 : ℕ) : ℂ) * z)
       have h2 : |(((n + 1 : ℕ) : ℂ) * z).im| ≤ ((n + 1 : ℕ) : ℝ) * (lam / 2) := by
         have : (((n + 1 : ℕ) : ℂ) * z).im = ((n + 1 : ℕ) : ℝ) * z.im := by
-          rw [Complex.mul_im]; simp
+          simp_all
         rw [this, abs_mul, abs_of_nonneg (Nat.cast_nonneg _)]
         exact mul_le_mul_of_nonneg_left (le_of_lt hz) (Nat.cast_nonneg _)
       have h3 : Real.exp |(((n + 1 : ℕ) : ℂ) * z).im| ≤ Real.exp (lam / 2) ^ (n + 1) := by

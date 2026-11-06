@@ -48,8 +48,7 @@ theorem mem_latticeCellBoundaryBonds (S : Finset LatticeVertex) (e : LatticeBond
 
 theorem latticeCellBoundaryBonds_finite (S : Finset LatticeVertex) :
     (latticeCellBoundaryBonds S : Set LatticeBond).Finite := by
-  exact Finset.finite_toSet _
-
+  simp_all
 /-- The graph whose edges are precisely the actual bonds crossing the face boundary. -/
 def latticeCellBoundaryGraph (S : Finset LatticeVertex) : SimpleGraph LatticeVertex where
   Adj u v := squareLattice.Adj u v ∧ ∃ e ∈ latticeCellBoundaryBonds S, e.toSym2 = s(u,v)

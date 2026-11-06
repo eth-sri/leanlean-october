@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Torus.SmoothingSum
 public import PottsDiscontinuity.Infra.Lambda
 
@@ -39,7 +40,7 @@ theorem half_exp_add_eq_sqrt (q lam : ℝ)
   have hm : Real.exp (lam / 2) * Real.exp (-lam / 2) = 1 := by
     rw [← Real.exp_add, show lam / 2 + -lam / 2 = 0 by ring, Real.exp_zero]
   have hs : (Real.exp (lam / 2) + Real.exp (-lam / 2)) ^ 2 = 2 + Real.sqrt q := by
-    nlinarith only [hp, hn, hm, h]
+    linarith
   have hpos : 0 ≤ Real.exp (lam / 2) + Real.exp (-lam / 2) :=
     add_nonneg (Real.exp_pos _).le (Real.exp_pos _).le
   rw [← hs, Real.sqrt_sq hpos]

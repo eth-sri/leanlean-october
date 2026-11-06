@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT1Analytic
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT1Ordinary
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT1Pairing
@@ -40,8 +41,7 @@ theorem tendsto_t_mul_perturbedWordTerm {N n : ℕ} {c : ℝ}
         wordPhase (N := N) x p σ w))) := by
   have hrot : finRotate (n + 1) a.castSucc = a.succ := finRotate_of_lt a.isLt
   have hσa : σ a.castSucc ≠ l := by
-    intro h
-    exact Fin.castSucc_lt_succ.ne (σ.injective (h.trans hsig.symm))
+    measurability
   have hpne : p (σ a.castSucc) ≠ 0 := by
     intro h
     apply hσa
@@ -54,7 +54,7 @@ theorem tendsto_t_mul_perturbedWordTerm {N n : ℕ} {c : ℝ}
   have hlocal (t : ℝ) : edge t = m * L c (z t) - 1 := by
     dsimp [edge, q, m]
     have hroot : z (perturbedMomenta p l t (σ a.succ)) = z t := by
-      rw [hsig, perturbedMomenta_at, hpl, zero_add]
+      simp_all
     have hother : perturbedMomenta p l t (σ a.castSucc) = p (σ a.castSucc) :=
       perturbedMomenta_of_ne p l (σ a.castSucc) t hσa
     unfold wordEdgeFactor
@@ -71,8 +71,7 @@ theorem tendsto_t_mul_perturbedWordTerm {N n : ℕ} {c : ℝ}
       apply hka
       exact (finRotate (n + 1)).injective (he.trans hrot.symm)
     have hσnext : σ (finRotate (n + 1) k) ≠ l := by
-      intro h
-      exact hnext (σ.injective (h.trans hsig.symm))
+      measurability
     have h3 := perturbedMomenta_of_ne p l (σ (finRotate (n + 1) k)) t hσnext
     have h4 := perturbedMomenta_of_ne p l (σ (finRotate (n + 1) k)) 0 hσnext
     unfold wordEdgeFactor
@@ -82,8 +81,7 @@ theorem tendsto_t_mul_perturbedWordTerm {N n : ℕ} {c : ℝ}
         rw [he, hb] at hw
         contradiction
       have hσk : σ k ≠ l := by
-        intro h
-        exact hkb (σ.injective (h.trans hsig.symm))
+        measurability
       have h1 := perturbedMomenta_of_ne p l (σ k) t hσk
       have h2 := perturbedMomenta_of_ne p l (σ k) 0 hσk
       simp only [q, Bool.false_eq_true, ↓reduceIte]
@@ -93,8 +91,7 @@ theorem tendsto_t_mul_perturbedWordTerm {N n : ℕ} {c : ℝ}
         rw [he, hb] at hw
         contradiction
       have hσk : σ k ≠ l := by
-        intro h
-        exact hkb (σ.injective (h.trans hsig.symm))
+        measurability
       have h1 := perturbedMomenta_of_ne p l (σ k) t hσk
       have h2 := perturbedMomenta_of_ne p l (σ k) 0 hσk
       simp only [q, Bool.false_eq_true, ↓reduceIte]

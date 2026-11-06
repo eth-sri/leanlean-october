@@ -72,7 +72,7 @@ theorem discreteBaseSolution_mem_S_n {N n : ℕ} (hN : 0 < N) (hn : 2 * n ≤ N)
       exact_mod_cast hnat
     have hI := discreteBetheIndex_abs_bound n j
     have hI2 : 2 * |discreteBetheIndex n j| < ((N - n : ℕ) : ℝ) := by
-      nlinarith
+      linarith
     have hnum : 2 * Real.pi * |discreteBetheIndex n j| <
         Real.pi * ((N - n : ℕ) : ℝ) := by
       nlinarith [mul_lt_mul_of_pos_left hI2 Real.pi_pos]

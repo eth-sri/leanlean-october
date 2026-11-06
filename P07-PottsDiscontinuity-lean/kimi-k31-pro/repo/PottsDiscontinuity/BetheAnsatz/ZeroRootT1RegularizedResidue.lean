@@ -34,10 +34,6 @@ theorem wordCoefficientEraseEdge_eq_zeroRootRegularizedProduct {n : ℕ} (c : �
   let J : Finset (Fin (n + 1)) := univ.filter (fun j => w j = true ∧ j ≠ b)
   let qL (j : Fin (n + 1)) := L c (z (p (σ j)))
   let qM (j : Fin (n + 1)) := M c (z (p (σ j)))
-  have hab : a ≠ b := by
-    intro he
-    rw [← he, hleft] at hright
-    contradiction
   have hroot : σ.symm l = b := by
     apply σ.injective
     simpa using hσ.symm

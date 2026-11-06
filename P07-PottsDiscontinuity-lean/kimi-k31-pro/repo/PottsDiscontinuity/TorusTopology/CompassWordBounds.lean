@@ -41,9 +41,9 @@ lemma compassWordCyclicTurn_append_three_replicates_bound
         (l++List.replicate m a++List.replicate n b++List.replicate k c)-
       compassWordCyclicTurn l| ≤ 18 := by
   have hl₁ : l++List.replicate m a ≠ [] := by
-    intro he; exact hl (List.append_eq_nil_iff.mp he).1
+    simp_all
   have hl₂ : l++List.replicate m a++List.replicate n b ≠ [] := by
-    intro he; exact hl₁ (List.append_eq_nil_iff.mp he).1
+    simp_all
   have h₁ := abs_le.mp (compassWordCyclicTurn_append_replicate_bound l hl a m hm)
   have h₂ := abs_le.mp (compassWordCyclicTurn_append_replicate_bound _ hl₁ b n hn)
   have h₃ := abs_le.mp (compassWordCyclicTurn_append_replicate_bound _ hl₂ c k hk)

@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT0
 
 /-!
@@ -27,10 +28,7 @@ theorem wordPhase_seam_swap {N n : ℕ} (x : Fin (n + 1) → ℤ)
   let u := Fin.last n
   let y := wordPositions N x w
   have hu0 : u ≠ (0 : Fin (n + 1)) := by
-    intro h
-    have := congrArg Fin.val h
-    simp [u] at this
-    omega
+    measurability
   have hyu : y u = x u := by simp [y, wordPositions, u, hLast]
   have hy0 : y 0 = x u - (N : ℤ) := by
     simp [y, wordPositions, hZero, cyclicPredecessorPositions_zero, u]
@@ -63,13 +61,13 @@ theorem wordPhase_seam_swap {N n : ℕ} (x : Fin (n + 1) → ℤ)
   have hgPair : g u * g 0 =
       z (p (σ 0)) ^ N * (z (p (σ u)) ^ N)⁻¹ * (f u * f 0) := by
     have hgu : g u = positionPhase (p (σ u)) (x u - (N : ℤ)) := by
-      simp [g, y, hy0, u]
+      measurability
     have hg0 : g 0 = positionPhase (p (σ 0)) (x u) := by
-      simp [g, y, u, hyu]
+      measurability
     have hfu : f u = positionPhase (p (σ u)) (x u) := by
-      simp [f, y, hyu]
+      measurability
     have hf0 : f 0 = positionPhase (p (σ 0)) (x u - (N : ℤ)) := by
-      simp [f, y, hy0]
+      measurability
     have hzu : z (p (σ u)) ≠ 0 := z_ne_zero _
     have hz0 : z (p (σ 0)) ≠ 0 := z_ne_zero _
     rw [hgu, hg0, hfu, hf0,

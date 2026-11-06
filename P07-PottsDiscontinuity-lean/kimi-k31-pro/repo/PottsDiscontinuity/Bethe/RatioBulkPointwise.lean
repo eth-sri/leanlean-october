@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Bethe.RatioInteriorQuadrature
 public import PottsDiscontinuity.Bethe.RatioPredecessor
 public import PottsDiscontinuity.Bethe.RatioScaledIncrement
@@ -69,8 +70,7 @@ theorem ratio_log_step_tendsto {ι : Type*} {l : Filter ι} {c : ℝ} (hc : 2 < 
   have hjcast : j.castSucc = ratioRootIndex (by omega) (q i) x := Fin.ext rfl
   have hjsucc : j.succ = ⟨(ratioRootIndex (by omega) (q i) x).val + 1, hj⟩ := Fin.ext rfl
   have hcell' : q i j.castSucc ≤ x ∧ x < q i j.succ := by
-    rw [hjcast, hjsucc]
-    exact hcell
+    assumption
   rw [ratio_interiorTest_eq_density (hq i) (hs i) _ j hcell', hjcast]
 
 end PottsDiscontinuity.Bethe

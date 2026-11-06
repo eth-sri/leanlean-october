@@ -21,9 +21,6 @@ noncomputable def parafermionicCoverWalkCompassDirections {u v : ParafermionicCo
     (p : parafermionicCoverGraph.Walk u v) : List (Fin 4) :=
   p.darts.map fun d => parafermionicCoverCompassDirection d.fst d.snd d.adj
 
-@[simp] theorem parafermionicCoverWalkCompassDirections_nil (u : ParafermionicCoverVertex) :
-    parafermionicCoverWalkCompassDirections (Walk.nil : parafermionicCoverGraph.Walk u u) = [] := by
-  simp [parafermionicCoverWalkCompassDirections]
 
 @[simp] theorem parafermionicCoverWalkCompassDirections_cons
     {u v w : ParafermionicCoverVertex}
@@ -34,14 +31,6 @@ noncomputable def parafermionicCoverWalkCompassDirections {u v : ParafermionicCo
         parafermionicCoverWalkCompassDirections p := by
   simp [parafermionicCoverWalkCompassDirections]
 
-@[simp] theorem parafermionicCoverWalkCompassDirections_append
-    {u v w : ParafermionicCoverVertex}
-    (p : parafermionicCoverGraph.Walk u v)
-    (q : parafermionicCoverGraph.Walk v w) :
-    parafermionicCoverWalkCompassDirections (p.append q) =
-      parafermionicCoverWalkCompassDirections p ++
-        parafermionicCoverWalkCompassDirections q := by
-  simp [parafermionicCoverWalkCompassDirections]
 
 theorem parafermionicCoverCompassDirection_eq_of_neighbor
     {u v : ParafermionicCoverVertex}
@@ -64,11 +53,6 @@ noncomputable def parafermionicCoverWalkCyclicCompassTurn
     primalCompassQuarterTurn
     ((parafermionicCoverWalkCompassDirections p).rotate 1)).sum
 
-@[simp] theorem parafermionicCoverWalkCyclicCompassTurn_nil
-    (u : ParafermionicCoverVertex) :
-    parafermionicCoverWalkCyclicCompassTurn
-      (Walk.nil : parafermionicCoverGraph.Walk u u) = 0 := by
-  simp [parafermionicCoverWalkCyclicCompassTurn]
 
 /-- Mapping an actual finite-box walk into the full cover preserves the exact
 ordered compass label of every dart. -/

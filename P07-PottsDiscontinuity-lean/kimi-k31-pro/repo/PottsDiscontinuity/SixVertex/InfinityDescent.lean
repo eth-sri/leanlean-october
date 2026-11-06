@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.SixVertex.InfinityMoves
 
 /-! # Finite descent for independent row states -/
@@ -139,7 +140,6 @@ theorem even_prefix_of_closed_two {x : Finset (Fin N)}
       · exact hji ▸ hi
       have hei := he i hi
       have hjlt : j.val < k := by
-        have hne : j.val ≠ i.val := fun h => hji (Fin.ext h)
         omega
       let l : Fin N := ⟨k - 2, by omega⟩
       have hl := hc i hi l (by omega) (by dsimp [l]; omega)

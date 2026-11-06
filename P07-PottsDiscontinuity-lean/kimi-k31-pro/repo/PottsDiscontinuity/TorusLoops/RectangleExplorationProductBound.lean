@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusLoops.RectangleExplorationProduct
 
 /-!
@@ -380,19 +381,10 @@ theorem rectangleDistinctRootCrossingEvent_probability_step
 
 private theorem mem_cons_of_mem_append {α : Type*} (u x : α) (roots : List α)
     (h : x ∈ roots ++ [u]) : x ∈ u :: roots := by
-  rcases List.mem_append.mp h with hroots | hu
-  · exact List.mem_cons.mpr (Or.inr hroots)
-  · have hxu : x = u := List.mem_singleton.mp hu
-    subst x
-    exact List.mem_cons.mpr (Or.inl rfl)
-
+  measurability
 private theorem mem_append_of_mem_cons {α : Type*} (u x : α) (roots : List α)
     (h : x ∈ u :: roots) : x ∈ roots ++ [u] := by
-  rcases List.mem_cons.mp h with hxu | hroots
-  · subst x
-    exact List.mem_append.mpr (Or.inr (List.mem_singleton_self u))
-  · exact List.mem_append.mpr (Or.inl hroots)
-
+  measurability
 /-- The distinct-crossing event is unchanged by moving the first root to the
 last position in the root list. -/
 theorem rectangleDistinctRootCrossingEvent_cons_eq_append

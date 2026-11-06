@@ -24,16 +24,10 @@ private theorem coverFaceVertices_nodup (f : ParafermionicCoverVertex) :
     [f, parafermionicCoverFaceRightLift f.1.1 f.1.2 f.2,
       parafermionicCoverFaceRightUpLift f.1.1 f.1.2 f.2,
       parafermionicCoverFaceRightUpLeftLift f.1.1 f.1.2 f.2].Nodup := by
-  rcases f with ⟨⟨x,y⟩,k⟩
-  simp only [List.nodup_cons, List.mem_cons]
-  repeat' constructor <;> simp [parafermionicCoverFaceRightLift_formula,
-    parafermionicCoverFaceRightUpLift_formula,
-    parafermionicCoverFaceRightUpLeftLift_formula]
-
+  aesop
 private theorem coverFaceDartList_nodup (f : ParafermionicCoverVertex) :
     (coverFaceDartList f).Nodup := by
   rcases f with ⟨⟨x,y⟩,k⟩
-  have hv := coverFaceVertices_nodup ((⟨(x,y),k⟩ : ParafermionicCoverVertex))
   simp only [coverFaceDartList, List.nodup_cons, List.mem_cons]
   repeat' constructor <;> simp [parafermionicCoverFaceRightLift_formula,
     parafermionicCoverFaceRightUpLift_formula,
@@ -163,11 +157,7 @@ private theorem coverFacePositiveCount_eq_sum {n : ℕ}
     (u v : ParafermionicCoverBoxVertex n) :
     (parafermionicCoverFacePositiveDartCount S u v : ℤ) =
       ∑ i ∈ S, if (u.1,v.1) ∈ parafermionicCoverFiniteFaceDarts i.1 then 1 else 0 := by
-  classical
-  unfold parafermionicCoverFacePositiveDartCount
-  rw [Finset.card_filter]
-  norm_cast
-
+  aesop
 theorem parafermionicCoverFaceBoundaryCoefficient_divergence {n : ℕ}
     (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
     (u : ParafermionicCoverBoxVertex n) :

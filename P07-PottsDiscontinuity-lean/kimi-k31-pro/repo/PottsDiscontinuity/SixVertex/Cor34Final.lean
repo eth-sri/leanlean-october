@@ -22,7 +22,7 @@ private theorem cor34_final_even_extension_eq_source {n : ℕ}
   have hdneg : d < 0 := lt_trans hd (lt_trans hd₁ (by norm_num))
   have hrecip : 1 / (1 / d) = d := by field_simp [ne_of_lt hdneg]
   have hrecip2 : 2 / (1 / d) = 2 * d := by
-    field_simp [ne_of_lt hdneg]
+    simp_all
   have hε : 1 / d < 0 := one_div_neg.mpr hdneg
   have hscale := cor34_final_normalizedRegularEigenvalue_scale
     (ε := 1 / d) hε (p d)
@@ -59,7 +59,7 @@ private theorem cor34_final_odd_extension_eq_source {N n : ℕ}
   have hdneg : d < 0 := lt_trans hd (lt_trans hd₁ (by norm_num))
   have hrecip : 1 / (1 / d) = d := by field_simp [ne_of_lt hdneg]
   have hrecip2 : 2 / (1 / d) = 2 * d := by
-    field_simp [ne_of_lt hdneg]
+    simp_all
   have hε : 1 / d < 0 := one_div_neg.mpr hdneg
   have hInv : 1 / (1 / d) < -1 := by rw [hrecip]; exact lt_trans hd hd₁
   have hscale := cor34_final_normalizedZeroEigenvalue_scale
@@ -145,8 +145,7 @@ theorem cor34_final_even_all_parameters {N n r : ℕ}
     have hd₀' : d ≤ d₀ := le_of_lt (lt_of_lt_of_le hd (min_le_left _ _))
     have hdb : d < b := lt_of_lt_of_le hd (min_le_right _ _)
     have hrecip2 : 2 / (1 / d) = 2 * d := by
-      have hdneg : d < 0 := lt_of_le_of_lt hd₀' (lt_trans hd₀ (by norm_num))
-      field_simp [ne_of_lt hdneg]
+      simp_all
     have hraw := hb d (le_of_lt hdb)
     rw [← hformula d hd₀', hrecip2] at hraw
     have hGsource := cor34_final_even_extension_eq_source
@@ -225,8 +224,7 @@ theorem cor34_final_odd_all_parameters {N n q r : ℕ}
   have hg : AnalyticOnNhd ℝ g (Iio d₂) := by
     intro d hd
     have hgood : ∀ j, j = l ∨ p d j ≠ 0 := by
-      intro j
-      simpa [l] using (hregular d hd j).2
+      measurability
     have hreg := cor34_final_analyticAt_normalizedZero (N := N) l hd₁ hpAnalytic
       (lt_trans hd hd₂d₁) (fun j => (hregular d hd j).1) hgood
     have hsR : AnalyticAt ℝ (fun t : ℝ => -2 * t) d := by fun_prop
@@ -261,8 +259,7 @@ theorem cor34_final_odd_all_parameters {N n q r : ℕ}
     have hd₀' : d ≤ d₀ := le_of_lt (lt_of_lt_of_le hd (min_le_left _ _))
     have hdb : d < b := lt_of_lt_of_le hd (min_le_right _ _)
     have hrecip2 : 2 / (1 / d) = 2 * d := by
-      have hdneg : d < 0 := lt_of_le_of_lt hd₀' (lt_trans hd₀ (by norm_num))
-      field_simp [ne_of_lt hdneg]
+      simp_all
     have hraw := hb d (le_of_lt hdb)
     rw [← hformula d hd₀', hrecip2] at hraw
     have hGsource := cor34_final_odd_extension_eq_source (N := N) (n := n)

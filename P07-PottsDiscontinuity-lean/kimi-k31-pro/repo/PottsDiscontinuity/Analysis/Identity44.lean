@@ -135,8 +135,7 @@ theorem hasSum_alt_cTerm {lam : ℝ} (hlam : 0 < lam) (j : ℕ) :
     simp only [Finset.sum_range_one, Nat.cast_zero, pow_zero, zero_pow two_ne_zero, add_zero,
       one_div]
     have e : π * b = π ^ 2 * (2 * (j : ℝ) + 1) / (2 * lam) := by
-      simp only [hb]
-      field_simp
+      ring
     rw [e]
     simp only [hb]
     have hs : Real.sinh (π ^ 2 * (2 * (j : ℝ) + 1) / (2 * lam)) ≠ 0 :=
@@ -191,10 +190,7 @@ theorem summable_bound {lam : ℝ} (hlam : 0 < lam) :
 
 theorem tTerm_pos {lam : ℝ} (hlam : 0 < lam) (k : ℕ) :
     0 < 4 / ((2 * (k : ℝ) + 1) * Real.sinh (π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam))) := by
-  have : 0 < Real.sinh (π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam)) :=
-    Real.sinh_pos_iff.2 (by positivity)
-  positivity
-
+  finiteness
 theorem tTerm_le {lam : ℝ} (hlam : 0 < lam) (k : ℕ) :
     4 / ((2 * (k : ℝ) + 1) * Real.sinh (π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam))) ≤
       8 * lam / ((2 * (k : ℝ) + 1) ^ 2 * π ^ 2) := by
@@ -204,8 +200,7 @@ theorem tTerm_le {lam : ℝ} (hlam : 0 < lam) (k : ℕ) :
   have hk : 0 < 2 * (k : ℝ) + 1 := by positivity
   calc 4 / ((2 * (k : ℝ) + 1) * Real.sinh (π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam)))
       ≤ 4 / ((2 * (k : ℝ) + 1) * (π ^ 2 * (2 * (k : ℝ) + 1) / (2 * lam))) := by
-        apply div_le_div_of_nonneg_left (by norm_num) (by positivity)
-        exact mul_le_mul_of_nonneg_left hs hk.le
+        gcongr
     _ = 8 * lam / ((2 * (k : ℝ) + 1) ^ 2 * π ^ 2) := by
         field_simp
         norm_num

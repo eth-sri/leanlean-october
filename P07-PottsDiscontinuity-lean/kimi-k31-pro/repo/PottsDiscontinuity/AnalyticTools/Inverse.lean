@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import Mathlib.Analysis.Calculus.InverseFunctionTheorem.Analytic
 
 /-!
@@ -28,7 +29,7 @@ theorem analyticAt_localInverse
   let R := hstrict.toOpenPartialHomeomorph f
   have hsource : a ∈ R.source := hstrict.mem_toOpenPartialHomeomorph_source
   have hR : AnalyticAt ℝ (R : E → F) a := by
-    simpa [R] using hf
+    assumption
   have hderiv : fderiv ℝ (R : E → F) a = (e : E →L[ℝ] F) := by
     simpa [R] using hstrict.hasFDerivAt.fderiv
   exact R.analyticAt_symm' hsource hR hderiv

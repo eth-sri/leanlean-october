@@ -11,7 +11,6 @@ open FK
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 noncomputable section
 open scoped Classical
-local instance distinctConnectionsEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 
 /-- The next prescribed connection is outside every previously explored seed cluster. -/
 def nextDistinctConnection (x y : ℕ → V) (j : ℕ) : Set (Configuration G) :=

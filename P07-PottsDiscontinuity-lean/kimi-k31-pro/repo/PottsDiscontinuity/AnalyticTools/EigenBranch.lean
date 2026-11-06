@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.AnalyticTools.Implicit
 public import Mathlib.LinearAlgebra.Matrix.Charpoly.Eigs
 public import Mathlib.Analysis.Calculus.Deriv.Polynomial
@@ -86,8 +87,7 @@ theorem analyticAt_charpolyEval_of_entries
   filter_upwards with p
   rw [Matrix.eval_charpoly]
   have hmat : Matrix.scalar n p.2 - A p.1 = -(A p.1 - Matrix.scalar n p.2) := by
-    ext i j
-    simp [Matrix.sub_apply, Matrix.scalar_apply]
+    simp_all
   rw [hmat, Matrix.det_neg]
 
 /-- A simple real characteristic root of an entrywise analytic matrix family has a local analytic

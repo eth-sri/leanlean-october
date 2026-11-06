@@ -35,15 +35,13 @@ theorem wordCoefficient_true {n : ℕ} (c : ℝ) (p : Fin (n + 1) → ℝ)
 theorem wordPhase_false {N n : ℕ} (x : Fin (n + 1) → ℤ) (p : Fin (n + 1) → ℝ)
     (σ : Equiv.Perm (Fin (n + 1))) :
     wordPhase (N := N) x p σ (fun _ => false) = planeWave p σ x := by
-  simp only [wordPhase, Bool.false_eq_true, ↓reduceIte, positionPhase, planeWave]
-
+  rfl
 /-- The all-L phase is the plane wave at the lifted predecessor coordinates. -/
 theorem wordPhase_true {N n : ℕ} (x : Fin (n + 1) → ℤ) (p : Fin (n + 1) → ℝ)
     (σ : Equiv.Perm (Fin (n + 1))) :
     wordPhase (N := N) x p σ (fun _ => true) =
       planeWave p σ (cyclicPredecessorPositions N x) := by
-  simp only [wordPhase, ↓reduceIte, positionPhase, planeWave]
-
+  rfl
 /-- Contribution of the constant M word. -/
 theorem sum_wordTerm_false {N n : ℕ} (c : ℝ) (x : Fin (n + 1) → ℤ)
     (p : Fin (n + 1) → ℝ) :

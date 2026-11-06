@@ -13,9 +13,6 @@ namespace PottsDiscontinuity.Potts
 
 open Classical MeasureTheory Filter Topology
 noncomputable section
-local instance wiredLimitLiteralDecidable (n : ℕ) : DecidableEq (LiteralBond (box n)) :=
-  fun _ _ => Classical.propDecidable _
-local instance wiredLimitBoundary (n : ℕ) : Fintype (BoundaryVertex (box n)) := Fintype.ofFinite _
 
 theorem wired_potts_cylinder_tendsto (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β)
     (i : Fin (q + 1)) (hi : 1 ≤ (i : ℕ))

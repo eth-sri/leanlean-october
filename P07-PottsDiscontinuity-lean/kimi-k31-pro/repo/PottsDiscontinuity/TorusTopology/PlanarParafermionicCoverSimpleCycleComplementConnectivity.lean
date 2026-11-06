@@ -52,7 +52,6 @@ theorem parafermionicCoverSimpleCycleComplementAdjacency_connected {n : ℕ}
   let root : V := simpleCycleComplementNone S
   let : Nonempty V := ⟨root⟩
   have hfill := parafermionicCoverSimpleCycleFillingSet_spec hn p hp
-  have hSnonempty : S.Nonempty := by simpa [S] using hfill.2.1
   have hcoeff (a b : ParafermionicCoverBoxVertex n) :
       parafermionicCoverFaceBoundaryCoefficient S a b ≠ 0 ↔ s(a,b) ∈ p.edges := by
     simpa [S] using hfill.2.2 a b

@@ -74,8 +74,7 @@ noncomputable def loopLiftPosition (ω : ArrowConfig N M) (s : Smoothing N M)
 lemma loopLiftPosition_zero (ω : ArrowConfig N M) (s : Smoothing N M)
     (h : CompatibleConfig ω s) (d : DirectedDart ω) :
     loopLiftPosition ω s h d 0 = ((d.val.1.1.val : ℤ),(d.val.1.2.val : ℤ)) := by
-  simp [loopLiftPosition]
-
+  rfl
 lemma loopLiftPosition_succ (ω : ArrowConfig N M) (s : Smoothing N M)
     (h : CompatibleConfig ω s) (d : DirectedDart ω) (n : ℕ) :
     loopLiftPosition ω s h d (n+1) = loopLiftPosition ω s h d n +

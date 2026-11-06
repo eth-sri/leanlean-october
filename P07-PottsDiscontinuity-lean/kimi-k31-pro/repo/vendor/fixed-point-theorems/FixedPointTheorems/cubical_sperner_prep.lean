@@ -578,9 +578,9 @@ lemma parent_simplex_case_BC I (hs : simplex SC n1 I) J
   {
     have h6 := h5 n1 (lt_add_one n1)
     have e1 : (Fin.ofNat (SC.n + 1) (n1 + 1) : Fin (SC.n + 1)) = Fin.last SC.n := by
-      rw [← hn1]; simp [Fin.ofNat_eq_cast, Fin.natCast_eq_last]
+      simp_all
     have e2 : (Fin.ofNat (n1 + 1) n1 : Fin (n1 + 1)) = Fin.last n1 := by
-      simp [Fin.ofNat_eq_cast, Fin.natCast_eq_last]
+      simp_all
     rw [e1, e2] at h6
     rw [congrFun h6 k1]
     exact (h3 k1).2
@@ -1468,12 +1468,8 @@ lemma case_BC_ex_unique I (hs : simplex SC n1 I) k1 q
   omega
 }
 
-lemma zero_ne_last {hn1 : n1 + 1 = SC.n} : 0 ≠ Fin.last SC.n := by {
-  simp only [ne_eq, Fin.zero_eq_last_iff]
-  rw [←hn1]
-  omega
-}
-
+lemma zero_ne_last {hn1 : n1 + 1 = SC.n} : 0 ≠ Fin.last SC.n := by
+  measurability
 lemma case_A_not_zero I (h1 : case_A SC I) J
     (h2 : I = @delete_vertex SC n1 hn1 0 J ∧ is_face SC I J) : False := by {
   have h3 := last_eq_first_add_one SC J h2.2.2.1

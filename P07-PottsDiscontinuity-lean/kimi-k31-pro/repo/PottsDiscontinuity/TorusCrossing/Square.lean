@@ -126,8 +126,6 @@ theorem crossD_eq_preimage (hsq : R.w = R.h) (hodd : R.w % 2 = 1) :
 
 attribute [local instance] FK.configurationMeasurableSpace
 
-noncomputable local instance pEdgeFintype' : Fintype R.pG.edgeSet := Fintype.ofFinite _
-noncomputable local instance dEdgeFintype' : Fintype R.dG.edgeSet := Fintype.ofFinite _
 
 theorem measure_dual_crossD (hsq : R.w = R.h) (hodd : R.w % 2 = 1) (q : Set.Ici (1 : ℝ)) :
     FK.measure R.dG (critParams q) R.dualBC R.crossD =

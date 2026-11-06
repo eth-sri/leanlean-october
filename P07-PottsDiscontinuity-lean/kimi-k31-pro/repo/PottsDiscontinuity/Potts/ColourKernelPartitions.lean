@@ -16,7 +16,6 @@ variable {A V C : Type*}
 theorem clusterCylinderProbability_factor (R : Setoid V) (v : A → V) (ξ : A → C) :
     clusterCylinderProbability R v ξ = clusterCylinderProbability (R.comap v) id ξ := by
   rfl
-
 /-- The pinned colouring kernel depends only on the observed marked partition. -/
 theorem pinnedClusterCylinderProbability_factor (R : Setoid V) (v : A → V) (ξ : A → C)
     (g : V) (i : C) :

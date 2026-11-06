@@ -28,10 +28,6 @@ private theorem coverFace_shift_left (x y : ℤ) :
   unfold parafermionicCoverSheetShift
   by_cases h : x = 0 ∧ y+1 < 0 <;> simp [h]; omega
 
-@[simp] private theorem coverFace_shift_down (x y : ℤ) :
-    parafermionicCoverSheetShift (x,y+1) (x,y) = 0 := by
-  unfold parafermionicCoverSheetShift
-  simp
 
 @[simp] theorem parafermionicCoverFaceRightLift_formula (x y k : ℤ) :
     parafermionicCoverFaceRightLift x y k =

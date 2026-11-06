@@ -22,7 +22,6 @@ noncomputable section
 
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 
-local instance remainingComparisonEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 local instance remainingComparisonDeletedEdgeFintype (R : Configuration G) :
     Fintype (edgeRestriction G R).edgeSet := Fintype.ofFinite _
 local instance remainingComparisonConfigurationFintype (R : Configuration G) :
@@ -85,19 +84,8 @@ abbrev remainingConfigurationMeasurableSpace (R : Configuration G) :
 
 attribute [local instance] remainingConfigurationMeasurableSpace
 
-local instance remainingComparisonDiscrete (R : Configuration G) :
-    DiscreteMeasurableSpace (RemainingConfiguration G R) :=
-  ⟨fun _ => MeasurableSpace.measurableSet_top⟩
 
-/-- The genuine probability measure induced by the existing remaining-edge PMF
-on the full power-set sigma algebra. -/
-def remainingMeasure (q : Parameters) (ξ : BoundaryCondition V) (R : Configuration G) :
-    MeasureTheory.Measure (RemainingConfiguration G R) := (remainingLaw G q ξ R).toMeasure
 
-instance remainingMeasure_isProbabilityMeasure (q : Parameters)
-    (ξ : BoundaryCondition V) (R : Configuration G) :
-    MeasureTheory.IsProbabilityMeasure (remainingMeasure G q ξ R) :=
-  PMF.toMeasure.isProbabilityMeasure _
 
 end
 end PottsDiscontinuity.FK

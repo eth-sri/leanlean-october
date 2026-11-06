@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusTopology.ClusterVerticalValues
 
 /-! U counts positive winding with multiplicity. Positive-winding loops belong
@@ -39,12 +40,7 @@ theorem sum_positive_vertical_winding_eq_U
       (loopVertical _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) j q).toNat) =
         rcVerticalWinding hN hM j A := by
   have hid (z : ℤ) : (z.natAbs : ℤ)+z = 2*(z.toNat : ℤ) := by
-    rw [Int.natCast_natAbs]
-    by_cases hz : 0 ≤ z
-    · rw [abs_of_nonneg hz,Int.toNat_of_nonneg hz]
-      ring
-    · rw [abs_of_neg (lt_of_not_ge hz),Int.toNat_of_nonpos (le_of_not_ge hz)]
-      simp
+    omega
   have hs := Finset.sum_congr (s₁ := (univ : Finset (Loop hN hM (rcSmoothing A)))) rfl
     (fun q _ => hid (loopVertical _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) j q))
   rw [Finset.sum_add_distrib,sum_vertical_winding_zero,add_zero,← Finset.mul_sum] at hs

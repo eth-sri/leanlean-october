@@ -75,9 +75,7 @@ theorem tendsto_log_sum_mul_pow (μ a : ι → ℝ) (i0 : ι) {ρ : ℝ} (hρ : 
   have hMne : (M : ℝ) ≠ 0 := by positivity
   have hpow : ρ ^ M ≠ 0 := (pow_pos hρ M).ne'
   have hSpos : (∑ i, μ i ^ M * a i) ≠ 0 := by
-    intro h
-    rw [h, zero_div] at hM
-    exact lt_irrefl _ hM
+    measurability
   rw [Real.log_div hSpos hpow, Real.log_pow]
   field_simp
   ring

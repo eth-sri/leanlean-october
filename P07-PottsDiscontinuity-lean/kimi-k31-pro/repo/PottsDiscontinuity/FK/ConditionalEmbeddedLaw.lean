@@ -16,14 +16,7 @@ variable {V W : Type*} [Finite V] [Finite W]
   (G : SimpleGraph V) (H : SimpleGraph W) (f : V ↪ W)
   (hGH : G.map f ≤ H)
 
-local instance conditionalEmbeddedLawSmallEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
-local instance conditionalEmbeddedLawMappedEdgeFintype : Fintype (G.map f).edgeSet := Fintype.ofFinite _
-local instance conditionalEmbeddedLawLargeEdgeFintype : Fintype H.edgeSet := Fintype.ofFinite _
 local instance conditionalEmbeddedLawLargeEdgeDecidableEq : DecidableEq H.edgeSet := Classical.decEq _
-local instance conditionalEmbeddedLawRemainingFintype
-    (R : Configuration H) : Fintype (RemainingConfiguration H R) := Fintype.ofFinite _
-local instance conditionalEmbeddedLawRemovedFintype
-    (R : Configuration H) : Fintype (RemovedConfiguration H R) := Fintype.ofFinite _
 
 /-- Conditioning on an exact state of all non-inner edges and restricting to
 an embedded inner graph gives its FK law with every exterior induced

@@ -23,8 +23,6 @@ variable {N M : ℕ}
 
 noncomputable section
 
-local instance clusterFintype (hN : Even N) (hM : Even M) (A : RCConfig N M) :
-    Fintype (diamondOpenGraph hN hM true A).ConnectedComponent := Fintype.ofFinite _
 
 def loopDisplacementX (hN : Even N) (hM : Even M) (A : RCConfig N M)
     (q : Loop hN hM (rcSmoothing A)) : ℚ :=

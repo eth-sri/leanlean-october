@@ -65,9 +65,6 @@ def wholePlaneClosedDualGraph (ω : LatticeConfiguration) : SimpleGraph LatticeV
     · have hne := LatticePort.closedPair_faceBase_ne (⟨b, false, false⟩ : LatticePort)
       exact hne (by simpa [LatticePort.closedPair, LatticePort.faceBase] using (huv.2.symm.trans huv.1).symm)⟩
 
-def wholePlaneClosedDualCluster (ω : LatticeConfiguration) (u : LatticeVertex) :
-    Set LatticeVertex :=
-  {v | Relation.EqvGen (wholePlaneClosedDualGraph ω).Adj u v}
 
 theorem wholePlaneClosedDualGraph_adj_iff (ω : LatticeConfiguration)
     (u v : LatticeVertex) :

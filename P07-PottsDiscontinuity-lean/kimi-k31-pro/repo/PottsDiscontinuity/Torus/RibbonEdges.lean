@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Torus.RibbonBoundary
 
 /-!
@@ -65,9 +66,7 @@ def ribbonEndEquiv (hN : Even N) (hM : Even M) :
   toFun x := ⟨ribbonEnd x.1 x.2, ribbonEnd_out hN hM x.1 x.2⟩
   invFun d := (d.val.1, ribbonEndSide d.val.2)
   left_inv x := by
-    apply Prod.ext
-    · rfl
-    · exact ribbonEnd_side x.1 x.2
+    measurability
   right_inv d := Subtype.ext (ribbonEnd_recover hN hM d)
 
 @[simp] theorem ribbonEndEquiv_val (hN : Even N) (hM : Even M)

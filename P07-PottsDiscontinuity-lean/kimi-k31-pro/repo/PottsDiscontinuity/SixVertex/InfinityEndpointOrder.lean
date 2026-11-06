@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.SixVertex.InfinityLiftedChoices
 
 /-! # Integer endpoint lifts of admissible defect choices -/
@@ -54,8 +55,7 @@ theorem admissible_indexed_succ (x : Finset (Fin N)) (d : Fin (defects x).card �
     d a = false → d b = false := by
   intro hh
   have hmem : nxt ((defects x).orderEmbOfFin rfl a) ∈ defects x := by
-    rw [hab]
-    exact (defects x).orderEmbOfFin_mem rfl b
+    simp_all
   have hh' : indexedDefectChoice x d
       ⟨(defects x).orderEmbOfFin rfl a, (defects x).orderEmbOfFin_mem rfl a⟩ = false := by
     rw [indexedDefectChoice_ordered]
@@ -221,7 +221,7 @@ theorem choiceEndpointLift_span {x : Finset (Fin N)} (hN : 0 < N) (hx : NoConsec
     have hfa := choiceEndpoint_val x d a
     have hfb := choiceEndpoint_val x d b
     have hvals : ((choiceEndpoint x d a).val : ℤ) = (choiceEndpoint x d b).val := by
-      split_ifs at hfa hfb <;> omega
+      omega
     have hab : a = b := choiceEndpoint_injective hx d ha (Fin.ext (by exact_mod_cast hvals))
     subst b
     omega

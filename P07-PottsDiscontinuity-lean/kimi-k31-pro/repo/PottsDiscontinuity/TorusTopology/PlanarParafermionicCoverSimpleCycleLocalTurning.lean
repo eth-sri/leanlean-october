@@ -44,7 +44,6 @@ theorem parafermionicCoverSimpleCycleLocalTurning {n : ℕ}
     Q (din + 2) dout k hab hk (by
       intro d
       simpa [Q, S, din, dout] using hprofile v hv d)
-  have hcard := parafermionicCoverFiniteFaceSelectedCorners_card S v
   change primalCompassQuarterTurn din dout =
     k * (2 -
       ((parafermionicCoverFiniteFaceSelectedIncidentVertices S v).card : ℤ))

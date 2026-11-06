@@ -145,7 +145,6 @@ variable {V W : Type*} [Finite V] [Finite W]
     (G : SimpleGraph V) (H : SimpleGraph W) (f : V ↪ W) (hGH : G.map f ≤ H)
 
 attribute [local instance] configurationMeasurableSpace
-local instance outerEdgeFintype : Fintype H.edgeSet := Fintype.ofFinite _
 local instance innerEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 local instance outerEdgeDecidableEq : DecidableEq H.edgeSet := Classical.decEq _
 local instance removedFintype (R : Configuration H) : Fintype (RemovedConfiguration H R) :=

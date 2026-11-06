@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.FK.Events
 public import PottsDiscontinuity.TorusLoops.RectangleExplorationWeightedStep
 
@@ -245,15 +246,11 @@ private theorem rectangleRemovedEdge_touches_U
     a ∈ U ∨ b ∈ U := by
   by_contra hn
   have haU : a ∉ U := by
-    intro ha
-    exact hn (Or.inl ha)
+    simp_all
   have hbU : b ∉ U := by
-    intro hb
-    exact hn (Or.inr hb)
+    simp_all
   have hbase : (rectangleBaseGraph hN hM).Adj a b := by
-    apply (rectangleBaseGraph hN hM).mem_edgeSet.mp
-    rw [← heq]
-    exact e.property
+    measurability
   have hIAdj : (rectangleComplementGraph hN hM U).Adj
       ⟨a, haU⟩ ⟨b, hbU⟩ := by
     simpa [rectangleComplementGraph] using hbase
@@ -438,7 +435,7 @@ private theorem rectangleComplementOpenAdj_of_openAdj
   let C := embeddedConfigurationRestriction I G f hIG A
   have hbase : G.Adj x y := openGraph_le G A hxy
   have hI : I.Adj ⟨x, hx⟩ ⟨y, hy⟩ := by
-    simpa [I, rectangleComplementGraph] using hbase
+    assumption
   let eI : I.edgeSet := ⟨s(⟨x, hx⟩, ⟨y, hy⟩), I.mem_edgeSet.mpr hI⟩
   have hopenG : s(x, y) ∈ openEdges G A := (openGraph_adj G A x y).mp hxy
   change s(x, y) ∈ Subtype.val '' (↑A : Set G.edgeSet) at hopenG
@@ -449,12 +446,10 @@ private theorem rectangleComplementOpenAdj_of_openAdj
     rw [embeddedEdgeEmbedding_coe]
     calc
       f.sym2Map (s(⟨x, hx⟩, ⟨y, hy⟩)) = s(x, y) := by
-        simp [f, rectangleComplementEmbedding]
+        rfl
       _ = eG.val := heqG.symm
   have heC : eI ∈ C := by
-    rw [mem_embeddedConfigurationRestriction]
-    rw [heMap]
-    exact heG
+    measurability
   apply (openGraph_adj I C ⟨x, hx⟩ ⟨y, hy⟩).mpr
   change s(⟨x, hx⟩, ⟨y, hy⟩) ∈ Subtype.val '' (↑C : Set I.edgeSet)
   exact ⟨eI, heC, rfl⟩

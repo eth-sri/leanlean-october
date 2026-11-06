@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
 public import Mathlib.Topology.Homotopy.Path
@@ -30,9 +31,7 @@ lemma mem_vertexCellBases (C : Finset LatticeVertex) (x : LatticeVertex) :
   · rintro hx
     obtain ⟨v, hv, h⟩ := Finset.mem_image.1 hx
     have hvx : v = (x.1 + 1, x.2 + 1) := by
-      have h₁ := congrArg Prod.fst h
-      have h₂ := congrArg Prod.snd h
-      ext <;> dsimp at h₁ h₂ ⊢ <;> omega
+      measurability
     simpa only [← hvx] using hv
   · intro hx
     apply Finset.mem_image.2

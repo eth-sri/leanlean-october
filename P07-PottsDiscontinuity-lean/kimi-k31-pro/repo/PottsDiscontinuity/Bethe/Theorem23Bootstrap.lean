@@ -21,7 +21,6 @@ theorem rootStepDensity_error_bddAbove {Δ : ℝ} (hΔ : Δ < -1)
   let c : Fin (n + 1) → ℝ := fun j => rootGapMultiplicity N n hs j /
     ((N : ℝ) * (rootPartitionPoint n p hn j.succ - rootPartitionPoint n p hn j.castSucc))
   let B := ∑ j, |c j|
-  have hB : 0 ≤ B := Finset.sum_nonneg fun _ _ => abs_nonneg _
   have hstep (x : ℝ) : |rootStepDensity N n p hp hn hs x| ≤ B := by
     unfold rootStepDensity
     apply (Finset.abs_sum_le_sum_abs _ _).trans

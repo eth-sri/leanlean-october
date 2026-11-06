@@ -210,13 +210,6 @@ private theorem faceSet_faceIncidence_count {n : ℕ}
           exact coverFaceBoundary_edgeFinset_card_four i
     _ = 4 * S.card := by simp [mul_comm]
 
-private theorem faceSet_edgeIncidence_count {n : ℕ}
-    (S : Finset (ParafermionicCoverFiniteFaceTopIndex n)) :
-    (faceIncidencePairsByEdge S).card =
-      ∑ e ∈ parafermionicCoverFiniteFaceSetEdgeSupport S,
-        (parafermionicCoverFiniteFaceSelectedIncidentFaces S e).card := by
-  exact faceIncidencePairsByEdge_card S
-
 private theorem faceSet_boundary_indicator_sum {n : ℕ}
     (S : Finset (ParafermionicCoverFiniteFaceTopIndex n)) :
     (∑ e ∈ parafermionicCoverFiniteFaceSetEdgeSupport S,
@@ -271,7 +264,7 @@ theorem parafermionicCoverFiniteFaceSetEdgeCount {n : ℕ}
   classical
   have hpairs := faceIncidencePairs_eq S
   have hface := faceSet_faceIncidence_count S
-  have hedge := faceSet_edgeIncidence_count S
+  have hedge := faceIncidencePairsByEdge_card S
   have hedge' : (faceIncidencePairsByFace S).card =
       ∑ e ∈ parafermionicCoverFiniteFaceSetEdgeSupport S,
         (parafermionicCoverFiniteFaceSelectedIncidentFaces S e).card := by

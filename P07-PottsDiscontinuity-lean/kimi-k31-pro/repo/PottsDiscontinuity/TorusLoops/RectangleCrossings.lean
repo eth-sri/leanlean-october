@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Torus.DiamondSeamWinding
 public import PottsDiscontinuity.TorusLoops.WindingClusterCount
 
@@ -170,7 +171,7 @@ theorem supportedCycle_nonzero_horizontal_hasRectangleCrossingX
   have hpair := diamondBoundary_pairing hN hM A g f.val
   rw [f.property] at hpair
   have hzero : (∑ e, diamondCoboundary hN hM A g e * f.val e) = 0 := by
-    simpa using hpair.symm
+    simp_all
   have hsum : (∑ e, diamondCoboundary hN hM A g e * f.val e) =
       diamondWindingX A f.val := by
     unfold diamondWindingX
@@ -220,8 +221,7 @@ theorem supportedCycle_nonzero_horizontal_hasRectangleCrossingX
           rw [diamondCoboundary_apply]
           simp [g, diamondSeamCrossX, hx, hpot]
   have hwind : diamondWindingX A f.val = 0 := by
-    rw [← hsum]
-    exact hzero
+    simp_all
   apply hdisp
   rw [← diamondWindingX_mul_period hN hM A f, hwind]
   simp
@@ -429,16 +429,9 @@ theorem windingLoopCount_le_threeN_add_two_mul_rectangleCrossings
     intro q hq
     exact (Finset.mem_filter.mp hq).1
   have hcleanEq : xset.filter (fun q => q ∈ clean) = clean := by
-    ext q
-    simp only [Finset.mem_filter]
-    constructor
-    · exact fun h => h.2
-    · intro hq
-      exact ⟨hcleanSubset hq, hq⟩
+    simp_all
   have hbadEq : xset.filter (fun q => q ∉ clean) = bad := by
-    ext q
-    simp [bad, badHorizontalWindingLoopSet, xset, clean,
-      horizontalWindingLoopSet, cleanHorizontalWindingLoops]
+    rfl
   have hsplit := Finset.card_filter_add_card_filter_not
     (s := xset) (p := fun q => q ∈ clean)
   rw [hcleanEq, hbadEq] at hsplit

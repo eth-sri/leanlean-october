@@ -21,8 +21,7 @@ def rectangleDualAmbientGraph (a : LatticeVertex) (w h : ℕ) :
 theorem rectangleDualAmbientGraph_adj_iff (a : LatticeVertex) (w h : ℕ)
     (u v : RectangleDualVertex a w h) :
     (rectangleDualAmbientGraph a w h).Adj u v ↔ squareLattice.Adj u.1 v.1 := by
-  simp [rectangleDualAmbientGraph]
-
+  rfl
 private theorem primalBondOfDual_endpoints_mem_of_interior_endpoint
     (a : LatticeVertex) (w h : ℕ) (d : LatticeBond) (z : LatticeVertex)
     (hz : z ∈ rectangleDualInterior a w h)

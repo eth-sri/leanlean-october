@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT1RunPath
 
 /-!
@@ -45,14 +46,11 @@ theorem zeroRootZipperPerm_apply_of_not_mem {n : ℕ}
       | nil => simp [zeroRootZipperPerm]
       | cons b rest =>
           have hka : k ≠ a := by
-            intro heq
-            exact hk (List.mem_cons.mpr (Or.inl heq))
+            simp_all
           have hkb : k ≠ b := by
-            intro heq
-            exact hk (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl heq))))
+            simp_all
           have htail : k ∉ b :: rest := by
-            intro hmem
-            exact hk (List.mem_cons.mpr (Or.inr hmem))
+            simp_all
           rw [zeroRootZipperPerm, Equiv.Perm.mul_apply, ih htail]
           exact Equiv.swap_apply_of_ne_of_ne hka hkb
 

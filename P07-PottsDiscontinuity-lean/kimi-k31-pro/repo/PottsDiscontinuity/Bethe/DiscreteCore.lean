@@ -37,17 +37,13 @@ theorem discreteBetheIndex_rev (n : ℕ) (j : Fin n) :
 def R_n_sym (n : ℕ) : Submodule ℝ (Fin n → ℝ) where
   carrier := {p | ∀ j, p (Fin.rev j) = -p j}
   zero_mem' := by
-    intro j
-    simp
+    simp_all
   add_mem' := by
     intro p q hp hq j
     simp only [Pi.add_apply, hp j, hq j]
     ring
   smul_mem' := by
-    intro c p hp j
-    simp only [Pi.smul_apply, smul_eq_mul, hp j]
-    ring
-
+    simp_all
 /-- The ordered symmetric configuration space `S_n`. -/
 def S_n (n : ℕ) : Set (Fin n → ℝ) :=
   {p | (∀ j, -Real.pi < p j ∧ p j < Real.pi) ∧ StrictMono p ∧ p ∈ R_n_sym n}

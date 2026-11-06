@@ -11,8 +11,6 @@ open FK
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 noncomputable section
 open scoped Classical
-local instance inducedConnectivityEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
-local instance inducedConnectivityEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 
 /-- The literal inclusion of an induced vertex set. -/
 def inducedVertexEmbedding (T : Set V) : T ↪ V := ⟨Subtype.val,Subtype.val_injective⟩

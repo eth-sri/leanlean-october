@@ -55,7 +55,6 @@ theorem wordCoefficient_swap_cross {n : ℕ} (c : ℝ) (p : Fin (n + 1) → ℝ)
         (M c (z (p (σ a))) * L c (z (p (σ (finRotate (n + 1) a)))) - 1) =
       wordCoefficient c p σ w *
         (M c (z (p (σ (finRotate (n + 1) a)))) * L c (z (p (σ a))) - 1) := by
-  have hab : a ≠ finRotate (n + 1) a := by intro he; rw [← he, ha] at hb; contradiction
   change (∏ k, wordEdgeFactor c p (σ * Equiv.swap a (finRotate (n + 1) a)) w k) * _ =
     (∏ k, wordEdgeFactor c p σ w k) * _
   rw [← Finset.mul_prod_erase univ _ (mem_univ a),

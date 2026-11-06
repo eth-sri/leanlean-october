@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.SixVertex.TransferMatrix
 public import Mathlib.LinearAlgebra.Matrix.Irreducible.Defs
 
@@ -173,7 +174,7 @@ theorem reach_packed (hc : 0 < c) (hn : n ≤ N) :
       omega
     obtain ⟨j, hjn, hjx⟩ := hj
     have hji : j < i := by
-      rw [Fin.lt_def]; omega
+      omega
     let q : State N n := ⟨jump x.1 i j, by rw [card_jump hi.1 hjx, x.2]⟩
     have hq : (q.1.filter fun a => n ≤ a.val).card = m := by
       have : q.1.filter (fun a => n ≤ a.val) = (x.1.filter fun a => n ≤ a.val).erase i := by

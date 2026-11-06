@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT0
 public import PottsDiscontinuity.BetheAnsatz.BoundaryLimit
 
@@ -52,9 +53,7 @@ theorem continuous_t0ScalarRegularized (c : ℝ) (N : ℕ) (seam : Prop) :
   have hnum : Continuous (fun t : ℝ => 1 - z t + (c : ℂ) ^ 2 * z t) := by
     fun_prop
   have hsum : Continuous (fun t : ℝ => ∑ k ∈ range N, z t ^ k) := by
-    apply continuous_finsetSum
-    intro k hk
-    exact hz.pow k
+    fun_prop
   have hden : Continuous (fun t : ℝ => z t ^ N) := hz.pow N
   have hquot : Continuous (fun t : ℝ =>
       (1 - z t + (c : ℂ) ^ 2 * z t) * (∑ k ∈ range N, z t ^ k) / z t ^ N) :=

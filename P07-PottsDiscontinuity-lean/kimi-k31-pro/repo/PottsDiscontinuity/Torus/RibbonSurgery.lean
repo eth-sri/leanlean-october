@@ -22,10 +22,7 @@ variable {N M : ℕ}
 
 theorem ribbonEnds_ne (hN : Even N) (hM : Even M) (v : Fin N × Fin M) :
     ribbonEndEquiv hN hM (v, false) ≠ ribbonEndEquiv hN hM (v, true) := by
-  intro he
-  have hb := congrArg Prod.snd ((ribbonEndEquiv hN hM).injective he)
-  exact Bool.false_ne_true hb
-
+  simp_all
 theorem permutationCycleCount_ribbonBoundary (hN : Even N) (hM : Even M)
     (A : RCConfig N M) :
     permutationCycleCount (ribbonBoundary hN hM A) = rcLoopCount hN hM A :=

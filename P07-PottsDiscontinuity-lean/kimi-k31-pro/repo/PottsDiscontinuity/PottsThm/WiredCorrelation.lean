@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Potts.InfinitePartitionMeasurability
 public import PottsDiscontinuity.Potts.PartitionExpectationAlgebra
 public import PottsDiscontinuity.Potts.SpinEventDecomposition
@@ -61,8 +62,7 @@ private theorem natCard_quotient_bot_optionBool :
 private theorem pinnedObservedClassCount (R : Setoid (Option Bool)) :
     observedClassCount R (markedMap some none) = Nat.card (Quotient R) := by
   have hid : markedMap some none = (id : Option Bool → Option Bool) := by
-    funext a
-    cases a <;> rfl
+    decide
   rw [hid]
   rfl
 
@@ -107,8 +107,6 @@ private theorem falsePinClassRel_compatible_iff (q : ℕ) (c pin : Set.Icc 1 q) 
   constructor
   · intro h
     have hrel : falsePinClassRel.comap (markedMap some none) (some false) none := by
-      change falsePinClassLabel (markedMap some none (some false)) =
-        falsePinClassLabel (markedMap some none none)
       rfl
     have heq := h hrel
     change markedMap (fun _ : Bool => c) pin (some false) =
@@ -126,8 +124,6 @@ private theorem truePinClassRel_compatible_iff (q : ℕ) (c pin : Set.Icc 1 q) :
   constructor
   · intro h
     have hrel : truePinClassRel.comap (markedMap some none) (some true) none := by
-      change truePinClassLabel (markedMap some none (some true)) =
-        truePinClassLabel (markedMap some none none)
       rfl
     have heq := h hrel
     change markedMap (fun _ : Bool => c) pin (some true) =
@@ -178,7 +174,7 @@ private theorem pairClassRel_kernel_sum (q : ℕ) (hq : 2 ≤ q)
   simp_rw [pairClassRel_kernel q pin]
   have hq0 : (q : ℝ) ≠ 0 := by exact_mod_cast (show q ≠ 0 by omega)
   have hcard : Fintype.card (Set.Icc 1 q) = q := by
-    simp
+    simp_all
   simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
   rw [hcard]
   field_simp
@@ -205,7 +201,7 @@ private theorem top_optionBool_compatible_iff (q : ℕ) (c pin : Set.Icc 1 q) :
   constructor
   · intro h
     have hrel : (⊤ : Setoid (Option Bool)).comap (markedMap some none) (some false) none := by
-      trivial
+      simp_all
     have heq := h hrel
     change markedMap (fun _ : Bool => c) pin (some false) =
       markedMap (fun _ : Bool => c) pin none at heq
@@ -246,8 +242,7 @@ private theorem bot_optionBool_compatible (q : ℕ) (c pin : Set.Icc 1 q) :
   change markedMap (fun _ : Bool => c) pin a = markedMap (fun _ : Bool => c) pin b
   have hab' : a = b := by
     have hid : markedMap some none = (id : Option Bool → Option Bool) := by
-      funext z
-      cases z <;> rfl
+      decide
     rw [hid] at hab
     exact hab
   rw [hab']
@@ -269,7 +264,7 @@ private theorem bot_optionBool_kernel_sum (q : ℕ) (hq : 2 ≤ q)
   simp_rw [bot_optionBool_kernel q pin]
   have hq0 : (q : ℝ) ≠ 0 := by exact_mod_cast (show q ≠ 0 by omega)
   have hcard : Fintype.card (Set.Icc 1 q) = q := by
-    simp
+    simp_all
   simp only [Finset.sum_const, Finset.card_univ, nsmul_eq_mul]
   rw [hcard]
   field_simp
@@ -470,41 +465,34 @@ private theorem wired_two_point_kernel_sum (q : ℕ) (hq : 2 ≤ q)
     simp [hxy]
   · rw [hpair]
     have hxy : pairClassRel (some false) (some true) := by
-      change pairClassLabel (some false) = pairClassLabel (some true)
       rfl
     rw [pairClassRel_kernel_sum q hq pin]
     simp [hxy]
   · rw [hfalse]
     have hxy : ¬ falsePinClassRel (some false) (some true) := by
-      change ¬ (falsePinClassLabel (some false) = falsePinClassLabel (some true))
-      simp [falsePinClassLabel]
+      tauto
     have hxg : falsePinClassRel (some false) none := by
-      change falsePinClassLabel (some false) = falsePinClassLabel none
       rfl
     have hyg : ¬ falsePinClassRel (some true) none := by
-      change ¬ (falsePinClassLabel (some true) = falsePinClassLabel none)
-      simp [falsePinClassLabel]
+      tauto
     rw [falsePinClassRel_kernel_sum q pin]
     simp [hxy, hxg, hyg]
   · rw [htrue]
     have hxy : ¬ truePinClassRel (some false) (some true) := by
-      change ¬ (truePinClassLabel (some false) = truePinClassLabel (some true))
-      simp [truePinClassLabel]
+      tauto
     have hxg : ¬ truePinClassRel (some false) none := by
-      change ¬ (truePinClassLabel (some false) = truePinClassLabel none)
-      simp [truePinClassLabel]
+      assumption
     have hyg : truePinClassRel (some true) none := by
-      change truePinClassLabel (some true) = truePinClassLabel none
       rfl
     rw [truePinClassRel_kernel_sum q pin]
     simp [hxy, hxg, hyg]
   · rw [hbot]
     have hxy : ¬ (⊥ : Setoid (Option Bool)) (some false) (some true) := by
-      simp
+      simp_all
     have hxg : ¬ (⊥ : Setoid (Option Bool)) (some false) none := by
-      simp
+      simp_all
     have hyg : ¬ (⊥ : Setoid (Option Bool)) (some true) none := by
-      simp
+      simp_all
     rw [bot_optionBool_kernel_sum q hq pin]
     simp
 

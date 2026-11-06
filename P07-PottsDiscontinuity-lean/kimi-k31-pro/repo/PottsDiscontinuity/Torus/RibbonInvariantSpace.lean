@@ -71,11 +71,6 @@ def ribbonDifference (hN : Even N) (hM : Even M) (A : RCConfig N M)
     LinearMap.proj (ribbonEndEquiv hN hM (v, true))).comp
       (ribbonFunctions hN hM A).subtype
 
-@[simp] theorem ribbonDifference_apply (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (v : Fin N × Fin M) (f : ribbonFunctions hN hM A) :
-    ribbonDifference hN hM A v f =
-      f.val (ribbonEndEquiv hN hM (v, false)) -
-        f.val (ribbonEndEquiv hN hM (v, true)) := rfl
 
 theorem ribbonDifference_eq_zero_of_connected (hN : Even N) (hM : Even M)
     (A : RCConfig N M) (v : Fin N × Fin M)

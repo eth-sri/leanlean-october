@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Torus.EdgeIndex
 public import PottsDiscontinuity.SixVertex.TraceFormula
 

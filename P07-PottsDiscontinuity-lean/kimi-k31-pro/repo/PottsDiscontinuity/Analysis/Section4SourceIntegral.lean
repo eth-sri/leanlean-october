@@ -42,7 +42,6 @@ noncomputable def fourierTauSeries (lam α : ℝ) : ℝ :=
 theorem fourierTauSeries_eq_Bethe_tauSeries (lam α : ℝ) :
     fourierTauSeries lam α = Bethe.tauSeries lam α := by
   rfl
-
 /-- The continuous representative of τ(k(α)) on the circle. -/
 noncomputable def fourierTauAlphaCont (lam α : ℝ) : ℝ :=
   Bethe.TcontFn lam α / (2 * π)
@@ -383,7 +382,6 @@ private theorem fourierAlphaSourceIntegrand_integrableOnIcc {lam : ℝ}
     IntegrableOn (fun α => fourierPPrime lam α * Bethe.tauSeries lam α)
       (Icc (-π) π) volume := by
   let C := fourierTauProductControl lam
-  have hC0 : 0 ≤ C := fourierTauProductControl_nonneg hlam
   have hC : ∀ α ∈ Icc (-π) π,
       |fourierPPrime lam α * Bethe.tauSeries lam α| ≤ C := by
     intro α hα
@@ -517,22 +515,8 @@ private theorem fourier_source_substitution_left {lam : ℝ} (hlam : 0 < lam)
   have hsub := intervalIntegral.integral_comp_mul_deriv'''
     (a := -π) (b := 0) (f := Bethe.kMap lam) (f' := Bethe.Xi lam)
     (g := fourierEllTauCont lam) hf hff' hgcont hG1 hG2
-  have hαInt : IntervalIntegrable q volume (-π) 0 := by
-    rw [intervalIntegrable_iff_integrableOn_Ioc_of_le (by linarith [Real.pi_pos])]
-    exact hqInt.mono_set (by
-      intro α hα
-      exact ⟨le_of_lt hα.1, le_trans hα.2 (by linarith [Real.pi_pos])⟩)
-  have hqToAlpha :
-      ∫ α in (-π)..0, q α =
-        ∫ α in (-π)..0,
-          (fourierEllTauCont lam ∘ Bethe.kMap lam) α * Bethe.Xi lam α :=
-    intervalIntegral.integral_congr (fun α _ => hq α)
-  have hsub' :
-      ∫ α in (-π)..0,
-          (fourierEllTauCont lam ∘ Bethe.kMap lam) α * Bethe.Xi lam α =
-        ∫ x in Bethe.kMap lam (-π)..0, fourierEllTauCont lam x := by
-    simpa [Bethe.kMap_zero] using hsub
-  exact hqToAlpha.trans hsub'
+  exact (intervalIntegral.integral_congr (fun α _ => hq α)).trans
+    (by simpa [Bethe.kMap_zero] using hsub)
 
 private theorem fourier_source_substitution_right {lam : ℝ} (hlam : 0 < lam)
     (q : ℝ → ℝ) (hq : ∀ α, q α =
@@ -584,22 +568,8 @@ private theorem fourier_source_substitution_right {lam : ℝ} (hlam : 0 < lam)
   have hsub := intervalIntegral.integral_comp_mul_deriv'''
     (a := 0) (b := π) (f := Bethe.kMap lam) (f' := Bethe.Xi lam)
     (g := fourierEllTauCont lam) hf hff' hgcont hG1 hG2
-  have hαInt : IntervalIntegrable q volume 0 π := by
-    rw [intervalIntegrable_iff_integrableOn_Ioc_of_le (by linarith [Real.pi_pos])]
-    exact hqInt.mono_set (by
-      intro α hα
-      exact ⟨le_trans (by linarith [Real.pi_pos]) (le_of_lt hα.1), hα.2⟩)
-  have hqToAlpha :
-      ∫ α in 0..π, q α =
-        ∫ α in 0..π,
-          (fourierEllTauCont lam ∘ Bethe.kMap lam) α * Bethe.Xi lam α :=
-    intervalIntegral.integral_congr (fun α _ => hq α)
-  have hsub' :
-      ∫ α in 0..π,
-          (fourierEllTauCont lam ∘ Bethe.kMap lam) α * Bethe.Xi lam α =
-        ∫ x in 0..Bethe.kMap lam π, fourierEllTauCont lam x := by
-    simpa [Bethe.kMap_zero] using hsub
-  exact hqToAlpha.trans hsub'
+  exact (intervalIntegral.integral_congr (fun α _ => hq α)).trans
+    (by simpa [Bethe.kMap_zero] using hsub)
 
 /-- Change of variables from the source coordinate to α identifies the original integral
 of ℓ′τ with the explicitly regularized α-integral.  The literal series values at the endpoints

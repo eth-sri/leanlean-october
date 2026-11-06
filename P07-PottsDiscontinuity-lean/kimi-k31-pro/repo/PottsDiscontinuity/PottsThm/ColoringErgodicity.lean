@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.PottsThm.ColoringFactor
 
 @[expose] public section
@@ -48,8 +49,7 @@ theorem mixingProduct_factor_translationErgodic {C : Type*} [MeasurableSpace C]
   · intro a
     rw [Measure.map_map (hτmeas a) hF]
     have hcomp : (fun σ : Vertex → C => fun x => σ (x + a)) ∘ F = F ∘ Q (-a) := by
-      funext z x
-      simpa [Function.comp_apply, sub_neg_eq_add] using (hFshift (-a) z x).symm
+      measurability
     rw [hcomp, ← Measure.map_map hF (hQmeas (-a)), (hQpres (-a)).map_eq]
   · intro A hA hAinv
     let E : Set (LatticeConfiguration × (Vertex → C)) := F ⁻¹' A
@@ -62,8 +62,7 @@ theorem mixingProduct_factor_translationErgodic {C : Type*} [MeasurableSpace C]
       rw [hspin]
       have hinv := Set.ext_iff.mp (hAinv (-a)) (F z)
       have hshiftEq : (fun x => F z (x - a)) = (fun x => F z (x + -a)) := by
-        funext x
-        simp [sub_eq_add_neg]
+        rfl
       rw [hshiftEq]
       exact hinv
     rcases mixingProduct_invariant_event μ ν T S hTpres hSpres hTmix hSmix hE hEinv with h | h

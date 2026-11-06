@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusRC.LowerEstimate
 public import PottsDiscontinuity.TorusRC.BoxProbability
 public import PottsDiscontinuity.TorusRC.LogRateLimits
@@ -60,8 +61,7 @@ theorem torusRCU_one_inner_liminf_of_h319 (q : Set.Ici (1 : ℝ)) (hh319 : h319 
     have hM4 : 4 ≤ height m := (le_max_left _ _).trans hm
     have h4nM : 4*n ≤ height m := (le_max_left _ _).trans ((le_max_right _ _).trans hm)
     have hNM : N/2 < height m := by
-      have h := (le_max_right (4*n) (N/2+1)).trans ((le_max_right _ _).trans hm)
-      omega
+      simp_all
     have h := hfinite N (height m) n hN (positiveEvenPeriod_even m) hN4 hM4 hNdiv hn h8nN h4nM hNM
     change _ ≤ p m at h
     convert h using 1; dsimp [C,b]; ring

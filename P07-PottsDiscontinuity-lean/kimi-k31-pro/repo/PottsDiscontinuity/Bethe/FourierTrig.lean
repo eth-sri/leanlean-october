@@ -132,7 +132,6 @@ theorem integral_trigTerm_mul_sin (a b : ℕ → ℝ) (n m : ℕ) :
 /-- The constant coefficient of a trigonometric series. -/
 theorem cosCoeff_trigSeries_zero {a b : ℕ → ℝ} (ha : Summable a) (hb : Summable b) (a₀ : ℝ) :
     cosCoeff (trigSeries a₀ a b) 0 = 2 * π * a₀ := by
-  have hpi := Real.pi_pos
   have hs := hasSum_intervalIntegral_of_bound (F := fun n β => trigTerm a b n β)
     (f := fun β => ∑' n, trigTerm a b n β) (continuous_trigTerm a b) _ (ha.abs.add hb.abs)
     (abs_trigTerm_le a b) (hasSum_trigTerm ha hb)

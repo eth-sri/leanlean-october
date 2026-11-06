@@ -12,7 +12,6 @@ namespace PottsDiscontinuity.FK
 noncomputable section
 variable {V : Type*} [Finite V] {G : SimpleGraph V}
 local instance complementFreeEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
-local instance complementFreeEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 
 lemma no_revealed_open_edge_at_cluster_complement (S : Finset V) (A : Configuration G)
     (u : actualMultiClusterComplementSet G S A) (w : V) :

@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
 public import Mathlib.Topology.Homotopy.Path
@@ -94,9 +95,7 @@ theorem critical_potts_free_measure_ne_wired_average (q : ℕ) (hq : 4 < q)
     hRC₀ (hRCp j0) L hL hrate
   have hθ : 0 < (φp j0).toMeasure.real (infiniteAt (0, 0)) := by
     have hposE : 0 < (φp j0).toMeasure (infiniteAt (0, 0)) := by
-      have hpos := hdisc.2
-      change 0 < (φp j0).toMeasure (infiniteAt (0, 0)) at hpos
-      exact hpos
+      tauto
     exact ENNReal.toReal_pos hposE.ne' (measure_ne_top _ _)
   let c : ℝ := 1 - 1 / (q : ℝ)
   have hc : 0 < c := by
@@ -145,8 +144,7 @@ theorem critical_potts_free_measure_ne_wired_average (q : ℕ) (hq : 4 < q)
     let d : Fin q → ℝ := fun i => (μ i.succ).toMeasure.real
         {σ | σ (0, 0) = σ (diagonalSite n)} - 1 / (q : ℝ)
     have hd (i : Fin q) : 0 ≤ d i := by
-      dsimp [d]
-      exact sub_nonneg.mpr (hcorrBase i n)
+      measurability
     have hd0 : c * ((φp j0).toMeasure.real (infiniteAt (0, 0)) ^ 2) ≤ d j0 := by
       dsimp [d]
       linarith [hcorrStrict n]

@@ -67,13 +67,11 @@ theorem diagonal_segments_intersection_index {p p' q q' : ℤ × ℤ} {z : ℝ �
   obtain ⟨t,⟨ht0,ht1⟩,htz⟩ := hzQ
   have hs0' : 0 < s := by
     have hne : s ≠ 0 := by
-      intro heq
-      exact hnotP p h00 h01 (by simpa [heq] using hsz.symm)
+      measurability
     exact lt_of_le_of_ne hs0 (Ne.symm hne)
   have hs1' : s < 1 := by
     have hne : s ≠ 1 := by
-      intro heq
-      exact hnotP p' h10 h11 (by simpa [heq] using hsz.symm)
+      measurability
     exact lt_of_le_of_ne hs1 hne
   have ht0' : 0 < t := by
     have hne : t ≠ 0 := by

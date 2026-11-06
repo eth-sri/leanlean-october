@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.SixVertex.InfinityChoices
 public import PottsDiscontinuity.SixVertex.InfinityDescent
 public import PottsDiscontinuity.SixVertex.InfinityGround
@@ -112,8 +113,7 @@ theorem sineLiftWeight_inadmissible (hN : 2 ≤ N) (x : Finset (Fin N))
     exact congrArg Subtype.val (e.apply_symm_apply ⟨nxt i.1, hj⟩)
   have hda : d a = false := hi
   have hdb : d b = true := by
-    change d b ≠ false at hnext
-    cases hh : d b <;> simp_all
+    measurability
   by_cases hwrap : i.1.val + 1 < N
   · have hnv := nxt_val_of_lt i.1 hwrap
     have hval : ((defects x).orderEmbOfFin rfl b).val =
@@ -129,10 +129,7 @@ theorem sineLiftWeight_inadmissible (hN : 2 ≤ N) (x : Finset (Fin N))
     have harank := orderEmbOfFin_rank_last (defects x) rfl a (by rw [hav]; exact hlast)
     have hbrank := orderEmbOfFin_rank_zero (defects x) rfl b (by rw [hbv]; exact hzero)
     have hab : b ≠ a := by
-      intro he
-      have heval := congrArg (fun j => ((defects x).orderEmbOfFin rfl j).val) he
-      rw [hbv, hav, hzero] at heval
-      omega
+      measurability
     have hp : (N + (defects x).card : ℤ) ≠ 0 := by omega
     have hdiff : leftStepLift (orderedDefectLift x) d a -
         leftStepLift (orderedDefectLift x) d b = (N + (defects x).card : ℤ) := by

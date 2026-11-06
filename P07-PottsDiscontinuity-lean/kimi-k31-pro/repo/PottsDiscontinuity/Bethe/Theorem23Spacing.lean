@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Bethe.AsymptoticPartition
 public import PottsDiscontinuity.Bethe.Theorem23Density
 
@@ -119,10 +120,9 @@ theorem rootPartition_gap_upper_of_norm_le {Δ₀ Δ : ℝ}
     rootPartitionPoint n p hn j.succ - rootPartitionPoint n p hn j.castSucc ≤
       2 * rootGapMultiplicity N n hs j / (mρ * (N : ℝ)) := by
   have hNnat : 0 < N := by omega
-  have hN : (0 : ℝ) < N := by exact_mod_cast hNnat
   have hsmall' : (K / (N : ℝ)) / mXi ≤ mρ / 2 := by
     have heq : (K / (N : ℝ)) / mXi = K / ((N : ℝ) * mXi) := by
-      field_simp
+      ring
     rw [heq]
     exact hsmall
   exact rootPartition_gap_upper_of_densityNorm hΔ₀ hΔ p hp hn hs

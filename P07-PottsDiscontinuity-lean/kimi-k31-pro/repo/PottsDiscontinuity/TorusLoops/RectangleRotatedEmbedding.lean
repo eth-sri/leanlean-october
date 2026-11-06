@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.CorrLength.RotatedLattice
 public import PottsDiscontinuity.TorusLoops.RectangleFK
 
@@ -100,11 +101,9 @@ private theorem rectangleFaceEndpointToRotated_adj (hN : Even N) (hM : Even M)
   have hi := prv_val_of_pos e.val.1 hip
   have hj := prv_val_of_pos e.val.2 hjp
   have hiZ : ((prv e.val.1).val : ℤ) = (e.val.1.val : ℤ) - 1 := by
-    rw [hi, Nat.cast_sub (by omega)]
-    norm_num
+    simp_all
   have hjZ : ((prv e.val.2).val : ℤ) = (e.val.2.val : ℤ) - 1 := by
-    rw [hj, Nat.cast_sub (by omega)]
-    norm_num
+    simp_all
   change |((faceEndpoint hN hM true e.val false).val.1.val : ℤ) -
       ((faceEndpoint hN hM true e.val true).val.1.val : ℤ)| = 1 ∧
     |((faceEndpoint hN hM true e.val false).val.2.val : ℤ) -

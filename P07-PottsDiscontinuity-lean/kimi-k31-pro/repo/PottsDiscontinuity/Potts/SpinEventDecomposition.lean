@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import Mathlib.MeasureTheory.Measure.Real
 
 @[expose] public section
@@ -15,13 +16,7 @@ theorem measureReal_same_colour_sum {X C : Type*} [MeasurableSpace X] [Measurabl
     (f g : X → C) (hf : Measurable f) (hg : Measurable g) :
     μ.real {x | f x = g x} = ∑ c : C, μ.real {x | f x = c ∧ g x = c} := by
   have he : {x | f x = g x} = ⋃ c ∈ (Finset.univ : Finset C), {x | f x = c ∧ g x = c} := by
-    ext x
-    simp only [Set.mem_ofPred_eq, Set.mem_iUnion, Finset.mem_univ, exists_prop, true_and]
-    constructor
-    · intro h
-      exact ⟨f x, rfl, h.symm⟩
-    · rintro ⟨c, hf, hg⟩
-      exact hf.trans hg.symm
+    measurability
   have hd : (↑(Finset.univ : Finset C) : Set C).PairwiseDisjoint
       (fun c => {x | f x = c ∧ g x = c}) := by
     intro c _ d _ hcd

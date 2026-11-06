@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootWordCancellationSum
 
 /-!
@@ -35,9 +36,7 @@ noncomputable def rootSlotFiberEquiv {n : ℕ} (l : Fin (n + 1)) :
         _ = q.1.2 q.1.1 := q.2.symm
     · rfl
   right_inv := by
-    intro σ
-    rfl
-
+    tauto
 /-- If a chosen ML edge is disjoint from the root slot, its entire constrained
 fixed-amplitude word sum vanishes. -/
 theorem sum_rootSlotFiber_fixedAmplitudeWordTerm_eq_zero_of_ML_away

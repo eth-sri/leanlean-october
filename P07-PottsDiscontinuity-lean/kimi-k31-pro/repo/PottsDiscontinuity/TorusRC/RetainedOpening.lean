@@ -12,16 +12,9 @@ open Torus
 
 variable {N M : ℕ}
 
-noncomputable local instance retainedOpeningEdgeFintype (hN : Even N) (hM : Even M) :
-    Fintype (fullDiamondGraph hN hM).edgeSet := Fintype.ofFinite _
-noncomputable local instance retainedOpeningEdgeDecidableEq (hN : Even N) (hM : Even M) :
-    DecidableEq (fullDiamondGraph hN hM).edgeSet := Classical.decEq _
 noncomputable local instance retainedOpeningRemainingFintype (hN : Even N) (hM : Even M)
     (R : FK.Configuration (fullDiamondGraph hN hM)) :
     Fintype (FK.RemainingConfiguration (fullDiamondGraph hN hM) R) := Fintype.ofFinite _
-noncomputable local instance retainedOpeningDeletedEdgeFintype (hN : Even N) (hM : Even M)
-    (R : FK.Configuration (fullDiamondGraph hN hM)) :
-    Fintype (FK.edgeRestriction (fullDiamondGraph hN hM) R).edgeSet := Fintype.ofFinite _
 
 noncomputable section
 

@@ -23,8 +23,8 @@ namespace PottsDiscontinuity.BetheAnsatz
 /-- The corrected decomposition of the two constant-word scalar factors. -/
 theorem constant_words_boundary_decomposition (c : ℝ) (w : ℂ) (N : ℕ) :
     M c w + L c w * (w ^ N)⁻¹ =
-      (M c w + L c w) + L c w * ((w ^ N)⁻¹ - 1) := by ring
-
+      (M c w + L c w) + L c w * ((w ^ N)⁻¹ - 1) := by
+  ring
 /-- Remove the apparent pole by a finite geometric sum. -/
 theorem L_mul_inv_pow_sub_one (c : ℝ) (N : ℕ) {w : ℂ} (hw0 : w ≠ 0) (hw1 : w ≠ 1) :
     L c w * ((w ^ N)⁻¹ - 1) =

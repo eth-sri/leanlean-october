@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
 public import Mathlib.Topology.Homotopy.Path
@@ -90,8 +91,7 @@ theorem rc_theorem_1_2_from_item3 (q : ℝ) (hq : 4 < q)
     simpa [lam] using hS
   have hSS : S = S₀ := tendsto_nhds_unique hS hS₀'
   have hL : 0 < lam + 2 * S := by
-    rw [hSS]
-    exact hpositive
+    simp_all
   have hitems := Duality.rcm_items_one_two_of_pos_diagonal_rate
     q hq φ hφFrozen (lam + 2 * S) hL hRate
   refine ⟨φ, hφFrozen, hitems.1, hitems.2, ?_⟩

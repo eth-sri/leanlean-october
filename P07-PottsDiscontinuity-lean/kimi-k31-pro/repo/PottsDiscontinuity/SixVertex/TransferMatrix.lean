@@ -24,7 +24,6 @@ theorem transferMatrix_apply (c : ℝ) (x y : Finset (Fin N)) :
       if x = y then 2 else
         if Interlaced x y then c ^ (univ.filter fun i => Psi x i ≠ Psi y i).card else 0 := by
   rfl
-
 @[simp] theorem transferMatrix_apply_self (c : ℝ) (x : Finset (Fin N)) :
     transferMatrix N c x x = 2 := by
   rw [transferMatrix_apply]; simp

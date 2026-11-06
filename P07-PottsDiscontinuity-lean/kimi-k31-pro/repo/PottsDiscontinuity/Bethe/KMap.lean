@@ -47,8 +47,7 @@ theorem Xi_pos {μ : ℝ} (hμ : 0 < μ) (α : ℝ) : 0 < Xi μ α := by
   unfold Xi
   have h1 := Real.sinh_pos_iff.mpr hμ
   have h2 : 1 < Real.cosh μ := by
-    have := Real.one_lt_cosh.mpr hμ.ne'
-    exact this
+    measurability
   have := Real.cos_le_one α
   exact div_pos h1 (by linarith)
 
@@ -147,7 +146,6 @@ theorem hasDerivAt_kMap {lam : ℝ} (hlam : 0 < lam) (α : ℝ) :
   have hs : Real.sin α ^ 2 + Real.cos α ^ 2 = 1 := Real.sin_sq_add_cos_sq α
   simp only [Xi, Real.sinh_eq, Real.cosh_eq, Real.exp_neg]
   have hpos : 0 < (Real.exp lam - Real.cos α)^2 + Real.sin α ^2 := by
-    have := exp_sub_cos_pos hlam α
     positivity
   have hden : (Real.exp lam + (Real.exp lam)⁻¹) / 2 - Real.cos α ≠ 0 := by
     have : (Real.exp lam + (Real.exp lam)⁻¹) / 2 - Real.cos α =

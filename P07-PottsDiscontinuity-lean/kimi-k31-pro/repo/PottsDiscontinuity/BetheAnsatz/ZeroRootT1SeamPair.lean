@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT1Ordinary
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT1Phase
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT1SeamAmplitude
@@ -35,13 +36,9 @@ theorem perturbedWordTerm_seam_pair {N n : ℕ} {c : ℝ} (hc : 2 < c)
   let u := Fin.last n
   let q := perturbedMomenta p l t
   have hu0 : u ≠ (0 : Fin (n + 1)) := by
-    intro h
-    have hv := congrArg Fin.val h
-    simp [u] at hv
-    omega
+    measurability
   have hσu : σ u ≠ l := by
-    intro h
-    exact hu0 (σ.injective (h.trans hsig.symm))
+    measurability
   have hpσu : p (σ u) ≠ 0 := by
     intro h
     apply hσu

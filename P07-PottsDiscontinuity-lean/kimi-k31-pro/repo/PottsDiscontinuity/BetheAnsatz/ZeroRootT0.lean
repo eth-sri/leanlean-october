@@ -268,20 +268,11 @@ theorem constantWordSumPerturbed_eq {N n : ℕ} {c : ℝ} (hc : 2 < c)
       have hfinal : P *
           (M c (z t) * (∑ σ, b σ) + L c (z t) * (∑ σ, b σ * e σ)) =
           P * ∑ σ, b σ * (M c (z t) + L c (z t) * e σ) := by
-        calc
-          _ = (P * M c (z t)) * (∑ σ, b σ) +
-              (P * L c (z t)) * (∑ σ, b σ * e σ) := by ring
-          _ = (∑ σ, (P * M c (z t)) * b σ) +
-              (∑ σ, (P * L c (z t)) * (b σ * e σ)) := by
-            rw [Finset.mul_sum, Finset.mul_sum]
-          _ = ∑ σ, ((P * M c (z t)) * b σ +
-              (P * L c (z t)) * (b σ * e σ)) := by
-            rw [← Finset.sum_add_distrib]
-          _ = ∑ σ, P * (b σ * (M c (z t) + L c (z t) * e σ)) := by
-            apply Finset.sum_congr rfl
-            intro σ _
-            ring
-          _ = _ := by rw [Finset.mul_sum]
+        rw [Finset.mul_sum, Finset.mul_sum, ← Finset.sum_add_distrib,
+          Finset.mul_sum, Finset.mul_sum]
+        apply Finset.sum_congr rfl
+        intro σ _
+        ring
       simpa only [b, e] using hfinal
 
 end PottsDiscontinuity.BetheAnsatz

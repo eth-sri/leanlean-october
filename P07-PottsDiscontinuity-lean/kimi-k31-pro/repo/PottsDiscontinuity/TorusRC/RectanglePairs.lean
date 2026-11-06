@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusRC.CrossingContracts
 public import PottsDiscontinuity.TorusRC.MeasureFacts
 
@@ -125,7 +126,7 @@ theorem point_pair_of_h319 (q : Set.Ici (1 : ℝ)) (hh319 : h319 q) :
   have hdiv : c / (16 * (n : ℝ) ^ 2) ≤ c / ((3 * (n : ℝ) + 1) ^ 2) :=
     div_le_div_of_nonneg_left hc.le (by positivity) hsq
   have heq : (c * 9 / 16) / (9 * (n : ℝ) ^ 2) = c / (16 * (n : ℝ) ^ 2) := by
-    field_simp
+    ring
   rw [heq]
   exact hdiv.trans hij
 

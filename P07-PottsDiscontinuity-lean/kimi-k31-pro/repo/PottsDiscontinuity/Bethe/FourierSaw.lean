@@ -40,13 +40,9 @@ theorem integral_id_mul_sin {m : ℕ} (hm : m ≠ 0) :
   have h1 : Real.cos (m * π) = (-1) ^ m := by
     exact Real.cos_nat_mul_pi m
   have h2 : Real.cos (m * -π) = (-1) ^ m := by
-    rw [mul_neg, Real.cos_neg, ← h1]
+    simp_all
   have h3 : ∫ x in (-π)..π, (1 : ℝ) * -(Real.cos (m * x) / m) = 0 := by
-    have : ∀ x : ℝ, (1 : ℝ) * -(Real.cos (m * x) / m) = -(m : ℝ)⁻¹ * Real.cos (m * x) := fun x => by
-      field_simp
-    simp_rw [this]
-    rw [intervalIntegral.integral_const_mul, integral_cos_nat_mul hm]
-    simp
+    simp_all
   rw [h3]
   rw [h1, h2]
   field_simp

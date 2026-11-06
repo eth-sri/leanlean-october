@@ -57,15 +57,7 @@ lemma card_latticeBox (c : LatticeVertex) (r : ℕ) :
   have hy : (c.2 + (r : ℤ) + 1 - (c.2 - (r : ℤ))).toNat = 2 * r + 1 := by omega
   rw [hx, hy, pow_two]
 
-/-- All vertices of a finite box, regardless of whether they meet an open edge. -/
-abbrev BoxVertex (c : LatticeVertex) (r : ℕ) := {v : LatticeVertex // v ∈ latticeBox c r}
 
-/-- The induced square-lattice graph on the full box carrier. -/
-def boxGraph (c : LatticeVertex) (r : ℕ) : SimpleGraph (BoxVertex c r) :=
-  squareLattice.induce (latticeBox c r : Set LatticeVertex)
 
-instance (c : LatticeVertex) (r : ℕ) : DecidableRel (boxGraph c r).Adj := by
-  unfold boxGraph
-  infer_instance
 
 end PottsDiscontinuity.TorusTopology.Planar

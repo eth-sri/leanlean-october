@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Torus.RibbonEdges
 
 /-!
@@ -28,13 +29,6 @@ def toggleEdge (A : RCConfig N M) (v : Fin N × Fin M) : RCConfig N M :=
 theorem toggleEdge_away (A : RCConfig N M) {v w : Fin N × Fin M} (h : w ≠ v) :
     toggleEdge A v w = A w := Function.update_of_ne h _ _
 
-@[simp] theorem toggleEdge_toggleEdge (A : RCConfig N M) (v : Fin N × Fin M) :
-    toggleEdge (toggleEdge A v) v = A := by
-  funext w
-  by_cases hw : w = v
-  · subst w
-    simp only [toggleEdge_at, Bool.not_not]
-  · rw [toggleEdge_away _ hw, toggleEdge_away _ hw]
 
 /-- The transposition of the two distinct slots of one indexed ribbon. -/
 def ribbonEndSwap (hN : Even N) (hM : Even M) (v : Fin N × Fin M) :
@@ -53,8 +47,7 @@ theorem ribbonEndSwap_end (hN : Even N) (hM : Even M)
       intro he
       exact hw (congrArg Prod.fst ((ribbonEndEquiv hN hM).injective he))
     have h₁ : ribbonEndEquiv hN hM (w, b) ≠ ribbonEndEquiv hN hM (v, true) := by
-      intro he
-      exact hw (congrArg Prod.fst ((ribbonEndEquiv hN hM).injective he))
+      simp_all
     simp only [ribbonEndSwap, Equiv.swap_apply_of_ne_of_ne h₀ h₁, hw, ite_false]
 
 theorem ribbonEdgePairing_toggle (hN : Even N) (hM : Even M)

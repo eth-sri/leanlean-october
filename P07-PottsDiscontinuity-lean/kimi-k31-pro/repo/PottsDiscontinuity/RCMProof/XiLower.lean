@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.RCMProof.BetheAssembly
 public import PottsDiscontinuity.RCMProof.Contracts
 public import PottsDiscontinuity.RCMProof.ExactOneWitness
@@ -87,12 +88,12 @@ private theorem lowerLoopFactor_ge_qsq_inv {N M : ℕ} (hN : Even N) (hM : Even 
   unfold lowerLoopFactor
   rw [hcount]
   have hsq' : Real.rpow (2 / Real.sqrt q.val) ((2 : ℕ) : ℝ) = 4 / q.val := by
-    simpa using hsq
+    assumption
   rw [hsq']
   have hmul := mul_le_mul_of_nonneg_left hpow' (show 0 ≤ 4 / q.val by positivity)
   calc
     4 / q.val ^ 2 = (4 / q.val) * (1 / q.val) := by
-      field_simp
+      ring
     _ ≤ (4 / q.val) * Real.rpow q.val
           (-(Torus.rcNetIndicator hN hM A : ℝ)) := hmul
     _ = (4 / q.val) * Real.rpow q.val
@@ -154,7 +155,7 @@ theorem exactOneProbability_le_qsq_mul_sector_ratio
     apply Finset.sum_le_sum
     intro A hA
     have hU : rcVerticalWinding hN hM ⟨0, hMp⟩ A = 1 := by
-      simpa [E] using hA
+      measurability
     have hf := lowerLoopFactor_ge_qsq_inv hN hM q hq hNp hMp A hU
     have hw : 0 ≤ w A := (TorusRC.torusRCWeight_pos hN hM q A).le
     dsimp [w, f]
@@ -162,7 +163,7 @@ theorem exactOneProbability_le_qsq_mul_sector_ratio
     have hcoef' : 1 ≤ (q.val ^ 2 / 4) * lowerLoopFactor hN hM q hNp hMp A := by
       calc
         1 = (q.val ^ 2 / 4) * (4 / q.val ^ 2) := by
-          field_simp
+          field
         _ ≤ (q.val ^ 2 / 4) * lowerLoopFactor hN hM q hNp hMp A :=
           mul_le_mul_of_nonneg_left hf hcoef.le
     calc
@@ -438,9 +439,7 @@ theorem xi_inverse_ge_critical_rate
       have := hwidthLarge j
       omega)).ne' (SixVertex.Lambda_pos hc (by omega)).ne']
   have hgap : Filter.Tendsto gapSeq Filter.atTop (nhds (-R)) := by
-    convert hlogRatio using 1
-    funext j
-    exact hgapEq j
+    measurability
   have hgapEventually (ε : ℝ) (hε : 0 < ε) :
       ∀ᶠ j : ℕ in Filter.atTop, gapSeq j < -R + ε := by
     exact hgap.eventually (Iio_mem_nhds (by linarith))
@@ -519,7 +518,7 @@ theorem xi_inverse_ge_critical_rate
   change ((-TorusRC.inverseCorrelationLength q : ℝ) : EReal) ≤
     Filter.liminf outerRate8 Filter.atTop at hW21'
   have hW21'' : (-(ξinv : ℝ) : EReal) ≤ Filter.liminf outerRate8 Filter.atTop := by
-    simpa [hxiCanonical] using hW21'
+    simp_all
   have hxi : ξinv ≥ R := by
     by_contra hnot
     have hε : 0 < (R - ξinv) / 2 := by linarith

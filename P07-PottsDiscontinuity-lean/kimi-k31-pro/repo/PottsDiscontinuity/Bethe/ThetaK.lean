@@ -113,10 +113,10 @@ theorem exp_neg_I_theta_kMap {lam Δ : ℝ} (hlam : 0 < lam) (hΔ : Real.cosh la
   rw [e1, e2, e3, hd, sub_neg_eq_add, sub_neg_eq_add, e4, e5]
   set E : ℂ := (Real.exp lam : ℂ) with hEdef
   have hEne : E ≠ 0 := by
-    rw [hEdef]; exact_mod_cast (Real.exp_pos lam).ne'
+    simp_all
   have hE2c : E ^ 2 - 1 ≠ 0 := by
     have h : E ^ 2 - 1 = (((Real.exp lam ^ 2 - 1 : ℝ)) : ℂ) := by
-      rw [hEdef]; push_cast; ring
+      simp_all
     rw [h]
     exact Complex.ofReal_ne_zero.mpr (by linarith : Real.exp lam ^ 2 - 1 ≠ 0)
   have hE2r : (((Real.exp lam ^ 2 : ℝ)) : ℂ) = E ^ 2 := by rw [hEdef]; push_cast; ring

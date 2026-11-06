@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Bethe.AsymptoticBoundaryLimit
 public import PottsDiscontinuity.Bethe.AsymptoticDiscreteExpansion
 public import PottsDiscontinuity.Bethe.AsymptoticLimitEquation
@@ -122,8 +123,7 @@ theorem offset_uniform_limit_identification {Δ : ℝ} (hΔ : Δ < -1)
     exact (show |d2Theta Δ (a i) y| ≤ M₀ by simpa only [Real.norm_eq_abs] using hM₀ (a i, y) ⟨hamem i, hy⟩).trans
       (le_max_left _ _)
   have hfBound : ∀ y ∈ Icc (-Real.pi) Real.pi, |f y| ≤ C := by
-    intro y hy
-    exact (show |f y| ≤ C₀ by simpa only [Real.norm_eq_abs] using hC₀ y hy).trans (le_max_left _ _)
+    measurability
   have hprod := tendstoUniformlyOn_mul_of_bounds hK₂ hF
     (show 0 ≤ M by dsimp [M]; linarith [le_max_right M₀ 1])
     (show 0 ≤ C by dsimp [C]; linarith [le_max_right C₀ 1]) hkernelBound hfBound

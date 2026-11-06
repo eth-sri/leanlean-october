@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusLoops.LoopTailUnionBound
 
 /-!
@@ -35,27 +36,9 @@ theorem rectangleSeamIndices_card_le_add
     ext v
     simp [rectangleSeamIndices, sx, sy]
   have hsx : sx = Finset.univ.image (fun j : Fin M => (0, j)) := by
-    ext v
-    simp only [sx, Finset.mem_filter, Finset.mem_univ, true_and,
-      Finset.mem_image, Finset.mem_univ]
-    constructor
-    · intro hv
-      refine ⟨v.2, ?_⟩
-      exact Prod.ext (Fin.ext hv.symm) rfl
-    · rintro ⟨j, h⟩
-      have hv := congrArg (fun z : Fin N × Fin M => z.1.val) h
-      simpa using hv.symm
+    measurability
   have hsy : sy = Finset.univ.image (fun i : Fin N => (i, 0)) := by
-    ext v
-    simp only [sy, Finset.mem_filter, Finset.mem_univ, true_and,
-      Finset.mem_image, Finset.mem_univ]
-    constructor
-    · intro hv
-      refine ⟨v.1, ?_⟩
-      exact Prod.ext rfl (Fin.ext hv.symm)
-    · rintro ⟨i, h⟩
-      have hv := congrArg (fun z : Fin N × Fin M => z.2.val) h
-      simpa using hv.symm
+    measurability
   have hsx_card : sx.card = M := by
     rw [hsx, Finset.card_image_of_injective _ (by
       intro a b h

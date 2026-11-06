@@ -19,9 +19,6 @@ def DependsOn (E : Set Edge) (A : Set LatticeConfiguration) : Prop :=
 def IsCylinder (A : Set LatticeConfiguration) : Prop :=
   ∃ F : Finset Edge, DependsOn (F : Set Edge) A
 
-theorem DependsOn.mono {E F : Set Edge} {A : Set LatticeConfiguration}
-    (h : DependsOn E A) (hEF : E ⊆ F) : DependsOn F A :=
-  fun ω η hω => h ω η (fun e he => hω e (hEF he))
 
 theorem DependsOn.compl {E : Set Edge} {A : Set LatticeConfiguration}
     (h : DependsOn E A) : DependsOn E Aᶜ := by

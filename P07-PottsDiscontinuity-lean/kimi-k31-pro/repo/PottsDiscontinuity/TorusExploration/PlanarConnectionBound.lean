@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
 public import Mathlib.Topology.Homotopy.Path
@@ -14,7 +15,6 @@ namespace PottsDiscontinuity.TorusExploration
 open FK CorrLength MeasureTheory
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 noncomputable section
-local instance planarConnectionBoundEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 
 lemma rotatedVertexEquiv_sum (v : RotatedVertex) :
     (rotatedVertexEquiv v).1+(rotatedVertexEquiv v).2=v.val.2 := by
@@ -45,7 +45,7 @@ theorem finiteFree_connectivity_sq_le_diagonal (θ : Parameters)
     have hzero : latticeTranslate (-(g u)) (g u) = (0,0) := by
       ext <;> simp [latticeTranslate]
     have hdiff : latticeTranslate (-(g u)) (g v) = x := by
-      ext <;> simp [x,latticeTranslate,sub_eq_add_neg]
+      rfl
     rw [hzero,hdiff] at ht
     exact ht.symm
   rw [heq] at hc

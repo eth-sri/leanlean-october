@@ -21,29 +21,8 @@ theorem parafermionicCoverFiniteFacePivot_boundary_classification {n : ℕ}
     (hij : parafermionicCoverFiniteFaceTopPivot n j ∈
       (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).edgeSet) :
     j = i ∨ parafermionicCoverFiniteFaceTopRank n j <
-      parafermionicCoverFiniteFaceTopRank n i := by
-  have hraw := Set.mem_image_of_mem (Sym2.map Subtype.val) hij
-  rw [parafermionicCoverFiniteFaceBoundaryGraph_actualEdgeSet] at hraw
-  rw [parafermionicCoverFiniteFaceTopPivot_map] at hraw
-  change parafermionicCoverFiniteFaceTopEdge j.1 ∈
-    {parafermionicCoverFiniteFaceBottomEdge i.1,
-     parafermionicCoverFiniteFaceRightEdge i.1,
-     parafermionicCoverFiniteFaceTopEdge i.1,
-     parafermionicCoverFiniteFaceLeftEdge i.1} at hraw
-  simp only [Set.mem_insert_iff, Set.mem_singleton_iff] at hraw
-  rcases hraw with hbottom | hright | htop | hleft
-  · have hheight : j.1.1.2 < i.1.1.2 := by
-      by_contra hnot
-      have hle : i.1.1.2 ≤ j.1.1.2 := by omega
-      exact (parafermionicCoverFiniteFaceBottomEdge_ne_topEdge_of_height_le
-        i.2 j.2 hle) hbottom.symm
-    exact Or.inr (parafermionicCoverFiniteFaceTopRank_strict_height n hheight)
-  · exact False.elim ((parafermionicCoverFiniteFaceRightEdge_ne_topEdge
-      i.2 j.2) hright.symm)
-  · exact Or.inl (Subtype.ext (parafermionicCoverFiniteFaceTopEdge_injective
-      n j.2 i.2 htop))
-  · exact False.elim ((parafermionicCoverFiniteFaceLeftEdge_ne_topEdge
-      i.2 j.2) hleft.symm)
+      parafermionicCoverFiniteFaceTopRank n i :=
+  coverFiniteFacePivot_boundary_classification i j hij
 
 theorem parafermionicCoverFiniteFaceChain_toFinset_unique {n : ℕ}
     (L M : List (ParafermionicCoverFiniteFaceTopIndex n))

@@ -17,12 +17,10 @@ variable {V W : Type*} [Finite V] [Finite W]
   (G : SimpleGraph V) (H : SimpleGraph W) (f : V ↪ W)
   (hGH : G.map f ≤ H)
 
-local instance embeddedUpperInnerEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 local instance embeddedUpperOuterEdgeFintype : Fintype H.edgeSet := Fintype.ofFinite _
-local instance embeddedUpperInnerEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 local instance embeddedUpperOuterEdgeDecidableEq : DecidableEq H.edgeSet := Classical.decEq _
 
-private theorem fkLaw_measure_toReal_eq_expectation
+theorem fkLaw_measure_toReal_eq_expectation
     (q : Parameters) (ξ : BoundaryCondition V)
     (S : Set (Configuration G)) :
     (measure G q ξ S).toReal =

@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.FK.PositiveAssociation
 public import PottsDiscontinuity.SixVertex.InfinityDescent
 public import PottsDiscontinuity.TorusLoops.FiniteEnergy
@@ -71,9 +72,7 @@ private theorem rectangleEndpointMaxX (hN : Even N) (hM : Even M)
         (faceEndpoint hN hM true v.val true).val.1.val = v.val.1.val := by
   let : NeZero N := v.val.1.neZero
   have hfin : v.val.1 ≠ 0 := by
-    intro hz
-    apply v.property.1
-    simpa using congrArg Fin.val hz
+    measurability
   rw [rectangleEndpointXFalse, rectangleEndpointXTrue]
   cases checker v.val <;> simp <;>
     exact Fin.one_le_of_ne_zero hfin
@@ -252,8 +251,7 @@ theorem rectangleRCConfigOfConfiguration_rectangleConfigurationOfRC
       intro hz
       exact hs (Or.inl hz)
     have hy : v.2.val ≠ 0 := by
-      intro hz
-      exact hs (Or.inr hz)
+      simp_all
     let w : RectangleEdgeIndex (N := N) (M := M) := ⟨v, hx, hy⟩
     change rectangleRCConfigOfConfiguration hN hM
       (rectangleConfigurationOfRC hN hM A) w.val = A w.val
@@ -302,15 +300,9 @@ theorem rectangleOpenGraph_eq_diamondOpenGraph_closedOnSeams
     exact rectangleEndpoints_ne hN hM v (Sym2.mk_isDiag_iff.mp hdiag)
   · rintro ⟨⟨v, hv, hp⟩, _⟩
     have hx : v.1.val ≠ 0 := by
-      intro hz
-      have hc := hclosed v (Or.inl hz)
-      rw [hc] at hv
-      contradiction
+      measurability
     have hy : v.2.val ≠ 0 := by
-      intro hz
-      have hc := hclosed v (Or.inr hz)
-      rw [hc] at hv
-      contradiction
+      measurability
     exact ⟨⟨v, hx, hy⟩, hv, hp⟩
 
 theorem rectangleConfiguration_card_eq_openCount
@@ -331,9 +323,7 @@ theorem rectangleConfiguration_card_eq_openCount
       have hinterior : v.1.val ≠ 0 ∧ v.2.val ≠ 0 := by
         by_contra hnot
         have hseam : v.1.val = 0 ∨ v.2.val = 0 := by
-          by_contra hseam
-          exact hnot ⟨by intro hz; exact hseam (Or.inl hz),
-            by intro hz; exact hseam (Or.inr hz)⟩
+          omega
         have hclosedv := hclosed v hseam
         rw [hclosedv] at hv
         contradiction

@@ -128,9 +128,6 @@ theorem rectanglePrimalFlowDivergence_eq_stencil
       intro b hb
       have hmap : rectangleCurlIncidentCandidate v (e b).1 = b.1.1 :=
         congrArg (fun z : rectangleActualIncidentBonds a w h v => z.1.1) (e.left_inv b)
-      have hflow : rectangleExtendedPrimalFlow a w h F
-          (rectangleCurlIncidentCandidate v (e b).1) = F b.1 := by
-        simp [rectangleExtendedPrimalFlow, hmap, b.1.2]
       simp [rectangleFlowSignedCandidate, hmap,
         rectangleExtendedPrimalFlow, b.1.2]
     _ = ∑ i : {i : Fin 4 // p i}, rectangleFlowSignedCandidate a w h F v i.1 :=
@@ -340,9 +337,7 @@ private theorem rectangleFlowExtendedPotential_eq_value
     (z : LatticeVertex) (hz : z ∈ rectangleDualExpanded a w h) :
     rectangleExtendedPotential a w h (rectangleFlowExteriorPotential a w h F) z =
       rectangleFlowPotentialValue a w h F z := by
-  rw [rectangleExtendedPotential_of_mem _ _ _ _ _ hz]
-  rfl
-
+  aesop
 private theorem rectangleFlowPotentialLeftBoundary
     (a : LatticeVertex) (w h : ℕ) (F : RectangleDivergenceFreeFlow a w h)
     (m : ℕ) (hm : m ≤ h) :

@@ -13,8 +13,6 @@ open Torus
 
 variable {N M : ℕ}
 
-noncomputable local instance splitGraphFintype (hN : Even N) (hM : Even M) :
-    Fintype (fullDiamondGraph hN hM).edgeSet := Fintype.ofFinite _
 
 noncomputable local instance splitGraphDecidableEq (hN : Even N) (hM : Even M) :
     DecidableEq (fullDiamondGraph hN hM).edgeSet := Classical.decEq _
@@ -24,13 +22,7 @@ noncomputable section
 open scoped Classical in
 private theorem map_pair_right_apply {α β : Type*} (p : PMF α) (b : β) (x : α × β) :
     p.map (fun a => (a, b)) x = if x.2 = b then p x.1 else 0 := by
-  classical
-  rcases x with ⟨x, y⟩
-  by_cases hy : y = b
-  · subst b
-    simp only [PMF.map_apply, Prod.mk.injEq, and_true, ite_true, tsum_ite_eq']
-  · simp only [PMF.map_apply, Prod.mk.injEq, hy, and_false, ite_false, tsum_zero]
-
+  aesop
 /-- The torus law disintegrates jointly into the actual exterior marginal and
 the exact conditional FK fiber law, retaining the exterior as a coordinate. -/
 theorem torusRCPMF_map_split_eq_bind_fiber (hN : Even N) (hM : Even M)

@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import Mathlib.MeasureTheory.Measure.MeasuredSets
 public import Mathlib.MeasureTheory.MeasurableSpace.Prod
 public import PottsDiscontinuity.PottsThm.ColorNoiseMixing
@@ -35,8 +36,7 @@ theorem measurableRectangles_isSetSemiring {X Y : Type*} [MeasurableSpace X]
     have hmemR₁ : R₁ ∈ K := Finset.mem_insert_self _ _
     have hmemR₂ : R₂ ∈ K := Finset.mem_insert_of_mem (Finset.mem_singleton_self _)
     have memK_iff (T : Set (X × Y)) : T ∈ K ↔ T = R₁ ∨ T = R₂ := by
-      change T ∈ insert R₁ {R₂} ↔ _
-      rw [Finset.mem_insert, Finset.mem_singleton]
+      measurability
     have hK : (K : Set (Set (X × Y))) ⊆
         measurableRectangles (X := X) (Y := Y) := by
       intro T hT
@@ -128,8 +128,7 @@ private theorem prodMeasure_real_rectangle {X Y : Type*} [MeasurableSpace X]
     [MeasurableSpace Y] (μ : Measure X) (ν : Measure Y)
     [IsFiniteMeasure μ] [IsFiniteMeasure ν] {A : Set X} {B : Set Y} :
     (μ.prod ν).real (A ×ˢ B) = μ.real A * ν.real B := by
-  simp only [Measure.real_def, Measure.prod_prod, ENNReal.toReal_mul]
-
+  measurability
 /-- The product of two translation mixing systems has no nontrivial invariant
 events. The proof uses rectangles as a generating set ring, so it does not
 require either factor to have a finite dimensional state space. -/
@@ -249,9 +248,7 @@ theorem mixingProduct_invariant_event {Γ X Y : Type*} [Infinite Γ]
             ((V : Set (X × Y)) ∩ (Q a) ⁻¹' (A ×ˢ B))) := by
         intro U V hne
         have hUV : (U : Set (X × Y)) ≠ (V : Set (X × Y)) := by
-          intro heq
-          apply hne
-          exact Subtype.ext heq
+          simp_all
         exact (P.disjoint U.property V.property hUV).mono inter_subset_left inter_subset_left
       have hsumSubtype :
           ρ.real (E' ∩ (Q a) ⁻¹' (A ×ˢ B)) =
@@ -281,7 +278,7 @@ theorem mixingProduct_invariant_event {Γ X Y : Type*} [Infinite Γ]
     have hconst (a : Γ) : ρ.real (E ∩ (Q a) ⁻¹' (A ×ˢ B)) =
         ρ.real (E ∩ (A ×ˢ B)) := by
       have hpre : (Q a) ⁻¹' (E ∩ (A ×ˢ B)) = E ∩ (Q a) ⁻¹' (A ×ˢ B) := by
-        rw [Set.preimage_inter, hEinv a]
+        measurability
       have hm : ρ.real ((Q a) ⁻¹' (E ∩ (A ×ˢ B))) = ρ.real (E ∩ (A ×ˢ B)) := by
         simp only [Measure.real_def]
         rw [← Measure.map_apply (hprodPres a).measurable (hE.inter htargetMeas),
@@ -451,9 +448,7 @@ theorem mixingProduct_invariant_event {Γ X Y : Type*} [Infinite Γ]
             Disjoint (E ∩ (U : Set (X × Y))) (E ∩ (V : Set (X × Y)))) := by
           intro U V hne
           have hUV : (U : Set (X × Y)) ≠ (V : Set (X × Y)) := by
-            intro heq
-            apply hne
-            exact Subtype.ext heq
+            simp_all
           exact (P₀.disjoint U.property V.property hUV).mono
             inter_subset_right inter_subset_right
         have hsumSubtype : ρ.real (E ∩ E₀) =

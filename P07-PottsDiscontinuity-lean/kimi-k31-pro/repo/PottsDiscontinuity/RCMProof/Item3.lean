@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import Mathlib.Analysis.SpecialFunctions.Complex.Circle
 public import Mathlib.Topology.Homotopy.Lifting
 public import Mathlib.Topology.Homotopy.Path
@@ -51,9 +52,7 @@ theorem rcItem3ForEveryFreeLimit_proved
     qI hh319 hq μ hμFK ξinv hRate
   have hSsame : Slo = Shi := tendsto_nhds_unique hSlo hShi
   have hxi : ξinv = Real.arcosh (Real.sqrt q / 2) + 2 * Slo := by
-    apply le_antisymm
-    · simpa [hSsame] using hUpper
-    · exact hLower
+    linarith
   obtain ⟨hlam0, hcosh0⟩ := arcosh_pos_of_gt4 q hq
   have hcoshArc : Real.cosh (Real.arcosh (Real.sqrt q / 2)) = Real.sqrt q / 2 := by
     apply Real.cosh_arcosh
@@ -90,9 +89,7 @@ theorem rcItem3ForEveryFreeLimit_proved
     have hnreal : (n : ℝ) ≠ 0 := by exact_mod_cast hn.ne'
     field_simp [hnreal]
   have hxiLam : ξinv = lam + 2 * Slo := by
-    calc
-      ξinv = Real.arcosh (Real.sqrt q / 2) + 2 * Slo := hxi
-      _ = lam + 2 * Slo := by rw [hlamEq]
+    simp_all
   refine ⟨Slo, hsum, ?_⟩
   simpa [hxiLam] using htarget
 

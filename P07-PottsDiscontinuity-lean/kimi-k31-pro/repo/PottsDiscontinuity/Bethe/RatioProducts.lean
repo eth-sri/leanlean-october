@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.BetheAnsatz.Scattering
 public import PottsDiscontinuity.Bethe.DiscreteCore
 
@@ -60,7 +61,7 @@ theorem ratio_prod_eq_prod_norm {ι : Type*} [DecidableEq ι]
     (hfix : ∀ i ∈ s, g i = i → f i = (‖f i‖ : ℂ)) :
     (∏ i ∈ s, f i) = ((∏ i ∈ s, ‖f i‖ : ℝ) : ℂ) := by
   have hnorm (i : ι) (hi : i ∈ s) : (‖f i‖ : ℂ) ≠ 0 := by
-    exact_mod_cast (norm_ne_zero_iff.mpr (hne i hi))
+    simp_all
   have hprod : ∏ i ∈ s, f i / (‖f i‖ : ℂ) = 1 := by
     apply Finset.prod_involution (fun i _ => g i)
     · intro i hi

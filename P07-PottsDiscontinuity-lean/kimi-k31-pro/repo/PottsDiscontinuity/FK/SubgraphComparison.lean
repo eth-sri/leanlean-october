@@ -65,7 +65,6 @@ theorem openGraph_subgraphConfigurationEmbedding (A : Configuration G) :
   rfl
 
 variable [Finite V]
-local instance subgraphComparisonSmallEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 local instance subgraphComparisonLargeEdgeFintype : Fintype H.edgeSet := Fintype.ofFinite _
 local instance subgraphComparisonLargeEdgeDecidableEq : DecidableEq H.edgeSet := Classical.decEq _
 
@@ -221,12 +220,6 @@ theorem embeddedConfigurationEmbedding_eq_map (A : Configuration G) :
     Equiv.symm_symm, mem_subgraphConfigurationRestriction]
   rfl
 
-@[simp] theorem embeddedConfigurationRestriction_embedding (A : Configuration G) :
-    embeddedConfigurationRestriction G H f hGH (embeddedConfigurationEmbedding G H f hGH A) = A := by
-  change (isolatedExtensionConfigurationEquiv G f).symm
-    (subgraphConfigurationRestriction hGH
-      (subgraphConfigurationEmbedding hGH (isolatedExtensionConfigurationEquiv G f A))) = A
-  rw [subgraphConfigurationRestriction_embedding, Equiv.symm_apply_apply]
 
 /-- Reading original edges and extending by closed edges is contained in the
 actual full configuration, including when the two vertex carriers differ. -/
@@ -242,8 +235,6 @@ theorem embeddedConfigurationRestriction_monotone : Monotone (embeddedConfigurat
     (subgraphConfigurationRestriction_monotone hGH)
 
 variable [Finite V] [Finite W]
-local instance subgraphComparisonEmbeddedSmallEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
-local instance subgraphComparisonEmbeddedMappedEdgeFintype : Fintype (G.map f).edgeSet := Fintype.ofFinite _
 local instance subgraphComparisonEmbeddedLargeEdgeFintype : Fintype H.edgeSet := Fintype.ofFinite _
 
 /-- The genuine larger free FK law dominates the smaller free law on every

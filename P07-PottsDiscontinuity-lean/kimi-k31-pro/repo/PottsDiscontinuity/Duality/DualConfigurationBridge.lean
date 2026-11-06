@@ -47,9 +47,7 @@ lemma rectangleDualEdgeToSquareEdge_carrier (a : LatticeVertex) (w h : ℕ)
     (e : RectangleDualEdgeCarrier a w h) :
     rectangleDualEdgeToSquareEdge a w h (rectangleDualGraphEdgeEquiv a w h e) =
       latticeBondEdge e.crossingBond := by
-  apply Subtype.ext
   rfl
-
 /-- Each sampled dual edge has the complement of its original crossing primal state. -/
 theorem dual_closedRectangleConfiguration_at (a : LatticeVertex) (w h : ℕ)
     (A : Configuration (rectangleGraph a w h)) (g : (rectangleDualGraph a w h).edgeSet) :

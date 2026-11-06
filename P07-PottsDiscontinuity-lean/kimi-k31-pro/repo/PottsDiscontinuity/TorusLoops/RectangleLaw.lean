@@ -1,6 +1,8 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusLoops.RectangleFK
+public import PottsDiscontinuity.FK.EmbeddedBoundaryUpper
 
 /-!
 # The seam-closed torus fiber and the free rectangle FK law
@@ -28,8 +30,6 @@ variable {N M : ℕ}
 local instance rectangleLawEdgeFintype (hN : Even N) (hM : Even M) :
     Fintype (rectangleBaseGraph hN hM).edgeSet := Fintype.ofFinite _
 
-local instance rectangleLawEdgeDecidableEq (hN : Even N) (hM : Even M) :
-    DecidableEq (rectangleBaseGraph hN hM).edgeSet := Classical.decEq _
 
 /-- A torus configuration is seam-closed when every deleted indexed edge is
 closed. -/
@@ -74,6 +74,19 @@ noncomputable def rectangleFKEventProbability (hN : Even N) (hM : Even M)
     FK.partitionFunction (rectangleBaseGraph hN hM) (rectangleFKParameters q)
       (BoundaryCondition.free ∅)
 
+theorem rectangleFKEventProbability_eq_measure
+    (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ))
+    (E : Set (Configuration (rectangleBaseGraph hN hM))) :
+    rectangleFKEventProbability hN hM q E =
+      (measure (rectangleBaseGraph hN hM) (rectangleFKParameters q)
+        (BoundaryCondition.free ∅) E).toReal := by
+  rw [measure_toReal_eq_indicator_sum]
+  unfold rectangleFKEventProbability rectangleFKEventWeight
+  rw [Finset.sum_div]
+  apply Finset.sum_congr rfl
+  intro C hC
+  by_cases h : C ∈ E <;> simp [Set.indicator, h, configurationProbability, mul_comm]
+
 /-- Unnormalized torus weight of the rectangle-event lift on the closed seam
 fiber. -/
 noncomputable def rectangleTorusClosedLiftWeight (hN : Even N) (hM : Even M)
@@ -107,8 +120,7 @@ theorem rectangleTorusClosedLiftWeight_eq
   · change (if rectangleConfigurationOfRC hN hM A.val ∈ E then
         torusRCWeight hN hM q A.val else 0) = _
     have hAE : rectangleConfigurationOfRC hN hM A.val ∈ E := by
-      rw [hrec]
-      exact hE
+      simp_all
     have hw := torusRCWeight_eq_seamFactor_mul_rectangleFKWeight
       hN hM q A.val hclosed
     rw [hrec] at hw
@@ -116,7 +128,7 @@ theorem rectangleTorusClosedLiftWeight_eq
   · change (if rectangleConfigurationOfRC hN hM A.val ∈ E then
         torusRCWeight hN hM q A.val else 0) = _
     have hAE : rectangleConfigurationOfRC hN hM A.val ∉ E := by
-      simpa [hrec] using hE
+      simp_all
     simp [hAE, hE]
 
 /-- Every torus event probability is its unnormalized weight sum divided by

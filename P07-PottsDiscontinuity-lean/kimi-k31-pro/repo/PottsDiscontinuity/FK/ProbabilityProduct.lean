@@ -29,13 +29,7 @@ def productPMF (p : PMF α) (q : PMF β) : PMF (α × β) :=
 open scoped Classical in
 lemma map_mk_apply (q : PMF β) (a : α) (x : α × β) :
     q.map (Prod.mk a) x = if x.1 = a then q x.2 else 0 := by
-  classical
-  rcases x with ⟨x, y⟩
-  by_cases hx : x = a
-  · subst a
-    simp only [PMF.map_apply, Prod.mk.injEq, true_and, ite_true, tsum_ite_eq']
-  · simp only [PMF.map_apply, Prod.mk.injEq, hx, false_and, ite_false, tsum_zero]
-
+  aesop
 lemma productPMF_apply (p : PMF α) (q : PMF β) (x : α × β) :
     productPMF p q x = p x.1 * q x.2 := by
   classical

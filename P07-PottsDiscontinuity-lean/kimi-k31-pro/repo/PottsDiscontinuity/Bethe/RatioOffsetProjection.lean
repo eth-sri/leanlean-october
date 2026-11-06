@@ -42,9 +42,7 @@ theorem ratio_rootIndex_after_last {n : ℕ} (hn : 0 < n) (q : Fin n → ℝ)
 theorem ratio_rootIndex_cast {n m : ℕ} (h : n = m) (hn : 0 < n) (hm : 0 < m)
     (q : Fin m → ℝ) (x : ℝ) :
     Fin.cast h (ratioRootIndex hn (fun j => q (Fin.cast h j)) x) = ratioRootIndex hm q x := by
-  subst m
-  rfl
-
+  aesop
 theorem ratio_root_mesh_cast {n m : ℕ} (h : n = m) (hn : 0 < n) (hm : 0 < m)
     (q : Fin m → ℝ) {d : ℝ}
     (hmesh : ∀ j : Fin (m + 1),
@@ -52,9 +50,7 @@ theorem ratio_root_mesh_cast {n m : ℕ} (h : n = m) (hn : 0 < n) (hm : 0 < m)
     ∀ j : Fin (n + 1),
       rootPartitionPoint n (fun i => q (Fin.cast h i)) hn j.succ -
         rootPartitionPoint n (fun i => q (Fin.cast h i)) hn j.castSucc ≤ d := by
-  subst m
-  exact hmesh
-
+  aesop
 /-- The finite source offset function is precisely the displacement of the
 canonical predecessor, including both boundary half-cells. -/
 theorem ratio_offsetFunction_eq_predecessor {N r : ℕ} (h4 : 4 ∣ N) (hr : r ≤ N / 2)

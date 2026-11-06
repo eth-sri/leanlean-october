@@ -91,7 +91,6 @@ section Weights
 variable {V : Type*} [Finite V] {G : SimpleGraph V}
 
 noncomputable local instance wcEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
-noncomputable local instance wcEdgeDecEq : DecidableEq G.edgeSet := Classical.decEq _
 
 /-- Hypothesis: `η` is obtained from `ξ` by additionally wiring the classes of `b₀` and `t₀`. -/
 def IsWireStep (ξ η : FK.BoundaryCondition V) (b₀ t₀ : V) : Prop :=

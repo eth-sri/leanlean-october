@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.CorrLength.ConnectionEvents
 public import PottsDiscontinuity.FK.Events
 
@@ -136,10 +137,8 @@ private theorem eventually_edge_lift_origin_boxGraph (e : squareLattice.edgeSet)
         exact hy
       let u : BoxVertex (0, 0) n := ⟨x, hx'⟩
       let v : BoxVertex (0, 0) n := ⟨y, hy'⟩
-      have hAdj : squareLattice.Adj x y := squareLattice.mem_edgeSet.mp he
       have hboxAdj : (boxGraph (0, 0) n).Adj u v := by
-        rw [boxGraph_adj_iff]
-        exact hAdj
+        assumption
       have hboxEdge : s(u, v) ∈ (boxGraph (0, 0) n).edgeSet :=
         (boxGraph (0, 0) n).mem_edgeSet.mpr hboxAdj
       refine ⟨⟨s(u, v), hboxEdge⟩, ?_⟩
@@ -203,8 +202,7 @@ theorem freeBoxLimit_connection_positive (θ : Parameters) (u v : LatticeVertex)
       LatticeConfiguration).toMeasure).real (connectionEvent u v) > 0 := by
   obtain ⟨F, hF⟩ := exists_finite_connection_witness u v
   have hsubset : LatticeConfiguration.allOpen F ⊆ connectionEvent u v := by
-    intro ω hω
-    exact ⟨F, hF, hω⟩
+    tauto
   let ν : ProbabilityMeasure LatticeConfiguration :=
     Classical.choose (freeBoxLimit_existsUnique θ)
   have hbox := freeBoxLimit_allOpen_pos θ F

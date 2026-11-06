@@ -18,10 +18,6 @@ open Torus TorusRC FK FK.FiniteProbability MeasureTheory
 variable {N M : ℕ}
 noncomputable section
 open scoped Classical
-local instance seamLawFullEdgeFintype (hN : Even N) (hM : Even M) :
-    Fintype (fullDiamondGraph hN hM).edgeSet := Fintype.ofFinite _
-local instance seamLawCylinderEdgeFintype (hN : Even N) (hM : Even M) :
-    Fintype (fullCylinderGraph hN hM).edgeSet := Fintype.ofFinite _
 local instance seamLawFullEdgeDecidableEq (hN : Even N) (hM : Even M) :
     DecidableEq (fullDiamondGraph hN hM).edgeSet := Classical.decEq _
 attribute [local instance] configurationMeasurableSpace

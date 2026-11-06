@@ -15,11 +15,9 @@ private theorem prod_Ioi_castSucc_last {M : Type*} [CommMonoid M] {k : ℕ}
     (f : Fin (k + 1) → M) (a : Fin k) :
     (∏ b ∈ Ioi a.castSucc, f b) = (∏ b ∈ Ioi a, f b.castSucc) * f (Fin.last k) := by
   have h1 : Ioi a.castSucc = univ.filter (fun b : Fin (k + 1) => a.castSucc < b) := by
-    ext b
-    simp
+    measurability
   have h2 : Ioi a = univ.filter (fun b : Fin k => a < b) := by
-    ext b
-    simp
+    measurability
   rw [h1, h2, prod_filter, prod_filter, Fin.prod_univ_castSucc]
   simp only [Fin.lt_def, Fin.val_castSucc, Fin.val_last, a.isLt, ↓reduceIte]
 
@@ -36,9 +34,7 @@ private theorem pairProduct_last {M : Type*} [CommMonoid M] {k : ℕ}
       (∏ a : Fin k, ∏ b ∈ Ioi a, f a.castSucc b.castSucc) *
         (∏ a : Fin k, f a.castSucc (Fin.last k)) := by
   have he : Ioi (Fin.last k) = ∅ := by
-    ext b
-    simp only [mem_Ioi, notMem_empty, iff_false]
-    exact not_lt_of_ge (Fin.le_last b)
+    measurability
   rw [Fin.prod_univ_castSucc, he, prod_empty, mul_one]
   simp_rw [prod_Ioi_castSucc_last]
   rw [prod_mul_distrib]

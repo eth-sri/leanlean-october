@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.BetheAnsatz.WordRotation
 
 /-!
@@ -75,8 +76,7 @@ theorem zeroRootRegularizedWordTerm_zipper_ordinary {N n : ℕ} {c : ℝ}
   have hbd : b ≠ d := by dsimp [b, d]; exact Fin.castSucc_lt_succ.ne
   have hσb : σ b = l := by simpa [b] using hsig
   have hσd : σ d ≠ l := by
-    intro h
-    exact hbd (σ.injective (h.trans hσb.symm)).symm
+    measurability
   have hpd : p (σ d) ≠ 0 := by
     intro h
     apply hσd
@@ -88,11 +88,11 @@ theorem zeroRootRegularizedWordTerm_zipper_ordinary {N n : ℕ} {c : ℝ}
     apply (σ * Equiv.swap b d).injective
     simp [Equiv.Perm.mul_apply, hσb]
   have hσ'b : (σ * Equiv.swap b d) b = σ d := by
-    simp [Equiv.Perm.mul_apply, b, d]
+    simp_all
   have hw'b : Function.update w b false b = false := by simp
   have hcw' : w d = true := by simpa [d] using hcw
   have hw'c : Function.update w b false d = true := by
-    simp [Function.update_of_ne hbd.symm, hcw']
+    measurability
   let S : Finset (Fin (n + 1)) := ((univ.erase b).erase d)
   have hcommon :
       (∏ k ∈ S, zeroRootLetterWeight c p (σ * Equiv.swap b d)
@@ -101,18 +101,15 @@ theorem zeroRootRegularizedWordTerm_zipper_ordinary {N n : ℕ} {c : ℝ}
     apply Finset.prod_congr rfl
     intro k hk
     have hkb : k ≠ b := by
-      intro he
-      subst k
-      exact (mem_erase.mp (mem_erase.mp hk).2).1 rfl
+      measurability
     have hkd : k ≠ d := (mem_erase.mp hk).1
     have hσk : (σ * Equiv.swap b d) k = σ k := by
-      simp [Equiv.Perm.mul_apply, Equiv.swap_apply_of_ne_of_ne hkb hkd]
+      measurability
     simp [zeroRootLetterWeight, Function.update_of_ne hkb, hσk]
   have hOld : zeroRootRegularizedProduct c p l σ w =
       L c (z (p (σ d))) * ∏ k ∈ S, zeroRootLetterWeight c p σ w k := by
     have hSymm : σ.symm l = b := by
-      apply σ.injective
-      simpa using hσb.symm
+      measurability
     have hletter : zeroRootLetterWeight c p σ w d =
         L c (z (p (σ d))) := by
       simp [zeroRootLetterWeight, hcw']
@@ -136,9 +133,7 @@ theorem zeroRootRegularizedWordTerm_zipper_ordinary {N n : ℕ} {c : ℝ}
         (Function.update w b false) b = M c (z (p (σ d))) := by
       simp [zeroRootLetterWeight, hσ'b]
     have hset : (univ.erase d).erase b = S := by
-      ext k
-      simp only [S, Finset.mem_erase, Finset.mem_univ]
-      constructor <;> rintro ⟨h1, h2, _⟩ <;> exact ⟨h2, h1, trivial⟩
+      measurability
     unfold zeroRootRegularizedProduct
     rw [hRoot']
     calc

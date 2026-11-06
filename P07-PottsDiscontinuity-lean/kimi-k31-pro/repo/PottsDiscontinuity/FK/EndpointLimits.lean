@@ -43,7 +43,6 @@ private theorem endpoint_weight_eq_zero (V : Finset (ℤ × ℤ))
   | true =>
       have hfalse : ω e = false := by cases h : ω e <;> simp_all
       have : Nonempty {f // ω f = false} := ⟨⟨e, hfalse⟩⟩
-      have hn : Nat.card {f // ω f = false} ≠ 0 := Nat.card_pos.ne'
       simp [rcWeight, endpointParameter]
 
 open Classical in

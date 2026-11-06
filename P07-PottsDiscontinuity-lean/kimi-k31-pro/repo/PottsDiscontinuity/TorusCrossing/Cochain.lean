@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusCrossing.Exact
 
 /-!
@@ -31,8 +32,7 @@ theorem cdeg_add (f g : Cell → ZMod 2) (c : Cell) :
   unfold cdeg; ring
 
 theorem cdeg_zero (c : Cell) : cdeg (fun _ => (0 : ZMod 2)) c = 0 := by
-  unfold cdeg; simp
-
+  rfl
 theorem zmod2_two (z : ZMod 2) : z + z = 0 := by fin_cases z <;> decide
 
 /-- The degree of the indicator of a single medial vertex at a primal cell. -/

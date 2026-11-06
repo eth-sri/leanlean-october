@@ -13,8 +13,6 @@ open Torus
 
 variable {N M : ℕ}
 
-noncomputable local instance torusFiberGraphFintype (hN : Even N) (hM : Even M) :
-    Fintype (fullDiamondGraph hN hM).edgeSet := Fintype.ofFinite _
 
 noncomputable local instance torusFiberGraphDecidableEq (hN : Even N) (hM : Even M) :
     DecidableEq (fullDiamondGraph hN hM).edgeSet := Classical.decEq _

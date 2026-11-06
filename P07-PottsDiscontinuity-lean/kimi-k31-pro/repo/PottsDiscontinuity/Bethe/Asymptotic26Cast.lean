@@ -13,16 +13,12 @@ namespace PottsDiscontinuity.Bethe
 
 theorem mem_S_n_cast {n m : ℕ} (h : n = m) {p : Fin m → ℝ} (hp : p ∈ S_n m) :
     (fun j : Fin n => p (Fin.cast h j)) ∈ S_n n := by
-  subst m
-  exact hp
-
+  aesop
 theorem rootStepDensity_cast {N n m : ℕ} (h : n = m) (p : Fin m → ℝ)
     (hp : p ∈ S_n m) (hn : 0 < n) (hm : 0 < m) (hs : 2 * n ≤ N) (ht : 2 * m ≤ N) :
     rootStepDensity N n (fun j => p (Fin.cast h j)) (mem_S_n_cast h hp) hn hs =
       rootStepDensity N m p hp hm ht := by
-  subst m
-  rfl
-
+  aesop
 theorem theorem26_sums_of_pos {ι : Type*} {l : Filter ι} {Δ : ℝ} (hΔ : Δ < -1)
     (r : ℕ) (N n : ι → ℕ) (p : ∀ i, Fin (n i) → ℝ)
     (hp : ∀ i, p i ∈ S_n (n i)) (hn : ∀ i, 0 < n i) (hs : ∀ i, 2 * n i ≤ N i)

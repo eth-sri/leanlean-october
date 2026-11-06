@@ -17,30 +17,7 @@ open Complex Filter MeasureTheory Real Topology Set intervalIntegral
 
 namespace PottsDiscontinuity
 
-private theorem fourier_one_sub_cos_lower_tau {α : ℝ} (hα : α ∈ Icc (-π) π) :
-    2 * α ^ 2 / π ^ 2 ≤ 1 - Real.cos α := by
-  have hx : |α / 2| ≤ π / 2 := by
-    rw [abs_div, abs_of_pos (by norm_num : (0 : ℝ) < 2)]
-    have habs : |α| ≤ π := abs_le.mpr ⟨by linarith [hα.1], hα.2⟩
-    linarith
-  have hj := Real.mul_abs_le_abs_sin hx
-  have hjSq : ((2 / π) * |α / 2|) ^ 2 ≤ |Real.sin (α / 2)| ^ 2 :=
-    (sq_le_sq₀ (by positivity) (abs_nonneg _)).2 hj
-  have habshalf : |α / 2| = |α| / 2 := by
-    rw [abs_div, abs_of_pos (by norm_num : (0 : ℝ) < 2)]
-  rw [habshalf] at hjSq
-  have hsimpl : (2 / π * (|α| / 2)) ^ 2 = α ^ 2 / π ^ 2 := by
-    field_simp [Real.pi_ne_zero]
-    rw [sq_abs]
-  rw [hsimpl, sq_abs] at hjSq
-  have hsin := Real.sin_sq_eq_half_sub (α / 2)
-  rw [show 2 * (α / 2) = α by ring] at hsin
-  calc
-    2 * α ^ 2 / π ^ 2 = 2 * (α ^ 2 / π ^ 2) := by ring
-    _ ≤ 2 * Real.sin (α / 2) ^ 2 := mul_le_mul_of_nonneg_left hjSq (by norm_num)
-    _ = 1 - Real.cos α := by rw [hsin]; ring
-
- noncomputable def fourierPrimeControl (lam : ℝ) : ℝ :=
+noncomputable def fourierPrimeControl (lam : ℝ) : ℝ :=
   (π / (Real.cosh (2 * lam) - 1) + π ^ 2 / 2) / 2
 
 private theorem fourierPPrime_alpha_bound {lam α : ℝ} (hlam : 0 < lam)
@@ -52,7 +29,7 @@ private theorem fourierPPrime_alpha_bound {lam α : ℝ} (hlam : 0 < lam)
     simp [fourierPPrime, hα0]
     dsimp [fourierPrimeControl]
     positivity
-  · have hcosLower := fourier_one_sub_cos_lower_tau hα
+  · have hcosLower := fourier_one_sub_cos_lower hα
     have hαabs : |α| ≤ π := abs_le.mpr ⟨by linarith [hα.1], hα.2⟩
     have hαsq : 0 < α ^ 2 := sq_pos_of_ne_zero hα0
     have hdenLower : 0 < 1 - Real.cos α := by
@@ -114,26 +91,9 @@ private theorem fourierPPrime_alpha_bound {lam α : ℝ} (hlam : 0 < lam)
             Real.sin α / (1 - Real.cos α)| * |α| ≤
         (1 / 2 : ℝ) *
           (|Real.sin α / (Real.cosh (2 * lam) - Real.cos α)| +
-            |Real.sin α / (1 - Real.cos α)|) * |α| :=
-            by
-              have hab :
-                  |Real.sin α / (Real.cosh (2 * lam) - Real.cos α) -
-                    Real.sin α / (1 - Real.cos α)| ≤
-                    |Real.sin α / (Real.cosh (2 * lam) - Real.cos α)| +
-                      |Real.sin α / (1 - Real.cos α)| := abs_sub _ _
-              have hbase := mul_le_mul_of_nonneg_right hab (abs_nonneg α)
-              calc
-                (1 / 2 : ℝ) *
-                    |Real.sin α / (Real.cosh (2 * lam) - Real.cos α) -
-                      Real.sin α / (1 - Real.cos α)| * |α| =
-                    (1 / 2 : ℝ) *
-                      (|Real.sin α / (Real.cosh (2 * lam) - Real.cos α) -
-                        Real.sin α / (1 - Real.cos α)| * |α|) := by ring
-                _ ≤ (1 / 2 : ℝ) *
-                    ((|Real.sin α / (Real.cosh (2 * lam) - Real.cos α)| +
-                      |Real.sin α / (1 - Real.cos α)|) * |α|) :=
-                        mul_le_mul_of_nonneg_left hbase (by norm_num)
-                _ = _ := by ring
+            |Real.sin α / (1 - Real.cos α)|) * |α| := by
+              gcongr
+              exact abs_sub _ _
       _ = (1 / 2 : ℝ) *
             (|Real.sin α| * |α| / (Real.cosh (2 * lam) - Real.cos α) +
               |Real.sin α| * |α| / (1 - Real.cos α)) := by
@@ -159,52 +119,20 @@ noncomputable def tauAbelCorrectionTerm (lam μ α : ℝ) (n : ℕ) : ℝ :=
 
 private theorem summable_tauAbelCorrection {lam μ : ℝ} (hlam : 0 < lam)
     (hμ : 0 < μ) (α : ℝ) : Summable (tauAbelCorrectionTerm lam μ α) := by
-  have hcoeff := Bethe.summable_tauCoeff hlam
   have hr : 0 < Real.exp (-μ) := Real.exp_pos _
-  have hrle : Real.exp (-μ) ≤ 1 := by
-    rw [Real.exp_le_one_iff]
-    linarith
-  apply Summable.of_norm_bounded (g := fun n => |Bethe.tauCoeff lam n| / (2 * π))
-    (hcoeff.abs.div_const (2 * π))
+  have hrle : Real.exp (-μ) ≤ 1 := by rw [Real.exp_le_one_iff]; linarith
+  have hsum := (Bethe.summable_tauCoeff hlam).abs.div_const (2 * π)
+  refine Summable.of_norm_bounded (g := fun n => |Bethe.tauCoeff lam n| / (2 * π)) hsum ?_
   intro n
-  rw [Real.norm_eq_abs, tauAbelCorrectionTerm]
-  have hpow : 0 ≤ Real.exp (-μ) ^ (n + 1) := by positivity
-  have hsin : |Real.sin (((n + 1 : ℕ) : ℝ) * α)| ≤ 1 := Real.abs_sin_le_one _
-  have h2pi : 0 < 2 * π := by positivity
-  have hconst : 0 < (1 / (2 * π) : ℝ) := by positivity
-  have hnorm :
-      |(1 / (2 * π) : ℝ) * Real.exp (-μ) ^ (n + 1) *
-          Bethe.tauCoeff lam n * Real.sin (((n + 1 : ℕ) : ℝ) * α)| =
-        (1 / (2 * π)) * |Real.exp (-μ) ^ (n + 1)| *
-          |Bethe.tauCoeff lam n| * |Real.sin (((n + 1 : ℕ) : ℝ) * α)| := by
-    rw [abs_mul, abs_mul, abs_mul, abs_of_pos hconst]
+  have hpow : |Real.exp (-μ) ^ (n + 1)| ≤ 1 := by
+    rw [abs_of_nonneg (by positivity)]
+    exact pow_le_one₀ hr.le hrle
+  have hsin := Real.abs_sin_le_one (((n + 1 : ℕ) : ℝ) * α)
+  rw [Real.norm_eq_abs, tauAbelCorrectionTerm, abs_mul, abs_mul, abs_mul,
+    abs_of_pos (by positivity : (0 : ℝ) < 1 / (2 * π))]
   calc
-    |(1 / (2 * π) : ℝ) * Real.exp (-μ) ^ (n + 1) *
-        Bethe.tauCoeff lam n * Real.sin (((n + 1 : ℕ) : ℝ) * α)| = _ := hnorm
-    _ ≤ (1 / (2 * π)) * 1 * |Bethe.tauCoeff lam n| * 1 := by
-          have hpowAbs : |Real.exp (-μ) ^ (n + 1)| ≤ 1 := by
-            rw [abs_of_nonneg hpow]
-            exact pow_le_one₀ hr.le hrle
-          calc
-            (1 / (2 * π)) * |Real.exp (-μ) ^ (n + 1)| * |Bethe.tauCoeff lam n| *
-                |Real.sin (((n + 1 : ℕ) : ℝ) * α)| ≤
-              (1 / (2 * π)) * 1 * |Bethe.tauCoeff lam n| *
-                |Real.sin (((n + 1 : ℕ) : ℝ) * α)| := by
-                  calc
-                    (1 / (2 * π)) * |Real.exp (-μ) ^ (n + 1)| * |Bethe.tauCoeff lam n| *
-                        |Real.sin (((n + 1 : ℕ) : ℝ) * α)| =
-                      ((1 / (2 * π)) * |Real.exp (-μ) ^ (n + 1)|) *
-                        (|Bethe.tauCoeff lam n| * |Real.sin (((n + 1 : ℕ) : ℝ) * α)|) := by ring
-                    _ ≤ ((1 / (2 * π)) * 1) *
-                        (|Bethe.tauCoeff lam n| * |Real.sin (((n + 1 : ℕ) : ℝ) * α)|) :=
-                          mul_le_mul_of_nonneg_right
-                            (mul_le_mul_of_nonneg_left hpowAbs (by positivity))
-                            (mul_nonneg (abs_nonneg _) (abs_nonneg _))
-                    _ = _ := by ring
-            _ ≤ (1 / (2 * π)) * 1 * |Bethe.tauCoeff lam n| * 1 := by
-                  exact mul_le_mul_of_nonneg_left hsin (by positivity)
-            _ = _ := by ring
-    _ = |Bethe.tauCoeff lam n| / (2 * π) := by ring
+    _ ≤ (1 / (2 * π)) * 1 * |Bethe.tauCoeff lam n| * 1 := by gcongr
+    _ = _ := by ring
 
 private theorem tauAbel_eq_sawS_add_correction {lam μ α : ℝ} (hlam : 0 < lam)
     (hμ : 0 < μ) :
@@ -269,21 +197,6 @@ private theorem tauAbel_eq_sawS_add_correction {lam μ α : ℝ} (hlam : 0 < lam
     rw [hpow]
     field_simp [hpi, hn]
     ring
-  have hsplit : (fun n : ℕ => tauFourierTerm lam α n * r ^ (n + 1)) =
-      (fun (n : ℕ) => (1 / (2 * π) : ℝ) *
-        (2 * (-1 : ℝ) ^ (n + 1) * r ^ (n + 1) / ((n : ℝ) + 1) *
-          Real.sin (((n + 1 : ℕ) : ℝ) * α)) +
-        tauAbelCorrectionTerm lam μ α n) := by
-    funext n
-    exact hterm n
-  have hsumTau : HasSum (fun n : ℕ => tauFourierTerm lam α n * r ^ (n + 1))
-      (∑' n : ℕ,
-        ((1 / (2 * π) : ℝ) *
-          (2 * (-1 : ℝ) ^ (n + 1) * r ^ (n + 1) / ((n : ℝ) + 1) *
-            Real.sin (((n + 1 : ℕ) : ℝ) * α)) +
-          tauAbelCorrectionTerm lam μ α n)) := by
-    exact HasSum.congr_fun hsumOriginal.hasSum (fun n => hterm n)
-  have hsumEq := hsumTau.tsum_eq
   have hbaseTsum : Bethe.sawS μ α = ∑' n : ℕ,
       2 * (-1 : ℝ) ^ (n + 1) * r ^ (n + 1) / ((n : ℝ) + 1) *
         Real.sin (((n + 1 : ℕ) : ℝ) * α) := by
@@ -291,30 +204,13 @@ private theorem tauAbel_eq_sawS_add_correction {lam μ α : ℝ} (hlam : 0 < lam
   calc
     tauAbel lam μ α = ∑' n : ℕ, tauFourierTerm lam α n * r ^ (n + 1) := by
       simp [tauAbel, r]
-    _ = (1 / (2 * π) : ℝ) *
-          (∑' n : ℕ, 2 * (-1 : ℝ) ^ (n + 1) * r ^ (n + 1) / ((n : ℝ) + 1) *
-            Real.sin (((n + 1 : ℕ) : ℝ) * α)) +
-          ∑' n : ℕ, tauAbelCorrectionTerm lam μ α n := by
-            calc
-              _ = ∑' n : ℕ,
-                    ((1 / (2 * π) : ℝ) *
-                      (2 * (-1 : ℝ) ^ (n + 1) * r ^ (n + 1) / ((n : ℝ) + 1) *
-                        Real.sin (((n + 1 : ℕ) : ℝ) * α)) +
-                      tauAbelCorrectionTerm lam μ α n) := hsumEq
-              _ = (∑' n : ℕ,
-                    (1 / (2 * π) : ℝ) *
-                      (2 * (-1 : ℝ) ^ (n + 1) * r ^ (n + 1) / ((n : ℝ) + 1) *
-                        Real.sin (((n + 1 : ℕ) : ℝ) * α))) +
-                    ∑' n : ℕ, tauAbelCorrectionTerm lam μ α n :=
-                  hbaseScaled.tsum_add hcorr
-              _ = (1 / (2 * π) : ℝ) *
-                    (∑' n : ℕ,
-                      2 * (-1 : ℝ) ^ (n + 1) * r ^ (n + 1) / ((n : ℝ) + 1) *
-                        Real.sin (((n + 1 : ℕ) : ℝ) * α)) +
-                    ∑' n : ℕ, tauAbelCorrectionTerm lam μ α n := by
-                  rw [tsum_mul_left]
+    _ = ∑' n : ℕ, ((1 / (2 * π) : ℝ) *
+          (2 * (-1 : ℝ) ^ (n + 1) * r ^ (n + 1) / ((n : ℝ) + 1) *
+            Real.sin (((n + 1 : ℕ) : ℝ) * α)) + tauAbelCorrectionTerm lam μ α n) :=
+      (HasSum.congr_fun hsumOriginal.hasSum (fun n => hterm n)).tsum_eq
     _ = (1 / (2 * π) : ℝ) * Bethe.sawS μ α +
-          ∑' n : ℕ, tauAbelCorrectionTerm lam μ α n := by rw [hbaseTsum]
+          ∑' n : ℕ, tauAbelCorrectionTerm lam μ α n := by
+      rw [hbaseScaled.tsum_add hcorr, tsum_mul_left, ← hbaseTsum]
 
 private theorem summable_tauCoeff_weighted {lam : ℝ} (hlam : 0 < lam) :
     Summable (fun n : ℕ => ((n : ℝ) + 1) * |Bethe.tauCoeff lam n|) := by
@@ -386,37 +282,9 @@ private theorem tauAbelCorrection_abs_bound {lam μ α : ℝ} (hlam : 0 < lam)
         c * |α| * (((n : ℝ) + 1) * |Bethe.tauCoeff lam n|) := by
     rw [tauAbelCorrectionTerm, abs_mul, abs_mul, abs_mul, abs_of_pos hc]
     calc
-      c * |Real.exp (-μ) ^ (n + 1)| * |Bethe.tauCoeff lam n| *
-          |Real.sin (((n + 1 : ℕ) : ℝ) * α)| ≤
-        c * 1 * |Bethe.tauCoeff lam n| * (((n : ℝ) + 1) * |α|) := by
-            calc
-              _ ≤ c * 1 * |Bethe.tauCoeff lam n| *
-                    |Real.sin (((n + 1 : ℕ) : ℝ) * α)| := by
-                      have hcoeffNonneg : 0 ≤ |Bethe.tauCoeff lam n| := abs_nonneg _
-                      calc
-                        c * |Real.exp (-μ) ^ (n + 1)| * |Bethe.tauCoeff lam n| *
-                            |Real.sin (((n + 1 : ℕ) : ℝ) * α)| =
-                          (c * |Real.exp (-μ) ^ (n + 1)|) *
-                            (|Bethe.tauCoeff lam n| *
-                              |Real.sin (((n + 1 : ℕ) : ℝ) * α)|) := by ring
-                        _ ≤ (c * 1) *
-                            (|Bethe.tauCoeff lam n| *
-                              |Real.sin (((n + 1 : ℕ) : ℝ) * α)|) :=
-                              mul_le_mul_of_nonneg_right
-                                (mul_le_mul_of_nonneg_left (hpow n) (by positivity))
-                                (mul_nonneg hcoeffNonneg (abs_nonneg _))
-                        _ = _ := by ring
-              _ ≤ _ := by
-                    have hcCoeff : 0 ≤ (c * 1) * |Bethe.tauCoeff lam n| :=
-                      mul_nonneg (by positivity) (abs_nonneg _)
-                    calc
-                      (c * 1 * |Bethe.tauCoeff lam n|) *
-                          |Real.sin (((n + 1 : ℕ) : ℝ) * α)| ≤
-                        (c * 1 * |Bethe.tauCoeff lam n|) *
-                          (((n : ℝ) + 1) * |α|) :=
-                            mul_le_mul_of_nonneg_left (hsin n) hcCoeff
-                      _ = _ := by ring
-      _ = c * |α| * (((n : ℝ) + 1) * |Bethe.tauCoeff lam n|) := by ring
+      _ ≤ c * 1 * |Bethe.tauCoeff lam n| * (((n : ℝ) + 1) * |α|) := by
+        gcongr <;> simp_all
+      _ = _ := by ring
   calc
     |∑' n : ℕ, tauAbelCorrectionTerm lam μ α n| ≤
         ∑' n : ℕ, |tauAbelCorrectionTerm lam μ α n| := by
@@ -741,15 +609,7 @@ private theorem tauAbelSeq_tendsto_tauSeries {lam α : ℝ} (hlam : 0 < lam)
             rw [pow_succ]
             ring
       _ = r N * ∑' n : ℕ, tauFourierTerm lam α n * r N ^ n := tsum_mul_left
-  have hmul' : Tendsto (fun N : ℕ =>
-      r N * ∑' n : ℕ, tauFourierTerm lam α n * r N ^ n) atTop
-      (𝓝 (1 * Bethe.tauSeries lam α)) := hmul
-  have hseq : (fun N : ℕ => tauAbelSeq lam α N) =
-      fun N => r N * ∑' n : ℕ, tauFourierTerm lam α n * r N ^ n := by
-    funext N
-    exact hpoint N
-  rw [← hseq] at hmul'
-  simpa using hmul'
+  simpa using hmul.congr' (Filter.Eventually.of_forall fun N => (hpoint N).symm)
 
 /-- A uniform bound for the product of the punctured derivative and the literal `τ` series.
 The estimate is first proved for Abel means and then passed to their pointwise limit; the two
@@ -912,13 +772,9 @@ private theorem fourierPPrime_tauAbel_integral {lam μ : ℝ}
   have hmeas : ∀ n : ℕ,
       AEStronglyMeasurable (F n) (volume.restrict (uIoc (-π) π)) := by
     intro n
-    have hcont : Measurable (fun α : ℝ => tauFourierTerm lam α n) := by
-      unfold tauFourierTerm
-      fun_prop
-    have hF : Measurable (F n) := by
-      dsimp [F]
-      exact (measurable_fourierPPrime lam).mul hcont |>.mul measurable_const
-    exact hF.aestronglyMeasurable
+    dsimp [F]
+    exact ((measurable_fourierPPrime lam).mul (by unfold tauFourierTerm; fun_prop) |>.mul
+      measurable_const).aestronglyMeasurable
   have hbound : ∀ n : ℕ, ∀ᵐ α ∂volume, α ∈ uIoc (-π) π →
       ‖F n α‖ ≤ B n := by
     intro n
@@ -954,25 +810,20 @@ private theorem fourierPPrime_tauAbel_integral {lam μ : ℝ}
     simp [F, r]
     ring
   have hboundInt :
-      IntervalIntegrable (fun α : ℝ => ∑' n : ℕ, B n) volume (-π) π := by
-    have hconst : (fun α : ℝ => ∑' n : ℕ, B n) = fun _ => ∑' n : ℕ, B n := by
-      funext α
-      rfl
-    rw [hconst]
-    exact intervalIntegrable_const
+      IntervalIntegrable (fun α : ℝ => ∑' n : ℕ, B n) volume (-π) π :=
+    intervalIntegrable_const
   have hsum := intervalIntegral.hasSum_integral_of_dominated_convergence
     (μ := volume) (a := -π) (b := π) (F := F)
     (f := fun α => fourierPPrime lam α * tauAbel lam μ α)
     (fun n α => B n) hmeas hbound
     (Filter.Eventually.of_forall fun α _ => hB) hboundInt hlim
-  have hsum' := hsum.tsum_eq
   have hterm : ∀ n : ℕ, ∫ α in (-π)..π, F n α =
       tauCorrectionTerm lam n * Real.exp (-μ) ^ (n + 1) := by
     intro n
     change ∫ α in (-π)..π,
         fourierPPrime lam α * tauFourierTerm lam α n * Real.exp (-μ) ^ (n + 1) = _
     exact tauAbel_integral_term hlam n
-  rw [← hsum']
+  rw [← hsum.tsum_eq]
   exact tsum_congr hterm
 
 noncomputable def tauCorrectionPartial (lam : ℝ) (N : ℕ) : ℝ :=
@@ -1041,12 +892,8 @@ private theorem tauCorrectionAbelSeq_tendsto {lam L : ℝ}
           rw [pow_succ]
           ring
       _ = r N * ∑' n : ℕ, tauCorrectionTerm lam n * r N ^ n := tsum_mul_left
-  have hseq : (fun N : ℕ => tauCorrectionAbelSeq lam N) =
-      fun N => r N * ∑' n : ℕ, tauCorrectionTerm lam n * r N ^ n := by
-    funext N
-    exact hpoint N
   have hmul := hr0.mul habelSeq'
-  rw [← hseq] at hmul
+  rw [← funext hpoint] at hmul
   simpa using hmul
 
 private theorem tauCorrectionAbelSeq_tendsto_value {lam : ℝ} (hlam : 0 < lam) :
@@ -1082,13 +929,9 @@ theorem fourierPPrime_tauSeries_integral {lam : ℝ} (hlam : 0 < lam) :
   have hmeas : ∀ N : ℕ,
       AEStronglyMeasurable (F N) (volume.restrict (uIoc (-π) π)) := by
     intro N
-    have hμ : 0 < 1 / ((N : ℝ) + 1) := by positivity
-    have hcont : Continuous (fun α : ℝ => tauAbel lam (1 / ((N : ℝ) + 1)) α) :=
-      continuous_tauAbel hlam hμ
-    have hF : Measurable (F N) := by
-      dsimp [F, tauAbelSeq]
-      exact (measurable_fourierPPrime lam).mul hcont.measurable
-    exact hF.aestronglyMeasurable
+    dsimp [F, tauAbelSeq]
+    exact ((measurable_fourierPPrime lam).mul
+      (continuous_tauAbel hlam (by positivity)).measurable).aestronglyMeasurable
   have hbound : ∀ N : ℕ, ∀ᵐ α ∂volume, α ∈ uIoc (-π) π →
       ‖F N α‖ ≤ fourierTauProductControl lam := by
     intro N
@@ -1128,19 +971,9 @@ theorem fourierPPrime_tauSeries_integral {lam : ℝ} (hlam : 0 < lam) :
       fourierPPrime lam α * tauAbel lam (1 / ((N : ℝ) + 1)) α = _
     rw [fourierPPrime_tauAbel_integral hlam (by positivity)]
     dsimp [tauCorrectionAbelSeq]
-  have hseqEq : (fun N : ℕ => ∫ α in (-π)..π, F N α) = tauCorrectionAbelSeq lam := by
-    funext N
-    exact hpoint N
-  have hDCT' : Tendsto (tauCorrectionAbelSeq lam) atTop
-      (𝓝 (∫ α in (-π)..π, fourierPPrime lam α * Bethe.tauSeries lam α)) := by
-    rw [hseqEq] at hDCT
-    exact hDCT
+  have hDCT' := hDCT.congr' (Filter.Eventually.of_forall hpoint)
   have hvalue := tendsto_nhds_unique hDCT' hAbelCorr
-  have hCorr : Tendsto (logCoshTauCorrectionPartial lam) atTop
-      (𝓝 (∫ α in (-π)..π, fourierPPrime lam α * Bethe.tauSeries lam α)) := by
-    have hCorr' := hPartialCorr.congr'
-      (Filter.Eventually.of_forall fun N => tauCorrectionPartial_eq lam N)
-    simpa [hvalue] using hCorr'
-  exact ⟨S, hS, hCorr⟩
+  exact ⟨S, hS, by simpa [hvalue] using (hPartialCorr.congr'
+    (Filter.Eventually.of_forall fun N => tauCorrectionPartial_eq lam N))⟩
 
 end PottsDiscontinuity

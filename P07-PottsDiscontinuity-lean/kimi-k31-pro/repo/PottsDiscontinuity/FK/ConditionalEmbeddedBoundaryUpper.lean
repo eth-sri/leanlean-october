@@ -15,8 +15,6 @@ variable {V W : Type*} [Finite V] [Finite W]
   (G : SimpleGraph V) (H : SimpleGraph W) (f : V ↪ W)
   (hGH : G.map f ≤ H)
 
-local instance innerConfigurationMeasurableSpace :
-    MeasurableSpace (Configuration G) := ⊤
 local instance outerConfigurationMeasurableSpace :
     MeasurableSpace (Configuration H) := ⊤
 

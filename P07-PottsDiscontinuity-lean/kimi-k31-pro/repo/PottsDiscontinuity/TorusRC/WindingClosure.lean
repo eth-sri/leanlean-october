@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusRC.BoundedChain
 public import PottsDiscontinuity.TorusRC.ColumnZigzag
 
@@ -117,8 +118,7 @@ theorem boundedChain_terminal_implies_winding (hNp : 0 < N) (hMp : 0 < M)
       ⟨h.2.2.1.1,by have hh := h.2.2.1.2; dsimp only [id]; push_cast; omega⟩,
       ⟨h.2.2.2.1,by have hh := h.2.2.2.2; dsimp only [id]; push_cast; omega⟩⟩⟩
   have hz0 : liftedChainSite i.val hi n 0 = liftedColumnSite i.val 0 hi ⟨0,rfl⟩ := by
-    apply Subtype.ext
-    simp [liftedChainSite,liftedColumnSite]
+    rfl
   have hHeven : Even (2 * n * k) := ⟨n*k,by ring⟩
   have hzH : columnZigzagSite i.val hi (2 * n * k) = liftedChainSite i.val hi n k := by
     rw [columnZigzagSite_even _ _ _ hHeven]

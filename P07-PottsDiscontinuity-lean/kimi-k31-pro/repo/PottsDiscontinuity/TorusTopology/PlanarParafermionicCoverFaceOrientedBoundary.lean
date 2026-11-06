@@ -24,7 +24,7 @@ noncomputable def parafermionicCoverFaceBoundaryCoefficient {n : ℕ}
   (parafermionicCoverFacePositiveDartCount S u v : ℤ) -
     (parafermionicCoverFacePositiveDartCount S v u : ℤ)
 
-private theorem coverFaceDarts_no_opposite {f : ParafermionicCoverVertex}
+theorem coverFaceDarts_no_opposite {f : ParafermionicCoverVertex}
     {u v : ParafermionicCoverVertex}
     (huv : (u,v) ∈ parafermionicCoverFiniteFaceDarts f)
     (hvu : (v,u) ∈ parafermionicCoverFiniteFaceDarts f) : False := by
@@ -53,7 +53,7 @@ private theorem list_countP_xor_mod {α : Type*} (L : List α)
       · simp at ih ⊢; omega
       · exact (hcase ⟨hp, hq⟩).elim
 
-private theorem coverFacePositiveDartCount_le_one {n : ℕ}
+theorem coverFacePositiveDartCount_le_one {n : ℕ}
     (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
     (u v : ParafermionicCoverBoxVertex n) :
     parafermionicCoverFacePositiveDartCount S u v ≤ 1 := by
@@ -90,7 +90,7 @@ theorem parafermionicCoverFaceBoundaryCoefficient_mem {n : ℕ}
   unfold parafermionicCoverFaceBoundaryCoefficient
   omega
 
-private theorem coverFaceBoundaryEdge_countP_mod {n : ℕ}
+theorem coverFaceBoundaryEdge_countP_mod {n : ℕ}
     (L : List (ParafermionicCoverFiniteFaceTopIndex n))
     (u v : ParafermionicCoverBoxVertex n)
     [DecidablePred (fun i : ParafermionicCoverFiniteFaceTopIndex n =>

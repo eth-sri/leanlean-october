@@ -19,9 +19,7 @@ namespace PottsDiscontinuity.BetheAnsatz
 private theorem adjacent_swap_lt {n : ℕ} {a b i j : Fin n}
     (hab : a.val + 1 = b.val) (hij : i < j) (hne : (i, j) ≠ (a, b)) :
     Equiv.swap a b i < Equiv.swap a b j := by
-  simp only [Equiv.swap_apply_def]
-  split_ifs <;> simp_all only <;> first | contradiction | omega
-
+  grind
 /-- An adjacent transposition changes exactly one factor in a product over `i < j`.
 The multiplication form avoids dividing by factors that might vanish. -/
 theorem pair_product_adjacent_swap {n : ℕ} (f : Fin n → Fin n → ℂ)

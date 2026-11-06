@@ -15,7 +15,6 @@ variable {V : Type*} [Finite V] (G : SimpleGraph V)
 noncomputable section
 open scoped Classical
 local instance distinctProductEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
-local instance distinctProductEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 
 /-- The exact finite exploration product: each successive distinct connection
 costs at most c, starting after the first explored cluster. -/

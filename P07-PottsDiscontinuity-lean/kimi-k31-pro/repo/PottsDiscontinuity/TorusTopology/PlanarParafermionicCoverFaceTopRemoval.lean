@@ -117,8 +117,7 @@ private theorem coverFace_bottom_adj_of_not_removed (n : ℕ)
 
 private theorem cover_int_toNat_lt {a b : ℤ}
     (ha : 0 ≤ a) (hb : 0 ≤ b) (hab : a < b) : a.toNat < b.toNat := by
-  omega
-
+  simp_all
 private theorem coverFace_top_reachable (n : ℕ) (f : ParafermionicCoverVertex)
     (hf : f ∈ parafermionicCoverFiniteOrdinaryFaces n) :
     (parafermionicCoverBoxGraphWithoutFaceTops n).Reachable
@@ -219,8 +218,6 @@ private theorem coverFace_top_reachable (n : ℕ) (f : ParafermionicCoverVertex)
 theorem parafermionicCoverBoxGraphWithoutFaceTops_connected
     (n : ℕ) (hn : 1 ≤ n) :
     (parafermionicCoverBoxGraphWithoutFaceTops n).Connected := by
-  have hnZ : 0 ≤ (n : ℤ) := Int.natCast_nonneg n
-  have hn5Z : 0 ≤ ((n^5 : ℕ) : ℤ) := Int.natCast_nonneg _
   have horigin : (((0:ℤ),(0:ℤ)),(0:ℤ)) ∈ parafermionicCoverBoxVertices n := by
     rw [parafermionicCoverBoxVertices_mem]
     norm_num

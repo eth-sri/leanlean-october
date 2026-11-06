@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Potts.FreeSpinObservations
 public import PottsDiscontinuity.Potts.WiredSpinFormula
 
@@ -60,16 +61,14 @@ private lemma wired_one_point_kernel_off_pin (q : ℕ)
     funext a
     cases a <;> rfl
   have hcount : observedClassCount R (markedMap some none) = Nat.card (Quotient R) := by
-    rw [hid]
-    rfl
+    tauto
   by_cases h : R (some PUnit.unit) none
   · have htop : R = ⊤ := optionUnit_setoid_top R h
     have hcompat : ¬ R.comap (markedMap some none) ≤
         Setoid.ker (markedMap (fun _ : PUnit => color) pin) := by
       intro hle
       have hrel : R.comap (markedMap some none) (some PUnit.unit) none := by
-        change R (markedMap some none (some PUnit.unit)) (markedMap some none none)
-        simpa [markedMap] using h
+        assumption
       have heq := hle hrel
       exact hcolor heq
     unfold pinnedClusterCylinderProbability
@@ -139,8 +138,7 @@ theorem wired_off_color_probability_le_uniform (q : ℕ) (hq : 2 ≤ q)
     funext R
     by_cases hR : R (some PUnit.unit) none <;> simp [hR]
   have hprob : φ.toMeasure.real {ω | ¬ r ω (some PUnit.unit) none} ≤ 1 := by
-    have hle := ProbabilityMeasure.apply_le_one φ {ω | ¬ r ω (some PUnit.unit) none}
-    exact_mod_cast hle
+    simp_all
   calc
     partitionExpectation φ.toMeasure r
         (fun R => if R (some PUnit.unit) none then 0 else (q : ℝ)⁻¹) =
@@ -171,16 +169,12 @@ theorem free_one_site_probability (q : ℕ) (hq : 2 ≤ q)
   have hkernel (R : Setoid Unit) :
       clusterCylinderProbability (A := Unit) (V := Unit) R id ξ = 1 / (q : ℝ) := by
     have hcomp : R.comap id ≤ Setoid.ker ξ := by
-      intro a b _
-      simp
+      tauto
     have hcount : observedClassCount (A := Unit) (V := Unit) R id = 1 := by
       rw [observedClassCount_eq_range]
       let f : Unit → Quotient R := Quotient.mk R
       let : Subsingleton (Set.range f) := by
-        constructor
-        rintro ⟨a, ha⟩ ⟨b, hb⟩
-        apply Subtype.ext
-        exact Subsingleton.elim _ _
+        simp_all
       let : Nonempty (Set.range f) := ⟨⟨f (), ⟨(), rfl⟩⟩⟩
       exact Nat.card_unique
     rw [clusterCylinderProbability, ite_eq_left hcomp, hcount, card_pottsColors]

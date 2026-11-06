@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusTopology.PeriodicSupportingLine
 public import PottsDiscontinuity.TorusTopology.LatticeSequenceWalk
 public import PottsDiscontinuity.TorusTopology.CompassWordBounds
@@ -23,7 +24,7 @@ theorem periodic_lattice_turn_eq_zero_of_pos_horizontal
   obtain ⟨k,hk,hmax⟩ := periodic_translation_supporting_phase f L D hL hper
   let g : ℕ → ℤ × ℤ := fun n => f (k+n)
   have hgadj : ∀ n, FK.squareLattice.Adj (g n) (g (n+1)) := by
-    intro n; simpa [g,Nat.add_assoc] using hadj (k+n)
+    tauto
   have hginj : Function.Injective g := by
     intro a b he; have hh := hf he; omega
   have hgper : ∀ n, g (n+L)=g n+D := by
@@ -33,10 +34,7 @@ theorem periodic_lattice_turn_eq_zero_of_pos_horizontal
   let v := g (32*L)
   have hend : v=u+32 • D := periodic_translation_mul g L D hgper 32
   have hxy : u.1 < v.1 := by
-    rw [hend]
-    change u.1 < u.1+(32 : ℕ) • D.1
-    simp only [nsmul_eq_mul]
-    omega
+    simp_all
   have heq : deckNormalHeight D u = deckNormalHeight D v := by
     rw [hend,deckNormalHeight_add_deck]
   have hp := latticeSequenceWalk_isPath g hgadj hginj (32*L)
@@ -55,10 +53,7 @@ theorem periodic_lattice_turn_eq_zero_of_pos_horizontal
   let a := sequenceCompass g hgadj
   let W := (List.range (32*L)).map a
   have hW : W ≠ [] := by
-    intro he
-    have hh := congrArg List.length he
-    simp only [W,List.length_map,List.length_range,List.length_nil] at hh
-    omega
+    measurability
   have hdirs : squareWalkCompassDirections (p.append r) =
       W++List.replicate (Y-v.2).toNat 1++List.replicate (v.1-u.1).toNat 2++
         List.replicate (Y-u.2).toNat 3 := by

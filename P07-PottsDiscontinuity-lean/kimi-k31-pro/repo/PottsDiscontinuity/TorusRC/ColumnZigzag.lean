@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusRC.LiftedPaths
 
 /-! # Explicit vertical zigzags in the lifted right half -/
@@ -37,8 +38,7 @@ theorem columnZigzagSite_index (hNp : 0 < N) (hMp : 0 < M)
       (columnZigzagSite x hx (t + 1)) =
       (periodicCoordinate hNp (x + 1), periodicCoordinate hMp (t + 1)) := by
   have hxmax : max (x + (t % 2 : ℕ)) (x + ((t + 1) % 2 : ℕ)) = x + 1 := by
-    have ht : t % 2 = 0 ∨ t % 2 = 1 := by omega
-    rcases ht with ht | ht <;> simp [Nat.add_mod, ht]
+    omega
   change (periodicCoordinate hNp (max (x + (t % 2 : ℕ))
     (x + ((t + 1) % 2 : ℕ))), periodicCoordinate hMp (max (t : ℤ) (t + 1 : ℕ))) = _
   rw [hxmax, max_eq_right (by omega)]

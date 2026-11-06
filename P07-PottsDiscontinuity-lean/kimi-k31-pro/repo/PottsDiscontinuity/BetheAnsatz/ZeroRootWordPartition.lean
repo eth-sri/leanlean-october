@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootT1Aggregate
 public import PottsDiscontinuity.BetheAnsatz.ZeroRootWordCancellationSum
 
@@ -47,8 +48,7 @@ theorem RootIncidentTermIndex.ext {n : ℕ} {l : Fin (n + 1)}
       subst side'
       subst w'
       have hσ' : σ = σ' := by
-        apply Subtype.ext
-        exact hσ
+        measurability
       subst σ'
       rfl
 
@@ -178,18 +178,7 @@ theorem mlEdge_incident_unique {n : ℕ} (w : Fin (n + 1) → Bool)
     (haI : r = a ∨ r = finRotate (n + 1) a)
     (hb₀ : w b = false) (hb₁ : w (finRotate (n + 1) b) = true)
     (hbI : r = b ∨ r = finRotate (n + 1) b) : a = b := by
-  rcases haI with haL | haR <;> rcases hbI with hbL | hbR
-  · exact haL.symm.trans hbL
-  · have hEq : a = finRotate (n + 1) b := haL.symm.trans hbR
-    have htrue : w a = true := by rw [hEq]; exact hb₁
-    have hfalse : false = true := ha₀.symm.trans htrue
-    cases hfalse
-  · have hEq : b = finRotate (n + 1) a := hbL.symm.trans haR
-    have htrue : w b = true := by rw [hEq]; exact ha₁
-    have hfalse : false = true := hb₀.symm.trans htrue
-    cases hfalse
-  · exact (finRotate (n + 1)).injective (haR.symm.trans hbR)
-
+  aesop
 /-- A nonconstant cyclic Boolean word has at least one ML edge. -/
 theorem exists_cyclicML_of_nonconstant {n : ℕ} (w : Fin (n + 1) → Bool)
     (hL : w ≠ fun _ => true) (hM : w ≠ fun _ => false) :

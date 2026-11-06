@@ -24,47 +24,11 @@ noncomputable section
 /-- Edge configurations on the rotated lattice `L`. -/
 abbrev RotatedConfiguration := rotatedLattice.edgeSet → Bool
 
-/-- The finite rotated domain whose image under the lattice isomorphism is the
-square box centered at `c` with radius `r`. -/
-def rotatedImageBoxDomain (c : LatticeVertex) (r : ℕ) : Set RotatedVertex :=
-  {v | rotatedToSquareVertex v ∈ latticeBox c r}
 
-/-- The induced finite graph on an image box in the rotated lattice. -/
-def rotatedImageBoxGraph (c : LatticeVertex) (r : ℕ) :=
-  rotatedLattice.induce (rotatedImageBoxDomain c r)
 
-/-- The induced graph on a rotated image box is isomorphic to its square-box
-image. -/
-def rotatedImageBoxGraphIso (c : LatticeVertex) (r : ℕ) :
-    rotatedImageBoxGraph c r ≃g boxGraph c r where
-  toEquiv :=
-    { toFun := fun v => ⟨rotatedToSquareVertex v.1, v.2⟩
-      invFun := fun v => ⟨squareToRotatedVertex v.1, by
-        change rotatedToSquareVertex (squareToRotatedVertex v.1) ∈ latticeBox c r
-        simp⟩
-      left_inv := by
-        intro v
-        apply Subtype.ext
-        exact squareToRotated_rotatedToSquare v.1
-      right_inv := by
-        intro v
-        apply Subtype.ext
-        exact rotatedToSquare_squareToRotated v.1 }
-  map_rel_iff' := by
-    intro u v
-    change squareLattice.Adj (rotatedToSquareVertex u.1) (rotatedToSquareVertex v.1) ↔
-      rotatedLattice.Adj u.1 v.1
-    exact (rotatedLattice_adj_iff_square u.1 v.1).symm
 
-local instance rotatedImageBoxVertexFintype (c : LatticeVertex) (r : ℕ) :
-    Fintype {v : RotatedVertex // v ∈ rotatedImageBoxDomain c r} :=
-  Fintype.ofEquiv (BoxVertex c r) (rotatedImageBoxGraphIso c r).toEquiv.symm
 
-local instance rotatedImageBoxEdgeFintype (c : LatticeVertex) (r : ℕ) :
-    Fintype (rotatedImageBoxGraph c r).edgeSet := Fintype.ofFinite _
 
-local instance rotatedImageBoxEdgeDecidableEq (c : LatticeVertex) (r : ℕ) :
-    DecidableEq (rotatedImageBoxGraph c r).edgeSet := Classical.decEq _
 
 /-- Coordinate transport of whole-lattice configurations from `ℤ²` to `L`. -/
 def rotatedConfigurationHomeomorph :
@@ -72,12 +36,6 @@ def rotatedConfigurationHomeomorph :
   Homeomorph.piCongrLeft (Y := fun _ : rotatedLattice.edgeSet => Bool)
     (SimpleGraph.Iso.mapEdgeSet rotatedLatticeIso.symm)
 
-@[simp] theorem rotatedConfigurationHomeomorph_apply
-    (ω : LatticeConfiguration) (e : rotatedLattice.edgeSet) :
-    rotatedConfigurationHomeomorph ω e =
-      ω (SimpleGraph.Iso.mapEdgeSet rotatedLatticeIso e) := by
-  simp [rotatedConfigurationHomeomorph, Homeomorph.piCongrLeft,
-    Equiv.piCongrLeft, SimpleGraph.Iso.mapEdgeSet, SimpleGraph.Hom.mapEdgeSet]
 
 /-- The free random-cluster measure on `L`, defined by transporting the unique
 square-lattice free-box limit through the graph isomorphism. -/

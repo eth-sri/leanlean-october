@@ -83,7 +83,6 @@ noncomputable section
 open scoped BigOperators
 
 variable [Finite V]
-local instance domainMarkovEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 local instance domainMarkovEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 local instance domainMarkovRemainingFintype (R : Configuration G) : Fintype (RemainingConfiguration G R) := Fintype.ofFinite _
 

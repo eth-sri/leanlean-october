@@ -135,7 +135,7 @@ theorem analyticAt_real_arctan (t : ℝ) : AnalyticAt ℝ Real.arctan t := by
         generalize ((1 - t^2) / (1 + t^2) : ℝ) = u at *
         simpa using hv
     have : AnalyticAt ℂ (fun z : ℂ => (1 + z * I) / (1 - z * I)) (t:ℂ) := by
-      fun_prop (disch := assumption)
+      fun_prop
     exact analyticAt_const.mul (this.clog hslit)
   have h2 : Real.arctan = fun x : ℝ => (Complex.arctan (x:ℂ)).re := by
     funext x; rw [← Complex.ofReal_arctan, Complex.ofReal_re]
@@ -306,10 +306,6 @@ theorem deriv_theta_right_neg (Δ x y : ℝ) :
 /-- On the diagonal `(∂₁Θ + ∂₂Θ)(x,x) = 0`. -/
 theorem deriv_theta_diag {Δ : ℝ} (hΔ : Δ < -1) (x : ℝ) :
     deriv (fun s => theta Δ s x) x + deriv (fun t => theta Δ x t) x = 0 := by
-  have h1 : HasDerivAt (fun s => theta Δ s x) (deriv (fun s => theta Δ s x) x) x :=
-    (analyticAt_theta_left hΔ x x).differentiableAt.hasDerivAt
-  have h2 : HasDerivAt (fun t => theta Δ x t) (deriv (fun t => theta Δ x t) x) x :=
-    (analyticAt_theta_right hΔ x x).differentiableAt.hasDerivAt
   have hF : DifferentiableAt ℝ (fun p : ℝ × ℝ => theta Δ p.1 p.2) (x, x) :=
     (analyticAt_theta_xy hΔ x x).differentiableAt
   have h3 : HasDerivAt (fun s : ℝ => ((s, s) : ℝ × ℝ)) ((1, 1) : ℝ × ℝ) x :=

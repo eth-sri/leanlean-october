@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.Bethe.AsymptoticPartition
 public import PottsDiscontinuity.Bethe.Theorem23Counting
 
@@ -33,8 +34,7 @@ theorem betheCountingFunction_cell_increment {Δ : ℝ} {N k : ℕ} (hN : 0 < N)
         p (Fin.last k) - 2 * Real.pi := by
       convert rootPartitionPoint_zero p (by omega) using 1 <;> congr 1
     have hb : rootPartitionPoint (k + 1) p (by omega) (0 : Fin (k + 2)).succ = p 0 := by
-      convert rootPartitionPoint_root p (by omega) (0 : Fin (k + 1)) using 1
-      congr 1
+      rfl
     have hperiod := betheCountingFunction_period (Δ := Δ) hN p (p (Fin.last k) - 2 * Real.pi)
     rw [show p (Fin.last k) - 2 * Real.pi + 2 * Real.pi = p (Fin.last k) by ring] at hperiod
     have hminus : f (p (Fin.last k) - 2 * Real.pi) =

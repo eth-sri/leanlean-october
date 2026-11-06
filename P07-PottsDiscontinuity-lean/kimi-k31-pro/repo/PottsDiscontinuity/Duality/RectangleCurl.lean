@@ -27,11 +27,6 @@ def rectangleExtendedPotential (a : LatticeVertex) (w h : ℕ)
     rectangleExtendedPotential a w h φ z = φ.1 ⟨z, hz⟩ := by
   simp [rectangleExtendedPotential, hz]
 
-@[simp] theorem rectangleExtendedPotential_of_not_mem (a : LatticeVertex) (w h : ℕ)
-    (φ : RectangleExteriorPotential a w h) (z : LatticeVertex)
-    (hz : z ∉ rectangleDualExpanded a w h) :
-    rectangleExtendedPotential a w h φ z = 0 := by
-  simp [rectangleExtendedPotential, hz]
 
 /-- Primal curl of a dual potential: above-minus-below horizontally and
 left-minus-right vertically. -/

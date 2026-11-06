@@ -1,5 +1,6 @@
 module
 
+public import Mathlib
 public import PottsDiscontinuity.TorusExploration.ExteriorConfig
 public import PottsDiscontinuity.TorusExploration.SeamClosureWinding
 public import PottsDiscontinuity.TorusExploration.CylinderIntersectionZero
@@ -78,7 +79,7 @@ theorem cylinderExterior_windingX_zero (hN : Even N) (hM : Even M)
     ← diamondWindingY_mul_period hN hM _ f,
     ← diamondWindingX_mul_period hN hM _ G,hGy,hfy] at hd
   have hz : (M : ℚ)*(N : ℚ)*diamondWindingX (openRCConfig N M) G.val = 0 := by
-    simpa only [mul_zero,zero_mul,mul_one,zero_sub,neg_eq_zero,mul_assoc] using hd.symm
+    linarith
   have hmn : (M : ℚ)*(N : ℚ) ≠ 0 := mul_ne_zero (by positivity) (by positivity)
   have hGx := (mul_eq_zero.mp hz).resolve_left hmn
   change diamondWindingX D g.val=0
