@@ -39,17 +39,14 @@ theorem small_Phi [CompleteSpace X] [CompleteSpace U] (S : ALCS 𝕜 X U ∞)
     (u : Lp U ∞ muPlus) (ε : ℝ) (hε : 0 < ε) :
     ∃ η > 0, ∀ r, 0 ≤ r → r < η → ∀ v : Lp U ∞ muPlus, ‖v‖ ≤ ‖u‖ → ‖S.Φ r v‖ < ε := by
   -- `κ(r) = ‖Φ r‖ < ε / (‖u‖ + 1)` for `r ∈ [0, η)`
-  have hz : Tendsto (fun t => ‖S.Φ t‖) (𝓝[≥] 0) (𝓝 0) := S.zero_class
-  obtain ⟨η, hη, hκ⟩ := Metric.tendsto_nhdsWithin_nhds.1 hz (ε / (‖u‖ + 1)) (by positivity)
+  obtain ⟨η, hη, hκ⟩ := Metric.tendsto_nhdsWithin_nhds.1 S.zero_class
+    (ε / (‖u‖ + 1)) (by positivity)
   refine ⟨η, hη, fun r hr hrη v hv => ?_⟩
-  have h1 := hκ (Set.mem_Ici.2 hr)
-    (by rw [Real.dist_eq, sub_zero, abs_of_nonneg hr]; exact hrη)
-  have h2 : ‖S.Φ r‖ < ε / (‖u‖ + 1) := by simpa using h1
-  have h3 : ‖S.Φ r‖ * (‖u‖ + 1) < ε := (lt_div_iff₀ (by positivity)).1 h2
-  -- `‖Φ r v‖ ≤ κ(r) ‖v‖`
-  calc ‖S.Φ r v‖ ≤ ‖S.Φ r‖ * ‖v‖ := ContinuousLinearMap.le_opNorm _ _
-    _ ≤ ‖S.Φ r‖ * (‖u‖ + 1) := mul_le_mul_of_nonneg_left (by linarith) (norm_nonneg _)
-    _ < ε := h3
+  have h2 : ‖S.Φ r‖ < ε / (‖u‖ + 1) := by
+    simpa using hκ hr (by simpa [Real.dist_eq, abs_of_nonneg hr] using hrη)
+  calc ‖S.Φ r v‖ ≤ ‖S.Φ r‖ * (‖u‖ + 1) :=
+      (S.Φ r).le_opNorm_of_le (hv.trans (by linarith))
+    _ < ε := (lt_div_iff₀ (by positivity)).1 h2
 
 /-- **Corollary 1.6** (`cor:p-infty-solution-continuous`). Let `X`, `U` be real or complex
 Banach spaces and `S = (𝕋, Φ)` an abstract linear control system with `p = ∞`. For every
@@ -59,17 +56,13 @@ theorem continuousOn_Phi [CompleteSpace X] [CompleteSpace U] (S : ALCS 𝕜 X U 
     ContinuousOn (fun t => S.Φ t u) (Set.Ici 0) := by
   rw [Metric.continuousOn_iff]
   intro t₀ ht₀ ε hε
-  rw [Set.mem_Ici] at ht₀
   rcases ht₀.eq_or_lt with h0 | hpos
   · -- continuity at `t₀ = 0`: `‖Φ t u‖ ≤ κ(t) ‖u‖ → 0`
     subst h0
     obtain ⟨η, hη, hsmall⟩ := S.small_Phi u ε hε
     refine ⟨η, hη, fun t ht hdist => ?_⟩
-    rw [Set.mem_Ici] at ht
     rw [Real.dist_eq, sub_zero, abs_of_nonneg ht] at hdist
-    show dist (S.Φ t u) (S.Φ 0 u) < ε
-    rw [S.Phi_zero, zero_apply, dist_zero_right]
-    exact hsmall t ht hdist u le_rfl
+    simpa [S.Phi_zero] using hsmall t ht hdist u le_rfl
   · -- continuity at `t₀ > 0`
     -- `‖Φ r v‖ < ε / 4` for `r ∈ [0, η)` and `‖v‖ ≤ ‖u‖`
     obtain ⟨η, hη, hsmall⟩ := S.small_Phi u (ε / 4) (by positivity)
@@ -77,41 +70,39 @@ theorem continuousOn_Phi [CompleteSpace X] [CompleteSpace U] (S : ALCS 𝕜 X U 
     obtain ⟨δ, hδpos, hδt, hδη⟩ : ∃ δ : ℝ, 0 < δ ∧ δ ≤ t₀ / 2 ∧ δ ≤ η / 3 :=
       ⟨min (t₀ / 2) (η / 3), lt_min (by linarith) (by linarith), min_le_left _ _,
         min_le_right _ _⟩
-    -- `t₁ := t₀ - δ`, `u₁ := u (t₁ + ·)` and `y := Φ t₁ u`
     have ht₁ : 0 ≤ t₀ - δ := by linarith
-    obtain ⟨u₁, hu₁, hcat⟩ := exists_shift (t₀ - δ) ht₁ u
-    obtain ⟨y, hy⟩ : ∃ y : X, y = S.Φ (t₀ - δ) u := ⟨_, rfl⟩
-    -- composition: `Φ (t₁ + r) u = T r y + Φ r u₁`
-    have hcomp : ∀ r, 0 ≤ r → S.Φ (t₀ - δ + r) u = S.T r y + S.Φ r u₁ := by
-      intro r hr
-      rw [hy]
-      exact S.composition (t₀ - δ) r ht₁ hr u u₁ u hcat
-    -- in particular `Φ t₀ u = T δ y + Φ δ u₁`
+    let u₁ := shiftLeft (t₀ - δ) u
+    have hu₁ : ‖u₁‖ ≤ ‖u‖ := norm_shiftLeft_le _ _
+    let y := S.Φ (t₀ - δ) u
+    have hcomp (r : ℝ) (hr : 0 ≤ r) : S.Φ (t₀ - δ + r) u = S.T r y + S.Φ r u₁ :=
+      S.composition (t₀ - δ) r ht₁ hr u u₁ u (by
+        have hraw : (⇑u : ℝ → U) = concat (t₀ - δ) ⇑u
+            (zeroExt ⇑u ∘ fun s => (t₀ - δ) + s) := by
+          funext s
+          by_cases hs : s < t₀ - δ
+          · simp only [concat, ite_eq_left hs]
+          · have hs' : 0 ≤ s := le_trans ht₁ (not_lt.1 hs)
+            simp [concat, hs, Function.comp_apply, zeroExt, hs']
+        exact (Filter.EventuallyEq.of_eq hraw).trans
+          (concat_congr _ (.refl _ _) (shiftLeft_ae _ u)).symm)
     have e₀ : S.Φ t₀ u = S.T δ y + S.Φ δ u₁ := by
-      have h := hcomp δ hδpos.le
-      rwa [sub_add_cancel] at h
-    -- continuity of `s ↦ T s y` at `s = δ`
+      simpa only [sub_add_cancel] using hcomp δ hδpos.le
     obtain ⟨δ', hδ', horbit⟩ := Metric.continuousOn_iff.1
-      (S.toC0Semigroup.continuousOn_orbit y) δ (Set.mem_Ici.2 hδpos.le) (ε / 2) (by positivity)
+      (S.toC0Semigroup.continuousOn_orbit y) δ hδpos.le (ε / 2) (by positivity)
     refine ⟨min δ δ', lt_min hδpos hδ', fun t _ hdist => ?_⟩
-    -- write `t = t₁ + r`, with `|r - δ| = |t - t₀|`
     obtain ⟨r, rfl⟩ : ∃ r, t = t₀ - δ + r := ⟨t - (t₀ - δ), by ring⟩
     rw [Real.dist_eq, show t₀ - δ + r - t₀ = r - δ by ring] at hdist
-    have hd1 : |r - δ| < δ := lt_of_lt_of_le hdist (min_le_left _ _)
-    have hd2 : |r - δ| < δ' := lt_of_lt_of_le hdist (min_le_right _ _)
+    have hd1 := lt_of_lt_of_le hdist (min_le_left _ _)
+    have hd2 := lt_of_lt_of_le hdist (min_le_right _ _)
     obtain ⟨hr1, hr2⟩ := abs_lt.1 hd1
     have hr : 0 ≤ r := by linarith
-    -- the three terms
     have h1 : ‖S.T r y - S.T δ y‖ < ε / 2 := by
-      have h := horbit r (Set.mem_Ici.2 hr) (by rw [Real.dist_eq]; exact hd2)
-      rwa [dist_eq_norm] at h
-    have h2 : ‖S.Φ r u₁‖ < ε / 4 := hsmall r hr (by linarith) u₁ hu₁
-    have h3 : ‖S.Φ δ u₁‖ < ε / 4 := hsmall δ hδpos.le (by linarith) u₁ hu₁
-    -- conclusion
-    show dist (S.Φ (t₀ - δ + r) u) (S.Φ t₀ u) < ε
-    rw [dist_eq_norm, hcomp r hr, e₀]
-    have h4 := norm_three_terms_le (S.T r y) (S.Φ r u₁) (S.T δ y) (S.Φ δ u₁)
-    linarith
+      simpa only [dist_eq_norm] using horbit r hr (by simpa [Real.dist_eq] using hd2)
+    have h2 := hsmall r hr (by linarith) u₁ hu₁
+    have h3 := hsmall δ hδpos.le (by linarith) u₁ hu₁
+    rw [dist_eq_norm, hcomp r hr, e₀, show S.T r y + S.Φ r u₁ - (S.T δ y + S.Φ δ u₁) =
+      (S.T r y - S.T δ y) + S.Φ r u₁ - S.Φ δ u₁ by abel]
+    exact ((norm_sub_le _ _).trans (add_le_add (norm_add_le _ _) le_rfl)).trans_lt (by linarith)
 
 end ALCS
 

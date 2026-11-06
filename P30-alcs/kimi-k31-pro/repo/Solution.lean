@@ -45,10 +45,9 @@ theorem zero_class
         (fun s => if s < τ then u s else v (s - τ))) →
       Φ (τ + t) w = T t (Φ τ u) + Φ t v) :
     Tendsto (fun t => ‖Φ t‖) (𝓝[≥] 0) (𝓝 0) := by
-  let S : ALCS 𝕜 X U ∞ :=
+  exact ALCS.zero_class
     { T := T, T_zero := hT_zero, T_add := hT_semigroup, T_cont := hT_cont,
       Φ := Φ, composition := hΦ_concat }
-  exact S.zero_class
 
 /-- **Corollary 1.6** (`cor:p-infty-solution-continuous`): for `p = ∞` and every input
 `u ∈ L^∞(ℝ₊; U)`, `t ↦ Φ t u` is continuous on `[0, ∞)`. -/
@@ -68,9 +67,8 @@ theorem continuousOn_Phi
       Φ (τ + t) w = T t (Φ τ u) + Φ t v)
     (u : L∞(ℝ₊; U)) :
     ContinuousOn (fun t => Φ t u) (Set.Ici 0) := by
-  let S : ALCS 𝕜 X U ∞ :=
+  exact ALCS.continuousOn_Phi
     { T := T, T_zero := hT_zero, T_add := hT_semigroup, T_cont := hT_cont,
-      Φ := Φ, composition := hΦ_concat }
-  exact S.continuousOn_Phi u
+      Φ := Φ, composition := hΦ_concat } u
 
 end PalomarALCS

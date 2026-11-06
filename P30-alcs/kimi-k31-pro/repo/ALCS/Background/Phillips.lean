@@ -6,7 +6,6 @@ public import Mathlib.Topology.ContinuousMap.Bounded.Normed
 public import Mathlib.Topology.Instances.Nat
 public import Mathlib.Data.Nat.Pairing
 public import Mathlib.Data.Set.Finite.Lemmas
-public import Mathlib.Topology.Algebra.InfiniteSum.Real
 
 public import Mathlib.Tactic.Abel
 public import Mathlib.Tactic.Choose
@@ -63,8 +62,6 @@ noncomputable section
 open Filter
 open scoped BigOperators Topology
 
-set_option maxHeartbeats 800000
-
 namespace Phillips
 
 attribute [local instance] Classical.propDecidable
@@ -78,9 +75,7 @@ variable {𝕜 : Type*} [RCLike 𝕜]
 def chi (S : Set ℕ) : Linfty 𝕜 :=
   BoundedContinuousFunction.ofNormedAddCommGroupDiscrete
     (fun k => if k ∈ S then (1 : 𝕜) else 0) 1
-    (by
-      intro k
-      by_cases hk : k ∈ S <;> simp [hk])
+    (by intro k; split_ifs <;> simp)
 
 @[simp] theorem chi_apply (S : Set ℕ) (k : ℕ) :
     chi (𝕜 := 𝕜) S k = if k ∈ S then 1 else 0 := rfl
@@ -105,29 +100,16 @@ private theorem small_on_subsets
   -- Partition an infinite subset of S into infinitely many infinite sets.
   let emb : ℕ ↪ S := Set.Infinite.natEmbedding S hS
   let g : ℕ × ℕ → ℕ := fun p => (emb (Nat.pair p.1 p.2)).val
-  have hg : Function.Injective g := by
-    intro p q hpq
-    have hpq' : Nat.pair p.1 p.2 = Nat.pair q.1 q.2 :=
-      emb.injective (Subtype.ext hpq)
-    exact Nat.pairEquiv.injective hpq'
+  have hg : Function.Injective g := fun p q h =>
+    Nat.pairEquiv.injective (emb.injective (Subtype.ext h))
   let A : ℕ → Set ℕ := fun i => Set.range (fun j => g (i, j))
-  have hAinf (i : ℕ) : (A i).Infinite := by
-    apply Set.infinite_range_of_injective
-    intro j k hjk
-    exact congrArg Prod.snd (hg hjk)
+  have hAinf (i : ℕ) : (A i).Infinite :=
+    Set.infinite_range_of_injective fun j k h => congrArg Prod.snd (hg h)
   have hAS (i : ℕ) : A i ⊆ S := by
     rintro x ⟨j, rfl⟩
     exact (emb (Nat.pair i j)).property
-  by_contra h
-  have hbad : ∀ i : ℕ, ∃ B : Set ℕ, B ⊆ A i ∧ δ < ‖φ (chi B)‖ := by
-    intro i
-    by_contra hi
-    apply h
-    refine ⟨A i, hAS i, hAinf i, ?_⟩
-    intro B hBA
-    by_contra hle
-    exact hi ⟨B, hBA, lt_of_not_ge hle⟩
-  choose B hBA hBδ using hbad
+  by_contra! h
+  choose B hBA hBδ using fun i => h (A i) (hAS i) (hAinf i)
   have hdisj {i j x : ℕ} (hi : x ∈ B i) (hj : x ∈ B j) : i = j := by
     obtain ⟨a, ha⟩ := hBA i hi
     obtain ⟨b, hb⟩ := hBA j hj
@@ -148,218 +130,18 @@ private theorem small_on_subsets
     rw [BoundedContinuousFunction.sum_apply]
     by_cases hx : ∃ i ∈ s, x ∈ B i
     · obtain ⟨i, hi, hxi⟩ := hx
-      have heq : (∑ j ∈ s, (v j) x) = (v i) x := by
-        apply Finset.sum_eq_single i
-        · intro j hj hji
-          have hxj : x ∉ B j := fun hxj => hji (hdisj hxj hxi)
-          simp [v, BoundedContinuousFunction.smul_apply, smul_eq_mul, hxj]
-        · intro hnot
-          exact (hnot hi).elim
-      rw [heq]
+      rw [Finset.sum_eq_single_of_mem i hi fun j hj hji => by
+        have hxj : x ∉ B j := fun hxj => hji (hdisj hxj hxi)
+        simp [v, BoundedContinuousFunction.smul_apply, smul_eq_mul, hxj]]
       simpa [v, BoundedContinuousFunction.smul_apply, smul_eq_mul, hxi] using hcoef i
-    · have hzero : ∀ i ∈ s, (v i) x = 0 := by
-        intro i hi
+    · rw [Finset.sum_eq_zero (fun i hi => by
         have hxi : x ∉ B i := fun hxi => hx ⟨i, hi, hxi⟩
-        simp [v, BoundedContinuousFunction.smul_apply, smul_eq_mul, hxi]
-      rw [Finset.sum_eq_zero hzero, norm_zero]
+        simp [v, BoundedContinuousFunction.smul_apply, smul_eq_mul, hxi]), norm_zero]
       positivity
   obtain ⟨N, hN⟩ := exists_nat_gt (‖φ‖ * δ⁻¹)
-  have hval : φ (∑ i ∈ Finset.range N, v i) = (N : 𝕜) := by
-    simp [map_sum, hv]
-  have hup : ‖φ (∑ i ∈ Finset.range N, v i)‖ ≤ ‖φ‖ * δ⁻¹ :=
-    (φ.le_opNorm _).trans
-      (mul_le_mul_of_nonneg_left (hsum _) (norm_nonneg φ))
-  rw [hval, RCLike.norm_natCast] at hup
-  exact (not_le_of_gt hN) hup
-
-/-- It is enough to assume convergence on characteristic sequences. -/
-theorem diagonal_of_indicator_tendsto
-    (μ : ℕ → (Linfty 𝕜 →L[𝕜] 𝕜))
-    (hμ : ∀ S : Set ℕ, Tendsto (fun n => μ n (chi S)) atTop (𝓝 0)) :
-    Tendsto (fun n => μ n (e n)) atTop (𝓝 0) := by
-  classical
-  apply Metric.tendsto_atTop.2
-  intro ε hε
-  by_contra hnot
-  have hbad : ∀ N : ℕ, ∃ n : ℕ, N ≤ n ∧ ε ≤ ‖μ n (e n)‖ := by
-    push Not at hnot
-    simpa only [dist_zero_right] using hnot
-  let D : Set ℕ := {n | ε ≤ ‖μ n (e n)‖}
-  have hD : D.Infinite := by
-    intro hfin
-    obtain ⟨N, hN⟩ := Set.exists_upper_bound_image D (fun n : ℕ => n) hfin
-    obtain ⟨n, hn, hbn⟩ := hbad (N + 1)
-    have hle : n ≤ N := hN n hbn
-    omega
-  let δ : ℝ := ε / 4
-  have hδ : 0 < δ := by dsimp [δ]; positivity
-  -- A reservoir is an infinite subset of the bad indices.
-  let X := {S : Set ℕ // S.Infinite ∧ S ⊆ D}
-  have hstep : ∀ (F : Set ℕ) (S : X), ∃ (n : ℕ) (T : X),
-      n ∈ S.val ∧
-      ‖μ n (chi F)‖ < δ ∧
-      T.val ⊆ S.val ∧
-      (∀ m ∈ T.val, n < m) ∧
-      (∀ B : Set ℕ, B ⊆ T.val → ‖μ n (chi B)‖ ≤ δ) := by
-    intro F S
-    obtain ⟨N, hN⟩ := (Metric.tendsto_atTop.1 (hμ F)) δ hδ
-    obtain ⟨n, hnS, hnN⟩ :=
-      S.property.1.exists_notMem_finite (Set.finite_lt_nat N)
-    have hNn : N ≤ n := by
-      simpa only [Set.mem_ofPred_eq, not_lt] using hnN
-    have hnsmall : ‖μ n (chi F)‖ < δ := by
-      simpa only [dist_zero_right] using hN n hNn
-    have hSinfinite : (S.val \ {m : ℕ | m ≤ n}).Infinite :=
-      S.property.1.sdiff (Set.finite_le_nat n)
-    obtain ⟨T, hTS, hTinf, hTsmall⟩ :=
-      small_on_subsets (μ n) (S.val \ {m : ℕ | m ≤ n}) hSinfinite δ hδ
-    have hTsub : T ⊆ S.val := fun m hm => (hTS hm).1
-    have hTD : T ⊆ D := fun m hm => S.property.2 (hTsub hm)
-    refine ⟨n, ⟨T, hTinf, hTD⟩, hnS, hnsmall, hTsub, ?_, hTsmall⟩
-    intro m hm
-    exact lt_of_not_ge (hTS hm).2
-  choose pick tail hpick hhead hsub hgt hsmall using hstep
-  -- State = (already selected indices, current infinite reservoir).
-  let state : ℕ → Set ℕ × X :=
-    Nat.rec (∅, ⟨D, hD, fun _ h => h⟩)
-      (fun _ p => (insert (pick p.1 p.2) p.1, tail p.1 p.2))
-  let n : ℕ → ℕ := fun i => pick (state i).1 (state i).2
-  let F : ℕ → Set ℕ := fun i => (state i).1
-  let R : ℕ → Set ℕ := fun i => ((state i).2).val
-  have hF0 : F 0 = ∅ := rfl
-  have hFs (i : ℕ) : F (i + 1) = insert (n i) (F i) := rfl
-  have hnmem (i : ℕ) : n i ∈ R i := hpick (state i).1 (state i).2
-  have hRsub (i : ℕ) : R (i + 1) ⊆ R i := hsub (state i).1 (state i).2
-  have hRgt (i : ℕ) : ∀ m ∈ R (i + 1), n i < m :=
-    hgt (state i).1 (state i).2
-  have hhead' (i : ℕ) : ‖μ (n i) (chi (F i))‖ < δ :=
-    hhead (state i).1 (state i).2
-  have hsmall' (i : ℕ) :
-      ∀ B : Set ℕ, B ⊆ R (i + 1) → ‖μ (n i) (chi B)‖ ≤ δ :=
-    hsmall (state i).1 (state i).2
-  have hnD (i : ℕ) : ε ≤ ‖μ (n i) (e (n i))‖ :=
-    (state i).2.property.2 (hnmem i)
-  have hnstep (i : ℕ) : n i < n (i + 1) := hRgt i _ (hnmem (i + 1))
-  have hnmono : StrictMono n := strictMono_nat_of_lt_succ hnstep
-  have hRanti : Antitone R := antitone_nat_of_succ_le hRsub
-  have hin : ∀ i : ℕ, i ≤ n i := by
-    intro i
-    induction i with
-    | zero => exact Nat.zero_le _
-    | succ i ih =>
-        have hi := hnstep i
-        omega
-  have hFmem : ∀ (i x : ℕ), x ∈ F i ↔ ∃ j < i, n j = x := by
-    intro i
-    induction i with
-    | zero =>
-        intro x
-        simp [hF0]
-    | succ i ih =>
-        intro x
-        rw [hFs, Set.mem_insert_iff, ih]
-        constructor
-        · rintro (hxi | ⟨j, hj, hjx⟩)
-          · exact ⟨i, Nat.lt_succ_self i, hxi.symm⟩
-          · exact ⟨j, by omega, hjx⟩
-        · rintro ⟨j, hj, hjx⟩
-          by_cases hji : j = i
-          · left
-            simpa [hji] using hjx.symm
-          · right
-            exact ⟨j, by omega, hjx⟩
-  let A : Set ℕ := Set.range n
-  let B : ℕ → Set ℕ := fun i => {x | ∃ j, i < j ∧ n j = x}
-  have hBsub (i : ℕ) : B i ⊆ R (i + 1) := by
-    rintro x ⟨j, hij, rfl⟩
-    exact hRanti (Nat.succ_le_of_lt hij) (hnmem j)
-  have hsplit (i : ℕ) :
-      chi (𝕜 := 𝕜) A = chi (F i) + e (n i) + chi (B i) := by
-    apply BoundedContinuousFunction.ext
-    intro x
-    simp only [BoundedContinuousFunction.add_apply, chi_apply, e_apply]
-    by_cases hx : x ∈ A
-    · obtain ⟨j, rfl⟩ := hx
-      have hA : n j ∈ A := ⟨j, rfl⟩
-      have hF : n j ∈ F i ↔ j < i := by
-        rw [hFmem]
-        constructor
-        · rintro ⟨k, hk, hkj⟩
-          exact hnmono.injective hkj ▸ hk
-        · intro hji
-          exact ⟨j, hji, rfl⟩
-      have hB : n j ∈ B i ↔ i < j := by
-        change (∃ k, i < k ∧ n k = n j) ↔ i < j
-        constructor
-        · rintro ⟨k, hk, hkj⟩
-          exact hnmono.injective hkj ▸ hk
-        · intro hij
-          exact ⟨j, hij, rfl⟩
-      have heq : n j = n i ↔ j = i :=
-        ⟨fun h => hnmono.injective h, fun h => congrArg n h⟩
-      rcases lt_trichotomy j i with hji | hji | hij
-      · simp [hA, hF, hB, heq, hji, ne_of_lt hji, not_lt_of_ge (le_of_lt hji)]
-      · subst j
-        simp [hA, hF, hB]
-      · simp [hA, hF, hB, heq, hij, ne_of_gt hij, not_lt_of_ge (le_of_lt hij)]
-    · have hxF : x ∉ F i := by
-        intro hxF
-        obtain ⟨j, hj, hjx⟩ := (hFmem i x).1 hxF
-        exact hx ⟨j, hjx⟩
-      have hxB : x ∉ B i := by
-        rintro ⟨j, hj, hjx⟩
-        exact hx ⟨j, hjx⟩
-      have hxn : x ≠ n i := by
-        intro hxn
-        exact hx ⟨i, hxn.symm⟩
-      simp [hx, hxF, hxB, hxn]
-  -- The characteristic sequence of all selected indices contradicts hμ.
-  obtain ⟨N, hN⟩ := (Metric.tendsto_atTop.1 (hμ A)) δ hδ
-  have hA_small : ‖μ (n N) (chi A)‖ < δ := by
-    simpa only [dist_zero_right] using hN (n N) (hin N)
-  have hF_small := hhead' N
-  have hB_small := hsmall' N (B N) (hBsub N)
-  have hidentity : μ (n N) (chi A) =
-      μ (n N) (chi (F N)) + μ (n N) (e (n N)) + μ (n N) (chi (B N)) := by
-    rw [hsplit N, map_add, map_add]
-  have hdiag : μ (n N) (e (n N)) =
-      μ (n N) (chi A) - μ (n N) (chi (F N)) - μ (n N) (chi (B N)) := by
-    rw [hidentity]
-    abel
-  have hnorm : ‖μ (n N) (e (n N))‖ ≤
-      ‖μ (n N) (chi A)‖ + ‖μ (n N) (chi (F N))‖ +
-        ‖μ (n N) (chi (B N))‖ := by
-    rw [hdiag]
-    exact (norm_sub_le _ _).trans (add_le_add (norm_sub_le _ _) le_rfl)
-  have hlarge := hnD N
-  dsimp [δ] at hA_small hF_small hB_small
-  linarith only [hε, hA_small, hF_small, hB_small, hnorm, hlarge]
-
-/-- Step 1 (diagonal statement): if `μ_n(a) → 0` for every `a ∈ ℓ^∞`, then
-`μ_n(e_n) → 0`. This is the "in particular" part of Lemma 2.2, proved first; the full
-lemma (`Phillips.full`) is deduced from it. -/
-theorem diagonal_tendsto_zero
-    (μ : ℕ → (Linfty 𝕜 →L[𝕜] 𝕜))
-    (hμ : ∀ a : Linfty 𝕜, Tendsto (fun n => μ n a) atTop (𝓝 0)) :
-    Tendsto (fun n => μ n (e n)) atTop (𝓝 0) :=
-  diagonal_of_indicator_tendsto μ (fun S => hμ (chi S))
-
-end Phillips
-
-namespace Phillips
-
-open Filter
-open scoped BigOperators Topology
-
-variable {𝕜 : Type*} [RCLike 𝕜]
-
-/-! ## Step 2: finite sums `Σ_{k ∈ s} |φ(e_k)| ≤ ‖φ‖` -/
-
-/-! ## Step 3: disjoint finite blocks, encoded by one bounded operator `ℓ^∞ → ℓ^∞` -/
-
-/-! ## Step 4: uniform smallness of all finite sums (gliding hump) -/
-
-/-! ## Lemma 2.2 -/
+  apply not_le_of_gt hN
+  simpa [map_sum, hv, RCLike.norm_natCast] using
+    φ.le_of_opNorm_le_of_le le_rfl (hsum (Finset.range N))
 
 end Phillips
 
@@ -371,83 +153,125 @@ open scoped Topology
 variable {𝕜 : Type*} [RCLike 𝕜]
 variable {X : Type*} [NormedAddCommGroup X] [NormedSpace 𝕜 X]
 
-/-! ## Lemma 2.3 -/
-
-/-- Vector-valued version of `diagonal_tendsto_zero`: if `A_n a → 0` for every `a ∈ ℓ^∞`,
-then `‖A_n e_n‖ → 0`. (A norming functional is chosen for each `A_n e_n`.) -/
-theorem norm_diagonal_tendsto_zero
-    (A : ℕ → (Linfty 𝕜 →L[𝕜] X))
-    (hA : ∀ a : Linfty 𝕜,
-      Tendsto (fun n => A n a) atTop (𝓝 0)) :
-    Tendsto (fun n => ‖A n (e n)‖) atTop (𝓝 0) := by
-  classical
-
-  -- Choose a norming functional for each diagonal vector.
-  choose φ hφnorm hφeval using
-    (fun n : ℕ => exists_dual_vector'' 𝕜 (A n (e n)))
-
-  let μ : ℕ → (Linfty 𝕜 →L[𝕜] 𝕜) :=
-    fun n => (φ n).comp (A n)
-
-  -- The scalar functionals converge pointwise to zero.
-  have hμ : ∀ a : Linfty 𝕜,
-      Tendsto (fun n => μ n a) atTop (𝓝 0) := by
-    intro a
-    refine squeeze_zero_norm (a := fun n => ‖A n a‖) ?_ ?_
-    · intro n
-      change ‖φ n (A n a)‖ ≤ ‖A n a‖
-      calc
-        ‖φ n (A n a)‖ ≤ ‖φ n‖ * ‖A n a‖ :=
-          (φ n).le_opNorm _
-        _ ≤ 1 * ‖A n a‖ :=
-          mul_le_mul_of_nonneg_right (hφnorm n) (norm_nonneg _)
-        _ = ‖A n a‖ := one_mul _
-    · simpa only [norm_zero] using (hA a).norm
-
-  -- Taking norms recovers the norms of the diagonal vectors.
-  have hnorm (n : ℕ) : ‖μ n (e n)‖ = ‖A n (e n)‖ := by
-    change ‖φ n (A n (e n))‖ = ‖A n (e n)‖
-    rw [hφeval n]
-    exact RCLike.norm_of_nonneg (norm_nonneg _)
-
-  simpa only [hnorm, norm_zero] using
-    (diagonal_tendsto_zero μ hμ).norm
-
-/-- **Lemma 2.3** (`lem:cor-Phillips`). Let `S : ℓ^∞ → X` be a bounded operator and
-`t n ≥ 0` with `t n → 0`. Then `‖(T (t n) - Id) (S (e n))‖ → 0`.
-
-Only strong right-continuity of `T` at zero is required; the semigroup law and
-completeness of `X` are not used. -/
+/-- **Lemma 2.3** (`lem:cor-Phillips`). -/
 theorem uniform
-    (S : Linfty 𝕜 →L[𝕜] X)
-    (T : ℝ → (X →L[𝕜] X))
-    (hT : ∀ x : X,
-      Tendsto (fun s : ℝ => T s x)
-        (nhdsWithin 0 (Set.Ici 0)) (𝓝 x))
-    (t : ℕ → ℝ)
-    (ht_nonneg : ∀ n : ℕ, 0 ≤ t n)
-    (ht : Tendsto t atTop (𝓝 0)) :
-    Tendsto
-      (fun n =>
-        ‖(T (t n) - ContinuousLinearMap.id 𝕜 X) (S (e n))‖)
+    (S : Linfty 𝕜 →L[𝕜] X) (T : ℝ → (X →L[𝕜] X))
+    (hT : ∀ x : X, Tendsto (fun s : ℝ => T s x) (nhdsWithin 0 (Set.Ici 0)) (𝓝 x))
+    (t : ℕ → ℝ) (ht_nonneg : ∀ n : ℕ, 0 ≤ t n) (ht : Tendsto t atTop (𝓝 0)) :
+    Tendsto (fun n => ‖(T (t n) - ContinuousLinearMap.id 𝕜 X) (S (e n))‖)
       atTop (𝓝 0) := by
-  have htWithin :
-      Tendsto t atTop (nhdsWithin (0 : ℝ) (Set.Ici 0)) :=
-    tendsto_nhdsWithin_iff.2
-      ⟨ht, Filter.Eventually.of_forall (fun n => ht_nonneg n)⟩
-
-  refine norm_diagonal_tendsto_zero
-    (fun n => (T (t n) - ContinuousLinearMap.id 𝕜 X).comp S) ?_
-  intro a
-
-  have hTa :
-      Tendsto (fun n => T (t n) (S a)) atTop (𝓝 (S a)) :=
-    (hT (S a)).comp htWithin
-
-  change Tendsto (fun n => T (t n) (S a) - S a) atTop (𝓝 0)
-  simpa only [sub_self] using
-    (hTa.sub
-      (tendsto_const_nhds :
-        Tendsto (fun _ : ℕ => S a) atTop (𝓝 (S a))))
+  classical
+  let A : ℕ → (Linfty 𝕜 →L[𝕜] X) :=
+    fun n => (T (t n) - ContinuousLinearMap.id 𝕜 X).comp S
+  have hA (a : Linfty 𝕜) : Tendsto (fun n => A n a) atTop (𝓝 0) := by
+    have hTa : Tendsto (fun n => T (t n) (S a)) atTop (𝓝 (S a)) :=
+      (hT (S a)).comp (tendsto_nhdsWithin_iff.2 ⟨ht, .of_forall ht_nonneg⟩)
+    change Tendsto (fun n => T (t n) (S a) - S a) atTop (𝓝 0)
+    simpa using hTa.sub_const (S a)
+  choose φ hφ hφ' using fun n : ℕ => exists_dual_vector'' 𝕜 (A n (e n))
+  let μ : ℕ → (Linfty 𝕜 →L[𝕜] 𝕜) := fun n => (φ n).comp (A n)
+  have hμ (a : Linfty 𝕜) : Tendsto (fun n => μ n a) atTop (𝓝 0) := by
+    refine squeeze_zero_norm (a := fun n => ‖A n a‖) ?_ (by simpa using (hA a).norm)
+    intro n
+    change ‖φ n (A n a)‖ ≤ ‖A n a‖
+    simpa using (φ n).le_of_opNorm_le (hφ n) (A n a)
+  have hnorm (n : ℕ) : ‖μ n (e n)‖ = ‖A n (e n)‖ := by
+    simp only [μ, ContinuousLinearMap.comp_apply, hφ',
+      RCLike.norm_of_nonneg (norm_nonneg _)]
+  have hd : Tendsto (fun n => μ n (e n)) atTop (𝓝 0) := by
+    apply Metric.tendsto_atTop.2
+    intro ε hε
+    by_contra! hnot
+    simp only [dist_zero_right] at hnot
+    let D : Set ℕ := {n | ε ≤ ‖μ n (e n)‖}
+    have hD : D.Infinite := Set.infinite_of_not_bddAbove <| by
+      rintro ⟨N, hN⟩
+      obtain ⟨n, hn, hbn⟩ := hnot (N + 1)
+      have := hN hbn
+      omega
+    let δ : ℝ := ε / 4
+    have hδ : 0 < δ := by dsimp [δ]; positivity
+    let X := {S : Set ℕ // S.Infinite ∧ S ⊆ D}
+    have hstep : ∀ (F : Set ℕ) (S : X), ∃ (n : ℕ) (T : X),
+        n ∈ S.val ∧ ‖μ n (chi F)‖ < δ ∧ T.val ⊆ S.val ∧
+        (∀ m ∈ T.val, n < m) ∧ (∀ B : Set ℕ, B ⊆ T.val → ‖μ n (chi B)‖ ≤ δ) := by
+      intro F S
+      obtain ⟨N, hN⟩ := (Metric.tendsto_atTop.1 (hμ (chi F))) δ hδ
+      obtain ⟨n, hnS, hnN⟩ := S.property.1.exists_notMem_finite (Set.finite_lt_nat N)
+      have hnsmall : ‖μ n (chi F)‖ < δ := by
+        simpa only [dist_zero_right] using hN n (by simpa only [Set.mem_ofPred_eq, not_lt] using hnN)
+      obtain ⟨T, hTS, hTinf, hTsmall⟩ := small_on_subsets (μ n) (S.val \ {m | m ≤ n})
+        (S.property.1.sdiff (Set.finite_le_nat n)) δ hδ
+      exact ⟨n, ⟨T, hTinf, fun m hm => S.property.2 (hTS hm).1⟩, hnS, hnsmall,
+        fun m hm => (hTS hm).1, fun m hm => lt_of_not_ge (hTS hm).2, hTsmall⟩
+    choose pick tail hpick hhead hsub hgt hsmall using hstep
+    let state : ℕ → Set ℕ × X :=
+      Nat.rec (∅, ⟨D, hD, fun _ h => h⟩)
+        (fun _ p => (insert (pick p.1 p.2) p.1, tail p.1 p.2))
+    let n : ℕ → ℕ := fun i => pick (state i).1 (state i).2
+    let F : ℕ → Set ℕ := fun i => (state i).1
+    let R : ℕ → Set ℕ := fun i => ((state i).2).val
+    have hF0 : F 0 = ∅ := rfl
+    have hFs (i : ℕ) : F (i + 1) = insert (n i) (F i) := rfl
+    have hnmem (i : ℕ) : n i ∈ R i := hpick (state i).1 (state i).2
+    have hnmono : StrictMono n := strictMono_nat_of_lt_succ fun i =>
+      hgt (state i).1 (state i).2 _ (hnmem (i + 1))
+    have hFmem (i x : ℕ) : x ∈ F i ↔ ∃ j < i, n j = x := by
+      induction i with
+      | zero => simp [hF0]
+      | succ i ih =>
+        rw [hFs, Set.mem_insert_iff, ih]
+        constructor
+        · rintro (rfl | ⟨j, hj, rfl⟩)
+          · exact ⟨i, by omega, rfl⟩
+          · exact ⟨j, by omega, rfl⟩
+        · rintro ⟨j, hj, rfl⟩
+          by_cases hji : j = i
+          · subst j; exact Or.inl rfl
+          · exact Or.inr ⟨j, by omega, rfl⟩
+    let A : Set ℕ := Set.range n
+    let B : ℕ → Set ℕ := fun i => {x | ∃ j, i < j ∧ n j = x}
+    have hBsub (i : ℕ) : B i ⊆ R (i + 1) := by
+      have hR : Antitone R := antitone_nat_of_succ_le fun i => hsub (state i).1 (state i).2
+      rintro x ⟨j, hij, rfl⟩
+      exact hR (Nat.succ_le_of_lt hij) (hnmem j)
+    have hsplit (i : ℕ) :
+        chi (𝕜 := 𝕜) A = chi (F i) + e (n i) + chi (B i) := by
+      apply BoundedContinuousFunction.ext
+      intro x
+      simp only [BoundedContinuousFunction.add_apply, chi_apply, e_apply]
+      by_cases hx : x ∈ A
+      · obtain ⟨j, rfl⟩ := hx
+        have hA : n j ∈ A := ⟨j, rfl⟩
+        have hF : n j ∈ F i ↔ j < i := by simp [hFmem, hnmono.injective.eq_iff]
+        have hB : n j ∈ B i ↔ i < j := by simp [B, hnmono.injective.eq_iff]
+        have heq : n j = n i ↔ j = i := hnmono.injective.eq_iff
+        simp only [hA, hF, hB, heq, ite_true]
+        split_ifs <;> norm_num <;> omega
+      · have hx' : ∀ j, n j ≠ x := by simpa [A] using hx
+        have hxn : x ≠ n i := (hx' i).symm
+        simp [A, B, hFmem, hx', hxn, hx]
+    obtain ⟨N, hN⟩ := (Metric.tendsto_atTop.1 (hμ (chi A))) δ hδ
+    have hA_small : ‖μ (n N) (chi A)‖ < δ := by
+      simpa only [dist_zero_right] using hN (n N) hnmono.le_apply
+    have hF_small : ‖μ (n N) (chi (F N))‖ < δ := hhead (state N).1 (state N).2
+    have hB_small : ‖μ (n N) (chi (B N))‖ ≤ δ :=
+      hsmall (state N).1 (state N).2 (B N) (hBsub N)
+    have hidentity : μ (n N) (chi A) =
+        μ (n N) (chi (F N)) + μ (n N) (e (n N)) + μ (n N) (chi (B N)) := by
+      rw [hsplit N, map_add, map_add]
+    have hdiag : μ (n N) (e (n N)) =
+        μ (n N) (chi A) - μ (n N) (chi (F N)) - μ (n N) (chi (B N)) := by
+      rw [hidentity]
+      abel
+    have hnorm : ‖μ (n N) (e (n N))‖ ≤
+        ‖μ (n N) (chi A)‖ + ‖μ (n N) (chi (F N))‖ +
+          ‖μ (n N) (chi (B N))‖ := by
+      rw [hdiag]
+      exact (norm_sub_le _ _).trans (add_le_add (norm_sub_le _ _) le_rfl)
+    have hlarge : ε ≤ ‖μ (n N) (e (n N))‖ := (state N).2.property.2 (hnmem N)
+    dsimp [δ] at hA_small hF_small hB_small
+    linarith only [hε, hA_small, hF_small, hB_small, hnorm, hlarge]
+  simpa only [hnorm, norm_zero, A, ContinuousLinearMap.comp_apply] using hd.norm
 
 end Phillips

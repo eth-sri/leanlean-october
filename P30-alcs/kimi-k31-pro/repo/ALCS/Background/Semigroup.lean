@@ -1,7 +1,6 @@
 module
 
 public import Mathlib.Analysis.Normed.Operator.BanachSteinhaus
-public import Mathlib.Analysis.SpecialFunctions.Log.Basic
 public import Mathlib.Analysis.SpecificLimits.Basic
 
 @[expose] public section
@@ -45,149 +44,89 @@ variable (S : C0Semigroup 𝕜 X)
 
 /-! ## Exponential bound -/
 
+/-- Banach–Steinhaus along a nonnegative null sequence. -/
+theorem exists_bound_of_tendsto_zero [CompleteSpace X] (t : ℕ → ℝ)
+    (ht0 : ∀ n, 0 ≤ t n) (ht : Tendsto t atTop (𝓝 0)) : ∃ C, ∀ n, ‖S.T (t n)‖ ≤ C := by
+  have ht' : Tendsto t atTop (nhdsWithin 0 (Set.Ici 0)) :=
+    tendsto_nhdsWithin_iff.2 ⟨ht, .of_forall ht0⟩
+  apply banach_steinhaus
+  intro x
+  obtain ⟨C, hC⟩ := isBounded_iff_forall_norm_le.1
+    (Metric.isBounded_range_of_tendsto _ ((S.T_cont x).comp ht'))
+  exact ⟨C, fun n => hC _ ⟨n, rfl⟩⟩
+
 /-- First step: `‖T t‖ ≤ M` on some interval `[0, τ]` (Banach–Steinhaus). -/
 theorem exists_bound_near_zero [CompleteSpace X] :
     ∃ τ > 0, ∃ M ≥ 1, ∀ t, 0 ≤ t → t ≤ τ → ‖S.T t‖ ≤ M := by
   by_contra h
-  -- otherwise, for every `n`, there is `t n ∈ [0, 1/(n+1)]` with `‖T (t n)‖ > n + 1`
-  have key : ∀ n : ℕ, ∃ t : ℝ, 0 ≤ t ∧ t ≤ 1 / ((n : ℝ) + 1) ∧ (n : ℝ) + 1 < ‖S.T t‖ := by
-    intro n
-    by_contra hn
-    push Not at hn
-    exact h ⟨1 / ((n : ℝ) + 1), by positivity, (n : ℝ) + 1,
-      le_add_of_nonneg_left (by positivity), hn⟩
+  have key (n : ℕ) : ∃ t : ℝ, 0 ≤ t ∧ t ≤ 1 / (n + 1) ∧ n + 1 < ‖S.T t‖ := by
+    by_contra! hn
+    exact h ⟨1 / (n + 1), by positivity, n + 1, le_add_of_nonneg_left (by positivity), hn⟩
   choose t ht0 htle htbig using key
-  -- `t n → 0⁺`
-  have ht_lim : Tendsto t atTop (nhdsWithin 0 (Set.Ici 0)) := by
-    rw [tendsto_nhdsWithin_iff]
-    constructor
-    · exact squeeze_zero ht0 htle tendsto_one_div_add_atTop_nhds_zero_nat
-    · exact Filter.Eventually.of_forall (fun n => Set.mem_Ici.2 (ht0 n))
-  -- for each `x`, the sequence `T (t n) x` converges to `x`, hence is bounded
-  have hbdd : ∀ x : X, ∃ C, ∀ n, ‖S.T (t n) x‖ ≤ C := by
-    intro x
-    have hx : Tendsto (fun n => S.T (t n) x) atTop (𝓝 x) := (S.T_cont x).comp ht_lim
-    obtain ⟨C, hC⟩ := isBounded_iff_forall_norm_le.1 (Metric.isBounded_range_of_tendsto _ hx)
-    exact ⟨C, fun n => hC _ (Set.mem_range_self n)⟩
-  -- Banach–Steinhaus: the norms `‖T (t n)‖` are bounded, contradiction
-  obtain ⟨C, hC⟩ := banach_steinhaus hbdd
+  obtain ⟨C, hC⟩ := S.exists_bound_of_tendsto_zero t ht0
+    (squeeze_zero ht0 htle tendsto_one_div_add_atTop_nhds_zero_nat)
   obtain ⟨n, hn⟩ := exists_nat_gt C
-  have h1 : ‖S.T (t n)‖ ≤ C := hC n
-  have h2 := htbig n
-  linarith
+  linarith [hC n, htbig n]
 
-/-- Exponential bound: `‖T t‖ ≤ M * exp (ω * t)` for all `t ≥ 0`, with `ω ≥ 0`, `M ≥ 1`. -/
-theorem exists_exp_bound [CompleteSpace X] :
-    ∃ ω ≥ 0, ∃ M ≥ 1, ∀ t, 0 ≤ t → ‖S.T t‖ ≤ M * Real.exp (ω * t) := by
+/-- A uniform norm bound on every finite interval. -/
+theorem exists_bound_upto [CompleteSpace X] (b : ℝ) :
+    ∃ K > 0, ∀ t, 0 ≤ t → t ≤ b → ‖S.T t‖ ≤ K := by
   obtain ⟨τ, hτ, M, hM, hbound⟩ := S.exists_bound_near_zero
-  have hMpos : 0 < M := by linarith
-  have hlogM : 0 ≤ Real.log M := Real.log_nonneg hM
-  -- `‖T (k τ)‖ ≤ M ^ k`, by induction on `k`
-  have hpow : ∀ k : ℕ, ‖S.T (k * τ)‖ ≤ M ^ k := by
-    intro k
+  have hM0 : 0 < M := zero_lt_one.trans_le hM
+  have hpow (k : ℕ) : ‖S.T (k * τ)‖ ≤ M ^ k := by
     induction k with
     | zero =>
       rw [Nat.cast_zero, zero_mul, S.T_zero, pow_zero]
       exact ContinuousLinearMap.norm_id_le
     | succ k ih =>
-      have hk : ((k + 1 : ℕ) : ℝ) * τ = k * τ + τ := by push_cast; ring
-      rw [hk, S.T_add (k * τ) τ (mul_nonneg (by positivity) hτ.le) hτ.le, pow_succ]
-      calc ‖(S.T (k * τ)).comp (S.T τ)‖
-          ≤ ‖S.T (k * τ)‖ * ‖S.T τ‖ := by apply ContinuousLinearMap.opNorm_comp_le
-        _ ≤ M ^ k * M :=
-          mul_le_mul ih (hbound τ hτ.le le_rfl) (norm_nonneg _) (pow_nonneg hMpos.le k)
-  -- `ω := log M / τ`
-  refine ⟨Real.log M / τ, div_nonneg hlogM hτ.le, M, hM, fun t ht => ?_⟩
-  -- write `t = k τ + t'` with `k = ⌊t/τ⌋` and `t' ∈ [0, τ)`
-  obtain ⟨k, hk_le, hk_lt⟩ : ∃ k : ℕ, (k : ℝ) ≤ t / τ ∧ t / τ < k + 1 :=
-    ⟨⌊t / τ⌋₊, Nat.floor_le (div_nonneg ht hτ.le), Nat.lt_floor_add_one _⟩
-  have h1 : (k : ℝ) * τ ≤ t := (le_div_iff₀ hτ).1 hk_le
-  have h2 : t < (k + 1) * τ := (div_lt_iff₀ hτ).1 hk_lt
-  -- `T t = T (k τ) ∘ T (t - k τ)`
-  have hdec : S.T t = (S.T (k * τ)).comp (S.T (t - k * τ)) := by
-    rw [← S.T_add (k * τ) (t - k * τ) (mul_nonneg (by positivity) hτ.le) (by linarith)]
-    rw [show (k : ℝ) * τ + (t - k * τ) = t by ring]
-  -- `‖T t‖ ≤ M ^ k * M`
-  have h3 : ‖S.T t‖ ≤ M ^ k * M := by
-    rw [hdec]
-    calc ‖(S.T (k * τ)).comp (S.T (t - k * τ))‖
-        ≤ ‖S.T (k * τ)‖ * ‖S.T (t - k * τ)‖ := by apply ContinuousLinearMap.opNorm_comp_le
-      _ ≤ M ^ k * M :=
-        mul_le_mul (hpow k) (hbound (t - k * τ) (by linarith) (by linarith))
-          (norm_nonneg _) (pow_nonneg hMpos.le k)
-  -- `M ^ k = exp (k log M) ≤ exp (ω t)` since `k ≤ t / τ`
-  have h4 : M ^ k ≤ Real.exp (Real.log M / τ * t) := by
-    calc M ^ k = Real.exp (Real.log M) ^ k := by rw [Real.exp_log hMpos]
-      _ = Real.exp (k * Real.log M) := (Real.exp_nat_mul _ _).symm
-      _ ≤ Real.exp (Real.log M / τ * t) := by
-        apply Real.exp_le_exp.2
-        calc (k : ℝ) * Real.log M ≤ t / τ * Real.log M :=
-              mul_le_mul_of_nonneg_right hk_le hlogM
-          _ = Real.log M / τ * t := by ring
-  calc ‖S.T t‖ ≤ M ^ k * M := h3
-    _ ≤ Real.exp (Real.log M / τ * t) * M := mul_le_mul_of_nonneg_right h4 hMpos.le
-    _ = M * Real.exp (Real.log M / τ * t) := mul_comm _ _
+      rw [Nat.cast_succ, add_mul, one_mul,
+        S.T_add _ _ (mul_nonneg (Nat.cast_nonneg _) hτ.le) hτ.le, pow_succ]
+      exact (ContinuousLinearMap.opNorm_comp_le _ _).trans
+        (mul_le_mul ih (hbound τ hτ.le le_rfl) (norm_nonneg _) (pow_nonneg hM0.le k))
+  refine ⟨M ^ (⌊b / τ⌋₊ + 1), pow_pos hM0 _, fun t ht htb => ?_⟩
+  let k := ⌊t / τ⌋₊
+  have hk : (k : ℝ) ≤ t / τ := Nat.floor_le (div_nonneg ht hτ.le)
+  have hkt : t / τ < k + 1 := Nat.lt_floor_add_one _
+  have h1 : (k : ℝ) * τ ≤ t := (le_div_iff₀ hτ).1 hk
+  have h2 : t < (k + 1) * τ := (div_lt_iff₀ hτ).1 hkt
+  calc
+    ‖S.T t‖ ≤ M ^ k * M := by
+      rw [← show (k : ℝ) * τ + (t - k * τ) = t by ring,
+        S.T_add _ _ (mul_nonneg (Nat.cast_nonneg _) hτ.le) (by linarith)]
+      exact (ContinuousLinearMap.opNorm_comp_le _ _).trans
+        (mul_le_mul (hpow k) (hbound _ (by linarith) (by linarith)) (norm_nonneg _)
+          (pow_nonneg hM0.le k))
+    _ = M ^ (k + 1) := (pow_succ _ _).symm
+    _ ≤ M ^ (⌊b / τ⌋₊ + 1) := pow_le_pow_right₀ hM <| Nat.succ_le_succ <|
+      Nat.floor_mono (div_le_div_of_nonneg_right htb hτ.le)
 
 /-! ## Proposition 1.2: continuity of the orbits -/
 
-/-- `T (a + h) y - T a y = T a (T h y - y)` -/
-theorem orbit_sub (y : X) (a h : ℝ) (ha : 0 ≤ a) (hh : 0 ≤ h) :
-    S.T (a + h) y - S.T a y = S.T a (S.T h y - y) := by
-  rw [S.T_add a h ha hh, ContinuousLinearMap.comp_apply, map_sub]
-
-/-- `‖T (a + h) y - T a y‖ ≤ ‖T a‖ ‖T h y - y‖` -/
-theorem norm_orbit_sub_le (y : X) (a h : ℝ) (ha : 0 ≤ a) (hh : 0 ≤ h) :
-    ‖S.T (a + h) y - S.T a y‖ ≤ ‖S.T a‖ * ‖S.T h y - y‖ := by
-  rw [S.orbit_sub y a h ha hh]
-  apply ContinuousLinearMap.le_opNorm
-
-/-- **Proposition 1.2** (`prop:pazy-semigroup-solution-continuous`). For every `y`,
-`t ↦ T t y` is continuous on `ℝ₊ = [0, ∞)`. -/
+/-- **Proposition 1.2** (`prop:pazy-semigroup-solution-continuous`). -/
 theorem continuousOn_orbit [CompleteSpace X] (y : X) :
     ContinuousOn (fun t => S.T t y) (Set.Ici 0) := by
-  obtain ⟨ω, hω, M, hM, hexp⟩ := S.exists_exp_bound
   rw [Metric.continuousOn_iff]
   intro t₀ ht₀ ε hε
-  rw [Set.mem_Ici] at ht₀
-  -- uniform bound `‖T a‖ ≤ K` for `a ∈ [0, t₀]`, with `K := M exp (ω t₀)`
-  obtain ⟨K, hKpos, hK⟩ : ∃ K > 0, ∀ a, 0 ≤ a → a ≤ t₀ → ‖S.T a‖ ≤ K := by
-    refine ⟨M * Real.exp (ω * t₀), mul_pos (by linarith) (Real.exp_pos _), ?_⟩
-    intro a ha hat
-    calc ‖S.T a‖ ≤ M * Real.exp (ω * a) := hexp a ha
-      _ ≤ M * Real.exp (ω * t₀) :=
-        mul_le_mul_of_nonneg_left
-          (Real.exp_le_exp.2 (mul_le_mul_of_nonneg_left hat hω)) (by linarith)
-  -- strong continuity at `0`, with tolerance `ε / K`
-  obtain ⟨δ, hδ, hcont⟩ :=
-    Metric.tendsto_nhdsWithin_nhds.1 (S.T_cont y) (ε / K) (div_pos hε hKpos)
-  -- key estimate: `‖T (a + h) y - T a y‖ < ε` for `a ∈ [0, t₀]`, `h ∈ [0, δ)`
-  have key : ∀ a h : ℝ, 0 ≤ a → a ≤ t₀ → 0 ≤ h → h < δ →
+  obtain ⟨K, hK0, hK⟩ := S.exists_bound_upto t₀
+  obtain ⟨δ, hδ, hc⟩ := Metric.tendsto_nhdsWithin_nhds.1 (S.T_cont y) (ε / K) (by positivity)
+  have key (a h : ℝ) (ha : 0 ≤ a) (hat : a ≤ t₀) (hh : 0 ≤ h) (hhδ : h < δ) :
       ‖S.T (a + h) y - S.T a y‖ < ε := by
-    intro a h ha hat hh hhδ
-    have h1 : dist (S.T h y) y < ε / K := by
-      apply hcont (Set.mem_Ici.2 hh)
-      rw [Real.dist_eq, sub_zero, abs_of_nonneg hh]
-      exact hhδ
-    rw [dist_eq_norm] at h1
-    have h2 : K * ‖S.T h y - y‖ < ε := by
-      rw [mul_comm]
-      exact (lt_div_iff₀ hKpos).1 h1
-    have h3 : ‖S.T a‖ * ‖S.T h y - y‖ ≤ K * ‖S.T h y - y‖ :=
-      mul_le_mul_of_nonneg_right (hK a ha hat) (norm_nonneg _)
-    have h4 := S.norm_orbit_sub_le y a h ha hh
-    linarith
-  refine ⟨δ, hδ, fun t ht hdist => ?_⟩
-  rw [Set.mem_Ici] at ht
-  rw [Real.dist_eq] at hdist
-  obtain ⟨hd1, hd2⟩ := abs_lt.1 hdist
-  show dist (S.T t y) (S.T t₀ y) < ε
+    have h1 : ‖S.T h y - y‖ < ε / K := by
+      rw [← dist_eq_norm]
+      exact hc hh (by simpa [Real.dist_eq, abs_of_nonneg hh] using hhδ)
+    calc
+      _ ≤ K * ‖S.T h y - y‖ := by
+        rw [S.T_add a h ha hh, ContinuousLinearMap.comp_apply, ← map_sub]
+        exact (S.T a).le_of_opNorm_le (hK a ha hat) _
+      _ < ε := by rw [mul_comm]; exact (lt_div_iff₀ hK0).1 h1
+  refine ⟨δ, hδ, fun t ht hd => ?_⟩
+  rw [Real.dist_eq] at hd
+  obtain ⟨hd1, hd2⟩ := abs_lt.1 hd
   rw [dist_eq_norm]
   rcases le_total t₀ t with htt | htt
-  · -- case `t₀ ≤ t`: apply `key` with `a = t₀`, `h = t - t₀`
-    have := key t₀ (t - t₀) ht₀ le_rfl (by linarith) (by linarith)
-    rwa [show t₀ + (t - t₀) = t by ring] at this
-  · -- case `t ≤ t₀`: apply `key` with `a = t`, `h = t₀ - t`
-    have := key t (t₀ - t) ht htt (by linarith) (by linarith)
-    rwa [show t + (t₀ - t) = t₀ by ring, norm_sub_rev] at this
+  · have h := key t₀ (t - t₀) ht₀ le_rfl (by linarith) (by linarith)
+    rwa [show t₀ + (t - t₀) = t by ring] at h
+  · have h := key t (t₀ - t) ht htt (by linarith) (by linarith)
+    rwa [show t + (t₀ - t) = t₀ by ring, norm_sub_rev] at h
 
 end C0Semigroup

@@ -65,52 +65,34 @@ def IsZeroClass : Prop :=
 
 /-- `Φ 0 = 0` (§ 1.2): composition with `τ = t = 0` and `u = v`, since `u ⋄_0 u = u`. -/
 theorem Phi_zero : S.Φ 0 = 0 := by
-  refine ContinuousLinearMap.ext (fun u => ?_)
-  -- `u ⋄_0 u = u` everywhere
-  have hw : ⇑u =ᵐ[muPlus] concat 0 ⇑u ⇑u :=
-    Filter.Eventually.of_forall (fun s => by simp [concat])
-  -- `Φ 0 u = T 0 (Φ 0 u) + Φ 0 u = Φ 0 u + Φ 0 u`
-  have h := S.composition 0 0 le_rfl le_rfl u u u hw
+  refine ContinuousLinearMap.ext fun u => ?_
+  have h := S.composition 0 0 le_rfl le_rfl u u u (.of_forall fun s => by simp [concat])
   simpa [S.T_zero] using h
 
-/-- **Lemma 2.1** (`lem:Phi-properties`), causality `eq:causality`:
-`Φ τ (u ⋄_τ v) = Φ τ u`, i.e. `Φ τ u` only depends on the restriction of `u` to `[0, τ)`.
-(Composition with `t = 0`.) -/
+/-- **Lemma 2.1** (`lem:Phi-properties`), causality `eq:causality`. -/
 theorem causality (τ : ℝ) (hτ : 0 ≤ τ) (u v w : Lp U p muPlus)
     (hw : ⇑w =ᵐ[muPlus] concat τ ⇑u ⇑v) :
     S.Φ τ w = S.Φ τ u := by
-  have h := S.composition τ 0 hτ le_rfl u v w hw
-  simpa [S.T_zero, S.Phi_zero] using h
+  simpa [S.T_zero, S.Phi_zero] using S.composition τ 0 hτ le_rfl u v w hw
 
-/-- **Lemma 2.1** (`lem:Phi-properties`), delay `eq:delay`:
-`Φ (s + t) (0 ⋄_s v) = Φ t v`, i.e. an initial period of zero input has no effect.
-(Composition with `u = 0`.) -/
+/-- **Lemma 2.1** (`lem:Phi-properties`), delay `eq:delay`. -/
 theorem delay (s t : ℝ) (hs : 0 ≤ s) (ht : 0 ≤ t) (v w : Lp U p muPlus)
     (hw : ⇑w =ᵐ[muPlus] concat s ⇑(0 : Lp U p muPlus) ⇑v) :
     S.Φ (s + t) w = S.Φ t v := by
-  have h := S.composition s t hs ht 0 v w hw
-  simpa using h
+  simpa using S.composition s t hs ht 0 v w hw
 
-/-- **Lemma 2.1** (`lem:Phi-properties`), free evolution `eq:free`:
-`Φ (τ + t) (u ⋄_τ 0) = T t (Φ τ u)`, i.e. once the input is switched off, the state evolves
-freely. (Composition with `v = 0`.) -/
+/-- **Lemma 2.1** (`lem:Phi-properties`), free evolution `eq:free`. -/
 theorem free (τ t : ℝ) (hτ : 0 ≤ τ) (ht : 0 ≤ t) (u w : Lp U p muPlus)
     (hw : ⇑w =ᵐ[muPlus] concat τ ⇑u ⇑(0 : Lp U p muPlus)) :
     S.Φ (τ + t) w = S.T t (S.Φ τ u) := by
-  have h := S.composition τ t hτ ht u 0 w hw
-  simpa using h
+  simpa using S.composition τ t hτ ht u 0 w hw
 
-/-- Monotonicity of `κ(t) = ‖Φ t‖`, equation `eq:Phi-monotone`:
-`‖Φ s‖ ≤ ‖Φ t‖` for `0 ≤ s ≤ t`. Indeed `Φ s u = Φ t (0 ⋄_{t-s} u)` by `delay`. -/
+/-- Monotonicity of `κ(t) = ‖Φ t‖`, equation `eq:Phi-monotone`. -/
 theorem norm_Phi_mono {s t : ℝ} (hs : 0 ≤ s) (hst : s ≤ t) : ‖S.Φ s‖ ≤ ‖S.Φ t‖ := by
   apply ContinuousLinearMap.opNorm_le_bound _ (norm_nonneg _)
   intro u
   obtain ⟨w, hw, hcat⟩ := exists_delay (t - s) u
-  have heq := S.delay (t - s) s (sub_nonneg.2 hst) hs u w hcat
-  rw [sub_add_cancel] at heq
-  calc
-    ‖S.Φ s u‖ = ‖S.Φ t w‖ := congrArg norm heq.symm
-    _ ≤ ‖S.Φ t‖ * ‖w‖ := (S.Φ t).le_opNorm w
-    _ ≤ ‖S.Φ t‖ * ‖u‖ := mul_le_mul_of_nonneg_left hw (norm_nonneg _)
+  rw [← S.delay (t - s) s (sub_nonneg.2 hst) hs u w hcat, sub_add_cancel]
+  exact (S.Φ t).le_opNorm_of_le hw
 
 end ALCS
