@@ -1,5 +1,9 @@
 module
 
+public import RequestProject.PlanarTypes
+
+public import RequestProject.PlanarGeometry
+
 public import Mathlib.Analysis.Calculus.Rademacher
 public import RequestProject.Observation
 
@@ -33,36 +37,38 @@ variable {C C' : ℝ → A} {M M' L : ℝ} {W W' F : ℝ → A}
 
 /-- A bounded strongly measurable function is interval integrable. -/
 lemma intervalIntegrable_of_bounded {G : Type*} [NormedAddCommGroup G] {f : ℝ → G}
-    (hf : AEStronglyMeasurable f volume) {B : ℝ} (hB : ∀ s, ‖f s‖ ≤ B) (a b : ℝ) :
+    (hf : AEStronglyMeasurable f volume)  (hB : ∀ s, ‖f s‖ ≤ B) a b :
     IntervalIntegrable f volume a b :=
   IntervalIntegrable.mono_fun' (g := fun _ => B) intervalIntegrable_const hf.restrict
     (Eventually.of_forall hB)
 
+section
+variable (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖C s‖ ≤ M) (hW : ContinuousOn W (Icc 0 L)) (eW : ∀ θ ∈ Icc 0 L, W θ = 1 + ∫ s in (0 : ℝ)..θ, C s * W s)
+include hC hM hW eW
+
 /-- The variation identity with an integration by parts, at every point of `[0, L]`: if
 `F' = C - C'` almost everywhere and `F(0) = 0`, then
 `W'(θ)^* W(θ) - 1 = W'(θ)^* F(θ) W(θ) + ∫₀^θ W'^* (C' F - F C) W`. -/
-theorem volterra_variation_at (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖C s‖ ≤ M)
-    (hW : ContinuousOn W (Icc 0 L))
-    (eW : ∀ θ ∈ Icc 0 L, W θ = 1 + ∫ s in (0 : ℝ)..θ, C s * W s)
+theorem volterra_variation_at
     (hC' : AEStronglyMeasurable C' volume) (hM' : ∀ s, ‖C' s‖ ≤ M')
     (hskew' : ∀ s, star (C' s) = -C' s) (hW' : ContinuousOn W' (Icc 0 L))
     (eW' : ∀ θ ∈ Icc 0 L, W' θ = 1 + ∫ s in (0 : ℝ)..θ, C' s * W' s)
-    (hL : 0 ≤ L) {KF : NNReal} (hF : LipschitzOnWith KF F (Icc 0 L))
+    (hL : 0 ≤ L)  (hF : LipschitzOnWith KF F (Icc 0 L))
     (hFd : ∀ᵐ θ, θ ∈ Ioo 0 L → HasDerivAt F (C θ - C' θ) θ) (hF0 : F 0 = 0) :
     ∀ θ ∈ Icc 0 L, star (W' θ) * W θ - 1 = star (W' θ) * F θ * W θ +
       ∫ s in (0 : ℝ)..θ, star (W' s) * (C' s * F s - F s * C s) * W s := by
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0)
-  have hM0' : 0 ≤ M' := (norm_nonneg _).trans (hM' 0)
+  have hM0  := (norm_nonneg _).trans (hM 0)
+  have hM0'  := (norm_nonneg _).trans (hM' 0)
   have hW0 : W 0 = 1 := by simpa using eW 0 ⟨le_rfl, hL⟩
   have hW0' : W' 0 = 1 := by simpa using eW' 0 ⟨le_rfl, hL⟩
-  have hFc : ContinuousOn F (Icc 0 L) := hF.continuousOn
+  have hFc  := hF.continuousOn
   obtain ⟨S1, hS1⟩ := isCompact_Icc.exists_bound_of_continuousOn hW
   obtain ⟨S2, hS2⟩ := isCompact_Icc.exists_bound_of_continuousOn hW'
   obtain ⟨S3, hS3⟩ := isCompact_Icc.exists_bound_of_continuousOn hFc
   have h0 : (0 : ℝ) ∈ Icc 0 L := ⟨le_rfl, hL⟩
-  have hS1' : 0 ≤ S1 := (norm_nonneg _).trans (hS1 0 h0)
-  have hS2' : 0 ≤ S2 := (norm_nonneg _).trans (hS2 0 h0)
-  have hS3' : 0 ≤ S3 := (norm_nonneg _).trans (hS3 0 h0)
+  have hS1'  := (norm_nonneg _).trans (hS1 0 h0)
+  have hS2'  := (norm_nonneg _).trans (hS2 0 h0)
+  have hS3'  := (norm_nonneg _).trans (hS3 0 h0)
   set B : ℝ := (1 + S1 + S2 + S3) * (1 + S1 + S2 + S3) with hB
   have hB1 : 1 + S1 + S2 + S3 ≤ B := by nlinarith
   have hb1 : ∀ x ∈ Icc 0 L, ‖W x‖ ≤ B := fun x hx => by linarith [hS1 x hx]
@@ -90,7 +96,7 @@ theorem volterra_variation_at (hC : AEStronglyMeasurable C volume) (hM : ∀ s, 
     have := (hθ hmem).star
     rwa [star_mul, hskew', mul_neg] at this
   set G : ℝ → A := fun θ => star (W' θ) * W θ - star (W' θ) * F θ * W θ with hG
-  have hGL : LipschitzOnWith _ G (Icc 0 L) :=
+  have hGL  :=
     (lipschitzOnWith_mul_of_bounded hK2s hK1 hb2 hb1).sub
       (lipschitzOnWith_mul_of_bounded (lipschitzOnWith_mul_of_bounded hK2s hF hb2 hb3) hK1
         hb23 hb1)
@@ -112,7 +118,7 @@ theorem volterra_variation_at (hC : AEStronglyMeasurable C volume) (hM : ∀ s, 
             · exact (norm_mul_le _ _).trans (mul_le_mul (hM' x) (hb3 x hx) (norm_nonneg _) hM0')
             · exact (norm_mul_le _ _).trans (mul_le_mul (hb3 x hx) (hM x) (norm_nonneg _) hB0)
           · exact hb1 x hx
-  have hgi : IntegrableOn g (Icc 0 L) :=
+  have hgi :=
     Integrable.of_bound hgm (B * (M' * B + B * M) * B)
       ((ae_restrict_iff' measurableSet_Icc).mpr (Eventually.of_forall hgB))
   have hP := eq_add_integral_of_ae_hasDerivAt hGL hgi hgB (by
@@ -123,35 +129,34 @@ theorem volterra_variation_at (hC : AEStronglyMeasurable C volume) (hM : ∀ s, 
     noncomm_ring)
   intro θ hθ
   have := hP θ hθ
-  simp only [hG, hW0, hW0', hF0, star_one, one_mul, mul_zero, zero_mul, sub_zero] at this
-  calc star (W' θ) * W θ - 1
-      = (star (W' θ) * W θ - star (W' θ) * F θ * W θ) + star (W' θ) * F θ * W θ - 1 := by abel
-    _ = _ := by rw [this]; abel
+  simp only [ hW0, hW0', hF0, star_one, one_mul, mul_zero, zero_mul, sub_zero] at this
+  grind
 
 /-- The variation identity with an integration by parts: if `F' = C - C'` almost
 everywhere and `F(0) = F(L) = 0`, then
 `W'(L)^* W(L) - 1 = ∫₀^L W'^* (C' F - F C) W`. -/
-theorem volterra_variation (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖C s‖ ≤ M)
-    (hW : ContinuousOn W (Icc 0 L))
-    (eW : ∀ θ ∈ Icc 0 L, W θ = 1 + ∫ s in (0 : ℝ)..θ, C s * W s)
+theorem volterra_variation
     (hC' : AEStronglyMeasurable C' volume) (hM' : ∀ s, ‖C' s‖ ≤ M')
     (hskew' : ∀ s, star (C' s) = -C' s) (hW' : ContinuousOn W' (Icc 0 L))
     (eW' : ∀ θ ∈ Icc 0 L, W' θ = 1 + ∫ s in (0 : ℝ)..θ, C' s * W' s)
-    (hL : 0 ≤ L) {KF : NNReal} (hF : LipschitzOnWith KF F (Icc 0 L))
+    (hL : 0 ≤ L)  (hF : LipschitzOnWith KF F (Icc 0 L))
     (hFd : ∀ᵐ θ, θ ∈ Ioo 0 L → HasDerivAt F (C θ - C' θ) θ) (hF0 : F 0 = 0) (hFL : F L = 0) :
     star (W' L) * W L - 1 = ∫ s in (0 : ℝ)..L, star (W' s) * (C' s * F s - F s * C s) * W s := by
   rw [volterra_variation_at hC hM hW eW hC' hM' hskew' hW' eW' hL hF hFd hF0 L ⟨hL, le_rfl⟩,
     hFL, mul_zero, zero_mul, zero_add]
 
+end
+
+
 omit [CompleteSpace A] [StarModule ℝ A] [NormedStarGroup A] in
 /-- The norm estimate in the variation identity. -/
 theorem norm_volterra_variation_le (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖C s‖ ≤ M)
     (hC' : AEStronglyMeasurable C' volume) (hM' : ∀ s, ‖C' s‖ ≤ M') (hL : 0 ≤ L)
-    {ε : ℝ} (hFε : ∀ θ ∈ Icc 0 L, ‖F θ‖ ≤ ε) (hWn : ∀ θ ∈ Icc 0 L, ‖W θ‖ ≤ 1)
+     (hFε : ∀ θ ∈ Icc 0 L, ‖F θ‖ ≤ ε) (hWn : ∀ θ ∈ Icc 0 L, ‖W θ‖ ≤ 1)
     (hW'n : ∀ θ ∈ Icc 0 L, ‖star (W' θ)‖ ≤ 1) :
     ‖∫ s in (0 : ℝ)..L, star (W' s) * (C' s * F s - F s * C s) * W s‖ ≤
       ε * ∫ s in (0 : ℝ)..L, (‖C' s‖ + ‖C s‖) := by
-  have hi : IntervalIntegrable (fun s => ‖C' s‖ + ‖C s‖) volume 0 L :=
+  have hi  :=
     intervalIntegrable_of_bounded (hC'.norm.add hC.norm)
       (B := M' + M) (fun s => by
         show ‖‖C' s‖ + ‖C s‖‖ ≤ M' + M
@@ -159,8 +164,8 @@ theorem norm_volterra_variation_le (hC : AEStronglyMeasurable C volume) (hM : �
   rw [← intervalIntegral.integral_const_mul]
   refine intervalIntegral.norm_integral_le_of_norm_le hL
     (Eventually.of_forall fun t ht => ?_) (hi.const_mul ε)
-  have ht' : t ∈ Icc 0 L := Ioc_subset_Icc_self ht
-  have hε : 0 ≤ ε := (norm_nonneg _).trans (hFε t ht')
+  have ht'  := Ioc_subset_Icc_self ht
+  have hε  := (norm_nonneg _).trans (hFε t ht')
   calc ‖star (W' t) * (C' t * F t - F t * C t) * W t‖
       ≤ ‖star (W' t)‖ * ‖C' t * F t - F t * C t‖ * ‖W t‖ := by
         refine (norm_mul_le _ _).trans ?_
@@ -180,31 +185,28 @@ end Generic
 
 /-- The matrix `-(i √E / 2) (z S_N^* + conj(z) S_N)`; the transport coefficient is
 `C_E(θ) = coeffOf E (γ'(θ))`. -/
-def coeffOf (E : ℝ) (z : ℂ) : Ell2 →L[ℂ] Ell2 :=
+def coeffOf (E : ℝ) (z : ℂ) : ComplexEnd Ell2 :=
   (-(Complex.I * (Real.sqrt E : ℂ)) / 2) •
     (z • ContinuousLinearMap.adjoint shiftN + conj z • shiftN)
 
-lemma transportCoeff_eq_coeffOf (γ : ℝ → ℂ) (E θ : ℝ) :
+lemma transportCoeff_eq_coeffOf γ E θ :
     transportCoeff γ E θ = coeffOf E (deriv γ θ) := rfl
 
 /-- The constant `κ = (‖S_N^*‖ + ‖S_N‖) / 2`. -/
-def shiftConst : ℝ := (‖(ContinuousLinearMap.adjoint shiftN : Ell2 →L[ℂ] Ell2)‖ + ‖shiftN‖) / 2
+def shiftConst : ℝ := (‖(ContinuousLinearMap.adjoint shiftN : ComplexEnd Ell2)‖ + ‖shiftN‖) / 2
 
 lemma shiftConst_nonneg : 0 ≤ shiftConst := by unfold shiftConst; positivity
 
-lemma coeffOf_sub (E : ℝ) (z w : ℂ) : coeffOf E z - coeffOf E w = coeffOf E (z - w) := by
+lemma coeffOf_sub E z w : coeffOf E z - coeffOf E w = coeffOf E (z - w) := by
   unfold coeffOf
   rw [map_sub]
   module
 
-lemma coeffOf_zero (E : ℝ) : coeffOf E 0 = 0 := by
-  ext1 v
+lemma coeffOf_zero E : coeffOf E 0 = 0 := by
   simp [coeffOf]
 
 lemma norm_I_mul_div_two (r : ℝ) : ‖(-(Complex.I * (r : ℂ)) / 2)‖ = |r| / 2 := by
-  rw [norm_div, norm_neg, norm_mul, Complex.norm_I, one_mul, Complex.norm_real,
-    Real.norm_eq_abs]
-  simp
+  simp_all
 
 lemma norm_shiftPart_le (z : ℂ) :
     ‖z • ContinuousLinearMap.adjoint shiftN + conj z • shiftN‖ ≤ 2 * shiftConst * ‖z‖ := by
@@ -213,7 +215,7 @@ lemma norm_shiftPart_le (z : ℂ) :
   rw [norm_smul, norm_smul, Complex.norm_conj]
   linarith
 
-lemma norm_coeffOf_le (E : ℝ) (z : ℂ) : ‖coeffOf E z‖ ≤ Real.sqrt E * shiftConst * ‖z‖ := by
+lemma norm_coeffOf_le E z : ‖coeffOf E z‖ ≤ Real.sqrt E * shiftConst * ‖z‖ := by
   unfold coeffOf
   rw [norm_smul, norm_I_mul_div_two, abs_of_nonneg (Real.sqrt_nonneg E)]
   calc Real.sqrt E / 2 * ‖z • ContinuousLinearMap.adjoint shiftN + conj z • shiftN‖
@@ -221,12 +223,12 @@ lemma norm_coeffOf_le (E : ℝ) (z : ℂ) : ‖coeffOf E z‖ ≤ Real.sqrt E * 
         gcongr; exact norm_shiftPart_le z
     _ = _ := by ring
 
-lemma norm_coeffOf_sub_coeffOf_le (E E' : ℝ) (z : ℂ) :
+lemma norm_coeffOf_sub_coeffOf_le E E' z :
     ‖coeffOf E z - coeffOf E' z‖ ≤ |Real.sqrt E - Real.sqrt E'| * shiftConst * ‖z‖ := by
   have hsplit : coeffOf E z - coeffOf E' z =
       (-(Complex.I * ((Real.sqrt E - Real.sqrt E' : ℝ) : ℂ)) / 2) •
         (z • ContinuousLinearMap.adjoint shiftN + conj z • shiftN) := by
-    unfold coeffOf; push_cast; module
+    unfold coeffOf; module
   rw [hsplit, norm_smul, norm_I_mul_div_two]
   calc |Real.sqrt E - Real.sqrt E'| / 2 *
         ‖z • ContinuousLinearMap.adjoint shiftN + conj z • shiftN‖
@@ -234,14 +236,18 @@ lemma norm_coeffOf_sub_coeffOf_le (E E' : ℝ) (z : ℂ) :
         gcongr; exact norm_shiftPart_le z
     _ = _ := by ring
 
-lemma hasDerivAt_coeffOf {γ : ℝ → ℂ} {γ' : ℂ} {θ : ℝ} (h : HasDerivAt γ γ' θ) (E : ℝ) (c : ℂ) :
+lemma hasDerivAt_coeffOf {γ : ComplexCurve} {γ' : ℂ} {θ : ℝ} (h : HasDerivAt γ γ' θ) (E : ℝ) (c : ℂ) :
     HasDerivAt (fun θ => coeffOf E (γ θ - c)) (coeffOf E γ') θ := by
   have h1 := h.sub_const c
-  have h2 : HasDerivAt (fun θ => conj (γ θ - c)) (conj γ') θ := h1.star
+  have h2  := h1.star
   exact ((h1.smul_const (ContinuousLinearMap.adjoint shiftN)).add
-    (h2.smul_const shiftN)).const_smul (-(Complex.I * (Real.sqrt E : ℂ)) / 2)
+    (h2.smul_const shiftN)).const_smul (-(Complex.I * (Real.sqrt E)) / 2)
 
-lemma lipschitzWith_coeffOf {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ) (E : ℝ) (c : ℂ) :
+section
+variable {γ : ComplexCurve} {K } (hK : LipschitzWith K γ)
+
+include γ K hK in
+lemma lipschitzWith_coeffOf E c :
     LipschitzWith (Real.sqrt E * shiftConst * K).toNNReal (fun θ => coeffOf E (γ θ - c)) := by
   refine LipschitzWith.of_dist_le' fun x y => ?_
   rw [dist_eq_norm, coeffOf_sub, sub_sub_sub_cancel_right]
@@ -249,18 +255,18 @@ lemma lipschitzWith_coeffOf {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith 
   rw [mul_assoc _ (K : ℝ)]
   have := hK.dist_le_mul x y
   rw [dist_eq_norm] at this
-  have h0 : 0 ≤ Real.sqrt E * shiftConst := mul_nonneg (Real.sqrt_nonneg E) shiftConst_nonneg
+  have h0  := mul_nonneg (Real.sqrt_nonneg E) shiftConst_nonneg
   exact mul_le_mul_of_nonneg_left this h0
 
 /-- Unitary operators have norm at most one. -/
-lemma norm_le_one_of_mem_unitary {U : Ell2 →L[ℂ] Ell2} (hU : U ∈ unitary (Ell2 →L[ℂ] Ell2)) :
+lemma norm_le_one_of_mem_unitary {U : ComplexEnd Ell2} (hU : U ∈ unitary (ComplexEnd Ell2)) :
     ‖U‖ ≤ 1 := by
-  have h1 := CStarRing.norm_coe_unitary_mul (⟨U, hU⟩ : unitary (Ell2 →L[ℂ] Ell2)) 1
-  simp only [mul_one] at h1
+  have h1 := CStarRing.norm_coe_unitary_mul (⟨U, hU⟩) 1
+  simp   at h1
   rw [h1]
   exact ContinuousLinearMap.norm_id_le
 
-lemma norm_coeffOf_sub_coeffOf_le' (E E' : ℝ) (z z' : ℂ) :
+lemma norm_coeffOf_sub_coeffOf_le' E E' z z' :
     ‖coeffOf E z - coeffOf E' z'‖ ≤
       |Real.sqrt E - Real.sqrt E'| * shiftConst * ‖z‖ + Real.sqrt E' * shiftConst * ‖z - z'‖ := by
   have : coeffOf E z - coeffOf E' z' = (coeffOf E z - coeffOf E' z) + coeffOf E' (z - z') := by
@@ -269,10 +275,13 @@ lemma norm_coeffOf_sub_coeffOf_le' (E E' : ℝ) (z z' : ℂ) :
   exact (norm_add_le _ _).trans
     (add_le_add (norm_coeffOf_sub_coeffOf_le E E' z) (norm_coeffOf_le E' _))
 
-lemma integral_norm_transportCoeff_le {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
-    (E : ℝ) :
-    ∫ θ in (0 : ℝ)..(2 * π), ‖transportCoeff γ E θ‖ ≤
-      Real.sqrt E * shiftConst * ∫ θ in (0 : ℝ)..(2 * π), ‖deriv γ θ‖ := by
+section
+include γ K hK
+
+lemma integral_norm_transportCoeff_le
+    E :
+    ∫ θ in (0 : ℝ)..circlePeriod, ‖transportCoeff γ E θ‖ ≤
+      Real.sqrt E * shiftConst * ∫ θ in (0 : ℝ)..circlePeriod, ‖deriv γ θ‖ := by
   rw [← intervalIntegral.integral_const_mul]
   have hd : ∀ s, ‖deriv γ s‖ ≤ K := fun s => norm_deriv_le_of_lipschitz hK
   refine intervalIntegral.integral_mono_on (by positivity) ?_ ?_ fun θ _ => ?_
@@ -283,36 +292,42 @@ lemma integral_norm_transportCoeff_le {γ : ℝ → ℂ} {K : NNReal} (hK : Lips
   · exact norm_coeffOf_le E _
 
 /-- The values of the transport of a Lipschitz curve are unitary. -/
-lemma transport_mem_unitary {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ) {E : ℝ}
-    {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W) {θ : ℝ} (hθ : θ ∈ Icc 0 (2 * π)) :
-    W θ ∈ unitary (Ell2 →L[ℂ] Ell2) :=
+lemma transport_mem_unitary {E : ℝ}
+    {W : ℝ → ComplexEnd Ell2} (hW : IsTransport γ E W) {θ : ℝ} (hθ : θ ∈ boundaryInterval) :
+    W θ ∈ unitary (ComplexEnd Ell2) :=
   Unitary.mem_iff.mpr (volterra_unitary (transportCoeff_aestronglyMeasurable γ E)
     (transportCoeff_norm_le γ E hK) (transportCoeff_star γ E) hW.1 hW.2 θ hθ)
+
+end
+
+
+end
+
 
 /-- The variation identity for two transports, with the explicit primitive
 `F = coeffOf E (γ - γ(0)) - coeffOf E' (γ' - γ'(0))` of `C - C'`, and the resulting
 estimate `‖V'^* V - I‖ ≤ ε ∫₀^L (‖C'‖ + ‖C‖)` whenever `‖F‖ ≤ ε` on `[0, L]`. -/
-theorem norm_transport_variation_le {γ γ' : ℝ → ℂ} {K K' : NNReal} (hK : LipschitzWith K γ)
-    (hK' : LipschitzWith K' γ') (hclosed : γ (2 * π) = γ 0) (hclosed' : γ' (2 * π) = γ' 0)
-    {E E' : ℝ} {W W' : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W)
-    (hW' : IsTransport γ' E' W') {ε : ℝ}
-    (hε : ∀ θ ∈ Icc 0 (2 * π),
+theorem norm_transport_variation_le   (hK : LipschitzWith K γ)
+    (hK' : LipschitzWith K' γ') (hclosed : γ circlePeriod = γ 0) (hclosed' : γ' circlePeriod = γ' 0)
+      (hW : IsTransport γ E W)
+    (hW' : IsTransport γ' E' W') 
+    (hε : ∀ θ ∈ boundaryInterval,
       ‖coeffOf E (γ θ - γ 0) - coeffOf E' (γ' θ - γ' 0)‖ ≤ ε) :
-    ‖star (W' (2 * π)) * W (2 * π) - 1‖ ≤
-      ε * ∫ s in (0 : ℝ)..(2 * π), (‖transportCoeff γ' E' s‖ + ‖transportCoeff γ E s‖) := by
+    ‖star (W' circlePeriod) * W circlePeriod - 1‖ ≤
+      ε * ∫ s in (0 : ℝ)..circlePeriod, (‖transportCoeff γ' E' s‖ + ‖transportCoeff γ E s‖) := by
   have hπ : (0 : ℝ) ≤ 2 * π := by positivity
-  set F : ℝ → Ell2 →L[ℂ] Ell2 := fun θ => coeffOf E (γ θ - γ 0) - coeffOf E' (γ' θ - γ' 0)
+  set F : ℝ → ComplexEnd Ell2 := fun θ => coeffOf E (γ θ - γ 0) - coeffOf E' (γ' θ - γ' 0)
     with hF
-  have hFL : LipschitzOnWith _ F (Icc 0 (2 * π)) :=
+  have hFL : LipschitzOnWith _ F boundaryInterval :=
     ((lipschitzWith_coeffOf hK E (γ 0)).sub (lipschitzWith_coeffOf hK' E' (γ' 0))).lipschitzOnWith
-  have hFd : ∀ᵐ θ, θ ∈ Ioo 0 (2 * π) →
+  have hFd : ∀ᵐ θ, θ ∈ Ioo 0 circlePeriod →
       HasDerivAt F (transportCoeff γ E θ - transportCoeff γ' E' θ) θ := by
     filter_upwards [hK.ae_differentiableAt (μ := volume),
       hK'.ae_differentiableAt (μ := volume)] with θ h1 h2 _
     exact (hasDerivAt_coeffOf h1.hasDerivAt E (γ 0)).sub
       (hasDerivAt_coeffOf h2.hasDerivAt E' (γ' 0))
   have hF0 : F 0 = 0 := by simp [hF, coeffOf_zero]
-  have hF2 : F (2 * π) = 0 := by simp [hF, hclosed, hclosed', coeffOf_zero]
+  have hF2 : F circlePeriod = 0 := by simp_all
   rw [volterra_variation (transportCoeff_aestronglyMeasurable γ E) (transportCoeff_norm_le γ E hK)
     hW.1 hW.2 (transportCoeff_aestronglyMeasurable γ' E') (transportCoeff_norm_le γ' E' hK')
     (transportCoeff_star γ' E') hW'.1 hW'.2 hπ hFL hFd hF0 hF2]
@@ -327,41 +342,38 @@ theorem norm_transport_variation_le {γ γ' : ℝ → ℂ} {K K' : NNReal} (hK :
 Lipschitz curves on `[0, L]` such that `γₙ → γ` uniformly on `[0, L]` and the lengths
 `∫₀^L |γₙ'|` are uniformly bounded. If `Eₙ → E`, then `U_{γₙ}(Eₙ) → U_γ(E)` in operator
 norm. -/
-theorem monodromy_tendsto_of_tendstoUniformlyOn {γ : ℝ → ℂ} {γs : ℕ → ℝ → ℂ} {K : NNReal}
+theorem monodromy_tendsto_of_tendstoUniformlyOn   
     {Ks : ℕ → NNReal} (hK : LipschitzWith K γ) (hKs : ∀ n, LipschitzWith (Ks n) (γs n))
-    (hclosed : γ (2 * π) = γ 0) (hclosed' : ∀ n, γs n (2 * π) = γs n 0)
-    (hunif : TendstoUniformlyOn γs γ atTop (Icc 0 (2 * π)))
-    (hlen : ∃ B, ∀ n, ∫ θ in (0 : ℝ)..(2 * π), ‖deriv (γs n) θ‖ ≤ B)
-    {E : ℝ} {Es : ℕ → ℝ} (hE : Tendsto Es atTop (𝓝 E))
-    {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W)
-    {Ws : ℕ → ℝ → Ell2 →L[ℂ] Ell2} (hWs : ∀ n, IsTransport (γs n) (Es n) (Ws n)) :
+    (hclosed : γ circlePeriod = γ 0) (hclosed' : ∀ n, γs n circlePeriod = γs n 0)
+    (hunif : TendstoUniformlyOn γs γ atTop boundaryInterval)
+    (hlen : ∃ B, ∀ n, ∫ θ in (0 : ℝ)..circlePeriod, ‖deriv (γs n) θ‖ ≤ B)
+      (hE : Tendsto Es atTop (𝓝 E))
+     (hW : IsTransport γ E W)
+    {Ws : ℕ → ℝ → ComplexEnd Ell2} (hWs : ∀ n, IsTransport (γs n) (Es n) (Ws n)) :
     Tendsto (fun n => monodromy (Ws n)) atTop (𝓝 (monodromy W)) := by
   obtain ⟨B, hB⟩ := hlen
   have hπ : (0 : ℝ) ≤ 2 * π := by positivity
-  have h0mem : (0 : ℝ) ∈ Icc 0 (2 * π) := ⟨le_rfl, hπ⟩
+  have h0mem : (0 : ℝ) ∈ boundaryInterval := ⟨le_rfl, hπ⟩
   obtain ⟨R, hR⟩ := isCompact_Icc.exists_bound_of_continuousOn
-    (s := Icc 0 (2 * π)) hK.continuous.continuousOn
-  have hR0 : 0 ≤ R := (norm_nonneg _).trans (hR 0 h0mem)
+    (s := boundaryInterval) hK.continuous.continuousOn
+  have hR0  := (norm_nonneg _).trans (hR 0 h0mem)
   have hκ := shiftConst_nonneg
   set κ := shiftConst
   set s0 := Real.sqrt E with hs0
-  have hs00 : 0 ≤ s0 := Real.sqrt_nonneg E
-  set A0 := ∫ θ in (0 : ℝ)..(2 * π), ‖transportCoeff γ E θ‖ with hA0def
+  set A0 := ∫ θ in (0)..circlePeriod, ‖transportCoeff γ E θ‖ with hA0def
   have hA0 : 0 ≤ A0 := intervalIntegral.integral_nonneg hπ fun _ _ => norm_nonneg _
   set B' := max B 0
-  have hB' : 0 ≤ B' := le_max_right _ _
   set c1 := 2 * κ * (R + s0 + 1) with hc1def
   set c2 := (s0 + 1) * κ * B' + A0 with hc2def
   have hc1 : 0 ≤ c1 := by positivity
   have hc2 : 0 ≤ c2 := by positivity
   have hbound : ∀ n, ∀ η, 0 ≤ η → η ≤ 1 → |s0 - Real.sqrt (Es n)| ≤ η →
-      (∀ θ ∈ Icc 0 (2 * π), ‖γ θ - γs n θ‖ ≤ η) →
+      (∀ θ ∈ boundaryInterval, ‖γ θ - γs n θ‖ ≤ η) →
       ‖monodromy (Ws n) - monodromy W‖ ≤ η * c1 * c2 := by
     intro n η hη0 hη1 hηE hηγ
     have hsq : Real.sqrt (Es n) ≤ s0 + 1 := by
-      have := (abs_le.mp hηE).1
-      linarith
-    have hε : ∀ θ ∈ Icc 0 (2 * π),
+      grind
+    have hε : ∀ θ ∈ boundaryInterval,
         ‖coeffOf E (γ θ - γ 0) - coeffOf (Es n) (γs n θ - γs n 0)‖ ≤ η * c1 := by
       intro θ hθ
       refine (norm_coeffOf_sub_coeffOf_le' _ _ _ _).trans ?_
@@ -375,7 +387,7 @@ theorem monodromy_tendsto_of_tendstoUniformlyOn {γ : ℝ → ℂ} {γs : ℕ �
             gcongr
         _ = η * c1 := by rw [hc1def]; ring
     have hvar := norm_transport_variation_le hK (hKs n) hclosed (hclosed' n) hW (hWs n) hε
-    have hint : ∫ s in (0 : ℝ)..(2 * π),
+    have hint : ∫ s in (0 : ℝ)..circlePeriod,
         (‖transportCoeff (γs n) (Es n) s‖ + ‖transportCoeff γ E s‖) ≤ c2 := by
       rw [intervalIntegral.integral_add
         (intervalIntegrable_of_bounded (transportCoeff_aestronglyMeasurable _ _).norm
@@ -383,30 +395,30 @@ theorem monodromy_tendsto_of_tendstoUniformlyOn {γ : ℝ → ℂ} {γs : ℕ �
         (intervalIntegrable_of_bounded (transportCoeff_aestronglyMeasurable _ _).norm
           (fun s => by rw [norm_norm]; exact transportCoeff_norm_le _ _ hK s) _ _)]
       have h3 := integral_norm_transportCoeff_le (hKs n) (Es n)
-      have h4 : 0 ≤ ∫ θ in (0 : ℝ)..(2 * π), ‖deriv (γs n) θ‖ :=
+      have h4 : 0 ≤ ∫ θ in (0 : ℝ)..circlePeriod, ‖deriv (γs n) θ‖ :=
         intervalIntegral.integral_nonneg hπ fun _ _ => norm_nonneg _
-      have h5 : Real.sqrt (Es n) * κ * ∫ θ in (0 : ℝ)..(2 * π), ‖deriv (γs n) θ‖ ≤
+      have h5 : Real.sqrt (Es n) * κ * ∫ θ in (0 : ℝ)..circlePeriod, ‖deriv (γs n) θ‖ ≤
           (s0 + 1) * κ * B' := by
         gcongr
         exact (hB n).trans (le_max_left _ _)
       rw [hc2def]
       linarith
     have hV := transport_mem_unitary hK hW (θ := 2 * π) ⟨hπ, le_rfl⟩
-    have hVV : W (2 * π) * star (W (2 * π)) = 1 := (Unitary.mem_iff.mp hV).2
+    have hVV  := (Unitary.mem_iff.mp hV).2
     have heq : monodromy (Ws n) - monodromy W =
-        (star (Ws n (2 * π)) * W (2 * π) - 1) * star (W (2 * π)) := by
+        (star (Ws n circlePeriod) * W circlePeriod - 1) * star (W circlePeriod) := by
       unfold monodromy
       rw [← ContinuousLinearMap.star_eq_adjoint, ← ContinuousLinearMap.star_eq_adjoint, sub_mul,
         mul_assoc, hVV, mul_one, one_mul]
     rw [heq]
-    calc ‖(star (Ws n (2 * π)) * W (2 * π) - 1) * star (W (2 * π))‖
-        ≤ ‖star (Ws n (2 * π)) * W (2 * π) - 1‖ * 1 :=
+    calc ‖(star (Ws n circlePeriod) * W circlePeriod - 1) * star (W circlePeriod)‖
+        ≤ ‖star (Ws n circlePeriod) * W circlePeriod - 1‖ * 1 :=
           (norm_mul_le _ _).trans (mul_le_mul_of_nonneg_left
             (norm_le_one_of_mem_unitary (Unitary.star_mem hV)) (norm_nonneg _))
       _ ≤ η * c1 * c2 := by
           rw [mul_one]
           refine hvar.trans ?_
-          exact mul_le_mul_of_nonneg_left hint (mul_nonneg hη0 hc1)
+          gcongr
   rw [Metric.tendsto_nhds]
   intro ε hε
   set η := min 1 (ε / (2 * (c1 * c2 + 1))) with hηdef
@@ -416,7 +428,7 @@ theorem monodromy_tendsto_of_tendstoUniformlyOn {γ : ℝ → ℂ} {γs : ℕ �
     have h1 : η ≤ ε / (2 * (c1 * c2 + 1)) := min_le_right _ _
     rw [le_div_iff₀ (by positivity)] at h1
     nlinarith [mul_nonneg hc1 hc2]
-  have hsqrt : Tendsto (fun n => Real.sqrt (Es n)) atTop (𝓝 s0) :=
+  have hsqrt :=
     (Real.continuous_sqrt.tendsto E).comp hE
   filter_upwards [Metric.tendsto_nhds.mp hsqrt η hηpos,
     Metric.tendstoUniformlyOn_iff.mp hunif η hηpos] with n hn1 hn2
@@ -426,6 +438,15 @@ theorem monodromy_tendsto_of_tendstoUniformlyOn {γ : ℝ → ℂ} {γs : ℕ �
     rw [abs_sub_comm]; exact hn1.le
   · intro θ hθ
     rw [← dist_eq_norm]; exact (hn2 θ hθ).le
+
+/-- The endpoint defect of the adjoint monodromy is a unitary multiple of
+that of the transport. -/
+lemma monodromy_sub_one {γ : ComplexCurve} {K} (hK : LipschitzWith K γ)
+    (hW : IsTransport γ E W) :
+    monodromy W - 1 = -(star (W circlePeriod) * (W circlePeriod - 1)) := by
+  rw [monodromy, ← ContinuousLinearMap.star_eq_adjoint, mul_sub,
+    (Unitary.mem_iff.mp (transport_mem_unitary hK hW ⟨by positivity, le_rfl⟩)).1,
+    mul_one, neg_sub]
 
 end PolyaNeumann
 

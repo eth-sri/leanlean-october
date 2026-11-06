@@ -1,5 +1,11 @@
 module
 
+public import Mathlib.Algebra.Field.Periodic
+
+public import RequestProject.PlanarTypes
+
+public import RequestProject.PlanarGeometry
+
 public import RequestProject.Shift
 public import RequestProject.Defs
 public import RequestProject.Picard
@@ -18,7 +24,7 @@ almost-everywhere equation for absolutely continuous solutions.
 
 @[expose] public section
 
-open scoped ComplexConjugate Real
+open scoped ComplexConjugate
 open MeasureTheory
 
 noncomputable section
@@ -30,45 +36,44 @@ namespace PolyaNeumann
 through Green's formula: the signed area integral `∫₀^L Im(conj(γ) γ') dθ` equals `2|Ω|`
 (for a Jordan parametrization of the boundary it is `±2|Ω|`, with the sign giving the
 orientation). -/
-structure IsBoundaryParam (Ω : Set ℂ) (γ : ℝ → ℂ) : Prop where
+structure IsBoundaryParam (Ω : PlanarSet) (γ : ComplexCurve) : Prop where
   lipschitz : ∃ K, LipschitzWith K γ
-  periodic : Function.Periodic γ (2 * π)
-  injOn : Set.InjOn γ (Set.Ico 0 (2 * π))
-  image : γ '' Set.Icc 0 (2 * π) = frontier Ω
+  periodic : Function.Periodic γ circlePeriod
+  injOn : Set.InjOn γ (Set.Ico 0 circlePeriod)
+  image : γ '' boundaryInterval = frontier Ω
   const_speed : ∃ c : ℝ, 0 < c ∧ ∀ᵐ θ, ‖deriv γ θ‖ = c
-  area : ∫ θ in (0 : ℝ)..(2 * π), (conj (γ θ) * deriv γ θ).im = 2 * (volume Ω).toReal
+  area : ∫ θ in (0 : ℝ)..circlePeriod, (conj (γ θ) * deriv γ θ).im = 2 * (volume Ω).toReal
 
 /-- The transport coefficient
 `C_E(θ) = -(i √E / 2) (γ'(θ) S_N^* + conj(γ'(θ)) S_N)`. -/
-def transportCoeff (γ : ℝ → ℂ) (E : ℝ) (θ : ℝ) : Ell2 →L[ℂ] Ell2 :=
+def transportCoeff (γ : ComplexCurve) (E : ℝ) (θ : ℝ) : ComplexEnd Ell2 :=
   (-(Complex.I * (Real.sqrt E : ℂ)) / 2) •
     (deriv γ θ • ContinuousLinearMap.adjoint shiftN + conj (deriv γ θ) • shiftN)
 
 /-- `W` is a transport for `γ` at energy `E`: it is continuous on `[0, L]` and solves
 `W(θ) = I + ∫₀^θ C_E(s) W(s) ds` there. -/
-def IsTransport (γ : ℝ → ℂ) (E : ℝ) (W : ℝ → Ell2 →L[ℂ] Ell2) : Prop :=
-  ContinuousOn W (Set.Icc 0 (2 * π)) ∧
-  ∀ θ ∈ Set.Icc 0 (2 * π), W θ = 1 + ∫ s in (0 : ℝ)..θ, transportCoeff γ E s * W s
+def IsTransport (γ : ComplexCurve) (E : ℝ) (W : ℝ → ComplexEnd Ell2) : Prop :=
+  ContinuousOn W boundaryInterval ∧
+  ∀ θ ∈ boundaryInterval, W θ = 1 + ∫ s in (0 : ℝ)..θ, transportCoeff γ E s * W s
 
 /-- The monodromy `U_E = W_E(L)^*`. -/
-def monodromy (W : ℝ → Ell2 →L[ℂ] Ell2) : Ell2 →L[ℂ] Ell2 :=
-  ContinuousLinearMap.adjoint (W (2 * π))
+def monodromy (W : ℝ → ComplexEnd Ell2) : ComplexEnd Ell2 :=
+  ContinuousLinearMap.adjoint (W circlePeriod)
 
 /-- `‖U - I‖ > 0` as soon as `U ≠ I`. -/
-lemma norm_sub_one_pos {U : Ell2 →L[ℂ] Ell2} (h : U ≠ 1) : 0 < ‖U - 1‖ :=
+lemma norm_sub_one_pos {U : ComplexEnd Ell2} (h : U ≠ 1) : 0 < ‖U - 1‖ :=
   norm_pos_iff.mpr (sub_ne_zero.mpr h)
 
-lemma transportCoeff_aestronglyMeasurable (γ : ℝ → ℂ) (E : ℝ) :
+lemma transportCoeff_aestronglyMeasurable γ E :
     AEStronglyMeasurable (transportCoeff γ E) volume := by
   have hg : Continuous fun z : ℂ => (-(Complex.I * (Real.sqrt E : ℂ)) / 2) •
       (z • ContinuousLinearMap.adjoint shiftN + conj z • shiftN) := by
-    have : Continuous fun z : ℂ => conj z := Complex.continuous_conj
     fun_prop
   exact hg.comp_aestronglyMeasurable (measurable_deriv γ).aestronglyMeasurable
 
-lemma transportCoeff_norm_le (γ : ℝ → ℂ) (E : ℝ) {K : NNReal} (hK : LipschitzWith K γ)
+lemma transportCoeff_norm_le (γ : ComplexCurve) (E : ℝ) {K : NNReal} (hK : LipschitzWith K γ)
     (θ : ℝ) : ‖transportCoeff γ E θ‖ ≤ ‖(-(Complex.I * (Real.sqrt E : ℂ)) / 2)‖ *
-      (K * ‖(ContinuousLinearMap.adjoint shiftN : Ell2 →L[ℂ] Ell2)‖ + K * ‖shiftN‖) := by
+      (K * ‖(ContinuousLinearMap.adjoint shiftN : ComplexEnd Ell2)‖ + K * ‖shiftN‖) := by
   have hd : ‖deriv γ θ‖ ≤ K := norm_deriv_le_of_lipschitz hK
   unfold transportCoeff
   rw [norm_smul]
@@ -77,18 +82,37 @@ lemma transportCoeff_norm_le (γ : ℝ → ℂ) (E : ℝ) {K : NNReal} (hK : Lip
   · rw [norm_smul]; gcongr
   · rw [norm_smul, Complex.norm_conj]; gcongr
 
+section
+variable (γ : ComplexCurve) {K } (hK : LipschitzWith K γ) (E : ℝ)
+include γ K hK E
+
 /-- Lemma 10.2 (existence): for a Lipschitz curve the transport equation has a solution. -/
-theorem transport_exists_of_lipschitz (γ : ℝ → ℂ) {K : NNReal} (hK : LipschitzWith K γ)
-    (E : ℝ) : ∃ W : ℝ → Ell2 →L[ℂ] Ell2, IsTransport γ E W :=
+theorem transport_exists_of_lipschitz : ∃ W : ℝ → ComplexEnd Ell2, IsTransport γ E W :=
   exists_volterra_solution (transportCoeff_aestronglyMeasurable γ E)
-    (transportCoeff_norm_le γ E hK) (2 * π)
+    (transportCoeff_norm_le γ E hK) circlePeriod
 
 /-- Lemma 10.2 (uniqueness): the transport is unique on `[0, L]`. -/
-theorem transport_unique_of_lipschitz (γ : ℝ → ℂ) {K : NNReal} (hK : LipschitzWith K γ)
-    (E : ℝ) {W W' : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W)
-    (hW' : IsTransport γ E W') : Set.EqOn W W' (Set.Icc 0 (2 * π)) :=
+theorem transport_unique_of_lipschitz  (hW : IsTransport γ E W)
+    (hW' : IsTransport γ E W') : Set.EqOn W W' boundaryInterval :=
   volterra_unique (transportCoeff_aestronglyMeasurable γ E) (transportCoeff_norm_le γ E hK)
-    (2 * π) hW.1 hW'.1 hW.2 hW'.2
+    circlePeriod hW.1 hW'.1 hW.2 hW'.2
+
+end
+
+
+/-- A periodic curve takes all its values on one closed period. -/
+lemma mem_image_Icc_of_periodic {γ : ComplexCurve}
+    (hper : Function.Periodic γ circlePeriod) θ : γ θ ∈ γ '' boundaryInterval := by
+  simpa only [← hper.image_Icc Real.two_pi_pos 0, zero_add] using
+    (Set.mem_range_self (f := γ) θ)
+
+lemma IsBoundaryParam.mem_frontier (hγ : IsBoundaryParam Ω γ) s : γ s ∈ frontier Ω := by
+  rw [← hγ.image]
+  exact mem_image_Icc_of_periodic hγ.periodic s
+
+lemma transport_zero (hW : IsTransport γ E W) : W 0 = 1 := by
+  have := hW.2 0 ⟨le_rfl, by positivity⟩
+  simpa using this
 
 end PolyaNeumann
 

@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.PlanarTypes
+
 public import RequestProject.JordanWinding
 
 /-!
@@ -21,7 +23,7 @@ Basic facts about the Lipschitz charts of a Lipschitz domain `Ω ⊂ ℂ`:
 @[expose] public section
 
 open MeasureTheory Set Filter Metric
-open scoped ComplexConjugate Real Topology
+open scoped ComplexConjugate Topology
 
 noncomputable section
 
@@ -30,56 +32,61 @@ namespace PolyaNeumann
 /-- A Lipschitz chart of `Ω` at `p`: after the rigid motion `w ↦ c (w - p)`, inside the box
 `|x| < r`, `|y| < h`, the domain is the region above the graph of the `K`-Lipschitz function `f`
 (with `f 0 = 0`, and the graph over `|x| < r` inside the box). -/
-def IsChartAt (Ω : Set ℂ) (p c : ℂ) (r h : ℝ) (K : NNReal) (f : ℝ → ℝ) : Prop :=
+def IsChartAt (Ω : PlanarSet) p c r h K f  :=
   ‖c‖ = 1 ∧ 0 < r ∧ 0 < h ∧ LipschitzWith K f ∧ f 0 = 0 ∧ (∀ x : ℝ, |x| < r → |f x| < h) ∧
     ∀ w : ℂ, |(c * (w - p)).re| < r → |(c * (w - p)).im| < h →
       (w ∈ Ω ↔ f (c * (w - p)).re < (c * (w - p)).im)
 
-lemma IsLipschitzDomain.exists_chart {Ω : Set ℂ} (hL : IsLipschitzDomain Ω) {p : ℂ}
-    (hp : p ∈ frontier Ω) : ∃ (c : ℂ) (r h : ℝ) (K : NNReal) (f : ℝ → ℝ),
+lemma IsLipschitzDomain.exists_chart  (hL : IsLipschitzDomain Ω) 
+    (hp : p ∈ frontier Ω) : ∃ (c : ℂ) (r h : ℝ) (K : NNReal) (f : RealMap),
       IsChartAt Ω p c r h K f :=
   hL.2 p hp
 
 /-- The graph point of a chart with abscissa `x`. -/
-def chartPt (p c : ℂ) (f : ℝ → ℝ) (x : ℝ) : ℂ := p + conj c * ((x : ℂ) + (f x : ℂ) * Complex.I)
+def chartPt p c (f : RealMap) (x : ℝ)  := p + conj c * ((x : ℂ) + (f x : ℂ) * Complex.I)
 
-lemma mul_chartPt_sub {p c : ℂ} (hc : ‖c‖ = 1) (f : ℝ → ℝ) (x : ℝ) :
+section
+variable {p c : ℂ} (hc : ‖c‖ = 1) (f : RealMap) (x : ℝ)
+include p c hc f x
+
+lemma mul_chartPt_sub :
     c * (chartPt p c f x - p) = (x : ℂ) + (f x : ℂ) * Complex.I := by
   have : c * conj c = 1 := by
     rw [Complex.mul_conj, Complex.normSq_eq_norm_sq, hc]; simp
-  simp only [chartPt, add_sub_cancel_left, ← mul_assoc, this, one_mul]
+  grind only [chartPt]
 
-lemma re_mul_chartPt_sub {p c : ℂ} (hc : ‖c‖ = 1) (f : ℝ → ℝ) (x : ℝ) :
+lemma re_mul_chartPt_sub :
     (c * (chartPt p c f x - p)).re = x := by
   rw [mul_chartPt_sub hc]; simp
 
-lemma im_mul_chartPt_sub {p c : ℂ} (hc : ‖c‖ = 1) (f : ℝ → ℝ) (x : ℝ) :
+lemma im_mul_chartPt_sub :
     (c * (chartPt p c f x - p)).im = f x := by
   rw [mul_chartPt_sub hc]; simp
 
-lemma chartPt_zero {p c : ℂ} {f : ℝ → ℝ} (hf0 : f 0 = 0) : chartPt p c f 0 = p := by
+end
+
+
+lemma chartPt_zero   (hf0 : f 0 = 0) : chartPt p c f 0 = p := by
   simp [chartPt, hf0]
 
-lemma norm_mul_sub {c : ℂ} (hc : ‖c‖ = 1) (w p : ℂ) : ‖c * (w - p)‖ = ‖w - p‖ := by
+lemma norm_mul_sub  (hc : ‖c‖ = 1) (w p : ℂ) : ‖c * (w - p)‖ = ‖w - p‖ := by
   rw [norm_mul, hc, one_mul]
 
 /-- A point is determined by its chart coordinates. -/
 lemma eq_of_mul_sub_eq {c p w w' : ℂ} (hc : ‖c‖ = 1) (h : c * (w - p) = c * (w' - p)) :
     w = w' := by
-  have hc0 : c ≠ 0 := by intro h0; rw [h0, norm_zero] at hc; exact zero_ne_one hc
-  have := mul_left_cancel₀ hc0 h
-  linear_combination this
+  aesop
 
 lemma eq_of_re_im_eq {c p w w' : ℂ} (hc : ‖c‖ = 1) (hre : (c * (w - p)).re = (c * (w' - p)).re)
     (him : (c * (w - p)).im = (c * (w' - p)).im) : w = w' :=
   eq_of_mul_sub_eq hc (Complex.ext hre him)
 
 /-- The graph map of a chart is `(1 + K)`-Lipschitz. -/
-lemma lipschitzWith_chartPt {p c : ℂ} (hc : ‖c‖ = 1) {K : NNReal} {f : ℝ → ℝ}
+lemma lipschitzWith_chartPt  (hc : ‖c‖ = 1)  
     (hf : LipschitzWith K f) : LipschitzWith (1 + K) (chartPt p c f) := by
   refine LipschitzWith.of_dist_le_mul fun x y => ?_
   have hcc : ‖conj c‖ = 1 := by rw [Complex.norm_conj, hc]
-  simp only [chartPt, dist_eq_norm, add_sub_add_left_eq_sub, ← mul_sub, norm_mul, hcc, one_mul]
+  simp only [chartPt, dist_eq_norm, add_sub_add_left_eq_sub, ← mul_sub, norm_mul, hcc]
   have h1 : ‖((x : ℂ) + (f x : ℂ) * Complex.I) - ((y : ℂ) + (f y : ℂ) * Complex.I)‖ ≤
       ‖((x - y : ℝ) : ℂ)‖ + ‖((f x - f y : ℝ) : ℂ) * Complex.I‖ := by
     have : ((x : ℂ) + (f x : ℂ) * Complex.I) - ((y : ℂ) + (f y : ℂ) * Complex.I) =
@@ -93,33 +100,36 @@ lemma lipschitzWith_chartPt {p c : ℂ} (hc : ‖c‖ = 1) {K : NNReal} {f : ℝ
   rw [Real.norm_eq_abs]
   nlinarith
 
-lemma continuous_chartPt {p c : ℂ} {f : ℝ → ℝ} (hf : Continuous f) :
+lemma continuous_chartPt   (hf : Continuous f) :
     Continuous (chartPt p c f) := by
   unfold chartPt; fun_prop
 
 /-- The open chart box. -/
-def chartBox (p c : ℂ) (r h : ℝ) : Set ℂ :=
+def chartBox (p c : ℂ) r h  :=
   {w | |(c * (w - p)).re| < r ∧ |(c * (w - p)).im| < h}
 
-lemma isOpen_chartBox (p c : ℂ) (r h : ℝ) : IsOpen (chartBox p c r h) := by
+lemma isOpen_chartBox p c r h : IsOpen (chartBox p c r h) := by
   have hg : Continuous fun w : ℂ => c * (w - p) := by fun_prop
   exact (isOpen_lt (Complex.continuous_re.comp hg).abs continuous_const).inter
     (isOpen_lt (Complex.continuous_im.comp hg).abs continuous_const)
 
 /-- A ball around the centre inside the box. -/
-lemma ball_subset_chartBox {p c : ℂ} (hc : ‖c‖ = 1) {r h : ℝ} :
+lemma ball_subset_chartBox  (hc : ‖c‖ = 1)  :
     ball p (min r h) ⊆ chartBox p c r h := by
   intro w hw
   rw [mem_ball, dist_eq_norm] at hw
   have hn := norm_mul_sub hc w p
   refine ⟨lt_of_le_of_lt (Complex.abs_re_le_norm _) ?_,
     lt_of_le_of_lt (Complex.abs_im_le_norm _) ?_⟩
-  · rw [hn]; exact lt_of_lt_of_le hw (min_le_left _ _)
-  · rw [hn]; exact lt_of_lt_of_le hw (min_le_right _ _)
+  · simp_all
+  simp_all
+
+section
+variable {Ω } (hΩo : IsOpen Ω) {p c } {r h } {K } {f } (hch : IsChartAt Ω p c r h K f)
+include Ω hΩo p c r h K f hch
 
 /-- Graph points of a chart are boundary points. -/
-lemma chartPt_mem_frontier {Ω : Set ℂ} (hΩo : IsOpen Ω) {p c : ℂ} {r h : ℝ} {K : NNReal}
-    {f : ℝ → ℝ} (hch : IsChartAt Ω p c r h K f) {x : ℝ} (hx : |x| < r) :
+lemma chartPt_mem_frontier  (hx : |x| < r) :
     chartPt p c f x ∈ frontier Ω := by
   obtain ⟨hc, hr, hh, hf, hf0, hfb, hΩ⟩ := hch
   rw [hΩo.frontier_eq]
@@ -133,7 +143,7 @@ lemma chartPt_mem_frontier {Ω : Set ℂ} (hΩo : IsOpen Ω) {p c : ℂ} {r h : 
     have ht : Tendsto (fun s : ℝ => chartPt p c f x + (s : ℂ) * (conj c * Complex.I))
         (𝓝[>] 0) (𝓝 (chartPt p c f x)) := by
       have := hcont.tendsto 0
-      simp only [Complex.ofReal_zero, zero_mul, add_zero] at this
+      simp   at this
       exact tendsto_nhdsWithin_of_tendsto_nhds this
     have hsmall : ∀ᶠ s : ℝ in 𝓝[>] 0, s < h - |f x| := by
       have : (0 : ℝ) < h - |f x| := by linarith
@@ -155,23 +165,11 @@ lemma chartPt_mem_frontier {Ω : Set ℂ} (hΩo : IsOpen Ω) {p c : ℂ} {r h : 
       rw [hcoord]; simp
     have him : (c * (chartPt p c f x + (s : ℂ) * (conj c * Complex.I) - p)).im = f x + s := by
       rw [hcoord]; simp
-    have hspos' : (0 : ℝ) < s := hspos
-    have hfx' := abs_lt.mp hfx
-    have habs : |f x + s| < h := by
-      rw [abs_lt]; constructor
-      · linarith
-      · linarith [le_abs_self (f x)]
-    refine (hΩ _ (by rw [hre]; exact hx) (by rw [him]; exact habs)).mpr ?_
-    rw [hre, him]; linarith
-  · intro hmem
-    have := (hΩ _ (by rw [re_mul_chartPt_sub hc]; exact hx)
-      (by rw [im_mul_chartPt_sub hc]; exact hfx)).mp hmem
-    rw [re_mul_chartPt_sub hc, im_mul_chartPt_sub hc] at this
-    exact lt_irrefl _ this
+    grind
+  grind only [re_mul_chartPt_sub, im_mul_chartPt_sub]
 
 /-- Boundary points in a chart box are graph points. -/
-lemma eq_chartPt_of_frontier {Ω : Set ℂ} (hΩo : IsOpen Ω) {p c : ℂ} {r h : ℝ} {K : NNReal}
-    {f : ℝ → ℝ} (hch : IsChartAt Ω p c r h K f) {w : ℂ} (hw : w ∈ frontier Ω)
+lemma eq_chartPt_of_frontier  (hw : w ∈ frontier Ω)
     (hbox : w ∈ chartBox p c r h) : w = chartPt p c f (c * (w - p)).re := by
   obtain ⟨hc, hr, hh, hf, hf0, hfb, hΩ⟩ := hch
   have hgr := chart_frontier_graph hΩo hf hΩ hw hbox.1 hbox.2
@@ -180,15 +178,13 @@ lemma eq_chartPt_of_frontier {Ω : Set ℂ} (hΩo : IsOpen Ω) {p c : ℂ} {r h 
   · rw [im_mul_chartPt_sub hc, hgr]
 
 /-- Two boundary points in a chart box with the same abscissa coincide. -/
-lemma eq_of_frontier_of_re_eq {Ω : Set ℂ} (hΩo : IsOpen Ω) {p c : ℂ} {r h : ℝ} {K : NNReal}
-    {f : ℝ → ℝ} (hch : IsChartAt Ω p c r h K f) {w w' : ℂ} (hw : w ∈ frontier Ω)
+lemma eq_of_frontier_of_re_eq  (hw : w ∈ frontier Ω)
     (hw' : w' ∈ frontier Ω) (hbox : w ∈ chartBox p c r h) (hbox' : w' ∈ chartBox p c r h)
     (hre : (c * (w - p)).re = (c * (w' - p)).re) : w = w' := by
   rw [eq_chartPt_of_frontier hΩo hch hw hbox, eq_chartPt_of_frontier hΩo hch hw' hbox', hre]
 
 /-- Along the boundary inside a chart box, distances are controlled by abscissae. -/
-lemma norm_sub_le_of_frontier {Ω : Set ℂ} (hΩo : IsOpen Ω) {p c : ℂ} {r h : ℝ} {K : NNReal}
-    {f : ℝ → ℝ} (hch : IsChartAt Ω p c r h K f) {w w' : ℂ} (hw : w ∈ frontier Ω)
+lemma norm_sub_le_of_frontier  (hw : w ∈ frontier Ω)
     (hw' : w' ∈ frontier Ω) (hbox : w ∈ chartBox p c r h) (hbox' : w' ∈ chartBox p c r h) :
     ‖w - w'‖ ≤ (1 + K) * |(c * (w - p)).re - (c * (w' - p)).re| := by
   have h1 := (lipschitzWith_chartPt (p := p) hch.1 hch.2.2.2.1).dist_le_mul
@@ -200,55 +196,49 @@ lemma norm_sub_le_of_frontier {Ω : Set ℂ} (hΩo : IsOpen Ω) {p c : ℂ} {r h
 /-! ### Recentering and uniform charts -/
 
 /-- Recentering a chart at a boundary point of the half box. -/
-lemma isChartAt_recenter {Ω : Set ℂ} (hΩo : IsOpen Ω) {p c : ℂ} {r h : ℝ} {K : NNReal}
-    {f : ℝ → ℝ} (hch : IsChartAt Ω p c r h K f) {q : ℂ} (hq : q ∈ frontier Ω)
+lemma isChartAt_recenter  (hq : q ∈ frontier Ω)
     (hqr : |(c * (q - p)).re| < r / 2) (hqh : |(c * (q - p)).im| < h / 2)
-    {ρ H : ℝ} {K' : NNReal} (hρ : 0 < ρ) (hH : 0 < H) (hρr : ρ ≤ r / 2) (hHh : H ≤ h / 2)
+      (hρ : 0 < ρ) (hH : 0 < H) (hρr : ρ ≤ r / 2) (hHh : H ≤ h / 2)
     (hKK : K ≤ K') (hKρ : (K' : ℝ) * ρ < H) :
     IsChartAt Ω q c ρ H K'
       (fun x => f (x + (c * (q - p)).re) - f (c * (q - p)).re) := by
   obtain ⟨hc, hr, hh, hf, hf0, hfb, hΩ⟩ := hch
   set X := (c * (q - p)).re with hX
-  have hfK' : LipschitzWith K' f := hf.weaken hKK
+  have hfK'  := hf.weaken hKK
   have hlip : LipschitzWith K' (fun x => f (x + X) - f X) := by
     refine LipschitzWith.of_dist_le_mul fun x y => ?_
     have := hfK'.dist_le_mul (x + X) (y + X)
-    simp only [Real.dist_eq, sub_sub_sub_cancel_right, add_sub_add_right_eq_sub] at this ⊢
-    exact this
+    simp_all
   refine ⟨hc, hρ, hH, hlip, by simp, fun x hx => ?_, fun w hw1 hw2 => ?_⟩
   · have := hlip.dist_le_mul x 0
-    simp only [Real.dist_eq, sub_zero, zero_add, sub_self] at this
-    calc |f (x + X) - f X| ≤ K' * |x| := this
-      _ ≤ K' * ρ := mul_le_mul_of_nonneg_left hx.le K'.2
-      _ < H := hKρ
-  · have hY : (c * (q - p)).im = f X :=
+    simp   at this
+    nlinarith
+  · have hY  :=
       chart_frontier_graph hΩo hf hΩ hq (by linarith [hqr]) (by linarith [hqh])
     have hsplit : c * (w - p) = c * (w - q) + c * (q - p) := by ring
     have hre : (c * (w - p)).re = (c * (w - q)).re + X := by rw [hsplit, Complex.add_re]
     have him : (c * (w - p)).im = (c * (w - q)).im + f X := by
       rw [hsplit, Complex.add_im, hY]
     have h1 : |(c * (w - p)).re| < r := by
-      rw [hre]; calc _ ≤ |(c * (w - q)).re| + |X| := abs_add_le _ _
-        _ < r := by linarith
-    have h2 : |(c * (w - p)).im| < h := by
-      rw [him]; calc _ ≤ |(c * (w - q)).im| + |f X| := abs_add_le _ _
-        _ < h := by rw [← hY]; linarith
-    rw [hΩ w h1 h2, hre, him]
-    constructor <;> intro hlt <;> linarith
+      grind
+    grind
 
-lemma frontier_isCompact {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) : IsCompact (frontier Ω) :=
+end
+
+
+lemma frontier_isCompact {Ω : PlanarSet} (hb : Bornology.IsBounded Ω) : IsCompact (frontier Ω) :=
   Metric.isCompact_of_isClosed_isBounded isClosed_frontier
     (hb.closure.subset frontier_subset_closure)
 
 /-- **Uniform charts.** A bounded Lipschitz domain has charts at every boundary point with
 uniform size `ρ × H` and uniform Lipschitz constant `K`, with `K ρ < H`. -/
-theorem exists_uniform_charts {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
+theorem exists_uniform_charts  (hb : Bornology.IsBounded Ω)
     (hL : IsLipschitzDomain Ω) :
     ∃ (ρ H : ℝ) (K : NNReal), 0 < ρ ∧ 0 < H ∧ (K : ℝ) * ρ < H ∧
-      ∀ p ∈ frontier Ω, ∃ (c : ℂ) (f : ℝ → ℝ), IsChartAt Ω p c ρ H K f := by
+      ∀ p ∈ frontier Ω, ∃ (c : ℂ) (f : RealMap), IsChartAt Ω p c ρ H K f := by
   have hΩo := hL.1.1
   choose! c r h K f hch using fun p (hp : p ∈ frontier Ω) => hL.exists_chart hp
-  set U : ℂ → Set ℂ := fun p => chartBox p (c p) (r p / 2) (h p / 2) with hU
+  set U : ℂ → PlanarSet := fun p => chartBox p (c p) (r p / 2) (h p / 2) with hU
   have hUo : ∀ p, IsOpen (U p) := fun p => isOpen_chartBox _ _ _ _
   have hcover : frontier Ω ⊆ ⋃ p ∈ frontier Ω, U p := fun q hq => by
     refine mem_biUnion hq ?_
@@ -280,8 +270,8 @@ theorem exists_uniform_charts {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
   have hρ0 : 0 < ρ := lt_min hRt0 (by positivity)
   have hKρ : (Kt : ℝ) * ρ < Ht := by
     have h1 : ρ ≤ Ht / (2 * (Kt + 1)) := min_le_right _ _
-    have hK0 : (0 : ℝ) ≤ Kt := Kt.2
-    calc (Kt : ℝ) * ρ ≤ Kt * (Ht / (2 * (Kt + 1))) := mul_le_mul_of_nonneg_left h1 hK0
+    have hK0  := Kt.2
+    calc Kt * ρ ≤ Kt * (Ht / (2 * (Kt + 1))) := mul_le_mul_of_nonneg_left h1 hK0
       _ < Ht := by
         rw [mul_div_assoc']
         rw [div_lt_iff₀ (by positivity)]
@@ -295,14 +285,17 @@ theorem exists_uniform_charts {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
 
 /-! ### Local monotonicity -/
 
+section
+variable {g : RealMap} {J } (hJ : J.OrdConnected) (hg : ContinuousOn g J)
+include g J hJ hg
+
 /-- A continuous function on an order-connected set that is, at every point, strictly larger
 than at all nearby points to the left, is strictly increasing. -/
-lemma strictMonoOn_of_local_left {g : ℝ → ℝ} {J : Set ℝ} (hJ : J.OrdConnected)
-    (hg : ContinuousOn g J)
+lemma strictMonoOn_of_local_left
     (hloc : ∀ y ∈ J, ∃ ε > 0, ∀ y' ∈ J, y - ε < y' → y' < y → g y' < g y) :
     StrictMonoOn g J := by
   intro y1 hy1 y2 hy2 h12
-  have hsub : Icc y1 y2 ⊆ J := hJ.out hy1 hy2
+  have hsub  := hJ.out hy1 hy2
   obtain ⟨m, hm, hmin⟩ := (isCompact_Icc (a := y1) (b := y2)).exists_isMinOn
     (nonempty_Icc.mpr h12.le) (hg.mono hsub)
   have key : ∀ m' ∈ Icc y1 y2, y1 < m' → ¬ IsMinOn g (Icc y1 y2) m' := by
@@ -315,10 +308,9 @@ lemma strictMonoOn_of_local_left {g : ℝ → ℝ} {J : Set ℝ} (hJ : J.OrdConn
     have := hε' y' (hsub hy'm) (lt_of_lt_of_le (by linarith) (le_max_left _ _)) hy'2
     exact absurd (hmin' hy'm) (not_le.mpr this)
   have hm1 : m = y1 := by
-    by_contra hne
-    exact key m hm (lt_of_le_of_ne hm.1 (Ne.symm hne)) hmin
+    grind
   subst hm1
-  have hle : g m ≤ g y2 := hmin ⟨h12.le, le_rfl⟩
+  have hle  := hmin ⟨h12.le, le_rfl⟩
   rcases lt_or_eq_of_le hle with hlt | heq
   · exact hlt
   · exfalso
@@ -327,22 +319,22 @@ lemma strictMonoOn_of_local_left {g : ℝ → ℝ} {J : Set ℝ} (hJ : J.OrdConn
 
 /-- Mirror version: strictly smaller than at nearby points to the right gives strictly
 decreasing. -/
-lemma strictAntiOn_of_local_right {g : ℝ → ℝ} {J : Set ℝ} (hJ : J.OrdConnected)
-    (hg : ContinuousOn g J)
+lemma strictAntiOn_of_local_right
     (hloc : ∀ y ∈ J, ∃ ε > 0, ∀ y' ∈ J, y < y' → y' < y + ε → g y' < g y) :
     StrictAntiOn g J := by
   have hJ' : (Neg.neg ⁻¹' J).OrdConnected := ⟨fun a ha b hb x hx => by
-    simp only [Set.mem_preimage] at *
     exact hJ.out hb ha ⟨by linarith [hx.2], by linarith [hx.1]⟩⟩
-  have hg' : ContinuousOn (fun y => g (-y)) (Neg.neg ⁻¹' J) :=
+  have hg'  :=
     hg.comp continuous_neg.continuousOn (fun y hy => hy)
   have hmono := strictMonoOn_of_local_left hJ' hg' fun y hy => by
-    obtain ⟨ε, hε, h⟩ := hloc (-y) hy
-    exact ⟨ε, hε, fun y' hy' h1 h2 => h (-y') hy' (by linarith) (by linarith)⟩
+    grind
   intro a ha b hb hab
   have := hmono (show -b ∈ Neg.neg ⁻¹' J by simpa using hb)
     (show -a ∈ Neg.neg ⁻¹' J by simpa using ha) (by linarith)
   simpa using this
+
+end
+
 
 /-! ### Consistency of orientation -/
 
@@ -350,9 +342,9 @@ lemma strictAntiOn_of_local_right {g : ℝ → ℝ} {J : Set ℝ} (hJ : J.OrdCon
 let the chart-1 graph point with abscissa `x₀` lie in the chart-2 box. Then, near `x₀`, the
 chart-2 abscissa of the chart-1 graph point is a strictly increasing function of `x₀`: both
 charts traverse the boundary in the same direction (with `Ω` on the left). -/
-theorem chart_orient {Ω : Set ℂ} (hΩo : IsOpen Ω) {p₁ c₁ p₂ c₂ : ℂ} {r₁ h₁ r₂ h₂ : ℝ}
-    {K₁ K₂ : NNReal} {f₁ f₂ : ℝ → ℝ} (hch₁ : IsChartAt Ω p₁ c₁ r₁ h₁ K₁ f₁)
-    (hch₂ : IsChartAt Ω p₂ c₂ r₂ h₂ K₂ f₂) {x₀ : ℝ} (hx₀ : |x₀| < r₁)
+theorem chart_orient  (hΩo : IsOpen Ω)  
+      (hch₁ : IsChartAt Ω p₁ c₁ r₁ h₁ K₁ f₁)
+    (hch₂ : IsChartAt Ω p₂ c₂ r₂ h₂ K₂ f₂)  (hx₀ : |x₀| < r₁)
     (hbox : chartPt p₁ c₁ f₁ x₀ ∈ chartBox p₂ c₂ r₂ h₂) :
     ∃ ε > 0, StrictMonoOn (fun x => (c₂ * (chartPt p₁ c₁ f₁ x - p₂)).re)
       (Icc (x₀ - ε) (x₀ + ε)) := by
@@ -361,7 +353,7 @@ theorem chart_orient {Ω : Set ℂ} (hΩo : IsOpen Ω) {p₁ c₁ p₂ c₂ : �
   set σ₁ := chartPt p₁ c₁ f₁ with hσ₁
   set σ₂ := chartPt p₂ c₂ f₂ with hσ₂
   have hσ₁c : Continuous σ₁ := continuous_chartPt hf₁.continuous
-  have hσ₂c : Continuous σ₂ := continuous_chartPt hf₂.continuous
+  
   -- a small closed interval around `x₀` on which everything is inside both boxes
   set O : Set ℝ := {x | |x| < r₁} ∩ σ₁ ⁻¹' chartBox p₂ c₂ r₂ h₂ with hO
   have hOo : IsOpen O := (isOpen_lt continuous_abs continuous_const).inter
@@ -371,7 +363,7 @@ theorem chart_orient {Ω : Set ℂ} (hΩo : IsOpen Ω) {p₁ c₁ p₂ c₂ : �
   set I := Icc (x₀ - δ / 2) (x₀ + δ / 2) with hI
   have hIO : I ⊆ O := fun x hx => hball (by
     rw [mem_ball, Real.dist_eq, abs_lt]; constructor <;> linarith [hx.1, hx.2])
-  set ψ : ℝ → ℝ := fun x => (c₂ * (σ₁ x - p₂)).re with hψ
+  set ψ : RealMap := fun x => (c₂ * (σ₁ x - p₂)).re with hψ
   have hψc : Continuous ψ := by simp only [hψ]; fun_prop
   set J := ψ '' I with hJ
   have hJo : J.OrdConnected :=
@@ -380,9 +372,9 @@ theorem chart_orient {Ω : Set ℂ} (hΩo : IsOpen Ω) {p₁ c₁ p₂ c₂ : �
     chartPt_mem_frontier hΩo ⟨hc₁, hr₁, hh₁, hf₁, hf₁0, hfb₁, hΩ₁⟩ (hIO hx).1
   have hσeq : ∀ x ∈ I, σ₁ x = σ₂ (ψ x) := fun x hx =>
     eq_chartPt_of_frontier hΩo ⟨hc₂, hr₂, hh₂, hf₂, hf₂0, hfb₂, hΩ₂⟩ (hfr x hx) (hIO hx).2
-  set φ : ℝ → ℝ := fun y => (c₁ * (σ₂ y - p₁)).re with hφ
+  set φ : RealMap := fun y => (c₁ * (σ₂ y - p₁)).re with hφ
   have hφψ : ∀ x ∈ I, φ (ψ x) = x := fun x hx => by
-    simp only [hφ]; rw [← hσeq x hx, hσ₁, re_mul_chartPt_sub hc₁]
+    grind only [re_mul_chartPt_sub]
   set v : ℂ := c₂ * conj c₁ with hv
   set a := v.re
   set b := v.im
@@ -418,11 +410,10 @@ theorem chart_orient {Ω : Set ℂ} (hΩo : IsOpen Ω) {p₁ c₁ p₂ c₂ : �
     have hc2 : ∀ s : ℝ, c₂ * (σ₁ x + (s : ℂ) * e - p₂) =
         c₂ * (σ₁ x - p₂) + (s : ℂ) * (v * Complex.I) := fun s => by
       rw [he, hv]; ring
-    have hvI_re : (v * Complex.I).re = -b := Complex.mul_I_re v
-    have hvI_im : (v * Complex.I).im = a := Complex.mul_I_im v
+    have hvI_re  := Complex.mul_I_re v
+    have hvI_im := Complex.mul_I_im v
     have hgr : (c₂ * (σ₁ x - p₂)).im = f₂ (ψ x) := by
-      have := congrArg (fun w => (c₂ * (w - p₂)).im) (hσeq x hx)
-      rw [this, hσ₂, im_mul_chartPt_sub hc₂]
+      grind only [im_mul_chartPt_sub]
     -- eventually in the chart-2 box
     have hcont : Continuous fun s : ℝ => σ₁ x + (s : ℂ) * e := by fun_prop
     have hev2 : ∀ᶠ s : ℝ in 𝓝 0, σ₁ x + (s : ℂ) * e ∈ chartBox p₂ c₂ r₂ h₂ := by
@@ -447,30 +438,24 @@ theorem chart_orient {Ω : Set ℂ} (hΩo : IsOpen Ω) {p₁ c₁ p₂ c₂ : �
     have := (hΩ₂ _ hs2.1 hs2.2).mp hmem
     rw [hc2, Complex.add_re, Complex.add_im, Complex.re_ofReal_mul, Complex.im_ofReal_mul,
       hvI_re, hvI_im, hgr] at this
-    have hψx : (c₂ * (σ₁ x - p₂)).re = ψ x := rfl
-    rw [hψx] at this
-    convert this using 2; ring
+    grind
   have hev_eps : ∀ y ∈ J, ∃ ε > 0, ∀ s, 0 < s → s < ε → f₂ (y - s * b) < f₂ y + s * a :=
     fun y hy => by
       rcases (nhdsGT_basis (0:ℝ)).eventually_iff.mp (hkey y hy) with ⟨i, hi, h⟩
-      exact ⟨i, hi, fun s h1 h2 => h ⟨h1, h2⟩⟩
+      grind
   have hgc : ContinuousOn (fun y => f₂ y + a / b * y) J :=
     (hf₂.continuous.add (continuous_const.mul continuous_id)).continuousOn
   -- `φ` is strictly increasing on `J`
   have hφmono : StrictMonoOn φ J := by
     rcases lt_trichotomy b 0 with hb | hb | hb
-    · have hb0 : b ≠ 0 := hb.ne
+    · have hb0 := hb.ne
       have hanti : StrictAntiOn (fun y => f₂ y + a / b * y) J := by
         refine strictAntiOn_of_local_right hJo hgc fun y hy => ?_
         obtain ⟨ε, hε, h⟩ := hev_eps y hy
         refine ⟨ε * (-b), by nlinarith, fun y' _ h1 h2 => ?_⟩
         have hs := h ((y - y') / b) (div_pos_of_neg_of_neg (by linarith) hb)
           (by rw [div_lt_iff_of_neg hb]; linarith)
-        have e1 : y - (y - y') / b * b = y' := by rw [div_mul_cancel₀ _ hb0]; ring
-        rw [e1] at hs
-        have e2 : (y - y') / b * a = a / b * y - a / b * y' := by ring
-        rw [e2] at hs
-        linarith
+        grind
       intro y1 hy1 y2 hy2 h12
       have := hanti hy1 hy2 h12
       rw [hφform, hφform]
@@ -485,22 +470,18 @@ theorem chart_orient {Ω : Set ℂ} (hΩo : IsOpen Ω) {p₁ c₁ p₂ c₂ : �
       have := h (ε / 2) (by positivity) (by linarith)
       rw [hb] at this
       simp only [mul_zero, sub_zero] at this
-      have ha0 : 0 < a := by nlinarith
+      
       have ha1 : a = 1 := by nlinarith
       intro y1 _ y2 _ h12
       rw [hφform, hφform, hb, ha1]; linarith
-    · have hb0 : b ≠ 0 := hb.ne'
+    · have hb0 := hb.ne'
       have hmono : StrictMonoOn (fun y => f₂ y + a / b * y) J := by
         refine strictMonoOn_of_local_left hJo hgc fun y hy => ?_
         obtain ⟨ε, hε, h⟩ := hev_eps y hy
         refine ⟨ε * b, by positivity, fun y' _ h1 h2 => ?_⟩
         have hs := h ((y - y') / b) (div_pos (by linarith) hb)
           (by rw [div_lt_iff₀ hb]; linarith)
-        have e1 : y - (y - y') / b * b = y' := by rw [div_mul_cancel₀ _ hb0]; ring
-        rw [e1] at hs
-        have e2 : (y - y') / b * a = a / b * y - a / b * y' := by ring
-        rw [e2] at hs
-        linarith
+        grind
       intro y1 hy1 y2 hy2 h12
       have := hmono hy1 hy2 h12
       rw [hφform, hφform]
@@ -513,7 +494,6 @@ theorem chart_orient {Ω : Set ℂ} (hΩo : IsOpen Ω) {p₁ c₁ p₂ c₂ : �
   by_contra hle
   push_neg at hle
   have := hφmono.le_iff_le (mem_image_of_mem ψ hx') (mem_image_of_mem ψ hx) |>.mpr hle
-  rw [hφψ x' hx', hφψ x hx] at this
-  linarith
+  grind
 
 end PolyaNeumann

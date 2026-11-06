@@ -1,24 +1,27 @@
 module
 
+public import RequestProject.PlanarTypes
+
+public import RequestProject.PlanarGeometry
+
 public import RequestProject.LocalDirichletNormalBootstrap
 
 /-! Genuine domain membership is retained with the actual elliptic chart.
 The same datum and chart serve every finite derivative order. -/
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
+
+open scoped ContDiff
 namespace PolyaNeumann
 open Set Metric Filter Complex MeasureTheory
-open scoped Topology
 
-theorem exists_riemannMapping_flattened_genuine_chart_h1 {Ω : Set ℂ}
-    (hb : Bornology.IsBounded Ω) (hS : IsSmoothDomain Ω) (hsc : SimplyConnectedSpace Ω)
-    (F : ℂ → ℂ) (hF : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1)) (himage : F '' ball (0 : ℂ) 1 = Ω)
-    {p : ℂ} (hp : p ∈ frontier Ω) :
+section
+variable {Ω } (hb : Bornology.IsBounded Ω) (hS : IsSmoothDomain Ω) (hsc : SimplyConnectedSpace Ω) (F ) (hF : DifferentiableOn ℂ F unitDisk) (hinj : InjOn F unitDisk) (himage : F '' unitDisk = Ω) {p } (hp : p ∈ frontier Ω)
+include Ω hb hS hsc F hF hinj himage p hp
+
+theorem exists_riemannMapping_flattened_genuine_chart_h1 :
     ∃ (d : smoothTraceTests) (c : ℂ) (hc : c ≠ 0)
-      (f : ℝ → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) (K : NNReal) (a b : ℝ),
+      (f : RealMap) (hf : RealSmooth f) (K : NNReal) (a b : ℝ),
       ‖c‖ = 1 ∧ LipschitzWith K f ∧ f 0 = 0 ∧ 0 < a ∧ 0 < b ∧
       (let Ψ := smoothDirichletGraphChart p c hc f hf.continuous
        let v := riemannMappingDirichletRemainder F d ∘ Ψ
@@ -26,11 +29,11 @@ theorem exists_riemannMapping_flattened_genuine_chart_h1 {Ω : Set ℂ}
        MapsTo Ψ (smoothDirichletClosedHalfBox a b) (closure Ω) ∧
        MapsTo Ψ (smoothDirichletHalfBox a b) Ω ∧
        ContinuousOn v (smoothDirichletClosedHalfBox a b) ∧
-       ContDiffOn ℝ (⊤ : ℕ∞) v (smoothDirichletHalfBox a b) ∧
+       RealSmoothOn v (smoothDirichletHalfBox a b) ∧
        (∀ x : ℝ, |x| < a → v (x : ℂ) = 0) ∧
        ∃ u : NeumannH1 (smoothDirichletHalfBox a b),
-         (h1Value _ u : ℂ → ℂ) =ᵐ[volume.restrict (smoothDirichletHalfBox a b)] v ∧
-         ∀ i : Fin 2, (h1Gradient _ i u : ℂ → ℂ)
+         (h1Value _ u : PlaneMap) =ᵐ[volume.restrict (smoothDirichletHalfBox a b)] v ∧
+         ∀ i : Coord, (h1Gradient _ i u : PlaneMap)
            =ᵐ[volume.restrict (smoothDirichletHalfBox a b)] dirD v (coordDir i)) := by
   obtain ⟨d, u, hvcont, hvsmooth, hvzero, hu, hgu, _, _⟩ :=
     exists_riemannMapping_zero_boundary_poisson_problem hb hS hsc F hF hinj himage
@@ -38,7 +41,6 @@ theorem exists_riemannMapping_flattened_genuine_chart_h1 {Ω : Set ℂ}
     exists_smoothDomain_flattening_rectangle hS hp
   let Ψ := smoothDirichletGraphChart p c hc f hf.continuous
   let V := smoothDirichletHalfBox (a / 2) (b / 2)
-  let v := riemannMappingDirichletRemainder F d ∘ Ψ
   have hV : IsOpen V := isOpen_smoothDirichletHalfBox _ _
   have hmap : MapsTo Ψ V Ω := by
     intro z hz
@@ -56,12 +58,11 @@ theorem exists_riemannMapping_flattened_genuine_chart_h1 {Ω : Set ℂ}
       exact frontier_subset_closure
         (smoothDirichletGraphChart_mem_frontier hS.1.1 p c hc f hf.continuous hb₀ hchart hzr)
     · exact subset_closure ((hchart z hzr hzi).mpr hpos)
-  have hvs : ContDiffOn ℝ (⊤ : ℕ∞) v V :=
+  have hvs  :=
     hvsmooth.comp (smoothDirichletGraphChart_contDiff p c hc hf).contDiffOn hmap
-  have hvm : MemLp (riemannMappingDirichletRemainder F d) 2 (volume.restrict Ω) :=
+  have hvm  :=
     (Lp.memLp (h1Value Ω u)).ae_eq hu
-  have hgm (i : Fin 2) : MemLp (dirD (riemannMappingDirichletRemainder F d) (coordDir i))
-      2 (volume.restrict Ω) := (Lp.memLp (h1Gradient Ω i u)).ae_eq (hgu i)
+  have hgm (i : Coord)  := (Lp.memLp (h1Gradient Ω i u)).ae_eq (hgu i)
   obtain ⟨hvm', hgm'⟩ := smoothDirichletGraphChart_pullback_memLp
     hS.1.1 hV p c hc hc₁ hf hLip (mapsTo_iff_image_subset.mp hmap) hvsmooth hvm hgm
   have hw := isWeakGradient_of_contDiffOn hV hvs hvm' hgm'
@@ -69,7 +70,7 @@ theorem exists_riemannMapping_flattened_genuine_chart_h1 {Ω : Set ℂ}
     by positivity, ?_, hclosed, hmap, ?_, hvs, ?_, h1Vector hw, ?_, ?_⟩
   · intro z hzr hzi
     exact hchart z (hzr.trans (by linarith)) (hzi.trans (by linarith))
-  · exact hvcont.comp Ψ.continuous.continuousOn hclosed
+  · fun_prop
   · intro x hx
     exact smoothDirichletGraphChart_zero_boundary hS.1.1 p c hc f hf.continuous
       hb₀ hchart _ hvzero (hx.trans (by linarith))
@@ -79,13 +80,9 @@ theorem exists_riemannMapping_flattened_genuine_chart_h1 {Ω : Set ℂ}
     rw [h1Gradient_h1Vector]
     exact (hgm' i).coeFn_toLp
 
-theorem exists_riemannMapping_flattened_genuine_chart_all_mixed_orders {Ω : Set ℂ}
-    (hb : Bornology.IsBounded Ω) (hS : IsSmoothDomain Ω) (hsc : SimplyConnectedSpace Ω)
-    (F : ℂ → ℂ) (hF : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1)) (himage : F '' ball (0 : ℂ) 1 = Ω)
-    {p : ℂ} (hp : p ∈ frontier Ω) :
+theorem exists_riemannMapping_flattened_genuine_chart_all_mixed_orders :
     ∃ (d : smoothTraceTests) (c : ℂ) (hc : c ≠ 0)
-      (f : ℝ → ℝ) (hf : ContDiff ℝ (⊤ : ℕ∞) f) (K : NNReal) (A b : ℝ),
+      (f : RealMap) (hf : RealSmooth f) (K : NNReal) (A b : ℝ),
       ‖c‖ = 1 ∧ LipschitzWith K f ∧ f 0 = 0 ∧ 0 < A ∧ 0 < b ∧
       (let Ψ := smoothDirichletGraphChart p c hc f hf.continuous
        let u := riemannMappingDirichletRemainder F d ∘ Ψ
@@ -93,10 +90,10 @@ theorem exists_riemannMapping_flattened_genuine_chart_all_mixed_orders {Ω : Set
        (∀ z : ℂ, |z.re| < A → |z.im| < b → (Ψ z ∈ Ω ↔ 0 < z.im)) ∧
        MapsTo Ψ (smoothDirichletClosedHalfBox A b) (closure Ω) ∧
        MapsTo Ψ U Ω ∧ ContinuousOn u (smoothDirichletClosedHalfBox A b) ∧
-       ContDiffOn ℝ (⊤ : ℕ∞) u U ∧
+       RealSmoothOn u U ∧
        (∀ x : ℝ, |x| < A → u (x : ℂ) = 0) ∧
        MemLp u 2 (volume.restrict U) ∧
-       (∀ i : Fin 2, MemLp (dirD u (coordDir i)) 2 (volume.restrict U)) ∧
+       (∀ i : Coord, MemLp (dirD u (coordDir i)) 2 (volume.restrict U)) ∧
        ∀ N : ℕ, ∃ ρ : ℝ, 0 < ρ ∧ ρ < A / 2 ∧ ρ < b ∧
          ∀ j q : ℕ, j + q ≤ N → MemLp (dirichletMixedDerivative j q u) 2
            (volume.restrict (smoothDirichletHalfBox ρ ρ))) := by
@@ -105,13 +102,13 @@ theorem exists_riemannMapping_flattened_genuine_chart_all_mixed_orders {Ω : Set
     exists_riemannMapping_flattened_genuine_chart_h1 hb hS hsc F hF hinj himage hp
   let Ψ := smoothDirichletGraphChart p c hc f hf.continuous
   let u := riemannMappingDirichletRemainder F d ∘ Ψ
-  let G := lap (d : ℂ → ℂ) ∘ Ψ
+  let G := lap d ∘ Ψ
   let U := smoothDirichletHalfBox A b
-  have hvm : MemLp u 2 (volume.restrict U) :=
+  have hvm  :=
     (Lp.memLp (h1Value U v)).ae_eq hv
-  have hvg (i : Fin 2) : MemLp (dirD u (coordDir i)) 2 (volume.restrict U) :=
+  have hvg (i : Coord)  :=
     (Lp.memLp (h1Gradient U i v)).ae_eq (hgv i)
-  have hGs : ContDiff ℝ (⊤ : ℕ∞) G :=
+  have hGs  :=
     d.property.lap.1.comp (smoothDirichletGraphChart_contDiff p c hc hf)
   have hstrong (z : ℂ) (hzU : z ∈ U) : dirichletFlattenedDivergence f u z = -G z := by
     rw [dirichletFlattenedDivergence_pullback hS.1.1 p c hc hc₁ hf
@@ -123,5 +120,7 @@ theorem exists_riemannMapping_flattened_genuine_chart_all_mixed_orders {Ω : Set
   exact exists_dirichlet_halfBox_mixed_derivative_memLp hA hb₀ hf hLip hu hs hz hvm hvg
     hstrong hGs N
 
-end PolyaNeumann
 end
+
+
+end PolyaNeumann

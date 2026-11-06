@@ -1,14 +1,13 @@
 module
 
-public import RequestProject.NeumannRegularSelfAdjoint
+public import RequestProject.NeumannNormalizedBoundary
 public import RequestProject.MatrixHSSymmetry
 public import RequestProject.NormalizedPeriodicRegular
 
 /-! Self-adjointness of the actual corrected periodic regular boundary operator. -/
 
-@[expose] public section
-set_option autoImplicit false
-noncomputable section
+public section
+
 namespace PolyaNeumann
 open Real
 open scoped ComplexConjugate
@@ -29,18 +28,15 @@ theorem principalNormalized_isSelfAdjoint : IsSelfAdjoint principalNormalized :=
   · exact Complex.conj_ofReal _
 
 theorem correctedRemainderMatrix_zero_hermitian
-    {γ : ℝ → ℂ} {K : NNReal} {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2}
-    (hK : LipschitzWith K γ) (hW : IsTransport γ E W) (m n : ℤ) :
+       
+    (hK : LipschitzWith K γ) (hW : IsTransport γ E W) m n :
     correctedRemainderMatrix W 0 0 (m,n) =
       conj (correctedRemainderMatrix W 0 0 (n,m)) := by
   have hc := correctedKernelCoeff_conj_symm hK hW (-n) m
-  simp only [neg_neg] at hc
+  simp   at hc
   simp only [correctedRemainderMatrix]
-  rw [hc]
   simp only [map_mul, Complex.conj_ofReal]
   congr 1
-  norm_num
   ring
 
 end PolyaNeumann
-end

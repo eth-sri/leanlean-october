@@ -1,5 +1,11 @@
 module
 
+public import RequestProject.L2Pairing
+
+public import RequestProject.PlanarTypes
+
+public import RequestProject.PlanarGeometry
+
 public import Mathlib.Analysis.InnerProductSpace.LinearMap
 public import Mathlib.LinearAlgebra.LinearIndependent.Basic
 public import Mathlib.Topology.DenseEmbedding
@@ -29,13 +35,13 @@ namespace PolyaNeumann
 open MeasureTheory Set Filter Topology
 open scoped Real InnerProductSpace ComplexConjugate
 
-lemma smoothConormalTest_memLp {Ω : Set ℂ} {γ : ℝ → ℂ}
-    (hγ : IsBoundaryParam Ω γ) {φ : ℂ → ℂ} (hφ : TestFunction univ φ) :
+lemma smoothConormalTest_memLp  
+    (hγ : IsBoundaryParam Ω γ)  (hφ : TestFunction univ φ) :
     MemLp (fun θ => conj (fderiv ℝ φ (γ θ) (-(Complex.I * deriv γ θ)))) 2
-      (volume.restrict (Ioc (0 : ℝ) (2 * π))) := by
+      (volume.restrict boundaryHalfOpenInterval) := by
   obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
   obtain ⟨Kφ, hKφ⟩ := ContDiff.lipschitzWith_of_hasCompactSupport hφ.2.1 hφ.1 (by simp)
-  have hc : Continuous (fun θ => fderiv ℝ φ (γ θ)) :=
+  have hc  :=
     (hφ.1.continuous_fderiv (by simp)).comp hKγ.continuous
   have hm : AEStronglyMeasurable
       (fun θ => fderiv ℝ φ (γ θ) (-(Complex.I * deriv γ θ))) volume :=
@@ -44,148 +50,247 @@ lemma smoothConormalTest_memLp {Ω : Set ℂ} {γ : ℝ → ℂ}
         ((measurable_deriv γ).const_mul _).neg.aestronglyMeasurable)
   apply MemLp.of_bound
     (Complex.continuous_conj.comp_aestronglyMeasurable hm).restrict
-    ((Kφ : ℝ) * Kγ)
+    (Kφ * Kγ)
   apply Eventually.of_forall
   intro θ
   rw [Complex.norm_conj]
   calc
     _ ≤ ‖fderiv ℝ φ (γ θ)‖ * ‖-(Complex.I * deriv γ θ)‖ :=
       ContinuousLinearMap.le_opNorm _ _
-    _ ≤ (Kφ : ℝ) * Kγ := by
+    _ ≤ Kφ * Kγ := by
       rw [norm_neg, norm_mul, Complex.norm_I, one_mul]
       exact mul_le_mul (norm_fderiv_le_of_lipschitz ℝ hKφ)
         (norm_deriv_le_of_lipschitz hKγ) (norm_nonneg _) Kφ.coe_nonneg
 
 /-- The actual conormal test, conjugated so that its pairing is linear in
 the trace. It is constructed in L² rather than assumed bounded. -/
-def smoothConormalTestL2 {Ω : Set ℂ} {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
-    {φ : ℂ → ℂ} (hφ : TestFunction univ φ) : BoundaryL2 :=
+def smoothConormalTestL2 {Ω } {γ } (hγ : IsBoundaryParam Ω γ)
+    {φ } hφ  :=
   (smoothConormalTest_memLp hγ hφ).toLp
     (fun θ => conj (fderiv ℝ φ (γ θ) (-(Complex.I * deriv γ θ))))
 
 /-- The actual double-layer boundary functional on H¹. -/
-def h1DoubleLayerBoundaryTest {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
-    {φ : ℂ → ℂ} (hφ : TestFunction univ φ) : NeumannH1 Ω →L[ℂ] ℂ :=
-  (innerSL ℂ (smoothConormalTestL2 hγ hφ)).comp (h1BoundaryTrace hb hL hγ)
+def h1DoubleLayerBoundaryTest {Ω : PlanarSet} (hL : IsLipschitzDomain Ω) {γ : ComplexCurve} (hγ : IsBoundaryParam Ω γ)
+    {φ : PlaneMap} (hφ : TestFunction univ φ) : NeumannH1 Ω →L[ℂ] ℂ :=
+  (innerSL ℂ (smoothConormalTestL2 hγ hφ)).comp (h1BoundaryTrace hL hγ)
+
+def smoothL2Pair (Ω : PlanarSet) {φ : PlaneMap}
+    (hφ : TestFunction univ φ) : L2 Ω →L[ℂ] ℂ :=
+  lpPair (hφ.memLp' 2)
+
+theorem smoothL2Pair_apply Ω 
+    (hφ : TestFunction univ φ) u :
+    smoothL2Pair Ω hφ u = ∫ z in Ω, u z * φ z := lpPair_apply (hφ.memLp' 2) u
+
+
+section
+variable (Ω : PlanarSet) {φ } (hφ : TestFunction univ φ) (f : smoothTraceTests)
+include Ω φ hφ f
+
+theorem smoothL2Pair_smooth_value :
+    smoothL2Pair Ω hφ (h1Value Ω (smoothTraceH1 Ω f)) = ∫ z in Ω, f z * φ z := by
+  rw [smoothL2Pair_apply]
+  apply integral_congr_ae
+  filter_upwards [(smoothTraceTests_memLp Ω f).coeFn_toLp] with z hz
+  rw [h1Value_smoothTraceH1, hz]
+
+theorem smoothL2Pair_smooth_gradient i :
+    smoothL2Pair Ω hφ (h1Gradient Ω i (smoothTraceH1 Ω f)) =
+      ∫ z in Ω, dirD (f : PlaneMap) (coordDir i) z * φ z := by
+  rw [smoothL2Pair_apply]
+  apply integral_congr_ae
+  filter_upwards [(smoothTraceTests_memLp_deriv Ω f i).coeFn_toLp] with z hz
+  simp_all [dirD]
+
+end
+
 
 /-- The interior Green expression is a continuous functional on the
 genuine H¹ space. Its coefficients are actual smooth Laplacian/derivative
 L² classes, not unspecified boundary regularity data. -/
-def h1DoubleLayerInteriorTest (Ω : Set ℂ) {φ : ℂ → ℂ} (hφ : TestFunction univ φ) :
+def h1DoubleLayerInteriorTest (Ω : PlanarSet) {φ : PlaneMap} (hφ : TestFunction univ φ) :
     NeumannH1 Ω →L[ℂ] ℂ :=
-  (innerSL ℂ ((hφ.lap.conj.memLp' 2).toLp (fun z => conj (lap φ z)))).comp (h1Value Ω) +
-    ∑ i : Fin 2,
-      (innerSL ℂ (((hφ.dirD (coordDir i)).conj.memLp' 2).toLp
-        (fun z => conj (dirD φ (coordDir i) z)))).comp (h1Gradient Ω i)
+  (smoothL2Pair Ω hφ.lap).comp (h1Value Ω) +
+    ∑ i : Coord, (smoothL2Pair Ω (hφ.dirD (coordDir i))).comp (h1Gradient Ω i)
 
-private lemma inner_conj_test_toLp {Ω : Set ℂ} {φ : ℂ → ℂ}
-    (hφ : TestFunction univ φ) (u : L2 Ω) :
-    ⟪(hφ.conj.memLp' 2).toLp (fun z => conj (φ z)), u⟫_ℂ =
-      ∫ z in Ω, u z * φ z := by
-  rw [L2.inner_def]
-  apply integral_congr_ae
-  filter_upwards [(hφ.conj.memLp' 2 (μ := volume.restrict Ω)).coeFn_toLp] with z hz
-  simp only [RCLike.inner_apply, hz, Complex.conj_conj]
-
-theorem h1DoubleLayerInteriorTest_apply (Ω : Set ℂ) {φ : ℂ → ℂ}
-    (hφ : TestFunction univ φ) (u : NeumannH1 Ω) :
+theorem h1DoubleLayerInteriorTest_apply Ω 
+    (hφ : TestFunction univ φ) u :
     h1DoubleLayerInteriorTest Ω hφ u =
       (∫ z in Ω, h1Value Ω u z * lap φ z) +
-        ∑ i : Fin 2, ∫ z in Ω, h1Gradient Ω i u z * dirD φ (coordDir i) z := by
+        ∑ i : Coord, ∫ z in Ω, h1Gradient Ω i u z * dirD φ (coordDir i) z := by
   simp only [h1DoubleLayerInteriorTest, ContinuousLinearMap.add_apply,
-    ContinuousLinearMap.comp_apply, ContinuousLinearMap.sum_apply,
-    innerSL_apply_apply]
-  exact congrArg₂ (fun x y : ℂ => x + y)
-    (inner_conj_test_toLp hφ.lap (h1Value Ω u))
-    (Finset.sum_congr rfl fun i _ =>
-      inner_conj_test_toLp (hφ.dirD (coordDir i)) (h1Gradient Ω i u))
+    ContinuousLinearMap.sum_apply, ContinuousLinearMap.comp_apply, smoothL2Pair_apply]
 
-theorem h1DoubleLayerBoundaryTest_apply {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
-    {φ : ℂ → ℂ} (hφ : TestFunction univ φ) (u : NeumannH1 Ω) :
-    h1DoubleLayerBoundaryTest hb hL hγ hφ u =
-      ∫ θ in Ioc (0 : ℝ) (2 * π), h1BoundaryTrace hb hL hγ u θ *
+section
+variable {Ω } (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω) {γ } (hγ : IsBoundaryParam Ω γ) {φ } (hφ : TestFunction univ φ)
+
+section
+include Ω hb hL γ hγ φ hφ
+
+theorem h1DoubleLayerBoundaryTest_apply u :
+    h1DoubleLayerBoundaryTest hL hγ hφ u =
+      ∫ θ in boundaryHalfOpenInterval, h1BoundaryTrace hL hγ u θ *
         fderiv ℝ φ (γ θ) (-(Complex.I * deriv γ θ)) := by
-  change ⟪smoothConormalTestL2 hγ hφ, h1BoundaryTrace hb hL hγ u⟫_ℂ = _
-  rw [L2.inner_def]
+  change ⟪smoothConormalTestL2 hγ hφ, h1BoundaryTrace hL hγ u⟫_ℂ = _
   apply integral_congr_ae
   filter_upwards [(smoothConormalTest_memLp hγ hφ).coeFn_toLp] with θ hθ
-  simp only [smoothConormalTestL2, RCLike.inner_apply, hθ, Complex.conj_conj]
+  simp_all [smoothConormalTestL2,  PolyaNeumann.NeumannH1, PolyaNeumann.BoundaryL2]
 
-private lemma h1DoubleLayerBoundaryTest_smooth {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
-    {φ : ℂ → ℂ} (hφ : TestFunction univ φ) (f : smoothTraceTests) :
-    h1DoubleLayerBoundaryTest hb hL hγ hφ (smoothTraceH1 Ω f) =
+private lemma h1DoubleLayerBoundaryTest_smooth f :
+    h1DoubleLayerBoundaryTest hL hγ hφ (smoothTraceH1 Ω f) =
       doubleLayer γ (fun θ => f (γ θ)) φ := by
-  rw [h1DoubleLayerBoundaryTest_apply, doubleLayer,
+  rw [h1DoubleLayerBoundaryTest_apply hb, doubleLayer,
     intervalIntegral.integral_of_le (by positivity)]
   apply integral_congr_ae
   filter_upwards [h1BoundaryTrace_smooth_ae hb hL hγ f] with θ hθ
   rw [hθ]
 
-private lemma h1DoubleLayerInteriorTest_smooth (Ω : Set ℂ)
-    {φ : ℂ → ℂ} (hφ : TestFunction univ φ) (f : smoothTraceTests) :
+end
+
+
+private lemma h1DoubleLayerInteriorTest_smooth Ω
+     (hφ : TestFunction univ φ) f :
     h1DoubleLayerInteriorTest Ω hφ (smoothTraceH1 Ω f) =
       ∫ z in Ω, (f z * lap φ z +
-        ∑ i : Fin 2, dirD (f : ℂ → ℂ) (coordDir i) z * dirD φ (coordDir i) z) := by
+        ∑ i : Coord, dirD (f : PlaneMap) (coordDir i) z * dirD φ (coordDir i) z) := by
   rw [h1DoubleLayerInteriorTest_apply]
   have h0 : (∫ z in Ω, h1Value Ω (smoothTraceH1 Ω f) z * lap φ z) =
       ∫ z in Ω, f z * lap φ z := by
     apply integral_congr_ae
     filter_upwards [(f.property.memLp' 2 (μ := volume.restrict Ω)).coeFn_toLp] with z hz
     rw [h1Value_smoothTraceH1, hz]
-  have hi : ∀ i : Fin 2,
+  have hi : ∀ i : Coord,
       (∫ z in Ω, h1Gradient Ω i (smoothTraceH1 Ω f) z * dirD φ (coordDir i) z) =
-        ∫ z in Ω, dirD (f : ℂ → ℂ) (coordDir i) z * dirD φ (coordDir i) z := by
+        ∫ z in Ω, dirD (f : PlaneMap) (coordDir i) z * dirD φ (coordDir i) z := by
     intro i
     apply integral_congr_ae
     filter_upwards [((f.property.dirD (coordDir i)).memLp' 2
       (μ := volume.restrict Ω)).coeFn_toLp] with z hz
-    rw [h1Gradient_smoothTraceH1]
     exact congrArg (fun w => w * dirD φ (coordDir i) z) hz
   rw [h0]
   simp_rw [hi]
   have hmass := integrable_mul_test (f.property.memLp' 2 (μ := volume.restrict Ω)) hφ.lap
-  have hgrad : ∀ i : Fin 2, IntegrableOn
-      (fun z => dirD (f : ℂ → ℂ) (coordDir i) z * dirD φ (coordDir i) z) Ω :=
+  have hgrad : ∀ i : Coord, IntegrableOn
+      (((dirD (f : PlaneMap) (coordDir i) * dirD φ (coordDir i)))) Ω :=
     fun i => integrable_mul_test ((f.property.dirD (coordDir i)).memLp' 2) (hφ.dirD _)
-  simp only [Fin.sum_univ_two]
+  simp  
   exact ((integral_add hmass ((hgrad 0).add (hgrad 1))).trans
     (congrArg (fun x : ℂ => (∫ z in Ω, f z * lap φ z) + x)
       (integral_add (hgrad 0) (hgrad 1)))).symm
 
+section
+include Ω hb hL γ hγ φ hφ
+
 /-- Green's double-layer identity for every actual weak-gradient H¹ vector.
 It follows by equality of continuous functionals on the dense smooth
 restrictions, so no extra regularity of the H¹ vector is imposed. -/
-theorem h1DoubleLayerBoundaryTest_eq_interior {Ω : Set ℂ}
-    (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
-    {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
-    {φ : ℂ → ℂ} (hφ : TestFunction univ φ) :
-    h1DoubleLayerBoundaryTest hb hL hγ hφ = h1DoubleLayerInteriorTest Ω hφ := by
+theorem h1DoubleLayerBoundaryTest_eq_interior :
+    h1DoubleLayerBoundaryTest hL hγ hφ = h1DoubleLayerInteriorTest Ω hφ := by
   apply DFunLike.coe_injective
   apply (denseRange_smoothTraceH1Lin hb hL).equalizer
-    (h1DoubleLayerBoundaryTest hb hL hγ hφ).continuous
+    (h1DoubleLayerBoundaryTest hL hγ hφ).continuous
     (h1DoubleLayerInteriorTest Ω hφ).continuous
   funext f
   rw [Function.comp_apply, Function.comp_apply, smoothTraceH1Lin_apply,
-    h1DoubleLayerBoundaryTest_smooth, h1DoubleLayerInteriorTest_smooth Ω]
+    h1DoubleLayerBoundaryTest_smooth hb, h1DoubleLayerInteriorTest_smooth Ω]
   obtain ⟨Kf, hKf⟩ := ContDiff.lipschitzWith_of_hasCompactSupport
     f.property.2.1 f.property.1 (by simp)
   exact doubleLayer_eq_integral hb hL hγ hKf f.property.2.1 (fun θ _ => rfl) hφ.1
 
 /-- The raw integral version of the generalized Green identity uses the
 actual L² representatives of the value, weak gradients, and boundary trace. -/
-theorem h1_doubleLayer_green {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
-    {φ : ℂ → ℂ} (hφ : TestFunction univ φ) (u : NeumannH1 Ω) :
+theorem h1_doubleLayer_green u :
     (∫ z in Ω, h1Value Ω u z * lap φ z) +
-      (∑ i : Fin 2, ∫ z in Ω, h1Gradient Ω i u z * dirD φ (coordDir i) z) =
-        ∫ θ in Ioc (0 : ℝ) (2 * π), h1BoundaryTrace hb hL hγ u θ *
+      (∑ i : Coord, ∫ z in Ω, h1Gradient Ω i u z * dirD φ (coordDir i) z) =
+        ∫ θ in boundaryHalfOpenInterval, h1BoundaryTrace hL hγ u θ *
           fderiv ℝ φ (γ θ) (-(Complex.I * deriv γ θ)) := by
   rw [← h1DoubleLayerInteriorTest_apply Ω hφ u,
     ← h1DoubleLayerBoundaryTest_eq_interior hb hL hγ hφ,
     h1DoubleLayerBoundaryTest_apply hb hL hγ hφ u]
+
+end
+
+
+end
+
+
+section
+variable {Ω } {γ } (hγ : IsBoundaryParam Ω γ) {φ } (hφ : TestFunction univ φ)
+include Ω γ hγ φ hφ
+
+theorem firstOrder_boundary_coefficient_memLp
+    a (ha : AEStronglyMeasurable a volume) 
+    (hK : ∀ θ, ‖a θ‖ ≤ K) :
+    MemLp (fun θ => φ (γ θ) * a θ) 2
+      (volume.restrict boundaryHalfOpenInterval) := by
+  obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
+  obtain ⟨C, hC⟩ := hφ.2.1.exists_bound_of_continuous hφ.1.continuous
+  have hC0  := (norm_nonneg (φ 0)).trans (hC 0)
+  apply MemLp.of_bound
+    ((hφ.1.continuous.comp hKγ.continuous).aestronglyMeasurable.mul ha).restrict (C * K)
+  apply Eventually.of_forall
+  intro θ
+  change ‖φ (γ θ) * a θ‖ ≤ C * K
+  rw [norm_mul]
+  exact mul_le_mul (hC (γ θ)) (hK θ) (norm_nonneg _) hC0
+
+theorem firstOrder_velocity_coefficient_memLp :
+    MemLp (fun θ => φ (γ θ) * deriv γ θ) 2
+      (volume.restrict boundaryHalfOpenInterval) := (Exists.casesOn hγ.lipschitz fun K hK => firstOrder_boundary_coefficient_memLp hγ hφ (deriv γ) (Measurable.aestronglyMeasurable (measurable_deriv γ)) fun x => norm_deriv_le_of_lipschitz hK)
+
+theorem firstOrder_conjugate_velocity_coefficient_memLp :
+    MemLp (fun θ => φ (γ θ) * conj (deriv γ θ)) 2
+      (volume.restrict boundaryHalfOpenInterval) := by
+  obtain ⟨K, hK⟩ := hγ.lipschitz
+  apply firstOrder_boundary_coefficient_memLp hγ hφ (fun θ => conj (deriv γ θ))
+    (Complex.continuous_conj.comp_aestronglyMeasurable
+      (measurable_deriv γ).aestronglyMeasurable)
+  intro θ
+  simpa   using norm_deriv_le_of_lipschitz (x₀ := θ) hK
+
+end
+
+
+theorem smooth_firstOrder_green  (hb : Bornology.IsBounded Ω)
+    (hL : IsLipschitzDomain Ω)  (hγ : IsBoundaryParam Ω γ)
+     (hp : TestFunction univ p) :
+    (∫ θ in boundaryHalfOpenInterval, p (γ θ) * deriv γ θ) =
+      Complex.I * (∫ z in Ω, dirD p 1 z) - ∫ z in Ω, dirD p Complex.I z := by
+  obtain ⟨Kp, hKp⟩ := ContDiff.lipschitzWith_of_hasCompactSupport hp.2.1 hp.1 (by simp)
+  have hg : (∫ θ in boundaryHalfOpenInterval, p (γ θ) * deriv γ θ) =
+      2 * Complex.I * ∫ z in Ω, dbar p z := by
+    simpa  [intervalIntegral.integral_of_le (by positivity : (0 : ℝ) ≤ 2 * π)]
+      using integral_boundary_eq_dbar hb hL hγ hKp hp.2.1
+  have hdx : IntegrableOn (dirD p 1) Ω :=
+    memLp_one_iff_integrable.mp ((hp.dirD 1).memLp' 1)
+  have hdy : IntegrableOn (dirD p Complex.I) Ω :=
+    memLp_one_iff_integrable.mp ((hp.dirD Complex.I).memLp' 1)
+  calc
+    _ = 2 * Complex.I * ∫ z in Ω, dbar p z := hg
+    _ = ∫ z in Ω, (Complex.I * dirD p 1 z - dirD p Complex.I z) := by
+      rw [← integral_const_mul]
+      apply integral_congr_ae
+      apply Eventually.of_forall
+      intro z
+      dsimp only [dbar, dirD]
+      ring_nf; simp  ; ring
+    _ = _ := by rw [integral_sub (hdx.const_mul _) hdy, integral_const_mul]
+
+
+theorem integral_dirD_smooth_mul Ω (f : smoothTraceTests)
+     (hφ : TestFunction univ φ) v :
+    (∫ z in Ω, dirD (fun z => f z * φ z) v z) =
+      (∫ z in Ω, dirD (f : PlaneMap) v z * φ z) +
+        ∫ z in Ω, f z * dirD φ v z := by
+  have hproduct (z : ℂ) :
+      dirD (fun z => f z * φ z) v z = dirD (f : PlaneMap) v z * φ z + f z * dirD φ v z := by
+    rw [dirD, fderiv_fun_mul (f.property.1.differentiable (by simp) z)
+      (hφ.1.differentiable (by simp) z)]
+    simp [dirD]
+    ring
+  simp_rw [hproduct]
+  exact integral_add (integrable_mul_test ((f.property.dirD v).memLp' 2) hφ)
+    (integrable_mul_test (f.property.memLp' 2) (hφ.dirD v))
 
 end PolyaNeumann
 

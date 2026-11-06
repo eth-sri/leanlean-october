@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.PlanarTypes
+
 public import RequestProject.BZConstruct
 public import RequestProject.SmoothDomain
 
@@ -15,7 +17,7 @@ off `{|d_Ω| ≤ 2 M T}` and moves points by at most `M T / 2`.
 @[expose] public section
 
 open Set Filter Metric
-open scoped Topology NNReal ContDiff
+open scoped NNReal
 
 noncomputable section
 
@@ -23,13 +25,13 @@ namespace PolyaNeumann
 
 namespace BZSetting
 
-variable {Ω : Set ℂ} (S : BZSetting Ω)
+variable {Ω : PlanarSet} (S : BZSetting Ω)
 
 /-- Uniform Lipschitz constant of the collar maps. -/
-def K₁ : ℝ := S.M * (S.Lb + S.La / 2) + 1 / 2 + Real.exp S.LX
+def K₁  := S.M * (S.Lb + S.La / 2) + 1 / 2 + Real.exp S.LX
 
 /-- Uniform Lipschitz constant of the inverse collar maps. -/
-def K₂ : ℝ := S.M * (3 * S.La + 2 * S.Lb) + 1 / 2 + Real.exp S.LX
+def K₂  := S.M * (3 * S.La + 2 * S.Lb) + 1 / 2 + Real.exp S.LX
 
 lemma K₁_nonneg : 0 ≤ S.K₁ := by
   have := S.M_pos; have := S.La_nonneg; have := S.Lb_nonneg; unfold K₁; positivity
@@ -41,9 +43,9 @@ end BZSetting
 
 namespace BZLevelData
 
-variable {Ω : Set ℂ} {S : BZSetting Ω} (D : BZLevelData S)
+variable {Ω } {S : BZSetting Ω} (D : BZLevelData S)
 
-lemma C_sub_U₁ {x : ℂ} (hx : x ∈ D.C) : x ∈ S.U₁ := by
+lemma C_sub_U₁  (hx : x ∈ D.C) : x ∈ S.U₁ := by
   have hx' : |signedDist Ω x| < 4 * S.M * D.T := hx
   have := D.path_bound
   have := S.M_pos; have := D.T₁_pos
@@ -51,11 +53,11 @@ lemma C_sub_U₁ {x : ℂ} (hx : x ∈ D.C) : x ∈ S.U₁ := by
   nlinarith
 
 /-- Points of the collar lie above the level `ρ = ε` exactly when the crossing time is negative. -/
-lemma lt_ρ_iff_s_neg {x : ℂ} (hx : x ∈ D.C) : D.ε < D.ρ x ↔ D.s x < 0 := by
+lemma lt_ρ_iff_s_neg  (hx : x ∈ D.C) : D.ε < D.ρ x ↔ D.s x < 0 := by
   obtain ⟨hu, h0⟩ := D.cross_ρ_spec hx
-  have hx' : |signedDist Ω x| < 4 * S.M * D.T := hx
+  have hx'  := hx
   have hT1 := D.T₁_le
-  have hκ : 0 < S.κ₀ / 2 := half_pos S.hκ₀
+  have hκ  := half_pos S.hκ₀
   have hpath : ∀ v, |v| ≤ D.T₁ → S.Φ v x ∈ S.U₁ := fun v hv =>
     D.flow_mem_U₁ hx' (by linarith [D.T₁_pos])
   rcases lt_trichotomy (D.s x) 0 with hneg | hzero | hpos
@@ -73,25 +75,25 @@ lemma lt_ρ_iff_s_neg {x : ℂ} (hx : x ∈ D.C) : D.ε < D.ρ x ↔ D.s x < 0 :
     constructor <;> intro h <;> linarith
 
 /-- The collar map. -/
-def f : ℂ → ℂ := collarMap S.Φ D.C D.a D.b D.T
+def f  := collarMap S.Φ D.C D.a D.b D.T
 
 /-- The inverse collar map. -/
-def g : ℂ → ℂ := collarMapInv S.Φ D.C D.a D.b D.T
+def g  := collarMapInv S.Φ D.C D.a D.b D.T
 
-lemma g_f (x : ℂ) : D.g (D.f x) = x :=
+lemma g_f x : D.g (D.f x) = x :=
   IsFlowCollar.collarMapInv_collarMap S.hΦ S.hX D.isFlowCollar x
 
-lemma f_g (y : ℂ) : D.f (D.g y) = y :=
+lemma f_g y : D.f (D.g y) = y :=
   IsFlowCollar.collarMap_collarMapInv S.hΦ S.hX D.isFlowCollar y
 
-lemma dist_f_le (x y : ℂ) : dist (D.f x) (D.f y) ≤ S.K₁ * dist x y := by
+lemma dist_f_le x y : dist (D.f x) (D.f y) ≤ S.K₁ * dist x y := by
   have h := IsFlowCollar.collarMap_lipschitz S.hΦ S.hX S.hM D.isFlowCollar x y
   have e : S.M * ((S.Lb + S.La / 2) + (D.T / 2) / (S.M * D.T)) + Real.exp S.LX = S.K₁ := by
     have := S.M_pos.ne'; have := D.T_pos.ne'
     unfold BZSetting.K₁; field_simp
   rw [e] at h; exact h
 
-lemma dist_g_le (x y : ℂ) : dist (D.g x) (D.g y) ≤ S.K₂ * dist x y := by
+lemma dist_g_le x y : dist (D.g x) (D.g y) ≤ S.K₂ * dist x y := by
   have h := IsFlowCollar.collarMapInv_lipschitz S.hΦ S.hX S.hM D.isFlowCollar x y
   have e : S.M * ((3 * S.La + 2 * S.Lb) + (D.T / 2) / (S.M * D.T)) + Real.exp S.LX = S.K₂ := by
     have := S.M_pos.ne'; have := D.T_pos.ne'
@@ -115,52 +117,51 @@ def homeo : ℂ ≃ₜ ℂ where
   continuous_toFun := D.lipschitzWith_f.continuous
   continuous_invFun := D.lipschitzWith_g.continuous
 
-lemma coe_homeo : (D.homeo : ℂ → ℂ) = D.f := rfl
+lemma coe_homeo : (D.homeo : PlaneMap) = D.f := rfl
 
-lemma f_eq_self {x : ℂ} (hx : 2 * S.M * D.T < |signedDist Ω x|) : D.f x = x := by
+lemma f_eq_self  (hx : 2 * S.M * D.T < |signedDist Ω x|) : D.f x = x := by
   have h0 : collarShift D.C D.a D.b D.T x = 0 := by
     refine D.isFlowCollar.collarShift_eq_zero ?_
     by_cases hC : x ∈ D.C
     · right
       have h1 := D.abs_d_le hC
       have hM := S.M_pos
-      by_contra hlt
-      push_neg at hlt
-      have : S.M * |D.a x| ≤ S.M * D.T := mul_le_mul_of_nonneg_left hlt.le hM.le
-      linarith
+      nlinarith
     · left; exact hC
-  simp only [f, collarMap, h0, S.hΦ.zero]
+  simp  [f, collarMap, h0, S.hΦ.zero]
 
-lemma norm_f_sub_le (x : ℂ) : ‖D.f x - x‖ ≤ S.M * (D.T / 2) := by
+lemma norm_f_sub_le x : ‖D.f x - x‖ ≤ S.M * (D.T / 2) := by
   have hu := D.isFlowCollar.abs_collarShift_le x
   have hT := D.T_lt
   have := S.hΦ.norm_sub_self_le S.hM x (t := collarShift D.C D.a D.b D.T x)
     ⟨by linarith [(abs_le.mp hu).1], by linarith [(abs_le.mp hu).2]⟩
   exact this.trans (mul_le_mul_of_nonneg_left hu S.M_pos.le)
 
-lemma f_mem (hΩo : IsOpen Ω) (hΩu : Ωᶜ.Nonempty) {x : ℂ} (hx : x ∈ Ω) : D.f x ∈ Ω := by
+section
+variable (hΩo : IsOpen Ω) (hΩu : Ωᶜ.Nonempty)
+include hΩo hΩu
+
+lemma f_mem  (hx : x ∈ Ω) : D.f x ∈ Ω := by
   have hc := D.isFlowCollar
   by_cases h : x ∈ D.C ∧ |D.a x| < D.T
   · obtain ⟨hxC, hax⟩ := h
     have hT := D.T_pos
     set u := collarShift D.C D.a D.b D.T x
-    have hu : |u| ≤ D.T / 2 := hc.abs_collarShift_le x
+    have hu  := hc.abs_collarShift_le x
     have hueq : u = D.b x * tentθ D.T (D.a x) := by simp [u, collarShift, hxC]
     obtain ⟨hyC, hya, -⟩ := hc.flow x hxC hax u (by linarith)
     have hpos := (D.mem_iff_a_pos hΩo hΩu hxC).mp hx
     have hb := D.b_mem hxC
-    have hσ : 0 < sigmaMap D.T (D.b x) (D.a x) :=
+    have hσ  :=
       sigmaMap_pos hT (hc.b_le x hxC) hb.1 hpos
     show S.Φ u x ∈ Ω
     rw [D.mem_iff_a_pos hΩo hΩu hyC, hya, hueq]
     exact hσ
   · have h0 : collarShift D.C D.a D.b D.T x = 0 := hc.collarShift_eq_zero (by
-      by_cases h' : x ∈ D.C
-      · exact Or.inr (by push_neg at h; exact h h')
-      · exact Or.inl h')
-    simp only [f, collarMap, h0, S.hΦ.zero]; exact hx
+      grind)
+    simp  [f, collarMap, h0, S.hΦ.zero]; exact hx
 
-lemma mem_image_iff (hΩo : IsOpen Ω) (hΩu : Ωᶜ.Nonempty) {w : ℂ} (hw : w ∈ D.C)
+lemma mem_image_iff  (hw : w ∈ D.C)
     (haw : |D.a w| < D.T) : w ∈ D.f '' Ω ↔ D.ε < D.ρ w := by
   have hc := D.isFlowCollar
   have h1 : w ∈ D.f '' Ω ↔ D.g w ∈ Ω := by
@@ -171,40 +172,39 @@ lemma mem_image_iff (hΩo : IsOpen Ω) (hΩu : Ωᶜ.Nonempty) {w : ℂ} (hw : w
   rw [h1, show D.g w = collarMapInv S.Φ D.C D.a D.b D.T w from rfl,
     D.mem_iff_a_pos hΩo hΩu hgC, hga, sigmaInv_pos_iff D.T_pos (hc.b_le w hw),
     D.lt_ρ_iff_s_neg hw]
-  simp only [b]
-  constructor <;> intro h <;> linarith
+  simp_all [PolyaNeumann.BZLevelData.b]
 
 /-- The collar map sends boundary points into `Ω` (onto the level `ρ = ε`). -/
-lemma f_mem_of_frontier (hΩo : IsOpen Ω) (hΩu : Ωᶜ.Nonempty) {q : ℂ} (hq : q ∈ frontier Ω) :
+lemma f_mem_of_frontier  (hq : q ∈ frontier Ω) :
     D.f q ∈ Ω := by
   have hT := D.T_pos
   have hM := S.M_pos
-  have hd : signedDist Ω q = 0 := signedDist_eq_zero_of_frontier hΩo hq
+  have hd  := signedDist_eq_zero_of_frontier hΩo hq
   have hqC : q ∈ D.C := by
-    show |signedDist Ω q| < 4 * S.M * D.T
-    rw [hd, abs_zero]; positivity
+    simp_all [PolyaNeumann.BZLevelData.C]
   have haq : D.a q = 0 := by
     have := D.a_eq hqC (u := 0) ⟨by linarith [D.T₁_pos], D.T₁_pos.le⟩ (by rw [S.hΦ.zero]; exact hd)
     rw [this, neg_zero]
   have hshift : collarShift D.C D.a D.b D.T q = D.s q := by
-    simp only [collarShift, if_pos hqC, haq, tentθ_zero, mul_one, b, zero_add]
+    simp  [collarShift, if_pos hqC, haq, tentθ_zero, b, zero_add]
   have hfq : D.f q = S.Φ (D.s q) q := by simp only [f, collarMap, hshift]
   have hρp : D.ρ (D.f q) = D.ε := by rw [hfq]; exact (D.cross_ρ_spec hqC).2
   have hε : D.ε = S.κ₀ * D.T / 24 := rfl
   have hc := D.close (D.f q)
   have hκ := S.hκ₀
   rw [← signedDist_pos_iff hΩo hΩu]
-  rw [hρp, hε] at hc
   have := (abs_le.mp hc).2
-  have : 0 < S.κ₀ * D.T := mul_pos hκ hT
-  linarith
+  nlinarith
 
 /-- The collar map sends `Ω̄` into `Ω`. -/
-lemma f_mem_of_mem_closure (hΩo : IsOpen Ω) (hΩu : Ωᶜ.Nonempty) {x : ℂ} (hx : x ∈ closure Ω) :
+lemma f_mem_of_mem_closure  (hx : x ∈ closure Ω) :
     D.f x ∈ Ω := by
   by_cases h : x ∈ Ω
   · exact D.f_mem hΩo hΩu h
   · exact D.f_mem_of_frontier hΩo hΩu ⟨hx, by rwa [hΩo.interior_eq]⟩
+
+end
+
 
 /-- The image `f(Ω)` is a smooth domain. -/
 theorem isSmoothDomain_image (hΩ : IsDomain Ω) (hΩu : Ωᶜ.Nonempty) :
@@ -214,16 +214,14 @@ theorem isSmoothDomain_image (hΩ : IsDomain Ω) (hΩu : Ωᶜ.Nonempty) :
   have hM := S.M_pos
   have hLa := S.La_nonneg
   refine ⟨⟨?_, ?_⟩, ?_⟩
-  · rw [← D.coe_homeo]; exact D.homeo.isOpenMap _ hΩ.1
+  · exact D.homeo.isOpenMap _ hΩ.1
   · exact hΩ.2.image _ D.lipschitzWith_f.continuous.continuousOn
   intro p hp
   rw [← D.coe_homeo, ← Homeomorph.image_frontier] at hp
   obtain ⟨q, hq, rfl⟩ := hp
-  rw [D.coe_homeo]
-  have hd : signedDist Ω q = 0 := signedDist_eq_zero_of_frontier hΩ.1 hq
+  have hd  := signedDist_eq_zero_of_frontier hΩ.1 hq
   have hqC : q ∈ D.C := by
-    show |signedDist Ω q| < 4 * S.M * D.T
-    rw [hd, abs_zero]; positivity
+    simp_all [signedDist, PolyaNeumann.BZLevelData.C]
   have haq : D.a q = 0 := by
     have := D.a_eq hqC (u := 0) ⟨by linarith [D.T₁_pos], D.T₁_pos.le⟩ (by rw [S.hΦ.zero]; exact hd)
     rw [this, neg_zero]
@@ -234,7 +232,7 @@ theorem isSmoothDomain_image (hΩ : IsDomain Ω) (hΩu : Ωᶜ.Nonempty) :
   have hbq := D.b_mem hqC
   have hbs : D.b q = D.s q := by simp only [b, haq, zero_add]
   obtain ⟨hpC, hpa, -⟩ := hc.flow q hqC (by rw [haq, abs_zero]; exact hT) (D.s q)
-    (by rw [← hbs, abs_of_nonneg hbq.1]; linarith [hbq.2])
+    (by grind)
   rw [← hfq] at hpC hpa
   rw [haq, zero_add, ← hbs] at hpa
   set R : ℝ := min (S.M * D.T) (D.T / (2 * S.La + 1))
@@ -251,19 +249,16 @@ theorem isSmoothDomain_image (hΩ : IsDomain Ω) (hΩu : Ωᶜ.Nonempty) :
       rw [Real.dist_eq, dist_eq_norm] at h2
       push_cast at h2
       have h3 := abs_sub_abs_le_abs_sub (signedDist Ω w) (signedDist Ω (D.f q))
-      have : S.M * D.b q ≤ S.M * (D.T / 8) := mul_le_mul_of_nonneg_left hbq.2 hM.le
-      show |signedDist Ω w| < 4 * S.M * D.T
-      nlinarith
+      have  := mul_le_mul_of_nonneg_left hbq.2 hM.le
+      grind [signedDist, PolyaNeumann.BZLevelData.C]
     refine ⟨hwC, ?_⟩
     have h4 := hc.a_lip w hwC (D.f q) hpC
     rw [hpa] at h4
-    have h5 : S.La * ‖w - D.f q‖ ≤ S.La * R := mul_le_mul_of_nonneg_left hw'.le hLa
+    have h5  := mul_le_mul_of_nonneg_left hw'.le hLa
     have h6 : S.La * (D.T / (2 * S.La + 1)) ≤ D.T / 2 := by
       rw [mul_div_assoc', div_le_div_iff₀ (by positivity) (by norm_num)]; nlinarith
-    have h7 : S.La * R ≤ S.La * (D.T / (2 * S.La + 1)) := mul_le_mul_of_nonneg_left hR2 hLa
-    have h8 := abs_sub_abs_le_abs_sub (D.a w) (D.b q)
-    rw [abs_of_nonneg hbq.1] at h8
-    linarith [hbq.2]
+    have h7  := mul_le_mul_of_nonneg_left hR2 hLa
+    grind
   exact smoothChart_of_level D.smooth D.lip S.hX S.hτ₀ (half_pos S.hκ₀) D.trans hR
     (fun w hw => D.C_sub_U₁ (hball w hw).1) hρp
     (fun w hw => D.mem_image_iff hΩ.1 hΩu (hball w hw).1 (hball w hw).2)

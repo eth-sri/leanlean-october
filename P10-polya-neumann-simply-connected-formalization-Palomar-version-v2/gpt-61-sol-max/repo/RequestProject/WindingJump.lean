@@ -1,5 +1,9 @@
 module
 
+public import RequestProject.PlanarTypes
+
+public import RequestProject.PlanarGeometry
+
 public import RequestProject.WindingNumber
 
 /-!
@@ -11,17 +15,17 @@ on the rest of the period, the winding numbers at `is` and `-is` differ by `±1`
 `s → 0⁺` (`windingNumber_jump`).
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Set Filter Metric
-open scoped ComplexConjugate Real Topology
+open scoped Real Topology
 
-noncomputable section
+
 
 namespace PolyaNeumann
 
 /-- A continuous curve avoiding `z` on a compact interval stays at positive distance. -/
-lemma exists_pos_le_norm_sub {γ : ℝ → ℂ} (hγ : Continuous γ) {a b : ℝ} {z : ℂ}
+lemma exists_pos_le_norm_sub  (hγ : Continuous γ) {a b : ℝ} {z : ℂ}
     (hz : ∀ θ ∈ Icc a b, γ θ ≠ z) : ∃ d > 0, ∀ θ ∈ Icc a b, d ≤ ‖γ θ - z‖ := by
   rcases (Icc a b).eq_empty_or_nonempty with he | hne
   · exact ⟨1, one_pos, by simp [he]⟩
@@ -30,9 +34,18 @@ lemma exists_pos_le_norm_sub {γ : ℝ → ℂ} (hγ : Continuous γ) {a b : ℝ
   refine ⟨‖γ θ₀ - z‖, norm_pos_iff.mpr (sub_ne_zero.mpr (hz θ₀ hθ₀)), fun θ hθ => ?_⟩
   exact hmin hθ
 
+section
+variable {γ : ComplexCurve} {K } (hK : LipschitzWith K γ) {a b : ℝ} (hab : a ≤ b)
+
+section
+variable {z } (hz : ∀ θ ∈ Icc a b, γ θ ≠ z)
+include z hz
+
+section
+include γ K hK a b hab
+
 /-- The integrand `γ'/(γ - z)` is interval integrable where the curve avoids `z`. -/
-lemma intervalIntegrable_deriv_div {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
-    {a b : ℝ} (hab : a ≤ b) {z : ℂ} (hz : ∀ θ ∈ Icc a b, γ θ ≠ z) :
+lemma intervalIntegrable_deriv_div :
     IntervalIntegrable (fun θ => deriv γ θ / (γ θ - z)) volume a b := by
   obtain ⟨d, hd, hdz⟩ := exists_pos_le_norm_sub hK.continuous hz
   refine IntervalIntegrable.mono_fun (intervalIntegrable_const (c := K / d)) ?_ ?_
@@ -46,12 +59,11 @@ lemma intervalIntegrable_deriv_div {γ : ℝ → ℂ} {K : NNReal} (hK : Lipschi
       (hdz θ ⟨hθ.1.le, hθ.2⟩)
 
 /-- Along an arc avoiding `z`, `exp(-∫ₐ^θ γ'/(γ - z)) (γ(θ) - z) = γ(a) - z`. -/
-lemma exp_neg_integral_mul_eq {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
-    {a b : ℝ} (hab : a ≤ b) {z : ℂ} (hz : ∀ θ ∈ Icc a b, γ θ ≠ z) :
+lemma exp_neg_integral_mul_eq :
     ∀ θ ∈ Icc a b,
       Complex.exp (-∫ t in a..θ, deriv γ t / (γ t - z)) * (γ θ - z) = γ a - z := by
   obtain ⟨ε, hε, hfar⟩ := exists_pos_le_norm_sub hK.continuous hz
-  set f : ℝ → ℂ := (Icc a b).indicator (fun s => deriv γ s / (γ s - z)) with hf
+  set f : ComplexCurve := (Icc a b).indicator (fun s => deriv γ s / (γ s - z)) with hf
   have hfm : Measurable f := ((measurable_deriv γ).div
     (hK.continuous.measurable.sub measurable_const)).indicator measurableSet_Icc
   have hfB : ∀ s, ‖f s‖ ≤ K / ε := by
@@ -62,11 +74,11 @@ lemma exp_neg_integral_mul_eq {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWit
     · rw [hf, indicator_of_notMem hs, norm_zero]; positivity
   set L : NNReal := Real.toNNReal (K / ε) with hL
   have hfB' : ∀ s, ‖f s‖ ≤ L := fun s => by
-    rw [hL, Real.coe_toNNReal _ (by positivity)]; exact hfB s
-  set h : ℝ → ℂ := fun t => ∫ s in a..t, f s with hh
+    simp_all
+  set h : ComplexCurve := fun t => ∫ s in a..t, f s with hh
   have hhlip : LipschitzWith L h := lipschitzWith_primitive hfm.aestronglyMeasurable hfB' a
   have hh' : h = fun t => (∫ s in (0 : ℝ)..t, f s) - ∫ s in (0 : ℝ)..a, f s := by
-    have hloc : LocallyIntegrable f volume :=
+    have hloc  :=
       locallyIntegrable_of_bounded hfm.aestronglyMeasurable hfB
     funext t
     simp only [hh]
@@ -77,12 +89,12 @@ lemma exp_neg_integral_mul_eq {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWit
     filter_upwards [ae_hasDerivAt_primitive_of_bounded hfm hfB] with x hx
     rw [hh']
     exact hx.sub_const _
-  set φ : ℝ → ℂ := fun t => Complex.exp (-h t) * (γ t - z) with hφ
+  set φ : ComplexCurve := fun t => Complex.exp (-h t) * (γ t - z) with hφ
   have hφ0 : ∀ᵐ x, x ∈ uIcc a b → HasDerivAt φ 0 x := by
     filter_upwards [hderiv, hK.ae_differentiableAt_real] with x h1 h2 hx
     rw [uIcc_of_le hab] at hx
     have hfx : f x = deriv γ x / (γ x - z) := by rw [hf, indicator_of_mem hx]
-    have hne : γ x - z ≠ 0 := sub_ne_zero.mpr (hz x hx)
+    have hne  := sub_ne_zero.mpr (hz x hx)
     have := (h1.neg.cexp).mul (h2.hasDerivAt.sub_const z)
     convert this using 1
     rw [hfx]
@@ -96,9 +108,9 @@ lemma exp_neg_integral_mul_eq {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWit
     have h0 : h a = 0 := by simp only [hh, intervalIntegral.integral_same]
     rw [dist_eq_norm, h0, sub_zero, Real.dist_eq, abs_of_nonneg (by linarith [ht.1])] at this
     exact this.trans (by gcongr; linarith [ht.2])
-  have hexpAC : AbsolutelyContinuousOnInterval (fun t => Complex.exp (-h t)) a b :=
+  have hexpAC  :=
     ((lipschitzOnWith_cexp_closedBall _).comp hhlip.neg.lipschitzOnWith
-      (fun t ht => hR t ht)).absolutelyContinuousOnInterval
+      hR).absolutelyContinuousOnInterval
   have hγAC : AbsolutelyContinuousOnInterval (fun t => γ t - z) a b :=
     (hK.sub (LipschitzWith.const z)).lipschitzOnWith.absolutelyContinuousOnInterval
   have hAC : AbsolutelyContinuousOnInterval φ a b := hexpAC.smul hγAC
@@ -114,22 +126,27 @@ lemma exp_neg_integral_mul_eq {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWit
   simpa only [hφ, hh, intervalIntegral.integral_same, neg_zero, Complex.exp_zero, one_mul]
     using heq
 
+end
+
+
+end
+
+
+include γ K hK a b hab in
 /-- Along an arc on which `c (γ - z)` stays in the slit plane, the integral of `γ'/(γ - z)` is
 the increment of the branch `log (c (· - z))`. -/
-lemma integral_deriv_div_eq_log_sub {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
-    {a b : ℝ} (hab : a ≤ b) {z c : ℂ} (hc : c ≠ 0)
+lemma integral_deriv_div_eq_log_sub  (hc : c ≠ 0)
     (hslit : ∀ θ ∈ Icc a b, c * (γ θ - z) ∈ Complex.slitPlane) :
     ∫ t in a..b, deriv γ t / (γ t - z) =
       Complex.log (c * (γ b - z)) - Complex.log (c * (γ a - z)) := by
   have hne : ∀ θ ∈ Icc a b, γ θ - z ≠ 0 := fun θ hθ h0 => by
     have := hslit θ hθ
-    rw [h0, mul_zero] at this
-    exact Complex.slitPlane_ne_zero this rfl
-  have hz : ∀ θ ∈ Icc a b, γ θ ≠ z := fun θ hθ => sub_ne_zero.mp (hne θ hθ)
-  set H : ℝ → ℂ := fun θ => ∫ t in a..θ, deriv γ t / (γ t - z) with hH
-  set ℓ : ℝ → ℂ := fun θ => Complex.log (c * (γ θ - z)) - Complex.log (c * (γ a - z))
+    simp_all
+  have hz  := fun θ hθ => sub_ne_zero.mp (hne θ hθ)
+  set H : ComplexCurve := fun θ => ∫ t in a..θ, deriv γ t / (γ t - z) with hH
+  set ℓ : ComplexCurve := fun θ => Complex.log (c * (γ θ - z)) - Complex.log (c * (γ a - z))
     with hℓ
-  set k : ℝ → ℂ := fun θ => (H θ - ℓ θ) / (2 * π * Complex.I) with hk
+  set k : ComplexCurve := fun θ => (H θ - ℓ θ) / (2 * π * Complex.I) with hk
   have hHc : ContinuousOn H (Icc a b) := by
     have hii := intervalIntegrable_deriv_div hK hab hz
     rw [intervalIntegrable_iff_integrableOn_Icc_of_le hab] at hii
@@ -143,7 +160,7 @@ lemma integral_deriv_div_eq_log_sub {γ : ℝ → ℂ} {K : NNReal} (hK : Lipsch
       (f := fun θ => c * (γ θ - z)) (continuousAt_clog (hslit θ hθ))
       ((continuous_const.mul (hK.continuous.sub continuous_const)).continuousWithinAt)
   have hkc : ContinuousOn k (Icc a b) := (hHc.sub hℓc).div_const _
-  have hmaps : MapsTo k (Icc a b) (range ((↑) : ℤ → ℂ)) := by
+  have hmaps : MapsTo k (Icc a b) (range ((↑) : FourierSeq)) := by
     intro θ hθ
     have h1 := exp_neg_integral_mul_eq hK hab hz θ hθ
     have h2 : Complex.exp (ℓ θ) = (γ θ - z) / (γ a - z) := by
@@ -153,28 +170,22 @@ lemma integral_deriv_div_eq_log_sub {γ : ℝ → ℂ} {K : NNReal} (hK : Lipsch
       field_simp
     have h3 : Complex.exp (-(H θ - ℓ θ)) = 1 := by
       rw [neg_sub, sub_eq_add_neg, Complex.exp_add, h2]
-      simp only [hH]
-      rw [div_mul_eq_mul_div, mul_comm, h1, div_self (hne a ⟨le_rfl, hab⟩)]
+      grind
     obtain ⟨n, hn⟩ := Complex.exp_eq_one_iff.mp h3
     refine ⟨-n, ?_⟩
     have h2pi : (2 * π * Complex.I : ℂ) ≠ 0 := by
-      simp [Real.pi_ne_zero, Complex.I_ne_zero]
-    simp only [hk]
-    rw [eq_div_iff h2pi, show H θ - ℓ θ = -(-(H θ - ℓ θ)) by ring, hn]
-    push_cast
-    ring
+      norm_num
+    grind
   have hconst := isPreconnected_Icc.constant_of_mapsTo
     (isDiscrete_iff_discreteTopology.mpr inferInstance) hkc hmaps
     (right_mem_Icc.mpr hab) (left_mem_Icc.mpr hab)
   have hka : k a = 0 := by simp [hk, hH, hℓ]
-  rw [hka] at hconst
   have h2pi : (2 * π * Complex.I : ℂ) ≠ 0 := by
-    simp [Real.pi_ne_zero, Complex.I_ne_zero]
-  simp only [hk, div_eq_zero_iff, h2pi, or_false, sub_eq_zero] at hconst
-  exact hconst
+    norm_num
+  grind
 
 /-- The two branches `log (i u)` and `log (-i u)` differ by `πi` on the right half-plane. -/
-lemma log_I_mul_sub_log_neg_I_mul_of_re_pos {u : ℂ} (hu : 0 < u.re) :
+lemma log_I_mul_sub_log_neg_I_mul_of_re_pos  (hu : 0 < u.re) :
     Complex.log (Complex.I * u) - Complex.log (-Complex.I * u) = π * Complex.I := by
   have him : 0 < (Complex.I * u).im := by simpa using hu
   rw [neg_mul, Complex.log, Complex.log, norm_neg, Complex.arg_neg_eq_arg_sub_pi_of_im_pos him]
@@ -182,7 +193,7 @@ lemma log_I_mul_sub_log_neg_I_mul_of_re_pos {u : ℂ} (hu : 0 < u.re) :
   ring
 
 /-- The two branches `log (i u)` and `log (-i u)` differ by `-πi` on the left half-plane. -/
-lemma log_I_mul_sub_log_neg_I_mul_of_re_neg {u : ℂ} (hu : u.re < 0) :
+lemma log_I_mul_sub_log_neg_I_mul_of_re_neg  (hu : u.re < 0) :
     Complex.log (Complex.I * u) - Complex.log (-Complex.I * u) = -(π * Complex.I) := by
   have him : (Complex.I * u).im < 0 := by simpa using hu
   rw [neg_mul, Complex.log, Complex.log, norm_neg, Complex.arg_neg_eq_arg_add_pi_of_im_neg him]
@@ -191,13 +202,13 @@ lemma log_I_mul_sub_log_neg_I_mul_of_re_neg {u : ℂ} (hu : u.re < 0) :
 
 /-- An injective arc on a graph through `0` has endpoints on opposite sides of the vertical
 axis. -/
-lemma re_mul_re_neg_of_graph {γ : ℝ → ℂ} (hγ : Continuous γ) {η : ℝ} (hη0 : 0 < η)
-    {f : ℝ → ℝ} (h0 : γ 0 = 0) (hgraph : ∀ θ ∈ Icc (-η) η, (γ θ).im = f (γ θ).re)
+lemma re_mul_re_neg_of_graph {γ : ComplexCurve} (hγ : Continuous γ)  (hη0 : 0 < η)
+    {f : RealMap} (h0 : γ 0 = 0) (hgraph : ∀ θ ∈ Icc (-η) η, (γ θ).im = f (γ θ).re)
     (hinj : InjOn γ (Icc (-η) η)) : (γ (-η)).re * (γ η).re < 0 := by
   have hxinj : InjOn (fun θ => (γ θ).re) (Icc (-η) η) := by
     intro θ₁ h₁ θ₂ h₂ he
-    simp only at he
-    exact hinj h₁ h₂ (Complex.ext he (by rw [hgraph θ₁ h₁, hgraph θ₂ h₂, he]))
+    simp  at he
+    exact hinj h₁ h₂ (Complex.ext he (by simp_all))
   have hc : ContinuousOn (fun θ => (γ θ).re) (Icc (-η) η) :=
     (Complex.continuous_re.comp hγ).continuousOn
   have hm0 : (0 : ℝ) ∈ Icc (-η) η := ⟨by linarith, hη0.le⟩
@@ -206,30 +217,30 @@ lemma re_mul_re_neg_of_graph {γ : ℝ → ℂ} (hγ : Continuous γ) {η : ℝ}
   rcases hc.strictMonoOn_of_injOn_Icc' (by linarith) hxinj with hm | hm
   · have h1 := hm hl hm0 (by linarith)
     have h2 := hm hm0 hr hη0
-    simp only [h0, Complex.zero_re] at h1 h2
+    simp  [h0] at h1 h2
     nlinarith
   · have h1 := hm hl hm0 (by linarith)
     have h2 := hm hm0 hr hη0
-    simp only [h0, Complex.zero_re] at h1 h2
+    simp  [h0] at h1 h2
     nlinarith
 
+include γ K hK a b hab in
 /-- The integral of `γ'/(γ - z)` over an arc avoiding `0` is continuous in `z` at `0`. -/
-lemma continuousAt_integral_deriv_div {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
-    {a b : ℝ} (hab : a ≤ b) (hfar : ∀ θ ∈ Icc a b, γ θ ≠ 0) :
+lemma continuousAt_integral_deriv_div (hfar : ∀ θ ∈ Icc a b, γ θ ≠ 0) :
     ContinuousAt (fun z => ∫ θ in a..b, deriv γ θ / (γ θ - z)) 0 := by
   obtain ⟨ε, hε, hd⟩ := exists_pos_le_norm_sub hK.continuous hfar
   have hfar' : ∀ z ∈ ball (0 : ℂ) (ε / 2), ∀ θ ∈ Icc a b, ε / 2 ≤ ‖γ θ - z‖ := by
     intro z hz θ hθ
     have h1 := hd θ hθ
     rw [sub_zero] at h1
-    have h2 : ‖z‖ < ε / 2 := mem_ball_zero_iff.mp hz
+    have h2  := mem_ball_zero_iff.mp hz
     have := norm_sub_norm_le (γ θ) z
     linarith
   refine intervalIntegral.continuousAt_of_dominated_interval (bound := fun _ => K / (ε / 2))
     ?_ ?_ intervalIntegrable_const ?_
   · exact Eventually.of_forall fun z => ((measurable_deriv γ).div
       (hK.continuous.measurable.sub measurable_const)).aestronglyMeasurable
-  · filter_upwards [ball_mem_nhds (0 : ℂ) (half_pos hε)] with z hz
+  · filter_upwards [ball_mem_nhds 0 (half_pos hε)] with z hz
     refine Eventually.of_forall fun θ hθ => ?_
     rw [uIoc_of_le hab] at hθ
     rw [norm_div]
@@ -237,24 +248,29 @@ lemma continuousAt_integral_deriv_div {γ : ℝ → ℂ} {K : NNReal} (hK : Lips
       (hfar' z hz θ ⟨hθ.1.le, hθ.2⟩)
   · refine Eventually.of_forall fun θ hθ => ?_
     rw [uIoc_of_le hab] at hθ
-    have hne : γ θ - 0 ≠ 0 := by rw [sub_zero]; exact hfar θ ⟨hθ.1.le, hθ.2⟩
-    exact continuousAt_const.div (continuousAt_const.sub continuousAt_id) hne
+    have hne : γ θ - 0 ≠ 0 := by grind
+    fun_prop
 
+end
+
+
+section
+variable {γ : ComplexCurve} {K } (hK : LipschitzWith K γ) (hper : Function.Periodic γ circlePeriod)
+
+include γ K hK hper in
 /-- For a `2π`-periodic Lipschitz curve avoiding `z` on `[a, a + 2π]`, the winding number
 splits at any intermediate point. -/
-lemma windingNumber_eq_split {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
-    (hper : Function.Periodic γ (2 * π)) {a m : ℝ} (ham : a ≤ m) (hm : m ≤ a + 2 * π) {z : ℂ}
+lemma windingNumber_eq_split  (ham : a ≤ m) (hm : m ≤ a + 2 * π) 
     (hz : ∀ θ ∈ Icc a (a + 2 * π), γ θ ≠ z) :
     windingNumber γ z = (2 * π * Complex.I)⁻¹ *
       ((∫ θ in a..m, deriv γ θ / (γ θ - z)) + ∫ θ in m..(a + 2 * π), deriv γ θ / (γ θ - z)) := by
-  have hdper : Function.Periodic (deriv γ) (2 * π) := by
+  have hdper : Function.Periodic (deriv γ) circlePeriod := by
     intro θ
-    have h1 : (fun x => γ (x + 2 * π)) = γ := funext hper
+    have h1  := funext hper
     rw [← deriv_comp_add_const, h1]
-  have hgp : Function.Periodic (fun θ => deriv γ θ / (γ θ - z)) (2 * π) := by
-    intro θ; simp only [hdper θ, hper θ]
+  have hgp : Function.Periodic (fun θ => deriv γ θ / (γ θ - z)) circlePeriod := by
+    intro θ; simp  [hdper θ, hper θ]
   rw [windingNumber]
-  congr 1
   have := hgp.intervalIntegral_add_eq 0 a
   rw [zero_add] at this
   rw [this, intervalIntegral.integral_add_adjacent_intervals
@@ -262,20 +278,20 @@ lemma windingNumber_eq_split {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith
     (intervalIntegrable_deriv_div hK hm fun θ hθ => hz θ ⟨ham.trans hθ.1, hθ.2⟩)]
 
 /-- Continuity of a logarithm branch along a vertical approach. -/
-lemma tendsto_log_mul_sub {c w e : ℂ} (h : c * w ∈ Complex.slitPlane) :
+lemma tendsto_log_mul_sub  (h : c * w ∈ Complex.slitPlane) :
     Tendsto (fun s : ℝ => Complex.log (c * (w - s * e))) (𝓝[>] 0)
       (𝓝 (Complex.log (c * w))) := by
   have hc : Continuous (fun s : ℝ => c * (w - (s : ℂ) * e)) := by fun_prop
   have := (continuousAt_clog h).tendsto.comp (hc.tendsto' 0 (c * w) (by simp))
   exact tendsto_nhdsWithin_of_tendsto_nhds this
 
+include γ K hK hper in
 /-- **Jump of the winding number.** Let `γ` be a `2π`-periodic Lipschitz curve with
 `γ(0) = 0`, injective on `[-η, η]` (`0 < η < π`), with `γ([-η, η])` contained in a graph
 `Im w = f(Re w)`, and `γ(θ) ≠ 0` for `θ ∈ [η, 2π - η]`. Then
 `wind(γ, is) - wind(γ, -is) → σ` as `s → 0⁺` for some `σ = ±1`. -/
-theorem windingNumber_jump {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
-    (hper : Function.Periodic γ (2 * π)) {η : ℝ} (hη0 : 0 < η) (hηπ : η < π)
-    {f : ℝ → ℝ} (h0 : γ 0 = 0) (hgraph : ∀ θ ∈ Icc (-η) η, (γ θ).im = f (γ θ).re)
+theorem windingNumber_jump  (hη0 : 0 < η) (hηπ : η < π)
+    {f : RealMap} (h0 : γ 0 = 0) (hgraph : ∀ θ ∈ Icc (-η) η, (γ θ).im = f (γ θ).re)
     (hinj : InjOn γ (Icc (-η) η)) (hfar : ∀ θ ∈ Icc η (2 * π - η), γ θ ≠ 0) :
     ∃ σ : ℂ, (σ = 1 ∨ σ = -1) ∧
       Tendsto (fun s : ℝ => windingNumber γ (s * Complex.I) -
@@ -291,19 +307,17 @@ theorem windingNumber_jump {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K
     simpa using this.symm
   set α := γ (-η) with hα
   set β := γ η with hβ
-  have hαβ : α.re * β.re < 0 := re_mul_re_neg_of_graph hK.continuous hη0 h0 hgraph hinj
+  have hαβ  := re_mul_re_neg_of_graph hK.continuous hη0 h0 hgraph hinj
   have hαne : α.re ≠ 0 := fun h => by rw [h, zero_mul] at hαβ; exact lt_irrefl _ hαβ
   have hβne : β.re ≠ 0 := fun h => by rw [h, mul_zero] at hαβ; exact lt_irrefl _ hαβ
-  set N : ℂ → ℂ := fun z => ∫ θ in (-η)..η, deriv γ θ / (γ θ - z) with hN
-  set F : ℂ → ℂ := fun z => ∫ θ in η..(-η + 2 * π), deriv γ θ / (γ θ - z) with hF
+  set N : PlaneMap := fun z => ∫ θ in (-η)..η, deriv γ θ / (γ θ - z) with hN
+  set F : PlaneMap := fun z => ∫ θ in η..(-η + 2 * π), deriv γ θ / (γ θ - z) with hF
   have hslitP : ∀ s : ℝ, 0 < s → ∀ θ ∈ Icc (-η) η,
       Complex.I * (γ θ - s * Complex.I) ∈ Complex.slitPlane := by
     intro s hs θ hθ
     rw [Complex.mem_slitPlane_iff]
     by_cases hx : (γ θ).re = 0
-    · left
-      have hy : (γ θ).im = 0 := by rw [hgraph θ hθ, hx, hf0]
-      simp [hy, hs]
+    · simp_all
     · right; simpa using hx
   have hslitN : ∀ s : ℝ, 0 < s → ∀ θ ∈ Icc (-η) η,
       -Complex.I * (γ θ - -(s * Complex.I)) ∈ Complex.slitPlane := by
@@ -324,13 +338,7 @@ theorem windingNumber_jump {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K
     integral_deriv_div_eq_log_sub hK hηη (neg_ne_zero.mpr Complex.I_ne_zero) (hslitN s hs)
   have hav : ∀ s : ℝ, 0 < s → s < d → ∀ z : ℂ, ‖z‖ = s →
       (∀ θ ∈ Icc (-η) η, γ θ ≠ z) → ∀ θ ∈ Icc (-η) (-η + 2 * π), γ θ ≠ z := by
-    intro s hs hsd z hz hnear θ hθ
-    by_cases hθη : θ ≤ η
-    · exact hnear θ ⟨hθ.1, hθη⟩
-    · intro heq
-      have := hdfar θ ⟨(not_le.mp hθη).le, hθ.2⟩
-      rw [heq, sub_zero, hz] at this
-      linarith
+    grind
   have hneP : ∀ s : ℝ, 0 < s → ∀ θ ∈ Icc (-η) η, γ θ ≠ s * Complex.I := by
     intro s hs θ hθ h
     have := hslitP s hs θ hθ
@@ -375,7 +383,7 @@ theorem windingNumber_jump {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K
       rw [hnearP s hs, hnearN s hs, mul_neg]
     exact Tendsto.congr' e (((tendsto_log_mul_sub hβP).sub (tendsto_log_mul_sub hαP)).sub
       ((tendsto_log_mul_sub hβN).sub (tendsto_log_mul_sub hαN)))
-  have hFc : ContinuousAt F 0 := continuousAt_integral_deriv_div hK hm2 hfar'
+  have hFc := continuousAt_integral_deriv_div hK hm2 hfar'
   have hFlim : Tendsto (fun s : ℝ => F (s * Complex.I) - F (-(s * Complex.I))) (𝓝[>] 0)
       (𝓝 (F 0 - F 0)) := by
     have h1 : Tendsto (fun s : ℝ => (s : ℂ) * Complex.I) (𝓝[>] 0) (𝓝 0) :=
@@ -387,25 +395,14 @@ theorem windingNumber_jump {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K
   have hlim := (tendsto_const_nhds (x := (2 * π * Complex.I)⁻¹)).mul (hNlim.add hFlim)
   have hlim' := hlim.congr' (EventuallyEq.symm heq)
   have h2pi : (2 * π * Complex.I : ℂ) ≠ 0 := by
-    simp [Real.pi_ne_zero, Complex.I_ne_zero]
+    norm_num
   rcases lt_or_gt_of_ne hαne with hαneg | hαpos
   · have hβpos : 0 < β.re := by nlinarith
-    refine ⟨1, Or.inl rfl, ?_⟩
-    convert hlim' using 2
-    rw [sub_self, add_zero, show ∀ a b c e : ℂ, (a - b) - (c - e) = (a - c) - (b - e) by
-      intros; ring, log_I_mul_sub_log_neg_I_mul_of_re_pos hβpos,
-      log_I_mul_sub_log_neg_I_mul_of_re_neg hαneg]
-    field_simp
-    ring
+    grind only [log_I_mul_sub_log_neg_I_mul_of_re_pos, log_I_mul_sub_log_neg_I_mul_of_re_neg]
   · have hβneg : β.re < 0 := by nlinarith
-    refine ⟨-1, Or.inr rfl, ?_⟩
-    convert hlim' using 2
-    rw [sub_self, add_zero, show ∀ a b c e : ℂ, (a - b) - (c - e) = (a - c) - (b - e) by
-      intros; ring, log_I_mul_sub_log_neg_I_mul_of_re_neg hβneg,
-      log_I_mul_sub_log_neg_I_mul_of_re_pos hαpos]
-    field_simp
-    ring
-
-end PolyaNeumann
+    grind only [log_I_mul_sub_log_neg_I_mul_of_re_neg, log_I_mul_sub_log_neg_I_mul_of_re_pos]
 
 end
+
+
+end PolyaNeumann

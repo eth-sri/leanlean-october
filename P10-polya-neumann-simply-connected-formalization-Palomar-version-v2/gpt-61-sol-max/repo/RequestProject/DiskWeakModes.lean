@@ -1,5 +1,11 @@
 module
 
+public import RequestProject.PlanarTypes
+
+public import RequestProject.CirclePeriod
+
+public import RequestProject.PlanarGeometry
+
 public import RequestProject.DiskHalfTrace
 
 /-!
@@ -12,96 +18,86 @@ and their normalized half traces are single Fourier basis vectors.
 
 @[expose] public section
 
-set_option autoImplicit false
-
 noncomputable section
 
 namespace PolyaNeumann
 
 open MeasureTheory Set Metric Real
-open scoped ComplexConjugate InnerProductSpace
+open scoped InnerProductSpace
 
-local instance diskWeakModeTwoPiPos : Fact (0 < 2 * π) := ⟨two_pi_pos⟩
 
-def diskHolomorphicH1Test (m : ℕ) : NeumannH1 (ball (0 : ℂ) 1) :=
-  smoothTraceH1 (ball (0 : ℂ) 1)
+
+def diskHolomorphicH1Test m  :=
+  smoothTraceH1 unitDisk
     ⟨diskHarmonicCutoff (diskHolomorphicMode m),
       diskHarmonicCutoff_testFunction (contDiff_diskHolomorphicMode m)⟩
 
-def diskAntiholomorphicH1Test (m : ℕ) : NeumannH1 (ball (0 : ℂ) 1) :=
-  smoothTraceH1 (ball (0 : ℂ) 1)
+def diskAntiholomorphicH1Test m  :=
+  smoothTraceH1 unitDisk
     ⟨diskHarmonicCutoff (diskAntiholomorphicMode m),
       diskHarmonicCutoff_testFunction (contDiff_diskAntiholomorphicMode m)⟩
 
-theorem diskH1Gradient_holomorphicTest (m : ℕ) :
-    diskH1Gradient (diskHolomorphicH1Test m) = diskHolomorphicGradient m := rfl
+section
+variable (m : ℕ) (u : NeumannH1 unitDisk)
+include m u
 
-theorem diskH1Gradient_antiholomorphicTest (m : ℕ) :
-    diskH1Gradient (diskAntiholomorphicH1Test m) = diskAntiholomorphicGradient m := rfl
-
-theorem disk_gradient_form_holomorphicTest (m : ℕ)
-    (u : NeumannH1 (ball (0 : ℂ) 1)) :
-    (∑ i : Fin 2, ⟪h1Gradient (ball (0 : ℂ) 1) i (diskHolomorphicH1Test m),
-      h1Gradient (ball (0 : ℂ) 1) i u⟫_ℂ) =
+theorem disk_gradient_form_holomorphicTest :
+    (∑ i : Coord, ⟪h1Gradient unitDisk i (diskHolomorphicH1Test m),
+      h1Gradient unitDisk i u⟫_ℂ) =
       (2 * π : ℂ) * (m : ℂ) *
-        fourierCoeffOn two_pi_pos (diskH1Trace u : ℝ → ℂ) (m : ℤ) := by
+        fourierCoeffOn two_pi_pos (diskH1Trace u : ComplexCurve) (m : ℤ) := by
   have h := disk_h1_fourier_green_pos m u
-  rw [← diskH1Gradient_holomorphicTest, PiLp.inner_apply] at h
-  exact h
+  assumption
 
-theorem disk_gradient_form_antiholomorphicTest (m : ℕ)
-    (u : NeumannH1 (ball (0 : ℂ) 1)) :
-    (∑ i : Fin 2, ⟪h1Gradient (ball (0 : ℂ) 1) i (diskAntiholomorphicH1Test m),
-      h1Gradient (ball (0 : ℂ) 1) i u⟫_ℂ) =
+theorem disk_gradient_form_antiholomorphicTest :
+    (∑ i : Coord, ⟪h1Gradient unitDisk i (diskAntiholomorphicH1Test m),
+      h1Gradient unitDisk i u⟫_ℂ) =
       (2 * π : ℂ) * (m : ℂ) *
-        fourierCoeffOn two_pi_pos (diskH1Trace u : ℝ → ℂ) (-(m : ℤ)) := by
+        fourierCoeffOn two_pi_pos (diskH1Trace u : ComplexCurve) (-(m : ℤ)) := by
   have h := disk_h1_fourier_green_neg m u
-  rw [← diskH1Gradient_antiholomorphicTest, PiLp.inner_apply] at h
-  exact h
+  assumption
 
-private theorem twoPi_fourier_mode (n : ℤ) (θ : ℝ) :
-    fourier (T := 2 * π) n (θ : AddCircle (2 * π)) =
+end
+
+
+private theorem twoPi_fourier_mode n (θ : ℝ) :
+    fourier (T := 2 * π) n (θ : AddCircle circlePeriod) =
       Complex.exp ((n : ℂ) * Complex.I * θ) := by
   rw [fourier_coe_apply]
-  congr 1
   push_cast
-  field_simp [Real.pi_ne_zero]
+  field_simp
 
 theorem fourierCoeffOn_twoPi_exp (n k : ℤ) :
     fourierCoeffOn two_pi_pos (fun θ => Complex.exp ((n : ℂ) * Complex.I * θ)) k =
-      (Pi.single n (1 : ℂ) : ℤ → ℂ) k := by
+      (Pi.single n (1 : ℂ) : FourierSeq) k := by
   have hm : (fun θ : ℝ => Complex.exp ((n : ℂ) * Complex.I * θ)) =
-      (fun θ : ℝ => fourier (T := 2 * π) n (θ : AddCircle (2 * π))) := by
-    funext θ
-    exact (twoPi_fourier_mode n θ).symm
-  have hl : AddCircle.liftIoc (2 * π) 0
-      (fun θ : ℝ => fourier (T := 2 * π) n (θ : AddCircle (2 * π))) =
+      (fun θ : ℝ => fourier (T := 2 * π) n (θ : AddCircle circlePeriod)) := by
+    grind only [twoPi_fourier_mode]
+  have hl : AddCircle.liftIoc circlePeriod 0
+      (fun θ : ℝ => fourier (T := 2 * π) n (θ : AddCircle circlePeriod)) =
       fourier (T := 2 * π) n := by
     funext q
-    change fourier n (((AddCircle.equivIoc (2 * π) 0 q : ℝ)) : AddCircle (2 * π)) = _
-    exact congrArg (fourier n) ((AddCircle.equivIoc (2 * π) 0).symm_apply_apply q)
+    change fourier n (((AddCircle.equivIoc circlePeriod 0 q))) = _
+    simp_all
   have hc := fourierCoeff_liftIoc_eq (T := 2 * π) (a := 0)
-    (fun θ => Complex.exp ((n : ℂ) * Complex.I * θ)) k
-  simp only [zero_add] at hc
+    (fun θ => Complex.exp (n * Complex.I * θ)) k
+  simp   at hc
   rw [← hc, hm, hl, fourierCoeff_fourier]
 
 theorem diskHalfTrace_smooth_fourier_test (f : smoothTraceTests) (n : ℤ)
-    (hf : ∀ θ, f (circleMap 0 1 θ) = Complex.exp ((n : ℂ) * Complex.I * θ)) :
-    diskHalfTrace (smoothTraceH1 (ball (0 : ℂ) 1) f) =
-      ((Real.sqrt (sobWeight n) : ℂ) * (Real.sqrt (2 * π) : ℂ)) • stdBasisZ n := by
-  have hae : (diskH1Trace (smoothTraceH1 (ball (0 : ℂ) 1) f) : ℝ → ℂ)
-      =ᵐ[volume.restrict (Ioc (0 : ℝ) (2 * π))]
+    (hf : ∀ θ, f (unitCircleMap θ) = Complex.exp ((n : ℂ) * Complex.I * θ)) :
+    diskHalfTrace (smoothTraceH1 unitDisk f) =
+      ((Real.sqrt (sobWeight n) : ℂ) * (Real.sqrt circlePeriod : ℂ)) • stdBasisZ n := by
+  have hae : (diskH1Trace (smoothTraceH1 unitDisk f) : ComplexCurve)
+      =ᵐ[volume.restrict boundaryHalfOpenInterval]
       (fun θ => Complex.exp ((n : ℂ) * Complex.I * θ)) := by
     have h := h1BoundaryTrace_smooth_ae unitDisk_bounded isLipschitzDomain_unitDisk
       unitCircle_isBoundaryParam f
-    filter_upwards [h] with θ hθ
-    exact hθ.trans (hf θ)
+    measurability
   have hc := fourierCoeffOn_congr_ae two_pi_pos hae
   apply lp.ext
   funext k
-  simp only [diskHalfTrace_apply, boundaryFourier_apply,
-    congrFun hc k, fourierCoeffOn_twoPi_exp, stdBasisZ_apply,
-    lp.coeFn_smul, Pi.smul_apply, smul_eq_mul, lp.single_apply]
+  simp  [boundaryFourier_apply, congrFun hc k, fourierCoeffOn_twoPi_exp, stdBasisZ_apply]
   by_cases hkn : k = n
   · subst k
     simp [sobWeight]
@@ -109,29 +105,27 @@ theorem diskHalfTrace_smooth_fourier_test (f : smoothTraceTests) (n : ℤ)
 
 theorem diskHalfTrace_holomorphicTest (m : ℕ) :
     diskHalfTrace (diskHolomorphicH1Test m) =
-      ((Real.sqrt (sobWeight (m : ℤ)) : ℂ) * (Real.sqrt (2 * π) : ℂ)) •
+      ((Real.sqrt (sobWeight (m : ℤ)) : ℂ) * (Real.sqrt circlePeriod : ℂ)) •
         stdBasisZ (m : ℤ) := by
   apply diskHalfTrace_smooth_fourier_test
   intro θ
-  change diskHarmonicCutoff (diskHolomorphicMode m) (circleMap 0 1 θ) = _
+  change diskHarmonicCutoff (diskHolomorphicMode m) (unitCircleMap θ) = _
   rw [diskHarmonicCutoff_eq_closedDisk _
-    (sphere_subset_closedBall (circleMap_mem_sphere (0 : ℂ) (by norm_num) θ)),
+    (sphere_subset_closedBall (circleMap_mem_sphere 0 (by norm_num) θ)),
     diskHolomorphicMode_unitCircle]
-  simp only [Int.cast_natCast]
+  simp  
 
 theorem diskHalfTrace_antiholomorphicTest (m : ℕ) :
     diskHalfTrace (diskAntiholomorphicH1Test m) =
-      ((Real.sqrt (sobWeight (-(m : ℤ))) : ℂ) * (Real.sqrt (2 * π) : ℂ)) •
+      ((Real.sqrt (sobWeight (-(m : ℤ))) : ℂ) * (Real.sqrt circlePeriod : ℂ)) •
         stdBasisZ (-(m : ℤ)) := by
   apply diskHalfTrace_smooth_fourier_test
   intro θ
-  change diskHarmonicCutoff (diskAntiholomorphicMode m) (circleMap 0 1 θ) = _
+  change diskHarmonicCutoff (diskAntiholomorphicMode m) (unitCircleMap θ) = _
   rw [diskHarmonicCutoff_eq_closedDisk _
-    (sphere_subset_closedBall (circleMap_mem_sphere (0 : ℂ) (by norm_num) θ)),
+    (sphere_subset_closedBall (circleMap_mem_sphere 0 (by norm_num) θ)),
     diskAntiholomorphicMode_unitCircle]
-  simp only [Int.cast_neg, Int.cast_natCast]
-  congr 1
-  ring
+  simp_all
 
 end PolyaNeumann
 

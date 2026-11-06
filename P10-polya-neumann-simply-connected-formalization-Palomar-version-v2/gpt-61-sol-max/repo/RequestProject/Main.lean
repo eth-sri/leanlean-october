@@ -1,5 +1,9 @@
 module
 
+public import RequestProject.PlanarTypes
+
+public import RequestProject.PlanarGeometry
+
 public import RequestProject.Poincare
 public import RequestProject.Finite
 public import RequestProject.Transport
@@ -7,7 +11,7 @@ public import RequestProject.Unitarity
 public import RequestProject.CurveContinuity
 public import RequestProject.AreaTrace
 public import RequestProject.Driven
-public import RequestProject.CayleyFactorization
+public import Mathlib.Analysis.InnerProductSpace.LinearPMap
 public import RequestProject.Phase
 public import RequestProject.Transmutation
 public import RequestProject.CutCorrection
@@ -15,7 +19,10 @@ public import RequestProject.Reparam
 public import RequestProject.BoundaryOrigin
 public import RequestProject.PeriodicForm
 public import RequestProject.Coercivity
-public import RequestProject.NegativeIndex
+public import Mathlib.Analysis.InnerProductSpace.Dual
+public import Mathlib.LinearAlgebra.FiniteDimensional.Basic
+public import Mathlib.Data.ENat.Lattice
+public import Mathlib.Tactic
 public import RequestProject.FiniteRankCompletion
 public import RequestProject.RankBound
 public import RequestProject.Approximation
@@ -57,7 +64,7 @@ The proof is assembled, exactly as in the paper, from
 
 @[expose] public section
 
-open scoped Real ComplexConjugate
+open scoped Real
 open MeasureTheory Filter Topology
 
 noncomputable section
@@ -67,13 +74,13 @@ namespace PolyaNeumann
 /-! ### Lemma 3.3: the discrete Neumann spectrum -/
 
 /-- Lemma 3.3: the Neumann eigenvalues of a Lipschitz domain are finite. -/
-theorem neumannEigenvalue_lt_top {Ω : Set ℂ} (hL : IsLipschitzDomain Ω) (j : ℕ) :
+theorem neumannEigenvalue_lt_top  (hL : IsLipschitzDomain Ω) j :
     neumannEigenvalue Ω j < ⊤ :=
   neumannEigenvalue_lt_top_of_isOpen hL.1.1 hL.1.2.nonempty j
 
 /-- Lemma 3.5: for a bounded Lipschitz domain, the eigenvalue form and the counting form
 of the strict Pólya inequality are equivalent. -/
-theorem eigen_iff_count {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
+theorem eigen_iff_count  (hb : Bornology.IsBounded Ω)
     (hL : IsLipschitzDomain Ω) :
     (∀ j : ℕ, 1 ≤ j → volume Ω * neumannEigenvalue Ω j < ENNReal.ofReal (4 * π * j)) ↔
     (∀ E : ℝ, 0 < E → volume Ω * ENNReal.ofReal E / ENNReal.ofReal (4 * π) <
@@ -88,6 +95,10 @@ theorem eigen_iff_count {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
 
 /-! ### Boundary parametrization and transport (Section 10) -/
 
+section
+variable {Ω } (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω) (hsc : SimplyConnectedSpace Ω)
+include Ω hb hL hsc
+
 /-- External theorem E3 (planar Lipschitz boundaries), in the form used here: the boundary of a
 bounded simply connected Lipschitz domain is a single Lipschitz Jordan curve. That is, `∂Ω` has
 a Lipschitz `2π`-periodic parametrization `γ` that is injective on `[0, 2π)` and has image
@@ -96,10 +107,9 @@ Proved from `isPreconnected_frontier_of_simplyConnected` (the boundary is connec
 `BoundaryConnected.lean`) and `exists_jordanParam_of_isPreconnected_frontier` (a connected
 Lipschitz boundary is a single Lipschitz Jordan curve, obtained by walking along the boundary
 through uniform Lipschitz charts, `BoundaryChart.lean`, `BoundaryWalk.lean`, `BoundaryLoop.lean`). -/
-theorem exists_lipschitzJordanParam_topological {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) (hsc : SimplyConnectedSpace Ω) :
-    ∃ γ : ℝ → ℂ, (∃ K, LipschitzWith K γ) ∧ Function.Periodic γ (2 * π) ∧
-      Set.InjOn γ (Set.Ico 0 (2 * π)) ∧ γ '' Set.Icc 0 (2 * π) = frontier Ω :=
+theorem exists_lipschitzJordanParam_topological :
+    ∃ γ : ComplexCurve, (∃ K, LipschitzWith K γ) ∧ Function.Periodic γ circlePeriod ∧
+      Set.InjOn γ (Set.Ico 0 circlePeriod) ∧ γ '' boundaryInterval = frontier Ω :=
   exists_jordanParam_of_isPreconnected_frontier hb hL
     (isPreconnected_frontier_of_simplyConnected hb hL hsc)
 
@@ -107,8 +117,7 @@ theorem exists_lipschitzJordanParam_topological {Ω : Set ℂ} (hb : Bornology.I
 Lipschitz domain is connected. Proved from `exists_lipschitzJordanParam_topological` (the
 boundary is a continuous image of an interval, hence connected) and
 `isConnected_compl_closure_of_frontier`. -/
-theorem isConnected_compl_closure {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) (hsc : SimplyConnectedSpace Ω) :
+theorem isConnected_compl_closure :
     IsConnected (closure Ω)ᶜ := by
   obtain ⟨γ, ⟨K, hK⟩, -, -, him⟩ := exists_lipschitzJordanParam_topological hb hL hsc
   refine isConnected_compl_closure_of_frontier hb hL ?_
@@ -124,10 +133,9 @@ Proved from `exists_lipschitzJordanParam_topological`, `isConnected_compl_closur
 continuous off the curve and zero far away (`WindingNumber.lean`), hence constant on the
 connected sets `Ω` and `ℂ \ Ω̄`; the jump of the winding number across the boundary at a
 Lipschitz chart point is `±1` (`windingNumber_jump`). -/
-theorem exists_lipschitzJordanParam_winding {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) (hsc : SimplyConnectedSpace Ω) :
-    ∃ γ : ℝ → ℂ, (∃ K, LipschitzWith K γ) ∧ Function.Periodic γ (2 * π) ∧
-      Set.InjOn γ (Set.Ico 0 (2 * π)) ∧ γ '' Set.Icc 0 (2 * π) = frontier Ω ∧
+theorem exists_lipschitzJordanParam_winding :
+    ∃ γ : ComplexCurve, (∃ K, LipschitzWith K γ) ∧ Function.Periodic γ circlePeriod ∧
+      Set.InjOn γ (Set.Ico 0 circlePeriod) ∧ γ '' boundaryInterval = frontier Ω ∧
       ∃ σ : ℝ, (σ = 1 ∨ σ = -1) ∧ (∀ z ∈ Ω, windingNumber γ z = σ) ∧
         ∀ z, z ∉ closure Ω → windingNumber γ z = 0 := by
   obtain ⟨γ, ⟨K, hK⟩, hper, hinj, him⟩ := exists_lipschitzJordanParam_topological hb hL hsc
@@ -141,11 +149,10 @@ signed-area integral `∫₀^{2π} Im(conj γ · γ')` of this parametrization i
 depending on the orientation).
 Proved from the topological statement `exists_lipschitzJordanParam_winding` and Green's formula
 in its winding-number form (`integral_signedAreaDensity_of_winding`, `GreenWinding.lean`). -/
-theorem exists_lipschitzJordanParam {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) (hsc : SimplyConnectedSpace Ω) :
-    ∃ γ : ℝ → ℂ, (∃ K, LipschitzWith K γ) ∧ Function.Periodic γ (2 * π) ∧
-      Set.InjOn γ (Set.Ico 0 (2 * π)) ∧ γ '' Set.Icc 0 (2 * π) = frontier Ω ∧
-      |∫ θ in (0 : ℝ)..(2 * π), signedAreaDensity γ θ| = 2 * (volume Ω).toReal := by
+theorem exists_lipschitzJordanParam :
+    ∃ γ : ComplexCurve, (∃ K, LipschitzWith K γ) ∧ Function.Periodic γ circlePeriod ∧
+      Set.InjOn γ (Set.Ico 0 circlePeriod) ∧ γ '' boundaryInterval = frontier Ω ∧
+      |∫ θ in (0 : ℝ)..circlePeriod, signedAreaDensity γ θ| = 2 * (volume Ω).toReal := by
   obtain ⟨γ, ⟨K, hK⟩, hper, hinj, him, σ, hσ, hin, hout⟩ :=
     exists_lipschitzJordanParam_winding hb hL hsc
   refine ⟨γ, ⟨K, hK⟩, hper, hinj, him, ?_⟩
@@ -158,27 +165,29 @@ a single Lipschitz Jordan boundary curve, which admits a positively oriented
 rescaled-arclength parametrization. Proved from the topological statement
 `exists_lipschitzJordanParam` by reparametrizing by rescaled arclength and, if necessary,
 reversing the orientation. -/
-theorem exists_boundaryParam {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) (hsc : SimplyConnectedSpace Ω) :
-    ∃ γ : ℝ → ℂ, IsBoundaryParam Ω γ := by
+theorem exists_boundaryParam :
+    ∃ γ : ComplexCurve, IsBoundaryParam Ω γ := by
   obtain ⟨γ, ⟨K, hK⟩, hper, hinj, him, harea⟩ := exists_lipschitzJordanParam hb hL hsc
   obtain ⟨γ1, ⟨K1, hK1⟩, hper1, hinj1, him1, ⟨c, hc, hspeed⟩, harea1, -⟩ :=
     exists_constSpeed_reparam hK hper hinj
   have hv : (0 : ℝ) ≤ 2 * (volume Ω).toReal := by positivity
   rcases (abs_eq hv).mp harea with hpos | hneg
   · exact ⟨γ1, ⟨⟨K1, hK1⟩, hper1, hinj1, him1.trans him, ⟨c, hc, hspeed⟩,
-      show ∫ θ in (0 : ℝ)..(2 * π), signedAreaDensity γ1 θ = _ by rw [harea1, hpos]⟩⟩
+      show ∫ θ in (0)..circlePeriod, signedAreaDensity γ1 θ = _ by rw [harea1, hpos]⟩⟩
   · obtain ⟨γ2, hK2, hper2, hinj2, him2, hspeed2, harea2⟩ :=
       exists_reverse_param hK1 hper1 hinj1 hspeed
     exact ⟨γ2, ⟨⟨K1, hK2⟩, hper2, hinj2, him2.trans (him1.trans him), ⟨c, hc, hspeed2⟩,
-      show ∫ θ in (0 : ℝ)..(2 * π), signedAreaDensity γ2 θ = _ by
+      show ∫ θ in (0)..circlePeriod, signedAreaDensity γ2 θ = _ by
         rw [harea2, harea1, hneg, neg_neg]⟩⟩
+
+end
+
 
 /-- Lemma 10.2: the Lipschitz transport of a boundary parametrization exists and is unique
 on `[0, L]`. -/
-theorem transport_exists_unique {Ω : Set ℂ} {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) (E : ℝ) :
-    ∃ W : ℝ → Ell2 →L[ℂ] Ell2, IsTransport γ E W ∧
-      ∀ W' : ℝ → Ell2 →L[ℂ] Ell2, IsTransport γ E W' → Set.EqOn W W' (Set.Icc 0 (2 * π)) := by
+theorem transport_exists_unique   (hγ : IsBoundaryParam Ω γ) E :
+    ∃ W : ℝ → ComplexEnd Ell2, IsTransport γ E W ∧
+      ∀ W' : ℝ → ComplexEnd Ell2, IsTransport γ E W' → Set.EqOn W W' boundaryInterval := by
   obtain ⟨K, hK⟩ := hγ.lipschitz
   obtain ⟨W, hW⟩ := transport_exists_of_lipschitz γ hK E
   exact ⟨W, hW, fun W' hW' => transport_unique_of_lipschitz γ hK E hW hW'⟩
@@ -187,10 +196,8 @@ theorem transport_exists_unique {Ω : Set ℂ} {γ : ℝ → ℂ} (hγ : IsBound
 lemma orthonormal_basisVec : Orthonormal ℂ basisVec := by
   rw [orthonormal_iff_ite]
   intro i j
-  simp only [basisVec, lp.inner_single_left, lp.single_apply]
-  by_cases h : i = j
-  · subst h; simp
-  · simp [h]
+  simp  [basisVec, lp.inner_single_left]
+  measurability
 
 /-- `ℓ²(ℕ₀)` is infinite-dimensional. -/
 lemma not_finiteDimensional_ell2 : ¬ FiniteDimensional ℂ Ell2 := by
@@ -198,71 +205,51 @@ lemma not_finiteDimensional_ell2 : ¬ FiniteDimensional ℂ Ell2 := by
   have := orthonormal_basisVec.linearIndependent.finite
   exact not_finite ℕ
 
-/-- Lemma 4.8 (Cauchy reconstruction) with zero conormal data, together with the uniqueness of
-Lemma 4.9 (zero Cauchy data): every compatible trace `h` (Lipschitz and closed on `[0, L]`, with
-`∫₀^L conj(g_a) h = 0` for the conormal trace `g_a` of every Herglotz wave) is the Dirichlet
-trace `u ∘ γ` of a unique Neumann eigenfunction `u` with eigenvalue `E`; the reconstruction
-`h ↦ u` is linear and `u = 0` forces `h = 0` on `[0, L]`.
-Proved from `neumann_reconstruction_of_compatible` (`RequestProject/Reconstruction.lean`). Only the
-linear map and its triviality on traces are recorded, which is what Lemma 10.5 uses. -/
-theorem neumann_reconstruction {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ}
-    (hγ : IsBoundaryParam Ω γ) (E : ℝ) (hE : 0 < E) :
-    ∃ R : compatibleTraces γ E →ₗ[ℂ] neumannEigenspace Ω E,
-      ∀ h, R h = 0 → ∀ θ ∈ Set.Icc 0 (2 * π), (h : ℝ → ℂ) θ = 0 :=
-  neumann_reconstruction_of_compatible hb hL hγ hE
+section
+variable {Ω } (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω) {γ } (hγ : IsBoundaryParam Ω γ) (E : ℝ) (hE : 0 < E)
+include Ω hb hL γ hγ E hE
 
-/-- Lemma 10.5, first inequality: `dim ker(V_E - I) ≤ dim ker(A_N - E)`, expressed as an
-injective linear map from the fixed space of `V_E = W_E(L)` into the Neumann eigenspace.
-As in the paper, a fixed vector `v` is sent to the Neumann eigenfunction reconstructed from the
-compatible trace `O_E v = ⟨e₀, W_E(·) v⟩`: the pairing step (orthogonality of `O_E v` to the
-Herglotz conormal traces, from the driven equation of Lemma 4.4) is proved in `Herglotz.lean` and
-`FixedSpace.lean`, the reconstruction is `neumann_reconstruction`, and injectivity follows from
-the injectivity of the observation map (Lemma 10.4). -/
-theorem fixedSpace_to_neumannEigenspace {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ}
-    (hγ : IsBoundaryParam Ω γ) (E : ℝ) (hE : 0 < E) (W : ℝ → Ell2 →L[ℂ] Ell2)
-    (hW : IsTransport γ E W) :
-    ∃ T : LinearMap.ker ((W (2 * π) - 1 : Ell2 →L[ℂ] Ell2) : Ell2 →ₗ[ℂ] Ell2) →ₗ[ℂ]
-      neumannEigenspace Ω E, Function.Injective T :=
-  fixedSpace_to_neumannEigenspace_of_reconstruction hγ hE hW
-    (neumann_reconstruction hb hL hγ E hE)
+section
+variable (W ) (hW : IsTransport γ E W)
+include W hW
 
 /-- Lemma 10.5: for every `E > 0`, `dim ker(V_E - I) ≤ dim ker(A_N - E) < ∞`; in particular
 the monodromy satisfies `U_E ≠ I`. The finiteness of `dim ker(A_N - E)` is
 `finiteDimensional_neumannEigenspace` (from Rellich compactness); if `U_E = I`, the fixed space
 of `V_E` would be all of the infinite-dimensional space `ℓ²(ℕ₀)`. -/
-theorem monodromy_ne_one {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ}
-    (hγ : IsBoundaryParam Ω γ) (E : ℝ) (hE : 0 < E) (W : ℝ → Ell2 →L[ℂ] Ell2)
-    (hW : IsTransport γ E W) : monodromy W ≠ 1 := by
+theorem monodromy_ne_one : monodromy W ≠ 1 := by
   intro h
-  obtain ⟨T, hT⟩ := fixedSpace_to_neumannEigenspace hb hL hγ E hE W hW
+  obtain ⟨T, hT⟩ := fixedSpace_to_neumannEigenspace_of_reconstruction hγ hE hW
+    (neumann_reconstruction_of_compatible hb hL hγ hE)
   haveI := finiteDimensional_neumannEigenspace hb hL E
-  have hV : W (2 * π) = 1 := by
+  have hV : W circlePeriod = 1 := by
     have h2 := congrArg ContinuousLinearMap.adjoint h
     rw [monodromy, ContinuousLinearMap.adjoint_adjoint] at h2
     rw [h2, ← ContinuousLinearMap.star_eq_adjoint, star_one]
-  haveI : FiniteDimensional ℂ
-      (LinearMap.ker ((W (2 * π) - 1 : Ell2 →L[ℂ] Ell2) : Ell2 →ₗ[ℂ] Ell2)) :=
+  haveI  :=
     Module.Finite.of_injective T hT
-  have htop : LinearMap.ker ((W (2 * π) - 1 : Ell2 →L[ℂ] Ell2) : Ell2 →ₗ[ℂ] Ell2) = ⊤ := by
-    rw [hV, sub_self, ContinuousLinearMap.coe_zero]
-    exact LinearMap.ker_zero
+  have htop : LinearMap.ker ((W circlePeriod - 1 : ComplexEnd Ell2) : Ell2 →ₗ[ℂ] Ell2) = ⊤ := by
+    simp_all
   rw [htop] at this
   exact not_finiteDimensional_ell2 (LinearEquiv.finiteDimensional Submodule.topEquiv)
+
+end
+
+
+end
+
 
 /-! ### Smooth domains (Section 9) -/
 
 /-- The real form of the left-hand side of the counting inequality. -/
-lemma count_lhs_eq_ofReal {Ω : Set ℂ} (hvol : volume Ω ≠ ⊤) {E : ℝ} (hE : 0 ≤ E)
-    (U : Ell2 →L[ℂ] Ell2) :
+lemma count_lhs_eq_ofReal {Ω : PlanarSet} (hvol : volume Ω ≠ ⊤)  (hE : 0 ≤ E)
+    (U : ComplexEnd Ell2) :
     volume Ω * ENNReal.ofReal E / ENNReal.ofReal (4 * π) +
-        ENNReal.ofReal (‖U - 1‖ / (2 * π)) =
-      ENNReal.ofReal ((volume Ω).toReal * E / (4 * π) + ‖U - 1‖ / (2 * π)) := by
+        ENNReal.ofReal (‖U - 1‖ / circlePeriod) =
+      ENNReal.ofReal ((volume Ω).toReal * E / (4 * π) + ‖U - 1‖ / circlePeriod) := by
   rw [ENNReal.ofReal_add (by positivity) (by positivity),
-    ENNReal.ofReal_div_of_pos (by positivity : (0 : ℝ) < 4 * π),
-    ENNReal.ofReal_div_of_pos (by positivity : (0 : ℝ) < 2 * π),
+    ENNReal.ofReal_div_of_pos (by positivity),
+    ENNReal.ofReal_div_of_pos (by positivity),
     ENNReal.ofReal_mul ENNReal.toReal_nonneg, ENNReal.ofReal_toReal hvol]
 
 /-- Proposition 7.10 (uniform Cayley bound and resonance rank), read on eigenvectors through
@@ -274,8 +261,8 @@ family of eigenvectors of `U_E` with eigenvalues `e^{it}`, `cot(t/2) > A`, has a
 members (`rank 1_{(A,∞)}(K_E) ≤ m`; for `m = 0` this is `K_E ≤ A`).
 Proved from the original smooth-domain Herglotz bound and the chosen-origin Cayley transfer
 (`uniform_cayley_rank_bound_of_original_smooth_domain`). -/
-theorem uniform_cayley_rank_bound {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hS : IsSmoothDomain Ω) (hsc : SimplyConnectedSpace Ω) {γ : ℝ → ℂ}
+theorem uniform_cayley_rank_bound {Ω : PlanarSet} (hb : Bornology.IsBounded Ω)
+    (hS : IsSmoothDomain Ω) (hsc : SimplyConnectedSpace Ω) {γ : ComplexCurve}
     (hγ : IsBoundaryParam Ω γ) (E₀ : ℝ) (hE₀ : 0 < E₀) (m : ℕ)
     (hm : {i | neumannEigenvalue Ω i = ENNReal.ofReal E₀}.encard = m) :
     ∃ A a : ℝ, 0 < a ∧ ∀ E, 0 < E → |E - E₀| < a →
@@ -288,45 +275,31 @@ theorem uniform_cayley_rank_bound {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     exact monodromy_ne_one hb hS.isLipschitzDomain hγ E₀ hE₀ W₀ hW₀
   exact uniform_cayley_rank_bound_of_original_smooth_domain hb hS hsc hγ E₀ hE₀ m hm hU₀
 
-/-- Lemma 9.3, analytic core (trace of the cut logarithm): for a closed Lipschitz curve, let
-`0 < ε < 2π` and let `[E₁, E₂] ⊂ (0, ∞)` be an interval on which `e^{iε}` avoids the spectrum of
-`U_E`. Then `tr(-i log_ε U_E) = ∑_{z ≠ 1} mult(z) argCut ε z` increases on `[E₁, E₂]` at the
-constant rate `tr L_E = (1/4) ∫₀^{2π} b` of Lemma 4.7, i.e.
-`tr(-i log_ε U_{E₂}) - tr(-i log_ε U_{E₁}) = (E₂ - E₁) · (1/4) ∫ b`.
-(Proved in `CutTrace.lean` (`cutPhaseSum_monodromyAt_sub'`) without the determinant identities of
-External theorem E9: an absolutely convergent Fourier series `argCut ε z = ∑ₙ 2 Re(cₙ (zⁿ - 1))`
-valid away from the cut reduces the claim to the traces `tr(U_E^n - I)`, which are differentiated
-in `E` through the curvature formula `∂_E U_E = i Q_E U_E`.) -/
-theorem cutPhaseSum_monodromyAt_sub {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
-    (hclosed : γ (2 * π) = γ 0) {ε : ℝ} (hε0 : 0 < ε) (hε : ε < 2 * π) (E₁ E₂ : ℝ)
-    (h1 : 0 < E₁) (h12 : E₁ ≤ E₂)
-    (hcut : ∀ E ∈ Set.Icc E₁ E₂,
-      Complex.exp (ε * Complex.I) ∉ spectrum ℂ (monodromyAt γ E)) :
-    cutPhaseSum ε (monodromyAt γ E₂) - cutPhaseSum ε (monodromyAt γ E₁) =
-      (E₂ - E₁) * ((1 / 4) * ∫ θ in (0 : ℝ)..(2 * π), areaDensity γ θ) :=
-  cutPhaseSum_monodromyAt_sub' hK hclosed hε0 hε E₁ E₂ h1 h12 hcut
-
 /-- Lemma 9.3 (continuity of a cut logarithm), for the monodromy of a bounded smooth Jordan
 domain: let `0 < ε < 2π` and let `[E₁, E₂] ⊂ (0, ∞)` be an interval on which `e^{iε}` (hence the
 whole radial cut through it) avoids the spectrum of `U_E`. Then the cut phase count
 `J_ε(E) = (E|Ω|/2 - tr(-i log_ε U_E)) / (2π)` takes the same value at `E₁` and `E₂`. Here the
 trace is written as the multiplicity-weighted eigenvalue sum `∑_{z ≠ 1} mult(z) argCut ε z`.
-Proved from `cutPhaseSum_monodromyAt_sub` and Green's formula `∫ b = 2|Ω|` (part of the
+Proved from `cutPhaseSum_monodromyAt_sub'` and Green's formula `∫ b = 2|Ω|` (part of the
 boundary parametrization). -/
-theorem cutPhaseCount_const {Ω : Set ℂ} {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) {ε : ℝ}
+theorem cutPhaseCount_const {Ω : PlanarSet} {γ : ComplexCurve} (hγ : IsBoundaryParam Ω γ) {ε : ℝ}
     (hε0 : 0 < ε) (hε : ε < 2 * π) (E₁ E₂ : ℝ) (h1 : 0 < E₁) (h12 : E₁ ≤ E₂)
     (hcut : ∀ E ∈ Set.Icc E₁ E₂,
       Complex.exp (ε * Complex.I) ∉ spectrum ℂ (monodromyAt γ E)) :
     cutPhaseCount Ω γ ε E₂ = cutPhaseCount Ω γ ε E₁ := by
   obtain ⟨K, hK⟩ := hγ.lipschitz
-  have hclosed : γ (2 * π) = γ 0 := by simpa using hγ.periodic 0
-  have h := cutPhaseSum_monodromyAt_sub hK hclosed hε0 hε E₁ E₂ h1 h12 hcut
-  have harea : ∫ θ in (0 : ℝ)..(2 * π), areaDensity γ θ = 2 * (volume Ω).toReal := by
+  have hclosed : γ circlePeriod = γ 0 := by simpa using hγ.periodic 0
+  have h := cutPhaseSum_monodromyAt_sub' hK hclosed hε0 hε E₁ E₂ h1 h12 hcut
+  have harea : ∫ θ in (0 : ℝ)..circlePeriod, areaDensity γ θ = 2 * (volume Ω).toReal := by
     rw [integral_areaDensity_eq hK hclosed]; exact hγ.area
   rw [harea] at h
   unfold cutPhaseCount
   rw [div_left_inj' (by positivity)]
   linarith
+
+section
+variable {Ω } (hb : Bornology.IsBounded Ω) (hS : IsSmoothDomain Ω) (hsc : SimplyConnectedSpace Ω) {γ } (hγ : IsBoundaryParam Ω γ) (E ) (hE : 0 < E) (hnr : ∀ j, neumannEigenvalue Ω j ≠ ENNReal.ofReal E)
+include Ω hb hS hsc γ hγ E hE hnr
 
 /-- Proposition 7.10 and the Cayley correspondence (Cayley bound at a nonresonant energy, on
 eigenvectors): for a bounded smooth Jordan domain and a nonresonant energy `E > 0`, the Cayley
@@ -334,14 +307,11 @@ transform `K_E` is bounded above, `K_E ≤ A`. Through the Cayley correspondence
 `e^{it}` of `U_E`, `0 < t < 2π`, is the eigenvalue `cot(t/2)` of `K_E`), this is stated on
 eigenvectors: `U_E v = e^{it} v` with `v ≠ 0` and `0 < t < 2π` implies `cot(t/2) ≤ A`.
 Proved from `uniform_cayley_rank_bound` with `m = 0`. -/
-theorem cayley_eigenvalue_bound {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : IsSmoothDomain Ω)
-    (hsc : SimplyConnectedSpace Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) (E : ℝ)
-    (hE : 0 < E) (hnr : ∀ j, neumannEigenvalue Ω j ≠ ENNReal.ofReal E) :
+theorem cayley_eigenvalue_bound :
     ∃ A : ℝ, ∀ t : ℝ, 0 < t → t < 2 * π → ∀ v : Ell2, v ≠ 0 →
       monodromyAt γ E v = Complex.exp (t * Complex.I) • v → Real.cot (t / 2) ≤ A := by
   have hm : {i | neumannEigenvalue Ω i = ENNReal.ofReal E}.encard = ((0 : ℕ) : ℕ∞) := by
-    rw [Nat.cast_zero, Set.encard_eq_zero]
-    exact Set.eq_empty_of_forall_notMem fun i hi => hnr i hi
+    simp_all
   obtain ⟨A, a, ha, hA⟩ := uniform_cayley_rank_bound hb hS hsc hγ E hE 0 hm
   exact ⟨A, fun t ht0 ht v hv hUv =>
     (hA E hE (by rw [sub_self, abs_zero]; exact ha) hnr).cot_le ht0 ht hv hUv⟩
@@ -352,16 +322,14 @@ the open upper half-plane. Proved, as in the paper, from the Cayley bound `K_E �
 (`cayley_eigenvalue_bound`), which keeps these eigenvalues at distance at least
 `1/(|A| + 1)` from `1`, and the convergence of `∑ mult(z) |z - 1|` (Lemma 4.7), which allows
 only finitely many eigenvalues at a fixed positive distance from `1`. -/
-theorem upper_eigenvalues_finite {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : IsSmoothDomain Ω)
-    (hsc : SimplyConnectedSpace Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) (E : ℝ)
-    (hE : 0 < E) (hnr : ∀ j, neumannEigenvalue Ω j ≠ ENNReal.ofReal E) :
+theorem upper_eigenvalues_finite :
     {z : ℂ | 0 < z.im ∧ ∃ v : Ell2, v ≠ 0 ∧ monodromyAt γ E v = z • v}.Finite := by
   obtain ⟨K, hK⟩ := hγ.lipschitz
-  have hclosed : γ (2 * π) = γ 0 := by simpa using hγ.periodic 0
+  have hclosed : γ circlePeriod = γ 0 := by simpa using hγ.periodic 0
   obtain ⟨W, hW⟩ := transport_exists_of_lipschitz γ hK E
   obtain ⟨A, hA⟩ := cayley_eigenvalue_bound hb hS hsc hγ E hE hnr
   rw [monodromyAt_eq hK hW] at hA ⊢
-  have hUunit : monodromy W ∈ unitary (Ell2 →L[ℂ] Ell2) := by
+  have hUunit : monodromy W ∈ unitary (ComplexEnd Ell2) := by
     rw [monodromy, ← ContinuousLinearMap.star_eq_adjoint]
     exact Unitary.star_mem (transport_mem_unitary hK hW ⟨by positivity, le_rfl⟩)
   exact upper_eigen_finite_of_cot_bound hUunit
@@ -375,37 +343,25 @@ integer; that part is not needed here.) Proved, as in the paper, from the finite
 upper-semicircle eigenvalues (`upper_eigenvalues_finite`), the bound
 `|Arg₋ z| ≤ (π/2)|z - 1|` on the lower semicircle and the trace-class property of `U_E - I`
 (Lemma 4.7, `summable_eigenMult_monodromy`), which makes `∑ mult(z) |z - 1|` finite. -/
-theorem phase_summable {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : IsSmoothDomain Ω)
-    (hsc : SimplyConnectedSpace Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) (E : ℝ)
-    (hE : 0 < E) (hnr : ∀ j, neumannEigenvalue Ω j ≠ ENNReal.ofReal E) :
+theorem phase_summable :
     Summable (phaseTerm (monodromyAt γ E)) := by
   obtain ⟨K, hK⟩ := hγ.lipschitz
-  have hclosed : γ (2 * π) = γ 0 := by simpa using hγ.periodic 0
+  have hclosed : γ circlePeriod = γ 0 := by simpa using hγ.periodic 0
   obtain ⟨W, hW⟩ := transport_exists_of_lipschitz γ hK E
   have hfin := upper_eigenvalues_finite hb hS hsc hγ E hE hnr
   rw [monodromyAt_eq hK hW] at hfin ⊢
-  have hUunit : monodromy W ∈ unitary (Ell2 →L[ℂ] Ell2) := by
+  have hUunit : monodromy W ∈ unitary (ComplexEnd Ell2) := by
     rw [monodromy, ← ContinuousLinearMap.star_eq_adjoint]
     exact Unitary.star_mem (transport_mem_unitary hK hW ⟨by positivity, le_rfl⟩)
   exact summable_phaseTerm_of_upper_finite hUunit hfin
     (summable_eigenMult_monodromy hK hclosed hE.le hW)
 
-/-- Lemma 8.6 (negative index at small energy), on Herglotz data: there is `δ > 0` such that
-for `0 < E < δ` and every transport `W` at energy `E`, the Herglotz form is nonnegative on the
-kernel of a single linear functional: `herglotzForm W γ E a ≥ 0` whenever `L a = 0`. (In the
-paper, `𝒜_E = C_E^sc + a_E⁻¹ b_E ⟨b_E, ·⟩` with `C_E^sc ≥ 0`, so the form is nonnegative on
-`{⟨b_E, g⟩ = 0}`, i.e. `ind₋ 𝒜_E ≤ 1`.)
-Proved (in `RequestProject/SmallEnergyCore.lean`) through the Schur complement along the
-constant mode and the analytic estimate `small_energy_schur_core`;
-simple connectivity is not needed for this lemma. The abstract index count is
-`negIndex_le_one_of_nonneg_on_ker`. -/
-theorem small_energy_herglotz_bound {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hS : IsSmoothDomain Ω) {γ : ℝ → ℂ}
-    (hγ : IsBoundaryParam Ω γ) :
-    ∃ δ > 0, ∀ E, 0 < E → E < δ → ∀ W : ℝ → Ell2 →L[ℂ] Ell2, IsTransport γ E W →
-      ∃ L : (ℝ → ℂ) →ₗ[ℂ] (Fin 1 → ℂ), ∀ a, IsDirDensity a → L a = 0 →
-        0 ≤ herglotzForm W γ E a := by
-  exact small_energy_herglotz_bound' hb hS.isLipschitzDomain hγ
+end
+
+
+section
+variable {Ω } (hb : Bornology.IsBounded Ω) (hS : IsSmoothDomain Ω) {γ } (hγ : IsBoundaryParam Ω γ)
+include Ω hb hS γ hγ
 
 /-- Lemma 8.7 (positive principal phases at small energy), read on eigenvectors through the
 Cayley correspondence: there is `δ > 0` such that for `0 < E < δ`, every orthonormal family of
@@ -414,19 +370,17 @@ phases `t ∈ (0, π)`), has at most one member.
 Proved, as in the paper, from `ind₋ 𝒜_E ≤ 1` on Herglotz data (`small_energy_herglotz_bound`,
 Lemma 8.6) and the Cayley factorization, which turns two positive principal phases into a
 two-dimensional negative subspace of `𝒜_E` (`cayleyRankBound_of_herglotzForm_bound`). -/
-theorem small_energy_cayley_rank_bound {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hS : IsSmoothDomain Ω) {γ : ℝ → ℂ}
-    (hγ : IsBoundaryParam Ω γ) :
+theorem small_energy_cayley_rank_bound :
     ∃ δ > 0, ∀ E, 0 < E → E < δ → CayleyRankBound (monodromyAt γ E) 0 1 := by
-  obtain ⟨δ, hδ, hA⟩ := small_energy_herglotz_bound hb hS hγ
+  obtain ⟨δ, hδ, hA⟩ := small_energy_herglotz_bound' hb hS.isLipschitzDomain hγ
   obtain ⟨K, hK⟩ := hγ.lipschitz
-  have hclosed : γ (2 * π) = γ 0 := by simpa using hγ.periodic 0
+  have hclosed : γ circlePeriod = γ 0 := by simpa using hγ.periodic 0
   refine ⟨δ, hδ, fun E hE hEδ => ?_⟩
   obtain ⟨W, hW⟩ := transport_exists_of_lipschitz γ hK E
   obtain ⟨L, hL⟩ := hA E hE hEδ W hW
   rw [monodromyAt_eq hK hW]
   exact cayleyRankBound_of_herglotzForm_bound hK hclosed hW 0 0 le_rfl L
-    (fun a ha hLa => by rw [zero_mul, neg_zero]; exact hL a ha hLa)
+    (fun a ha hLa => by simp_all)
 
 /-- Lemma 8.8 (initial value of the phase count): for a bounded smooth Jordan domain,
 `M(E) = 1` for all sufficiently small `E > 0`. Proved, as in the paper (Lemmas 8.7–8.8): the
@@ -434,22 +388,21 @@ trace-norm bound `‖U_E - I‖_{𝒮₁} ≤ C E` keeps `-1` out of the spectru
 phase sum `O(E)`; the principal cut phase count `J_π` is constant (`cutPhaseCount_const`) and
 tends to `0`, so `∑ θ_j = E|Ω|/2`; exactly one principal phase is positive
 (`small_energy_cayley_rank_bound`, and the sum is positive), and `M = J_π + 1 = 1`. -/
-theorem phaseCount_initial {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : IsSmoothDomain Ω)
-    {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) :
+theorem phaseCount_initial :
     ∃ δ > 0, ∀ E, 0 < E → E < δ → phaseCount Ω γ E = 1 := by
   obtain ⟨K, hK⟩ := hγ.lipschitz
-  have hclosed : γ (2 * π) = γ 0 := by simpa using hγ.periodic 0
+  have hclosed : γ circlePeriod = γ 0 := by simpa using hγ.periodic 0
   obtain ⟨Cq, hCq0, hT⟩ := exists_linear_traceBound_monodromyAt hK hclosed
   obtain ⟨δr, hδr, hrank⟩ := small_energy_cayley_rank_bound hb hS hγ
   set v := (volume Ω).toReal with hv
-  have hvpos : 0 < v := ENNReal.toReal_pos
+  have hvpos  := ENNReal.toReal_pos
     (hS.1.1.measure_pos volume hS.1.2.nonempty).ne' hb.measure_lt_top.ne
   have hpi := Real.pi_pos
   set δ := min δr (1 / (Cq + 1)) with hδ
   have hδpos : 0 < δ := lt_min hδr (by positivity)
   have hsmall : ∀ E, 0 < E → E < δ → Cq * E < 2 := by
     intro E hE hEδ
-    have h1 : E < 1 / (Cq + 1) := hEδ.trans_le (min_le_right _ _)
+    have h1  := hEδ.trans_le (min_le_right _ _)
     rw [lt_div_iff₀ (by positivity)] at h1
     nlinarith
   -- `-1` avoids the spectrum
@@ -463,7 +416,7 @@ theorem phaseCount_initial {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : Is
       (isCompactOperator_monodromyAt_sub_one hK hclosed hE.le) (hT E hE.le)
       (hsmall E hE hEδ) hw0 hw
   -- `J_π(E) = O(E)`
-  set c := (v / 2 + π / 2 * Cq) / (2 * π) with hc
+  set c := (v / 2 + π / 2 * Cq) / circlePeriod with hc
   have hJb : ∀ E, 0 < E → E < δ → |cutPhaseCount Ω γ π E| ≤ c * E := by
     intro E hE hEδ
     obtain ⟨-, hP⟩ := cutPhaseSum_pi_bound (monodromyAt_mem_unitary hK E)
@@ -476,7 +429,7 @@ theorem phaseCount_initial {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : Is
       rw [abs_of_pos (by positivity : (0 : ℝ) < v * E / 2)] at this
       linarith
     calc |v * E / 2 - cutPhaseSum π (monodromyAt γ E)| ≤ v * E / 2 + π / 2 * (Cq * E) := h1
-      _ = c * E * (2 * π) := by rw [hc]; field_simp
+      _ = c * E * circlePeriod := by rw [hc]; field_simp
   -- `J_π = 0`
   have hJ0 : ∀ E, 0 < E → E < δ → cutPhaseCount Ω γ π E = 0 := by
     intro E hE hEδ
@@ -493,8 +446,8 @@ theorem phaseCount_initial {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : Is
     exact abs_nonpos_iff.mp (ge_of_tendsto hlim hev)
   refine ⟨δ, hδpos, fun E hE hEδ => ?_⟩
   set U := monodromyAt γ E with hUdef
-  have hUu : U ∈ unitary (Ell2 →L[ℂ] Ell2) := monodromyAt_mem_unitary hK E
-  have hUc : IsCompactOperator ⇑(U - 1) := isCompactOperator_monodromyAt_sub_one hK hclosed hE.le
+  have hUu  := monodromyAt_mem_unitary hK E
+  have hUc  := isCompactOperator_monodromyAt_sub_one hK hclosed hE.le
   obtain ⟨hsa, hle⟩ := arcCount_le (ε := π) (A := 0) hUu hUc (by linarith)
     (fun t ht0 htπ => by
       rw [Real.cot_eq_cos_div_sin]
@@ -535,38 +488,45 @@ theorem phaseCount_initial {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : Is
       refine tsum_nonpos fun z => ?_
       rw [cutPhaseTerm_eq, hall z, mul_zero, add_zero, phaseTerm]
       exact mul_nonpos_of_nonneg_of_nonpos (Nat.cast_nonneg _) (argNeg_nonpos _)
-    have : 0 < v * E / 2 := by positivity
-    linarith
+    nlinarith
   rw [hM, hJ0 E hE hEδ, zero_add]
   exact le_antisymm (by exact_mod_cast hle) hge
+
+end
+
+
+section
+variable {Ω } (hb : Bornology.IsBounded Ω) (hS : IsSmoothDomain Ω) (hsc : SimplyConnectedSpace Ω) {γ } (hγ : IsBoundaryParam Ω γ)
+local notation "neumannEigenvalueFixed" => neumannEigenvalue Ω
+
+local notation "phaseCountFixed" => phaseCount Ω γ
+
+include Ω hb hS hsc γ hγ
 
 /-- Lemma 9.4 (constancy away from the Neumann spectrum): `M` is constant on every interval
 `[E₁, E₂] ⊆ (0, ∞)` containing no Neumann eigenvalue. Proved, as in the paper: locally the
 uniform Cayley bound `K_E ≤ A` (`uniform_cayley_rank_bound`) excludes an arc
 `{e^{it} : 0 < t ≤ ε}` from the spectrum of `U_E`, so `M = J_ε` there, and `J_ε` is locally
 constant (`cutPhaseCount_const`); local constancy on an interval gives constancy. -/
-theorem phaseCount_const {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : IsSmoothDomain Ω)
-    (hsc : SimplyConnectedSpace Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) (E₁ E₂ : ℝ)
+theorem phaseCount_const E₁ E₂
     (h1 : 0 < E₁) (h12 : E₁ ≤ E₂)
-    (hno : ∀ j, ∀ E ∈ Set.Icc E₁ E₂, neumannEigenvalue Ω j ≠ ENNReal.ofReal E) :
-    phaseCount Ω γ E₂ = phaseCount Ω γ E₁ := by
+    (hno : ∀ j, ∀ E ∈ Set.Icc E₁ E₂, neumannEigenvalueFixed j ≠ ENNReal.ofReal E) :
+    phaseCountFixed E₂ = phaseCountFixed E₁ := by
   obtain ⟨K, hK⟩ := hγ.lipschitz
-  have hclosed : γ (2 * π) = γ 0 := by simpa using hγ.periodic 0
+  have hclosed : γ circlePeriod = γ 0 := by simpa using hγ.periodic 0
   -- local constancy
   have hloc : ∀ E₀ ∈ Set.Icc E₁ E₂, ∃ a > 0, ∀ E ∈ Set.Icc E₁ E₂, ∀ E' ∈ Set.Icc E₁ E₂,
-      |E - E₀| < a → |E' - E₀| < a → E ≤ E' → phaseCount Ω γ E' = phaseCount Ω γ E := by
+      |E - E₀| < a → |E' - E₀| < a → E ≤ E' → phaseCountFixed E' = phaseCountFixed E := by
     intro E₀ hE₀
-    have hpos₀ : 0 < E₀ := h1.trans_le hE₀.1
-    have hm : {i | neumannEigenvalue Ω i = ENNReal.ofReal E₀}.encard = ((0 : ℕ) : ℕ∞) := by
-      rw [Nat.cast_zero, Set.encard_eq_zero]
-      exact Set.eq_empty_of_forall_notMem fun i hi => hno i E₀ hE₀ hi
+    have hpos₀  := h1.trans_le hE₀.1
+    have hm : {i | neumannEigenvalueFixed i = ENNReal.ofReal E₀}.encard = ((0 : ℕ) : ℕ∞) := by
+      simp_all
     obtain ⟨A, a, ha, hA⟩ := uniform_cayley_rank_bound hb hS hsc hγ E₀ hpos₀ 0 hm
     obtain ⟨ε, hε0, hεπ, hεA⟩ := exists_cot_half_gt A
-    have hnoarc : ∀ E ∈ Set.Icc E₁ E₂, |E - E₀| < a → ∀ t, 0 < t → t ≤ ε → ∀ v : Ell2,
-        v ≠ 0 → monodromyAt γ E v ≠ Complex.exp (t * Complex.I) • v := fun E hE hEa =>
+    have hnoarc  := fun E hE hEa =>
       (hA E (h1.trans_le hE.1) hEa (fun j => hno j E hE)).no_arc_eigen hεπ hεA
     have hJ : ∀ E ∈ Set.Icc E₁ E₂, |E - E₀| < a →
-        phaseCount Ω γ E = cutPhaseCount Ω γ ε E := by
+        phaseCountFixed E = cutPhaseCount Ω γ ε E := by
       intro E hE hEa
       rw [phaseCount, cutPhaseCount, cutPhaseSum_eq_phaseSum (monodromyAt_mem_unitary hK E)
         (isCompactOperator_monodromyAt_sub_one hK hclosed (h1.trans_le hE.1).le)
@@ -579,20 +539,18 @@ theorem phaseCount_const {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : IsSm
     have hFa : |F - E₀| < a := by
       rw [abs_lt] at hEa hE'a ⊢; constructor <;> linarith [hF.1, hF.2]
     exact exp_mul_I_notMem_spectrum (isCompactOperator_monodromyAt_sub_one hK hclosed
-      (h1.trans_le hFI.1).le) hε0 hεπ (fun v hv => hnoarc F hFI hFa ε hε0 le_rfl v hv)
+      (h1.trans_le hFI.1).le) hε0 hεπ ((hnoarc F hFI hFa ε hε0 le_rfl))
   -- constancy on the interval
-  let f : Set.Icc E₁ E₂ → ℝ := fun E => phaseCount Ω γ E
+  let f : Set.Icc E₁ E₂ → ℝ := fun E => phaseCountFixed E
   have hf : IsLocallyConstant f := by
     rw [IsLocallyConstant.iff_eventually_eq]
     intro x
     obtain ⟨a, ha, hx⟩ := hloc x x.2
     filter_upwards [Metric.ball_mem_nhds x ha] with y hy
     have hy' : |(y : ℝ) - x| < a := by
-      rw [Metric.mem_ball, Subtype.dist_eq, Real.dist_eq] at hy; exact hy
+      assumption
     have hx0 : |(x : ℝ) - x| < a := by rw [sub_self, abs_zero]; exact ha
-    rcases le_total (y : ℝ) x with h | h
-    · exact (hx y y.2 x x.2 hy' hx0 h).symm
-    · exact hx x x.2 y y.2 hx0 hy' h
+    grind
   haveI : PreconnectedSpace (Set.Icc E₁ E₂) := Subtype.preconnectedSpace isPreconnected_Icc
   exact hf.apply_eq_of_preconnectedSpace ⟨E₂, h12, le_rfl⟩ ⟨E₁, le_rfl, h12⟩
 
@@ -603,23 +561,22 @@ the resonance rank bound (`uniform_cayley_rank_bound`) and a cut `e^{iε}` with 
 outside the (countable) set of eigenvalues of `U_μ`; it stays outside the spectrum of `U_E` for
 `E` near `μ`, so `J_ε` is constant there (`cutPhaseCount_const`), and
 `M(E) = J_ε(E) + n_{(0,ε)}(U_E)` with `0 ≤ n_{(0,ε)}(U_E) ≤ m`. -/
-theorem phaseCount_jump {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : IsSmoothDomain Ω)
-    (hsc : SimplyConnectedSpace Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) (j : ℕ)
-    (hj : 0 < neumannEigenvalue Ω j) (m : ℕ)
-    (hm : {i | neumannEigenvalue Ω i = neumannEigenvalue Ω j}.encard = m) :
-    ∃ δ > 0, ∀ E₁ E₂, 0 < E₁ → (neumannEigenvalue Ω j).toReal - δ < E₁ →
-      E₁ < (neumannEigenvalue Ω j).toReal → (neumannEigenvalue Ω j).toReal < E₂ →
-      E₂ < (neumannEigenvalue Ω j).toReal + δ →
-      (∀ i, neumannEigenvalue Ω i ≠ ENNReal.ofReal E₁) →
-      (∀ i, neumannEigenvalue Ω i ≠ ENNReal.ofReal E₂) →
-      phaseCount Ω γ E₂ ≤ phaseCount Ω γ E₁ + m := by
+theorem phaseCount_jump (j : ℕ)
+    (hj : 0 < neumannEigenvalueFixed j) (m : ℕ)
+    (hm : {i | neumannEigenvalueFixed i = neumannEigenvalueFixed j}.encard = m) :
+    ∃ δ > 0, ∀ E₁ E₂, 0 < E₁ → (neumannEigenvalueFixed j).toReal - δ < E₁ →
+      E₁ < (neumannEigenvalueFixed j).toReal → (neumannEigenvalueFixed j).toReal < E₂ →
+      E₂ < (neumannEigenvalueFixed j).toReal + δ →
+      (∀ i, neumannEigenvalueFixed i ≠ ENNReal.ofReal E₁) →
+      (∀ i, neumannEigenvalueFixed i ≠ ENNReal.ofReal E₂) →
+      phaseCountFixed E₂ ≤ phaseCountFixed E₁ + m := by
   obtain ⟨K, hK⟩ := hγ.lipschitz
-  have hclosed : γ (2 * π) = γ 0 := by simpa using hγ.periodic 0
+  have hclosed : γ circlePeriod = γ 0 := by simpa using hγ.periodic 0
   have hfin := (neumannEigenvalue_lt_top hS.isLipschitzDomain j).ne
-  set μ := (neumannEigenvalue Ω j).toReal with hμdef
-  have hμ0 : 0 < μ := ENNReal.toReal_pos hj.ne' hfin
-  have hm' : {i | neumannEigenvalue Ω i = ENNReal.ofReal μ}.encard = m := by
-    rw [hμdef, ENNReal.ofReal_toReal hfin]; exact hm
+  set μ := (neumannEigenvalueFixed j).toReal with hμdef
+  have hμ0  := ENNReal.toReal_pos hj.ne' hfin
+  have hm' : {i | neumannEigenvalueFixed i = ENNReal.ofReal μ}.encard = m := by
+    simp_all
   obtain ⟨A, a, ha, hA⟩ := uniform_cayley_rank_bound hb hS hsc hγ μ hμ0 m hm'
   obtain ⟨ε₀, hε₀, hε₀π, hε₀A⟩ := exists_cot_half_gt A
   -- the cut directions in `(0, ε₀)` that are eigenvalues of `U_μ` form a countable set
@@ -631,7 +588,7 @@ theorem phaseCount_jump {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : IsSmo
     rw [← monodromyAt_eq hK hW] at hsum
     refine Set.MapsTo.countable_of_injOn (f := fun t : ℝ => Complex.exp (t * Complex.I))
       (t := Subtype.val '' Function.support
-        (fun z : {z : ℂ // z ≠ 1} => (eigenMult (monodromyAt γ μ) z : ℝ) * ‖(z : ℂ) - 1‖))
+        (fun z : {z : ℂ // z ≠ 1} => (eigenMult (monodromyAt γ μ) z) * ‖(z : ℂ) - 1‖))
       ?_ ?_ (hsum.countable_support.image _)
     · rintro t ⟨⟨ht0, htε⟩, v, hv0, hv⟩
       have hne : Complex.exp (t * Complex.I) ≠ 1 := by
@@ -645,7 +602,7 @@ theorem phaseCount_jump {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : IsSmo
       have hpos : 0 < eigenMult (monodromyAt γ μ) (Complex.exp (t * Complex.I)) :=
         Module.finrank_pos_iff_exists_ne_zero.mpr
           ⟨⟨v, Module.End.mem_eigenspace_iff.mpr hv⟩, fun h => hv0 (by simpa using h)⟩
-      have hn : 0 < ‖Complex.exp (t * Complex.I) - 1‖ := norm_pos_iff.mpr (sub_ne_zero.mpr hne)
+      have hn  := norm_pos_iff.mpr (sub_ne_zero.mpr hne)
       exact (mul_pos (by exact_mod_cast hpos) hn).ne'
     · intro s hs t ht hst
       have := congrArg Complex.arg hst
@@ -660,14 +617,14 @@ theorem phaseCount_jump {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : IsSmo
     have h0 := measure_mono_null hne (hS_count.measure_zero MeasureTheory.volume)
     rw [Real.volume_Ioo, sub_zero, ENNReal.ofReal_eq_zero] at h0
     linarith
-  have hεπ : ε < π := hεε₀.trans hε₀π
-  have hεA : A < Real.cot (ε / 2) :=
+  have hεπ  := hεε₀.trans hε₀π
+  have hεA  :=
     lt_of_lt_of_le hε₀A (cot_half_le_cot_half hε0 hεε₀.le hε₀π)
-  have hspecμ : Complex.exp (ε * Complex.I) ∉ spectrum ℂ (monodromyAt γ μ) :=
+  have hspecμ  :=
     exp_mul_I_notMem_spectrum (isCompactOperator_monodromyAt_sub_one hK hclosed hμ0.le) hε0 hεπ
       (fun v hv h => hεS ⟨⟨hε0, hεε₀⟩, v, hv, h⟩)
   -- the cut stays outside the spectrum near `μ`
-  have hnhds : {E : ℝ | IsUnit (algebraMap ℂ (Ell2 →L[ℂ] Ell2) (Complex.exp (ε * Complex.I)) -
+  have hnhds : {E : ℝ | IsUnit (algebraMap ℂ (ComplexEnd Ell2) (Complex.exp (ε * Complex.I)) -
       monodromyAt γ E)} ∈ 𝓝 μ := by
     rw [spectrum.mem_iff, not_not] at hspecμ
     exact (continuousAt_const.sub (continuousAt_monodromyAt hK hclosed hμ0)).preimage_mem_nhds
@@ -681,14 +638,12 @@ theorem phaseCount_jump {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : IsSmo
     have hEb : E ∈ Metric.ball μ δ₁ := by
       rw [Metric.mem_ball, Real.dist_eq, abs_lt]
       constructor <;> linarith [min_le_right a δ₁, hE.1, hE.2]
-    have := hball hEb
-    rw [spectrum.mem_iff, not_not]
-    exact this
+    solve_by_elim (maxDepth := 5) [PolyaNeumann.Ell2]
   have hJ := cutPhaseCount_const hγ hε0 (by linarith [Real.pi_pos]) E₁ E₂ hE₁0
     (by linarith) hcut
   -- `M = J_ε + n_{(0,ε)}` with `0 ≤ n_{(0,ε)} ≤ m`
-  have hdec : ∀ E, 0 < E → |E - μ| < a → (∀ i, neumannEigenvalue Ω i ≠ ENNReal.ofReal E) →
-      phaseCount Ω γ E = cutPhaseCount Ω γ ε E + arcCount ε (monodromyAt γ E) ∧
+  have hdec : ∀ E, 0 < E → |E - μ| < a → (∀ i, neumannEigenvalueFixed i ≠ ENNReal.ofReal E) →
+      phaseCountFixed E = cutPhaseCount Ω γ ε E + arcCount ε (monodromyAt γ E) ∧
         arcCount ε (monodromyAt γ E) ≤ m := by
     intro E hE hEa hnr
     obtain ⟨hsa, hle⟩ := arcCount_le (monodromyAt_mem_unitary hK E)
@@ -697,9 +652,7 @@ theorem phaseCount_jump {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : IsSmo
       (hA E hE hEa hnr)
     refine ⟨?_, hle⟩
     rw [phaseCount, cutPhaseCount, cutPhaseSum_eq_add (phase_summable hb hS hsc hγ E hE hnr) hsa]
-    have := Real.pi_pos
-    field_simp
-    ring
+    field_simp <;> ring
   have hE₁a : |E₁ - μ| < a := by
     rw [abs_lt]; constructor <;> linarith [min_le_left a δ₁]
   have hE₂a : |E₂ - μ| < a := by
@@ -709,29 +662,31 @@ theorem phaseCount_jump {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : IsSmo
   rw [h1eq, h2eq, hJ]
   linarith [arcCount_nonneg ε (monodromyAt γ E₁)]
 
+section
+variable (E ) (hE : 0 < E) (hnr : ∀ j, neumannEigenvalue Ω j ≠ ENNReal.ofReal E)
+include E hE hnr
+
 /-- Lemma 9.6 (comparison with the strict count): for a bounded smooth Jordan domain and every
 nonresonant `E > 0`, `M(E) ≤ N_N(E)`. Proved, as in the paper, by induction across the
 finitely many eigenvalues below `E`, from the initial value (Lemma 8.8), the constancy away
 from the spectrum (Lemma 9.4) and the jump bound (Lemma 9.5). -/
-theorem phaseCount_le_count {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : IsSmoothDomain Ω)
-    (hsc : SimplyConnectedSpace Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) (E : ℝ)
-    (hE : 0 < E) (hnr : ∀ j, neumannEigenvalue Ω j ≠ ENNReal.ofReal E) :
-    ENNReal.ofReal (phaseCount Ω γ E) ≤ (neumannCount Ω (ENNReal.ofReal E) : ENNReal) := by
+theorem phaseCount_le_count :
+    ENNReal.ofReal (phaseCountFixed E) ≤ (neumannCount Ω (ENNReal.ofReal E) : ENNReal) := by
   have hL := hS.isLipschitzDomain
-  have hfin : ∀ j, neumannEigenvalue Ω j ≠ ⊤ := fun j => (neumannEigenvalue_lt_top hL j).ne
-  set lam : ℕ → ℝ := fun j => (neumannEigenvalue Ω j).toReal with hlam
-  have hμ : ∀ j, neumannEigenvalue Ω j = ENNReal.ofReal (lam j) := fun j =>
+  have hfin  := fun j => (neumannEigenvalue_lt_top hL j).ne
+  set lam : ℕ → ℝ := fun j => (neumannEigenvalueFixed j).toReal with hlam
+  have hμ  := fun j =>
     (ENNReal.ofReal_toReal (hfin j)).symm
   have hlam0 : ∀ j, 0 ≤ lam j := fun j => ENNReal.toReal_nonneg
   -- conversions between the two descriptions of the spectrum
-  have hne : ∀ j (t : ℝ), 0 ≤ t → (neumannEigenvalue Ω j ≠ ENNReal.ofReal t ↔ lam j ≠ t) := by
+  have hne : ∀ j (t : ℝ), 0 ≤ t → (neumannEigenvalueFixed j ≠ ENNReal.ofReal t ↔ lam j ≠ t) := by
     intro j t ht
     rw [hμ j, ne_eq, ne_eq, ENNReal.ofReal_eq_ofReal_iff (hlam0 j) ht]
-  have hlt : ∀ (t : ℝ), 0 < t → {j | neumannEigenvalue Ω j < ENNReal.ofReal t} =
+  have hlt : ∀ (t : ℝ), 0 < t → {j | neumannEigenvalueFixed j < ENNReal.ofReal t} =
       {j | lam j < t} := by
     intro t ht
     ext j
-    simp only [Set.mem_setOf_eq]
+    simp  
     rw [hμ j, ENNReal.ofReal_lt_ofReal_iff ht]
   have hcount : neumannCount Ω (ENNReal.ofReal E) = {j | lam j < E}.encard := by
     rw [neumannCount, hlt E hE]
@@ -740,28 +695,22 @@ theorem phaseCount_le_count {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : I
   · rw [hcount, Set.encard_eq_top_iff.mpr hinf, ENat.toENNReal_top]; exact le_top
   have h0 : lam 0 = 0 := by
     simp [hlam, neumannEigenvalue_zero Ω hL.1.1 hL.1.2.nonempty hb]
-  have key := phase_le_count_of_jumps lam h0 (phaseCount Ω γ)
+  have key := phase_le_count_of_jumps lam h0 phaseCountFixed
     (by
-      obtain ⟨δ, hδ, h⟩ := phaseCount_initial hb hS hγ
-      exact ⟨δ, hδ, fun E hE hEδ _ => (h E hE hEδ).le⟩)
+      grind only [phaseCount_initial])
     (by
-      intro E₁ E₂ h1 h12 hno
-      refine (phaseCount_const hb hS hsc hγ E₁ E₂ h1 h12 fun j t ht => ?_).le
-      rw [hne j t (h1.le.trans ht.1)]
-      rintro rfl
-      exact hno j ht)
+      grind [phaseCount_const])
     (by
       intro j hj m hm
-      have hj' : 0 < neumannEigenvalue Ω j := by
+      have hj' : 0 < neumannEigenvalueFixed j := by
         rw [hμ j]; exact ENNReal.ofReal_pos.mpr hj
-      have hset : {i | neumannEigenvalue Ω i = neumannEigenvalue Ω j} = {i | lam i = lam j} := by
+      have hset : {i | neumannEigenvalueFixed i = neumannEigenvalueFixed j} = {i | lam i = lam j} := by
         ext i
-        simp only [Set.mem_setOf_eq]
-        exact ENNReal.toReal_eq_toReal_iff' (hfin i) (hfin j) |>.symm
+        grind
       obtain ⟨δ, hδ, h⟩ := phaseCount_jump hb hS hsc hγ j hj' m (hset ▸ hm)
       refine ⟨δ, hδ, fun E₁ E₂ h1 h2 h3 h4 h5 h6 h7 => h E₁ E₂ h1 h2 h3 h4 h5 ?_ ?_⟩
-      · intro i; rw [hne i E₁ h1.le]; exact h6 i
-      · intro i; rw [hne i E₂ (h1.trans (h3.trans h4)).le]; exact h7 i)
+      · grind
+      grind)
     E hE (fun j => (hne j E hE.le).mp (hnr j)) hinf
   rw [hcount, ← hinf.cast_ncard_eq, ENat.toENNReal_coe, ← ENNReal.ofReal_natCast]
   exact ENNReal.ofReal_le_ofReal key
@@ -773,18 +722,16 @@ eigenvalues of `U_E` can be listed, with multiplicity, as a family `z_i` of unim
 `M(E) = (E|Ω|/2 - ∑ Arg₋ z_i)/(2π)` is at most `N_N(E)`. Proved from Lemma 9.1
 (`phase_summable`), Lemma 9.6 (`phaseCount_le_count`) and the compactness of `U_E - I`
 (Lemma 4.7), which makes every eigenspace at `z ≠ 1` finite-dimensional. -/
-theorem smooth_phase_count {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : IsSmoothDomain Ω)
-    (hsc : SimplyConnectedSpace Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) (E : ℝ)
-    (hE : 0 < E) (hnr : ∀ j, neumannEigenvalue Ω j ≠ ENNReal.ofReal E)
-    (W : ℝ → Ell2 →L[ℂ] Ell2) (hW : IsTransport γ E W) :
+theorem smooth_phase_count
+    (W : ℝ → ComplexEnd Ell2) (hW : IsTransport γ E W) :
     ∃ (ι : Type) (z : ι → ℂ), (∀ i, ‖z i‖ = 1) ∧ (∀ i, z i ≠ 1) ∧
       (∀ (c : ℂ) (v : Ell2), v ≠ 0 → monodromy W v = c • v → c ≠ 1 → ∃ i, z i = c) ∧
       Summable (fun i => argNeg (z i)) ∧
-      ENNReal.ofReal (((volume Ω).toReal * E / 2 - ∑' i, argNeg (z i)) / (2 * π)) ≤
+      ENNReal.ofReal (((volume Ω).toReal * E / 2 - ∑' i, argNeg (z i)) / circlePeriod) ≤
         (neumannCount Ω (ENNReal.ofReal E) : ENNReal) := by
   obtain ⟨K, hK⟩ := hγ.lipschitz
-  have hclosed : γ (2 * π) = γ 0 := by simpa using hγ.periodic 0
-  have hUunit : monodromy W ∈ unitary (Ell2 →L[ℂ] Ell2) := by
+  have hclosed : γ circlePeriod = γ 0 := by simpa using hγ.periodic 0
+  have hUunit : monodromy W ∈ unitary (ComplexEnd Ell2) := by
     rw [monodromy, ← ContinuousLinearMap.star_eq_adjoint]
     exact Unitary.star_mem (transport_mem_unitary hK hW ⟨by positivity, le_rfl⟩)
   have hs := phase_summable hb hS hsc hγ E hE hnr
@@ -799,18 +746,15 @@ theorem smooth_phase_count {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : Is
 bounded smooth Jordan domain and a nonresonant `E > 0`,
 `N_N(E) ≥ E |Ω| / (4π) + ‖U_E - I‖ / (2π)`. `U_E - I` is compact (Lemma 4.7), so if
 `U_E ≠ I` its norm is `|z - 1|` for an eigenvalue `z ≠ 1` of `U_E` (Lemma 9.2). -/
-theorem smooth_count_nonresonant {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hS : IsSmoothDomain Ω) (hsc : SimplyConnectedSpace Ω) {γ : ℝ → ℂ}
-    (hγ : IsBoundaryParam Ω γ) (E : ℝ) (hE : 0 < E)
-    (hnr : ∀ j, neumannEigenvalue Ω j ≠ ENNReal.ofReal E) (W : ℝ → Ell2 →L[ℂ] Ell2)
+theorem smooth_count_nonresonant W
     (hW : IsTransport γ E W) :
     volume Ω * ENNReal.ofReal E / ENNReal.ofReal (4 * π) +
-        ENNReal.ofReal (‖monodromy W - 1‖ / (2 * π)) ≤
+        ENNReal.ofReal (‖monodromy W - 1‖ / circlePeriod) ≤
       (neumannCount Ω (ENNReal.ofReal E) : ENNReal) := by
   obtain ⟨ι, z, hz, h1, hall, hs, hM⟩ := smooth_phase_count hb hS hsc hγ E hE hnr W hW
   obtain ⟨K, hK⟩ := hγ.lipschitz
-  have hclosed : γ (2 * π) = γ 0 := by simpa using hγ.periodic 0
-  have hUunit : monodromy W ∈ unitary (Ell2 →L[ℂ] Ell2) := by
+  have hclosed : γ circlePeriod = γ 0 := by simpa using hγ.periodic 0
+  have hUunit : monodromy W ∈ unitary (ComplexEnd Ell2) := by
     rw [monodromy, ← ContinuousLinearMap.star_eq_adjoint]
     exact Unitary.star_mem (transport_mem_unitary hK hW ⟨by positivity, le_rfl⟩)
   have hr : ‖monodromy W - 1‖ = 0 ∨ ∃ j, ‖z j - 1‖ = ‖monodromy W - 1‖ := by
@@ -827,51 +771,52 @@ theorem smooth_count_nonresonant {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
   rw [mul_comm ((volume Ω).toReal) E]
   exact key
 
+end
+
+
 /-- Theorem 9.7 (quantitative smooth counting inequality): for a bounded smooth Jordan
 domain and every `E > 0`, `N_N(E) ≥ E |Ω| / (4π) + ‖U_E - I‖ / (2π)`. Proved, as in the paper,
 from the nonresonant case by approaching `E` from below through nonresonant energies, using
 the continuity of `E ↦ U_E` (Lemma 4.7). -/
-theorem smooth_count {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : IsSmoothDomain Ω)
-    (hsc : SimplyConnectedSpace Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) (E : ℝ)
-    (hE : 0 < E) (W : ℝ → Ell2 →L[ℂ] Ell2) (hW : IsTransport γ E W) :
+theorem smooth_count E
+    (hE : 0 < E) W (hW : IsTransport γ E W) :
     volume Ω * ENNReal.ofReal E / ENNReal.ofReal (4 * π) +
-        ENNReal.ofReal (‖monodromy W - 1‖ / (2 * π)) ≤
+        ENNReal.ofReal (‖monodromy W - 1‖ / circlePeriod) ≤
       (neumannCount Ω (ENNReal.ofReal E) : ENNReal) := by
   classical
   obtain ⟨K, hK⟩ := hγ.lipschitz
-  have hclosed : γ (2 * π) = γ 0 := by simpa using hγ.periodic 0
-  choose Ws hWs using fun E' : ℝ => transport_exists_of_lipschitz γ hK E'
+  have hclosed : γ circlePeriod = γ 0 := by simpa using hγ.periodic 0
+  choose Ws hWs using (transport_exists_of_lipschitz γ hK)
   have hWE : monodromy (Ws E) = monodromy W := by
     unfold monodromy
     rw [transport_unique_of_lipschitz γ hK E (hWs E) hW ⟨by positivity, le_rfl⟩]
   set N : ℕ∞ := neumannCount Ω (ENNReal.ofReal E) with hNdef
   by_cases hN : N = ⊤
-  · rw [hN, ENat.toENNReal_top]; exact le_top
-  set T := {j : ℕ | neumannEigenvalue Ω j < ENNReal.ofReal E} with hTdef
-  have hT : T.Finite := Set.encard_ne_top_iff.mp hN
+  · measurability
+  set T := {j : ℕ | neumannEigenvalueFixed j < ENNReal.ofReal E} with hTdef
+  have hT  := Set.encard_ne_top_iff.mp hN
   have hN' : (N : ENNReal) ≠ ⊤ := by simpa using hN
   have hvol : volume Ω ≠ ⊤ := hb.measure_lt_top.ne
   -- the real form of the left-hand side
-  set g : ℝ → ℝ := fun E' => (volume Ω).toReal * E' / (4 * π) +
-    ‖monodromy (Ws E') - 1‖ / (2 * π) with hg
+  set g : RealMap := fun E' => (volume Ω).toReal * E' / (4 * π) +
+    ‖monodromy (Ws E') - 1‖ / circlePeriod with hg
   -- nonresonant energies just below `E`
-  have hev1 : ∀ᶠ E' in 𝓝[<] E, E' ∈ Set.Ioo 0 E := Ioo_mem_nhdsLT hE
-  have hev2 : ∀ᶠ E' in 𝓝[<] E, ∀ j ∈ T, (neumannEigenvalue Ω j).toReal < E' :=
+  have hev1  := Ioo_mem_nhdsLT hE
+  have hev2  :=
     hT.eventually_all.mpr fun j hj => by
-      have hne : neumannEigenvalue Ω j ≠ ⊤ := ne_top_of_lt hj
-      have hlt : (neumannEigenvalue Ω j).toReal < E :=
+      have hne : neumannEigenvalueFixed j ≠ ⊤ := ne_top_of_lt hj
+      have hlt  :=
         (ENNReal.toReal_lt_toReal hne ENNReal.ofReal_ne_top).mpr hj |>.trans_le
           (by rw [ENNReal.toReal_ofReal hE.le])
       exact Ioo_mem_nhdsLT hlt |> Filter.mem_of_superset <| fun x hx => hx.1
   have hev : ∀ᶠ E' in 𝓝[<] E, g E' ≤ (N : ENNReal).toReal := by
     filter_upwards [hev1, hev2] with E' hE' hT'
-    have hlt : ENNReal.ofReal E' < ENNReal.ofReal E :=
+    have hlt  :=
       (ENNReal.ofReal_lt_ofReal_iff hE).mpr hE'.2
-    have hnr : ∀ j, neumannEigenvalue Ω j ≠ ENNReal.ofReal E' := by
+    have hnr : ∀ j, neumannEigenvalueFixed j ≠ ENNReal.ofReal E' := by
       intro j hj
       have hjT : j ∈ T := by
-        show neumannEigenvalue Ω j < _
-        rw [hj]; exact hlt
+        simp_all
       have := hT' j hjT
       rw [hj, ENNReal.toReal_ofReal hE'.1.le] at this
       exact lt_irrefl _ this
@@ -883,7 +828,7 @@ theorem smooth_count {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : IsSmooth
       constructor
       · intro h; exact h.trans hlt
       · intro h
-        have hne : neumannEigenvalue Ω j ≠ ⊤ := ne_top_of_lt h
+        have hne  := ne_top_of_lt h
         rw [← ENNReal.ofReal_toReal hne]
         exact (ENNReal.ofReal_lt_ofReal_iff hE'.1).mpr (hT' j h)
     have h := smooth_count_nonresonant hb hS hsc hγ E' hE'.1 hnr (Ws E') (hWs E')
@@ -892,40 +837,41 @@ theorem smooth_count {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : IsSmooth
   -- continuity of `g` at `E`
   have hcont : ContinuousAt g E := by
     have hm := (hasDerivAt_monodromy_energy hK hclosed hWs hE).continuousAt
-    exact ((continuous_const.mul continuous_id).div_const _).continuousAt.add
-      ((hm.sub continuousAt_const).norm.div_const _)
-  have hgE : g E ≤ (N : ENNReal).toReal :=
+    fun_prop
+  have hgE  :=
     le_of_tendsto (hcont.tendsto.mono_left nhdsWithin_le_nhds) hev
   rw [count_lhs_eq_ofReal hvol hE.le, ← hWE]
   exact (ENNReal.ofReal_le_iff_le_toReal hN').mpr hgE
 
 /-- Corollary 9.8 (quantitative smooth eigenvalue inequality): for a bounded smooth Jordan
 domain and `j ≥ 1`, `|Ω| μ_j + 2 ‖U_{μ_j} - I‖ ≤ 4π j`. -/
-theorem smooth_eigen {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : IsSmoothDomain Ω)
-    (hsc : SimplyConnectedSpace Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) (j : ℕ)
-    (hj : 1 ≤ j) (W : ℝ → Ell2 →L[ℂ] Ell2)
-    (hW : IsTransport γ (neumannEigenvalue Ω j).toReal W) :
-    volume Ω * neumannEigenvalue Ω j + ENNReal.ofReal (2 * ‖monodromy W - 1‖) ≤
+theorem smooth_eigen j
+    (hj : 1 ≤ j) W
+    (hW : IsTransport γ (neumannEigenvalueFixed j).toReal W) :
+    volume Ω * neumannEigenvalueFixed j + ENNReal.ofReal (2 * ‖monodromy W - 1‖) ≤
       ENNReal.ofReal (4 * π * j) := by
   have hL := hS.isLipschitzDomain
   have hfin := (neumannEigenvalue_lt_top hL j).ne
-  have hE : 0 < (neumannEigenvalue Ω j).toReal :=
+  have hE  :=
     ENNReal.toReal_pos (neumannEigenvalue_pos hb hL j hj).ne' hfin
   have h := smooth_count hb hS hsc hγ _ hE W hW
   rw [ENNReal.ofReal_toReal hfin] at h
-  have hc : ((neumannCount Ω (neumannEigenvalue Ω j) : ℕ∞) : ENNReal) ≤ (j : ENNReal) := by
+  have hc : ((neumannCount Ω (neumannEigenvalueFixed j) : ℕ∞) : ENNReal) ≤ (j : ENNReal) := by
     have := ENat.toENNReal_le.mpr
       (encard_lt_le_of_monotone _ (neumannEigenvalue_monotone Ω) j)
     simpa [neumannCount] using this
   have h2 := h.trans hc
   have h4 : ENNReal.ofReal (4 * π) ≠ 0 := by
-    simp only [ne_eq, ENNReal.ofReal_eq_zero, not_le]; positivity
+    positivity
   have h4' : ENNReal.ofReal (4 * π) ≠ ⊤ := ENNReal.ofReal_ne_top
   have h3 := mul_le_mul_left h2 (ENNReal.ofReal (4 * π))
   rw [add_mul, ENNReal.div_mul_cancel h4 h4', ← ENNReal.ofReal_mul (by positivity)] at h3
   convert h3 using 2
-  · congr 1; field_simp; ring
+  · field_simp; ring
   · rw [mul_comm (j : ENNReal), ← ENNReal.ofReal_natCast, ← ENNReal.ofReal_mul (by positivity)]
+
+end
+
 
 /-! ### Lipschitz domains (Section 10) -/
 
@@ -944,9 +890,9 @@ domain `Ω` with boundary parametrization `γ`:
   unit spheres of finite-dimensional subspaces of `H¹(Ω)` (Lemma 10.11), and along subsequences
   with convergent eigenvalues there are orthonormal limits of the eigenfunctions
   (the compactness part of Lemma 10.13). -/
-structure SmoothApproximation (Ω : Set ℂ) (γ : ℝ → ℂ) where
+structure SmoothApproximation (Ω : PlanarSet) (γ : ComplexCurve) where
   /-- The approximating smooth domains `Ω_n`. -/
-  dom : ℕ → Set ℂ
+  dom : ℕ → PlanarSet
   dom_bounded : ∀ n, Bornology.IsBounded (dom n)
   dom_smooth : ∀ n, IsSmoothDomain (dom n)
   dom_simplyConnected : ∀ n, SimplyConnectedSpace (dom n)
@@ -957,10 +903,10 @@ structure SmoothApproximation (Ω : Set ℂ) (γ : ℝ → ℂ) where
   curve : ℕ → ℝ → ℂ
   curveLip : ℕ → NNReal
   curve_lipschitz : ∀ n, LipschitzWith (curveLip n) (curve n)
-  curve_closed : ∀ n, curve n (2 * π) = curve n 0
-  curve_tendsto : TendstoUniformlyOn curve γ atTop (Set.Icc 0 (2 * π))
-  curve_length : ∃ B, ∀ n, ∫ θ in (0 : ℝ)..(2 * π), ‖deriv (curve n) θ‖ ≤ B
-  monodromy_eq : ∀ n (E : ℝ) (W W' : ℝ → Ell2 →L[ℂ] Ell2), IsTransport (curve n) E W →
+  curve_closed : ∀ n, curve n circlePeriod = curve n 0
+  curve_tendsto : TendstoUniformlyOn curve γ atTop boundaryInterval
+  curve_length : ∃ B, ∀ n, ∫ θ in (0 : ℝ)..circlePeriod, ‖deriv (curve n) θ‖ ≤ B
+  monodromy_eq : ∀ n (E : ℝ) (W W' : ℝ → ComplexEnd Ell2), IsTransport (curve n) E W →
     IsTransport (param n) E W' → monodromy W = monodromy W'
   /-- The densities `ρ_n = |det Df_n|`. -/
   density : ℕ → ℂ → ℝ
@@ -985,6 +931,10 @@ structure SmoothApproximation (Ω : Set ℂ) (γ : ℝ → ℂ) where
     ∃ u : Fin (j + 1) → L2 Ω, Orthonormal ℂ u ∧ ∀ a : Fin (j + 1) → ℂ,
       neumannEnergy Ω (∑ r, a r • u r) ≤ lam * ENNReal.ofReal (∑ r, ‖a r‖ ^ 2)
 
+section
+variable {Ω } (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω) (hsc : SimplyConnectedSpace Ω) {γ } (hγ : IsBoundaryParam Ω γ)
+include Ω hb hL hsc γ hγ
+
 /-- External theorem BZ, Definition 10.8 and Lemmas 10.9–10.11, 10.14 and the compactness part
 of Lemma 10.13: every bounded simply connected Lipschitz domain with a boundary parametrization
 admits a smooth approximation with the properties of `SmoothApproximation`.
@@ -994,22 +944,20 @@ Proved from the Ball–Zarnescu data (`exists_ballZarnescu`) and the pulled-back
 (`eventually_boundaryParam_ballZarnescu`, Lemma 10.3), the densities are `ρ_n = |det Df_n|`,
 bounded by the square of the bi-Lipschitz constant and equal to `1` off the collars, and
 `|Ω_n| = ∫_Ω ρ_n` by the change of variables formula (`volume_image_eq_lintegral`). -/
-theorem exists_smoothApproximation {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) (hsc : SimplyConnectedSpace Ω) {γ : ℝ → ℂ}
-    (hγ : IsBoundaryParam Ω γ) : Nonempty (SmoothApproximation Ω γ) := by
+theorem exists_smoothApproximation : Nonempty (SmoothApproximation Ω γ) := by
   obtain ⟨A⟩ := exists_ballZarnescu hb hL
   obtain ⟨formQ, hmin, hQ, hlim⟩ := exists_pullbackForms hb hL A
   obtain ⟨N, hN⟩ := eventually_atTop.mp (eventually_boundaryParam_ballZarnescu hb hL hγ A)
   choose γ' hγ' τ hτm hτL hτ0 hτ2 hτc using fun n => hN (n + N) (Nat.le_add_left N n)
   obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
-  have hΩo : IsOpen Ω := hL.1.1
+  have hΩo  := hL.1.1
   have hfr : ∀ θ, γ θ ∈ closure Ω := by
     intro θ
     have h1 : γ θ ∈ γ '' Set.Icc 0 (0 + 2 * π) := by
       rw [hγ.periodic.image_Icc Real.two_pi_pos]; exact Set.mem_range_self θ
     rw [zero_add, hγ.image] at h1
     exact frontier_subset_closure h1
-  have hcl : ∀ n, LipschitzWith (A.lip * Kγ) (A.map (n + N) ∘ γ) := fun n =>
+  have hcl  := fun n =>
     lipschitzOnWith_univ.mp ((A.lipschitz (n + N)).comp (hKγ.lipschitzOnWith (s := Set.univ))
       fun θ _ => hfr θ)
   have hmeas : ∀ n, AEStronglyMeasurable (fun w => |(fderiv ℝ (A.map (n + N)) w).det|)
@@ -1025,9 +973,9 @@ theorem exists_smoothApproximation {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     refine ae_restrict_of_forall_mem hΩo.measurableSet fun w hw => ?_
     refine tendsto_const_nhds.congr' ?_
     filter_upwards [(tendsto_add_atTop_nat N).eventually (A.collar_shrink w hw)] with n hn
-    have hloc : (A.map (n + N) : ℂ → ℂ) =ᶠ[𝓝 w] id :=
+    have hloc : (A.map (n + N) : PlaneMap) =ᶠ[𝓝 w] id :=
       Filter.mem_of_superset ((A.collar_closed _).isOpen_compl.mem_nhds hn)
-        fun x hx => A.eq_self _ x hx
+        (A.eq_self _)
     rw [hloc.fderiv_eq, fderiv_id, ContinuousLinearMap.det, ContinuousLinearMap.coe_id,
       LinearMap.det_id, abs_one]
   refine ⟨{
@@ -1041,12 +989,12 @@ theorem exists_smoothApproximation {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     curve := fun n => A.map (n + N) ∘ γ
     curveLip := fun _ => A.lip * Kγ
     curve_lipschitz := hcl
-    curve_closed := fun n => by simp [Function.comp, show γ (2 * π) = γ 0 by simpa using hγ.periodic 0]
+    curve_closed := fun n => by simp [Function.comp, show γ circlePeriod = γ 0 by simpa using hγ.periodic 0]
     curve_tendsto := ?_
     curve_length := ⟨2 * π * (A.lip * Kγ), fun n => ?_⟩
     monodromy_eq := fun n E W W' hW hW' => ?_
     density := fun n w => |(fderiv ℝ (A.map (n + N)) w).det|
-    densityBound := (A.lip : ℝ) ^ 2
+    densityBound := A.lip ^ 2
     density_aestronglyMeasurable := fun n => (hmeas n).restrict
     density_bound := fun n => (hbound n).mono fun w hw => by rwa [abs_abs]
     density_tendsto := hdt
@@ -1060,7 +1008,7 @@ theorem exists_smoothApproximation {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     limits := fun j φ hφ lam hlam h => hlim j (fun n => φ n + N)
       (fun a b hab => Nat.add_lt_add_right (hφ hab) N) lam hlam h }⟩
   case refine_1 =>
-    have h := (A.tendsto.comp γ).mono (fun θ _ => hfr θ : Set.Icc 0 (2 * π) ⊆ γ ⁻¹' closure Ω)
+    have h := (A.tendsto.comp γ).mono (fun θ _ => hfr θ : boundaryInterval ⊆ γ ⁻¹' closure Ω)
     exact fun u hu => (tendsto_add_atTop_nat N).eventually (h u hu)
   case refine_2 =>
     have h := intervalIntegral.norm_integral_le_of_norm_le_const (a := 0) (b := 2 * π)
@@ -1086,15 +1034,13 @@ theorem exists_smoothApproximation {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
 connected Lipschitz domain and every `j ≥ 1`, `|Ω| μ_j + 2 ‖U_γ(μ_j) - I‖ ≤ 4π j`.
 Proved, as in the paper, by applying Corollary 9.8 to the smooth approximations and passing to
 the limit with Lemmas 10.12–10.14. -/
-theorem lipschitz_quantitative {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) (hsc : SimplyConnectedSpace Ω) {γ : ℝ → ℂ}
-    (hγ : IsBoundaryParam Ω γ) (j : ℕ) (hj : 1 ≤ j) (W : ℝ → Ell2 →L[ℂ] Ell2)
+theorem lipschitz_quantitative j (hj : 1 ≤ j) W
     (hW : IsTransport γ (neumannEigenvalue Ω j).toReal W) :
     volume Ω * neumannEigenvalue Ω j + ENNReal.ofReal (2 * ‖monodromy W - 1‖) ≤
       ENNReal.ofReal (4 * π * j) := by
   obtain ⟨A⟩ := exists_smoothApproximation hb hL hsc hγ
   obtain ⟨K, hK⟩ := hγ.lipschitz
-  have hclosed : γ (2 * π) = γ 0 := by simpa using hγ.periodic 0
+  have hclosed : γ circlePeriod = γ 0 := by simpa using hγ.periodic 0
   -- transports of the approximating curves at the approximating eigenvalues
   choose Ws hWs using fun n => transport_exists_of_lipschitz (A.curve n) (A.curve_lipschitz n)
     (neumannEigenvalue (A.dom n) j).toReal
@@ -1119,31 +1065,39 @@ theorem lipschitz_quantitative {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
     A.curve_closed A.curve_tendsto A.curve_length hW hWs hsmooth hvolfin
     (neumannEigenvalue_lt_top hL j).ne hvol hμ
 
+end
+
+
+section
+variable (Ω ) (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω) (hsc : SimplyConnectedSpace Ω)
+include Ω hb hL hsc
+
 /-- **Theorem 10.16 (strict Neumann Pólya inequality).** For every bounded simply connected
 Lipschitz domain `Ω ⊂ ℝ²` and every integer `j ≥ 1`, `|Ω| μ_j(Ω) < 4π j`. -/
-theorem strict_neumann_polya (Ω : Set ℂ) (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) (hsc : SimplyConnectedSpace Ω) (j : ℕ) (hj : 1 ≤ j) :
+theorem strict_neumann_polya j (hj : 1 ≤ j) :
     volume Ω * neumannEigenvalue Ω j < ENNReal.ofReal (4 * π * j) := by
   have hfin := (neumannEigenvalue_lt_top hL j).ne
-  have hE : 0 < (neumannEigenvalue Ω j).toReal :=
+  have hE  :=
     ENNReal.toReal_pos (neumannEigenvalue_pos hb hL j hj).ne' hfin
   obtain ⟨γ, hγ⟩ := exists_boundaryParam hb hL hsc
   obtain ⟨W, hW, -⟩ := transport_exists_unique hγ (neumannEigenvalue Ω j).toReal
   have hq := lipschitz_quantitative hb hL hsc hγ j hj W hW
   have hU := norm_sub_one_pos (monodromy_ne_one hb hL hγ _ hE W hW)
   have hpos : ENNReal.ofReal (2 * ‖monodromy W - 1‖) ≠ 0 := by
-    simp only [ne_eq, ENNReal.ofReal_eq_zero, not_le]; positivity
+    positivity
   have hfin' : volume Ω * neumannEigenvalue Ω j ≠ ⊤ :=
     ENNReal.mul_ne_top hb.measure_lt_top.ne hfin
   exact lt_of_lt_of_le (ENNReal.lt_add_right hfin' hpos) hq
 
 /-- **Theorem 10.16, counting form.** For every bounded simply connected Lipschitz domain
 and every `E > 0`, `N_N(E) > |Ω| E / (4π)`. -/
-theorem strict_neumann_polya_count (Ω : Set ℂ) (hb : Bornology.IsBounded Ω)
-    (hL : IsLipschitzDomain Ω) (hsc : SimplyConnectedSpace Ω) (E : ℝ) (hE : 0 < E) :
+theorem strict_neumann_polya_count E (hE : 0 < E) :
     volume Ω * ENNReal.ofReal E / ENNReal.ofReal (4 * π) <
       (neumannCount Ω (ENNReal.ofReal E) : ENNReal) :=
   (eigen_iff_count hb hL).mp (strict_neumann_polya Ω hb hL hsc) E hE
+
+end
+
 
 end PolyaNeumann
 

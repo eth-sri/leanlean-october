@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.PlanarGeometry
+
 public import RequestProject.RiemannMappingSmoothCollar
 public import RequestProject.LocalConformalBoundaryParamSync
 public import RequestProject.LocalConformalSuppliedHerglotzBound
@@ -22,51 +24,48 @@ does not import `Main`, and its spectral restriction and multiplicity are the
 original ones.  This module is part of the verified dependency chain.
 -/
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
 
-noncomputable section
 
 namespace PolyaNeumann
 
 open Set Metric
-open scoped Real
 
 /-- The unchanged uniform Cayley rank estimate under the original bounded
 smooth simply-connected domain assumptions, using the independently proved
 nontriviality of the original boundary monodromy at the center energy. -/
 theorem uniform_cayley_rank_bound_of_original_smooth_domain
-    {Ω : Set ℂ} (hb : Bornology.IsBounded Ω) (hS : IsSmoothDomain Ω)
-    (hsc : SimplyConnectedSpace Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ)
-    (E₀ : ℝ) (hE₀ : 0 < E₀) (m : ℕ)
+     (hb : Bornology.IsBounded Ω) (hS : IsSmoothDomain Ω)
+    (hsc : SimplyConnectedSpace Ω)  (hγ : IsBoundaryParam Ω γ)
+    E₀ (hE₀ : 0 < E₀) (m : ℕ)
     (hm : {i | neumannEigenvalue Ω i = ENNReal.ofReal E₀}.encard = m)
     (hU₀ : monodromyAt γ E₀ ≠ 1) :
     ∃ A δ : ℝ, 0 < δ ∧ ∀ E, 0 < E → |E - E₀| < δ →
       (∀ j, neumannEigenvalue Ω j ≠ ENNReal.ofReal E) →
       CayleyRankBound (monodromyAt γ E) A m := by
   obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
-  let Ws : ℝ → ℝ → Ell2 →L[ℂ] Ell2 := fun E =>
+  let Ws  := fun E =>
     Classical.choose (transport_exists_of_lipschitz γ hKγ E)
-  have hWs : ∀ E, IsTransport γ E (Ws E) := fun E =>
+  have hWs  := fun E =>
     Classical.choose_spec (transport_exists_of_lipschitz γ hKγ E)
   have hU : monodromy (Ws E₀) ≠ 1 := by
-    simpa only [monodromyAt_eq hKγ (hWs E₀)] using hU₀
+    simpa  [monodromyAt_eq hKγ (hWs E₀)] using hU₀
   obtain ⟨t, ht, ε, hε, _hεE, hcut⟩ :=
     exists_boundary_origin_of_boundaryParam hγ hWs hE₀ hU
-  let γt : ℝ → ℂ := fun θ => γ (θ + t)
-  have hγt : IsBoundaryParam Ω γt := hγ.shift t
+  let γt  := fun θ => γ (θ + t)
+  have hγt  := hγ.shift t
 
   obtain ⟨R, C, K, F, e, hR, _hCpos, _hKpos, hFs, hhol, _hinj, himage,
     _hnz, hC, hK, he, hsource, hes, _hclosed, _hsphere⟩ :=
     exists_smoothConformal_coordinates Ω hb hS hsc
-  have hbF : Bornology.IsBounded (F '' ball (0 : ℂ) 1) := by
+  have hbF : Bornology.IsBounded (F '' unitDisk) := by
     rw [himage]
     exact hb
-  have hLF : IsLipschitzDomain (F '' ball (0 : ℂ) 1) := by
+  have hLF : IsLipschitzDomain (F '' unitDisk) := by
     rw [himage]
     exact hS.isLipschitzDomain
-  have hγtF : IsBoundaryParam (F '' ball (0 : ℂ) 1) γt := by
+  have hγtF : IsBoundaryParam (F '' unitDisk) γt := by
     rw [himage]
     exact hγt
   obtain ⟨φ, _hφ, c, L, himageφ, _hclosedφ, hFsφ, hbφ, hLφ, hholφ,
@@ -74,41 +73,41 @@ theorem uniform_cayley_rank_bound_of_original_smooth_domain
     hΓLip, _horigin⟩ :=
     exists_localConformal_original_boundary_coordinates hR F hFs hbF hLF hhol
       hC hK e he hsource hes hγtF
-  let τ : ℝ → ℝ :=
+  let τ  :=
     localConformalRotateTraceReparam (normalizedArcReparam (physicalCircleTrace F)) φ
-  let Γ : ℝ → ℂ := physicalCircleTrace (localConformalRotate F φ)
-  have hτ' : IsC1TraceReparam τ c := hτ
+  let Γ  := physicalCircleTrace (localConformalRotate F φ)
+  have hτ'  := hτ
   have hcomp : Γ = γt ∘ τ := by
     funext θ
     exact hcoord θ
-  let WΓ : ℝ → ℝ → Ell2 →L[ℂ] Ell2 := fun E =>
+  let WΓ  := fun E =>
     Classical.choose (transport_exists_of_lipschitz Γ hΓLip E)
-  have hWΓ : ∀ E, IsTransport Γ E (WΓ E) := fun E =>
+  have hWΓ  := fun E =>
     Classical.choose_spec (transport_exists_of_lipschitz Γ hΓLip E)
   obtain ⟨Kγt, hKγt⟩ := hγt.lipschitz
   obtain ⟨Wt, hWt⟩ := transport_exists_of_lipschitz γt hKγt E₀
-  have hcut_t : cutC (Wt (2 * π)) (basisVec 0) ≠ 0 :=
+  have hcut_t  :=
     hcut E₀ ⟨by linarith, by linarith⟩ Wt hWt
   obtain ⟨Kτ, hKτ⟩ := hτ'.lipschitz
   have hWΓcomp : IsTransport (γt ∘ τ) E₀ (WΓ E₀) := by
     rw [← hcomp]
     exact hWΓ E₀
-  have hmono : monodromy (WΓ E₀) = monodromy Wt :=
+  have hmono  :=
     monodromy_comp hKγt hτ'.monotone hKτ hτ'.zero hτ'.endpoint hWt hWΓcomp
-  have hcutΓ : cutC (WΓ E₀ (2 * π)) (basisVec 0) ≠ 0 := by
-    have hcut_eq : cutC (WΓ E₀ (2 * π)) (basisVec 0) =
-        cutC (Wt (2 * π)) (basisVec 0) := by
+  have hcutΓ : cutC (WΓ E₀ circlePeriod) (basisVec 0) ≠ 0 := by
+    have hcut_eq : cutC (WΓ E₀ circlePeriod) (basisVec 0) =
+        cutC (Wt circlePeriod) (basisVec 0) := by
       change monodromy (WΓ E₀) (basisVec 0) - basisVec 0 =
         monodromy Wt (basisVec 0) - basisVec 0
       rw [hmono]
     rw [hcut_eq]
     exact hcut_t
 
-  have himageφΩ : localConformalRotate F φ '' ball (0 : ℂ) 1 = Ω :=
+  have himageφΩ  :=
     himageφ.trans himage
-  have hmφ : {i | neumannEigenvalue (localConformalRotate F φ '' ball (0 : ℂ) 1) i =
+  have hmφ : {i | neumannEigenvalue (localConformalRotate F φ '' unitDisk) i =
       ENNReal.ofReal E₀}.encard = m := by
-    simpa only [himageφΩ] using hm
+    simpa  [himageφΩ] using hm
   obtain ⟨A, δ, _hA, hδ, hbound⟩ :=
     exists_localConformal_original_herglotz_boundary_bound_of_multiplicity
       hR (localConformalRotate F φ) hFsφ hbφ hLφ hholφ
@@ -120,11 +119,9 @@ theorem uniform_cayley_rank_bound_of_original_smooth_domain
   refine ⟨t, ht, A, δ, hδ, ?_⟩
   intro E hE hnear hnr W hW
   have hnrφ : ∀ j,
-      neumannEigenvalue (localConformalRotate F φ '' ball (0 : ℂ) 1) j ≠
+      neumannEigenvalue (localConformalRotate F φ '' unitDisk) j ≠
         ENNReal.ofReal E := by
-    simpa only [himageφΩ] using hnr
+    simpa  [himageφΩ] using hnr
   exact hbound E hE hnear hnrφ W hW
 
 end PolyaNeumann
-
-end

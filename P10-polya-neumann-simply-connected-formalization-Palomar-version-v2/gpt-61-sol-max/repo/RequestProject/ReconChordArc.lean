@@ -1,5 +1,9 @@
 module
 
+public import RequestProject.PlanarTypes
+
+public import RequestProject.PlanarGeometry
+
 public import RequestProject.ReconBasic
 public import RequestProject.BoundaryChart
 public import RequestProject.ArcLength
@@ -21,37 +25,28 @@ argument makes the estimate global.
 @[expose] public section
 
 open MeasureTheory Set Filter Metric Topology
-open scoped ComplexConjugate Real
+open scoped Real
 
 noncomputable section
 
 namespace PolyaNeumann
 
-variable {Ω : Set ℂ} {γ : ℝ → ℂ}
+variable {Ω : PlanarSet} {γ : ComplexCurve}
 
-lemma IsBoundaryParam.mem_frontier (hγ : IsBoundaryParam Ω γ) (s : ℝ) : γ s ∈ frontier Ω := by
-  have h2π : (0 : ℝ) < 2 * π := by positivity
-  have hm := toIcoMod_mem_Ico h2π 0 s
-  have he : γ (toIcoMod h2π 0 s) = γ s := by
-    rw [toIcoMod, hγ.periodic.sub_zsmul_eq]
-  rw [← he, ← hγ.image]
-  exact mem_image_of_mem γ (Ico_subset_Icc_self (by simpa using hm))
-
-lemma IsBoundaryParam.eq_of_eq (hγ : IsBoundaryParam Ω γ) {s s' : ℝ} (hss : |s - s'| < 2 * π)
+lemma IsBoundaryParam.eq_of_eq (hγ : IsBoundaryParam Ω γ)  (hss : |s - s'| < 2 * π)
     (he : γ s = γ s') : s = s' := by
   have h2π : (0 : ℝ) < 2 * π := by positivity
   have hm := toIcoMod_mem_Ico h2π 0 s
   have hm' := toIcoMod_mem_Ico h2π 0 s'
   have e1 : γ (toIcoMod h2π 0 s) = γ s := by rw [toIcoMod, hγ.periodic.sub_zsmul_eq]
   have e2 : γ (toIcoMod h2π 0 s') = γ s' := by rw [toIcoMod, hγ.periodic.sub_zsmul_eq]
-  have heq : toIcoMod h2π 0 s = toIcoMod h2π 0 s' :=
+  have heq  :=
     hγ.injOn (by simpa using hm) (by simpa using hm') (by rw [e1, e2, he])
   obtain ⟨n, hn⟩ := (toIcoMod_eq_toIcoMod h2π).mp heq
   rw [zsmul_eq_mul] at hn
   have hlt : |(n : ℝ)| < 1 := by
-    have : |(n : ℝ) * (2 * π)| < 2 * π := by rw [← hn, abs_sub_comm]; exact hss
-    rw [abs_mul, abs_of_pos h2π] at this
-    nlinarith
+    have : |(n : ℝ) * circlePeriod| < 2 * π := by rw [← hn, abs_sub_comm]; exact hss
+    simp_all
   have hn0 : n = 0 := by
     have : |n| < 1 := by exact_mod_cast hlt
     exact Int.abs_lt_one_iff.mp this
@@ -62,10 +57,10 @@ lemma IsBoundaryParam.eq_of_eq (hγ : IsBoundaryParam Ω γ) {s s' : ℝ} (hss :
 /-- **Lower bound in a cone.** If, on an interval, a constant-speed Lipschitz curve satisfies the
 cone condition `‖γ s - γ s'‖ ≤ L |Re(c(γ s - γ s'))|` and `Re(c γ)` is strictly increasing, then
 `Re(c γ)` grows at least at rate `c₀ / L`. -/
-lemma lower_bound_of_cone {Kγ : NNReal} (hK : LipschitzWith Kγ γ) {a b : ℝ} {c : ℂ} {L c0 : ℝ}
+lemma lower_bound_of_cone  (hK : LipschitzWith Kγ γ)   
     (hL : 0 < L) (hspeed : ∀ᵐ θ, ‖deriv γ θ‖ = c0)
     (hcone : ∀ s ∈ Ioo a b, ∀ s' ∈ Ioo a b, ‖γ s - γ s'‖ ≤ L * |(c * (γ s - γ s')).re|)
-    (hmono : StrictMonoOn (fun s => (c * γ s).re) (Ioo a b)) {s s' : ℝ} (hs : s ∈ Ioo a b)
+    (hmono : StrictMonoOn (fun s => (c * γ s).re) (Ioo a b))  (hs : s ∈ Ioo a b)
     (hs' : s' ∈ Ioo a b) (hss : s ≤ s') :
     c0 / L * (s' - s) ≤ (c * (γ s' - γ s)).re := by
   have hpt : ∀ u ∈ Ioo a b, ∀ v, HasDerivAt γ v u → ‖v‖ ≤ L * |(c * v).re| ∧ 0 ≤ (c * v).re := by
@@ -73,7 +68,7 @@ lemma lower_bound_of_cone {Kγ : NNReal} (hK : LipschitzWith Kγ γ) {a b : ℝ}
     have ht := hv.tendsto_slope_zero
     have hev : ∀ᶠ t in 𝓝[≠] (0 : ℝ), u + t ∈ Ioo a b := by
       have : Tendsto (fun t : ℝ => u + t) (𝓝 0) (𝓝 u) := by
-        simpa using (continuous_const_add u).tendsto (0 : ℝ)
+        simpa using (continuous_const_add u).tendsto 0
       exact nhdsWithin_le_nhds (this (isOpen_Ioo.mem_nhds hu))
     have hcre : Continuous fun v : ℂ => (c * v).re :=
       Complex.continuous_re.comp (continuous_const.mul continuous_id)
@@ -87,13 +82,12 @@ lemma lower_bound_of_cone {Kγ : NNReal} (hK : LipschitzWith Kγ γ) {a b : ℝ}
       linarith
     · refine (isClosed_le continuous_const hcre).mem_of_tendsto ht ?_
       filter_upwards [hev, self_mem_nhdsWithin] with t ht1 ht0
-      show 0 ≤ (c * (t⁻¹ • (γ (u + t) - γ u))).re
       rw [Complex.real_smul, mul_left_comm, Complex.re_ofReal_mul, mul_sub, Complex.sub_re]
-      rcases lt_or_gt_of_ne (show t ≠ 0 from ht0) with hneg | hpos
-      · have : (c * γ (u + t)).re < (c * γ u).re := hmono ht1 hu (by linarith)
+      rcases lt_or_gt_of_ne ht0 with hneg | hpos
+      · have  := hmono ht1 hu (by linarith)
         exact mul_nonneg_of_nonpos_of_nonpos (inv_nonpos.mpr hneg.le) (by linarith)
-      · have : (c * γ u).re < (c * γ (u + t)).re := hmono hu ht1 (by linarith)
-        exact mul_nonneg (inv_nonneg.mpr hpos.le) (by linarith)
+      · have  := hmono hu ht1 (by linarith)
+        positivity
   have hae : ∀ᵐ u, u ∈ Ioo a b → c0 / L ≤ (c * deriv γ u).re := by
     filter_upwards [hK.ae_differentiableAt, hspeed] with u hd hsp hu
     obtain ⟨h1, h2⟩ := hpt u hu _ hd.hasDerivAt
@@ -124,17 +118,17 @@ lemma lower_bound_of_cone {Kγ : NNReal} (hK : LipschitzWith Kγ γ) {a b : ℝ}
   refine intervalIntegral.integral_mono_ae_restrict hss intervalIntegrable_const hd ?_
   rw [EventuallyLE, ae_restrict_iff' measurableSet_Icc]
   filter_upwards [hae] with u hu hu'
-  exact hu ⟨by linarith [hs.1, hu'.1], by linarith [hs'.2, hu'.2]⟩
+  grind
 
 /-- **Local chord-arc estimate.** -/
-lemma local_chord_arc (hL : IsLipschitzDomain Ω) (hγ : IsBoundaryParam Ω γ) (θ₀ : ℝ) :
+lemma local_chord_arc (hL : IsLipschitzDomain Ω) (hγ : IsBoundaryParam Ω γ) θ₀ :
     ∃ ε > 0, ∃ c1 > 0, ∀ s ∈ Ioo (θ₀ - ε) (θ₀ + ε), ∀ s' ∈ Ioo (θ₀ - ε) (θ₀ + ε),
       c1 * |s - s'| ≤ ‖γ s - γ s'‖ := by
   obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
   obtain ⟨c0, hc0, hspeed⟩ := hγ.const_speed
-  have hΩo : IsOpen Ω := hL.1.1
+  have hΩo  := hL.1.1
   obtain ⟨c, r, h, K, f, hch⟩ := hL.exists_chart (hγ.mem_frontier θ₀)
-  have hc : ‖c‖ = 1 := hch.1
+  have hc  := hch.1
   have hbox : γ ⁻¹' chartBox (γ θ₀) c r h ∈ 𝓝 θ₀ :=
     hKγ.continuous.continuousAt.preimage_mem_nhds ((isOpen_chartBox _ _ _ _).mem_nhds
       ⟨by simp [hch.2.1], by simp [hch.2.2.1]⟩)
@@ -154,7 +148,7 @@ lemma local_chord_arc (hL : IsLipschitzDomain Ω) (hγ : IsBoundaryParam Ω γ) 
       simp only [mul_sub, Complex.sub_re]; ring
     rwa [e] at this
   have hdist : ∀ s ∈ U, ∀ s' ∈ U, |s - s'| < 2 * π := fun s hs s' hs' => by
-    rw [abs_lt]; constructor <;> linarith [hs.1, hs.2, hs'.1, hs'.2, Real.pi_pos]
+    grind
   have hinj : InjOn (fun s => (c * γ s).re) U := by
     intro s hs s' hs' he
     have hre : (c * (γ s - γ θ₀)).re = (c * (γ s' - γ θ₀)).re := by
@@ -190,19 +184,19 @@ lemma local_chord_arc (hL : IsLipschitzDomain Ω) (hγ : IsBoundaryParam Ω γ) 
       exact hm hs hs' hlt
 
 /-- The distance on the circle `ℝ / 2πℤ`, for parameters in `[0, 2π]`. -/
-def circDist (θ θ' : ℝ) : ℝ := min |θ - θ'| (2 * π - |θ - θ'|)
+def circDist θ θ'  := min |θ - θ'| (2 * π - |θ - θ'|)
 
 /-- **Chord-arc estimate.** The boundary parametrization is bi-Lipschitz from the circle onto
 `∂Ω`. -/
 theorem chord_arc (hL : IsLipschitzDomain Ω) (hγ : IsBoundaryParam Ω γ) :
-    ∃ c > 0, ∀ θ ∈ Icc 0 (2 * π), ∀ θ' ∈ Icc 0 (2 * π), c * circDist θ θ' ≤ ‖γ θ - γ θ'‖ := by
+    ∃ c > 0, ∀ θ ∈ boundaryInterval, ∀ θ' ∈ boundaryInterval, c * circDist θ θ' ≤ ‖γ θ - γ θ'‖ := by
   obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
   have h2π : (0 : ℝ) < 2 * π := by positivity
   choose ε hε c1 hc1 hloc using local_chord_arc hL hγ
   set U : ℝ → Set ℝ := fun θ₀ => Ioo (θ₀ - ε θ₀) (θ₀ + ε θ₀) with hUdef
-  obtain ⟨t, -, hcov⟩ := (isCompact_Icc (a := (0 : ℝ)) (b := 2 * π)).elim_nhds_subcover U
+  obtain ⟨t, -, hcov⟩ := (isCompact_Icc (a := 0) (b := 2 * π)).elim_nhds_subcover U
     (fun x _ => Ioo_mem_nhds (by linarith [hε x]) (by linarith [hε x]))
-  have hcov' : Icc (0 : ℝ) (2 * π) ⊆ ⋃ i : t, U i := by
+  have hcov' : boundaryInterval ⊆ ⋃ i : t, U i := by
     intro x hx
     obtain ⟨i, hi, hx⟩ := mem_iUnion₂.mp (hcov hx)
     exact mem_iUnion.mpr ⟨⟨i, hi⟩, hx⟩
@@ -214,61 +208,56 @@ theorem chord_arc (hL : IsLipschitzDomain Ω) (hγ : IsBoundaryParam Ω γ) :
   set cmin := t.inf' htne c1 with hcmin
   have hcmin0 : 0 < cmin := (Finset.lt_inf'_iff _).mpr fun i _ => hc1 i
   -- near pairs
-  have hnear : ∀ θ ∈ Icc (0 : ℝ) (2 * π), ∀ θ'', |θ - θ''| < δ →
+  have hnear : ∀ θ ∈ boundaryInterval, ∀ θ'', |θ - θ''| < δ →
       cmin * |θ - θ''| ≤ ‖γ θ - γ θ''‖ := by
     intro θ hθ θ'' hθ''
     obtain ⟨i, hi⟩ := hleb θ hθ
-    have h1 : θ ∈ U i := hi (mem_ball_self hδ)
-    have h2 : θ'' ∈ U i := hi (by rw [mem_ball, Real.dist_eq, abs_sub_comm]; exact hθ'')
+    have h1  := hi (mem_ball_self hδ)
+    have h2  := hi (by rw [mem_ball, Real.dist_eq, abs_sub_comm]; exact hθ'')
     exact (mul_le_mul_of_nonneg_right (Finset.inf'_le _ i.2) (abs_nonneg _)).trans
       (hloc i θ h1 θ'' h2)
   -- far pairs
   have hcd : Continuous fun q : ℝ × ℝ => circDist q.1 q.2 := by
     unfold circDist; fun_prop
-  set P := (Icc (0 : ℝ) (2 * π) ×ˢ Icc (0 : ℝ) (2 * π)) ∩ {q | δ ≤ circDist q.1 q.2} with hP
+  set P := (Icc 0 circlePeriod ×ˢ Icc 0 circlePeriod) ∩ {q | δ ≤ circDist q.1 q.2} with hP
   have hPc : IsCompact P :=
     (isCompact_Icc.prod isCompact_Icc).inter_right (isClosed_le continuous_const hcd)
   have hcg : Continuous fun q : ℝ × ℝ => ‖γ q.1 - γ q.2‖ := by
     have := hKγ.continuous; fun_prop
   obtain ⟨m, hm0, hm⟩ : ∃ m > 0, ∀ q ∈ P, m ≤ ‖γ q.1 - γ q.2‖ := by
     rcases P.eq_empty_or_nonempty with he | hne
-    · exact ⟨1, one_pos, fun q hq => by rw [he] at hq; exact hq.elim⟩
+    · grind
     obtain ⟨q, hq, hqmin⟩ := hPc.exists_isMinOn hne hcg.continuousOn
     refine ⟨‖γ q.1 - γ q.2‖, ?_, fun q' hq' => hqmin hq'⟩
     rcases (norm_nonneg (γ q.1 - γ q.2)).lt_or_eq with hpos | hzero
     · exact hpos
     exfalso
-    have he : γ q.1 = γ q.2 := sub_eq_zero.mp (norm_eq_zero.mp hzero.symm)
+    have he  := sub_eq_zero.mp (norm_eq_zero.mp hzero.symm)
     obtain ⟨⟨hq1, hq2⟩, hqδ⟩ := hq
     simp only [mem_setOf_eq, circDist] at hqδ
     have habs : |q.1 - q.2| ≤ 2 * π := by
-      rw [abs_le]; constructor <;> linarith [hq1.1, hq1.2, hq2.1, hq2.2]
+      grind
     rcases habs.lt_or_eq with hlt | heq
     · have := hγ.eq_of_eq hlt he
-      rw [this, sub_self, abs_zero] at hqδ
-      linarith [min_le_left (0 : ℝ) (2 * π - 0)]
-    · rw [heq, sub_self] at hqδ
-      linarith [min_le_right (2 * π) (0 : ℝ)]
-  refine ⟨min cmin (m / (2 * π)), lt_min hcmin0 (by positivity), fun θ hθ θ' hθ' => ?_⟩
+      grind
+    grind
+  refine ⟨min cmin (m / circlePeriod), lt_min hcmin0 (by positivity), fun θ hθ θ' hθ' => ?_⟩
   have hd0 : 0 ≤ circDist θ θ' := by
-    unfold circDist
-    refine le_min (abs_nonneg _) ?_
-    rw [sub_nonneg, abs_le]; constructor <;> linarith [hθ.1, hθ.2, hθ'.1, hθ'.2]
+    grind [circDist, PolyaNeumann.circDist]
   have hd2 : circDist θ θ' ≤ 2 * π := by
     unfold circDist
-    refine (min_le_left _ _).trans ?_
-    rw [abs_le]; constructor <;> linarith [hθ.1, hθ.2, hθ'.1, hθ'.2]
+    grind
   by_cases hfar : δ ≤ circDist θ θ'
-  · calc min cmin (m / (2 * π)) * circDist θ θ' ≤ m / (2 * π) * (2 * π) :=
+  · calc min cmin (m / circlePeriod) * circDist θ θ' ≤ m / circlePeriod * circlePeriod :=
           mul_le_mul (min_le_right _ _) hd2 hd0 (by positivity)
       _ = m := by field_simp
       _ ≤ ‖γ θ - γ θ'‖ := hm (θ, θ') ⟨⟨hθ, hθ'⟩, hfar⟩
   · push_neg at hfar
     unfold circDist at hfar ⊢
     rcases min_lt_iff.mp hfar with h1 | h1
-    · calc min cmin (m / (2 * π)) * min |θ - θ'| (2 * π - |θ - θ'|) ≤ cmin * |θ - θ'| :=
+    · calc min cmin (m / circlePeriod) * min |θ - θ'| (2 * π - |θ - θ'|) ≤ cmin * |θ - θ'| :=
             mul_le_mul (min_le_left _ _) (min_le_left _ _) (le_min (abs_nonneg _) (by
-              rw [sub_nonneg, abs_le]; constructor <;> linarith [hθ.1, hθ.2, hθ'.1, hθ'.2]))
+              grind))
               hcmin0.le
         _ ≤ ‖γ θ - γ θ'‖ := hnear θ hθ θ' h1
     · obtain ⟨θ'', hγeq, habs⟩ : ∃ θ'', γ θ'' = γ θ' ∧ |θ - θ''| = 2 * π - |θ - θ'| := by
@@ -281,41 +270,41 @@ theorem chord_arc (hL : IsLipschitzDomain Ω) (hγ : IsBoundaryParam Ω γ) :
           ring
       have := hnear θ hθ θ'' (by rw [habs]; exact h1)
       rw [hγeq, habs] at this
-      calc min cmin (m / (2 * π)) * min |θ - θ'| (2 * π - |θ - θ'|)
+      calc min cmin (m / circlePeriod) * min |θ - θ'| (2 * π - |θ - θ'|)
           ≤ cmin * (2 * π - |θ - θ'|) :=
             mul_le_mul (min_le_left _ _) (min_le_right _ _) (le_min (abs_nonneg _) (by
-              rw [sub_nonneg, abs_le]; constructor <;> linarith [hθ.1, hθ.2, hθ'.1, hθ'.2]))
+              grind))
               hcmin0.le
         _ ≤ ‖γ θ - γ θ'‖ := this
 
 /-- A closed Lipschitz function on `[0, 2π]` is Lipschitz for the circle distance. -/
-lemma norm_sub_le_circDist {h : ℝ → ℂ} {K : NNReal} (hK : LipschitzOnWith K h (Icc 0 (2 * π)))
-    (hper : h (2 * π) = h 0) {θ θ' : ℝ} (hθ : θ ∈ Icc 0 (2 * π)) (hθ' : θ' ∈ Icc 0 (2 * π)) :
+lemma norm_sub_le_circDist {h : ComplexCurve}  (hK : LipschitzOnWith K h boundaryInterval)
+    (hper : h circlePeriod = h 0)  (hθ : θ ∈ boundaryInterval) (hθ' : θ' ∈ boundaryInterval) :
     ‖h θ - h θ'‖ ≤ K * circDist θ θ' := by
   have h2π : (0 : ℝ) < 2 * π := by positivity
-  have hd : ∀ x ∈ Icc (0 : ℝ) (2 * π), ∀ y ∈ Icc (0 : ℝ) (2 * π), ‖h x - h y‖ ≤ K * |x - y| :=
+  have hd  :=
     fun x hx y hy => by
       have := hK.dist_le_mul x hx y hy
       rwa [dist_eq_norm, Real.dist_eq] at this
-  have h0 : (0 : ℝ) ∈ Icc (0 : ℝ) (2 * π) := ⟨le_rfl, h2π.le⟩
-  have h1 : 2 * π ∈ Icc (0 : ℝ) (2 * π) := ⟨h2π.le, le_rfl⟩
+  have h0 : (0 : ℝ) ∈ boundaryInterval := ⟨le_rfl, h2π.le⟩
+  have h1 : 2 * π ∈ boundaryInterval := ⟨h2π.le, le_rfl⟩
   unfold circDist
   rw [mul_min_of_nonneg _ _ (NNReal.coe_nonneg K)]
   refine le_min (hd θ hθ θ' hθ') ?_
   rcases le_total θ θ' with hle | hle
-  · have e : h θ - h θ' = (h θ - h 0) + (h (2 * π) - h θ') := by rw [hper]; ring
+  · have e : h θ - h θ' = (h θ - h 0) + (h circlePeriod - h θ') := by rw [hper]; ring
     rw [e]
     refine (norm_add_le _ _).trans ?_
     have a1 := hd θ hθ 0 h0
-    have a2 := hd (2 * π) h1 θ' hθ'
+    have a2 := hd circlePeriod h1 θ' hθ'
     rw [abs_of_nonpos (by linarith)]
     rw [sub_zero, abs_of_nonneg hθ.1] at a1
     rw [abs_of_nonneg (by linarith [hθ'.2])] at a2
     nlinarith
-  · have e : h θ - h θ' = (h θ - h (2 * π)) + (h 0 - h θ') := by rw [hper]; ring
+  · have e : h θ - h θ' = (h θ - h circlePeriod) + (h 0 - h θ') := by rw [hper]; ring
     rw [e]
     refine (norm_add_le _ _).trans ?_
-    have a1 := hd θ hθ (2 * π) h1
+    have a1 := hd θ hθ circlePeriod h1
     have a2 := hd 0 h0 θ' hθ'
     rw [abs_of_nonneg (by linarith)]
     rw [abs_of_nonpos (by linarith [hθ.2])] at a1
@@ -324,39 +313,37 @@ lemma norm_sub_le_circDist {h : ℝ → ℂ} {K : NNReal} (hK : LipschitzOnWith 
 
 /-- Every closed Lipschitz function on `[0, 2π]` is the trace along `γ` of a Lipschitz compactly
 supported function on `ℂ`. -/
-theorem exists_lipschitz_extension_of_trace {Ω : Set ℂ} (hL : IsLipschitzDomain Ω) {γ : ℝ → ℂ} (hγ : IsBoundaryParam Ω γ) {h : ℝ → ℂ}
-    {K : NNReal} (hK : LipschitzOnWith K h (Icc 0 (2 * π))) (hper : h (2 * π) = h 0) :
-    ∃ V : ℂ → ℂ, (∃ K' : NNReal, LipschitzWith K' V) ∧ HasCompactSupport V ∧
-      ∀ θ ∈ Icc 0 (2 * π), V (γ θ) = h θ := by
+theorem exists_lipschitz_extension_of_trace  (hL : IsLipschitzDomain Ω)  (hγ : IsBoundaryParam Ω γ) 
+     (hK : LipschitzOnWith K h boundaryInterval) (hper : h circlePeriod = h 0) :
+    ∃ V : PlaneMap, (∃ K' : NNReal, LipschitzWith K' V) ∧ HasCompactSupport V ∧
+      ∀ θ ∈ boundaryInterval, V (γ θ) = h θ := by
   classical
   obtain ⟨Kγ, hKγ⟩ := hγ.lipschitz
   obtain ⟨c, hc, hca⟩ := chord_arc hL hγ
-  have h2π : (0 : ℝ) < 2 * π := by positivity
-  set S : Set ℂ := γ '' Icc 0 (2 * π) with hS
+  set S : PlanarSet := γ '' boundaryInterval with hS
   have hSc : IsCompact S := isCompact_Icc.image hKγ.continuous
-  obtain ⟨R, hR⟩ := hSc.isBounded.subset_closedBall (0 : ℂ)
+  obtain ⟨R, hR⟩ := hSc.isBounded.subset_closedBall 0
   obtain ⟨Mh, hMh⟩ := isCompact_Icc.exists_bound_of_continuousOn hK.continuousOn
   -- `h` is Lipschitz with respect to the chord
   set Lc : ℝ := K / c with hLc
   have hLc0 : 0 ≤ Lc := by positivity
-  have hchord : ∀ θ ∈ Icc (0 : ℝ) (2 * π), ∀ θ' ∈ Icc (0 : ℝ) (2 * π),
+  have hchord : ∀ θ ∈ boundaryInterval, ∀ θ' ∈ boundaryInterval,
       ‖h θ - h θ'‖ ≤ Lc * ‖γ θ - γ θ'‖ := by
     intro θ hθ θ' hθ'
     refine (norm_sub_le_circDist hK hper hθ hθ').trans ?_
     have := hca θ hθ θ' hθ'
     rw [hLc, div_mul_eq_mul_div, le_div_iff₀ hc]
-    calc (K : ℝ) * circDist θ θ' * c = K * (c * circDist θ θ') := by ring
-      _ ≤ K * ‖γ θ - γ θ'‖ := by gcongr
+    nlinarith
   choose! θof hθof using fun p (hp : p ∈ S) => hp
-  have hval : ∀ θ ∈ Icc (0 : ℝ) (2 * π), h (θof (γ θ)) = h θ := by
+  have hval : ∀ θ ∈ boundaryInterval, h (θof (γ θ)) = h θ := by
     intro θ hθ
-    have hm : γ θ ∈ S := mem_image_of_mem γ hθ
+    have hm  := mem_image_of_mem γ hθ
     have := hchord _ (hθof _ hm).1 θ hθ
     rw [(hθof _ hm).2, sub_self, norm_zero, mul_zero] at this
     exact sub_eq_zero.mp (norm_le_zero_iff.mp this)
   -- the function on `S ∪ {‖z‖ ≥ R + 1}`
-  set T : Set ℂ := S ∪ {z | R + 1 ≤ ‖z‖} with hT
-  set V0 : ℂ → ℂ := fun z => if z ∈ S then h (θof z) else 0 with hV0
+  set T : PlanarSet := S ∪ {z | R + 1 ≤ ‖z‖} with hT
+  set V0 : PlaneMap := fun z => if z ∈ S then h (θof z) else 0 with hV0
   set L : ℝ := max Lc Mh with hL'
   have hL0 : 0 ≤ L := le_max_of_le_left hLc0
   have hfarS : ∀ z ∈ S, ∀ w : ℂ, R + 1 ≤ ‖w‖ → 1 ≤ ‖z - w‖ := by
@@ -368,9 +355,7 @@ theorem exists_lipschitz_extension_of_trace {Ω : Set ℂ} (hL : IsLipschitzDoma
   have hnotS : ∀ w : ℂ, R + 1 ≤ ‖w‖ → w ∉ S := fun w hw hwS => by
     have := hfarS w hwS w hw; simp at this; linarith
   have hV0S : ∀ z ∈ S, ‖V0 z‖ ≤ Mh := by
-    intro z hz
-    simp only [hV0, if_pos hz]
-    exact hMh _ (hθof z hz).1
+    grind
   have hV0lip : ∀ z ∈ T, ∀ w ∈ T, ‖V0 z - V0 w‖ ≤ L * ‖z - w‖ := by
     intro z hz w hw
     rcases hz with hzS | hzF <;> rcases hw with hwS | hwF

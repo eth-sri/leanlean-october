@@ -1,5 +1,9 @@
 module
 
+public import RequestProject.PlanarTypes
+
+public import RequestProject.PlanarGeometry
+
 public import RequestProject.Transport
 public import RequestProject.Unitarity
 
@@ -26,18 +30,14 @@ variable {A : Type*} [NormedRing A]
 variable {C : ℝ → A} {M L : ℝ} {W : ℝ → A}
 
 /-- The continuation of a solution over a second period. -/
-def volterraExt (W : ℝ → A) (L : ℝ) (θ : ℝ) : A :=
+def volterraExt (W : ℝ → A) L θ  :=
   if θ ≤ L then W θ else W (θ - L) * W L
 
-lemma volterraExt_of_le {θ : ℝ} (h : θ ≤ L) : volterraExt W L θ = W θ := if_pos h
+lemma volterraExt_of_le  (h : θ ≤ L) : volterraExt W L θ = W θ := if_pos h
 
-lemma volterraExt_of_ge (hW0 : W 0 = 1) {θ : ℝ} (h : L ≤ θ) :
+lemma volterraExt_of_ge (hW0 : W 0 = 1)  (h : L ≤ θ) :
     volterraExt W L θ = W (θ - L) * W L := by
-  unfold volterraExt
-  split_ifs with h'
-  · have : θ = L := le_antisymm h' h
-    subst this; simp [hW0]
-  · rfl
+  grind only [volterraExt]
 
 lemma volterraExt_continuousOn (hL : 0 ≤ L) (hW : ContinuousOn W (Icc 0 L)) (hW0 : W 0 = 1) :
     ContinuousOn (volterraExt W L) (Icc 0 (2 * L)) := by
@@ -49,21 +49,23 @@ lemma volterraExt_continuousOn (hL : 0 ≤ L) (hW : ContinuousOn W (Icc 0 L)) (h
       fun θ hθ => volterraExt_of_ge hW0 hθ.1
     refine ContinuousOn.mul ?_ continuousOn_const
     refine hW.comp (continuousOn_id.sub continuousOn_const) fun θ hθ => ?_
-    simp only [mem_Icc] at hθ ⊢
-    constructor <;> linarith [hθ.1, hθ.2]
+    grind
 
 variable [NormedAlgebra ℝ A] [CompleteSpace A]
 
 /-- Integrals commute with right multiplication by a constant. -/
-lemma intervalIntegral_mul_const_right {f : ℝ → A} {a b : ℝ}
+lemma intervalIntegral_mul_const_right  
     (hf : IntervalIntegrable f volume a b) (c : A) :
     ∫ s in a..b, f s * c = (∫ s in a..b, f s) * c :=
   ((ContinuousLinearMap.mul ℝ A).flip c).intervalIntegral_comp_comm hf
 
+section
+variable (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖C s‖ ≤ M) (hper : Function.Periodic C L)
+include hC hM hper
+
 /-- For a periodic coefficient, the continued solution solves the Volterra equation on two
 periods. -/
-theorem volterraExt_eq (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖C s‖ ≤ M)
-    (hper : Function.Periodic C L) (hL : 0 ≤ L) (hW : ContinuousOn W (Icc 0 L))
+theorem volterraExt_eq (hL : 0 ≤ L) (hW : ContinuousOn W (Icc 0 L))
     (eW : ∀ θ ∈ Icc 0 L, W θ = 1 + ∫ s in (0 : ℝ)..θ, C s * W s) :
     ∀ θ ∈ Icc 0 (2 * L), volterraExt W L θ = 1 + ∫ s in (0 : ℝ)..θ, C s * volterraExt W L s := by
   have hW0 : W 0 = 1 := by simpa using eW 0 ⟨le_rfl, hL⟩
@@ -73,11 +75,10 @@ theorem volterraExt_eq (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖C s�
     intro θ hθ
     refine intervalIntegral.integral_congr fun s hs => ?_
     rw [uIcc_of_le hθ.1] at hs
-    rw [volterraExt_of_le (hs.2.trans hθ.2)]
+    grind [volterraExt_of_le, PolyaNeumann.volterraExt]
   intro θ hθ
   rcases le_or_gt θ L with h | h
-  · rw [volterraExt_of_le h, hInt θ ⟨hθ.1, h⟩]
-    exact eW θ ⟨hθ.1, h⟩
+  · grind [volterraExt_of_le, PolyaNeumann.volterraExt]
   · have hLmem : L ∈ Icc 0 (2 * L) := ⟨hL, by linarith⟩
     have i1 := intervalIntegrable_mul_of_continuousOn hC hM hExt hLmem
     have i2 := intervalIntegrable_mul_of_continuousOn hC hM hExt hθ
@@ -102,26 +103,24 @@ theorem volterraExt_eq (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖C s�
 equation on `[0, L]` and `W'` solves the equation with the shifted coefficient
 `s ↦ C (s + t)`, `t ∈ [0, L]`, and `W(t)` has a right inverse `Winv`, then
 `W'(L) = W(t) W(L) Winv`. -/
-theorem volterra_basepoint (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖C s‖ ≤ M)
-    (hper : Function.Periodic C L) (hW : ContinuousOn W (Icc 0 L))
+theorem volterra_basepoint (hW : ContinuousOn W (Icc 0 L))
     (eW : ∀ θ ∈ Icc 0 L, W θ = 1 + ∫ s in (0 : ℝ)..θ, C s * W s)
-    {t : ℝ} (ht : t ∈ Icc 0 L) {Winv : A} (hinv : W t * Winv = 1) {W' : ℝ → A}
+     (ht : t ∈ Icc 0 L)  (hinv : W t * Winv = 1) 
     (hW' : ContinuousOn W' (Icc 0 L))
     (eW' : ∀ θ ∈ Icc 0 L, W' θ = 1 + ∫ s in (0 : ℝ)..θ, C (s + t) * W' s) :
     W' L = W t * W L * Winv := by
-  have hL : 0 ≤ L := ht.1.trans ht.2
+  have hL  := ht.1.trans ht.2
   have hW0 : W 0 = 1 := by simpa using eW 0 ⟨le_rfl, hL⟩
   have hXc := volterraExt_continuousOn hL hW hW0
   have eX := volterraExt_eq hC hM hper hL hW eW
-  have hCt : AEStronglyMeasurable (fun s => C (s + t)) volume :=
+  have hCt  :=
     hC.comp_measurePreserving (measurePreserving_add_right volume t)
-  have hMt : ∀ s, ‖C (s + t)‖ ≤ M := fun s => hM (s + t)
+  have hMt  := fun s => hM (s + t)
   set Z : ℝ → A := fun θ => volterraExt W L (θ + t) * Winv with hZ
   have hZc : ContinuousOn Z (Icc 0 L) := by
     refine ContinuousOn.mul ?_ continuousOn_const
     refine hXc.comp (continuousOn_id.add continuousOn_const) fun θ hθ => ?_
-    simp only [mem_Icc] at hθ ⊢
-    constructor <;> linarith [hθ.1, hθ.2, ht.1, ht.2]
+    grind
   have eZ : ∀ θ ∈ Icc 0 L, Z θ = 1 + ∫ s in (0 : ℝ)..θ, C (s + t) * Z s := by
     intro θ hθ
     have htm : t ∈ Icc 0 (2 * L) := ⟨ht.1, by linarith [ht.2]⟩
@@ -139,16 +138,16 @@ theorem volterra_basepoint (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖
     rw [e1, add_mul, hinv, ← intervalIntegral_mul_const_right i3]
     simp only [mul_assoc]
   have := volterra_unique hCt hMt L hW' hZc eW' eZ ⟨hL, le_rfl⟩
-  rw [this, hZ]
-  simp only
-  rw [volterraExt_of_ge hW0 (by linarith [ht.1]), show L + t - L = t by ring]
+  grind [volterraExt_of_ge]
+
+end
+
 
 /-! ### The boundary transport -/
 
-open scoped ComplexConjugate Real
 
 /-- The transport coefficient is skew-adjoint: `C_E(θ)^* = -C_E(θ)`. -/
-lemma transportCoeff_star (γ : ℝ → ℂ) (E θ : ℝ) :
+lemma transportCoeff_star γ E θ :
     star (transportCoeff γ E θ) = -transportCoeff γ E θ := by
   unfold transportCoeff
   rw [ContinuousLinearMap.star_eq_adjoint]
@@ -157,20 +156,16 @@ lemma transportCoeff_star (γ : ℝ → ℂ) (E θ : ℝ) :
       -(-(Complex.I * (Real.sqrt E : ℂ)) / 2) := by
     rw [map_div₀, map_neg, map_mul, Complex.conj_I, Complex.conj_ofReal, Complex.conj_ofNat]
     ring
-  rw [hc]
-  ext1 v
-  simp only [ContinuousLinearMap.smul_apply, ContinuousLinearMap.add_apply,
-    ContinuousLinearMap.neg_apply]
-  module
+  simp_all
 
 /-- Shifting the parameter of the curve shifts the transport coefficient. -/
-lemma transportCoeff_comp_add (γ : ℝ → ℂ) (E t s : ℝ) :
+lemma transportCoeff_comp_add γ E t s :
     transportCoeff (fun θ => γ (θ + t)) E s = transportCoeff γ E (s + t) := by
   unfold transportCoeff
   rw [deriv_comp_add_const]
 
 /-- The transport coefficient of a periodic curve is periodic. -/
-lemma transportCoeff_periodic {γ : ℝ → ℂ} {L : ℝ} (hper : Function.Periodic γ L) (E : ℝ) :
+lemma transportCoeff_periodic   (hper : Function.Periodic γ L) E :
     Function.Periodic (transportCoeff γ E) L := by
   intro s
   rw [← transportCoeff_comp_add]
@@ -178,22 +173,26 @@ lemma transportCoeff_periodic {γ : ℝ → ℂ} {L : ℝ} (hper : Function.Peri
   funext θ
   exact hper θ
 
+section
+variable {γ : ComplexCurve} {K } (hK : LipschitzWith K γ)
+include γ K hK
+
 /-- The values of the transport of a Lipschitz curve are unitary (Lemma 10.2). -/
-lemma transport_mul_adjoint {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ) {E : ℝ}
-    {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W) {t : ℝ} (ht : t ∈ Icc 0 (2 * π)) :
+lemma transport_mul_adjoint {E : ℝ}
+    {W : ℝ → ComplexEnd Ell2} (hW : IsTransport γ E W) {t : ℝ} (ht : t ∈ boundaryInterval) :
     W t * ContinuousLinearMap.adjoint (W t) = 1 := by
   have := (volterra_unitary (transportCoeff_aestronglyMeasurable γ E)
     (transportCoeff_norm_le γ E hK) (transportCoeff_star γ E) hW.1 hW.2 t ht).2
-  rwa [ContinuousLinearMap.star_eq_adjoint] at this
+  assumption
 
 /-- Lemma 10.3 (cyclic change of base point): if `W` is the transport of a periodic
 Lipschitz curve `γ` and `W'` is the transport of the same curve started at the parameter
 `t ∈ [0, L]`, then `V' = W(t) V W(t)^*`, where `V = W(L)`, `V' = W'(L)`. -/
-theorem transport_basepoint {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
-    (hper : Function.Periodic γ (2 * π)) {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2}
-    (hW : IsTransport γ E W) {t : ℝ} (ht : t ∈ Icc 0 (2 * π)) {W' : ℝ → Ell2 →L[ℂ] Ell2}
+theorem transport_basepoint
+    (hper : Function.Periodic γ circlePeriod) {E : ℝ} {W : ℝ → ComplexEnd Ell2}
+    (hW : IsTransport γ E W) {t : ℝ} (ht : t ∈ boundaryInterval) {W' : ℝ → ComplexEnd Ell2}
     (hW' : IsTransport (fun θ => γ (θ + t)) E W') :
-    W' (2 * π) = W t * W (2 * π) * ContinuousLinearMap.adjoint (W t) := by
+    W' circlePeriod = W t * W circlePeriod * ContinuousLinearMap.adjoint (W t) := by
   refine volterra_basepoint (transportCoeff_aestronglyMeasurable γ E)
     (transportCoeff_norm_le γ E hK) (transportCoeff_periodic hper E) hW.1 hW.2 ht
     (transport_mul_adjoint hK hW ht) hW'.1 fun θ hθ => ?_
@@ -202,15 +201,18 @@ theorem transport_basepoint {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith 
 
 /-- Lemma 10.3: a cyclic change of base point conjugates the monodromy by a unitary,
 `U' = W(t) U W(t)^*`. -/
-theorem monodromy_basepoint {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ)
-    (hper : Function.Periodic γ (2 * π)) {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2}
-    (hW : IsTransport γ E W) {t : ℝ} (ht : t ∈ Icc 0 (2 * π)) {W' : ℝ → Ell2 →L[ℂ] Ell2}
+theorem monodromy_basepoint
+    (hper : Function.Periodic γ circlePeriod) {E : ℝ} {W : ℝ → ComplexEnd Ell2}
+    (hW : IsTransport γ E W) {t : ℝ} (ht : t ∈ boundaryInterval) {W' : ℝ → ComplexEnd Ell2}
     (hW' : IsTransport (fun θ => γ (θ + t)) E W') :
     monodromy W' = W t * monodromy W * ContinuousLinearMap.adjoint (W t) := by
   unfold monodromy
   rw [transport_basepoint hK hper hW ht hW', ← ContinuousLinearMap.star_eq_adjoint,
     ← ContinuousLinearMap.star_eq_adjoint, ← ContinuousLinearMap.star_eq_adjoint,
     star_mul, star_mul, star_star, mul_assoc]
+
+end
+
 
 end PolyaNeumann
 

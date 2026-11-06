@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.PlanarTypes
+
 public import Mathlib.Analysis.Complex.RealDeriv
 public import Mathlib.Analysis.InnerProductSpace.Calculus
 public import Mathlib.Analysis.ODE.Gronwall
@@ -30,26 +32,26 @@ noncomputable section
 namespace PolyaNeumann
 
 /-- Uniqueness for a second-order linear ODE with bounded coefficients. -/
-theorem ode2_unique {a b : ℝ} {p q : ℝ → ℂ} {P Q : ℝ} (hp : ∀ r ∈ Ioo a b, ‖p r‖ ≤ P)
-    (hq : ∀ r ∈ Ioo a b, ‖q r‖ ≤ Q) {y y' : ℝ → ℂ}
+theorem ode2_unique  {p q : ComplexCurve}  (hp : ∀ r ∈ Ioo a b, ‖p r‖ ≤ P)
+    (hq : ∀ r ∈ Ioo a b, ‖q r‖ ≤ Q) 
     (hy : ∀ r ∈ Ioo a b, HasDerivAt y (y' r) r)
-    (hy' : ∀ r ∈ Ioo a b, HasDerivAt y' (-(p r * y' r) - q r * y r) r) {r₀ : ℝ}
+    (hy' : ∀ r ∈ Ioo a b, HasDerivAt y' (-(p r * y' r) - q r * y r) r) 
     (hr₀ : r₀ ∈ Ioo a b) (h0 : y r₀ = 0) (h1 : y' r₀ = 0) : ∀ r ∈ Ioo a b, y r = 0 := by
   set V : ℝ → ℂ × ℂ → ℂ × ℂ := fun r z => (z.2, -(p r * z.2) - q r * z.1)
   set K : ℝ≥0 := ⟨1 + |P| + |Q|, by positivity⟩
   have hV : ∀ r ∈ Ioo a b, LipschitzOnWith K (V r) univ := by
     intro r hr
     refine (LipschitzWith.of_dist_le_mul fun z w => ?_).lipschitzOnWith
-    have hP : ‖p r‖ ≤ |P| := (hp r hr).trans (le_abs_self _)
-    have hQ : ‖q r‖ ≤ |Q| := (hq r hr).trans (le_abs_self _)
+    have hP  := (hp r hr).trans (le_abs_self _)
+    have hQ  := (hq r hr).trans (le_abs_self _)
     rw [dist_eq_norm, dist_eq_norm]
     have e : V r z - V r w = (z.2 - w.2, -(p r * (z.2 - w.2)) - q r * (z.1 - w.1)) := by
-      simp only [V, Prod.mk_sub_mk]; congr 1; ring
+      ext <;> simp_all <;> ring
     rw [e, Prod.norm_def]
     have h1 : ‖z.1 - w.1‖ ≤ ‖z - w‖ := by
-      rw [← Prod.fst_sub]; exact norm_fst_le _
+      bound
     have h2 : ‖z.2 - w.2‖ ≤ ‖z - w‖ := by
-      rw [← Prod.snd_sub]; exact norm_snd_le _
+      measurability
     have hn : 0 ≤ ‖z - w‖ := norm_nonneg _
     rw [show (K : ℝ) = 1 + |P| + |Q| from rfl]
     refine max_le ?_ ?_
@@ -64,13 +66,10 @@ theorem ode2_unique {a b : ℝ} {p q : ℝ → ℂ} {P Q : ℝ} (hp : ∀ r ∈ 
     (fun r hr => ⟨(hy r hr).prodMk (hy' r hr), mem_univ _⟩)
     (fun r hr => ⟨by convert hasDerivAt_const (𝕜 := ℝ) r ((0 : ℂ), (0 : ℂ)) using 1; simp [V], mem_univ _⟩)
     (by simp [h0, h1])
-  intro r hr
-  have := heq hr
-  simp only [Prod.mk.injEq] at this
-  exact this.1
+  grind
 
 /-- The decay iteration of the Rellich argument. -/
-lemma decay_iter {W N f : ℝ → ℝ} {r1 B E c : ℝ} (hE : 0 < E) (hB0 : 0 ≤ B) (hr1 : 0 < r1)
+lemma decay_iter {W N f : RealMap}  (hE : 0 < E) (hB0 : 0 ≤ B) (hr1 : 0 < r1)
     (hWB : ∀ s, r1 ≤ s → W s ≤ B) (hNW : ∀ s, r1 ≤ s → N s ≤ 2 / E * W s)
     (hf : ∀ t, r1 ≤ t → ‖f t‖ ≤ 2 * |c| / t ^ 3 * N t) (hfi : IntegrableOn f (Ioi r1))
     (htail : ∀ s, r1 ≤ s → W s ≤ ∫ t in Ioi s, ‖f t‖)
@@ -81,33 +80,30 @@ lemma decay_iter {W N f : ℝ → ℝ} {r1 B E c : ℝ} (hE : 0 < E) (hB0 : 0 �
   | zero => intro s hs; simpa using hWB s hs
   | succ k ih =>
     intro s hs
-    have hs0 : 0 < s := lt_of_lt_of_le hr1 hs
+    have hs0  := lt_of_lt_of_le hr1 hs
     set K : ℝ := 4 * |c| * B / (E * 2 ^ k) with hKdef
-    have hK0 : 0 ≤ K := by positivity
     have hbound : ∀ t ∈ Ioi s, ‖f t‖ ≤ K * t ^ (-3 : ℝ) := fun t ht => by
-      have ht1 : r1 ≤ t := hs.trans (le_of_lt ht)
-      have ht0 : 0 < t := hs0.trans ht
-      have h2 : N t ≤ 2 / E * (B / 2 ^ k) :=
+      have ht1  := hs.trans (le_of_lt ht)
+      have ht0  := hs0.trans ht
+      have h2  :=
         (hNW t ht1).trans (mul_le_mul_of_nonneg_left (ih t ht1) (by positivity))
       have h3 : t ^ (-3 : ℝ) = (t ^ 3)⁻¹ := by
-        rw [show (-3 : ℝ) = -((3 : ℕ) : ℝ) by norm_num, Real.rpow_neg ht0.le, Real.rpow_natCast]
+        norm_num
       rw [h3]
       calc ‖f t‖ ≤ 2 * |c| / t ^ 3 * N t := hf t ht1
         _ ≤ 2 * |c| / t ^ 3 * (2 / E * (B / 2 ^ k)) :=
             mul_le_mul_of_nonneg_left h2 (by positivity)
-        _ = K * (t ^ 3)⁻¹ := by rw [hKdef]; field_simp; ring
+        _ = K * (t ^ 3)⁻¹ := by rw [hKdef]; ring
     have hint_s : IntegrableOn (fun t => K * t ^ (-3 : ℝ)) (Ioi s) :=
       (integrableOn_Ioi_rpow_of_lt (by norm_num) hs0).const_mul K
     have hI : ∫ t in Ioi s, K * t ^ (-3 : ℝ) = K * (s ^ (-2 : ℝ) / 2) := by
       rw [integral_const_mul, integral_Ioi_rpow_of_lt (by norm_num) hs0]
-      congr 1
       norm_num
-    have h5 : ∫ t in Ioi s, ‖f t‖ ≤ ∫ t in Ioi s, K * t ^ (-3 : ℝ) :=
+    have h5  :=
       setIntegral_mono_on (hfi.mono_set (Ioi_subset_Ioi hs)).norm hint_s measurableSet_Ioi hbound
     have hs2 : s ^ (-2 : ℝ) = (s ^ 2)⁻¹ := by
-      rw [show (-2 : ℝ) = -((2 : ℕ) : ℝ) by norm_num, Real.rpow_neg hs0.le, Real.rpow_natCast]
-    have hsq : 0 < s ^ 2 := by positivity
-    have hle1 : 4 * |c| / (E * s ^ 2) ≤ 1 := (div_le_one (by positivity)).mpr (hcs s hs)
+      bound
+    have hle1  := (div_le_one (by positivity)).mpr (hcs s hs)
     have h6 : K * (s ^ (-2 : ℝ) / 2) ≤ B / 2 ^ (k + 1) := by
       have e : K * (s ^ (-2 : ℝ) / 2) = 4 * |c| / (E * s ^ 2) * (B / 2 ^ (k + 1)) := by
         rw [hs2, hKdef]; field_simp; ring
@@ -115,19 +111,23 @@ lemma decay_iter {W N f : ℝ → ℝ} {r1 B E c : ℝ} (hE : 0 < E) (hB0 : 0 �
       exact mul_le_of_le_one_left (by positivity) hle1
     linarith [htail s hs]
 
+section
+variable {E c R : ℝ} (hE : 0 < E) (hR : 0 < R)
+include E c R hE hR
+
 /-- A Rellich-type lemma: a solution of `w'' + (E - c/r²) w = 0` on `(R, ∞)` (`E > 0`, `R > 0`)
 which is square integrable at infinity vanishes identically. -/
-theorem ode_rellich {E c R : ℝ} (hE : 0 < E) (hR : 0 < R) {w w' : ℝ → ℂ}
+theorem ode_rellich 
     (hw : ∀ r ∈ Ioi R, HasDerivAt w (w' r) r)
     (hw' : ∀ r ∈ Ioi R, HasDerivAt w' (-(((E - c / r ^ 2 : ℝ) : ℂ) * w r)) r)
     (hint : IntegrableOn (fun r => ‖w r‖ ^ 2) (Ioi R)) : ∀ r ∈ Ioi R, w r = 0 := by
-  set q : ℝ → ℝ := fun r => E - c / r ^ 2 with hqdef
-  set q' : ℝ → ℝ := fun r => 2 * c / r ^ 3 with hq'def
-  set N : ℝ → ℝ := fun r => ‖w r‖ ^ 2 with hNdef
-  set D : ℝ → ℝ := fun r => ‖w' r‖ ^ 2 with hDdef
-  set W : ℝ → ℝ := fun r => D r + q r * N r with hWdef
-  set P : ℝ → ℝ := fun r => inner ℝ (w r) (w' r) with hPdef
-  set f : ℝ → ℝ := fun r => q' r * N r with hfdef
+  set q : RealMap := fun r => E - c / r ^ 2 with hqdef
+  set q' : RealMap := fun r => 2 * c / r ^ 3 with hq'def
+  set N : RealMap := fun r => ‖w r‖ ^ 2 with hNdef
+  set D : RealMap := fun r => ‖w' r‖ ^ 2 with hDdef
+  set W : RealMap := fun r => D r + q r * N r with hWdef
+  set P : RealMap := fun r => inner ℝ (w r) (w' r) with hPdef
+  set f : RealMap := fun r => q' r * N r with hfdef
   set r1 : ℝ := R + 1 + 4 * |c| / E with hr1def
   have hc4 : 0 ≤ 4 * |c| / E := by positivity
   have hr1R : R < r1 := by linarith
@@ -146,11 +146,11 @@ theorem ode_rellich {E c R : ℝ} (hE : 0 < E) (hR : 0 < R) {w w' : ℝ → ℂ}
     convert h' using 1
     · funext t; simp only [hqdef, Pi.inv_apply]; ring
     · simp only [hq'def]; field_simp; ring
-  have hN_d : ∀ r ∈ Ioi R, HasDerivAt N (2 * P r) r := fun r hr => (hw r hr).norm_sq
+  have hN_d  := fun r hr => (hw r hr).norm_sq
   have hD_d : ∀ r ∈ Ioi R, HasDerivAt D (-(2 * q r * P r)) r := fun r hr => by
     have h := (hw' r hr).norm_sq
     convert h using 1
-    rw [show (-(((E - c / r ^ 2 : ℝ) : ℂ) * w r)) = (-(q r)) • w r by
+    rw [show (-(((E - c / r ^ 2 : ℝ)) * w r)) = (-(q r)) • w r by
       rw [Complex.real_smul]; simp only [hqdef]; push_cast; ring, real_inner_smul_right,
       real_inner_comm]
     ring
@@ -161,7 +161,7 @@ theorem ode_rellich {E c R : ℝ} (hE : 0 < E) (hR : 0 < R) {w w' : ℝ → ℂ}
   have hP_d : ∀ r ∈ Ioi R, HasDerivAt P (D r - q r * N r) r := fun r hr => by
     have h := (hw r hr).inner ℝ (hw' r hr)
     convert h using 1
-    rw [show (-(((E - c / r ^ 2 : ℝ) : ℂ) * w r)) = (-(q r)) • w r by
+    rw [show (-(((E - c / r ^ 2 : ℝ)) * w r)) = (-(q r)) • w r by
       rw [Complex.real_smul]; simp only [hqdef]; push_cast; ring, real_inner_smul_right,
       real_inner_self_eq_norm_sq, real_inner_self_eq_norm_sq]
     simp only [hDdef, hNdef]; ring
@@ -171,9 +171,9 @@ theorem ode_rellich {E c R : ℝ} (hE : 0 < E) (hR : 0 < R) {w w' : ℝ → ℂ}
   have hqc : ContinuousOn q (Ioi R) := fun r hr =>
     (hq_d r (hR.trans hr)).continuousAt.continuousWithinAt
   have hq'c : ContinuousOn q' (Ioi R) := fun r hr => by
-    have : r ≠ 0 := (hR.trans hr).ne'
+    have := (hR.trans hr).ne'
     exact (continuousAt_const.div (continuousAt_id.pow 3) (pow_ne_zero 3 this)).continuousWithinAt
-  have hfc : ContinuousOn f (Ioi R) := hq'c.mul hNc
+  have hfc := hq'c.mul hNc
   -- pointwise bounds on `[r1, ∞)`
   have hq_lo : ∀ r, r1 ≤ r → E / 2 ≤ q r := fun r hr => by
     have h := hcs r hr
@@ -199,14 +199,14 @@ theorem ode_rellich {E c R : ℝ} (hE : 0 < E) (hR : 0 < R) {w w' : ℝ → ℂ}
     rw [div_mul_eq_mul_div, le_div_iff₀ hE]
     simp only [hWdef]; nlinarith
   have hf_le : ∀ r, r1 ≤ r → ‖f r‖ ≤ 2 * |c| * N r := fun r hr => by
-    have hr' : 1 ≤ r := hr1.trans hr
+    have hr' := hr1.trans hr
     have h3 : 1 ≤ r ^ 3 := one_le_pow₀ hr'
     simp only [hfdef, hq'def, Real.norm_eq_abs, abs_mul, abs_div, abs_of_nonneg (hN0 r),
       abs_of_pos (by positivity : (0 : ℝ) < r ^ 3), abs_two]
     have : 2 * |c| / r ^ 3 ≤ 2 * |c| := div_le_self (by positivity) h3
-    exact mul_le_mul_of_nonneg_right this (hN0 r)
+    gcongr
   -- integrability on `(r1, ∞)`
-  have hNi : IntegrableOn N (Ioi r1) := hint.mono_set (Ioi_subset_Ioi hr1R.le)
+  have hNi := hint.mono_set (Ioi_subset_Ioi hr1R.le)
   have hfi : IntegrableOn f (Ioi r1) := by
     refine (hNi.const_mul (2 * |c|)).mono' ((hfc.mono (Ioi_subset_Ioi hr1R.le)).aestronglyMeasurable
       measurableSet_Ioi) ?_
@@ -223,11 +223,10 @@ theorem ode_rellich {E c R : ℝ} (hE : 0 < E) (hR : 0 < R) {w w' : ℝ → ℂ}
   set B : ℝ := W r1 + ∫ t in Ioi r1, ‖f t‖ with hBdef
   have hB0 : 0 ≤ B := by
     have := hW0 r1 le_rfl
-    have : 0 ≤ ∫ t in Ioi r1, ‖f t‖ := integral_nonneg fun _ => norm_nonneg _
-    linarith
+    positivity
   have hWB : ∀ r, r1 ≤ r → W r ≤ B := fun r hr => by
     rw [hW_ftc r hr, hBdef]
-    have h1 : ∫ t in r1..r, f t ≤ ∫ t in r1..r, ‖f t‖ :=
+    have h1 :=
       intervalIntegral.integral_mono_on hr
         ((intervalIntegrable_iff_integrableOn_Ioc_of_le hr).mpr (hfi.mono_set Ioc_subset_Ioi_self))
         ((intervalIntegrable_iff_integrableOn_Ioc_of_le hr).mpr
@@ -248,7 +247,7 @@ theorem ode_rellich {E c R : ℝ} (hE : 0 < E) (hR : 0 < R) {w w' : ℝ → ℂ}
     have h1 : |P r| ≤ ‖w r‖ * ‖w' r‖ := abs_real_inner_le_norm _ _
     have h2 : ‖w r‖ * ‖w' r‖ ≤ N r + D r := by
       simp only [hNdef, hDdef]
-      nlinarith [sq_nonneg (‖w r‖ - ‖w' r‖), norm_nonneg (w r), norm_nonneg (w' r)]
+      nlinarith
     have h3 := hNW r hr
     have h4 := hDW r hr
     have h5 := hWB r hr
@@ -271,7 +270,7 @@ theorem ode_rellich {E c R : ℝ} (hE : 0 < E) (hR : 0 < R) {w w' : ℝ → ℂ}
       have hsub : ∀ t ∈ Icc r1 b, t ∈ Ioi R := fun t ht => hmem t ht.1
       have hiD := (hDc.mono hsub).intervalIntegrable_of_Icc (μ := volume) hb
       have hiqN := ((hqc.mul hNc).mono hsub).intervalIntegrable_of_Icc (μ := volume) hb
-      have hP_ftc : ∫ t in r1..b, (D t - q t * N t) = P b - P r1 :=
+      have hP_ftc :=
         intervalIntegral.integral_eq_sub_of_hasDerivAt
           (fun x hx => hP_d x (hsub x (by rwa [uIcc_of_le hb] at hx))) (hiD.sub hiqN)
       have e1 : ∫ t in r1..b, ‖D t‖ = ∫ t in r1..b, D t := by
@@ -292,8 +291,7 @@ theorem ode_rellich {E c R : ℝ} (hE : 0 < E) (hR : 0 < R) {w w' : ℝ → ℂ}
                 (Eventually.of_forall Ioc_subset_Ioi_self)
       have h4 := abs_le.mp (hPB b hb)
       have h5 := abs_le.mp (hPB r1 le_rfl)
-      rw [e1, e2]
-      linarith [h4.1, h4.2, h5.1, h5.2]
+      linarith
   have hWi : IntegrableOn W (Ioi r1) := by
     have h2 : IntegrableOn (fun r => q r * N r) (Ioi r1) := by
       refine (hNi.const_mul (2 * E)).mono'
@@ -310,10 +308,10 @@ theorem ode_rellich {E c R : ℝ} (hE : 0 < E) (hR : 0 < R) {w w' : ℝ → ℂ}
     filter_upwards [eventually_ge_atTop r1] with r hr
     rw [hW_ftc r hr]; rfl
   have hL0 : L = 0 := by
-    have hLnn : 0 ≤ L := ge_of_tendsto hWlim (by
+    have hLnn := ge_of_tendsto hWlim (by
       filter_upwards [eventually_ge_atTop r1] with r hr using hW0 r hr)
     by_contra hne
-    have hLpos : 0 < L := lt_of_le_of_ne hLnn (Ne.symm hne)
+    have hLpos := lt_of_le_of_ne hLnn (Ne.symm hne)
     obtain ⟨r2, hr2⟩ := eventually_atTop.mp (hWlim.eventually (lt_mem_nhds (half_lt_self hLpos)))
     set r3 := max r1 r2
     have hc : IntegrableOn (fun _ : ℝ => L / 2) (Ioi r3) := by
@@ -331,12 +329,10 @@ theorem ode_rellich {E c R : ℝ} (hE : 0 < E) (hR : 0 < R) {w w' : ℝ → ℂ}
         measurableSet_Ioi (hfi.mono_set Ioc_subset_Ioi_self) (hfi.mono_set (Ioi_subset_Ioi hr)),
         Ioc_union_Ioi_eq_Ioi hr]
     have := hW_ftc r hr
-    have h0 : L = 0 := hL0
-    rw [hLdef, hsplit] at h0
     linarith
   -- iteration: `W ≤ B / 2^k`
   have hiter := decay_iter hE hB0 hr1pos hWB hNW (fun t ht => by
-      have ht0 : 0 < t := lt_of_lt_of_le hr1pos ht
+      have ht0 := lt_of_lt_of_le hr1pos ht
       simp only [hfdef, hq'def, Real.norm_eq_abs, abs_mul, abs_div, abs_of_nonneg (hN0 t),
         abs_of_pos (pow_pos ht0 3), abs_two]
       exact le_rfl) hfi
@@ -344,14 +340,14 @@ theorem ode_rellich {E c R : ℝ} (hE : 0 < E) (hR : 0 < R) {w w' : ℝ → ℂ}
       rw [hW_tail s hs]
       exact (neg_le_abs _).trans (by rw [← Real.norm_eq_abs]; exact norm_integral_le_integral_norm _))
     hcs
-  have hW_zero : ∀ s, r1 ≤ s → W s = 0 := fun s hs => by
+  have hW_zero := fun s hs => by
     have hlim : Tendsto (fun k : ℕ => B / 2 ^ k) atTop (𝓝 0) :=
       tendsto_const_nhds.div_atTop (tendsto_pow_atTop_atTop_of_one_lt one_lt_two)
     exact le_antisymm (ge_of_tendsto' hlim fun k => hiter k s hs) (hW0 s hs)
   -- the initial data at `r1` vanish
   have h0 := hW_zero r1 le_rfl
   have hq1 := hq_lo r1 le_rfl
-  have h0' : D r1 + q r1 * N r1 = 0 := h0
+  have h0' := h0
   have hqN : 0 ≤ q r1 * N r1 := mul_nonneg (by linarith) (hN0 r1)
   have hD1 : D r1 = 0 := by linarith [hD0 r1]
   have hN1 : N r1 = 0 := by
@@ -365,54 +361,48 @@ theorem ode_rellich {E c R : ℝ} (hE : 0 < E) (hR : 0 < R) {w w' : ℝ → ℂ}
     simpa [hDdef] using hD1
   -- uniqueness
   intro r hr
-  have hrR : R < r := hr
+  have hrR := hr
   set b := max r r1 + 1
   refine ode2_unique (a := R) (b := b) (p := fun _ => 0)
     (q := fun t => ((E - c / t ^ 2 : ℝ) : ℂ)) (P := 0) (Q := E + |c| / R ^ 2)
     (fun t _ => by simp) (fun t ht => ?_) (fun t ht => hw t ht.1) (fun t ht => ?_)
     (r₀ := r1) ⟨hr1R, by simp only [b]; linarith [le_max_right r r1]⟩ hw1 hw'1 r
     ⟨hrR, by simp only [b]; linarith [le_max_left r r1]⟩
-  · have ht0 : 0 < t := hR.trans ht.1
-    have hRt : R ^ 2 ≤ t ^ 2 := pow_le_pow_left₀ hR.le ht.1.le 2
+  · have ht0 := hR.trans ht.1
+    have hRt := pow_le_pow_left₀ hR.le ht.1.le 2
     rw [Complex.norm_real, Real.norm_eq_abs]
     refine (abs_sub _ _).trans ?_
     rw [abs_of_pos hE, abs_div, abs_of_pos (by positivity : (0 : ℝ) < t ^ 2)]
-    have : |c| / t ^ 2 ≤ |c| / R ^ 2 :=
-      div_le_div_of_nonneg_left (abs_nonneg c) (by positivity) hRt
-    linarith
+    gcongr
   · convert hw' t ht.1 using 1
     ring
 
 /-- The Rellich lemma for Bessel's equation `m'' + m'/r + (E - c/r²) m = 0`: a solution on
 `(R, ∞)` with `∫ r |m|² dr < ∞` vanishes identically. -/
-theorem bessel_rellich {E c R : ℝ} (hE : 0 < E) (hR : 0 < R) {m m' : ℝ → ℂ}
+theorem bessel_rellich 
     (hm : ∀ r ∈ Ioi R, HasDerivAt m (m' r) r)
     (hm' : ∀ r ∈ Ioi R, HasDerivAt m' (-(m' r / r) - ((E - c / r ^ 2 : ℝ) : ℂ) * m r) r)
     (hint : IntegrableOn (fun r => r * ‖m r‖ ^ 2) (Ioi R)) : ∀ r ∈ Ioi R, m r = 0 := by
-  set w : ℝ → ℂ := fun r => (Real.sqrt r : ℂ) * m r with hwdef
-  set w' : ℝ → ℂ := fun r => ((1 / (2 * Real.sqrt r) : ℝ) : ℂ) * m r + (Real.sqrt r : ℂ) * m' r
+  set w : ComplexCurve := fun r => (Real.sqrt r) * m r with hwdef
+  set w' : ComplexCurve := fun r => ((1 / (2 * Real.sqrt r) : ℝ)) * m r + (Real.sqrt r) * m' r
     with hw'def
   have hsq_d : ∀ r, 0 < r → HasDerivAt (fun r => (Real.sqrt r : ℂ)) ((1 / (2 * Real.sqrt r) : ℝ) : ℂ) r :=
     fun r hr => (Real.hasDerivAt_sqrt hr.ne').ofReal_comp
   have hisq_d : ∀ r, 0 < r → HasDerivAt (fun r => ((1 / (2 * Real.sqrt r) : ℝ) : ℂ))
       ((-(1 / (4 * Real.sqrt r ^ 3)) : ℝ) : ℂ) r := fun r hr => by
-    have hs : 0 < Real.sqrt r := Real.sqrt_pos.mpr hr
     have h := ((Real.hasDerivAt_sqrt hr.ne').const_mul 2).inv (by positivity)
     have h2 := h.ofReal_comp
     convert h2 using 1
-    · funext t; simp [one_div]
-    · congr 1
-      have : Real.sqrt r ^ 2 = r := Real.sq_sqrt hr.le
-      field_simp
-      norm_num
+    · simp 
+    ring
   have hw : ∀ r ∈ Ioi R, HasDerivAt w (w' r) r := fun r hr => by
     have h := (hsq_d r (hR.trans hr)).mul (hm r hr)
     convert h using 1
   have hw' : ∀ r ∈ Ioi R, HasDerivAt w' (-((((E - (c - 1 / 4) / r ^ 2) : ℝ) : ℂ) * w r)) r :=
     fun r hr => by
-    have hr0 : 0 < r := hR.trans hr
-    have hs : 0 < Real.sqrt r := Real.sqrt_pos.mpr hr0
-    have hss : Real.sqrt r ^ 2 = r := Real.sq_sqrt hr0.le
+    have hr0  := hR.trans hr
+    have hs  := Real.sqrt_pos.mpr hr0
+    have hss  := Real.sq_sqrt hr0.le
     have h := ((hisq_d r hr0).mul (hm r hr)).add ((hsq_d r hr0).mul (hm' r hr))
     convert h using 1
     simp only [hwdef]
@@ -421,20 +411,22 @@ theorem bessel_rellich {E c R : ℝ} (hE : 0 < E) (hR : 0 < R) {m m' : ℝ → �
     have hssC : (Real.sqrt r : ℂ) ^ 2 = r := by exact_mod_cast hss
     push_cast
     field_simp
-    rw [show (r : ℂ) = (Real.sqrt r : ℂ) ^ 2 from hssC.symm]
+    rw [hssC.symm]
     ring
   have hint' : IntegrableOn (fun r => ‖w r‖ ^ 2) (Ioi R) := by
     refine hint.congr_fun (fun r hr => ?_) measurableSet_Ioi
-    have hr0 : 0 < r := hR.trans hr
+    have hr0  := hR.trans hr
     simp only [hwdef, norm_mul, Complex.norm_real, Real.norm_eq_abs,
       abs_of_nonneg (Real.sqrt_nonneg r), mul_pow, Real.sq_sqrt hr0.le]
   have h0 := ode_rellich hE hR hw hw' hint'
   intro r hr
   have hs : (Real.sqrt r : ℂ) ≠ 0 := by
-    have : 0 < Real.sqrt r := Real.sqrt_pos.mpr (hR.trans hr)
+    have  := Real.sqrt_pos.mpr (hR.trans hr)
     exact_mod_cast this.ne'
   have := h0 r hr
-  simp only [hwdef, mul_eq_zero] at this
-  exact this.resolve_left hs
+  simp_all
+
+end
+
 
 end PolyaNeumann

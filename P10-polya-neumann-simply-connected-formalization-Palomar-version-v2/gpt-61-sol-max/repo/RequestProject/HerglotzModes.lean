@@ -1,5 +1,9 @@
 module
 
+public import RequestProject.PlanarTypes
+
+public import RequestProject.PlanarGeometry
+
 public import RequestProject.HerglotzMean
 
 /-!
@@ -19,49 +23,45 @@ inequality gives `∫_Ω |F_{-j}|² ≤ C (k²/2) ∫_Ω (|F_{-j+1}|² + |F_{-j-
 @[expose] public section
 
 open MeasureTheory Set Filter Metric
-open scoped ComplexConjugate Real
 
 noncomputable section
 
 namespace PolyaNeumann
 
-variable {Ω : Set ℂ} {a : ℝ → ℂ}
+variable {Ω : PlanarSet} {a : ComplexCurve}
 
 /-- Parseval for the Herglotz coefficients at a point. -/
-lemma hasSum_sq_herglotzCoeff (ha : IsDirDensity a) (k : ℝ) (z : ℂ) :
+lemma hasSum_sq_herglotzCoeff (ha : IsDirDensity a) k z :
     HasSum (fun m : ℤ => ‖herglotzCoeff k a m z‖ ^ 2)
-      ((2 * π)⁻¹ * ∫ φ in (0 : ℝ)..(2 * π), ‖a φ‖ ^ 2) := by
-  have hm : MemLp (fun φ => a φ * planeWave k z φ) 2 (volume.restrict (Ioc 0 (2 * π))) := by
-    have hb : MemLp (planeWave k z) ⊤ (volume.restrict (Ioc 0 (2 * π))) :=
+      (circlePeriod⁻¹ * ∫ φ in (0 : ℝ)..circlePeriod, ‖a φ‖ ^ 2) := by
+  have hm : MemLp (fun φ => a φ * planeWave k z φ) 2 (volume.restrict boundaryHalfOpenInterval) := by
+    have hb : MemLp (planeWave k z) ⊤ (volume.restrict boundaryHalfOpenInterval) :=
       memLp_top_of_bound (continuous_planeWave k z).aestronglyMeasurable 1
         (Eventually.of_forall fun φ => (norm_planeWave k z φ).le)
     have := ha.mul' (r := 2) hb
-    refine this.congr_norm (ha.aestronglyMeasurable.mul hb.aestronglyMeasurable)
-      (Eventually.of_forall fun φ => ?_)
-    simp only [norm_mul, mul_comm]
+    assumption
   simp_rw [herglotzCoeff_eq_fourierCoeffOn]
   convert hasSum_sq_fourierCoeffOn Real.two_pi_pos hm using 1
   rw [smul_eq_mul, sub_zero]
   congr 1
-  refine intervalIntegral.integral_congr fun φ _ => ?_
-  simp only [norm_mul, norm_planeWave, mul_one]
+  simp  [norm_planeWave]
 
 /-- `N_j = ∫_Ω |F_{-j}|²`. -/
-def negModeNorm (Ω : Set ℂ) (k : ℝ) (a : ℝ → ℂ) (j : ℕ) : ℝ :=
+def negModeNorm Ω k a (j : ℕ)  :=
   ∫ z in Ω, ‖herglotzCoeff k a (-(j : ℤ)) z‖ ^ 2
 
-lemma negModeNorm_nonneg (k : ℝ) (a : ℝ → ℂ) (j : ℕ) : 0 ≤ negModeNorm Ω k a j :=
+lemma negModeNorm_nonneg k a j : 0 ≤ negModeNorm Ω k a j :=
   integral_nonneg fun _ => by positivity
 
 lemma integrable_herglotzCoeff_sq (hb : Bornology.IsBounded Ω)
-    (ha : IntervalIntegrable a volume 0 (2 * π)) (k : ℝ) (m : ℤ) :
+    (ha : IntervalIntegrable a volume 0 circlePeriod) k m :
     Integrable (fun z => ‖herglotzCoeff k a m z‖ ^ 2) (volume.restrict Ω) :=
   integrable_norm_sq_of_bounded hb.measure_lt_top (continuous_herglotzCoeff ha k m)
     (norm_herglotzCoeff_le k m)
 
-lemma summable_negModeNorm (hb : Bornology.IsBounded Ω) (ha : IsDirDensity a) (k : ℝ) :
+lemma summable_negModeNorm (hb : Bornology.IsBounded Ω) (ha : IsDirDensity a) k :
     Summable (negModeNorm Ω k a) := by
-  set A := (2 * π)⁻¹ * ∫ φ in (0 : ℝ)..(2 * π), ‖a φ‖ ^ 2 with hA
+  set A := circlePeriod⁻¹ * ∫ φ in (0)..circlePeriod, ‖a φ‖ ^ 2 with hA
   refine summable_of_sum_range_le (c := A * (volume Ω).toReal) (negModeNorm_nonneg k a)
     fun N => ?_
   unfold negModeNorm
@@ -76,17 +76,20 @@ lemma summable_negModeNorm (hb : Bornology.IsBounded Ω) (ha : IsDirDensity a) (
     exact sum_le_hasSum _ (fun _ _ => by positivity) (hasSum_sq_herglotzCoeff ha k z)
   haveI : IsFiniteMeasure (volume.restrict Ω) :=
     isFiniteMeasure_restrict.mpr hb.measure_lt_top.ne
-  calc ∫ z in Ω, ∑ j ∈ Finset.range N, ‖herglotzCoeff k a (-(j : ℤ)) z‖ ^ 2
+  calc ∫ z in Ω, ∑ j ∈ Finset.range N, ‖herglotzCoeff k a (-j) z‖ ^ 2
       ≤ ∫ _ in Ω, A := integral_mono (integrable_finset_sum _ fun j _ =>
           integrable_herglotzCoeff_sq hb ha.intervalIntegrable k _) (integrable_const _) hpt
     _ = A * (volume Ω).toReal := by
         rw [integral_const, smul_eq_mul, Measure.real_def,
           Measure.restrict_apply MeasurableSet.univ, univ_inter, mul_comm]
 
+section
+variable (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω) {z₁ } {r } (hr : 0 < r) (hball : ball z₁ r ⊆ Ω)
+include hb hL z₁ r hr hball
+
 /-- The Poincaré chain for the negative modes. -/
-lemma negModeNorm_chain (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω) {z₁ : ℂ}
-    {r : ℝ} (hr : 0 < r) (hball : ball z₁ r ⊆ Ω) :
-    ∃ c : ℝ, 0 < c ∧ ∀ a : ℝ → ℂ, IntervalIntegrable a volume 0 (2 * π) → ∀ k : ℝ,
+lemma negModeNorm_chain :
+    ∃ c : ℝ, 0 < c ∧ ∀ a : ComplexCurve, IntervalIntegrable a volume 0 circlePeriod → ∀ k : ℝ,
       (∀ j : ℕ, 1 ≤ j → herglotzCoeff k a (-(j : ℤ)) z₁ = 0) → ∀ j : ℕ,
         negModeNorm Ω k a (j + 1) ≤ c * k ^ 2 * (negModeNorm Ω k a j + negModeNorm Ω k a (j + 2)) := by
   obtain ⟨C, hC, hP⟩ := poincare_herglotzCoeff_ball hb hL hr hball
@@ -99,13 +102,10 @@ lemma negModeNorm_chain (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω
   rw [e1, e2, integral_add (integrable_herglotzCoeff_sq hb ha k _)
     (integrable_herglotzCoeff_sq hb ha k _)] at key
   unfold negModeNorm
-  calc _ ≤ C * (k ^ 2 / 2 * ((∫ z in Ω, ‖herglotzCoeff k a (-(j : ℤ)) z‖ ^ 2) +
-        ∫ z in Ω, ‖herglotzCoeff k a (-((j + 2 : ℕ) : ℤ)) z‖ ^ 2)) := key
-    _ = _ := by ring
+  linarith
 
 /-- **Smallness of `F₀` and of the negative modes.** -/
-theorem herglotz_modes_small (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω) {z₁ : ℂ}
-    {r : ℝ} (hr : 0 < r) (hball : ball z₁ r ⊆ Ω) :
+theorem herglotz_modes_small :
     ∃ C δ : ℝ, 0 < C ∧ 0 < δ ∧ ∀ a, IsDirDensity a → ∀ k : ℝ, k ^ 2 ≤ δ →
       (∀ j : ℕ, 1 ≤ j → herglotzCoeff k a (-(j : ℤ)) z₁ = 0) →
       ∫ z in Ω, herglotzCoeff k a 0 z = 0 →
@@ -122,13 +122,13 @@ theorem herglotz_modes_small (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDoma
   set A1 := ∫ z in Ω, ‖herglotzCoeff k a 1 z‖ ^ 2 with hA1
   have hA10 : 0 ≤ A1 := integral_nonneg fun _ => by positivity
   have hN0 : ∀ j, 0 ≤ N j := negModeNorm_nonneg k a
-  have hk2 : 0 ≤ k ^ 2 := sq_nonneg k
-  have hkδ1 : k ^ 2 ≤ 1 := hk.trans (min_le_left _ _)
-  have hkδ2 : k ^ 2 ≤ 1 / (4 * c) := hk.trans ((min_le_right _ _).trans (min_le_left _ _))
-  have hkδ3 : k ^ 2 ≤ 1 / (2 * c * cP) := hk.trans ((min_le_right _ _).trans (min_le_right _ _))
+  have hk2  := sq_nonneg k
+  have hkδ1  := hk.trans (min_le_left _ _)
+  have hkδ2  := hk.trans ((min_le_right _ _).trans (min_le_left _ _))
+  have hkδ3  := hk.trans ((min_le_right _ _).trans (min_le_right _ _))
   have hck : c * k ^ 2 ≤ 1 / 4 := by
-    rw [le_div_iff₀ (by positivity : (0 : ℝ) < 4 * c)] at hkδ2
-    rw [le_div_iff₀ (by norm_num : (0 : ℝ) < 4)]; nlinarith
+    rw [le_div_iff₀ (by positivity)] at hkδ2
+    linarith
   -- the summed chain
   set T : ℕ → ℝ := fun n => ∑ i ∈ Finset.range n, N (i + 1) with hT
   have hTbound : ∀ n, T n ≤ 2 * (c * k ^ 2) * (N 0 + N (n + 1)) := by
@@ -150,7 +150,7 @@ theorem herglotz_modes_small (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDoma
     nlinarith
   have h12 : N 1 + N 2 ≤ 2 * (c * k ^ 2) * N 0 := by
     have hsum := summable_negModeNorm hb ha k
-    have ht : Tendsto (fun n => N (n + 1)) atTop (nhds 0) :=
+    have ht  :=
       (hsum.tendsto_atTop_zero).comp (tendsto_add_atTop_nat 1)
     have hlim : Tendsto (fun n => 2 * (c * k ^ 2) * (N 0 + N (n + 1))) atTop
         (nhds (2 * (c * k ^ 2) * (N 0 + 0))) := (ht.const_add _).const_mul _
@@ -189,12 +189,15 @@ theorem herglotz_modes_small (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDoma
           have : 0 ≤ 2 * c * cP * k ^ 2 * A1 := by positivity
           nlinarith
   · calc _ = N 1 + N 2 := by
-          simp only [hN, negModeNorm, Nat.cast_one, Nat.cast_ofNat]
+          rfl
       _ ≤ 2 * (c * k ^ 2) * N 0 := h12
       _ ≤ 2 * (c * k ^ 2) * (cP * k ^ 2 * A1) := by gcongr
       _ = 2 * c * cP * k ^ 4 * A1 := by ring
       _ ≤ (cP + 2 * c * cP) * k ^ 4 * A1 := by
           have : 0 ≤ cP * k ^ 4 * A1 := by positivity
           nlinarith
+
+end
+
 
 end PolyaNeumann

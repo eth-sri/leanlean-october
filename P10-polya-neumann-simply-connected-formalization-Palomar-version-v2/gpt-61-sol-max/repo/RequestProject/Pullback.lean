@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.PlanarTypes
+
 public import RequestProject.BallZarnescu
 public import RequestProject.Rellich
 public import RequestProject.Approximation
@@ -35,19 +37,19 @@ noncomputable section
 namespace PolyaNeumann
 
 /-- The pointwise sesquilinear density `∑_{i,k} M_{ik} ⟨ξ_i, η_k⟩` of a real `2 × 2` matrix. -/
-def coefSesq (M : Matrix (Fin 2) (Fin 2) ℝ) (ξ η : Fin 2 → ℂ) : ℂ :=
+def coefSesq (M : Matrix (Coord) (Coord) ℝ) (ξ η : Coord → ℂ)  :=
   ∑ i, ∑ k, (M i k : ℂ) * inner ℂ (ξ i) (η k)
 
 /-- The quadratic form `q_M[g] = Re ∫_Ω ∑_{i,k} M_{ik} conj(g_i) g_k` of a matrix field `M` on a
 gradient `g = (g_x, g_y)`. -/
-def gradForm (Ω : Set ℂ) (M : ℂ → Matrix (Fin 2) (Fin 2) ℝ) (g : Fin 2 → L2 Ω) : ℝ :=
-  (∫ w in Ω, coefSesq (M w) (fun i => (g i : ℂ → ℂ) w) (fun i => (g i : ℂ → ℂ) w)).re
+def gradForm Ω (M : ℂ → Matrix (Coord) (Coord) ℝ) (g : Coord → L2 Ω)  :=
+  (∫ w in Ω, coefSesq (M w) (fun i => (g i : PlaneMap) w) (fun i => (g i : PlaneMap) w)).re
 
 /-- The data produced by Lemmas 10.9 and 10.10 for a Ball–Zarnescu approximation `A`
 (`Ω_n = f_n(Ω)`, `ρ_n = |det Df_n|`). In the paper `A_n = ρ_n (Df_n)⁻¹ (Df_n)⁻ᵀ`. -/
-structure PullbackData (Ω : Set ℂ) (A : BallZarnescuApprox Ω) where
+structure PullbackData (Ω : PlanarSet) (A : BallZarnescuApprox Ω) where
   /-- The coefficient matrices `A_n`. -/
-  coef : ℕ → ℂ → Matrix (Fin 2) (Fin 2) ℝ
+  coef : ℕ → ℂ → Matrix (Coord) (Coord) ℝ
   coef_meas : ∀ n i k, AEStronglyMeasurable (fun w => coef n w i k) (volume.restrict Ω)
   /-- A uniform bound for the entries. -/
   bound : ℝ
@@ -55,7 +57,7 @@ structure PullbackData (Ω : Set ℂ) (A : BallZarnescuApprox Ω) where
   /-- A uniform ellipticity constant, also a lower bound for the densities. -/
   ellip : ℝ
   ellip_pos : 0 < ellip
-  coef_ellip : ∀ n, ∀ᵐ w ∂(volume.restrict Ω), ∀ ξ : Fin 2 → ℂ,
+  coef_ellip : ∀ n, ∀ᵐ w ∂(volume.restrict Ω), ∀ ξ : Coord → ℂ,
     ellip * ∑ i, ‖ξ i‖ ^ 2 ≤ (coefSesq (coef n w) ξ ξ).re
   coef_eq_one : ∀ n, ∀ w ∈ Ω, w ∉ A.collar n → coef n w = 1
   density_ge : ∀ n, ∀ᵐ w ∂(volume.restrict Ω), ellip ≤ |(fderiv ℝ (A.map n) w).det|
@@ -63,31 +65,30 @@ structure PullbackData (Ω : Set ℂ) (A : BallZarnescuApprox Ω) where
   pull : ∀ n, L2 (A.map n '' Ω) ≃ₗ[ℂ] L2 Ω
   pull_inner : ∀ n (v w : L2 (A.map n '' Ω)), inner ℂ v w =
     ∫ x in Ω, ((|(fderiv ℝ (A.map n) x).det| : ℝ) : ℂ) *
-      inner ℂ ((pull n v : ℂ → ℂ) x) ((pull n w : ℂ → ℂ) x)
+      inner ℂ ((pull n v : PlaneMap) x) ((pull n w : PlaneMap) x)
   pull_H1 : ∀ n v, v ∈ H1 (A.map n '' Ω) ↔ pull n v ∈ H1 Ω
-  pull_energy : ∀ n v (g : Fin 2 → L2 Ω), IsWeakGradient Ω (pull n v) g →
+  pull_energy : ∀ n v (g : Coord → L2 Ω), IsWeakGradient Ω (pull n v) g →
     neumannEnergy (A.map n '' Ω) v = ENNReal.ofReal (gradForm Ω (coef n) g)
 
 /-- The chain rule and the change of variables for one bi-Lipschitz map `f`: for `v ∈ L²(f(Ω))`
 and `u = v ∘ f`, `v ∈ H¹(f(Ω))` if and only if `u ∈ H¹(Ω)`, and then the Neumann energy of `v` is
 the weighted gradient form of `u` with the coefficient matrix `|det Df| (Df)⁻¹ (Df)⁻ᵀ`. -/
-lemma bzChainRule_of_bilip {Ω : Set ℂ} (hΩ : IsOpen Ω) {f : ℂ ≃ₜ ℂ} {K : NNReal} (hK : 0 < K)
+lemma bzChainRule_of_bilip  (hΩ : IsOpen Ω) {f : ℂ ≃ₜ ℂ}  (hK : 0 < K)
     (hf : LipschitzOnWith K f Ω) (hg : LipschitzOnWith K f.symm (f '' Ω))
     (v : L2 (f '' Ω)) (u : L2 Ω)
-    (hu : (u : ℂ → ℂ) =ᵐ[volume.restrict Ω] fun x => (v : ℂ → ℂ) (f x)) :
+    (hu : (u : PlaneMap) =ᵐ[volume.restrict Ω] fun x => (v : PlaneMap) (f x)) :
     (v ∈ H1 (f '' Ω) ↔ u ∈ H1 Ω) ∧
-      ∀ g : Fin 2 → L2 Ω, IsWeakGradient Ω u g →
+      ∀ g : Coord → L2 Ω, IsWeakGradient Ω u g →
         neumannEnergy (f '' Ω) v =
           ENNReal.ofReal (gradForm Ω (fun w => bzCoef (fderiv ℝ f w)) g) := by
-  have hΩ' : IsOpen (f '' Ω) := f.isOpenMap Ω hΩ
+  have hΩ'  := f.isOpenMap Ω hΩ
   -- the converse direction: `u ∈ H¹(Ω) → v ∈ H¹(f(Ω))`
   have hback : u ∈ H1 Ω → v ∈ H1 (f '' Ω) := by
     rintro ⟨g, hg'⟩
-    have hv : (v : ℂ → ℂ) =ᵐ[volume.restrict (f '' Ω)] fun y => (u : ℂ → ℂ) (f.symm y) := by
+    have hv : (v : PlaneMap) =ᵐ[volume.restrict (f '' Ω)] fun y => (u : PlaneMap) (f.symm y) := by
       have := (quasiMeasurePreserving_symm_restrict hf).ae_eq hu
       filter_upwards [this] with y hy
-      simp only [Function.comp_apply, Homeomorph.apply_symm_apply] at hy
-      exact hy.symm
+      simp_all
     obtain ⟨G, hG, -⟩ := exists_isWeakGradient_comp_bilip (f := f.symm) (Ω := f '' Ω)
       (f.symm_image_image Ω) hΩ' hK hg (by simpa using hf) hg' hv
     exact ⟨G, hG⟩
@@ -98,28 +99,28 @@ lemma bzChainRule_of_bilip {Ω : Set ℂ} (hΩ : IsOpen Ω) {f : ℂ ≃ₜ ℂ}
   refine ⟨⟨hfwd, hback⟩, fun g hgu => ?_⟩
   obtain ⟨G, hG⟩ := hback ⟨g, hgu⟩
   obtain ⟨g', hg', hg'eq⟩ := exists_isWeakGradient_comp_bilip rfl hΩ hK hf hg hG hu
-  have hgg : g = g' := hgu.unique hΩ hg'
+  have hgg  := hgu.unique hΩ hg'
   subst hgg
   rw [neumannEnergy_eq_of_isWeakGradient hΩ' hG]
-  have hdet : ∀ᵐ w ∂(volume.restrict Ω), (fderiv ℝ f w).det ≠ 0 :=
+  have hdet  :=
     (ae_inv_sq_le_abs_det hΩ hf hg).mono fun w hw =>
-      abs_pos.mp (lt_of_lt_of_le (by have := hK; positivity) hw)
+      abs_pos.mp (lt_of_lt_of_le (by positivity) hw)
   have hpt : ∀ᵐ w ∂(volume.restrict Ω),
-      coefSesq (bzCoef (fderiv ℝ f w)) (fun i => (g i : ℂ → ℂ) w) (fun i => (g i : ℂ → ℂ) w) =
-        |(fderiv ℝ f w).det| • ∑ j, inner ℂ ((G j : ℂ → ℂ) (f w)) ((G j : ℂ → ℂ) (f w)) := by
+      coefSesq (bzCoef (fderiv ℝ f w)) (fun i => (g i : PlaneMap) w) (fun i => (g i : PlaneMap) w) =
+        |(fderiv ℝ f w).det| • ∑ j, inner ℂ ((G j : PlaneMap) (f w)) ((G j : PlaneMap) (f w)) := by
     filter_upwards [hdet, ae_all_iff.2 hg'eq] with w hw hgw
     simp only [coefSesq, hgw, chainGrad]
     rw [sesq_bzCoef_chain _ hw]
-    simp only [inner_self_eq_norm_sq_to_K, Complex.real_smul]
+    simp only [inner_self_eq_norm_sq_to_K]
     push_cast
     rfl
-  have hS : (∫ y in f '' Ω, ∑ j, inner ℂ ((G j : ℂ → ℂ) y) ((G j : ℂ → ℂ) y)) =
+  have hS : (∫ y in f '' Ω, ∑ j, inner ℂ ((G j : PlaneMap) y) ((G j : PlaneMap) y)) =
       ∑ j, inner ℂ (G j) (G j) := by
     rw [integral_finset_sum _ (fun j _ => L2.integrable_inner (G j) (G j))]
     simp only [L2.inner_def]
   have hform : gradForm Ω (fun w => bzCoef (fderiv ℝ f w)) g = ∑ j, ‖G j‖ ^ 2 := by
     rw [gradForm, integral_congr_ae hpt, ← integral_image_bilip hΩ hf
-      (fun y => ∑ j, inner ℂ ((G j : ℂ → ℂ) y) ((G j : ℂ → ℂ) y)), hS, Complex.re_sum]
+      (fun y => ∑ j, inner ℂ ((G j) y) ((G j) y)), hS, Complex.re_sum]
     refine Finset.sum_congr rfl fun j _ => ?_
     exact (norm_sq_eq_re_inner (𝕜 := ℂ) (G j)).symm
   rw [hform, ENNReal.ofReal_sum_of_nonneg (fun j _ => by positivity)]
@@ -128,6 +129,10 @@ lemma bzChainRule_of_bilip {Ω : Set ℂ} (hΩ : IsOpen Ω) {f : ℂ ≃ₜ ℂ}
   rfl
 
 
+section
+variable {Ω } (hL : IsLipschitzDomain Ω) (A : BallZarnescuApprox Ω)
+include Ω hL A
+
 /-- Lemma 10.9 and the Sobolev part of Lemma 10.10 for a Ball–Zarnescu approximation
 `Ω_n = f_n(Ω)`: there are coefficient matrices `A_n` on `Ω` (in the paper
 `A_n = ρ_n (Df_n)⁻¹ (Df_n)⁻ᵀ`), uniformly bounded and uniformly elliptic and equal to `I` off the
@@ -135,61 +140,59 @@ collars, such that for `v ∈ L²(Ω_n)` and `u = v ∘ f_n ∈ L²(Ω)`: `v ∈
 `u ∈ H¹(Ω)`, and then `q_{Ω_n}[v] = ∫_Ω ∇ū · A_n ∇u`. Proved from the bi-Lipschitz Sobolev chain
 rule `∇(v ∘ f) = (Df)ᵀ (∇v) ∘ f` (`exists_isWeakGradient_comp_bilip`) and the change of variables
 formula `integral_image_bilip`. -/
-theorem exists_bzChainRule {Ω : Set ℂ} (hL : IsLipschitzDomain Ω) (A : BallZarnescuApprox Ω) :
-    ∃ (coef : ℕ → ℂ → Matrix (Fin 2) (Fin 2) ℝ) (bound ellip : ℝ),
+theorem exists_bzChainRule :
+    ∃ (coef : ℕ → ℂ → Matrix (Coord) (Coord) ℝ) (bound ellip : ℝ),
       (∀ n i k, AEStronglyMeasurable (fun w => coef n w i k) (volume.restrict Ω)) ∧
       (∀ n, ∀ᵐ w ∂(volume.restrict Ω), ∀ i k, |coef n w i k| ≤ bound) ∧ 0 < ellip ∧
-      (∀ n, ∀ᵐ w ∂(volume.restrict Ω), ∀ ξ : Fin 2 → ℂ,
+      (∀ n, ∀ᵐ w ∂(volume.restrict Ω), ∀ ξ : Coord → ℂ,
         ellip * ∑ i, ‖ξ i‖ ^ 2 ≤ (coefSesq (coef n w) ξ ξ).re) ∧
       (∀ n, ∀ w ∈ Ω, w ∉ A.collar n → coef n w = 1) ∧
       ∀ n (v : L2 (A.map n '' Ω)) (u : L2 Ω),
-        (u : ℂ → ℂ) =ᵐ[volume.restrict Ω] (fun x => (v : ℂ → ℂ) (A.map n x)) →
+        (u : PlaneMap) =ᵐ[volume.restrict Ω] (fun x => (v : PlaneMap) (A.map n x)) →
         (v ∈ H1 (A.map n '' Ω) ↔ u ∈ H1 Ω) ∧
-        ∀ g : Fin 2 → L2 Ω, IsWeakGradient Ω u g →
+        ∀ g : Coord → L2 Ω, IsWeakGradient Ω u g →
           neumannEnergy (A.map n '' Ω) v = ENNReal.ofReal (gradForm Ω (coef n) g) := by
-  have hΩ : IsOpen Ω := hL.1.1
+  have hΩ  := hL.1.1
   set K : NNReal := max A.lip 1
   have hK : 0 < K := lt_of_lt_of_le one_pos (le_max_right _ _)
-  have hK' : (0 : ℝ) < K := hK
   have hf : ∀ n, LipschitzOnWith K (A.map n) Ω := fun n =>
     lipschitzOnWith_weaken ((A.lipschitz n).mono subset_closure) (le_max_left _ _)
   have hg : ∀ n, LipschitzOnWith K (A.map n).symm (A.map n '' Ω) := fun n =>
     lipschitzOnWith_weaken ((A.lipschitz_symm n).mono subset_closure) (le_max_left _ _)
   have hnorm : ∀ n, ∀ w ∈ Ω, ‖fderiv ℝ (A.map n) w‖ ≤ K := fun n w hw =>
     norm_fderiv_le_of_lipschitzOn ℝ (hΩ.mem_nhds hw) (hf n)
-  refine ⟨fun n w => bzCoef (fderiv ℝ (A.map n) w), 2 * (K : ℝ) ^ 2 * (K : ℝ) ^ 2,
-    (2 * (K : ℝ) ^ 2 * (K : ℝ) ^ 2)⁻¹, fun n i k =>
+  refine ⟨fun n w => bzCoef (fderiv ℝ (A.map n) w), 2 * K ^ 2 * K ^ 2,
+    (2 * K ^ 2 * K ^ 2)⁻¹, fun n i k =>
       ((measurable_bzCoef i k).comp (measurable_fderiv ℝ _)).aestronglyMeasurable,
     fun n => ?_, by positivity, fun n => ?_, fun n w _ hwc => ?_,
     fun n v u hu => bzChainRule_of_bilip hΩ hK (hf n) (hg n) v u hu⟩
   · filter_upwards [ae_inv_sq_le_abs_det hΩ (hf n) (hg n), ae_restrict_mem hΩ.measurableSet]
       with w hw hwΩ i k
-    have hpos : 0 < ((K : ℝ) ^ 2)⁻¹ := by positivity
     calc |bzCoef (fderiv ℝ (A.map n) w) i k|
         ≤ 2 * ‖fderiv ℝ (A.map n) w‖ ^ 2 / |(fderiv ℝ (A.map n) w).det| := abs_bzCoef_le _ i k
-      _ ≤ 2 * (K : ℝ) ^ 2 / ((K : ℝ) ^ 2)⁻¹ := by
+      _ ≤ 2 * K ^ 2 / ((K : ℝ) ^ 2)⁻¹ := by
           gcongr
           exact hnorm n w hwΩ
-      _ = 2 * (K : ℝ) ^ 2 * (K : ℝ) ^ 2 := by field_simp
+      _ = 2 * K ^ 2 * K ^ 2 := by field_simp
   · filter_upwards [ae_inv_sq_le_abs_det hΩ (hf n) (hg n), ae_restrict_mem hΩ.measurableSet]
       with w hw hwΩ ξ
     set T := fderiv ℝ (A.map n) w
     have hpos : 0 < ((K : ℝ) ^ 2)⁻¹ := by positivity
-    have hT : T.det ≠ 0 := abs_pos.mp (hpos.trans_le hw)
+    have hT  := abs_pos.mp (hpos.trans_le hw)
     have e := bzCoef_ellip T hT ξ
     have hre := re_sesq_bzCoef_nonneg T ξ
-    have hTK : ‖T‖ ^ 2 ≤ (K : ℝ) ^ 2 := pow_le_pow_left₀ (norm_nonneg _) (hnorm n w hwΩ) 2
+    have hTK  := pow_le_pow_left₀ (norm_nonneg _) (hnorm n w hwΩ) 2
     have hsum : 0 ≤ ∑ i, ‖ξ i‖ ^ 2 := Finset.sum_nonneg fun i _ => sq_nonneg _
-    change _ ≤ (∑ i, ∑ k, ((bzCoef T) i k : ℂ) * inner ℂ (ξ i) (ξ k)).re
-    set R := (∑ i, ∑ k, ((bzCoef T) i k : ℂ) * inner ℂ (ξ i) (ξ k)).re
+    change _ ≤ (∑ i, ∑ k, ((bzCoef T) i k) * inner ℂ (ξ i) (ξ k)).re
+    set R := (∑ i, ∑ k, ((bzCoef T) i k) * inner ℂ (ξ i) (ξ k)).re
     have h1 : ((K : ℝ) ^ 2)⁻¹ * ∑ i, ‖ξ i‖ ^ 2 ≤ 2 * (K : ℝ) ^ 2 * R :=
       (mul_le_mul_of_nonneg_right hw hsum).trans (e.trans (by gcongr))
     rw [inv_mul_le_iff₀ (by positivity)]
     rw [inv_mul_le_iff₀ (by positivity)] at h1
     nlinarith
-  · have hev : (A.map n : ℂ → ℂ) =ᶠ[𝓝 w] id :=
+  · have hev : (A.map n : PlaneMap) =ᶠ[𝓝 w] id :=
       Filter.eventually_of_mem ((A.collar_closed n).isOpen_compl.mem_nhds hwc)
-        fun x hx => A.eq_self n x hx
+        (A.eq_self n)
     show bzCoef (fderiv ℝ (A.map n) w) = 1
     rw [hev.fderiv_eq, fderiv_id]
     exact bzCoef_id
@@ -198,17 +201,17 @@ theorem exists_bzChainRule {Ω : Set ℂ} (hL : IsLipschitzDomain Ω) (A : BallZ
 bounded Lipschitz domain. Proved from the bi-Lipschitz change of variables (`bilipPull`,
 `inner_eq_integral_bilipPull`, `ae_inv_sq_le_abs_det`) and the Sobolev chain rule
 `exists_bzChainRule`. -/
-theorem exists_pullbackData {Ω : Set ℂ} (hL : IsLipschitzDomain Ω) (A : BallZarnescuApprox Ω) :
+theorem exists_pullbackData :
     Nonempty (PullbackData Ω A) := by
   obtain ⟨coef, bound, ellip, hm, hbd, hell, hel, hone, hchain⟩ := exists_bzChainRule hL A
-  have hΩ : IsOpen Ω := hL.1.1
+  have hΩ  := hL.1.1
   set K : NNReal := max A.lip 1
   have hK : 0 < K := lt_of_lt_of_le one_pos (le_max_right _ _)
   have hf : ∀ n, LipschitzOnWith K (A.map n) Ω := fun n =>
     lipschitzOnWith_weaken ((A.lipschitz n).mono subset_closure) (le_max_left _ _)
   have hg : ∀ n, LipschitzOnWith K (A.map n).symm (A.map n '' Ω) := fun n =>
     lipschitzOnWith_weaken ((A.lipschitz_symm n).mono subset_closure) (le_max_left _ _)
-  set e := min ellip ((K : ℝ) ^ 2)⁻¹
+  set e := min ellip (K ^ 2)⁻¹
   have he : 0 < e := lt_min hell (by positivity)
   exact ⟨{
     coef := coef
@@ -228,59 +231,67 @@ theorem exists_pullbackData {Ω : Set ℂ} (hL : IsLipschitzDomain Ω) (A : Ball
     pull_H1 := fun n v => (hchain n v _ (bilipPull_ae hΩ hK (hf n) (hg n) v)).1
     pull_energy := fun n v g hg' => (hchain n v _ (bilipPull_ae hΩ hK (hf n) (hg n) v)).2 g hg' }⟩
 
+end
+
+
 /-! ### The gradient forms -/
 
 section GradForm
 
-variable {Ω : Set ℂ} {M : ℂ → Matrix (Fin 2) (Fin 2) ℝ} {C : ℝ}
+variable {Ω : PlanarSet} {M : ℂ → Matrix (Coord) (Coord) ℝ} {C : ℝ}
 
-lemma coefSesq_one (ξ η : Fin 2 → ℂ) : coefSesq 1 ξ η = ∑ i, inner ℂ (ξ i) (η i) := by
-  simp [coefSesq, Matrix.one_apply]
+lemma coefSesq_one ξ η : coefSesq 1 ξ η = ∑ i, inner ℂ (ξ i) (η i) := by
+  simp [coefSesq]
 
-lemma coefSesq_add_left (N : Matrix (Fin 2) (Fin 2) ℝ) (ξ ξ' η : Fin 2 → ℂ) :
+section
+variable (N : Matrix (Coord) (Coord) ℝ)
+include N
+
+lemma coefSesq_add_left ξ ξ' η :
     coefSesq N (ξ + ξ') η = coefSesq N ξ η + coefSesq N ξ' η := by
   simp [coefSesq, mul_add, Finset.sum_add_distrib]
 
-lemma coefSesq_add_right (N : Matrix (Fin 2) (Fin 2) ℝ) (ξ η η' : Fin 2 → ℂ) :
+lemma coefSesq_add_right ξ η η' :
     coefSesq N ξ (η + η') = coefSesq N ξ η + coefSesq N ξ η' := by
   simp only [coefSesq, Pi.add_apply, inner_add_right, mul_add, Finset.sum_add_distrib]
 
-lemma coefSesq_smul_left (N : Matrix (Fin 2) (Fin 2) ℝ) (c : ℂ) (ξ η : Fin 2 → ℂ) :
+lemma coefSesq_smul_left c ξ η :
     coefSesq N (c • ξ) η = conj c * coefSesq N ξ η := by
-  simp only [coefSesq, Pi.smul_apply, inner_smul_left, Finset.mul_sum]
-  refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun k _ => ?_
-  ring
+  simp_all [coefSesq] <;> ring
 
-lemma coefSesq_smul_right (N : Matrix (Fin 2) (Fin 2) ℝ) (c : ℂ) (ξ η : Fin 2 → ℂ) :
+lemma coefSesq_smul_right c ξ η :
     coefSesq N ξ (c • η) = c * coefSesq N ξ η := by
-  simp only [coefSesq, Pi.smul_apply, inner_smul_right, Finset.mul_sum]
-  refine Finset.sum_congr rfl fun i _ => Finset.sum_congr rfl fun k _ => ?_
-  ring
+  simp_all [coefSesq] <;> ring
 
-lemma ae_coeFn_add_pi (g g' : Fin 2 → L2 Ω) :
-    ∀ᵐ w ∂(volume.restrict Ω), ∀ i, ((g + g') i : ℂ → ℂ) w = (g i : ℂ → ℂ) w + (g' i : ℂ → ℂ) w :=
+end
+
+
+lemma ae_coeFn_add_pi (g g' : Coord → L2 Ω) :
+    ∀ᵐ w ∂(volume.restrict Ω), ∀ i, ((g + g') i : PlaneMap) w = (g i : PlaneMap) w + (g' i : PlaneMap) w :=
   ae_all_iff.mpr fun i => Lp.coeFn_add (g i) (g' i)
 
-lemma ae_coeFn_smul_pi (c : ℂ) (g : Fin 2 → L2 Ω) :
-    ∀ᵐ w ∂(volume.restrict Ω), ∀ i, ((c • g) i : ℂ → ℂ) w = c * (g i : ℂ → ℂ) w :=
+lemma ae_coeFn_smul_pi c (g : Coord → L2 Ω) :
+    ∀ᵐ w ∂(volume.restrict Ω), ∀ i, ((c • g) i : PlaneMap) w = c * (g i : PlaneMap) w :=
   ae_all_iff.mpr fun i => Lp.coeFn_smul c (g i)
 
-lemma integrable_coefSesq (hMm : ∀ i k, AEStronglyMeasurable (fun w => M w i k) (volume.restrict Ω))
-    (hMb : ∀ᵐ w ∂(volume.restrict Ω), ∀ i k, |M w i k| ≤ C) (g h : Fin 2 → L2 Ω) :
-    Integrable (fun w => coefSesq (M w) (fun i => (g i : ℂ → ℂ) w) (fun i => (h i : ℂ → ℂ) w))
+section
+variable (hMm : ∀ i k, AEStronglyMeasurable (fun w => M w i k) (volume.restrict Ω)) (hMb : ∀ᵐ w ∂(volume.restrict Ω), ∀ i k, |M w i k| ≤ C)
+
+include hMm hMb in
+lemma integrable_coefSesq (g h : Coord → L2 Ω) :
+    Integrable (fun w => coefSesq (M w) (fun i => (g i : PlaneMap) w) (fun i => (h i : PlaneMap) w))
       (volume.restrict Ω) := by
-  unfold coefSesq
   refine integrable_finset_sum _ fun i _ => integrable_finset_sum _ fun k _ => ?_
   exact (L2.integrable_inner (g i) (h k)).bdd_mul
     (Complex.continuous_ofReal.comp_aestronglyMeasurable (hMm i k))
-    (hMb.mono fun w hw => by simpa [Complex.norm_real] using hw i k)
+    (hMb.mono fun w hw => by simpa  using hw i k)
 
 /-- The sesquilinear form `(g, h) ↦ ∫_Ω ∑_{i,k} M_{ik} ⟨g_i, h_k⟩` on gradients. -/
 def gradSesq (hMm : ∀ i k, AEStronglyMeasurable (fun w => M w i k) (volume.restrict Ω))
     (hMb : ∀ᵐ w ∂(volume.restrict Ω), ∀ i k, |M w i k| ≤ C) :
-    (Fin 2 → L2 Ω) →ₗ⋆[ℂ] (Fin 2 → L2 Ω) →ₗ[ℂ] ℂ :=
+    (Coord → L2 Ω) →ₗ⋆[ℂ] (Coord → L2 Ω) →ₗ[ℂ] ℂ :=
   LinearMap.mk₂'ₛₗ (starRingEnd ℂ) (RingHom.id ℂ)
-    (fun g h => ∫ w in Ω, coefSesq (M w) (fun i => (g i : ℂ → ℂ) w) (fun i => (h i : ℂ → ℂ) w))
+    (fun g h => ∫ w in Ω, coefSesq (M w) (fun i => (g i : PlaneMap) w) (fun i => (h i : PlaneMap) w))
     (fun g₁ g₂ h => by
       rw [← integral_add (integrable_coefSesq hMm hMb _ _) (integrable_coefSesq hMm hMb _ _)]
       refine integral_congr_ae ?_
@@ -314,24 +325,23 @@ def gradSesq (hMm : ∀ i k, AEStronglyMeasurable (fun w => M w i k) (volume.res
       funext i
       exact hw i)
 
-lemma gradSesq_apply (hMm : ∀ i k, AEStronglyMeasurable (fun w => M w i k) (volume.restrict Ω))
-    (hMb : ∀ᵐ w ∂(volume.restrict Ω), ∀ i k, |M w i k| ≤ C) (g h : Fin 2 → L2 Ω) :
-    gradSesq hMm hMb g h =
-      ∫ w in Ω, coefSesq (M w) (fun i => (g i : ℂ → ℂ) w) (fun i => (h i : ℂ → ℂ) w) := rfl
+section
+include hMm hMb
 
-lemma gradForm_eq_re (hMm : ∀ i k, AEStronglyMeasurable (fun w => M w i k) (volume.restrict Ω))
-    (hMb : ∀ᵐ w ∂(volume.restrict Ω), ∀ i k, |M w i k| ≤ C) (g : Fin 2 → L2 Ω) :
+lemma gradForm_eq_re g :
     gradForm Ω M g = (gradSesq hMm hMb g g).re := by
-  rw [gradSesq_apply]; rfl
+  rfl
 
-lemma gradForm_smul (hMm : ∀ i k, AEStronglyMeasurable (fun w => M w i k) (volume.restrict Ω))
-    (hMb : ∀ᵐ w ∂(volume.restrict Ω), ∀ i k, |M w i k| ≤ C) (c : ℂ) (g : Fin 2 → L2 Ω) :
+lemma gradForm_smul (c : ℂ) g :
     gradForm Ω M (c • g) = ‖c‖ ^ 2 * gradForm Ω M g := by
   rw [gradForm_eq_re hMm hMb, gradForm_eq_re hMm hMb]
   simp only [map_smulₛₗ, LinearMap.smul_apply, RingHom.id_apply, smul_eq_mul]
   rw [← mul_assoc, Complex.mul_conj, Complex.re_ofReal_mul, Complex.normSq_eq_norm_sq]
 
-lemma gradForm_one (g : Fin 2 → L2 Ω) : gradForm Ω 1 g = ∑ i, ‖g i‖ ^ 2 := by
+end
+
+
+lemma gradForm_one g : gradForm Ω 1 g = ∑ i, ‖g i‖ ^ 2 := by
   unfold gradForm
   simp only [Pi.one_apply, coefSesq_one]
   rw [integral_finset_sum _ fun i _ => L2.integrable_inner (g i) (g i), Complex.re_sum]
@@ -339,15 +349,14 @@ lemma gradForm_one (g : Fin 2 → L2 Ω) : gradForm Ω 1 g = ∑ i, ‖g i‖ ^ 
   rw [← L2.inner_def, inner_self_eq_norm_sq_to_K]
   norm_cast
 
+include hMm hMb in
 /-- If `M = I` on `F ∩ Ω` and `M` is positive semidefinite, then `∑ᵢ ∫_F |gᵢ|² ≤ q_M[g]`. -/
 lemma integral_restrict_le_gradForm
-    (hMm : ∀ i k, AEStronglyMeasurable (fun w => M w i k) (volume.restrict Ω))
-    (hMb : ∀ᵐ w ∂(volume.restrict Ω), ∀ i k, |M w i k| ≤ C)
-    (hMp : ∀ᵐ w ∂(volume.restrict Ω), ∀ ξ : Fin 2 → ℂ, 0 ≤ (coefSesq (M w) ξ ξ).re)
-    (hΩ : MeasurableSet Ω) {F : Set ℂ} (hF : MeasurableSet F)
-    (hMF : ∀ w ∈ Ω, w ∈ F → M w = 1) (g : Fin 2 → L2 Ω) :
-    ∑ i, ∫ w in F, ‖(g i : ℂ → ℂ) w‖ ^ 2 ∂(volume.restrict Ω) ≤ gradForm Ω M g := by
-  have hint : ∀ i, Integrable (fun w => ‖(g i : ℂ → ℂ) w‖ ^ 2) (volume.restrict Ω) := fun i =>
+    (hMp : ∀ᵐ w ∂(volume.restrict Ω), ∀ ξ : Coord → ℂ, 0 ≤ (coefSesq (M w) ξ ξ).re)
+    (hΩ : MeasurableSet Ω)  (hF : MeasurableSet F)
+    (hMF : ∀ w ∈ Ω, w ∈ F → M w = 1) g :
+    ∑ i, ∫ w in F, ‖(g i : PlaneMap) w‖ ^ 2 ∂(volume.restrict Ω) ≤ gradForm Ω M g := by
+  have hint : ∀ i, Integrable (fun w => ‖(g i : PlaneMap) w‖ ^ 2) (volume.restrict Ω) := fun i =>
     (memLp_two_iff_integrable_sq_norm (Lp.aestronglyMeasurable _)).mp (Lp.memLp _)
   rw [← integral_finset_sum _ fun i _ => (hint i).integrableOn, ← integral_indicator hF,
     gradForm]
@@ -358,53 +367,54 @@ lemma integral_restrict_le_gradForm
   by_cases hwF : w ∈ F
   · rw [Set.indicator_of_mem hwF, hMF w hwΩ hwF, coefSesq_one, map_sum]
     exact le_of_eq (Finset.sum_congr rfl fun i _ => (inner_self_eq_norm_sq _).symm)
-  · rw [Set.indicator_of_notMem hwF]
-    exact hw _
+  simp_all
+
+end
+
 
 /-- Convergence of the gradient sesquilinear forms when the matrices are eventually `I`. -/
-lemma tendsto_integral_coefSesq (M : ℕ → ℂ → Matrix (Fin 2) (Fin 2) ℝ)
+lemma tendsto_integral_coefSesq (M : ℕ → ℂ → Matrix (Coord) (Coord) ℝ)
     (hMm : ∀ n i k, AEStronglyMeasurable (fun w => M n w i k) (volume.restrict Ω))
     (hMb : ∀ n, ∀ᵐ w ∂(volume.restrict Ω), ∀ i k, |M n w i k| ≤ C)
-    (hev : ∀ᵐ w ∂(volume.restrict Ω), ∀ᶠ n in atTop, M n w = 1) (g h : Fin 2 → L2 Ω) :
-    Tendsto (fun n => ∫ w in Ω, coefSesq (M n w) (fun i => (g i : ℂ → ℂ) w)
-      (fun i => (h i : ℂ → ℂ) w)) atTop
-      (𝓝 (∫ w in Ω, coefSesq 1 (fun i => (g i : ℂ → ℂ) w) (fun i => (h i : ℂ → ℂ) w))) := by
+    (hev : ∀ᵐ w ∂(volume.restrict Ω), ∀ᶠ n in atTop, M n w = 1) (g h : Coord → L2 Ω) :
+    Tendsto (fun n => ∫ w in Ω, coefSesq (M n w) (fun i => (g i : PlaneMap) w)
+      (fun i => (h i : PlaneMap) w)) atTop
+      (𝓝 (∫ w in Ω, coefSesq 1 (fun i => (g i : PlaneMap) w) (fun i => (h i : PlaneMap) w))) := by
   set C' := max C 0
   refine tendsto_integral_of_dominated_convergence
-    (fun w => C' * ∑ i, ∑ k, ‖inner ℂ ((g i : ℂ → ℂ) w) ((h k : ℂ → ℂ) w)‖)
+    (fun w => C' * ∑ i, ∑ k, ‖inner ℂ ((g i) w) ((h k) w)‖)
     (fun n => (integrable_coefSesq (hMm n) (hMb n) g h).aestronglyMeasurable)
     ((integrable_finset_sum _ fun i _ => integrable_finset_sum _ fun k _ =>
       (L2.integrable_inner (g i) (h k)).norm).const_mul C') (fun n => ?_) ?_
   · filter_upwards [hMb n] with w hw
-    unfold coefSesq
-    calc _ ≤ ∑ i, ‖∑ k, ((M n w i k : ℝ) : ℂ) *
-          inner ℂ ((g i : ℂ → ℂ) w) ((h k : ℂ → ℂ) w)‖ := norm_sum_le _ _
-      _ ≤ ∑ i, ∑ k, ‖((M n w i k : ℝ) : ℂ) *
-          inner ℂ ((g i : ℂ → ℂ) w) ((h k : ℂ → ℂ) w)‖ :=
+    calc _ ≤ ∑ i, ‖∑ k, ((M n w i k : ℝ)) *
+          inner ℂ ((g i) w) ((h k) w)‖ := norm_sum_le _ _
+      _ ≤ ∑ i, ∑ k, ‖((M n w i k : ℝ)) *
+          inner ℂ ((g i) w) ((h k) w)‖ :=
         Finset.sum_le_sum fun i _ => norm_sum_le _ _
-      _ ≤ ∑ i, ∑ k, C' * ‖inner ℂ ((g i : ℂ → ℂ) w) ((h k : ℂ → ℂ) w)‖ :=
+      _ ≤ ∑ i, ∑ k, C' * ‖inner ℂ ((g i) w) ((h k) w)‖ :=
         Finset.sum_le_sum fun i _ => Finset.sum_le_sum fun k _ => by
           rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
           exact mul_le_mul_of_nonneg_right ((hw i k).trans (le_max_left _ _)) (norm_nonneg _)
       _ = _ := by simp_rw [Finset.mul_sum]
   · filter_upwards [hev] with w hw
-    exact tendsto_const_nhds.congr' (hw.mono fun n hn => by simp only [hn])
+    exact tendsto_const_nhds.congr' (hw.mono fun n hn => by simp  [hn])
 
 end GradForm
 
 /-! ### Weak gradients on a subspace of `H¹` -/
 
 /-- The weak gradient, as a linear map on a subspace of `H¹(Ω)` (`Ω` open). -/
-def gradOf {Ω : Set ℂ} (hΩ : IsOpen Ω) (S : Submodule ℂ (L2 Ω)) (hS : (S : Set (L2 Ω)) ⊆ H1 Ω) :
-    S →ₗ[ℂ] (Fin 2 → L2 Ω) where
+def gradOf {Ω : PlanarSet} (hΩ : IsOpen Ω) (S : Submodule ℂ (L2 Ω)) (hS : (S : Set (L2 Ω)) ⊆ H1 Ω) :
+    S →ₗ[ℂ] (Coord → L2 Ω) where
   toFun u := (hS u.2).choose
   map_add' u v := (hS (u + v).2).choose_spec.unique hΩ (by
     simpa using (hS u.2).choose_spec.add (hS v.2).choose_spec)
   map_smul' c u := (hS (c • u).2).choose_spec.unique hΩ (by
     simpa using (hS u.2).choose_spec.smul c)
 
-lemma isWeakGradient_gradOf {Ω : Set ℂ} (hΩ : IsOpen Ω) (S : Submodule ℂ (L2 Ω))
-    (hS : (S : Set (L2 Ω)) ⊆ H1 Ω) (u : S) : IsWeakGradient Ω u (gradOf hΩ S hS u) :=
+lemma isWeakGradient_gradOf  hΩ (S : Submodule ℂ (L2 Ω))
+    hS (u : S) : IsWeakGradient Ω u (gradOf hΩ S hS u) :=
   (hS u.2).choose_spec
 
 /-! ### Hilbert space and `L²` facts -/
@@ -419,7 +429,7 @@ theorem exists_common_subseq {ι : Type*} [Fintype ι] (P : ι → (ℕ → ℕ)
   classical
   suffices h : ∀ s : Finset ι, ∃ θ : ℕ → ℕ, StrictMono θ ∧ ∀ i ∈ s, P i θ by
     obtain ⟨θ, hθ, hP⟩ := h Finset.univ
-    exact ⟨θ, hθ, fun i => hP i (Finset.mem_univ i)⟩
+    grind
   intro s
   induction s using Finset.induction_on with
   | empty => exact ⟨id, strictMono_id, by simp⟩
@@ -427,14 +437,12 @@ theorem exists_common_subseq {ι : Type*} [Fintype ι] (P : ι → (ℕ → ℕ)
     obtain ⟨θ, hθ, hP⟩ := ih
     obtain ⟨θ', hθ', hP'⟩ := hex a θ hθ
     refine ⟨θ ∘ θ', hθ.comp hθ', fun i hi => ?_⟩
-    rcases Finset.mem_insert.mp hi with rfl | hi
-    · exact hP'
-    · exact hmono i θ θ' (hP i hi) hθ'
+    grind
 
 /-- Weak convergence is preserved by continuous linear maps. -/
 lemma weak_tendsto_map {H K : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
     [CompleteSpace H] [NormedAddCommGroup K] [InnerProductSpace ℂ K] [CompleteSpace K]
-    (T : H →L[ℂ] K) {x : ℕ → H} {y : H}
+    (T : H →L[ℂ] K) {x : ℕ → H} {y }
     (hx : ∀ z, Tendsto (fun n => inner ℂ z (x n)) atTop (𝓝 (inner ℂ z y))) :
     ∀ z, Tendsto (fun n => inner ℂ z (T (x n))) atTop (𝓝 (inner ℂ z (T y))) := by
   intro z
@@ -443,7 +451,7 @@ lemma weak_tendsto_map {H K : Type*} [NormedAddCommGroup H] [InnerProductSpace �
 
 /-- Weak lower semicontinuity of the norm. -/
 lemma weak_lsc_norm_sq {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ H]
-    {x : ℕ → H} {y : H}
+    {x : ℕ → H} {y }
     (hx : ∀ z, Tendsto (fun n => inner ℂ z (x n)) atTop (𝓝 (inner ℂ z y))) :
     ∀ ε > 0, ∀ᶠ n in atTop, ‖y‖ ^ 2 - ε ≤ ‖x n‖ ^ 2 := by
   intro ε hε
@@ -454,29 +462,22 @@ lemma weak_lsc_norm_sq {H : Type*} [NormedAddCommGroup H] [InnerProductSpace ℂ
   filter_upwards [h.eventually (lt_mem_nhds (show ‖y‖ ^ 2 - ε / 2 < ‖y‖ ^ 2 by linarith))]
     with n hn
   have h1 := re_inner_le_norm (𝕜 := ℂ) y (x n)
-  simp only [Function.comp_apply] at hn
+  simp   at hn
   have h2 : (inner ℂ y (x n)).re = RCLike.re (inner ℂ y (x n)) := rfl
-  nlinarith [sq_nonneg (‖y‖ - ‖x n‖)]
+  nlinarith
 
-lemma integral_norm_sq_eq_of {μ : Measure ℂ} (u : Lp ℂ 2 μ) :
-    ∫ w, ‖(u : ℂ → ℂ) w‖ ^ 2 ∂μ = ‖u‖ ^ 2 := by
-  have h := congrArg RCLike.re (L2.inner_def (𝕜 := ℂ) u u)
-  rw [inner_self_eq_norm_sq, ← integral_re (L2.integrable_inner u u)] at h
-  simp_rw [inner_self_eq_norm_sq] at h
-  exact h.symm
-
-lemma integral_norm_sq_eq {Ω : Set ℂ} (u : L2 Ω) :
-    ∫ w in Ω, ‖(u : ℂ → ℂ) w‖ ^ 2 = ‖u‖ ^ 2 :=
-  integral_norm_sq_eq_of u
+section
+variable {Ω : PlanarSet}
+include Ω
 
 /-- Weak lower semicontinuity of `∫_F |·|²`. -/
-lemma weak_lsc_restrict {Ω : Set ℂ} {x : ℕ → L2 Ω} {y : L2 Ω}
-    (hx : ∀ z, Tendsto (fun n => inner ℂ z (x n)) atTop (𝓝 (inner ℂ z y))) (F : Set ℂ) :
-    ∀ ε > 0, ∀ᶠ n in atTop, ∫ w in F, ‖(y : ℂ → ℂ) w‖ ^ 2 ∂(volume.restrict Ω) - ε ≤
-      ∫ w in F, ‖(x n : ℂ → ℂ) w‖ ^ 2 ∂(volume.restrict Ω) := by
+lemma weak_lsc_restrict {x : ℕ → L2 Ω} 
+    (hx : ∀ z, Tendsto (fun n => inner ℂ z (x n)) atTop (𝓝 (inner ℂ z y))) F :
+    ∀ ε > 0, ∀ᶠ n in atTop, ∫ w in F, ‖(y : PlaneMap) w‖ ^ 2 ∂(volume.restrict Ω) - ε ≤
+      ∫ w in F, ‖(x n : PlaneMap) w‖ ^ 2 ∂(volume.restrict Ω) := by
   intro ε hε
   set T := LpToLpRestrictCLM ℂ ℂ ℂ (volume.restrict Ω) 2 F
-  have hT : ∀ v : L2 Ω, ∫ w in F, ‖(v : ℂ → ℂ) w‖ ^ 2 ∂(volume.restrict Ω) = ‖T v‖ ^ 2 := by
+  have hT : ∀ v : L2 Ω, ∫ w in F, ‖(v : PlaneMap) w‖ ^ 2 ∂(volume.restrict Ω) = ‖T v‖ ^ 2 := by
     intro v
     rw [← integral_norm_sq_eq_of (T v)]
     refine integral_congr_ae ?_
@@ -487,26 +488,25 @@ lemma weak_lsc_restrict {Ω : Set ℂ} {x : ℕ → L2 Ω} {y : L2 Ω}
 
 /-- Weak gradients pass to limits with strongly convergent functions and weakly convergent
 gradients. -/
-lemma isWeakGradient_of_weak_tendsto {Ω : Set ℂ} {u : ℕ → L2 Ω} {g : ℕ → Fin 2 → L2 Ω}
-    {U : L2 Ω} {G : Fin 2 → L2 Ω} (hg : ∀ n, IsWeakGradient Ω (u n) (g n))
+lemma isWeakGradient_of_weak_tendsto  {g : ℕ → Coord → L2 Ω}
+      (hg : ∀ n, IsWeakGradient Ω (u n) (g n))
     (hu : Tendsto u atTop (𝓝 U))
     (hG : ∀ i z, Tendsto (fun n => inner ℂ z (g n i)) atTop (𝓝 (inner ℂ z (G i)))) :
     IsWeakGradient Ω U G := by
   intro φ hφ i
-  have hmem : ∀ ψ : ℂ → ℂ, Continuous ψ → HasCompactSupport ψ →
+  have hmem : ∀ ψ : PlaneMap, Continuous ψ → HasCompactSupport ψ →
       MemLp (fun w => (starRingEnd ℂ) (ψ w)) 2 (volume.restrict Ω) := fun ψ hc hs =>
     ((Complex.continuous_conj.comp hc).memLp_of_hasCompactSupport
       (hs.comp_left (map_zero _))).restrict Ω
-  have key : ∀ (ψ : ℂ → ℂ) (hψ : MemLp (fun w => (starRingEnd ℂ) (ψ w)) 2 (volume.restrict Ω))
+  have key : ∀ (ψ : PlaneMap) (hψ : MemLp (fun w => (starRingEnd ℂ) (ψ w)) 2 (volume.restrict Ω))
       (H : L2 Ω), ∫ w in Ω, H w * ψ w = inner ℂ (hψ.toLp _) H := by
     intro ψ hψ H
-    rw [L2.inner_def]
     refine integral_congr_ae ?_
     filter_upwards [hψ.coeFn_toLp] with w hw
-    simp only [hw, RCLike.inner_apply, Complex.conj_conj]
+    simp_all
   have hd : Continuous fun w => fderiv ℝ φ w (coordDir i) :=
     (hφ.1.continuous_fderiv (by simp)).clm_apply continuous_const
-  have hds : HasCompactSupport fun w => fderiv ℝ φ w (coordDir i) :=
+  have hds  :=
     (hφ.2.1.fderiv ℝ).comp_left (g := fun T : ℂ →L[ℝ] ℂ => T (coordDir i)) rfl
   have h1 := tendsto_integral_mul (hmem _ hd hds) hu
   have h2 : Tendsto (fun n => -∫ w in Ω, g n i w * φ w) atTop (𝓝 (-∫ w in Ω, G i w * φ w)) := by
@@ -516,47 +516,46 @@ lemma isWeakGradient_of_weak_tendsto {Ω : Set ℂ} {u : ℕ → L2 Ω} {g : ℕ
   exact h2.congr fun n => (hg n φ hφ i).symm
 
 /-- Hölder's inequality in `L²(Ω)`. -/
-lemma integral_norm_mul_le {Ω : Set ℂ} (u v : L2 Ω) :
-    ∫ w in Ω, ‖(u : ℂ → ℂ) w‖ * ‖(v : ℂ → ℂ) w‖ ≤ ‖u‖ * ‖v‖ := by
+lemma integral_norm_mul_le (u v : L2 Ω) :
+    ∫ w in Ω, ‖(u : PlaneMap) w‖ * ‖(v : PlaneMap) w‖ ≤ ‖u‖ * ‖v‖ := by
   have h2 : ENNReal.ofReal 2 = 2 := by simp
-  have h := integral_mul_norm_le_Lp_mul_Lq (μ := volume.restrict Ω) (f := (u : ℂ → ℂ))
-    (g := (v : ℂ → ℂ)) Real.HolderConjugate.two_two (by rw [h2]; exact Lp.memLp u)
+  have h := integral_mul_norm_le_Lp_mul_Lq (μ := volume.restrict Ω) (f := u)
+    (g := v) Real.HolderConjugate.two_two (by rw [h2]; exact Lp.memLp u)
     (by rw [h2]; exact Lp.memLp v)
   simp_rw [Real.rpow_two] at h
-  rwa [integral_norm_sq_eq, integral_norm_sq_eq, ← Real.sqrt_eq_rpow, ← Real.sqrt_eq_rpow,
+  rwa [integral_norm_sq_eq_of, integral_norm_sq_eq_of, ← Real.sqrt_eq_rpow, ← Real.sqrt_eq_rpow,
     Real.sqrt_sq (norm_nonneg _), Real.sqrt_sq (norm_nonneg _)] at h
 
-lemma integrable_norm_mul_L2 {Ω : Set ℂ} (u v : L2 Ω) :
-    Integrable (fun w => ‖(u : ℂ → ℂ) w‖ * ‖(v : ℂ → ℂ) w‖) (volume.restrict Ω) :=
+lemma integrable_norm_mul_L2 (u v : L2 Ω) :
+    Integrable (fun w => ‖(u : PlaneMap) w‖ * ‖(v : PlaneMap) w‖) (volume.restrict Ω) :=
   (Lp.memLp u).norm.integrable_mul (Lp.memLp v).norm
 
 /-- Weighted inner products converge along strongly convergent sequences, for uniformly bounded
 weights converging to `1` almost everywhere. -/
-lemma tendsto_weighted_inner {Ω : Set ℂ} (ρ : ℕ → ℂ → ℝ) (C : ℝ)
+lemma tendsto_weighted_inner (ρ : ℕ → ℂ → ℝ) C
     (hm : ∀ n, AEStronglyMeasurable (ρ n) (volume.restrict Ω))
     (hb₀ : ∀ n, ∀ᵐ w ∂(volume.restrict Ω), |ρ n w| ≤ C)
     (ht : ∀ᵐ w ∂(volume.restrict Ω), Tendsto (fun n => ρ n w) atTop (𝓝 1))
-    {x y : ℕ → L2 Ω} {X Y : L2 Ω} (hx : Tendsto x atTop (𝓝 X)) (hy : Tendsto y atTop (𝓝 Y)) :
-    Tendsto (fun n => ∫ w in Ω, (ρ n w : ℂ) * inner ℂ ((x n : ℂ → ℂ) w) ((y n : ℂ → ℂ) w))
+     {X Y : L2 Ω} (hx : Tendsto x atTop (𝓝 X)) (hy : Tendsto y atTop (𝓝 Y)) :
+    Tendsto (fun n => ∫ w in Ω, (ρ n w : ℂ) * inner ℂ ((x n : PlaneMap) w) ((y n : PlaneMap) w))
       atTop (𝓝 (inner ℂ X Y)) := by
   set C' := max C 0
   have hC' : 0 ≤ C' := le_max_right _ _
   have hb : ∀ n, ∀ᵐ w ∂(volume.restrict Ω), |ρ n w| ≤ C' := fun n =>
     (hb₀ n).mono fun w hw => hw.trans (le_max_left _ _)
   -- the fixed term, by dominated convergence
-  have hE : Tendsto (fun n => ∫ w in Ω, (ρ n w : ℂ) * inner ℂ ((X : ℂ → ℂ) w) ((Y : ℂ → ℂ) w))
+  have hE : Tendsto (fun n => ∫ w in Ω, (ρ n w : ℂ) * inner ℂ ((X : PlaneMap) w) ((Y : PlaneMap) w))
       atTop (𝓝 (inner ℂ X Y)) := by
-    rw [L2.inner_def]
     refine tendsto_integral_of_dominated_convergence
-      (fun w => C' * ‖inner ℂ ((X : ℂ → ℂ) w) ((Y : ℂ → ℂ) w)‖)
+      (fun w => C' * ‖inner ℂ (X w) (Y w)‖)
       (fun n => (integrable_weight_inner (hm n) (hb n) _ _).aestronglyMeasurable)
       ((L2.integrable_inner _ _).norm.const_mul C') (fun n => ?_) ?_
     · filter_upwards [hb n] with w hw
       rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
-      exact mul_le_mul_of_nonneg_right hw (norm_nonneg _)
+      bound
     · filter_upwards [ht] with w hw
       have := ((Complex.continuous_ofReal.tendsto 1).comp hw).mul_const
-        (inner ℂ ((X : ℂ → ℂ) w) ((Y : ℂ → ℂ) w))
+        (inner ℂ (X w) (Y w))
       simpa using this
   -- the difference term
   have hD : Tendsto (fun n => C' * (‖x n - X‖ * ‖y n‖ + ‖X‖ * ‖y n - Y‖)) atTop (𝓝 0) := by
@@ -564,8 +563,8 @@ lemma tendsto_weighted_inner {Ω : Set ℂ} (ρ : ℕ → ℂ → ℝ) (C : ℝ)
       ((tendsto_const_nhds (x := ‖X‖)).mul
         (tendsto_iff_norm_sub_tendsto_zero.mp hy))).const_mul C'
     simpa using h
-  have hbound : ∀ n, ‖(∫ w in Ω, (ρ n w : ℂ) * inner ℂ ((x n : ℂ → ℂ) w) ((y n : ℂ → ℂ) w)) -
-      ∫ w in Ω, (ρ n w : ℂ) * inner ℂ ((X : ℂ → ℂ) w) ((Y : ℂ → ℂ) w)‖ ≤
+  have hbound : ∀ n, ‖(∫ w in Ω, (ρ n w : ℂ) * inner ℂ ((x n : PlaneMap) w) ((y n : PlaneMap) w)) -
+      ∫ w in Ω, (ρ n w : ℂ) * inner ℂ ((X : PlaneMap) w) ((Y : PlaneMap) w)‖ ≤
       C' * (‖x n - X‖ * ‖y n‖ + ‖X‖ * ‖y n - Y‖) := by
     intro n
     rw [← integral_sub (integrable_weight_inner (hm n) (hb n) _ _)
@@ -578,10 +577,10 @@ lemma tendsto_weighted_inner {Ω : Set ℂ} (ρ : ℕ → ℂ → ℝ) (C : ℝ)
       rw [h1, h2, ← mul_sub, norm_mul, Complex.norm_real, Real.norm_eq_abs, Pi.sub_apply,
         Pi.sub_apply]
       refine mul_le_mul hw ?_ (norm_nonneg _) hC'
-      have e : inner ℂ ((x n : ℂ → ℂ) w) ((y n : ℂ → ℂ) w) -
-          inner ℂ ((X : ℂ → ℂ) w) ((Y : ℂ → ℂ) w) =
-          inner ℂ ((x n : ℂ → ℂ) w - (X : ℂ → ℂ) w) ((y n : ℂ → ℂ) w) +
-          inner ℂ ((X : ℂ → ℂ) w) ((y n : ℂ → ℂ) w - (Y : ℂ → ℂ) w) := by
+      have e : inner ℂ ((x n : PlaneMap) w) ((y n : PlaneMap) w) -
+          inner ℂ ((X : PlaneMap) w) ((Y : PlaneMap) w) =
+          inner ℂ ((x n : PlaneMap) w - (X : PlaneMap) w) ((y n : PlaneMap) w) +
+          inner ℂ ((X : PlaneMap) w) ((y n : PlaneMap) w - (Y : PlaneMap) w) := by
         rw [inner_sub_left, inner_sub_right]; ring
       rw [e]
       exact (norm_add_le _ _).trans (add_le_add (norm_inner_le_norm _ _) (norm_inner_le_norm _ _))
@@ -593,70 +592,77 @@ lemma tendsto_weighted_inner {Ω : Set ℂ} (ρ : ℕ → ℂ → ℝ) (C : ℝ)
   rw [tendsto_iff_norm_sub_tendsto_zero]
   refine squeeze_zero (fun n => norm_nonneg _) (fun n => ?_)
     (by simpa using hD.add (tendsto_iff_norm_sub_tendsto_zero.mp hE))
-  calc _ = ‖((∫ w in Ω, (ρ n w : ℂ) * inner ℂ ((x n : ℂ → ℂ) w) ((y n : ℂ → ℂ) w)) -
-        ∫ w in Ω, (ρ n w : ℂ) * inner ℂ ((X : ℂ → ℂ) w) ((Y : ℂ → ℂ) w)) +
-        ((∫ w in Ω, (ρ n w : ℂ) * inner ℂ ((X : ℂ → ℂ) w) ((Y : ℂ → ℂ) w)) -
+  calc _ = ‖((∫ w in Ω, (ρ n w) * inner ℂ ((x n) w) ((y n) w)) -
+        ∫ w in Ω, (ρ n w) * inner ℂ (X w) (Y w)) +
+        ((∫ w in Ω, (ρ n w) * inner ℂ (X w) (Y w)) -
           inner ℂ X Y)‖ := by ring_nf
     _ ≤ _ := (norm_add_le _ _).trans (add_le_add_left (hbound n) _)
+
+end
+
 
 /-! ### Densities of the Ball–Zarnescu maps -/
 
 /-- The density `ρ_n = |det Df_n|`. -/
-def bzDensity {Ω : Set ℂ} (A : BallZarnescuApprox Ω) (n : ℕ) : ℂ → ℝ :=
+def bzDensity {Ω } (A : BallZarnescuApprox Ω) n  :=
   fun w => |(fderiv ℝ (A.map n) w).det|
 
-lemma bzDensity_aestronglyMeasurable {Ω : Set ℂ} (A : BallZarnescuApprox Ω) (n : ℕ) :
+section
+variable {Ω : PlanarSet}
+include Ω
+
+lemma bzDensity_aestronglyMeasurable (A : BallZarnescuApprox Ω) n :
     AEStronglyMeasurable (bzDensity A n) (volume.restrict Ω) :=
   ((continuous_abs.comp ContinuousLinearMap.continuous_det).measurable.comp
     (measurable_fderiv ℝ _)).aestronglyMeasurable
 
-lemma bzDensity_bound {Ω : Set ℂ} (hΩ : IsOpen Ω) (A : BallZarnescuApprox Ω) (n : ℕ) :
+lemma bzDensity_bound (hΩ : IsOpen Ω) (A : BallZarnescuApprox Ω) n :
     ∀ᵐ w ∂(volume.restrict Ω), |bzDensity A n w| ≤ (A.lip : ℝ) ^ 2 :=
   ae_restrict_of_forall_mem hΩ.measurableSet fun w hw => by
     rw [bzDensity, abs_abs]
     exact abs_det_fderiv_le hΩ ((A.lipschitz n).mono subset_closure) hw
 
-lemma bzDensity_tendsto {Ω : Set ℂ} (hΩ : IsOpen Ω) (A : BallZarnescuApprox Ω) {ψ : ℕ → ℕ}
+lemma bzDensity_tendsto (hΩ : IsOpen Ω) (A : BallZarnescuApprox Ω) {ψ : ℕ → ℕ}
     (hψ : Tendsto ψ atTop atTop) :
     ∀ᵐ w ∂(volume.restrict Ω), Tendsto (fun n => bzDensity A (ψ n) w) atTop (𝓝 1) := by
   refine ae_restrict_of_forall_mem hΩ.measurableSet fun w hw => ?_
   refine tendsto_const_nhds.congr' ?_
   filter_upwards [hψ.eventually (A.collar_shrink w hw)] with n hn
-  have hloc : (A.map (ψ n) : ℂ → ℂ) =ᶠ[𝓝 w] id :=
+  have hloc : (A.map (ψ n) : PlaneMap) =ᶠ[𝓝 w] id :=
     Filter.mem_of_superset ((A.collar_closed _).isOpen_compl.mem_nhds hn)
-      fun x hx => A.eq_self _ x hx
+      (A.eq_self _)
   rw [bzDensity, hloc.fderiv_eq, fderiv_id, ContinuousLinearMap.det, ContinuousLinearMap.coe_id,
     LinearMap.det_id, abs_one]
 
 /-! ### Coercivity of the pulled-back forms -/
 
 /-- A lower bound for a weight gives a lower bound for the weighted mass. -/
-lemma weightedMass_ge {Ω : Set ℂ} {ρ : ℂ → ℝ} {c C : ℝ}
+lemma weightedMass_ge  
     (hm : AEStronglyMeasurable ρ (volume.restrict Ω))
     (hb : ∀ᵐ w ∂(volume.restrict Ω), |ρ w| ≤ C)
-    (hc : ∀ᵐ w ∂(volume.restrict Ω), c ≤ ρ w) (u : L2 Ω) :
+    (hc : ∀ᵐ w ∂(volume.restrict Ω), c ≤ ρ w) u :
     c * ‖u‖ ^ 2 ≤ weightedMass Ω ρ u := by
-  have hint : Integrable (fun w => ‖(u : ℂ → ℂ) w‖ ^ 2) (volume.restrict Ω) :=
+  have hint : Integrable (fun w => ‖(u : PlaneMap) w‖ ^ 2) (volume.restrict Ω) :=
     (memLp_two_iff_integrable_sq_norm (Lp.aestronglyMeasurable _)).mp (Lp.memLp _)
-  have hint2 : Integrable (fun w => ρ w * ‖(u : ℂ → ℂ) w‖ ^ 2) (volume.restrict Ω) :=
-    hint.bdd_mul hm (hb.mono fun w hw => by simpa [Real.norm_eq_abs] using hw)
-  rw [← integral_norm_sq_eq, ← integral_const_mul, weightedMass]
+  have hint2  :=
+    hint.bdd_mul hm (hb.mono fun w hw => by simpa  using hw)
+  rw [← integral_norm_sq_eq_of, ← integral_const_mul, weightedMass]
   refine integral_mono_ae (hint.const_mul c) hint2 ?_
   filter_upwards [hc] with w hw
-  exact mul_le_mul_of_nonneg_right hw (sq_nonneg _)
+  gcongr
 
 /-- Uniform ellipticity gives coercivity of the gradient form. -/
-lemma ellip_le_gradForm {Ω : Set ℂ} {M : ℂ → Matrix (Fin 2) (Fin 2) ℝ} {c C : ℝ}
+lemma ellip_le_gradForm  
     (hMm : ∀ i k, AEStronglyMeasurable (fun w => M w i k) (volume.restrict Ω))
     (hMb : ∀ᵐ w ∂(volume.restrict Ω), ∀ i k, |M w i k| ≤ C)
-    (hMe : ∀ᵐ w ∂(volume.restrict Ω), ∀ ξ : Fin 2 → ℂ,
-      c * ∑ i, ‖ξ i‖ ^ 2 ≤ (coefSesq (M w) ξ ξ).re) (g : Fin 2 → L2 Ω) :
+    (hMe : ∀ᵐ w ∂(volume.restrict Ω), ∀ ξ : Coord → ℂ,
+      c * ∑ i, ‖ξ i‖ ^ 2 ≤ (coefSesq (M w) ξ ξ).re) g :
     c * ∑ i, ‖g i‖ ^ 2 ≤ gradForm Ω M g := by
-  have hint : ∀ i, Integrable (fun w => ‖(g i : ℂ → ℂ) w‖ ^ 2) (volume.restrict Ω) := fun i =>
+  have hint : ∀ i, Integrable (fun w => ‖(g i : PlaneMap) w‖ ^ 2) (volume.restrict Ω) := fun i =>
     (memLp_two_iff_integrable_sq_norm (Lp.aestronglyMeasurable _)).mp (Lp.memLp _)
-  have e : c * ∑ i, ‖g i‖ ^ 2 = ∫ w in Ω, c * ∑ i, ‖(g i : ℂ → ℂ) w‖ ^ 2 := by
+  have e : c * ∑ i, ‖g i‖ ^ 2 = ∫ w in Ω, c * ∑ i, ‖(g i : PlaneMap) w‖ ^ 2 := by
     rw [integral_const_mul, integral_finset_sum _ fun i _ => hint i]
-    simp_rw [integral_norm_sq_eq]
+    simp_rw [integral_norm_sq_eq_of]
   rw [e, gradForm]
   refine (integral_mono_ae ((integrable_finset_sum _ fun i _ => hint i).const_mul c)
     (integrable_coefSesq hMm hMb g g).re ?_).trans_eq
@@ -664,21 +670,24 @@ lemma ellip_le_gradForm {Ω : Set ℂ} {M : ℂ → Matrix (Fin 2) (Fin 2) ℝ} 
   filter_upwards [hMe] with w hw
   exact hw _
 
+end
+
+
 /-- The sets `F_N` of points outside all collars `C_m`, `m ≥ N`. -/
-def collarFree {Ω : Set ℂ} (A : BallZarnescuApprox Ω) (N : ℕ) : Set ℂ :=
+def collarFree {Ω } (A : BallZarnescuApprox Ω) N  :=
   ⋂ m ∈ Set.Ici N, (A.collar m)ᶜ
 
-lemma measurableSet_collarFree {Ω : Set ℂ} (A : BallZarnescuApprox Ω) (N : ℕ) :
+lemma measurableSet_collarFree  (A : BallZarnescuApprox Ω) N :
     MeasurableSet (collarFree A N) :=
   MeasurableSet.biInter (Set.to_countable _) fun m _ => (A.collar_closed m).measurableSet.compl
 
 /-- Integrals over the collar-free sets converge to the integral over `Ω`. -/
-lemma tendsto_setIntegral_collarFree {Ω : Set ℂ} (A : BallZarnescuApprox Ω) {f : ℂ → ℝ} (hf : Integrable f (volume.restrict Ω)) :
+lemma tendsto_setIntegral_collarFree  (A : BallZarnescuApprox Ω) {f : ℂ → ℝ} (hf : Integrable f (volume.restrict Ω)) :
     Tendsto (fun N => ∫ w in collarFree A N, f w ∂(volume.restrict Ω)) atTop
       (𝓝 (∫ w in Ω, f w)) := by
   have hmono : Monotone (collarFree A) := fun N N' hNN' w hw => by
-    simp only [collarFree, Set.mem_iInter] at hw ⊢
-    exact fun m hm => hw m (le_trans hNN' hm)
+    simp  [collarFree] at hw ⊢
+    grind
   have h := tendsto_setIntegral_of_monotone (μ := volume.restrict Ω)
     (measurableSet_collarFree A) hmono hf.integrableOn
   have hU : Ω ⊆ ⋃ N, collarFree A N := fun w hw => by
@@ -691,32 +700,34 @@ lemma tendsto_setIntegral_collarFree {Ω : Set ℂ} (A : BallZarnescuApprox Ω) 
 
 namespace PullbackData
 
-variable {Ω : Set ℂ} {A : BallZarnescuApprox Ω} (P : PullbackData Ω A)
+variable {Ω } {A } (P : PullbackData Ω A)
+local notation "l2Fixed" => L2 Ω
+
 
 open Classical in
 /-- The pulled-back Neumann form `q_n[u] = ∫_Ω ∇ū · A_n ∇u` on `H¹(Ω)` (`0` off `H¹(Ω)`). -/
-def formQ (n : ℕ) (u : L2 Ω) : ℝ :=
+def formQ (n : ℕ) (u : l2Fixed) : ℝ :=
   if h : u ∈ H1 Ω then gradForm Ω (P.coef n) h.choose else 0
 
-lemma formQ_eq (hΩ : IsOpen Ω) (n : ℕ) {u : L2 Ω} {g : Fin 2 → L2 Ω}
+lemma formQ_eq (hΩ : IsOpen Ω) n  
     (hg : IsWeakGradient Ω u g) : P.formQ n u = gradForm Ω (P.coef n) g := by
   have h : u ∈ H1 Ω := ⟨g, hg⟩
   rw [formQ, dif_pos h, h.choose_spec.unique hΩ hg]
 
-lemma weightedMass_pull (hΩ : IsOpen Ω) (n : ℕ) (v : L2 (A.map n '' Ω)) :
+lemma weightedMass_pull (hΩ : IsOpen Ω) n v :
     weightedMass Ω (bzDensity A n) (P.pull n v) = ‖v‖ ^ 2 := by
   have h := congrArg RCLike.re (P.pull_inner n v v)
   have hi : Integrable (fun x => ((bzDensity A n x : ℝ) : ℂ) *
-      inner ℂ ((P.pull n v : ℂ → ℂ) x) ((P.pull n v : ℂ → ℂ) x)) (volume.restrict Ω) :=
+      inner ℂ ((P.pull n v : PlaneMap) x) ((P.pull n v : PlaneMap) x)) (volume.restrict Ω) :=
     integrable_weight_inner (bzDensity_aestronglyMeasurable A n) (bzDensity_bound hΩ A n) _ _
   rw [inner_self_eq_norm_sq] at h
   erw [← integral_re hi] at h
   rw [h, weightedMass]
   refine integral_congr_ae (Eventually.of_forall fun w => ?_)
-  show bzDensity A n w * _ = RCLike.re (((bzDensity A n w : ℝ) : ℂ) * inner ℂ _ _)
+  show bzDensity A n w * _ = RCLike.re (((bzDensity A n w : ℝ)) * inner ℂ _ _)
   rw [RCLike.re_to_complex, Complex.re_ofReal_mul, ← RCLike.re_to_complex, inner_self_eq_norm_sq]
 
-lemma weightedMass_smul' (ρ : ℂ → ℝ) (c : ℂ) (u : L2 Ω) :
+lemma weightedMass_smul' ρ (c : ℂ) u :
     weightedMass Ω ρ (c • u) = ‖c‖ ^ 2 * weightedMass Ω ρ u := by
   unfold weightedMass
   rw [← integral_const_mul]
@@ -726,16 +737,15 @@ lemma weightedMass_smul' (ρ : ℂ → ℝ) (c : ℂ) (u : L2 Ω) :
   ring
 
 /-- Lemma 10.10 (min–max for the pulled-back quotient). -/
-theorem minmax (hΩ : IsOpen Ω) (j n : ℕ) (S : Submodule ℂ (L2 Ω))
-    (hS : Module.finrank ℂ S = j + 1) (hSH : (S : Set (L2 Ω)) ⊆ H1 Ω) :
+theorem minmax (hΩ : IsOpen Ω) j n (S : Submodule ℂ (l2Fixed))
+    (hS : Module.finrank ℂ S = j + 1) (hSH : (S : Set (l2Fixed)) ⊆ H1 Ω) :
     neumannEigenvalue (A.map n '' Ω) j ≤
-      ⨆ (u : L2 Ω) (_ : u ∈ S) (_ : ‖u‖ = 1),
+      ⨆ (u : l2Fixed) (_ : u ∈ S) (_ : ‖u‖ = 1),
         ENNReal.ofReal (P.formQ n u / weightedMass Ω (bzDensity A n) u) := by
-  set e : L2 Ω ≃ₗ[ℂ] L2 (A.map n '' Ω) := (P.pull n).symm
-  have hS' : Module.finrank ℂ (S.map (e : L2 Ω →ₗ[ℂ] L2 (A.map n '' Ω))) = j + 1 := by
+  set e : l2Fixed ≃ₗ[ℂ] L2 (A.map n '' Ω) := (P.pull n).symm
+  have hS' : Module.finrank ℂ (S.map (e : l2Fixed →ₗ[ℂ] L2 (A.map n '' Ω))) = j + 1 := by
     rw [LinearEquiv.finrank_map_eq]; exact hS
-  unfold neumannEigenvalue
-  refine (iInf₂_le (S.map (e : L2 Ω →ₗ[ℂ] L2 (A.map n '' Ω))) hS').trans
+  refine (iInf₂_le (S.map (e : l2Fixed →ₗ[ℂ] L2 (A.map n '' Ω))) hS').trans
     (iSup₂_le fun v hv => iSup_le fun hv0 => ?_)
   obtain ⟨u, huS, rfl⟩ := Submodule.mem_map.mp hv
   have hpu : P.pull n (e u) = u := LinearEquiv.apply_symm_apply _ _
@@ -743,18 +753,17 @@ theorem minmax (hΩ : IsOpen Ω) (j n : ℕ) (S : Submodule ℂ (L2 Ω))
   have hu0 : u ≠ 0 := by
     rintro rfl
     exact hv0 (map_zero _)
-  have hnu : 0 < ‖u‖ := norm_pos_iff.mpr hu0
+  have hnu  := norm_pos_iff.mpr hu0
   set c : ℂ := ((‖u‖⁻¹ : ℝ) : ℂ)
   have hc : ‖c‖ = ‖u‖⁻¹ := by
     rw [Complex.norm_real, Real.norm_eq_abs, abs_of_pos (inv_pos.mpr hnu)]
   have hcu : ‖c • u‖ = 1 := by
     rw [norm_smul, hc, inv_mul_cancel₀ hnu.ne']
   refine le_trans ?_ (le_iSup₂_of_le (c • u) (S.smul_mem c huS) (le_iSup_of_le hcu le_rfl))
-  have hen : neumannEnergy (A.map n '' Ω) (e u) = ENNReal.ofReal (gradForm Ω (P.coef n) g) :=
+  have hen  :=
     P.pull_energy n (e u) g (by rw [hpu]; exact hg)
   have hwm : weightedMass Ω (bzDensity A n) u = ‖e u‖ ^ 2 := by
     rw [← P.weightedMass_pull hΩ n (e u), hpu]
-  have hev : 0 < ‖e u‖ := norm_pos_iff.mpr hv0
   have hq : P.formQ n (c • u) / weightedMass Ω (bzDensity A n) (c • u) =
       gradForm Ω (P.coef n) g / ‖e u‖ ^ 2 := by
     rw [P.formQ_eq hΩ n (hg.smul c), gradForm_smul (P.coef_meas n) (P.coef_bound n),
@@ -764,31 +773,30 @@ theorem minmax (hΩ : IsOpen Ω) (j n : ℕ) (S : Submodule ℂ (L2 Ω))
   exact le_rfl
 
 /-- Lemma 10.11 (convergence of the pulled-back Neumann forms). -/
-theorem formQ_tendsto (hΩ : IsOpen Ω) (S : Submodule ℂ (L2 Ω)) (hS : FiniteDimensional ℂ S)
-    (hSH : (S : Set (L2 Ω)) ⊆ H1 Ω) :
+theorem formQ_tendsto (hΩ : IsOpen Ω) (S : Submodule ℂ (l2Fixed)) (hS : FiniteDimensional ℂ S)
+    (hSH : (S : Set (l2Fixed)) ⊆ H1 Ω) :
     TendstoUniformlyOn P.formQ (fun u => (neumannEnergy Ω u).toReal) atTop
-      ((S : Set (L2 Ω)) ∩ Metric.sphere 0 1) := by
+      ((S : Set (l2Fixed)) ∩ Metric.sphere 0 1) := by
   have hev : ∀ᵐ w ∂(volume.restrict Ω), ∀ᶠ n in atTop, P.coef n w = 1 :=
     ae_restrict_of_forall_mem hΩ.measurableSet fun w hw =>
       (A.collar_shrink w hw).mono fun n hn => P.coef_eq_one n w hw hn
-  have h1m : ∀ i k, AEStronglyMeasurable (fun w : ℂ => (fun _ => (1 : Matrix (Fin 2) (Fin 2) ℝ)) w i k)
+  have h1m : ∀ i k, AEStronglyMeasurable (fun w : ℂ => (fun _ => (1 : Matrix (Coord) (Coord) ℝ)) w i k)
       (volume.restrict Ω) := fun _ _ => aestronglyMeasurable_const
   have h1b : ∀ᵐ w ∂(volume.restrict Ω), ∀ i k,
-      |(fun _ => (1 : Matrix (Fin 2) (Fin 2) ℝ)) w i k| ≤ 1 :=
+      |(fun _ => (1 : Matrix (Coord) (Coord) ℝ)) w i k| ≤ 1 :=
     Eventually.of_forall fun w i k => by
-      simp only [Matrix.one_apply]
+      simp  [Matrix.one_apply]
       split_ifs <;> simp
   set G := gradOf hΩ S hSH
   set Bn : ℕ → S →ₗ⋆[ℂ] S →ₗ[ℂ] ℂ := fun n =>
     ((gradSesq (P.coef_meas n) (P.coef_bound n)).comp G).compl₂ G
   set B : S →ₗ⋆[ℂ] S →ₗ[ℂ] ℂ := ((gradSesq h1m h1b).comp G).compl₂ G
   set b := Module.finBasis ℂ S
-  have hentries : ∀ r s, Tendsto (fun n => Bn n (b r) (b s)) atTop (𝓝 (B (b r) (b s))) :=
+  have hentries  :=
     fun r s => tendsto_integral_coefSesq P.coef P.coef_meas P.coef_bound hev (G (b r)) (G (b s))
   have hK : Bornology.IsBounded {u : S | ‖u‖ = 1} :=
-    (Metric.isBounded_closedBall (x := (0 : S)) (r := 1)).subset fun u hu => by
-      simp only [Set.mem_setOf_eq] at hu
-      simp [hu]
+    (Metric.isBounded_closedBall (x := 0) (r := 1)).subset fun u hu => by
+      simp_all
   have hU := tendstoUniformlyOn_sesq_of_basis b Bn B hentries hK
   have hU' := Complex.uniformContinuous_re.comp_tendstoUniformlyOn hU
   intro t ht
@@ -800,7 +808,7 @@ theorem formQ_tendsto (hΩ : IsOpen Ω) (S : Submodule ℂ (L2 Ω)) (hS : Finite
     rw [P.formQ_eq hΩ n hgu, gradForm_eq_re (P.coef_meas n) (P.coef_bound n)]
     rfl
   have eq2 : (neumannEnergy Ω u).toReal = (B ⟨u, huS⟩ ⟨u, huS⟩).re := by
-    have e3 : (B ⟨u, huS⟩ ⟨u, huS⟩).re = gradForm Ω (fun _ => 1) (G ⟨u, huS⟩) :=
+    have e3 : (B ⟨u, huS⟩ ⟨u, huS⟩).re = gradForm Ω 1 (G ⟨u, huS⟩) :=
       (gradForm_eq_re h1m h1b _).symm
     rw [e3, neumannEnergy_eq_of_isWeakGradient hΩ hgu, ENNReal.toReal_sum fun i _ => by simp]
     simp only [ENNReal.toReal_pow, ENNReal.coe_toReal, coe_nnnorm]
@@ -810,7 +818,7 @@ theorem formQ_tendsto (hΩ : IsOpen Ω) (S : Submodule ℂ (L2 Ω)) (hS : Finite
 
 /-- Almost-minimizing orthonormal families for the min–max formula: if `μ_j(D) < ∞`, there are
 `j + 1` orthonormal functions on whose span the Neumann energy is at most `(μ_j(D) + ε) ‖·‖²`. -/
-theorem exists_orthonormal_energy_le (D : Set ℂ) (j : ℕ) (hμ : neumannEigenvalue D j ≠ ⊤)
+theorem exists_orthonormal_energy_le (D : PlanarSet) (j : ℕ) (hμ : neumannEigenvalue D j ≠ ⊤)
     {ε : ℝ} (hε : 0 < ε) :
     ∃ e : Fin (j + 1) → L2 D, Orthonormal ℂ e ∧ ∀ a : Fin (j + 1) → ℂ,
       neumannEnergy D (∑ r, a r • e r) ≤
@@ -821,26 +829,24 @@ theorem exists_orthonormal_energy_le (D : Set ℂ) (j : ℕ) (hμ : neumannEigen
     ENNReal.lt_add_right hμ (by simpa using hε)
   obtain ⟨S, hS⟩ := iInf_lt_iff.mp hlt
   obtain ⟨hSj, hsup⟩ := iInf_lt_iff.mp hS
-  haveI : FiniteDimensional ℂ S := Module.finite_of_finrank_eq_succ hSj
+  haveI  := Module.finite_of_finrank_eq_succ hSj
   set ob := (stdOrthonormalBasis ℂ S).reindex (finCongr hSj)
   have hon : Orthonormal ℂ (fun r => (ob r : L2 D)) := by
     rw [orthonormal_iff_ite]
     intro r s
     exact orthonormal_iff_ite.mp ob.orthonormal r s
-  refine ⟨fun r => (ob r : L2 D), hon, fun a => ?_⟩
+  refine ⟨fun r => (ob r), hon, fun a => ?_⟩
   set v := ∑ r, a r • (ob r : L2 D)
   have hvS : v ∈ S := S.sum_mem fun r _ => S.smul_mem _ (ob r).2
   have hn : ‖v‖ ^ 2 = ∑ r, ‖a r‖ ^ 2 := by
     rw [@norm_sq_eq_re_inner ℂ, hon.inner_sum]
-    simp only [Complex.conj_mul']
-    rw [map_sum]
-    refine Finset.sum_congr rfl fun r _ => ?_
+    simp  [Complex.conj_mul']
     norm_cast
   by_cases hv : v = 0
   · rw [hv]
     refine le_trans (iInf₂_le 0 isWeakGradient_zero) ?_
     simp
-  · have hr : rayleigh D v ≤ neumannEigenvalue D j + ENNReal.ofReal ε :=
+  · have hr  :=
       (le_iSup₂_of_le v hvS (le_iSup (fun _ : v ≠ 0 => rayleigh D v) hv)).trans hsup.le
     have hne : (‖v‖₊ : ENNReal) ^ 2 ≠ 0 := by simpa using hv
     have e1 : (‖v‖₊ : ENNReal) ^ 2 = ENNReal.ofReal (∑ r, ‖a r‖ ^ 2) := by
@@ -855,9 +861,9 @@ theorem exists_orthonormal_energy_le (D : Set ℂ) (j : ℕ) (hμ : neumannEigen
 orthonormal for `m_n`, on whose span `q_n ≤ (μ_j(Ω_n) + ε) m_n`. -/
 theorem exists_almostMinimizers (j n : ℕ)
     (hμ : neumannEigenvalue (A.map n '' Ω) j ≠ ⊤) {ε : ℝ} (hε : 0 < ε) :
-    ∃ (u : Fin (j + 1) → L2 Ω) (G : Fin (j + 1) → Fin 2 → L2 Ω),
+    ∃ (u : Fin (j + 1) → l2Fixed) (G : Fin (j + 1) → Coord → l2Fixed),
       (∀ r, IsWeakGradient Ω (u r) (G r)) ∧
-      (∀ r s, ∫ w in Ω, (bzDensity A n w : ℂ) * inner ℂ ((u r : ℂ → ℂ) w) ((u s : ℂ → ℂ) w) =
+      (∀ r s, ∫ w in Ω, (bzDensity A n w : ℂ) * inner ℂ ((u r : PlaneMap) w) ((u s : PlaneMap) w) =
         if r = s then 1 else 0) ∧
       ∀ a : Fin (j + 1) → ℂ, gradForm Ω (P.coef n) (∑ r, a r • G r) ≤
         ((neumannEigenvalue (A.map n '' Ω) j).toReal + ε) * ∑ r, ‖a r‖ ^ 2 := by
@@ -866,9 +872,7 @@ theorem exists_almostMinimizers (j n : ℕ)
     intro r
     refine (P.pull_H1 n _).mp (mem_H1_of_neumannEnergy_ne_top ?_)
     have h1 := hE (Pi.single r 1)
-    simp only [Pi.single_apply, ite_smul, one_smul, zero_smul, Finset.sum_ite_eq',
-      Finset.mem_univ, if_true] at h1
-    exact ne_top_of_le_ne_top ENNReal.ofReal_ne_top h1
+    measurability
   choose G hG using hH
   refine ⟨fun r => P.pull n (e r), G, hG, fun r s => ?_, fun a => ?_⟩
   · rw [← orthonormal_iff_ite.mp he r s]
@@ -885,44 +889,43 @@ theorem exists_almostMinimizers (j n : ℕ)
 gradients `g_n` converge weakly to `Γ` and `q_{κ(n)}[g_n] ≤ β_n → β` with `κ(n) → ∞`, then
 `∫_Ω |Γ|² ≤ β`. On the sets `F_N` outside the collars `C_m`, `m ≥ N`, the matrices `A_m` equal
 `I`, and elsewhere they are positive. -/
-theorem lsc_gradForm (hΩ : MeasurableSet Ω) (κ : ℕ → ℕ) (hκ : Tendsto κ atTop atTop)
-    (g : ℕ → Fin 2 → L2 Ω) (Γ : Fin 2 → L2 Ω)
+theorem lsc_gradForm (hΩ : MeasurableSet Ω) κ (hκ : Tendsto κ atTop atTop)
+    (g : ℕ → Coord → l2Fixed) (Γ : Coord → l2Fixed)
     (hw : ∀ i z, Tendsto (fun n => inner ℂ z (g n i)) atTop (𝓝 (inner ℂ z (Γ i))))
-    (β : ℕ → ℝ) (β₀ : ℝ) (hβ : Tendsto β atTop (𝓝 β₀))
+    β β₀ (hβ : Tendsto β atTop (𝓝 β₀))
     (hq : ∀ n, gradForm Ω (P.coef (κ n)) (g n) ≤ β n) :
     ∑ i, ‖Γ i‖ ^ 2 ≤ β₀ := by
-  have hMp : ∀ m, ∀ᵐ w ∂(volume.restrict Ω), ∀ ξ : Fin 2 → ℂ,
-      0 ≤ (coefSesq (P.coef m w) ξ ξ).re := fun m =>
+  have hMp  := fun m =>
     (P.coef_ellip m).mono fun w hw ξ =>
       le_trans (mul_nonneg P.ellip_pos.le (Finset.sum_nonneg fun i _ => sq_nonneg _)) (hw ξ)
-  have hF : ∀ N, ∑ i, ∫ w in collarFree A N, ‖(Γ i : ℂ → ℂ) w‖ ^ 2 ∂(volume.restrict Ω) ≤ β₀ := by
+  have hF : ∀ N, ∑ i, ∫ w in collarFree A N, ‖(Γ i : PlaneMap) w‖ ^ 2 ∂(volume.restrict Ω) ≤ β₀ := by
     intro N
     refine le_of_forall_pos_le_add fun ε hε => ?_
     have h1 : ∀ i, ∀ᶠ n in atTop,
-        ∫ w in collarFree A N, ‖(Γ i : ℂ → ℂ) w‖ ^ 2 ∂(volume.restrict Ω) - ε / 2 ≤
-          ∫ w in collarFree A N, ‖(g n i : ℂ → ℂ) w‖ ^ 2 ∂(volume.restrict Ω) :=
+        ∫ w in collarFree A N, ‖(Γ i : PlaneMap) w‖ ^ 2 ∂(volume.restrict Ω) - ε / 2 ≤
+          ∫ w in collarFree A N, ‖(g n i : PlaneMap) w‖ ^ 2 ∂(volume.restrict Ω) :=
       fun i => weak_lsc_restrict (hw i) _ (ε / 2) (by positivity)
     have h3 : ∀ᶠ n in atTop,
-        ∑ i, ∫ w in collarFree A N, ‖(Γ i : ℂ → ℂ) w‖ ^ 2 ∂(volume.restrict Ω) - ε ≤ β n := by
+        ∑ i, ∫ w in collarFree A N, ‖(Γ i : PlaneMap) w‖ ^ 2 ∂(volume.restrict Ω) - ε ≤ β n := by
       filter_upwards [h1 0, h1 1, hκ.eventually_ge_atTop N] with n hn0 hn1 hn2
       have hMF : ∀ w ∈ Ω, w ∈ collarFree A N → P.coef (κ n) w = 1 := by
         intro w hwΩ hwF
         refine P.coef_eq_one _ w hwΩ ?_
-        simp only [collarFree, Set.mem_iInter] at hwF
+        simp  [collarFree] at hwF
         exact hwF (κ n) hn2
       have h := integral_restrict_le_gradForm (P.coef_meas (κ n)) (P.coef_bound (κ n))
         (hMp (κ n)) hΩ (measurableSet_collarFree A N) hMF (g n)
-      simp only [Fin.sum_univ_two] at h ⊢
+      simp   at h ⊢
       linarith [hq n]
     have := ge_of_tendsto hβ h3
     linarith
-  have hint : ∀ i, Integrable (fun w => ‖(Γ i : ℂ → ℂ) w‖ ^ 2) (volume.restrict Ω) := fun i =>
+  have hint : ∀ i, Integrable (fun w => ‖(Γ i : PlaneMap) w‖ ^ 2) (volume.restrict Ω) := fun i =>
     (memLp_two_iff_integrable_sq_norm (Lp.aestronglyMeasurable _)).mp (Lp.memLp _)
-  have hlim : Tendsto (fun N => ∑ i, ∫ w in collarFree A N, ‖(Γ i : ℂ → ℂ) w‖ ^ 2
+  have hlim : Tendsto (fun N => ∑ i, ∫ w in collarFree A N, ‖(Γ i : PlaneMap) w‖ ^ 2
       ∂(volume.restrict Ω)) atTop (𝓝 (∑ i, ‖Γ i‖ ^ 2)) := by
     refine tendsto_finset_sum _ fun i _ => ?_
-    rw [← integral_norm_sq_eq]
-    exact tendsto_setIntegral_collarFree A (hint i)
+    rw [← integral_norm_sq_eq_of]
+    exact?
   exact le_of_tendsto' hlim hF
 
 /-- The compactness step of Lemma 10.13: almost-minimizing families along a sequence of
@@ -930,33 +933,28 @@ indices tending to infinity have orthonormal limits in `L²(Ω)`, with `q_Ω ≤
 span. -/
 theorem limits_of_almostMinimizers (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
     (j : ℕ) (ψ : ℕ → ℕ) (hψ : Tendsto ψ atTop atTop)
-    (u : ℕ → Fin (j + 1) → L2 Ω) (G : ℕ → Fin (j + 1) → Fin 2 → L2 Ω)
+    (u : ℕ → Fin (j + 1) → l2Fixed) (G : ℕ → Fin (j + 1) → Coord → l2Fixed)
     (hG : ∀ n r, IsWeakGradient Ω (u n r) (G n r))
     (horth : ∀ n r s, ∫ w in Ω, (bzDensity A (ψ n) w : ℂ) *
-      inner ℂ ((u n r : ℂ → ℂ) w) ((u n s : ℂ → ℂ) w) = if r = s then 1 else 0)
+      inner ℂ ((u n r : PlaneMap) w) ((u n s : PlaneMap) w) = if r = s then 1 else 0)
     (b : ℕ → ℝ) (B : ℝ) (hbB : Tendsto b atTop (𝓝 B))
     (hq : ∀ n (a : Fin (j + 1) → ℂ), gradForm Ω (P.coef (ψ n)) (∑ r, a r • G n r) ≤
       b n * ∑ r, ‖a r‖ ^ 2) :
-    ∃ U : Fin (j + 1) → L2 Ω, Orthonormal ℂ U ∧ ∀ a : Fin (j + 1) → ℂ,
+    ∃ U : Fin (j + 1) → l2Fixed, Orthonormal ℂ U ∧ ∀ a : Fin (j + 1) → ℂ,
       neumannEnergy Ω (∑ r, a r • U r) ≤ ENNReal.ofReal (B * ∑ r, ‖a r‖ ^ 2) := by
-  have hΩ : IsOpen Ω := hL.1.1
+  have hΩ  := hL.1.1
   set c := P.ellip
-  have hc : 0 < c := P.ellip_pos
+  have hc  := P.ellip_pos
   -- uniform bounds in `H¹`
   have hmass : ∀ n r, weightedMass Ω (bzDensity A (ψ n)) (u n r) = 1 := by
     intro n r
     have e : ∫ w in Ω, (bzDensity A (ψ n) w : ℂ) *
-        inner ℂ ((u n r : ℂ → ℂ) w) ((u n r : ℂ → ℂ) w) =
+        inner ℂ ((u n r : PlaneMap) w) ((u n r : PlaneMap) w) =
         ((weightedMass Ω (bzDensity A (ψ n)) (u n r) : ℝ) : ℂ) := by
       rw [weightedMass, ← integral_complex_ofReal]
-      refine integral_congr_ae (Eventually.of_forall fun w => ?_)
-      simp only
-      rw [inner_self_eq_norm_sq_to_K]
-      push_cast
-      rfl
+      simp_all
     have h := horth n r r
-    rw [e, if_pos rfl] at h
-    exact_mod_cast h
+    simp_all
   have hub : ∀ n r, ‖u n r‖ ≤ Real.sqrt (1 / c) := by
     intro n r
     have h := weightedMass_ge (bzDensity_aestronglyMeasurable A (ψ n)) (bzDensity_bound hΩ A (ψ n))
@@ -965,20 +963,19 @@ theorem limits_of_almostMinimizers (hb : Bornology.IsBounded Ω) (hL : IsLipschi
     have h2 : ‖u n r‖ ^ 2 ≤ 1 / c := by rw [le_div_iff₀ hc]; linarith
     simpa using Real.abs_le_sqrt h2
   obtain ⟨Bm, hBm⟩ := hbB.bddAbove_range
-  have hBm' : ∀ n, b n ≤ Bm := fun n => hBm ⟨n, rfl⟩
+  have hBm'  := fun n => hBm ⟨n, rfl⟩
   have hGb : ∀ n r i, ‖G n r i‖ ≤ Real.sqrt (Bm / c) := by
     intro n r i
     have h1 := hq n (Pi.single r 1)
     have e1 : ∑ s, (Pi.single r (1 : ℂ) : Fin (j + 1) → ℂ) s • G n s = G n r := by
-      rw [Finset.sum_eq_single r (fun s _ hs => by simp [hs]) (by simp)]
-      simp
+      norm_num
     have e2 : ∑ s, ‖(Pi.single r (1 : ℂ) : Fin (j + 1) → ℂ) s‖ ^ 2 = 1 := by
       rw [Finset.sum_eq_single r (fun s _ hs => by simp [hs]) (by simp)]
       simp
     rw [e1, e2, mul_one] at h1
     have h2 := ellip_le_gradForm (P.coef_meas (ψ n)) (P.coef_bound (ψ n)) (P.coef_ellip (ψ n))
       (G n r)
-    have h3 : ‖G n r i‖ ^ 2 ≤ ∑ k, ‖G n r k‖ ^ 2 :=
+    have h3  :=
       Finset.single_le_sum (f := fun k => ‖G n r k‖ ^ 2) (fun k _ => sq_nonneg _)
         (Finset.mem_univ i)
     have h4 : ‖G n r i‖ ^ 2 ≤ Bm / c := by
@@ -987,7 +984,7 @@ theorem limits_of_almostMinimizers (hb : Bornology.IsBounded Ω) (hL : IsLipschi
     simpa using Real.abs_le_sqrt h4
   set R := max (Real.sqrt (1 / c)) (Real.sqrt (Bm / c))
   -- a common subsequence
-  let Pr : Fin (j + 1) ⊕ (Fin (j + 1) × Fin 2) → (ℕ → ℕ) → Prop := fun k θ =>
+  let Pr : Fin (j + 1) ⊕ (Fin (j + 1) × Coord) → (ℕ → ℕ) → Prop := fun k θ =>
     Sum.elim (fun r => ∃ V, Tendsto (fun n => u (θ n) r) atTop (𝓝 V))
       (fun ri => ∃ V, ∀ z, Tendsto (fun n => inner ℂ z (G (θ n) ri.1 ri.2)) atTop
         (𝓝 (inner ℂ z V))) k
@@ -1012,22 +1009,22 @@ theorem limits_of_almostMinimizers (hb : Bornology.IsBounded Ω) (hL : IsLipschi
           (fun n => (hGb _ _ _).trans (le_max_right _ _))
         exact ⟨φ', hφ', V, hV⟩)
   choose U hU using fun r => hP (Sum.inl r)
-  choose Γ hΓ using fun ri : Fin (j + 1) × Fin 2 => hP (Sum.inr ri)
-  have hUG : ∀ r, IsWeakGradient Ω (U r) (fun i => Γ (r, i)) := fun r =>
+  choose Γ hΓ using fun ri : Fin (j + 1) × Coord => hP (Sum.inr ri)
+  have hUG  := fun r =>
     isWeakGradient_of_weak_tendsto (fun n => hG (θ n) r) (hU r) (fun i z => hΓ (r, i) z)
-  have hψθ : Tendsto (fun n => ψ (θ n)) atTop atTop := hψ.comp hθ.tendsto_atTop
+  have hψθ  := hψ.comp hθ.tendsto_atTop
   refine ⟨U, ?_, fun a => ?_⟩
   · -- orthonormality of the limits
     rw [orthonormal_iff_ite]
     intro r s
-    have h := tendsto_weighted_inner (fun n => bzDensity A (ψ (θ n))) ((A.lip : ℝ) ^ 2)
+    have h := tendsto_weighted_inner (fun n => bzDensity A (ψ (θ n))) (A.lip ^ 2)
       (fun n => bzDensity_aestronglyMeasurable A _) (fun n => bzDensity_bound hΩ A _)
       (bzDensity_tendsto hΩ A hψθ) (hU r) (hU s)
     refine tendsto_nhds_unique h ?_
     simp_rw [horth]
     exact tendsto_const_nhds
   · -- the energy bound
-    set Γa : Fin 2 → L2 Ω := ∑ r, a r • (fun i => Γ (r, i))
+    set Γa : Coord → l2Fixed := ∑ r, a r • (fun i => Γ (r, i))
     have hV : IsWeakGradient Ω (∑ r, a r • U r) Γa :=
       IsWeakGradient.sum _ _ _ fun r _ => (hUG r).smul (a r)
     have hw : ∀ i z, Tendsto (fun n => inner ℂ z ((∑ r, a r • G (θ n) r) i)) atTop
@@ -1048,17 +1045,16 @@ include P in
 theorem limits (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω) (j : ℕ) (φ : ℕ → ℕ)
     (hφ : StrictMono φ) (lam : ENNReal) (hlam : lam < ⊤)
     (h : Tendsto (fun n => neumannEigenvalue (A.map (φ n) '' Ω) j) atTop (𝓝 lam)) :
-    ∃ u : Fin (j + 1) → L2 Ω, Orthonormal ℂ u ∧ ∀ a : Fin (j + 1) → ℂ,
+    ∃ u : Fin (j + 1) → l2Fixed, Orthonormal ℂ u ∧ ∀ a : Fin (j + 1) → ℂ,
       neumannEnergy Ω (∑ r, a r • u r) ≤ lam * ENNReal.ofReal (∑ r, ‖a r‖ ^ 2) := by
   obtain ⟨N, hN⟩ := eventually_atTop.mp (h.eventually (Iio_mem_nhds hlam))
-  have hfin : ∀ n, neumannEigenvalue (A.map (φ (n + N)) '' Ω) j ≠ ⊤ := fun n =>
+  have hfin  := fun n =>
     (hN (n + N) (Nat.le_add_left N n)).ne
   choose u G hG horth hq using fun n =>
-    P.exists_almostMinimizers j (φ (n + N)) (hfin n) (ε := 1 / ((n : ℝ) + 1)) (by positivity)
-  have hψ : Tendsto (fun n => φ (n + N)) atTop atTop :=
+    P.exists_almostMinimizers j (φ (n + N)) (hfin n) (ε := 1 / (n + 1)) (by positivity)
+  have hψ  :=
     hφ.tendsto_atTop.comp (tendsto_add_atTop_nat N)
-  have hbB : Tendsto (fun n => (neumannEigenvalue (A.map (φ (n + N)) '' Ω) j).toReal +
-      1 / ((n : ℝ) + 1)) atTop (𝓝 (lam.toReal + 0)) :=
+  have hbB  :=
     ((ENNReal.tendsto_toReal hlam.ne).comp (h.comp (tendsto_add_atTop_nat N))).add
       tendsto_one_div_add_atTop_nhds_zero_nat
   rw [add_zero] at hbB
@@ -1077,7 +1073,7 @@ subspaces of `H¹(Ω)` (Lemma 10.10), `q_n → q_Ω` uniformly on unit spheres o
 subspaces of `H¹(Ω)` (Lemma 10.11), and along subsequences with convergent eigenvalues there are
 orthonormal limits of the pulled-back eigenfunctions.
 Proved from the pullback data `exists_pullbackData` (Lemmas 10.9–10.10). -/
-theorem exists_pullbackForms {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
+theorem exists_pullbackForms {Ω : PlanarSet} (hb : Bornology.IsBounded Ω)
     (hL : IsLipschitzDomain Ω) (A : BallZarnescuApprox Ω) :
     ∃ formQ : ℕ → L2 Ω → ℝ,
       (∀ (j n : ℕ) (S : Submodule ℂ (L2 Ω)), Module.finrank ℂ S = j + 1 →
@@ -1092,9 +1088,8 @@ theorem exists_pullbackForms {Ω : Set ℂ} (hb : Bornology.IsBounded Ω)
         ∃ u : Fin (j + 1) → L2 Ω, Orthonormal ℂ u ∧ ∀ a : Fin (j + 1) → ℂ,
           neumannEnergy Ω (∑ r, a r • u r) ≤ lam * ENNReal.ofReal (∑ r, ‖a r‖ ^ 2)) := by
   obtain ⟨P⟩ := exists_pullbackData hL A
-  exact ⟨P.formQ, fun j n S hS hSH => P.minmax hL.1.1 j n S hS hSH,
-    fun S hS hSH => P.formQ_tendsto hL.1.1 S hS hSH, fun j φ hφ lam hlam h =>
-      P.limits hb hL j φ hφ lam hlam h⟩
+  exact ⟨P.formQ, (P.minmax hL.1.1),
+    (P.formQ_tendsto hL.1.1), (P.limits hb hL)⟩
 
 end PolyaNeumann
 

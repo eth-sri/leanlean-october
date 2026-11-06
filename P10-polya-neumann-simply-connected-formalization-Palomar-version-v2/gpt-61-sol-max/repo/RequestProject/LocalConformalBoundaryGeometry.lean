@@ -1,5 +1,9 @@
 module
 
+public import RequestProject.PlanarTypes
+
+public import RequestProject.PlanarGeometry
+
 public import RequestProject.LocalConformalArcFactorization
 public import Mathlib.Topology.ContinuousOn
 
@@ -20,104 +24,112 @@ field of `IsBoundaryParam` still requires a proof of positive orientation.
 Existence of the initial supplied conformal map is a separate obligation.
 -/
 
-@[expose] public section
+public section
 
-set_option autoImplicit false
+open scoped ContDiff
 
-noncomputable section
+
 
 namespace PolyaNeumann
 
 open MeasureTheory Set Metric
-open scoped Topology
+
+section
+variable (F : PlaneMap) (hF : ContinuousOn F closedUnitDisk)
+include F hF
 
 /-- Compactness and continuity give the exact closed-disk image. No
 injectivity or holomorphicity is needed for this topological identity. -/
-theorem unitDisk_closed_image_eq_closure (F : ℂ → ℂ)
-    (hF : ContinuousOn F (closedBall (0 : ℂ) 1)) :
-    F '' closedBall (0 : ℂ) 1 = closure (F '' ball (0 : ℂ) 1) := by
-  have hclosure : closure (ball (0 : ℂ) 1) = closedBall (0 : ℂ) 1 :=
+theorem unitDisk_closed_image_eq_closure :
+    F '' closedUnitDisk = closure (F '' unitDisk) := by
+  have hclosure  :=
     closure_ball (0 : ℂ) (by norm_num : (1 : ℝ) ≠ 0)
-  have hFc : ContinuousOn F (closure (ball (0 : ℂ) 1)) := by
-    simpa only [hclosure] using hF
+  have hFc : ContinuousOn F (closure unitDisk) := by
+    simpa  [hclosure] using hF
   apply Subset.antisymm
-  · simpa only [hclosure] using hFc.image_closure
+  · simpa  [hclosure] using hFc.image_closure
   · apply closure_minimal
     · rintro w ⟨z, hz, rfl⟩
       exact ⟨z, ball_subset_closedBall hz, rfl⟩
-    · exact ((isCompact_closedBall (0 : ℂ) 1).image_of_continuousOn hF).isClosed
+    · exact ((isCompact_closedBall 0 1).image_of_continuousOn hF).isClosed
 
 /-- For an injective closed-disk map, removing the open-disk image removes
 exactly the interior source points. Openness of the image identifies the
 remaining points with its frontier. -/
-theorem unitDisk_sphere_image_eq_frontier (F : ℂ → ℂ)
-    (hF : ContinuousOn F (closedBall (0 : ℂ) 1))
-    (hinj : InjOn F (closedBall (0 : ℂ) 1))
-    (hΩ : IsOpen (F '' ball (0 : ℂ) 1)) :
-    F '' sphere (0 : ℂ) 1 = frontier (F '' ball (0 : ℂ) 1) := by
+theorem unitDisk_sphere_image_eq_frontier
+    (hinj : InjOn F closedUnitDisk)
+    (hΩ : IsOpen (F '' unitDisk)) :
+    F '' sphere (0 : ℂ) 1 = frontier (F '' unitDisk) := by
   calc
-    F '' sphere (0 : ℂ) 1 =
-        F '' (closedBall (0 : ℂ) 1 \ ball (0 : ℂ) 1) := by
+    F '' sphere 0 1 =
+        F '' (closedBall 0 1 \ ball 0 1) := by
       rw [closedBall_diff_ball]
-    _ = F '' closedBall (0 : ℂ) 1 \ F '' ball (0 : ℂ) 1 :=
+    _ = F '' closedBall 0 1 \ F '' ball 0 1 :=
       hinj.image_diff_subset ball_subset_closedBall
-    _ = closure (F '' ball (0 : ℂ) 1) \ F '' ball (0 : ℂ) 1 := by
-      rw [unitDisk_closed_image_eq_closure F hF]
-    _ = frontier (F '' ball (0 : ℂ) 1) := hΩ.frontier_eq.symm
+    _ = closure (F '' ball 0 1) \ F '' ball 0 1 := by
+      simp_all [unitDisk_closed_image_eq_closure]
+    _ = frontier (F '' ball 0 1) := hΩ.frontier_eq.symm
 
-theorem localConformal_closedDisk_image_eq_closure {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R)) :
-    F '' closedBall (0 : ℂ) 1 = closure (F '' ball (0 : ℂ) 1) :=
+end
+
+
+section
+variable {R } (hR : 1 < R) (F : PlaneMap) (hFs : RealSmoothOnBall F R)
+
+section
+include R hR F hFs
+
+theorem localConformal_closedDisk_image_eq_closure :
+    F '' closedUnitDisk = closure (F '' unitDisk) :=
   unitDisk_closed_image_eq_closure F
     (hFs.continuousOn.mono (closedBall_subset_ball hR))
 
-theorem localConformal_unitSphere_image_eq_frontier {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hinj : InjOn F (closedBall (0 : ℂ) 1))
-    (hΩ : IsOpen (F '' ball (0 : ℂ) 1)) :
-    F '' sphere (0 : ℂ) 1 = frontier (F '' ball (0 : ℂ) 1) :=
+theorem localConformal_unitSphere_image_eq_frontier
+    (hinj : InjOn F closedUnitDisk)
+    (hΩ : IsOpen (F '' unitDisk)) :
+    F '' sphere (0 : ℂ) 1 = frontier (F '' unitDisk) :=
   unitDisk_sphere_image_eq_frontier F
     (hFs.continuousOn.mono (closedBall_subset_ball hR)) hinj hΩ
+
+end
+
 
 /-- The closed angular interval has exactly the unit-circle image, including
 both representations of its common endpoint. -/
 theorem unitCircleMap_image_Icc :
-    circleMap 0 1 '' Icc (0 : ℝ) (2 * Real.pi) = sphere (0 : ℂ) 1 := by
-  have hIoc : circleMap 0 1 '' Ioc (0 : ℝ) (2 * Real.pi) = sphere (0 : ℂ) 1 := by
-    simpa only [abs_one] using image_circleMap_Ioc 0 1
+    unitCircleMap '' boundaryInterval = sphere (0 : ℂ) 1 := by
+  have hIoc : unitCircleMap '' boundaryHalfOpenInterval = sphere (0 : ℂ) 1 := by
+    norm_num
   apply Subset.antisymm
   · intro w hw
-    have hwr : w ∈ range (circleMap 0 1) :=
-      image_subset_range (circleMap 0 1) (Icc 0 (2 * Real.pi)) hw
-    simpa only [range_circleMap, abs_one] using hwr
+    aesop
   · rw [← hIoc]
     rintro w ⟨θ, hθ, rfl⟩
-    exact ⟨θ, ⟨hθ.1.le, hθ.2⟩, rfl⟩
+    grind
 
-theorem physicalCircleTrace_image_Icc (F : ℂ → ℂ) :
-    physicalCircleTrace F '' Icc (0 : ℝ) (2 * Real.pi) = F '' sphere (0 : ℂ) 1 := by
-  change (F ∘ circleMap 0 1) '' Icc (0 : ℝ) (2 * Real.pi) = _
-  rw [image_comp, unitCircleMap_image_Icc]
+theorem physicalCircleTrace_image_Icc F :
+    physicalCircleTrace F '' boundaryInterval = F '' sphere (0 : ℂ) 1 := by
+  grind [unitCircleMap_image_Icc, PolyaNeumann.physicalCircleTrace]
 
+include R hR F hFs in
 /-- The boundary image is proved from F itself; it is not supplied as an
 independent premise. -/
-theorem localConformal_circleTrace_image_frontier {R : ℝ} (hR : 1 < R)
-    (F : ℂ → ℂ) (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hinj : InjOn F (closedBall (0 : ℂ) 1))
-    (hΩ : IsOpen (F '' ball (0 : ℂ) 1)) :
-    physicalCircleTrace F '' Icc (0 : ℝ) (2 * Real.pi) =
-      frontier (F '' ball (0 : ℂ) 1) := by
-  rw [physicalCircleTrace_image_Icc]
-  exact localConformal_unitSphere_image_eq_frontier hR F hFs hinj hΩ
+theorem localConformal_circleTrace_image_frontier
+    (hinj : InjOn F closedUnitDisk)
+    (hΩ : IsOpen (F '' unitDisk)) :
+    physicalCircleTrace F '' boundaryInterval =
+      frontier (F '' unitDisk) := by
+  grind only [physicalCircleTrace_image_Icc, localConformal_unitSphere_image_eq_frontier]
+
+end
+
 
 /-- Exact inverse arclength preserves an already proved boundary image. -/
-theorem normalizedArcCurve_image_frontier {Ω : Set ℂ} {γ : ℝ → ℂ}
-    (hγ : ContDiff ℝ 1 γ) (hper : Function.Periodic γ (2 * Real.pi))
+theorem normalizedArcCurve_image_frontier  
+    hγ hper
     (hnz : ∀ θ, deriv γ θ ≠ 0)
-    (him : γ '' Icc (0 : ℝ) (2 * Real.pi) = frontier Ω) :
-    normalizedArcCurve hγ hper hnz '' Icc (0 : ℝ) (2 * Real.pi) = frontier Ω := by
+    (him : γ '' boundaryInterval = frontier Ω) :
+    normalizedArcCurve hγ hper hnz '' boundaryInterval = frontier Ω := by
   rw [normalizedArcCurve_image_Icc hγ hper hnz, him]
 
 end PolyaNeumann
-
-end

@@ -1,5 +1,9 @@
 module
 
+public import RequestProject.PlanarTypes
+
+public import RequestProject.PlanarGeometry
+
 public import RequestProject.DiskHardyExtension
 public import RequestProject.LocalConformalH1Equiv
 public import RequestProject.LocalConformalTrace
@@ -17,7 +21,8 @@ gives its norm bound. The initial conformal map is supplied explicitly.
 
 @[expose] public section
 
-set_option autoImplicit false
+open scoped ContDiff
+
 
 noncomputable section
 
@@ -25,48 +30,49 @@ namespace PolyaNeumann
 
 open MeasureTheory Set Metric
 
-variable {R C K : ℝ} (hR : 1 < R) (F : ℂ → ℂ)
-    (hFs : ContDiffOn ℝ (⊤ : ℕ∞) F (ball (0 : ℂ) R))
-    (hb : Bornology.IsBounded (F '' ball (0 : ℂ) 1))
-    (hL : IsLipschitzDomain (F '' ball (0 : ℂ) 1))
-    (hhol : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hinj : InjOn F (ball (0 : ℂ) 1))
-    (hC : ∀ z ∈ ball (0 : ℂ) 1, 1 ≤ C * ‖deriv F z‖ ^ 2)
-    (hK : ∀ z ∈ ball (0 : ℂ) 1, ‖fderiv ℝ F z 1‖ ≤ K)
-    (e : OpenPartialHomeomorph ℂ ℂ) (he : (e : ℂ → ℂ) = F)
-    (hsource : closedBall (0 : ℂ) 1 ⊆ e.source)
-    (hes : ContDiffOn ℝ (⊤ : ℕ∞) e.symm e.target)
+variable {R C K : ℝ} (hR : 1 < R) (F : PlaneMap)
+    (hFs : RealSmoothOnBall F R)
+    (hb : Bornology.IsBounded (F '' unitDisk))
+    (hL : IsLipschitzDomain (F '' unitDisk))
+    (hhol : DifferentiableOn ℂ F unitDisk)
+    (hinj : InjOn F unitDisk)
+    (hC : DiskInverseJacobianBound F C)
+    (hK : DiskDerivativeBound F K)
+    (e : OpenPartialHomeomorph ℂ ℂ) (he : (e : PlaneMap) = F)
+    (hsource : closedUnitDisk ⊆ e.source)
+    (hes : RealSmoothOn e.symm e.target)
 
 /-- The actual disk extension followed by the actual physical H¹ pushforward. -/
 def localConformalHardyH1Extension :
-    L2Z →L[ℂ] NeumannH1 (F '' ball (0 : ℂ) 1) :=
+    L2Z →L[ℂ] NeumannH1 (F '' unitDisk) :=
   (localConformalH1Pushforward hR F hFs hb hL hhol hinj hC hK e he hsource hes).comp
     diskHardyExtension
+local notation "hardyH1ExtensionFixed" => localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes
 
-@[simp] theorem localConformalH1Pullback_hardyExtension (b : L2Z) :
+
+@[simp] theorem localConformalH1Pullback_hardyExtension b :
     localConformalH1Pullback hR F hFs hL
-      (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes b) =
-        diskHardyExtension b := by
-  exact localConformalH1Pullback_pushforward hR F hFs hb hL hhol hinj hC hK e he hsource hes
+      (hardyH1ExtensionFixed b) =
+        diskHardyExtension b := localConformalH1Pullback_pushforward hR F hFs hb hL hhol hinj hC hK e he hsource hes
     (diskHardyExtension b)
 
-theorem localConformalDiskHalfTrace_hardyExtension_eq_of_nonpositive (b : L2Z)
+theorem localConformalDiskHalfTrace_hardyExtension_eq_of_nonpositive b
     (hneg : ∀ n : ℤ, 0 < n → b n = 0) :
     localConformalDiskHalfTrace hR F hFs hL
-      (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes b) = b := by
+      (hardyH1ExtensionFixed b) = b := by
   change diskHalfTrace (localConformalH1Pullback hR F hFs hL
-    (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes b)) = _
+    (hardyH1ExtensionFixed b)) = _
   rw [localConformalH1Pullback_hardyExtension]
   exact diskHalfTrace_diskHardyExtension_eq_of_nonpositive b hneg
 
 /-- The transported vector satisfies the actual physical weak CR equation. -/
-theorem localConformalHardyH1Extension_cauchyRiemann (b : L2Z) :
-    h1Gradient (F '' ball (0 : ℂ) 1) 0
-        (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes b) =
-      Complex.I • h1Gradient (F '' ball (0 : ℂ) 1) 1
-        (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes b) := by
+theorem localConformalHardyH1Extension_cauchyRiemann b :
+    h1Gradient (F '' unitDisk) 0
+        (hardyH1ExtensionFixed b) =
+      Complex.I • h1Gradient (F '' unitDisk) 1
+        (hardyH1ExtensionFixed b) := by
   apply (localConformalH1Pullback_antiholomorphic_iff hR F hFs hb hL hhol hinj hC
-    (localConformalHardyH1Extension hR F hFs hb hL hhol hinj hC hK e he hsource hes b)).mp
+    (hardyH1ExtensionFixed b)).mp
   rw [localConformalH1Pullback_hardyExtension]
   exact diskHardyExtension_cauchyRiemann b
 

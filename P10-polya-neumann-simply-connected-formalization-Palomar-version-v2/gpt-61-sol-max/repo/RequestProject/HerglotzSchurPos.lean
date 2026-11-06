@@ -1,5 +1,9 @@
 module
 
+public import RequestProject.PlanarTypes
+
+public import RequestProject.PlanarGeometry
+
 public import RequestProject.TraceIneq
 public import RequestProject.HerglotzModes
 public import RequestProject.HerglotzSchurBound
@@ -20,26 +24,26 @@ The principal part is `2k² ∫_Ω (|F₁|² + 2|F₋₁|² − 3|F₀|²) − 2
 @[expose] public section
 
 open MeasureTheory Set Filter Metric
-open scoped ComplexConjugate Real Topology
+open scoped ComplexConjugate Real
 
 noncomputable section
 namespace PolyaNeumann
-variable {Ω : Set ℂ} {γ : ℝ → ℂ} {a : ℝ → ℂ}
+variable {Ω : PlanarSet} {γ : ComplexCurve} {a : ComplexCurve}
 
 /-- Cauchy–Schwarz on `[0, 2π]`: `(∫ |g|)² ≤ 2π ∫ |g|²`. -/
-lemma sq_intervalIntegral_norm_le {g : ℝ → ℂ} (hg : Continuous g) :
-    (∫ θ in (0:ℝ)..(2 * π), ‖g θ‖) ^ 2 ≤ 2 * π * ∫ θ in (0:ℝ)..(2 * π), ‖g θ‖ ^ 2 := by
+lemma sq_intervalIntegral_norm_le {g : ComplexCurve} (hg : Continuous g) :
+    (∫ θ in (0:ℝ)..circlePeriod, ‖g θ‖) ^ 2 ≤ 2 * π * ∫ θ in (0:ℝ)..circlePeriod, ‖g θ‖ ^ 2 := by
   have h2π : (0:ℝ) < 2 * π := by positivity
-  set S := ∫ θ in (0:ℝ)..(2 * π), ‖g θ‖ with hS
-  set m := S / (2 * π) with hm
-  have h1 : IntervalIntegrable (fun θ => ‖g θ‖ ^ 2) volume 0 (2 * π) :=
+  set S := ∫ θ in (0)..circlePeriod, ‖g θ‖ with hS
+  set m := S / circlePeriod with hm
+  have h1 : IntervalIntegrable (fun θ => ‖g θ‖ ^ 2) volume 0 circlePeriod :=
     (hg.norm.pow 2).intervalIntegrable _ _
-  have h2 : IntervalIntegrable (fun θ => 2 * m * ‖g θ‖) volume 0 (2 * π) :=
+  have h2 : IntervalIntegrable (fun θ => 2 * m * ‖g θ‖) volume 0 circlePeriod :=
     (continuous_const.mul hg.norm).intervalIntegrable _ _
-  have hnn : 0 ≤ ∫ θ in (0:ℝ)..(2 * π), (‖g θ‖ - m) ^ 2 :=
+  have hnn : 0 ≤ ∫ θ in (0:ℝ)..circlePeriod, (‖g θ‖ - m) ^ 2 :=
     intervalIntegral.integral_nonneg h2π.le fun θ _ => sq_nonneg _
-  have hexp : ∫ θ in (0:ℝ)..(2 * π), (‖g θ‖ - m) ^ 2 =
-      (∫ θ in (0:ℝ)..(2 * π), ‖g θ‖ ^ 2) - 2 * m * S + m ^ 2 * (2 * π) := by
+  have hexp : ∫ θ in (0:ℝ)..circlePeriod, (‖g θ‖ - m) ^ 2 =
+      (∫ θ in (0:ℝ)..circlePeriod, ‖g θ‖ ^ 2) - 2 * m * S + m ^ 2 * circlePeriod := by
     have : (fun θ => (‖g θ‖ - m) ^ 2) = fun θ => (‖g θ‖ ^ 2 - 2 * m * ‖g θ‖) + m ^ 2 := by
       funext θ; ring
     rw [this, intervalIntegral.integral_add (h1.sub h2) intervalIntegrable_const,
@@ -50,51 +54,54 @@ lemma sq_intervalIntegral_norm_le {g : ℝ → ℂ} (hg : Continuous g) :
   field_simp at hnn
   nlinarith
 
+section
+variable (ha : IntervalIntegrable a volume 0 circlePeriod) (k : ℝ) {K } (hK : LipschitzWith K γ)
+local notation "herglotzCoeffFixed" => herglotzCoeff k a
+
+local notation "herglotzQdFixed" => herglotzQd k a γ
+
+include ha k K hK
+
 /-- `∫ |q| ≤ K ∫ |F₋₁ ∘ γ|`. -/
-lemma integral_norm_herglotzQd_le (ha : IntervalIntegrable a volume 0 (2 * π)) (k : ℝ)
-    {K : NNReal} (hK : LipschitzWith K γ) :
-    ∫ θ in (0:ℝ)..(2 * π), ‖herglotzQd k a γ θ‖ ≤
-      K * ∫ θ in (0:ℝ)..(2 * π), ‖herglotzCoeff k a (-1) (γ θ)‖ := by
+lemma integral_norm_herglotzQd_le :
+    ∫ θ in (0:ℝ)..circlePeriod, ‖herglotzQdFixed θ‖ ≤
+      K * ∫ θ in (0:ℝ)..circlePeriod, ‖herglotzCoeffFixed (-1) (γ θ)‖ := by
   obtain ⟨hqm, hqB⟩ := herglotzQd_bounded ha k hK
   rw [← intervalIntegral.integral_const_mul]
   refine intervalIntegral.integral_mono_on (by positivity)
-    ((intervalIntegrable_of_norm_le hqm (fun θ => hqB θ) _ _).norm)
+    ((intervalIntegrable_of_norm_le hqm hqB _ _).norm)
     ((continuous_const.mul ((continuous_herglotzCoeff ha k (-1)).comp
       hK.continuous).norm).intervalIntegrable _ _) fun θ _ => ?_
   rw [herglotzQd, norm_mul, Complex.norm_conj]
   exact mul_le_mul_of_nonneg_right (norm_deriv_le_of_lipschitz hK) (norm_nonneg _)
 
-lemma norm_herglotzQ_le (ha : IntervalIntegrable a volume 0 (2 * π)) (k : ℝ)
-    {K : NNReal} (hK : LipschitzWith K γ) {θ : ℝ} (hθ : θ ∈ Icc 0 (2 * π)) :
-    ‖herglotzQ k a γ θ‖ ≤ ∫ t in (0:ℝ)..(2 * π), ‖herglotzQd k a γ t‖ := by
+lemma norm_herglotzQ_le  (hθ : θ ∈ boundaryInterval) :
+    ‖herglotzQ k a γ θ‖ ≤ ∫ t in (0:ℝ)..circlePeriod, ‖herglotzQdFixed t‖ := by
   obtain ⟨hqm, hqB⟩ := herglotzQd_bounded ha k hK
-  have hqi : ∀ b c, IntervalIntegrable (fun t => ‖herglotzQd k a γ t‖) volume b c := fun b c =>
-    (intervalIntegrable_of_norm_le hqm (fun θ => hqB θ) _ _).norm
-  rw [herglotzQ]
+  have hqi : ∀ b c, IntervalIntegrable (fun t => ‖herglotzQdFixed t‖) volume b c := fun b c =>
+    (intervalIntegrable_of_norm_le hqm hqB _ _).norm
   refine (intervalIntegral.norm_integral_le_integral_norm hθ.1).trans ?_
   refine intervalIntegral.integral_mono_interval le_rfl hθ.1 hθ.2
     (Eventually.of_forall fun t => norm_nonneg _) (hqi _ _)
 
 /-- `|∫ conj(q) Q| ≤ (∫ |q|)²`. -/
-lemma norm_integral_conj_herglotzQd_mul_le (ha : IntervalIntegrable a volume 0 (2 * π)) (k : ℝ)
-    {K : NNReal} (hK : LipschitzWith K γ) :
-    ‖∫ θ in (0:ℝ)..(2 * π), conj (herglotzQd k a γ θ) * herglotzQ k a γ θ‖ ≤
-      (∫ θ in (0:ℝ)..(2 * π), ‖herglotzQd k a γ θ‖) ^ 2 := by
+lemma norm_integral_conj_herglotzQd_mul_le :
+    ‖∫ θ in (0:ℝ)..circlePeriod, conj (herglotzQdFixed θ) * herglotzQ k a γ θ‖ ≤
+      (∫ θ in (0:ℝ)..circlePeriod, ‖herglotzQdFixed θ‖) ^ 2 := by
   obtain ⟨hqm, hqB⟩ := herglotzQd_bounded ha k hK
-  set S := ∫ θ in (0:ℝ)..(2 * π), ‖herglotzQd k a γ θ‖
-  have hqi : IntervalIntegrable (fun t => ‖herglotzQd k a γ t‖) volume 0 (2 * π) :=
-    (intervalIntegrable_of_norm_le hqm (fun θ => hqB θ) _ _).norm
+  set S := ∫ θ in (0)..circlePeriod, ‖herglotzQdFixed θ‖
+  have hqi : IntervalIntegrable (fun t => ‖herglotzQdFixed t‖) volume 0 circlePeriod :=
+    (intervalIntegrable_of_norm_le hqm hqB _ _).norm
   refine (intervalIntegral.norm_integral_le_integral_norm (by positivity)).trans ?_
-  calc ∫ θ in (0:ℝ)..(2 * π), ‖conj (herglotzQd k a γ θ) * herglotzQ k a γ θ‖
-      ≤ ∫ θ in (0:ℝ)..(2 * π), ‖herglotzQd k a γ θ‖ * S := by
+  calc ∫ θ in (0)..circlePeriod, ‖conj (herglotzQdFixed θ) * herglotzQ k a γ θ‖
+      ≤ ∫ θ in (0)..circlePeriod, ‖herglotzQdFixed θ‖ * S := by
         refine intervalIntegral.integral_mono_on_of_le_Ioo (by positivity) ?_ (hqi.mul_const _)
           fun θ hθ => ?_
         · have hQ : Continuous (herglotzQ k a γ) := by
-            unfold herglotzQ
             exact intervalIntegral.continuous_primitive
-              (fun b c => intervalIntegrable_of_norm_le hqm (fun θ => hqB θ) _ _) 0
+              (fun b c => intervalIntegrable_of_norm_le hqm hqB _ _) 0
           have := ((intervalIntegrable_conj' (intervalIntegrable_of_norm_le hqm
-            (fun θ => hqB θ) 0 (2 * π))).mul_continuousOn hQ.continuousOn).norm
+            hqB 0 circlePeriod)).mul_continuousOn hQ.continuousOn).norm
           simpa using this
         · rw [norm_mul, Complex.norm_conj]
           exact mul_le_mul_of_nonneg_left (norm_herglotzQ_le ha k hK ⟨hθ.1.le, hθ.2.le⟩)
@@ -102,30 +109,29 @@ lemma norm_integral_conj_herglotzQd_mul_le (ha : IntervalIntegrable a volume 0 (
     _ = S ^ 2 := by rw [intervalIntegral.integral_mul_const]; ring
 
 /-- With `c = i h_a(0)`: `∫ |G - c| ≤ ∫ |h_a| + 2π |k| ∫ |q|`. -/
-lemma integral_norm_primitive_sub_le (ha : IntervalIntegrable a volume 0 (2 * π)) (k : ℝ)
-    {K : NNReal} (hK : LipschitzWith K γ) :
-    ∫ θ in (0:ℝ)..(2 * π), ‖(∫ s in (0:ℝ)..θ, herglotzConormal k a γ s) -
-        Complex.I * herglotzCoeff k a 0 (γ 0)‖ ≤
-      (∫ θ in (0:ℝ)..(2 * π), ‖herglotzCoeff k a 0 (γ θ)‖) +
-        2 * π * |k| * ∫ θ in (0:ℝ)..(2 * π), ‖herglotzQd k a γ θ‖ := by
+lemma integral_norm_primitive_sub_le :
+    ∫ θ in (0:ℝ)..circlePeriod, ‖(∫ s in (0:ℝ)..θ, herglotzConormal k a γ s) -
+        Complex.I * herglotzCoeffFixed 0 (γ 0)‖ ≤
+      (∫ θ in (0:ℝ)..circlePeriod, ‖herglotzCoeffFixed 0 (γ θ)‖) +
+        2 * π * |k| * ∫ θ in (0:ℝ)..circlePeriod, ‖herglotzQdFixed θ‖ := by
   obtain ⟨hgm, Bg, hgB⟩ := herglotzConormal_bounded ha k hK
-  set S := ∫ θ in (0:ℝ)..(2 * π), ‖herglotzQd k a γ θ‖
+  set S := ∫ θ in (0)..circlePeriod, ‖herglotzQdFixed θ‖
   have hGc : Continuous fun θ => ‖(∫ s in (0:ℝ)..θ, herglotzConormal k a γ s) -
-      Complex.I * herglotzCoeff k a 0 (γ 0)‖ :=
+      Complex.I * herglotzCoeffFixed 0 (γ 0)‖ :=
     ((intervalIntegral.continuous_primitive
       (fun b c => intervalIntegrable_of_norm_le hgm hgB _ _) 0).sub continuous_const).norm
-  have hh : Continuous fun θ => ‖herglotzCoeff k a 0 (γ θ)‖ :=
+  have hh : Continuous fun θ => ‖herglotzCoeffFixed 0 (γ θ)‖ :=
     ((continuous_herglotzCoeff ha k 0).comp hK.continuous).norm
-  calc _ ≤ ∫ θ in (0:ℝ)..(2 * π), (‖herglotzCoeff k a 0 (γ θ)‖ + |k| * S) := by
+  calc _ ≤ ∫ θ in (0)..circlePeriod, (‖herglotzCoeffFixed 0 (γ θ)‖ + |k| * S) := by
         refine intervalIntegral.integral_mono_on (by positivity) (hGc.intervalIntegrable _ _)
           ((hh.add continuous_const).intervalIntegrable _ _) fun θ hθ => ?_
         rw [primitive_herglotzConormal_eq ha k hK θ]
-        have he : -Complex.I * (herglotzCoeff k a 0 (γ θ) - herglotzCoeff k a 0 (γ 0)) +
-            k * herglotzQ k a γ θ - Complex.I * herglotzCoeff k a 0 (γ 0) =
-            -Complex.I * herglotzCoeff k a 0 (γ θ) + k * herglotzQ k a γ θ := by ring
+        have he : -Complex.I * (herglotzCoeffFixed 0 (γ θ) - herglotzCoeffFixed 0 (γ 0)) +
+            k * herglotzQ k a γ θ - Complex.I * herglotzCoeffFixed 0 (γ 0) =
+            -Complex.I * herglotzCoeffFixed 0 (γ θ) + k * herglotzQ k a γ θ := by ring
         rw [he]
         refine (norm_add_le _ _).trans (add_le_add ?_ ?_)
-        · rw [norm_mul, norm_neg, Complex.norm_I, one_mul]
+        · norm_num
         · rw [norm_mul, Complex.norm_real, Real.norm_eq_abs]
           exact mul_le_mul_of_nonneg_left (norm_herglotzQ_le ha k hK hθ) (abs_nonneg _)
     _ = _ := by
@@ -133,11 +139,14 @@ lemma integral_norm_primitive_sub_le (ha : IntervalIntegrable a volume 0 (2 * π
           intervalIntegral.integral_const, smul_eq_mul, sub_zero]
         ring
 
+end
+
+
 /-- Trace inequality for a Herglotz coefficient. -/
 theorem trace_herglotzCoeff (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
     (hγ : IsBoundaryParam Ω γ) :
-    ∃ C : ℝ, 0 ≤ C ∧ ∀ a, IntervalIntegrable a volume 0 (2 * π) → ∀ (k : ℝ) (m : ℤ),
-      ∫ θ in (0:ℝ)..(2 * π), ‖herglotzCoeff k a m (γ θ)‖ ^ 2 ≤
+    ∃ C : ℝ, 0 ≤ C ∧ ∀ a, IntervalIntegrable a volume 0 circlePeriod → ∀ (k : ℝ) (m : ℤ),
+      ∫ θ in (0:ℝ)..circlePeriod, ‖herglotzCoeff k a m (γ θ)‖ ^ 2 ≤
         C * ((∫ z in Ω, ‖herglotzCoeff k a m z‖ ^ 2) +
           k ^ 2 / 2 * ((∫ z in Ω, ‖herglotzCoeff k a (m + 1) z‖ ^ 2) +
             ∫ z in Ω, ‖herglotzCoeff k a (m - 1) z‖ ^ 2)) := by
@@ -145,7 +154,7 @@ theorem trace_herglotzCoeff (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomai
   refine ⟨C, hC0, fun a ha k m => ?_⟩
   obtain ⟨⟨Kf, hKf⟩, hB⟩ := herglotzCoeff_bounded_lipschitz ha k m
   have h := hC _ Kf hKf _ hB
-  simp only [gradSq_herglotzCoeff ha] at h
+  simp  [gradSq_herglotzCoeff ha] at h
   rwa [integral_const_mul, integral_add (integrable_herglotzCoeff_sq hb ha k _)
     (integrable_herglotzCoeff_sq hb ha k _)] at h
 
@@ -175,25 +184,20 @@ lemma schur_numeric {E A I0 Im1 Im2 T0 T1 S G C₁ CT CS K : ℝ} (hE : 0 < E) (
   have hIm2b : Im2 ≤ C₁ * E ^ 2 * A := by linarith
   have hEIm1 : E * Im1 ≤ C₁ * E ^ 3 * A := by
     have := mul_le_mul_of_nonneg_left hIm1b hE.le
-    linarith [show E * (C₁ * E ^ 2 * A) = C₁ * E ^ 3 * A by ring]
+    linarith
   have hEIm2 : E * Im2 ≤ C₁ * E ^ 3 * A := by
     have := mul_le_mul_of_nonneg_left hIm2b hE.le
-    linarith [show E * (C₁ * E ^ 2 * A) = C₁ * E ^ 3 * A by ring]
+    linarith
   have hEI0 : E * I0 ≤ C₁ * E ^ 2 * A := by
     have := mul_le_mul_of_nonneg_left hm0 hE.le
-    linarith [show E * (C₁ * E * A) = C₁ * E ^ 2 * A by ring]
+    linarith
   have h32 : C₁ * E ^ 3 * A ≤ C₁ * E ^ 2 * A := by
-    have := mul_le_mul_of_nonneg_left hE32 hCA
-    linarith [show C₁ * A * E ^ 3 = C₁ * E ^ 3 * A by ring,
-      show C₁ * A * E ^ 2 = C₁ * E ^ 2 * A by ring]
+    gcongr
   have h21 : C₁ * E ^ 2 * A ≤ C₁ * E * A := by
-    have := mul_le_mul_of_nonneg_left hE2 hCA
-    linarith [show C₁ * A * E ^ 2 = C₁ * E ^ 2 * A by ring, show C₁ * A * E = C₁ * E * A by ring]
+    gcongr
   have hT0' : T0 ≤ b0 * E * A := by
     refine hT0.trans ?_
     have h : I0 + E / 2 * (A + Im1) ≤ (2 * C₁ + 1) * E * A := by
-      have : E / 2 * (A + Im1) = E * A / 2 + E * Im1 / 2 := by ring
-      rw [this]
       linarith
     calc CT * (I0 + E / 2 * (A + Im1)) ≤ CT * ((2 * C₁ + 1) * E * A) :=
           mul_le_mul_of_nonneg_left h hCT
@@ -201,8 +205,6 @@ lemma schur_numeric {E A I0 Im1 Im2 T0 T1 S G C₁ CT CS K : ℝ} (hE : 0 < E) (
   have hT1' : T1 ≤ 2 * CT * C₁ * E ^ 2 * A := by
     refine hT1.trans ?_
     have h : Im1 + E / 2 * (I0 + Im2) ≤ 2 * C₁ * E ^ 2 * A := by
-      have : E / 2 * (I0 + Im2) = E * I0 / 2 + E * Im2 / 2 := by ring
-      rw [this]
       linarith
     calc CT * (Im1 + E / 2 * (I0 + Im2)) ≤ CT * (2 * C₁ * E ^ 2 * A) :=
           mul_le_mul_of_nonneg_left h hCT
@@ -216,31 +218,27 @@ lemma schur_numeric {E A I0 Im1 Im2 T0 T1 S G C₁ CT CS K : ℝ} (hE : 0 < E) (
     have h1 := mul_le_mul_of_nonneg_left hSq hE.le
     have h2 : E * (cq * E ^ 2 * A) ≤ cq * E * A := by
       have := mul_le_mul_of_nonneg_left (hE32.trans hE2) hcqA
-      linarith [show cq * A * E ^ 3 = E * (cq * E ^ 2 * A) by ring,
-        show cq * A * E = cq * E * A by ring]
+      linarith
     linarith
   have hES2 : E * S ^ 2 ≤ cq * E ^ 2 * A := by
     have h1 := mul_le_mul_of_nonneg_left hSq hE.le
     have := mul_le_mul_of_nonneg_left hE32 hcqA
-    linarith [show cq * A * E ^ 3 = E * (cq * E ^ 2 * A) by ring,
-      show cq * A * E ^ 2 = cq * E ^ 2 * A by ring]
+    linarith
   have hGsq : G ^ 2 ≤ cG * E * A := by
     refine hG.trans ?_
     have h1 : 2 * (2 * π * T0) ≤ 4 * π * b0 * E * A := by
       have := mul_le_mul_of_nonneg_left hT0' (show (0:ℝ) ≤ 4 * π by positivity)
-      linarith [show 4 * π * (b0 * E * A) = 4 * π * b0 * E * A by ring]
+      linarith
     have h2 : 2 * (4 * π ^ 2 * E * S ^ 2) ≤ 8 * π ^ 2 * cq * E * A := by
       have := mul_le_mul_of_nonneg_left hES (show (0:ℝ) ≤ 8 * π ^ 2 by positivity)
-      linarith [show 8 * π ^ 2 * (E * S ^ 2) = 2 * (4 * π ^ 2 * E * S ^ 2) by ring,
-        show 8 * π ^ 2 * (cq * E * A) = 8 * π ^ 2 * cq * E * A by ring]
-    rw [hcG]; linarith [show (4 * π * b0 + 8 * π ^ 2 * cq) * E * A =
-      4 * π * b0 * E * A + 8 * π ^ 2 * cq * E * A by ring]
+      linarith
+    linarith
   -- final
   have t1 : 6 * E * I0 ≤ 6 * C₁ * E ^ 2 * A := by linarith
   have t2 : 2 * E * S ^ 2 ≤ 2 * cq * E ^ 2 * A := by linarith
   have t3 : CS * E * G ^ 2 ≤ CS * cG * E ^ 2 * A := by
     have := mul_le_mul_of_nonneg_left hGsq (show 0 ≤ CS * E by positivity)
-    linarith [show CS * E * (cG * E * A) = CS * cG * E ^ 2 * A by ring]
+    linarith
   have t4 : (6 * C₁ + 2 * cq + CS * cG) * (E * (E * A)) ≤ E * A := by
     have h := mul_le_mul_of_nonneg_right hED hEA
     linarith [mul_nonneg hE.le hEA]
@@ -250,8 +248,8 @@ lemma schur_numeric {E A I0 Im1 Im2 T0 T1 S G C₁ CT CS K : ℝ} (hE : 0 < E) (
 complement is nonnegative on the Herglotz vector of every density whose wave has zero mean over
 `Ω` and whose negative coefficients `F_{-j}` (`j ≥ 1`) vanish at `z₁`. -/
 theorem herglotz_imSchur_nonneg (hb : Bornology.IsBounded Ω) (hL : IsLipschitzDomain Ω)
-    (hγ : IsBoundaryParam Ω γ) {z₁ : ℂ} {r : ℝ} (hr : 0 < r) (hball : ball z₁ r ⊆ Ω) :
-    ∃ δ > 0, ∀ E, 0 < E → E < δ → ∀ W : ℝ → Ell2 →L[ℂ] Ell2, IsTransport γ E W →
+    (hγ : IsBoundaryParam Ω γ)   (hr : 0 < r) (hball : ball z₁ r ⊆ Ω) :
+    ∃ δ > 0, ∀ E, 0 < E → E < δ → ∀ W : ℝ → ComplexEnd Ell2, IsTransport γ E W →
       ∀ a (ha : IsDirDensity a),
         (∀ j : ℕ, 1 ≤ j → herglotzCoeff (Real.sqrt E) a (-(j : ℤ)) z₁ = 0) →
         ∫ z in Ω, herglotzCoeff (Real.sqrt E) a 0 z = 0 →
@@ -261,23 +259,23 @@ theorem herglotz_imSchur_nonneg (hb : Bornology.IsBounded Ω) (hL : IsLipschitzD
   obtain ⟨CT, hCT0, htrace⟩ := trace_herglotzCoeff hb hL hγ
   obtain ⟨CS, δS, hδS, hS⟩ := imSchur_herglotzVec_sub_principal_le hb hL hγ
   have hCS'0 : 0 ≤ max CS 0 := le_max_right _ _
-  obtain ⟨D, hD, hD0⟩ : ∃ D : ℝ, D = 6 * C₁ + 2 * (2 * π * (Kγ : ℝ) ^ 2 * (2 * CT * C₁)) +
-      max CS 0 * (4 * π * (CT * (2 * C₁ + 1)) + 8 * π ^ 2 * (2 * π * (Kγ : ℝ) ^ 2 *
+  obtain ⟨D, hD, hD0⟩ : ∃ D : ℝ, D = 6 * C₁ + 2 * (2 * π * Kγ ^ 2 * (2 * CT * C₁)) +
+      max CS 0 * (4 * π * (CT * (2 * C₁ + 1)) + 8 * π ^ 2 * (2 * π * Kγ ^ 2 *
         (2 * CT * C₁))) + 1 ∧ 0 < D := ⟨_, rfl, by positivity⟩
   refine ⟨min (min 1 δ₁) (min δS (1 / D)), by positivity,
     fun E hE hEδ W hW a ha hz hmean => ?_⟩
-  have hE1 : E ≤ 1 := (hEδ.trans_le ((min_le_left _ _).trans (min_le_left _ _))).le
-  have hEδ₁ : E ≤ δ₁ := (hEδ.trans_le ((min_le_left _ _).trans (min_le_right _ _))).le
-  have hEδS : E < δS := hEδ.trans_le ((min_le_right _ _).trans (min_le_left _ _))
+  have hE1  := (hEδ.trans_le ((min_le_left _ _).trans (min_le_left _ _))).le
+  have hEδ₁  := (hEδ.trans_le ((min_le_left _ _).trans (min_le_right _ _))).le
+  have hEδS  := hEδ.trans_le ((min_le_right _ _).trans (min_le_left _ _))
   have hED : E * D ≤ 1 := by
-    have : E ≤ 1 / D := (hEδ.trans_le ((min_le_right _ _).trans (min_le_right _ _))).le
+    have  := (hEδ.trans_le ((min_le_right _ _).trans (min_le_right _ _))).le
     rwa [le_div_iff₀ hD0] at this
   rw [hD] at hED
   have hai := ha.intervalIntegrable
-  have hk0 : 0 ≤ Real.sqrt E := Real.sqrt_nonneg E
-  have hk2 : Real.sqrt E ^ 2 = E := Real.sq_sqrt hE.le
+  have hk0  := Real.sqrt_nonneg E
+  have hk2  := Real.sq_sqrt hE.le
   have hk4 : Real.sqrt E ^ 4 = E ^ 2 := by
-    rw [show Real.sqrt E ^ 4 = (Real.sqrt E ^ 2) ^ 2 by ring, hk2]
+    grind
   obtain ⟨hm0, hm12⟩ := hmodes a ha (Real.sqrt E) (by rw [hk2]; exact hEδ₁) hz hmean
   rw [hk2] at hm0
   rw [hk4] at hm12
@@ -286,48 +284,46 @@ theorem herglotz_imSchur_nonneg (hb : Bornology.IsBounded Ω) (hL : IsLipschitzD
   norm_num at hT0 hT1
   rw [hk2] at hT0 hT1
   -- the boundary density `q`
-  have hSq : (∫ θ in (0:ℝ)..(2 * π), ‖herglotzQd (Real.sqrt E) a γ θ‖) ^ 2 ≤
-      Kγ ^ 2 * (2 * π * ∫ θ in (0:ℝ)..(2 * π),
+  have hSq : (∫ θ in (0:ℝ)..circlePeriod, ‖herglotzQd (Real.sqrt E) a γ θ‖) ^ 2 ≤
+      Kγ ^ 2 * (2 * π * ∫ θ in (0:ℝ)..circlePeriod,
         ‖herglotzCoeff (Real.sqrt E) a (-1) (γ θ)‖ ^ 2) := by
     have h1 := integral_norm_herglotzQd_le hai (Real.sqrt E) hKγ (γ := γ)
     have h2 := sq_intervalIntegral_norm_le ((continuous_herglotzCoeff hai (Real.sqrt E) (-1)).comp
       hKγ.continuous)
-    have hS0 : 0 ≤ ∫ θ in (0:ℝ)..(2 * π), ‖herglotzQd (Real.sqrt E) a γ θ‖ :=
+    have hS0 : 0 ≤ ∫ θ in (0:ℝ)..circlePeriod, ‖herglotzQd (Real.sqrt E) a γ θ‖ :=
       intervalIntegral.integral_nonneg (by positivity) fun _ _ => norm_nonneg _
-    calc _ ≤ (Kγ * ∫ θ in (0:ℝ)..(2 * π), ‖herglotzCoeff (Real.sqrt E) a (-1) (γ θ)‖) ^ 2 :=
+    calc _ ≤ (Kγ * ∫ θ in (0)..circlePeriod, ‖herglotzCoeff (Real.sqrt E) a (-1) (γ θ)‖) ^ 2 :=
           pow_le_pow_left₀ hS0 h1 2
-      _ = Kγ ^ 2 * (∫ θ in (0:ℝ)..(2 * π), ‖herglotzCoeff (Real.sqrt E) a (-1) (γ θ)‖) ^ 2 := by
+      _ = Kγ ^ 2 * (∫ θ in (0)..circlePeriod, ‖herglotzCoeff (Real.sqrt E) a (-1) (γ θ)‖) ^ 2 := by
           ring
       _ ≤ _ := by gcongr; exact h2
   -- the kernel term
-  have hGsq : (∫ θ in (0:ℝ)..(2 * π), ‖(∫ s in (0:ℝ)..θ, herglotzConormal (Real.sqrt E) a γ s) -
+  have hGsq : (∫ θ in (0:ℝ)..circlePeriod, ‖(∫ s in (0:ℝ)..θ, herglotzConormal (Real.sqrt E) a γ s) -
       Complex.I * herglotzCoeff (Real.sqrt E) a 0 (γ 0)‖) ^ 2 ≤
-      2 * (2 * π * ∫ θ in (0:ℝ)..(2 * π), ‖herglotzCoeff (Real.sqrt E) a 0 (γ θ)‖ ^ 2) +
-        2 * (4 * π ^ 2 * E * (∫ θ in (0:ℝ)..(2 * π), ‖herglotzQd (Real.sqrt E) a γ θ‖) ^ 2) := by
+      2 * (2 * π * ∫ θ in (0:ℝ)..circlePeriod, ‖herglotzCoeff (Real.sqrt E) a 0 (γ θ)‖ ^ 2) +
+        2 * (4 * π ^ 2 * E * (∫ θ in (0:ℝ)..circlePeriod, ‖herglotzQd (Real.sqrt E) a γ θ‖) ^ 2) := by
     have h1 := integral_norm_primitive_sub_le hai (Real.sqrt E) hKγ (γ := γ)
-    have h2 : (∫ θ in (0:ℝ)..(2 * π), ‖herglotzCoeff (Real.sqrt E) a 0 (γ θ)‖) ^ 2 ≤
-        2 * π * ∫ θ in (0:ℝ)..(2 * π), ‖herglotzCoeff (Real.sqrt E) a 0 (γ θ)‖ ^ 2 :=
+    have h2 : (∫ θ in (0:ℝ)..circlePeriod, ‖herglotzCoeff (Real.sqrt E) a 0 (γ θ)‖) ^ 2 ≤
+        2 * π * ∫ θ in (0:ℝ)..circlePeriod, ‖herglotzCoeff (Real.sqrt E) a 0 (γ θ)‖ ^ 2 :=
       sq_intervalIntegral_norm_le ((continuous_herglotzCoeff hai (Real.sqrt E) 0).comp
         hKγ.continuous)
     rw [abs_of_nonneg hk0] at h1
-    have hG0 : 0 ≤ ∫ θ in (0:ℝ)..(2 * π), ‖(∫ s in (0:ℝ)..θ,
+    have hG0 : 0 ≤ ∫ θ in (0:ℝ)..circlePeriod, ‖(∫ s in (0:ℝ)..θ,
         herglotzConormal (Real.sqrt E) a γ s) - Complex.I * herglotzCoeff (Real.sqrt E) a 0 (γ 0)‖ :=
       intervalIntegral.integral_nonneg (by positivity) fun _ _ => norm_nonneg _
-    generalize (∫ θ in (0:ℝ)..(2 * π), ‖(∫ s in (0:ℝ)..θ,
+    generalize (∫ θ in (0)..circlePeriod, ‖(∫ s in (0)..θ,
         herglotzConormal (Real.sqrt E) a γ s) - Complex.I * herglotzCoeff (Real.sqrt E) a 0 (γ 0)‖)
       = G at h1 hG0 ⊢
-    generalize (∫ θ in (0:ℝ)..(2 * π), ‖herglotzCoeff (Real.sqrt E) a 0 (γ θ)‖) = H at h1 h2
-    generalize (∫ θ in (0:ℝ)..(2 * π), ‖herglotzQd (Real.sqrt E) a γ θ‖) = S at h1 ⊢
+    generalize (∫ θ in (0)..circlePeriod, ‖herglotzCoeff (Real.sqrt E) a 0 (γ θ)‖) = H at h1 h2
+    generalize (∫ θ in (0)..circlePeriod, ‖herglotzQd (Real.sqrt E) a γ θ‖) = S at h1 ⊢
     have h3 : G ^ 2 ≤ 2 * H ^ 2 + 2 * (2 * π * Real.sqrt E * S) ^ 2 := by
       have := pow_le_pow_left₀ hG0 h1 2
       nlinarith [sq_nonneg (H - 2 * π * Real.sqrt E * S)]
-    have h4 : (2 * π * Real.sqrt E * S) ^ 2 = 4 * π ^ 2 * E * S ^ 2 := by
-      rw [show (2 * π * Real.sqrt E * S) ^ 2 = 4 * π ^ 2 * Real.sqrt E ^ 2 * S ^ 2 by ring, hk2]
-    linarith
+    grind
   -- the principal part
   have hP : 2 * E * (∫ z in Ω, ‖herglotzCoeff (Real.sqrt E) a 1 z‖ ^ 2) -
       6 * E * (∫ z in Ω, ‖herglotzCoeff (Real.sqrt E) a 0 z‖ ^ 2) -
-      2 * E * (∫ θ in (0:ℝ)..(2 * π), ‖herglotzQd (Real.sqrt E) a γ θ‖) ^ 2 ≤
+      2 * E * (∫ θ in (0:ℝ)..circlePeriod, ‖herglotzQd (Real.sqrt E) a γ θ‖) ^ 2 ≤
       herglotzPrincipal Ω γ (Real.sqrt E) a := by
     unfold herglotzPrincipal
     rw [hk2]
@@ -348,7 +344,7 @@ theorem herglotz_imSchur_nonneg (hb : Bornology.IsBounded Ω) (hL : IsLipschitzD
         integral_const_mul]
     rw [hint]
     have hQ := norm_integral_conj_herglotzQd_mul_le hai (Real.sqrt E) hKγ (γ := γ)
-    have him := (Complex.im_le_norm (∫ θ in (0:ℝ)..(2 * π),
+    have him := (Complex.im_le_norm (∫ θ in (0:ℝ)..circlePeriod,
       conj (herglotzQd (Real.sqrt E) a γ θ) * herglotzQ (Real.sqrt E) a γ θ)).trans hQ
     have hIm1 : 0 ≤ ∫ z in Ω, ‖herglotzCoeff (Real.sqrt E) a (-1) z‖ ^ 2 :=
       integral_nonneg fun _ => by positivity
@@ -357,10 +353,10 @@ theorem herglotz_imSchur_nonneg (hb : Bornology.IsBounded Ω) (hL : IsLipschitzD
   have hSchur := hS E hE hEδS W hW a ha hmean
     (Complex.I * herglotzCoeff (Real.sqrt E) a 0 (γ 0))
   have hlow := (abs_le.mp hSchur).1
-  have hCS : CS * E * (∫ θ in (0:ℝ)..(2 * π), ‖(∫ s in (0:ℝ)..θ,
+  have hCS : CS * E * (∫ θ in (0:ℝ)..circlePeriod, ‖(∫ s in (0:ℝ)..θ,
       herglotzConormal (Real.sqrt E) a γ s) -
         Complex.I * herglotzCoeff (Real.sqrt E) a 0 (γ 0)‖) ^ 2 ≤
-      max CS 0 * E * (∫ θ in (0:ℝ)..(2 * π), ‖(∫ s in (0:ℝ)..θ,
+      max CS 0 * E * (∫ θ in (0:ℝ)..circlePeriod, ‖(∫ s in (0:ℝ)..θ,
         herglotzConormal (Real.sqrt E) a γ s) -
           Complex.I * herglotzCoeff (Real.sqrt E) a 0 (γ 0)‖) ^ 2 := by
     gcongr; exact le_max_left _ _

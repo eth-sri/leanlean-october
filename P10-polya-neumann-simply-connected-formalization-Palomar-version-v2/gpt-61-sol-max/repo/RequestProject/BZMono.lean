@@ -1,5 +1,7 @@
 module
 
+public import RequestProject.PlanarTypes
+
 public import RequestProject.BZFlow
 
 /-!
@@ -21,27 +23,32 @@ noncomputable section
 
 namespace PolyaNeumann
 
-variable {X : ℂ → ℂ} {LX : ℝ≥0} {M : ℝ} {Φ : ℝ → ℂ → ℂ}
+variable {X : PlaneMap} {LX : ℝ≥0} {M : ℝ} {Φ : ℝ → PlaneMap}
 
 /-- Straight-line transversality of `φ` along `X` in the region `U`, at rate `κ` up to time
 `τ`. -/
-def IsTransversalOn (φ : ℂ → ℝ) (X : ℂ → ℂ) (U : Set ℂ) (τ κ : ℝ) : Prop :=
+def IsTransversalOn (φ : ℂ → ℝ) (X : PlaneMap) (U : PlanarSet) (τ κ : ℝ)  :=
   ∀ z ∈ U, ∀ t, 0 ≤ t → t ≤ τ → φ z + κ * t ≤ φ (z + t * X z)
 
+section
+variable (hΦ : IsShortFlow X Φ) (hX : LipschitzWith LX X) (hM : ∀ z, ‖X z‖ ≤ M) {φ } {Lφ } (hφ : LipschitzWith Lφ φ) {U } {τ κ } (hτ : 0 < τ) (hκ : 0 < κ) (hQ : IsTransversalOn φ X U τ κ)
+include hΦ hX hM φ Lφ hφ U τ κ hτ hκ hQ
+
+section
+variable (x : ℂ) {s t : ℝ} (hs : -1 < s)
+include x s t hs
+
 /-- Monotonicity of a transversal function along flow lines. -/
-theorem IsShortFlow.le_of_transversal (hΦ : IsShortFlow X Φ) (hX : LipschitzWith LX X)
-    (hM : ∀ z, ‖X z‖ ≤ M) {φ : ℂ → ℝ} {Lφ : ℝ≥0} (hφ : LipschitzWith Lφ φ) {U : Set ℂ}
-    {τ κ : ℝ} (hτ : 0 < τ) (hκ : 0 < κ) (hQ : IsTransversalOn φ X U τ κ) (x : ℂ) {s t : ℝ}
-    (hs : -1 < s) (hst : s ≤ t) (ht : t < 1) (hU : ∀ u ∈ Icc s t, Φ u x ∈ U) :
+theorem IsShortFlow.le_of_transversal (hst : s ≤ t) (ht : t < 1) (hU : ∀ u ∈ Icc s t, Φ u x ∈ U) :
     φ (Φ s x) + κ / 2 * (t - s) ≤ φ (Φ t x) := by
-  have hM0 : 0 ≤ M := (norm_nonneg _).trans (hM 0)
+  have hM0  := (norm_nonneg _).trans (hM 0)
   have hsub : Icc s t ⊆ Ioo (-3 : ℝ) 3 := fun u hu =>
     ⟨by linarith [hu.1], by linarith [hu.2]⟩
-  set f : ℝ → ℝ := fun u => φ (Φ s x) - φ (Φ u x)
+  set f : RealMap := fun u => φ (Φ s x) - φ (Φ u x)
   have hfc : ContinuousOn f (Icc s t) :=
     continuousOn_const.sub (hφ.continuous.comp_continuousOn ((hΦ.continuousOn x).mono hsub))
   set C : ℝ := Lφ * LX * M
-  have hC : 0 ≤ C := by positivity
+  
   have hf' : ∀ u ∈ Ico s t, ∀ r, -κ < r → ∃ᶠ z in 𝓝[>] u, slope f u z < r := by
     intro u hu r hr
     refine Filter.Eventually.frequently ?_
@@ -51,8 +58,8 @@ theorem IsShortFlow.le_of_transversal (hΦ : IsShortFlow X Φ) (hX : LipschitzWi
     set h := z - u
     have hh0 : 0 < h := by simp only [h]; linarith [hz.1]
     have hhδ : h < δ := by simp only [h]; linarith [hz.2]
-    have hhτ : h ≤ τ := hhδ.le.trans ((min_le_left _ _).trans (min_le_left _ _))
-    have hh1 : h < 1 := lt_of_lt_of_le hhδ ((min_le_left _ _).trans (min_le_right _ _))
+    have hhτ  := hhδ.le.trans ((min_le_left _ _).trans (min_le_left _ _))
+    have hh1  := lt_of_lt_of_le hhδ ((min_le_left _ _).trans (min_le_right _ _))
     have hhr : (C + 1) * h < r + κ := by
       have := lt_of_lt_of_le hhδ (min_le_right _ _)
       rw [lt_div_iff₀ (by positivity)] at this; linarith
@@ -60,7 +67,7 @@ theorem IsShortFlow.le_of_transversal (hΦ : IsShortFlow X Φ) (hX : LipschitzWi
     have hu1 : u ∈ Ioo (-1 : ℝ) 1 := ⟨by linarith [hu.1], by linarith [hu.2]⟩
     have hzy : Φ z x = Φ h y := by
       rw [hΦ.add hX x ⟨by linarith, by linarith⟩ hu1]; congr 1; simp [h]
-    have hyU : y ∈ U := hU u (Ico_subset_Icc_self hu)
+    have hyU  := hU u (Ico_subset_Icc_self hu)
     have h1 := hQ y hyU h hh0.le hhτ
     have h2 : |φ (Φ h y) - φ (y + h * X y)| ≤ Lφ * ‖Φ h y - (y + h * X y)‖ := by
       rw [← Real.dist_eq, ← dist_eq_norm]; exact hφ.dist_le_mul _ _
@@ -71,7 +78,7 @@ theorem IsShortFlow.le_of_transversal (hΦ : IsShortFlow X Φ) (hX : LipschitzWi
       have := neg_abs_le (φ (Φ h y) - φ (y + h * X y))
       have h5 : Lφ * ‖Φ h y - (y + h * X y)‖ ≤ C * h ^ 2 := by
         simp only [C]; rw [mul_assoc (Lφ : ℝ), mul_assoc (Lφ : ℝ)]
-        exact mul_le_mul_of_nonneg_left (by simpa [mul_assoc] using h3) Lφ.2
+        gcongr
       linarith
     rw [slope_def_field]
     simp only [f]
@@ -89,20 +96,17 @@ theorem IsShortFlow.le_of_transversal (hΦ : IsShortFlow X Φ) (hX : LipschitzWi
   linarith
 
 /-- Strict monotonicity along a flow line staying in the region. -/
-lemma IsShortFlow.lt_of_transversal (hΦ : IsShortFlow X Φ) (hX : LipschitzWith LX X)
-    (hM : ∀ z, ‖X z‖ ≤ M) {φ : ℂ → ℝ} {Lφ : ℝ≥0} (hφ : LipschitzWith Lφ φ) {U : Set ℂ}
-    {τ κ : ℝ} (hτ : 0 < τ) (hκ : 0 < κ) (hQ : IsTransversalOn φ X U τ κ) (x : ℂ) {s t : ℝ}
-    (hs : -1 < s) (hst : s < t) (ht : t < 1) (hU : ∀ u ∈ Icc s t, Φ u x ∈ U) :
+lemma IsShortFlow.lt_of_transversal (hst : s < t) (ht : t < 1) (hU : ∀ u ∈ Icc s t, Φ u x ∈ U) :
     φ (Φ s x) < φ (Φ t x) := by
   have := hΦ.le_of_transversal hX hM hφ hτ hκ hQ x hs hst.le ht hU
-  have : 0 < κ / 2 * (t - s) := by have := sub_pos.mpr hst; positivity
-  linarith
+  nlinarith
+
+end
+
 
 /-- Existence and uniqueness of the crossing time of a level. -/
-theorem IsShortFlow.existsUnique_crossing (hΦ : IsShortFlow X Φ) (hX : LipschitzWith LX X)
-    (hM : ∀ z, ‖X z‖ ≤ M) {φ : ℂ → ℝ} {Lφ : ℝ≥0} (hφ : LipschitzWith Lφ φ) {U : Set ℂ}
-    {τ κ : ℝ} (hτ : 0 < τ) (hκ : 0 < κ) (hQ : IsTransversalOn φ X U τ κ) {T₁ : ℝ}
-    (hT₁ : 0 < T₁) (hT₁1 : T₁ < 1) (x : ℂ) (hU : ∀ u ∈ Icc (-T₁) T₁, Φ u x ∈ U) {l : ℝ}
+theorem IsShortFlow.existsUnique_crossing 
+    (hT₁ : 0 < T₁) (hT₁1 : T₁ < 1) x (hU : ∀ u ∈ Icc (-T₁) T₁, Φ u x ∈ U) 
     (hlo : l - κ / 2 * T₁ ≤ φ x) (hhi : φ x ≤ l + κ / 2 * T₁) :
     ∃! u, u ∈ Icc (-T₁) T₁ ∧ φ (Φ u x) = l := by
   have hsub : Icc (-T₁) T₁ ⊆ Ioo (-3 : ℝ) 3 := fun u hu =>
@@ -121,22 +125,20 @@ theorem IsShortFlow.existsUnique_crossing (hΦ : IsShortFlow X Φ) (hX : Lipschi
   rcases lt_or_gt_of_ne hne with h | h
   · have := hΦ.lt_of_transversal hX hM hφ hτ hκ hQ x (by linarith [hv.1]) h
       (by linarith [hu.2]) (fun w hw => hU w ⟨by linarith [hv.1, hw.1], by linarith [hu.2, hw.2]⟩)
-    simp only at hul; linarith
+    linarith
   · have := hΦ.lt_of_transversal hX hM hφ hτ hκ hQ x (by linarith [hu.1]) h
       (by linarith [hv.2]) (fun w hw => hU w ⟨by linarith [hu.1, hw.1], by linarith [hv.2, hw.2]⟩)
-    simp only at hul; linarith
+    linarith
 
 /-- Lipschitz dependence of crossing times on the initial point. -/
-theorem IsShortFlow.abs_crossing_sub_le (hΦ : IsShortFlow X Φ) (hX : LipschitzWith LX X)
-    (hM : ∀ z, ‖X z‖ ≤ M) {φ : ℂ → ℝ} {Lφ : ℝ≥0} (hφ : LipschitzWith Lφ φ) {U : Set ℂ}
-    {τ κ : ℝ} (hτ : 0 < τ) (hκ : 0 < κ) (hQ : IsTransversalOn φ X U τ κ) {T₁ : ℝ}
-    (hT₁1 : T₁ < 1) {x y : ℂ} (hUy : ∀ u ∈ Icc (-T₁) T₁, Φ u y ∈ U) {l u v : ℝ}
+theorem IsShortFlow.abs_crossing_sub_le 
+    (hT₁1 : T₁ < 1)  (hUy : ∀ u ∈ Icc (-T₁) T₁, Φ u y ∈ U) 
     (hu : u ∈ Icc (-T₁) T₁) (hv : v ∈ Icc (-T₁) T₁) (hxu : φ (Φ u x) = l)
     (hyv : φ (Φ v y) = l) :
     κ / 2 * |u - v| ≤ Lφ * Real.exp LX * ‖x - y‖ := by
   have hd : |φ (Φ u y) - φ (Φ u x)| ≤ Lφ * Real.exp LX * ‖x - y‖ := by
     have h1 : |φ (Φ u y) - φ (Φ u x)| ≤ Lφ * dist (Φ u y) (Φ u x) := by
-      rw [← Real.dist_eq]; exact hφ.dist_le_mul _ _
+      exact hφ.dist_le_mul _ _
     have h2 := hΦ.dist_le hX y x (t := u) ⟨by linarith [hu.1], by linarith [hu.2]⟩
     have h3 : Real.exp (LX * |u|) ≤ Real.exp LX := by
       apply Real.exp_le_exp.mpr
@@ -158,6 +160,9 @@ theorem IsShortFlow.abs_crossing_sub_le (hΦ : IsShortFlow X Φ) (hX : Lipschitz
     rw [abs_of_nonneg (by linarith)]
     have := (abs_le.mp hd).2
     linarith
+
+end
+
 
 end PolyaNeumann
 

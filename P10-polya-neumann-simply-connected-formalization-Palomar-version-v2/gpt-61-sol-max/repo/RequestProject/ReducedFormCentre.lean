@@ -15,9 +15,9 @@ only their functional-analytic consequence; it does not assert these
 identities for physical boundary operators without their separate proofs.
 -/
 
-@[expose] public section
+public section
 
-noncomputable section
+
 
 namespace PolyaNeumann
 
@@ -65,8 +65,8 @@ theorem chart_reduced_boundary_bound_on_energy_set {m : ℕ} (J : ℝ → H₀ �
   refine ⟨A₀, hA₀, _, hev, ?_⟩
   intro E hE hEU
   obtain ⟨u, hu⟩ := hunit E hEU
-  set zc : H →L[ℂ] H₀ᗮ := H₀ᗮ.orthogonalProjection ∘L (↑u⁻¹ : H →L[ℂ] H) with hzc
-  refine ⟨LinearMap.pi fun j => (((innerSL ℂ (η j)) ∘L zc : H →L[ℂ] ℂ) : H →ₗ[ℂ] ℂ), ?_⟩
+  set zc : H →L[ℂ] H₀ᗮ := H₀ᗮ.orthogonalProjection ∘L (↑u⁻¹) with hzc
+  refine ⟨LinearMap.pi fun j => (((innerSL ℂ (η j)) ∘L zc : H →L[ℂ] ℂ)), ?_⟩
   intro y hy
   set x := (↑u⁻¹ : H →L[ℂ] H) y with hx
   set a := H₀.orthogonalProjection x with ha
@@ -103,5 +103,3 @@ theorem chart_reduced_boundary_bound_on_energy_set {m : ℕ} (J : ℝ → H₀ �
   exact hb
 
 end PolyaNeumann
-
-end

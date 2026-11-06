@@ -1,5 +1,10 @@
 module
 
+public import RequestProject.PlanarTypes
+public import RequestProject.CirclePeriod
+
+public import RequestProject.PlanarGeometry
+
 public import RequestProject.ObservationHS
 
 /-!
@@ -26,79 +31,70 @@ namespace PolyaNeumann
 open Real MeasureTheory
 open scoped InnerProductSpace ComplexConjugate
 
-local instance factTwoPiPosKR : Fact (0 < 2 * π) := ⟨two_pi_pos⟩
+
 
 /-- `L²(𝕋)` with the normalized Haar measure on `ℝ / 2πℤ`. -/
-abbrev L2Circ := Lp ℂ 2 (@AddCircle.haarAddCircle (2 * π) _)
+abbrev L2Circ := Lp ℂ 2 (@AddCircle.haarAddCircle circlePeriod _)
 
 /-- The representative in `[0, 2π)` of a point of the circle. -/
-def circRep (x : AddCircle (2 * π)) : ℝ := (AddCircle.measurableEquivIco (2 * π) 0 x : ℝ)
+def circRep x  := (AddCircle.measurableEquivIco circlePeriod 0 x : ℝ)
 
-lemma circRep_mem (x : AddCircle (2 * π)) : circRep x ∈ Set.Ico 0 (2 * π) := by
-  have := (AddCircle.measurableEquivIco (2 * π) 0 x).2
-  simpa [circRep] using this
+lemma circRep_mem x : circRep x ∈ Set.Ico 0 circlePeriod := by
+  grind only [circRep]
 
-lemma liftIco_eq_comp (f : ℝ → ℂ) : AddCircle.liftIco (2 * π) 0 f = fun x => f (circRep x) := rfl
+lemma liftIco_eq_comp (f : ComplexCurve) : AddCircle.liftIco circlePeriod 0 f = fun x => f (circRep x) := rfl
 
-lemma measurable_liftIco_two_pi {f : ℝ → ℂ} (hf : Measurable f) :
-    Measurable (AddCircle.liftIco (2 * π) 0 f) := by
-  rw [liftIco_eq_comp]
-  exact hf.comp (measurable_subtype_coe.comp (AddCircle.measurableEquivIco (2 * π) 0).measurable)
+lemma measurable_liftIco_two_pi {f : ComplexCurve} (hf : Measurable f) :
+    Measurable (AddCircle.liftIco circlePeriod 0 f) := by
+  exact hf.comp (measurable_subtype_coe.comp (AddCircle.measurableEquivIco circlePeriod 0).measurable)
 
-lemma memLp_liftIco_two_pi {f : ℝ → ℂ} (hf : Measurable f) {M : ℝ} (hM : ∀ t, ‖f t‖ ≤ M) :
-    MemLp (AddCircle.liftIco (2 * π) 0 f) 2 AddCircle.haarAddCircle :=
+lemma memLp_liftIco_two_pi {f : ComplexCurve} (hf : Measurable f)  (hM : ∀ t, ‖f t‖ ≤ M) :
+    MemLp (AddCircle.liftIco circlePeriod 0 f) 2 AddCircle.haarAddCircle :=
   MemLp.of_bound (measurable_liftIco_two_pi hf).aestronglyMeasurable M
-    (ae_of_all _ fun x => by rw [liftIco_eq_comp]; exact hM _)
+    (ae_of_all _ fun x => by exact hM _)
 
 /-- Fourier coefficients of the lift of a function on `[0, 2π)` to the circle. -/
-lemma fourierCoeff_liftIco_two_pi (f : ℝ → ℂ) (n : ℤ) :
-    fourierCoeff (AddCircle.liftIco (2 * π) 0 f) n = fourierCoeffOn two_pi_pos f n := by
+lemma fourierCoeff_liftIco_two_pi (f : ComplexCurve) n :
+    fourierCoeff (AddCircle.liftIco circlePeriod 0 f) n = fourierCoeffOn two_pi_pos f n := by
   rw [fourierCoeff_liftIco_eq, fourierCoeffOn_eq_integral, fourierCoeffOn_eq_integral]
-  simp only [fourier_coe_apply, zero_add, sub_zero]
+  norm_num
 
 /-- Fourier coefficients of a complex conjugate. -/
-lemma fourierCoeffOn_conj (g : ℝ → ℂ) (m : ℤ) :
+lemma fourierCoeffOn_conj (g : ComplexCurve) m :
     fourierCoeffOn two_pi_pos (fun θ => conj (g θ)) m =
       conj (fourierCoeffOn two_pi_pos g (-m)) := by
   rw [fourierCoeffOn_eq_integral, fourierCoeffOn_eq_integral]
   rw [Complex.real_smul, Complex.real_smul, map_mul, Complex.conj_ofReal]
-  congr 1
   rw [← intervalIntegral_conj]
-  refine intervalIntegral.integral_congr fun θ _ => ?_
-  simp only [smul_eq_mul, map_mul, neg_neg]
-  congr 1
-  rw [fourier_coe_apply, fourier_coe_apply, ← Complex.exp_conj]
-  congr 1
-  have h2 : (starRingEnd ℂ) 2 = 2 := map_ofNat _ 2
-  simp [Complex.conj_ofReal, h2]
+  simp_all
 
 section Kernel
 
-variable {k : ℝ → ℝ → ℂ} {M : ℝ} {K : NNReal}
+variable {k : ℝ → ComplexCurve} {M : ℝ} {K : NNReal}
   (hmeas : ∀ θ, Measurable (k θ)) (hbd : ∀ θ t, ‖k θ t‖ ≤ M)
 
 /-- The row `θ ↦ k(θ, ·)` as an element of `L²(𝕋)`. -/
-def kernelRow (θ : ℝ) : L2Circ :=
+def kernelRow θ  :=
   (memLp_liftIco_two_pi (hmeas θ) (hbd θ)).toLp _
 
-include hmeas hbd in
-lemma inner_kernelRow_fourierBasis (θ : ℝ) (n : ℤ) :
+section
+include hmeas hbd
+
+lemma inner_kernelRow_fourierBasis θ n :
     ⟪kernelRow hmeas hbd θ, fourierBasis n⟫_ℂ = conj (fourierCoeffOn two_pi_pos (k θ) n) := by
   rw [← inner_conj_symm, ← HilbertBasis.repr_apply_apply, fourierBasis_repr]
-  congr 1
   rw [kernelRow, fourierCoeff_congr_ae (MemLp.coeFn_toLp (memLp_liftIco_two_pi (hmeas θ) (hbd θ))),
     fourierCoeff_liftIco_two_pi]
 
-include hmeas hbd in
 lemma norm_kernelRow_sub_le
-    (hlip : ∀ θ θ' t, t ∈ Set.Ico 0 (2 * π) → ‖k θ t - k θ' t‖ ≤ K * |θ - θ'|) (θ θ' : ℝ) :
+    (hlip : ∀ θ θ' t, t ∈ Set.Ico 0 circlePeriod → ‖k θ t - k θ' t‖ ≤ K * |θ - θ'|) θ θ' :
     ‖kernelRow hmeas hbd θ - kernelRow hmeas hbd θ'‖ ≤ K * |θ - θ'| := by
   unfold kernelRow
   rw [← MemLp.toLp_sub]
-  have h := Lp.norm_le_of_ae_bound (μ := (@AddCircle.haarAddCircle (2 * π) _)) (p := 2)
+  have h := Lp.norm_le_of_ae_bound (μ := (@AddCircle.haarAddCircle circlePeriod _)) (p := 2)
     (f := MemLp.toLp _ ((memLp_liftIco_two_pi (hmeas θ) (hbd θ)).sub
       (memLp_liftIco_two_pi (hmeas θ') (hbd θ')))) (C := K * |θ - θ'|) (by positivity) ?_
-  · have h1 : measureUnivNNReal (@AddCircle.haarAddCircle (2 * π) _) = 1 := by
+  · have h1 : measureUnivNNReal (@AddCircle.haarAddCircle circlePeriod _) = 1 := by
       simp [measureUnivNNReal]
     simpa [h1] using h
   · filter_upwards [MemLp.coeFn_toLp ((memLp_liftIco_two_pi (hmeas θ) (hbd θ)).sub
@@ -106,14 +102,13 @@ lemma norm_kernelRow_sub_le
     rw [hx, Pi.sub_apply, liftIco_eq_comp, liftIco_eq_comp]
     exact hlip θ θ' _ (circRep_mem x)
 
-include hmeas hbd in
-lemma kernelRow_periodic (hper : ∀ θ t, t ∈ Set.Ico 0 (2 * π) → k (θ + 2 * π) t = k θ t) :
-    Function.Periodic (kernelRow hmeas hbd) (2 * π) := by
+lemma kernelRow_periodic (hper : ∀ θ t, t ∈ Set.Ico 0 circlePeriod → k (θ + 2 * π) t = k θ t) :
+    Function.Periodic (kernelRow hmeas hbd) circlePeriod := by
   intro θ
-  unfold kernelRow
-  refine MemLp.toLp_congr _ _ (ae_of_all _ fun x => ?_)
-  rw [liftIco_eq_comp, liftIco_eq_comp]
-  exact hper θ _ (circRep_mem x)
+  simp_all only [kernelRow, liftIco_eq_comp, circRep_mem]
+
+end
+
 
 end Kernel
 

@@ -1,5 +1,9 @@
 module
 
+public import RequestProject.PlanarTypes
+
+public import RequestProject.PlanarGeometry
+
 public import RequestProject.FourierLipschitz
 
 /-!
@@ -25,19 +29,21 @@ estimate on differences: a derivative which is Lipschitz away from finitely many
   `δ < 1/2`, i.e. `φ ∈ H^{1+δ}(𝕋)`.
 -/
 
-@[expose] public section
+public section
 
-noncomputable section
 
 namespace PolyaNeumann
 
 open Real Filter MeasureTheory
-open scoped InnerProductSpace
+
+section
+variable {a : ℤ → ℝ} (ha : ∀ n, 0 ≤ a n)
+include a ha
 
 /-- **Dyadic summation, quantitative form.** If a nonnegative sequence on `ℤ` has dyadic block
 sums `∑_{N ≤ |n| ≤ 2N} aₙ ≤ C N^{-β}` for every `N ≥ 1` and `0 ≤ 2s < β`, then every finite
 partial sum of `∑ₙ |n|^{2s} aₙ` is at most `0^{2s} a₀ + |C| 2^{2s} / (1 - 2^{2s-β})`. -/
-theorem sum_rpow_mul_le_of_block_bound {a : ℤ → ℝ} (ha : ∀ n, 0 ≤ a n) {C β s : ℝ}
+theorem sum_rpow_mul_le_of_block_bound {C β s : ℝ}
     (hs : 0 ≤ s) (hsβ : 2 * s < β)
     (hblock : ∀ N : ℕ, 1 ≤ N → ∀ u : Finset ℤ, (∀ n ∈ u, (N : ℝ) ≤ |(n : ℝ)| ∧
       |(n : ℝ)| ≤ 2 * N) → ∑ n ∈ u, a n ≤ C * (N : ℝ) ^ (-β)) (u : Finset ℤ) :
@@ -46,10 +52,10 @@ theorem sum_rpow_mul_le_of_block_bound {a : ℤ → ℝ} (ha : ∀ n, 0 ≤ a n)
   classical
   set f : ℤ → ℝ := fun n => |(n : ℝ)| ^ (2 * s) * a n with hf
   have hf0 : ∀ n, 0 ≤ f n := fun n => mul_nonneg (by positivity) (ha n)
-  set r : ℝ := (2 : ℝ) ^ (2 * s - β) with hr
+  set r : ℝ := 2 ^ (2 * s - β) with hr
   have hr0 : 0 ≤ r := by positivity
   have hr1 : r < 1 := Real.rpow_lt_one_of_one_lt_of_neg one_lt_two (by linarith)
-  set b : ℕ → ℝ := fun j => |C| * (2 : ℝ) ^ (2 * s) * r ^ j with hbdef
+  set b : ℕ → ℝ := fun j => |C| * 2 ^ (2 * s) * r ^ j with hbdef
   have hb0 : ∀ j, 0 ≤ b j := fun j => by positivity
   have hb : Summable b := (summable_geometric_of_lt_one hr0 hr1).mul_left _
   have hpow : ∀ (j : ℕ) (x : ℝ), ((2 : ℝ) ^ j) ^ x = ((2 : ℝ) ^ x) ^ j := by
@@ -74,15 +80,14 @@ theorem sum_rpow_mul_le_of_block_bound {a : ℤ → ℝ} (ha : ∀ n, 0 ≤ a n)
       · have : (n.natAbs : ℝ) < 2 ^ (j + 1) := by exact_mod_cast h2
         rw [pow_succ] at this
         linarith
-    have hblk := hblock (2 ^ j) (Nat.one_le_two_pow) v (by
+    have hblk := hblock (2 ^ j) Nat.one_le_two_pow v (by
       intro n hn; push_cast; exact hrange n hn)
     push_cast at hblk
-    have hsa : 0 ≤ ∑ n ∈ v, a n := Finset.sum_nonneg fun n _ => ha n
-    calc ∑ n ∈ v, f n ≤ ∑ n ∈ v, (2 * 2 ^ j : ℝ) ^ (2 * s) * a n := by
+    calc ∑ n ∈ v, f n ≤ ∑ n ∈ v, (2 * 2 ^ j) ^ (2 * s) * a n := by
           refine Finset.sum_le_sum fun n hn => mul_le_mul_of_nonneg_right ?_ (ha n)
           exact Real.rpow_le_rpow (abs_nonneg _) (hrange n hn).2 (by linarith)
-      _ = (2 * 2 ^ j : ℝ) ^ (2 * s) * ∑ n ∈ v, a n := by rw [Finset.mul_sum]
-      _ ≤ (2 * 2 ^ j : ℝ) ^ (2 * s) * (|C| * ((2 : ℝ) ^ j) ^ (-β)) := by
+      _ = (2 * 2 ^ j) ^ (2 * s) * ∑ n ∈ v, a n := by rw [Finset.mul_sum]
+      _ ≤ (2 * 2 ^ j) ^ (2 * s) * (|C| * (2 ^ j) ^ (-β)) := by
           refine mul_le_mul_of_nonneg_left (hblk.trans ?_) (by positivity)
           exact mul_le_mul_of_nonneg_right (le_abs_self C) (by positivity)
       _ = b j := by
@@ -97,25 +102,23 @@ theorem sum_rpow_mul_le_of_block_bound {a : ℤ → ℝ} (ha : ∀ n, 0 ≤ a n)
   gcongr
   · calc ∑ n ∈ u with n = 0, f n ≤ ∑ n ∈ ({0} : Finset ℤ), f n := by
           refine Finset.sum_le_sum_of_subset_of_nonneg (fun n hn => ?_) fun n _ _ => hf0 n
-          rw [Finset.mem_filter] at hn
-          simp [hn.2]
+          grind
       _ = (0 : ℝ) ^ (2 * s) * a 0 := by
-          simp only [Finset.sum_singleton, hf, Int.cast_zero, abs_zero]
+          grind
   · rw [← Finset.sum_fiberwise_of_maps_to (g := g) (t := (u.filter fun n => ¬n = 0).image g)
       (fun n hn => Finset.mem_image_of_mem g hn)]
     calc ∑ j ∈ (u.filter fun n => ¬n = 0).image g,
           ∑ n ∈ (u.filter fun n => ¬n = 0) with g n = j, f n
         ≤ ∑ j ∈ (u.filter fun n => ¬n = 0).image g, b j := by
           refine Finset.sum_le_sum fun j _ => hfiber j _ fun n hn => ?_
-          simp only [Finset.mem_filter] at hn
-          exact ⟨hn.1.2, hn.2⟩
+          grind
       _ ≤ ∑' j, b j := hb.sum_le_tsum _ fun j _ => hb0 j
 
 /-- **Dyadic block bounds from a difference estimate.** If `aₙ ≥ 0` is summable and
 `∑ₙ |e^{inh} - 1|^{2k} aₙ ≤ C h^β` for all `0 < h ≤ π/2`, then
 `∑_{N ≤ |n| ≤ 2N} aₙ ≤ C (π/2)^β N^{-β}`. -/
-theorem block_bound_of_diff_bound {a : ℤ → ℝ} (ha : ∀ n, 0 ≤ a n) (hsum : Summable a)
-    (k : ℕ) {C β : ℝ}
+theorem block_bound_of_diff_bound (hsum : Summable a)
+    k {C β : ℝ}
     (hdiff : ∀ h : ℝ, 0 < h → h ≤ π / 2 →
       ∑' n : ℤ, ‖Complex.exp (n * h * Complex.I) - 1‖ ^ (2 * k) * a n ≤ C * h ^ β)
     (N : ℕ) (hN : 1 ≤ N) (u : Finset ℤ)
@@ -126,15 +129,11 @@ theorem block_bound_of_diff_bound {a : ℤ → ℝ} (ha : ∀ n, 0 ≤ a n) (hsu
   have hhpos : 0 < h := by positivity
   have hhle : h ≤ π / 2 := by
     rw [hh, div_le_div_iff₀ (by positivity) two_pos]
-    have : (1 : ℝ) ≤ N := by exact_mod_cast hN
-    nlinarith [pi_pos]
+    simp_all
   set w : ℤ → ℝ := fun n => ‖Complex.exp (n * h * Complex.I) - 1‖ ^ (2 * k) * a n with hw
   have hnorm2 : ∀ n : ℤ, ‖Complex.exp (n * h * Complex.I) - 1‖ ≤ 2 := by
     intro n
-    refine (norm_sub_le _ _).trans ?_
-    rw [show (n : ℂ) * h * Complex.I = ((n * h : ℝ) : ℂ) * Complex.I from (by push_cast; ring),
-      Complex.norm_exp_ofReal_mul_I]
-    norm_num
+    exact norm_fourierPhase_sub_one_le n h
   have hwsum : Summable w := by
     refine Summable.of_nonneg_of_le (fun n => mul_nonneg (by positivity) (ha n)) (fun n => ?_)
       (hsum.mul_left (2 ^ (2 * k)))
@@ -155,9 +154,9 @@ theorem block_bound_of_diff_bound {a : ℤ → ℝ} (ha : ∀ n, 0 ≤ a n) (hsu
     rw [heq] at hk
     have hone : 1 ≤ ‖Complex.exp (n * h * Complex.I) - 1‖ ^ 2 := by
       have hsq : (π / 2) ^ 2 ≤ ((n : ℝ) * h) ^ 2 := by
-        rw [← sq_abs ((n : ℝ) * h)]
-        exact pow_le_pow_left₀ (by positivity) hlow 2
-      have hpi : 0 < π := pi_pos
+        rw [← sq_abs (n * h)]
+        gcongr
+      have hpi  := pi_pos
       have : 4 / π ^ 2 * (π / 2) ^ 2 = 1 := by field_simp; ring
       nlinarith [div_pos (by norm_num : (0:ℝ) < 4) (pow_pos hpi 2)]
     have : 1 ≤ ‖Complex.exp (n * h * Complex.I) - 1‖ ^ (2 * k) := by
@@ -172,48 +171,53 @@ theorem block_bound_of_diff_bound {a : ℤ → ℝ} (ha : ∀ n, 0 ≤ a n) (hsu
         Real.rpow_neg hNpos.le]
       ring
 
+end
+
+
+section
+variable {φ : ComplexCurve} (hφ : Continuous φ) (hper : Function.Periodic φ circlePeriod) (h : ℝ)
+include φ hφ hper h
+
 /-- Fourier coefficients of the `k`-th forward difference `Δ_h^k φ`. -/
-lemma fourierCoeffOn_diff {φ : ℝ → ℂ} (hφ : Continuous φ) (hper : Function.Periodic φ (2 * π))
-    (h : ℝ) (n : ℤ) :
+lemma fourierCoeffOn_diff n :
     fourierCoeffOn two_pi_pos (fun θ => φ (θ + h) - φ θ) n =
       (Complex.exp (n * h * Complex.I) - 1) * fourierCoeffOn two_pi_pos φ n := by
-  have h1 := fourierCoeffOn_sub_of_continuous (f := fun θ => φ (θ + h)) (g := φ)
-    (hφ.comp ((continuous_id.add continuous_const : Continuous fun x => x + h))) hφ n
+  have h1 := fourierCoeffOn_sub_of_continuousOn (f := fun θ => φ (θ + h)) (g := φ)
+    (hφ.comp ((continuous_id.add continuous_const))).continuousOn hφ.continuousOn n
   have h2 := fourierCoeffOn_comp_add hper h n
   rw [h1, h2]
   ring
 
 /-- Parseval for the first difference. -/
-lemma tsum_diff_eq_integral {φ : ℝ → ℂ} (hφ : Continuous φ) (hper : Function.Periodic φ (2 * π))
-    (h : ℝ) :
+lemma tsum_diff_eq_integral :
     ∑' n : ℤ, ‖Complex.exp (n * h * Complex.I) - 1‖ ^ (2 * 1) *
         ‖fourierCoeffOn two_pi_pos φ n‖ ^ 2 =
-      (2 * π)⁻¹ * ∫ θ in (0 : ℝ)..(2 * π), ‖φ (θ + h) - φ θ‖ ^ 2 := by
-  have hc : Continuous fun θ => φ (θ + h) - φ θ := (hφ.comp ((continuous_id.add continuous_const : Continuous fun x => x + h))).sub hφ
+      circlePeriod⁻¹ * ∫ θ in (0 : ℝ)..circlePeriod, ‖φ (θ + h) - φ θ‖ ^ 2 := by
+  have hc : Continuous fun θ => φ (θ + h) - φ θ := (hφ.comp ((continuous_id.add continuous_const))).sub hφ
   rw [← (hasSum_sq_fourierCoeffOn_of_continuous hc).tsum_eq]
   congr 1
   funext n
   rw [fourierCoeffOn_diff hφ hper, norm_mul, mul_pow, mul_one]
 
 /-- Parseval for the second difference. -/
-lemma tsum_second_diff_eq_integral {φ : ℝ → ℂ} (hφ : Continuous φ)
-    (hper : Function.Periodic φ (2 * π)) (h : ℝ) :
+lemma tsum_second_diff_eq_integral :
     ∑' n : ℤ, ‖Complex.exp (n * h * Complex.I) - 1‖ ^ (2 * 2) *
         ‖fourierCoeffOn two_pi_pos φ n‖ ^ 2 =
-      (2 * π)⁻¹ * ∫ θ in (0 : ℝ)..(2 * π), ‖φ (θ + 2 * h) - 2 * φ (θ + h) + φ θ‖ ^ 2 := by
-  set ψ : ℝ → ℂ := fun θ => φ (θ + h) - φ θ with hψ
-  have hψc : Continuous ψ := (hφ.comp ((continuous_id.add continuous_const : Continuous fun x => x + h))).sub hφ
-  have hψp : Function.Periodic ψ (2 * π) := fun θ => by
-    simp only [hψ, show θ + 2 * π + h = θ + h + 2 * π by ring, hper (θ + h), hper θ]
+      circlePeriod⁻¹ * ∫ θ in (0 : ℝ)..circlePeriod, ‖φ (θ + 2 * h) - 2 * φ (θ + h) + φ θ‖ ^ 2 := by
+  set ψ : ComplexCurve := fun θ => φ (θ + h) - φ θ with hψ
+  have hψc : Continuous ψ := (hφ.comp ((continuous_id.add continuous_const))).sub hφ
+  have hψp : Function.Periodic ψ circlePeriod := fun θ => by
+    simp  [hψ, show θ + 2 * π + h = θ + h + 2 * π by ring, hper (θ + h), hper θ]
   have heq : ∀ θ, φ (θ + 2 * h) - 2 * φ (θ + h) + φ θ = ψ (θ + h) - ψ θ := by
-    intro θ
-    simp only [hψ, show θ + h + h = θ + 2 * h by ring]
-    ring
+    grind
   simp_rw [heq]
   rw [← tsum_diff_eq_integral hψc hψp h]
   congr 1
   funext n
   rw [fourierCoeffOn_diff hφ hper, norm_mul]
   ring
+
+end
+
 
 end PolyaNeumann

@@ -1,5 +1,10 @@
 module
 
+public import RequestProject.PlanarTypes
+public import Mathlib.Tactic.FunProp
+
+public import RequestProject.PlanarGeometry
+
 public import Mathlib.Analysis.Calculus.ContDiff.Bounds
 public import Mathlib.Analysis.Calculus.ContDiff.RestrictScalars
 public import Mathlib.Analysis.Calculus.IteratedDeriv.Lemmas
@@ -33,7 +38,7 @@ circle trace remains a separate boundary-regularity/Fourier step.
 
 @[expose] public section
 
-set_option autoImplicit false
+open scoped ContDiff
 
 noncomputable section
 
@@ -43,12 +48,12 @@ open Set Metric Filter
 open scoped Topology
 
 /-- The actual transition, with precisely the required two constant sides. -/
-def fourierCollarCutoff (t : ℝ) : ℝ := 1 - Real.smoothTransition t
+def fourierCollarCutoff t  := 1 - Real.smoothTransition t
 
-theorem fourierCollarCutoff_one {t : ℝ} (ht : t ≤ 0) : fourierCollarCutoff t = 1 := by
-  simp [fourierCollarCutoff, Real.smoothTransition.zero_of_nonpos ht]
+theorem fourierCollarCutoff_one  (ht : t ≤ 0) : fourierCollarCutoff t = 1 := by
+  simp_all [fourierCollarCutoff]
 
-theorem fourierCollarCutoff_zero {t : ℝ} (ht : 1 ≤ t) : fourierCollarCutoff t = 0 := by
+theorem fourierCollarCutoff_zero  (ht : 1 ≤ t) : fourierCollarCutoff t = 0 := by
   simp [fourierCollarCutoff, Real.smoothTransition.one_of_one_le ht]
 
 theorem fourierCollarCutoff_contDiff (N : ℕ∞) : ContDiff ℝ N fourierCollarCutoff :=
@@ -56,13 +61,13 @@ theorem fourierCollarCutoff_contDiff (N : ℕ∞) : ContDiff ℝ N fourierCollar
 
 /-- Each derivative is truly bounded globally: outside the compact
 transition interval the function is locally constant. -/
-theorem fourierCollarCutoff_exists_derivative_bound (i : ℕ) :
+theorem fourierCollarCutoff_exists_derivative_bound i :
     ∃ B : ℝ, 1 ≤ B ∧ ∀ t : ℝ, ‖iteratedFDeriv ℝ i fourierCollarCutoff t‖ ≤ B := by
-  obtain ⟨B, hB⟩ := (isCompact_Icc : IsCompact (Icc (0 : ℝ) 1)).exists_bound_of_continuousOn
-    (ContDiff.continuous_iteratedFDeriv' (fourierCollarCutoff_contDiff (i : ℕ∞))).continuousOn
+  obtain ⟨B, hB⟩ := (isCompact_Icc).exists_bound_of_continuousOn
+    (ContDiff.continuous_iteratedFDeriv' (fourierCollarCutoff_contDiff i)).continuousOn
   refine ⟨max 1 B, le_max_left _ _, ?_⟩
   intro t
-  by_cases ht : t ∈ Icc (0 : ℝ) 1
+  by_cases ht : t ∈ Icc 0 1
   · exact (hB t ht).trans (le_max_right _ _)
   · rcases lt_or_ge t 0 with ht0 | ht0
     · have heq : fourierCollarCutoff =ᶠ[𝓝 t] (fun _ : ℝ => (1 : ℝ)) := by
@@ -71,21 +76,19 @@ theorem fourierCollarCutoff_exists_derivative_bound (i : ℕ) :
       have hd := (heq.iteratedFDeriv ℝ i).eq_of_nhds
       rw [hd]
       cases i with
-      | zero => simpa only [norm_iteratedFDeriv_zero, norm_one] using (le_max_left (1 : ℝ) B)
+      | zero => simp_all
       | succ i =>
           simpa only [iteratedFDeriv_succ_const, Pi.zero_apply, norm_zero] using
-            (show (0 : ℝ) ≤ max 1 B by positivity)
-    · have ht1 : 1 < t := lt_of_not_ge (fun h => ht ⟨ht0, h⟩)
-      have heq : fourierCollarCutoff =ᶠ[𝓝 t] (fun _ : ℝ => (0 : ℝ)) := by
+            (show 0 ≤ max 1 B by positivity)
+    · have ht1  := lt_of_not_ge (fun h => ht ⟨ht0, h⟩)
+      have heq : fourierCollarCutoff =ᶠ[𝓝 t] 0 := by
         filter_upwards [eventually_gt_nhds ht1] with s hs
         exact fourierCollarCutoff_zero hs.le
       have hd := (heq.iteratedFDeriv ℝ i).eq_of_nhds
-      rw [hd]
-      simpa only [iteratedFDeriv_zero_fun, Pi.zero_apply, norm_zero] using
-        (show (0 : ℝ) ≤ max 1 B by positivity)
+      simp_all
 
 /-- A finite family of the genuine global derivative bounds. -/
-theorem fourierCollarCutoff_exists_finite_derivative_bound (k : ℕ) :
+theorem fourierCollarCutoff_exists_finite_derivative_bound k :
     ∃ C : ℝ, 1 ≤ C ∧ ∀ i ≤ k, ∀ t : ℝ, ‖iteratedFDeriv ℝ i fourierCollarCutoff t‖ ≤ C := by
   choose B hB hbound using fourierCollarCutoff_exists_derivative_bound
   let C := max 1 (∑ i ∈ Finset.range (k + 1), B i)
@@ -93,22 +96,22 @@ theorem fourierCollarCutoff_exists_finite_derivative_bound (k : ℕ) :
   intro i hi t
   have hsingle : B i ≤ ∑ j ∈ Finset.range (k + 1), B j :=
     Finset.single_le_sum (fun j _ => (by linarith [hB j])) (Finset.mem_range.mpr (by omega))
-  exact (hbound i t).trans (hsingle.trans (le_max_right _ _))
+  grind
 
-def fourierCollarRadialDefect (z : ℂ) : ℝ := ‖z‖ ^ 2 - 1
+def fourierCollarRadialDefect (z : ℂ)  := ‖z‖ ^ 2 - 1
 
 theorem fourierCollarRadialDefect_contDiff (N : ℕ∞) : ContDiff ℝ N fourierCollarRadialDefect :=
   (contDiff_norm_sq ℂ).sub contDiff_const
 
 /-- Compact bounds on the unscaled radial polynomial. These are actual
 iterated derivatives, rather than an assumed Faà di Bruno estimate. -/
-theorem fourierCollarRadialDefect_exists_finite_derivative_bound (k : ℕ) :
+theorem fourierCollarRadialDefect_exists_finite_derivative_bound k :
     ∃ D : ℝ, 1 ≤ D ∧ ∀ i ≤ k, ∀ z ∈ closedBall (0 : ℂ) 2,
       ‖iteratedFDeriv ℝ i fourierCollarRadialDefect z‖ ≤ D := by
   have hbound (i : ℕ) : ∃ B : ℝ, 1 ≤ B ∧ ∀ z ∈ closedBall (0 : ℂ) 2,
       ‖iteratedFDeriv ℝ i fourierCollarRadialDefect z‖ ≤ B := by
-    obtain ⟨B, hB⟩ := (isCompact_closedBall (0 : ℂ) 2).exists_bound_of_continuousOn
-      (ContDiff.continuous_iteratedFDeriv' (fourierCollarRadialDefect_contDiff (i : ℕ∞))).continuousOn
+    obtain ⟨B, hB⟩ := (isCompact_closedBall 0 2).exists_bound_of_continuousOn
+      (ContDiff.continuous_iteratedFDeriv' (fourierCollarRadialDefect_contDiff i)).continuousOn
     exact ⟨max 1 B, le_max_left _ _, fun z hz => (hB z hz).trans (le_max_right _ _)⟩
   choose B hB hbound using hbound
   let D := max 1 (∑ i ∈ Finset.range (k + 1), B i)
@@ -116,55 +119,55 @@ theorem fourierCollarRadialDefect_exists_finite_derivative_bound (k : ℕ) :
   intro i hi z hz
   have hsingle : B i ≤ ∑ j ∈ Finset.range (k + 1), B j :=
     Finset.single_le_sum (fun j _ => (by linarith [hB j])) (Finset.mem_range.mpr (by omega))
-  exact (hbound i z hz).trans (hsingle.trans (le_max_right _ _))
+  grind
 
-def fourierCollarScaledDefect (n : ℕ) (z : ℂ) : ℝ := (n : ℝ) * fourierCollarRadialDefect z
+def fourierCollarScaledDefect (n : ℕ) z  := (n : ℝ) * fourierCollarRadialDefect z
 
-theorem fourierCollarScaledDefect_contDiff (N : ℕ∞) (n : ℕ) :
+theorem fourierCollarScaledDefect_contDiff (N : ℕ∞) n :
     ContDiff ℝ N (fourierCollarScaledDefect n) :=
   contDiff_const.mul (fourierCollarRadialDefect_contDiff N)
 
-def fourierCollarTerm (n : ℕ) (z : ℂ) : ℂ :=
+def fourierCollarTerm n z  :=
   z ^ n * (fourierCollarCutoff (fourierCollarScaledDefect n z) : ℂ)
 
-theorem fourierCollarTerm_contDiff (N : ℕ∞) (n : ℕ) : ContDiff ℝ N (fourierCollarTerm n) :=
+@[fun_prop]
+theorem fourierCollarTerm_contDiff (N : ℕ∞) n : ContDiff ℝ N (fourierCollarTerm n) :=
   (contDiff_id.pow n).mul (Complex.ofRealCLM.contDiff.comp
     ((fourierCollarCutoff_contDiff N).comp (fourierCollarScaledDefect_contDiff N n)))
 
-theorem fourierCollarTerm_eq_pow_on_closedDisk (n : ℕ) {z : ℂ} (hz : z ∈ closedBall (0 : ℂ) 1) :
+theorem fourierCollarTerm_eq_pow_on_closedDisk n  (hz : z ∈ closedUnitDisk) :
     fourierCollarTerm n z = z ^ n := by
-  have hr : ‖z‖ ≤ 1 := by simpa only [mem_closedBall, dist_zero_right] using hz
+  have hr : ‖z‖ ≤ 1 := by simp_all
   have hq : fourierCollarScaledDefect n z ≤ 0 := by
     dsimp [fourierCollarScaledDefect, fourierCollarRadialDefect]
     exact mul_nonpos_of_nonneg_of_nonpos (Nat.cast_nonneg _) (by nlinarith [norm_nonneg z])
-  simp only [fourierCollarTerm, fourierCollarCutoff_one hq, Complex.ofReal_one, mul_one]
+  simp_all [fourierCollarTerm, fourierCollarCutoff_one]
 
 /-- The support radius remains in a fixed compact ball. -/
-theorem fourierCollar_support_radius {n : ℕ} (hn : 1 ≤ n) {z : ℂ}
+theorem fourierCollar_support_radius  (hn : 1 ≤ n) 
     (hz : fourierCollarScaledDefect n z ≤ 1) :
     ‖z‖ ^ 2 ≤ 1 + 1 / (n : ℝ) ∧ z ∈ closedBall (0 : ℂ) 2 := by
   have hn1 : (1 : ℝ) ≤ n := by exact_mod_cast hn
   have hn0 : (0 : ℝ) < n := by linarith
   have hr : ‖z‖ ^ 2 - 1 ≤ 1 / (n : ℝ) := by
     apply (le_div_iff₀ hn0).mpr
-    change (‖z‖ ^ 2 - 1) * (n : ℝ) ≤ 1
+    change (‖z‖ ^ 2 - 1) * n ≤ 1
     rw [mul_comm]
     exact hz
-  have hinv : 1 / (n : ℝ) ≤ 1 := (div_le_one hn0).mpr hn1
+  have hinv  := (div_le_one hn0).mpr hn1
   refine ⟨by linarith, ?_⟩
   rw [mem_closedBall, dist_zero_right]
   nlinarith [norm_nonneg z]
 
 /-- The shrinking support compensates exactly for monomial growth.
 This proves the uniform exponential constant instead of assuming it. -/
-theorem fourierCollar_support_pow_le_exp_half {n m : ℕ} (hn : 1 ≤ n) (hm : m ≤ n)
-    {z : ℂ} (hz : fourierCollarScaledDefect n z ≤ 1) :
+theorem fourierCollar_support_pow_le_exp_half  (hn : 1 ≤ n) (hm : m ≤ n)
+     (hz : fourierCollarScaledDefect n z ≤ 1) :
     ‖z‖ ^ m ≤ Real.exp (1 / 2 : ℝ) := by
   have hsupport := (fourierCollar_support_radius hn hz).1
-  have hn0 : (0 : ℝ) < n := by exact_mod_cast (lt_of_lt_of_le Nat.zero_lt_one hn)
+  have hn0 : (0 : ℝ) < n := by positivity
   have hExp : 1 ≤ Real.exp (1 / 2 : ℝ) := by
-    have h := Real.add_one_le_exp (1 / 2 : ℝ)
-    linarith
+    simp_all
   rcases le_or_gt ‖z‖ 1 with hr | hr
   · exact (pow_le_one₀ (norm_nonneg z) hr).trans hExp
   · have hlog : (2 : ℝ) * Real.log ‖z‖ ≤ ‖z‖ ^ 2 - 1 := by
@@ -172,27 +175,23 @@ theorem fourierCollar_support_pow_le_exp_half {n m : ℕ} (hn : 1 ≤ n) (hm : m
         Real.log_le_sub_one_of_pos (sq_pos_of_pos (lt_trans zero_lt_one hr))
     have hlog' : 2 * Real.log ‖z‖ ≤ 1 / (n : ℝ) := by linarith
     have hmul := mul_le_mul_of_nonneg_right hlog' hn0.le
-    have hcancel : (1 / (n : ℝ)) * (n : ℝ) = 1 := by field_simp [hn0.ne']
-    rw [hcancel] at hmul
+    have hcancel : (1 / (n : ℝ)) * (n : ℝ) = 1 := by field_simp
     have hne : (n : ℝ) * Real.log ‖z‖ ≤ 1 / 2 := by nlinarith
     have hnpow : ‖z‖ ^ n ≤ Real.exp (1 / 2 : ℝ) := by
       have heq : ‖z‖ ^ n = Real.exp ((n : ℝ) * Real.log ‖z‖) := by
         rw [Real.exp_nat_mul, Real.exp_log (lt_trans zero_lt_one hr)]
-      rw [heq]
-      exact Real.exp_le_exp.mpr hne
+      simp_all
     exact (pow_le_pow_right₀ hr.le hm).trans hnpow
 
 /-- The exact real derivative norm of a holomorphic monomial. -/
-theorem fourierCollar_pow_iteratedFDeriv_norm (n k : ℕ) (z : ℂ) :
+theorem fourierCollar_pow_iteratedFDeriv_norm n k z :
     ‖iteratedFDeriv ℝ k (fun w : ℂ => w ^ n) z‖ =
       (n.descFactorial k : ℝ) * ‖z‖ ^ (n - k) := by
   have hp : ContDiffAt ℂ k (fun w : ℂ => w ^ n) z := (contDiff_id.pow n).contDiffAt
   rw [← hp.restrictScalars_iteratedFDeriv (𝕜 := ℝ)]
-  simp only [Function.comp_apply, ContinuousMultilinearMap.norm_restrictScalars,
-    norm_iteratedFDeriv_eq_norm_iteratedDeriv, iteratedDeriv_pow, norm_mul,
-    Complex.norm_natCast, norm_pow]
+  simp  [norm_iteratedFDeriv_eq_norm_iteratedDeriv]
 
-theorem fourierCollar_pow_iteratedFDeriv_le {n : ℕ} (hn : 1 ≤ n) (k : ℕ) {z : ℂ}
+theorem fourierCollar_pow_iteratedFDeriv_le  (hn : 1 ≤ n) k 
     (hz : fourierCollarScaledDefect n z ≤ 1) :
     ‖iteratedFDeriv ℝ k (fun w : ℂ => w ^ n) z‖ ≤ (n : ℝ) ^ k * Real.exp (1 / 2 : ℝ) := by
   rw [fourierCollar_pow_iteratedFDeriv_norm]
@@ -202,18 +201,17 @@ theorem fourierCollar_pow_iteratedFDeriv_le {n : ℕ} (hn : 1 ≤ n) (k : ℕ) {
     (by positivity) (by positivity)
 
 /-- True uniform kth-order bounds for the individual collar summands. -/
-theorem fourierCollarTerm_exists_iteratedFDeriv_bound (k : ℕ) :
+theorem fourierCollarTerm_exists_iteratedFDeriv_bound k :
     ∃ B : ℝ, 0 ≤ B ∧ ∀ n : ℕ, 1 ≤ n → ∀ z : ℂ,
       ‖iteratedFDeriv ℝ k (fourierCollarTerm n) z‖ ≤ B * (n : ℝ) ^ k := by
   obtain ⟨C, hC, hχ⟩ := fourierCollarCutoff_exists_finite_derivative_bound k
   obtain ⟨D, hD, hq⟩ := fourierCollarRadialDefect_exists_finite_derivative_bound k
   let B := ∑ i ∈ Finset.range (k + 1),
-    (k.choose i : ℝ) * Real.exp (1 / 2 : ℝ) * ((k - i).factorial : ℝ) * C * D ^ (k - i)
+    (k.choose i) * Real.exp (1 / 2) * ((k - i).factorial) * C * D ^ (k - i)
   have hBdef : B = ∑ i ∈ Finset.range (k + 1),
       (k.choose i : ℝ) * Real.exp (1 / 2 : ℝ) * ((k - i).factorial : ℝ) * C * D ^ (k - i) := rfl
   have hB : 0 ≤ B := by
-    dsimp [B]
-    exact Finset.sum_nonneg (fun i _ => by positivity)
+    positivity
   refine ⟨B, hB, ?_⟩
   intro n hn z
   have hn1 : (1 : ℝ) ≤ n := by exact_mod_cast hn
@@ -226,35 +224,33 @@ theorem fourierCollarTerm_exists_iteratedFDeriv_bound (k : ℕ) :
           (n : ℝ) * ‖iteratedFDeriv ℝ i fourierCollarRadialDefect z‖ := by
         change ‖iteratedFDeriv ℝ i (fun w => (n : ℝ) • fourierCollarRadialDefect w) z‖ = _
         rw [iteratedFDeriv_const_smul_apply'
-          (fourierCollarRadialDefect_contDiff (i : ℕ∞)).contDiffAt, norm_smul,
+          (fourierCollarRadialDefect_contDiff i).contDiffAt, norm_smul,
           Real.norm_eq_abs, abs_of_nonneg hn0.le]
       rw [hscale]
       have hND : 1 ≤ (n : ℝ) * D := by
-        simpa only [one_mul] using mul_le_mul hn1 hD (by norm_num : (0 : ℝ) ≤ 1) hn0.le
+        nlinarith
       exact (mul_le_mul_of_nonneg_left (hq i hi z hz2) hn0.le).trans
-        (by simpa only [pow_one] using pow_le_pow_right₀ hND hi1)
+        (by bound)
     have hcut (j : ℕ) (hj : j ≤ k) :
         ‖iteratedFDeriv ℝ j
           (fun w : ℂ => (fourierCollarCutoff (fourierCollarScaledDefect n w) : ℂ)) z‖ ≤
           (j.factorial : ℝ) * C * ((n : ℝ) * D) ^ j := by
-      have hc := norm_iteratedFDeriv_comp_le (fourierCollarCutoff_contDiff (j : ℕ∞))
-        (fourierCollarScaledDefect_contDiff (j : ℕ∞) n) le_rfl z
+      have hc := norm_iteratedFDeriv_comp_le (fourierCollarCutoff_contDiff j)
+        (fourierCollarScaledDefect_contDiff j n) le_rfl z
         (fun i hi => hχ i (hi.trans hj) _) (fun i hi1 hi => hscaled i hi1 (hi.trans hj))
       have hnrm := Complex.ofRealLI.norm_iteratedFDeriv_comp_left (x := z)
-        (((fourierCollarCutoff_contDiff (j : ℕ∞)).comp
-          (fourierCollarScaledDefect_contDiff (j : ℕ∞) n)).contDiffAt) le_rfl
+        (((fourierCollarCutoff_contDiff j).comp
+          (fourierCollarScaledDefect_contDiff j n)).contDiffAt) le_rfl
       simpa only [Function.comp_def, Complex.ofRealLI_apply] using hnrm.le.trans hc
     have hprod := norm_iteratedFDeriv_mul_le
-      (show ContDiff ℝ (k : ℕ∞) (fun w : ℂ => w ^ n) from contDiff_id.pow n)
-      (Complex.ofRealCLM.contDiff.comp ((fourierCollarCutoff_contDiff (k : ℕ∞)).comp
-        (fourierCollarScaledDefect_contDiff (k : ℕ∞) n))) z le_rfl
-    change ‖iteratedFDeriv ℝ k (fun w : ℂ => w ^ n *
-      (fourierCollarCutoff (fourierCollarScaledDefect n w) : ℂ)) z‖ ≤ _
+      ((contDiff_id.pow n))
+      (Complex.ofRealCLM.contDiff.comp ((fourierCollarCutoff_contDiff k).comp
+        (fourierCollarScaledDefect_contDiff k n))) z le_rfl
     apply hprod.trans
     rw [hBdef, Finset.sum_mul]
     apply Finset.sum_le_sum
     intro i hi
-    have hik : i ≤ k := Nat.le_of_lt_succ (Finset.mem_range.mp hi)
+    have hik  := Nat.le_of_lt_succ (Finset.mem_range.mp hi)
     have hkmi : k - i ≤ k := Nat.sub_le _ _
     have hpow := fourierCollar_pow_iteratedFDeriv_le hn i hz
     have hcut' := hcut (k - i) hkmi
@@ -271,80 +267,77 @@ theorem fourierCollarTerm_exists_iteratedFDeriv_bound (k : ℕ) :
           ((n : ℝ) ^ i * (n : ℝ) ^ (k - i)) := by rw [mul_pow]; ring
       _ = ((k.choose i : ℝ) * Real.exp (1 / 2 : ℝ) * ((k - i).factorial : ℝ) * C * D ^ (k - i)) *
           (n : ℝ) ^ k := by rw [← pow_add, Nat.add_sub_of_le hik]
-  · have hgt : 1 < fourierCollarScaledDefect n z := lt_of_not_ge hz
+  · have hgt := lt_of_not_ge hz
     have heq : fourierCollarTerm n =ᶠ[𝓝 z] (fun _ : ℂ => (0 : ℂ)) := by
-      have hopen : {w : ℂ | 1 < fourierCollarScaledDefect n w} ∈ 𝓝 z :=
+      have hopen :=
         (isOpen_lt continuous_const (fourierCollarScaledDefect_contDiff (0 : ℕ∞) n).continuous).mem_nhds hgt
       filter_upwards [hopen] with w hw
       simp only [fourierCollarTerm, fourierCollarCutoff_zero hw.le, Complex.ofReal_zero, mul_zero]
     have hd := (heq.iteratedFDeriv ℝ k).eq_of_nhds
-    rw [hd]
-    simp only [iteratedFDeriv_zero_fun, Pi.zero_apply, norm_zero]
-    exact mul_nonneg hB (pow_nonneg hn0.le _)
+    simp_all
 
 /-- All polynomially weighted ordinary Taylor coefficients are absolutely
 summable. This is an intermediate Fourier regularity input, not a collar. -/
-def HasRapidFourierDecay (a : ℕ → ℂ) : Prop :=
+def HasRapidFourierDecay (a : ComplexSeq)  :=
   ∀ k : ℕ, Summable (fun n : ℕ => ‖a (n + 1)‖ * ((n + 1 : ℕ) : ℝ) ^ k)
 
-def fourierCollarExtension (a : ℕ → ℂ) (z : ℂ) : ℂ :=
+def fourierCollarExtension (a : ComplexSeq) z  :=
   a 0 + ∑' n : ℕ, a (n + 1) • fourierCollarTerm (n + 1) z
 
 /-- Smoothness of the constructed series follows from actual uniform
 derivative majorants, rather than a smooth-series premise. -/
-theorem fourierCollarExtension_contDiff {a : ℕ → ℂ} (ha : HasRapidFourierDecay a) :
-    ContDiff ℝ (⊤ : ℕ∞) (fourierCollarExtension a) := by
+theorem fourierCollarExtension_contDiff  (ha : HasRapidFourierDecay a) :
+    RealSmooth (fourierCollarExtension a) := by
   choose B hB hbound using fourierCollarTerm_exists_iteratedFDeriv_bound
-  have hseries : ContDiff ℝ (⊤ : ℕ∞)
+  have hseries : RealSmooth
       (fun z : ℂ => ∑' n : ℕ, a (n + 1) • fourierCollarTerm (n + 1) z) := by
-    apply contDiff_tsum (v := fun k n => B k * (‖a (n + 1)‖ * ((n + 1 : ℕ) : ℝ) ^ k))
-    · intro n
-      exact (fourierCollarTerm_contDiff (⊤ : ℕ∞) (n + 1)).const_smul (a (n + 1))
+    apply contDiff_tsum (v := fun k n => B k * (‖a (n + 1)‖ * ((n + 1 : ℕ)) ^ k))
+    · fun_prop
     · intro k _
       exact (ha k).mul_left (B k)
     · intro k n z _
       rw [iteratedFDeriv_const_smul_apply'
-        (fourierCollarTerm_contDiff (k : ℕ∞) (n + 1)).contDiffAt, norm_smul]
+        (fourierCollarTerm_contDiff k (n + 1)).contDiffAt, norm_smul]
       calc
         ‖a (n + 1)‖ * ‖iteratedFDeriv ℝ k (fourierCollarTerm (n + 1)) z‖ ≤
-            ‖a (n + 1)‖ * (B k * ((n + 1 : ℕ) : ℝ) ^ k) :=
+            ‖a (n + 1)‖ * (B k * ((n + 1 : ℕ)) ^ k) :=
           mul_le_mul_of_nonneg_left (hbound k (n + 1) (by omega) z) (norm_nonneg _)
-        _ = B k * (‖a (n + 1)‖ * ((n + 1 : ℕ) : ℝ) ^ k) := by ring
+        _ = B k * (‖a (n + 1)‖ * ((n + 1 : ℕ)) ^ k) := by ring
   exact contDiff_const.add hseries
 
 /-- Every summand agrees with its actual Taylor monomial on the
 closed disk, including the boundary. The zeroth coefficient is separate. -/
-theorem fourierCollarExtension_eq_taylor_on_closedDisk (a : ℕ → ℂ) {z : ℂ}
-    (hz : z ∈ closedBall (0 : ℂ) 1) :
+theorem fourierCollarExtension_eq_taylor_on_closedDisk a 
+    (hz : z ∈ closedUnitDisk) :
     fourierCollarExtension a z = a 0 + ∑' n : ℕ, a (n + 1) * z ^ (n + 1) := by
-  unfold fourierCollarExtension
-  congr 1
-  apply tsum_congr
-  intro n
-  rw [fourierCollarTerm_eq_pow_on_closedDisk (n + 1) hz]
-  rfl
+  simp_all [fourierCollarExtension, fourierCollarTerm_eq_pow_on_closedDisk]
+
+section
+variable {a } (ha : HasRapidFourierDecay a) {F : PlaneMap}
+include a ha F
 
 /-- A genuine smooth collar from genuine rapidly decaying Taylor data.
 The input equality is a Taylor-series identity for F, never an assumed
 extension or an assumed infinite-sum differentiability assertion. -/
-theorem exists_smooth_fourier_collar_of_taylor {a : ℕ → ℂ} (ha : HasRapidFourierDecay a)
-    {F : ℂ → ℂ} (hTaylor : ∀ z ∈ closedBall (0 : ℂ) 1,
+theorem exists_smooth_fourier_collar_of_taylor (hTaylor : ∀ z ∈ closedUnitDisk,
       F z = a 0 + ∑' n : ℕ, a (n + 1) * z ^ (n + 1)) :
-    ∃ G : ℂ → ℂ, ContDiff ℝ (⊤ : ℕ∞) G ∧ EqOn G F (closedBall (0 : ℂ) 1) := by
+    ∃ G : PlaneMap, RealSmooth G ∧ EqOn G F closedUnitDisk := by
   refine ⟨fourierCollarExtension a, fourierCollarExtension_contDiff ha, ?_⟩
   intro z hz
-  rw [fourierCollarExtension_eq_taylor_on_closedDisk a hz, hTaylor z hz]
+  simp_all [fourierCollarExtension_eq_taylor_on_closedDisk]
 
 /-- Interior complex holomorphicity is inherited from the actual F.
 Only real smoothness is asserted outside the disk. -/
-theorem exists_smooth_holomorphic_fourier_collar_of_taylor {a : ℕ → ℂ}
-    (ha : HasRapidFourierDecay a) {F : ℂ → ℂ}
-    (hF : DifferentiableOn ℂ F (ball (0 : ℂ) 1))
-    (hTaylor : ∀ z ∈ closedBall (0 : ℂ) 1,
+theorem exists_smooth_holomorphic_fourier_collar_of_taylor
+    (hF : DifferentiableOn ℂ F unitDisk)
+    (hTaylor : ∀ z ∈ closedUnitDisk,
       F z = a 0 + ∑' n : ℕ, a (n + 1) * z ^ (n + 1)) :
-    ∃ G : ℂ → ℂ, ContDiff ℝ (⊤ : ℕ∞) G ∧
-      EqOn G F (closedBall (0 : ℂ) 1) ∧ DifferentiableOn ℂ G (ball (0 : ℂ) 1) := by
+    ∃ G : PlaneMap, RealSmooth G ∧
+      EqOn G F closedUnitDisk ∧ DifferentiableOn ℂ G unitDisk := by
   obtain ⟨G, hG, hGF⟩ := exists_smooth_fourier_collar_of_taylor ha hTaylor
   exact ⟨G, hG, hGF, hF.congr (fun z hz => hGF (ball_subset_closedBall hz))⟩
+
+end
+
 
 end PolyaNeumann

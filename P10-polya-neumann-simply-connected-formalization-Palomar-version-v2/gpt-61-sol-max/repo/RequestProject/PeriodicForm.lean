@@ -1,5 +1,9 @@
 module
 
+public import RequestProject.PlanarTypes
+
+public import RequestProject.PlanarGeometry
+
 public import RequestProject.CutCorrection
 
 /-!
@@ -38,80 +42,82 @@ namespace PolyaNeumann
 
 /-- The form `(𝒜_E g)(θ) = 2 n(θ) + i((T_E g)(θ) - (T_E^* g)(θ))`, where `n = 𝒩(E) g` is the
 Neumann-to-Dirichlet trace of `g` (supplied as data). -/
-def periodicA (W : ℝ → Ell2 →L[ℂ] Ell2) (n g : ℝ → ℂ) (θ : ℝ) : ℂ :=
+def periodicA W (n g : ComplexCurve) θ  :=
   2 * n θ + Complex.I * (volterraOp W g θ - volterraOpAdj W g θ)
 
 /-- The corrected periodic form `𝒫_E g = 𝒜_E g + O_E B_E O_E^* g` of Definition 6.2, with
 `B_E` built from `c_E = (V_E^* - I)e₀` and `d_E = i s_E`. -/
-def periodicP (W : ℝ → Ell2 →L[ℂ] Ell2) (n g : ℝ → ℂ) (θ : ℝ) : ℂ :=
+def periodicP (W : ℝ → ComplexEnd Ell2) (n g : ComplexCurve) (θ : ℝ) : ℂ :=
   periodicA W n g θ +
-    observation W (cutB (cutC (W (2 * π)) (basisVec 0))
-      (Complex.I • cutS (W (2 * π)) (basisVec 0)) (observationAdj W g)) θ
+    observation W (cutB (cutC (W circlePeriod) (basisVec 0))
+      (Complex.I • cutS (W circlePeriod) (basisVec 0)) (observationAdj W g)) θ
 
+section
+variable {W : ℝ → ComplexEnd Ell2} (hW : ContinuousOn W boundaryInterval)
+
+include W hW in
 /-- **Lemma 6.4 (jump of `i(T_E - T_E^*)`).** If `W` is continuous with `W(0) = I`, then
 `i(T_E - T_E^*) g` jumps by `i⟨s_E, O_E^* g⟩` between `0` and `L`. -/
-theorem volterra_jump {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : ContinuousOn W (Icc 0 (2 * π)))
-    (hW0 : W 0 = 1) {g : ℝ → ℂ} (hg : AEStronglyMeasurable g volume) {B : ℝ}
+theorem volterra_jump
+    (hW0 : W 0 = 1)  (hg : AEStronglyMeasurable g volume) 
     (hgB : ∀ s, ‖g s‖ ≤ B) :
-    Complex.I * (volterraOp W g (2 * π) - volterraOpAdj W g (2 * π)) -
+    Complex.I * (volterraOp W g circlePeriod - volterraOpAdj W g circlePeriod) -
         Complex.I * (volterraOp W g 0 - volterraOpAdj W g 0) =
-      Complex.I * ⟪cutS (W (2 * π)) (basisVec 0), observationAdj W g⟫_ℂ := by
+      Complex.I * ⟪cutS (W circlePeriod) (basisVec 0), observationAdj W g⟫_ℂ := by
   have hL : (0 : ℝ) ≤ 2 * π := by positivity
   have h0 := volterraOp_add_adj hW hg hgB ⟨le_rfl, hL⟩
   have h1 := volterraOp_add_adj hW hg hgB ⟨hL, le_rfl⟩
   have hT0 : volterraOp W g 0 = 0 := by simp [volterraOp]
-  have hT1 : volterraOpAdj W g (2 * π) = 0 := by simp [volterraOpAdj]
+  have hT1 : volterraOpAdj W g circlePeriod = 0 := by simp [volterraOpAdj]
   rw [hT0, zero_add] at h0
   rw [hT1, add_zero] at h1
   rw [hT0, hT1, h0, h1]
-  simp only [observation, hW0, ContinuousLinearMap.one_apply, cutS, inner_add_left,
-    ContinuousLinearMap.adjoint_inner_left]
+  simp  [observation, hW0, cutS, inner_add_left, ContinuousLinearMap.adjoint_inner_left]
   ring
 
+include W hW in
 /-- **Lemma 6.4 (jump of `𝒜_E`).** If the Neumann trace `n` is periodic, then
 `(𝒜_E g)(L) - (𝒜_E g)(0) = i⟨s_E, O_E^* g⟩`. -/
-theorem periodicA_jump {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : ContinuousOn W (Icc 0 (2 * π)))
-    (hW0 : W 0 = 1) {n g : ℝ → ℂ} (hn : n (2 * π) = n 0) (hg : AEStronglyMeasurable g volume)
-    {B : ℝ} (hgB : ∀ s, ‖g s‖ ≤ B) :
-    periodicA W n g (2 * π) - periodicA W n g 0 =
-      Complex.I * ⟪cutS (W (2 * π)) (basisVec 0), observationAdj W g⟫_ℂ := by
+theorem periodicA_jump
+    (hW0 : W 0 = 1)  (hn : n circlePeriod = n 0) (hg : AEStronglyMeasurable g volume)
+     (hgB : ∀ s, ‖g s‖ ≤ B) :
+    periodicA W n g circlePeriod - periodicA W n g 0 =
+      Complex.I * ⟪cutS (W circlePeriod) (basisVec 0), observationAdj W g⟫_ℂ := by
   rw [← volterra_jump hW hW0 hg hgB, periodicA, periodicA, hn]
   ring
-
-lemma transport_zero {γ : ℝ → ℂ} {E : ℝ} {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W) :
-    W 0 = 1 := by
-  have := hW.2 0 ⟨le_rfl, by positivity⟩
-  simpa using this
 
 /-- **Lemma 6.4 (periodicity of `𝒫_E`).** For a transport `W` of a Lipschitz curve with
 `c_E ≠ 0` and a periodic Neumann trace `n`, the corrected form has matching endpoint values:
 `(𝒫_E g)(L) = (𝒫_E g)(0)`. -/
-theorem periodicP_periodic {γ : ℝ → ℂ} {K : NNReal} (hK : LipschitzWith K γ) {E : ℝ}
-    {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : IsTransport γ E W)
-    (hc : cutC (W (2 * π)) (basisVec 0) ≠ 0) {n g : ℝ → ℂ} (hn : n (2 * π) = n 0)
-    (hg : AEStronglyMeasurable g volume) {B : ℝ} (hgB : ∀ s, ‖g s‖ ≤ B) :
-    periodicP W n g (2 * π) = periodicP W n g 0 := by
+theorem periodicP_periodic   (hK : LipschitzWith K γ) 
+     (hW : IsTransport γ E W)
+    (hc : cutC (W circlePeriod) (basisVec 0) ≠ 0)  (hn : n circlePeriod = n 0)
+    (hg : AEStronglyMeasurable g volume)  (hgB : ∀ s, ‖g s‖ ≤ B) :
+    periodicP W n g circlePeriod = periodicP W n g 0 := by
   have hU := transport_mem_unitary hK hW ⟨by positivity, le_rfl⟩
   have hA := periodicA_jump hW.1 (transport_zero hW) hn hg hgB
-  have hO := observation_jump hW (cutB (cutC (W (2 * π)) (basisVec 0))
-      (Complex.I • cutS (W (2 * π)) (basisVec 0)) (observationAdj W g))
+  have hO := observation_jump hW (cutB (cutC (W circlePeriod) (basisVec 0))
+      (Complex.I • cutS (W circlePeriod) (basisVec 0)) (observationAdj W g))
   rw [inner_cutC_cutB hU _ hc] at hO
-  rw [← sub_eq_zero]
-  simp only [periodicP]
+  simp  [periodicP]
   linear_combination hA + hO
 
 /-! ### The small-energy Schur complement (Definition 8.1, Lemma 8.3) -/
 
 /-- The `L²(0, L)` pairing `⟨f, g⟩ = ∫₀^L conj(f) g`. -/
-def l2Inner (f g : ℝ → ℂ) : ℂ := ∫ s in (0 : ℝ)..(2 * π), conj (f s) * g s
+def l2Inner (f g : ComplexCurve)  := ∫ s in (0 : ℝ)..circlePeriod, conj (f s) * g s
 
+include W hW in
 /-- `⟨x, O_E^* g⟩ = ⟨O_E x, g⟩_{L²}`. -/
-lemma inner_observationAdj_right {W : ℝ → Ell2 →L[ℂ] Ell2} (hW : ContinuousOn W (Icc 0 (2 * π)))
-    {g : ℝ → ℂ} (hg : AEStronglyMeasurable g volume) {B : ℝ} (hgB : ∀ s, ‖g s‖ ≤ B) (x : Ell2) :
+lemma inner_observationAdj_right
+     (hg : AEStronglyMeasurable g volume)  (hgB : ∀ s, ‖g s‖ ≤ B) x :
     ⟪x, observationAdj W g⟫_ℂ = l2Inner (observation W x) g := by
   rw [← inner_conj_symm, inner_observationAdj hW hg hgB, ← intervalIntegral_conj, l2Inner]
   refine intervalIntegral.integral_congr fun s _ => ?_
-  simp only [map_mul, Complex.conj_conj]
+  simp  
   ring
+
+end
+
 
 end PolyaNeumann

@@ -34,17 +34,15 @@ Main results:
   `∑_{n=0}^ℓ (-1)ⁿ / (n! (ℓ-n)!) = [ℓ = 0]`.
 -/
 
-@[expose] public section
+public section
 
-noncomputable section
 
 namespace PolyaNeumann
 
-open PowerSeries
 
 /-- The combinatorial identity in the proof of Lemma 5.5:
 `∑_{n=0}^ℓ (-1)ⁿ / (n! (ℓ - n)!) = 1` if `ℓ = 0` and `0` otherwise. -/
-theorem alternating_factorial_sum (l : ℕ) :
+theorem alternating_factorial_sum l :
     ∑ n ∈ Finset.range (l + 1), ((-1 : ℚ) ^ n / (n.factorial * (l - n).factorial)) =
       if l = 0 then 1 else 0 := by
   have key : ∀ n ∈ Finset.range (l + 1), ((-1 : ℚ) ^ n / (n.factorial * (l - n).factorial)) =
@@ -60,9 +58,5 @@ theorem alternating_factorial_sum (l : ℕ) :
     push_cast; rfl
   rw [h2, Int.alternating_sum_range_choose]
   split_ifs with h <;> simp [h]
-
-variable {R : Type*} [CommRing R] [Algebra ℚ R]
-
-variable {D Dbar : Derivation ℚ R R} {z : R} {J : R →ₗ[ℚ] R} {A : Submodule ℚ R}
 
 end PolyaNeumann
