@@ -13,9 +13,8 @@ In `N = n + 3` variables the exponent is `18 + 3n = 3N + 9`: the corrected surfa
 bound `d^18` and a cost of `d^3` for each bounded good hyperplane slice
 (`affineHypersurfaceGrowth`, in `CCDN.Hypersurface.AffineHypersurfaceCount`). -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- CCDN Theorem 4 for integer equations in all affine ambient dimensions
@@ -41,5 +40,4 @@ theorem affine_hypersurface_dimension_growth_rat (n : ℕ) :
         C * (f.totalDegree : ℝ) ^ (18 + 3 * n) * B ^ (n + 1) :=
   (affineHypersurfaceGrowth n).rational
 
-end
 end CCDN

@@ -14,9 +14,8 @@ import CCDN.AuxiliaryPolynomial.HypersurfaceProjectiveAuxiliary
 /-! CCDN Theorem 3.1.1 for irreducible integer homogeneous equations.
 The constant is fixed before the equation, degree and radius are chosen. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The constant `hypersurfaceAbsoluteAuxiliaryConstant n` is at least `1`. -/
@@ -51,7 +50,6 @@ theorem hypersurface_projective_auxiliary
         (∀ x : ProjectivePoint (n + 2), x.mulHeight ≤ B →
           x ∈ projectiveZeroLocus (map (Int.castRingHom ℚ) f) →
           x ∈ projectiveZeroLocus (map (Int.castRingHom ℚ) g)) ∧ ¬ f ∣ g := by
-  classical
   by_cases habs : AbsolutelyIrreducible f
   · obtain ⟨bad, M, hbad, hdegree, hg⟩ := hypersurface_absolute_projective_auxiliary f hf hd habs hB
     refine ⟨M, hdegree.trans_eq ?_, hg⟩
@@ -70,5 +68,4 @@ theorem hypersurface_projective_auxiliary
     exact (hdD.trans (le_add_of_nonneg_left hl)).trans
       (le_mul_of_one_le_left (by positivity) (hypersurfaceAbsoluteAuxiliaryConstant_one_le n))
 
-end
 end CCDN

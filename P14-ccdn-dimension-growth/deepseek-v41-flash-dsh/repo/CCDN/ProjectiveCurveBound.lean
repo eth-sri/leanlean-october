@@ -13,10 +13,8 @@ the homogeneous Hilbert function. The height and count use rational
 projective points. All projection and plane-counting inputs are proved; the count with an
 explicit constant is `projective_curve_count`, in `CCDN.Curve.ProjectiveCurveCount`. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
-open MvPolynomial
 
 /-- CCDN (2020), Theorem 2: the bound `ProjectiveCurveBound`. -/
 theorem projectiveCurveBound : ProjectiveCurveBound := by
@@ -26,5 +24,4 @@ theorem projectiveCurveBound : ProjectiveCurveBound := by
   have : I.IsPrime := hI
   exact projective_curve_count I hd hdegree hB
 
-end
 end CCDN

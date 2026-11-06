@@ -20,7 +20,7 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma aeval_affineChart {K F : Type*} [Field K] [Field F] [Algebra K F] {n : ℕ}
+lemma aeval_affineChart {K F : Type*} [Field K] [Field F] [Algebra K F] {n : ℕ}
     (f : MvPolynomial (Fin (n + 1)) K) (x : Fin n → F) :
     aeval x (affineChart n f) = aeval (Fin.cons 1 x) f := by
   change eval₂ (algebraMap K F) x (affineChart n f) =
@@ -54,7 +54,7 @@ lemma projectiveChartCoordinateMap_chart {K F : Type*} [Field K] [Field F] [Alge
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f.IsHomogeneous M) :
     projectiveChartCoordinateMap I q (affineChart n f) =
       (q ((Ideal.Quotient.mk I) (X 0)))⁻¹ ^ M * q ((Ideal.Quotient.mk I) f) := by
-  let v : Fin (n + 1) → F := fun j => q ((Ideal.Quotient.mk I) (X j))
+  let v := fun j => q ((Ideal.Quotient.mk I) (X j))
   have he : aeval v = q.comp (Ideal.Quotient.mkₐ K I) := by
     apply MvPolynomial.algHom_ext
     intro j
@@ -68,7 +68,7 @@ lemma projectiveChartCoordinateMap_chart {K F : Type*} [Field K] [Field F] [Alge
   rw [aeval_affineChart, hnorm, homogeneous_aeval_smul hf, he]
   rfl
 
-private lemma projectiveChartCoordinateMap_homogenize {K F : Type*} [Field K] [Field F]
+lemma projectiveChartCoordinateMap_homogenize {K F : Type*} [Field K] [Field F]
     [Algebra K F] {n M : ℕ} (I : Ideal (MvPolynomial (Fin (n + 1)) K))
     (q : (MvPolynomial (Fin (n + 1)) K ⧸ I) →ₐ[K] F)
     (h0 : q ((Ideal.Quotient.mk I) (X 0)) ≠ 0)

@@ -99,7 +99,7 @@ namespace exteriorPower
 
 /-- `Fin k` has exactly one subset of `k` elements, and its increasing enumeration is the
 identity. -/
-private lemma ofFinEmbEquiv_symm_fin {k : ℕ} (s : Set.powersetCard (Fin k) k) :
+lemma ofFinEmbEquiv_symm_fin {k : ℕ} (s : Set.powersetCard (Fin k) k) :
     ⇑(Set.powersetCard.ofFinEmbEquiv.symm s) = (id : Fin k → Fin k) := by
   have hs : (s : Finset (Fin k)) = Finset.univ := Finset.eq_univ_of_card _ (by simp)
   rw [Set.powersetCard.ofFinEmbEquiv_symm_apply]
@@ -144,11 +144,6 @@ theorem plucker_apply (k : ℕ) (v : Fin k → (ι → R)) (s : Set.powersetCard
     plucker k v s = (Matrix.of fun i j ↦ v i (Set.powersetCard.ofFinEmbEquiv.symm s j)).det := by
   rw [plucker, Basis.equivFun_apply, basis_repr_apply, ιMultiDual_apply_ιMulti]
   simp
-
-/-- The empty wedge: in rank `0` there is one Plücker coordinate and it is `1`. -/
-@[simp] theorem plucker_zero (v : Fin 0 → (ι → R)) : plucker 0 v = 1 := by
-  funext s
-  rw [plucker_apply, Matrix.det_fin_zero, Pi.one_apply]
 
 /-- In top rank there is one Plücker coordinate and it is the determinant. -/
 theorem plucker_fin_eq_det {n : ℕ} (v : Fin n → (Fin n → R)) (s : Set.powersetCard (Fin n) n) :
@@ -200,7 +195,7 @@ variable {K : Type*} [Field K] {ι : Type*} [Fintype ι] [LinearOrder ι] {k : �
 
 /-- Two bases of the same `k`-dimensional subspace have proportional Plücker coordinates: the
 scalar is the determinant of the change-of-basis matrix, and in particular a unit. -/
-private lemma exists_plucker_eq_smul (hV : finrank K V = k) (b b' : Basis (Fin k) K V) :
+lemma exists_plucker_eq_smul (hV : finrank K V = k) (b b' : Basis (Fin k) K V) :
     ∃ c : K, plucker k (fun i ↦ ((b' i : ι → K))) = c • plucker k fun i ↦ ((b i : ι → K)) := by
   have h1 : finrank K (⋀[K]^k V) = 1 := by rw [exteriorPower.finrank_eq, hV, Nat.choose_self]
   obtain ⟨c, hc⟩ := (finrank_eq_one_iff_of_nonzero' (ιMulti K k ⇑b)

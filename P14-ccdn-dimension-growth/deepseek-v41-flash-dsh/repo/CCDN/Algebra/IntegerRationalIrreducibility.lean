@@ -14,9 +14,8 @@ import Mathlib.Algebra.MvPolynomial.NoZeroDivisors
 /-! Positive-degree irreducible integer equations remain irreducible over Q.
 Primitive denominator-cleared divisors give an elementary Gauss argument. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- An irreducible integer polynomial of positive total degree remains irreducible over `ℚ`. -/
@@ -64,5 +63,4 @@ theorem rational_map_irreducible_of_integer {n : ℕ}
     rw [hgdegree, hh, add_zero] at hedeg
     omega
 
-end
 end CCDN

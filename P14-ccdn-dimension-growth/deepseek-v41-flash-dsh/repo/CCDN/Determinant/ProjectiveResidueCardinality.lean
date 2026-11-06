@@ -14,12 +14,11 @@ import CCDN.Plane.ProjectivePlaneBezout
 at most d points at infinity. The infinity bound is proved by projective
 Bezout and introduces no extra leading multiple of p. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private theorem projectivePlaneResidue_infinity_card_le {p d : ℕ} [Fact p.Prime]
+theorem projectivePlaneResidue_infinity_card_le {p d : ℕ} [Fact p.Prime]
     (f : MvPolynomial (Fin 3) ℤ) (hf : f.IsHomogeneous d)
     (hir : Irreducible (map (Int.castRingHom (ZMod p)) f))
     (hproper : ¬ map (Int.castRingHom (ZMod p)) f ∣ X 0) :
@@ -33,7 +32,7 @@ private theorem projectivePlaneResidue_infinity_card_le {p d : ℕ} [Fact p.Prim
     (fun r => by change eval r.val.val.rep (X 0) = 0; simpa using r.property)
   simpa only [mul_one] using h
 
-private theorem projectivePlaneResidue_affine_card_le {p d : ℕ} [Fact p.Prime]
+theorem projectivePlaneResidue_affine_card_le {p d : ℕ} [Fact p.Prime]
     (f : MvPolynomial (Fin 3) ℤ) (hf : f.IsHomogeneous d) :
     Fintype.card {r : ProjectivePlaneResidue f p // r.val.rep 0 ≠ 0} ≤
       Fintype.card (PlaneResidue (affineChart 2 f) p) := by
@@ -70,5 +69,4 @@ theorem projectivePlaneResidue_card_le_affine_add_degree {p d : ℕ} [Fact p.Pri
   have ha := projectivePlaneResidue_affine_card_le (p := p) f hf
   omega
 
-end
 end CCDN

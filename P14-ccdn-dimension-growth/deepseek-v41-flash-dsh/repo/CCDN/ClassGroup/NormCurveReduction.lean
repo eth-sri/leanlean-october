@@ -14,7 +14,6 @@ number of translation classes is a separate lattice theorem. -/
 @[expose] public section
 namespace CCDN
 noncomputable section
-open scoped NumberField
 open NumberField NumberField.InfinitePlace
 
 variable (K : Type*) [Field K] [NumberField K]

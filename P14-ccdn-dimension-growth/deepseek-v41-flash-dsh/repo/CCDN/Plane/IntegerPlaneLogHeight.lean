@@ -14,8 +14,6 @@ The resulting nonzero integer witness fits the fourth-power prime cutoff. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
-open MvPolynomial
 
 /-- For `d ≥ 1` and `H ≥ 1`, the interpolation height `integerPlaneHeight m d H (2 * d ^ 3)` is at
 least `1`. -/
@@ -31,7 +29,7 @@ lemma integerPlaneHeight_one_le (m d : ℕ) (hd : 1 ≤ d)
     · exact one_le_mul_of_one_le_of_one_le (one_le_pow₀ (by linarith)) hH
     · exact one_le_pow₀ (one_le_mul_of_one_le_of_one_le hA (by linarith))
 
-private lemma integerPlaneHeight_log_le (m d : ℕ) (hd : 1 ≤ d)
+lemma integerPlaneHeight_log_le (m d : ℕ) (hd : 1 ≤ d)
     (H : ℝ) (hH : 1 ≤ H) :
     Real.log (integerPlaneHeight m d H (2 * (d : ℝ) ^ 3)) ≤
       Real.log H + (m : ℝ) * d + 11 * (d : ℝ) ^ 2 := by
@@ -122,5 +120,4 @@ lemma integerPlaneHeight_scaled_log_le (m d : ℕ) (hd : 1 ≤ d)
   rw [hr]
   exact (add_le_add hmul le_rfl).trans (hmid.trans hlast)
 
-end
 end CCDN

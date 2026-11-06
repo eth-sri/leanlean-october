@@ -21,7 +21,7 @@ type of variables and clears the denominators, giving an inequality between natu
   `σ` has at most `p.totalDegree * #S ^ (card σ - 1)` zeros in `S ^ σ`, stated multiplicatively.
 -/
 
-@[expose] public section
+public section
 
 open Finset Fintype
 

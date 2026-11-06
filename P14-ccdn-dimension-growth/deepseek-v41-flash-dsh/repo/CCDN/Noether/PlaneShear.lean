@@ -48,7 +48,7 @@ def planeShear (R : Type*) [CommRing R] (a : R) :
     (by rw [planeShearHom_comp, add_neg_cancel, planeShearHom_zero])
     (by rw [planeShearHom_comp, neg_add_cancel, planeShearHom_zero])
 
-private lemma planeShear_monomial {R : Type*} [CommRing R] (a : R)
+lemma planeShear_monomial {R : Type*} [CommRing R] (a : R)
     (m : Fin 2 →₀ ℕ) (c : R) :
     planeShear R a (monomial m c) =
       C c * (X 0) ^ m 0 * (X 1 + C a * X 0) ^ m 1 := by
@@ -58,7 +58,7 @@ private lemma planeShear_monomial {R : Type*} [CommRing R] (a : R)
     Matrix.cons_val_fin_one]
   ring
 
-private lemma planeShear_monomial_totalDegree_le {R : Type*} [CommRing R] [Nontrivial R]
+lemma planeShear_monomial_totalDegree_le {R : Type*} [CommRing R] [Nontrivial R]
     (a : R) (m : Fin 2 →₀ ℕ) (c : R) :
     (planeShear R a (monomial m c)).totalDegree ≤ m.sum (fun _ e => e) := by
   have hx : (X 1 + C a * X 0 : MvPolynomial (Fin 2) R).totalDegree ≤ 1 := by
@@ -79,10 +79,9 @@ private lemma planeShear_monomial_totalDegree_le {R : Type*} [CommRing R] [Nontr
     h₃.trans (by simpa using Nat.mul_le_mul_left (m 1) hx)
   omega
 
-private lemma planeShear_totalDegree_le {R : Type*} [CommRing R] [Nontrivial R]
+lemma planeShear_totalDegree_le {R : Type*} [CommRing R] [Nontrivial R]
     (a : R) (f : MvPolynomial (Fin 2) R) :
     (planeShear R a f).totalDegree ≤ f.totalDegree := by
-  classical
   conv_lhs => rw [f.as_sum, map_sum]
   apply (totalDegree_finsetSum _ _).trans
   apply Finset.sup_le

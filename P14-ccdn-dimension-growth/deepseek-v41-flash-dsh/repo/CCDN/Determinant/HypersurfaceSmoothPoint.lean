@@ -17,9 +17,8 @@ import Mathlib.RingTheory.Nullstellensatz
 closed field. The characteristic bound supplies a nonzero partial derivative;
 the Nullstellensatz supplies a point where it does not vanish. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A polynomial outside a prime hypersurface ideal is nonzero at some point
@@ -28,8 +27,7 @@ theorem exists_hypersurface_point_eval_ne_zero
     {K σ : Type*} [Field K] [IsAlgClosed K] [Finite σ]
     (f g : MvPolynomial σ K) (hf : Irreducible f) (hg : ¬ f ∣ g) :
     ∃ z : σ → K, eval z f = 0 ∧ eval z g ≠ 0 := by
-  classical
-  let I : Ideal (MvPolynomial σ K) := Ideal.span {f}
+  let I := Ideal.span {f}
   have : I.IsPrime := Ideal.isPrime_span_singleton_of_prime hf.prime
   by_contra! h
   apply hg
@@ -42,7 +40,7 @@ theorem exists_hypersurface_point_eval_ne_zero
 
 /-- A nonzero partial derivative of an irreducible polynomial is nonzero at
 some point on its hypersurface. -/
-private theorem exists_hypersurface_point_partial_ne_zero
+theorem exists_hypersurface_point_partial_ne_zero
     {K σ : Type*} [Field K] [IsAlgClosed K] [Finite σ]
     (f : MvPolynomial σ K) (hf : Irreducible f)
     (hpos : 0 < f.totalDegree) (j : σ) (hj : pderiv j f ≠ 0) :
@@ -69,5 +67,4 @@ theorem exists_smooth_hypersurface_point_of_degree_lt_char
   obtain ⟨z, hz, hderiv⟩ := exists_hypersurface_point_partial_ne_zero f hf hpos j hj
   exact ⟨z, j, hz, hderiv⟩
 
-end
 end CCDN

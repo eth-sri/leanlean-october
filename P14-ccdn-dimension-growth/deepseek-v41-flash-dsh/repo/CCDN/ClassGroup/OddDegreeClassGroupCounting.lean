@@ -14,9 +14,8 @@ translation classes and their two signed norm curves. The curve equation
 retains its full odd degree, including when the translating generator
 belongs to a proper subfield. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open NumberField NumberField.InfinitePlace
 
 /-- For `n ≥ 2` and `B ≥ 1`, the norm-curve box height `H = max (2 * B) (√(B ^ n))` satisfies
@@ -49,7 +48,7 @@ variable (K : Type*) [Field K] [NumberField K]
 
 /-- Summing over the constructed curves costs two signs and a factor
 `2 √B` from their square-height parameter. -/
-private theorem boundedSquareNormIntegers_odd_count
+theorem boundedSquareNormIntegers_odd_count
     (hn : 2 ≤ Module.finrank ℚ K) (hodd : Odd (Module.finrank ℚ K))
     {B : ℝ} (hB : 1 ≤ B) :
     ((boundedSquareNormIntegers K B).ncard : ℝ) ≤
@@ -121,5 +120,4 @@ theorem boundedSquareNormIntegers_odd_count_of_relative_short_basis
     (mul_nonneg hcurve (Real.sqrt_nonneg B))
   nlinarith only [h₁, h₂]
 
-end
 end CCDN

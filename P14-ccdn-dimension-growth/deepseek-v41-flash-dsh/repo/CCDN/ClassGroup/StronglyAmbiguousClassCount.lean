@@ -34,7 +34,7 @@ variable {R : Type*} [CommRing R] [IsDedekindDomain R]
 def integralIdealClass (I : Ideal R) : ClassGroup R :=
   if h : I = 0 then 1 else ClassGroup.mk0 ⟨I, mem_nonZeroDivisors_iff_ne_zero.mpr h⟩
 
-private lemma integralIdealClass_eq (I : Ideal R) (hI : I ≠ 0) :
+lemma integralIdealClass_eq (I : Ideal R) (hI : I ≠ 0) :
     integralIdealClass I = ClassGroup.mk0 ⟨I, mem_nonZeroDivisors_iff_ne_zero.mpr hI⟩ := by
   simp only [integralIdealClass, dite_eq_right hI]
 
@@ -43,11 +43,11 @@ private lemma integralIdealClass_eq (I : Ideal R) (hI : I ≠ 0) :
   rw [integralIdealClass_eq _ one_ne_zero]
   exact map_one ClassGroup.mk0
 
-private lemma integralIdealClass_mk0 (I : (Ideal R)⁰) :
+lemma integralIdealClass_mk0 (I : (Ideal R)⁰) :
     integralIdealClass (I : Ideal R) = ClassGroup.mk0 I := by
   exact integralIdealClass_eq _ (mem_nonZeroDivisors_iff_ne_zero.mp I.property)
 
-private lemma integralIdealClass_mul {I J : Ideal R} (hI : I ≠ 0) (hJ : J ≠ 0) :
+lemma integralIdealClass_mul {I J : Ideal R} (hI : I ≠ 0) (hJ : J ≠ 0) :
     integralIdealClass (I * J) = integralIdealClass I * integralIdealClass J := by
   rw [integralIdealClass_eq _ (mul_ne_zero hI hJ),
     integralIdealClass_eq _ hI, integralIdealClass_eq _ hJ]
@@ -55,17 +55,17 @@ private lemma integralIdealClass_mul {I J : Ideal R} (hI : I ≠ 0) (hJ : J ≠ 
     (⟨I, mem_nonZeroDivisors_iff_ne_zero.mpr hI⟩ : (Ideal R)⁰)
     (⟨J, mem_nonZeroDivisors_iff_ne_zero.mpr hJ⟩ : (Ideal R)⁰)
 
-private lemma integralIdealClass_prod (s : Finset (Ideal R)) (hs : ∀ I ∈ s, I ≠ 0) :
+lemma integralIdealClass_prod (s : Finset (Ideal R)) (hs : ∀ I ∈ s, I ≠ 0) :
     integralIdealClass (∏ I ∈ s, I) = ∏ I ∈ s, integralIdealClass I := by
   induction s using Finset.induction_on with
   | empty => simpa only [Finset.prod_empty] using (integralIdealClass_one (R := R))
   | @insert I s hIs ih =>
     have hI := hs I (Finset.mem_insert_self I s)
-    have hs' : ∀ J ∈ s, J ≠ 0 := fun J hJ ↦ hs J (Finset.mem_insert_of_mem hJ)
+    have hs' := fun J hJ ↦ hs J (Finset.mem_insert_of_mem hJ)
     rw [Finset.prod_insert hIs, integralIdealClass_mul hI (Finset.prod_ne_zero_iff.mpr hs'),
       ih hs', Finset.prod_insert hIs]
 
-private lemma integralIdealClass_extension
+lemma integralIdealClass_extension
     (S : Type*) [CommRing S] [IsDedekindDomain S] [Algebra R S]
     [Module.IsTorsionFree R S] (I : Ideal R) (hI : I ≠ 0) :
     integralIdealClass (I.map (algebraMap R S)) =
@@ -78,14 +78,13 @@ end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open NumberField
 open scoped Pointwise nonZeroDivisors
 
 variable (F K : Type*) [Field F] [Field K] [NumberField F] [NumberField K]
   [Algebra F K] [FiniteDimensional F K]
 
-private theorem stronglyAmbiguousClassGroup_ramified_cover
+theorem stronglyAmbiguousClassGroup_ramified_cover
     (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1)
     (S : Finset (Ideal (𝓞 K)))
     (hS : ∀ Q, IsQuadraticRamifiedPrime F K Q → Q ∈ S)
@@ -101,7 +100,7 @@ private theorem stronglyAmbiguousClassGroup_ramified_cover
   obtain ⟨I, hIinv, hIc⟩ :=
     exists_invariant_integral_ideal_representative
       (RingOfIntegers.mapAlgEquiv σ).toRingEquiv hσO J hJ
-  have hI0 : (I : Ideal (𝓞 K)) ≠ 0 := mem_nonZeroDivisors_iff_ne_zero.mp I.property
+  have hI0 := mem_nonZeroDivisors_iff_ne_zero.mp I.property
   have hIinv' : σ • (I : Ideal (𝓞 K)) = I := by
     rw [quadratic_integer_ideal_action]
     exact hIinv
@@ -109,15 +108,15 @@ private theorem stronglyAmbiguousClassGroup_ramified_cover
     (integralIdealClass_mk0 I).trans (hIc.trans hJc)
   obtain ⟨A, t, hA, ht, hfact⟩ :=
     invariant_integral_ideal_ramified_factorization F K hd σ hσ I hI0 hIinv'
-  have htS : t ⊆ S := fun Q hQ ↦ hS Q (ht Q hQ)
-  have ht0 : ∀ Q ∈ t, Q ≠ 0 := fun Q hQ ↦ (ht Q hQ).2.1
+  have htS := fun Q hQ ↦ hS Q (ht Q hQ)
+  have ht0 := fun Q hQ ↦ (ht Q hQ).2.1
   have hmap0 : A.map (algebraMap (𝓞 F) (𝓞 K)) ≠ 0 :=
     Ideal.map_ne_bot_of_ne_bot hA
   refine ⟨integralIdealClass A, ⟨t, Finset.mem_powerset.mpr htS⟩, ?_⟩
   rw [← hc, hfact, integralIdealClass_mul hmap0 (Finset.prod_ne_zero_iff.mpr ht0),
     integralIdealClass_extension (𝓞 K) A hA, integralIdealClass_prod t ht0]
 
-private theorem stronglyAmbiguousTwoTorsion_card_le_ramified_cover
+theorem stronglyAmbiguousTwoTorsion_card_le_ramified_cover
     (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1)
     (S : Finset (Ideal (𝓞 K)))
     (hS : ∀ Q, IsQuadraticRamifiedPrime F K Q → Q ∈ S) :
@@ -145,5 +144,4 @@ theorem stronglyAmbiguousTwoTorsion_card_le_discriminant_primes
   exact hh.trans (Nat.mul_le_mul_left _
     (Nat.pow_le_pow_right (by omega) (discriminantPrimeIdealCover_card_le K)))
 
-end
 end CCDN

@@ -12,9 +12,8 @@ import Mathlib.MeasureTheory.Integral.Bochner.Basic
 /-! An orthonormal flag adapted to greedy lattice vectors. A small
 coordinate box in this flag contains no nonzero lattice vector. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Module Submodule InnerProductSpace
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
@@ -49,7 +48,6 @@ theorem lattice_flag_coordinate_box_zero
     (hminimum : ∀ i x, x ∈ L → x ∉ Submodule.span ℝ (c '' Set.Iio i) → a i ≤ ‖x‖)
     {x : E} (hx : x ∈ L)
     (hbox : ∀ i, |c.toBasis.repr x i| < a i / n) : x = 0 := by
-  classical
   by_contra hx0
   let S := (c.toBasis.repr x).support
   have hS : S.Nonempty := by
@@ -91,5 +89,4 @@ theorem lattice_flag_coordinate_box_zero
       _ ≤ _ := norm_sum_le _ _
   exact (not_lt_of_ge hmin) (hnorm.trans_lt hstrict)
 
-end
 end CCDN

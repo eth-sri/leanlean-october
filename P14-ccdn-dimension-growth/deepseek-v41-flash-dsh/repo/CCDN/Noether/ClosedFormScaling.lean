@@ -21,19 +21,18 @@ D, in characteristic zero or larger than 2dD. This supplies the rank input to
 effective Bertini.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial Matrix Submodule
 
-private lemma bivariateGridPolynomial_natDegree_lt {R : Type*} [CommRing R] {d : ℕ}
+lemma bivariateGridPolynomial_natDegree_lt {R : Type*} [CommRing R] {d : ℕ}
     (hd : 0 < d) (v : BivariateGrid d → R) :
     (bivariateGridPolynomial R d v).natDegree < d := by
   by_cases h : bivariateGridPolynomial R d v = 0
   · simpa only [h, natDegree_zero] using hd
   · exact (natDegree_lt_iff_degree_lt h).mpr (bivariateGridPolynomial_degree_lt v)
 
-private lemma bivariateGridPolynomial_coefficient_natDegree_le {R : Type*} [CommRing R] {d : ℕ}
+lemma bivariateGridPolynomial_coefficient_natDegree_le {R : Type*} [CommRing R] {d : ℕ}
     (v : BivariateGrid d → R) (i : ℕ) :
     ((bivariateGridPolynomial R d v).coeff i).natDegree ≤ d := by
   apply natDegree_le_of_degree_le
@@ -44,7 +43,7 @@ private lemma bivariateGridPolynomial_coefficient_natDegree_le {R : Type*} [Comm
 
 /-- For a normalized irreducible equation the entire coefficient kernel
 maps into the one-dimensional span of the gradient. -/
-private theorem closedForm_kernel_image_le_gradient
+theorem closedForm_kernel_image_le_gradient
     {F : Type*} [Field F] [IsAlgClosed F]
     (d : ℕ) (f : F[X][X]) (hf : Irreducible f) (hm : f.Monic) (hdeg : f.degree = d)
     (D : ℕ) (htotal : bivariateTotalDegree f ≤ D) (hchar : CharZeroOrGT F (2 * d * D)) :
@@ -86,7 +85,7 @@ private theorem closedForm_kernel_image_le_gradient
 
 /-- No more than one independent coefficient vector solves the closed-form
 matrix for an irreducible normalized equation. -/
-private theorem closedForm_kernel_finrank_le_one
+theorem closedForm_kernel_finrank_le_one
     {F : Type*} [Field F] [IsAlgClosed F]
     (d : ℕ) (f : F[X][X]) (hf : Irreducible f) (hm : f.Monic) (hdeg : f.degree = d)
     (D : ℕ) (htotal : bivariateTotalDegree f ≤ D) (hchar : CharZeroOrGT F (2 * d * D)) :
@@ -116,11 +115,9 @@ theorem closedForm_coefficient_rank_lower
   change (closedFormCoefficientMatrix d f).rank + _ = _ at he
   omega
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open Polynomial Matrix
 
 /-- The closed-form operator is linear in the equation: scaling the equation by `a` scales the
@@ -137,7 +134,6 @@ lemma closedFormOperator_smul_equation {R : Type*} [CommRing R]
 lemma closedFormCoefficientMatrix_smul {R : Type*} [CommRing R]
     (a : R) (d : ℕ) (f : R[X][X]) :
     closedFormCoefficientMatrix d (a • f) = a • closedFormCoefficientMatrix d f := by
-  classical
   ext i j
   change (bivariateCoefficients R (closedFormOperator (a • f)
     (closedFormPair R d (Pi.single j 1)))) i =
@@ -146,7 +142,7 @@ lemma closedFormCoefficientMatrix_smul {R : Type*} [CommRing R]
   rw [closedFormOperator_smul_equation, (bivariateCoefficients R).map_smul]
   rfl
 
-private lemma closedForm_rank_smul {F : Type*} [Field F] (a : F) (ha : a ≠ 0)
+lemma closedForm_rank_smul {F : Type*} [Field F] (a : F) (ha : a ≠ 0)
     (d : ℕ) (f : F[X][X]) :
     (closedFormCoefficientMatrix d (a • f)).rank = (closedFormCoefficientMatrix d f).rank := by
   rw [closedFormCoefficientMatrix_smul]
@@ -217,5 +213,4 @@ theorem closedForm_rank_drop_of_constant_leading
   rw [closedForm_rank_smul _ (inv_ne_zero ha)] at hr
   exact hr
 
-end
 end CCDN

@@ -10,12 +10,11 @@ import CCDN.Determinant.PlaneSingularities
 
 /-! Multiplicity greater than one forces a singular point. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma origin_power_pderiv_zero {K σ : Type*} [Field K]
+lemma origin_power_pderiv_zero {K σ : Type*} [Field K]
     {f : MvPolynomial σ K} {μ : ℕ} (hμ : 2 ≤ μ)
     (hf : f ∈ idealOfVars σ K ^ μ) (j : σ) :
     eval (0 : σ → K) (pderiv j f) = 0 := by
@@ -44,7 +43,7 @@ theorem origin_order_eq_one_of_smooth {K σ : Type*} [Field K]
   obtain ⟨j, hj⟩ := hs
   exact hj (singular_of_origin_order_ge_two f a (by omega) hf j)
 
-private lemma planeResidueMultiplicity_singular {p : ℕ} [Fact p.Prime]
+lemma planeResidueMultiplicity_singular {p : ℕ} [Fact p.Prime]
     (f : MvPolynomial (Fin 2) ℤ) (hf : map (Int.castRingHom (ZMod p)) f ≠ 0)
     (a : PlaneResidue f p) (ha : 2 ≤ planeResidueMultiplicity f p hf a) :
     ∀ j, eval a.val (pderiv j (map (Int.castRingHom (ZMod p)) f)) = 0 := by
@@ -99,5 +98,4 @@ theorem planeTotalMultiplicity_le_card_add_correction {p : ℕ} [Fact p.Prime]
   have hmul := Nat.mul_le_mul_right f.totalDegree hS
   nlinarith
 
-end
 end CCDN

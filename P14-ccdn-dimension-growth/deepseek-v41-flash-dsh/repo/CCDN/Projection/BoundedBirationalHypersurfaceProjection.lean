@@ -17,8 +17,6 @@ homogeneous prime quotient to a hypersurface of exactly the same degree. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
-open MvPolynomial
 
 /-- The coefficient bound for the birational hypersurface projection in `n` variables and degree
 `d`: the maximum of the normalization height and `(n * d ^ 2 + 1) ^ n`, which bounds the moment
@@ -58,7 +56,7 @@ theorem moment_cons_abs_le_integerBirationalProjectionHeight {m n d t : ℕ}
 
 /-- A bounded primitive augmentation of the constructed normalization
 produces a homogeneous irreducible equation of exactly the original degree. -/
-private theorem exists_bounded_birational_hypersurface_projection
+theorem exists_bounded_birational_hypersurface_projection
     (m k : ℕ) (I : Ideal (MvPolynomial (Fin (m + 1 + k)) ℚ)) [I.IsPrime]
     (hI : IsHomogeneousIdeal I)
     (d : ℕ) (hdimdeg : HasProjectiveDimensionDegree I m d) :
@@ -67,7 +65,6 @@ private theorem exists_bounded_birational_hypersurface_projection
       IsNoetherNormalization I (fun i : Fin (m + 1) => integerLinearForm (b i.succ)) ∧
       IsBirationalProjection I (fun i => integerLinearForm (b i)) f ∧
       f.IsHomogeneous d ∧ f.totalDegree = d := by
-  classical
   let n := m + 1 + k
   let F := FractionRing (MvPolynomial (Fin n) ℚ ⧸ I)
   obtain ⟨a, ha, hinta, hinja⟩ := exists_bounded_integer_normalization m k I d hdimdeg
@@ -146,5 +143,4 @@ theorem integerBirationalProjectionHeight_le (n d : ℕ) (hd : 1 ≤ d) :
 
 end
 
-end
 end CCDN

@@ -55,7 +55,7 @@ lemma sum_preHilbertPoly_leading {ι : Type*} (s : Finset ι) (hs : s.Nonempty)
     apply mul_ne_zero
     · exact_mod_cast Nat.ne_of_gt hd
     · exact inv_ne_zero (by exact_mod_cast Nat.factorial_ne_zero m)
-  have he : P.natDegree = m := le_antisymm hle (Polynomial.le_natDegree_of_ne_zero hc0)
+  have he := le_antisymm hle (Polynomial.le_natDegree_of_ne_zero hc0)
   refine ⟨hd, he, ?_⟩
   rw [Polynomial.leadingCoeff, he, hc, div_eq_mul_inv]
 

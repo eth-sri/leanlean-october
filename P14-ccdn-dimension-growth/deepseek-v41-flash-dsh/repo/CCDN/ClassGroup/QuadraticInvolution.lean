@@ -17,9 +17,8 @@ action of a field involution on two-torsion ideal classes. -/
 namespace CCDN
 noncomputable section
 open NumberField
-open scoped NumberField
 
-private theorem two_torsion_card_le_involution_fixed_square
+theorem two_torsion_card_le_involution_fixed_square
     {G : Type*} [CommGroup G] [Finite G]
     (σ : G →* G) (hσ : Function.Involutive σ) (hG : ∀ x : G, x ^ 2 = 1) :
     Nat.card G ≤ Nat.card (σ.eqLocus (MonoidHom.id G)) ^ 2 := by
@@ -45,7 +44,7 @@ private theorem two_torsion_card_le_involution_fixed_square
         Nat.card (σ.eqLocus (MonoidHom.id G)) := Nat.mul_le_mul hk hr
     _ = Nat.card (σ.eqLocus (MonoidHom.id G)) ^ 2 := (pow_two _).symm
 
-private theorem classGroup_mulEquiv_involutive
+theorem classGroup_mulEquiv_involutive
     {R : Type*} [CommRing R] [IsDomain R]
     (σ : R ≃+* R) (hσ : Function.Involutive σ) :
     Function.Involutive (ClassGroup.mulEquiv σ) := by
@@ -70,7 +69,7 @@ def classGroupTwoTorsionAction (σ : K ≃+* K) :
   map_one' := Subtype.ext (map_one _)
   map_mul' c d := Subtype.ext (map_mul _ _ _)
 
-private theorem classGroupTwoTorsionAction_involutive (σ : K ≃+* K)
+theorem classGroupTwoTorsionAction_involutive (σ : K ≃+* K)
     (hσ : Function.Involutive σ) :
     Function.Involutive (classGroupTwoTorsionAction K σ) := by
   have hσO : Function.Involutive (RingOfIntegers.mapRingEquiv σ) := by

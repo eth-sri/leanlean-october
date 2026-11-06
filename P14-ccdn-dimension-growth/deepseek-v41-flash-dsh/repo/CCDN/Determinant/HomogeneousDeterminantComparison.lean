@@ -24,11 +24,11 @@ absolute value at least one. This is the coefficient obstruction used in CCDN §
 The determinant bound needed to make the auxiliary polynomial small enough remains separate.
 -/
 
-@[expose] public section
+public section
 
 namespace CCDN
 
-private theorem abs_leadingCoeff_le_of_dvd {n : ℕ} (order : MonomialOrder (Fin n))
+theorem abs_leadingCoeff_le_of_dvd {n : ℕ} (order : MonomialOrder (Fin n))
     {f g : MvPolynomial (Fin n) ℤ} (hg : g ≠ 0) (hfg : f ∣ g) :
     |order.leadingCoeff f| ≤ |order.leadingCoeff g| := by
   obtain ⟨q, rfl⟩ := hfg
@@ -40,7 +40,6 @@ private theorem abs_leadingCoeff_le_of_dvd {n : ℕ} (order : MonomialOrder (Fin
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial Matrix
 
 /-- Without an auxiliary polynomial, selected rows have exact Hilbert
@@ -60,7 +59,6 @@ theorem homogeneous_no_auxiliary_comparison {n d M t : ℕ}
           (evaluationMatrix (homogeneousMonomials n M) (points ∘ a))ᵀ).det : ℤ) : ℝ) /
           (Int.Matrix.minorGcd (evaluationMatrix (homogeneousMonomials n M) (points ∘ a)) : ℝ)) ^
             ((((n + M).choose M : ℝ) - s)⁻¹) := by
-  classical
   obtain ⟨s, a, ha, hli, hspan, hs⟩ :=
     homogeneous_independent_evaluation_rows f hf hf0 hdM points hzero
   let mon := homogeneousMonomials n M
@@ -119,7 +117,7 @@ lemma log_gcd_le_of_coefficient_bound {L G D k : ℝ}
 
 /-- The logarithmic determinant comparison with exact Hilbert rank, derived
 from the absence of an auxiliary polynomial. -/
-private theorem homogeneous_no_auxiliary_log_comparison {n d M t : ℕ}
+theorem homogeneous_no_auxiliary_log_comparison {n d M t : ℕ}
     (order : MonomialOrder (Fin (n + 1)))
     (f : MvPolynomial (Fin (n + 1)) ℤ) (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hdM : d ≤ M)
     (points : Fin t → (Fin (n + 1) → ℤ)) (hzero : ∀ i, eval (points i) f = 0)
@@ -197,5 +195,4 @@ theorem homogeneous_no_auxiliary_box_comparison {n d M t : ℕ}
     (fun j => (homogeneousMonomials_degree n M j).le) hG
   linarith
 
-end
 end CCDN

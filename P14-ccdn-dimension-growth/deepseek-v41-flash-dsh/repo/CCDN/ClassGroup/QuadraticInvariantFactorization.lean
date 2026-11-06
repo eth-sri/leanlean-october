@@ -16,7 +16,6 @@ ramified primes; repeated ramified factors can be absorbed in pairs. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open NumberField Ideal
 open scoped Pointwise
 
@@ -28,7 +27,7 @@ variable (F K : Type*) [Field F] [Field K] [NumberField F] [NumberField K]
 def IsQuadraticRamifiedPrime (Q : Ideal (𝓞 K)) : Prop :=
   Q.IsPrime ∧ Q ≠ ⊥ ∧ Q.ramificationIdx (𝓞 F) = 2
 
-private theorem quadratic_ramified_prime_fixed
+theorem quadratic_ramified_prime_fixed
     (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1)
     {Q : Ideal (𝓞 K)} (hQ : IsQuadraticRamifiedPrime F K Q) :
     σ • Q = Q := by
@@ -38,7 +37,7 @@ private theorem quadratic_ramified_prime_fixed
   have he := hQ.2.2
   omega
 
-private theorem quadratic_ramified_prime_square
+theorem quadratic_ramified_prime_square
     (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1)
     {Q : Ideal (𝓞 K)} (hQ : IsQuadraticRamifiedPrime F K Q) :
     Q ^ 2 = (Q.under (𝓞 F)).map (algebraMap (𝓞 F) (𝓞 K)) := by
@@ -49,7 +48,7 @@ private theorem quadratic_ramified_prime_square
   exact hh.symm
 
 omit [NumberField F] [FiniteDimensional F K] in
-private lemma invariant_ideal_remainder
+lemma invariant_ideal_remainder
     (σ : K ≃ₐ[F] K) {I A R : Ideal (𝓞 K)}
     (hI : σ • I = I) (hA : σ • A = A) (hA0 : A ≠ 0)
     (he : I = A * R) : σ • R = R := by
@@ -58,7 +57,7 @@ private lemma invariant_ideal_remainder
     A * (σ • R) = σ • (A * R) := by rw [smul_mul', hA]
     _ = A * R := by rw [← he, hI, he]
 
-private theorem invariant_integral_ideal_ramified_multiset
+theorem invariant_integral_ideal_ramified_multiset
     (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1)
     (I : Ideal (𝓞 K)) (hI : I ≠ 0) (hinv : σ • I = I) :
     ∃ (J : Ideal (𝓞 F)) (s : Multiset (Ideal (𝓞 K))),
@@ -137,7 +136,7 @@ private theorem invariant_integral_ideal_ramified_multiset
         hIeq, hJs]
       ac_rfl
 
-private theorem quadratic_ramified_multiset_parity
+theorem quadratic_ramified_multiset_parity
     (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1)
     (s : Multiset (Ideal (𝓞 K)))
     (hs : ∀ Q ∈ s, IsQuadraticRamifiedPrime F K Q) :
@@ -184,5 +183,4 @@ theorem invariant_integral_ideal_ramified_factorization
   rw [hIeq, hsprod, Ideal.map_mul]
   ac_rfl
 
-end
 end CCDN

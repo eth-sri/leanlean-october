@@ -18,7 +18,6 @@ gcd `1`. -/
 theorem exists_primitive_projective_rep {n : ℕ} (x : ProjectivePoint n) :
     ∃ (z : IntPoint (n + 1)) (hz : z ≠ 0), Finset.univ.gcd z = 1 ∧
       Projectivization.mk ℚ (rationalPoint z) (rationalPoint_ne_zero hz) = x := by
-  classical
   obtain ⟨b, hb⟩ := IsLocalization.exist_integer_multiples_of_finite
     (nonZeroDivisors ℤ) x.rep
   choose u hu using hb
@@ -101,7 +100,7 @@ theorem primitiveProjectiveRep_injective {n : ℕ} :
         congr 1
     _ = y := primitiveProjectiveRep_mk y
 
-private theorem primitiveProjectiveRep_height {n : ℕ} (x : ProjectivePoint n) :
+theorem primitiveProjectiveRep_height {n : ℕ} (x : ProjectivePoint n) :
     x.mulHeight = ((⨆ i, |primitiveProjectiveRep x i| : ℤ) : ℝ) := by
   have h := projective_height_primitive _ (primitiveProjectiveRep_ne_zero x)
     (primitiveProjectiveRep_gcd x)

@@ -46,7 +46,7 @@ lemma exists_integer_inverse_of_isCoprime {q a : ℤ} (h : IsCoprime q a) :
 
 /-- Unit normalization in the first homogeneous coordinate preserves the
 evaluation of a degree-M form, up to the corresponding unit row factor. -/
-private lemma projective_chart_eval_congr {M : ℕ} {q u : ℤ}
+lemma projective_chart_eval_congr {M : ℕ} {q u : ℤ}
     (z : Fin 3 → ℤ) (hu : q ∣ u * z 0 - 1)
     (F : MvPolynomial (Fin 3) ℤ) (hF : F.IsHomogeneous M) :
     q ∣ eval (fun j : Fin 2 => u * z j.succ) (affineChart 2 F) -
@@ -61,7 +61,7 @@ private lemma projective_chart_eval_congr {M : ℕ} {q u : ℤ}
 
 /-- Projective local determinant estimate in a chart whose first coordinate
 is a p-adic unit. The affine multiplicity belongs to the chart equation. -/
-private theorem projective_plane_chart_det_divisibility {p μ s d M : ℕ} [Fact p.Prime]
+theorem projective_plane_chart_det_divisibility {p μ s d M : ℕ} [Fact p.Prime]
     (f : MvPolynomial (Fin 3) ℤ) (hfhom : f.IsHomogeneous d)
     (F : Fin s → MvPolynomial (Fin 3) ℤ) (hF : ∀ j, (F j).IsHomogeneous M)
     (z : Fin s → Fin 3 → ℤ) (a : Fin 2 → ℤ)
@@ -74,7 +74,6 @@ private theorem projective_plane_chart_det_divisibility {p μ s d M : ℕ} [Fact
     (hz : ∀ i, eval (z i) f = 0) :
     (p : ℤ) ^ multiplicityExponent s μ ∣
       (Matrix.of fun i j => eval (z i) (F j)).det := by
-  classical
   let N := multiplicityExponent s μ
   by_cases hN : N = 0
   · change (p : ℤ) ^ N ∣ _
@@ -122,7 +121,7 @@ def projectivePlaneChart (k : Fin 3) (f : MvPolynomial (Fin 3) ℤ) :
     MvPolynomial (Fin 2) ℤ :=
   affineChart 2 (rename (Equiv.swap 0 k) f)
 
-private lemma eval_swap_plane_coordinates (k : Fin 3) (z : Fin 3 → ℤ)
+lemma eval_swap_plane_coordinates (k : Fin 3) (z : Fin 3 → ℤ)
     (f : MvPolynomial (Fin 3) ℤ) :
     eval (z ∘ Equiv.swap 0 k) (rename (Equiv.swap 0 k) f) = eval z f := by
   rw [eval_rename]
@@ -132,7 +131,7 @@ private lemma eval_swap_plane_coordinates (k : Fin 3) (z : Fin 3 → ℤ)
   rw [he]
 
 /-- The local projective divisor is available in every coordinate chart. -/
-private theorem projective_plane_local_det_divisibility {p μ s d M : ℕ} [Fact p.Prime]
+theorem projective_plane_local_det_divisibility {p μ s d M : ℕ} [Fact p.Prime]
     (f : MvPolynomial (Fin 3) ℤ) (hfhom : f.IsHomogeneous d)
     (F : Fin s → MvPolynomial (Fin 3) ℤ) (hF : ∀ j, (F j).IsHomogeneous M)
     (z : Fin s → Fin 3 → ℤ) (k : Fin 3) (a : Fin 2 → ℤ)

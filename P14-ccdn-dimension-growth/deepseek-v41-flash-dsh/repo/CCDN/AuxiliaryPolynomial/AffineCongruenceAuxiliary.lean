@@ -18,16 +18,14 @@ namespace CCDN
 noncomputable section
 open MvPolynomial Finset
 
-private theorem square_minorGcd_eq_abs_det {s : ℕ} (A : Matrix (Fin s) (Fin s) ℤ) :
+theorem square_minorGcd_eq_abs_det {s : ℕ} (A : Matrix (Fin s) (Fin s) ℤ) :
     Int.Matrix.minorGcd A = |A.det| := by
-  classical
   let : Nonempty (Set.powersetCard (Fin s) s) :=
     ⟨⟨univ, by simp⟩⟩
   rw [minorGcd_eq_gcd_plucker]
   have hp : exteriorPower.plucker s A.row = fun _ => A.det :=
     funext (fun S => exteriorPower.plucker_fin_eq_det A.row S)
-  rw [hp]
-  rw [Finset.gcd_eq_gcd_image, Finset.image_const univ_nonempty]
+  rw [hp, Finset.gcd_eq_gcd_image, Finset.image_const univ_nonempty]
   simp only [Finset.gcd_singleton, id_eq, ← Int.abs_eq_normalize]
 
 /-- The lower bound for the logarithm of a nonzero `s × s` determinant of monomials evaluated
@@ -44,7 +42,7 @@ def affineCongruenceDeterminantLower (n d s : ℕ) (H Q : ℝ) : ℝ :=
 /-- A strict numerical gap forces every maximal determinant to vanish.
 The arithmetic divisibility and archimedean bounds come from the
 equation, its smooth residue classes, and the integer points. -/
-private theorem affine_congruence_evaluation_det_eq_zero {n s M : ℕ} (hs : 0 < s)
+theorem affine_congruence_evaluation_det_eq_zero {n s M : ℕ} (hs : 0 < s)
     (f : MvPolynomial (Fin (n + 2)) ℤ)
     (hir : AbsolutelyIrreducible f)
     (hd : 0 < f.totalDegree) (H : ℝ) (hH : 1 ≤ H)

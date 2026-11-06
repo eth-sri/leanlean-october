@@ -15,16 +15,15 @@ equal to a unit of the base ring. This formulation works directly with
 relative ideal norms, so it does not identify the unit obstruction with
 the trivial class. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open scoped nonZeroDivisors
 
 variable (R S : Type*) [CommRing R] [IsDedekindDomain R]
   [CommRing S] [IsDedekindDomain S] [Algebra R S]
   [Module.Finite R S] [Module.IsTorsionFree R S]
 
-private theorem ambiguous_ideal_scalar_relative_unit
+theorem ambiguous_ideal_scalar_relative_unit
     (σ : S ≃ₐ[R] S) (I : (Ideal S)⁰)
     (hI : ClassGroup.mulEquiv σ.toRingEquiv (ClassGroup.mk0 I) = ClassGroup.mk0 I) :
     ∃ x y : S, ∃ u : Rˣ, x ≠ 0 ∧ y ≠ 0 ∧
@@ -78,5 +77,4 @@ theorem ambiguous_numberField_ideal_norm_unit
 
 end NumberFields
 
-end
 end CCDN

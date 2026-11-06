@@ -28,9 +28,8 @@ import Mathlib.RingTheory.MvPolynomial.Localization
   common fraction field has a nonzero conductor element.
 -/
 
-@[expose] public section
+public section
 
-noncomputable section
 
 namespace IsLocalization
 
@@ -66,7 +65,6 @@ theorem exists_ne_zero_mul_mem_range_of_finite
     [IsFractionRing R F] [IsFractionRing A F] [Module.Finite R A] :
     ∃ c : R, c ≠ 0 ∧ ∀ a : A, ∃ r : R,
       algebraMap R A r = algebraMap R A c * a := by
-  classical
   obtain ⟨s, hs⟩ := (Module.Finite.fg_top : (⊤ : Submodule R A).FG)
   let φ : A →ₐ[R] F := IsScalarTower.toAlgHom R A F
   obtain ⟨c, hc⟩ := IsLocalization.exist_integer_multiples
@@ -95,4 +93,3 @@ theorem exists_ne_zero_mul_mem_range_of_finite
 
 end IsFractionRing
 
-end

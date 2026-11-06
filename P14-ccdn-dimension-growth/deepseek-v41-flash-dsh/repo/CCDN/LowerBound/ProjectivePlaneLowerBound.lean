@@ -16,10 +16,8 @@ import CCDN.Plane.ProjectivePlaneBezout
 constant 1/5: the grid construction for degree at least four, and two rational points for
 smaller degrees. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
-open MvPolynomial
 
 /-- For every d>0 there is an absolutely irreducible projective plane curve
 of degree d and an integer B≥1 with N(X,B)≥d² B^(2/d)/5. -/
@@ -44,5 +42,4 @@ theorem projective_plane_lower_bound (d : ℕ) (hd : 0 < d) :
     simp only [Nat.cast_one, Real.one_rpow, mul_one]
     nlinarith [mul_nonneg hd0 (show 0 ≤ 3 - (d : ℝ) by linarith)]
 
-end
 end CCDN

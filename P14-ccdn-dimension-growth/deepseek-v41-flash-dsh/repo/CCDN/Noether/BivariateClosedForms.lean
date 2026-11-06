@@ -17,7 +17,6 @@ compatibility with rational differentiation, for the closed-form criterion. -/
 namespace CCDN
 noncomputable section
 open Polynomial Differential
-open scoped Polynomial.Bivariate
 attribute [local instance] rationalDifferential
 
 /-- Differentiate the inner variable of a bivariate polynomial. -/

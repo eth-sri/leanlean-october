@@ -16,9 +16,8 @@ import Mathlib.Tactic.Linarith
 crosses its target by at most one prime factor. A change of containment
 then occurs across a single deletion edge. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Finset
 
 /-- If a finite set `P` of positive integers bounded by `U` has product at least `X > 1`, then
@@ -76,5 +75,4 @@ theorem exists_subset_erase_boundary {α : Type*} [DecidableEq α] (R : Finset �
     ⟨mem_powerset.mpr (Subset.trans (erase_subset p T) (mem_powerset.mp hTR)), he⟩
   exact (not_le_of_gt (card_lt_card (erase_ssubset hp))) (hmin _ herase)
 
-end
 end CCDN

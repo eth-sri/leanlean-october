@@ -11,9 +11,8 @@ import CCDN.Hypersurface.GoodHyperplaneBounds
 /-! Transport of the constructed good hyperplane to coordinates suited to
 the universal Noether family. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Restriction to the graph hyperplane `x_none = ∑ a j * x j` commutes with renaming the
@@ -70,5 +69,4 @@ theorem exists_geometrically_good_graph_reindexed {n : ℕ}
   rw [he]
   simpa only [F, map_rename] using hgood
 
-end
 end CCDN

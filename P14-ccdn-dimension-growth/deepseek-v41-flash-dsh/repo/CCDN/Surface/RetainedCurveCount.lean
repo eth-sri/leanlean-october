@@ -15,12 +15,11 @@ import CCDN.Surface.SmallDegreeSurfaceCurveCount
 nonlinear prime curves are counted together, using their common degree
 budget and the logarithmic cap on the retained degrees. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Finset
 
-private theorem surface_curve_number_weight {d : ℕ} (hd : 5 ≤ d) {B : ℝ} (hB : 1 ≤ B) :
+theorem surface_curve_number_weight {d : ℕ} (hd : 5 ≤ d) {B : ℝ} (hB : 1 ≤ B) :
     B ^ (1 / Real.sqrt (d : ℝ)) * (Real.log B + 1) ≤
       (20 * Real.exp (1 / 20 : ℝ)) * B := by
   calc
@@ -111,5 +110,4 @@ theorem retained_surface_curve_union_bound :
     (show 0 ≤ A * D ^ 2 * (D + 1) * B by positivity)
   nlinarith [hcount, hlineCount, hcurveCount, hcardBound, hl, hn, hc]
 
-end
 end CCDN

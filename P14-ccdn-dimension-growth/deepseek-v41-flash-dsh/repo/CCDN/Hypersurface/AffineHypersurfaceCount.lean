@@ -13,16 +13,14 @@ import CCDN.Surface.AffineSurfaceDimensionGrowth
 `d^18` of Proposition 4.3.4 starts the hyperplane-slicing induction, which costs `d^3` for each
 further variable, and clearing denominators passes from integer to rational equations. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Clearing denominators transfers affine dimension growth from integer equations to
 rational equations with the same constant. -/
 theorem AffineHypersurfaceGrowth.rational {n e : ℕ} (h : AffineHypersurfaceGrowth n e) :
     RationalAffineHypersurfaceGrowth n e := by
-  classical
   obtain ⟨C, hC, hbound⟩ := h
   refine ⟨C, hC, fun f hir hd B hB => ?_⟩
   obtain ⟨g, hdeg, htop, hzero⟩ := exists_integer_model_absolute_top f hir
@@ -43,5 +41,4 @@ theorem affineHypersurfaceGrowth (n : ℕ) : AffineHypersurfaceGrowth n (18 + 3 
     simpa only [AffineHypersurfaceGrowth, Nat.zero_add, pow_one]
       using affine_surface_dimension_growth) n
 
-end
 end CCDN

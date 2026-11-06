@@ -40,7 +40,7 @@ polynomial over `F[t]` is evaluating its coefficients at `t`. -/
   ext i
   simp
 
-private lemma residueEliminationEquation_map_eval {F L : Type*} [Field F] [Field L] [Algebra F L]
+lemma residueEliminationEquation_map_eval {F L : Type*} [Field F] [Field L] [Algebra F L]
     (t u : L) (f g : F[X][X]) :
     (residueEliminationEquation f g).map (residueParameterEval t u) =
       C u * (f.map (aeval t).toRingHom).derivative - g.map (aeval t).toRingHom := by

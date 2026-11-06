@@ -17,12 +17,11 @@ homogeneous and affine bad-reduction predicates agree. In degree one, the
 homogeneous bad-prime set can be smaller because affine degree loss can
 produce a nonzero multiple of the homogenizing variable. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma affineChart_not_variable_dvd_of_full_degree {K : Type*} [Field K] {n : ℕ}
+lemma affineChart_not_variable_dvd_of_full_degree {K : Type*} [Field K] {n : ℕ}
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f ≠ 0)
     (hd : (affineChart n f).totalDegree = f.totalDegree) : ¬ X 0 ∣ f := by
   rintro ⟨g, he⟩
@@ -61,7 +60,7 @@ lemma unscaledHomogenize_absolute_irreducible_iff {n : ℕ}
     rw [← hd]
     exact scaledHomogenize_irreducible _ hir one_ne_zero
 
-private lemma hypersurfaceBadReduction_unscaledHomogenize_imp {n : ℕ}
+lemma hypersurfaceBadReduction_unscaledHomogenize_imp {n : ℕ}
     (f : MvPolynomial (Fin n) ℤ) (hf : f ≠ 0) (p : ℕ) :
     HypersurfaceBadReduction (scaledHomogenize f.totalDegree 1 f) p →
       HypersurfaceBadReduction f p := by
@@ -87,7 +86,6 @@ theorem hypersurfaceBadPrimeFactor_mono_of_badReduction_imp {n m : ℕ}
     (habs : AbsolutelyIrreducible f → AbsolutelyIrreducible g)
     (hbad : ∀ q, HypersurfaceBadReduction f q → HypersurfaceBadReduction g q) :
     hypersurfaceBadPrimeFactor f ≤ hypersurfaceBadPrimeFactor g := by
-  classical
   by_cases hf : AbsolutelyIrreducible f
   · have hg := habs hf
     let S := (finite_fin_hypersurface_bad_primes f hf
@@ -125,5 +123,4 @@ theorem hypersurfaceBadPrimeFactor_unscaledHomogenize_le {n : ℕ}
   · exact (unscaledHomogenize_absolute_irreducible_iff f hf).mp
   · exact hypersurfaceBadReduction_unscaledHomogenize_imp f hf
 
-end
 end CCDN

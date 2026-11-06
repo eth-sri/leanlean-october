@@ -13,12 +13,11 @@ import CCDN.Height.MultivariateGridHeight
 /-! Translation preserves the leading homogeneous equation exactly. Bounded
 integer translations make the constant coefficient nonzero in every dimension. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma scaledHomogenize_one_affineTranslation {R : Type*} [CommRing R] [Nontrivial R]
+lemma scaledHomogenize_one_affineTranslation {R : Type*} [CommRing R] [Nontrivial R]
     {n d : ℕ} (a : Fin n → R) (f : MvPolynomial (Fin n) R) (hd : f.totalDegree ≤ d) :
     scaledHomogenize d 1 (affineTranslation R a f) =
       homogeneousTranslation R a (scaledHomogenize d 1 f) := by
@@ -30,7 +29,7 @@ private lemma scaledHomogenize_one_affineTranslation {R : Type*} [CommRing R] [N
   rw [affineChart_scaledHomogenize_one, affineChart_homogeneousTranslation,
     affineChart_scaledHomogenize_one]
 
-private lemma homogeneousSlice_zero_translation {R : Type*} [CommRing R] {n : ℕ}
+lemma homogeneousSlice_zero_translation {R : Type*} [CommRing R] {n : ℕ}
     (a : Fin n → R) (f : MvPolynomial (Fin (n + 1)) R) :
     homogeneousSlice n 0 (homogeneousTranslation R a f) = homogeneousSlice n 0 f := by
   have he : (homogeneousSlice n (0 : R)).comp (homogeneousTranslation R a).toRingHom =
@@ -43,16 +42,15 @@ private lemma homogeneousSlice_zero_translation {R : Type*} [CommRing R] {n : �
         simp [homogeneousSlice, homogeneousTranslation, homogeneousTranslationHom]
   exact RingHom.congr_fun he f
 
-private lemma homogeneousSlice_zero_scaledHomogenize_one {R : Type*} [CommRing R]
+lemma homogeneousSlice_zero_scaledHomogenize_one {R : Type*} [CommRing R]
     {n d : ℕ} (f : MvPolynomial (Fin n) R) (hd : f.totalDegree ≤ d) :
     homogeneousSlice n 0 (scaledHomogenize d 1 f) = homogeneousComponent d f := by
-  classical
   rw [scaledHomogenize, map_sum]
   conv_rhs => rw [f.as_sum, map_sum]
   apply Finset.sum_congr rfl
   intro m hm
   rw [homogeneousSlice_monomial, chartExponent_homogenizedExponent]
-  have hmd : m.sum (fun _ e => e) ≤ d := (le_totalDegree hm).trans hd
+  have hmd := (le_totalDegree hm).trans hd
   by_cases he : m.sum (fun _ e => e) = d
   · have hhom := isHomogeneous_monomial (f.coeff m) he
     rw [homogeneousComponent_eq_self hhom]
@@ -82,5 +80,4 @@ theorem exists_bounded_affine_translation_nonzero_constant {n : ℕ}
   obtain ⟨a, ha, he, _⟩ := exists_integer_multivariate_grid_height_witness f hf le_rfl
   exact ⟨a, ha, by rwa [affineTranslation_constantCoeff]⟩
 
-end
 end CCDN

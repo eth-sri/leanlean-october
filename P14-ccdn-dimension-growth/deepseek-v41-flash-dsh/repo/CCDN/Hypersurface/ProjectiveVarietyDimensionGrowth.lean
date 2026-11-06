@@ -11,10 +11,8 @@ import CCDN.Projection.BoundedDegreeNormalizationFiber
 /-! Dimension growth for homogeneous prime ideals of positive
 projective dimension. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
-open MvPolynomial
 
 /-- The general projective-variety bound, with dimension and codimension
 displayed separately. The hypotheses use the Hilbert polynomial of
@@ -42,5 +40,4 @@ theorem projective_variety_dimension_growth (m k : ℕ) :
     (fun i => z i.succ) s hzero (fun x hx i => hproj x hx i.succ)).trans
     (Nat.le_self_pow (by omega) d)
 
-end
 end CCDN

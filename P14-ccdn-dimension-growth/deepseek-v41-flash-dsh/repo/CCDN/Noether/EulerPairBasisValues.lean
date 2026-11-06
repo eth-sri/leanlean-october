@@ -11,15 +11,13 @@ public import CCDN.Noether.EulerPairBasis
 /-! Explicit monomial values of the Euler basis and nonzero minors of the
 correct Noether order d^2-1. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Module
 
-private lemma euler_restrict_basis_val {R : Type*} [CommRing R]
+lemma euler_restrict_basis_val {R : Type*} [CommRing R]
     (S : Set (Fin 2 →₀ ℕ)) (i : S) :
     (basisRestrictSupport R S i).val = monomial i.val 1 := by
-  classical
   change AddMonoidAlgebra.ofCoeff
     (((Finsupp.supportedEquivFinsupp (M := R) (R := R) S).symm
       (Finsupp.single i 1)).val) = _
@@ -31,7 +29,6 @@ corresponding to `i` and coefficient one. -/
 lemma eulerLowBasis_apply {R : Type*} [CommRing R] (k : ℕ) (i : EulerLowIndex k) :
     (eulerLowBasis R k i).val =
       monomial ((Finsupp.degreeLeEquivSym (Fin 2) k).symm i).val 1 := by
-  classical
   have h := Basis.reindex_apply (basisRestrictSupport R {p : Fin 2 →₀ ℕ | p.degree ≤ k})
     (Finsupp.degreeLeEquivSym (Fin 2) k) i
   exact (congrArg Subtype.val h).trans (euler_restrict_basis_val _ _)
@@ -41,11 +38,10 @@ exponent vector corresponding to `i` and coefficient one. -/
 lemma eulerTopBasis_apply {R : Type*} [CommRing R] (k : ℕ) (i : EulerTopIndex k) :
     (eulerTopBasis R k i).val =
       monomial ((degreeEqEquivSym (Fin 2) k).symm i).val 1 := by
-  classical
   simp only [eulerTopBasis, Basis.map_apply, Basis.reindex_apply]
   exact euler_restrict_basis_val _ _
 
-private theorem eulerClosedFormCoefficientMatrix_rank
+theorem eulerClosedFormCoefficientMatrix_rank
     {F : Type*} [Field F] [CharZero F] [IsAlgClosed F]
     (k : ℕ) (f : Polynomial (Polynomial F)) (hf : Irreducible f)
     (a : F) (ha : a ≠ 0) (hl : f.leadingCoeff = Polynomial.C a)
@@ -67,5 +63,4 @@ theorem exists_eulerClosedForm_nonzero_minor
     (eulerClosedFormCoefficientMatrix k f).HasNonzeroMinor ((k + 2) ^ 2 - 1) :=
   Matrix.hasNonzeroMinor_of_le_rank _ (eulerClosedFormCoefficientMatrix_rank k f hf a ha hl hdeg).ge
 
-end
 end CCDN

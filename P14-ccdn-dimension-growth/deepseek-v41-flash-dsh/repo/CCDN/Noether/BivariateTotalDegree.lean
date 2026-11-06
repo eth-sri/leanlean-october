@@ -84,7 +84,7 @@ lemma bivariateTotalDegree_le_iff {R : Type*} [CommRing R]
     rw [AlgEquiv.apply_symm_apply] at hc
     exact hc.symm ▸ MvPolynomial.mem_support_iff.mp hm
 
-private lemma bivariateTotalDegree_mul {R : Type*} [CommRing R] [IsDomain R]
+lemma bivariateTotalDegree_mul {R : Type*} [CommRing R] [IsDomain R]
     (f g : R[X][X]) (hf : f ≠ 0) (hg : g ≠ 0) :
     bivariateTotalDegree (f * g) = bivariateTotalDegree f + bivariateTotalDegree g := by
   unfold bivariateTotalDegree
@@ -145,7 +145,7 @@ lemma bivariate_natDegree_le_totalDegree {R : Type*} [CommRing R]
     (f : R[X][X]) : f.natDegree ≤ bivariateTotalDegree f := by
   by_cases hf : f = 0
   · simp [hf]
-  have hc : f.coeff f.natDegree ≠ 0 := Polynomial.leadingCoeff_ne_zero.mpr hf
+  have hc := Polynomial.leadingCoeff_ne_zero.mpr hf
   have hn : ((f.coeff f.natDegree).coeff (f.coeff f.natDegree).natDegree) ≠ 0 :=
     Polynomial.leadingCoeff_ne_zero.mpr hc
   have hh := bivariateTotalDegree_coeff_le f f.natDegree _ hn

@@ -10,9 +10,8 @@ import CCDN.Hilbert.CoordinateIndependence
 
 /-! Full ambient Hilbert dimension forces the ideal to be zero. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A proper ideal whose filtered Hilbert polynomial has degree equal to the number of variables is
@@ -46,5 +45,4 @@ theorem ideal_eq_bot_of_full_hilbert_dimension
     (Ideal.Quotient.mkₐ K I).toRingHom).mp hinj
   simpa only [Ideal.Quotient.mkₐ_toRingHom, Ideal.mk_ker] using hk
 
-end
 end CCDN

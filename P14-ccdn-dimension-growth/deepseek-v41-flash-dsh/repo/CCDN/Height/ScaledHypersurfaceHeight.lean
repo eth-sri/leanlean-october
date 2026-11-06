@@ -12,9 +12,8 @@ import CCDN.ForMathlib.MvPolynomial
 /-! The exact leading homogeneous coefficient height supplies the full
 scaling gain in every dimension. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- For `h ≥ 1`, the scaled homogenization of `f` in degree `d = f.totalDegree` has coefficient
@@ -50,5 +49,4 @@ lemma leading_height_one_le {n : ℕ} (f : MvPolynomial (Fin n) ℤ) (hf : f ≠
     (1 : ℝ) ≤ integerCoefficientHeight (homogeneousComponent f.totalDegree f) := by
   exact_mod_cast integerCoefficientHeight_pos _ (homogeneousComponent_totalDegree_ne_zero hf)
 
-end
 end CCDN

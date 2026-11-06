@@ -16,9 +16,8 @@ import Mathlib.RingTheory.DedekindDomain.Factorization
 These are the arithmetic inputs for factoring invariant ideals into
 extended base ideals and ramified prime factors. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open NumberField Ideal
 open scoped Pointwise
 
@@ -32,7 +31,7 @@ lemma quadratic_integer_ideal_action (σ : K ≃ₐ[F] K) (I : Ideal (𝓞 K)) :
     σ • I = I.map (RingOfIntegers.mapAlgEquiv σ).toRingHom := by
   rfl
 
-private theorem quadratic_prime_orbit_eq_pair
+theorem quadratic_prime_orbit_eq_pair
     (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1)
     (Q : Ideal (𝓞 K)) [Q.IsPrime] :
     (Q.under (𝓞 F)).primesOver (𝓞 K) = {Q, σ • Q} := by
@@ -56,7 +55,7 @@ private theorem quadratic_prime_orbit_eq_pair
       subst P
       exact ⟨inferInstance, inferInstance⟩
 
-private theorem quadratic_prime_ramification_identity
+theorem quadratic_prime_ramification_identity
     (hd : Module.finrank F K = 2) (Q : Ideal (𝓞 K)) [Q.IsPrime] :
     ((Q.under (𝓞 F)).primesOver (𝓞 K)).ncard *
       (Q.ramificationIdx (𝓞 F) * Q.inertiaDeg (𝓞 F)) = 2 := by
@@ -104,7 +103,7 @@ theorem quadratic_fixed_prime_extension
     (Q : Ideal (𝓞 K)) [Q.IsPrime] (hQ : Q ≠ ⊥) (hfix : σ • Q = Q) :
     (Q.under (𝓞 F)).map (algebraMap (𝓞 F) (𝓞 K)) =
       Q ^ Q.ramificationIdx (𝓞 F) := by
-  have hp : Q.under (𝓞 F) ≠ ⊥ := Ideal.under_ne_bot (𝓞 F) hQ
+  have hp := Ideal.under_ne_bot (𝓞 F) hQ
   have : (Q.under (𝓞 F)).IsMaximal := (inferInstance : (Q.under (𝓞 F)).IsPrime).isMaximal hp
   have hset : ((Q.under (𝓞 F)).primesOver (𝓞 K)).toFinset = {Q} := by
     ext P
@@ -121,7 +120,7 @@ theorem quadratic_moving_prime_extension
   let : Algebra.IsQuadraticExtension F K := ⟨hd⟩
   let : IsGaloisGroup (K ≃ₐ[F] K) (𝓞 F) (𝓞 K) :=
     IsGaloisGroup.of_isFractionRing _ _ _ F K
-  have hp : Q.under (𝓞 F) ≠ ⊥ := Ideal.under_ne_bot (𝓞 F) hQ
+  have hp := Ideal.under_ne_bot (𝓞 F) hQ
   have : (Q.under (𝓞 F)).IsMaximal := (inferInstance : (Q.under (𝓞 F)).IsPrime).isMaximal hp
   have he := quadratic_moving_prime_unramified F K hd σ hσ Q hmove
   have he' : (σ • Q).ramificationIdx (𝓞 F) = 1 := by
@@ -132,5 +131,4 @@ theorem quadratic_moving_prime_extension
   rw [Ideal.map_algebraMap_eq_finsetProd_pow hp, hset]
   simp [hmove.symm, he, he']
 
-end
 end CCDN

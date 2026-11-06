@@ -15,9 +15,8 @@ import CCDN.Determinant.HomogeneousDeterminantComparison
 integer plane-curve points. The residue geometry comes from the plane
 equation, so coordinates such as (H,x,y) need no rational rows. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Matrix Real
 
 /-- Evaluating the composite `g ∘ τ` of a polynomial map `τ` and a polynomial `g` at `z` is
@@ -29,7 +28,7 @@ lemma eval_polynomial_coordinate_map {R : Type*} [CommRing R] {n m : ℕ}
   rw [← eval_assoc]
   rfl
 
-private lemma polynomial_coordinate_evaluation_matrix {M s : ℕ}
+lemma polynomial_coordinate_evaluation_matrix {M s : ℕ}
     (τ : Fin 3 → MvPolynomial (Fin 2) ℤ) (z : Fin s → Fin 2 → ℤ) :
     (Matrix.of fun i k => eval (z i) (aeval τ (monomial (homogeneousMonomials 2 M k) (1 : ℤ)))) =
       evaluationMatrix (homogeneousMonomials 2 M) (fun i j => eval (z i) (τ j)) := by
@@ -78,5 +77,4 @@ theorem polynomial_map_no_auxiliary_height_comparison
   rw [hqdegree, show (Matrix.of fun i k => eval ((z ∘ a) i) (g k)) = _ from he] at hlower
   exact hlower.trans hupper
 
-end
 end CCDN

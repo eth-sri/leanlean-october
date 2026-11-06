@@ -20,7 +20,7 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Real
   explicit absorption of the logarithm into a power.
 -/
 
-@[expose] public section
+public section
 
 namespace Real
 

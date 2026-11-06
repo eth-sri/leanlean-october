@@ -52,7 +52,7 @@ abbrev projectivePlaneTotalMultiplicity {p d : ℕ} [Fact p.Prime]
     (hf0 : map (Int.castRingHom (ZMod p)) f ≠ 0) : ℕ :=
   projectiveHypersurfaceTotalMultiplicity f hf hf0
 
-private theorem projectivePlaneTotalMultiplicity_bounds {p d : ℕ} [Fact p.Prime]
+theorem projectivePlaneTotalMultiplicity_bounds {p d : ℕ} [Fact p.Prime]
     (f : MvPolynomial (Fin 3) ℤ) (hf : f.IsHomogeneous d)
     (hf0 : map (Int.castRingHom (ZMod p)) f ≠ 0) :
     Fintype.card (ProjectivePlaneResidue f p) ≤ projectivePlaneTotalMultiplicity f hf hf0 ∧
@@ -72,7 +72,6 @@ theorem projective_reduction_minorGcd {s N p d M : ℕ} [Fact p.Prime] (hs : 0 <
       s ^ 2 ≤ 2 * projectivePlaneTotalMultiplicity f hf hf0 * (e + s) ∧
       (s : ℝ) ^ 2 / (2 * projectivePlaneTotalMultiplicity f hf hf0) - s ≤ e ∧
       (p : ℤ) ^ e ∣ Int.Matrix.minorGcd (Matrix.of fun i j => eval (z i) (F j)) := by
-  classical
   let red : Fin s → ProjectivePlaneResidue f p := fun i =>
     ⟨primitiveProjectiveReduction (z i) (hprim i),
       primitiveProjectiveReduction_zero f hf (z i) (hprim i) (hz i)⟩

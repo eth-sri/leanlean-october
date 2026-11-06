@@ -10,9 +10,8 @@ public import CCDN.Algebra.HomogeneousChart
 /-! Integral scaled homogenization. The point (h,x) on the homogeneous model
 corresponds to the original integer affine point x, without dividing coordinates. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The monomial with exponent `homogenizedExponent d m` evaluated at `(h, x)` equals
@@ -30,7 +29,6 @@ lemma homogenizedExponent_value {R : Type*} [CommRing R] {n : ℕ}
 theorem scaledHomogenize_eval {R : Type*} [CommRing R] {n d : ℕ}
     (h : R) (f : MvPolynomial (Fin n) R) (hf : f.totalDegree ≤ d) (x : Fin n → R) :
     eval (Fin.cons h x) (scaledHomogenize d h f) = h ^ d * eval x f := by
-  classical
   rw [scaledHomogenize, map_sum]
   conv_rhs => rw [f.as_sum, map_sum, Finset.mul_sum]
   apply Finset.sum_congr rfl
@@ -80,5 +78,4 @@ theorem exists_scaledHomogenize_top_coefficient {n : ℕ} (f : MvPolynomial (Fin
     abs_of_nonneg (by linarith : (0 : ℝ) ≤ h)]
   nlinarith [show 0 ≤ (h : ℝ) ^ f.totalDegree by positivity]
 
-end
 end CCDN

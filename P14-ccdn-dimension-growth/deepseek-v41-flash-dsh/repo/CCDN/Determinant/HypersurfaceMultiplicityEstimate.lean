@@ -11,12 +11,11 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 /-! Sharp leading term for the hypersurface local determinant exponent.
 The linear error depends on dimension alone, not on singular multiplicity. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- Optimize the binomial cutoff at the nonnegative mth root. -/
-private theorem local_exponent_root_bound (m s e : ℕ) (hm : 0 < m)
+theorem local_exponent_root_bound (m s e : ℕ) (hm : 0 < m)
     {μ : ℕ} (R : ℝ) (hR0 : 0 ≤ R)
     (hR : (μ : ℝ) * R ^ m = (m.factorial : ℝ) * s)
     (hcutoff : ∀ K : ℕ, s * K ≤ e + μ * (m + K).choose (m + 1)) :
@@ -78,7 +77,7 @@ private theorem local_exponent_root_bound (m s e : ℕ) (hm : 0 < m)
 
 /-- The sharp multiplicity-dependent leading term, with a dimension-only
 linear error. This is the numerical bound needed in CCDN Section 2. -/
-private theorem local_exponent_lower_bound (m s e : ℕ) (hm : 0 < m)
+theorem local_exponent_lower_bound (m s e : ℕ) (hm : 0 < m)
     {μ : ℕ} (hμ : 0 < μ)
     (hcutoff : ∀ K : ℕ, s * K ≤ e + μ * (m + K).choose (m + 1)) :
     (s : ℝ) * (((m.factorial : ℝ) * s / μ) ^ (1 / (m : ℝ))) * m / (m + 1) ≤
@@ -129,5 +128,4 @@ theorem hypersurfaceMultiplicityExponent_lower_bound (m s : ℕ) (hm : 0 < m)
   local_exponent_separated_lower_bound m s _ hm hμ
     (fun K => hypersurfaceMultiplicityExponent_cutoff_pos m s K hm hμ)
 
-end
 end CCDN

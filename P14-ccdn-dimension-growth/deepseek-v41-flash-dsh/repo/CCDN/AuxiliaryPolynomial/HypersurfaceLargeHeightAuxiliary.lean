@@ -18,13 +18,13 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private def hypersurfaceLargeThreshold (n d : ℕ) (T : ℝ) : ℝ :=
+def hypersurfaceLargeThreshold (n d : ℕ) (T : ℝ) : ℝ :=
   Real.exp (hypersurfaceLargeHeightError (n + 1) (hypersurfaceNormalizedError n) T) *
     (d : ℝ) ^ (4 - 1 / (n + 1 : ℝ))
 
 /-- In the large-height range, an integer degree above the explicit threshold
 gives a homogeneous auxiliary nonmultiple. -/
-private theorem hypersurface_exists_auxiliary_large_height
+theorem hypersurface_exists_auxiliary_large_height
     {K : Type*} [Field K] [CharZero K] [IsAlgClosed K] {n d M t : ℕ}
     (order : MonomialOrder (Fin (n + 3))) (f : MvPolynomial (Fin (n + 3)) ℤ)
     (hf : f.IsHomogeneous d) (hd : 0 < d) (hM : 8 * d * (n + 2) ≤ M)
@@ -37,7 +37,6 @@ private theorem hypersurface_exists_auxiliary_large_height
       T * d * degreeRoot n d)
     (hthreshold : hypersurfaceLargeThreshold n d T < M) :
     ∃ g, IsPointAuxiliary f g M z := by
-  classical
   have hf0 : f ≠ 0 := ne_zero_of_irreducible_map hir
   have hdM : d ≤ M := by nlinarith
   by_contra hnone

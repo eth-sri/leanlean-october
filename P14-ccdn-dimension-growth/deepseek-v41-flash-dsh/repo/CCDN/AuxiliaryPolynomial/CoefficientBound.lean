@@ -17,11 +17,10 @@ polynomial. Nondivisibility by the defining polynomial is a separate step, prove
 global determinant lower bound in Section 3.3.
 -/
 
-@[expose] public section
+public section
 
 namespace CCDN
 
-open Matrix
 
 /-- If the monomials `mon` are distinct and the integer coefficient vector `v` lies in the box
 of radius `R ≥ 0`, then every coefficient of `polynomialOfCoefficients mon v` has absolute
@@ -31,7 +30,6 @@ theorem abs_coefficient_polynomialOfCoefficients_le {n N : ℕ}
     (v : Fin N → ℤ) {R : ℝ} (hR : 0 ≤ R) (hv : InBox v R)
     (e : Fin n →₀ ℕ) :
     |((polynomialOfCoefficients mon v).coeff e : ℝ)| ≤ R := by
-  classical
   by_cases he : ∃ j, mon j = e
   · obtain ⟨j, rfl⟩ := he
     rw [coefficient_polynomialOfCoefficients mon hmon]

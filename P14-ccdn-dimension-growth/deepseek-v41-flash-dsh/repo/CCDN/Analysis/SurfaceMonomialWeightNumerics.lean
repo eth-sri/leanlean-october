@@ -13,12 +13,11 @@ import Mathlib.Algebra.Order.Star.Real
 /-! Sharp leading constant for sums of surface standard-monomial degrees.
 The numerical argument retains 2/3 of the cutoff in the weighted rank. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Finset
 
-private lemma sum_successor_squares_lower (M : ℕ) :
+lemma sum_successor_squares_lower (M : ℕ) :
     (M : ℝ) ^ 3 / 3 ≤ ∑ i ∈ range M, ((i : ℝ) + 1) ^ 2 := by
   induction M with
   | zero => simp
@@ -60,10 +59,10 @@ theorem surface_weight_root_bound {d M s W : ℝ}
     (hlo : M - d ≤ R) (hhi : R ≤ M + 2)
     (hweight : W + d * (M - d) ^ 3 / 6 ≤ M * s) :
     W ≤ (2 / 3 : ℝ) * s * R + (2 * d + 2) * s := by
-  have ht : 0 ≤ M - d := sub_nonneg.mpr hM
-  have htR : (M - d) ^ 2 ≤ R ^ 2 := pow_le_pow_left₀ ht hlo 2
+  have ht := sub_nonneg.mpr hM
+  have htR := pow_le_pow_left₀ ht hlo 2
   have hprod : R * (M - d) ≤ R ^ 2 := by nlinarith
-  have hdiff : 0 ≤ R - (M - d) := sub_nonneg.mpr hlo
+  have hdiff := sub_nonneg.mpr hlo
   have hfactor : R ^ 2 + R * (M - d) + (M - d) ^ 2 ≤ 3 * R ^ 2 := by
     linarith
   have hcube : R ^ 3 - (M - d) ^ 3 ≤ 3 * (d + 2) * R ^ 2 := by
@@ -82,5 +81,4 @@ theorem surface_weight_root_bound {d M s W : ℝ}
     mul_le_mul_of_nonneg_right (by linarith) hs
   nlinarith
 
-end
 end CCDN

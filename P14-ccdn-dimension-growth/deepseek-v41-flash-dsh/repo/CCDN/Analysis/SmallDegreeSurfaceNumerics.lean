@@ -11,9 +11,8 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 The estimates hold uniformly for every degree at least five and absorb any
 fixed power of the logarithm; geometric covering hypotheses are separate. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- For every natural number `d ≥ 5`, `1 / √d ≤ 9 / 20`. -/
 theorem surface_inverse_sqrt_le_nine_twentieths {d : ℕ} (hd : 5 ≤ d) :
@@ -72,5 +71,4 @@ theorem surface_nonlinear_polylog_weight {d : ℕ} (hd : 5 ≤ d) (k : ℕ)
       exact mul_le_mul_of_nonneg_left
         (by simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le hB he) hC
 
-end
 end CCDN

@@ -18,11 +18,10 @@ each entry has l1 norm at most d, hence the order d²−1 determinant has
 l1 norm at most d^(3d²−3).
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
-private lemma factorial_mul_degree_pow_le (d r : ℕ) (hr : r ≤ d ^ 2) :
+lemma factorial_mul_degree_pow_le (d r : ℕ) (hr : r ≤ d ^ 2) :
     r.factorial * d ^ r ≤ d ^ (3 * r) := by
   calc
     r.factorial * d ^ r ≤ r ^ r * d ^ r :=
@@ -34,19 +33,16 @@ private lemma factorial_mul_degree_pow_le (d r : ℕ) (hr : r ≤ d ^ 2) :
       congr 1
       omega
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma ambientEulerEntry_flatten_l1_le (σ : Type*) [Fintype σ] [DecidableEq σ]
+lemma ambientEulerEntry_flatten_l1_le (σ : Type*) [Fintype σ] [DecidableEq σ]
     (k : ℕ) (row : ℕ × ℕ) (col : EulerColumns k) :
     l1Norm ((sumAlgEquiv ℤ (PlaneParameters σ) (Sym σ (k + 2))).symm
       (ambientEulerEntryLinear _ σ k row col (universalHomogeneousForm σ (k + 2)))) ≤
       Fintype.card (Sym σ (k + 2)) * ((k + 2) * 3 ^ (k + 2)) := by
-  classical
   rw [universalHomogeneousForm_linear_expansion, map_sum, map_sum]
   apply (l1Norm_sum_le _ _).trans
   calc
@@ -58,7 +54,7 @@ private lemma ambientEulerEntry_flatten_l1_le (σ : Type*) [Fintype σ] [Decidab
         (ambientEulerEntry_monomial_l1_le k _ (homogeneousCoefficientExponent_degree _ _ _) row col)
     _ = _ := by simp
 
-private theorem ambientNoetherParameterMinor_flatten_l1_le
+theorem ambientNoetherParameterMinor_flatten_l1_le
     (σ : Type*) [Fintype σ] [DecidableEq σ]
     (k : ℕ) (rows : Fin ((k + 2) ^ 2 - 1) → ℕ × ℕ)
     (cols : Fin ((k + 2) ^ 2 - 1) → EulerColumns k) :
@@ -66,7 +62,6 @@ private theorem ambientNoetherParameterMinor_flatten_l1_le
       (ambientNoetherParameterMinor σ k rows cols)) ≤
       (k + 2) ^ (3 * (k + 2) ^ 2 - 3) *
         (Fintype.card (Sym σ (k + 2)) * 3 ^ (k + 2)) ^ ((k + 2) ^ 2 - 1) := by
-  classical
   let r := (k + 2) ^ 2 - 1
   let N := Fintype.card (Sym σ (k + 2))
   let φ := (sumAlgEquiv ℤ (PlaneParameters σ) (Sym σ (k + 2))).symm.toRingHom
@@ -103,5 +98,4 @@ theorem ambientNoetherForm_coefficientL1_le
   (l1Norm_coeff_le_l1Norm_sumAlgEquiv_symm _ _).trans
     (ambientNoetherParameterMinor_flatten_l1_le σ k rows cols)
 
-end
 end CCDN

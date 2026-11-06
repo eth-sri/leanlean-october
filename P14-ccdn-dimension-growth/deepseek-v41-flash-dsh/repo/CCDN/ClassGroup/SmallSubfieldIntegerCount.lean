@@ -18,7 +18,7 @@ namespace CCDN
 noncomputable section
 open NumberField
 
-private lemma small_dimension_packing_bound {m n : ℕ} (hm : 4 * m ≤ n)
+lemma small_dimension_packing_bound {m n : ℕ} (hm : 4 * m ≤ n)
     {B : ℝ} (hB : 1 ≤ B) :
     (2 * Real.sqrt (m : ℝ) * B + 1) ^ m ≤
       (2 * Real.sqrt (n : ℝ) + 1) ^ n * B ^ ((n : ℝ) / 4) := by
@@ -67,7 +67,7 @@ lemma smallSubfieldIntegerCountConstant_pos (n : ℕ) :
   unfold smallSubfieldIntegerCountConstant
   positivity
 
-private theorem boundedSmallSubfieldIntegers_count {B : ℝ} (hB : 1 ≤ B) :
+theorem boundedSmallSubfieldIntegers_count {B : ℝ} (hB : 1 ≤ B) :
     ((boundedSmallSubfieldIntegers K B).ncard : ℝ) ≤
       smallSubfieldIntegerCountConstant (Module.finrank ℚ K) *
         B ^ ((Module.finrank ℚ K : ℝ) / 4) := by

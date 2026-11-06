@@ -26,7 +26,6 @@ the sharp finite-field count is an explicit geometric hypothesis.
 
 @[expose] public section
 namespace CCDN
-open Real
 
 /-- Affine plane count with exponent `1 / d` when the constant coefficient is nonzero and of small
 logarithmic height: if `f` is a primitive integer polynomial of degree `d ≥ 1`, absolutely
@@ -65,13 +64,12 @@ end CCDN
 
 namespace CCDN
 noncomputable section
-open MvPolynomial Real
 
 /-- The threshold constant `(12 * scalingPrimeRatio) ^ 2` separating small boxes
 `B ≤ affineSmallBoxScale * d ^ 2` from large boxes in the affine plane count. -/
 def affineSmallBoxScale : ℝ := (12 * scalingPrimeRatio) ^ 2
 
-private lemma affineSmallBoxScale_one_le : 1 ≤ affineSmallBoxScale := by
+lemma affineSmallBoxScale_one_le : 1 ≤ affineSmallBoxScale := by
   have h := scalingPrimeRatio_one_le
   unfold affineSmallBoxScale
   nlinarith

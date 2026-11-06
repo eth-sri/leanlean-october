@@ -16,9 +16,8 @@ import CCDN.Hypersurface.FiniteFieldCount
 /-! The sharp projective finite-field count and its singular
 multiplicity correction. This discharges the count in CCDN Lemma 2.7. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- An absolutely irreducible form `f` of degree `d > 0` in `n + 3` variables over `ZMod p`, with
@@ -88,5 +87,4 @@ theorem projective_hypersurface_totalMultiplicity_bound {n p d : ℕ} [Fact p.Pr
       positivity
     nlinarith
 
-end
 end CCDN

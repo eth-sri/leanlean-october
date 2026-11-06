@@ -83,7 +83,6 @@ end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Under `commAlgEquiv`, which swaps the two sets of variables of an iterated multivariate
@@ -103,7 +102,7 @@ lemma commAlgEquiv_coeff_coeff {K σ τ : Type*} [CommRing K]
         Finsupp.single_apply, eq_comm]
       split_ifs <;> simp_all [AddMonoidAlgebra.coeff_single]
 
-private lemma coefficient_totalDegree_le_commAlgEquiv {K σ τ : Type*} [CommRing K]
+lemma coefficient_totalDegree_le_commAlgEquiv {K σ τ : Type*} [CommRing K]
     (f : MvPolynomial σ (MvPolynomial τ K)) (m : σ →₀ ℕ) :
     (f.coeff m).totalDegree ≤ (commAlgEquiv K σ τ f).totalDegree := by
   classical
@@ -116,7 +115,7 @@ private lemma coefficient_totalDegree_le_commAlgEquiv {K σ τ : Type*} [CommRin
   rw [← commAlgEquiv_coeff_coeff, he]
   rfl
 
-private lemma universalPlaneMap_comm {K σ : Type*} [CommRing K] (f : MvPolynomial σ K) :
+lemma universalPlaneMap_comm {K σ : Type*} [CommRing K] (f : MvPolynomial σ K) :
     commAlgEquiv K (Fin 2) (PlaneParameters σ) (universalPlaneMap K σ f) =
       eval₂Hom (C.comp (C : K →+* MvPolynomial (Fin 2) K))
         (fun i => X (i,0) + X (i,1) * C (X 0) + X (i,2) * C (X 1)) f := by
@@ -131,7 +130,7 @@ private lemma universalPlaneMap_comm {K σ : Type*} [CommRing K] (f : MvPolynomi
       simp [universalPlaneMap]
   exact RingHom.congr_fun he f
 
-private lemma universalPlaneMap_parameterDegree_le {K σ : Type*} [CommRing K]
+lemma universalPlaneMap_parameterDegree_le {K σ : Type*} [CommRing K]
     (f : MvPolynomial σ K) :
     (commAlgEquiv K (Fin 2) (PlaneParameters σ) (universalPlaneMap K σ f)).totalDegree ≤
       f.totalDegree := by
@@ -158,5 +157,4 @@ theorem universalPlanePolynomial_coefficient_degree {K σ : Type*} [CommRing K]
   exact (coefficient_totalDegree_le_commAlgEquiv _ _).trans
     (universalPlaneMap_parameterDegree_le f)
 
-end
 end CCDN

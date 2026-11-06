@@ -15,19 +15,17 @@ plane curve of degree at least three have a uniform, coefficient-independent
 sum. Geometric height bands turn the proved projective point count into
 the weighted estimate used for surface-line directions. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private theorem sum_inv_height_geometric_bound {α : Type*}
+theorem sum_inv_height_geometric_bound {α : Type*}
     (s : Finset α) (h : α → ℝ) (M : ℝ) (_hM : 0 ≤ M) (N : ℕ)
     (hheight : ∀ x ∈ s, 1 ≤ h x)
     (hmax : ∀ x ∈ s, h x ≤ (8 : ℝ) ^ N)
     (hcount : ∀ k : ℕ,
       ((s.filter (fun x => h x ≤ (8 : ℝ) ^ k)).card : ℝ) ≤ M * 4 ^ k) :
     ∑ x ∈ s, 1 / h x ≤ 9 * M - 8 * M * (1 / 2 : ℝ) ^ N := by
-  classical
   induction N generalizing s with
   | zero =>
     have he (x : α) (hx : x ∈ s) : h x = 1 := by
@@ -93,13 +91,12 @@ private theorem sum_inv_height_geometric_bound {α : Type*}
 
 /-- A finite weighted-count lemma with geometric counting thresholds. Its
 application below obtains the threshold counts from the proved curve theorem. -/
-private theorem sum_inv_height_le_of_geometric_count {α : Type*}
+theorem sum_inv_height_le_of_geometric_count {α : Type*}
     (s : Finset α) (h : α → ℝ) (M : ℝ) (hM : 0 ≤ M)
     (hheight : ∀ x ∈ s, 1 ≤ h x)
     (hcount : ∀ k : ℕ,
       ((s.filter (fun x => h x ≤ (8 : ℝ) ^ k)).card : ℝ) ≤ M * 4 ^ k) :
     ∑ x ∈ s, 1 / h x ≤ 9 * M := by
-  classical
   obtain ⟨N, hN⟩ := pow_unbounded_of_one_lt (∑ x ∈ s, h x) (show (1 : ℝ) < 8 by norm_num)
   have hmax (x : α) (hx : x ∈ s) : h x ≤ (8 : ℝ) ^ N := by
     have hs : h x ≤ ∑ x ∈ s, h x := Finset.single_le_sum
@@ -109,7 +106,7 @@ private theorem sum_inv_height_le_of_geometric_count {α : Type*}
   have hnonneg : 0 ≤ 8 * M * (1 / 2 : ℝ) ^ N := by positivity
   linarith
 
-private lemma eight_pow_two_thirds (k : ℕ) :
+lemma eight_pow_two_thirds (k : ℕ) :
     ((8 : ℝ) ^ k) ^ (2 / 3 : ℝ) = (4 : ℝ) ^ k := by
   have he : (8 : ℝ) ^ (2 / 3 : ℝ) = 4 := by
     calc
@@ -121,13 +118,12 @@ private lemma eight_pow_two_thirds (k : ℕ) :
 
 /-- A uniform reciprocal-height sum for distinct rational projective
 zeros. The constant precedes the equation, its degree and the finite set. -/
-private theorem projective_plane_reciprocal_height_sum :
+theorem projective_plane_reciprocal_height_sum :
     ∃ C : ℝ, 0 < C ∧
       ∀ (d : ℕ), 3 ≤ d →
       ∀ f : MvPolynomial (Fin 3) ℚ, f.IsHomogeneous d → Irreducible f →
       ∀ s : Finset (ProjectivePoint 2), (∀ x ∈ s, x ∈ projectiveZeroLocus f) →
         ∑ x ∈ s, 1 / x.mulHeight ≤ C * (d : ℝ) ^ 4 := by
-  classical
   refine ⟨9 * projectivePlaneAbsoluteConstant, by
     exact mul_pos (by norm_num) projectivePlaneAbsoluteConstant_pos, ?_⟩
   intro d hd f hf hir s hs
@@ -175,5 +171,4 @@ theorem integer_projective_plane_reciprocal_height_sum :
   exact hbound d hd (map (Int.castRingHom ℚ) F) (hF.map _)
     (rational_irreducible_of_charZero_map F hir) s hs
 
-end
 end CCDN

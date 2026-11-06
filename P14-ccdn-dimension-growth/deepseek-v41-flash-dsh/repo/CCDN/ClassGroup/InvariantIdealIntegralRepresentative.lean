@@ -13,9 +13,8 @@ representative in the same ideal class. Multiplying a denominator by
 its conjugate makes the denominator clearing compatible with the
 involution. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open scoped nonZeroDivisors
 
 variable {R K : Type*} [CommRing R] [IsDedekindDomain R]
@@ -71,5 +70,4 @@ theorem exists_invariant_integral_ideal_representative
     simpa only [fractionalIdeal_conjugate_coeIdeal] using h
   · rw [← ClassGroup.mk_mk0 K I₀, hIu, map_mul, classGroup_mk_principal, one_mul]
 
-end
 end CCDN

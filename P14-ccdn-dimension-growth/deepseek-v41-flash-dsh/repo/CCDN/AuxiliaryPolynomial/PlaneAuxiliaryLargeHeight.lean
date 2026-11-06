@@ -12,14 +12,12 @@ import CCDN.ForMathlib.Log
 
 /-! The complementary large-coefficient-height auxiliary-degree estimate. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
-open Real
 
 /-- Real bounds for the plane rank `s` with `2s + d² = d(2M + 3)` in the large-degree range
 `32 d ≤ M`. -/
-private lemma plane_rank_large_degree_bounds {s d M : ℕ} (hd : 0 < d) (hMlarge : 32 * d ≤ M)
+lemma plane_rank_large_degree_bounds {s d M : ℕ} (hd : 0 < d) (hMlarge : 32 * d ≤ M)
     (hr : 2 * s + d ^ 2 = d * (2 * M + 3)) :
     (0 : ℝ) < s ∧ (d : ℝ) * M ≤ 2 * s ∧ (s : ℝ) ≤ d * (M + 1) ∧ 16 * (d : ℝ) ^ 2 ≤ s := by
   have hdM : d ≤ M := by omega
@@ -35,7 +33,7 @@ private lemma plane_rank_large_degree_bounds {s d M : ℕ} (hd : 0 < d) (hMlarge
   exact ⟨hsR, hslo, hshi, by nlinarith⟩
 
 /-- Dividing the no-auxiliary comparison by `s² / 2` and bounding its archimedean error. -/
-private lemma plane_comparison_div_le {s d M : ℕ} {B L K X : ℝ} (hd : 0 < d) (hdM : d ≤ M)
+lemma plane_comparison_div_le {s d M : ℕ} {B L K X : ℝ} (hd : 0 < d) (hdM : d ≤ M)
     (hr : 2 * s + d ^ 2 = d * (2 * M + 3))
     (hcomparison : (s : ℝ) ^ 2 / 2 * (Real.log s - 4 * Real.log d - X - K) ≤
       Real.log (s.factorial : ℝ) / 2 + (s : ℝ) / 2 * Real.log ((2 + M).choose M) +
@@ -60,7 +58,7 @@ private lemma plane_comparison_div_le {s d M : ℕ} {B L K X : ℝ} (hd : 0 < d)
 
 /-- In the large-degree range, the box term is controlled by the coefficient height:
 `(2M / s) log B ≤ (5/8) log H / d²` whenever `4 d log B ≤ log H`. -/
-private lemma plane_box_term_le {s d M : ℕ} {B H : ℝ} (hd : 0 < d) (hMlarge : 32 * d ≤ M)
+lemma plane_box_term_le {s d M : ℕ} {B H : ℝ} (hd : 0 < d) (hMlarge : 32 * d ≤ M)
     (hr : 2 * s + d ^ 2 = d * (2 * M + 3)) (hB : 1 ≤ B)
     (hheight : 4 * d * Real.log B ≤ Real.log H) :
     2 * (M : ℝ) / s * Real.log B ≤ 5 / 8 * (Real.log H / (d : ℝ) ^ 2) := by
@@ -82,7 +80,7 @@ private lemma plane_box_term_le {s d M : ℕ} {B H : ℝ} (hd : 0 < d) (hMlarge 
 /-- In the large-degree range, the coefficient term dominates the positioned height:
 `(7/8)(log H / d² - T) ≤ 2 (binom(M + 2, 2) - s) / s² · log L` whenever
 `log H ≤ log L + T d²`. -/
-private lemma plane_coefficient_term_ge {s d M : ℕ} {L H T : ℝ} (hd : 0 < d) (hMlarge : 32 * d ≤ M)
+lemma plane_coefficient_term_ge {s d M : ℕ} {L H T : ℝ} (hd : 0 < d) (hMlarge : 32 * d ≤ M)
     (hr : 2 * s + d ^ 2 = d * (2 * M + 3)) (hL : 1 ≤ L)
     (hposition : Real.log H ≤ Real.log L + T * (d : ℝ) ^ 2) :
     7 / 8 * (Real.log H / (d : ℝ) ^ 2) - 7 / 8 * T ≤
@@ -117,7 +115,7 @@ private lemma plane_coefficient_term_ge {s d M : ℕ} {L H T : ℝ} (hd : 0 < d)
   exact hh'.trans hh
 
 /-- The plane rank satisfies `log d + log M - log 2 ≤ log s`, since `d M ≤ 2 s`. -/
-private lemma plane_rank_log_ge {s d M : ℕ} (hd : 0 < d) (hMlarge : 32 * d ≤ M)
+lemma plane_rank_log_ge {s d M : ℕ} (hd : 0 < d) (hMlarge : 32 * d ≤ M)
     (hr : 2 * s + d ^ 2 = d * (2 * M + 3)) :
     Real.log d + Real.log M - Real.log 2 ≤ Real.log s := by
   obtain ⟨-, hslo, -, -⟩ := plane_rank_large_degree_bounds hd hMlarge hr
@@ -167,5 +165,4 @@ lemma plane_large_degree_bound_of_log_bound {d M : ℕ} {T K : ℝ}
   push_cast
   ring
 
-end
 end CCDN

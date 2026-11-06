@@ -12,7 +12,6 @@ import CCDN.Surface.NonlinearCount
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Finset
 
 /-- For a subset `R` of the prime window of logarithmic size `L` whose product is at most
@@ -40,7 +39,7 @@ def surfaceResidueResidualLocus {f : MvPolynomial (Fin 3) ℤ} {A B : ℝ}
     Set (RatPoint 3) :=
   ⋃ R ∈ (congruencePrimeWindow L).powerset, surfaceResidueSubsetLocus F S L X hL R
 
-private theorem mem_surfaceResidueResidualLocus
+theorem mem_surfaceResidueResidualLocus
     {f : MvPolynomial (Fin 3) ℤ} {A B L X : ℝ}
     (F : SurfaceCongruenceFamily f B A)
     (S : Finset (Ideal (CoordinatePolynomial 3))) (hL : 1 ≤ L)
@@ -163,5 +162,4 @@ theorem large_curve_point_mem_surfaceResidueResidualLocus
   rw [map_eval, map_zero] at hh
   exact hh
 
-end
 end CCDN

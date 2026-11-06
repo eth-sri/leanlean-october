@@ -25,7 +25,6 @@ component.
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Translation carries the finite-precision determinant theorem to any
@@ -46,7 +45,6 @@ theorem hypersurface_residue_pow_dvd_det_mod {p n μ s : ℕ} [Fact p.Prime]
     (fun j => originShift a (F j))
   simpa only [eval_sub_originShift] using h
 
-end
 end CCDN
 
 namespace CCDN
@@ -83,7 +81,6 @@ theorem projective_hypersurface_chart_det_divisibility {p n μ s d M : ℕ} [Fac
     (hz : ∀ i, eval (z i) f = 0) :
     (p : ℤ) ^ hypersurfaceMultiplicityExponent (n + 1) μ s ∣
       (Matrix.of fun i j => eval (z i) (F j)).det := by
-  classical
   let N := hypersurfaceMultiplicityExponent (n + 1) μ s
   by_cases hN : N = 0
   · change (p : ℤ) ^ N ∣ _
@@ -131,7 +128,7 @@ def projectiveHypersurfaceChart {n : ℕ} (k : Fin (n + 3)) (f : MvPolynomial (F
     MvPolynomial (Fin (n + 2)) ℤ :=
   affineChart (n + 2) (rename (Equiv.swap 0 k) f)
 
-private lemma eval_swap_hypersurface_coordinates {n : ℕ} (k : Fin (n + 3)) (z : Fin (n + 3) → ℤ)
+lemma eval_swap_hypersurface_coordinates {n : ℕ} (k : Fin (n + 3)) (z : Fin (n + 3) → ℤ)
     (f : MvPolynomial (Fin (n + 3)) ℤ) :
     eval (z ∘ Equiv.swap 0 k) (rename (Equiv.swap 0 k) f) = eval z f := by
   rw [eval_rename]

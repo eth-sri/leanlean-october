@@ -19,12 +19,11 @@ Integer equations for every parallel level of a good hyperplane whose
 normal has cubic degree height.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private theorem exists_good_integer_hyperplane_slices {n : ℕ}
+theorem exists_good_integer_hyperplane_slices {n : ℕ}
     (f : MvPolynomial (Option (Fin (3 + n))) ℤ)
     (hir : HasAbsIrreducibleTopForm f) (hd : 2 ≤ f.totalDegree) :
     ∃ (D : ℤ) (a : Fin (3 + n) → ℤ) (g : ℤ → MvPolynomial (Fin (3 + n)) ℤ),
@@ -41,16 +40,14 @@ private theorem exists_good_integer_hyperplane_slices {n : ℕ}
   obtain ⟨g, hg⟩ := exists_integer_hyperplane_slice_models f D a hD hgood
   exact ⟨D, a, g, hD, hDb, hab, hg⟩
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A normal of height at most `d^3` costs three powers of the degree
 and one power of the box radius in a dimension induction. -/
-private theorem count_le_of_good_integer_hyperplane_slices {n d e r : ℕ}
+theorem count_le_of_good_integer_hyperplane_slices {n d e r : ℕ}
     (X : Set (RatPoint (n + 1))) (a : IntPoint (n + 1))
     (j : Fin (n + 1)) (hj : a j ≠ 0) (Y : ℤ → Set (RatPoint n))
     (hd : 1 ≤ d) {B C : ℝ} (hB : 1 ≤ B) (hC : 0 ≤ C)
@@ -61,11 +58,9 @@ private theorem count_le_of_good_integer_hyperplane_slices {n d e r : ℕ}
     (count X B : ℝ) ≤
       (2 * (n + 1 : ℕ) + 1) * C * (d : ℝ) ^ (e + 3) * B ^ (r + 1) := by
   have hdR : (1 : ℝ) ≤ d := by exact_mod_cast hd
-  have hd0 : (0 : ℝ) ≤ d := Nat.cast_nonneg _
   have hB0 : 0 ≤ B := by linarith
   have hK : 0 ≤ C * (d : ℝ) ^ e * B ^ r := by positivity
   have hD : 1 ≤ (d : ℝ) ^ 3 := one_le_pow₀ hdR
-  have hDB : 1 ≤ (d : ℝ) ^ 3 * B := one_le_mul_of_one_le_of_one_le hD hB
   have hfactor :
       2 * (n + 1 : ℕ) * ((d : ℝ) ^ 3) * B + 1 ≤
         (2 * (n + 1 : ℕ) + 1) * (d : ℝ) ^ 3 * B := by
@@ -82,9 +77,8 @@ private theorem count_le_of_good_integer_hyperplane_slices {n d e r : ℕ}
 /-- One bounded good hyperplane slice: affine dimension growth in `n + 3` variables
 gives it in `n + 4` variables, at the cost of three powers of the degree and one power of
 the box radius. -/
-private theorem AffineHypersurfaceGrowth.succ {n e : ℕ} (h : AffineHypersurfaceGrowth n e) :
+theorem AffineHypersurfaceGrowth.succ {n e : ℕ} (h : AffineHypersurfaceGrowth n e) :
     AffineHypersurfaceGrowth (n + 1) (e + 3) := by
-  classical
   obtain ⟨C, hC, hbound⟩ := h
   rw [show n + 3 = 3 + n by omega] at hbound
   unfold AffineHypersurfaceGrowth
@@ -124,5 +118,4 @@ theorem affineHypersurfaceGrowth_of_surface {e : ℕ} (h : AffineHypersurfaceGro
   | 0 => h
   | n + 1 => (affineHypersurfaceGrowth_of_surface h n).succ
 
-end
 end CCDN

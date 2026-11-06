@@ -17,7 +17,6 @@ for every bounded integer zero of the original surface. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The degree threshold of the large-degree surface bound `affine_surface_count_large_degree`. It
@@ -34,7 +33,6 @@ theorem affine_surface_count_large_degree :
       topFormSurfaceThreshold ≤ f.totalDegree → ∀ B : ℝ, 1 ≤ B →
       (count (zeroLocus (map (Int.castRingHom ℚ) f)) B : ℝ) ≤
         C * (f.totalDegree : ℝ) ^ 18 * B := by
-  classical
   obtain ⟨A, hA, hnonlinear⟩ := top_form_surface_nonlinear_count
   obtain ⟨C, hC, hlines⟩ := surface_degree_one_component_contribution
   let K := topFormAuxiliaryConstant 1
@@ -107,5 +105,4 @@ theorem affine_surface_count_large_degree :
       add_le_add houtside hlinefinal
     _ = _ := by ring
 
-end
 end CCDN

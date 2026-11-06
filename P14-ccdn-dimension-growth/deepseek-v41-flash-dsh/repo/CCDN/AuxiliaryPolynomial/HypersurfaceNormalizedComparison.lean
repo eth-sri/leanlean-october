@@ -10,7 +10,7 @@ public import CCDN.Determinant.HypersurfaceHeightDeterminant
 import CCDN.AuxiliaryPolynomial.HypersurfaceHeightComparison
 
 /-! The normalized higher-dimensional determinant inequality, retaining the
-exact root-rank and kernel-rank coefficients needed for uniform degree selection. -/
+root-rank and kernel-rank coefficients needed for uniform degree selection. -/
 
 @[expose] public section
 namespace CCDN

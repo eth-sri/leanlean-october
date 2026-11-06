@@ -15,9 +15,8 @@ import CCDN.Determinant.SingularLocalDeterminant
 /-! Translation and residue-block assembly for the singular local
 plane-curve determinant theorem. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Singular local divisibility at an arbitrary integral representative of a
@@ -41,7 +40,7 @@ theorem singular_plane_chart_det_divisibility_mod {p μ s : ℕ} [Fact p.Prime]
   simpa only [he] using h
 
 /-- Exact integral zeros satisfy the finite-precision version at every precision. -/
-private theorem singular_plane_chart_det_divisibility {p μ s : ℕ} [Fact p.Prime]
+theorem singular_plane_chart_det_divisibility {p μ s : ℕ} [Fact p.Prime]
     (f : MvPolynomial (Fin 2) ℤ) (F : Fin s → MvPolynomial (Fin 2) ℤ)
     (x : Fin s → Fin 2 → ℤ) (a : Fin 2 → ℤ)
     (hf : map (Int.castRingHom (ZMod p)) (originShift a f) ∈
@@ -81,5 +80,4 @@ theorem singular_plane_residue_minorGcd {p c s N : ℕ} [Fact p.Prime]
   · intro k
     exact hfx _
 
-end
 end CCDN

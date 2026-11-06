@@ -11,18 +11,17 @@ public import Mathlib.Algebra.Polynomial.Degree.IsMonicOfDegree
 
 /-! Exact total degree and coefficient extension for the explicit grid equation. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial
 
-private lemma bivariateTotalDegree_add_le {R : Type*} [CommRing R] (f g : R[X][X]) :
+lemma bivariateTotalDegree_add_le {R : Type*} [CommRing R] (f g : R[X][X]) :
     bivariateTotalDegree (f + g) ≤ max (bivariateTotalDegree f) (bivariateTotalDegree g) := by
   unfold bivariateTotalDegree
   rw [map_add]
   exact MvPolynomial.totalDegree_add _ _
 
-private lemma bivariateTotalDegree_C_le {R : Type*} [CommRing R] (f : R[X]) :
+lemma bivariateTotalDegree_C_le {R : Type*} [CommRing R] (f : R[X]) :
     bivariateTotalDegree (C f) ≤ f.natDegree := by
   rw [bivariateTotalDegree_le_iff]
   intro i j hij
@@ -31,7 +30,7 @@ private lemma bivariateTotalDegree_C_le {R : Type*} [CommRing R] (f : R[X]) :
     simpa using le_natDegree_of_ne_zero (by simpa using hij : f.coeff j ≠ 0)
   · simp [coeff_C, hi] at hij
 
-private lemma bivariateTotalDegree_map_C_le {R : Type*} [CommRing R] (f : R[X]) :
+lemma bivariateTotalDegree_map_C_le {R : Type*} [CommRing R] (f : R[X]) :
     bivariateTotalDegree (f.map C) ≤ f.natDegree := by
   rw [bivariateTotalDegree_le_iff]
   intro i j hij
@@ -40,7 +39,7 @@ private lemma bivariateTotalDegree_map_C_le {R : Type*} [CommRing R] (f : R[X]) 
     simpa using le_natDegree_of_ne_zero (by simpa using hij : f.coeff i ≠ 0)
   · simp [coeff_map, coeff_C, hj] at hij
 
-private lemma gridEisensteinCorrection_monic_degree {K : Type*} [Field K]
+lemma gridEisensteinCorrection_monic_degree {K : Type*} [Field K]
     (V : K[X]) (k : ℕ) (hm : V.Monic) (hk : 2 ≤ k) :
     IsMonicOfDegree (gridEisensteinCorrection V k) (V.natDegree + k) := by
   apply IsMonicOfDegree.mul (show IsMonicOfDegree V V.natDegree from ⟨rfl, hm⟩)
@@ -49,7 +48,7 @@ private lemma gridEisensteinCorrection_monic_degree {K : Type*} [Field K]
     simpa using (natDegree_mul_le (p := (C (V.coeff 1 / V.coeff 0 + 1) : K[X])) (q := X))
   omega
 
-private lemma gridEisensteinPolynomial_constantCoeff {K : Type*} [Field K]
+lemma gridEisensteinPolynomial_constantCoeff {K : Type*} [Field K]
     (V : K[X]) (k : ℕ) (h0 : V.coeff 0 ≠ 0) (hd : 0 < V.natDegree) :
     (gridEisensteinPolynomial V k).coeff 0 =
       C (V.coeff 0) - V + gridEisensteinCorrection V k := by
@@ -58,18 +57,17 @@ private lemma gridEisensteinPolynomial_constantCoeff {K : Type*} [Field K]
   rw [mul_neg, mul_assoc, ← C_mul, inv_mul_cancel₀ h0, C_1, mul_one]
   rfl
 
-private lemma gridEisensteinPolynomial_highCoeff {K : Type*} [Field K]
+lemma gridEisensteinPolynomial_highCoeff {K : Type*} [Field K]
     (V : K[X]) (k : ℕ) (hm : V.Monic) (h0 : V.coeff 0 ≠ 0)
     (hd : 0 < V.natDegree) (hk : 2 ≤ k) :
     ((gridEisensteinPolynomial V k).coeff 0).coeff (V.natDegree + k) = 1 := by
-  rw [gridEisensteinPolynomial_constantCoeff V k h0 hd, coeff_add, coeff_sub]
-  rw [coeff_C, ite_eq_right (by omega : V.natDegree + k ≠ 0)]
+  rw [gridEisensteinPolynomial_constantCoeff V k h0 hd, coeff_add, coeff_sub, coeff_C, ite_eq_right (by omega : V.natDegree + k ≠ 0)]
   rw [coeff_eq_zero_of_natDegree_lt (by omega), zero_sub, neg_zero, zero_add]
   have h := gridEisensteinCorrection_monic_degree V k hm hk
   rw [← h.natDegree_eq]
   exact h.monic.coeff_natDegree
 
-private lemma gridEisensteinPolynomial_totalDegree_le {K : Type*} [Field K]
+lemma gridEisensteinPolynomial_totalDegree_le {K : Type*} [Field K]
     (V : K[X]) (k : ℕ) (hm : V.Monic) (hd : 0 < V.natDegree)
     (hk : 2 ≤ k) (hs : V.natDegree ≤ k + 1) :
     bivariateTotalDegree (gridEisensteinPolynomial V k) ≤ V.natDegree + k := by
@@ -104,12 +102,12 @@ theorem gridEisensteinPolynomial_totalDegree {K : Type*} [Field K]
     (by rw [gridEisensteinPolynomial_highCoeff V k hm h0 hd hk]; exact one_ne_zero)
   simpa using hh
 
-private lemma gridEisensteinCorrection_map {K L : Type*} [Field K] [Field L]
+lemma gridEisensteinCorrection_map {K L : Type*} [Field K] [Field L]
     (φ : K →+* L) (V : K[X]) (k : ℕ) :
     (gridEisensteinCorrection V k).map φ = gridEisensteinCorrection (V.map φ) k := by
   simp [gridEisensteinCorrection]
 
-private lemma gridEisensteinPolynomial_map {K L : Type*} [Field K] [Field L]
+lemma gridEisensteinPolynomial_map {K L : Type*} [Field K] [Field L]
     (φ : K →+* L) (V : K[X]) (k : ℕ) :
     bivariateMap φ (gridEisensteinPolynomial V k) = gridEisensteinPolynomial (V.map φ) k := by
   have he : (Polynomial.mapRingHom φ).comp C = C.comp φ := by ext a; simp
@@ -131,5 +129,4 @@ theorem gridEisensteinPolynomial_map_irreducible {K L : Type*} [Field K] [Field 
   · simpa only [coeff_map, map_ne_zero_iff φ φ.injective] using h0
   · exact hk
 
-end
 end CCDN

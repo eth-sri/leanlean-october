@@ -14,9 +14,8 @@ import CCDN.Projection.PlaneRelationSpace
 /-! The principal equation of the image of a homogeneous linear
 projection is homogeneous. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- For a homogeneous ideal `I` and homogeneous linear forms `a`, the kernel of the projection by
@@ -32,8 +31,7 @@ theorem projection_kernel_homogeneousComponent_mem
   apply Ideal.Quotient.eq_zero_iff_mem.mpr
   rw [← homogeneousComponent_aeval_linear a ha]
   apply hI
-  apply Ideal.Quotient.eq_zero_iff_mem.mp
-  exact hp
+  exact Ideal.Quotient.eq_zero_iff_mem.mp hp
 
 /-- A nonzero generator of a principal ideal that is closed under homogeneous components is
 homogeneous of its total degree. -/
@@ -71,5 +69,4 @@ theorem homogeneous_projection_equation
   principal_generator_isHomogeneous _ (projection_kernel_homogeneousComponent_mem I hI a ha)
     f hf hgen
 
-end
 end CCDN

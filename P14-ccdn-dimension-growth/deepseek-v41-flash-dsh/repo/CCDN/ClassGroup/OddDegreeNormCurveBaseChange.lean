@@ -13,15 +13,13 @@ import CCDN.Noether.ShearNormalization
 residue characteristic, including characteristic two. The signs ±1 remain
 nonzero in every field. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
-open scoped NumberField
 open Polynomial NumberField
 
 variable (K E : Type*) [Field K] [NumberField K] [Field E]
 
-private lemma signedNormCurvePolynomial_bivariate_map (β : 𝓞 K) (ε : ℤ) :
+lemma signedNormCurvePolynomial_bivariate_map (β : 𝓞 K) (ε : ℤ) :
     bivariatePolynomialEquiv E
       (MvPolynomial.map (Int.castRingHom E) (signedNormCurvePolynomial K β ε)) =
       X ^ 2 - C (C (ε : E) *
@@ -62,5 +60,4 @@ theorem signedNormCurvePolynomial_map_totalDegree
       double_cover_bivariateTotalDegree _ (by omega), hd]
   simpa only [bivariateTotalDegree, AlgEquiv.symm_apply_apply] using hh
 
-end
 end CCDN

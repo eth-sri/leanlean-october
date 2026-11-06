@@ -17,14 +17,13 @@ Iterating the sharp univariate bound gives the factor 3^(nd) over ℂ (CCDN Lemm
 the real and integer statements, with the weaker factor (d+1)^(n(d+1)), are corollaries
 obtained by embedding the coefficients in ℂ. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Iterated one-variable interpolation controls every coefficient of a complex polynomial
 from its values on the full grid {0,...,d}^n, with the exact factor 3^(nd). -/
-private theorem complex_multivariate_coefficient_bound_of_integer_grid {n : ℕ}
+theorem complex_multivariate_coefficient_bound_of_integer_grid {n : ℕ}
     (f : MvPolynomial (Fin n) ℂ) {d : ℕ} (hd : f.totalDegree ≤ d)
     {H : ℝ} (hH : 0 ≤ H)
     (heval : ∀ a : Fin n → ℕ, (∀ i, a i ≤ d) → ‖eval (fun i => (a i : ℂ)) f‖ ≤ H)
@@ -71,7 +70,6 @@ theorem exists_complex_multivariate_grid_height_witness {n : ℕ}
     (f : MvPolynomial (Fin n) ℂ) {d : ℕ} (hd : f.totalDegree ≤ d) :
     ∃ a : Fin n → ℕ, (∀ i, a i ≤ d) ∧ ∀ m,
       ‖f.coeff m‖ ≤ (3 : ℝ) ^ (n * d) * ‖eval (fun i => (a i : ℂ)) f‖ := by
-  classical
   let S := Fintype.piFinset (fun _ : Fin n => Finset.range (d + 1))
   have hS : S.Nonempty := ⟨fun _ => 0, by simp [S]⟩
   obtain ⟨a, ha, hmax⟩ := S.exists_max_image
@@ -83,7 +81,7 @@ theorem exists_complex_multivariate_grid_height_witness {n : ℕ}
   exact hmax b (by simpa only [S, Fintype.mem_piFinset, Finset.mem_range, Nat.lt_succ_iff] using hb)
 
 /-- The sharp factor 3^(nd) is at most the factor (d+1)^(n(d+1)) of the real statements. -/
-private lemma three_pow_mul_le (n d : ℕ) :
+lemma three_pow_mul_le (n d : ℕ) :
     (3 : ℝ) ^ (n * d) ≤ ((d : ℝ) + 1) ^ (n * (d + 1)) := by
   rw [pow_mul', pow_mul']
   gcongr
@@ -94,7 +92,7 @@ private lemma three_pow_mul_le (n d : ℕ) :
       _ ≤ ((d : ℝ) + 1) ^ (d + 1) := pow_le_pow_right₀ (by linarith) d.le_succ
 
 /-- Transfer of the complex grid bound along a ring homomorphism into ℂ. -/
-private lemma coefficient_bound_of_integer_grid_of_ringHom {R : Type*} [CommRing R]
+lemma coefficient_bound_of_integer_grid_of_ringHom {R : Type*} [CommRing R]
     (φ : R →+* ℂ) {n : ℕ} (f : MvPolynomial (Fin n) R) {d : ℕ} (hd : f.totalDegree ≤ d)
     {H : ℝ} (hH : 0 ≤ H)
     (heval : ∀ a : Fin n → ℕ, (∀ i, a i ≤ d) → ‖φ (eval (fun i => (a i : R)) f)‖ ≤ H)
@@ -153,5 +151,4 @@ theorem exists_integer_multivariate_grid_height_witness {n : ℕ}
   rw [hz, Int.cast_zero, abs_zero, mul_zero] at hh
   exact_mod_cast abs_nonpos_iff.mp hh
 
-end
 end CCDN

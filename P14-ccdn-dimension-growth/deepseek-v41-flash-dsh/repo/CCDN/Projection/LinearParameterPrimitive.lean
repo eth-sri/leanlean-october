@@ -19,10 +19,8 @@ import Mathlib.RingTheory.AlgebraicIndependent.Basic
 /-! Bounded primitive augmentation of any independent linear parameter
 tuple of the Hilbert dimension. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
-open MvPolynomial
 
 /-- Given `m + 1` linear forms algebraically independent modulo a prime `I` of projective dimension
 `m` and degree `d` (in characteristic zero), some moment coordinate with parameter `k ≤ n * d ^ 2`
@@ -69,5 +67,4 @@ theorem exists_bounded_linear_parameter_primitive
   funext i
   refine Fin.cases ?_ (fun j => ?_) i <;> rfl
 
-end
 end CCDN

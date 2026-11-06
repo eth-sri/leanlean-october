@@ -13,9 +13,8 @@ import Mathlib.LinearAlgebra.Dual.Lemmas
 
 /-! Homogeneous coefficient descent and homogeneous top factors. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Applying a linear map `φ : K → k` to the coefficients of a homogeneous polynomial of
@@ -44,7 +43,7 @@ theorem exists_nonzero_homogeneous_linear_descent {k K : Type*}
     polynomialCoefficientLinear_homogeneous φ f hhom, ?_⟩
   · intro he
     have hh := polynomialCoefficientLinear_coeff φ f m
-    have hz : φ (f.coeff m) = 0 := by simpa [he] using hh.symm
+    have hz := by simpa [he] using hh.symm
     exact hφ hz
   · intro x hx
     rw [polynomialCoefficientLinear_eval, hx, map_zero]
@@ -55,7 +54,6 @@ lemma top_homogeneousComponent_mul {K σ : Type*} [CommRing K]
     (g h : MvPolynomial σ K) :
     homogeneousComponent (g.totalDegree + h.totalDegree) (g * h) =
       homogeneousComponent g.totalDegree g * homogeneousComponent h.totalDegree h := by
-  classical
   calc
     _ = homogeneousComponent (g.totalDegree + h.totalDegree)
         ((∑ i ∈ Finset.range (g.totalDegree + 1), homogeneousComponent i g) * h) := by
@@ -67,7 +65,7 @@ lemma top_homogeneousComponent_mul {K σ : Type*} [CommRing K]
         (homogeneousComponent g.totalDegree g * h) := by
       apply Finset.sum_eq_single g.totalDegree
       · intro i hi hne
-        have hi' : i < g.totalDegree := by have := Finset.mem_range.mp hi; omega
+        have hi' := by have := Finset.mem_range.mp hi; omega
         apply homogeneousComponent_eq_zero
         have hh := totalDegree_mul (homogeneousComponent i g) h
         have hh' := (homogeneousComponent_isHomogeneous i g).totalDegree_le
@@ -90,5 +88,4 @@ theorem homogeneous_factorization_top {K σ : Type*} [Field K]
   refine ⟨hd, ?_⟩
   rw [← top_homogeneousComponent_mul, ← he, hd, homogeneousComponent_eq_self hf]
 
-end
 end CCDN

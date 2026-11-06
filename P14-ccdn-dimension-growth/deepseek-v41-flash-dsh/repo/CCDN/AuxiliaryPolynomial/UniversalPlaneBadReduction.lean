@@ -15,14 +15,13 @@ import Mathlib.Algebra.MvPolynomial.Funext
 reducible ambient reduction. A nonzero integer coefficient therefore detects
 every sufficiently large bad prime, in arbitrary ambient dimension. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Bad ambient reduction forces the ENTIRE parameter polynomial to vanish.
 The target field is infinite, so it suffices to inspect sections. -/
-private theorem universalPlaneBadWitness_map_eq_zero_of_bad
+theorem universalPlaneBadWitness_map_eq_zero_of_bad
     {R L σ : Type*} [CommRing R] [Field L] [Infinite L] {p : ℕ} [CharP L p]
     (φ : R →+* L) (f : MvPolynomial σ R) (hpos : 0 < f.totalDegree)
     (hchar : f.totalDegree < p)
@@ -95,5 +94,4 @@ theorem exists_integer_hypersurface_bad_prime_witness
   exact ⟨rows, cols, e, he, fun p _ hp hbad =>
     bad_prime_dvd_universalPlaneBadWitness_coeff f hpos rows cols p hp hbad e⟩
 
-end
 end CCDN

@@ -16,9 +16,8 @@ import CCDN.Projection.PlaneProjectionKernel
 /-! The irreducible image equation has degree at most the original affine
 Hilbert degree. This is an upper bound; the degree need not be preserved. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A principal image equation of a linear projection has degree at most the
@@ -57,5 +56,4 @@ theorem exists_plane_projection_equation_degree_le {K τ : Type*} [Field K] [Fin
     exact Ideal.Quotient.eq_zero_iff_mem.symm
   rw [hh, hker, Ideal.mem_span_singleton]
 
-end
 end CCDN

@@ -17,13 +17,13 @@ noncomputable section
 open MvPolynomial
 
 /-- A parameter triple and a coordinate pair mapping into the hypersurface. -/
-private def PlaneIncidence {K σ : Type*} [CommRing K] (f : MvPolynomial σ K) :=
+def PlaneIncidence {K σ : Type*} [CommRing K] (f : MvPolynomial σ K) :=
   {vt : (PlaneParameters σ → K) × (Fin 2 → K) //
     bivariateEval (vt.2 0) (vt.2 1) (universalPlaneSection f vt.1) = 0}
 
 /-- Once the image point, both directions and the two plane coordinates are
 fixed, the base point is determined uniquely. -/
-private def planeIncidenceEquiv {K σ : Type*} [CommRing K] (f : MvPolynomial σ K) :
+def planeIncidenceEquiv {K σ : Type*} [CommRing K] (f : MvPolynomial σ K) :
     PlaneIncidence f ≃
       ({z : σ → K // eval z f = 0} × (σ → K) × (σ → K) × (Fin 2 → K)) where
   toFun vt :=
@@ -56,7 +56,7 @@ private def planeIncidenceEquiv {K σ : Type*} [CommRing K] (f : MvPolynomial σ
     · rfl
 
 /-- Exact incidence identity: q^(2*m+2) incidences per hypersurface point. -/
-private theorem planeIncidence_card {K σ : Type*} [CommRing K] [Fintype K] [Fintype σ]
+theorem planeIncidence_card {K σ : Type*} [CommRing K] [Fintype K] [Fintype σ]
     (f : MvPolynomial σ K) :
     Nat.card (PlaneIncidence f) =
       Nat.card {z : σ → K // eval z f = 0} * Fintype.card K ^ (2 * Fintype.card σ + 2) := by
@@ -72,7 +72,7 @@ def PlaneSectionPoints {K σ : Type*} [CommRing K]
     (f : MvPolynomial σ K) (v : PlaneParameters σ → K) :=
   {t : Fin 2 → K // bivariateEval (t 0) (t 1) (universalPlaneSection f v) = 0}
 
-private def planeIncidenceSigmaEquiv {K σ : Type*} [CommRing K] (f : MvPolynomial σ K) :
+def planeIncidenceSigmaEquiv {K σ : Type*} [CommRing K] (f : MvPolynomial σ K) :
     PlaneIncidence f ≃ Σ v, PlaneSectionPoints f v where
   toFun vt := ⟨vt.val.1, ⟨vt.val.2, vt.property⟩⟩
   invFun vt := ⟨(vt.1, vt.2.val), vt.2.property⟩

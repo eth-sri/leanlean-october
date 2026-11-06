@@ -17,7 +17,7 @@ divisibility lemma isolates a basic arithmetic input to determinant lower bounds
 assert the much stronger local multiplicity estimates of CCDN §2.
 -/
 
-@[expose] public section
+public section
 
 namespace CCDN
 
@@ -27,7 +27,6 @@ open Matrix
 theorem prod_row_factors_dvd_det {R : Type*} [CommRing R] {s : ℕ}
     (A : Matrix (Fin s) (Fin s) R)
     (d : Fin s → R) (h : ∀ i j, d i ∣ A i j) : (∏ i, d i) ∣ A.det := by
-  classical
   choose Q hQ using h
   have hA : A = Matrix.of (fun i j => d i * Q i j) := by
     ext i j
@@ -37,7 +36,7 @@ theorem prod_row_factors_dvd_det {R : Type*} [CommRing R] {s : ℕ}
 
 /-- Bound the Gram determinant by expanding its determinant and bounding each entry.
 For monomials of degree at most `M` in a radius-`B` box, take `H = B^M`. -/
-private theorem abs_gram_det_le {s N : ℕ} (A : Matrix (Fin s) (Fin N) ℝ) {H : ℝ}
+theorem abs_gram_det_le {s N : ℕ} (A : Matrix (Fin s) (Fin N) ℝ) {H : ℝ}
     (hH : 0 ≤ H) (hA : ∀ i j, |A i j| ≤ H) :
     |(A * Aᵀ).det| ≤ (s.factorial : ℝ) * ((N : ℝ) * H ^ 2) ^ s := by
   have hentry : ∀ i j, |(A * Aᵀ) i j| ≤ (N : ℝ) * H ^ 2 := by

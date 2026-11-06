@@ -17,9 +17,8 @@ import CCDN.Projection.ProjectiveClosureSpecialization
 /-! A bounded elimination step whose affine projection and projective
 closure projection are both integral. The latter map fixes X₀. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- One step of bounded linear elimination: for a prime ideal `I` in `n + 1` variables of projective
@@ -73,5 +72,4 @@ theorem exists_fin_integer_closure_elimination_step {n m : ℕ}
     (fun i => integerLinearForm (c i)) (fun i => linearForm_totalDegree_le _) hint hdimdeg
   exact ⟨c, e, hc, he, hed, hint, RingHom.ker_isPrime _, hker, hcone⟩
 
-end
 end CCDN

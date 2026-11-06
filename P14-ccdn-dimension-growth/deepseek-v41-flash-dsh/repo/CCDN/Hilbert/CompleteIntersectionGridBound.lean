@@ -14,9 +14,8 @@ import Mathlib.Data.Nat.Choose.Bounds
 constant depends only on the ambient dimension; the degree dependence
 is quadratic. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- If `f` is prime, `g` is not divisible by `f`, and both have total degree at most `d`, then the
@@ -30,7 +29,6 @@ theorem proper_intersection_grid_card_le {K ι : Type*} [Field K]
     (hzS : ∀ i j, z i j ∈ S) (hzf : ∀ i, eval (z i) f = 0)
     (hzg : ∀ i, eval (z i) g = 0) :
     Fintype.card ι ≤ (n + 2) ^ n * d ^ 2 * S.card ^ n := by
-  classical
   let L := S.card
   have hbox : Fintype.card ι ≤ L ^ (n + 2) := by
     let ψ : ι → (Fintype.piFinset (fun _ : Fin (n + 2) => S)) :=
@@ -90,5 +88,4 @@ theorem proper_intersection_grid_card_le {K ι : Type*} [Field K]
       _ ≤ (n + 2) ^ n * (d ^ 2 * L ^ n) := Nat.le_mul_of_pos_left _ hconst
       _ = _ := by rw [Nat.mul_assoc]
 
-end
 end CCDN

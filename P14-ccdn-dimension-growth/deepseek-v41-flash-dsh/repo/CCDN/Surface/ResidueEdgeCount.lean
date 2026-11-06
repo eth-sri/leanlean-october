@@ -16,7 +16,6 @@ edge, including the sum over all smooth residue tuples. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Finset
 
 open Classical in
@@ -34,7 +33,7 @@ def surfaceResidueCrossing {f : MvPolynomial (Fin 3) ℤ} {A B : ℝ}
   let h := map (Int.castRingHom ℚ) (F.auxiliary R hR r)
   ⋃ I ∈ S.filter (fun I => g ∈ I ∧ h ∉ I), idealZeroLocus I ∩ zeroLocus h
 
-private theorem surface_residue_crossing_count_le
+theorem surface_residue_crossing_count_le
     {f : MvPolynomial (Fin 3) ℤ} {A B : ℝ}
     (F : SurfaceCongruenceFamily f B A)
     (hir : Irreducible (map (Int.castRingHom ℚ) f))
@@ -56,13 +55,10 @@ private theorem surface_residue_crossing_count_le
   have hh := surface_curve_crossing_count_le (map (Int.castRingHom ℚ) f) g h hir
     (F.proper _ _ _) (S.filter (fun I => g ∈ I)) δ
     (fun I hI => ⟨hS I (mem_filter.mp hI).1, (mem_filter.mp hI).2⟩) B
-  have he : (S.filter (fun I => g ∈ I)).filter (fun I => h ∉ I) =
-      S.filter (fun I => g ∈ I ∧ h ∉ I) := by ext I; simp only [mem_filter]; tauto
-  rw [he] at hh
-  change count (surfaceResidueCrossing F S R hR p r) B ≤ _ at hh
-  simpa only [g, h, rational_map_totalDegree] using hh
+  rw [Finset.filter_filter] at hh
+  simpa only [surfaceResidueCrossing, g, h, rational_map_totalDegree] using hh
 
-private lemma SurfaceCongruenceFamily.scaled_degree_le
+lemma SurfaceCongruenceFamily.scaled_degree_le
     {f : MvPolynomial (Fin 3) ℤ} {A B L X : ℝ}
     (F : SurfaceCongruenceFamily f B A) (hA : 0 ≤ A) (hB : 1 ≤ B) (hL : 1 ≤ L)
     (hX : B ^ (1 / Real.sqrt (f.totalDegree : ℝ)) ≤ X)
@@ -96,7 +92,7 @@ private lemma SurfaceCongruenceFamily.scaled_degree_le
   · positivity
   · positivity
 
-private theorem surface_residue_crossing_scaled_count
+theorem surface_residue_crossing_scaled_count
     {f : MvPolynomial (Fin 3) ℤ} {A B L X : ℝ}
     (F : SurfaceCongruenceFamily f B A) (hA : 0 ≤ A) (hB : 1 ≤ B) (hL : 1 ≤ L)
     (hX0 : 0 ≤ X) (hX : B ^ (1 / Real.sqrt (f.totalDegree : ℝ)) ≤ X)
@@ -138,14 +134,11 @@ private theorem surface_residue_crossing_scaled_count
       _ = (g.totalDegree : ℝ) * (∏ t ∈ R.erase p, (t : ℝ)) * p := by rw [mul_assoc, hqp]
       _ ≤ _ := hh
       _ = _ := by dsimp only [T]; rw [← hqp]; ring
-  have hchild' : (h.totalDegree : ℝ) * q ≤ A * (X + q) * T := hchild
+  have hchild' := hchild
+  change q ≤ U * X at hq
   have hfirst : X * p + q ≤ 2 * (U + 1) * X := by
-    have hpX := mul_le_mul_of_nonneg_left hpU hX0
-    change q ≤ U * X at hq
-    nlinarith
-  have hsecond : X + q ≤ (U + 1) * X := by
-    change q ≤ U * X at hq
-    linarith
+    nlinarith [mul_le_mul_of_nonneg_left hpU hX0]
+  have hsecond : X + q ≤ (U + 1) * X := by linarith
   have hpar'' : (g.totalDegree : ℝ) * q ≤ A * (2 * (U + 1) * X) * T :=
     hpar'.trans (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hfirst hA) hT)
   have hchild'' : (h.totalDegree : ℝ) * q ≤ A * ((U + 1) * X) * T :=
@@ -224,5 +217,4 @@ theorem surface_residue_edge_count_le
       _ = _ := by dsimp only [C]; rw [pow_succ]; ring
   exact le_of_mul_le_mul_right hscaled (sq_pos_of_pos hqpos)
 
-end
 end CCDN

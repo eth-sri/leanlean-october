@@ -13,12 +13,11 @@ import Mathlib.Tactic.Linarith
 /-! Coefficient-height bounds for evaluating a polynomial on a bounded box.
 The constants depend only on total degree and the number of variables. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma polynomial_support_card_le {R σ : Type*} [CommSemiring R] [Fintype σ]
+lemma polynomial_support_card_le {R σ : Type*} [CommSemiring R] [Fintype σ]
     (f : MvPolynomial σ R) :
     f.support.card ≤ (f.totalDegree + 1) ^ Fintype.card σ := by
   classical
@@ -74,5 +73,4 @@ theorem polynomial_eval₂_box_bound {σ : Type*} [Fintype σ]
       exact mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_right hc hH)
         (pow_nonneg (by linarith) _)
 
-end
 end CCDN

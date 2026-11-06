@@ -16,7 +16,6 @@ height and finite-fiber losses remain polynomial in the original degree. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The exponent `18 + 3 * m + N + 2 * N * (m + 1)`, with `N = m + k + 2`, of the degree in the
@@ -91,5 +90,4 @@ theorem projective_projection_dimension_growth (m k : ℕ) :
   simp only [pow_add, pow_mul, mul_pow]
   ring
 
-end
 end CCDN

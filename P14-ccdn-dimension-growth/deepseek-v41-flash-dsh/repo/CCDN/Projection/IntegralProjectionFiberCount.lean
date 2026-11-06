@@ -11,9 +11,8 @@ public import CCDN.Hilbert.LinearProjectionFiltration
 /-! Rational-point fibers of an integral polynomial projection.
 Evaluation on the quotient constructs the specialization homomorphisms. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A rational point of the fiber over `z` gives a specialization of the quotient algebra over
@@ -51,5 +50,4 @@ theorem exists_projection_fiber_specialization {K σ τ : Type*} [Field K]
   change φ (Ideal.Quotient.mk I (X i)) = x i
   simpa only [eval_X] using hφ (X i)
 
-end
 end CCDN

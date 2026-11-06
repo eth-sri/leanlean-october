@@ -16,9 +16,8 @@ import CCDN.Height.ProjectiveIntegerHeight
 /-! The affine auxiliary polynomial obtained from a prime-scaled
 homogeneous model. All point and nondivisibility transports are proved. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- For any prime p<=B avoiding the constant coefficient, construct an
@@ -76,5 +75,4 @@ theorem prime_scaled_affine_auxiliary {n : ℕ}
     rw [homogeneousSlice_eval]
     exact hvG
 
-end
 end CCDN

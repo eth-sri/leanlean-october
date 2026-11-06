@@ -12,9 +12,8 @@ import Mathlib.Tactic.Linarith
 /-! Integer parameters for the Stepanov construction above the cutoff
 `stepanovThreshold d = 27 * d ^ 4`. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- The numerical dimension inequality of the Stepanov method: for `p > 27 d⁴`, `x ^ 2 ≤ p`,
 `p ≤ y + d` and `N = x - 4 d² > 0`, one has `N (x + y + d + d² N) < (x - d²) (y - d²)`. -/
@@ -107,5 +106,4 @@ theorem exists_stepanov_integer_parameters (d p : ℕ) (hd : 0 < d)
   have hxp : x ≤ p := hxx.trans hx
   exact ⟨A, D, N, hA, hD, hyp, (by omega), hNx, hNpos, hx, hpy, hpx⟩
 
-end
 end CCDN

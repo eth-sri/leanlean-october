@@ -10,9 +10,8 @@ import CCDN.AuxiliaryPolynomial.HypersurfaceRankProfile
 
 /-! Exact leading term for the dimension root of the homogeneous Hilbert rank. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- Taking the dimension root preserves the factorial leading coefficient. -/
 theorem hypersurface_rank_root_bounds {r d M s : ℕ} (hrpos : 0 < r) (hdM : d ≤ M)
@@ -42,5 +41,4 @@ theorem hypersurface_rank_root_bounds {r d M s : ℕ} (hrpos : 0 < r) (hdM : d �
   · simpa only [one_div, mul_comm] using hlroot
   · simpa only [one_div, mul_comm] using huroot
 
-end
 end CCDN

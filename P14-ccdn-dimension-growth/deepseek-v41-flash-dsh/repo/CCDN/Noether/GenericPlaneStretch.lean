@@ -21,7 +21,7 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma optionEquivLeft_map_coefficients {R S σ : Type*} [CommRing R] [CommRing S]
+lemma optionEquivLeft_map_coefficients {R S σ : Type*} [CommRing R] [CommRing S]
     (φ : R →+* S) (f : MvPolynomial (Option σ) R) :
     optionEquivLeft S σ (MvPolynomial.map φ f) =
       Polynomial.map (MvPolynomial.map φ) (optionEquivLeft R σ f) := by
@@ -42,14 +42,12 @@ def variableScaleEquiv (K σ : Type*) [Field K] (a : K) (ha : a ≠ 0) :
     (by
       apply MvPolynomial.algHom_ext
       intro i
-      simp only [AlgHom.comp_apply, aeval_X, AlgHom.id_apply]
-      simp only [map_mul, aeval_C, aeval_X, MvPolynomial.algebraMap_eq]
+      simp only [AlgHom.comp_apply, aeval_X, AlgHom.id_apply, map_mul, aeval_C, aeval_X, MvPolynomial.algebraMap_eq]
       rw [← mul_assoc, ← map_mul, inv_mul_cancel₀ ha, map_one, one_mul])
     (by
       apply MvPolynomial.algHom_ext
       intro i
-      simp only [AlgHom.comp_apply, aeval_X, AlgHom.id_apply]
-      simp only [map_mul, aeval_C, aeval_X, MvPolynomial.algebraMap_eq]
+      simp only [AlgHom.comp_apply, aeval_X, AlgHom.id_apply, map_mul, aeval_C, aeval_X, MvPolynomial.algebraMap_eq]
       rw [← mul_assoc, ← map_mul, mul_inv_cancel₀ ha, map_one, one_mul])
 
 /-- The scaling automorphism by `a` sends each variable `X i` to `a * X i`. -/
@@ -72,7 +70,7 @@ def genericPlaneStretch {K σ : Type*} [Field K]
     Polynomial (MvPolynomial σ (MvPolynomial Unit K)) :=
   Polynomial.map (genericStretchCoefficients K σ).toRingHom (optionEquivLeft K σ f)
 
-private lemma genericPlaneStretch_monic {K σ : Type*} [Field K]
+lemma genericPlaneStretch_monic {K σ : Type*} [Field K]
     (f : MvPolynomial (Option σ) K) (hf : (optionEquivLeft K σ f).Monic) :
     (genericPlaneStretch f).Monic := hf.map _
 
@@ -86,9 +84,8 @@ theorem genericPlaneStretch_irreducible {K σ : Type*} [Field K]
   let F := FractionRing R
   let ι : R →+* F := algebraMap R F
   let κ : K →+* F := ι.comp C
-  let y : F := ι (X ())
-  have hy : y ≠ 0 := by
-    exact (map_ne_zero_iff _ (IsFractionRing.injective R F)).mpr (X_ne_zero ())
+  let y := ι (X ())
+  have hy := (map_ne_zero_iff _ (IsFractionRing.injective R F)).mpr (X_ne_zero ())
   let e := Polynomial.mapAlgEquiv (variableScaleEquiv F σ y hy)
   have hbase : Irreducible (optionEquivLeft F σ (MvPolynomial.map κ f)) :=
     (MulEquiv.irreducible_iff (f := optionEquivLeft F σ)).mpr

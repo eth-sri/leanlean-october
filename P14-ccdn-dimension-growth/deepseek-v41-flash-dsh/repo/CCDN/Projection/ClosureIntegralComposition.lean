@@ -11,12 +11,11 @@ import Mathlib.RingTheory.IntegralClosure.IsIntegralClosure.Basic
 
 /-! Closure-preserving integral affine projections compose. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma aeval_closureProjectionCoordinates_rename {K : Type*} [Field K] {m n : ℕ}
+lemma aeval_closureProjectionCoordinates_rename {K : Type*} [Field K] {m n : ℕ}
     (a : Fin m → MvPolynomial (Fin n) K) (f : MvPolynomial (Fin m) K) :
     aeval (closureProjectionCoordinates a) (rename Fin.succ f) =
       rename Fin.succ (aeval a f) := by
@@ -26,7 +25,7 @@ private lemma aeval_closureProjectionCoordinates_rename {K : Type*} [Field K] {m
     simp [closureProjectionCoordinates]
   exact AlgHom.congr_fun h f
 
-private lemma closureProjectionCoordinates_comp {K : Type*} [Field K] {l m n : ℕ}
+lemma closureProjectionCoordinates_comp {K : Type*} [Field K] {l m n : ℕ}
     (a : Fin l → MvPolynomial (Fin m) K)
     (b : Fin m → MvPolynomial (Fin n) K) (i : Fin (l + 1)) :
     aeval (closureProjectionCoordinates b) (closureProjectionCoordinates a i) =
@@ -68,5 +67,4 @@ theorem closure_projection_integral_comp
   change (φ.comp χ).IsIntegral at hcomp
   rwa [heq] at hcomp
 
-end
 end CCDN

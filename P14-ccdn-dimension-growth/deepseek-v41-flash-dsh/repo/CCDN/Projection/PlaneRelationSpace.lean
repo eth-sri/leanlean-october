@@ -13,9 +13,8 @@ import Mathlib.RingTheory.MvPolynomial.IrreducibleQuadratic
 space is one-dimensional. This supplies the specialized-kernel condition
 for first-order deformation of a degree-preserving projection. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A multiple `g` of a nonzero polynomial `f` with total degree at most that of `f` is a scalar
@@ -44,5 +43,4 @@ theorem plane_projection_relation_space {K τ : Type*} [Field K]
     (hzero : aeval a g ∈ I) : ∃ c : K, g = c • f :=
   eq_scalar_mul_of_dvd_of_totalDegree_le f g hf ((hker g).mp hzero) hg
 
-end
 end CCDN

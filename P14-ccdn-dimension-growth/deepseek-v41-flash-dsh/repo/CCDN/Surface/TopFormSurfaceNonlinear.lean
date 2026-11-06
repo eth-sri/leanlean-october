@@ -14,9 +14,8 @@ import CCDN.Surface.TopFormSurfaceComponents
 all nonlinear components together contribute O(d^18 B) bounded integer points.
 The union of the degree-one components is not covered by this estimate. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The nonlinear part of the corrected large-degree surface bound, using
@@ -40,7 +39,6 @@ theorem top_form_surface_nonlinear_count :
           (count (zeroLocus (map (Int.castRingHom ℚ) f) \
             (⋃ P ∈ S.filter (fun P => δ P = 1), idealZeroLocus P)) B : ℝ) ≤
               A * (f.totalDegree : ℝ) ^ 18 * B := by
-  classical
   obtain ⟨K, hK, hcount⟩ := nonlinear_curve_union_bound
   let C := topFormAuxiliaryConstant 1
   have hC : 0 < C := topFormAuxiliaryConstant_pos 1
@@ -92,5 +90,4 @@ theorem top_form_surface_nonlinear_count :
         (count (⋃ P ∈ T, idealZeroLocus P) B : ℝ) := by exact_mod_cast houtside
     exact hh.trans hnonlinear
 
-end
 end CCDN

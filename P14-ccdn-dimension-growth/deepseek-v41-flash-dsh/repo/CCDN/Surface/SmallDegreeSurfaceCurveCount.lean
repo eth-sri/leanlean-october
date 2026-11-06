@@ -14,16 +14,15 @@ import CCDN.Surface.NonlinearCount
 box radius. The full affine curve theorem and the strict surface exponent
 gap give a linear bound in every surface degree at least five. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
-private theorem curveBound_logarithmic_degree {δ : ℕ} (hδ : 2 ≤ δ)
+theorem curveBound_logarithmic_degree {δ : ℕ} (hδ : 2 ≤ δ)
     {B D : ℝ} (hB : 1 ≤ B) (_hD : 0 ≤ D)
     (hδD : (δ : ℝ) ≤ D * (Real.log B + 1)) :
     curveBound δ B ≤ (δ : ℝ) * D ^ 2 * (D + 1) *
       B ^ (1 / 2 : ℝ) * (Real.log B + 1) ^ 3 := by
-  have hB0 : 0 < B := zero_lt_one.trans_le hB
+  have hB0 := zero_lt_one.trans_le hB
   have hlog := Real.log_nonneg hB
   have hδR : (2 : ℝ) ≤ δ := by exact_mod_cast hδ
   have hpow : B ^ (1 / (δ : ℝ)) ≤ B ^ (1 / 2 : ℝ) :=
@@ -44,7 +43,7 @@ private theorem curveBound_logarithmic_degree {δ : ℕ} (hδ : 2 ≤ δ)
       · positivity
     _ = _ := by ring
 
-private theorem sum_curveBound_logarithmic_degrees {ι : Type*}
+theorem sum_curveBound_logarithmic_degrees {ι : Type*}
     (S : Finset ι) (δ : ι → ℕ) (k : ℕ) {d : ℕ} (hd : 5 ≤ d)
     {A D B : ℝ} (hA : 0 ≤ A) (hD : 0 ≤ D) (hB : 1 ≤ B)
     (hδ : ∀ i ∈ S, 2 ≤ δ i)
@@ -54,7 +53,7 @@ private theorem sum_curveBound_logarithmic_degrees {ι : Type*}
     ∑ i ∈ S, curveBound (δ i) B ≤
       ((k + 3).factorial / (1 / 20 : ℝ) ^ (k + 3) * Real.exp (1 / 20)) *
         A * D ^ 2 * (D + 1) * B := by
-  have hB0 : 0 < B := zero_lt_one.trans_le hB
+  have hB0 := zero_lt_one.trans_le hB
   have hlog := Real.log_nonneg hB
   let C := ((k + 3).factorial / (1 / 20 : ℝ) ^ (k + 3) * Real.exp (1 / 20))
   have hsum : (∑ i ∈ S, curveBound (δ i) B) ≤
@@ -115,5 +114,4 @@ theorem logarithmic_degree_curve_union_bound (k : ℕ) :
       mul_le_mul_of_nonneg_left hsum hK.le
     _ = _ := by ring
 
-end
 end CCDN

@@ -15,9 +15,8 @@ import CCDN.Projection.ProjectivePlaneProjection
 equation of the same degree. Projection loses at most d(d-1) affine points
 and at most d further points lie on the omitted hyperplane. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Let `I` be a prime ideal defining a projective curve of degree `d` not contained in the
@@ -119,5 +118,4 @@ theorem exists_projective_plane_count_reduction {n d : ℕ}
     rw [hπ]
     exact hcount S hS
 
-end
 end CCDN

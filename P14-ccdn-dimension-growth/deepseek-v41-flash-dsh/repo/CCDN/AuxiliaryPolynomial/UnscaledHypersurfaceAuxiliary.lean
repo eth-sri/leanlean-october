@@ -19,9 +19,8 @@ import CCDN.Plane.UnscaledModelCount
 /-! The ordinary homogenization provides an affine auxiliary without a
 scaling-prime hypothesis and transfers the coefficient-height dichotomy. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The ordinary homogenization (scaling factor one) of an integer polynomial has the same
@@ -29,7 +28,6 @@ coefficient height as the polynomial. -/
 lemma integerCoefficientHeight_scaledHomogenize_one {n : ℕ} (d : ℕ)
     (f : MvPolynomial (Fin n) ℤ) :
     integerCoefficientHeight (scaledHomogenize d 1 f) = integerCoefficientHeight f := by
-  classical
   have hupper : (integerCoefficientHeight (scaledHomogenize d 1 f) : ℝ) ≤
       integerCoefficientHeight f := by
     apply integerCoefficientHeight_le _ (Nat.cast_nonneg _)
@@ -54,7 +52,7 @@ lemma integerCoefficientHeight_scaledHomogenize_one {n : ℕ} (d : ℕ)
         (homogenizedExponent d m)
   exact_mod_cast le_antisymm hupper hlower
 
-private lemma scaledHomogenize_one_integer_irreducible {n : ℕ}
+lemma scaledHomogenize_one_integer_irreducible {n : ℕ}
     (f : MvPolynomial (Fin n) ℤ) (hprim : PrimitiveIntegerPolynomial f)
     (hir : Irreducible f) (hd : 0 < f.totalDegree) :
     Irreducible (scaledHomogenize f.totalDegree 1 f) := by
@@ -81,7 +79,7 @@ lemma unscaled_auxiliary_not_dvd {n M : ℕ}
   rw [hslice] at hndQ
   exact fun h => hndQ (map_dvd (map (Int.castRingHom ℚ)) h)
 
-private lemma unscaled_auxiliary_vanishes {n M : ℕ}
+lemma unscaled_auxiliary_vanishes {n M : ℕ}
     (f : MvPolynomial (Fin n) ℤ) (G : MvPolynomial (Fin (n + 1)) ℤ)
     (hGhom : G.IsHomogeneous M) {B : ℝ} (hB : 1 ≤ B)
     (hGzero : ∀ P : ProjectivePoint n, P.mulHeight ≤ B →
@@ -159,5 +157,4 @@ theorem affine_coefficient_height_dichotomy {n : ℕ}
     exact ⟨g, ⟨fun h => hgnd (by rw [h]; exact dvd_zero _), hgnd,
       unscaled_auxiliary_vanishes f G hGhom hB hGzero⟩, homogeneousSlice_degree_le (1 : ℤ) hGhom⟩
 
-end
 end CCDN

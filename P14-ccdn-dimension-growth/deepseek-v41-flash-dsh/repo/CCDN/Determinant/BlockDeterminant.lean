@@ -18,10 +18,9 @@ open Matrix Module Finset
 
 /-- Every integer matrix factors through a square matrix with the same column
 lattice. The two factorizations record both inclusions without rank hypotheses. -/
-private theorem integer_square_column_factorization {k N : ℕ} (A : Matrix (Fin k) (Fin N) ℤ) :
+theorem integer_square_column_factorization {k N : ℕ} (A : Matrix (Fin k) (Fin N) ℤ) :
     ∃ (B : Matrix (Fin k) (Fin k) ℤ) (R : Matrix (Fin k) (Fin N) ℤ)
       (C : Matrix (Fin N) (Fin k) ℤ), A = B * R ∧ B = A * C := by
-  classical
   let L := LinearMap.range A.mulVecLin
   obtain ⟨r, snf⟩ := L.smithNormalForm (Pi.basisFun ℤ (Fin k))
   let T : (Fin k → ℤ) →ₗ[ℤ] L :=
@@ -72,7 +71,7 @@ private theorem integer_square_column_factorization {k N : ℕ} (A : Matrix (Fin
     exact (congrFun (hC j) i).symm
 
 /-- Divisibility of all maximal minors passes to the square column factor. -/
-private theorem dvd_det_square_column_factor {k N : ℕ} (A : Matrix (Fin k) (Fin N) ℤ)
+theorem dvd_det_square_column_factor {k N : ℕ} (A : Matrix (Fin k) (Fin N) ℤ)
     (C : Matrix (Fin N) (Fin k) ℤ) (d : ℤ)
     (hd : ∀ c : Fin k ↪o Fin N, d ∣ (A.submatrix id c).det) :
     d ∣ (A * C).det := by
@@ -83,12 +82,11 @@ private theorem dvd_det_square_column_factor {k N : ℕ} (A : Matrix (Fin k) (Fi
 
 /-- The product of common divisors of the maximal minors of disjoint row blocks
 is a divisor of the full determinant. Empty and rank-deficient blocks are allowed. -/
-private theorem block_minor_divisors_dvd_det {c : ℕ} (n : Fin c → ℕ)
+theorem block_minor_divisors_dvd_det {c : ℕ} (n : Fin c → ℕ)
     (A : Matrix (Σ i, Fin (n i)) (Σ i, Fin (n i)) ℤ) (d : Fin c → ℤ)
     (hd : ∀ i, ∀ j : Fin (n i) ↪o Fin (Fintype.card (Σ i, Fin (n i))),
       d i ∣ (A.submatrix (Sigma.mk i) ((Fintype.equivFin _).symm ∘ j)).det) :
     (∏ i, d i) ∣ A.det := by
-  classical
   let e := Fintype.equivFin (Σ i, Fin (n i))
   let M := fun i => A.submatrix (Sigma.mk i) e.symm
   choose B R C hR hC using fun i => integer_square_column_factorization (M i)
@@ -101,8 +99,7 @@ private theorem block_minor_divisors_dvd_det {c : ℕ} (n : Fin c → ℕ)
     fun i j => R i.1 i.2 (e j)
   have hfac : Matrix.blockDiagonal' B * Q = A := by
     ext ⟨i, j⟩ l
-    rw [Matrix.mul_apply, Fintype.sum_sigma]
-    rw [Finset.sum_eq_single i]
+    rw [Matrix.mul_apply, Fintype.sum_sigma, Finset.sum_eq_single i]
     · simp only [Matrix.blockDiagonal'_apply_eq]
       have hh := (congrArg (fun m => m j (e l)) (hR i)).symm
       simpa only [M, Matrix.submatrix_apply, Equiv.symm_apply_apply, Matrix.mul_apply, Q] using hh
@@ -115,7 +112,7 @@ private theorem block_minor_divisors_dvd_det {c : ℕ} (n : Fin c → ℕ)
   exact dvd_mul_of_dvd_left (Finset.prod_dvd_prod_of_dvd _ _ (fun i _ => hdiv i)) _
 
 /-- Enumerate rows grouped by their residue-class label. -/
-private def partitionRowEquiv {c s : ℕ} (label : Fin s → Fin c) :
+def partitionRowEquiv {c s : ℕ} (label : Fin s → Fin c) :
     (Σ i : Fin c, Fin (Fintype.card {j : Fin s // label j = i})) ≃ Fin s :=
   (Equiv.sigmaCongrRight fun i =>
     (Fintype.equivFin {j : Fin s // label j = i}).symm).trans (Equiv.sigmaFiberEquiv label)
@@ -140,12 +137,11 @@ lemma sum_residue_class_sizes {c s : ℕ} (label : Fin s → Fin c) :
 
 /-- Divisibility of all local block minors combines for an arbitrary row
 partition, without any assumption on the ordering of residue classes. -/
-private theorem residue_minor_divisors_dvd_det {c s : ℕ}
+theorem residue_minor_divisors_dvd_det {c s : ℕ}
     (A : Matrix (Fin s) (Fin s) ℤ) (label : Fin s → Fin c) (d : Fin c → ℤ)
     (hd : ∀ i, ∀ j : Fin (Fintype.card {j : Fin s // label j = i}) → Fin s,
       d i ∣ (A.submatrix (residueRows label i) j).det) :
     (∏ i, d i) ∣ A.det := by
-  classical
   let e := partitionRowEquiv label
   rw [← Matrix.det_submatrix_equiv_self e A]
   apply block_minor_divisors_dvd_det
@@ -164,12 +160,11 @@ theorem minorGcd_eq_gcd_plucker {ι : Type*} [Fintype ι] [LinearOrder ι] {m : 
 /-- If each `d i` divides every maximal minor of the rows labelled `i`, then `∏ i, d i`
 divides the gcd of all maximal minors of the rectangular matrix, as required by the
 Bombieri--Vaaler bound. -/
-private theorem residue_minor_divisors_dvd_minorGcd {c s N : ℕ}
+theorem residue_minor_divisors_dvd_minorGcd {c s N : ℕ}
     (A : Matrix (Fin s) (Fin N) ℤ) (label : Fin s → Fin c) (d : Fin c → ℤ)
     (hd : ∀ i, ∀ j : Fin (Fintype.card {j : Fin s // label j = i}) → Fin N,
       d i ∣ (A.submatrix (residueRows label i) j).det) :
     (∏ i, d i) ∣ Int.Matrix.minorGcd A := by
-  classical
   rw [minorGcd_eq_gcd_plucker]
   apply Finset.dvd_gcd
   intro S _

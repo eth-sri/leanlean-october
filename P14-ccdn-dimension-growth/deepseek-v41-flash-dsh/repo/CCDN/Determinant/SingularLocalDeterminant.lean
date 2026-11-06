@@ -15,15 +15,13 @@ import CCDN.ForMathlib.Matrix
 /-! Singular plane-curve local determinant divisibility, obtained from
 finite-precision homogeneous generators of the local maximal-ideal filtration. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma sum_fin_zero_pad {A : Type*} [AddCommMonoid A] {r μ : ℕ}
+lemma sum_fin_zero_pad {A : Type*} [AddCommMonoid A] {r μ : ℕ}
     (h : r ≤ μ) (f : Fin r → A) :
     (∑ i : Fin μ, if hi : i.val < r then f ⟨i.val, hi⟩ else 0) = ∑ j, f j := by
-  classical
   let J := Finset.univ.image (Fin.castLE h)
   have hsum : (∑ i : Fin μ, if hi : i.val < r then f ⟨i.val, hi⟩ else 0) =
       ∑ i ∈ J, if hi : i.val < r then f ⟨i.val, hi⟩ else 0 := by
@@ -53,7 +51,6 @@ theorem singular_plane_pow_dvd_det_mod {p μ s : ℕ} [Fact p.Prime]
     (hfx : ∀ i, (p : ℤ) ^ multiplicityExponent s μ ∣ eval (x i) f)
     (F : Fin s → MvPolynomial (Fin 2) ℤ) :
     (p : ℤ) ^ multiplicityExponent s μ ∣ (Matrix.of fun i j => eval (x i) (F j)).det := by
-  classical
   let N := multiplicityExponent s μ
   obtain ⟨r, g, hr, hg, happrox⟩ := exists_singular_plane_approximation_mod f hf hμ
   choose c hc using fun j => happrox N (F j)
@@ -122,5 +119,4 @@ theorem singular_plane_pow_dvd_det {p μ s : ℕ} [Fact p.Prime]
   exact singular_plane_pow_dvd_det_mod f hf hμ x hx
     (fun i => by rw [hfx]; exact dvd_zero _) F
 
-end
 end CCDN

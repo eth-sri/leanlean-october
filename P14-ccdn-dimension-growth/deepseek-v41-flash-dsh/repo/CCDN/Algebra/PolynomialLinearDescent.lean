@@ -115,7 +115,7 @@ theorem exists_nonzero_polynomial_linear_descent {k K : Type*}
     polynomialCoefficientLinear_totalDegree_le φ f, ?_⟩
   · intro he
     have hh := polynomialCoefficientLinear_coeff φ f m
-    have hz : φ (f.coeff m) = 0 := by simpa [he] using hh.symm
+    have hz := by simpa [he] using hh.symm
     exact hφ hz
   · intro x hx
     rw [polynomialCoefficientLinear_eval, hx, map_zero]

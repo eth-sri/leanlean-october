@@ -16,9 +16,8 @@ import Mathlib.RingTheory.Polynomial.UniqueFactorization
 /-! Sharp bounds for distinct points in proper polynomial sections. In the plane,
 the principal Hilbert function gives the usual product-of-degrees bound. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- An irreducible plane curve and a polynomial not divisible by its equation
 have at most the product of their degrees many distinct common zeros. -/
@@ -44,7 +43,6 @@ theorem count_curve_section_le {n d : ℕ} (I : Ideal (CoordinatePolynomial n))
     [I.IsPrime] (hd : HasAffineCurveDegree I d)
     (g : CoordinatePolynomial n) (hg : g ∉ I) (B : ℝ) :
     count (idealZeroLocus I ∩ zeroLocus g) B ≤ d * g.totalDegree := by
-  classical
   let S := integralPoints (idealZeroLocus I ∩ zeroLocus g) B
   let z : S → RatPoint n := fun x => rationalPoint x.val
   have hz : Function.Injective z := by
@@ -59,5 +57,4 @@ theorem count_curve_section_le {n d : ℕ} (I : Ideal (CoordinatePolynomial n))
   have h := polynomial_section_card_le_degree I d hd g hg g.totalDegree le_rfl z hz hzp hzg
   simpa only [Fintype.card_coe, S, count] using h
 
-end
 end CCDN

@@ -30,10 +30,9 @@ affine-plane parameter ring.
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma eulerClosedFormCoefficientMatrix_smul {R : Type*} [CommRing R]
+lemma eulerClosedFormCoefficientMatrix_smul {R : Type*} [CommRing R]
     (u : R) (k : ℕ) (f : Polynomial (Polynomial R)) :
     eulerClosedFormCoefficientMatrix k (u • f) = u • eulerClosedFormCoefficientMatrix k f := by
   ext row col
@@ -41,7 +40,7 @@ private lemma eulerClosedFormCoefficientMatrix_smul {R : Type*} [CommRing R]
     u • eulerCoefficientEntryLinear k row col f
   exact map_smul _ _ _
 
-private lemma eulerClosedForm_minor_smul {R : Type*} [CommRing R]
+lemma eulerClosedForm_minor_smul {R : Type*} [CommRing R]
     (u : R) (k r : ℕ) (f : Polynomial (Polynomial R))
     (a : Fin r → ℕ × ℕ) (c : Fin r → EulerColumns k) :
     ((eulerClosedFormCoefficientMatrix k (u • f)).submatrix a c).det =
@@ -52,7 +51,7 @@ private lemma eulerClosedForm_minor_smul {R : Type*} [CommRing R]
 
 /-- The universal affine-plane family has a nonzero determinant of
 the precise Noether order. -/
-private theorem exists_universalPlane_euler_minor_charZero
+theorem exists_universalPlane_euler_minor_charZero
     {K σ : Type*} [Field K] [CharZero K] [IsAlgClosed K] [Fintype σ]
     (k : ℕ) (f : MvPolynomial (Option σ) K) (hf : Irreducible f)
     (hd : f.totalDegree = k + 2) :
@@ -73,11 +72,9 @@ private theorem exists_universalPlane_euler_minor_charZero
   intro he
   exact hne (by rw [he, map_zero, mul_zero])
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Some constructed universal form detects every absolutely irreducible
@@ -102,17 +99,15 @@ theorem exists_ambientNoetherForm_nonzero {K σ : Type*}
   rw [← ambientEuler_minor_map φ k f rows cols, coeff_map,
     ← ambientNoetherForm_specialize k f hf rows cols m, hz, map_zero]
 
-end
 end CCDN
 
 namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma finite_homogeneous_coefficientL1_bounded (σ : Type*) [Fintype σ] [DecidableEq σ]
+lemma finite_homogeneous_coefficientL1_bounded (σ : Type*) [Fintype σ] [DecidableEq σ]
     (r H : ℕ) :
     {f : MvPolynomial σ ℤ | f.IsHomogeneous r ∧ l1Norm f ≤ H}.Finite := by
-  classical
   let C := ↥(Finset.Icc (-(H : ℤ)) (H : ℤ))
   let F : (Sym σ r → C) → MvPolynomial σ ℤ :=
     fun c => ∑ i, monomial (homogeneousCoefficientExponent σ r i) (c i).val
@@ -145,7 +140,7 @@ def universalNoetherForms (σ : Type*) [Fintype σ] [DecidableEq σ] (k : ℕ) :
     Finset (MvPolynomial (Sym σ (k + 2)) ℤ) :=
   (finite_ambientNoetherForms σ k).toFinset
 
-private lemma mem_universalNoetherForms {σ : Type*} [Fintype σ] [DecidableEq σ]
+lemma mem_universalNoetherForms {σ : Type*} [Fintype σ] [DecidableEq σ]
     (k : ℕ) (f : MvPolynomial (Sym σ (k + 2)) ℤ) :
     f ∈ universalNoetherForms σ k ↔ ∃ rows cols m, f = ambientNoetherForm σ k rows cols m := by
   exact Set.Finite.mem_toFinset _

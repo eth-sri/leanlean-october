@@ -15,13 +15,12 @@ import Mathlib.LinearAlgebra.FreeModule.StrongRankCondition
 Bounds intersections with arbitrary section polynomials. No projective intersection theorem or
 point-counting axiom is used. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- Distinct points in a proper polynomial section force a corresponding lower
 bound for the filtered coordinate-space growth. -/
-private theorem polynomial_points_filtered_lower {K σ ι : Type*} [Field K] [Fintype σ]
+theorem polynomial_points_filtered_lower {K σ ι : Type*} [Field K] [Fintype σ]
     [Fintype ι] [DecidableEq ι]
     (p : Ideal (MvPolynomial σ K)) [p.IsPrime]
     (l : MvPolynomial σ K) (hl : l ∉ p) (m : ℕ) (hld : l.totalDegree ≤ m)
@@ -29,7 +28,6 @@ private theorem polynomial_points_filtered_lower {K σ ι : Type*} [Field K] [Fi
     (hzp : ∀ i, z i ∈ idealZeroLocus p) (hzl : ∀ i, MvPolynomial.eval (z i) l = 0) :
     ∃ D : ℕ, ∀ N : ℕ,
       Fintype.card ι * (N + 1) ≤ Module.finrank K (filteredCoordinateSpace p (D + m * N)) := by
-  classical
   obtain ⟨h, hsep⟩ := exists_point_separators z hz
   let φ : ι → (MvPolynomial σ K ⧸ p) →ₐ[K] K :=
     fun i => Ideal.Quotient.liftₐ p (MvPolynomial.aeval (z i)) (by
@@ -104,5 +102,4 @@ theorem polynomial_section_card_le_degree {K σ ι : Type*} [Field K] [Fintype �
   have hNeq : (N : ℤ) = d * D + c.natAbs + N₀ + 1 := by simp [N]
   nlinarith
 
-end
 end CCDN

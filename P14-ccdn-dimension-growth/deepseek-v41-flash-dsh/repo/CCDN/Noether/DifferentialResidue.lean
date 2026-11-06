@@ -10,19 +10,17 @@ public import Mathlib.RingTheory.Derivation.MapCoeffs
 /-! Residues of closed rational one-forms at simple polynomial roots.
 The polynomial proof avoids needing a partial-fraction decomposition. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial Differential
-open scoped Differential
 
-private lemma polynomial_degree_C_mul_le {K : Type*} [Field K] (a : K) (p : K[X]) :
+lemma polynomial_degree_C_mul_le {K : Type*} [Field K] (a : K) (p : K[X]) :
     (C a * p).degree ≤ p.degree := by
   simpa only [smul_eq_C_mul] using degree_smul_le a p
 
 /-- Coefficientwise differentiation strictly lowers the degree of a monic
 polynomial, since its leading coefficient differentiates to zero. -/
-private lemma differential_mapCoeffs_degree_lt {K : Type*} [Field K] [Differential K]
+lemma differential_mapCoeffs_degree_lt {K : Type*} [Field K] [Differential K]
     {p : K[X]} (hp : p.Monic) : (Differential.mapCoeffs p).degree < p.degree := by
   rw [degree_eq_natDegree hp.ne_zero, degree_lt_iff_coeff_zero]
   intro n hn
@@ -76,7 +74,7 @@ lemma differential_mapCoeffs_map {K L : Type*} [Field K] [Field L]
   ext n
   simp only [Differential.coeff_mapCoeffs, coeff_map, deriv_algebraMap]
 
-private lemma eq_zero_of_aeval_root_of_degree_lt {K L : Type*} [Field K] [Field L]
+lemma eq_zero_of_aeval_root_of_degree_lt {K L : Type*} [Field K] [Field L]
     [Algebra K L] {f p : K[X]} (hf : Irreducible f) (hm : f.Monic)
     {c : L} (hc : aeval c f = 0) (hp : aeval c p = 0) (hdeg : p.degree < f.degree) : p = 0 := by
   have hdiv := minpoly.dvd K c hp
@@ -125,5 +123,4 @@ theorem closed_form_eq_constant_gradient_of_residue_mem_base
         ((polynomial_degree_C_mul_le _ _).trans_lt (differential_mapCoeffs_degree_lt hm)))
   exact ⟨a, hpEq, sub_eq_zero.mp hqzero⟩
 
-end
 end CCDN

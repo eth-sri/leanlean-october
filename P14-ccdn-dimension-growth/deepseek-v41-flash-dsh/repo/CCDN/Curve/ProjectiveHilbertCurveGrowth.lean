@@ -17,9 +17,8 @@ import CCDN.Projection.ProjectiveLinearCountTransfer
 specified by their filtered Hilbert polynomial. The construction of
 the finite birational projection and its integer matrix is internal. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Dimension growth for projective curves in `ℙⁿ` over `ℚ`, specified by their Hilbert
@@ -96,5 +95,4 @@ theorem projective_hilbert_curve_dimension_growth (n : ℕ) (hn : 1 ≤ n) :
   simp only [pow_add]
   ring
 
-end
 end CCDN

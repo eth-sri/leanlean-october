@@ -22,9 +22,8 @@ components of the resulting section have total degree at most d², giving
 the sharp elementary bound d²(2B+1), whatever the highest homogeneous
 component. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Linear descent of both proper factors produces a base-field auxiliary
@@ -93,7 +92,6 @@ theorem finite_curve_union_count_le_box_side
     {B : ℝ} (hB : 0 ≤ B) :
     (count (⋃ P ∈ S, idealZeroLocus P) B : ℝ) ≤
       (∑ P ∈ S, (d P : ℝ)) * (2 * B + 1) := by
-  classical
   induction S using Finset.induction_on with
   | empty => simp [count, integralPoints]
   | @insert P S hPS ih =>
@@ -106,5 +104,4 @@ theorem finite_curve_union_count_le_box_side
       exact_mod_cast count_union_le (idealZeroLocus P) (⋃ Q ∈ S, idealZeroLocus Q) B
     exact hcount.trans (add_le_add (curve_count_le_degree_mul_box_side P hP.2.1 hP.2.2 hB) hS)
 
-end
 end CCDN

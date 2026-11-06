@@ -19,12 +19,11 @@ import Mathlib.RingTheory.AlgebraicIndependent.Basic
 The Hilbert multiplicity bounds the field degree by d*q^dimension;
 a separating integral element gives the same bound for every finite fiber. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private theorem bounded_degree_normalization_fiber_card_le_of_fractionField
+theorem bounded_degree_normalization_fiber_card_le_of_fractionField
     {K E : Type*} [Field K] [CharZero K] [Field E] [Algebra K E]
     {n m : ℕ} (I : Ideal (MvPolynomial (Fin n) K)) [I.IsPrime]
     [Algebra (MvPolynomial (Fin n) K ⧸ I) E]
@@ -40,7 +39,6 @@ private theorem bounded_degree_normalization_fiber_card_le_of_fractionField
     (hzero : ∀ x ∈ s, x ∈ idealZeroLocus I)
     (hproj : ∀ x ∈ s, ∀ i, eval x (l i) = z i) :
     s.card ≤ d * q ^ (m + 1) := by
-  classical
   let A := MvPolynomial (Fin n) K ⧸ I
   let η : A →ₐ[K] E := IsScalarTower.toAlgHom K A E
   let v : Fin (m + 1) → E := fun i => η ((Ideal.Quotient.mk I) (l i))
@@ -118,5 +116,4 @@ theorem linear_normalization_fiber_card_le
   simpa only [one_pow, mul_one] using bounded_degree_normalization_fiber_card_le I 1 one_pos l hl
     hi hint d hdimdeg z s hzero hproj
 
-end
 end CCDN

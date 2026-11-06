@@ -40,10 +40,9 @@ coefficients `v` is `v (i, j)`. -/
 lemma bivariateGridPolynomial_coeff {R : Type*} [CommRing R] {d : ℕ}
     (v : BivariateGrid d → R) (i j : Fin d) :
     ((bivariateGridPolynomial R d v).coeff i.val).coeff j.val = v (i,j) := by
-  classical
   simp [bivariateGridPolynomial, coeff_monomial, Fintype.sum_prod_type, Fin.val_inj]
 
-private lemma bivariateGridPolynomial_injective {R : Type*} [CommRing R] (d : ℕ) :
+lemma bivariateGridPolynomial_injective {R : Type*} [CommRing R] (d : ℕ) :
     Function.Injective (bivariateGridPolynomial R d) := by
   intro v w h
   funext i
@@ -54,7 +53,6 @@ private lemma bivariateGridPolynomial_injective {R : Type*} [CommRing R] (d : �
 `d`. -/
 lemma bivariateGridPolynomial_degree_lt {R : Type*} [CommRing R] {d : ℕ}
     (v : BivariateGrid d → R) : (bivariateGridPolynomial R d v).degree < d := by
-  classical
   rw [degree_lt_iff_coeff_zero]
   intro n hn
   simp only [bivariateGridPolynomial, LinearMap.coe_mk, AddHom.coe_mk, finsetSum_coeff]
@@ -123,7 +121,7 @@ def closedFormCoefficientMatrix {R : Type*} [CommRing R] (d : ℕ) (f : R[X][X])
   LinearMap.toMatrix'
     ((bivariateCoefficients R).comp ((closedFormOperator f).comp (closedFormPair R d)))
 
-private lemma closedFormCoefficientMatrix_mulVec {R : Type*} [CommRing R] (d : ℕ) (f : R[X][X])
+lemma closedFormCoefficientMatrix_mulVec {R : Type*} [CommRing R] (d : ℕ) (f : R[X][X])
     (v : ClosedFormColumns d → R) :
     closedFormCoefficientMatrix d f *ᵥ v =
       bivariateCoefficients R (closedFormOperator f (closedFormPair R d v)) := by

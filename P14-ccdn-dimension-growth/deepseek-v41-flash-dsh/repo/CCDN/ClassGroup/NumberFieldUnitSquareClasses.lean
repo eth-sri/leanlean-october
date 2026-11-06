@@ -14,14 +14,12 @@ The endpoint concerns the unit group modulo squares. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open NumberField
-open scoped NumberField
 
-private def integerParityIndex (e : ℤ) : Fin 2 :=
+def integerParityIndex (e : ℤ) : Fin 2 :=
   ⟨(e % 2).toNat, by omega⟩
 
-private theorem zpow_eq_parity_pow {G : Type*} [Group G] (x : G)
+theorem zpow_eq_parity_pow {G : Type*} [Group G] (x : G)
     (hx : x ^ 2 = 1) (e : ℤ) :
     x ^ e = x ^ (integerParityIndex e).val := by
   rw [zpow_eq_zpow_emod' e hx, ← zpow_natCast]
@@ -37,7 +35,6 @@ theorem numberFieldUnit_exponent_two_quotient
     {G : Type*} [CommGroup G] (φ : (𝓞 K)ˣ →* G)
     (hφ : Function.Surjective φ) (hG : ∀ x : G, x ^ 2 = 1) :
     Finite G ∧ Nat.card G ≤ 2 ^ (NumberField.Units.rank K + 1) := by
-  classical
   obtain ⟨ζ, hζ⟩ := exists_zpow_surjective (NumberField.Units.torsion K)
   let code : Fin 2 × (Fin (NumberField.Units.rank K) → Fin 2) → G :=
     fun e ↦ φ (ζ : (𝓞 K)ˣ) ^ e.1.val *
@@ -72,5 +69,4 @@ theorem numberField_unit_rank_add_one_le_degree :
   unfold NumberField.Units.rank
   omega
 
-end
 end CCDN

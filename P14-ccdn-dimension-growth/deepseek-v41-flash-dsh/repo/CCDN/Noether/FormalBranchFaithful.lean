@@ -25,7 +25,7 @@ open MvPolynomial
 
 /-- A formal map of an irreducible plane curve, with one coordinate equal to
 X+a, kills precisely the multiples of its defining equation. -/
-private theorem formal_plane_map_eq_zero_iff_dvd {K : Type*} [Field K]
+theorem formal_plane_map_eq_zero_iff_dvd {K : Type*} [Field K]
     (f : MvPolynomial (Fin 2) K) (hf : Irreducible f)
     (ψ : MvPolynomial (Fin 2) K →ₐ[K] PowerSeries K) (hψ : ψ f = 0)
     (j : Fin 2) (a : K) (hparam : ψ (X j - C a) = PowerSeries.X)
@@ -65,17 +65,17 @@ private theorem formal_plane_map_eq_zero_iff_dvd {K : Type*} [Field K]
     rw [map_mul, hψ, zero_mul]
 
 /-- The substitution map attached to a chosen formal branch. -/
-private def formalPlaneBranchMap {K : Type*} [Field K]
+def formalPlaneBranchMap {K : Type*} [Field K]
     (z : Fin 2 → K) (j : Fin 2) (g : PowerSeries K) :
     MvPolynomial (Fin 2) K →ₐ[K] PowerSeries K :=
   MvPolynomial.aeval (fun k => if k = j then g else PowerSeries.X + PowerSeries.C (z j.rev))
 
-private lemma formalPlaneBranchMap_parameter {K : Type*} [Field K]
+lemma formalPlaneBranchMap_parameter {K : Type*} [Field K]
     (z : Fin 2 → K) (j : Fin 2) (g : PowerSeries K) :
     formalPlaneBranchMap z j g (X j.rev - C (z j.rev)) = PowerSeries.X := by
   fin_cases j <;> simp [formalPlaneBranchMap, PowerSeries.algebraMap_eq]
 
-private lemma formalPlaneBranchMap_constant {K : Type*} [Field K]
+lemma formalPlaneBranchMap_constant {K : Type*} [Field K]
     (z : Fin 2 → K) (j : Fin 2) (g : PowerSeries K)
     (hg : PowerSeries.constantCoeff g = z j) (f : MvPolynomial (Fin 2) K) :
     PowerSeries.constantCoeff (formalPlaneBranchMap z j g f) = eval z f := by

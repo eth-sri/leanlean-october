@@ -42,21 +42,19 @@ theorem standardMonomialPrefix_card {K σ : Type*} [Field K] [Fintype σ]
   rw [filteredCoordinateSpace_finrank_eq_standard_card]
   exact (Set.ncard_eq_toFinset_card _).symm
 
-private theorem standardMonomialPrefix_filter {K σ : Type*} [Field K] [Fintype σ]
+theorem standardMonomialPrefix_filter {K σ : Type*} [Field K] [Fintype σ]
     (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ) {N k : ℕ} (hk : k ≤ N) :
     (standardMonomialPrefix I m N).filter (fun a => Finsupp.degree a ≤ k) =
       standardMonomialPrefix I m k := by
-  classical
   ext a
   simp only [mem_filter, mem_standardMonomialPrefix]
   exact ⟨fun h => ⟨h.1.1, h.2⟩, fun h => ⟨⟨h.1, h.2.trans hk⟩, h.2⟩⟩
 
 /-- Summation by parts for a finite set of nonnegative weights. -/
-private theorem sum_weights_add_prefix_counts {α : Type*} (S : Finset α) (w : α → ℕ)
+theorem sum_weights_add_prefix_counts {α : Type*} (S : Finset α) (w : α → ℕ)
     (N : ℕ) (hN : ∀ a ∈ S, w a ≤ N) :
     (∑ a ∈ S, w a) + ∑ k ∈ range N, (S.filter (fun a => w a ≤ k)).card =
       N * S.card := by
-  classical
   have hcount : ∑ k ∈ range N, (S.filter (fun a => w a ≤ k)).card =
       ∑ a ∈ S, (N - w a) := by
     simp only [card_filter]

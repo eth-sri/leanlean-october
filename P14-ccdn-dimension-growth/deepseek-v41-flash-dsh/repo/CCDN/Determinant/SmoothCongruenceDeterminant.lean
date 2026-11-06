@@ -18,14 +18,13 @@ conditions. Bad reductions and local exponents are derived from the equation.
 Congruence-refined global hypersurface determinant bounds.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Finset
 
 /-- The higher-dimensional rank-cutoff form of Proposition 3.2.6 for
 maximal minors and common-degree homogeneous evaluation columns. -/
-private theorem hypersurface_determinant_log_lower_at_rank_congruence {n s N d M : ℕ} (hs : 0 < s)
+theorem hypersurface_determinant_log_lower_at_rank_congruence {n s N d M : ℕ} (hs : 0 < s)
     (f : MvPolynomial (Fin (n + 3)) ℤ) (hf : f.IsHomogeneous d) (hd : 0 < d)
     {F : Fin N → MvPolynomial (Fin (n + 3)) ℤ} {z : Fin s → IntPoint (n + 3)}
     (hev : IsIndependentEvaluation f M F z)
@@ -50,11 +49,9 @@ private theorem hypersurface_determinant_log_lower_at_rank_congruence {n s N d M
     projective_hypersurface_minorGcd_dvd f hf hd hf0 hir hcut F hev.isHomogeneous z hev.primitive
       hev.eval_eq_zero
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial Finset
 
 /-- The global determinant contribution and all prescribed smooth-prime
@@ -81,7 +78,6 @@ theorem exists_smooth_congruence_determinant_log_lower
         (hypersurfaceDeterminantMain n s - (n + 2 : ℝ) * s) *
           (∑ p ∈ P, Real.log p) ≤
         Real.log (Int.Matrix.minorGcd (Matrix.of fun i j => eval (z i) (F j))) := by
-  classical
   obtain ⟨bad, hmem⟩ := exists_hypersurface_bad_prime_finset f hf hd hir
   have hcong (p : ℕ) (hp : p ∈ P) :
       (p : ℤ) ^ hypersurfaceMultiplicityExponent (n + 1) 1 s ∣
@@ -108,5 +104,4 @@ theorem exists_smooth_congruence_determinant_log_lower
     intro hb
     exact (mem_sdiff.mp hp).2 (mem_union_left P ((hmem p).mpr ⟨by exact_mod_cast hcut, hb⟩))
 
-end
 end CCDN

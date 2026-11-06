@@ -14,13 +14,12 @@ import Mathlib.NumberTheory.Height.Projectivization
 polynomials have one common degree, so their classes belong to a single
 graded coordinate space. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 variable {K : Type*} [Field K]
 
-private lemma exists_projective_separating_minor {n : ℕ}
+lemma exists_projective_separating_minor {n : ℕ}
     {x y : Projectivization K (Fin (n + 1) → K)}
     (hxy : x ≠ y) :
     ∃ a b, y.rep b * x.rep a - y.rep a * x.rep b ≠ 0 := by
@@ -42,7 +41,7 @@ private lemma exists_projective_separating_minor {n : ℕ}
       exact ⟨_, he.symm⟩
     _ = y := y.mk_rep
 
-private lemma exists_projective_linear_separator {n : ℕ}
+lemma exists_projective_linear_separator {n : ℕ}
     {x y : Projectivization K (Fin (n + 1) → K)}
     (hxy : x ≠ y) :
     ∃ f : MvPolynomial (Fin (n + 1)) K,
@@ -58,13 +57,12 @@ private lemma exists_projective_linear_separator {n : ℕ}
 
 /-- Homogeneous Lagrange separators in degree `card ι - 1`, with exact
 Kronecker-delta values on the selected representatives. -/
-private theorem exists_projective_point_separators {n : ℕ} {ι : Type*}
+theorem exists_projective_point_separators {n : ℕ} {ι : Type*}
     [Fintype ι] [DecidableEq ι] (z : ι → Projectivization K (Fin (n + 1) → K))
     (hz : Function.Injective z) :
     ∃ h : ι → MvPolynomial (Fin (n + 1)) K,
       (∀ j, (h j).IsHomogeneous (Fintype.card ι - 1)) ∧
       ∀ i j, eval (z i).rep (h j) = if i = j then 1 else 0 := by
-  classical
   have hex (i : ι) : ∃ f : MvPolynomial (Fin (n + 1)) K,
       f.IsHomogeneous (Fintype.card ι - 1) ∧ eval (z i).rep f = 1 ∧
       ∀ j, j ≠ i → eval (z j).rep f = 0 := by
@@ -98,7 +96,6 @@ theorem exists_projective_point_separators_degree {n M : ℕ} {ι : Type*}
     ∃ h : ι → MvPolynomial (Fin (n + 1)) K,
       (∀ j, (h j).IsHomogeneous M) ∧
       ∀ i j, eval (z i).rep (h j) = if i = j then 1 else 0 := by
-  classical
   obtain ⟨h, hhom, heval⟩ := exists_projective_point_separators z hz
   have hcoord (j : ι) : ∃ k, (z j).rep k ≠ 0 :=
     Function.ne_iff.mp (z j).rep_nonzero
@@ -116,5 +113,4 @@ theorem exists_projective_point_separators_degree {n M : ℕ} {ι : Type*}
       simp [L, hk]
     · simp [hij]
 
-end
 end CCDN

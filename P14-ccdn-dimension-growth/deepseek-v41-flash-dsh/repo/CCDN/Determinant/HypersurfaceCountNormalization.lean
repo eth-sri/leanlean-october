@@ -11,9 +11,8 @@ import CCDN.Determinant.HypersurfaceMultiplicityEstimate
 /-! Numerical normalization of a finite-field hypersurface count, as in
 CCDN Lemma 2.8. The input count bound is an explicit hypothesis. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- A point-count error of H times P^(m-1) increases the mth root by at most H.
 There is no degree or multiplicity loss in this normalization. -/
@@ -86,5 +85,4 @@ theorem projective_hypersurface_minorGcd_of_count_bound {n s N p d M : ℕ}
     simp only [hs0, Nat.cast_zero,
       Real.zero_rpow (by positivity : (1 : ℝ) + 1 / (n + 1 : ℝ) ≠ 0), mul_zero, sub_zero, le_refl]
 
-end
 end CCDN

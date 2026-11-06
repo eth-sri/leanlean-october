@@ -14,9 +14,8 @@ import CCDN.Plane.GridHeight
 /-! Positioning a coefficient-height witness as the lexicographic leading
 coefficient by a bounded integral translation of the affine chart. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 open scoped MonomialOrder
 
@@ -62,7 +61,7 @@ lemma lex_leadingCoeff_eq_pure_first {R : Type*} [CommRing R] {n d : ℕ}
   change f.coeff (MonomialOrder.lex.degree f) = _
   rw [he]
 
-private lemma homogeneous_pure_first_coefficient {R : Type*} [CommRing R] {n d : ℕ}
+lemma homogeneous_pure_first_coefficient {R : Type*} [CommRing R] {n d : ℕ}
     (f : MvPolynomial (Fin (n + 1)) R) (hf : f.IsHomogeneous d) :
     f.coeff (Finsupp.single 0 d) = eval (Fin.cons 1 (0 : Fin n → R)) f := by
   have hd : (Finsupp.single (0 : Fin (n + 1)) d).degree = d := by simp
@@ -119,5 +118,4 @@ theorem exists_bounded_leading_coefficient_translation {d : ℕ}
     · rw [hf.coeff_eq_zero hm, Int.cast_zero, abs_zero]
       positivity
 
-end
 end CCDN

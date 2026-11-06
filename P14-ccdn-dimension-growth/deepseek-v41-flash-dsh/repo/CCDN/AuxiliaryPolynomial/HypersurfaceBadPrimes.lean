@@ -13,7 +13,6 @@ import CCDN.AuxiliaryPolynomial.UniversalPlaneBadReduction
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A polynomial with an irreducible image under a coefficient map is nonzero. -/
@@ -31,7 +30,7 @@ abbrev HasGoodReduction {σ : Type*} (f : MvPolynomial σ ℤ) (p : ℕ) [Fact p
 
 /-- A positive integer and the exact finite bad-prime set above the
 degree. -/
-private theorem exists_hypersurface_bad_prime_set
+theorem exists_hypersurface_bad_prime_set
     {L σ : Type*} [Field L] [CharZero L] [IsAlgClosed L] [Fintype σ]
     (f : MvPolynomial (Option σ) ℤ)
     (hf : Irreducible (MvPolynomial.map (Int.castRingHom L) f))
@@ -76,5 +75,4 @@ theorem finite_hypersurface_bad_primes
   have h3 : 27 * f.totalDegree ^ 4 < p := hp.1
   nlinarith [h3]
 
-end
 end CCDN

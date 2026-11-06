@@ -19,9 +19,8 @@ import Mathlib.Tactic.Positivity
 /-! Algebraically independent linear coordinates have cardinality at most
 the degree of the filtered Hilbert polynomial. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- `projectionCoordinateMap I a` is evaluation at the classes of the coordinate polynomials `a i`
@@ -42,7 +41,7 @@ lemma injective_projectionCoordinateMap_iff {K σ τ : Type*} [Field K]
   rw [projectionCoordinateMap_eq_aeval]
   rfl
 
-private lemma independent_linear_filtered_finrank_lower
+lemma independent_linear_filtered_finrank_lower
     {K σ τ : Type*} [Field K] [Fintype σ] [Fintype τ]
     (I : Ideal (MvPolynomial τ K)) (a : σ → MvPolynomial τ K)
     (ha : ∀ i, (a i).totalDegree ≤ 1)
@@ -55,7 +54,7 @@ private lemma independent_linear_filtered_finrank_lower
     (ψ.toLinearMap.comp V.subtype).codRestrict _ (fun v =>
       projectionCoordinateMap_filtered I a ha v.val
         ((mem_restrictTotalDegree _ _ _).mp v.property))
-  have hinj : Function.Injective ψ := injective_projectionCoordinateMap_iff.mpr hi
+  have hinj := injective_projectionCoordinateMap_iff.mpr hi
   have hiT : Function.Injective T := by
     intro x y h
     apply Subtype.ext
@@ -99,5 +98,4 @@ theorem linear_projection_not_injective_of_hilbert_dimension_lt
   exact (not_le_of_gt hd) (independent_linear_card_le_hilbert_dimension I a ha
     (injective_projectionCoordinateMap_iff.mp hinj))
 
-end
 end CCDN

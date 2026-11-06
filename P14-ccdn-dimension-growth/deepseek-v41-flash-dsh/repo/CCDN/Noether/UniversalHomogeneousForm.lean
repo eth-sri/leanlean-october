@@ -29,7 +29,7 @@ lemma homogeneousCoefficientExponent_degree (σ : Type*) [Fintype σ] [Decidable
     (d : ℕ) (i : Sym σ d) : (homogeneousCoefficientExponent σ d i).degree = d :=
   ((degreeEqEquivSym σ d).symm i).property
 
-private lemma homogeneousCoefficientExponent_injective (σ : Type*) [Fintype σ] [DecidableEq σ]
+lemma homogeneousCoefficientExponent_injective (σ : Type*) [Fintype σ] [DecidableEq σ]
     (d : ℕ) : Function.Injective (homogeneousCoefficientExponent σ d) :=
   Subtype.val_injective.comp (degreeEqEquivSym σ d).symm.injective
 
@@ -51,7 +51,6 @@ theorem homogeneousCoefficientData_reconstruct {R σ : Type*} [CommRing R]
     (f : MvPolynomial σ R) (hf : f.IsHomogeneous d) :
     ∑ i : Sym σ d, monomial (homogeneousCoefficientExponent σ d i)
       (homogeneousCoefficientData d f i) = f := by
-  classical
   ext m
   rw [coeff_sum]
   by_cases hm : m.degree = d

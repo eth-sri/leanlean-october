@@ -31,27 +31,23 @@ def radialMap {K σ : Type*} [CommRing K] :
     radialMap (MvPolynomial.X j : MvPolynomial σ K) =
       Polynomial.C (MvPolynomial.X j) * Polynomial.X := by simp [radialMap]
 
-private lemma radialMap_monomial {K σ : Type*} [CommRing K] (e : σ →₀ ℕ) (c : K) :
+lemma radialMap_monomial {K σ : Type*} [CommRing K] (e : σ →₀ ℕ) (c : K) :
     radialMap (monomial e c) = Polynomial.C (monomial e c) * Polynomial.X ^ e.degree := by
-  classical
   rw [monomial_eq, map_mul, radialMap_C, map_finsuppProd]
   simp only [map_pow, radialMap_X, mul_pow]
   rw [Finsupp.prod_mul]
   simp only [← map_pow, Finsupp.prod]
-  rw [← map_prod, Finset.prod_pow_eq_pow_sum]
-  rw [← mul_assoc, ← Polynomial.C_mul]
+  rw [← map_prod, Finset.prod_pow_eq_pow_sum, ← mul_assoc, ← Polynomial.C_mul]
   rfl
 
 /-- The coefficient of `T ^ n` in the radial image of `f` is the homogeneous component of
 `f` of degree `n`. -/
 lemma radialMap_coeff {K σ : Type*} [CommRing K] (f : MvPolynomial σ K) (n : ℕ) :
     (radialMap f).coeff n = homogeneousComponent n f := by
-  classical
   induction f using MvPolynomial.induction_on' with
   | add f g hf hg => simp only [map_add, Polynomial.coeff_add, hf, hg]
   | monomial e c =>
-    rw [radialMap_monomial, Polynomial.coeff_C_mul, Polynomial.coeff_X_pow]
-    rw [homogeneousComponent_of_mem (isHomogeneous_monomial c rfl)]
+    rw [radialMap_monomial, Polynomial.coeff_C_mul, Polynomial.coeff_X_pow, homogeneousComponent_of_mem (isHomogeneous_monomial c rfl)]
     split_ifs <;> simp_all
 
 end

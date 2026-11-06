@@ -24,13 +24,12 @@ Eventual generation of the affine degree filtration by a linear parameter
 forces the function-field extension to have the full Hilbert degree.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- A linear parameter generating the filtration in large degrees gives a
 function-field extension of degree exactly d. -/
-private theorem curve_parameter_full_degree_of_recurrence {K F σ : Type*}
+theorem curve_parameter_full_degree_of_recurrence {K F σ : Type*}
     [Field K] [Field F] [Fintype σ] [Algebra K F]
     [Algebra (RatFunc K) F] [IsScalarTower K (RatFunc K) F]
     (I : Ideal (MvPolynomial σ K)) [I.IsPrime]
@@ -59,11 +58,9 @@ private theorem curve_parameter_full_degree_of_recurrence {K F σ : Type*}
     (IsFractionRing.injective _ _) hcomm N hrec d hdegree
   exact ⟨hfinite, Nat.le_antisymm hupper hlower⟩
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Build the bounded second projection coordinate and a plane equation of
@@ -96,7 +93,7 @@ theorem exists_full_degree_primitive_projection {K F : Type*}
     exact RatFunc.transcendental_X ((isAlgebraic_algHom_iff
       (IsScalarTower.toAlgHom K (RatFunc K) F) (algebraMap (RatFunc K) F).injective).mp hh)
   obtain ⟨k, hk, hprim⟩ := exists_bounded_curve_primitive_element (R := RatFunc K) (F := F) I
-  let a : Fin 2 → MvPolynomial (Fin n) K := ![l, momentCoordinate K n k]
+  let a := ![l, momentCoordinate K n k]
   have ha (i : Fin 2) : (a i).totalDegree ≤ 1 := by
     fin_cases i
     · exact hl
@@ -116,5 +113,4 @@ theorem exists_full_degree_primitive_projection {K F : Type*}
     exact Ideal.Quotient.eq_zero_iff_mem.symm
   rw [hg, hker, Ideal.mem_span_singleton]
 
-end
 end CCDN

@@ -15,22 +15,19 @@ finitely many rational affine zeros. Its projective zero locus is empty,
 since every nonzero representative would produce arbitrarily many affine
 zeros by scaling. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
-open MvPolynomial
 
-private theorem finite_point_bound_of_hilbert_dimension_zero
+theorem finite_point_bound_of_hilbert_dimension_zero
     {σ : Type*} [Fintype σ] [LinearOrder σ]
     (I : Ideal (MvPolynomial σ ℚ)) (hdim : (filteredHilbertPolynomial I).natDegree = 0) :
     ∃ M : ℕ, ∀ s : Finset (σ → ℚ),
       (∀ x ∈ s, x ∈ idealZeroLocus I) → s.card ≤ M := by
-  classical
   obtain ⟨N₀, hN₀⟩ := filteredHilbertPolynomial_spec I
   have hP := Polynomial.eq_C_of_natDegree_eq_zero hdim
   refine ⟨Module.finrank ℚ (filteredCoordinateSpace I N₀), ?_⟩
   intro s hs
-  let S : Finset ℚ := s.biUnion (fun x => Finset.univ.image x)
+  let S := s.biUnion (fun x => Finset.univ.image x)
   let N := max N₀ (Fintype.card σ * (S.card - 1))
   have hdimN : Module.finrank ℚ (filteredCoordinateSpace I N) =
       Module.finrank ℚ (filteredCoordinateSpace I N₀) := by
@@ -40,8 +37,7 @@ private theorem finite_point_bound_of_hilbert_dimension_zero
     exact_mod_cast h₁.symm.trans h₂
   have hh := grid_points_filtered_lower I S (fun x : s => x.val)
     Subtype.val_injective (fun x j => by
-      apply Finset.mem_biUnion.mpr
-      exact ⟨x.val, x.property, Finset.mem_image.mpr ⟨j, Finset.mem_univ j, rfl⟩⟩)
+      exact Finset.mem_biUnion.mpr ⟨x.val, x.property, Finset.mem_image.mpr ⟨j, Finset.mem_univ j, rfl⟩⟩)
     (fun x f hf => hs x.val x.property f hf) (le_max_right _ _ : _ ≤ N)
   have hh' : s.card ≤ Module.finrank ℚ (filteredCoordinateSpace I N) := by
     simpa only [Fintype.card_coe] using hh
@@ -61,5 +57,4 @@ theorem projectiveIdealZeroLocus_eq_empty_of_hilbert_dimension_zero
     (fun s hs _ => hM s hs) x hx
   exact hh rfl
 
-end
 end CCDN

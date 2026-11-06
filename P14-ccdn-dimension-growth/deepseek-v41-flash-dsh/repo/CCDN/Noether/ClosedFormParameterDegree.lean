@@ -14,7 +14,6 @@ in the two plane coordinates does not increase the parameter degree. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open Polynomial
 
 /-- Every coefficient of the bivariate polynomial `f`, whose coefficients are polynomials in the
@@ -24,7 +23,7 @@ def BivariateParameterDegreeBound {K τ : Type*} [CommRing K]
     (f : (MvPolynomial τ K)[X][X]) (D : ℕ) : Prop :=
   ∀ i j, ((f.coeff i).coeff j).totalDegree ≤ D
 
-private lemma bivariateParameterDegreeBound_sub {K τ : Type*} [CommRing K]
+lemma bivariateParameterDegreeBound_sub {K τ : Type*} [CommRing K]
     {f g : (MvPolynomial τ K)[X][X]} {D : ℕ}
     (hf : BivariateParameterDegreeBound f D) (hg : BivariateParameterDegreeBound g D) :
     BivariateParameterDegreeBound (f - g) D := by
@@ -32,7 +31,7 @@ private lemma bivariateParameterDegreeBound_sub {K τ : Type*} [CommRing K]
   simp only [coeff_sub]
   exact (MvPolynomial.totalDegree_sub _ _).trans (max_le (hf i j) (hg i j))
 
-private lemma bivariateParameterDegreeBound_monomial_mul {K τ : Type*} [CommRing K]
+lemma bivariateParameterDegreeBound_monomial_mul {K τ : Type*} [CommRing K]
     {f : (MvPolynomial τ K)[X][X]} {D : ℕ}
     (hf : BivariateParameterDegreeBound f D) (a : K) (m n : ℕ) :
     BivariateParameterDegreeBound
@@ -46,7 +45,7 @@ private lemma bivariateParameterDegreeBound_monomial_mul {K τ : Type*} [CommRin
     · simp
   · simp
 
-private lemma bivariateParameterDegreeBound_innerDerivative {K τ : Type*} [CommRing K]
+lemma bivariateParameterDegreeBound_innerDerivative {K τ : Type*} [CommRing K]
     {f : (MvPolynomial τ K)[X][X]} {D : ℕ}
     (hf : BivariateParameterDegreeBound f D) :
     BivariateParameterDegreeBound ((bivariateCoefficientDerivative _) f) D := by
@@ -57,7 +56,7 @@ private lemma bivariateParameterDegreeBound_innerDerivative {K τ : Type*} [Comm
   exact (MvPolynomial.totalDegree_mul _ _).trans
     (by simpa only [MvPolynomial.totalDegree_C, Nat.add_zero] using hf i (j+1))
 
-private lemma bivariateParameterDegreeBound_outerDerivative {K τ : Type*} [CommRing K]
+lemma bivariateParameterDegreeBound_outerDerivative {K τ : Type*} [CommRing K]
     {f : (MvPolynomial τ K)[X][X]} {D : ℕ}
     (hf : BivariateParameterDegreeBound f D) :
     BivariateParameterDegreeBound f.derivative D := by
@@ -69,7 +68,7 @@ private lemma bivariateParameterDegreeBound_outerDerivative {K τ : Type*} [Comm
     (by simpa only [MvPolynomial.totalDegree_C, Nat.add_zero] using hf (i+1) j)
 
 /-- Every matrix entry depends linearly on the input polynomial coefficients. -/
-private theorem closedFormCoefficientMatrix_parameterDegree {K τ : Type*} [CommRing K]
+theorem closedFormCoefficientMatrix_parameterDegree {K τ : Type*} [CommRing K]
     (d : ℕ) (f : (MvPolynomial τ K)[X][X]) (D : ℕ)
     (hf : BivariateParameterDegreeBound f D) :
     ∀ i j, (closedFormCoefficientMatrix d f i j).totalDegree ≤ D := by
@@ -107,7 +106,6 @@ lemma matrix_det_parameterDegree {K τ ι : Type*} [CommRing K] [Fintype ι] [De
     (M : Matrix ι ι (MvPolynomial τ K)) (D : ℕ)
     (hM : ∀ i j, (M i j).totalDegree ≤ D) :
     M.det.totalDegree ≤ Fintype.card ι * D := by
-  classical
   rw [Matrix.det_apply]
   apply MvPolynomial.totalDegree_finsetSum_le
   intro s _
@@ -128,5 +126,4 @@ theorem closedForm_minor_parameterDegree {K τ : Type*} [CommRing K]
     matrix_det_parameterDegree ((closedFormCoefficientMatrix d f).submatrix a c) D
       (fun i j => closedFormCoefficientMatrix_parameterDegree d f D hf (a i) (c j))
 
-end
 end CCDN

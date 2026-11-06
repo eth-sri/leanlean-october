@@ -14,9 +14,8 @@ import CCDN.Hilbert.FullDimension
 full ambient Hilbert dimension. This uses the Hilbert polynomial
 of the polynomial ring, rather than an additional geometric hypothesis. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The filtered Hilbert polynomial of the zero ideal in `|σ|` variables is the binomial polynomial
@@ -59,5 +58,4 @@ theorem hilbert_dimension_lt_ambient_of_degree_gt_one
   have heqn : d = 1 := by exact_mod_cast heq.symm
   omega
 
-end
 end CCDN

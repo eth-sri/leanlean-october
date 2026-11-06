@@ -43,7 +43,7 @@ lemma exponent_degree_split {n : ℕ} (m : Fin (n + 1) →₀ ℕ) :
     Finsupp.sum_fintype _ _ (by simp)]
   rfl
 
-private lemma chartExponent_injective_on_degree {n M : ℕ} {m k : Fin (n + 1) →₀ ℕ}
+lemma chartExponent_injective_on_degree {n M : ℕ} {m k : Fin (n + 1) →₀ ℕ}
     (hm : m.sum (fun _ e => e) = M) (hk : k.sum (fun _ e => e) = M)
     (he : chartExponent m = chartExponent k) : m = k := by
   have h0 : m 0 = k 0 := by
@@ -71,7 +71,6 @@ lemma affineChart_homogeneous_coefficient {K : Type*} [CommRing K] {n M : ℕ}
     (j : Fin ((n + M).choose M)) :
     (affineChart n f).coeff (chartExponent (homogeneousMonomials n M j)) =
       f.coeff (homogeneousMonomials n M j) := by
-  classical
   have hinj : Function.Injective (fun j => chartExponent (homogeneousMonomials n M j)) := by
     intro j k he
     apply homogeneousMonomials_injective n M
@@ -94,7 +93,6 @@ lemma affineChart_injective_on_homogeneous {K : Type*} [CommRing K] {n M : ℕ}
 /-- Restriction to the affine chart `x₀ = 1` does not increase the total degree. -/
 lemma affineChart_totalDegree_le {K : Type*} [CommRing K] {n : ℕ}
     (f : MvPolynomial (Fin (n + 1)) K) : (affineChart n f).totalDegree ≤ f.totalDegree := by
-  classical
   conv_lhs => rw [f.as_sum, map_sum]
   apply totalDegree_finsetSum_le
   intro m hm
@@ -116,14 +114,14 @@ def homogenizedExponent {n : ℕ} (M : ℕ) (m : Fin n →₀ ℕ) : Fin (n + 1)
   ext i
   rfl
 
-private lemma homogenizedExponent_degree {n M : ℕ} (m : Fin n →₀ ℕ)
+lemma homogenizedExponent_degree {n M : ℕ} (m : Fin n →₀ ℕ)
     (hm : m.sum (fun _ e => e) ≤ M) :
     (homogenizedExponent M m).sum (fun _ e => e) = M := by
   rw [exponent_degree_split, chartExponent_homogenizedExponent]
   change M - m.sum (fun _ e => e) + m.sum (fun _ e => e) = M
   omega
 
-private lemma homogenizedExponent_injective {n : ℕ} (d : ℕ) :
+lemma homogenizedExponent_injective {n : ℕ} (d : ℕ) :
     Function.Injective (homogenizedExponent (n := n) d) := by
   intro m k h
   simpa only [chartExponent_homogenizedExponent] using congrArg chartExponent h
@@ -141,7 +139,6 @@ lemma scaledHomogenize_coefficient {R : Type*} [CommRing R] {n : ℕ}
     (d : ℕ) (h : R) (f : MvPolynomial (Fin n) R) (m : Fin n →₀ ℕ) :
     (scaledHomogenize d h f).coeff (homogenizedExponent d m) =
       h ^ m.sum (fun _ e => e) * f.coeff m := by
-  classical
   by_cases hm : m ∈ f.support
   · simp [scaledHomogenize, coeff_monomial, (homogenizedExponent_injective d).eq_iff, hm]
   · have hz := notMem_support_iff.mp hm
@@ -160,7 +157,6 @@ lemma scaledHomogenize_homogeneous {R : Type*} [CommRing R] {n d : ℕ}
 the affine chart `x₀ = 1`. -/
 lemma affineChart_scaledHomogenize_one {R : Type*} [CommRing R] {n : ℕ}
     (d : ℕ) (f : MvPolynomial (Fin n) R) : affineChart n (scaledHomogenize d 1 f) = f := by
-  classical
   simp only [scaledHomogenize, map_sum, affineChart_monomial, chartExponent_homogenizedExponent,
     one_pow, one_mul]
   exact f.as_sum.symm

@@ -51,7 +51,7 @@ theorem homogeneousMultiples_finrank {K σ : Type*} [Field K]
   (Submodule.equivMapOfInjective (LinearMap.mulLeft K f)
     (fun _ _ h => mul_left_cancel₀ hf h) _).finrank_eq.symm
 
-private theorem principal_homogeneous_finrank {K σ : Type*} [Field K] [Finite σ]
+theorem principal_homogeneous_finrank {K σ : Type*} [Field K] [Finite σ]
     (f : MvPolynomial σ K) {d M : ℕ} (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hM : d ≤ M) :
     Module.finrank K (homogeneousCoordinateSpace (Ideal.span {f}) M) +
       Module.finrank K (homogeneousSubmodule σ K (M - d)) =
@@ -70,7 +70,7 @@ private theorem principal_homogeneous_finrank {K σ : Type*} [Field K] [Finite �
         (Ideal.mem_span_singleton.mpr (dvd_mul_right f u))⟩
       change (f * u).IsHomogeneous M
       simpa only [Nat.add_sub_of_le hM] using hf.mul hu
-  let _ : Module.Finite K V := Module.Finite.of_fg (homogeneousSubmodule_fg σ K M)
+  let _ := Module.Finite.of_fg (homogeneousSubmodule_fg σ K M)
   have h := φ.finrank_map_add_finrank_inf_ker V
   rw [hk, homogeneousMultiples_finrank f hf0] at h
   exact h

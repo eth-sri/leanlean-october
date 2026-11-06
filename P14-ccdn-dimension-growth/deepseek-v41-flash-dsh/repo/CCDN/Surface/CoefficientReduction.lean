@@ -25,7 +25,7 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private theorem surface_section_count_le
+theorem surface_section_count_le
     (f g : CoordinatePolynomial 3) (hf : Irreducible f) (hfg : ¬ f ∣ g)
     {B : ℝ} (hB : 0 ≤ B) :
     (count (zeroLocus f ∩ zeroLocus g) B : ℝ) ≤
@@ -39,7 +39,7 @@ private theorem surface_section_count_le
     ⟨(hcurve P hP).isPrime, (hcurve P hP).height_eq, (hcurve P hP).degree⟩) hB).trans
       (mul_le_mul_of_nonneg_right hsum (by linarith))
 
-private theorem integer_surface_count_le_of_auxiliary
+theorem integer_surface_count_le_of_auxiliary
     (f g : MvPolynomial (Fin 3) ℤ)
     (hf : Irreducible (map (Int.castRingHom ℚ) f))
     (hfg : ¬ map (Int.castRingHom ℚ) f ∣ map (Int.castRingHom ℚ) g)

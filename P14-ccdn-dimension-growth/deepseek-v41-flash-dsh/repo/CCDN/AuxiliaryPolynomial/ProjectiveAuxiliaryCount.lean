@@ -17,12 +17,11 @@ import CCDN.Plane.ProjectivePlaneBezout
 /-! Projective point counts obtained from integral homogeneous
 auxiliary polynomials and projective Bézout. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private theorem projective_integer_points_card_le_auxiliary_degree {d M t : ℕ}
+theorem projective_integer_points_card_le_auxiliary_degree {d M t : ℕ}
     (f g : MvPolynomial (Fin 3) ℤ) (hf : f.IsHomogeneous d)
     (hprim : PrimitiveIntegerPolynomial f) (hir : Irreducible (map (Int.castRingHom ℚ) f))
     (z : Fin t → IntPoint 3) (hz0 : ∀ i, z i ≠ 0)
@@ -43,7 +42,7 @@ private theorem projective_integer_points_card_le_auxiliary_degree {d M t : ℕ}
     _ _ (hf.map _) hir (hg.isHomogeneous.map _) hndQ _ hinj (hzero f hf hzf)
     (hzero g hg.isHomogeneous hg.eval_eq_zero)
 
-private theorem projective_chart_rational_irreducible
+theorem projective_chart_rational_irreducible
     {K : Type*} [Field K] [CharZero K] {d : ℕ}
     (f : MvPolynomial (Fin 3) ℤ) (hf : f.IsHomogeneous d) (hf0 : f ≠ 0)
     (hdeg : (affineChart 2 f).totalDegree = d)
@@ -117,5 +116,4 @@ theorem projective_points_large_height_bound
       hR.trans (mul_le_mul_of_nonneg_left hM (by positivity))
     _ = _ := by ring
 
-end
 end CCDN

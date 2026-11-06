@@ -17,9 +17,8 @@ import CCDN.Surface.TopFormIrreducibility
 bounded integer points have a bounded projective direction and a spacing
 bound expressed using its representative-independent projective height. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Evaluating the restriction `affineLinePolynomial a v f` of `f` to the line through `a` with
@@ -37,7 +36,7 @@ lemma eval_affineLinePolynomial {K σ : Type*} [Field K]
       ring
   exact RingHom.congr_fun he f
 
-private theorem affineLinePolynomial_eq_zero_of_contained {n : ℕ}
+theorem affineLinePolynomial_eq_zero_of_contained {n : ℕ}
     (a v : RatPoint n) (f : CoordinatePolynomial n)
     (hline : rationalAffineLine a v ⊆ zeroLocus f) :
     affineLinePolynomial a v f = 0 := by
@@ -46,7 +45,7 @@ private theorem affineLinePolynomial_eq_zero_of_contained {n : ℕ}
   rw [eval_affineLinePolynomial]
   exact hline ⟨t, rfl⟩
 
-private theorem rationalAffineLine_direction_top_zero {n : ℕ}
+theorem rationalAffineLine_direction_top_zero {n : ℕ}
     (a v : RatPoint n) (f : MvPolynomial (Fin n) ℤ)
     (hline : rationalAffineLine a v ⊆ zeroLocus (map (Int.castRingHom ℚ) f)) :
     eval v (map (Int.castRingHom ℚ) (homogeneousComponent f.totalDegree f)) = 0 := by
@@ -57,7 +56,7 @@ private theorem rationalAffineLine_direction_top_zero {n : ℕ}
   rw [hpoly, Polynomial.coeff_zero, ← map_homogeneousComponent] at hc
   exact hc.symm
 
-private lemma rationalAffineLine_eq_projective_rep {n : ℕ}
+lemma rationalAffineLine_eq_projective_rep {n : ℕ}
     (a v : RatPoint (n + 1)) (hv : v ≠ 0) (p : ProjectivePoint n)
     (hp : Projectivization.mk ℚ v hv = p) :
     rationalAffineLine a v = rationalAffineLine a p.rep := by
@@ -105,5 +104,4 @@ theorem surface_line_projective_direction {n : ℕ}
       _ ≤ 2 * B / p.mulHeight + 2 * B / p.mulHeight := by linarith
       _ = _ := by ring
 
-end
 end CCDN

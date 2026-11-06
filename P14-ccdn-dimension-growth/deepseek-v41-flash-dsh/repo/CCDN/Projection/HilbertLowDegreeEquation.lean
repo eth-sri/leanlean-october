@@ -13,9 +13,8 @@ import CCDN.Projection.HilbertProjectionDegree
 contains a nonzero equation of degree at most its Hilbert multiplicity.
 The independent coordinate subtuple and the equation are both constructed. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A prime ideal of projective dimension `n` and degree `d` in more than `n + 1` variables contains
@@ -76,5 +75,4 @@ theorem exists_mem_ideal_degree_le_multiplicity
     exact Ideal.Quotient.eq_zero_iff_mem.mp hmem
   · exact (aeval_totalDegree_le a ha f).trans (by simpa using hfd)
 
-end
 end CCDN

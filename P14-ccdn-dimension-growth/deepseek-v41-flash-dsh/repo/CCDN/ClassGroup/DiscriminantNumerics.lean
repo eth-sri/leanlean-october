@@ -10,16 +10,16 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 /-! The exact discriminant exponent obtained from a square-root norm-curve
 count and the `n−1` dimensional translation-class count. -/
 
-@[expose] public section
+public section
 namespace CCDN
 
-private lemma classGroup_balanced_radius_power_identity {D : ℝ} (hD : 0 < D)
+lemma classGroup_balanced_radius_power_identity {D : ℝ} (hD : 0 < D)
     {n : ℕ} (hn : 0 < n) :
     (9 * D ^ (1 / (n : ℝ))) ^ (n - 1) *
         Real.sqrt (9 * D ^ (1 / (n : ℝ))) =
       (3 * (9 : ℝ) ^ (n - 1)) *
         D ^ (1 / 2 - 1 / (2 * (n : ℝ))) * Real.sqrt D := by
-  have hn0 : (n : ℝ) ≠ 0 := by exact_mod_cast hn.ne'
+  have hn0 := by exact_mod_cast hn.ne'
   have hpred : ((n - 1 : ℕ) : ℝ) = (n : ℝ) - 1 := by
     rw [Nat.cast_sub (by omega : 1 ≤ n), Nat.cast_one]
   have hsqrt : Real.sqrt (9 * D ^ (1 / (n : ℝ))) =

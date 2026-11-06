@@ -23,14 +23,13 @@ The singular points of an irreducible hypersurface satisfy a
 coefficient-uniform codimension-two finite-field bound.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A nonzero partial derivative cuts the irreducible hypersurface
 properly. Fixed-degree finite-field interpolation bounds all its singular points. -/
-private theorem hypersurface_singular_points_card_le {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem hypersurface_singular_points_card_le {ι : Type*} [Fintype ι] [DecidableEq ι]
     {n p : ℕ} [Fact p.Prime] (f : MvPolynomial (Fin (n + 2)) (ZMod p))
     (hf : Irreducible f) (hpos : 0 < f.totalDegree) (hchar : f.totalDegree < p)
     (z : ι → Fin (n + 2) → ZMod p) (hz : Function.Injective z)
@@ -49,14 +48,12 @@ private theorem hypersurface_singular_points_card_le {ι : Type*} [Fintype ι] [
   exact h.trans (Nat.mul_le_mul_right (p ^ n)
     (Nat.mul_le_mul_left ((n + 4) ^ n * f.totalDegree) hdeg))
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma hypersurfaceResidueChart_normalized {n p : ℕ} [Fact p.Prime]
+lemma hypersurfaceResidueChart_normalized {n p : ℕ} [Fact p.Prime]
     (r : ProjectiveResidueSpace (n + 2) p) :
     (Fin.cons 1 (fun j => (hypersurfaceResidueChartLift r j : ZMod p))) ∘
       Equiv.swap 0 (hypersurfaceResiduePivot r) =
@@ -72,7 +69,7 @@ private lemma hypersurfaceResidueChart_normalized {n p : ℕ} [Fact p.Prime]
   funext j
   simp
 
-private theorem hypersurfaceResidueChart_injective_of_pivot_eq {n p : ℕ} [Fact p.Prime]
+theorem hypersurfaceResidueChart_injective_of_pivot_eq {n p : ℕ} [Fact p.Prime]
     {r t : ProjectiveResidueSpace (n + 2) p}
     (hk : hypersurfaceResiduePivot r = hypersurfaceResiduePivot t)
     (ha : (fun j => (hypersurfaceResidueChartLift r j : ZMod p)) =
@@ -92,7 +89,7 @@ private theorem hypersurfaceResidueChart_injective_of_pivot_eq {n p : ℕ} [Fact
       exact ⟨_, hs⟩
     _ = t := t.mk_rep
 
-private theorem projectiveHypersurfaceChart_irreducible_degree {n p d : ℕ} [Fact p.Prime]
+theorem projectiveHypersurfaceChart_irreducible_degree {n p d : ℕ} [Fact p.Prime]
     (f : MvPolynomial (Fin (n + 3)) ℤ) (hf : f.IsHomogeneous d) (hd : 2 ≤ d)
     (hir : Irreducible (map (Int.castRingHom (ZMod p)) f)) (k : Fin (n + 3)) :
     Irreducible (map (Int.castRingHom (ZMod p)) (projectiveHypersurfaceChart k f)) ∧
@@ -110,7 +107,7 @@ private theorem projectiveHypersurfaceChart_irreducible_degree {n p d : ℕ} [Fa
   exact ⟨affineChart_irreducible_of_not_variable_dvd q hq hqi hX,
     affineChart_degree_of_not_variable_dvd q hq hX⟩
 
-private lemma projectiveHypersurfaceResidueMultiplicity_singular {n p d : ℕ} [Fact p.Prime]
+lemma projectiveHypersurfaceResidueMultiplicity_singular {n p d : ℕ} [Fact p.Prime]
     (f : MvPolynomial (Fin (n + 3)) ℤ) (hf : f.IsHomogeneous d)
     (hf0 : map (Int.castRingHom (ZMod p)) f ≠ 0) (r : ProjectiveHypersurfaceResidue f p)
     (hμ : 2 ≤ projectiveHypersurfaceResidueMultiplicity f hf hf0 r) :
@@ -125,7 +122,7 @@ private lemma projectiveHypersurfaceResidueMultiplicity_singular {n p d : ℕ} [
 
 /-- Count singular classes in their n+3 possible charts. The pivots and
 multiplicities here are those of the reduced projective hypersurface. -/
-private theorem projective_hypersurface_singular_residue_card_le {n p d : ℕ} [Fact p.Prime]
+theorem projective_hypersurface_singular_residue_card_le {n p d : ℕ} [Fact p.Prime]
     (f : MvPolynomial (Fin (n + 3)) ℤ) (hf : f.IsHomogeneous d) (hd : 2 ≤ d)
     (hir : Irreducible (map (Int.castRingHom (ZMod p)) f)) (hchar : d < p) :
     (Finset.univ.filter fun r : ProjectiveHypersurfaceResidue f p =>
@@ -169,7 +166,7 @@ private theorem projective_hypersurface_singular_residue_card_le {n p d : ℕ} [
 
 /-- Singular classes contribute only a lower-order correction to the
 projective point count; the leading term is not multiplied by the degree. -/
-private theorem projectiveHypersurfaceTotalMultiplicity_le_card_add_correction {n p d : ℕ}
+theorem projectiveHypersurfaceTotalMultiplicity_le_card_add_correction {n p d : ℕ}
     [Fact p.Prime] (f : MvPolynomial (Fin (n + 3)) ℤ) (hf : f.IsHomogeneous d)
     (hd : 2 ≤ d) (hir : Irreducible (map (Int.castRingHom (ZMod p)) f)) (hchar : d < p) :
     projectiveHypersurfaceTotalMultiplicity f hf hir.ne_zero ≤
@@ -224,5 +221,4 @@ theorem projectiveHypersurfaceTotalMultiplicity_le_card_add_sqrt_error {n p d : 
   convert hmul using 1
   ring
 
-end
 end CCDN

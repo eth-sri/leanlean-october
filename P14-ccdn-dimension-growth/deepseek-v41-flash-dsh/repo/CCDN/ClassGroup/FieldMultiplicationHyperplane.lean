@@ -13,13 +13,12 @@ a number-field lattice. Multiplication preserving a rational hyperplane
 must be multiplication by a scalar. The proof uses linear functionals and
 works over an arbitrary field extension. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 variable {F K : Type*} [Field F] [Field K] [Algebra F K]
 
-private theorem scalar_of_preserves_hyperplane (ℓ : K →ₗ[F] F) (hℓ : ℓ ≠ 0)
+theorem scalar_of_preserves_hyperplane (ℓ : K →ₗ[F] F) (hℓ : ℓ ≠ 0)
     (a : K) (ha : ∀ b : K, ℓ b = 0 → ℓ (a * b) = 0) :
     ∃ c : F, a = algebraMap F K c := by
   obtain ⟨z, hz⟩ : ∃ z : K, ℓ z ≠ 0 := by
@@ -44,7 +43,7 @@ private theorem scalar_of_preserves_hyperplane (ℓ : K →ₗ[F] F) (hℓ : ℓ
   rw [mul_inv_cancel_left₀ (sub_ne_zero.mpr h), hu] at hh
   exact one_ne_zero hh
 
-private theorem exists_kernel_multiplication_witness
+theorem exists_kernel_multiplication_witness
     (ℓ : K →ₗ[F] F) (hℓ : ℓ ≠ 0)
     (a : K) (ha : a ∉ Set.range (algebraMap F K)) :
     ∃ b : K, ℓ b = 0 ∧ ℓ (a * b) ≠ 0 := by
@@ -74,5 +73,4 @@ theorem multiplication_pairing_on_hyperplane_complement
   · simpa only [mul_sub, mul_smul_comm, mul_one, map_sub, map_smul,
       hℓa, smul_zero, sub_zero] using hab
 
-end
 end CCDN

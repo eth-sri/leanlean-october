@@ -14,12 +14,11 @@ import Mathlib.Algebra.MvPolynomial.NoZeroDivisors
 /-! Primitive models preserve the equation's degree and homogeneous grading,
 and integer content removal does not increase coefficient height. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma integer_scalar_factor_ne_zero {σ : Type*} {f g : MvPolynomial σ ℤ} {c : ℤ}
+lemma integer_scalar_factor_ne_zero {σ : Type*} {f g : MvPolynomial σ ℤ} {c : ℤ}
     (hf : f ≠ 0) (he : f = C c * g) : g ≠ 0 := by
   intro hg
   apply hf
@@ -91,5 +90,4 @@ lemma rational_scalar_model_zero_iff {σ : Type*} {f : MvPolynomial σ ℚ}
   rw [he, eval_mul, eval_C]
   exact mul_eq_zero_iff_left ha
 
-end
 end CCDN

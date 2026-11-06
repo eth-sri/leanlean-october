@@ -28,14 +28,14 @@ namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private def homogeneousPointEvaluation {K L σ ι : Type*} [Field K] [Field L]
+def homogeneousPointEvaluation {K L σ ι : Type*} [Field K] [Field L]
     [Algebra K L] (z : ι → σ → L) (m : ℕ) :
     homogeneousSubmodule σ K m →ₗ[K] (ι → L) :=
   LinearMap.pi (fun i => (aeval (z i)).toLinearMap.comp (homogeneousSubmodule σ K m).subtype)
 
 /-- The L-span of evaluations of K-polynomials is controlled by the
 infinity quotient. -/
-private theorem infinity_evaluation_span_finrank_le {K L σ ι : Type*} [Field K] [Field L]
+theorem infinity_evaluation_span_finrank_le {K L σ ι : Type*} [Field K] [Field L]
     [Algebra K L] [Fintype σ] (I : Ideal (MvPolynomial σ K))
     (z : ι → σ → L) (hz : ∀ i, z i ∈ MvPolynomial.zeroLocus L (leadingInfinityIdeal I))
     (m : ℕ) :
@@ -65,7 +65,7 @@ private theorem infinity_evaluation_span_finrank_le {K L σ ι : Type*} [Field K
 /-- In stable degrees `m ≥ N`, where the filtered coordinate spaces have dimension `d * m + b`,
 the `L`-span of the value vectors `(h (z i))_i` of the homogeneous polynomials `h` of degree
 `m + 1` at points `z i` of the cone at infinity has dimension at most `d`. -/
-private theorem infinity_evaluation_span_finrank_le_degree {K L σ ι : Type*} [Field K] [Field L]
+theorem infinity_evaluation_span_finrank_le_degree {K L σ ι : Type*} [Field K] [Field L]
     [Algebra K L] [Fintype σ] (I : Ideal (MvPolynomial σ K))
     (z : ι → σ → L) (hz : ∀ i, z i ∈ MvPolynomial.zeroLocus L (leadingInfinityIdeal I))
     {d N : ℕ} {b : ℤ} (hdegree : ∀ m ≥ N,
@@ -80,10 +80,9 @@ end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma exists_homogeneous_chart_delta {L σ ι : Type*} [Field L] [Fintype ι] [DecidableEq ι]
+lemma exists_homogeneous_chart_delta {L σ ι : Type*} [Field L] [Fintype ι] [DecidableEq ι]
     (z : ι → σ → L) (hz : Function.Injective z) (j : σ) (hj : ∀ i, z i j = 1)
     (m : ℕ) (hm : Fintype.card ι ≤ m) (i : ι) :
     ∃ p : MvPolynomial σ L, p.IsHomogeneous m ∧
@@ -125,14 +124,12 @@ private lemma exists_homogeneous_chart_delta {L σ ι : Type*} [Field L] [Fintyp
         Finset.prod_eq_zero (Finset.mem_univ k) (hlk k hik)
       simp [p, hik, hh]
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma homogeneous_extension_evaluation_mem {K L σ ι : Type*} [Field K] [Field L]
+lemma homogeneous_extension_evaluation_mem {K L σ ι : Type*} [Field K] [Field L]
     [Algebra K L] (z : ι → σ → L) (m : ℕ) (p : MvPolynomial σ L)
     (hp : p.IsHomogeneous m) :
     (fun i => MvPolynomial.eval (z i) p) ∈
@@ -160,14 +157,12 @@ private lemma homogeneous_extension_evaluation_mem {K L σ ι : Type*} [Field K]
   rw [hsum]
   exact W.sum_mem hmono
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma homogeneous_chart_evaluation_span_eq_top {K L σ ι : Type*} [Field K] [Field L]
+lemma homogeneous_chart_evaluation_span_eq_top {K L σ ι : Type*} [Field K] [Field L]
     [Algebra K L] [Fintype ι] (z : ι → σ → L) (hz : Function.Injective z)
     (j : σ) (hj : ∀ i, z i j = 1) (m : ℕ) (hm : Fintype.card ι ≤ m) :
     Submodule.span L (Set.range (homogeneousPointEvaluation (K := K) z m)) = ⊤ := by
@@ -188,7 +183,7 @@ private lemma homogeneous_chart_evaluation_span_eq_top {K L σ ι : Type*} [Fiel
 
 /-- Every finite family of distinct normalized infinity points has size at
 most the original affine Hilbert degree, over any extension field. -/
-private theorem infinity_chart_card_le_degree {K L σ ι : Type*} [Field K] [Field L]
+theorem infinity_chart_card_le_degree {K L σ ι : Type*} [Field K] [Field L]
     [Algebra K L] [Fintype σ] [Fintype ι]
     (I : Ideal (MvPolynomial σ K)) (d : ℕ)
     (hdegree : HasFilteredCurveDegree I d)
@@ -225,5 +220,4 @@ theorem exists_finite_infinity_chart {K L σ : Type*} [Field K] [Field L]
     (fun z => (hT.mem_toFinset.mp z.property).2)
   simpa only [Fintype.card_coe] using hb
 
-end
 end CCDN

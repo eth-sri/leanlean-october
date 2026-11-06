@@ -24,10 +24,9 @@ the full outer degree.
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma universalPlaneMap_map {K L σ : Type*} [CommRing K] [CommRing L]
+lemma universalPlaneMap_map {K L σ : Type*} [CommRing K] [CommRing L]
     (φ : K →+* L) (f : MvPolynomial σ K) :
     universalPlaneMap L σ (MvPolynomial.map φ f) =
       MvPolynomial.map (MvPolynomial.map φ) (universalPlaneMap K σ f) := by
@@ -78,14 +77,13 @@ theorem exists_universalPlane_minor_degree
   · exact closedForm_minor_parameterDegree _ _ _ _
       (universalPlanePolynomial_coefficient_degree f) rows cols
 
-end
 end CCDN
 
 namespace CCDN
 noncomputable section
 open MvPolynomial
 
-private lemma universalPlanePolynomial_specialize_axis {K σ : Type*} [CommRing K]
+lemma universalPlanePolynomial_specialize_axis {K σ : Type*} [CommRing K]
     (a b c : σ → K) (f : MvPolynomial σ K) :
     Polynomial.map (Polynomial.evalRingHom 0)
       (bivariateMap (planeParameterEval (RingHom.id K) a b c) (universalPlanePolynomial f)) =
@@ -108,7 +106,7 @@ def universalPlaneLeading {K σ : Type*} [CommRing K] (f : MvPolynomial σ K) :
     MvPolynomial (PlaneParameters σ) K :=
   ((universalPlanePolynomial f).coeff f.totalDegree).coeff 0
 
-private lemma universalPlaneLeading_specialize {K σ : Type*} [CommRing K]
+lemma universalPlaneLeading_specialize {K σ : Type*} [CommRing K]
     (a b c : σ → K) (f : MvPolynomial σ K) :
     planeParameterEval (RingHom.id K) a b c (universalPlaneLeading f) =
       eval b (homogeneousComponent f.totalDegree f) := by
@@ -120,7 +118,7 @@ private lemma universalPlaneLeading_specialize {K σ : Type*} [CommRing K]
   rw [← Polynomial.coeff_zero_eq_eval_zero, bivariateMap_coeff] at h
   exact h
 
-private lemma universalPlaneLeading_map {K L σ : Type*} [Field K] [Field L]
+lemma universalPlaneLeading_map {K L σ : Type*} [Field K] [Field L]
     (φ : K →+* L) (f : MvPolynomial σ K) :
     universalPlaneLeading (MvPolynomial.map φ f) =
       MvPolynomial.map φ (universalPlaneLeading f) := by

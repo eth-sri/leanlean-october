@@ -53,7 +53,7 @@ lemma homogeneous_evaluation_mulVec {K : Type*} [Field K] {n M t : ℕ}
 /-- For finitely many zeros of a nonzero homogeneous polynomial `f` of degree `d ≤ M`, the rank
 of their degree-`M` evaluation matrix plus the dimension of the degree-`M` multiples of `f` is at
 most the number of degree-`M` monomials. -/
-private theorem homogeneous_evaluation_rank_bound {K : Type*} [Field K] {n d M t : ℕ}
+theorem homogeneous_evaluation_rank_bound {K : Type*} [Field K] {n d M t : ℕ}
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hdM : d ≤ M)
     (points : Fin t → (Fin (n + 1) → K)) (hzero : ∀ i, eval (points i) f = 0) :
     (homogeneousEvaluationMatrix K n M points).rank + (n + (M - d)).choose (M - d) ≤
@@ -97,7 +97,7 @@ private theorem homogeneous_evaluation_rank_bound {K : Type*} [Field K] {n d M t
 /-- For finitely many zeros of a nonzero homogeneous polynomial `f` of degree `d ≤ M` with
 linearly independent degree-`M` evaluation rows, the number of points plus the dimension of the
 degree-`M` multiples of `f` is at most the number of degree-`M` monomials. -/
-private theorem homogeneous_independent_rows_hilbert_bound {K : Type*} [Field K] {n d M t : ℕ}
+theorem homogeneous_independent_rows_hilbert_bound {K : Type*} [Field K] {n d M t : ℕ}
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hdM : d ≤ M)
     (points : Fin t → (Fin (n + 1) → K)) (hzero : ∀ i, eval (points i) f = 0)
     (hli : LinearIndependent K (homogeneousEvaluationMatrix K n M points).row) :

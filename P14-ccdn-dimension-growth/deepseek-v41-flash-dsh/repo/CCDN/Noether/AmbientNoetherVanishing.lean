@@ -15,12 +15,11 @@ import Mathlib.Algebra.MvPolynomial.Nilpotent
 /-! The constructed ambient coefficient forms vanish on every geometrically
 reducible homogeneous equation, in every characteristic. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma universalPlanePolynomial_mul {R σ : Type*} [CommRing R]
+lemma universalPlanePolynomial_mul {R σ : Type*} [CommRing R]
     (g h : MvPolynomial σ R) :
     universalPlanePolynomial (g * h) = universalPlanePolynomial g * universalPlanePolynomial h := by
   simp only [universalPlanePolynomial, map_mul]
@@ -49,7 +48,7 @@ theorem ambientEuler_minor_eq_zero_of_product {R σ : Type*} [CommRing R]
 
 /-- Reducibility forces the entire parameter determinant to vanish,
 including the zero homogeneous equation. -/
-private theorem ambientEuler_minor_eq_zero_of_not_irreducible {K σ : Type*} [Field K]
+theorem ambientEuler_minor_eq_zero_of_not_irreducible {K σ : Type*} [Field K]
     (k : ℕ) (f : MvPolynomial σ K) (hf : f.IsHomogeneous (k + 2))
     (hred : ¬Irreducible f)
     (rows : Fin ((k + 2) ^ 2 - 1) → ℕ × ℕ)
@@ -61,13 +60,13 @@ private theorem ambientEuler_minor_eq_zero_of_not_irreducible {K σ : Type*} [Fi
     simpa only [zero_mul] using ambientEuler_minor_eq_zero_of_product
       (σ := σ) k 1 (k + 1) (by omega) (by omega) (by omega)
       (0 : MvPolynomial σ K) 0 (by simp) (by simp) rows cols
-  have hd : f.totalDegree = k + 2 := hf.totalDegree hf0
+  have hd := hf.totalDegree hf0
   have hfu : ¬IsUnit f := by
     intro hu
     have hh := (isUnit_iff_totalDegree_of_isReduced.mp hu).2
     omega
   obtain ⟨g, h, hgu, hhu, he⟩ := (irreducible_or_factor hfu).resolve_left hred
-  have hgh0 : g * h ≠ 0 := he ▸ hf0
+  have hgh0 := he ▸ hf0
   have hg0 := (mul_ne_zero_iff.mp hgh0).1
   have hh0 := (mul_ne_zero_iff.mp hgh0).2
   have hgpos := totalDegree_pos_of_ne_zero_of_not_isUnit hg0 hgu
@@ -109,5 +108,4 @@ theorem ambientNoetherForm_eq_zero_of_not_absolutely_irreducible
     ← coeff_map, ambientEuler_minor_map, hz]
   rfl
 
-end
 end CCDN

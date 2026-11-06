@@ -227,7 +227,7 @@ theorem hasPrekopaLeindler_innerProductSpace {E : Type*} [NormedAddCommGroup E]
   exact HasPrekopaLeindler.of_measurePreserving f.toLinearEquiv f.measurePreserving
     f.symm.continuous.measurable (hasPrekopaLeindler_euclideanSpace _)
 
-private theorem hasSliceBound_prodBallPi_aux.{u} {κ : Type*} [DecidableEq κ] [Countable κ]
+theorem hasSliceBound_prodBallPi_aux.{u} {κ : Type*} [DecidableEq κ] [Countable κ]
     (n : ℕ) :
     ∀ (α : Type u) [Fintype α] (blk : α → κ),
       Fintype.card α ≤ n →

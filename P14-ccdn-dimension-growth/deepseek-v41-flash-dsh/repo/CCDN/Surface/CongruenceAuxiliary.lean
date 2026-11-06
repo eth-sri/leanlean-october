@@ -24,7 +24,6 @@ open MvPolynomial Finset
 coordinatewise, for every `p ∈ P`. -/
 def affineCongruencePoints {n : ℕ} (f : MvPolynomial (Fin n) ℤ)
     (B : ℝ) (P : Finset ℕ) (a : ℕ → IntPoint n) : Finset (IntPoint n) := by
-  classical
   exact (integerBox n B).filter (fun x =>
     eval x f = 0 ∧ ∀ p ∈ P, ∀ j, (p : ℤ) ∣ x j - a p j)
 
@@ -35,7 +34,6 @@ lemma mem_affineCongruencePoints {n : ℕ} {f : MvPolynomial (Fin n) ℤ}
     x ∈ affineCongruencePoints f B P a ↔
       InBox x B ∧ eval x f = 0 ∧
         ∀ p ∈ P, ∀ j, (p : ℤ) ∣ x j - a p j := by
-  classical
   simp only [affineCongruencePoints, mem_filter, mem_integerBox]
 
 /-- The number of standard monomials of degree at most `M`, for the degree-lexicographic order,
@@ -92,7 +90,6 @@ theorem exists_surface_congruence_auxiliary_of_gap
     ∃ g : MvPolynomial (Fin 3) ℤ, g ≠ 0 ∧
       ¬ map (Int.castRingHom ℚ) f ∣ map (Int.castRingHom ℚ) g ∧
       g.totalDegree ≤ M ∧ ∀ x ∈ affineCongruencePoints f B P a, eval x g = 0 := by
-  classical
   let fQ := map (Int.castRingHom ℚ) f
   let S := standardMonomialPrefix (Ideal.span {fQ}) MonomialOrder.degLex M
   let e := (Fintype.equivFin S).symm

@@ -58,7 +58,7 @@ lemma projectiveIdealZeroLocus_rep {n : ℕ}
     x.rep ∈ idealZeroLocus I :=
   hx x.rep x.rep_nonzero x.mk_rep
 
-private lemma homogeneousCoordinateSpace_mul_mem {n M m : ℕ}
+lemma homogeneousCoordinateSpace_mul_mem {n M m : ℕ}
     (I : Ideal (MvPolynomial (Fin (n + 1)) K))
     {f : MvPolynomial (Fin (n + 1)) K} (hf : f.IsHomogeneous m)
     {a : MvPolynomial (Fin (n + 1)) K ⧸ I}
@@ -69,7 +69,7 @@ private lemma homogeneousCoordinateSpace_mul_mem {n M m : ℕ}
 
 /-- Distinct points on a proper homogeneous section force a drop in the graded
 Hilbert function at least as large as their number. -/
-private theorem projective_section_hilbert_drop {n m M : ℕ} {ι : Type*}
+theorem projective_section_hilbert_drop {n m M : ℕ} {ι : Type*}
     [Fintype ι] [DecidableEq ι]
     (I : Ideal (MvPolynomial (Fin (n + 1)) K)) [I.IsPrime]
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f.IsHomogeneous m) (hfI : f ∉ I)
@@ -77,7 +77,6 @@ private theorem projective_section_hilbert_drop {n m M : ℕ} {ι : Type*}
     (hzI : ∀ i, z i ∈ projectiveIdealZeroLocus I)
     (hzf : ∀ i, eval (z i).rep f = 0) (hM : Fintype.card ι - 1 ≤ m + M) :
     Fintype.card ι + projectiveHilbertFunction I M ≤ projectiveHilbertFunction I (m + M) := by
-  classical
   let A := MvPolynomial (Fin (n + 1)) K ⧸ I
   let q := Ideal.Quotient.mkₐ K I
   let ψ : ι → A →ₐ[K] K := fun i =>
@@ -102,8 +101,7 @@ private theorem projective_section_hilbert_drop {n m M : ℕ} {ι : Type*}
     ext i
     change ψ i (q f * b) = 0
     rw [map_mul, hψ, hzf, zero_mul]
-  have hf0 : q f ≠ 0 := by
-    exact fun he => hfI (Ideal.Quotient.eq_zero_iff_mem.mp he)
+  have hf0 := fun he => hfI (Ideal.Quotient.eq_zero_iff_mem.mp he)
   have hUdim : Module.finrank K U = projectiveHilbertFunction I M :=
     (Submodule.equivMapOfInjective (LinearMap.mulLeft K (q f))
       (fun a b h => mul_left_cancel₀ hf0 h) W).finrank_eq.symm

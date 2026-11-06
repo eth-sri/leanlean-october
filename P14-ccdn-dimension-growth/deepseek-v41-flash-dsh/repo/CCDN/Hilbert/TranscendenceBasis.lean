@@ -24,10 +24,9 @@ functions, in arbitrary Hilbert dimension.
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private def coordinateParameterField {K F σ : Type*} [Field K] [Field F] [Algebra K F]
+def coordinateParameterField {K F σ : Type*} [Field K] [Field F] [Algebra K F]
     (I : Ideal (MvPolynomial σ K)) [Algebra (MvPolynomial σ K ⧸ I) F]
     (U : Set σ) : IntermediateField K F :=
   IntermediateField.adjoin K (Set.range (fun i : U =>
@@ -35,7 +34,7 @@ private def coordinateParameterField {K F σ : Type*} [Field K] [Field F] [Algeb
 
 /-- There is a subset of coordinate functions whose generated field
 has finite extension degree at most the Hilbert multiplicity. -/
-private theorem exists_finite_coordinate_parameter_field
+theorem exists_finite_coordinate_parameter_field
     {K F σ : Type*} [Field K] [Field F] [Fintype σ] [LinearOrder σ] [Algebra K F]
     (I : Ideal (MvPolynomial σ K)) [I.IsPrime]
     [Algebra (MvPolynomial σ K ⧸ I) F] [IsScalarTower K (MvPolynomial σ K ⧸ I) F]
@@ -66,11 +65,9 @@ private theorem exists_finite_coordinate_parameter_field
   exact hilbert_functionField_finite_rank_le I d ⟨hdim, by simpa only [← hdim] using hdegree⟩
     (fun i : U => X i.val) (fun _ => by simp) u hu (fun _ => rfl)
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- For a prime ideal `I`, some set of coordinate functions, of size the Hilbert dimension of `I`,
@@ -141,5 +138,4 @@ theorem integral_embedding_hilbert_dimension_eq
   rw [Nat.card_eq_fintype_card] at hU
   exact hU.symm.trans hJ.symm
 
-end
 end CCDN

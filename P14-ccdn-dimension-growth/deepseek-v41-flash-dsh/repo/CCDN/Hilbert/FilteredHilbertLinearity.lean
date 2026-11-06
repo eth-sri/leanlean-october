@@ -21,15 +21,14 @@ Its sufficiently high degree shells therefore have constant cardinality.
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 
 /-- Full coordinate rays with uniquely normalized base points. -/
-private def fullExponentRays {σ : Type*} [Fintype σ] [DecidableEq σ]
+def fullExponentRays {σ : Type*} [Fintype σ] [DecidableEq σ]
     (S : Set (σ →₀ ℕ)) (B : ℕ) :=
   {p : σ × (σ → Fin B) // (p.2 p.1).val = 0 ∧
     ∀ n, exponentRay B p.1 p.2 n ∈ S}
 
-private lemma exponentRay_degree {σ : Type*} [Fintype σ] [DecidableEq σ]
+lemma exponentRay_degree {σ : Type*} [Fintype σ] [DecidableEq σ]
     (B : ℕ) (j : σ) (b : σ → Fin B) (n : ℕ) (hb : (b j).val = 0) :
     Finsupp.degree (exponentRay B j b n) = n + ∑ k, (b k).val := by
   have h := Finsupp.sum_update_add
@@ -38,7 +37,7 @@ private lemma exponentRay_degree {σ : Type*} [Fintype σ] [DecidableEq σ]
   change (exponentRay B j b n).sum (fun _ v => v) = _
   simpa [exponentRay, Finsupp.sum_fintype, hb, add_comm] using h
 
-private lemma rayBase_weight_le {σ : Type*} [Fintype σ] {B : ℕ} (b : σ → Fin B) :
+lemma rayBase_weight_le {σ : Type*} [Fintype σ] {B : ℕ} (b : σ → Fin B) :
     (∑ k, (b k).val) ≤ Fintype.card σ * B := by
   calc
     _ ≤ ∑ _ : σ, B := Finset.sum_le_sum (fun k _ => (b k).isLt.le)
@@ -46,13 +45,12 @@ private lemma rayBase_weight_le {σ : Type*} [Fintype σ] {B : ℕ} (b : σ → 
 
 /-- A lower monomial set confined to coordinate rays has eventually constant
 shell cardinalities. -/
-private theorem lowerSet_shell_card_eventually_constant {σ : Type*} [Fintype σ] [DecidableEq σ]
+theorem lowerSet_shell_card_eventually_constant {σ : Type*} [Fintype σ] [DecidableEq σ]
     (S : Set (σ →₀ ℕ)) (hS : IsLowerSet S) (B : ℕ) (hB : 0 < B)
     (hunique : ∀ a ∈ S, ∀ i j, B ≤ a i → B ≤ a j → i = j) :
     ∃ N, ∀ n ≥ N,
       Nat.card {a : σ →₀ ℕ // a ∈ S ∧ Finsupp.degree a = n} =
         Nat.card (fullExponentRays S B) := by
-  classical
   obtain ⟨M, hMB, hM⟩ := lowerSet_rays_eventually_full S hS B
   refine ⟨M + Fintype.card σ * B, ?_⟩
   intro n hn
@@ -126,13 +124,12 @@ private theorem lowerSet_shell_card_eventually_constant {σ : Type*} [Fintype σ
   exact (Nat.card_congr (Equiv.ofBijective φ ⟨hinj, hsurj⟩)).symm
 
 /-- Splitting off the top degree shell gives the Hilbert-function increment. -/
-private theorem standard_card_succ {K σ : Type*} [Field K] [Fintype σ]
+theorem standard_card_succ {K σ : Type*} [Field K] [Fintype σ]
     [LinearOrder σ] (I : Ideal (MvPolynomial σ K)) (N : ℕ) :
     Module.finrank K (filteredCoordinateSpace I (N + 1)) =
       Module.finrank K (filteredCoordinateSpace I N) +
       Nat.card {a : σ →₀ ℕ // a ∈ Ideal.standardExponents I MonomialOrder.degLex ∧
         Finsupp.degree a = N + 1} := by
-  classical
   let S := Ideal.standardExponents I MonomialOrder.degLex
   let A := Ideal.boundedStandardExponents I MonomialOrder.degLex (N + 1)
   let B := Ideal.boundedStandardExponents I MonomialOrder.degLex N
@@ -171,7 +168,6 @@ theorem filteredCoordinateSpace_eventually_linear {K σ : Type*} [Field K] [Fint
     [LinearOrder σ] (I : Ideal (MvPolynomial σ K)) (C : ℕ)
     (hbound : ∀ N ≥ 14, Module.finrank K (filteredCoordinateSpace I N) ≤ C * (N + 2)) :
     ∃ d ≤ C, HasFilteredCurveDegree I d := by
-  classical
   let B := 2 * C + 14
   obtain ⟨N, hN⟩ := lowerSet_shell_card_eventually_constant
     (Ideal.standardExponents I MonomialOrder.degLex)
@@ -211,7 +207,6 @@ theorem transcendental_coordinate_filtered_lower {K σ : Type*} [Field K] [Finty
     (I : Ideal (MvPolynomial σ K)) {j : σ}
     (hj : Transcendental K ((Ideal.Quotient.mk I) (MvPolynomial.X j))) (N : ℕ) :
     N + 1 ≤ Module.finrank K (filteredCoordinateSpace I N) := by
-  classical
   have hlin := transcendental_powers_independent
     ((Ideal.Quotient.mk I) (MvPolynomial.X j)) hj (N + 1)
   have hmem (k : Fin (N + 1)) :
@@ -226,5 +221,4 @@ theorem transcendental_coordinate_filtered_lower {K σ : Type*} [Field K] [Finty
     LinearIndependent.of_comp (filteredCoordinateSpace I N).subtype hlin
   simpa using hv.fintype_card_le_finrank
 
-end
 end CCDN

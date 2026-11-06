@@ -19,21 +19,20 @@ import Mathlib.FieldTheory.PrimitiveElement
  degree. Combined with the filtered upper bound, a parameter of full field
  degree forces a linear projection to preserve the affine Hilbert degree. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A plane relation bounds the algebraic degree of either coordinate over a
 field containing a transcendental linear parameter. -/
-private theorem minpoly_degree_le_plane_relation {K R F : Type*}
+theorem minpoly_degree_le_plane_relation {K R F : Type*}
     [Field K] [Field R] [Field F] [Algebra K R] [Algebra R F] [Algebra K F]
     [IsScalarTower K R F] (ψ : MvPolynomial (Fin 2) K →ₐ[K] F)
     (f : MvPolynomial (Fin 2) K) (hf : f ≠ 0) (hzero : ψ f = 0)
     (j k : Fin 2) (u : R) (hu : Transcendental K u)
     (he : ψ (X j) = algebraMap R F u) :
     (minpoly R (ψ (X k))).natDegree ≤ f.totalDegree := by
-  let I : Ideal (MvPolynomial (Fin 2) K) := Ideal.span {f}
+  let I := Ideal.span {f}
   have hI : ∀ g ∈ I, ψ g = 0 := by
     intro g hg
     obtain ⟨q, rfl⟩ := Ideal.mem_span_singleton.mp hg
@@ -54,7 +53,7 @@ private theorem minpoly_degree_le_plane_relation {K R F : Type*}
 
 /-- The degree of a plane equation is at least the degree of a function-field
 extension when its second coordinate is primitive over the parameter field. -/
-private theorem primitive_field_degree_le_plane_relation {K R F : Type*}
+theorem primitive_field_degree_le_plane_relation {K R F : Type*}
     [Field K] [Field R] [Field F] [Algebra K R] [Algebra R F] [Algebra K F]
     [IsScalarTower K R F] [Module.Finite R F]
     (ψ : MvPolynomial (Fin 2) K →ₐ[K] F)
@@ -93,5 +92,4 @@ theorem plane_projection_degree_eq_of_full_parameter {K R F τ : Type*}
   exact primitive_field_degree_le_plane_relation ψ f hf (by simp [ψ, hz])
     j k u hu (by rw [hψ]; exact he) (by rw [hψ]; exact hprim)
 
-end
 end CCDN

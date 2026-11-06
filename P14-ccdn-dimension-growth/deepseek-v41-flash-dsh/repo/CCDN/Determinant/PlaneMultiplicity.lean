@@ -10,9 +10,8 @@ public import CCDN.Determinant.SingularPlaneChart
 /-! Positive singular multiplicity is derived from a nonzero equation
 vanishing at the origin; it is bounded by the equation's total degree. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The first nonzero homogeneous component realizes the order at the origin. -/
@@ -97,5 +96,4 @@ theorem exists_hypersurface_reduction_multiplicity {p : ℕ} [Fact p.Prime] {σ 
   obtain ⟨μ, hpos, hμdeg, hpow, hμ⟩ := exists_origin_multiplicity _ hn hz
   exact ⟨μ, hpos, hμdeg.trans hdeg, hpow, hμ⟩
 
-end
 end CCDN

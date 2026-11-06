@@ -16,9 +16,8 @@ Odd degrees have no logarithm; even degrees have exactly one logarithm.
 The quadratic descent, exceptional subfields, lattice and curve counts
 used by the proof are all proved in the imported modules. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open NumberField
 universe u
 
@@ -56,5 +55,4 @@ theorem classGroup_two_torsion_bound (n : ℕ) (hn : 3 ≤ n) :
     exact hh'.trans (mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_right hCT (by positivity)) (by linarith))
 
-end
 end CCDN

@@ -10,14 +10,13 @@ public import CCDN.Hilbert.FilteredPrimeDecomposition
 /-! Separating prime components makes their filtered dimensions
 additive up to a fixed degree shift. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Polynomial lifts independent on separate prime components remain
 jointly independent after multiplying by the component separators. -/
-private theorem prime_separator_lifts_independent {K σ ι : Type*} [Field K]
+theorem prime_separator_lifts_independent {K σ ι : Type*} [Field K]
     [Fintype ι] [DecidableEq ι] (κ : ι → Type*) [∀ i, Fintype (κ i)]
     (I : Ideal (MvPolynomial σ K)) (P : ι → Ideal (MvPolynomial σ K))
     (hprime : ∀ i, (P i).IsPrime) (hIP : ∀ i, I ≤ P i)
@@ -27,7 +26,6 @@ private theorem prime_separator_lifts_independent {K σ ι : Type*} [Field K]
     (hv : ∀ i, LinearIndependent K (fun j => (Ideal.Quotient.mkₐ K (P i)) (v i j))) :
     LinearIndependent K (fun t : Sigma κ =>
       (Ideal.Quotient.mkₐ K I) (a t.1 * v t.1 t.2)) := by
-  classical
   let φ (i : ι) : (MvPolynomial σ K ⧸ I) →ₐ[K] (MvPolynomial σ K ⧸ P i) :=
     Ideal.Quotient.liftₐ I (Ideal.Quotient.mkₐ K (P i))
       (fun p hp => Ideal.Quotient.eq_zero_iff_mem.mpr (hIP i hp))
@@ -65,7 +63,7 @@ private theorem prime_separator_lifts_independent {K σ ι : Type*} [Field K]
 
 /-- The sum of the component filtration dimensions injects into the
 original coordinate filtration after a fixed shift independent of N. -/
-private theorem prime_components_filtered_rank_lower {K σ ι : Type*} [Field K]
+theorem prime_components_filtered_rank_lower {K σ ι : Type*} [Field K]
     [Finite σ] [Fintype ι] [DecidableEq ι]
     (I : Ideal (MvPolynomial σ K)) (P : ι → Ideal (MvPolynomial σ K))
     (hprime : ∀ i, (P i).IsPrime) (hIP : ∀ i, I ≤ P i)
@@ -73,7 +71,6 @@ private theorem prime_components_filtered_rank_lower {K σ ι : Type*} [Field K]
     ∃ D : ℕ, ∀ N : ℕ,
       (∑ i, Module.finrank K (filteredCoordinateSpace (P i) N)) ≤
         Module.finrank K (filteredCoordinateSpace I (D + N)) := by
-  classical
   obtain ⟨a, ha, hsep⟩ := exists_prime_component_separators P hprime hanti
   let D := Finset.univ.sup (fun i => (a i).totalDegree)
   refine ⟨D, ?_⟩
@@ -102,12 +99,10 @@ theorem minimalPrimeComponents_filtered_rank_lower {K σ : Type*} [Field K] [Fin
     ∃ D : ℕ, ∀ N : ℕ,
       (∑ P : minimalPrimeComponents I, Module.finrank K (filteredCoordinateSpace P.val N)) ≤
         Module.finrank K (filteredCoordinateSpace I (D + N)) := by
-  classical
   apply prime_components_filtered_rank_lower I (fun P : minimalPrimeComponents I => P.val)
   · exact fun P => minimalPrimeComponents_isPrime P.property
   · exact fun P => le_minimalPrimeComponents P.property
   · intro P Q hPQ
     exact Subtype.ext (minimalPrimeComponents_eq_of_le P.property Q.property hPQ)
 
-end
 end CCDN

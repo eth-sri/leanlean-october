@@ -11,15 +11,13 @@ public import CCDN.ClassGroup.SmallSubfieldIntegerCount
 fibers. Fibers with even generated-subfield index are absorbed into the
 small-subfield set when there is no index-two intermediate field. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open NumberField NumberField.InfinitePlace IntermediateField
-open scoped IntermediateField
 
 variable (K : Type*) [Field K] [NumberField K]
 
-private theorem exists_norm_translate_cover (B : ℝ) :
+theorem exists_norm_translate_cover (B : ℝ) :
     ∃ β : (boundedSquareNormTranslationClasses K B) → 𝓞 K,
       Function.Injective β ∧
       (∀ q, ∀ w : InfinitePlace K, w (β q : K) ≤ B) ∧
@@ -59,7 +57,7 @@ private theorem exists_norm_translate_cover (B : ℝ) :
   rw [hx']
   abel
 
-private lemma even_index_translate_mem_smallSubfield
+lemma even_index_translate_mem_smallSubfield
     (hnoTwo : ∀ L : IntermediateField ℚ K, Module.finrank L K ≠ 2)
     (β : 𝓞 K) (hindex : ¬ Odd (Module.finrank ℚ⟮(β : K)⟯ K))
     {B : ℝ} {α : 𝓞 K} (hα : α ∈ squareNormTranslateFiber K β B) :
@@ -140,5 +138,4 @@ theorem exists_norm_curve_exception_split
         exact squareNormTranslateFiber_count_le K (β q) (hb q)
       · simp only [tf, ite_eq_right hodd, Finset.card_empty, le_refl]
 
-end
 end CCDN

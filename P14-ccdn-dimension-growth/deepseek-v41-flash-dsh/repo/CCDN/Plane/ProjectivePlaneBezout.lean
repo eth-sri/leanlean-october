@@ -12,14 +12,13 @@ import CCDN.Hilbert.PlaneHilbert
 /-! The homogeneous degree of a plane equation agrees with its
 projective Hilbert degree, giving sharp projective plane intersection bounds. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 variable {K : Type*} [Field K]
 
-private theorem principal_projective_plane_hilbert_function
+theorem principal_projective_plane_hilbert_function
     (f : MvPolynomial (Fin 3) K) {d M : ℕ}
     (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hM : d ≤ M) :
     (projectiveHilbertFunction (Ideal.span {f}) M : ℤ) =
@@ -84,7 +83,7 @@ theorem projective_plane_common_zeros_card_le {d m : ℕ} {ι : Type*}
     (hzf : ∀ i, z i ∈ projectiveZeroLocus f)
     (hzg : ∀ i, z i ∈ projectiveZeroLocus g) :
     Fintype.card ι ≤ d * m := by
-  let I : Ideal (MvPolynomial (Fin 3) K) := Ideal.span {f}
+  let I := Ideal.span {f}
   have : I.IsPrime := Ideal.isPrime_span_singleton_of_prime hir.prime
   apply projective_section_card_le_degree I
     (principal_plane_hasProjectiveCurveDegree f hf hir.ne_zero) g hg
@@ -95,5 +94,4 @@ theorem projective_plane_common_zeros_card_le {d m : ℕ} {ι : Type*}
     exact hzf i
   · exact hzg
 
-end
 end CCDN

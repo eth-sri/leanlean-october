@@ -23,7 +23,6 @@ and every coefficient depends only on the degree.
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open NumberField
 
 variable (K : Type*) [Field K] [NumberField K]
@@ -42,7 +41,6 @@ theorem boundedSquareNormTranslationClasses_uniform_count
     (by positivity)
   exact fun i ↦ (hnorm i).trans (mul_le_mul_of_nonneg_left hB (by positivity))
 
-end
 end CCDN
 
 namespace CCDN
@@ -68,7 +66,7 @@ lemma noIndexTwoClassGroupConstant_pos (n : ℕ) :
   unfold noIndexTwoClassGroupConstant
   positivity
 
-private lemma balanced_radius_log_le {D : ℝ} (hD : 0 < D) (hlog : 1 ≤ Real.log D)
+lemma balanced_radius_log_le {D : ℝ} (hD : 0 < D) (hlog : 1 ≤ Real.log D)
     {n : ℕ} (hn : 0 < n) :
     Real.log (9 * D ^ (1 / (n : ℝ))) + 1 ≤
       (Real.log 9 + 2) * Real.log D := by

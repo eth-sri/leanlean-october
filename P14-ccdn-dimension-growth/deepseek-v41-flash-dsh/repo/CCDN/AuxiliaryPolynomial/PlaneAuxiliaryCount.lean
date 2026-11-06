@@ -14,9 +14,8 @@ import CCDN.Plane.Bezout
 /-! Distinct-point bounds obtained from the auxiliary polynomials and
 Bézout. The sharp finite-field estimate remains an explicit hypothesis. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Mapping an integer polynomial to `ℚ` preserves its total degree. -/
@@ -76,7 +75,6 @@ lemma integer_zero_count_le_of_family_bound {n : ℕ} (f : MvPolynomial (Fin n) 
     (hbound : ∀ (t : ℕ) (z : Fin t → Fin n → ℤ), Function.Injective z →
       (∀ i, eval (z i) f = 0) → (∀ i, InBox (z i) B) → (t : ℝ) ≤ R) :
     (count (zeroLocus (MvPolynomial.map (Int.castRingHom ℚ) f)) B : ℝ) ≤ R := by
-  classical
   let S := integralPoints (zeroLocus (MvPolynomial.map (Int.castRingHom ℚ) f)) B
   let e := (Fintype.equivFin S).symm
   let z : Fin (Fintype.card S) → Fin n → ℤ := fun i => (e i).val
@@ -93,5 +91,4 @@ lemma integer_zero_count_le_of_family_bound {n : ℕ} (f : MvPolynomial (Fin n) 
   have h := hbound _ z hinj hzero hbox
   simpa only [Fintype.card_coe, S, count] using h
 
-end
 end CCDN

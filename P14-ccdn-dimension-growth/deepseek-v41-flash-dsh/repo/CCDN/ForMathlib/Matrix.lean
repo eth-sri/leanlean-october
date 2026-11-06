@@ -44,7 +44,6 @@ theorem exists_fin_linearIndependent_row_span_eq
       LinearIndependent F (A.submatrix a id).row ∧
       Submodule.span F (Set.range (A.submatrix a id).row) =
         Submodule.span F (Set.range A.row) := by
-  classical
   obtain ⟨κ, a, ha, hs, hi⟩ := exists_linearIndependent' F A.row
   let : Finite κ := hi.finite
   let : Fintype κ := Fintype.ofFinite κ
@@ -155,7 +154,6 @@ variable {o R : Type*} {m' : o → Type*} [Fintype o] [DecidableEq o]
 the determinants of its blocks. -/
 theorem det_blockDiagonal' (M : ∀ i, Matrix (m' i) (m' i) R) :
     (blockDiagonal' M).det = ∏ i, (M i).det := by
-  classical
   let _ : LinearOrder o := LinearOrder.lift' (Fintype.equivFin o) (Fintype.equivFin o).injective
   rw [(blockTriangular_blockDiagonal' M).det_fintype]
   refine Finset.prod_congr rfl fun i _ => ?_

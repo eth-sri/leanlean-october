@@ -13,12 +13,11 @@ import CCDN.AuxiliaryPolynomial.AffineTranslationCount
 /-! Integral translations preserve the affine bad-prime factor, including
 degree-dropping reductions and the nonabsolute zero convention. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma hypersurfaceBadReduction_affineTranslation {n : ℕ}
+lemma hypersurfaceBadReduction_affineTranslation {n : ℕ}
     (a : Fin n → ℤ) (f : MvPolynomial (Fin n) ℤ) (p : ℕ) :
     HypersurfaceBadReduction (affineTranslation ℤ a f) p ↔ HypersurfaceBadReduction f p := by
   unfold HypersurfaceBadReduction
@@ -34,7 +33,6 @@ translation of the variables. -/
 theorem hypersurfaceBadPrimeFactor_affineTranslation {n : ℕ}
     (a : Fin (n + 1) → ℤ) (f : MvPolynomial (Fin (n + 1)) ℤ) :
     hypersurfaceBadPrimeFactor (affineTranslation ℤ a f) = hypersurfaceBadPrimeFactor f := by
-  classical
   have hir : AbsolutelyIrreducible (affineTranslation ℤ a f) ↔ AbsolutelyIrreducible f := by
     dsimp only [AbsolutelyIrreducible]
     rw [affineTranslation_map, affineTranslation_irreducible_iff]
@@ -56,7 +54,7 @@ theorem affine_auxiliary_translation_transport {n : ℕ}
     (hg : IsBoxAuxiliary (affineTranslation ℤ a f) g (B + D)) (ha : InBox a D) :
     ∃ G, IsBoxAuxiliary f G B ∧ G.totalDegree = g.totalDegree := by
   let G := (affineTranslation ℤ a).symm g
-  have hG0 : G ≠ 0 := (affineTranslation ℤ a).symm.injective.ne (by simpa using hg.ne_zero)
+  have hG0 := (affineTranslation ℤ a).symm.injective.ne (by simpa using hg.ne_zero)
   have hGnd : ¬ f ∣ G := by
     intro hd
     apply hg.not_dvd
@@ -75,5 +73,4 @@ theorem affine_auxiliary_translation_transport {n : ℕ}
   rw [affineTranslation_eval]
   exact hg.vanishes (x - a) hx' hf'
 
-end
 end CCDN

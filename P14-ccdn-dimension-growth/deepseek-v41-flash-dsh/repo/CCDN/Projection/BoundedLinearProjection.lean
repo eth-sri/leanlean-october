@@ -13,12 +13,11 @@ import CCDN.Height.ProjectiveIntegerHeight
 linear center. Its kernel is exactly the span of the given independent
 rows, and its coefficient bound is uniform in their entries. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Matrix
 
-private theorem integer_linear_map_box_bound {m n : ℕ}
+theorem integer_linear_map_box_bound {m n : ℕ}
     (P : Matrix (Fin m) (Fin n) ℤ) {H B : ℝ} (hH : 0 ≤ H)
     (hP : ∀ i j, |(P i j : ℝ)| ≤ H)
     (z : IntPoint n) (hz : InBox z B) :
@@ -37,7 +36,7 @@ private theorem integer_linear_map_box_bound {m n : ℕ}
 /-- An integer matrix with entries bounded by `H` maps an integer point of the box of radius
 `B` to a projective point of multiplicative height at most `n H B` (when the image is nonzero),
 since primitive reduction cannot enlarge an integral representative. -/
-private theorem projective_integer_linear_map_height {m n : ℕ}
+theorem projective_integer_linear_map_height {m n : ℕ}
     (P : Matrix (Fin (m + 1)) (Fin n) ℤ) {H B : ℝ} (hH : 0 ≤ H)
     (hP : ∀ i j, |(P i j : ℝ)| ≤ H)
     (z : IntPoint n) (hz : InBox z B) (himage : P *ᵥ z ≠ 0) :
@@ -45,7 +44,7 @@ private theorem projective_integer_linear_map_height {m n : ℕ}
       (rationalPoint_ne_zero himage)).mulHeight ≤ (n : ℝ) * H * B :=
   projective_integer_height_le _ himage (integer_linear_map_box_bound P hH hP z hz)
 
-private lemma rationalPoint_integer_mulVec {m n : ℕ}
+lemma rationalPoint_integer_mulVec {m n : ℕ}
     (P : Matrix (Fin m) (Fin n) ℤ) (z : IntPoint n) :
     rationalPoint (P *ᵥ z) =
       (P.map (Int.castRingHom ℚ)) *ᵥ rationalPoint z := by
@@ -81,11 +80,9 @@ theorem projective_linear_map_height {m n : ℕ}
   have hproj :
       Projectivization.mk ℚ (rationalPoint w) (rationalPoint_ne_zero hw0) =
         Projectivization.mk ℚ ((P.map (Int.castRingHom ℚ)) *ᵥ x.rep) himage := by
-    apply (Projectivization.mk_eq_mk_iff' ℚ _ _ _ _).mpr
-    exact ⟨c, hw.symm⟩
+    exact (Projectivization.mk_eq_mk_iff' ℚ _ _ _ _).mpr ⟨c, hw.symm⟩
   rw [← hproj]
   exact projective_integer_linear_map_height P hH hP z
     (primitiveProjectiveRep_bound x) hw0
 
-end
 end CCDN

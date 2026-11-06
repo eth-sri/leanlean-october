@@ -14,10 +14,8 @@ import Mathlib.FieldTheory.Minpoly.IsIntegrallyClosed
 polynomial of an integral element has degree at most the degree of the fraction-field
 extension. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
-open Polynomial
 
 /-- Let `R` be an integrally closed domain with fraction field `F`, and let `E` be a finite
 extension of `F` receiving compatible maps from `R`, `A` and `F`. The minimal polynomial over
@@ -34,5 +32,4 @@ theorem integral_minpoly_natDegree_le_fraction_finrank
     ← minpoly.isIntegrallyClosed_eq_field_fractions F E ha]
   exact minpoly.natDegree_le (algebraMap A E a)
 
-end
 end CCDN

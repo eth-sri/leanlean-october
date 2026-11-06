@@ -12,10 +12,8 @@ public import CCDN.Height.ProjectiveBox
 Projective fibers inject into affine fibers after choosing a fixed
 nonzero representative in the target. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
-open MvPolynomial
 
 /-- If the zeros of `I` in `ℚ^(n+1)` killed by the linear map `L` form a set of at most `M`
 elements, then `L` does not vanish on the representative of any point of the projective zero
@@ -28,7 +26,6 @@ theorem projective_linear_image_ne_zero_of_finite_zero_fiber
       (∀ z ∈ s, L z = 0) → s.card ≤ M)
     (x : ProjectivePoint n) (hx : x ∈ projectiveIdealZeroLocus I) :
     L x.rep ≠ 0 := by
-  classical
   intro hzero
   let z : Fin (M + 1) → (Fin (n + 1) → ℚ) := fun j => (j.val + 1 : ℚ) • x.rep
   have hz (j : Fin (M + 1)) : z j ≠ 0 := by
@@ -69,12 +66,11 @@ theorem projective_linear_fiber_card_le
       (∀ z ∈ t, z ∈ idealZeroLocus I) →
       (∀ z ∈ t, L z = y.rep) → t.card ≤ M) :
     s.card ≤ M := by
-  classical
   have hscale (x : s) : ∃ c : ℚˣ, c • y.rep = L x.val.rep := by
     exact (Projectivization.mk_eq_mk_iff ℚ _ _ _ _).mp
       ((he x.val x.property).trans y.mk_rep.symm)
   choose c hc using hscale
-  let z : s → (Fin (n + 1) → ℚ) := fun x => (c x : ℚ)⁻¹ • x.val.rep
+  let z := fun x => (c x : ℚ)⁻¹ • x.val.rep
   have hz (x : s) : z x ≠ 0 := smul_ne_zero (inv_ne_zero (c x).ne_zero) x.val.rep_nonzero
   have hmk (x : s) : Projectivization.mk ℚ (z x) (hz x) = x.val := by
     rw [← x.val.mk_rep, Projectivization.mk_eq_mk_iff']
@@ -98,5 +94,4 @@ theorem projective_linear_fiber_card_le
     exact himage x)
   simpa only [Finset.card_image_of_injective _ hinj, Finset.card_univ, Fintype.card_coe] using hh
 
-end
 end CCDN

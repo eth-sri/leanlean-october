@@ -19,9 +19,8 @@ characteristic zero loses at most d(d-1) points from any finite source set.
 The proof constructs a common derivative denominator and all reconstruction
 identities, with no normalization or exceptional-fiber hypothesis. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- All source coordinates have the same proper reconstruction denominator,
@@ -61,5 +60,4 @@ theorem degree_preserving_projection_card_le {K τ : Type*}
     (fun i => (hP i).2) S hS).trans
       (Nat.add_le_add_left (Nat.mul_le_mul_left d hQd) _)
 
-end
 end CCDN

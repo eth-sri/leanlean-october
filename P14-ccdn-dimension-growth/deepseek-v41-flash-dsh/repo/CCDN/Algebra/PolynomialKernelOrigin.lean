@@ -13,13 +13,12 @@ import CCDN.Algebra.PolynomialMatrixSpecialization
 polynomial kernel vector that remains nonzero at zero. A common power of X is
 removed from a kernel vector after its rational denominators are cleared. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial Matrix
 
 /-- Remove the common order of vanishing of a nonzero polynomial vector. -/
-private lemma polynomial_vector_remove_common_X {K ι : Type*} [Field K]
+lemma polynomial_vector_remove_common_X {K ι : Type*} [Field K]
     (w : ι → Polynomial K) (hw : w ≠ 0) :
     ∃ N : ℕ, ∃ v : ι → Polynomial K,
       (∀ i, w i = X ^ N * v i) ∧ ∃ i, (v i).eval 0 ≠ 0 := by
@@ -48,7 +47,7 @@ private lemma polynomial_vector_remove_common_X {K ι : Type*} [Field K]
 
 /-- Rational-function dependence of columns gives a nonzero polynomial
 kernel vector by clearing one common denominator. -/
-private theorem polynomial_matrix_kernel_of_not_injective {K ι κ : Type*} [Field K]
+theorem polynomial_matrix_kernel_of_not_injective {K ι κ : Type*} [Field K]
     [Fintype ι] [Fintype κ] [DecidableEq ι] [DecidableEq κ]
     (A : Matrix ι κ (Polynomial K))
     (hA : ¬ Function.Injective (A.map (algebraMap (Polynomial K) (RatFunc K))).mulVecLin) :
@@ -57,7 +56,7 @@ private theorem polynomial_matrix_kernel_of_not_injective {K ι κ : Type*} [Fie
   let M := A.map f
   obtain ⟨x, y, hxy, hne⟩ := Function.not_injective_iff.mp hA
   let v := x - y
-  have hv : v ≠ 0 := sub_ne_zero.mpr hne
+  have hv := sub_ne_zero.mpr hne
   have hMv : M *ᵥ v = 0 := by
     change M.mulVecLin (x - y) = 0
     rw [map_sub, hxy, sub_self]
@@ -65,7 +64,7 @@ private theorem polynomial_matrix_kernel_of_not_injective {K ι κ : Type*} [Fie
     (fun i (_ : Unit) => v i)
   let w := fun i => C i ()
   have hw (i : κ) : f (w i) = f q * v i := hC i ()
-  have hqf : f q ≠ 0 := RatFunc.algebraMap_ne_zero hq
+  have hqf := RatFunc.algebraMap_ne_zero hq
   refine ⟨w, ?_, ?_⟩
   · intro hw0
     apply hv
@@ -117,5 +116,4 @@ theorem polynomial_matrix_kernel_nonzero_at_zero {K ι κ : Type*} [Field K] [Ch
   rw [hv j]
   ring
 
-end
 end CCDN

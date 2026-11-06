@@ -15,10 +15,8 @@ reduces a curve in `𝔸ⁿ` to an irreducible plane equation of the same degree
 plane bound `PlaneCurveBound` counts; exceptional fibres contribute at most `d(d − 1)` points and
 the enlarged box costs a constant depending only on `n`. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
-open MvPolynomial
 
 /-- The affine curve counting bound `AffineCurveBound` of CCDN Theorem 3: the plane bound, after
 a degree-preserving bounded projection to the plane. -/
@@ -58,5 +56,4 @@ theorem affine_curve_count : AffineCurveBound := by
     _ = _ := by ring
 
 
-end
 end CCDN

@@ -12,12 +12,11 @@ public import CCDN.AuxiliaryPolynomial.HypersurfaceAffineCoordinates
 outer degree after the explicit affine coordinate change. Its leading
 coefficient is the scalar obtained by evaluating that component. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma optionEquivLeft_top_coefficient_constant {K σ : Type*} [Field K]
+lemma optionEquivLeft_top_coefficient_constant {K σ : Type*} [Field K]
     (f : MvPolynomial (Option σ) K) (d : ℕ) (hd : f.totalDegree ≤ d) :
     (optionEquivLeft K σ f).coeff d = C (eval (0 : σ → K) ((optionEquivLeft K σ f).coeff d)) := by
   by_cases h : d ≤ f.totalDegree
@@ -29,7 +28,7 @@ private lemma optionEquivLeft_top_coefficient_constant {K σ : Type*} [Field K]
       exact (degreeOf_le_totalDegree f none).trans_lt (by omega)
     rw [Polynomial.coeff_eq_zero_of_natDegree_lt hn, map_zero, map_zero]
 
-private lemma hypersurfaceAffineCoordinates_axis {K σ : Type*} [Field K]
+lemma hypersurfaceAffineCoordinates_axis {K σ : Type*} [Field K]
     (a b : Option σ → K) (hb : b none ≠ 0) (f : MvPolynomial (Option σ) K) :
     Polynomial.map (eval (0 : σ → K))
       (optionEquivLeft K σ (hypersurfaceAffineCoordinates a b hb f)) =
@@ -81,5 +80,4 @@ theorem hypersurfaceAffineCoordinates_full_outer_degree {K σ : Type*} [Field K]
       (hypersurfaceAffineCoordinates_totalDegree_le a b hb f)
   · exact Polynomial.le_natDegree_of_ne_zero hc
 
-end
 end CCDN

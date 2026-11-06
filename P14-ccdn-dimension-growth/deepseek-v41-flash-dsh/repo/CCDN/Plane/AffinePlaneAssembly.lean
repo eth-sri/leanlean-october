@@ -14,12 +14,11 @@ import CCDN.ForMathlib.Log
 for primitive absolutely irreducible plane equations. The resulting bound
 assumes the sharp finite-field estimate. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Real
 
-private lemma curveBound_translation_radius {d : ℕ} (hd : 0 < d) {B : ℝ} (hB : 1 ≤ B) :
+lemma curveBound_translation_radius {d : ℕ} (hd : 0 < d) {B : ℝ} (hB : 1 ≤ B) :
     curveBound d (((d : ℝ) + 1) * B) ≤ 2 * Real.exp 1 * curveBound d B := by
   have hd0 : (0 : ℝ) < d := by exact_mod_cast hd
   have hB0 : 0 < B := by linarith
@@ -48,7 +47,7 @@ private lemma curveBound_translation_radius {d : ℕ} (hd : 0 < d) {B : ℝ} (hB
 /-- Coefficient-uniform point count for a primitive absolutely irreducible
 integer plane equation, assuming the sharp finite-field point estimate at
 primes above 27*d^4. -/
-private theorem plane_finite_count_of_residue_bound
+theorem plane_finite_count_of_residue_bound
     {F : Type*} [Field F] [CharZero F] [IsAlgClosed F] {t : ℕ}
     (f : MvPolynomial (Fin 2) ℤ) (hprim : PrimitiveIntegerPolynomial f)
     (hir : Irreducible (MvPolynomial.map (Int.castRingHom F) f)) (hd : 0 < f.totalDegree)
@@ -114,5 +113,4 @@ theorem count_plane_of_residue_bound
   intro t z hinj hz hbox
   exact plane_finite_count_of_residue_bound f hprim hir hd z hinj ⟨hB, hz, hbox⟩ hC hcount
 
-end
 end CCDN

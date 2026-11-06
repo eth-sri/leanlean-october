@@ -90,7 +90,7 @@ theorem hypersurfaceResidueChartLift_zero {n p d : ℕ} [Fact p.Prime]
       (fun j => (hypersurfaceResidueChartLift r j : ZMod p))
       (projectiveHypersurfaceChart (hypersurfaceResiduePivot r) f) = 0 := by
   let k := hypersurfaceResiduePivot r
-  let a : Fin (n + 2) → ZMod p := fun j => (hypersurfaceResidueChartLift r j : ZMod p)
+  let a := fun j => (hypersurfaceResidueChartLift r j : ZMod p)
   have hv : Fin.cons 1 a = (r.rep k)⁻¹ • (r.rep ∘ Equiv.swap 0 k) := by
     funext j
     refine Fin.cases ?_ (fun l => ?_) j

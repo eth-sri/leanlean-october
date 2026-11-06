@@ -10,12 +10,11 @@ public import CCDN.Projection.InfinityParameterReduction
 /-! The infinity ideal is homogeneous, so its geometric zero locus is closed
 under scalar multiplication. This allows normalization into finite charts. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma leadingInfinityIdeal_homogeneousComponent_mem {K σ : Type*} [Field K]
+lemma leadingInfinityIdeal_homogeneousComponent_mem {K σ : Type*} [Field K]
     (I : Ideal (MvPolynomial σ K)) (f : MvPolynomial σ K)
     (hf : f ∈ leadingInfinityIdeal I) (m : ℕ) :
     homogeneousComponent m f ∈ leadingInfinityIdeal I := by
@@ -51,7 +50,6 @@ private lemma leadingInfinityIdeal_homogeneousComponent_mem {K σ : Type*} [Fiel
 lemma homogeneous_aeval_scale {K L σ : Type*} [Field K] [Field L] [Algebra K L]
     [Fintype σ] (f : MvPolynomial σ K) {m : ℕ} (hf : f.IsHomogeneous m)
     (z : σ → L) (c : L) : aeval (fun j => c * z j) f = c ^ m * aeval z f := by
-  classical
   conv_lhs => rw [f.as_sum, map_sum]
   conv_rhs => rw [f.as_sum, map_sum, Finset.mul_sum]
   apply Finset.sum_congr rfl
@@ -77,8 +75,6 @@ lemma infinity_zeroLocus_scale {K L σ : Type*} [Field K] [Field L]
   rw [← sum_homogeneousComponent (φ := f), map_sum]
   apply Finset.sum_eq_zero
   intro m _
-  rw [homogeneous_aeval_scale _ (homogeneousComponent_isHomogeneous m f)]
-  rw [hz _ (leadingInfinityIdeal_homogeneousComponent_mem I f hf m), mul_zero]
+  rw [homogeneous_aeval_scale _ (homogeneousComponent_isHomogeneous m f), hz _ (leadingInfinityIdeal_homogeneousComponent_mem I f hf m), mul_zero]
 
-end
 end CCDN

@@ -12,12 +12,11 @@ public import Mathlib.Analysis.SpecialFunctions.Log.Basic
 fourth-power prime cutoff. The charge applies to primes with proved matrix
 rank drop; identifying these with the geometric bad primes is a separate step. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial Matrix Real
 
-private lemma log_factorial_le_square (r : ℕ) : Real.log (r.factorial : ℝ) ≤ (r : ℝ) ^ 2 := by
+lemma log_factorial_le_square (r : ℕ) : Real.log (r.factorial : ℝ) ≤ (r : ℝ) ^ 2 := by
   by_cases hr : r = 0
   · simp [hr]
   have hr0 : (0 : ℝ) < r := by exact_mod_cast Nat.pos_of_ne_zero hr
@@ -69,5 +68,4 @@ theorem closedForm_minor_log_height
   rw [he]
   nlinarith [mul_nonneg (sq_nonneg (d : ℝ)) hlog]
 
-end
 end CCDN

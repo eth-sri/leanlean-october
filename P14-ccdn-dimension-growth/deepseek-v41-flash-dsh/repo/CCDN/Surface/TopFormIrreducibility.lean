@@ -15,9 +15,8 @@ import Mathlib.Algebra.MvPolynomial.NoZeroDivisors
  the full polynomial. Coefficient reduction preserves this implication and
  the full degree whenever the reduced highest component remains irreducible. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Applying a ring homomorphism to the coefficients commutes with taking the homogeneous
@@ -25,12 +24,11 @@ component of degree `d`. -/
 lemma map_homogeneousComponent {R S σ : Type*} [CommRing R] [CommRing S]
     (φ : R →+* S) (d : ℕ) (f : MvPolynomial σ R) :
     map φ (homogeneousComponent d f) = homogeneousComponent d (map φ f) := by
-  classical
   ext m
   simp only [coeff_map, coeff_homogeneousComponent]
   split_ifs <;> simp
 
-private lemma isUnit_of_isUnit_top_homogeneousComponent {K σ : Type*} [Field K]
+lemma isUnit_of_isUnit_top_homogeneousComponent {K σ : Type*} [Field K]
     (f : MvPolynomial σ K) (hu : IsUnit (homogeneousComponent f.totalDegree f)) :
     IsUnit f := by
   have hd : f.totalDegree = 0 := by
@@ -43,7 +41,7 @@ private lemma isUnit_of_isUnit_top_homogeneousComponent {K σ : Type*} [Field K]
 
 /-- The product of highest components detects every proper factorization of
  the full equation, over any field. -/
-private theorem irreducible_of_top_homogeneousComponent_irreducible {K σ : Type*} [Field K]
+theorem irreducible_of_top_homogeneousComponent_irreducible {K σ : Type*} [Field K]
     (f : MvPolynomial σ K)
     (hir : Irreducible (homogeneousComponent f.totalDegree f)) : Irreducible f := by
   have hf : f ≠ 0 := by intro hz; exact hir.ne_zero (by rw [hz, map_zero])
@@ -82,5 +80,4 @@ theorem map_degree_and_irreducible_of_top_irreducible
   apply irreducible_of_top_homogeneousComponent_irreducible
   rwa [he]
 
-end
 end CCDN

@@ -11,9 +11,8 @@ public import CCDN.Algebra.ProjectiveAffineChart
 bound on projective height. Removing their gcd can only decrease the
 maximum absolute coordinate. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- If the chosen representative of `x` has nonzero first coordinate, then so does its primitive
 integer representative, and the affine chart coordinates of `x` are the ratios of the
@@ -39,7 +38,6 @@ point of height at most `B`, whether or not its coordinates are coprime. -/
 theorem projective_integer_height_le {n : ℕ} (z : IntPoint (n + 1)) (hz : z ≠ 0)
     {B : ℝ} (hbox : InBox z B) :
     (Projectivization.mk ℚ (rationalPoint z) (rationalPoint_ne_zero hz)).mulHeight ≤ B := by
-  classical
   obtain ⟨v, hv, hprim⟩ := Finset.extract_gcd z
     (show (Finset.univ : Finset (Fin (n + 1))).Nonempty from Finset.univ_nonempty)
   have he (j : Fin (n + 1)) : z j = Finset.univ.gcd z * v j := hv j (Finset.mem_univ j)
@@ -78,5 +76,4 @@ theorem projective_integer_height_le {n : ℕ} (z : IntPoint (n + 1)) (hz : z �
   rw [hmax, Int.cast_abs]
   exact hvbox j
 
-end
 end CCDN

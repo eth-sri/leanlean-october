@@ -15,9 +15,8 @@ import Mathlib.LinearAlgebra.Lagrange
 sum of each Lagrange basis polynomial is at most a binomial coefficient;
 summing gives the factor 3^d in CCDN Lemma 3.4.1, over the complex numbers. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial Finset
 
 private lemma complex_linear_mul_coefficient_bound {f : ℂ[X]} {H : ℝ}
@@ -44,7 +43,6 @@ private lemma complex_nat_sub_norm (i j : ℕ) :
 private lemma complex_lagrange_product_bound (s : Finset ℕ) (i k : ℕ) :
     ‖(∏ j ∈ s, Lagrange.basisDivisor (i : ℂ) (j : ℂ)).coeff k‖ ≤
       ∏ j ∈ s, ((j : ℝ) + 1) / |(i : ℝ) - j| := by
-  classical
   induction s using Finset.induction_on generalizing k with
   | empty =>
     by_cases hk : k = 0 <;> simp [coeff_one, hk]
@@ -66,7 +64,6 @@ private lemma complex_lagrange_product_bound (s : Finset ℕ) (i k : ℕ) :
 private lemma integer_grid_lagrange_weight (d i : ℕ) (hi : i ≤ d) :
     (∏ j ∈ (range (d + 1)).erase i, ((j : ℝ) + 1) / |(i : ℝ) - j|) =
       ((d + 1).choose (i + 1) : ℝ) := by
-  classical
   induction d generalizing i with
   | zero =>
     have : i = 0 := by omega
@@ -75,8 +72,7 @@ private lemma integer_grid_lagrange_weight (d i : ℕ) (hi : i ≤ d) :
   | succ d ih =>
     by_cases hie : i = d + 1
     · subst i
-      rw [range_add_one, erase_insert (by simp)]
-      rw [prod_div_distrib]
+      rw [range_add_one, erase_insert (by simp), prod_div_distrib]
       have hn : (∏ j ∈ range (d + 1), ((j : ℝ) + 1)) = ((d + 1).factorial : ℝ) := by
         exact_mod_cast (Finset.prod_range_add_one_eq_factorial (d + 1))
       have hd : (∏ j ∈ range (d + 1), |((d + 1 : ℕ) : ℝ) - j|) =
@@ -163,5 +159,4 @@ theorem complex_polynomial_coefficient_bound_of_integer_grid
     _ ≤ H * (3 : ℝ) ^ d := mul_le_mul_of_nonneg_left (two_pow_succ_sub_one_le_three_pow d) hH
     _ = _ := mul_comm _ _
 
-end
 end CCDN

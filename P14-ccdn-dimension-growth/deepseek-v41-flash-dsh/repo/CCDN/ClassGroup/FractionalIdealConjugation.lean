@@ -10,9 +10,8 @@ public import CCDN.ClassGroup.QuadraticInvariantIdeal
 /-! Compatibility of conjugation with integral representatives and with
 the scalar comparisons used in the definition of an ideal class. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open scoped nonZeroDivisors
 
 variable {R K : Type*} [CommRing R] [IsDedekindDomain R]
@@ -58,9 +57,9 @@ theorem integral_ideal_scalar_fractional_comparison
         Units.mk0 (algebraMap R K x) (by
           simpa only [map_zero] using (IsFractionRing.injective R K).ne hx)) *
       FractionalIdeal.mk0 K I := by
-  let a : Kˣ := Units.mk0 (algebraMap R K x) (by
+  let a := Units.mk0 (algebraMap R K x) (by
     simpa only [map_zero] using (IsFractionRing.injective R K).ne hx)
-  let b : Kˣ := Units.mk0 (algebraMap R K y) (by
+  let b := Units.mk0 (algebraMap R K y) (by
     simpa only [map_zero] using (IsFractionRing.injective R K).ne hy)
   have h : toPrincipalIdeal R K a *
       fractionalIdealUnitAction (K := K) σ (FractionalIdeal.mk0 K I) =
@@ -88,5 +87,4 @@ theorem integral_ideal_scalar_fractional_comparison
       ac_rfl
     _ = _ := by rw [mul_inv_cancel, one_mul]
 
-end
 end CCDN

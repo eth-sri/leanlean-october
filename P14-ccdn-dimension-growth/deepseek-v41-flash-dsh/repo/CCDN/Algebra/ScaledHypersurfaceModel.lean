@@ -16,9 +16,8 @@ import Mathlib.Algebra.MvPolynomial.NoZeroDivisors
 /-! Irreducibility and coefficient maps of scaled homogeneous models in
 arbitrary dimension, including reduction modulo primes. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Scaled homogenization commutes with mapping the coefficients along a ring homomorphism
@@ -26,7 +25,6 @@ open MvPolynomial
 lemma scaledHomogenize_map {R S : Type*} [CommRing R] [CommRing S] {n : ℕ}
     (φ : R →+* S) (d : ℕ) (h : R) (f : MvPolynomial (Fin n) R) :
     map φ (scaledHomogenize d h f) = scaledHomogenize d (φ h) (map φ f) := by
-  classical
   simp only [scaledHomogenize, map_sum, map_monomial, map_mul, map_pow, coeff_map]
   symm
   apply Finset.sum_subset (support_map_subset _ _)
@@ -76,5 +74,4 @@ theorem scaledHomogenize_integer_irreducible {n : ℕ}
     (by simpa only [Int.coe_castRingHom, Int.cast_natCast] using
       (show (p : ℚ) ≠ 0 by exact_mod_cast hp.ne_zero))
 
-end
 end CCDN

@@ -28,14 +28,12 @@ def SmoothAffineResidue {n : ℕ} (f : MvPolynomial (Fin n) ℤ) (p : ℕ) :=
 
 instance {n : ℕ} (f : MvPolynomial (Fin n) ℤ) (p : ℕ) [NeZero p] :
     Fintype (SmoothAffineResidue f p) := by
-  classical
   unfold SmoothAffineResidue
   infer_instance
 
-private theorem smoothAffineResidue_card_le {n p : ℕ} [Fact p.Prime]
+theorem smoothAffineResidue_card_le {n p : ℕ} [Fact p.Prime]
     (f : MvPolynomial (Fin (n + 1)) ℤ) :
     Fintype.card (SmoothAffineResidue f p) ≤ f.totalDegree * p ^ n := by
-  classical
   let g := map (Int.castRingHom (ZMod p)) f
   by_cases hg : g = 0
   · have hempty : IsEmpty (SmoothAffineResidue f p) := by
@@ -76,7 +74,6 @@ theorem smoothAffineResidueFamily_card_le {n : ℕ}
     (hP : ∀ p ∈ P, p.Prime) :
     Nat.card (SmoothAffineResidueFamily f P) ≤
       f.totalDegree ^ P.card * (∏ p ∈ P, p) ^ n := by
-  classical
   let (p : P) : Fact p.val.Prime := ⟨hP p.val p.property⟩
   let (p : P) : NeZero p.val := ⟨(hP p.val p.property).ne_zero⟩
   let : Fintype (SmoothAffineResidueFamily f P) := Pi.instFintype
@@ -98,7 +95,7 @@ def smoothResidueIntegerLift {n : ℕ} {f : MvPolynomial (Fin n) ℤ}
     {P : Finset ℕ} (r : SmoothAffineResidueFamily f P) : ℕ → IntPoint n :=
   fun p j => if hp : p ∈ P then ((r ⟨p, hp⟩).val j).val else 0
 
-private lemma smoothResidueIntegerLift_cast {n : ℕ} {f : MvPolynomial (Fin n) ℤ}
+lemma smoothResidueIntegerLift_cast {n : ℕ} {f : MvPolynomial (Fin n) ℤ}
     {P : Finset ℕ} (r : SmoothAffineResidueFamily f P) (p : P) [NeZero p.val] (j : Fin n) :
     (smoothResidueIntegerLift r p.val j : ZMod p.val) = (r p).val j := by
   simp only [smoothResidueIntegerLift, dite_eq_left p.property, Int.cast_natCast,

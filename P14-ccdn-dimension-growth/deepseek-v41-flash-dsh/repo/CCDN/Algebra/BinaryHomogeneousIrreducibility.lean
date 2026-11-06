@@ -12,15 +12,13 @@ import CCDN.Algebra.HomogeneousChartIrreducible
 /-! Over an algebraically closed field, an irreducible homogeneous binary
 form has degree one. The affine chart reduces this to a univariate polynomial. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private theorem uniqueAlgEquiv_natDegree {R σ : Type*} [CommRing R] [Unique σ]
+theorem uniqueAlgEquiv_natDegree {R σ : Type*} [CommRing R] [Unique σ]
     (f : MvPolynomial σ R) :
     ((uniqueAlgEquiv R σ) f).natDegree = f.totalDegree := by
-  classical
   apply le_antisymm
   · apply Polynomial.natDegree_le_iff_coeff_eq_zero.mpr
     intro k hk
@@ -62,5 +60,4 @@ theorem binary_homogeneous_irreducible_degree_le_one
   rw [uniqueAlgEquiv_natDegree, hdeg] at hh
   omega
 
-end
 end CCDN

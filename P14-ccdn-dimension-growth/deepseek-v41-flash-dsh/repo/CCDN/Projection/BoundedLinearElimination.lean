@@ -31,7 +31,7 @@ theorem exists_bounded_full_degree_direction {σ : Type*} [Fintype σ]
       b none ≠ 0 ∧
       eval (fun i => (b i : ℚ)) (homogeneousComponent f.totalDegree f) ≠ 0 := by
   let P := X none * homogeneousComponent f.totalDegree f
-  have hp : P ≠ 0 := mul_ne_zero (X_ne_zero none) (homogeneousComponent_totalDegree_ne_zero hf)
+  have hp := mul_ne_zero (X_ne_zero none) (homogeneousComponent_totalDegree_ne_zero hf)
   have hd : P.totalDegree ≤ f.totalDegree + 1 := by
     apply (totalDegree_mul _ _).trans
     rw [totalDegree_X]

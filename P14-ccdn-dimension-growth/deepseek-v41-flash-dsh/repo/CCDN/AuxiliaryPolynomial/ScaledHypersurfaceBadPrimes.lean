@@ -14,12 +14,11 @@ import CCDN.ForMathlib.MvPolynomial
 absolute constant. Outside the scaling prime, the homogeneous models are
 related by an invertible change of coordinates and a nonzero scalar. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma firstCoordinateScaleHom_scaledHomogenize {R : Type*} [CommRing R] {n d : ℕ}
+lemma firstCoordinateScaleHom_scaledHomogenize {R : Type*} [CommRing R] {n d : ℕ}
     (h : R) (f : MvPolynomial (Fin n) R) (hd : f.totalDegree ≤ d) :
     firstCoordinateScaleHom R h (scaledHomogenize d h f) =
       C (h ^ d) * scaledHomogenize d 1 f := by
@@ -30,7 +29,7 @@ private lemma firstCoordinateScaleHom_scaledHomogenize {R : Type*} [CommRing R] 
     map_mul, affineChart_scaledHomogenize_one]
   simp [affineChart]
 
-private lemma scaledHomogenize_irreducible_iff {K : Type*} [Field K] {n d : ℕ}
+lemma scaledHomogenize_irreducible_iff {K : Type*} [Field K] {n d : ℕ}
     (h : K) (hh : h ≠ 0) (f : MvPolynomial (Fin n) K) (hd : f.totalDegree ≤ d) :
     Irreducible (scaledHomogenize d h f) ↔ Irreducible (scaledHomogenize d 1 f) := by
   have hu : IsUnit (C (h ^ d) : MvPolynomial (Fin (n + 1)) K) :=
@@ -42,7 +41,7 @@ private lemma scaledHomogenize_irreducible_iff {K : Type*} [Field K] {n d : ℕ}
   rw [firstCoordinateScaleHom_scaledHomogenize h f hd, irreducible_isUnit_mul hu] at he
   exact he.symm
 
-private lemma scaledHomogenize_map_irreducible_iff {K : Type*} [Field K] {n d : ℕ}
+lemma scaledHomogenize_map_irreducible_iff {K : Type*} [Field K] {n d : ℕ}
     (φ : ℤ →+* K) (h : ℤ) (hh : φ h ≠ 0)
     (f : MvPolynomial (Fin n) ℤ) (hd : f.totalDegree ≤ d) :
     Irreducible (map φ (scaledHomogenize d h f)) ↔
@@ -51,7 +50,7 @@ private lemma scaledHomogenize_map_irreducible_iff {K : Type*} [Field K] {n d : 
   apply scaledHomogenize_irreducible_iff _ hh
   exact (totalDegree_map_le _ _).trans hd
 
-private lemma hypersurfaceBadReduction_scaledHomogenize {n d : ℕ}
+lemma hypersurfaceBadReduction_scaledHomogenize {n d : ℕ}
     (f : MvPolynomial (Fin n) ℤ) (hf : f ≠ 0) (hd : f.totalDegree ≤ d)
     {p q : ℕ} (hp : p.Prime) (hqp : q ≠ p) :
     HypersurfaceBadReduction (scaledHomogenize d (p : ℤ) f) q ↔
@@ -72,13 +71,12 @@ private lemma hypersurfaceBadReduction_scaledHomogenize {n d : ℕ}
 
 /-- Enlarging the bad-prime set at one prime costs at most `exp 1`. The
 nonabsolute case is included, using the paper's zero convention. -/
-private theorem hypersurfaceBadPrimeFactor_le_of_badReduction_imp {n : ℕ}
+theorem hypersurfaceBadPrimeFactor_le_of_badReduction_imp {n : ℕ}
     (f g : MvPolynomial (Fin (n + 1)) ℤ) {p : ℕ} (hp : 0 < p)
     (hd : f.totalDegree = g.totalDegree)
     (habs : AbsolutelyIrreducible f → AbsolutelyIrreducible g)
     (hbad : ∀ q, q ≠ p → HypersurfaceBadReduction f q → HypersurfaceBadReduction g q) :
     hypersurfaceBadPrimeFactor f ≤ Real.exp 1 * hypersurfaceBadPrimeFactor g := by
-  classical
   by_cases hf : AbsolutelyIrreducible f
   · have hg := habs hf
     let S := (finite_fin_hypersurface_bad_primes f hf
@@ -144,5 +142,4 @@ theorem hypersurfaceBadPrimeFactor_scaledHomogenize_le {n : ℕ}
   · intro q hq
     exact (hypersurfaceBadReduction_scaledHomogenize f hf le_rfl hp hq).mp
 
-end
 end CCDN

@@ -13,11 +13,10 @@ import CCDN.ClassGroup.PrimeFactorSubpower
 The prime-factor and logarithmic losses fit in the positive exponent
 margin between the base-field and extension-field estimates. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
-private theorem primeFactors_polylog_subpower (a k : ℕ) {ε : ℝ} (hε : 0 < ε) :
+theorem primeFactors_polylog_subpower (a k : ℕ) {ε : ℝ} (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ D : ℕ, 1 ≤ D →
       (2 : ℝ) ^ (a * D.primeFactors.card) * (Real.log (D : ℝ) + 1) ^ k ≤
         C * (D : ℝ) ^ ε := by
@@ -124,5 +123,4 @@ theorem quadratic_class_group_base_numeric :
   norm_num
   nlinarith [hbound D hD]
 
-end
 end CCDN

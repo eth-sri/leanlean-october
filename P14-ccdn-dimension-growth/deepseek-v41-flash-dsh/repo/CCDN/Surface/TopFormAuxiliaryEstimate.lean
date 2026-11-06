@@ -11,10 +11,8 @@ import CCDN.AuxiliaryPolynomial.HypersurfaceHeightTransfer
 /-! Uniform coefficient absorption and affine-box estimates for the
 auxiliary theorem with an irreducible leading homogeneous form. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
-open MvPolynomial
 
 /-- For a nonzero integer polynomial `f` of degree `d > 0` with coefficient height `H` and for
 `r > 0`, the bad-prime factor of `f` divided by `H^(1/(r d d^(1/r)))` is bounded by a constant
@@ -48,7 +46,7 @@ theorem hypersurface_badPrime_fractional_height_bound {m r d : ℕ}
       mul_le_mul_of_nonneg_left hratio (by positivity)
     _ = _ := by dsimp only [K]; field_simp
 
-private lemma affine_auxiliary_lower_terms_bound (n : ℕ) {d : ℕ} (hd : 0 < d)
+lemma affine_auxiliary_lower_terms_bound (n : ℕ) {d : ℕ} (hd : 0 < d)
     {B : ℝ} (hB : 1 ≤ B) :
     (d : ℝ) ^ (1 - 1 / (n + 1 : ℝ)) * Real.log B + (d : ℝ) ^ (4 - 1 / (n + 1 : ℝ)) ≤
       2 * (d : ℝ) ^ (4 - 1 / (n + 1 : ℝ)) * B ^ (1 / (d : ℝ) ^ (1 / (n + 1 : ℝ))) := by
@@ -114,5 +112,4 @@ theorem affineAuxiliaryDegreeExpression_le_of_badPrime_ratio (n : ℕ) {d : ℕ}
   dsimp only [q, Q] at hmain
   nlinarith only [hmain, hlower]
 
-end
 end CCDN

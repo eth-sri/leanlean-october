@@ -117,7 +117,7 @@ theorem hypersurfaceBadPrimeFactor_le_height {n : ℕ}
     hypersurfaceBadPrimeFactor f ≤
       (Real.exp (2 * mertensError + 1) * hypersurfaceHeightConstant (n + 1)) *
         (1 + Real.log H / (f.totalDegree : ℝ) ^ 2) := by
-  have hlog : 0 ≤ Real.log H := Real.log_nonneg hH
+  have hlog := Real.log_nonneg hH
   have hc : 0 < hypersurfaceHeightConstant (n + 1) :=
     zero_lt_one.trans_le (hypersurfaceHeightConstant_one_le _)
   by_cases hf : AbsolutelyIrreducible f

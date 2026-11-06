@@ -13,9 +13,8 @@ import Mathlib.RingTheory.Norm.Transitivity
 two-element Galois group, the field norm, and its fixed field; they
 connect the unit-norm obstruction with the involution formulation. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 variable (F K : Type*) [Field F] [Field K] [Algebra F K]
   [FiniteDimensional F K] [Algebra.IsSeparable F K]
@@ -61,5 +60,4 @@ theorem quadratic_norm_eq_mul_conjugate
       False.elim ((quadratic_automorphism_eq_one_or F K hd σ hσ τ).elim hτ.1 hτ.2))
   simpa only [AlgEquiv.one_apply] using hp
 
-end
 end CCDN

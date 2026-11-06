@@ -23,12 +23,11 @@ import Mathlib.RingTheory.SimpleModule.Basic
 degree, obtained from the geometric Hilbert multiplicity. Linear parameters are the case of
 degree one. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private theorem bounded_degree_polynomial_parameters_rank_le
+theorem bounded_degree_polynomial_parameters_rank_le
     {K R F σ τ ι : Type*} [Field K] [Field R] [Field F]
     [Algebra K R] [Algebra R F] [Algebra K F] [IsScalarTower K R F]
     [Fintype σ] [LinearOrder σ] [Fintype τ] [Fintype ι] [DecidableEq ι]
@@ -41,15 +40,14 @@ private theorem bounded_degree_polynomial_parameters_rank_le
     (h : ι → MvPolynomial σ K)
     (hi : LinearIndependent R (fun i => φ ((Ideal.Quotient.mk I) (h i)))) :
     Fintype.card ι ≤ d * q ^ Fintype.card τ := by
-  classical
   let D := Finset.univ.sup (fun i => (h i).totalDegree)
   apply hilbert_scaled_block_count_le_multiplicity I hI (Fintype.card τ) d
     (Fintype.card ι) D q hq hdimdeg
   intro N
   let V := restrictTotalDegree τ K N
   let b := Module.finBasis K V
-  let p : Fin (Module.finrank K V) → MvPolynomial τ K := fun j => (b j).val
-  let uN : Fin (Module.finrank K V) → R := fun j => aeval u (p j)
+  let p := fun j => (b j).val
+  let uN := fun j => aeval u (p j)
   have huN : LinearIndependent K uN := by
     have hinj : Function.Injective ((aeval u).toLinearMap.comp V.subtype) :=
       (show Function.Injective (aeval u) from hu).comp Subtype.val_injective
@@ -98,7 +96,7 @@ variable {K R F σ : Type*} [Field K] [Field R] [Field F]
 
 /-- Clearing common denominators gives the same sharp bound for arbitrary
 independent functions in the fraction field. -/
-private theorem bounded_degree_fraction_parameters_rank_le
+theorem bounded_degree_fraction_parameters_rank_le
     {τ ι : Type*} [Fintype τ] [Fintype ι] [DecidableEq ι]
     (d q : ℕ) (hq : 0 < q) (hdimdeg : HasAffineDimensionDegree I (Fintype.card τ) d)
     (l : τ → MvPolynomial σ K) (hl : ∀ i, (l i).totalDegree ≤ q)
@@ -106,7 +104,6 @@ private theorem bounded_degree_fraction_parameters_rank_le
     (he : ∀ i, algebraMap (MvPolynomial σ K ⧸ I) F ((Ideal.Quotient.mk I) (l i)) =
       algebraMap R F (u i))
     (v : ι → F) (hv : LinearIndependent R v) : Fintype.card ι ≤ d * q ^ Fintype.card τ := by
-  classical
   let A := MvPolynomial σ K ⧸ I
   let φ := IsScalarTower.toAlgHom K A F
   obtain ⟨b, hb⟩ := IsLocalization.exist_integer_multiples_of_finite (nonZeroDivisors A) v
@@ -164,5 +161,4 @@ theorem hilbert_functionField_finite_rank_le
   simpa only [one_pow, mul_one] using
     bounded_degree_hilbert_functionField_finite_rank_le I d 1 one_pos hdimdeg l hl u hu he
 
-end
 end CCDN

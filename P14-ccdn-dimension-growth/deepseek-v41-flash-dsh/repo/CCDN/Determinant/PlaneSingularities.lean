@@ -13,9 +13,8 @@ import CCDN.Plane.Bezout
 /-! The singular-point correction in the finite-field curve estimate. The
 remaining estimate for all nonsingular rational points is not asserted here. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A partial derivative lowers the total degree by at least one. -/
@@ -63,5 +62,4 @@ theorem plane_singular_points_card_le {K ι : Type*} [Field K] [Fintype ι] [Dec
     (not_dvd_pderiv_of_pderiv_ne_zero hf.ne_zero hj) z hz hzf
     (fun i => hzsing i j)).trans (Nat.mul_le_mul_left _ (pderiv_totalDegree_le f j))
 
-end
 end CCDN

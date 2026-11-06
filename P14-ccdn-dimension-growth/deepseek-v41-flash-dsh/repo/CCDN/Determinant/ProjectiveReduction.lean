@@ -30,7 +30,7 @@ lemma primitive_mod_ne_zero {n p : ℕ} [Fact p.Prime]
     intro i _
     exact (ZMod.intCast_zmod_eq_zero_iff_dvd _ _).mp (congrFun h i)
   rw [hz] at hd
-  have hp : Prime (p : ℤ) := Nat.prime_iff_prime_int.mp (Fact.out : p.Prime)
+  have hp := Nat.prime_iff_prime_int.mp (Fact.out : p.Prime)
   exact hp.not_isUnit (isUnit_of_dvd_one hd)
 
 /-- The reduction modulo `p` of a primitive integer point, as a point of `ℙⁿ(𝔽_p)`. -/
@@ -117,7 +117,7 @@ theorem projectiveResidueChartLift_zero {p d : ℕ} [Fact p.Prime]
       (fun j => (projectiveResidueChartLift r j : ZMod p))
       (projectivePlaneChart (projectiveResiduePivot r) f) = 0 := by
   let k := projectiveResiduePivot r
-  let a : Fin 2 → ZMod p := fun j => (projectiveResidueChartLift r j : ZMod p)
+  let a := fun j => (projectiveResidueChartLift r j : ZMod p)
   have hv : Fin.cons 1 a = (r.rep k)⁻¹ • (r.rep ∘ Equiv.swap 0 k) := by
     funext j
     refine Fin.cases ?_ (fun l => ?_) j

@@ -20,7 +20,6 @@ large square. Consequently its unbounded portions lie in coordinate rays.
 @[expose] public section
 namespace CCDN
 noncomputable section
-open MvPolynomial
 
 /-- Bounded exponent sets are finite. -/
 instance finite_boundedStandardExponents {K σ : Type*} [Field K] [Fintype σ]
@@ -38,7 +37,7 @@ instance finite_boundedStandardExponents {K σ : Type*} [Field K] [Fintype σ]
 
 /-- A standard monomial with two large exponents supplies an entire square of
 independent quotient classes in degree at most `2B`. -/
-private theorem standard_square_le_filtered {K σ : Type*} [Field K] [Fintype σ]
+theorem standard_square_le_filtered {K σ : Type*} [Field K] [Fintype σ]
     [LinearOrder σ] (I : Ideal (MvPolynomial σ K)) (B : ℕ)
     {a : σ →₀ ℕ} (ha : a ∈ Ideal.standardExponents I MonomialOrder.degLex)
     {i j : σ} (hij : i ≠ j) (hi : B ≤ a i) (hj : B ≤ a j) :

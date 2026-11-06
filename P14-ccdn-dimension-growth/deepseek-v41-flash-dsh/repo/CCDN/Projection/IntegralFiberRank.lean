@@ -19,13 +19,12 @@ linear combination separates a finite set of characteristic-zero points.
 Its specialized monic minimal polynomial bounds the entire fiber by the
 fraction-field rank, independently of the number of coordinates. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- Distinct specialization tuples are roots of one separating integral
 element's minimal polynomial. Normality bounds its degree by the field rank. -/
-private theorem integral_coordinate_tuple_count_le_finrank
+theorem integral_coordinate_tuple_count_le_finrank
     (R A F E : Type*) [CommRing R] [IsDomain R] [IsIntegrallyClosed R]
     [CommRing A] [IsDomain A] [Field F] [Field E]
     [Algebra R A] [Algebra R F] [IsFractionRing R F]
@@ -117,5 +116,4 @@ theorem integral_projection_fiber_card_le_finrank
   intro x hx
   exact exists_projection_fiber_specialization I l hmap z x (hzero x hx) (hproj x hx)
 
-end
 end CCDN

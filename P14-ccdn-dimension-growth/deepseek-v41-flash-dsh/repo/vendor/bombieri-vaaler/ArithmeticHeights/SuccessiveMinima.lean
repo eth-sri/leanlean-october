@@ -160,7 +160,7 @@ variable [DiscreteTopology L] [IsZLattice ℝ L]
 /-- A `ℤ`-basis of a lattice of `E`, read as an `ℝ`-basis of `E` indexed by `Fin (finrank ℝ E)`.
 Every basis vector is a lattice point, which is what makes the set of admissible dilations
 nonempty. -/
-private theorem exists_basis_mem (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] :
+theorem exists_basis_mem (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L] :
     ∃ b : Basis (Fin (finrank ℝ E)) ℝ E, ∀ j, b j ∈ L := by
   classical
   have hcard : Fintype.card (Module.Free.ChooseBasisIndex ℤ L) = finrank ℝ E := by
@@ -172,7 +172,7 @@ private theorem exists_basis_mem (L : Submodule ℤ E) [DiscreteTopology L] [IsZ
 
 /-- Below the dimension there is an admissible dilation: a basis of `E` made of lattice vectors
 is independent, and the body absorbs its finitely many members. -/
-private theorem exists_mem_minimumSet (hi : i < finrank ℝ E) (hB₀ : Convex ℝ B)
+theorem exists_mem_minimumSet (hi : i < finrank ℝ E) (hB₀ : Convex ℝ B)
     (hB₁ : ∀ x ∈ B, -x ∈ B) (hB₂ : (interior B).Nonempty) :
     ∃ t : ℝ, 0 < t ∧ ∃ v : Fin (i + 1) → E,
       (∀ j, v j ∈ (t • B) ∩ (L : Set E)) ∧ LinearIndependent ℝ v := by
@@ -240,7 +240,7 @@ variable [DiscreteTopology L]
 /-- A bounded gauge slice meets the lattice in a finite set: the slice is bounded because the body
 is, and the lattice is discrete and closed. This is the one place discreteness of the lattice is
 used, and every attainment statement below rests on it. -/
-private theorem finite_gauge_le_inter (L : Submodule ℤ E) [DiscreteTopology L]
+theorem finite_gauge_le_inter (L : Submodule ℤ E) [DiscreteTopology L]
     (h₀ : B ∈ 𝓝 (0 : E)) (hB₃ : Bornology.IsBounded B) (t : ℝ) :
     ({x : E | gauge B x ≤ t} ∩ (L : Set E)).Finite := by
   obtain ⟨R, hR, hRB⟩ := hB₃.subset_closedBall_lt 0 0
@@ -258,7 +258,7 @@ private theorem finite_gauge_le_inter (L : Submodule ℤ E) [DiscreteTopology L]
 
 /-- The gauge attains its minimum on any nonempty set of lattice points: the points of gauge at
 most that of a chosen member form a finite set. -/
-private theorem exists_gauge_min (L : Submodule ℤ E) [DiscreteTopology L] (h₀ : B ∈ 𝓝 (0 : E))
+theorem exists_gauge_min (L : Submodule ℤ E) [DiscreteTopology L] (h₀ : B ∈ 𝓝 (0 : E))
     (hB₃ : Bornology.IsBounded B) {S : Set E} (hS : S ⊆ (L : Set E)) (hne : S.Nonempty) :
     ∃ w ∈ S, ∀ y ∈ S, gauge B w ≤ gauge B y := by
   obtain ⟨x₀, hx₀⟩ := hne
@@ -275,7 +275,7 @@ variable [IsZLattice ℝ L]
 /-- Nonzero lattice points have gauge bounded away from zero. This is where boundedness of the
 body is used: the body is inside a ball, so a point of small gauge is a point of small norm, and
 the lattice has none but `0`. -/
-private theorem exists_pos_le_gauge (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
+theorem exists_pos_le_gauge (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
     (h₀ : B ∈ 𝓝 (0 : E)) (hB₃ : Bornology.IsBounded B) (hE : 0 < finrank ℝ E) :
     ∃ δ : ℝ, 0 < δ ∧ ∀ x ∈ (L : Set E), x ≠ 0 → δ ≤ gauge B x := by
   obtain ⟨b, hb⟩ := exists_basis_mem L
@@ -305,7 +305,7 @@ variable [DiscreteTopology L] [IsZLattice ℝ L]
 /-- The inductive step of Cassels' Lemma 1, carrying the minimality of the family over the
 complement of its own span: that clause is what makes the gauges increase along the family, and
 it is the reason the construction is greedy rather than a choice for each index separately. -/
-private theorem exists_gauge_eq_aux (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
+theorem exists_gauge_eq_aux (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
     (hB₀ : Convex ℝ B) (hB₁ : ∀ x ∈ B, -x ∈ B) (hB₂ : (interior B).Nonempty)
     (hB₃ : Bornology.IsBounded B) :
     ∀ m : ℕ, m ≤ finrank ℝ E → ∃ v : Fin m → E, (∀ j, v j ∈ (L : Set E)) ∧

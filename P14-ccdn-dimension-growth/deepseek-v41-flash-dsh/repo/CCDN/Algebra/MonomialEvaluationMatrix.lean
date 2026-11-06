@@ -37,7 +37,6 @@ noncomputable def polynomialOfCoefficients {n N : ℕ} (mon : Fin N → (Fin n �
 theorem coefficient_polynomialOfCoefficients {n N : ℕ} (mon : Fin N → (Fin n →₀ ℕ))
     (hmon : Function.Injective mon) (v : Fin N → ℤ) (j : Fin N) :
     (polynomialOfCoefficients mon v).coeff (mon j) = v j := by
-  classical
   simp [polynomialOfCoefficients, MvPolynomial.coeff_monomial,
     hmon.eq_iff]
 
@@ -85,7 +84,7 @@ theorem abs_monomial_value_le {n M : ℕ} (e : Fin n →₀ ℕ) (x : Fin n → 
     {B : ℝ} (hB : 1 ≤ B) (hx : InBox x B)
     (he : e.degree ≤ M) :
     |((e.prod (fun i k => x i ^ k) : ℤ) : ℝ)| ≤ B ^ M := by
-  have hsum : ∑ i, e i ≤ M := by rwa [Finsupp.degree_eq_sum] at he
+  have hsum := by rwa [Finsupp.degree_eq_sum] at he
   rw [Finsupp.prod_fintype e (fun i k => x i ^ k) (fun _ => pow_zero _)]
   push_cast
   rw [Finset.abs_prod]

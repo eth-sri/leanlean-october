@@ -14,12 +14,11 @@ import CCDN.Noether.EulerSparseMatrix
 An original monomial of degree d contributes at most 3^d; an Euler matrix
 entry contributes at most d times this quantity. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma universalPlane_coordinate_flatten_l1_le {σ : Type*} (i : σ) :
+lemma universalPlane_coordinate_flatten_l1_le {σ : Type*} (i : σ) :
     l1Norm ((sumAlgEquiv ℤ (Fin 2) (PlaneParameters σ)).symm
       (C (X (i,0)) + C (X (i,1)) * X 0 + C (X (i,2)) * X 1)) ≤ 3 := by
   simp only [map_add, map_mul, sumAlgEquiv_symm_C_X, sumAlgEquiv_symm_X]
@@ -35,10 +34,9 @@ private lemma universalPlane_coordinate_flatten_l1_le {σ : Type*} (i : σ) :
     (X (Sum.inr (i,2)) : MvPolynomial (Fin 2 ⊕ PlaneParameters σ) ℤ) (X (Sum.inl 1))
   simpa only [hx] using Nat.add_le_add hab hc
 
-private theorem universalPlane_monomial_flatten_l1_le {σ : Type*} (m : σ →₀ ℕ) :
+theorem universalPlane_monomial_flatten_l1_le {σ : Type*} (m : σ →₀ ℕ) :
     l1Norm ((sumAlgEquiv ℤ (Fin 2) (PlaneParameters σ)).symm
       (universalPlaneMap ℤ σ (monomial m 1))) ≤ 3 ^ m.degree := by
-  classical
   rw [universalPlaneMap, aeval_monomial, map_one, one_mul]
   change l1Norm ((sumAlgEquiv ℤ (Fin 2) (PlaneParameters σ)).symm
     (∏ i ∈ m.support,
@@ -58,12 +56,12 @@ private theorem universalPlane_monomial_flatten_l1_le {σ : Type*} (m : σ →�
       rw [Finset.prod_pow_eq_pow_sum]
       rfl
 
-private theorem universalPlane_monomial_coefficient_l1_le {σ : Type*}
+theorem universalPlane_monomial_coefficient_l1_le {σ : Type*}
     (m : σ →₀ ℕ) (n : Fin 2 →₀ ℕ) :
     l1Norm ((universalPlaneMap ℤ σ (monomial m 1)).coeff n) ≤ 3 ^ m.degree :=
   (l1Norm_coeff_le_l1Norm_sumAlgEquiv_symm _ _).trans (universalPlane_monomial_flatten_l1_le m)
 
-private theorem eulerClosedForm_entry_l1_le {σ : Type*} (k H : ℕ)
+theorem eulerClosedForm_entry_l1_le {σ : Type*} (k H : ℕ)
     (f : Polynomial (Polynomial (MvPolynomial σ ℤ)))
     (hf : bivariateTotalDegree f ≤ k + 2)
     (hcoeff : ∀ i, l1Norm (eulerCoefficientData (k + 2) f i) ≤ H)
@@ -104,5 +102,4 @@ theorem ambientEulerEntry_monomial_l1_le {σ : Type*} (k : ℕ)
       universalPlane_monomial_coefficient_l1_le m
         ((Finsupp.degreeLeEquivSym (Fin 2) (k + 2)).symm i).val
 
-end
 end CCDN

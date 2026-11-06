@@ -22,7 +22,6 @@ open MvPolynomial
 lemma aeval_totalDegree_le {K σ τ : Type*} [Field K] [Fintype σ]
     (a : σ → MvPolynomial τ K) {m : ℕ} (ha : ∀ i, (a i).totalDegree ≤ m)
     (f : MvPolynomial σ K) : (aeval a f).totalDegree ≤ m * f.totalDegree := by
-  classical
   conv_lhs => rw [f.as_sum, map_sum]
   apply totalDegree_finsetSum_le
   intro e he

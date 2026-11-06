@@ -13,7 +13,6 @@ sharp determinant exponent. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The degree-k Hilbert function of a homogeneous hypersurface of degree μ
@@ -21,7 +20,7 @@ in n+1 variables, including the degrees below μ. -/
 def hypersurfaceLayerBound (n μ k : ℕ) : ℕ :=
   (n + k).choose n - if μ ≤ k then (n + (k - μ)).choose n else 0
 
-private lemma originLayer_finrank_le_hypersurfaceLayerBound {K : Type*} [Field K] {n μ k : ℕ}
+lemma originLayer_finrank_le_hypersurfaceLayerBound {K : Type*} [Field K] {n μ k : ℕ}
     (f : MvPolynomial (Fin (n + 1)) K)
     (hf : f ∈ idealOfVars (Fin (n + 1)) K ^ μ)
     (hμ : homogeneousComponent μ f ≠ 0) :
@@ -34,7 +33,7 @@ private lemma originLayer_finrank_le_hypersurfaceLayerBound {K : Type*} [Field K
   · rw [Nat.sub_zero, Nat.choose_symm_add]
     exact originLayer_finrank_le f k
 
-private lemma hypersurfaceLayerBound_zero (n k : ℕ) : hypersurfaceLayerBound n 0 k = 0 := by
+lemma hypersurfaceLayerBound_zero (n k : ℕ) : hypersurfaceLayerBound n 0 k = 0 := by
   simp [hypersurfaceLayerBound]
 
 /-- For positive degree `μ`, the Hilbert function `hypersurfaceLayerBound n μ` takes the value `1`
@@ -51,8 +50,7 @@ lemma hypersurfaceLayerBound_succ_succ (n μ k : ℕ) :
       (n + (k + 1)).choose n + hypersurfaceLayerBound (n + 1) μ k := by
   have hchoose : (n + 1 + (k + 1)).choose (n + 1) =
       (n + (k + 1)).choose n + (n + 1 + k).choose (n + 1) := by
-    rw [show n + 1 + (k + 1) = (n + 1 + k) + 1 by omega, Nat.choose_succ_succ']
-    rw [show n + 1 + k = n + (k + 1) by omega]
+    rw [show n + 1 + (k + 1) = (n + 1 + k) + 1 by omega, Nat.choose_succ_succ', show n + 1 + k = n + (k + 1) by omega]
   unfold hypersurfaceLayerBound
   rw [hchoose]
   by_cases hk : μ ≤ k
@@ -79,7 +77,7 @@ theorem hypersurfaceLayerBound_le_mul_choose (n μ k : ℕ) :
 
 /-- Cumulative layer dimension through degree k is at most
 μ * binomial(n+k,n), where n is the hypersurface dimension. -/
-private theorem sum_hypersurfaceLayerBound_le (n μ k : ℕ) :
+theorem sum_hypersurfaceLayerBound_le (n μ k : ℕ) :
     (∑ j : Fin (k + 1), hypersurfaceLayerBound (n + 1) μ j.val) ≤
       μ * (n + k + 1).choose (n + 1) := by
   calc
@@ -102,5 +100,4 @@ theorem originLayer_cumulative_le {K : Type*} [Field K] {n μ : ℕ}
     originLayer_finrank_le_hypersurfaceLayerBound f hf hμ)).trans
       (sum_hypersurfaceLayerBound_le n μ k)
 
-end
 end CCDN

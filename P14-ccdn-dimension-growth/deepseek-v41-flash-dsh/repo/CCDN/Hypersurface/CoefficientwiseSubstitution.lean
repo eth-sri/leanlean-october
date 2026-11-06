@@ -11,14 +11,13 @@ public import CCDN.Noether.UniversalHomogeneousForm
 /-! Homogeneous substitution with independent coefficient and polynomial
 variables, and specialization of the resulting coefficient forms. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Finsupp
 
 namespace CoefficientwiseHomogeneous
 
-private lemma pow {R σ τ : Type*} [CommRing R]
+lemma pow {R σ τ : Type*} [CommRing R]
     {f : MvPolynomial σ (MvPolynomial τ R)} {d : ℕ}
     (hf : CoefficientwiseHomogeneous f d) (n : ℕ) :
     CoefficientwiseHomogeneous (f ^ n) (d * n) := by
@@ -81,5 +80,4 @@ lemma homogeneousCoefficientSpecialization_homogeneous
   · intro i
     exact hf (homogeneousCoefficientExponent σ d i)
 
-end
 end CCDN

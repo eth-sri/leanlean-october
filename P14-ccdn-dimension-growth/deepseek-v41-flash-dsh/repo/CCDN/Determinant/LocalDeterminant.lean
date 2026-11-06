@@ -23,7 +23,6 @@ factorization is proved in `FilteredDeterminant` in arbitrary ambient dimension.
 
 namespace CCDN
 
-open Matrix
 
 /-- Cauchy–Binet valuation bound: if `p ^ weight i` divides the `i`-th row of `V`, and every choice
 of `s` increasing row indices has total weight at least `e`, then `p ^ e` divides `det (U * V)`. -/
@@ -33,7 +32,6 @@ theorem pow_dvd_det_of_weighted_factorization {R : Type*} [CommRing R] {s N : �
     (hV : ∀ i j, p ^ weight i ∣ V i j)
     (he : ∀ t : Fin s ↪o Fin N, e ≤ ∑ i, weight (t i)) :
     p ^ e ∣ (U * V).det := by
-  classical
   rw [Matrix.det_mul_eq_sum_det_submatrix]
   apply Finset.dvd_sum
   intro S _
@@ -43,7 +41,7 @@ theorem pow_dvd_det_of_weighted_factorization {R : Type*} [CommRing R] {s N : �
   rw [Finset.prod_pow_eq_pow_sum] at hminor
   exact dvd_mul_of_dvd_right ((pow_dvd_pow p (he t)).trans hminor) _
 
-private theorem orderEmbedding_value_ge {s N : ℕ} (t : Fin s ↪o Fin N) (i : Fin s) :
+theorem orderEmbedding_value_ge {s N : ℕ} (t : Fin s ↪o Fin N) (i : Fin s) :
     i.val ≤ (t i).val := by
   have hpoint : ∀ j : ℕ, ∀ hj : j < s, j ≤ (t ⟨j, hj⟩).val := by
     intro j

@@ -19,13 +19,12 @@ import CCDN.Plane.FrobeniusSystem
 The polynomial bases, auxiliary coefficients, formal branches and multiplicity
 argument are explicit, given a numerical choice of degrees. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A strict dimension inequality gives the smooth prime-field point count. -/
-private theorem plane_stepanov_smooth_bound {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem plane_stepanov_smooth_bound {ι : Type*} [Fintype ι] [DecidableEq ι]
     (p : ℕ) [Fact p.Prime] (f : MvPolynomial (Fin 2) (ZMod p)) (hf : Irreducible f)
     (z : ι → Fin 2 → ZMod p) (hz : Function.Injective z)
     (hzero : ∀ i, eval (z i) f = 0) (j : Fin 2)
@@ -36,7 +35,6 @@ private theorem plane_stepanov_smooth_bound {ι : Type*} [Fintype ι] [Decidable
       Module.finrank (ZMod p) (filteredCoordinateSpace (Ideal.span {f}) D) *
       Module.finrank (ZMod p) (filteredCoordinateSpace (Ideal.span {f}) A)) :
     Fintype.card ι * N ≤ f.totalDegree * (D + p * A) := by
-  classical
   obtain ⟨h, hd, hi⟩ := exists_filtered_polynomial_basis (Ideal.span {f}) D
   obtain ⟨b, hb, hbi⟩ := exists_filtered_polynomial_basis (Ideal.span {f}) A
   obtain ⟨a, ha, hne, hdiv⟩ := exists_planeFrobenius_coefficients f j h b hd hb hbi
@@ -57,7 +55,6 @@ theorem plane_stepanov_bound {ι : Type*} [Fintype ι] [DecidableEq ι]
       Module.finrank (ZMod p) (filteredCoordinateSpace (Ideal.span {f}) A)) :
     Fintype.card ι * N ≤ f.totalDegree * (D + p * A) +
       f.totalDegree * (f.totalDegree - 1) * N := by
-  classical
   obtain ⟨k, hk⟩ := exists_pderiv_ne_zero hpos (CharZeroOrGT.of_charP hchar)
   let P (i : ι) := eval (z i) (pderiv k f) = 0
   have hgood := plane_stepanov_smooth_bound p f hf
@@ -81,5 +78,4 @@ theorem plane_stepanov_bound {ι : Type*} [Fintype ι] [DecidableEq ι]
     exact Nat.add_sub_of_le (Fintype.card_subtype_le P)
   nlinarith
 
-end
 end CCDN

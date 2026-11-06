@@ -22,14 +22,12 @@ lemmas isolate the constant-descent step in Gao's differential criterion;
 they do not supply the resultant bounds for residues or a Bertini theorem.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial Differential
-open scoped Differential
 
 /-- A polynomial with zero derivative is constant when its degree is below the characteristic. -/
-private lemma polynomial_eq_C_of_derivative_eq_zero_of_degree_lt_char
+lemma polynomial_eq_C_of_derivative_eq_zero_of_degree_lt_char
     {K : Type*} [Field K] (f : K[X]) (hchar : CharZeroOrGT K f.natDegree)
     (hder : f.derivative = 0) :
     f = C (f.coeff 0) := by
@@ -45,15 +43,12 @@ private lemma polynomial_eq_C_of_derivative_eq_zero_of_degree_lt_char
       exact (mul_eq_zero.mp h).resolve_right (by
         simpa only [Nat.cast_succ] using hchar.natCast_ne_zero hi (Nat.le_of_not_gt hlarge))
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open Polynomial Differential
-open scoped Differential
 
-private theorem polynomial_eq_zero_of_differential_constant_coefficients
+theorem polynomial_eq_zero_of_differential_constant_coefficients
     {L : Type*} [Field L] [Differential L]
     (t : L) (ht : t′ = 1) (f : L[X]) (hchar : CharZeroOrGT L f.natDegree)
     (hcoeff : Differential.mapCoeffs f = 0) (hroot : f.eval t = 0) :
@@ -80,7 +75,7 @@ private theorem polynomial_eq_zero_of_differential_constant_coefficients
       rw [he, eval_C] at hroot
       rw [he, hroot, C_0]
 
-private lemma differential_aeval_eq_zero_of_constants
+lemma differential_aeval_eq_zero_of_constants
     {F L : Type*} [Field F] [Field L] [Algebra F L] [Differential L]
     (hbase : ∀ a : F, (algebraMap F L a)′ = 0)
     (x : L) (hx : x′ = 0) (f : F[X]) :
@@ -109,12 +104,11 @@ theorem differential_constant_mem_base_of_relation
   have hz := polynomial_eq_zero_of_differential_constant_coefficients t ht
     (R.map (aeval x).toRingHom) (hchar.mono natDegree_map_le) hmap hroot
   let i := R.natDegree
-  have hi : R.coeff i ≠ 0 := by simpa only [i, coeff_natDegree] using leadingCoeff_ne_zero.mpr hR
+  have hi := by simpa only [i, coeff_natDegree] using leadingCoeff_ne_zero.mpr hR
   have hiRoot : ((R.coeff i).map (algebraMap F L)).IsRoot x := by
     have h := congrArg (fun f : L[X] => f.coeff i) hz
     simpa only [coeff_map, coeff_zero, AlgHom.toRingHom_eq_coe, RingHom.coe_coe,
       IsRoot, eval_map, aeval_def] using h
   exact (IsAlgClosed.splits (R.coeff i)).mem_range_of_isRoot hi hiRoot
 
-end
 end CCDN

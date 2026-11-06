@@ -26,8 +26,7 @@ def clampExponent {σ : Type*} (B : ℕ) (a : σ → ℕ) : σ → ℕ :=
 theorem lowerSet_clamp_stabilizes {σ : Type*} [Fintype σ]
     (S : Set (σ → ℕ)) (hS : IsLowerSet S) :
     ∃ B : ℕ, 0 < B ∧ ∀ a, a ∈ S ↔ clampExponent B a ∈ S := by
-  classical
-  let T : Set (σ → ℕ) := {a | Minimal (fun a => a ∉ S) a}
+  let T := {a | Minimal (fun a => a ∉ S) a}
   have hT : T.Finite :=
     WellQuasiOrderedLE.finite_of_isAntichain (setOfPred_minimal_antichain _)
   let B := hT.toFinset.sup (fun a => Finset.univ.sup a) + 1
@@ -84,7 +83,6 @@ plus the total of the added free coordinates. -/
 lemma orthantExpand_sum {σ : Type*} [Fintype σ] {B : ℕ}
     (b : σ → Fin (B + 1)) (c : orthantFree b → ℕ) :
     (∑ i, orthantExpand b c i) = orthantBaseDegree b + ∑ j, c j := by
-  classical
   simp only [orthantExpand, Finset.sum_add_distrib, orthantBaseDegree]
   congr 1
   have hh := Finset.sum_subtype (p := fun i => (b i).val = B) (F := inferInstance)

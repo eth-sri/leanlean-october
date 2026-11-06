@@ -13,9 +13,8 @@ import CCDN.Noether.ShearNormalization
 /-! A coefficient-height witness on the bounded integer plane grid: the case n = 2 of
 `CCDN.Height.MultivariateGridHeight`. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial
 
 /-- Evaluating the nested-polynomial form of a bivariate polynomial `f` at `(x, y)` (inner
@@ -36,7 +35,7 @@ lemma bivariatePolynomialEquiv_eval {R : Type*} [CommRing R]
   exact RingHom.congr_fun he f
 
 /-- Natural-number points of `Fin 2 → ℕ`, written as vectors of length two. -/
-private lemma natCast_fin_two_eq {R : Type*} [CommRing R] (a : Fin 2 → ℕ) :
+lemma natCast_fin_two_eq {R : Type*} [CommRing R] (a : Fin 2 → ℕ) :
     (fun i => (a i : R)) = ![(a 0 : R), (a 1 : R)] := by
   funext i
   fin_cases i <;> rfl
@@ -76,5 +75,4 @@ theorem integer_plane_coefficient_bound_of_grid (f : MvPolynomial (Fin 2) ℤ) {
   integer_multivariate_coefficient_bound_of_grid f hd hH (fun a ha => by
     rw [natCast_fin_two_eq]; exact heval (a 0) (a 1) (ha 0) (ha 1)) m
 
-end
 end CCDN

@@ -60,14 +60,14 @@ lemma affinePlaneMap_totalDegree_le {K σ : Type*} [CommRing K]
     · exact (totalDegree_mul _ _).trans (by simpa using hx 0)
   · exact (totalDegree_mul _ _).trans (by simpa using hx 1)
 
-private lemma affinePlaneMap_rename {K σ τ : Type*} [CommRing K]
+lemma affinePlaneMap_rename {K σ τ : Type*} [CommRing K]
     (e : σ → τ) (a b c : τ → K) (f : MvPolynomial σ K) :
     affinePlaneMap a b c (rename e f) =
       affinePlaneMap (a ∘ e) (b ∘ e) (c ∘ e) f := by
   change eval₂Hom _ _ (rename e f) = eval₂Hom _ _ f
   simp only [eval₂Hom_rename, Function.comp_def]
 
-private lemma map_affinePlaneMap {K L σ : Type*} [CommRing K] [CommRing L]
+lemma map_affinePlaneMap {K L σ : Type*} [CommRing K] [CommRing L]
     (φ : K →+* L) (a b c : σ → K) (f : MvPolynomial σ K) :
     map φ (affinePlaneMap a b c f) =
       affinePlaneMap (φ ∘ a) (φ ∘ b) (φ ∘ c) (map φ f) := by
@@ -78,7 +78,7 @@ private lemma map_affinePlaneMap {K L σ : Type*} [CommRing K] [CommRing L]
     · intro i; simp [affinePlaneMap]
   exact RingHom.congr_fun he f
 
-private lemma universalPlaneSection_eq_affinePlaneMap {K σ : Type*} [CommRing K]
+lemma universalPlaneSection_eq_affinePlaneMap {K σ : Type*} [CommRing K]
     (f : MvPolynomial σ K) (u : PlaneParameters σ → K) :
     universalPlaneSection f u = bivariatePolynomialEquiv K
       (affinePlaneMap (fun i => u (i,0)) (fun i => u (i,1)) (fun i => u (i,2)) f) := by
@@ -98,11 +98,11 @@ def planeDirectionMatrix {K : Type*} [CommRing K] (b c v : Fin 3 → K) :
     Matrix (Fin 3) (Fin 3) K :=
   fun i j => ![b i, c i, v i] j
 
-private def planeTransversalityPolynomial (v : Fin 3 → ℚ) :
+def planeTransversalityPolynomial (v : Fin 3 → ℚ) :
     MvPolynomial (PlaneParameters (Fin 3)) ℚ :=
   (planeDirectionMatrix (fun i => X (i,1)) (fun i => X (i,2)) (fun i => C (v i))).det
 
-private lemma planeTransversalityPolynomial_eval (v : Fin 3 → ℚ)
+lemma planeTransversalityPolynomial_eval (v : Fin 3 → ℚ)
     (u : PlaneParameters (Fin 3) → ℚ) :
     eval u (planeTransversalityPolynomial v) =
       (planeDirectionMatrix (fun i => u (i,1)) (fun i => u (i,2)) v).det := by
@@ -111,7 +111,7 @@ private lemma planeTransversalityPolynomial_eval (v : Fin 3 → ℚ)
   ext i j
   fin_cases j <;> simp [planeDirectionMatrix, Matrix.map_apply]
 
-private lemma planeTransversalityPolynomial_ne_zero (v : Fin 3 → ℚ) (hv : v ≠ 0) :
+lemma planeTransversalityPolynomial_ne_zero (v : Fin 3 → ℚ) (hv : v ≠ 0) :
     planeTransversalityPolynomial v ≠ 0 := by
   obtain ⟨j, hj⟩ := Function.ne_iff.mp hv
   intro he
@@ -133,7 +133,7 @@ private lemma planeTransversalityPolynomial_ne_zero (v : Fin 3 → ℚ) (hv : v 
 
 /-- The integer specialization theorem, reindexed to three
 coordinates, can avoid any nonzero rational parameter polynomial. -/
-private theorem exists_good_rational_plane_avoiding
+theorem exists_good_rational_plane_avoiding
     (f : MvPolynomial (Fin 3) ℤ)
     (hir : AbsolutelyIrreducible f)
     (hd : 0 < f.totalDegree)
@@ -142,7 +142,6 @@ private theorem exists_good_rational_plane_avoiding
       eval (fun i => ![a i.1, b i.1, c i.1] i.2) P ≠ 0 ∧
       Irreducible (affinePlaneMap a b c (map (Int.castRingHom ℚ) f)) ∧
       (affinePlaneMap a b c (map (Int.castRingHom ℚ) f)).totalDegree = f.totalDegree := by
-  classical
   let e : Fin 3 ≃ Option (Fin 2) := finSuccEquiv' 0
   let ep : PlaneParameters (Fin 3) ≃ PlaneParameters (Option (Fin 2)) :=
     Equiv.prodCongr e (Equiv.refl _)

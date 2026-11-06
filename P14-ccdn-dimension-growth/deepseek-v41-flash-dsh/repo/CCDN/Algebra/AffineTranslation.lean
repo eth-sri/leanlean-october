@@ -33,7 +33,6 @@ lemma affineTranslation_irreducible_iff {R : Type*} [CommRing R] {n : ℕ}
 lemma affineTranslation_totalDegree_le {R : Type*} [CommRing R] [Nontrivial R] {n : ℕ}
     (a : Fin n → R) (f : MvPolynomial (Fin n) R) :
     (affineTranslation R a f).totalDegree ≤ f.totalDegree := by
-  classical
   have hm (m : Fin n →₀ ℕ) (c : R) :
       (affineTranslation R a (monomial m c)).totalDegree ≤ m.sum (fun _ e => e) := by
     change (aeval (fun j => X j + C (a j)) (monomial m c)).totalDegree ≤ _

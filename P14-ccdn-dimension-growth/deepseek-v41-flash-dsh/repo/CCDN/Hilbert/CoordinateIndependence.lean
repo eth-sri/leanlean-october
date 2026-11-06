@@ -13,12 +13,11 @@ import CCDN.Hilbert.OrthantMultiplicity
 /-! Maximal standard-monomial orthants construct algebraically
 independent original coordinates of cardinality equal to Hilbert dimension. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma algebraicIndependent_coordinates_of_standard
+lemma algebraicIndependent_coordinates_of_standard
     {K σ ι : Type*} [Field K]
     (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ)
     (j : ι → σ) (hj : Function.Injective j)
@@ -32,7 +31,7 @@ private lemma algebraicIndependent_coordinates_of_standard
     ext i
     simp
   rw [he] at hp
-  have hmem : rename j p ∈ I := Ideal.Quotient.eq_zero_iff_mem.mp hp
+  have hmem := Ideal.Quotient.eq_zero_iff_mem.mp hp
   have hs : rename j p ∈ restrictSupport K (Ideal.standardExponents I m) := by
     intro a ha
     change a ∈ (rename j p).support at ha
@@ -42,7 +41,7 @@ private lemma algebraicIndependent_coordinates_of_standard
   have hz := Ideal.eq_zero_of_mem_restrictSupport_standardExponents I m hs hmem
   exact (rename_injective j hj) (by simpa only [map_zero] using hz)
 
-private lemma orthant_free_monomials_standard {K σ : Type*} [Field K] [Fintype σ]
+lemma orthant_free_monomials_standard {K σ : Type*} [Field K] [Fintype σ]
     (I : Ideal (MvPolynomial σ K)) (m : MonomialOrder σ) (B : ℕ)
     (hstable : ∀ a, a ∈ standardExponentVectors I m ↔
       clampExponent B a ∈ standardExponentVectors I m)
@@ -103,5 +102,4 @@ theorem exists_hilbert_dimension_independent_coordinates
       (orthant_free_monomials_standard I MonomialOrder.degLex B hB b
         (Finset.mem_filter.mp hb).2)
 
-end
 end CCDN

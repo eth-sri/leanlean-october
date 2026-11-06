@@ -22,16 +22,14 @@ affine cone at the same height. Chosen primitive representatives give a
 height-preserving injection.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Height-preserving comparison with the affine cone, for every real radius. -/
-private theorem projective_count_le_affine_cone_count {n d : ℕ}
+theorem projective_count_le_affine_cone_count {n d : ℕ}
     (f : MvPolynomial (Fin (n + 1)) ℚ) (hf : f.IsHomogeneous d) (B : ℝ) :
     projectiveCount (projectiveZeroLocus f) B ≤ count (zeroLocus f) B := by
-  classical
   let S := projectivePoints (projectiveZeroLocus f) B
   have hsub : S.image primitiveProjectiveRep ⊆ integralPoints (zeroLocus f) B := by
     intro z hz
@@ -44,14 +42,12 @@ private theorem projective_count_le_affine_cone_count {n d : ℕ}
   rw [Finset.card_image_of_injective S primitiveProjectiveRep_injective] at hc
   exact hc
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private theorem nonabsolute_projective_hypersurface_dimension_growth {K : Type*}
+theorem nonabsolute_projective_hypersurface_dimension_growth {K : Type*}
     [Field K] [Algebra ℚ K] {n : ℕ}
     (f : MvPolynomial (Fin (n + 2)) ℚ)
     (hhom : f.IsHomogeneous f.totalDegree) (hir : Irreducible f)
@@ -64,7 +60,7 @@ private theorem nonabsolute_projective_hypersurface_dimension_growth {K : Type*}
 
 /-- The affine bound on the cone gives the projective hypersurface bound with the same
 degree exponent, provided the exponent is at least two. -/
-private theorem RationalAffineHypersurfaceGrowth.projective {n e : ℕ}
+theorem RationalAffineHypersurfaceGrowth.projective {n e : ℕ}
     (h : RationalAffineHypersurfaceGrowth n e) (he : 2 ≤ e) :
     ProjectiveHypersurfaceGrowth n e := by
   obtain ⟨C, hC, hbound⟩ := h
@@ -128,5 +124,4 @@ theorem ProjectiveHypersurfaceGrowth.ideal {n e : ℕ} (h : ProjectiveHypersurfa
         (principal_generator_isHomogeneous _ hI p hp.ne_zero rfl) hp.irreducible
         (by omega) B hB
 
-end
 end CCDN

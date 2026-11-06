@@ -21,12 +21,11 @@ successive filtered spaces. Critical growth forces every coordinate to be affine
 in one transcendental coordinate, giving polynomial containment of an affine line.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma coordinate_mul_filtered_mem {K σ : Type*} [Field K]
+lemma coordinate_mul_filtered_mem {K σ : Type*} [Field K]
     (I : Ideal (MvPolynomial σ K)) (j : σ) (N : ℕ)
     {u : MvPolynomial σ K ⧸ I} (hu : u ∈ filteredCoordinateSpace I N) :
     (Ideal.Quotient.mk I) (X j) * u ∈ filteredCoordinateSpace I (N + 1) := by
@@ -40,7 +39,7 @@ private lemma coordinate_mul_filtered_mem {K σ : Type*} [Field K]
 
 /-- Affine coordinate formulas in a prime quotient give polynomial containment
 of an affine line through each base-field-valued point. -/
-private theorem affine_coordinates_line_polynomial_identity {K : Type*} [Field K]
+theorem affine_coordinates_line_polynomial_identity {K : Type*} [Field K]
     (p : Ideal (MvPolynomial (Fin 3) K)) [p.IsPrime]
     (j : Fin 3) (c d : Fin 3 → K)
     (hj : Transcendental K ((Ideal.Quotient.mk p) (X j)))
@@ -100,7 +99,7 @@ private theorem affine_coordinates_line_polynomial_identity {K : Type*} [Field K
 
 /-- A degree-one prime curve containing a base-field point has affine coordinate
 formulas over that same field. In particular this holds directly over `ℚ`. -/
-private theorem degree_one_coordinates_affine_of_point {K : Type*} [Field K]
+theorem degree_one_coordinates_affine_of_point {K : Type*} [Field K]
     (p : Ideal (MvPolynomial (Fin 3) K)) [p.IsPrime] (hp : p.height = 2)
     (hdegree : HasFilteredCurveDegree p 1)
     (z : Fin 3 → K) (hz : z ∈ idealZeroLocus p) :
@@ -141,7 +140,7 @@ private theorem degree_one_coordinates_affine_of_point {K : Type*} [Field K]
 
 /-- Affine coordinate identities identify the entire base-field zero set
 with the parameterized line, in both directions. -/
-private theorem zeroLocus_eq_line_of_affine_coordinates {K : Type*} [Field K]
+theorem zeroLocus_eq_line_of_affine_coordinates {K : Type*} [Field K]
     (p : Ideal (MvPolynomial (Fin 3) K)) [p.IsPrime]
     (j : Fin 3) (c d : Fin 3 → K)
     (hj : Transcendental K ((Ideal.Quotient.mk p) (X j)))
@@ -195,5 +194,4 @@ theorem degree_one_zeroLocus_eq_rationalAffineLine
     affine_coordinates_line_polynomial_identity p j c d hj hcd z hz⟩
   exact zeroLocus_eq_line_of_affine_coordinates p j c d hj hcd z hz
 
-end
 end CCDN

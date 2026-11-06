@@ -52,7 +52,7 @@ def integerEliminationCoordinates {σ : Type*} (b : Option σ → ℤ) :
     σ → MvPolynomial (Option σ) ℚ :=
   fun i => C (b none : ℚ) * X (some i) - C (b (some i) : ℚ) * X none
 
-private lemma integerEliminationCoordinates_eq_scale {σ : Type*}
+lemma integerEliminationCoordinates_eq_scale {σ : Type*}
     (b : Option σ → ℤ) (hb : (b none : ℚ) ≠ 0) (i : σ) :
     integerEliminationCoordinates b i =
       C (b none : ℚ) * eliminationLinearCoordinates (fun i => (b i : ℚ)) i := by
@@ -72,7 +72,7 @@ theorem integerEliminationMap_isIntegral {σ : Type*}
     (projectionCoordinateMap I (integerEliminationCoordinates b)).IsIntegral := by
   let e := variableScaleEquiv ℚ σ (b none : ℚ) hb
   let ψ := projectionCoordinateMap I (eliminationLinearCoordinates (fun i => (b i : ℚ)))
-  have he : e.toRingHom.IsIntegral := RingHom.isIntegral_of_surjective _ e.surjective
+  have he := RingHom.isIntegral_of_surjective _ e.surjective
   have hcomp := RingHom.IsIntegral.trans e.toRingHom ψ.toRingHom he hint
   have heq : ψ.comp e.toAlgHom = projectionCoordinateMap I (integerEliminationCoordinates b) := by
     ext i

@@ -17,12 +17,11 @@ import CCDN.Plane.ScaledModelPosition
 /-! Coefficient-uniform projective plane counts after a bounded integral
 coordinate change. The finite-field and positioning inputs are proved. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private theorem homogeneous_absolute_chart_data
+theorem homogeneous_absolute_chart_data
     {K : Type*} [Field K] [CharZero K] {d : ℕ}
     (f : MvPolynomial (Fin 3) ℤ) (hf : f.IsHomogeneous d) (hd : 2 ≤ d)
     (hir : Irreducible (map (Int.castRingHom K) f)) :
@@ -122,5 +121,4 @@ theorem projective_plane_finite_count_positioned
         heightDeterminantError projectivePlaneDeterminantConstant + 20 by ring] at ht
     exact ht.trans (le_max_right _ _)
 
-end
 end CCDN

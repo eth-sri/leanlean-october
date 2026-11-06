@@ -16,12 +16,11 @@ import CCDN.Plane.ProjectivePlaneBezout
 /-! Curves that are irreducible over the base field but split over an
 extension have at most d^2+d projective base-field points. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private theorem nonabsolute_projective_plane_points_card_le {k K ι : Type*}
+theorem nonabsolute_projective_plane_points_card_le {k K ι : Type*}
     [Field k] [Field K] [Algebra k K] [Fintype ι] [DecidableEq ι] {d : ℕ}
     (f : MvPolynomial (Fin 3) k) (hf : f.IsHomogeneous d) (hd : 2 ≤ d)
     (hir : Irreducible f) (hred : ¬ Irreducible (map (algebraMap k K) f))
@@ -71,7 +70,7 @@ private theorem nonabsolute_projective_plane_points_card_le {k K ι : Type*}
     exact projectiveAffineCoordinates_zero f hf (z i.val)
       (Finset.mem_filter.mp i.property).2 (hz i.val)
 
-private theorem projectiveCount_nonabsolute_plane_le
+theorem projectiveCount_nonabsolute_plane_le
     {K : Type*} [Field K] [Algebra ℚ K] {d : ℕ}
     (f : MvPolynomial (Fin 3) ℚ) (hf : f.IsHomogeneous d) (hd : 2 ≤ d)
     (hir : Irreducible f) (hred : ¬ Irreducible (map (algebraMap ℚ K) f)) (B : ℝ) :
@@ -113,5 +112,4 @@ theorem projective_plane_rational_count {d : ℕ}
       _ ≤ _ := le_mul_of_one_le_right
         (mul_nonneg projectivePlaneAbsoluteConstant_pos.le (by positivity)) hQ
 
-end
 end CCDN

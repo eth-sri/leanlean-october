@@ -12,10 +12,10 @@ import Mathlib.Tactic.IntervalCases
 floor((d-1)/2)+1 points per side at radius floor((d+1)/4) already gives
 the stated degree-squared lower bound, with the exact constant 1/5. -/
 
-@[expose] public section
+public section
 namespace CCDN
 
-private lemma degree_square_le_five_fourths_power (d : ℕ) :
+lemma degree_square_le_five_fourths_power (d : ℕ) :
     ((d : ℝ) + 1) ^ 2 ≤ 16 * (5 / 4 : ℝ) ^ d := by
   induction d with
   | zero => norm_num

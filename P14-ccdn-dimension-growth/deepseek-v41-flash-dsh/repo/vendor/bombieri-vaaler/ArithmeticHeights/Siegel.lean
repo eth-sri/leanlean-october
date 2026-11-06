@@ -5,7 +5,6 @@ Authors: Ralf Stephan
 -/
 module
 
-public import ArithmeticHeights.Absolute
 public import Mathlib.NumberTheory.NumberField.House
 public import Mathlib.NumberTheory.SiegelsLemma
 
@@ -77,7 +76,7 @@ This is Layer 5.1 of the `ArithmeticHeights` roadmap.
 
 public section
 
-open Finset Height Matrix
+open Finset Matrix
 
 /-! ### The sup norm of an integer tuple -/
 

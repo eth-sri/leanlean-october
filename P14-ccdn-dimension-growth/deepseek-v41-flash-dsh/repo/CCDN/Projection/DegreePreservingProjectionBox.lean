@@ -18,7 +18,6 @@ Evaluation of the moment coordinates used by the bounded primitive pair.
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Evaluating the moment coordinate with parameter `k` at `z` gives `∑ j, k ^ j * z j`. -/
@@ -27,7 +26,6 @@ lemma momentCoordinate_eval {K : Type*} [CommRing K] {n : ℕ}
     eval z (momentCoordinate K n k) = ∑ j : Fin n, (k : K) ^ j.val * z j := by
   simp only [momentCoordinate, map_sum, map_mul, eval_C, eval_X]
 
-end
 end CCDN
 
 namespace CCDN
@@ -54,7 +52,7 @@ lemma projectionBoxFactor_one_le (n d : ℕ) : 1 ≤ projectionBoxFactor n d := 
     one_le_pow₀ (one_le_pow₀ hmul)
   nlinarith
 
-private lemma momentCoordinate_height_of_le {n k : ℕ} {M B : ℝ}
+lemma momentCoordinate_height_of_le {n k : ℕ} {M B : ℝ}
     (hM : 1 ≤ M) (hk : (k : ℝ) ≤ M)
     (z : IntPoint n) (hz : InBox z B) :
     |(eval z (momentCoordinate ℤ n k) : ℝ)| ≤ n * M ^ n * B := by

@@ -15,12 +15,11 @@ import Mathlib.Data.Nat.Choose.Bounds
 /-! Uniform bounds for the exact homogeneous hypersurface Hilbert rank.
 The factorial leading coefficient is retained in both directions. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Finset
 
-private lemma sum_shifted_choose_add (r k d : ℕ) :
+lemma sum_shifted_choose_add (r k d : ℕ) :
     (∑ i ∈ range d, (r + 1 + k + i).choose r) + (r + 1 + k).choose (r + 1) =
       (r + 1 + k + d).choose (r + 1) := by
   induction d with
@@ -32,7 +31,7 @@ private lemma sum_shifted_choose_add (r k d : ℕ) :
     omega
 
 /-- The exact rank is a sum of d adjacent binomial layers. -/
-private theorem hypersurface_rank_eq_sum {r d M s : ℕ} (hdM : d ≤ M)
+theorem hypersurface_rank_eq_sum {r d M s : ℕ} (hdM : d ≤ M)
     (hr : s + (r + 1 + (M - d)).choose (M - d) = (r + 1 + M).choose M) :
     s = ∑ i ∈ range d, (r + 1 + (M - d) + i).choose r := by
   have hh := sum_shifted_choose_add r (M - d) d
@@ -79,5 +78,4 @@ theorem hypersurface_rank_power_bounds {r d M s : ℕ} (hdM : d ≤ M)
   · exact hhiR.trans
       (by simpa only [mul_div_assoc] using mul_le_mul_of_nonneg_left hu (Nat.cast_nonneg d))
 
-end
 end CCDN

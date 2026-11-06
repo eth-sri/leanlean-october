@@ -19,7 +19,6 @@ computed from the cumulative dimensions of the origin-adic layers. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The sum of the deficits below successive weights. For a graded profile
@@ -31,7 +30,6 @@ def filtrationExponent (r : ℕ → ℕ) (s : ℕ) : ℕ :=
 `k < K`, the weights exceeding `k` never exceeds the total weight. -/
 lemma sum_weight_tail_counts_le {s : ℕ} (w : Fin s → ℕ) (K : ℕ) :
     (∑ k : Fin K, (Finset.univ.filter fun i => k.val < w i).card) ≤ ∑ i, w i := by
-  classical
   simp only [Finset.card_eq_sum_ones, Finset.sum_filter]
   rw [Finset.sum_comm]
   refine Finset.sum_le_sum fun i _ ↦ ?_
@@ -46,7 +44,6 @@ lemma low_weight_card_le {s N : ℕ} (r : ℕ → ℕ)
     (t : Fin s ↪ ((j : Fin N) × Fin (r j.val))) (k : ℕ) :
     (Finset.univ.filter fun i => (t i).1.val ≤ k).card ≤
       ∑ j : Fin (k + 1), r j.val := by
-  classical
   let φ : {i : Fin s // (t i).1.val ≤ k} → ((j : Fin (k + 1)) × Fin (r j.val)) :=
     fun i => ⟨⟨(t i.val).1.val, by omega⟩, (t i.val).2⟩
   have hφ : Function.Injective φ := by
@@ -64,10 +61,9 @@ lemma low_weight_card_le {s N : ℕ} (r : ℕ → ℕ)
   have hc := Fintype.card_le_of_injective φ hφ
   simpa only [Fintype.card_subtype, Fintype.card_sigma, Fintype.card_fin] using hc
 
-private lemma filtrationExponent_le_weights {s N : ℕ} (r : ℕ → ℕ)
+lemma filtrationExponent_le_weights {s N : ℕ} (r : ℕ → ℕ)
     (t : Fin s ↪ ((j : Fin N) × Fin (r j.val))) :
     filtrationExponent r s ≤ ∑ i, (t i).1.val := by
-  classical
   apply le_trans ?_ (sum_weight_tail_counts_le (fun i => (t i).1.val) s)
   unfold filtrationExponent
   apply Finset.sum_le_sum
@@ -86,7 +82,6 @@ theorem pow_dvd_det_of_weighted_factorization_fintype {R ι : Type*} [CommRing R
     (hV : ∀ i j, p ^ weight i ∣ V i j)
     (he : ∀ t : Fin s ↪ ι, e ≤ ∑ i, weight (t i)) :
     p ^ e ∣ (U * V).det := by
-  classical
   let a := (Fintype.equivFin ι).symm
   let U' := U.submatrix id a
   let V' := V.submatrix a id
@@ -109,7 +104,6 @@ theorem origin_filtration_pow_dvd_det_mod {p n s e : ℕ} [Fact p.Prime]
     (hfx : ∀ i, (p : ℤ) ^ e ∣ eval (x i) f)
     (F : Fin s → MvPolynomial (Fin (n + 1)) ℤ) :
     (p : ℤ) ^ e ∣ (Matrix.of fun i j => eval (x i) (F j)).det := by
-  classical
   obtain ⟨r, g, hr, hg, hrep⟩ := exists_integer_hypersurface_generators (p := p) f
   have hr' : r = fun k => Module.finrank (ZMod p)
       (originLayer (map (Int.castRingHom (ZMod p)) f) k) := funext hr
@@ -142,5 +136,4 @@ theorem origin_filtration_pow_dvd_det_mod {p n s e : ℕ} [Fact p.Prime]
       exact hc j (x i) (hfx i) (hx i))
   simpa only [sub_add_cancel] using dvd_add hd hdet
 
-end
 end CCDN

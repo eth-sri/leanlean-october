@@ -20,13 +20,12 @@ factor decompositions, with coprimality imposed in the univariate fraction-field
 factorization can supply it.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial
 
 /-- A bounded extra solution outside the scalar gradient span forces rank drop. -/
-private theorem closedForm_rank_drop_of_extra_form {F : Type*} [Field F]
+theorem closedForm_rank_drop_of_extra_form {F : Type*} [Field F]
     (d : ℕ) (hd : 0 < d) (f p q : F[X][X])
     (hf : bivariateTotalDegree f ≤ d) (hf' : f.derivative ≠ 0)
     (hp : InBivariateGrid d p) (hq : InBivariateGrid d q)
@@ -48,7 +47,7 @@ private theorem closedForm_rank_drop_of_extra_form {F : Type*} [Field F]
 
 /-- A nontrivial coprime product gives two independent bounded closed forms,
 and hence the required matrix rank drop. -/
-private theorem closedForm_rank_drop_of_coprime_factors
+theorem closedForm_rank_drop_of_coprime_factors
     {F : Type*} [Field F] (d : ℕ) (hd : 0 < d)
     (hchar : CharZeroOrGT F d)
     (g h : F[X][X]) (hg : Irreducible g) (hgm : g.Monic)
@@ -91,7 +90,7 @@ private theorem closedForm_rank_drop_of_coprime_factors
 
 /-- Repeated irreducible factors of every multiplicity at least two likewise
 force rank drop; the whole equation need not be squarefree. -/
-private theorem closedForm_rank_drop_of_repeated_factor
+theorem closedForm_rank_drop_of_repeated_factor
     {F : Type*} [Field F] (d k : ℕ) (hd : 0 < d)
     (hchar : CharZeroOrGT F d)
     (g h : F[X][X]) (hg : Irreducible g) (hgm : g.Monic) (hh : h ≠ 0)
@@ -131,14 +130,12 @@ private theorem closedForm_rank_drop_of_repeated_factor
     simpa only [Polynomial.map_mul, Polynomial.map_pow, Polynomial.map_C, derivative_map,
       RatFunc.algebraMap_C, RatFunc.algebraMap_eq_C, φ] using congrArg (Polynomial.map φ) he
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open Polynomial
 
-private lemma exists_monic_bivariate_irreducible_factor {F : Type*} [Field F]
+lemma exists_monic_bivariate_irreducible_factor {F : Type*} [Field F]
     (f : F[X][X]) (hf : f.Monic) (hu : ¬IsUnit f) :
     ∃ g : F[X][X], Irreducible g ∧ g.Monic ∧ g ∣ f := by
   obtain ⟨r, hr, hrf⟩ := WfDvdMonoid.exists_irreducible_factor hu hf.ne_zero
@@ -157,7 +154,7 @@ private lemma exists_monic_bivariate_irreducible_factor {F : Type*} [Field F]
 
 /-- Extract one monic irreducible factor with its full multiplicity; the
 remaining factor is monic and coprime after passage to the fraction field. -/
-private lemma exists_monic_bivariate_primary_factor {F : Type*} [Field F]
+lemma exists_monic_bivariate_primary_factor {F : Type*} [Field F]
     (f : F[X][X]) (hf : f.Monic) (hu : ¬IsUnit f) :
     ∃ (g h : F[X][X]) (m : ℕ), Irreducible g ∧ g.Monic ∧ h.Monic ∧
       0 < m ∧ f = g ^ m * h ∧
@@ -206,5 +203,4 @@ theorem closedForm_rank_drop_of_not_irreducible
     exact closedForm_rank_drop_of_repeated_factor d (m - 2) hd hchar g h hg hgm
       hhm.ne_zero hcop hdeg htotal
 
-end
 end CCDN

@@ -18,7 +18,7 @@ namespace CCDN
 noncomputable section
 open NumberField NumberField.InfinitePlace MeasureTheory
 
-private theorem unitBall_volume_le_two_pow_finrank
+theorem unitBall_volume_le_two_pow_finrank
     {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
     [FiniteDimensional ℝ E] [MeasurableSpace E] [BorelSpace E] :
     volume.real (Metric.ball (0 : E) 1) ≤ (2 : ℝ) ^ Module.finrank ℝ E := by
@@ -50,7 +50,7 @@ variable (K : Type*) [Field K] [NumberField K]
 open Classical in
 /-- The bounded algebraic integers are embedded injectively into the
 Euclidean lattice and counted by finite-volume packing. -/
-private theorem boundedArchimedeanIntegers_count_of_short_basis
+theorem boundedArchimedeanIntegers_count_of_short_basis
     {ι : Type*} [Fintype ι]
     (b : Module.Basis ι ℝ (mixedEmbedding.euclidean.mixedSpace K))
     (hb : ∀ i, b i ∈ mixedEmbedding.euclidean.integerLattice K)
@@ -108,7 +108,7 @@ lemma numberFieldLatticeBoxConstant_nonneg (n : ℕ) {C : ℝ} (hC : 0 ≤ C) :
   positivity
 
 open Classical in
-private theorem boundedArchimedeanIntegers_count_of_relative_short_basis
+theorem boundedArchimedeanIntegers_count_of_relative_short_basis
     {ι : Type*} [Fintype ι]
     (b : Module.Basis ι ℝ (mixedEmbedding.euclidean.mixedSpace K))
     (hb : ∀ i, b i ∈ mixedEmbedding.euclidean.integerLattice K)

@@ -150,7 +150,7 @@ variable {R : Type*} [CommRing R] {ι : Type*} [Fintype ι] {k l : ℕ}
 /-- Mathlib's `Matrix.submatrix_mul_equiv`, read as a re-indexing of the inner index of a
 product: with both factors square it turns a product of rectangular matrices into a product of
 square ones, where `Matrix.det_mul` applies. -/
-private lemma mul_eq_submatrix_mul_submatrix {m p r : Type*} [Fintype r]
+lemma mul_eq_submatrix_mul_submatrix {m p r : Type*} [Fintype r]
     (X : Matrix m ι R) (Y : Matrix ι p R) (e : r ≃ ι) :
     X * Y = X.submatrix id e * Y.submatrix e id := by
   rw [Matrix.submatrix_mul_equiv X Y id e id, Matrix.submatrix_id_id]
@@ -160,17 +160,17 @@ variable [LinearOrder ι]
 /-- The enumeration of `ι` that lists the elements of `s` in increasing order and then those of
 its complement. This is the index identification the complementary-minor identity runs on; the
 determinant of a matrix read through it depends on `s` only up to a sign. -/
-private noncomputable def enumEquiv {s : Finset ι} (hs : s.card = k) (hsc : sᶜ.card = l) :
+noncomputable def enumEquiv {s : Finset ι} (hs : s.card = k) (hsc : sᶜ.card = l) :
     Fin k ⊕ Fin l ≃ ι :=
   (Equiv.sumCongr (s.orderIsoOfFin hs).toEquiv
     ((sᶜ.orderIsoOfFin hsc).toEquiv.trans
       (Equiv.subtypeEquivRight fun _ ↦ Finset.mem_compl))).trans (Equiv.sumCompl (· ∈ s))
 
-private lemma enumEquiv_inl {s : Finset ι} (hs : s.card = k) (hsc : sᶜ.card = l) (a : Fin k) :
+lemma enumEquiv_inl {s : Finset ι} (hs : s.card = k) (hsc : sᶜ.card = l) (a : Fin k) :
     enumEquiv hs hsc (Sum.inl a) = s.orderEmbOfFin hs a :=
   Finset.coe_orderIsoOfFin_apply s hs a
 
-private lemma enumEquiv_inr {s : Finset ι} (hs : s.card = k) (hsc : sᶜ.card = l) (b : Fin l) :
+lemma enumEquiv_inr {s : Finset ι} (hs : s.card = k) (hsc : sᶜ.card = l) (b : Fin l) :
     enumEquiv hs hsc (Sum.inr b) = sᶜ.orderEmbOfFin hsc b :=
   Finset.coe_orderIsoOfFin_apply sᶜ hsc b
 
@@ -179,7 +179,7 @@ another for the standard bilinear form, then the maximal minor of the first bloc
 columns `s` is the complementary minor of the second block of `D` times the determinant of `C`
 read through the enumeration attached to `s`. This is the whole content of duality: the
 `s`-dependence of the factor is a sign, by `Matrix.det_permute'`. -/
-private theorem det_submatrix_inl_eq_mul (C D : Matrix (Fin k ⊕ Fin l) ι R) (hCD : C * Dᵀ = 1)
+theorem det_submatrix_inl_eq_mul (C D : Matrix (Fin k ⊕ Fin l) ι R) (hCD : C * Dᵀ = 1)
     {s : Finset ι} (hs : s.card = k) (hsc : sᶜ.card = l) :
     ((C.submatrix Sum.inl id).submatrix id (s.orderEmbOfFin hs)).det
       = (C.submatrix id (enumEquiv hs hsc)).det *
@@ -212,7 +212,7 @@ private theorem det_submatrix_inl_eq_mul (C D : Matrix (Fin k ⊕ Fin l) ι R) (
     · simp [hE, enumEquiv_inl]
     · have hne : sᶜ.orderEmbOfFin hsc b' ≠ s.orderEmbOfFin hs a := by
         intro hcon
-        have h1 : sᶜ.orderEmbOfFin hsc b' ∈ sᶜ := sᶜ.orderEmbOfFin_mem hsc b'
+        have h1 := sᶜ.orderEmbOfFin_mem hsc b'
         rw [hcon, Finset.mem_compl] at h1
         exact h1 (s.orderEmbOfFin_mem hs a)
       simp [hE, enumEquiv_inr, hne]
@@ -259,7 +259,7 @@ theorem linearIndependent_row_of_mul_transpose_eq_one {C D : Matrix r ι K}
 
 /-- The two-sided form of duality of rows: the dual rows expand every vector, with the pairings
 against the original rows as coefficients. -/
-private lemma eq_sum_dotProduct_smul_row {C D : Matrix r ι K} (hCD : C * Dᵀ = 1)
+lemma eq_sum_dotProduct_smul_row {C D : Matrix r ι K} (hCD : C * Dᵀ = 1)
     (hcard : Fintype.card r = Fintype.card ι) (x : ι → K) :
     x = ∑ j, (C.row j ⬝ᵥ x) • D.row j := by
   classical
@@ -305,7 +305,7 @@ theorem mem_comap_piEquiv_dualAnnihilator {V : Submodule K (ι → K)} {x : ι �
   simp [dotProduct]
 
 /-- The span of a family is orthogonal to `x` as soon as every member is. -/
-private lemma span_le_ker_piEquiv {s : Set (ι → K)} {x : ι → K} (h : ∀ v ∈ s, v ⬝ᵥ x = 0) :
+lemma span_le_ker_piEquiv {s : Set (ι → K)} {x : ι → K} (h : ∀ v ∈ s, v ⬝ᵥ x = 0) :
     span K s ≤ LinearMap.ker (Module.piEquiv ι K K x) := by
   rw [Submodule.span_le]
   intro v hv
@@ -420,7 +420,7 @@ theorem exists_plucker_eq_plucker_compl (V : Submodule K (ι → K)) (hk : finra
     (Matrix.linearIndependent_row_of_mul_transpose_eq_one hCD).comp _ Sum.inl_injective,
     (Matrix.linearIndependent_row_of_mul_transpose_eq_one hDC).comp _ Sum.inr_injective,
     hV, span_range_inr_row_eq hCD hlk hV, fun s ↦ ?_⟩
-  have hs : (s : Finset ι).card = k := Set.powersetCard.card_eq s
+  have hs := Set.powersetCard.card_eq s
   have hsc : ((s : Finset ι))ᶜ.card = l := by
     rw [Finset.card_compl, hs]
     omega
@@ -445,7 +445,7 @@ variable {K : Type*} [Field K] {ι : Type*} [Fintype ι] [LinearOrder ι]
 /-- The two tuples of Plücker coordinates attached to `V` and to its annihilator, with the
 relation between them. This is `Submodule.exists_plucker_eq_plucker_compl` with the two ranks
 existentially bound, the form the height statements consume. -/
-private lemma exists_plucker_pair (V : Submodule K (ι → K)) :
+lemma exists_plucker_pair (V : Submodule K (ι → K)) :
     ∃ (k l : ℕ) (hlk : l + k = Fintype.card ι) (v : Fin k → (ι → K)) (w : Fin l → (ι → K))
       (c : K), c ≠ 0 ∧ LinearIndependent K v ∧ LinearIndependent K w ∧
       span K (Set.range v) = V ∧

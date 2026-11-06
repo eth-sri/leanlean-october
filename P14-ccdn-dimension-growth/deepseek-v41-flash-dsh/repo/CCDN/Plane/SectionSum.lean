@@ -14,9 +14,8 @@ import CCDN.Plane.SectionBounds
 /-! Sum the sharp good-section bound and the separately controlled bad and
 zero contributions over the full plane parameter space. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The exact incidence identity with each section bounded according to its
@@ -82,5 +81,4 @@ theorem plane_sections_incidence_bound {σ : Type*} [Fintype σ]
   convert hsum using 1
   simp [A, V, PlaneParameters, Nat.mul_comm]
 
-end
 end CCDN

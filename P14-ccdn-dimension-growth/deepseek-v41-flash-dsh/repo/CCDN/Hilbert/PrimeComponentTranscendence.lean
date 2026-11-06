@@ -34,7 +34,7 @@ def partialCoordinateEval {K : Type*} [CommRing K] (c : Fin 3 → K) (n : ℕ) :
     partialCoordinateEval c n (X j) = if j.val < n then C (c j) else X j := by
   simp [partialCoordinateEval]
 
-private lemma partialCoordinateEval_comp {K : Type*} [CommRing K] (c : Fin 3 → K)
+lemma partialCoordinateEval_comp {K : Type*} [CommRing K] (c : Fin 3 → K)
     {m n : ℕ} (hmn : m ≤ n) :
     (partialCoordinateEval c n).comp (partialCoordinateEval c m) = partialCoordinateEval c n := by
   apply MvPolynomial.ringHom_ext
@@ -46,7 +46,7 @@ private lemma partialCoordinateEval_comp {K : Type*} [CommRing K] (c : Fin 3 →
       simp [hj, hn]
     · simp [hj]
 
-private lemma partialCoordinateEval_ker_lt {K : Type*} [Field K] (c : Fin 3 → K)
+lemma partialCoordinateEval_ker_lt {K : Type*} [Field K] (c : Fin 3 → K)
     {n : ℕ} (hn : n < 3) :
     RingHom.ker (partialCoordinateEval c n) < RingHom.ker (partialCoordinateEval c (n + 1)) := by
   have hle : RingHom.ker (partialCoordinateEval c n) ≤
@@ -74,7 +74,7 @@ private lemma partialCoordinateEval_ker_lt {K : Type*} [Field K] (c : Fin 3 → 
   simp [hsingle] at hc
 
 /-- Fixing all three coordinates gives a prime ideal of height at least three. -/
-private lemma three_le_height_coordinate_kernel {K : Type*} [Field K] (c : Fin 3 → K) :
+lemma three_le_height_coordinate_kernel {K : Type*} [Field K] (c : Fin 3 → K) :
     3 ≤ (RingHom.ker (partialCoordinateEval c 3)).height := by
   let inst (n : ℕ) : (RingHom.ker (partialCoordinateEval c n)).IsPrime := RingHom.ker_isPrime _
   have h0 := Ideal.height_add_one_le_of_lt_of_isPrime
@@ -136,7 +136,6 @@ theorem height_two_transcendental_coordinate_of_point {K : Type*} [Field K]
     (p : Ideal (MvPolynomial (Fin 3) K)) [p.IsPrime] (hp : p.height = 2)
     (z : Fin 3 → K) (hz : z ∈ idealZeroLocus p) :
     ∃ j : Fin 3, Transcendental K ((Ideal.Quotient.mk p) (X j)) := by
-  classical
   by_contra h
   push Not at h
   have ha (j : Fin 3) : IsAlgebraic K ((Ideal.Quotient.mk p) (X j)) := by

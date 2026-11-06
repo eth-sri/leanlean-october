@@ -12,9 +12,8 @@ import CCDN.ForMathlib.Matrix
 Rank drop after reduction forces divisibility of this same integer. The
 geometric rank-drop criterion and the height bound are separate obligations. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial Matrix
 
 /-- Determinants of selected coefficient minors commute with any coefficient
@@ -42,5 +41,4 @@ theorem characteristic_dvd_closedForm_minor_of_rank_lt
   by_contra hn
   exact hr.not_ge (Matrix.le_rank_of_det_submatrix_ne_zero _ a c hn)
 
-end
 end CCDN

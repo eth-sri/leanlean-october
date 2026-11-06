@@ -22,12 +22,11 @@ import Mathlib.Algebra.MvPolynomial.Monad
 projections of a prime affine curve. The relation has degree at most the
 curve's Hilbert degree and remains nonzero at parameter zero. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma planeLinearDeformation_eval_quotient {K τ : Type*} [Field K]
+lemma planeLinearDeformation_eval_quotient {K τ : Type*} [Field K]
     (I : Ideal (MvPolynomial τ K)) (a : Fin 2 → MvPolynomial τ K)
     (l : MvPolynomial τ K) (t : K) (f : MvPolynomial (Fin 2) K) :
     (planeLinearDeformation (fun i => (Ideal.Quotient.mk I) (a i)) 1
@@ -63,7 +62,6 @@ theorem exists_curve_projection_relation_family {K τ : Type*}
         planeLinearDeformation (fun i => (Ideal.Quotient.mk I) (a i)) 1
           ((Ideal.Quotient.mk I) l) (b j).val) = 0 ∧
       ∃ j, (v j).eval 0 ≠ 0 := by
-  classical
   let V := restrictTotalDegree (Fin 2) K d
   let b := Module.finBasis K V
   let ψ := planeLinearDeformation (K := K) (fun i => (Ideal.Quotient.mk I) (a i)) 1
@@ -104,5 +102,4 @@ theorem exists_curve_projection_relation_family {K τ : Type*}
   simp_rw [← map_smul]
   rw [← map_sum, hs, hpzero]
 
-end
 end CCDN

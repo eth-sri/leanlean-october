@@ -18,10 +18,8 @@ import Mathlib.Algebra.MvPolynomial.Nilpotent
 /-! Finite bad-prime sets for plane equations, with coefficient-height
 charge bounds and irreducible good reductions. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
-open MvPolynomial Real
 
 /-- A multivariate polynomial over a field whose image under a field homomorphism is irreducible
 is itself irreducible. -/
@@ -51,7 +49,7 @@ lemma bivariateTotalDegree_equiv {R : Type*} [CommRing R]
 
 /-- Bad reduction of the bivariate model of a plane equation is bad reduction of the
 equation itself. -/
-private lemma bivariateBadReduction_iff_hypersurfaceBadReduction (f : MvPolynomial (Fin 2) ℤ)
+lemma bivariateBadReduction_iff_hypersurfaceBadReduction (f : MvPolynomial (Fin 2) ℤ)
     (p : ℕ) :
     BivariateBadReduction (bivariatePolynomialEquiv ℤ f) f.totalDegree p ↔
       HypersurfaceBadReduction f p := by
@@ -128,5 +126,4 @@ theorem exists_plane_bad_prime_set
     (fun p hp => (bivariateBadReduction_iff_hypersurfaceBadReduction f p).mpr ((hmem p).mp hp).2)
     (fun p hp => ((hmem p).mp hp).1)
 
-end
 end CCDN

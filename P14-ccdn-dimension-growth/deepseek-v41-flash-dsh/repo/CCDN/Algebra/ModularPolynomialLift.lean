@@ -21,7 +21,7 @@ representatives `ZMod.val` in `[0, p)`. -/
 def modularPolynomialLift {σ : Type*} {p : ℕ} (f : MvPolynomial σ (ZMod p)) :
     MvPolynomial σ ℤ := ∑ e ∈ f.support, monomial e (f.coeff e).val
 
-private lemma coeff_modularPolynomialLift {σ : Type*} {p : ℕ}
+lemma coeff_modularPolynomialLift {σ : Type*} {p : ℕ}
     (f : MvPolynomial σ (ZMod p)) (e : σ →₀ ℕ) :
     (modularPolynomialLift f).coeff e = (f.coeff e).val := by
   classical

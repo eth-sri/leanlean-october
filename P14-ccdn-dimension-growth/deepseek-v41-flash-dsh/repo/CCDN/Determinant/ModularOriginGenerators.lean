@@ -15,14 +15,13 @@ import Mathlib.FieldTheory.Finite.Polynomial
 /-! Lift singular local generators from the reduction modulo p. The
 remaining error is an explicit multiple of p, with a separate high-order term. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Lift a whole homogeneous generating family without changing its size at
 any weight. The error separates the equation, the origin power and a multiple of p. -/
-private theorem lift_origin_truncation_generators {σ : Type*} {p : ℕ} [Fact p.Prime]
+theorem lift_origin_truncation_generators {σ : Type*} {p : ℕ} [Fact p.Prime]
     (f : MvPolynomial σ ℤ) (r : ℕ → ℕ)
     (g : (k : ℕ) → Fin (r k) → MvPolynomial σ (ZMod p))
     (hg : ∀ k j, (g k j).IsHomogeneous k)
@@ -34,7 +33,6 @@ private theorem lift_origin_truncation_generators {σ : Type*} {p : ℕ} [Fact p
       ∀ N u, ∃ (c : (k : Fin N) → Fin (r k.val) → ℤ) (h v w : MvPolynomial σ ℤ),
         v ∈ idealOfVars σ ℤ ^ N ∧
         u - ∑ k : Fin N, ∑ j, c k j • G k.val j = f * h + v + C (p : ℤ) * w := by
-  classical
   let π := Int.castRingHom (ZMod p)
   refine ⟨(fun k j => modularPolynomialLift (g k j)),
     (fun k j => modularPolynomialLift_homogeneous _ (hg k j)), ?_⟩
@@ -95,5 +93,4 @@ theorem exists_integer_origin_generators {p μ : ℕ} [Fact p.Prime]
   obtain ⟨G, hG, hrep⟩ := lift_origin_truncation_generators f r g hg hs
   exact ⟨r, G, hr, hG, hrep⟩
 
-end
 end CCDN

@@ -17,13 +17,13 @@ The determinant argument selects independent evaluation rows. This module justif
 coefficient vector annihilating those rows vanishes on every point whose row they span.
 -/
 
-@[expose] public section
+public section
 
 namespace CCDN
 
 open Matrix
 
-private theorem dotProduct_eq_zero_of_mem_span {s N : ℕ}
+theorem dotProduct_eq_zero_of_mem_span {s N : ℕ}
     (A : Matrix (Fin s) (Fin N) ℚ) (v : Fin N → ℚ) (hAv : A *ᵥ v = 0)
     {r : Fin N → ℚ} (hr : r ∈ Submodule.span ℚ (Set.range A.row)) : r ⬝ᵥ v = 0 := by
   induction hr using Submodule.span_induction with
@@ -34,7 +34,7 @@ private theorem dotProduct_eq_zero_of_mem_span {s N : ℕ}
   | add x y hx hy ihx ihy => simp [add_dotProduct, ihx, ihy]
   | smul a x hx ih => simp [smul_dotProduct, ih]
 
-private theorem integer_dotProduct_eq_zero_of_mem_span {s N : ℕ}
+theorem integer_dotProduct_eq_zero_of_mem_span {s N : ℕ}
     (A : Matrix (Fin s) (Fin N) ℤ) (v : Fin N → ℤ) (hAv : A *ᵥ v = 0)
     {r : Fin N → ℤ}
     (hr : (fun j => (r j : ℚ)) ∈ Submodule.span ℚ (Set.range (A.map ((↑) : ℤ → ℚ)).row)) :
@@ -79,10 +79,10 @@ theorem exists_independent_spanning_rows {F ι : Type*} [Field F] {N : ℕ}
 
 /-- A nonzero relation on all columns forces every independent row family
 to contain strictly fewer rows than columns. -/
-private theorem independent_rows_lt_of_kernel {s N : ℕ} (A : Matrix (Fin s) (Fin N) ℚ)
+theorem independent_rows_lt_of_kernel {s N : ℕ} (A : Matrix (Fin s) (Fin N) ℚ)
     (hA : LinearIndependent ℚ A.row) (v : Fin N → ℚ) (hv : v ≠ 0)
     (hker : A *ᵥ v = 0) : s < N := by
-  have hle : s ≤ N := by simpa using hA.fintype_card_le_finrank
+  have hle := by simpa using hA.fintype_card_le_finrank
   by_contra h
   have he : s = N := by omega
   by_cases hs : s = 0

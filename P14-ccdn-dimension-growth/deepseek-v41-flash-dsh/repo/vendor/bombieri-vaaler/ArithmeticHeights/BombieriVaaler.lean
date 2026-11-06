@@ -298,12 +298,12 @@ noncomputable def minorGcd (A : _root_.Matrix (Fin m) ι ℤ) : ℤ :=
   (univ : Finset (Set.powersetCard ι m)).gcd (plucker m A.row)
 
 /-- The minors of the rational matrix are the minors of the integer matrix, cast. -/
-private theorem plucker_row_map_rat (A : _root_.Matrix (Fin m) ι ℤ) :
+theorem plucker_row_map_rat (A : _root_.Matrix (Fin m) ι ℤ) :
     plucker m (A.map ((↑) : ℤ → ℚ)).row = ((↑) : ℤ → ℚ) ∘ plucker m A.row :=
   funext fun s ↦ plucker_row_map (Int.castRingHom ℚ) A s
 
 /-- Under the rank hypothesis some maximal minor is nonzero. -/
-private theorem plucker_row_ne_zero {A : _root_.Matrix (Fin m) ι ℤ}
+theorem plucker_row_ne_zero {A : _root_.Matrix (Fin m) ι ℤ}
     (hA : LinearIndependent ℚ (A.map ((↑) : ℤ → ℚ)).row) : plucker m A.row ≠ 0 := by
   intro h
   refine (linearIndependent_row_iff_plucker_row_ne_zero (A.map ((↑) : ℤ → ℚ))).1 hA ?_
@@ -355,7 +355,7 @@ theorem minorGcd_mul_arakelovMulHeight_ker (A : _root_.Matrix (Fin m) ι ℤ)
 
 omit [LinearOrder ι] in
 /-- The solution space of `A x = 0` has dimension `N - M` when the rows are independent. -/
-private theorem finrank_ker (A : _root_.Matrix (Fin m) ι ℤ)
+theorem finrank_ker (A : _root_.Matrix (Fin m) ι ℤ)
     (hA : LinearIndependent ℚ (A.map ((↑) : ℤ → ℚ)).row) :
     finrank ℚ ↥(LinearMap.ker (A.map ((↑) : ℤ → ℚ)).mulVecLin) = Fintype.card ι - m := by
   have hrank : (A.map ((↑) : ℤ → ℚ)).rank = m := by

@@ -17,19 +17,17 @@ import Mathlib.RingTheory.AlgebraicIndependent.Transcendental
 coordinate has a nonzero derivative in the second coordinate. That derivative
 is a proper section of degree at most d-1 of the source curve. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A nonzero relation cannot omit the coordinate complementary to a
 transcendental coordinate. -/
-private theorem plane_relation_pderiv_ne_zero {K A : Type*} [Field K] [CharZero K]
+theorem plane_relation_pderiv_ne_zero {K A : Type*} [Field K] [CharZero K]
     [CommRing A] [Algebra K A] (ψ : MvPolynomial (Fin 2) K →ₐ[K] A)
     (f : MvPolynomial (Fin 2) K) (hf : f ≠ 0) (hzero : ψ f = 0)
     (j k : Fin 2) (hjk : j ≠ k) (hj : Transcendental K (ψ (X j))) :
     pderiv k f ≠ 0 := by
-  classical
   intro hz
   have hk := notMem_vars_of_pderiv_eq_zero hz fun n hn _ ↦ Nat.cast_ne_zero.mpr hn.ne'
   have hvars : (f.vars : Set (Fin 2)) ⊆ Set.range (fun _ : Unit => j) := by
@@ -75,5 +73,4 @@ theorem projection_derivative_proper {K τ : Type*} [Field K] [CharZero K] [Fint
     (aeval_totalDegree_le a ha _).trans ?_⟩
   simpa only [one_mul] using pderiv_totalDegree_le f k
 
-end
 end CCDN

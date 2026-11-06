@@ -22,7 +22,7 @@ import Mathlib.LinearAlgebra.FreeModule.PID
   kernel is contained in the kernel of `g`.
 -/
 
-@[expose] public section
+public section
 
 namespace LinearMap
 
@@ -48,7 +48,6 @@ theorem finrank_span_range_le {K L V A : Type*} [Field K] [Field L]
     [AddCommGroup A] [Module K A] [Module L A] [IsScalarTower K L A]
     (g : V →ₗ[K] A) :
     Module.finrank L (Submodule.span L (Set.range g)) ≤ Module.finrank K V := by
-  classical
   let b := Module.finBasis K V
   let W := Submodule.span L (Set.range (fun i => g (b i)))
   have hg (v : V) : g v ∈ W := by

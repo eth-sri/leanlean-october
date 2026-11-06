@@ -28,7 +28,7 @@ initial segments of such a tuple, and count the pairs of its indices:
 * `Fin.sum_card_Ioi`: there are `n.choose 2` pairs `i < j` in `Fin n`.
 -/
 
-@[expose] public section
+public section
 
 namespace Fin
 
@@ -63,14 +63,13 @@ theorem exists_shortest_vector_notMem
     (U : Submodule ℝ E) (hU : U ≠ ⊤) :
     ∃ v : E, v ∈ L ∧ v ∉ U ∧
       ∀ x : E, x ∈ L → x ∉ U → ‖v‖ ≤ ‖x‖ := by
-  classical
   have hex : ∃ x : E, x ∈ L ∧ x ∉ U := by
     by_contra! h
-    have hh : Submodule.span ℝ (L : Set E) ≤ U := Submodule.span_le.mpr h
+    have hh := Submodule.span_le.mpr h
     rw [IsZLattice.span_top] at hh
     exact hU (top_le_iff.mp hh)
   obtain ⟨x₀, hx₀, hx₀U⟩ := hex
-  let S : Set E := {x | x ∈ L ∧ x ∉ U ∧ ‖x‖ ≤ ‖x₀‖}
+  let S := {x | x ∈ L ∧ x ∉ U ∧ ‖x‖ ≤ ‖x₀‖}
   have hfinite : S.Finite := by
     have : DiscreteTopology L.toAddSubgroup := inferInstanceAs (DiscreteTopology L)
     have hf : (Metric.closedBall 0 ‖x₀‖ ∩ (L : Set E)).Finite :=
@@ -93,10 +92,9 @@ theorem measureReal_le_covolume [MeasurableSpace E] [BorelSpace E]
     {S : Set E} (hS : MeasurableSet S)
     (hsep : ∀ x ∈ S, ∀ y ∈ S, x - y ∈ L → x = y) :
     μ.real S ≤ ZLattice.covolume L μ := by
-  classical
   let b := Module.Free.chooseBasis ℤ L
   let F := ZSpan.fundamentalDomain (b.ofZLatticeBasis ℝ L)
-  have hF : IsAddFundamentalDomain L F μ := ZLattice.isAddFundamentalDomain b μ
+  have hF := ZLattice.isAddFundamentalDomain b μ
   have hle : μ S ≤ μ F := by
     by_contra! hlt
     let : MeasurableVAdd L E := inferInstanceAs (MeasurableVAdd L.toAddSubgroup E)

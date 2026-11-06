@@ -15,9 +15,8 @@ import CCDN.Plane.ScaledModelPosition
 /-! The unit-scaled model gives a coefficient-uniform 2/d fallback and a
 large-coefficient O(d^4) count, without requiring a scaling prime. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Real
 
 /-- The homogenization (with scaling factor `1`) of a primitive integer polynomial is
@@ -31,7 +30,7 @@ lemma PrimitiveIntegerPolynomial.scaledHomogenize_one {n : ℕ}
   have h := hc (homogenizedExponent d m)
   simpa only [scaledHomogenize_coefficient, one_pow, one_mul] using h
 
-private lemma unscaled_positioned_points_card_le {M t : ℕ}
+lemma unscaled_positioned_points_card_le {M t : ℕ}
     (f : MvPolynomial (Fin 2) ℤ) (hprim : PrimitiveIntegerPolynomial f)
     (hir : Irreducible (MvPolynomial.map (Int.castRingHom ℚ) f))
     (a : Fin 2 → ℤ) (z : Fin t → Fin 2 → ℤ) (hinj : Function.Injective z)
@@ -172,5 +171,4 @@ theorem unscaled_plane_finite_count_large_coefficient
   convert ht' using 1
   ring
 
-end
 end CCDN

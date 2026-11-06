@@ -12,9 +12,8 @@ import Mathlib.RingTheory.SimpleRing.Principal
 
 /-! Enlarging the ambient affine space preserves the irreducible grid equation. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Renaming the variables of an irreducible polynomial along an injective map keeps it irreducible.
@@ -22,7 +21,6 @@ open MvPolynomial
 lemma irreducible_rename_of_injective {K σ τ : Type*} [Field K]
     (i : σ → τ) (hi : Function.Injective i) (f : MvPolynomial σ K)
     (hf : Irreducible f) : Irreducible (rename i f) := by
-  classical
   let e : σ ≃ Set.range i := Equiv.ofInjective i hi
   have he : rename i f = rename Subtype.val (renameEquiv K e f) := by
     rw [renameEquiv_apply, rename_rename]
@@ -45,5 +43,4 @@ lemma totalDegree_rename_of_leftInverse {K σ τ : Type*} [CommRing K]
     simp [hc, rename_id]
   rwa [he] at h
 
-end
 end CCDN

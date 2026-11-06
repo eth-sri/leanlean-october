@@ -90,7 +90,6 @@ lemma graphHyperplaneRestriction_homogeneousComponent {K σ : Type*}
     (f : MvPolynomial (Option σ) K) (d : ℕ) :
     graphHyperplaneRestriction a (homogeneousComponent d f) =
       homogeneousComponent d (graphHyperplaneRestriction a f) := by
-  classical
   induction f using MvPolynomial.induction_on' with
   | monomial m c =>
     have hm := isHomogeneous_monomial c (rfl : m.degree = m.degree)
@@ -99,14 +98,14 @@ lemma graphHyperplaneRestriction_homogeneousComponent {K σ : Type*}
     split_ifs <;> simp
   | add f g hf hg => simp only [map_add, hf, hg]
 
-private lemma planeSectionPolynomial_eval {K σ : Type*} [CommRing K]
+lemma planeSectionPolynomial_eval {K σ : Type*} [CommRing K]
     (f : MvPolynomial σ K) (v : PlaneParameters σ → K) (t : Fin 2 → K) :
     eval t (planeSectionPolynomial f v) =
       eval (fun i => v (i, 0) + v (i, 1) * t 0 + v (i, 2) * t 1) f := by
   rw [← bivariateEval_equiv, planeSectionPolynomial, AlgEquiv.apply_symm_apply]
   exact universalPlaneSection_eval f v (t 0) (t 1)
 
-private lemma graphHyperplaneRestriction_planeSection {K σ : Type*}
+lemma graphHyperplaneRestriction_planeSection {K σ : Type*}
     [Field K] [Infinite K] [Fintype σ]
     (a : σ → K) (v : PlaneParameters (Option σ) → K)
     (hv : ∀ j : Fin 3, v (none, j) = ∑ i, a i * v (some i, j))

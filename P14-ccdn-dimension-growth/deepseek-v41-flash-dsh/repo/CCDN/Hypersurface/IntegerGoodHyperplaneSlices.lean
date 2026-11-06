@@ -16,9 +16,8 @@ import Mathlib.Algebra.BigOperators.Field
 hyperplane. Degrees and geometric irreducibility of the leading forms are
 preserved, and deleting the solved coordinate does not enlarge the box. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 local notation "Qbar" => AlgebraicClosure ℚ
 
@@ -80,7 +79,6 @@ theorem exists_integer_hyperplane_slice_models {n : ℕ}
       ∀ x : Option (Fin n) → ℤ,
         D * x none - ∑ i, a i * x (some i) = k →
         eval x f = 0 → eval (fun i => x (some i)) (g k) = 0 := by
-  classical
   let p := map (Int.castRingHom ℚ) f
   let α : Fin n → ℚ := fun i => (a i : ℚ) / D
   have hpdegree : p.totalDegree = f.totalDegree :=
@@ -137,5 +135,4 @@ theorem exists_integer_hyperplane_slice_models {n : ℕ}
   choose g hg using hslices
   exact ⟨g, hg⟩
 
-end
 end CCDN

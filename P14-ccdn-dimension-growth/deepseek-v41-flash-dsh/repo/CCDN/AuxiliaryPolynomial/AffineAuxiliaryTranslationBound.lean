@@ -12,15 +12,14 @@ import CCDN.ForMathlib.Log
 /-! Translating the affine box by a vector bounded by the degree costs only
  a dimension constant in the coefficient-sensitive minimum bound. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
-private lemma affine_box_translation_power {r d : ℕ} (hr : 0 < r) (hd : 0 < d)
+lemma affine_box_translation_power {r d : ℕ} (hr : 0 < r) (hd : 0 < d)
     {B : ℝ} (hB : 1 ≤ B) :
     (B + d) ^ (1 / (d : ℝ) ^ (1 / (r : ℝ))) ≤
       Real.exp ((r : ℝ) + 1) * B ^ (1 / (d : ℝ) ^ (1 / (r : ℝ))) := by
-  have hd0 : (0 : ℝ) < d := by exact_mod_cast hd
+  have hd0 := by exact_mod_cast hd
   have hroot : (0 : ℝ) < (d : ℝ) ^ (1 / (r : ℝ)) := by positivity
   have hfactor : ((d : ℝ) + 1) ^ (1 / (d : ℝ) ^ (1 / (r : ℝ))) ≤
       Real.exp ((r : ℝ) + 1) := by
@@ -34,14 +33,14 @@ private lemma affine_box_translation_power {r d : ℕ} (hr : 0 < r) (hd : 0 < d)
         B ^ (1 / (d : ℝ) ^ (1 / (r : ℝ))) := Real.mul_rpow (by positivity) (by linarith)
     _ ≤ _ := mul_le_mul_of_nonneg_right hfactor (by positivity)
 
-private lemma affine_box_translation_log {d : ℕ} (hd : 0 < d) {B : ℝ} (hB : 1 ≤ B) :
+lemma affine_box_translation_log {d : ℕ} (hd : 0 < d) {B : ℝ} (hB : 1 ≤ B) :
     Real.log (B + d) ≤ Real.log B + Real.log ((d : ℝ) + 1) := by
   have hd0 : (0 : ℝ) < d := by exact_mod_cast hd
   have hlog := Real.log_le_log (by positivity : 0 < B + d)
     (show B + d ≤ B * ((d : ℝ) + 1) by nlinarith)
   rwa [Real.log_mul (by linarith) (by positivity)] at hlog
 
-private lemma affine_box_translation_min {d : ℕ} (hd : 0 < d)
+lemma affine_box_translation_min {d : ℕ} (hd : 0 < d)
     {B L b : ℝ} (hB : 1 ≤ B) (hL : 1 ≤ L) (hb : 0 ≤ b) :
     min (Real.log L + d * Real.log (B + d) + (d : ℝ) ^ 2) ((d : ℝ) ^ 2 * b) ≤
       2 * min (Real.log L + d * Real.log B + (d : ℝ) ^ 2) ((d : ℝ) ^ 2 * b) := by
@@ -60,7 +59,7 @@ private lemma affine_box_translation_min {d : ℕ} (hd : 0 < d)
   · rw [min_eq_right h]
     exact (min_le_right _ _).trans (by nlinarith [sq_nonneg (d : ℝ)])
 
-private lemma affine_box_translation_lower {r d : ℕ} (_hr : 0 < r) (hd : 0 < d)
+lemma affine_box_translation_lower {r d : ℕ} (_hr : 0 < r) (hd : 0 < d)
     {B : ℝ} (hB : 1 ≤ B) :
     (d : ℝ) ^ (1 - 1 / (r : ℝ)) * Real.log (B + d) +
         (d : ℝ) ^ (4 - 1 / (r : ℝ)) ≤
@@ -84,7 +83,7 @@ private lemma affine_box_translation_lower {r d : ℕ} (_hr : 0 < r) (hd : 0 < d
 
 /-- The full coefficient-sensitive affine expression is stable under the
  bounded translation used to make the constant coefficient nonzero. -/
-private theorem affine_auxiliary_expression_translation_bound {r d : ℕ}
+theorem affine_auxiliary_expression_translation_bound {r d : ℕ}
     (hr : 0 < r) (hd : 0 < d) {K B L b : ℝ}
     (hK : 0 ≤ K) (hB : 1 ≤ B) (hL : 1 ≤ L) (hb : 0 ≤ b) :
     K * (d : ℝ) ^ (2 - 1 / (r : ℝ)) *
@@ -140,5 +139,4 @@ theorem affineMinimumAuxiliaryBound_translation {n d : ℕ} (hd : 0 < d)
   convert hscaled using 1
   ring
 
-end
 end CCDN

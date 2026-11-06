@@ -16,7 +16,6 @@ extraction of any parameter coefficient. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A polynomial `f` in the variables `σ` with coefficients in `MvPolynomial τ R` is coefficientwise
@@ -31,12 +30,6 @@ namespace CoefficientwiseHomogeneous
 variable {R σ τ : Type*} [CommRing R]
 
 /-- The zero polynomial is coefficientwise homogeneous of every degree. -/
-lemma zero (d : ℕ) : CoefficientwiseHomogeneous (0 : MvPolynomial σ (MvPolynomial τ R)) d := by
-  intro m
-  simpa only [AddMonoidAlgebra.coeff_zero, Finsupp.zero_apply] using isHomogeneous_zero τ R d
-
-/-- The negation of a coefficientwise homogeneous polynomial of degree `d` is coefficientwise
-homogeneous of degree `d`. -/
 lemma neg {f : MvPolynomial σ (MvPolynomial τ R)} {d : ℕ}
     (hf : CoefficientwiseHomogeneous f d) :
     CoefficientwiseHomogeneous (-f) d := by
@@ -120,5 +113,4 @@ lemma det {r : ℕ} (M : Matrix (Fin r) (Fin r) (MvPolynomial σ (MvPolynomial �
   simpa only [zero_add, map_intCast] using hh
 
 end CoefficientwiseHomogeneous
-end
 end CCDN

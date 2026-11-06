@@ -17,7 +17,6 @@ growth bound needed to recognize a parameter of full degree. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 
 /-- Powers through N of a parameter, multiplied by a fixed finite family. -/
 def parameterPowerSpan (K : Type*) {F ι : Type*} [Field K] [Field F] [Algebra K F]
@@ -69,7 +68,6 @@ lemma parameterPowerSpan_mul_mem {K F ι : Type*} [Field K] [Field F] [Algebra K
 lemma polynomial_parameter_mul_mem {K F ι : Type*} [Field K] [Field F] [Algebra K F]
     (u : F) (v : ι → F) (i : ι) (p : Polynomial K) (N : ℕ) (hp : p.natDegree ≤ N) :
     Polynomial.aeval u p * v i ∈ parameterPowerSpan K u v N := by
-  classical
   rw [p.as_sum_support, map_sum, Finset.sum_mul]
   apply (parameterPowerSpan K u v N).sum_mem
   intro j hj
@@ -81,5 +79,4 @@ lemma polynomial_parameter_mul_mem {K F ι : Type*} [Field K] [Field F] [Algebra
   simpa only [Algebra.smul_def, mul_assoc] using
     (parameterPowerSpan K u v N).smul_mem (p.coeff j) hm
 
-end
 end CCDN

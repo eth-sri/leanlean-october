@@ -17,9 +17,8 @@ import Mathlib.RingTheory.Localization.Integer
 transcendental linear parameter, of degree at most its affine Hilbert degree.
 Common denominators transfer arbitrary field elements to polynomial classes. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- Multiplying a linearly independent family in a field by a common nonzero element keeps it
 linearly independent. -/
@@ -43,13 +42,12 @@ variable {K R F σ : Type*} [Field K] [Field R] [Field F]
 
 /-- Clearing a common denominator extends the polynomial rank bound to
 arbitrary elements of the fraction field. -/
-private theorem fraction_parameter_rank_le {ι : Type*} [Fintype ι] [DecidableEq ι]
+theorem fraction_parameter_rank_le {ι : Type*} [Fintype ι] [DecidableEq ι]
     (d : ℕ) (hdegree : HasFilteredCurveDegree I d)
     (l : MvPolynomial σ K) (hl : l.totalDegree ≤ 1)
     (u : R) (hu : Transcendental K u)
     (he : algebraMap (MvPolynomial σ K ⧸ I) F ((Ideal.Quotient.mk I) l) = algebraMap R F u)
     (v : ι → F) (hv : LinearIndependent R v) : Fintype.card ι ≤ d := by
-  classical
   let A := MvPolynomial σ K ⧸ I
   let φ := IsScalarTower.toAlgHom K A F
   obtain ⟨b, hb⟩ := IsLocalization.exist_integer_multiples_of_finite (nonZeroDivisors A) v
@@ -89,5 +87,4 @@ theorem curve_functionField_finite_rank_le
     (Module.finBasis R F) (Module.finBasis R F).linearIndependent
   simpa only [Fintype.card_fin] using hh
 
-end
 end CCDN

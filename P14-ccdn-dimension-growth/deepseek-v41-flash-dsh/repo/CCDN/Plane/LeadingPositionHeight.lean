@@ -26,15 +26,13 @@ integer point box, with the exact number of monomials.
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private theorem homogeneous_integer_evaluation_bound {n d : ℕ}
+theorem homogeneous_integer_evaluation_bound {n d : ℕ}
     (f : MvPolynomial (Fin (n + 1)) ℤ) (hf : f.IsHomogeneous d)
     {H R : ℝ} (hH : 0 ≤ H) (hR : 1 ≤ R) (hcoeff : CoefficientHeightLE f H)
     (x : Fin (n + 1) → ℤ) (hx : InBox x R) :
     |(eval x f : ℝ)| ≤ ((n + d).choose d : ℝ) * H * R ^ d := by
-  classical
   conv_lhs => rw [homogeneous_eq_sum_coeff f hf]
   simp only [map_sum, eval_monomial, Int.cast_sum, Int.cast_mul]
   calc
@@ -49,17 +47,15 @@ private theorem homogeneous_integer_evaluation_bound {n d : ℕ}
         (homogeneousMonomials_degree n d j).le) (abs_nonneg _) hH
     _ = _ := by simp [mul_assoc]
 
-private lemma ternary_homogeneous_dimension_le_square (d : ℕ) :
+lemma ternary_homogeneous_dimension_le_square (d : ℕ) :
     ((2 + d).choose d : ℝ) ≤ ((d : ℝ) + 2) ^ 2 := by
   have h : 2 * ((2 + d).choose d : ℝ) = ((d : ℝ) + 2) * (d + 1) := by
     exact_mod_cast ternary_homogeneous_dimension d
   nlinarith [show (0 : ℝ) ≤ d by positivity]
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial Real
 
 /-- The height-loss factor `(d + 1) ^ (4 (d + 1)) (d + 2) ^ 2 (2 d + 1) ^ d` by which the
@@ -173,5 +169,4 @@ theorem exists_translated_coefficient_position {d : ℕ} (hd : 0 < d)
     have h := leadingPositionHeightFactor_log_le hd
     linarith
 
-end
 end CCDN

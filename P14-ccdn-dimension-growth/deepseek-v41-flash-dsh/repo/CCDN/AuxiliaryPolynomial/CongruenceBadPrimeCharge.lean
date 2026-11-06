@@ -15,12 +15,11 @@ import CCDN.AuxiliaryPolynomial.HypersurfaceBadPrimeHeight
 /-! A single logarithmic-height witness bounds the combined charge of
 geometric bad primes and prescribed congruence primes. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Finset
 
-private theorem exists_fin_hypersurface_bad_prime_height_witness
+theorem exists_fin_hypersurface_bad_prime_height_witness
     {L : Type*} [Field L] [CharZero L] [IsAlgClosed L] {n : ℕ}
     (f : MvPolynomial (Fin (n + 1)) ℤ)
     (hf : Irreducible (map (Int.castRingHom L) f)) (hd : 0 < f.totalDegree)
@@ -59,7 +58,6 @@ theorem hypersurface_and_congruence_prime_charge
         (hypersurfaceHeightConstant (n + 1) *
           (1 + Real.log H / (f.totalDegree : ℝ) ^ 2)) +
         (∑ p ∈ P, Real.log p)) + 2 * mertensError + 1 := by
-  classical
   obtain ⟨D, hD, hheight, hdiv⟩ :=
     exists_fin_hypersurface_bad_prime_height_witness f hf hd H hH hcoeff
   let q : ℤ := ∏ p ∈ P, (p : ℤ)
@@ -99,5 +97,4 @@ theorem hypersurface_and_congruence_prime_charge
       hlogq, one_mul]
     linarith
 
-end
 end CCDN

@@ -12,9 +12,8 @@ import CCDN.Analysis.SmallDegreeSurfaceNumerics
 costs only an arbitrarily small positive power of the box radius. Constants
 are fixed before the radius, including the bounded range near B = 1. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Finset
 
 /-- For `L ≥ 1`, the number of primes in `congruencePrimeWindow L`, multiplied by `log 2`, is
@@ -33,7 +32,7 @@ theorem congruencePrimeWindow_card_log_two {L : ℝ} (hL : 1 ≤ L) :
 
 /-- A uniform bound for any fixed exponential in the size of the window.
 This retains the arbitrary epsilon needed to absorb residue multiplicities. -/
-private theorem congruencePrimeWindow_pow_subpower {K R ε : ℝ}
+theorem congruencePrimeWindow_pow_subpower {K R ε : ℝ}
     (hK : 1 ≤ K) (hR : 1 ≤ R) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ B : ℝ, 1 ≤ B →
       R ^ (congruencePrimeWindow (K * (Real.log B + 1))).card ≤ C * B ^ ε := by
@@ -99,7 +98,7 @@ private theorem congruencePrimeWindow_pow_subpower {K R ε : ℝ}
 
 /-- The edge count of the subset lattice, together with a fixed cost per
 selected prime, also has arbitrarily small power growth. -/
-private theorem congruencePrimeWindow_edge_subpower {K R ε : ℝ}
+theorem congruencePrimeWindow_edge_subpower {K R ε : ℝ}
     (hK : 1 ≤ K) (hR : 1 ≤ R) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ B : ℝ, 1 ≤ B →
       (congruencePrimeWindow (K * (Real.log B + 1))).card *
@@ -117,7 +116,7 @@ private theorem congruencePrimeWindow_edge_subpower {K R ε : ℝ}
 
 /-- Both prime-subset multiplicities and any fixed logarithmic power fit
 inside the exponent gap used by the surface argument. -/
-private theorem congruencePrimeWindow_edge_polylog_linear {K R : ℝ}
+theorem congruencePrimeWindow_edge_polylog_linear {K R : ℝ}
     (hK : 1 ≤ K) (hR : 1 ≤ R) (k : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ α B : ℝ, α ≤ 19 / 20 → 1 ≤ B →
       ((congruencePrimeWindow (K * (Real.log B + 1))).card *
@@ -167,5 +166,4 @@ theorem congruencePrimeWindow_surface_residual_bound {K R : ℝ}
   rw [he]
   linarith
 
-end
 end CCDN

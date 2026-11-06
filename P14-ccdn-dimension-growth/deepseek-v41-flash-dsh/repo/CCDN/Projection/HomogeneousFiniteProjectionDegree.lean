@@ -17,9 +17,8 @@ import CCDN.Projection.PrimitiveCoordinateField
 Hilbert multiplicity. Both the conductor and the dimension equality
 are consequences of the algebraic hypotheses. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A homogeneous linear projection of a homogeneous prime quotient that is integral and birational
@@ -85,5 +84,4 @@ theorem homogeneous_finite_birational_projection_leadingCoeff_eq
   rw [hp']
   exact hr
 
-end
 end CCDN

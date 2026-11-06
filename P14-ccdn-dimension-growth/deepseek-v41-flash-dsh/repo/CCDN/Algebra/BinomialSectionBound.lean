@@ -11,11 +11,10 @@ import CCDN.ForMathlib.MvPolynomial
 /-! Two finite differences of a binomial Hilbert function. This gives a
 coefficient-uniform codimension-two bound for filtered coordinate spaces. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
-private lemma choose_shift_sum (n k d : ℕ) :
+lemma choose_shift_sum (n k d : ℕ) :
     (n + 1 + (k + d)).choose (n + 1) = (n + 1 + k).choose (n + 1) +
       ∑ i ∈ Finset.range d, (n + (k + i + 1)).choose n := by
   induction d with
@@ -27,7 +26,7 @@ private lemma choose_shift_sum (n k d : ℕ) :
     rw [show n + 1 + (k + d) = n + (k + d + 1) by omega]
     omega
 
-private lemma choose_shift_bound (n k d : ℕ) :
+lemma choose_shift_bound (n k d : ℕ) :
     (n + 1 + (k + d)).choose (n + 1) ≤ (n + 1 + k).choose (n + 1) +
       d * (n + (k + d)).choose n := by
   rw [choose_shift_sum]
@@ -41,7 +40,7 @@ private lemma choose_shift_bound (n k d : ℕ) :
 
 /-- The second finite difference has the product-of-degrees factor and loses
 two powers of the cutoff, in every ambient dimension. -/
-private theorem choose_double_difference_bound (n k d e : ℕ) :
+theorem choose_double_difference_bound (n k d e : ℕ) :
     (n + 2 + (k + d + e)).choose (n + 2) + (n + 2 + k).choose (n + 2) ≤
       (n + 2 + (k + d)).choose (n + 2) + (n + 2 + (k + e)).choose (n + 2) +
         d * e * (n + (k + d + e)).choose n := by
@@ -86,5 +85,4 @@ theorem filteredCoordinateSpace_codim_two_bound {K : Type*} [Field K] {n N : ℕ
   rw [h0, h1, h2] at hc
   omega
 
-end
 end CCDN

@@ -15,10 +15,8 @@ import CCDN.Plane.ProjectivePlaneBezout
 irreducible projective plane equation. The principal ideal is prime and its
 projective Hilbert degree is the prescribed degree. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
-open MvPolynomial
 
 /-- The lower-bound equation defines an integral homogeneous plane curve
 whose degree is also certified by the projective Hilbert function. -/
@@ -36,5 +34,4 @@ theorem projective_integral_curve_lower_bound (d : ℕ) (hd : 0 < d) :
     principal_plane_hasProjectiveCurveDegree F hhom hir.ne_zero, ?_⟩
   rwa [projectiveIdealZeroLocus_span_singleton F hhom]
 
-end
 end CCDN

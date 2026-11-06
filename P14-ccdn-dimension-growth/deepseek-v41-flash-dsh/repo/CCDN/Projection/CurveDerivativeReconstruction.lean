@@ -20,12 +20,11 @@ The constant and first-order equations of a polynomial family of plane
 relations, expressed as equations in the target algebra.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma plane_deformation_relation_coefficients {K A ι : Type*}
+lemma plane_deformation_relation_coefficients {K A ι : Type*}
     [Field K] [CommRing A] [Algebra K A] [Fintype ι]
     (a : Fin 2 → A) (k : Fin 2) (w : A)
     (r : ι → MvPolynomial (Fin 2) K) (v : ι → Polynomial K)
@@ -47,11 +46,9 @@ private lemma plane_deformation_relation_coefficients {K A ι : Type*}
     simp only [Algebra.smul_def, Finset.sum_mul]
     simpa only [mul_assoc, add_comm] using h1
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Differentiate a family of degree-d plane equations to reconstruct
@@ -67,7 +64,6 @@ theorem exists_derivative_reconstruction {K τ : Type*}
     (l : MvPolynomial τ K) (hl : l.totalDegree ≤ 1) :
     ∃ P : MvPolynomial (Fin 2) K, P.totalDegree ≤ d ∧
       aeval a (pderiv 1 f) * l - aeval a P ∈ I := by
-  classical
   let V := restrictTotalDegree (Fin 2) K d
   let b := Module.finBasis K V
   obtain ⟨v, hv, j, hj⟩ := exists_curve_projection_relation_family I a ha d hdegree hu l hl
@@ -109,5 +105,4 @@ theorem exists_derivative_reconstruction {K τ : Type*}
     simp only [P, map_neg, map_smul, sub_neg_eq_add]
     exact (add_comm _ _).trans hs
 
-end
 end CCDN

@@ -13,9 +13,8 @@ import Mathlib.Tactic.LinearCombination
 /-! Uniform finite p-adic approximation by weighted local generators
 at a possibly singular plane-curve residue point. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- If every coordinate of `x` is divisible by `p`, then `p ^ N` divides `u(x)` for every integer
@@ -93,5 +92,4 @@ theorem exists_singular_plane_approximation_mod {p μ : ℕ} [Fact p.Prime]
   obtain ⟨r, g, hr, hg, hrep⟩ := exists_integer_origin_generators f hf hμ
   exact ⟨r, g, hr, hg, fun N u => integer_generators_approximate_mod f r g (hrep N) u⟩
 
-end
 end CCDN

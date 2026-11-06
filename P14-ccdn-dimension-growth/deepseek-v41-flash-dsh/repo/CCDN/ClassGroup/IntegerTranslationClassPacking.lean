@@ -13,8 +13,6 @@ lattice-point estimate from the already constructed norm-curve family. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
-open scoped NumberField
 open NumberField NumberField.InfinitePlace
 
 variable (K : Type*) [Field K] [NumberField K]
@@ -40,7 +38,6 @@ theorem boundedSquareNormTranslationClasses_packing (B R : ℝ) :
     (boundedSquareNormTranslationClasses K B).card *
         (2 * ⌊R⌋ + 1).toNat ≤
       (boundedArchimedeanIntegers K (B + R)).ncard := by
-  classical
   let Q := boundedSquareNormTranslationClasses K B
   let Z := Finset.Icc (-⌊R⌋) ⌊R⌋
   have hex (q : Q) : ∃ r : 𝓞 K, r ∈ boundedSquareNormIntegers K B ∧
@@ -97,5 +94,4 @@ theorem boundedSquareNormTranslationClasses_packing (B R : ℝ) :
   simpa only [Nat.card_eq_fintype_card, Fintype.card_prod, Fintype.card_coe,
     Set.fintypeCard_eq_ncard, hZ] using hcard
 
-end
 end CCDN

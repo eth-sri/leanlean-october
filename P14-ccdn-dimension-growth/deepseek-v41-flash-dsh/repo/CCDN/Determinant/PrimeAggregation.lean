@@ -18,19 +18,17 @@ packages this for a local divisor oracle (for each good prime an exponent with t
 lower bound) and absorbs the square-root error above a cutoff `L ≥ d ^ 4`;
 `determinant_log_lower_of_local_divisors_degree_four` is the case `L = 27 d ^ 4`. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Finset Real
 
-private lemma sum_log_disjoint_prime_powers_le_log (P Q : Finset ℕ)
+lemma sum_log_disjoint_prime_powers_le_log (P Q : Finset ℕ)
     (hPQ : Disjoint P Q) (e v : ℕ → ℕ) {D : ℤ} (hD : 0 < D)
     (hP : ∀ p ∈ P, p.Prime) (hQ : ∀ p ∈ Q, p.Prime)
     (hdivP : ∀ p ∈ P, (p : ℤ) ^ e p ∣ D)
     (hdivQ : ∀ p ∈ Q, (p : ℤ) ^ v p ∣ D) :
     (∑ p ∈ P, (e p : ℝ) * Real.log p) +
       (∑ p ∈ Q, (v p : ℝ) * Real.log p) ≤ Real.log D := by
-  classical
   let w : ℕ → ℕ := fun p => if p ∈ P then e p else v p
   have hw (p : ℕ) (hp : p ∈ P ∪ Q) : (p : ℤ) ^ w p ∣ D := by
     by_cases h : p ∈ P
@@ -71,7 +69,6 @@ theorem general_determinant_log_lower_cutoff_congruence {x L C A E : ℝ}
       (∑ p ∈ bad, Real.log p / p) - C * (2 * primeBlockMass / Real.sqrt L)) -
       E * ((Real.log 4 + 4) * x) +
       (∑ p ∈ P, (v p : ℝ) * Real.log p) ≤ Real.log D := by
-  classical
   let S := (((Ioc 0 ⌊x⌋₊).filter Nat.Prime) \ bad).filter (fun p : ℕ => L < (p : ℝ))
   have hp (p : ℕ) (hp : p ∈ S) : p.Prime :=
     (mem_filter.mp (mem_sdiff.mp (mem_filter.mp hp).1).1).2
@@ -120,7 +117,6 @@ theorem determinant_log_lower_of_local_divisors {x L K A E : ℝ} {d : ℕ}
     A * (Real.log x - Real.log L - 2 * mertensError - (∑ p ∈ bad, Real.log p / p) -
       2 * K * primeBlockMass) - E * ((Real.log 4 + 4) * x) +
       (∑ p ∈ P, (v p : ℝ) * Real.log p) ≤ Real.log D := by
-  classical
   have hd1 : (1 : ℝ) ≤ d := by exact_mod_cast hd
   have hL : 1 ≤ L := (one_le_pow₀ hd1).trans hdL
   let G := ((Ioc 0 ⌊x⌋₊).filter Nat.Prime) \ bad
@@ -170,5 +166,4 @@ theorem determinant_log_lower_of_local_divisors_degree_four {x K A E : ℝ} {d :
   push_cast at h
   linarith
 
-end
 end CCDN

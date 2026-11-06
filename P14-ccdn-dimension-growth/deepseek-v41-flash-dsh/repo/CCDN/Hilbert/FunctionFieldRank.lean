@@ -16,9 +16,8 @@ import Mathlib.RingTheory.Algebraic.Basic
 coordinate. Independent functions over the parameter field produce independent
 blocks over the constant field, whose filtered growth bounds their number. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- In a tower `K → R → F`, the products `u k • v i` of a family `v` independent over `R` and a
 family `u` independent over `K` are independent over `K`. -/
@@ -60,7 +59,6 @@ theorem polynomial_parameter_rank_le {K R F σ ι : Type*} [Field K] [Field R] [
     (h : ι → MvPolynomial σ K)
     (hi : LinearIndependent R (fun i => φ ((Ideal.Quotient.mk I) (h i)))) :
     Fintype.card ι ≤ d := by
-  classical
   let D := Finset.univ.sup (fun i => (h i).totalDegree)
   have hlow (N : ℕ) : Fintype.card ι * (N + 1) ≤
       Module.finrank K (filteredCoordinateSpace I (D + N)) := by
@@ -101,5 +99,4 @@ theorem polynomial_parameter_rank_le {K R F σ ι : Type*} [Field K] [Field R] [
   have hNeq : (N : ℤ) = d * D + c.natAbs + N₀ + 1 := by simp [N]
   nlinarith
 
-end
 end CCDN

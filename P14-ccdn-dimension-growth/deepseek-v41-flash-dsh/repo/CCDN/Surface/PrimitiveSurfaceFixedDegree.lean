@@ -21,9 +21,8 @@ import Mathlib.Algebra.Order.Star.Real
 polynomials of each fixed degree at least five. The argument constructs
 its congruence auxiliaries and curve cover. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Finset
 
 /-- For each degree `d ≥ 5`, there is a constant `C` such that every primitive integer
@@ -109,5 +108,4 @@ theorem primitive_surface_fixed_degree_linear_bound (d : ℕ) (hd : 5 ≤ d) :
     nlinarith [hcoverR, hret, hresidual, hsingular, sq_nonneg (f.totalDegree : ℝ)]
   · nlinarith [hlarge, sq_nonneg (f.totalDegree : ℝ)]
 
-end
 end CCDN

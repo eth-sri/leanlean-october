@@ -70,7 +70,6 @@ lemma genericPlaneMap_pderiv {K F σ : Type*} [Field K] [Field F]
     [Algebra K F] [Algebra (MvPolynomial σ K) F]
     (f : MvPolynomial (Option σ) K) :
     pderiv 0 (genericPlaneMap K F σ f) = genericPlaneMap K F σ (pderiv none f) := by
-  classical
   induction f using MvPolynomial.induction_on with
   | C a => simp [genericPlaneMap]
   | add f g hf hg => simp only [map_add, hf, hg]

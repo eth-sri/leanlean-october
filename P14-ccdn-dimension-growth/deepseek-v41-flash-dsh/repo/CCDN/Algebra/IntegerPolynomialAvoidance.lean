@@ -12,9 +12,8 @@ import Mathlib.Combinatorics.Nullstellensatz
 point with every coordinate between 0 and its degree. This is the combinatorial
 Nullstellensatz `MvPolynomial.eq_zero_of_eval_zero_at_prod_finset` on the grid {0,...,D}. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A nonzero polynomial with coordinate degrees at most `D` has a nonzero value on the
@@ -52,5 +51,4 @@ theorem exists_integer_grid_eval_ne_zero {σ : Type*} [Finite σ]
     ∃ v : σ → ℤ, (∀ i, 0 ≤ v i ∧ v i ≤ A) ∧ eval v f ≠ 0 := by
   simpa only [Int.cast_id] using exists_integer_grid_eval_ne_zero_of_totalDegree f hf A hd
 
-end
 end CCDN

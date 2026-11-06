@@ -15,9 +15,8 @@ import CCDN.Projection.BoundedDegreePreservingProjection
 /-! Reduce the integral-point count of an arbitrary prime affine curve
 to the proved plane count, using the constructed degree-preserving projection. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The inclusion of integer points into rational points is injective. -/
@@ -44,7 +43,6 @@ theorem affine_curve_count_le_of_moment_projection {n d k₀ k₁ : ℕ}
     (B : ℝ) (hB : 1 ≤ B) :
     count (idealZeroLocus I) B ≤
       count (zeroLocus f) (projectionBoxFactor n d * B) + d * (d - 1) := by
-  classical
   let S := integralPoints (idealZeroLocus I) B
   let R := S.image rationalPoint
   let π : RatPoint n → RatPoint 2 := fun z =>
@@ -55,7 +53,7 @@ theorem affine_curve_count_le_of_moment_projection {n d k₀ k₁ : ℕ}
     obtain ⟨z, hz, rfl⟩ := Finset.mem_image.mp hw
     exact (mem_integralPoints.mp hz).2
   have hc := hcount R hR
-  have hRcard : R.card = S.card := Finset.card_image_of_injective S (rationalPoint_injective n)
+  have hRcard := Finset.card_image_of_injective S (rationalPoint_injective n)
   have himg : R.image π = P.image rationalPoint := by
     simp only [R, P, Finset.image_image]
     congr 1
@@ -104,5 +102,4 @@ theorem exists_plane_count_reduction {n : ℕ}
   rw [hπ]
   exact hcount S hS
 
-end
 end CCDN

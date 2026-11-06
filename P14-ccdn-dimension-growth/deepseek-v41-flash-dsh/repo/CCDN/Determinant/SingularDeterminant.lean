@@ -12,9 +12,8 @@ import CCDN.ForMathlib.MvPolynomial
 /-! The local exponent at a possibly singular plane reduction, bounded by
 the residue-point count plus the singular correction. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Finset Real MvPolynomial
 
 /-- The local exponent can be bounded using the reduced point count
@@ -37,5 +36,4 @@ theorem singular_reduction_minorGcd_card_bound {s N p : ℕ} [Fact p.Prime] (hs 
   apply div_le_div_of_nonneg_left (sq_nonneg _) (by positivity)
   exact mul_le_mul_of_nonneg_left (by exact_mod_cast hbound) (by norm_num)
 
-end
 end CCDN

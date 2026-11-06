@@ -14,9 +14,8 @@ import Mathlib.Algebra.MvPolynomial.CommRing
 /-! Section 6, Lemma 6.1: an absolutely irreducible rational equation
 of prescribed degree vanishes on the entire stated integer box. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- For `d > 0` and `n ≥ 2`, there is a polynomial over `K` in `n` variables of total degree `d`
@@ -27,7 +26,6 @@ lemma exists_irreducible_zero_one_equation
     ∃ f : MvPolynomial (Fin n) K,
       f.totalDegree = d ∧ Irreducible (map φ f) ∧
         eval (0 : Fin n → K) f = 0 ∧ eval (fun _ => (1 : K)) f = 0 := by
-  classical
   let f : MvPolynomial (Fin 2) K := X 0 - X 1 ^ d
   have hfdeg : f.totalDegree = d := by
     apply le_antisymm
@@ -61,5 +59,4 @@ lemma exists_irreducible_zero_one_equation
   · simp [f, ne_of_gt hd]
   · simp [f]
 
-end
 end CCDN

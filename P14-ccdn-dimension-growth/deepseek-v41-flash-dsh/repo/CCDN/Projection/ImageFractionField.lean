@@ -16,7 +16,6 @@ field is constructed and identified on every coordinate-ring element. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 variable {K F σ τ : Type*} [Field K] [Field F] [Algebra K F]
@@ -75,5 +74,4 @@ lemma IsBirationalImage.aeval_mem [I.IsPrime] {a : σ → MvPolynomial τ K}
     {f : MvPolynomial σ K} (h : IsBirationalImage I a f) : aeval a f ∈ I :=
   (h.aeval_mem_iff f).mpr dvd_rfl
 
-end
 end CCDN

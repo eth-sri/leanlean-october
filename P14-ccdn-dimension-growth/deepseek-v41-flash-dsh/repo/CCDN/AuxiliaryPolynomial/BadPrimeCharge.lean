@@ -12,9 +12,8 @@ import CCDN.Analysis.PrimeProduct
 /-! Analytic control of bad-prime charges from an integer witness.
 The construction and coefficient bound for a Noether witness remain separate. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Finset Real
 
 /-- Distinct prime divisors of a positive integer have total logarithmic
@@ -40,7 +39,7 @@ lemma prime_divisor_charge_le (P : Finset ℕ) {D : ℤ} (hD : 0 < D)
 
 /-- Mertens bounds an arbitrary prime interval, with its logarithmic width
 and two absolute error terms. -/
-private lemma prime_interval_weight_le {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T)
+lemma prime_interval_weight_le {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T)
     (P : Finset ℕ) (hP : ∀ p ∈ P, p.Prime)
     (hlo : ∀ p ∈ P, L < (p : ℝ)) (hhi : ∀ p ∈ P, (p : ℝ) ≤ T) :
     (∑ p ∈ P, Real.log p / p) ≤ Real.log T - Real.log L + 2 * mertensError := by
@@ -67,12 +66,11 @@ private lemma prime_interval_weight_le {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T
 
 /-- Split the bad primes at T. The low part costs log(T/L), while the high
 part is bounded using the integer witness. -/
-private theorem bad_prime_charge_split (P : Finset ℕ) {D : ℤ} (hD : 0 < D)
+theorem bad_prime_charge_split (P : Finset ℕ) {D : ℤ} (hD : 0 < D)
     (hP : ∀ p ∈ P, p.Prime) (hdiv : ∀ p ∈ P, (p : ℤ) ∣ D)
     {L T : ℝ} (hL : 1 ≤ L) (hLT : L ≤ T) (hlo : ∀ p ∈ P, L < (p : ℝ)) :
     (∑ p ∈ P, Real.log p / p) ≤
       Real.log T - Real.log L + 2 * mertensError + Real.log D / T := by
-  classical
   let U := P.filter (fun p : ℕ => (p : ℝ) ≤ T)
   let V := P.filter (fun p : ℕ => ¬ (p : ℝ) ≤ T)
   have hlow := prime_interval_weight_le hL hLT U
@@ -104,5 +102,4 @@ theorem bad_prime_charge_of_height (P : Finset ℕ) {D : ℤ} (hD : 0 < D)
   rw [Real.log_mul hL0.ne' hH0.ne'] at h
   linarith
 
-end
 end CCDN

@@ -12,14 +12,11 @@ import CCDN.Curve.AffineCurveCount
 depending only on ambient dimension and with the exact degree dependence in
 CCDN Theorem 3. The proof is `affine_curve_count`, in `CCDN.Curve.AffineCurveCount`. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
-open MvPolynomial
 
 /-- The affine curve counting bound `AffineCurveBound` of CCDN Theorem 3. -/
 theorem affineCurveBound : AffineCurveBound :=
   affine_curve_count
 
-end
 end CCDN

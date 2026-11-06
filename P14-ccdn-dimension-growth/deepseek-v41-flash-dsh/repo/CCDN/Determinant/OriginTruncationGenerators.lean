@@ -21,21 +21,19 @@ Homogeneous generators lifted from the origin-adic layers of a
 plane equation, with the number at every weight bounded by its multiplicity.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Module
 
 /-- A basis of the graded layer lifts to homogeneous polynomials and
 reduces every element of the ideal power modulo the equation and the next power. -/
-private theorem exists_originLayer_generators {K : Type*} [Field K] {n : ℕ}
+theorem exists_originLayer_generators {K : Type*} [Field K] {n : ℕ}
     (f : MvPolynomial (Fin (n + 1)) K) (k : ℕ) :
     ∃ (r : ℕ) (g : Fin r → MvPolynomial (Fin (n + 1)) K),
       r = Module.finrank K (originLayer f k) ∧
       (∀ j, (g j).IsHomogeneous k) ∧
       ∀ u ∈ idealOfVars (Fin (n + 1)) K ^ k, ∃ c : Fin r → K,
         u - ∑ j, c j • g j ∈ originTruncationIdeal f k := by
-  classical
   let b := Module.finBasis K (originLayer f k)
   let φ := (Ideal.Quotient.mkₐ K (originTruncationIdeal f k)).toLinearMap
   have hlift : ∀ j, ∃ g : MvPolynomial (Fin (n + 1)) K,
@@ -60,30 +58,27 @@ private theorem exists_originLayer_generators {K : Type*} [Field K] {n : ℕ}
 
 /-- The singular multiplicity gives homogeneous local generators at
 all weights, with at most μ generators at each weight. -/
-private theorem exists_plane_origin_generators {K : Type*} [Field K] {μ : ℕ}
+theorem exists_plane_origin_generators {K : Type*} [Field K] {μ : ℕ}
     (f : MvPolynomial (Fin 2) K) (hf : f ∈ idealOfVars (Fin 2) K ^ μ)
     (hμ : homogeneousComponent μ f ≠ 0) :
     ∃ (r : ℕ → ℕ) (g : (k : ℕ) → Fin (r k) → MvPolynomial (Fin 2) K),
       (∀ k, r k ≤ μ) ∧ (∀ k j, (g k j).IsHomogeneous k) ∧
       ∀ k u, u ∈ idealOfVars (Fin 2) K ^ k → ∃ c : Fin (r k) → K,
         u - ∑ j, c j • g k j ∈ originTruncationIdeal f k := by
-  classical
   choose r g hr hg hspan using fun k => exists_originLayer_generators (n := 1) f k
   refine ⟨r, g, ?_, hg, hspan⟩
   intro k
   rw [hr]
   exact plane_originLayer_finrank_le_multiplicity f hf hμ
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Successive layer reductions assemble into a finite-precision
 polynomial representation, modulo the defining equation and the Nth origin power. -/
-private lemma origin_layers_generate_truncation {K σ : Type*} [Field K]
+lemma origin_layers_generate_truncation {K σ : Type*} [Field K]
     (f : MvPolynomial σ K) (r : ℕ → ℕ)
     (g : (k : ℕ) → Fin (r k) → MvPolynomial σ K)
     (hspan : ∀ k u, u ∈ idealOfVars σ K ^ k → ∃ c : Fin (r k) → K,
@@ -118,7 +113,6 @@ theorem exists_origin_truncation_generators {K : Type*} [Field K] {n : ℕ}
       ∀ N u, ∃ c : (k : Fin N) → Fin (r k.val) → K,
         u - ∑ k : Fin N, ∑ j, c k j • g k.val j ∈
           Ideal.span {f} ⊔ idealOfVars (Fin (n + 1)) K ^ N := by
-  classical
   choose r g hr hg hs using fun k => exists_originLayer_generators f k
   exact ⟨r, g, hr, hg, origin_layers_generate_truncation f r g hs⟩
 
@@ -135,5 +129,4 @@ theorem exists_plane_truncation_generators {K : Type*} [Field K] {μ : ℕ}
   obtain ⟨r, g, hr, hg, hs⟩ := exists_plane_origin_generators f hf hμ
   exact ⟨r, g, hr, hg, origin_layers_generate_truncation f r g hs⟩
 
-end
 end CCDN

@@ -34,7 +34,6 @@ nonvanishing derivative supplied by separability.
 namespace CCDN
 noncomputable section
 open Polynomial Differential
-open scoped Differential
 
 /-- The differential structure on `AdjoinRoot f` extending the derivation of `K`, for a monic
 irreducible separable `f`: the root `α` is sent to `-(f^D)(α) / f'(α)`, where `f^D` is `f` with
@@ -69,7 +68,7 @@ def separableAdjoinRootDifferential {K : Type*} [Field K] [Differential K]
 -- since matching `?m ?x` against the `toIntAlgHom` coercion needs unfolding past the
 -- transparency that the unifier otherwise respects.
 set_option backward.isDefEq.respectTransparency false in
-private theorem separableAdjoinRootDifferential_algebra {K : Type*} [Field K] [Differential K]
+theorem separableAdjoinRootDifferential_algebra {K : Type*} [Field K] [Differential K]
     (f : K[X]) [Fact (Irreducible f)] [Fact f.Monic] (hsep : f.Separable) :
     let := separableAdjoinRootDifferential f hsep
     DifferentialAlgebra K (AdjoinRoot f) := by
@@ -85,14 +84,12 @@ end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open Polynomial Differential
-open scoped Differential
 
 /-- The bounded-residue constant lemma used in the differential
 irreducibility criterion. This is the needed irreducible case of Gao's
 Lemma 2.4, proved directly by differentiating the constructed eliminant. -/
-private theorem simple_root_ratio_mem_base_of_differential_constant
+theorem simple_root_ratio_mem_base_of_differential_constant
     {F L : Type*} [Field F] [IsAlgClosed F] [Field L] [Algebra F L]
     [Differential L]
     (hbase : ∀ a : F, (algebraMap F L a)′ = 0)
@@ -116,24 +113,21 @@ private theorem simple_root_ratio_mem_base_of_differential_constant
       (hchar.mono (residueEliminant_natDegree_le f g D hfD hgD))
       (residueEliminant_eval_ratio_eq_zero t β f g hdeg hroot hsimple)
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open Polynomial Differential
-open scoped Differential
 attribute [local instance] rationalDifferential
 
 /-- An irreducible polynomial of degree below the characteristic is separable. -/
-private lemma irreducible_separable_of_natDegree_lt_char
+lemma irreducible_separable_of_natDegree_lt_char
     {K : Type*} [Field K] (f : K[X]) (hf : Irreducible f)
     (hchar : CharZeroOrGT K f.natDegree) :
     f.Separable :=
   (separable_iff_derivative_ne_zero hf).mpr (derivative_ne_zero_of_natCast_natDegree_ne_zero
     (hchar.natCast_ne_zero hf.natDegree_pos.ne' le_rfl))
 
-private lemma aeval_ratFunc_variable {F L : Type*} [Field F] [Field L]
+lemma aeval_ratFunc_variable {F L : Type*} [Field F] [Field L]
     [Algebra F L] [Algebra (RatFunc F) L] [IsScalarTower F (RatFunc F) L]
     (a : F[X]) :
     aeval (algebraMap (RatFunc F) L RatFunc.X) a =
@@ -145,7 +139,7 @@ private lemma aeval_ratFunc_variable {F L : Type*} [Field F] [Field L]
       ← RatFunc.algebraMap_eq_C, ← IsScalarTower.algebraMap_apply]
 
 /-- In a differential algebra over `F(t)`, the constants of `F` have derivative zero. -/
-private lemma deriv_algebraMap_ratFunc_base {F L : Type*} [Field F] [Field L]
+lemma deriv_algebraMap_ratFunc_base {F L : Type*} [Field F] [Field L]
     [Algebra F L] [Algebra (RatFunc F) L] [IsScalarTower F (RatFunc F) L]
     [Differential L] [DifferentialAlgebra (RatFunc F) L] (a : F) :
     (algebraMap F L a)′ = 0 := by
@@ -157,7 +151,7 @@ private lemma deriv_algebraMap_ratFunc_base {F L : Type*} [Field F] [Field L]
   rw [ha, map_zero]
 
 /-- In a differential algebra over `F(t)`, the image of `t` has derivative one. -/
-private lemma deriv_algebraMap_ratFunc_X {F L : Type*} [Field F] [Field L]
+lemma deriv_algebraMap_ratFunc_X {F L : Type*} [Field F] [Field L]
     [Algebra (RatFunc F) L] [Differential L] [DifferentialAlgebra (RatFunc F) L] :
     (algebraMap (RatFunc F) L RatFunc.X)′ = 1 := by
   rw [deriv_algebraMap]
@@ -167,7 +161,7 @@ private lemma deriv_algebraMap_ratFunc_X {F L : Type*} [Field F] [Field L]
   rw [hX, map_one]
 
 /-- The closed-form equation persists over the rational function field. -/
-private lemma bivariate_closed_form_map_ratFunc {F : Type*} [Field F] (f g h : F[X][X])
+lemma bivariate_closed_form_map_ratFunc {F : Type*} [Field F] (f g h : F[X][X])
     (hclosed : (bivariateCoefficientDerivative F) g * f -
         g * (bivariateCoefficientDerivative F) f = h.derivative * f - h * f.derivative) :
     Differential.mapCoeffs (g.map (algebraMap F[X] (RatFunc F))) *
@@ -183,7 +177,7 @@ private lemma bivariate_closed_form_map_ratFunc {F : Type*} [Field F] (f g h : F
 /-- At a simple root over `F(t)`, the residue of a closed form lies in `F`. This is
 the constant-residue descent, with the characteristic bounded by the residue
 eliminant's degree. -/
-private lemma closed_form_residue_mem_base {F L : Type*} [Field F] [IsAlgClosed F] [Field L]
+lemma closed_form_residue_mem_base {F L : Type*} [Field F] [IsAlgClosed F] [Field L]
     [Algebra F L] [Algebra (RatFunc F) L] [IsScalarTower F (RatFunc F) L]
     [Differential L] [DifferentialAlgebra (RatFunc F) L]
     (f g h : F[X][X]) (hf : Irreducible (f.map (algebraMap F[X] (RatFunc F))))
@@ -227,7 +221,7 @@ private lemma closed_form_residue_mem_base {F L : Type*} [Field F] [IsAlgClosed 
 
 /-- The closed-form criterion over `F(t)`: a closed form within the degree bounds
 is a constant multiple of the gradient. -/
-private lemma ratFunc_closed_form_eq_gradient {F : Type*} [Field F] [IsAlgClosed F]
+lemma ratFunc_closed_form_eq_gradient {F : Type*} [Field F] [IsAlgClosed F]
     (f g h : F[X][X]) (hf : Irreducible f) (hm : f.Monic)
     (hgdeg : g.natDegree < f.natDegree) (hhdeg : h.natDegree < f.natDegree)
     (D : ℕ) (hfD : ∀ i, (f.coeff i).natDegree ≤ D) (hgD : ∀ i, (g.coeff i).natDegree ≤ D)
@@ -290,5 +284,4 @@ theorem bivariate_closed_form_eq_gradient
   · simpa only [φ, Polynomial.map_mul, Polynomial.map_C, RatFunc.algebraMap_C,
       RatFunc.algebraMap_eq_C, bivariateCoefficientDerivative_map] using hb
 
-end
 end CCDN

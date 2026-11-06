@@ -14,12 +14,11 @@ import CCDN.Projection.InfinityScaling
 /-! Finite normalized charts give a bounded integral moment parameter
 avoiding every nonzero infinity direction. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma momentCoordinate_aeval {K L : Type*} [Field K] [Field L] [Algebra K L]
+lemma momentCoordinate_aeval {K L : Type*} [Field K] [Field L] [Algebra K L]
     {n : ℕ} (k : ℕ) (z : Fin n → L) :
     aeval z (momentCoordinate K n k) = ∑ j : Fin n, z j * (k : L) ^ j.val := by
   simp [momentCoordinate, mul_comm]
@@ -32,7 +31,6 @@ theorem exists_bounded_infinity_parameter {K L : Type*} [Field K] [Field L]
     ∃ k : ℕ, k ≤ n ^ 2 * d ∧
       ∀ z ∈ MvPolynomial.zeroLocus L
         (leadingInfinityIdeal I ⊔ Ideal.span {momentCoordinate K n k}), z = 0 := by
-  classical
   choose S hcard hS using (fun j : Fin n => exists_finite_infinity_chart (L := L) I d hdegree j)
   let T := (j : Fin n) × {z : Fin n → L // z ∈ S j}
   let v (t : T) := t.2.val
@@ -74,5 +72,4 @@ theorem exists_bounded_infinity_parameter {K L : Type*} [Field K] [Field L]
   rw [momentCoordinate_aeval] at hwzero
   exact hwzero
 
-end
 end CCDN

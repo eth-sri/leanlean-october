@@ -18,13 +18,12 @@ preserve the total-degree filtration, giving an exact combinatorial model for th
 of the filtered coordinate spaces.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Standard representatives describe precisely each filtered coordinate space. -/
-private theorem map_bounded_standard_eq {K σ : Type*} [Field K]
+theorem map_bounded_standard_eq {K σ : Type*} [Field K]
     [LinearOrder σ] [WellFoundedGT σ] (I : Ideal (MvPolynomial σ K)) (N : ℕ) :
     (restrictSupport K (Ideal.boundedStandardExponents I MonomialOrder.degLex N)).map
         (Ideal.Quotient.mkₐ K I).toLinearMap = filteredCoordinateSpace I N := by
@@ -67,5 +66,4 @@ theorem filteredCoordinateSpace_finrank_eq_standard_card {K σ : Type*} [Field K
   rw [← hrange, LinearMap.finrank_range_of_inj hinj]
   exact Module.finrank_eq_nat_card_basis (basisRestrictSupport K _)
 
-end
 end CCDN

@@ -16,12 +16,11 @@ import Mathlib.RingTheory.Polynomial.UniqueFactorization
 /-! A strict containment of affine prime ideals strictly lowers the
 Hilbert dimension. The proof uses a polynomial in their difference. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private theorem prime_ideal_strict_hilbert_dimension_drop
+theorem prime_ideal_strict_hilbert_dimension_drop
     {K : Type*} [Field K] {n m : ℕ}
     (I J : Ideal (MvPolynomial (Fin n) K)) [I.IsPrime]
     (hdim : (filteredHilbertPolynomial I).natDegree = m + 1)
@@ -82,5 +81,4 @@ theorem exists_prime_generator_of_hilbert_dimension {n : ℕ}
     (principal_filteredHilbertPolynomial_natDegree p hp.ne_zero hdeg) hdim (Ne.symm hne)
     ((Ideal.span_singleton_le_iff_mem I).mpr hpI)
 
-end
 end CCDN

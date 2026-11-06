@@ -18,22 +18,20 @@ A nonzero Euler kernel vector forces every maximal universal
 coefficient minor to vanish after specialization.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Module
 
-private theorem eulerClosedForm_minor_eq_zero_of_kernel
+theorem eulerClosedForm_minor_eq_zero_of_kernel
     {F : Type*} [Field F] (k : ℕ) (f : Polynomial (Polynomial F))
     (u : EulerPairSpace F k) (hu : u ≠ 0)
     (hker : eulerClosedFormOperator k f u = 0)
     (rows : Fin ((k + 2) ^ 2 - 1) → ℕ × ℕ)
     (cols : Fin ((k + 2) ^ 2 - 1) → EulerColumns k) :
     ((eulerClosedFormCoefficientMatrix k f).submatrix rows cols).det = 0 := by
-  classical
   by_contra hdet
   let A := eulerClosedFormCoefficientMatrix k f
-  have hlo : (k + 2) ^ 2 - 1 ≤ A.rank := A.le_rank_of_det_submatrix_ne_zero rows cols hdet
+  have hlo := A.le_rank_of_det_submatrix_ne_zero rows cols hdet
   have hr : A.rank = Fintype.card (EulerColumns k) := by
     apply le_antisymm (Matrix.rank_le_card_width _)
     simpa only [card_eulerColumns] using hlo
@@ -55,19 +53,17 @@ private theorem eulerClosedForm_minor_eq_zero_of_kernel
   ext i
   simpa only [map_zero, Finsupp.zero_apply] using hz i
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open Polynomial
 
-private lemma bivariateMap_injective {R S : Type*} [CommRing R] [CommRing S]
+lemma bivariateMap_injective {R S : Type*} [CommRing R] [CommRing S]
     (φ : R →+* S) (hφ : Function.Injective φ) :
     Function.Injective (bivariateMap φ) :=
   Polynomial.map_injective _ (Polynomial.map_injective φ hφ)
 
-private theorem genericEulerProduct_minor_eq_zero
+theorem genericEulerProduct_minor_eq_zero
     (k a b : ℕ) (ha : 0 < a) (hb : 0 < b) (hab : a + b = k + 2)
     (rows : Fin ((k + 2) ^ 2 - 1) → ℕ × ℕ)
     (cols : Fin ((k + 2) ^ 2 - 1) → EulerColumns k) :
@@ -118,5 +114,4 @@ theorem eulerClosedForm_minor_eq_zero_of_product
     genericEulerFactorRight_specialize a b g h hh] at hz
   exact hz
 
-end
 end CCDN

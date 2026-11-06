@@ -18,7 +18,6 @@ hypersurface instance retains the original geometric bad-prime factor. -/
 @[expose] public section
 namespace CCDN
 noncomputable section
-open MvPolynomial
 
 /-- The coefficient-sensitive threshold, with a dimension-only constant. -/
 def hypersurfaceSmallThreshold (n d : ℕ) (B L A : ℝ) : ℝ :=
@@ -30,7 +29,7 @@ def hypersurfaceSmallThreshold (n d : ℕ) (B L A : ℝ) : ℝ :=
 /-- A degree above the proved threshold yields an integer homogeneous
 nonmultiple vanishing at all given bounded points, for any finite prime set `bad`
 for which the normalized comparison holds. -/
-private theorem exists_auxiliary_small_height_of_comparison {n d M t : ℕ}
+theorem exists_auxiliary_small_height_of_comparison {n d M t : ℕ}
     (order : MonomialOrder (Fin (n + 3))) (f : MvPolynomial (Fin (n + 3)) ℤ)
     (hf0 : f ≠ 0) (hd : 0 < d) (hM : 2 * d ≤ M) (z : Fin t → IntPoint (n + 3))
     {B : ℝ} (hB : 1 ≤ B) (hbox : ∀ i, InBox (z i) B)
@@ -40,7 +39,6 @@ private theorem exists_auxiliary_small_height_of_comparison {n d M t : ℕ}
     (hthreshold : hypersurfaceSmallThreshold n d B |((order.leadingCoeff f : ℤ) : ℝ)|
       (primeSetFactor bad) < M) :
     ∃ g, IsPointAuxiliary f g M z := by
-  classical
   have hdM : d ≤ M := by omega
   by_contra hnone
   obtain ⟨s, _, hr, hc⟩ := hcomp hB hbox hdM (dvd_of_not_exists_isPointAuxiliary hnone)

@@ -31,7 +31,7 @@ variable to the constant polynomial with value the power series `X + a`. -/
       if k = j then Polynomial.X else Polynomial.C (PowerSeries.X + PowerSeries.C a) := by
   simp [formalPlanePolynomial]
 
-private lemma formalPlanePolynomial_derivative {K : Type*} [CommRing K]
+lemma formalPlanePolynomial_derivative {K : Type*} [CommRing K]
     (j : Fin 2) (a : K) (f : MvPolynomial (Fin 2) K) :
     (formalPlanePolynomial j a f).derivative =
       formalPlanePolynomial j a (MvPolynomial.pderiv j f) := by
@@ -46,7 +46,7 @@ private lemma formalPlanePolynomial_derivative {K : Type*} [CommRing K]
     · simp [map_mul, Polynomial.derivative_mul, formalPlanePolynomial_X, hf, h]
       ring
 
-private lemma formalPlanePolynomial_eval {K : Type*} [CommRing K]
+lemma formalPlanePolynomial_eval {K : Type*} [CommRing K]
     (j : Fin 2) (a : K) (f : MvPolynomial (Fin 2) K) (g : PowerSeries K) :
     (formalPlanePolynomial j a f).eval g =
       MvPolynomial.eval₂ PowerSeries.C
@@ -57,7 +57,7 @@ private lemma formalPlanePolynomial_eval {K : Type*} [CommRing K]
   | mul_X f k hf =>
     by_cases h : k = j <;> simp [map_mul, formalPlanePolynomial_X, hf, h]
 
-private lemma formalPlanePolynomial_constant_eval {K : Type*} [CommRing K]
+lemma formalPlanePolynomial_constant_eval {K : Type*} [CommRing K]
     (j : Fin 2) (a b : K) (f : MvPolynomial (Fin 2) K) :
     ((formalPlanePolynomial j a f).map PowerSeries.constantCoeff).eval b =
       MvPolynomial.eval (fun k => if k = j then b else a) f := by

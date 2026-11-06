@@ -23,9 +23,8 @@ curve. Chart irreducibility, its full degree and the infinity correction
 are proved; the affine input is the formalized Stepanov estimate.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- For a homogeneous integer polynomial `f` of degree `d ≥ 2` with irreducible reduction modulo a
@@ -63,11 +62,9 @@ theorem projective_plane_finite_field_card_bound {p d : ℕ} [Fact p.Prime]
     nlinarith
   linarith
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial Finset
 
 /-- For a homogeneous integer polynomial `f` of degree `d ≥ 2` with irreducible reduction modulo a
@@ -99,7 +96,7 @@ theorem projectivePlaneTotalMultiplicity_le {p d : ℕ} [Fact p.Prime]
   nlinarith
 
 /-- A uniform local exponent at primes `p > stepanovThreshold d` of irreducible reduction. -/
-private theorem projective_plane_minorGcd_dvd {s N p d M : ℕ} [Fact p.Prime] (hs : 0 < s)
+theorem projective_plane_minorGcd_dvd {s N p d M : ℕ} [Fact p.Prime] (hs : 0 < s)
     (f : MvPolynomial (Fin 3) ℤ) (hf : f.IsHomogeneous d) (hd : 2 ≤ d)
     (hir : Irreducible (map (Int.castRingHom (ZMod p)) f))
     (hsize : stepanovThreshold (d : ℝ) < p)
@@ -147,5 +144,4 @@ theorem projective_determinant_log_lower_at_rank {s N d M : ℕ} (hs : 0 < s)
   dsimp only [degreeFourDeterminantError]
   ring
 
-end
 end CCDN

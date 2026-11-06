@@ -14,7 +14,7 @@ on the top homogeneous component and the direction, not the base point. -/
 namespace CCDN
 noncomputable section
 
-private lemma polynomial_coeff_prod_sum_of_natDegree_le
+lemma polynomial_coeff_prod_sum_of_natDegree_le
     {R ι : Type*} [CommRing R] (s : Finset ι) (q : ι → Polynomial R) (e : ι → ℕ)
     (hq : ∀ i ∈ s, (q i).natDegree ≤ e i) :
     (∏ i ∈ s, q i).coeff (∑ i ∈ s, e i) = ∏ i ∈ s, (q i).coeff (e i) := by
@@ -43,12 +43,12 @@ def affineLinePolynomial {R σ : Type*} [CommRing R] (a b : σ → R) :
   MvPolynomial.eval₂Hom Polynomial.C
     (fun i => Polynomial.C (a i) + Polynomial.C (b i) * Polynomial.X)
 
-private lemma affineLinePolynomial_monomial_top {R σ : Type*} [CommRing R]
+lemma affineLinePolynomial_monomial_top {R σ : Type*} [CommRing R]
     (a b : σ → R) (m : σ →₀ ℕ) (c : R) (d : ℕ) (hd : m.degree ≤ d) :
     (affineLinePolynomial a b (MvPolynomial.monomial m c)).coeff d =
       if d = m.degree then c * m.prod (fun i e => b i ^ e) else 0 := by
   classical
-  let q : σ → Polynomial R := fun i => Polynomial.C (a i) + Polynomial.C (b i) * Polynomial.X
+  let q := fun i => Polynomial.C (a i) + Polynomial.C (b i) * Polynomial.X
   have hq (i : σ) : (q i).natDegree ≤ 1 := polynomial_affine_natDegree_le _ _
   have hp (i : σ) : ((q i) ^ m i).natDegree ≤ m i := by
     exact Polynomial.natDegree_pow_le.trans (by simpa using Nat.mul_le_mul_left (m i) (hq i))

@@ -23,7 +23,6 @@ of the coordinate functionals `b.coord q` and `b.coord p`. -/
 theorem fieldBasisMiddle_span (b : Module.Basis ι F K) (p q : ι) :
     Submodule.span F (Set.range (fun i : {i : ι // i ≠ p ∧ i ≠ q} ↦ b i)) =
       hyperplaneComplement (b.coord q) (b.coord p) := by
-  classical
   have hr : Set.range (fun i : {i : ι // i ≠ p ∧ i ≠ q} ↦ b i) =
       b '' {i : ι | i ≠ p ∧ i ≠ q} := by
     ext x
@@ -64,7 +63,7 @@ theorem fieldBasisMiddle_apply (b : Module.Basis ι F K) (p q : ι)
 section Finite
 variable [Fintype ι] [DecidableEq ι]
 
-private theorem fieldBasisMiddle_card (p q : ι) (hpq : p ≠ q) :
+theorem fieldBasisMiddle_card (p q : ι) (hpq : p ≠ q) :
     Fintype.card {i : ι // i ≠ p ∧ i ≠ q} + 2 = Fintype.card ι := by
   have hs (i : ι) :
       i ∈ (Finset.univ.erase p).erase q ↔ i ≠ p ∧ i ≠ q := by
@@ -76,7 +75,7 @@ private theorem fieldBasisMiddle_card (p q : ι) (hpq : p ≠ q) :
   simpa only [Finset.card_univ] using (show
     ((Finset.univ.erase p).erase q).card + 2 = Finset.univ.card by omega)
 
-private theorem fieldBasisMiddle_prod {R : Type*} [CommMonoid R]
+theorem fieldBasisMiddle_prod {R : Type*} [CommMonoid R]
     (w : ι → R) (p q : ι) (hpq : p ≠ q) :
     ∏ i, w i = w p * w q * ∏ i : {i : ι // i ≠ p ∧ i ≠ q}, w i := by
   have hs (i : ι) :

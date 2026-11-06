@@ -33,7 +33,7 @@ lemma projectiveCurveConstant_pos (n : ℕ) : 0 < projectiveCurveConstant n := b
   have := projectivePlaneAbsoluteConstant_pos
   positivity
 
-private theorem projectiveCurveEstimate_scale (n : ℕ) {d : ℕ} (hd : 0 < d)
+theorem projectiveCurveEstimate_scale (n : ℕ) {d : ℕ} (hd : 0 < d)
     {B : ℝ} (hB : 1 ≤ B) :
     projectiveCurveEstimate d (projectionBoxFactor n d * B) ≤
       Real.exp (2 * projectionLogConstant n) * projectiveCurveEstimate d B := by
@@ -95,7 +95,6 @@ theorem projective_curve_count {n d : ℕ}
     (hd : 0 < d) (hdegree : HasProjectiveCurveDegree I d) {B : ℝ} (hB : 1 ≤ B) :
     (projectiveCount (projectiveIdealZeroLocus I) B : ℝ) ≤
       projectiveCurveConstant n * projectiveCurveEstimate d B := by
-  classical
   by_cases hS : (projectivePoints (projectiveIdealZeroLocus I) B).Nonempty
   · obtain ⟨x, hx⟩ := hS
     have hxI := (mem_projectivePoints.mp hx).2

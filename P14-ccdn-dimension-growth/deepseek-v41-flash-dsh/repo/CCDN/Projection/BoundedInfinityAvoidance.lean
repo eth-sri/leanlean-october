@@ -14,9 +14,8 @@ import Mathlib.Algebra.Polynomial.OfFn
 /-! An explicit bounded integer moment form avoids any prescribed finite set
 of nonzero directions. No separation of pairs is needed for this step. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- The moment coordinate `∑ j, k ^ j * X j` is homogeneous of degree one. -/
 lemma momentCoordinate_homogeneous (K : Type*) [Field K] (n k : ℕ) :
@@ -73,5 +72,4 @@ theorem filtration_recurrence_of_infinity_avoidance {K L σ : Type*}
   exact ⟨Fintype.card σ * N,
     eventual_generation_of_power_reductions I l hl.totalDegree_le N hN hred⟩
 
-end
 end CCDN

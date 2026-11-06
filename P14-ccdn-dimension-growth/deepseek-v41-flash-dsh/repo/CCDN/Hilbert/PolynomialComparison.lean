@@ -11,9 +11,8 @@ import Mathlib.Analysis.Polynomial.Basic
 /-! Eventual inequalities compare the degree and leading coefficient of
 Hilbert polynomials. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Filter
 
 /-- A rational polynomial that is eventually nonnegative on the natural numbers has nonnegative
@@ -28,7 +27,7 @@ lemma leadingCoeff_nonneg_of_eventual_nat_eval_nonneg (P : Polynomial ℚ)
     rw [he, Polynomial.eval_C] at hh
     exact hh
   · by_contra! hn
-    have hdeg : 0 < P.degree := Polynomial.natDegree_pos_iff_degree_pos.mp (Nat.pos_of_ne_zero hd)
+    have hdeg := Polynomial.natDegree_pos_iff_degree_pos.mp (Nat.pos_of_ne_zero hd)
     have ht : Tendsto (fun n : ℕ => P.eval (n : ℚ)) atTop atBot :=
       (P.tendsto_atBot_of_leadingCoeff_nonpos hdeg hn.le).comp
         tendsto_natCast_atTop_atTop
@@ -113,5 +112,4 @@ theorem filteredHilbertPolynomial_leadingCoeff_le
   rw [hM n ((le_max_left _ _).trans hn), hN n ((le_max_right _ _).trans hn)]
   exact_mod_cast hle n
 
-end
 end CCDN

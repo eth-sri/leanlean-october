@@ -22,9 +22,8 @@ set of rational affine lines with the same rational zero-set union. Empty
 rational loci are discarded, and repeated line sets are counted only once.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- The union of the rational zero sets of finitely many degree-one affine curves in
 three-space is a union of at most as many rational affine lines, each of which is the zero set
@@ -65,11 +64,9 @@ theorem degree_one_components_line_cover
       degree_one_zeroLocus_eq_rationalAffineLine P hheight hdegree z hz
     exact ⟨⟨P, hPS, rfl⟩, z, v, hv, he⟩
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- There is an absolute constant `C` such that, for an integer surface equation `f` of degree
@@ -101,5 +98,4 @@ theorem surface_degree_one_component_contribution :
   have hcardR : (lines.card : ℝ) ≤ S.card := by exact_mod_cast hcard
   exact hh.trans (add_le_add le_rfl hcardR)
 
-end
 end CCDN

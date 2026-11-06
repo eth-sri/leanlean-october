@@ -32,7 +32,7 @@ generates a subfield of odd index. -/
 def oddIndexNormCurveCountConstant : ℝ :=
   2 * Real.exp 1 * affineNonzeroConstantBound planeResidueConstant
 
-private lemma oddIndexNormCurveCountConstant_pos : 0 < oddIndexNormCurveCountConstant :=
+lemma oddIndexNormCurveCountConstant_pos : 0 < oddIndexNormCurveCountConstant :=
   mul_pos (by positivity) (affineNonzeroConstantBound_pos planeResidueConstant)
 
 /-- If `[K : ℚ(β)]` is odd, `n = [K : ℚ] ≥ 2` and `ε ≠ 0`, then the signed norm curve
@@ -68,7 +68,7 @@ noncomputable section
 open NumberField NumberField.InfinitePlace
 open scoped IntermediateField
 
-private lemma normCurveBoxHeight_log_le {n : ℕ} (hn : 2 ≤ n) {B : ℝ} (hB : 1 ≤ B) :
+lemma normCurveBoxHeight_log_le {n : ℕ} (hn : 2 ≤ n) {B : ℝ} (hB : 1 ≤ B) :
     Real.log (max (2 * B) (Real.sqrt (B ^ n))) + n ≤
       2 * (n : ℝ) * (Real.log B + 1) := by
   have hB0 : 0 < B := zero_lt_one.trans_le hB

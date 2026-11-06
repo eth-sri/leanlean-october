@@ -21,9 +21,8 @@ Numerical absorption of bad and zero plane sections above the cutoff
 p>27*d^4. The leading term remains exactly p^(m-1).
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- For `1 ≤ d` and `p` above the threshold `27 * d ^ 4`, the bad-section error
 `2 * d ^ 4 * p + d ^ 3` is at most `3 * d ^ 2 * p * √p`. -/
@@ -44,7 +43,7 @@ lemma hypersurface_bad_section_error {d p : ℝ} (hd : 1 ≤ d) (hp : stepanovTh
 
 /-- The unsimplified incidence estimate implies the desired sharp affine
 hypersurface estimate in every ambient dimension at least three. -/
-private theorem hypersurface_count_of_incidence_bound (n : ℕ) {d p N : ℝ}
+theorem hypersurface_count_of_incidence_bound (n : ℕ) {d p N : ℝ}
     (hd : 1 ≤ d) (hp : stepanovThreshold d < p)
     (hcount : N * p ^ (2 * n + 8) ≤
       p ^ (3 * n + 9) * (p + planeResidueConstant * d ^ 2 * Real.sqrt p) +
@@ -70,16 +69,14 @@ private theorem hypersurface_count_of_incidence_bound (n : ℕ) {d p N : ℝ}
   rw [he] at hfact
   exact (mul_le_mul_iff_left₀ (pow_pos hp0 _)).mp (hcount.trans hfact)
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- In n+3 ambient coordinates, the leading term is p^(n+2), with an explicit
 absolute square-degree square-root error. -/
-private theorem affine_hypersurface_finite_field_bound_option {n : ℕ}
+theorem affine_hypersurface_finite_field_bound_option {n : ℕ}
     (p : ℕ) [Fact p.Prime] (f : MvPolynomial (Option (Fin (n + 2))) (ZMod p))
     (hf : Irreducible (MvPolynomial.map (algebraMap (ZMod p) (AlgebraicClosure (ZMod p))) f))
     (hsize : stepanovThreshold (f.totalDegree : ℝ) < p) :
@@ -125,7 +122,7 @@ private theorem affine_hypersurface_finite_field_bound_option {n : ℕ}
       ring
 
 /-- Renaming coordinates preserves the number of affine zeros. -/
-private lemma polynomial_zero_card_renameEquiv {K σ τ : Type*} [CommRing K]
+lemma polynomial_zero_card_renameEquiv {K σ τ : Type*} [CommRing K]
     (e : σ ≃ τ) (f : MvPolynomial σ K) :
     Nat.card {z : τ → K // eval z (rename e f) = 0} =
       Nat.card {z : σ → K // eval z f = 0} := by
@@ -158,5 +155,4 @@ theorem affine_hypersurface_finite_field_bound {n : ℕ}
   rw [hd, polynomial_zero_card_renameEquiv] at h
   exact h
 
-end
 end CCDN

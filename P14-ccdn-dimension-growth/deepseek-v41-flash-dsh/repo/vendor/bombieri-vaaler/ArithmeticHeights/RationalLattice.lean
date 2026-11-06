@@ -140,12 +140,13 @@ place is the inclusion. -/
   map_add' a b := by ext i; push_cast; simp
   map_smul' c a := by ext i; push_cast; simp [Rat.smul_def]
 
-@[simp] theorem Rat.piEuclidean_apply {ι : Type*} (x : ι → ℚ) (i : ι) :
-    (Rat.piEuclidean ι x).ofLp i = (x i : ℝ) := rfl
-
 /-!
 ### The integral points of a rational subspace
 -/
+
+
+@[simp] theorem Rat.piEuclidean_apply {ι : Type*} (x : ι → ℚ) (i : ι) :
+    (Rat.piEuclidean ι x).ofLp i = (x i : ℝ) := rfl
 
 section IntPoints
 
@@ -159,7 +160,7 @@ variable {ι : Type*}
     z ∈ V.intPoints ↔ Rat.piIntCast ι z ∈ V := Iff.rfl
 
 /-- A `ℤ`-basis of the integral points is linearly independent over `ℚ`. -/
-private theorem linearIndependent_of_basis_intPoints (V : Submodule ℚ (ι → ℚ)) {κ : Type*}
+theorem linearIndependent_of_basis_intPoints (V : Submodule ℚ (ι → ℚ)) {κ : Type*}
     (b : Basis κ ℤ V.intPoints) :
     LinearIndependent ℚ fun i ↦ Rat.piIntCast ι (b i : ι → ℤ) := by
   rw [← LinearIndependent.iff_fractionRing (R := ℤ) (K := ℚ)]
@@ -167,7 +168,7 @@ private theorem linearIndependent_of_basis_intPoints (V : Submodule ℚ (ι → 
     (LinearMap.ker_eq_bot.2 (Rat.piIntCast_injective.comp V.intPoints.injective_subtype))
 
 /-- A `ℤ`-basis of the integral points generates all of them: saturation. -/
-private theorem span_int_of_basis_intPoints (V : Submodule ℚ (ι → ℚ)) {κ : Type*}
+theorem span_int_of_basis_intPoints (V : Submodule ℚ (ι → ℚ)) {κ : Type*}
     (b : Basis κ ℤ V.intPoints) :
     Submodule.span ℤ (Set.range fun i ↦ (b i : ι → ℤ)) = V.intPoints := by
   rw [show (fun i ↦ ((b i : ι → ℤ))) = (V.intPoints.subtype ∘ b) from rfl, Set.range_comp,
@@ -182,7 +183,7 @@ instance (V : Submodule ℚ (ι → ℚ)) : Module.Free ℤ V.intPoints :=
   Module.free_of_finite_type_torsion_free'
 
 /-- Clearing denominators: every rational tuple has a nonzero integral multiple. -/
-private theorem exists_intCast_smul (v : ι → ℚ) :
+theorem exists_intCast_smul (v : ι → ℚ) :
     ∃ (N : ℤ) (z : ι → ℤ), N ≠ 0 ∧ (N : ℚ) • v = Rat.piIntCast ι z := by
   classical
   let _ : Fintype ι := Fintype.ofFinite ι
@@ -195,7 +196,7 @@ private theorem exists_intCast_smul (v : ι → ℚ) :
   simpa using h.symm
 
 /-- A `ℤ`-basis of the integral points spans `V` over `ℚ`. -/
-private theorem span_of_basis_intPoints (V : Submodule ℚ (ι → ℚ)) {κ : Type*}
+theorem span_of_basis_intPoints (V : Submodule ℚ (ι → ℚ)) {κ : Type*}
     (b : Basis κ ℤ V.intPoints) :
     Submodule.span ℚ (Set.range fun i ↦ Rat.piIntCast ι (b i : ι → ℤ)) = V := by
   refine le_antisymm (Submodule.span_le.2 ?_) fun v hv ↦ ?_
@@ -352,7 +353,7 @@ theorem Submodule.mem_intLattice {V : Submodule ℚ (ι → ℚ)} {w : ↥V.real
     Submodule.coe_subtype, Submodule.mem_intPoints]
   exact ⟨fun ⟨z, hz, h⟩ ↦ ⟨z, hz, h.symm⟩, fun ⟨z, hz, h⟩ ↦ ⟨z, hz, h.symm⟩⟩
 
-private theorem realSpan_eq (V : Submodule ℚ (ι → ℚ)) {k : ℕ} {y : Fin k → (ι → ℤ)}
+theorem realSpan_eq (V : Submodule ℚ (ι → ℚ)) {k : ℕ} {y : Fin k → (ι → ℤ)}
     (hspan : Submodule.span ℚ (Set.range fun i ↦ Rat.piIntCast ι (y i)) = V) :
     V.realSpan =
       Submodule.span ℝ (Set.range fun i ↦ Rat.piEuclidean ι (Rat.piIntCast ι (y i))) := by
@@ -363,7 +364,7 @@ private theorem realSpan_eq (V : Submodule ℚ (ι → ℚ)) {k : ℕ} {y : Fin 
 
 variable [Finite ι]
 
-private theorem linearIndependent_euclidean {k : ℕ} {y : Fin k → (ι → ℤ)}
+theorem linearIndependent_euclidean {k : ℕ} {y : Fin k → (ι → ℤ)}
     (hy : LinearIndependent ℚ (fun i ↦ Rat.piIntCast ι (y i))) :
     LinearIndependent ℝ fun i ↦ Rat.piEuclidean ι (Rat.piIntCast ι (y i)) := by
   have h := (linearIndependent_algebraMap_comp_iff (R := ℚ) (S := ℝ)
@@ -377,7 +378,7 @@ private theorem linearIndependent_euclidean {k : ℕ} {y : Fin k → (ι → ℤ
 
 /-- The construction behind every statement below: a saturated integral basis of `V ∩ ℤ^ι`, read
 as an `ℝ`-basis of the real span whose `ℤ`-span is the lattice. -/
-private theorem exists_basis_intLattice (V : Submodule ℚ (ι → ℚ)) :
+theorem exists_basis_intLattice (V : Submodule ℚ (ι → ℚ)) :
     ∃ (y : Fin (finrank ℚ V) → (ι → ℤ)) (b : Basis (Fin (finrank ℚ V)) ℝ ↥V.realSpan),
       (∀ i, (b i : EuclideanSpace ℝ ι) = Rat.piEuclidean ι (Rat.piIntCast ι (y i))) ∧
       V.intLattice = Submodule.span ℤ (Set.range b) ∧
@@ -482,17 +483,17 @@ open Matrix exteriorPower
 
 variable {ι : Type*} [Fintype ι] [LinearOrder ι]
 
-private theorem plucker_piIntCast (k : ℕ) (y : Fin k → (ι → ℤ)) (s : Set.powersetCard ι k) :
+theorem plucker_piIntCast (k : ℕ) (y : Fin k → (ι → ℤ)) (s : Set.powersetCard ι k) :
     plucker k (fun i ↦ Rat.piIntCast ι (y i)) s = ((plucker k y s : ℤ) : ℚ) := by
   rw [show (fun i ↦ Rat.piIntCast ι (y i)) = (fun i ↦ ((Int.castRingHom ℚ) ∘ y i)) from rfl]
   exact plucker_map _ k y s
 
-private theorem plucker_intCast_real (k : ℕ) (y : Fin k → (ι → ℤ)) (s : Set.powersetCard ι k) :
+theorem plucker_intCast_real (k : ℕ) (y : Fin k → (ι → ℤ)) (s : Set.powersetCard ι k) :
     plucker k (fun i ↦ (fun l ↦ ((y i l : ℤ) : ℝ))) s = ((plucker k y s : ℤ) : ℝ) := by
   rw [show (fun i ↦ (fun l ↦ ((y i l : ℤ) : ℝ))) = (fun i ↦ ((Int.castRingHom ℝ) ∘ y i)) from rfl]
   exact plucker_map _ k y s
 
-private theorem covolume_eq_of_basis {k : ℕ} {V : Submodule ℚ (ι → ℚ)}
+theorem covolume_eq_of_basis {k : ℕ} {V : Submodule ℚ (ι → ℚ)}
     {y : Fin k → (ι → ℤ)} {b : Basis (Fin k) ℝ ↥V.realSpan}
     (hb : ∀ i, (b i : EuclideanSpace ℝ ι) = Rat.piEuclidean ι (Rat.piIntCast ι (y i)))
     (hL : V.intLattice = Submodule.span ℤ (Set.range b))

@@ -19,7 +19,6 @@ on the degree. -/
 namespace CCDN
 noncomputable section
 open NumberField NumberField.InfinitePlace MeasureTheory
-open scoped NNReal
 
 variable (K : Type*) [Field K] [NumberField K]
 
@@ -80,7 +79,7 @@ lemma mem_euclidean_integerLattice_iff
     exact euclideanNumberFieldEmbedding_mem_integerLattice K z
 
 open Classical in
-private lemma infinitePlace_le_euclidean_norm (w : InfinitePlace K) (x : K) :
+lemma infinitePlace_le_euclidean_norm (w : InfinitePlace K) (x : K) :
     w x ≤ ‖euclideanNumberFieldEmbedding K x‖ := by
   rw [← mixedEmbedding.normAtPlace_apply w x,
     ← toMixed_euclideanNumberFieldEmbedding]
@@ -93,7 +92,7 @@ private lemma infinitePlace_le_euclidean_norm (w : InfinitePlace K) (x : K) :
       (WithLp.norm_snd_le _ (euclideanNumberFieldEmbedding K x))
 
 open Classical in
-private lemma euclideanNumberFieldEmbedding_norm_sq (x : K) :
+lemma euclideanNumberFieldEmbedding_norm_sq (x : K) :
     ‖euclideanNumberFieldEmbedding K x‖ ^ 2 =
       (∑ w : {w : InfinitePlace K // IsReal w}, (w.val x) ^ 2) +
       (∑ w : {w : InfinitePlace K // IsComplex w}, (w.val x) ^ 2) := by

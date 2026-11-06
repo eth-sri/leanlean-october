@@ -18,11 +18,10 @@ A monotone scaled logarithmic-height ratio. A lower bound for the scaled
 model height yields the saving needed to change the box exponent 2/d to 1/d.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-open Real
 
-private lemma log_height_ratio_antitone {u v : ℝ} (hu : 0 ≤ u) (huv : u ≤ v) :
+lemma log_height_ratio_antitone {u v : ℝ} (hu : 0 ≤ u) (huv : u ≤ v) :
     (1 + v) / Real.exp v ≤ (1 + u) / Real.exp u := by
   have he : 1 + (v - u) ≤ Real.exp (v - u) := by
     simpa only [add_comm] using Real.add_one_le_exp (v - u)
@@ -36,7 +35,7 @@ private lemma log_height_ratio_antitone {u v : ℝ} (hu : 0 ≤ u) (huv : u ≤ 
 
 /-- Eliminate an upper coefficient height in favor of any lower model height,
 retaining the exact exponent 1/d² and the position loss exp(T). -/
-private theorem positioned_height_ratio_le {d H L Y T : ℝ}
+theorem positioned_height_ratio_le {d H L Y T : ℝ}
     (hd : 0 < d) (hY : 1 ≤ Y) (hYH : Y ≤ H) (hL : 0 < L)
     (hposition : Real.log H ≤ Real.log L + T * d ^ 2) :
     (1 + Real.log H / d ^ 2) / L ^ (1 / d ^ 2) ≤
@@ -71,10 +70,8 @@ private theorem positioned_height_ratio_le {d H L Y T : ℝ}
 end CCDN
 
 namespace CCDN
-noncomputable section
-open MvPolynomial Real
 
-private lemma leadingPositionHeightFactor_interpolation_le (d : ℕ) :
+lemma leadingPositionHeightFactor_interpolation_le (d : ℕ) :
     ((d : ℝ) + 1) ^ (2 * (d + 1)) ≤ leadingPositionHeightFactor d := by
   have hd0 : (0 : ℝ) ≤ d := by positivity
   have hb : (1 : ℝ) ≤ d + 1 := by linarith
@@ -87,7 +84,7 @@ private lemma leadingPositionHeightFactor_interpolation_le (d : ℕ) :
 
 /-- The chosen height bounds both the original homogeneous coefficients and
 the translated chart coefficients, with the same absolute position loss. -/
-private theorem exists_translated_model_position {d : ℕ} (hd : 0 < d)
+theorem exists_translated_model_position {d : ℕ} (hd : 0 < d)
     (f : MvPolynomial (Fin 3) ℤ) (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) :
     ∃ (a : Fin 2 → ℤ) (H : ℝ), (∀ j, 0 ≤ a j ∧ a j ≤ d) ∧ 1 ≤ H ∧
       CoefficientHeightLE f H ∧
@@ -155,5 +152,4 @@ theorem scaled_positioned_height_ratio_le {d : ℕ} (hd : 0 < d) {h H L : ℝ}
   rw [hp, he] at ht
   exact ht
 
-end
 end CCDN

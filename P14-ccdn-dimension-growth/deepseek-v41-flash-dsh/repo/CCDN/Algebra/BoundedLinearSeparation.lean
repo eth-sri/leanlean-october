@@ -14,9 +14,8 @@ import Mathlib.Algebra.Polynomial.Roots
 integer linear form on the moment curve (1,t,...,t^(n-1)). The proof avoids
 an unquantified genericity argument. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- In characteristic zero, a nonzero polynomial `P` does not vanish at some natural number
 `k ≤ P.natDegree`. -/
@@ -80,5 +79,4 @@ theorem exists_bounded_moment_separation {K ι : Type*} [Field K] [CharZero K]
     Polynomial.eval_monomial, t]
   simpa only [sub_mul, Finset.sum_sub_distrib, sub_eq_zero] using he
 
-end
 end CCDN

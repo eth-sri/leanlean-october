@@ -13,9 +13,8 @@ import CCDN.AuxiliaryPolynomial.HypersurfaceBadPrimeHeight
 /-! Coordinate invariance of geometric bad reduction and coefficient height,
 with the exact bad-prime charge in standard Fin-indexed coordinates. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Geometric bad reduction at `p` is invariant under a bijective renaming of the
@@ -60,7 +59,6 @@ theorem exists_fin_hypersurface_bad_prime_charge
       (∑ p ∈ bad, Real.log p / p) ≤
         Real.log (hypersurfaceHeightConstant (n + 1) *
           (1 + Real.log H / (f.totalDegree : ℝ) ^ 2)) + 2 * mertensError + 1 := by
-  classical
   let e : Fin (n + 1) ≃ Option (Fin n) := finSuccEquiv' 0
   let g := rename e f
   have hg : Irreducible (map (Int.castRingHom L) g) := by
@@ -146,5 +144,4 @@ lemma hasGoodReduction_of_not_mem {σ : Type*} {f : MvPolynomial σ ℤ} {d : �
     HasGoodReduction f p :=
   hypersurface_good_reduction f p fun hb => hp ((hbad p).mpr ⟨by exact_mod_cast hcut, hb⟩)
 
-end
 end CCDN

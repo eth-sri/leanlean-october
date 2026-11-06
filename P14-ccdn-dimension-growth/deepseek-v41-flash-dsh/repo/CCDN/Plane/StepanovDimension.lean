@@ -14,11 +14,10 @@ import Mathlib.Data.Nat.Choose.Bounds
 /-! The exact plane Hilbert function verifies the Stepanov dimension inequality
 for the constructed integer parameters. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
-private lemma principal_plane_hilbert_balance {K : Type*} [Field K]
+lemma principal_plane_hilbert_balance {K : Type*} [Field K]
     (f : MvPolynomial (Fin 2) K) (hf : f ≠ 0) {M : ℕ} (hM : f.totalDegree ≤ M) :
     Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) M) + f.totalDegree.choose 2 =
       f.totalDegree * M + f.totalDegree := by
@@ -27,7 +26,7 @@ private lemma principal_plane_hilbert_balance {K : Type*} [Field K]
       f.totalDegree.choose 2 = (f.totalDegree : ℤ) * M + f.totalDegree := by omega
   exact_mod_cast he
 
-private lemma principal_plane_hilbert_bounds {K : Type*} [Field K]
+lemma principal_plane_hilbert_bounds {K : Type*} [Field K]
     (f : MvPolynomial (Fin 2) K) (hf : f ≠ 0) {M : ℕ} (hM : f.totalDegree ≤ M) :
     f.totalDegree * M - f.totalDegree ^ 2 ≤
       Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) M) ∧
@@ -69,5 +68,4 @@ theorem stepanov_hilbert_dimension_inequality {K : Type*} [Field K]
     (principal_plane_hilbert_bounds f hf hD).1
   exact hsum.trans_lt (hn.trans_le (by nlinarith only [hprod]))
 
-end
 end CCDN

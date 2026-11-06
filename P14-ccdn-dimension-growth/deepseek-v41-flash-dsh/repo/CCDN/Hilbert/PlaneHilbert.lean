@@ -13,9 +13,8 @@ import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 /-! The exact affine Hilbert function of a principal plane equation. This
 identifies polynomial total degree with the degree in the curve-counting target. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- For `f ≠ 0` and `deg f ≤ N`, the affine Hilbert function of `(f)` at `N` plus the dimension of
@@ -32,13 +31,13 @@ theorem principal_filtered_finrank {K σ : Type*} [Field K] [Finite σ]
     ext x
     constructor
     · rintro ⟨hx, hz⟩
-      have hmem : x ∈ Ideal.span {f} := Ideal.Quotient.eq_zero_iff_mem.mp hz
+      have hmem := Ideal.Quotient.eq_zero_iff_mem.mp hz
       obtain ⟨u, rfl⟩ := Ideal.mem_span_singleton.mp hmem
       apply (mem_filteredMultiples f (f * u) N).mpr
       refine ⟨u, ?_, rfl⟩
       by_cases hu : u = 0
       · simp [hu]
-      have hdeg : (f * u).totalDegree ≤ N := (mem_restrictTotalDegree _ _ _).mp hx
+      have hdeg := (mem_restrictTotalDegree _ _ _).mp hx
       rw [totalDegree_mul_of_isDomain hf hu] at hdeg
       omega
     · intro hx
@@ -97,5 +96,4 @@ theorem principal_plane_hilbert_function {K : Type*} [Field K]
       nlinarith
   nlinarith
 
-end
 end CCDN

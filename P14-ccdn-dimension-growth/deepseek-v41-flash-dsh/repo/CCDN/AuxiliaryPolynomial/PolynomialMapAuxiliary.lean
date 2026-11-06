@@ -19,9 +19,8 @@ of the original integer plane curve. Sharp finite-field counts remain explicit.
 Explicit integer degree choices for both coefficient-height ranges.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- For nonnegative reals `l` and `R`, there is an integer `M` with `d ≤ M`, `l ≤ M`, `R < M` and
 `M ≤ d + l + R + 2`. -/
@@ -39,13 +38,11 @@ lemma auxiliary_integer_degree_selection (d : ℕ) {l R : ℝ} (hl : 0 ≤ l) (h
     push_cast
     linarith
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 
-private theorem polynomial_map_exists_auxiliary_small_height
+theorem polynomial_map_exists_auxiliary_small_height
     {F : Type*} [Field F] [CharZero F] [IsAlgClosed F] {d M t : ℕ}
     (order : MonomialOrder (Fin 3)) (f : MvPolynomial (Fin 3) ℤ)
     (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hd : 0 < d) (hdM : d ≤ M)
@@ -61,7 +58,6 @@ private theorem polynomial_map_exists_auxiliary_small_height
         |((order.leadingCoeff f : ℤ) : ℝ)| ^ (1 / (d : ℝ) ^ 2) < M)
     (hcount : PlaneResidueCountBound C d q) :
     ∃ g, IsPointAuxiliary f g M (fun i j => MvPolynomial.eval (z i) (τ j)) := by
-  classical
   by_contra hnone
   obtain ⟨s, _, _, hr, hc⟩ := polynomial_map_no_auxiliary_height_comparison
     order f hf hf0 hd hdM hq τ z hz himage hC (dvd_of_not_exists_isPointAuxiliary hnone) hcount
@@ -78,7 +74,7 @@ private theorem polynomial_map_exists_auxiliary_small_height
   exact (not_lt_of_ge hbound) hthreshold
 
 
-private theorem polynomial_map_exists_auxiliary_large_height
+theorem polynomial_map_exists_auxiliary_large_height
     {F : Type*} [Field F] [CharZero F] [IsAlgClosed F] {d M t : ℕ}
     (order : MonomialOrder (Fin 3)) (f : MvPolynomial (Fin 3) ℤ)
     (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hd : 0 < d) (hMlarge : 32 * d ≤ M)
@@ -93,7 +89,6 @@ private theorem polynomial_map_exists_auxiliary_large_height
     (hthreshold : 8 * Real.exp (heightDeterminantError C + 6 + T) * (d : ℝ) ^ 3 < M)
     (hcount : PlaneResidueCountBound C d q) :
     ∃ g, IsPointAuxiliary f g M (fun i j => MvPolynomial.eval (z i) (τ j)) := by
-  classical
   have hdM : d ≤ M := by omega
   by_contra hnone
   obtain ⟨s, _, _, hr, hc⟩ := polynomial_map_no_auxiliary_height_comparison
@@ -180,5 +175,4 @@ theorem polynomial_map_auxiliary_large_height_degree
       himage hC T hT hheight hposition hth hcount
 
 
-end
 end CCDN

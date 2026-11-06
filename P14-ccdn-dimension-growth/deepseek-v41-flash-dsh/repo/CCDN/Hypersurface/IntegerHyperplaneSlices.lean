@@ -14,7 +14,6 @@ on each level and preserves the box radius. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 
 /-- The value `∑ a i * x i` of the integer linear form with coefficients `a` at the point `x`. -/
 def integerLinearLevel {n : ℕ} (a x : IntPoint n) : ℤ := ∑ i, a i * x i
@@ -28,18 +27,15 @@ def deleteIntegerCoordinate {n : ℕ} (j : Fin (n + 1))
 integer linear form with coefficients `a`. -/
 noncomputable def integerSlicePoints {n : ℕ} (X : Set (RatPoint n))
     (B : ℝ) (a : IntPoint n) (k : ℤ) : Finset (IntPoint n) := by
-  classical
   exact (integralPoints X B).filter fun x => integerLinearLevel a x = k
 
 private noncomputable def integerSliceLevels {n : ℕ} (X : Set (RatPoint n))
     (B : ℝ) (a : IntPoint n) : Finset ℤ := by
-  classical
   exact (integralPoints X B).image (integerLinearLevel a)
 
 private theorem count_eq_sum_integerSlicePoints {n : ℕ} (X : Set (RatPoint n))
     (B : ℝ) (a : IntPoint n) :
     count X B = ∑ k ∈ integerSliceLevels X B a, (integerSlicePoints X B a k).card := by
-  classical
   exact Finset.card_eq_sum_card_image (integerLinearLevel a) (integralPoints X B)
 
 private theorem integerLinearLevel_abs_le {n : ℕ} (a x : IntPoint n) {H B : ℝ}
@@ -61,7 +57,6 @@ private theorem integerSliceLevels_card_le {n : ℕ} (X : Set (RatPoint n))
     (a : IntPoint n) {H B : ℝ} (hH : 0 ≤ H) (hB : 0 ≤ B)
     (ha : InBox a H) :
     ((integerSliceLevels X B a).card : ℝ) ≤ 2 * (n : ℝ) * H * B + 1 := by
-  classical
   let R : ℝ := (n : ℝ) * H * B
   have hR : 0 ≤ R := mul_nonneg (mul_nonneg (Nat.cast_nonneg _) hH) hB
   have hsub : integerSliceLevels X B a ⊆ Finset.Icc (-⌊R⌋) ⌊R⌋ := by
@@ -114,7 +109,6 @@ private theorem integerSlicePoints_card_le_count {n : ℕ}
     (hmap : ∀ x ∈ integerSlicePoints X B a k,
       rationalPoint (deleteIntegerCoordinate j x) ∈ Y) :
     (integerSlicePoints X B a k).card ≤ count Y B := by
-  classical
   apply Finset.card_le_card_of_injOn (deleteIntegerCoordinate j)
   · intro x hx
     exact mem_integralPoints.mpr
@@ -135,7 +129,6 @@ theorem count_le_of_integer_hyperplane_slices {n : ℕ}
       rationalPoint (deleteIntegerCoordinate j x) ∈ Y k)
     (hcount : ∀ k, (count (Y k) B : ℝ) ≤ K) :
     (count X B : ℝ) ≤ (2 * (n + 1 : ℕ) * H * B + 1) * K := by
-  classical
   rw [count_eq_sum_integerSlicePoints X B a, Nat.cast_sum]
   calc
     _ ≤ ∑ _k ∈ integerSliceLevels X B a, K := by
@@ -147,5 +140,4 @@ theorem count_le_of_integer_hyperplane_slices {n : ℕ}
     _ = ((integerSliceLevels X B a).card : ℝ) * K := by simp
     _ ≤ _ := mul_le_mul_of_nonneg_right (integerSliceLevels_card_le X a hH hB ha) hK
 
-end
 end CCDN

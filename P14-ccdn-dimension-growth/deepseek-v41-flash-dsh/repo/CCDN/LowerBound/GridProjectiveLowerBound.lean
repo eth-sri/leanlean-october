@@ -16,12 +16,11 @@ import CCDN.LowerBound.IntegerGridLowerBound
 irreducible projective closure. This is the geometric input to CCDN
 Proposition 5, including the stated degree and the exact grid size. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma affineProjectivePoint_integer_height_le {n : ℕ} (z : IntPoint n)
+lemma affineProjectivePoint_integer_height_le {n : ℕ} (z : IntPoint n)
     {B : ℝ} (hB : 1 ≤ B) (hz : InBox z B) :
     (affineProjectivePoint (rationalPoint z)).mulHeight ≤ B := by
   let w : IntPoint (n + 1) := Fin.cons 1 z
@@ -47,7 +46,6 @@ theorem integer_grid_le_projective_count {n d : ℕ}
     (hsB : ∀ a ∈ s, |(a : ℝ)| ≤ B)
     (hfzero : ∀ z : IntPoint n, (∀ j, z j ∈ s) → eval (rationalPoint z) f = 0) :
     s.card ^ n ≤ projectiveCount (projectiveZeroLocus (scaledHomogenize d 1 f)) B := by
-  classical
   let S : Finset (IntPoint n) := Fintype.piFinset (fun _ => s)
   have hScard : S.card = s.card ^ n := by simp [S, Fintype.card_piFinset]
   rw [← hScard]
@@ -95,7 +93,6 @@ theorem exists_projective_grid_lower_bound (d : ℕ) (hd : 4 ≤ d) :
           ((d - 1) / 2 + 1) ^ 2 ≤
             projectiveCount (projectiveZeroLocus F)
               (((d - 1) / 2 - (d - 1) / 4 : ℕ) : ℝ) := by
-  classical
   let q := (d - 1) / 2
   let r := (d - 1) / 4
   let B := q - r
@@ -135,7 +132,6 @@ theorem exists_projective_two_point_lower_bound (d : ℕ) (hd : 0 < d) :
       F.IsHomogeneous d ∧ F.totalDegree = d ∧
         AbsolutelyIrreducibleRat F ∧
           2 ≤ projectiveCount (projectiveZeroLocus F) 1 := by
-  classical
   obtain ⟨f, hfdeg, hfir, hfzero, hfone⟩ := exists_irreducible_zero_one_equation
     (algebraMap ℚ (AlgebraicClosure ℚ)) d 2 hd (by decide)
   obtain ⟨hhom, hdeg, hir⟩ := projective_closure_absolute_irreducible f hfdeg hfir
@@ -163,5 +159,4 @@ theorem exists_projective_two_point_lower_bound (d : ℕ) (hd : 0 < d) :
     have h := congrFun hh 0
     exact Int.cast_injective h
 
-end
 end CCDN

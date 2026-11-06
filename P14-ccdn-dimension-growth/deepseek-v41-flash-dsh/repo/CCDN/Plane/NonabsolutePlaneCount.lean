@@ -15,12 +15,11 @@ import Mathlib.Algebra.MvPolynomial.Nilpotent
 most d² base-field points. The proof uses linear coefficient descent and
 Bézout. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma plane_extension_section_card_le {k K ι : Type*}
+lemma plane_extension_section_card_le {k K ι : Type*}
     [Field k] [Field K] [Algebra k K] [Fintype ι] [DecidableEq ι]
     (f : MvPolynomial (Fin 2) k) (hf : Irreducible f)
     (g : MvPolynomial (Fin 2) K) (hg : g ≠ 0) (hdeg : g.totalDegree < f.totalDegree)
@@ -36,7 +35,7 @@ private lemma plane_extension_section_card_le {k K ι : Type*}
   exact (plane_common_zeros_card_le f g₀ hf hnd z hinj hzf (fun i => hzero (z i) (hzg i))).trans
     (Nat.mul_le_mul_left _ hdeg₀)
 
-private lemma plane_points_card_le_of_extension_factorization {k K ι : Type*}
+lemma plane_points_card_le_of_extension_factorization {k K ι : Type*}
     [Field k] [Field K] [Algebra k K] [Fintype ι] [DecidableEq ι]
     (f : MvPolynomial (Fin 2) k) (hf : Irreducible f)
     (g h : MvPolynomial (Fin 2) K) (hg : g ≠ 0) (hh : h ≠ 0)
@@ -104,5 +103,4 @@ theorem nonabsolute_plane_points_card_le {k K ι : Type*}
     (totalDegree_pos_of_ne_zero_of_not_isUnit hg hgu)
     (totalDegree_pos_of_ne_zero_of_not_isUnit hh hhu) hfac z hinj hz
 
-end
 end CCDN

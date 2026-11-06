@@ -57,7 +57,7 @@ lemma filteredMultiples_finrank {K σ : Type*} [Field K] (f : MvPolynomial σ K)
     (fun x y h => mul_left_cancel₀ hf h) _).finrank_eq.symm
 
 /-- Exact intersection of the two spaces of bounded-degree multiples. -/
-private theorem filteredMultiples_inf {K σ : Type*} [Field K]
+theorem filteredMultiples_inf {K σ : Type*} [Field K]
     {f g : MvPolynomial σ K} (hf : Prime f) (hfg : ¬ f ∣ g)
     {N : ℕ} (hN : f.totalDegree + g.totalDegree ≤ N) :
     filteredMultiples f N ⊓ filteredMultiples g N = filteredMultiples (f * g) N := by
@@ -93,7 +93,7 @@ private theorem filteredMultiples_inf {K σ : Type*} [Field K]
 
 
 /-- Dimension inclusion-exclusion for the bounded-degree multiples. -/
-private theorem filteredMultiples_sup_finrank {K σ : Type*} [Field K] [Finite σ]
+theorem filteredMultiples_sup_finrank {K σ : Type*} [Field K] [Finite σ]
     {f g : MvPolynomial σ K} (hf : Prime f) (hfg : ¬ f ∣ g)
     {N : ℕ} (hN : f.totalDegree + g.totalDegree ≤ N) :
     Module.finrank K ↥(filteredMultiples f N ⊔ filteredMultiples g N) +
@@ -169,7 +169,6 @@ theorem exists_filtered_polynomial_basis {K σ : Type*} [Field K] [Finite σ]
     ∃ h : Fin (Module.finrank K (filteredCoordinateSpace I D)) → MvPolynomial σ K,
       (∀ i, (h i).totalDegree ≤ D) ∧
       LinearIndependent K (fun i => (Ideal.Quotient.mkₐ K I) (h i)) := by
-  classical
   let b := Module.finBasis K (filteredCoordinateSpace I D)
   have hlift (i : Fin (Module.finrank K (filteredCoordinateSpace I D))) :
       ∃ h : MvPolynomial σ K, h.totalDegree ≤ D ∧

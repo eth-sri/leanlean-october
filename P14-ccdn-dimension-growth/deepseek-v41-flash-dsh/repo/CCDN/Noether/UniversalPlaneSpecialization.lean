@@ -21,7 +21,6 @@ additional nonzero polynomial condition on the plane parameters.
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Construct an integer plane specialization which is geometrically
@@ -56,7 +55,6 @@ theorem exists_integer_geometrically_good_plane_avoiding {σ : Type*} [Fintype �
   refine ⟨v, hv, hvP, ?_⟩
   simpa only [φ, bivariateMap_comp_apply, universalPlaneSection] using hgood
 
-end
 end CCDN
 
 namespace CCDN

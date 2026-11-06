@@ -106,18 +106,6 @@ theorem logConcave_indicator {E : Type*} [AddCommGroup E] [Module ℝ E] {s : Se
     · simp [Set.indicator_of_notMem hy, ENNReal.zero_rpow_of_pos hb]
   · simp [Set.indicator_of_notMem hx, ENNReal.zero_rpow_of_pos ha]
 
-/-- A product of log-concave functions is log-concave. -/
-theorem LogConcave.mul {E : Type*} [AddCommGroup E] [Module ℝ E] {f g : E → ENNReal}
-    (hf : LogConcave f) (hg : LogConcave g) : LogConcave (f * g) := by
-  intro a b ha hb hab x y
-  have h1 : (f x * g x) ^ a = f x ^ a * g x ^ a := ENNReal.mul_rpow_of_nonneg _ _ ha.le
-  have h2 : (f y * g y) ^ b = f y ^ b * g y ^ b := ENNReal.mul_rpow_of_nonneg _ _ hb.le
-  simp only [Pi.mul_apply, h1, h2]
-  calc f x ^ a * g x ^ a * (f y ^ b * g y ^ b)
-      = f x ^ a * f y ^ b * (g x ^ a * g y ^ b) := by ring
-    _ ≤ f (a • x + b • y) * g (a • x + b • y) :=
-        mul_le_mul' (hf a b ha hb hab x y) (hg a b ha hb hab x y)
-
 /-- **Bombieri–Gubler, Lemma C.3.4: a marginal of a log-concave function over a convex set is
 log-concave.** If `f : E × F → ℝ≥0∞` is measurable and log-concave and `A ⊆ F` is convex and
 measurable, then `x ↦ ∫⁻ y in A, f (x, y) ∂ν` is log-concave on `E`, for any measure `ν` on `F`

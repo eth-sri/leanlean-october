@@ -18,22 +18,22 @@ noncomputable section
 open MvPolynomial
 
 /-- The linear form evaluating a differential on a direction. -/
-private def tangentDirectionPolynomial {K σ : Type*} [Field K] [Fintype σ]
+def tangentDirectionPolynomial {K σ : Type*} [Field K] [Fintype σ]
     (f : MvPolynomial σ K) (z : σ → K) : MvPolynomial σ K :=
   ∑ i, C (eval z (pderiv i f)) * X i
 
-private lemma tangentDirectionPolynomial_coeff {K σ : Type*} [Field K] [Fintype σ]
+lemma tangentDirectionPolynomial_coeff {K σ : Type*} [Field K] [Fintype σ]
     (f : MvPolynomial σ K) (z : σ → K) (j : σ) :
     (tangentDirectionPolynomial f z).coeff (Finsupp.single j 1) = eval z (pderiv j f) := by
   classical
   simp [tangentDirectionPolynomial, coeff_C_mul, coeff_X, Finsupp.single_eq_single_iff]
 
-private lemma tangentDirectionPolynomial_eval {K σ : Type*} [Field K] [Fintype σ]
+lemma tangentDirectionPolynomial_eval {K σ : Type*} [Field K] [Fintype σ]
     (f : MvPolynomial σ K) (z b : σ → K) :
     eval b (tangentDirectionPolynomial f z) = ∑ i, eval z (pderiv i f) * b i := by
   simp [tangentDirectionPolynomial]
 
-private lemma tangentDirectionPolynomial_isHomogeneous {K σ : Type*} [Field K] [Fintype σ]
+lemma tangentDirectionPolynomial_isHomogeneous {K σ : Type*} [Field K] [Fintype σ]
     (f : MvPolynomial σ K) (z : σ → K) :
     (tangentDirectionPolynomial f z).IsHomogeneous 1 := by
   exact IsHomogeneous.sum _ _ _ (fun i _ => isHomogeneous_C_mul_X _ i)
@@ -50,13 +50,13 @@ theorem exists_good_hypersurface_direction_with_coordinate
   classical
   let H := homogeneousComponent f.totalDegree f
   let T := tangentDirectionPolynomial f z
-  have hH : H ≠ 0 := homogeneousComponent_totalDegree_ne_zero hf
+  have hH := homogeneousComponent_totalDegree_ne_zero hf
   have hT : T ≠ 0 := by
     intro h
     have hc := congrArg (fun g : MvPolynomial σ K => g.coeff (Finsupp.single j 1)) h
     rw [tangentDirectionPolynomial_coeff] at hc
     exact hj hc
-  have hprod : H * T * X k ≠ 0 := mul_ne_zero (mul_ne_zero hH hT) (X_ne_zero k)
+  have hprod := mul_ne_zero (mul_ne_zero hH hT) (X_ne_zero k)
   have hhom : (H * T * X k).IsHomogeneous (f.totalDegree + 1 + 1) :=
     ((homogeneousComponent_isHomogeneous _ _).mul
       (tangentDirectionPolynomial_isHomogeneous f z)).mul (isHomogeneous_X K k)

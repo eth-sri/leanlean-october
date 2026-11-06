@@ -13,17 +13,15 @@ import Mathlib.LinearAlgebra.FreeModule.StrongRankCondition
 not only distinct point evaluations. This is the multiplicity-ready form of
 the Hilbert-function argument. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
-private lemma section_powers_independent {K A B ι : Type*} [Field K]
+lemma section_powers_independent {K A B ι : Type*} [Field K]
     [CommRing A] [IsDomain A] [Algebra K A] [CommRing B] [Algebra K B]
     [Fintype ι] [DecidableEq ι] (φ : A →ₐ[K] B) (h : ι → A)
     (hlin : LinearIndependent K (fun i => φ (h i))) (l : A) (hl : l ≠ 0)
     (hzero : φ l = 0) (N : ℕ) :
     LinearIndependent K (fun t : ι × Fin N => h t.1 * l ^ t.2.val) := by
-  classical
   induction N with
   | zero => exact linearIndependent_empty_type
   | succ N ih =>
@@ -51,7 +49,7 @@ private lemma section_powers_independent {K A B ι : Type*} [Field K]
     obtain ⟨i, k⟩ := t
     exact Fin.cases (hconst i) (fun k => hc (i, k)) k
 
-private lemma section_image_filtered_lower {K B σ ι : Type*} [Field K]
+lemma section_image_filtered_lower {K B σ ι : Type*} [Field K]
     [CommRing B] [Algebra K B] [Fintype σ] [Fintype ι] [DecidableEq ι]
     (p : Ideal (MvPolynomial σ K)) [p.IsPrime]
     (φ : (MvPolynomial σ K ⧸ p) →ₐ[K] B)
@@ -61,7 +59,6 @@ private lemma section_image_filtered_lower {K B σ ι : Type*} [Field K]
     (hzero : φ ((Ideal.Quotient.mk p) l) = 0) :
     ∃ D : ℕ, ∀ N : ℕ,
       Fintype.card ι * (N + 1) ≤ Module.finrank K (filteredCoordinateSpace p (D + m * N)) := by
-  classical
   let D := Finset.univ.sup (fun i => (h i).totalDegree)
   refine ⟨D, ?_⟩
   intro N
@@ -128,5 +125,4 @@ theorem section_image_rank_le {K B σ ι : Type*} [Field K]
   have hNeq : (N : ℤ) = d * D + c.natAbs + N₀ + 1 := by simp [N]
   nlinarith
 
-end
 end CCDN

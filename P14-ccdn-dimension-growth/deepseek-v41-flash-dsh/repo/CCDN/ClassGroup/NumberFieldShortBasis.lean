@@ -25,11 +25,10 @@ Numerical conversion of a lattice norm-product bound into the uniform
 discriminant-root scale for its largest minimum.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
-private theorem largest_minimum_le_discriminant_root
+theorem largest_minimum_le_discriminant_root
     {n : ℕ} (hn : 0 < n) {M P D : ℝ} (hP : 0 ≤ P) (hD : 0 ≤ D)
     (hminimum : M ^ n ≤ P ^ 2)
     (hproduct : P ≤ Real.sqrt n * (n : ℝ) ^ n * Real.sqrt D) :
@@ -50,7 +49,7 @@ private theorem largest_minimum_le_discriminant_root
   rw [mul_pow, ← pow_mul, hroot]
   exact hminimum.trans (hsq'.trans (mul_le_mul_of_nonneg_right hdegrees hD))
 
-private theorem sqrt_degree_le_discriminant_root
+theorem sqrt_degree_le_discriminant_root
     {n : ℕ} (hn : 0 < n) {D : ℝ} (hD : 1 ≤ D) :
     Real.sqrt n ≤ (n : ℝ) ^ 3 * D ^ (1 / (n : ℝ)) := by
   have hn1 : (1 : ℝ) ≤ n := by exact_mod_cast hn
@@ -64,11 +63,9 @@ private theorem sqrt_degree_le_discriminant_root
   exact (hsqrt.trans hcube).trans
     (by simpa using mul_le_mul_of_nonneg_left hroot (by positivity : 0 ≤ (n : ℝ) ^ 3))
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open Module MeasureTheory
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
@@ -91,23 +88,19 @@ theorem prescribed_greedy_lattice_basis_product_le
   have hh := mul_le_mul_of_nonneg_left hprod (div_nonneg (norm_nonneg w) hδ.le)
   simpa only [Nat.cast_add, Nat.cast_one, mul_assoc] using hh
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open Module NumberField
-open scoped NumberField
 
 variable (K : Type*) [Field K] [NumberField K]
 
 open Classical in
-private theorem euclidean_prescribed_basis_last_minimum_pow
+theorem euclidean_prescribed_basis_last_minimum_pow
     {n : ℕ} (b : Basis (Fin (n + 2)) ℝ (mixedEmbedding.euclidean.mixedSpace K))
     (hb : IsPrescribedGreedyLatticeFamily (mixedEmbedding.euclidean.integerLattice K)
       (euclideanNumberFieldEmbedding K 1) b) :
     ‖b (Fin.last (n + 1))‖ ^ (n + 2) ≤ (∏ i, ‖b i‖) ^ 2 := by
-  classical
   obtain ⟨v, q, hq, hmap⟩ :=
     exists_field_basis_of_euclidean_lattice_basis K b hb.mem
   have hpq : (0 : Fin (n + 2)) ≠ Fin.last (n + 1) := by
@@ -136,12 +129,11 @@ private theorem euclidean_prescribed_basis_last_minimum_pow
   simpa only [Fintype.card_fin, hmap] using hh
 
 open Classical in
-private theorem exists_numberField_short_basis_of_degree
+theorem exists_numberField_short_basis_of_degree
     (n : ℕ) (hn : Module.finrank ℚ K = n + 2) :
     ∃ b : Basis (Fin (n + 2)) ℝ (mixedEmbedding.euclidean.mixedSpace K),
       (∀ i, b i ∈ mixedEmbedding.euclidean.integerLattice K) ∧
       ∀ i, ‖b i‖ ≤ (n + 2 : ℝ) ^ 3 * |(discr K : ℝ)| ^ (1 / (n + 2 : ℝ)) := by
-  classical
   let L := mixedEmbedding.euclidean.integerLattice K
   let w := euclideanNumberFieldEmbedding K 1
   have hw : w ∈ L := euclideanNumberFieldEmbedding_mem_integerLattice K 1
@@ -206,5 +198,4 @@ theorem exists_numberField_short_basis
   simpa only [Nat.cast_add, Nat.cast_ofNat] using
     exists_numberField_short_basis_of_degree K n hn
 
-end
 end CCDN

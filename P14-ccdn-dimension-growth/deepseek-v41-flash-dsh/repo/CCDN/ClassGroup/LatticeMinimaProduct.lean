@@ -13,9 +13,8 @@ import Mathlib.MeasureTheory.Measure.Haar.InnerProductSpace
 /-! A uniform product-of-minima bound from Blichfeldt's principle.
 The constant n^n is sufficient for the number-field lattice application. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Module MeasureTheory
 
 variable {E : Type*} [NormedAddCommGroup E] [InnerProductSpace ℝ E]
@@ -30,7 +29,6 @@ theorem lattice_flag_minima_product_le
     (hpos : ∀ i, 0 < a i) (hmono : Monotone a)
     (hminimum : ∀ i x, x ∈ L → x ∉ Submodule.span ℝ (c '' Set.Iio i) → a i ≤ ‖x‖) :
     ∏ i, a i ≤ (n : ℝ) ^ n * ZLattice.covolume L := by
-  classical
   have hnR : (0 : ℝ) < n := by exact_mod_cast hn
   let r : Fin n → ℝ := fun i => a i / n
   have hr (i) : 0 < r i := div_pos (hpos i) hnR
@@ -65,8 +63,7 @@ theorem lattice_flag_minima_product_le
     rw [c.volume_parallelepiped, ENNReal.toReal_one]
   have hvol : volume.real (ZSpan.fundamentalDomain u) =
       (∏ i, a i) / (n : ℝ) ^ n := by
-    rw [ZSpan.measureReal_fundamentalDomain u volume c.toBasis]
-    rw [hunit, mul_one]
+    rw [ZSpan.measureReal_fundamentalDomain u volume c.toBasis, hunit, mul_one]
     change |c.toBasis.det (c.toBasis.unitsSMul _)| = _
     rw [Basis.det_unitsSMul_self]
     simp only [Units.val_mk0]
@@ -75,5 +72,4 @@ theorem lattice_flag_minima_product_le
   rw [hvol] at hbound
   exact (div_le_iff₀ (pow_pos hnR n)).mp hbound |>.trans_eq (mul_comm _ _)
 
-end
 end CCDN

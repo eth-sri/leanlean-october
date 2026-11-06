@@ -27,7 +27,7 @@ public import Mathlib.RingTheory.Polynomial.Resultant.Basic
   degree preserves nonvanishing when the first polynomial is irreducible.
 -/
 
-@[expose] public section
+public section
 
 namespace Polynomial
 
@@ -35,7 +35,7 @@ section FiniteDifference
 
 variable {K : Type*} [Field K] [CharZero K]
 
-private theorem natDegree_and_leadingCoeff_comp_X_add_C_sub_self
+theorem natDegree_and_leadingCoeff_comp_X_add_C_sub_self
     (P : K[X]) {m : ℕ} (hm : P.natDegree = m + 1) (s : K) (hs : s ≠ 0) :
     (P.comp (X + C s) - P).natDegree = m ∧
       (P.comp (X + C s) - P).leadingCoeff = P.leadingCoeff * (m + 1) * s := by

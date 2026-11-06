@@ -31,14 +31,12 @@ abbrev EulerColumns (k : ℕ) := EulerLowIndex k ⊕ (EulerLowIndex k ⊕ EulerT
 /-- The usual monomial basis of the total-degree-at-most space. -/
 def eulerLowBasis (R : Type*) [CommRing R] (k : ℕ) :
     Basis (EulerLowIndex k) R (restrictTotalDegree (Fin 2) R k) := by
-  classical
   exact (basisRestrictSupport R {p : Fin 2 →₀ ℕ | p.degree ≤ k}).reindex
     (Finsupp.degreeLeEquivSym (Fin 2) k)
 
 /-- The usual monomial basis of the homogeneous space. -/
 def eulerTopBasis (R : Type*) [CommRing R] (k : ℕ) :
     Basis (EulerTopIndex k) R (homogeneousSubmodule (Fin 2) R k) := by
-  classical
   let e : restrictSupport R {p : Fin 2 →₀ ℕ | p.degree = k} ≃ₗ[R]
       homogeneousSubmodule (Fin 2) R k :=
     LinearEquiv.ofEq _ _ (homogeneousSubmodule_eq_finsupp_supported (Fin 2) R k).symm

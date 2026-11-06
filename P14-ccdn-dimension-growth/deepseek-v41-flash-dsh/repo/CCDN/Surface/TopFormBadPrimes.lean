@@ -15,14 +15,13 @@ import CCDN.Surface.TopFormIrreducibility
 /-! Bad reduction of an affine equation is contained in bad reduction of
  its top homogeneous form. This includes degree loss in the defined predicate. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- If the top form has good geometric reduction, the original affine
  equation keeps its degree and has good geometric reduction as well. -/
-private theorem hypersurfaceBadReduction_imp_top_homogeneousComponent {σ : Type*}
+theorem hypersurfaceBadReduction_imp_top_homogeneousComponent {σ : Type*}
     (f : MvPolynomial σ ℤ) (p : ℕ) :
     HypersurfaceBadReduction f p →
       HypersurfaceBadReduction (homogeneousComponent f.totalDegree f) p := by
@@ -92,5 +91,4 @@ theorem absolute_top_irreducible_of_integer_scalar_factor {σ : Type*}
     simpa only [Int.coe_castRingHom, ne_eq, Int.cast_eq_zero] using hc
   exact (irreducible_isUnit_mul ((isUnit_iff_ne_zero.mpr hcK).map C)).mp hir
 
-end
 end CCDN

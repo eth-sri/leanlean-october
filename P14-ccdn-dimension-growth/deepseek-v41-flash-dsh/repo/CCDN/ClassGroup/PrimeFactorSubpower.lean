@@ -11,12 +11,11 @@ public import Mathlib.Analysis.SpecialFunctions.Pow.Real
 subpower. The proof splits the prime divisors at a fixed cutoff; above
 the cutoff, each logarithmic cost is absorbed by the prime itself. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Finset
 
-private theorem primeFactors_sum_log_le {D : ℕ} (hD : 1 ≤ D) :
+theorem primeFactors_sum_log_le {D : ℕ} (hD : 1 ≤ D) :
     ∑ p ∈ D.primeFactors, Real.log (p : ℝ) ≤ Real.log (D : ℝ) := by
   have hprod : (∏ p ∈ D.primeFactors, (p : ℝ)) ≤ D := by
     rw [← Nat.cast_prod]
@@ -28,7 +27,7 @@ private theorem primeFactors_sum_log_le {D : ℕ} (hD : 1 ≤ D) :
 
 /-- The constant is chosen before the integer whose prime divisors are
 counted. This form also permits a real exponential base. -/
-private theorem primeFactors_pow_subpower {R ε : ℝ} (hR : 1 ≤ R) (hε : 0 < ε) :
+theorem primeFactors_pow_subpower {R ε : ℝ} (hR : 1 ≤ R) (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ D : ℕ, 1 ≤ D →
       R ^ D.primeFactors.card ≤ C * (D : ℝ) ^ ε := by
   have hR0 : 0 < R := zero_lt_one.trans_le hR
@@ -89,5 +88,4 @@ theorem two_pow_primeFactors_subpower (a : ℕ) {ε : ℝ} (hε : 0 < ε) :
   refine ⟨C, hC, fun D hD => ?_⟩
   simpa only [pow_mul] using hbound D hD
 
-end
 end CCDN

@@ -15,14 +15,13 @@ import Mathlib.Algebra.MvPolynomial.NoZeroDivisors
 /-! A degree-d auxiliary equation for nonabsolute irreducible hypersurfaces.
 Linear descent of the two homogeneous factors suffices over any extension. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Over an arbitrary field extension, descent of a proper factorization
 produces a degree-d nonmultiple vanishing at all base-field zeros. -/
-private theorem nonabsolute_homogeneous_auxiliary {k K : Type*}
+theorem nonabsolute_homogeneous_auxiliary {k K : Type*}
     [Field k] [Field K] [Algebra k K] {n d : ℕ}
     (f : MvPolynomial (Fin n) k) (hf : f.IsHomogeneous d) (hd : 0 < d)
     (hir : Irreducible f) (hred : ¬ Irreducible (map (algebraMap k K) f)) :
@@ -112,5 +111,4 @@ theorem nonabsolute_projective_auxiliary {K : Type*}
   obtain ⟨g, hg0, hgh, hgnd, hz⟩ := integer_nonabsolute_homogeneous_auxiliary f hf hd hir hred
   exact ⟨g, hg0, hgh, hgnd, fun x hx => hz x.rep hx⟩
 
-end
 end CCDN

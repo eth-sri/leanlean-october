@@ -11,9 +11,8 @@ import CCDN.Determinant.HomogeneousDeterminantComparison
 /-! Exact-rank Bombieri--Vaaler comparison for higher-dimensional hypersurfaces.
 Absence of an auxiliary polynomial forces the explicit numerical inequality. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The Hilbert function `s` of a degree-`d` hypersurface in `n + 3` variables, defined by
@@ -74,5 +73,4 @@ theorem hypersurface_no_auxiliary_height_comparison
   rw [he] at hlower
   exact hlower.trans hupper
 
-end
 end CCDN

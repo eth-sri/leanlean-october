@@ -48,7 +48,7 @@ lemma planeSectionPolynomial_totalDegree {K σ : Type*} [CommRing K]
     (planeSectionPolynomial f v).totalDegree ≤ f.totalDegree :=
   universalPlanePolynomial_specialization_totalDegree f (eval v)
 
-private lemma planeSectionPoints_card_eq {K σ : Type*} [CommRing K]
+lemma planeSectionPoints_card_eq {K σ : Type*} [CommRing K]
     (f : MvPolynomial σ K) (v : PlaneParameters σ → K) :
     Nat.card (PlaneSectionPoints f v) =
       Nat.card {t : Fin 2 → K // eval t (planeSectionPolynomial f v) = 0} := by
@@ -94,14 +94,13 @@ lemma planeSectionPoints_card_le_add_mul_sqrt {σ : Type*}
     (hsize : stepanovThreshold (f.totalDegree : ℝ) < p) :
     (Nat.card (PlaneSectionPoints f v) : ℝ) ≤
       p + planeResidueConstant * (f.totalDegree : ℝ) ^ 2 * Real.sqrt p := by
-  classical
   let g := planeSectionPolynomial f v
   have hg : Irreducible g := by
     apply mvPolynomial_irreducible_of_field_map (algebraMap (ZMod p) (AlgebraicClosure (ZMod p)))
     apply (MulEquiv.irreducible_iff (f := bivariatePolynomialEquiv (AlgebraicClosure (ZMod p)))).mp
     rw [← bivariatePolynomialEquiv_map]
     simpa only [g, planeSectionPolynomial, AlgEquiv.apply_symm_apply] using hir
-  have hd : g.totalDegree ≤ f.totalDegree := planeSectionPolynomial_totalDegree f v
+  have hd := planeSectionPolynomial_totalDegree f v
   have hs : stepanovThreshold (g.totalDegree : ℝ) < p := by
     apply lt_of_le_of_lt _ hsize
     gcongr

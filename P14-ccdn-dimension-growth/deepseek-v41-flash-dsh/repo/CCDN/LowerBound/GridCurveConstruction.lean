@@ -16,12 +16,11 @@ import CCDN.Plane.GridHeight
 /-! Absolutely irreducible plane equations through arbitrary finite square
 Cartesian grids. Translation moves the Eisenstein place away from the grid. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial
 
-private lemma grid_root_polynomial_constant_ne_zero {K : Type*} [Field K]
+lemma grid_root_polynomial_constant_ne_zero {K : Type*} [Field K]
     (s : Finset K) (h0 : 0 ∉ s) :
     (∏ a ∈ s, (X - C a : K[X])).coeff 0 ≠ 0 := by
   rw [coeff_zero_eq_eval_zero]
@@ -30,7 +29,7 @@ private lemma grid_root_polynomial_constant_ne_zero {K : Type*} [Field K]
   intro a ha
   exact neg_ne_zero.mpr (by intro h; subst a; exact h0 ha)
 
-private lemma grid_root_polynomial_eval_zero {K : Type*} [Field K]
+lemma grid_root_polynomial_eval_zero {K : Type*} [Field K]
     (s : Finset K) {a : K} (ha : a ∈ s) :
     (∏ b ∈ s, (X - C b : K[X])).eval a = 0 := by
   rw [eval_prod]
@@ -93,5 +92,4 @@ theorem exists_absolutely_irreducible_plane_grid
     rw [hzvec]
     exact he.symm
 
-end
 end CCDN

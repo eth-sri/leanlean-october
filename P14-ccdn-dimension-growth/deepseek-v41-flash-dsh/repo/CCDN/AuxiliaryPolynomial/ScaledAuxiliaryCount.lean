@@ -13,9 +13,8 @@ import CCDN.Plane.Bezout
 /-! Proper affine sections and Bézout counts from prime-scaled homogeneous
 models. The coordinate slice is x₀=p, and the original points stay integral. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Let `p` be a prime not dividing the constant coefficient of the primitive integer polynomial
@@ -81,5 +80,4 @@ theorem scaled_plane_points_card_le_auxiliary_degree {M t : ℕ}
   rw [Fintype.card_fin, rational_map_totalDegree, rational_map_totalDegree] at h
   exact h.trans (Nat.mul_le_mul_left _ (homogeneousSlice_degree_le _ hg))
 
-end
 end CCDN

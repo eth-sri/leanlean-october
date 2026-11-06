@@ -11,9 +11,8 @@ import CCDN.AuxiliaryPolynomial.RatioEstimates
 /-! In the large-height range, the coefficient saving absorbs the radius
 and leaves a negative logarithmic-height term to control the bad-prime factor. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- Abstract real-variable form of the large-height step: if `a` is the normalized rank ratio,
 `k` the kernel ratio and the comparison `a * u ≤ b - k * l` holds, with `M ≥ 8 d (r + 1)`,
@@ -72,5 +71,4 @@ lemma log_one_add_le_linear_add_log {x c : ℝ} (hx : 0 ≤ x) (hc : 1 ≤ c) :
   rw [he] at hh
   linarith
 
-end
 end CCDN

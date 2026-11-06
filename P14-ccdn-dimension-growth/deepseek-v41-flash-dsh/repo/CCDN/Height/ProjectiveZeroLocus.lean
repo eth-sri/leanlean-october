@@ -13,7 +13,6 @@ representatives. Membership is independent of the representative. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Evaluating a homogeneous polynomial of degree `d` at `a • v` multiplies its value at `v` by
@@ -22,7 +21,6 @@ lemma homogeneous_eval_smul {K σ : Type*} [CommSemiring K]
     {f : MvPolynomial σ K} {d : ℕ} (hf : f.IsHomogeneous d)
     (a : K) (v : σ → K) :
     eval (a • v) f = a ^ d * eval v f := by
-  classical
   conv_lhs => rw [f.as_sum]
   conv_rhs => rw [f.as_sum]
   simp only [map_sum, eval_monomial, Finset.mul_sum]
@@ -111,7 +109,6 @@ theorem projective_zero_count_le_of_family_bound {n d : ℕ}
       (∀ i, eval (z i) f = 0) →
       (∀ i, InBox (z i) B) → (t : ℝ) ≤ R) :
     (projectiveCount (projectiveZeroLocus (map (Int.castRingHom ℚ) f)) B : ℝ) ≤ R := by
-  classical
   let S := projectivePoints (projectiveZeroLocus (map (Int.castRingHom ℚ) f)) B
   let e := (Fintype.equivFin S).symm
   let z : Fin (Fintype.card S) → IntPoint (n + 1) :=
@@ -131,5 +128,4 @@ theorem projective_zero_count_le_of_family_bound {n d : ℕ}
   have h := hbound _ z hz hinj hprim hzero hbox
   simpa only [Fintype.card_coe, S, projectiveCount] using h
 
-end
 end CCDN

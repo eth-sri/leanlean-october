@@ -16,12 +16,11 @@ import CCDN.Determinant.ProjectivePrimeDeterminant
 matrices. Good reduction of a full-degree affine chart implies good reduction
 of the entire projective equation. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Finset
 
-private theorem homogeneous_irreducible_reduction_of_not_hypersurfaceBadReduction
+theorem homogeneous_irreducible_reduction_of_not_hypersurfaceBadReduction
     {d p : ℕ} [Fact p.Prime] (f : MvPolynomial (Fin 3) ℤ)
     (hf : f.IsHomogeneous d) (hdeg : (affineChart 2 f).totalDegree = d)
     (hgood : ¬HypersurfaceBadReduction (affineChart 2 f) p) :
@@ -74,5 +73,4 @@ theorem projective_determinant_log_lower_height
   dsimp only [heightDeterminantError]
   nlinarith
 
-end
 end CCDN

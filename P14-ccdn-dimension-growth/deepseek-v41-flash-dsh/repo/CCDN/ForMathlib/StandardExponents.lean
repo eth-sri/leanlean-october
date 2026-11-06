@@ -66,8 +66,7 @@ theorem exists_standard_representative_degLex [LinearOrder σ] [WellFoundedGT σ
     ∃ r : MvPolynomial σ K,
       r ∈ restrictSupport K (standardExponents I MonomialOrder.degLex) ∧
       r.totalDegree ≤ f.totalDegree ∧ f - r ∈ I := by
-  classical
-  let B : Set (MvPolynomial σ K) := {b | b ∈ I ∧ b ≠ 0}
+  let B := {b | b ∈ I ∧ b ≠ 0}
   obtain ⟨g, r, hsum, hdeg, hstd⟩ :=
     MonomialOrder.div_set (m := MonomialOrder.degLex)
       (B := B) (fun b hb => MonomialOrder.isUnit_leadingCoeff.mpr hb.2) f

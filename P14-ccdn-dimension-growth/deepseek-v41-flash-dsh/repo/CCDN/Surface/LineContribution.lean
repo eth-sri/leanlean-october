@@ -16,14 +16,13 @@ import CCDN.Surface.ParallelLines
 lines by their projective direction combines the primitive spacing bound
 with the uniform reciprocal-height sum. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Weighted finite sums with a uniform bound on the cardinality of each
 fiber. No injectivity of the indexing map is required. -/
-private theorem sum_comp_le_fiber_card_mul {α β : Type*} [DecidableEq β]
+theorem sum_comp_le_fiber_card_mul {α β : Type*} [DecidableEq β]
     (s : Finset α) (p : α → β) (w : β → ℝ) (M : ℝ)
     (hw : ∀ q ∈ s.image p, 0 ≤ w q)
     (hfiber : ∀ q ∈ s.image p, ((s.filter (fun x => p x = q)).card : ℝ) ≤ M) :
@@ -44,7 +43,7 @@ private theorem sum_comp_le_fiber_card_mul {α β : Type*} [DecidableEq β]
 
 /-- The aggregation step, stated separately so that the geometric
 parallel-line theorem can supply its only remaining input. -/
-private theorem surface_line_contribution_of_parallel_bound :
+theorem surface_line_contribution_of_parallel_bound :
     ∃ C : ℝ, 0 < C ∧
       ∀ f : MvPolynomial (Fin 3) ℤ,
       HasAbsIrreducibleTopForm f →
@@ -72,7 +71,7 @@ private theorem surface_line_contribution_of_parallel_bound :
         (count L B : ℝ) ≤ 4 * B / p.mulHeight :=
     surface_line_projective_direction f L (hlines L (Finset.mem_filter.mp hL).1)
       (hsurface L (Finset.mem_filter.mp hL).1) hB (Finset.mem_filter.mp hL).2
-  let p : Set (RatPoint 3) → ProjectivePoint 2 := fun L =>
+  let p := fun L =>
     if hL : L ∈ t then (hdir L hL).choose else Classical.choice inferInstance
   have hp (L : Set (RatPoint 3)) (hL : L ∈ t) :
       p L ∈ projectiveZeroLocus (map (Int.castRingHom ℚ) (homogeneousComponent f.totalDegree f)) ∧
@@ -159,5 +158,4 @@ theorem surface_line_contribution :
   exact surface_parallel_lines_card_le f hir (by omega) v hv t htv
     (fun L hL => hsurface L (ht hL))
 
-end
 end CCDN

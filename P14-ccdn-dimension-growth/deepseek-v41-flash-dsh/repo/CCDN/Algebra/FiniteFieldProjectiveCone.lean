@@ -12,12 +12,11 @@ import Mathlib.LinearAlgebra.Projectivization.Cardinality
 zero locus. The origin is counted once and each projective zero contributes
 exactly one nonzero vector for every unit in the field. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private theorem homogeneous_affine_cone_card {K : Type*} [Field K] [Fintype K] {n d : ℕ}
+theorem homogeneous_affine_cone_card {K : Type*} [Field K] [Fintype K] {n d : ℕ}
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f.IsHomogeneous d) (hd : 0 < d) :
     Nat.card {v : Fin (n + 1) → K // eval v f = 0} =
       Nat.card (projectiveZeroLocus f) * (Fintype.card K - 1) + 1 := by
@@ -106,5 +105,4 @@ theorem homogeneous_projective_count_of_cone_bound {K : Type*} [Field K] [Fintyp
         (Fintype.card K - 1) := by linarith [hcone.trans hmajor]
   exact (mul_le_mul_iff_left₀ (by linarith : (0 : ℝ) < Fintype.card K - 1)).mp hmul
 
-end
 end CCDN

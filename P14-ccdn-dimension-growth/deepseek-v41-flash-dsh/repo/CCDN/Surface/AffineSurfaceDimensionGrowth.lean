@@ -20,15 +20,14 @@ Removing integer content from the fixed-degree surface estimate.
 The resulting constant is uniform in all integer coefficients.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Every fixed degree at least five has a coefficient-uniform linear
 integer-point bound when the highest homogeneous part is absolutely
 irreducible. The equation need not be primitive. -/
-private theorem top_form_surface_fixed_degree_linear_bound (d : ℕ) (hd : 5 ≤ d) :
+theorem top_form_surface_fixed_degree_linear_bound (d : ℕ) (hd : 5 ≤ d) :
     ∃ C : ℝ, 0 < C ∧
       ∀ f : MvPolynomial (Fin 3) ℤ,
       HasAbsIrreducibleTopForm f →
@@ -50,15 +49,13 @@ private theorem top_form_surface_fixed_degree_linear_bound (d : ℕ) (hd : 5 ≤
   rw [hzero]
   exact hbound u hprim hutop (hudeg.trans hfd) B hB
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The fixed-degree surface bounds for the degrees `5 ≤ d < t` hold with one constant. -/
-private theorem top_form_surface_bounded_degree_linear_bound (t : ℕ) :
+theorem top_form_surface_bounded_degree_linear_bound (t : ℕ) :
     ∃ C : ℝ, 0 < C ∧
       ∀ f : MvPolynomial (Fin 3) ℤ,
       HasAbsIrreducibleTopForm f →
@@ -101,5 +98,4 @@ theorem affine_surface_dimension_growth :
       _ ≤ (Cbig + Csmall) * 1 * B := by gcongr; linarith
       _ ≤ (Cbig + Csmall) * (f.totalDegree : ℝ) ^ 18 * B := by gcongr
 
-end
 end CCDN

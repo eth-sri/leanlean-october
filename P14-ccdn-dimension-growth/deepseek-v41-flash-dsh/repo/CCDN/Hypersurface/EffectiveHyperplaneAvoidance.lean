@@ -16,13 +16,12 @@ The polynomial is nonzero by a constructed geometrically good section.
 It is homogeneous of degree d(d²−1)+1 and vanishes on every bad graph
 section, as well as on the omitted chart. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 universe u
 
-private lemma hyperplaneNoether_specialize {K σ : Type*}
+lemma hyperplaneNoether_specialize {K σ : Type*}
     [CommRing K] [Fintype σ] [DecidableEq σ]
     (d : ℕ) (f : MvPolynomial (Option σ) ℤ) (A : Option σ → K)
     (Φ : MvPolynomial (Sym σ d) ℤ) :
@@ -32,7 +31,7 @@ private lemma hyperplaneNoether_specialize {K σ : Type*}
         (scaledHyperplaneRestriction A (map (Int.castRingHom K) f)) Φ := by
   rw [homogeneousCoefficientSpecialization_map, universalHyperplaneRestriction_specialize]
 
-private lemma scaledHyperplaneRestriction_not_absolutely_irreducible {K σ : Type*}
+lemma scaledHyperplaneRestriction_not_absolutely_irreducible {K σ : Type*}
     [Field K] [Fintype σ] (A : Option σ → K) (hA : A none ≠ 0)
     {d : ℕ} {f : MvPolynomial (Option σ) K} (hf : f.IsHomogeneous d)
     (hbad : ¬Irreducible (map (algebraMap K (AlgebraicClosure K))
@@ -66,7 +65,6 @@ theorem exists_effective_hyperplane_avoidance {n : ℕ}
             (graphHyperplaneRestriction (fun i => -A (some i) / A none)
               (map (Int.castRingHom K) f)))) →
         eval₂ (Int.castRingHom K) A G = 0 := by
-  classical
   obtain ⟨k, rfl⟩ : ∃ k, d = k + 2 := ⟨d - 2, by omega⟩
   have hf0 : f ≠ 0 := by
     intro hz
@@ -119,5 +117,4 @@ theorem exists_effective_hyperplane_avoidance {n : ℕ}
         (homogeneousCoefficientSpecialization (k + 2) (universalHyperplaneRestriction f) Φ) = 0
       rw [hyperplaneNoether_specialize, hz, mul_zero]
 
-end
 end CCDN

@@ -19,7 +19,7 @@ public import Mathlib.RingTheory.PowerSeries.Order
   are linearly independent.
 -/
 
-@[expose] public section
+public section
 
 namespace PowerSeries
 

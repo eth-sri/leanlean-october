@@ -10,9 +10,8 @@ import CCDN.Noether.ShearNormalization
 
 /-! Exact sparse monomial columns of the Euler differential matrix. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial
 
 /-- The nested polynomial associated with a monomial in two variables is the nested monomial with
@@ -21,7 +20,6 @@ lemma bivariatePolynomialEquiv_monomial {R : Type*} [CommRing R]
     (m : Fin 2 →₀ ℕ) (a : R) :
     bivariatePolynomialEquiv R (MvPolynomial.monomial m a) =
       monomial (m 0) (monomial (m 1) a) := by
-  classical
   ext i j
   rw [bivariatePolynomialEquiv_coeff]
   have he : m = Finsupp.cons i (Finsupp.single 0 j) ↔ m 0 = i ∧ m 1 = j := by
@@ -97,5 +95,4 @@ lemma closedFormOperator_monomial_radial {R : Type*} [CommRing R]
   push_cast
   ring
 
-end
 end CCDN

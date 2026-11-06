@@ -13,9 +13,8 @@ import Mathlib.Tactic.Ring
 /-! Reciprocal estimates retain the exact leading coefficients when solving
 the normalized determinant inequality, even when its bracket is negative. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- If `a ≥ X (M - d) / ((r + 1) M)` with `X > 0`, `d ≥ 1` and `M ≥ 2 d`, then `a` is positive and
 `1 / a ≤ (r + 1) / X * (1 + 2 d / M)`. -/
@@ -100,5 +99,4 @@ theorem auxiliary_small_height_bracket_bound {r d M X a k u b l : ℝ}
   rw [he] at hbound
   nlinarith
 
-end
 end CCDN

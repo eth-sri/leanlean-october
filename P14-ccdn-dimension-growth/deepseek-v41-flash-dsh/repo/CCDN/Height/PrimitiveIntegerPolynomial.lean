@@ -18,19 +18,18 @@ reflection of divisibility from rational coefficients for primitive equations. -
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The integer coefficients have no common nonunit divisor. -/
 def PrimitiveIntegerPolynomial {σ : Type*} (f : MvPolynomial σ ℤ) : Prop :=
   ∀ c : ℤ, (∀ m, c ∣ f.coeff m) → IsUnit c
 
-private lemma PrimitiveIntegerPolynomial.of_dvd {σ : Type*} {f g : MvPolynomial σ ℤ}
+lemma PrimitiveIntegerPolynomial.of_dvd {σ : Type*} {f g : MvPolynomial σ ℤ}
     (hf : PrimitiveIntegerPolynomial f) (hg : g ∣ f) : PrimitiveIntegerPolynomial g := by
   intro c hc
   exact hf c ((C_dvd_iff_dvd_coeff c f).mp (((C_dvd_iff_dvd_coeff c g).mpr hc).trans hg))
 
-private lemma PrimitiveIntegerPolynomial.isUnit_of_rational_map {σ : Type*}
+lemma PrimitiveIntegerPolynomial.isUnit_of_rational_map {σ : Type*}
     {f : MvPolynomial σ ℤ} (hf : PrimitiveIntegerPolynomial f)
     (hu : IsUnit (MvPolynomial.map (Int.castRingHom ℚ) f)) : IsUnit f := by
   have hd := (isUnit_iff_totalDegree_of_isReduced.mp hu).2
@@ -71,7 +70,7 @@ theorem mvPolynomial_integer_multiple {σ : Type*} (f : MvPolynomial σ ℚ) :
   congr 1
   simpa [Algebra.smul_def] using hv i
 
-private lemma PrimitiveIntegerPolynomial.isRelPrime_constant {σ : Type*}
+lemma PrimitiveIntegerPolynomial.isRelPrime_constant {σ : Type*}
     {f : MvPolynomial σ ℤ} (hf : PrimitiveIntegerPolynomial f) {c : ℤ} (hc : c ≠ 0) :
     IsRelPrime f (C c) := by
   intro q hqf hqc
@@ -123,5 +122,4 @@ theorem exists_primitive_integer_factor {σ : Type*} (f : MvPolynomial σ ℤ) (
   rw [← hcoeff m hm]
   exact hc m
 
-end
 end CCDN

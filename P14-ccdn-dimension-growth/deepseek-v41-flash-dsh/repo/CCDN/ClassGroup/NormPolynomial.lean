@@ -17,7 +17,6 @@ number-field degree even when its parameter lies in a proper subfield. -/
 @[expose] public section
 namespace CCDN
 noncomputable section
-open scoped NumberField
 open NumberField Polynomial
 
 variable (K : Type*) [Field K] [NumberField K]
@@ -52,7 +51,7 @@ def signedNormCurvePolynomial (β : 𝓞 K) (ε : ℤ) : MvPolynomial (Fin 2) �
   (bivariatePolynomialEquiv ℤ).symm
     (X ^ 2 - C (C ε * integerNormPolynomial K β))
 
-private lemma signedNormCurvePolynomial_eval (β : 𝓞 K) (ε x y : ℤ) :
+lemma signedNormCurvePolynomial_eval (β : 𝓞 K) (ε x y : ℤ) :
     MvPolynomial.eval ![y, x] (signedNormCurvePolynomial K β ε) =
       y ^ 2 - ε * Algebra.norm ℤ (algebraMap ℤ (𝓞 K) x - β) := by
   rw [← bivariatePolynomialEquiv_eval _ y x]

@@ -10,9 +10,8 @@ public import CCDN.AuxiliaryPolynomial.AbsoluteAuxiliary
 /-! A single auxiliary polynomial for all rational points of bounded projective
 height, with no finite-family hypothesis. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The rational points of height at most `B` on the zero locus of `f`, as a finite family
@@ -26,7 +25,6 @@ lemma exists_bounded_projective_zero_family {n d : ℕ} (f : MvPolynomial (Fin (
         (∀ i, eval (z i) g = 0) → ∀ x : ProjectivePoint n, x.mulHeight ≤ B →
           x ∈ projectiveZeroLocus (map (Int.castRingHom ℚ) f) →
           x ∈ projectiveZeroLocus (map (Int.castRingHom ℚ) g) := by
-  classical
   let S := projectivePoints (projectiveZeroLocus (map (Int.castRingHom ℚ) f)) B
   let e := (Fintype.equivFin S).symm
   refine ⟨Fintype.card S, fun i => primitiveProjectiveRep (e i).val,
@@ -60,5 +58,4 @@ theorem hypersurface_absolute_projective_auxiliary
     hypersurface_absolute_auxiliary_degree f hf hd hir z hprim hzero hB hbox
   exact ⟨bad, M, hbad, hdegree, g, hg0, hgh, hlift g hgh hgz, hgnd⟩
 
-end
 end CCDN

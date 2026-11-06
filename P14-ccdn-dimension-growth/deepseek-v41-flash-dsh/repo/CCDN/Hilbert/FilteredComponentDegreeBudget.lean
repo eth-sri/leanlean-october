@@ -12,20 +12,17 @@ import CCDN.Hilbert.FilteredComponentRank
 /-! Additivity of the leading filtered dimension bounds the total degree of
 the minimal-prime components of a two-equation section. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
-open MvPolynomial
 
 /-- A common linear upper bound bounds the sum of the eventual linear
 slopes of the minimal-prime components. -/
-private theorem minimalPrimeComponents_slope_sum_le {K σ : Type*} [Field K] [Finite σ]
+theorem minimalPrimeComponents_slope_sum_le {K σ : Type*} [Field K] [Finite σ]
     (I : Ideal (MvPolynomial σ K)) (C N₀ : ℕ)
     (hupper : ∀ N ≥ N₀, Module.finrank K (filteredCoordinateSpace I N) ≤ C * (N + 1))
     (d : minimalPrimeComponents I → ℕ)
     (hdegree : ∀ P, HasFilteredCurveDegree P.val (d P)) :
     ∑ P, d P ≤ C := by
-  classical
   obtain ⟨D, hD⟩ := minimalPrimeComponents_filtered_rank_lower I
   choose Nᵢ cᵢ hNᵢ using hdegree
   let Nmax := Finset.univ.sup Nᵢ
@@ -66,7 +63,7 @@ private theorem minimalPrimeComponents_slope_sum_le {K σ : Type*} [Field K] [Fi
 
 /-- The product-of-degrees budget holds for the prime components.
 Only their eventual Hilbert formulas are inputs to this intermediate lemma. -/
-private theorem polynomialSection_minimalPrime_slope_sum_le {K : Type*} [Field K]
+theorem polynomialSection_minimalPrime_slope_sum_le {K : Type*} [Field K]
     (f g : MvPolynomial (Fin 3) K) (hf : Prime f) (hfg : ¬ f ∣ g)
     (d : minimalPrimeComponents (polynomialSectionIdeal f g) → ℕ)
     (hdegree : ∀ P, HasFilteredCurveDegree P.val (d P)) :
@@ -87,5 +84,4 @@ theorem polynomialSection_minimalPrime_curveDegree_sum_le
     ∑ P, d P ≤ f.totalDegree * g.totalDegree :=
   polynomialSection_minimalPrime_slope_sum_le f g hf.prime hfg d hdegree
 
-end
 end CCDN

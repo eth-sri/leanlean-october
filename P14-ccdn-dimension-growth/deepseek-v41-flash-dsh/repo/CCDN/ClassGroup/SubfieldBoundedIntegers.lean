@@ -14,7 +14,6 @@ of the subfield is obtained by restricting an ambient place. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open NumberField NumberField.InfinitePlace
 
 variable (K : Type*) [Field K] [NumberField K]
@@ -36,8 +35,7 @@ def boundedIntegerToSubfield (L : IntermediateField ℚ K) (B : ℝ) :
   let γ : L := ⟨(β.val : K), β.property.2⟩
   have hγ : γ ∈ integralClosure ℤ L := by
     change IsIntegral ℤ γ
-    apply (isIntegral_algebraMap_iff (R := ℤ) (A := L) (B := K)).mp
-    exact β.val.isIntegral_coe
+    exact (isIntegral_algebraMap_iff (R := ℤ) (A := L) (B := K)).mp β.val.isIntegral_coe
   let z : 𝓞 L := ⟨γ, hγ⟩
   refine ⟨z, ?_⟩
   intro w
@@ -53,7 +51,7 @@ def boundedIntegerToSubfield (L : IntermediateField ℚ K) (B : ℝ) :
     (((boundedIntegerToSubfield K L B β).val : L) : K) = (β.val : K) := by
   rfl
 
-private lemma boundedIntegerToSubfield_injective (L : IntermediateField ℚ K) (B : ℝ) :
+lemma boundedIntegerToSubfield_injective (L : IntermediateField ℚ K) (B : ℝ) :
     Function.Injective (boundedIntegerToSubfield K L B) := by
   intro x y h
   apply Subtype.ext
@@ -61,7 +59,7 @@ private lemma boundedIntegerToSubfield_injective (L : IntermediateField ℚ K) (
   simpa only [boundedIntegerToSubfield_coe] using
     congrArg (fun z : boundedArchimedeanIntegers L B ↦ ((z.val : L) : K)) h
 
-private theorem boundedIntegersInSubfield_ncard_le (L : IntermediateField ℚ K) (B : ℝ) :
+theorem boundedIntegersInSubfield_ncard_le (L : IntermediateField ℚ K) (B : ℝ) :
     (boundedIntegersInSubfield K L B).ncard ≤
       (boundedArchimedeanIntegers L B).ncard := by
   let := (boundedIntegersInSubfield_finite K L B).fintype
@@ -79,5 +77,4 @@ theorem boundedIntegersInSubfield_count (L : IntermediateField ℚ K)
   (Nat.cast_le.mpr (boundedIntegersInSubfield_ncard_le K L B)).trans
     (boundedArchimedeanIntegers_separated_count L hB)
 
-end
 end CCDN

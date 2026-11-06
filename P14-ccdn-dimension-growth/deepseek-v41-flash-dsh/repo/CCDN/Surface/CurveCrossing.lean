@@ -17,11 +17,11 @@ prime curves on a surface section. A curve constructed by another
 auxiliary is counted as a component of the section whenever its ideal
 contains the section's equation. -/
 
-@[expose] public section
+public section
 namespace CCDN
 noncomputable section
 
-private theorem height_two_prime_isMinimalPrime_section
+theorem height_two_prime_isMinimalPrime_section
     (f g : CoordinatePolynomial 3) (hf : Irreducible f) (hfg : ¬ f ∣ g)
     (P : Ideal (CoordinatePolynomial 3)) (hP : P.IsPrime) (hheight : P.height = 2)
     (hfP : f ∈ P) (hgP : g ∈ P) :
@@ -37,7 +37,7 @@ private theorem height_two_prime_isMinimalPrime_section
       exact hgP
   obtain ⟨Q, hQ, hQP⟩ := Ideal.exists_minimalPrimes_le hle
   have : Q.IsPrime := hQ.isPrime
-  have hQheight : Q.height = 2 := Ideal.height_eq_two_of_mem_minimalPrimes_span_pair hf.prime hfg hQ
+  have hQheight := Ideal.height_eq_two_of_mem_minimalPrimes_span_pair hf.prime hfg hQ
   have hQP' : Q = P := by
     by_contra hne
     have hh := Ideal.height_add_one_le_of_lt_of_isPrime (lt_of_le_of_ne hQP hne)
@@ -54,7 +54,6 @@ theorem surface_prime_curve_degree_sum_le
     (δ : Ideal (CoordinatePolynomial 3) → ℕ)
     (hS : ∀ P ∈ S, IsSurfaceCurve f P (δ P) ∧ g ∈ P) :
     ∑ P ∈ S, δ P ≤ f.totalDegree * g.totalDegree := by
-  classical
   let T := minimalPrimeComponents (polynomialSectionIdeal f g)
   obtain ⟨d, hd, hsum⟩ := polynomialSection_minimalPrime_degrees_exist f g hf hfg
   let e (P : Ideal (CoordinatePolynomial 3)) := if hP : P ∈ T then d ⟨P, hP⟩ else 0
@@ -89,7 +88,6 @@ theorem surface_curve_crossing_count_le
     (hS : ∀ P ∈ S, IsSurfaceCurve f P (δ P) ∧ g ∈ P) (B : ℝ) :
     count (⋃ P ∈ S.filter (fun P => h ∉ P), idealZeroLocus P ∩ zeroLocus h) B ≤
       f.totalDegree * g.totalDegree * h.totalDegree := by
-  classical
   let T := S.filter (fun P => h ∉ P)
   have hcurve (P) (hPT : P ∈ T) :
       count (idealZeroLocus P ∩ zeroLocus h) B ≤ δ P * h.totalDegree := by

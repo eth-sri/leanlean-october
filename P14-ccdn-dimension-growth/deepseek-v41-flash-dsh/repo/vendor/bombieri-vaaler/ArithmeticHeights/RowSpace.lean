@@ -11,7 +11,6 @@ public import Mathlib.LinearAlgebra.Matrix.Rank
 
 -- Only the worked examples below mention `Matrix.mulHeight`, the height of the entries of
 -- Layer 2.5, and they mention it in order to distinguish it from the height of the row space.
-import ArithmeticHeights.Matrix
 
 /-!
 # The row space of a matrix and the height of its maximal minors
@@ -110,12 +109,6 @@ section RowOps
 
 variable {R : Type*} [CommRing R] {ι : Type*} {m : ℕ}
 
-/-- The rows of the identity matrix are the standard basis. -/
-theorem row_one_eq_basisFun :
-    (1 : Matrix (Fin m) (Fin m) R).row = ⇑(Pi.basisFun R (Fin m)) := by
-  funext i j
-  simp [Matrix.one_apply, Pi.single_apply, eq_comm]
-
 end RowOps
 
 section Plucker
@@ -132,11 +125,6 @@ section Span
 
 variable {R : Type*} [CommRing R] {ι : Type*} {m : ℕ}
 variable {n : Type*} [Fintype n] [DecidableEq n]
-
-@[simp]
-theorem span_range_row_one : span R (Set.range (1 : Matrix (Fin m) (Fin m) R).row) = ⊤ := by
-  rw [row_one_eq_basisFun]
-  exact (Pi.basisFun R (Fin m)).span_eq
 
 end Span
 

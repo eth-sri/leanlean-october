@@ -22,7 +22,6 @@ and gives a linear error independent of all residue multiplicities.
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 
 /-- A common cutoff aggregates without any loss in the leading coefficient. -/
 theorem aggregate_hypersurface_exponents_cutoff {ι : Type*} [Fintype ι]
@@ -35,7 +34,7 @@ theorem aggregate_hypersurface_exponents_cutoff {ι : Type*} [Fintype ι]
 
 /-- The sharp leading term depends only on the sum of local multiplicities,
 with exactly the same dimension-only error as the single-residue bound. -/
-private theorem aggregate_hypersurface_exponents_lower_bound {ι : Type*} [Fintype ι]
+theorem aggregate_hypersurface_exponents_lower_bound {ι : Type*} [Fintype ι]
     (m : ℕ) (hm : 0 < m) (s μ : ι → ℕ) (hμ : ∀ i, 0 < μ i)
     (hμsum : 0 < ∑ i, μ i) :
     ((m.factorial : ℝ) / (∑ i, μ i : ℕ)) ^ (1 / (m : ℝ)) * m / (m + 1) *
@@ -44,7 +43,6 @@ private theorem aggregate_hypersurface_exponents_lower_bound {ι : Type*} [Finty
   local_exponent_separated_lower_bound m (∑ i, s i) _ hm hμsum
     (aggregate_hypersurface_exponents_cutoff m hm s μ hμ)
 
-end
 end CCDN
 
 namespace CCDN
@@ -155,7 +153,6 @@ theorem projective_hypersurface_reduction_minorGcd {n s N p d M : ℕ}
         (1 / (n + 1 : ℝ)) * (n + 1 : ℝ) / (n + 2 : ℝ) *
         (s : ℝ) ^ (1 + 1 / (n + 1 : ℝ)) - (n + 2 : ℝ) * s ≤ e ∧
       (p : ℤ) ^ e ∣ Int.Matrix.minorGcd (Matrix.of fun i j => eval (z i) (F j)) := by
-  classical
   let red : Fin s → ProjectiveHypersurfaceResidue f p := fun i =>
     ⟨primitiveProjectiveReduction (z i) (hprim i),
       primitiveProjectiveReduction_zero f hf (z i) (hprim i) (hz i)⟩

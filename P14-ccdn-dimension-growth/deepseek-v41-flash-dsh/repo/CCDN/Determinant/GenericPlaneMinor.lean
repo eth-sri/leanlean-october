@@ -29,9 +29,8 @@ coordinate algebra to every field, and identifies the resulting prime ideal
 in the polynomial ring over that field.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open scoped TensorProduct
 
 /-- An irreducible plane equation with a smooth rational point remains
@@ -43,7 +42,7 @@ theorem irreducible_map_of_smooth_plane_point
     (hz : MvPolynomial.eval z f = 0)
     (hj : MvPolynomial.eval z (MvPolynomial.pderiv j f) ≠ 0) :
     Irreducible (MvPolynomial.map (algebraMap K L) f) := by
-  let I : Ideal (MvPolynomial (Fin 2) K) := Ideal.span {f}
+  let I := Ideal.span {f}
   let J : Ideal (L ⊗[K] MvPolynomial (Fin 2) K) :=
     I.map Algebra.TensorProduct.includeRight
   let e := Algebra.TensorProduct.tensorQuotientEquiv (R := K) L
@@ -67,16 +66,14 @@ theorem irreducible_map_of_smooth_plane_point
       hf.ne_zero
   exact ((Ideal.span_singleton_prime hne).mp hp).irreducible
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open Polynomial Matrix
 
 /-- A nonzero minor over the original coefficient field, obtained by proving
 geometric irreducibility from the smooth point. -/
-private theorem exists_closedForm_minor_of_smooth_plane_point
+theorem exists_closedForm_minor_of_smooth_plane_point
     {K : Type*} [Field K]
     (d : ℕ) (f : MvPolynomial (Fin 2) K) (hf : Irreducible f)
     (z : Fin 2 → K) (j : Fin 2)
@@ -94,7 +91,7 @@ private theorem exists_closedForm_minor_of_smooth_plane_point
     dsimp only [g]
     rw [bivariatePolynomialEquiv_map, MulEquiv.irreducible_iff (f := bivariatePolynomialEquiv L)]
     exact irreducible_map_of_smooth_plane_point f hf z j hz hj
-  have hgm : g.Monic := bivariateMap_monic φ hm
+  have hgm := bivariateMap_monic φ hm
   have hgd : g.degree = d := by
     rw [degree_eq_natDegree hgm.ne_zero, bivariateMap_natDegree_of_monic φ hm, hdeg]
   have hgt : bivariateTotalDegree g ≤ d := by
@@ -109,14 +106,12 @@ private theorem exists_closedForm_minor_of_smooth_plane_point
   apply hdet
   rw [← closedForm_minor_map, he, map_zero]
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma genericPlaneMap_totalDegree_le {K F σ : Type*} [Field K] [Field F]
+lemma genericPlaneMap_totalDegree_le {K F σ : Type*} [Field K] [Field F]
     [Algebra K F] [Algebra (MvPolynomial σ K) F]
     (f : MvPolynomial (Option σ) K) :
     (genericPlaneMap K F σ f).totalDegree ≤ f.totalDegree := by
@@ -144,7 +139,7 @@ lemma genericPlaneMap_smooth_monic {K σ : Type*} [Field K]
         (genericPlaneMap K (FractionRing (MvPolynomial σ K)) σ f)).natDegree = d := by
   let F := FractionRing (MvPolynomial σ K)
   let φ : MvPolynomial σ K →+* F := algebraMap (MvPolynomial σ K) F
-  have hx : 0 < (optionEquivLeft K σ f).natDegree := hdeg ▸ hd
+  have hx := hdeg ▸ hd
   have hpos : 0 < f.totalDegree := by
     rw [natDegree_optionEquivLeft] at hx
     exact hx.trans_le (degreeOf_le_totalDegree f none)
@@ -177,5 +172,4 @@ theorem exists_genericPlane_minor
   refine ⟨a, c, fun he ↦ hdet ?_⟩
   rw [genericPlaneMap_bivariate, ← closedForm_minor_map, he, map_zero]
 
-end
 end CCDN

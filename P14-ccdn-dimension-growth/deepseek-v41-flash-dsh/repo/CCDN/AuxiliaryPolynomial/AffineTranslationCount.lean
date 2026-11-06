@@ -14,7 +14,6 @@ finite-field residue count, primitivity and integer point families. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Evaluating the affine translate of `f` by `a` at `x` gives the value of `f` at `x + a`. -/
@@ -49,7 +48,7 @@ lemma PrimitiveIntegerPolynomial.translate_affine {n : ℕ} (a : Fin n → ℤ)
   exact hf c ((C_dvd_iff_dvd_coeff c f).mp he)
 
 /-- Translation of the residue zero set, over ZMod p for every p. -/
-private def affineTranslationResidueEquiv (a : Fin 2 → ℤ) (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) :
+def affineTranslationResidueEquiv (a : Fin 2 → ℤ) (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) :
     PlaneResidue (affineTranslation ℤ a f) p ≃ PlaneResidue f p where
   toFun x := ⟨x.val + fun j => (a j : ZMod p), by
     have h := x.property
@@ -57,8 +56,7 @@ private def affineTranslationResidueEquiv (a : Fin 2 → ℤ) (f : MvPolynomial 
     rw [affineTranslation_map, affineTranslation_eval] at h
     simpa only [eval_map, Function.comp_def, Int.coe_castRingHom] using h⟩
   invFun x := ⟨x.val - fun j => (a j : ZMod p), by
-    rw [← eval_map]
-    rw [affineTranslation_map, affineTranslation_eval]
+    rw [← eval_map, affineTranslation_map, affineTranslation_eval]
     simpa only [Function.comp_def, Int.coe_castRingHom, sub_add_cancel, eval_map] using x.property⟩
   left_inv x := by apply Subtype.ext; exact add_sub_cancel_right _ _
   right_inv x := by apply Subtype.ext; exact sub_add_cancel _ _
@@ -84,5 +82,4 @@ theorem exists_bounded_translation_nonzero_constant (f : MvPolynomial (Fin 2) �
       exact ⟨by positivity, by exact_mod_cast hy⟩
   · rwa [affineTranslation_constantCoeff]
 
-end
 end CCDN

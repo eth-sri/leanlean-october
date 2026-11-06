@@ -17,9 +17,8 @@ import Mathlib.Algebra.Order.Star.Real
 affine surface. The coefficient 2/3 of the square-root rank is retained,
 with an explicit linear error depending only on the equation degree. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Finset
 
 /-- Standard monomials up to degree M have weighted degree at most
@@ -32,7 +31,6 @@ theorem surface_standard_monomial_weight {K : Type*} [Field K]
     (∑ a ∈ S, ((Finsupp.degree a : ℕ) : ℝ)) ≤
       (2 / 3 : ℝ) * S.card * Real.sqrt (2 * S.card / (f.totalDegree : ℝ)) +
         (2 * f.totalDegree + 2) * S.card := by
-  classical
   dsimp only
   let H : ℕ → ℕ := fun k => Module.finrank K (filteredCoordinateSpace (Ideal.span {f}) k)
   have hrank (k : ℕ) (hk : f.totalDegree ≤ k) :
@@ -79,5 +77,4 @@ theorem surface_standard_monomial_weight {K : Type*} [Field K]
     hroot hlo hhi hw
   simpa only [standardMonomialPrefix_card, H, R] using hh
 
-end
 end CCDN

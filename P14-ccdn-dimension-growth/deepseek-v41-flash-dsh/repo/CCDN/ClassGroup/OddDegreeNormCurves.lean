@@ -12,13 +12,11 @@ import Mathlib.RingTheory.Polynomial.IsIntegral
 /-! The full odd-degree norm polynomial gives an absolutely irreducible
 double-cover equation. No squarefree-part substitution is made. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
-open scoped NumberField
 open Polynomial NumberField
 
-private lemma odd_degree_polynomial_not_square_ratFunc {F : Type*} [Field F]
+lemma odd_degree_polynomial_not_square_ratFunc {F : Type*} [Field F]
     (p : F[X]) (hp : Odd p.natDegree) (b : RatFunc F) :
     b ^ 2 ≠ algebraMap F[X] (RatFunc F) p := by
   intro he
@@ -27,7 +25,7 @@ private lemma odd_degree_polynomial_not_square_ratFunc {F : Type*} [Field F]
     simp [h] at hp
   have hb : b ≠ 0 := by
     intro h
-    have hz : algebraMap F[X] (RatFunc F) p = 0 := by simpa [h] using he.symm
+    have hz := by simpa [h] using he.symm
     exact hp0 ((IsFractionRing.injective F[X] (RatFunc F)) (by simpa using hz))
   have hd := congrArg RatFunc.intDegree he
   rw [sq, RatFunc.intDegree_mul hb hb, RatFunc.intDegree_polynomial] at hd
@@ -66,7 +64,7 @@ lemma double_cover_bivariateTotalDegree {R : Type*} [CommRing R] [Nontrivial R]
       omega
     · by_cases hi0 : i = 0
       · subst i
-        have hj : p.coeff j ≠ 0 := by simpa using hij
+        have hj := by simpa using hij
         simpa using le_natDegree_of_ne_zero hj
       · simp [coeff_sub, coeff_X_pow, coeff_C, hi, hi0] at hij
   · have hp0 : p ≠ 0 := by intro h; simp [h] at hp
@@ -84,5 +82,4 @@ theorem signedNormCurvePolynomial_totalDegree (K : Type*) [Field K] [NumberField
   change bivariateTotalDegree (X ^ 2 - C (C ε * integerNormPolynomial K β)) = _
   rw [double_cover_bivariateTotalDegree _ (by omega), hd]
 
-end
 end CCDN

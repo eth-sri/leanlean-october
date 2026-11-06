@@ -18,17 +18,15 @@ three-space. A transcendental coordinate has fibers of size at most the
 affine Hilbert degree, and the integer box has only 2 floor(B)+1 values
 of that coordinate. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private theorem curve_count_le_degree_mul_integer_interval
+theorem curve_count_le_degree_mul_integer_interval
     (I : Ideal (CoordinatePolynomial 3)) [I.IsPrime]
     (hheight : I.height = 2) {d : ℕ} (hdegree : HasAffineCurveDegree I d)
     (B : ℝ) :
     count (idealZeroLocus I) B ≤ d * (2 * ⌊B⌋ + 1).toNat := by
-  classical
   let S := integralPoints (idealZeroLocus I) B
   by_cases hS : S.Nonempty
   · obtain ⟨x, hx⟩ := hS
@@ -106,5 +104,4 @@ theorem curve_count_le_degree_mul_box_side
       exact_mod_cast curve_count_le_degree_mul_integer_interval I hheight hdegree B
     _ ≤ _ := mul_le_mul_of_nonneg_left hside (Nat.cast_nonneg _)
 
-end
 end CCDN

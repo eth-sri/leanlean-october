@@ -12,11 +12,9 @@ number-field basis. Its real coordinates on embedded field elements are
 the corresponding rational coordinates, so missing-span conditions
 transfer without any rationality assumption on a real linear relation. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Module NumberField
-open scoped NumberField
 
 variable (K : Type*) [Field K] [NumberField K]
 
@@ -44,7 +42,7 @@ theorem exists_field_basis_of_euclidean_lattice_basis
     congrFun (coe_basisOfLinearIndependentOfCardEqFinrank' _ hi hcard) i
   exact ⟨v, q, hq, fun i => (congrArg (euclideanNumberFieldEmbedding K) (hq i)).trans (hv i)⟩
 
-private theorem euclidean_field_basis_repr
+theorem euclidean_field_basis_repr
     {ι : Type*} [Fintype ι]
     (b : Basis ι ℝ (mixedEmbedding.euclidean.mixedSpace K)) (q : Basis ι ℚ K)
     (hmap : ∀ i, euclideanNumberFieldEmbedding K (q i) = b i) (x : K) (i : ι) :
@@ -79,5 +77,4 @@ theorem euclidean_notMem_basis_span_of_coordinate_ne_zero
   rw [euclidean_field_basis_repr K b q hmap]
   exact_mod_cast hi
 
-end
 end CCDN

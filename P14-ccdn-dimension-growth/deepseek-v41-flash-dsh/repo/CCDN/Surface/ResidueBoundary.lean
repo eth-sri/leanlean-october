@@ -61,7 +61,7 @@ lemma exp_sum_log_primes (P : Finset ℕ) (hP : ∀ p ∈ P, p.Prime) :
   intro p hp
   exact Real.exp_log (by exact_mod_cast (hP p hp).pos)
 
-private lemma SurfaceCongruenceFamily.terminal_degree_le
+lemma SurfaceCongruenceFamily.terminal_degree_le
     {f : MvPolynomial (Fin 3) ℤ} {B A L X : ℝ}
     (F : SurfaceCongruenceFamily f B A) (hB : 1 ≤ B) (hA : 0 ≤ A) (hL : 1 ≤ L)
     (P : Finset ℕ) (hPW : P ⊆ congruencePrimeWindow L)
@@ -98,7 +98,7 @@ private lemma SurfaceCongruenceFamily.terminal_degree_le
       · positivity
     _ = _ := by ring
 
-private lemma surface_prime_curve_degree_le
+lemma surface_prime_curve_degree_le
     (f g : CoordinatePolynomial 3) (hf : Irreducible f) (hfg : ¬ f ∣ g)
     (I : Ideal (CoordinatePolynomial 3)) {d : ℕ} (hI : IsSurfaceCurve f I d) (hgI : g ∈ I) :
     d ≤ f.totalDegree * g.totalDegree := by
@@ -149,7 +149,6 @@ theorem surface_residue_boundary_of_large_curve
     (hsmooth : ∃ j, eval x (pderiv j f) ≠ 0) :
     ∃ R : Finset ℕ, ∃ hR : ∀ p ∈ R, p.Prime,
       ∃ p ∈ R, ∃ r : SmoothAffineResidueFamily f R, IsSurfaceResidueEdge F I L X x R hR p r := by
-  classical
   have hL := hW.one_le_window
   obtain ⟨P, hPW, hPprod, hPsmooth⟩ := exists_smooth_prime_window_subset f hW.one_le_height
     hW.one_le_radius hL hW.coeff_le (by norm_num; exact hW.log_le_window) x hx hsmooth

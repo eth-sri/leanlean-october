@@ -30,7 +30,7 @@ minimal polynomial.
   an element `I` with `τ I = P a * I` and `a σ(a) = 1` has a `τ`-invariant multiple `P b * I`.
 -/
 
-@[expose] public section
+public section
 
 section
 

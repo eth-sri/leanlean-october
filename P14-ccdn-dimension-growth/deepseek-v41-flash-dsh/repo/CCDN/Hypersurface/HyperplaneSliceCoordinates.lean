@@ -14,7 +14,6 @@ the finite integral-point count. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Renaming the variables of an integer polynomial along an equivalence preserves absolute
@@ -58,7 +57,6 @@ theorem integer_slice_map_of_option_equations {n : ℕ}
       B (graphIntegerNormal D a) k) :
     rationalPoint (deleteIntegerCoordinate 0 x) ∈
       zeroLocus (map (Int.castRingHom ℚ) (g k)) := by
-  classical
   let e : Fin (n + 1) ≃ Option (Fin n) := finSuccEquiv' 0
   let z : Option (Fin n) → ℤ := x ∘ e.symm
   have hznone : z none = x 0 := by simp [z, e]
@@ -93,5 +91,4 @@ theorem integer_slice_map_of_option_equations {n : ℕ}
       (map_eval (Int.castRingHom ℚ) (fun i => z (some i)) (g k)).symm
   rw [he, hgZ, Int.cast_zero]
 
-end
 end CCDN

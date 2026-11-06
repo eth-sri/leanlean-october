@@ -13,9 +13,8 @@ import Mathlib.Algebra.MvPolynomial.NoZeroDivisors
 /-! Dehomogenization preserves degree and irreducibility when the
 homogenizing coordinate does not divide the homogeneous equation. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- A full-degree affine chart detects irreducibility of the original
@@ -28,7 +27,7 @@ theorem irreducible_of_affineChart_irreducible {K : Type*} [Field K] {n : ℕ}
   have hunit (a : MvPolynomial (Fin (n + 1)) K) (ha : a ≠ 0)
       (hda : a.totalDegree = (affineChart n a).totalDegree)
       (hu : IsUnit (affineChart n a)) : IsUnit a := by
-    have ha0 : a.totalDegree = 0 := hda.trans (isUnit_iff_totalDegree_of_isReduced.mp hu).2
+    have ha0 := hda.trans (isUnit_iff_totalDegree_of_isReduced.mp hu).2
     have he := totalDegree_eq_zero_iff_eq_C.mp ha0
     rw [he]
     apply (isUnit_iff_ne_zero.mpr ?_).map C
@@ -142,5 +141,4 @@ theorem affineChart_irreducible_of_not_variable_dvd {K : Type*} [Field K] {n d :
     · right
       simpa only [affineChart_scaledHomogenize_one] using hb.map (affineChart n)
 
-end
 end CCDN

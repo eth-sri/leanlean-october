@@ -12,9 +12,8 @@ import CCDN.Noether.ShearNormalization
 /-! Euler columns and their coefficient minors commute with every coefficient
 ring homomorphism, including specialization and reduction in any characteristic. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Module
 
 /-- The basis vector of `EulerPairSpace R k` from the first low block corresponds to the pair
@@ -39,7 +38,7 @@ lemma eulerPairCoordinates_basis_radial {R : Type*} [CommRing R] (k : ℕ) (i : 
         -(X 0 * monomial ((degreeEqEquivSym (Fin 2) k).symm i).val 1)) := by
   simp [eulerPairCoordinates, eulerPairBasis, Basis.prod_apply, eulerTopBasis_apply]
 
-private lemma eulerPairCoordinates_basis_map {R S : Type*} [CommRing R] [CommRing S]
+lemma eulerPairCoordinates_basis_map {R S : Type*} [CommRing R] [CommRing S]
     (φ : R →+* S) (k : ℕ) (i : EulerColumns k) :
     (map φ (eulerPairCoordinates R k (eulerPairBasis R k i)).1,
       map φ (eulerPairCoordinates R k (eulerPairBasis R k i)).2) =
@@ -52,7 +51,7 @@ private lemma eulerPairCoordinates_basis_map {R S : Type*} [CommRing R] [CommRin
   · rw [eulerPairCoordinates_basis_radial, eulerPairCoordinates_basis_radial]
     simp
 
-private lemma eulerBivariatePair_basis_map {R S : Type*} [CommRing R] [CommRing S]
+lemma eulerBivariatePair_basis_map {R S : Type*} [CommRing R] [CommRing S]
     (φ : R →+* S) (k : ℕ) (i : EulerColumns k) :
     (bivariateMap φ (eulerBivariatePair R k (eulerPairBasis R k i)).1,
       bivariateMap φ (eulerBivariatePair R k (eulerPairBasis R k i)).2) =
@@ -87,5 +86,4 @@ theorem eulerClosedForm_minor_map {R S : Type*} [CommRing R] [CommRing S]
   change (((eulerClosedFormCoefficientMatrix k f).map φ).submatrix a c).det = _
   rw [eulerClosedFormCoefficientMatrix_map]
 
-end
 end CCDN

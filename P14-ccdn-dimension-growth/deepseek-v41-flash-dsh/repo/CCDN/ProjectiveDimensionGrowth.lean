@@ -26,8 +26,6 @@ exponent `2n³`. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
-open MvPolynomial
 
 /-- Theorem 1 holds with any degree exponent `E` which dominates, in `ℙⁿ`, the exponent
 `n + 1` of the zero-dimensional count, the exponent `3(n+1) + 4` of the curve bound, the
@@ -39,7 +37,6 @@ theorem projectiveGrowth_of_le {n E : ℕ} (hpoint : 1 ≤ n → n + 1 ≤ E)
     (hproj : ∀ m k, m + k + 1 = n → 1 ≤ m → 2 ≤ k →
       projectionDegreeExponent m k ≤ E) :
     ProjectiveGrowth n E := by
-  classical
   have hlt (I : Ideal (MvPolynomial (Fin (n + 1)) ℚ)) (hI : I.IsPrime) (d : ℕ) (hd : 5 ≤ d)
       (hdegree : (filteredHilbertPolynomial I).leadingCoeff =
         (d : ℚ) / (filteredHilbertPolynomial I).natDegree.factorial) :
@@ -139,5 +136,4 @@ theorem projective_dimension_growth (n : ℕ) :
   · have := projectiveProjectionDegreeExponent_le h hk
     omega
 
-end
 end CCDN

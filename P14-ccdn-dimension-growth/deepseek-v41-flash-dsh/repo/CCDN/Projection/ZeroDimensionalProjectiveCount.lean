@@ -19,12 +19,11 @@ one-parameter normalization sends every projective point to the unique
 point of projective zero-space; its affine fiber bound controls
 the whole source, independently of height. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Matrix
 
-private theorem exists_integer_linear_normalization_of_le (m n : ℕ) (hmn : m + 1 ≤ n)
+theorem exists_integer_linear_normalization_of_le (m n : ℕ) (hmn : m + 1 ≤ n)
     (I : Ideal (MvPolynomial (Fin n) ℚ)) [I.IsPrime] (d : ℕ)
     (hdimdeg : HasProjectiveDimensionDegree I m d) :
     ∃ a : Fin (m + 1) → Fin n → ℤ,
@@ -42,7 +41,6 @@ theorem zero_dimensional_projective_count_le
     (d : ℕ) (hdim : (filteredHilbertPolynomial I).natDegree = 1)
     (hdegree : (filteredHilbertPolynomial I).leadingCoeff = d) (B : ℝ) :
     projectiveCount (projectiveIdealZeroLocus I) B ≤ d ^ (n + 1) := by
-  classical
   obtain ⟨a, hint, hi⟩ := exists_integer_linear_normalization_of_le 0 (n + 1)
     (by omega) I d ⟨hdim, by simpa using hdegree⟩
   let L := (Matrix.map a (Int.castRingHom ℚ)).mulVecLin
@@ -79,5 +77,4 @@ theorem zero_dimensional_projective_count_le
   have hi0 : i = 0 := by apply Fin.ext; have := i.isLt; omega
   simp [hi0]
 
-end
 end CCDN

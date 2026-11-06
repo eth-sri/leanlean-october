@@ -12,16 +12,13 @@ import CCDN.ForMathlib.Matrix
 /-! Finite linear independence of formal power series survives arbitrary
 field extension. A finite nonzero coefficient minor witnesses independence. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
-open Matrix
 
-private theorem powerSeries_linearIndependent_map
+theorem powerSeries_linearIndependent_map
     {K L ι : Type*} [Field K] [Field L] [Algebra K L] [Fintype ι]
     (v : ι → PowerSeries K) (hv : LinearIndependent K v) :
     LinearIndependent L (fun i => PowerSeries.map (algebraMap K L) (v i)) := by
-  classical
   let A : Matrix ℕ ι K := fun n i => PowerSeries.coeff n (v i)
   have hcols : LinearIndependent K A.col := by
     rw [Fintype.linearIndependent_iff]
@@ -70,11 +67,9 @@ theorem powerSeries_linearIndependent_map_of_linearIndependent
     {K L ι : Type*} [Field K] [Field L] [Algebra K L]
     (v : ι → PowerSeries K) (hv : LinearIndependent K v) :
     LinearIndependent L (fun i => PowerSeries.map (algebraMap K L) (v i)) := by
-  classical
   rw [linearIndependent_iff_finset_linearIndependent]
   intro s
   exact powerSeries_linearIndependent_map (v ∘ (Subtype.val : s → ι))
     (hv.comp _ Subtype.val_injective)
 
-end
 end CCDN

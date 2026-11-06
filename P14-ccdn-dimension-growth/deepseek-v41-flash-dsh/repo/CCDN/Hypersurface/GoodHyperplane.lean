@@ -13,12 +13,11 @@ import CCDN.Hypersurface.GoodHyperplaneReindex
 /-! A good integer hyperplane normal of height at most d³, obtained from
 the universal Noether detector and integer-grid avoidance. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma exists_good_hyperplane_double_option {n : ℕ}
+lemma exists_good_hyperplane_double_option {n : ℕ}
     (f : MvPolynomial (Option (Option (Fin (2 + n)))) ℤ)
     (d : ℕ) (hd : 2 ≤ d) (hf : f.IsHomogeneous d)
     (hir : AbsolutelyIrreducible f) :
@@ -110,5 +109,4 @@ theorem exists_geometrically_good_hyperplane {n : ℕ}
     exact hgood.ne_zero (by rw [hz, map_zero])
   · exact hgood
 
-end
 end CCDN

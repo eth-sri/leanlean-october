@@ -13,15 +13,13 @@ import CCDN.Noether.ShearNormalization
 /-! The explicit Euler parameters exhaust all polynomial pairs satisfying
 the degree and Euler-contraction constraints. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma totalDegree_sub_top_component_le {R σ : Type*} [CommRing R]
+lemma totalDegree_sub_top_component_le {R σ : Type*} [CommRing R]
     (k : ℕ) (p : MvPolynomial σ R) (hp : p.totalDegree ≤ k + 1) :
     (p - homogeneousComponent (k + 1) p).totalDegree ≤ k := by
-  classical
   apply Finset.sup_le
   intro m hm
   have hm0 := mem_support_iff.mp hm
@@ -36,7 +34,7 @@ private lemma totalDegree_sub_top_component_le {R σ : Type*} [CommRing R]
 
 /-- Every bounded pair with lower-degree Euler contraction has the unique
 shape `(A+yQ,B-xQ)` used by the coefficient matrix. -/
-private theorem exists_eulerPairCoordinates {F : Type*} [Field F]
+theorem exists_eulerPairCoordinates {F : Type*} [Field F]
     (k : ℕ) (p q : MvPolynomial (Fin 2) F)
     (hp : p.totalDegree ≤ k + 1) (hq : q.totalDegree ≤ k + 1)
     (he : (X 0 * p + X 1 * q).totalDegree ≤ k + 1) :
@@ -104,5 +102,4 @@ theorem exists_eulerBivariatePair {F : Type*} [Field F]
   rw [hu]
   simp only [AlgEquiv.apply_symm_apply]
 
-end
 end CCDN

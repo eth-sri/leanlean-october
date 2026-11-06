@@ -11,11 +11,10 @@ import CCDN.ForMathlib.Log
 /-! The scaling-prime interval yields the affine box exponent 1/d. These
 numerical bounds are independent of the coefficient height. -/
 
-@[expose] public section
+public section
 namespace CCDN
-open Real
 
-private lemma scaled_box_power_ratio_le {d : ℕ} (hd : 0 < d) {A B p : ℝ}
+lemma scaled_box_power_ratio_le {d : ℕ} (hd : 0 < d) {A B p : ℝ}
     (hA : 1 ≤ A) (hB : 1 ≤ B) (hp : 0 < p) (hBp : B ≤ A * p) :
     (((d : ℝ) + 1) * B) ^ (2 / (d : ℝ)) / p ^ (1 / (d : ℝ)) ≤
       Real.exp 2 * A * B ^ (1 / (d : ℝ)) := by
@@ -39,15 +38,14 @@ private lemma scaled_box_power_ratio_le {d : ℕ} (hd : 0 < d) {A B p : ℝ}
       (show (1 : ℝ) / d ≤ 1 by apply (div_le_iff₀ hd0).mpr; linarith)
   have he : (((d : ℝ) + 1) * B) ^ (2 / (d : ℝ)) / p ^ (1 / (d : ℝ)) =
       ((d : ℝ) + 1) ^ (2 / (d : ℝ)) * (B / p) ^ (1 / (d : ℝ)) * B ^ (1 / (d : ℝ)) := by
-    rw [Real.mul_rpow hdplus.le hB0.le, Real.div_rpow hB0.le hp.le]
-    rw [show (2 : ℝ) / d = 1 / d + 1 / d by ring, Real.rpow_add hB0]
+    rw [Real.mul_rpow hdplus.le hB0.le, Real.div_rpow hB0.le hp.le, show (2 : ℝ) / d = 1 / d + 1 / d by ring, Real.rpow_add hB0]
     ring
   rw [he]
   exact mul_le_mul_of_nonneg_right
     (mul_le_mul hdeg hquot (Real.rpow_nonneg (div_nonneg hB0.le hp.le) _) (Real.exp_pos _).le)
     (Real.rpow_nonneg hB0.le _)
 
-private lemma scaled_auxiliary_degree_bound_le {d : ℕ} (hd : 0 < d) {A B p C : ℝ}
+lemma scaled_auxiliary_degree_bound_le {d : ℕ} (hd : 0 < d) {A B p C : ℝ}
     (hA : 1 ≤ A) (hB : 1 ≤ B) (hp : 1 ≤ p) (hpB : p ≤ B) (hBp : B ≤ A * p) :
     (d : ℝ) * scaledPlaneAuxiliaryDegreeBound d C (((d : ℝ) + 1) * B) p ≤
       (4 + 2 * Real.exp (heightDeterminantError C + 23) * Real.exp 14 * Real.exp 2 * A) *

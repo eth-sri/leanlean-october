@@ -118,7 +118,6 @@ lemma homogeneousSlice_monomial {R : Type*} [CommRing R] {n : ℕ}
 lemma homogeneousSlice_scaledHomogenize {R : Type*} [CommRing R] {n d : ℕ}
     (h : R) (f : MvPolynomial (Fin n) R) (hf : f.totalDegree ≤ d) :
     homogeneousSlice n h (scaledHomogenize d h f) = C (h ^ d) * f := by
-  classical
   rw [scaledHomogenize, map_sum]
   conv_rhs => rw [f.as_sum, Finset.mul_sum]
   apply Finset.sum_congr rfl
@@ -132,15 +131,14 @@ lemma homogeneousSlice_scaledHomogenize {R : Type*} [CommRing R] {n d : ℕ}
 
 /-- Nonzero constant slices reflect divisibility when the equation's degree
 is preserved. This is the proper-section transfer for the scaled models. -/
-private theorem homogeneous_dvd_of_slice_dvd {K : Type*} [Field K] {n d M : ℕ}
+theorem homogeneous_dvd_of_slice_dvd {K : Type*} [Field K] {n d M : ℕ}
     {f g : MvPolynomial (Fin (n + 1)) K} {h : K} (hh : h ≠ 0)
     (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hg : g.IsHomogeneous M)
     (hd : (homogeneousSlice n h f).totalDegree = d)
     (hdiv : homogeneousSlice n h f ∣ homogeneousSlice n h g) : f ∣ g := by
   rw [homogeneousSlice_eq_chart_scale, homogeneousSlice_eq_chart_scale] at hdiv
   rw [homogeneousSlice_eq_chart_scale] at hd
-  have hf0' : firstCoordinateScaleHom K h f ≠ 0 := by
-    exact (map_ne_zero_iff _ (firstCoordinateScale K h hh).injective).mpr hf0
+  have hf0' := (map_ne_zero_iff _ (firstCoordinateScale K h hh).injective).mpr hf0
   have hdiv' := homogeneous_dvd_of_affineChart_dvd (firstCoordinateScaleHom_homogeneous h hf) hf0'
     (firstCoordinateScaleHom_homogeneous h hg) hd hdiv
   have he := map_dvd (firstCoordinateScale K h hh).symm.toRingHom hdiv'
@@ -148,7 +146,7 @@ private theorem homogeneous_dvd_of_slice_dvd {K : Type*} [Field K] {n d M : ℕ}
     (firstCoordinateScale K h hh).symm (firstCoordinateScale K h hh g) at he
   simpa only [AlgEquiv.symm_apply_apply] using he
 
-private lemma homogeneousSlice_map {R S : Type*} [CommRing R] [CommRing S] {n : ℕ}
+lemma homogeneousSlice_map {R S : Type*} [CommRing R] [CommRing S] {n : ℕ}
     (φ : R →+* S) (h : R) (f : MvPolynomial (Fin (n + 1)) R) :
     MvPolynomial.map φ (homogeneousSlice n h f) =
       homogeneousSlice n (φ h) (MvPolynomial.map φ f) := by

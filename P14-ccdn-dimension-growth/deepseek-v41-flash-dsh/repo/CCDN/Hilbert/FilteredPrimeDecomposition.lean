@@ -80,7 +80,6 @@ theorem exists_prime_component_separators {R ι : Type*} [CommRing R]
     (hanti : ∀ i j, P i ≤ P j → i = j) :
     ∃ a : ι → R, (∀ i, a i ∉ P i) ∧
       ∀ i j, i ≠ j → a i ∈ P j := by
-  classical
   have hex (i : ι) : ∃ a : R, a ∉ P i ∧ ∀ j, i ≠ j → a ∈ P j := by
     have hw (j : {j : ι // j ≠ i}) : ∃ x : R, x ∈ P j.val ∧ x ∉ P i := by
       by_contra! h

@@ -14,9 +14,8 @@ import CCDN.Surface.CompleteIntersectionDegreeBudget
 coefficient height. Both the auxiliaries and the initial prime components
 are constructed. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Finset
 
 /-- The curve components cut out on the surface `f = 0` by the initial auxiliary of a
@@ -51,7 +50,7 @@ theorem exists_surface_initial_curve_components (f : MvPolynomial (Fin 3) ℤ)
 
 /-- An integral point of the surface `f = 0` is singular, or lies on a component of the initial
 cover of degree at most `2 d A Λ(B, L)`, or lies in the residual locus. -/
-private theorem surface_point_mem_small_curve_cover (f : MvPolynomial (Fin 3) ℤ)
+theorem surface_point_mem_small_curve_cover (f : MvPolynomial (Fin 3) ℤ)
     (hirQ : Irreducible (map (Int.castRingHom ℚ) f))
     {A B H L X : ℝ} (hA : 0 ≤ A) (hW : IsSurfaceResidueWindow f B H L X)
     (F : SurfaceCongruenceFamily f B A)
@@ -110,7 +109,6 @@ theorem exists_surface_small_curve_residual_cover
               2 * f.totalDegree * surfaceCongruenceDegreeConstant f.totalDegree K *
                 surfaceResidueLogBudget B L), idealZeroLocus I) B +
             count (surfaceResidueResidualLocus F S L X hW.one_le_window) B := by
-  classical
   have hA : 0 ≤ surfaceCongruenceDegreeConstant f.totalDegree K :=
     (surfaceCongruenceDegreeConstant_pos f.totalDegree K).le
   have hirQ := rational_irreducible_of_charZero_map f hir
@@ -137,5 +135,4 @@ theorem exists_surface_small_curve_residual_cover
   exact hcount.trans ((count_union_le (singular ∪ retained) residual B).trans
     (Nat.add_le_add_right (count_union_le singular retained B) _))
 
-end
 end CCDN

@@ -14,9 +14,8 @@ import CCDN.Height.ScaledHypersurfaceHeight
 /-! The ordinary homogenization attains the affine box exponent on every
 polynomial range in the degree, with both terms of the minimum retained. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The coefficient height of the leading homogeneous component of an integer polynomial is at most
@@ -31,7 +30,7 @@ lemma leading_height_le_coefficient_height {n : ℕ}
 
 /-- Both coefficient-sensitive branches hold for the unscaled model itself.
 This estimate preserves their minimum before applying the box estimate. -/
-private theorem unscaled_hypersurface_minimum_height_bound {n : ℕ}
+theorem unscaled_hypersurface_minimum_height_bound {n : ℕ}
     (f : MvPolynomial (Fin (n + 2)) ℤ) (hf : f ≠ 0) (hd : 0 < f.totalDegree)
     {B : ℝ} (hB : 1 ≤ B) :
     (f.totalDegree : ℝ) ^ (4 - 1 / (n + 1 : ℝ)) *
@@ -118,7 +117,7 @@ private theorem unscaled_hypersurface_minimum_height_bound {n : ℕ}
 
 /-- The full auxiliary degree bound retains both branches of the minimum
 on every box bounded polynomially in the degree. -/
-private theorem unscaled_hypersurface_auxiliary_minimum_bound {n k : ℕ}
+theorem unscaled_hypersurface_auxiliary_minimum_bound {n k : ℕ}
     (f : MvPolynomial (Fin (n + 2)) ℤ) (hf : f ≠ 0) (hd : 0 < f.totalDegree)
     {S B : ℝ} (hS : 1 ≤ S) (hB : 1 ≤ B)
     (hbound : B ≤ S * ((f.totalDegree : ℝ) + 1) ^ k) :
@@ -173,5 +172,4 @@ theorem unscaled_affine_auxiliary_minimum {n k : ℕ}
   exact ⟨g, hg, hgdeg.trans
     (unscaled_hypersurface_auxiliary_minimum_bound f hir.ne_zero hd hS hB hbound)⟩
 
-end
 end CCDN

@@ -16,9 +16,8 @@ import CCDN.Hypersurface.NonabsoluteSurfaceCount
 hypersurfaces in every ambient dimension. The dependence on the degree
 is quadratic; the explicit constant depends only on dimension. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- If `f` is a prime rational polynomial in `n + 2` variables not dividing `g`, and both have
@@ -30,7 +29,6 @@ theorem proper_intersection_count_le_box {n d : ℕ}
     {B : ℝ} (hB : 0 ≤ B) :
     (count (zeroLocus f ∩ zeroLocus g) B : ℝ) ≤
       (n + 2 : ℝ) ^ n * (d : ℝ) ^ 2 * (2 * B + 1) ^ n := by
-  classical
   let T := integralPoints (zeroLocus f ∩ zeroLocus g) B
   let S := (Finset.Icc (-⌊B⌋) ⌊B⌋).image (fun t : ℤ => (t : ℚ))
   let z : T → Fin (n + 2) → ℚ := fun x => rationalPoint x.val
@@ -56,8 +54,7 @@ theorem proper_intersection_count_le_box {n d : ℕ}
   have hScard : (S.card : ℝ) ≤ 2 * B + 1 := by
     have hfloor : 0 ≤ ⌊B⌋ := Int.floor_nonneg.mpr hB
     dsimp only [S]
-    rw [Finset.card_image_of_injective _ Int.cast_injective, Int.card_Icc]
-    rw [← Int.cast_natCast, Int.toNat_of_nonneg (by omega)]
+    rw [Finset.card_image_of_injective _ Int.cast_injective, Int.card_Icc, ← Int.cast_natCast, Int.toNat_of_nonneg (by omega)]
     push_cast
     linarith [Int.floor_le B]
   exact hcard.trans (mul_le_mul_of_nonneg_left
@@ -67,7 +64,7 @@ theorem proper_intersection_count_le_box {n d : ℕ}
 extension satisfy affine dimension growth with quadratic degree
 dependence. The dimension-only factor here is not asserted to be the
 sharp constant one in CCDN Corollary 4.1.4. -/
-private theorem nonabsolute_hypersurface_count_le {K : Type*}
+theorem nonabsolute_hypersurface_count_le {K : Type*}
     [Field K] [Algebra ℚ K] {n : ℕ}
     (f : CoordinatePolynomial (n + 2)) (hir : Irreducible f)
     (hred : ¬ Irreducible (map (algebraMap ℚ K) f))
@@ -100,5 +97,4 @@ theorem nonabsolute_hypersurface_dimension_growth {K : Type*}
       linarith
     _ = _ := by simp only [mul_pow]; ring
 
-end
 end CCDN

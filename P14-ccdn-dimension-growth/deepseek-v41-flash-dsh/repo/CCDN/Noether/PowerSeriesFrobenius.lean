@@ -13,12 +13,10 @@ import Mathlib.RingTheory.PowerSeries.NoZeroDivisors
 /-! Frobenius noncancellation from injectivity of finite coefficient jets.
 These are statements about power series in prime-power characteristic. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
-open PowerSeries
 
-private lemma powerSeries_frobenius_constant_congruence {K : Type*} [Field K]
+lemma powerSeries_frobenius_constant_congruence {K : Type*} [Field K]
     (p r : ℕ) [Fact p.Prime] [CharP K p] (g : PowerSeries K) :
     PowerSeries.X ^ (p ^ r) ∣ g ^ (p ^ r) - PowerSeries.C (g.constantCoeff ^ (p ^ r)) := by
   let : CharP (PowerSeries K) p :=
@@ -31,7 +29,7 @@ private lemma powerSeries_frobenius_constant_congruence {K : Type*} [Field K]
 
 /-- A relation with Frobenius-powered series coefficients forces all their
 constant terms to vanish if the low coefficient jets of f are independent. -/
-private lemma powerSeries_frobenius_relation_constants {K ι : Type*} [Field K]
+lemma powerSeries_frobenius_relation_constants {K ι : Type*} [Field K]
     [Fintype ι] [DecidableEq ι] (p r : ℕ) [Fact p.Prime] [CharP K p]
     (f g : ι → PowerSeries K)
     (hjet : ∀ a : ι → K, (∀ n < p ^ r, PowerSeries.coeff n (∑ i, a i • f i) = 0) → ∀ i, a i = 0)
@@ -53,7 +51,7 @@ private lemma powerSeries_frobenius_relation_constants {K ι : Type*} [Field K]
 
 /-- A finite family of series has a common lowest power of X; after dividing
 it out, at least one remaining series has nonzero constant coefficient. -/
-private lemma powerSeries_common_order_factor {K ι : Type*} [Field K] [Fintype ι] [DecidableEq ι]
+lemma powerSeries_common_order_factor {K ι : Type*} [Field K] [Fintype ι] [DecidableEq ι]
     (g : ι → PowerSeries K) (hg : ∃ i, g i ≠ 0) :
     ∃ (m : ℕ) (h : ι → PowerSeries K), (∀ i, g i = PowerSeries.X ^ m * h i) ∧
       ∃ i, (h i).constantCoeff ≠ 0 := by
@@ -98,5 +96,4 @@ theorem powerSeries_frobenius_relation_trivial {K ι : Type*} [Field K]
   have hz := (mul_eq_zero.mp hrel).resolve_left hX
   exact hj (powerSeries_frobenius_relation_constants p r f h hjet hz j)
 
-end
 end CCDN

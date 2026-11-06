@@ -12,9 +12,8 @@ import CCDN.ForMathlib.Log
  degree contributes a further factor d to the intersection degree, giving d^18
  after taking fourth powers. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- For `d ≥ 16`, the exponent `1 / √d` is at most `1 / 4`. -/
 lemma surface_inverse_sqrt_le_quarter {d : ℕ} (hd : 16 ≤ d) :
@@ -25,7 +24,7 @@ lemma surface_inverse_sqrt_le_quarter {d : ℕ} (hd : 16 ≤ d) :
 
 /-- The large-component fourth moment has exactly the corrected degree
  factor d^18, uniformly for every surface degree at least sixteen. -/
-private theorem surface_degree_budget_fourth {d : ℕ} (hd : 16 ≤ d)
+theorem surface_degree_budget_fourth {d : ℕ} (hd : 16 ≤ d)
     {C B D : ℝ} (_hC : 0 ≤ C) (hB : 1 ≤ B) (hD0 : 0 ≤ D)
     (hD : D ≤ C * (d : ℝ) ^ (9 / 2 : ℝ) * B ^ (1 / Real.sqrt d)) :
     D ^ 4 ≤ C ^ 4 * (d : ℝ) ^ 18 * B := by
@@ -43,7 +42,7 @@ private theorem surface_degree_budget_fourth {d : ℕ} (hd : 16 ≤ d)
     simpa only [Real.rpow_one] using Real.rpow_le_rpow_of_exponent_le hB hexp
   exact hpow.trans (mul_le_mul_of_nonneg_left hbox (by positivity))
 
-private lemma small_degree_rpow_weight {δ : ℕ} (hδ : 2 ≤ δ) {B : ℝ}
+lemma small_degree_rpow_weight {δ : ℕ} (hδ : 2 ≤ δ) {B : ℝ}
     (hB : 1 ≤ B) (hδB : (δ : ℝ) ≤ Real.log B) :
     (δ : ℝ) ^ 3 * B ^ (1 / (δ : ℝ)) ≤
       (48 * Real.exp 1) * B ^ (1 / 2 : ℝ) := by
@@ -77,7 +76,7 @@ private lemma small_degree_rpow_weight {δ : ℕ} (hδ : 2 ≤ δ) {B : ℝ}
 
 /-- For curve degrees between two and log B, the degree factors can be
  absorbed uniformly into a square-root box bound. -/
-private theorem curveBound_small_degree_uniform {δ : ℕ} (hδ : 2 ≤ δ) {B : ℝ}
+theorem curveBound_small_degree_uniform {δ : ℕ} (hδ : 2 ≤ δ) {B : ℝ}
     (hB : 1 ≤ B) (hδB : (δ : ℝ) ≤ Real.log B) :
     curveBound δ B ≤ (96 * Real.exp 1) * B ^ (1 / 2 : ℝ) * (Real.log B + 1) := by
   have hlog := Real.log_nonneg hB
@@ -90,7 +89,7 @@ private theorem curveBound_small_degree_uniform {δ : ℕ} (hδ : 2 ≤ δ) {B :
 
 /-- The logarithm in the total contribution of the small-degree components
  costs only a quarter power of the box size. -/
-private lemma surface_small_component_weight {d : ℕ} (hd : 16 ≤ d)
+lemma surface_small_component_weight {d : ℕ} (hd : 16 ≤ d)
     {B : ℝ} (hB : 1 ≤ B) :
     B ^ (1 / Real.sqrt (d : ℝ)) *
         (B ^ (1 / 2 : ℝ) * (Real.log B + 1)) ≤ 5 * B := by
@@ -117,7 +116,7 @@ private lemma surface_small_component_weight {d : ℕ} (hd : 16 ≤ d)
 
 /-- A component count bounded by the intersection degree has uniformly
  bounded small-degree contribution, with the same d^18 factor. -/
-private theorem surface_degree_budget_small_components {d : ℕ} (hd : 16 ≤ d)
+theorem surface_degree_budget_small_components {d : ℕ} (hd : 16 ≤ d)
     {C B D : ℝ} (hC : 0 ≤ C) (hB : 1 ≤ B)
     (hD : D ≤ C * (d : ℝ) ^ (9 / 2 : ℝ) * B ^ (1 / Real.sqrt d)) :
     D * ((96 * Real.exp 1) * B ^ (1 / 2 : ℝ) * (Real.log B + 1)) ≤
@@ -141,7 +140,7 @@ private theorem surface_degree_budget_small_components {d : ℕ} (hd : 16 ≤ d)
 
 /-- The sum of fourth powers of nonnegative component degrees is bounded
  by the fourth power of their total degree. -/
-private lemma sum_fourth_powers_le_fourth_power_sum {ι : Type*}
+lemma sum_fourth_powers_le_fourth_power_sum {ι : Type*}
     (s : Finset ι) (a : ι → ℝ) (ha : ∀ i ∈ s, 0 ≤ a i) :
     ∑ i ∈ s, (a i) ^ 4 ≤ (∑ i ∈ s, a i) ^ 4 := by
   calc
@@ -158,7 +157,7 @@ private lemma sum_fourth_powers_le_fourth_power_sum {ι : Type*}
 
 /-- Above the logarithmic degree threshold, the curve bound is controlled
  by the fourth power of the curve degree. -/
-private theorem curveBound_large_degree {δ : ℕ} (hδ : 0 < δ) {B : ℝ}
+theorem curveBound_large_degree {δ : ℕ} (hδ : 0 < δ) {B : ℝ}
     (hB : 1 ≤ B) (hBδ : Real.log B ≤ (δ : ℝ)) :
     curveBound δ B ≤ (2 * Real.exp 1) * (δ : ℝ) ^ 4 := by
   have hδ0 : (0 : ℝ) < δ := by exact_mod_cast hδ
@@ -179,7 +178,7 @@ private theorem curveBound_large_degree {δ : ℕ} (hδ : 0 < δ) {B : ℝ}
 
 /-- Both degree ranges can be summed using their common total-degree
  budget. Every component here has degree at least two. -/
-private theorem sum_curveBound_le_degree_budget {ι : Type*} (s : Finset ι) (δ : ι → ℕ)
+theorem sum_curveBound_le_degree_budget {ι : Type*} (s : Finset ι) (δ : ι → ℕ)
     {B D : ℝ} (hB : 1 ≤ B) (hδ : ∀ i ∈ s, 2 ≤ δ i)
     (hD : (∑ i ∈ s, (δ i : ℝ)) ≤ D) :
     ∑ i ∈ s, curveBound (δ i) B ≤
@@ -234,5 +233,4 @@ theorem sum_curveBound_le_surface_degree_budget {ι : Type*}
         (2 * Real.exp 1) * (C ^ 4 * (d : ℝ) ^ 18 * B) := add_le_add hsmall hlarge
     _ = _ := by ring
 
-end
 end CCDN

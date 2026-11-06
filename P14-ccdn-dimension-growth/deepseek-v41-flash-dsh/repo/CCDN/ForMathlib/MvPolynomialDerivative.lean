@@ -27,7 +27,7 @@ Below the characteristic this means that `xᵢ` does not occur in `f`.
   characteristic has a nonzero partial derivative.
 -/
 
-@[expose] public section
+public section
 
 namespace CharP
 

@@ -23,7 +23,7 @@ import Mathlib.RingTheory.IntegralClosure.GoingDown
   `g`, every minimal prime of `(f, g)` has height two.
 -/
 
-@[expose] public section
+public section
 
 namespace Ideal
 

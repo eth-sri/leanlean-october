@@ -15,11 +15,10 @@ import Mathlib.Tactic.Positivity
 /-! The homogeneous kernel-to-rank ratio differs from its leading term by
 at most 1/M. Exact binomial identities avoid a formal asymptotic expansion. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
-private lemma shifted_choose_successor_identity (r k : ℕ) :
+lemma shifted_choose_successor_identity (r k : ℕ) :
     (r + k + 1) * (r + k).choose r = (r + 1 + k).choose (r + 1) * (r + 1) := by
   rw [show r + 1 + k = r + k + 1 by omega]
   exact Nat.add_one_mul_choose_eq (r + k) r
@@ -81,5 +80,4 @@ theorem hypersurface_kernel_ratio_bounds {r d M s : ℕ} (hd : 0 < d) (hdM : d �
       nlinarith [mul_le_mul_of_nonneg_right hd1 (mul_nonneg hr0.le hs0.le)]
     nlinarith
 
-end
 end CCDN

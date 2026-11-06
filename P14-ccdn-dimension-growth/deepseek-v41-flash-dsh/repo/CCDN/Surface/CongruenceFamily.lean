@@ -14,7 +14,6 @@ theorem; its existence is proved from the equation. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Finset
 
 /-- The restriction of a family of smooth residues, indexed by the primes of `P`, to a subset
@@ -63,7 +62,6 @@ theorem exists_surface_congruence_family
     (hcoeff : CoefficientHeightLE f H)
     (hheight : Real.log H ≤ K * (Real.log B + 1)) :
     Nonempty (SurfaceCongruenceFamily f B (surfaceCongruenceDegreeConstant f.totalDegree K)) := by
-  classical
   have hex (P : Finset ℕ) (hP : ∀ p ∈ P, p.Prime) (r : SmoothAffineResidueFamily f P) :=
     exists_surface_congruence_auxiliary f hir hd hK hH hB hcoeff hheight P hP
       (smoothResidueIntegerLift r)
@@ -119,5 +117,4 @@ lemma SurfaceCongruenceFamily.point_vanishes {f : MvPolynomial (Fin 3) ℤ} {B A
   let : NeZero p := ⟨(hP p hp).ne_zero⟩
   exact smoothResidueFamilyOfPoint_congruence x hxf P hs p hp j
 
-end
 end CCDN

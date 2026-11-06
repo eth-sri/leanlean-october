@@ -17,13 +17,12 @@ import Mathlib.Tactic.Positivity.Finset
 hypersurface. The proof uses polynomial interpolation and the filtered
 Koszul rank estimate. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The product-of-degrees factor survives in every ambient dimension. -/
-private theorem finite_field_common_zeros_card_le_choose {K ι : Type*} [Field K] [Fintype K]
+theorem finite_field_common_zeros_card_le_choose {K ι : Type*} [Field K] [Fintype K]
     [Fintype ι] [DecidableEq ι] {n : ℕ}
     (f g : MvPolynomial (Fin (n + 2)) K) (hf : Prime f) (hfg : ¬ f ∣ g)
     (z : ι → Fin (n + 2) → K) (hz : Function.Injective z)
@@ -70,5 +69,4 @@ theorem finite_field_common_zeros_card_le {K ι : Type*} [Field K] [Fintype K]
     (Nat.mul_le_mul_left (f.totalDegree * g.totalDegree) hchoose)
   simpa only [mul_pow, Nat.mul_assoc, Nat.mul_left_comm, Nat.mul_comm] using h
 
-end
 end CCDN

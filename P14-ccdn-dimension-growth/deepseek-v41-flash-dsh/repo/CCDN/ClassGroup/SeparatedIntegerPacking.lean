@@ -12,12 +12,11 @@ import CCDN.ClassGroup.NumberFieldEuclideanLattice
 It is uniform in the number field, including fields of degree one, and
 does not require a lower bound on the radius in terms of the discriminant. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open NumberField MeasureTheory MeasureTheory.Measure
 
-private theorem separated_finite_ball_count
+theorem separated_finite_ball_count
     {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
     [FiniteDimensional ℝ E] [MeasurableSpace E] [BorelSpace E]
     (μ : Measure E) [μ.IsAddHaarMeasure] (s : Finset E) {R : ℝ}
@@ -30,7 +29,7 @@ private theorem separated_finite_ball_count
     intro z hzx hzy
     have hzx' : dist x z < 1 / 2 := by
       simpa only [dist_comm] using Metric.mem_ball.mp hzx
-    have hzy' : dist z y < 1 / 2 := Metric.mem_ball.mp hzy
+    have hzy' := Metric.mem_ball.mp hzy
     have ht := dist_triangle x z y
     have hh := hsep x hx y hy hxy
     rw [← dist_eq_norm] at hh
@@ -97,7 +96,7 @@ theorem boundedArchimedeanIntegers_separated_count
     intro x hx y hy hxy
     obtain ⟨z, hz, rfl⟩ := Finset.mem_image.mp hx
     obtain ⟨w, hw, rfl⟩ := Finset.mem_image.mp hy
-    have hzw : z - w ≠ 0 := sub_ne_zero.mpr (fun h ↦ hxy (congrArg e h))
+    have hzw := sub_ne_zero.mpr (fun h ↦ hxy (congrArg e h))
     have hh := one_le_euclidean_norm_integer K hzw
     change 1 ≤ ‖euclideanNumberFieldEmbedding K ((z : K) - (w : K))‖ at hh
     simpa only [e, map_sub] using hh
@@ -108,5 +107,4 @@ theorem boundedArchimedeanIntegers_separated_count
     (mul_nonneg (Real.sqrt_nonneg _) hB) hs hsep
   simpa only [hcard, mixedEmbedding.euclidean.finrank, mul_assoc] using hh
 
-end
 end CCDN

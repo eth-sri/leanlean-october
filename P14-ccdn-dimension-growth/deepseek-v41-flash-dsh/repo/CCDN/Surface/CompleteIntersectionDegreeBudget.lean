@@ -22,12 +22,10 @@ An eventual linear upper bound gives an eventual linear Hilbert
 formula, with its slope bounded by the original coefficient.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
-open MvPolynomial
 
-private theorem filteredCoordinateSpace_eventually_linear_of_eventual_bound
+theorem filteredCoordinateSpace_eventually_linear_of_eventual_bound
     {K σ : Type*} [Field K] [Fintype σ] [LinearOrder σ]
     (I : Ideal (MvPolynomial σ K)) (C T : ℕ)
     (hbound : ∀ N ≥ T, Module.finrank K (filteredCoordinateSpace I N) ≤ C * (N + 2)) :
@@ -60,7 +58,7 @@ private theorem filteredCoordinateSpace_eventually_linear_of_eventual_bound
 /-- A proper intersection of two equations in affine three-space has an
 eventually linear Hilbert function with slope at most the product of degrees.
 This holds for every ideal containing the equations, not just prime ideals. -/
-private theorem proper_intersection_eventual_linear_degree {K : Type*} [Field K]
+theorem proper_intersection_eventual_linear_degree {K : Type*} [Field K]
     {f g : MvPolynomial (Fin 3) K} (hf : Prime f) (hfg : ¬ f ∣ g)
     (I : Ideal (MvPolynomial (Fin 3) K)) (hIf : f ∈ I) (hIg : g ∈ I) :
     ∃ d ≤ f.totalDegree * g.totalDegree, HasFilteredCurveDegree I d := by
@@ -71,12 +69,9 @@ private theorem proper_intersection_eventual_linear_degree {K : Type*} [Field K]
   simp only [Nat.choose_one_right] at hh
   exact hh.trans (Nat.mul_le_mul_left _ (by omega))
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
-open MvPolynomial
 
 /-- Every minimal-prime component has an eventual affine Hilbert
 degree. The slope is allowed to be zero until a rational point is exhibited. -/
@@ -160,5 +155,4 @@ theorem exists_completeIntersection_curve_components
   · intro P hPS
     exact hTP P (Finset.mem_filter.mp hPS).1
 
-end
 end CCDN

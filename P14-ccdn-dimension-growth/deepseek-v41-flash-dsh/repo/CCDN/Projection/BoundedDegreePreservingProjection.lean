@@ -30,12 +30,12 @@ namespace CCDN
 noncomputable section
 
 /-- Send the rational-function variable to a transcendental element. -/
-private def transcendentalRatFuncMap {K F : Type*} [Field K] [Field F] [Algebra K F]
+def transcendentalRatFuncMap {K F : Type*} [Field K] [Field F] [Algebra K F]
     (u : F) (hu : Transcendental K u) : RatFunc K →ₐ[K] F :=
   RatFunc.liftAlgHom (Polynomial.aeval u)
     (nonZeroDivisors_le_comap_nonZeroDivisors_of_injective _ (transcendental_iff_injective.mp hu))
 
-private lemma transcendentalRatFuncMap_X {K F : Type*} [Field K] [Field F] [Algebra K F]
+lemma transcendentalRatFuncMap_X {K F : Type*} [Field K] [Field F] [Algebra K F]
     (u : F) (hu : Transcendental K u) : transcendentalRatFuncMap u hu RatFunc.X = u := by
   change RatFunc.liftRingHom (Polynomial.aeval u).toRingHom _ RatFunc.X = u
   exact (RatFunc.liftRingHom_X (Polynomial.aeval u).toRingHom _).trans (Polynomial.aeval_X u)
@@ -44,7 +44,6 @@ end
 end CCDN
 
 namespace CCDN
-noncomputable section
 
 section
 
@@ -55,7 +54,7 @@ open MvPolynomial
 
 /-- Avoiding infinity and the certified affine Hilbert degree suffice for a
 degree-preserving plane projection. -/
-private theorem exists_degree_preserving_projection_of_infinity_avoidance {K L F : Type*}
+theorem exists_degree_preserving_projection_of_infinity_avoidance {K L F : Type*}
     [Field K] [CharZero K] [Field L] [Algebra K L] [IsAlgClosed L]
     [Field F] [Algebra K F] {n : ℕ}
     (I : Ideal (MvPolynomial (Fin n) K)) [I.IsPrime]
@@ -134,5 +133,4 @@ theorem exists_bounded_projection_card_le {K : Type*} [Field K] [CharZero K]
   funext z j
   fin_cases j <;> rfl
 
-end
 end CCDN

@@ -48,7 +48,7 @@ lemma bivariateMap_coefficientDerivative {R S : Type*} [CommRing R] [CommRing S]
   intro i
   simp [bivariateMap, Polynomial.derivative_map]
 
-private lemma bivariateMap_gridPolynomial {R S : Type*} [CommRing R] [CommRing S]
+lemma bivariateMap_gridPolynomial {R S : Type*} [CommRing R] [CommRing S]
     (φ : R →+* S) (d : ℕ) (v : BivariateGrid d → R) :
     bivariateMap φ (bivariateGridPolynomial R d v) =
       bivariateGridPolynomial S d (fun i => φ (v i)) := by
@@ -70,7 +70,6 @@ theorem closedFormCoefficientMatrix_map {R S : Type*} [CommRing R] [CommRing S]
     (φ : R →+* S) (d : ℕ) (f : R[X][X]) :
     (closedFormCoefficientMatrix d f).map φ =
       closedFormCoefficientMatrix d (bivariateMap φ f) := by
-  classical
   ext i j
   change φ ((bivariateCoefficients R (closedFormOperator f
     (closedFormPair R d (Pi.single j 1)))) i) =
@@ -97,7 +96,6 @@ end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open Polynomial Matrix
 
 /-- All coefficients outside the strict rectangular grid vanish. -/
@@ -109,7 +107,6 @@ monomial with outer exponent `i` and inner exponent `j` such that `d ≤ i` or `
 lemma bivariateGridPolynomial_coeff_zero {R : Type*} [CommRing R] (d : ℕ)
     (v : BivariateGrid d → R) (i j : ℕ) (h : d ≤ i ∨ d ≤ j) :
     ((bivariateGridPolynomial R d v).coeff i).coeff j = 0 := by
-  classical
   simp only [bivariateGridPolynomial, LinearMap.coe_mk, AddHom.coe_mk, finsetSum_coeff]
   apply Finset.sum_eq_zero
   intro k _
@@ -135,7 +132,7 @@ theorem bivariateGridPolynomial_reconstruct {R : Type*} [CommRing R]
   · rw [bivariateGridPolynomial_coeff_zero d _ i j (Or.inl (by omega)), hf i j (Or.inl (by omega))]
 
 /-- Every pair supported on the grid comes from a coefficient vector. -/
-private theorem exists_closedFormPair_of_grid {R : Type*} [CommRing R]
+theorem exists_closedFormPair_of_grid {R : Type*} [CommRing R]
     (d : ℕ) (u : R[X][X] × R[X][X]) (hp : InBivariateGrid d u.1)
     (hq : InBivariateGrid d u.2) :
     ∃ v, closedFormPair R d v = u := by
@@ -193,5 +190,4 @@ theorem closedForm_rank_drop_of_two_forms {F : Type*} [Field F]
   change (closedFormCoefficientMatrix d f).rank + Module.finrank F V = _ at he
   omega
 
-end
 end CCDN

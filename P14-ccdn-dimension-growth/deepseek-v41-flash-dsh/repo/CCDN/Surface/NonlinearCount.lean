@@ -12,9 +12,8 @@ import CCDN.Surface.AuxiliaryExponent
 /-! Counting the nonlinear components of a surface section using their
 total Hilbert degree and the affine curve counting theorem. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- The number of integral points of height at most `B` on a finite union of sets is at most
 the sum of the numbers of such points on the individual sets. -/
@@ -58,5 +57,4 @@ theorem nonlinear_curve_union_bound :
           hdegree) hK.le
     _ = _ := by ring
 
-end
 end CCDN

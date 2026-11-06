@@ -111,7 +111,7 @@ variable {R : Type*} [CommRing R] {ι : Type*} [Finite ι] [LinearOrder ι]
 /-- The pairing against the image of a basis vector of `⋀^k (ι → R)` reads off a coordinate: this
 is `exteriorPower.ιMultiDual` unfolded, since that functional is *defined* as the pairing against
 the wedge of the dual basis vectors indexed by `s`. -/
-private lemma pairingDual_map_toDual_basis (k : ℕ) (s : Set.powersetCard ι k)
+lemma pairingDual_map_toDual_basis (k : ℕ) (s : Set.powersetCard ι k)
     (y : ⋀[R]^k (ι → R)) :
     pairingDual R (ι → R) k
         (map k (Pi.basisFun R ι).toDual ((Pi.basisFun R ι).exteriorPower k s)) y
@@ -129,7 +129,7 @@ variable {R : Type*} [CommRing R] {ι : Type*} [Fintype ι] [LinearOrder ι] {k 
 
 /-- On the basis of `⋀^k (ι → R)` induced by the standard basis, the bilinear form obtained by
 pairing along `Basis.toDual` is the diagonal one. -/
-private lemma pairingDual_map_toDual (k : ℕ) (x y : ⋀[R]^k (ι → R)) :
+lemma pairingDual_map_toDual (k : ℕ) (x y : ⋀[R]^k (ι → R)) :
     pairingDual R (ι → R) k (map k (Pi.basisFun R ι).toDual x) y
       = ∑ s : Set.powersetCard ι k, ((Pi.basisFun R ι).exteriorPower k).repr x s *
           ((Pi.basisFun R ι).exteriorPower k).repr y s := by

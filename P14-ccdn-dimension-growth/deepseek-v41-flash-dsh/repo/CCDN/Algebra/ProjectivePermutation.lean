@@ -38,7 +38,7 @@ instance projectivePermutedIdeal_isPrime {K : Type*} [Field K] {n : ℕ}
     (e : Equiv.Perm (Fin (n + 1))) : (projectivePermutedIdeal I e).IsPrime :=
   RingHom.ker_isPrime _
 
-private theorem projectiveHilbertFunction_permuted {K : Type*} [Field K] {n : ℕ}
+theorem projectiveHilbertFunction_permuted {K : Type*} [Field K] {n : ℕ}
     (I : Ideal (MvPolynomial (Fin (n + 1)) K)) (e : Equiv.Perm (Fin (n + 1))) (M : ℕ) :
     projectiveHilbertFunction (projectivePermutedIdeal I e) M = projectiveHilbertFunction I M := by
   let ψ := (Ideal.Quotient.mkₐ K I).comp (renameEquiv K e).toAlgHom
@@ -71,28 +71,28 @@ theorem projectiveCurveDegree_permuted {K : Type*} [Field K] {n d : ℕ}
   obtain ⟨N, c, hN⟩ := hdegree
   exact ⟨N, c, fun M hM => by rw [projectiveHilbertFunction_permuted]; exact hN M hM⟩
 
-private def coordinatePermutation {K : Type*} [Field K] {n : ℕ} (e : Equiv.Perm (Fin (n + 1))) :
+def coordinatePermutation {K : Type*} [Field K] {n : ℕ} (e : Equiv.Perm (Fin (n + 1))) :
     (Fin (n + 1) → K) →ₗ[K] (Fin (n + 1) → K) where
   toFun v := v ∘ e
   map_add' _ _ := rfl
   map_smul' _ _ := rfl
 
-private lemma coordinatePermutation_injective {K : Type*} [Field K] {n : ℕ}
+lemma coordinatePermutation_injective {K : Type*} [Field K] {n : ℕ}
     (e : Equiv.Perm (Fin (n + 1))) :
     Function.Injective (coordinatePermutation (K := K) e) := by
   intro v w he
   funext j
   simpa [coordinatePermutation] using congrFun he (e.symm j)
 
-private def projectivePermutation {K : Type*} [Field K] {n : ℕ} (e : Equiv.Perm (Fin (n + 1))) :
+def projectivePermutation {K : Type*} [Field K] {n : ℕ} (e : Equiv.Perm (Fin (n + 1))) :
     Projectivization K (Fin (n + 1) → K) → Projectivization K (Fin (n + 1) → K) :=
   Projectivization.map (coordinatePermutation e) (coordinatePermutation_injective e)
 
-private lemma projectivePermutation_injective {K : Type*} [Field K] {n : ℕ}
+lemma projectivePermutation_injective {K : Type*} [Field K] {n : ℕ}
     (e : Equiv.Perm (Fin (n + 1))) : Function.Injective (projectivePermutation (K := K) e) :=
   Projectivization.map_injective _ _
 
-private lemma projectivePermutation_height {n : ℕ} (e : Equiv.Perm (Fin (n + 1)))
+lemma projectivePermutation_height {n : ℕ} (e : Equiv.Perm (Fin (n + 1)))
     (x : ProjectivePoint n) :
     (projectivePermutation e x).mulHeight = x.mulHeight := by
   conv_lhs => rw [← x.mk_rep]
@@ -100,7 +100,7 @@ private lemma projectivePermutation_height {n : ℕ} (e : Equiv.Perm (Fin (n + 1
   change Height.mulHeight (x.rep ∘ e) = x.mulHeight
   rw [Height.mulHeight_comp_equiv, projective_rep_height]
 
-private lemma projectivePermutation_zeroLocus {K : Type*} [Field K] {n : ℕ}
+lemma projectivePermutation_zeroLocus {K : Type*} [Field K] {n : ℕ}
     (I : Ideal (MvPolynomial (Fin (n + 1)) K)) (e : Equiv.Perm (Fin (n + 1)))
     (x : Projectivization K (Fin (n + 1) → K)) (hx : x ∈ projectiveIdealZeroLocus I) :
     projectivePermutation e x ∈ projectiveIdealZeroLocus (projectivePermutedIdeal I e) := by
@@ -117,7 +117,7 @@ private lemma projectivePermutation_zeroLocus {K : Type*} [Field K] {n : ℕ}
     rw [x.mk_rep]
     exact hvx
   obtain ⟨c, hc⟩ := (Projectivization.mk_eq_mk_iff K _ _ _ _).mp he
-  have hw : (c : K) • x.rep ≠ 0 := smul_ne_zero c.ne_zero x.rep_nonzero
+  have hw := smul_ne_zero c.ne_zero x.rep_nonzero
   have hwx : Projectivization.mk K ((c : K) • x.rep) hw = x := by
     calc
       _ = Projectivization.mk K x.rep x.rep_nonzero :=

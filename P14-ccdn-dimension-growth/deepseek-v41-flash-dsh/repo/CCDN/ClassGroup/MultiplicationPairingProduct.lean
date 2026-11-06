@@ -18,7 +18,6 @@ successive minimum. This file contains the algebraic product step. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 
 variable {F K : Type*} [Field F] [Field K] [Algebra F K]
 
@@ -26,7 +25,7 @@ variable {F K : Type*} [Field F] [Field K] [Algebra F K]
 def hyperplaneComplement (ℓ μ : K →ₗ[F] F) : Submodule F K :=
   LinearMap.ker ℓ ⊓ LinearMap.ker μ
 
-private def hyperplaneMultiplicationPairing (ℓ μ : K →ₗ[F] F) :
+def hyperplaneMultiplicationPairing (ℓ μ : K →ₗ[F] F) :
     LinearMap.BilinForm F (hyperplaneComplement ℓ μ) where
   toFun a :=
     { toFun := fun b ↦ ℓ ((a : K) * (b : K))
@@ -35,13 +34,13 @@ private def hyperplaneMultiplicationPairing (ℓ μ : K →ₗ[F] F) :
   map_add' := by intros; ext b; simp [add_mul]
   map_smul' := by intros; ext b; simp
 
-private lemma hyperplaneMultiplicationPairing_nondegenerate
+lemma hyperplaneMultiplicationPairing_nondegenerate
     (ℓ μ : K →ₗ[F] F) (hℓ : ℓ ≠ 0) (hℓ1 : ℓ 1 = 0) (hμ1 : μ 1 = 1) :
     (hyperplaneMultiplicationPairing ℓ μ).Nondegenerate := by
   have hl (a : hyperplaneComplement ℓ μ)
       (ha : ∀ b, hyperplaneMultiplicationPairing ℓ μ a b = 0) : a = 0 := by
     by_contra hn
-    have hav : (a : K) ≠ 0 := fun h ↦ hn (Subtype.ext h)
+    have hav := fun h ↦ hn (Subtype.ext h)
     obtain ⟨b, hbℓ, hbμ, hab⟩ :=
       multiplication_pairing_on_hyperplane_complement ℓ μ hℓ hℓ1 hμ1
         a hav a.property.1 a.property.2
@@ -54,7 +53,7 @@ private lemma hyperplaneMultiplicationPairing_nondegenerate
     simpa only [hyperplaneMultiplicationPairing, LinearMap.coe_mk, AddHom.coe_mk,
       mul_comm] using hb a
 
-private lemma exists_permutation_nonzero_entries {ι R : Type*} [Fintype ι] [DecidableEq ι]
+lemma exists_permutation_nonzero_entries {ι R : Type*} [Fintype ι] [DecidableEq ι]
     [CommRing R] (A : Matrix ι ι R) (hA : A.det ≠ 0) :
     ∃ σ : Equiv.Perm ι, ∀ i, A (σ i) i ≠ 0 := by
   by_contra h
@@ -66,7 +65,7 @@ private lemma exists_permutation_nonzero_entries {ι R : Type*} [Fintype ι] [De
   obtain ⟨i, hi⟩ := h σ
   rw [Finset.prod_eq_zero (f := fun j ↦ A (σ j) j) (Finset.mem_univ i) hi, smul_zero]
 
-private lemma determinant_weight_product_bound {ι R : Type*} [Fintype ι] [DecidableEq ι]
+lemma determinant_weight_product_bound {ι R : Type*} [Fintype ι] [DecidableEq ι]
     [CommRing R] (A : Matrix ι ι R) (hA : A.det ≠ 0)
     (w : ι → ℝ) {M : ℝ} (hM : 0 ≤ M)
     (hw : ∀ i j, A i j ≠ 0 → M ≤ w i * w j) :
@@ -99,5 +98,4 @@ theorem hyperplane_multiplication_minimum_product
     _ ≤ (∏ i, w i) ^ 2 * M ^ 2 := mul_le_mul_of_nonneg_right hprod (sq_nonneg M)
     _ = (M * ∏ i, w i) ^ 2 := by ring
 
-end
 end CCDN

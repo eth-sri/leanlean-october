@@ -91,7 +91,7 @@ variable {G : Type*} [NormedAddCommGroup G] [MeasurableSpace G] [BorelSpace G]
 
 /-- A set enlarged by a countable lattice is a countable union of its translates, hence
 measurable. -/
-private theorem measurableSet_add_lattice (M : Submodule ℤ G) [Countable M] {A : Set G}
+theorem measurableSet_add_lattice (M : Submodule ℤ G) [Countable M] {A : Set G}
     (hA : MeasurableSet A) : MeasurableSet (A + (M : Set G)) := by
   have h : A + (M : Set G) = ⋃ l : M, (fun x ↦ x - (l : G)) ⁻¹' A := by
     ext x
@@ -103,7 +103,7 @@ private theorem measurableSet_add_lattice (M : Submodule ℤ G) [Countable M] {A
 
 omit [MeasurableSpace G] [BorelSpace G] in
 /-- A set enlarged by a lattice is invariant under that lattice. -/
-private theorem preimage_vadd_add_lattice (M : Submodule ℤ G) {Y : Set G} (g : M) :
+theorem preimage_vadd_add_lattice (M : Submodule ℤ G) {Y : Set G} (g : M) :
     (fun x ↦ g +ᵥ x) ⁻¹' (Y + (M : Set G)) = Y + (M : Set G) := by
   ext x
   constructor
@@ -119,7 +119,7 @@ private theorem preimage_vadd_add_lattice (M : Submodule ℤ G) {Y : Set G} (g :
 
 omit [MeasurableSpace G] [BorelSpace G] in
 /-- Membership in a set enlarged by a lattice is unchanged by a lattice translation. -/
-private theorem mem_add_lattice_iff (M : Submodule ℤ G) {A : Set G} {v : G} (hv : v ∈ M) (x : G) :
+theorem mem_add_lattice_iff (M : Submodule ℤ G) {A : Set G} {v : G} (hv : v ∈ M) (x : G) :
     v + x ∈ A + (M : Set G) ↔ x ∈ A + (M : Set G) := by
   constructor
   · rintro ⟨a, ha, l, hl, h⟩
@@ -261,7 +261,7 @@ private instance countable_prod_bot (Λ : Submodule ℤ V) [Countable Λ] :
 omit [NormedSpace ℝ V] [MeasurableSpace V] [BorelSpace V] [FiniteDimensional ℝ V]
   [NormedSpace ℝ W] [MeasurableSpace W] [BorelSpace W] [FiniteDimensional ℝ W] in
 /-- The slice of a slab enlarged by `Λ × 0` is the corresponding slice enlarged by `Λ`. -/
-private theorem preimage_prodMk_inter (Λ : Submodule ℤ V) (X : Set (V × W)) (z : W) {F : Set V} :
+theorem preimage_prodMk_inter (Λ : Submodule ℤ V) (X : Set (V × W)) (z : W) {F : Set V} :
     (fun y ↦ (y, z)) ⁻¹' ((F ×ˢ (univ : Set W)) ∩
         (X + ((Λ.prod (⊥ : Submodule ℤ W)) : Set (V × W))))
       = F ∩ ({y | (y, z) ∈ X} + (Λ : Set V)) := by
@@ -299,7 +299,7 @@ omit [NormedSpace ℝ V] [FiniteDimensional ℝ V] in
 /-- Translation invariance and monotonicity of the quotient measure, in one step: if every point of
 `X` lands in `Y` after a translation by the *fixed* vector `c`, the quotient measure of `X` is at
 most that of `Y`. -/
-private theorem measure_inter_add_le (μ : Measure V) [μ.IsAddHaarMeasure] (Λ : Submodule ℤ V)
+theorem measure_inter_add_le (μ : Measure V) [μ.IsAddHaarMeasure] (Λ : Submodule ℤ V)
     [Countable Λ] {F : Set V} (hF : ∀ x : V, ∃! v : Λ, (v : V) + x ∈ F) (hFm : MeasurableSet F)
     {X Y : Set V} (hY : MeasurableSet Y) {c : V} (hsub : ∀ y ∈ X, y + c ∈ Y) :
     μ (F ∩ (X + (Λ : Set V))) ≤ μ (F ∩ (Y + (Λ : Set V))) := by
@@ -336,7 +336,7 @@ private theorem measure_inter_add_le (μ : Measure V) [μ.IsAddHaarMeasure] (Λ 
 omit [MeasurableSpace V] [BorelSpace V] [FiniteDimensional ℝ V] [MeasurableSpace W] [BorelSpace W]
   [FiniteDimensional ℝ W] in
 /-- Dilating a set dilates its slices, the slice being taken at the dilated point. -/
-private theorem slice_smul (A : Set (V × W)) {s : ℝ} (hs : s ≠ 0) (z : W) :
+theorem slice_smul (A : Set (V × W)) {s : ℝ} (hs : s ≠ 0) (z : W) :
     {y | (y, s • z) ∈ s • A} = s • {y | (y, z) ∈ A} := by
   ext y
   simp only [Set.mem_ofPred_eq, Set.mem_smul_set]
@@ -416,12 +416,12 @@ variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E] [MeasurableSpace
 
 omit [MeasurableSpace E] [BorelSpace E] [FiniteDimensional ℝ E] in
 /-- A lattice lies in its own `ℝ`-span. -/
-private theorem le_restrictScalars_span (Λ : Submodule ℤ E) :
+theorem le_restrictScalars_span (Λ : Submodule ℤ E) :
     Λ ≤ (Submodule.span ℝ (Λ : Set E)).restrictScalars ℤ := fun _ hx ↦ Submodule.subset_span hx
 
 omit [MeasurableSpace E] [BorelSpace E] [FiniteDimensional ℝ E] in
 /-- A `ℤ`-submodule spans its own `ℝ`-span: the `span_top` half of being a lattice there. -/
-private theorem span_comap_span_eq_top (Λ : Submodule ℤ E) :
+theorem span_comap_span_eq_top (Λ : Submodule ℤ E) :
     Submodule.span ℝ ((ZLattice.comap ℝ Λ (Submodule.span ℝ (Λ : Set E)).subtype) :
       Set ↥(Submodule.span ℝ (Λ : Set E))) = ⊤ := by
   set V : Submodule ℝ E := Submodule.span ℝ (Λ : Set E) with hV
@@ -436,7 +436,7 @@ private theorem span_comap_span_eq_top (Λ : Submodule ℤ E) :
 
 omit [MeasurableSpace E] [BorelSpace E] [FiniteDimensional ℝ E] in
 /-- The lattice and its copy inside its own span are `ℤ`-linearly equivalent. -/
-private def comapSpanEquiv (Λ : Submodule ℤ E) :
+def comapSpanEquiv (Λ : Submodule ℤ E) :
     (ZLattice.comap ℝ Λ (Submodule.span ℝ (Λ : Set E)).subtype) ≃ₗ[ℤ] Λ :=
   Submodule.comapSubtypeEquivOfLe (le_restrictScalars_span Λ)
 

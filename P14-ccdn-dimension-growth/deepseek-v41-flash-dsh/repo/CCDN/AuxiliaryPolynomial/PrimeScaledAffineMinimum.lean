@@ -102,7 +102,7 @@ theorem scaled_hypersurface_auxiliary_bound_of_badPrime_le {n : ℕ}
   exact mul_le_mul_of_nonneg_left (add_le_add (add_le_add hmain le_rfl) le_rfl)
     (hypersurfaceAbsoluteAuxiliaryConstant_pos n).le
 
-private theorem scaled_hypersurface_auxiliary_badPrime_bound {n : ℕ}
+theorem scaled_hypersurface_auxiliary_badPrime_bound {n : ℕ}
     (f : MvPolynomial (Fin (n + 2)) ℤ) (hf : f ≠ 0) (hd : 0 < f.totalDegree)
     {p : ℕ} (hp : p.Prime) {A B : ℝ} (hA : 1 ≤ A) (hB : 1 ≤ B)
     (hBp : B / A ≤ p) :
@@ -126,7 +126,7 @@ private theorem scaled_hypersurface_auxiliary_badPrime_bound {n : ℕ}
 /-- The auxiliary degree bound of the `p`-scaled homogenization is at most
 `affineMinimumAuxiliaryBound`, the minimum of the two coefficient estimates, so the auxiliary
 polynomial satisfies the better of the two without changing its zero set. -/
-private theorem scaled_hypersurface_auxiliary_minimum_bound {n : ℕ}
+theorem scaled_hypersurface_auxiliary_minimum_bound {n : ℕ}
     (f : MvPolynomial (Fin (n + 2)) ℤ) (hf : f ≠ 0) (hd : 0 < f.totalDegree)
     {p : ℕ} (hp : p.Prime) {A B : ℝ} (hA : 1 ≤ A) (hB : 1 ≤ B)
     (hpB : (p : ℝ) ≤ B) (hBp : B / A ≤ p) :
@@ -177,7 +177,7 @@ private theorem scaled_hypersurface_auxiliary_minimum_bound {n : ℕ}
           (mul_le_mul_of_nonneg_right (le_max_right _ _) hA0) (by positivity)) (by positivity))
         (by positivity)
 
-private theorem prime_scaled_affine_auxiliary_minimum {n : ℕ}
+theorem prime_scaled_affine_auxiliary_minimum {n : ℕ}
     (f : MvPolynomial (Fin (n + 2)) ℤ) (hprim : PrimitiveIntegerPolynomial f)
     (hir : Irreducible f) (hd : 0 < f.totalDegree)
     {p : ℕ} (hp : p.Prime) (hp0 : ¬ (p : ℤ) ∣ f.coeff 0)

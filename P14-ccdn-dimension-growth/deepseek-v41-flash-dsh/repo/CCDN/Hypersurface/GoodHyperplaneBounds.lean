@@ -24,9 +24,8 @@ Cramer's rule uses row-replacement determinants, so the same elementary
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 
-private lemma three_by_three_det_abs_le (M : Matrix (Fin 3) (Fin 3) ℤ) (T : ℕ)
+lemma three_by_three_det_abs_le (M : Matrix (Fin 3) (Fin 3) ℤ) (T : ℕ)
     (hM : ∀ i j, |M i j| ≤ (T : ℤ)) :
     |M.det| ≤ 6 * (T : ℤ) ^ 3 := by
   have hh := Matrix.det_le (abv := AbsoluteValue.abs) hM
@@ -36,7 +35,7 @@ private lemma three_by_three_det_abs_le (M : Matrix (Fin 3) (Fin 3) ℤ) (T : �
 /-- The bounded row relation in integral coordinates. In particular the
 coefficient multiplying the extra row is nonzero, without clearing a further
 denominator after solving the linear system. -/
-private theorem exists_bounded_three_row_relation
+theorem exists_bounded_three_row_relation
     (M : Matrix (Fin 3) (Fin 3) ℤ) (w : Fin 3 → ℤ) (T : ℕ)
     (hM : ∀ i j, |M i j| ≤ (T : ℤ))
     (hw : ∀ j, |w j| ≤ (T : ℤ)) (hdet : M.det ≠ 0) :
@@ -61,7 +60,6 @@ private theorem exists_bounded_three_row_relation
     · rw [Matrix.updateRow_ne hji]
       exact hM j k
 
-end
 end CCDN
 
 namespace CCDN
@@ -88,7 +86,6 @@ theorem exists_bounded_geometrically_good_hyperplane {n : ℕ}
         (map (Int.castRingHom ℚ) f)).totalDegree = f.totalDegree ∧
       AbsolutelyIrreducibleRat (graphHyperplaneRestriction (fun i => (a i : ℚ) / D)
         (map (Int.castRingHom ℚ) f)) := by
-  classical
   let T := 2 * f.totalDegree ^ 3 + 3
   obtain ⟨v, hv, hminor, _, hplanedegree, hplaneir⟩ :=
     exists_integer_good_plane_with_anchor f hir hd

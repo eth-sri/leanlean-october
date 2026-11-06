@@ -20,8 +20,6 @@ open scoped nonZeroDivisors
 variable {R K : Type*} [CommRing R] [IsDomain R] [Field K]
   [Algebra R K] [IsFractionRing R K]
 
-omit [IsDomain R] in
-omit [IsDomain R] in
 /-- Conjugation of invertible fractional ideals by a ring automorphism. -/
 def fractionalIdealUnitAction (σ : R ≃+* R) :
     (FractionalIdeal R⁰ K)ˣ →* (FractionalIdeal R⁰ K)ˣ :=

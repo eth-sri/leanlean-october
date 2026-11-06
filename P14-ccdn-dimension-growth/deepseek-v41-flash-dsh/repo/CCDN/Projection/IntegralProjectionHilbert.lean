@@ -15,10 +15,8 @@ import Mathlib.RingTheory.IntegralClosure.IsIntegralClosure.Basic
 /-! Integral linear projections preserve Hilbert dimension and
 do not increase its multiplicity. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
-open MvPolynomial
 
 /-- An integral map `ψ` from a polynomial ring to the quotient by a prime `I` preserves Hilbert
 dimension: the filtered Hilbert polynomials of `ker ψ` and of `I` have the same degree. -/
@@ -34,7 +32,7 @@ theorem integral_projection_hilbert_dimension_eq
   exact integral_embedding_hilbert_dimension_eq (RingHom.ker ψ) I
     (Ideal.kerLiftAlg ψ) (Ideal.kerLiftAlg_injective ψ) hint.kerLift
 
-private theorem integral_linear_projection_multiplicity
+theorem integral_linear_projection_multiplicity
     {K σ τ : Type*} [Field K] [Fintype σ] [Fintype τ]
     [LinearOrder σ] [LinearOrder τ]
     (I : Ideal (MvPolynomial τ K)) [I.IsPrime]
@@ -76,5 +74,4 @@ theorem integral_linear_projection_dimension_degree
   rw [hdimdeg.natDegree_eq] at hdim hlc
   exact ⟨e, he, hed, hdim, hlc⟩
 
-end
 end CCDN

@@ -23,16 +23,15 @@ by strong induction on the number-field degree.
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open NumberField
 
 variable (K : Type*) [Field K] [NumberField K]
 
-private lemma one_le_log_discr_natAbs_add_one : 1 ≤ Real.log ((discr K).natAbs : ℝ) + 1 := by
+lemma one_le_log_discr_natAbs_add_one : 1 ≤ Real.log ((discr K).natAbs : ℝ) + 1 := by
   rw [numberField_discriminant_natAbs_cast]
   linarith [Real.log_nonneg (one_le_abs_discr K)]
 
-private theorem index_two_subfield_degree
+theorem index_two_subfield_degree
     (hn : 3 ≤ Module.finrank ℚ K) (L : IntermediateField ℚ K)
     (hL : Module.finrank L K = 2) :
     Module.finrank ℚ L = Module.finrank ℚ K / 2 ∧
@@ -42,7 +41,7 @@ private theorem index_two_subfield_degree
   rw [hL] at ht
   omega
 
-private theorem no_index_two_classGroup_log_one_bound
+theorem no_index_two_classGroup_log_one_bound
     (hn : 2 ≤ Module.finrank ℚ K)
     (hnoTwo : ∀ L : IntermediateField ℚ K, Module.finrank L K ≠ 2) :
     (classGroupTwoTorsionCard K : ℝ) ≤
@@ -57,11 +56,9 @@ private theorem no_index_two_classGroup_log_one_bound
       exact mul_nonneg (noIndexTwoClassGroupConstant_pos _).le
         (Real.rpow_nonneg (abs_nonneg _) _))
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open NumberField
 universe u
 
@@ -77,7 +74,6 @@ def ClassGroupLogarithmicBound (n : ℕ) (C : ℝ) : Prop :=
 satisfies `h₂(K) ≤ C * |discr K| ^ (1 / 2 - 1 / (2 * n)) * (log |discr K| + 1)`. -/
 theorem classGroup_uniform_logarithmic_bound (n : ℕ) (hn : 2 ≤ n) :
     ∃ C : ℝ, 0 < C ∧ ClassGroupLogarithmicBound.{u} n C := by
-  classical
   induction n using Nat.strong_induction_on with
   | h n ih =>
     by_cases hn2 : n = 2
@@ -150,5 +146,4 @@ theorem classGroup_uniform_logarithmic_bound (n : ℕ) (hn : 2 ≤ n) :
         exact hm (hLdeg ▸ hmL)
       simpa only [hdeg] using no_index_two_classGroup_log_one_bound K (by omega) hno
 
-end
 end CCDN

@@ -15,19 +15,17 @@ import CCDN.Plane.AffinePlaneBadPrimeCount
 Their integral point count has no logarithmic loss, as required
 by the odd-degree branch of CCDN Theorem 6. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open scoped NumberField
 
 variable (K : Type*) [Field K] [NumberField K]
 
-private theorem signedNormCurvePolynomial_primitive (β : 𝓞 K) (ε : ℤ) :
+theorem signedNormCurvePolynomial_primitive (β : 𝓞 K) (ε : ℤ) :
     PrimitiveIntegerPolynomial (signedNormCurvePolynomial K β ε) := by
   have hcoef : (signedNormCurvePolynomial K β ε).coeff
       (Finsupp.cons 2 (Finsupp.single 0 0)) = 1 := by
-    rw [← bivariatePolynomialEquiv_coeff]
-    rw [signedNormCurvePolynomial, AlgEquiv.apply_symm_apply]
+    rw [← bivariatePolynomialEquiv_coeff, signedNormCurvePolynomial, AlgEquiv.apply_symm_apply]
     simp only [Polynomial.coeff_sub, Polynomial.coeff_X_pow, Polynomial.coeff_C]
     norm_num
   intro c hc
@@ -35,7 +33,7 @@ private theorem signedNormCurvePolynomial_primitive (β : 𝓞 K) (ε : ℤ) :
   have hh := hc (Finsupp.cons 2 (Finsupp.single 0 0))
   rwa [hcoef] at hh
 
-private theorem signedNormCurvePolynomial_no_bad_reduction
+theorem signedNormCurvePolynomial_no_bad_reduction
     (β : 𝓞 K) {ε : ℤ} (hε : IsUnit ε)
     (hn : 2 ≤ Module.finrank ℚ K) (hodd : Odd (Module.finrank ℚ K)) (p : ℕ) :
     ¬ HypersurfaceBadReduction (signedNormCurvePolynomial K β ε) p := by
@@ -50,7 +48,7 @@ private theorem signedNormCurvePolynomial_no_bad_reduction
     (AlgebraicClosure (ZMod p)) β hεp hodd
   exact hbad.elim (fun h => h (hd.trans hdZ.symm)) (fun h => h hir)
 
-private theorem signedNormCurvePolynomial_bad_prime_factor
+theorem signedNormCurvePolynomial_bad_prime_factor
     (β : 𝓞 K) {ε : ℤ} (hε : IsUnit ε)
     (hn : 2 ≤ Module.finrank ℚ K) (hodd : Odd (Module.finrank ℚ K)) :
     hypersurfaceBadPrimeFactor (signedNormCurvePolynomial K β ε) = 1 := by
@@ -86,5 +84,4 @@ theorem signed_norm_curve_log_free_count
   convert hh using 1
   ring
 
-end
 end CCDN

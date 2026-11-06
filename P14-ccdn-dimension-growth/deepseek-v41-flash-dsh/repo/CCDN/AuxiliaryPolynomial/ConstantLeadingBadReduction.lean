@@ -21,7 +21,6 @@ covers degree-dropping reductions. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open Polynomial Real
 
 /-- Full outer degree forces the outer leading coefficient to be constant. -/
@@ -36,7 +35,7 @@ lemma bivariate_leadingCoeff_eq_constant {R : Type*} [CommRing R]
   have hz : f.leadingCoeff.natDegree = 0 := by omega
   exact eq_C_of_natDegree_eq_zero hz
 
-private lemma bivariateMap_constant_leading {R S : Type*} [CommRing R] [CommRing S]
+lemma bivariateMap_constant_leading {R S : Type*} [CommRing R] [CommRing S]
     (φ : R →+* S) (f : R[X][X]) (a : R) (ha : φ a ≠ 0)
     (hl : f.leadingCoeff = C a) :
     (bivariateMap φ f).natDegree = f.natDegree ∧
@@ -54,7 +53,7 @@ def BivariateBadReduction (f : ℤ[X][X]) (d p : ℕ) : Prop :=
     let fₚ := bivariateMap (Int.castRingHom (AlgebraicClosure (ZMod p))) f
     bivariateTotalDegree fₚ ≠ d ∨ ¬Irreducible fₚ
 
-private lemma exists_constant_leading_integer_minor
+lemma exists_constant_leading_integer_minor
     {F : Type*} [Field F] [CharZero F] [IsAlgClosed F]
     (d : ℕ) (f : ℤ[X][X]) (a : ℤ) (ha : a ≠ 0) (hl : f.leadingCoeff = C a)
     (hdeg : f.natDegree = d) (hir : Irreducible (bivariateMap (Int.castRingHom F) f)) :
@@ -75,7 +74,7 @@ private lemma exists_constant_leading_integer_minor
 
 /-- Every bad prime above the degree divides leading coefficient times minor.
 Primes killing the leading coefficient are handled without a rank hypothesis. -/
-private lemma constant_leading_bad_prime_dvd
+lemma constant_leading_bad_prime_dvd
     (d : ℕ) (hd : 0 < d) (f : ℤ[X][X]) (a : ℤ) (hl : f.leadingCoeff = C a)
     (hdeg : f.natDegree = d) (htotal : bivariateTotalDegree f ≤ d)
     (r : Fin (2 * d ^ 2 - 1) → ℕ × ℕ)
@@ -154,5 +153,4 @@ theorem exists_full_outer_bad_prime_witness
     exact (dvd_abs _ _).mpr
       (constant_leading_bad_prime_dvd d (by omega) f a hl hdeg htotal r c p hp hbad)
 
-end
 end CCDN

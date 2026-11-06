@@ -24,12 +24,11 @@ The coefficient-sensitive determinant comparison for bounded primitive
 integer representatives of projective plane points.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private theorem projective_no_auxiliary_height_comparison
+theorem projective_no_auxiliary_height_comparison
     {K : Type*} [Field K] [CharZero K] [IsAlgClosed K] {d M t : ℕ}
     (order : MonomialOrder (Fin 3)) (f : MvPolynomial (Fin 3) ℤ)
     (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hd : 2 ≤ d) (hdM : d ≤ M)
@@ -66,13 +65,11 @@ private theorem projective_no_auxiliary_height_comparison
   rw [he] at hlower
   exact hlower.trans hupper
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 
-private theorem projective_exists_auxiliary_small_height
+theorem projective_exists_auxiliary_small_height
     {F : Type*} [Field F] [CharZero F] [IsAlgClosed F] {d M t : ℕ}
     (order : MonomialOrder (Fin 3)) (f : MvPolynomial (Fin 3) ℤ)
     (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hd : 2 ≤ d) (hdM : d ≤ M)
@@ -84,7 +81,6 @@ private theorem projective_exists_auxiliary_small_height
       (d : ℝ) ^ 3 * (1 + Real.log H / (d : ℝ) ^ 2) * B ^ (2 / (d : ℝ)) /
         |((order.leadingCoeff f : ℤ) : ℝ)| ^ (1 / (d : ℝ) ^ 2) < M) :
     ∃ g, IsPointAuxiliary f g M z := by
-  classical
   by_contra hnone
   obtain ⟨s, _, _, hr, hc⟩ := projective_no_auxiliary_height_comparison
     order f hf hf0 hd hdM hchart hzB (dvd_of_not_exists_isPointAuxiliary hnone)
@@ -100,7 +96,7 @@ private theorem projective_exists_auxiliary_small_height
     (by linarith) (by linarith) hA hlog
   exact (not_lt_of_ge hbound) hthreshold
 
-private theorem projective_exists_auxiliary_large_height
+theorem projective_exists_auxiliary_large_height
     {F : Type*} [Field F] [CharZero F] [IsAlgClosed F] {d M t : ℕ}
     (order : MonomialOrder (Fin 3)) (f : MvPolynomial (Fin 3) ℤ)
     (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hd : 2 ≤ d) (hMlarge : 32 * d ≤ M)
@@ -113,7 +109,6 @@ private theorem projective_exists_auxiliary_large_height
       8 * Real.exp (heightDeterminantError projectivePlaneDeterminantConstant + 6 + T) *
         (d : ℝ) ^ 3 < M) :
     ∃ g, IsPointAuxiliary f g M z := by
-  classical
   have hdM : d ≤ M := by omega
   by_contra hnone
   obtain ⟨s, _, _, hr, hc⟩ := projective_no_auxiliary_height_comparison
@@ -191,5 +186,4 @@ theorem projective_auxiliary_large_height_degree
   · exact projective_exists_auxiliary_large_height order f hf hf0 hd hMlarge hchart hzB T hT
       hheight hposition hth
 
-end
 end CCDN

@@ -15,7 +15,6 @@ denominator, even with degenerate parameterizations included. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The usual degree-times-q^(m-1) bound, for arbitrary nonempty finite
@@ -37,7 +36,7 @@ def ZeroPlaneParameters {K σ : Type*} [CommRing K] (f : MvPolynomial σ K) :=
 
 /-- Sending a zero section to its three defining hypersurface points is
 injective. -/
-private theorem zero_plane_parameters_card_le_cube {K σ : Type*} [CommRing K]
+theorem zero_plane_parameters_card_le_cube {K σ : Type*} [CommRing K]
     [Fintype K] [Fintype σ] (f : MvPolynomial σ K) :
     Nat.card (ZeroPlaneParameters f) ≤
       (Nat.card {x : σ → K // eval x f = 0}) ^ 3 := by
@@ -66,5 +65,4 @@ theorem finite_field_zero_plane_parameters_card
     (Nat.pow_le_pow_left (finite_field_polynomial_zeros_card f hf) 3)
   simpa only [Fintype.card_option, Nat.add_sub_cancel, mul_pow, ← pow_mul, Nat.mul_comm] using h
 
-end
 end CCDN

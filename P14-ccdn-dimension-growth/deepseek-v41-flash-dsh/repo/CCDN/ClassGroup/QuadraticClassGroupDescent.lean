@@ -23,9 +23,7 @@ class group and its two-torsion subgroup are trivial.
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open NumberField
-open scoped NumberField
 
 /-- A number field of degree one over `ℚ` has trivial two-torsion in its class group. -/
 theorem classGroupTwoTorsionCard_eq_one_of_degree_one
@@ -42,13 +40,10 @@ theorem classGroupTwoTorsionCard_eq_one_of_degree_one
   · exact Nat.one_le_iff_ne_zero.mpr
       (Nat.card_pos (α := classGroupTwoTorsion K)).ne'
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open NumberField
-open scoped NumberField
 
 /-- For a quadratic extension `K / F` of number fields,
 `h₂(K) ≤ (h₂(F) * 2 ^ ([K : ℚ] * ω(discr K) + [F : ℚ])) ^ 2`, where `ω` counts distinct prime
@@ -89,5 +84,4 @@ theorem quadratic_field_classGroupTwoTorsionCard_le
   congr 1
   ring
 
-end
 end CCDN

@@ -13,7 +13,6 @@ irreducibility modulo `p`. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Bad reduction at `p`: `p` is prime and the reduction of `f` over the algebraic closure of
@@ -40,5 +39,4 @@ lemma not_hypersurfaceBadReduction_iff {σ : Type*} (f : MvPolynomial σ ℤ) (p
   · rintro ⟨hdeg, hir⟩ ⟨_, hbad⟩
     exact hbad.elim (· hdeg) (· hir)
 
-end
 end CCDN

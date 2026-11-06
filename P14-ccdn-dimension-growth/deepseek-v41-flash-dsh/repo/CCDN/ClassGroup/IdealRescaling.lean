@@ -13,9 +13,8 @@ its class and carries the chosen generator of its square to the exact
 generator alpha*kappa^2. This retains the generator needed for subsequent
 archimedean estimates, rather than replacing it by an unspecified associate. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open scoped nonZeroDivisors
 open FractionalIdeal
 
@@ -79,5 +78,4 @@ theorem rescale_integral_ideal_square (I : (Ideal R)⁰) {α : R} (hα : α ≠ 
     rw [coeIdeal_pow, coeIdeal_span_singleton, hβ]
     exact hsq
 
-end
 end CCDN

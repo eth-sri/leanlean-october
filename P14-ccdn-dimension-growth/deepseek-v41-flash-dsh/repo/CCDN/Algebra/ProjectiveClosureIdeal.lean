@@ -50,13 +50,6 @@ polynomials in `n + 1` variables all of whose homogeneous components dehomogeniz
 def projectiveClosureIdeal {K : Type*} [Field K] {n : ℕ}
     (I : Ideal (MvPolynomial (Fin n) K)) : Ideal (MvPolynomial (Fin (n + 1)) K) :=
   RingHom.ker (projectiveClosureMap I)
-
-instance projectiveClosureIdeal_isPrime {K : Type*} [Field K] {n : ℕ}
-    (I : Ideal (MvPolynomial (Fin n) K)) [I.IsPrime] :
-    (projectiveClosureIdeal I).IsPrime := RingHom.ker_isPrime _
-
-/-- A polynomial lies in the projective closure ideal of `I` if and only if the dehomogenization
-of each of its homogeneous components lies in `I`. -/
 lemma mem_projectiveClosureIdeal_iff {K : Type*} [Field K] {n : ℕ}
     (I : Ideal (MvPolynomial (Fin n) K)) (f : MvPolynomial (Fin (n + 1)) K) :
     f ∈ projectiveClosureIdeal I ↔

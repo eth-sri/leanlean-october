@@ -13,12 +13,11 @@ import CCDN.ForMathlib.MvPolynomial
 /-! Exact evaluation rank when all homogeneous vanishing relations are multiples
 of the defining equation, and the resulting auxiliary-polynomial dichotomy. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Matrix
 
-private lemma homogeneousCoefficientMap_injective {K : Type*} [Field K] (n M : ℕ) :
+lemma homogeneousCoefficientMap_injective {K : Type*} [Field K] (n M : ℕ) :
     Function.Injective ((homogeneousCoefficientMap K n M).domRestrict
       (homogeneousSubmodule (Fin (n + 1)) K M)) := by
   intro u v huv
@@ -28,12 +27,11 @@ private lemma homogeneousCoefficientMap_injective {K : Type*} [Field K] (n M : �
   rw [homogeneous_eq_sum_coeff u.val u.property, homogeneous_eq_sum_coeff v.val v.property]
   simp only [he]
 
-private lemma homogeneousCoefficientMap_surjective {K : Type*} [Field K] (n M : ℕ) :
+lemma homogeneousCoefficientMap_surjective {K : Type*} [Field K] (n M : ℕ) :
     Function.Surjective ((homogeneousCoefficientMap K n M).domRestrict
       (homogeneousSubmodule (Fin (n + 1)) K M)) := by
-  classical
   intro v
-  let f : MvPolynomial (Fin (n + 1)) K := ∑ j, monomial (homogeneousMonomials n M j) (v j)
+  let f := ∑ j, monomial (homogeneousMonomials n M j) (v j)
   have hf : f.IsHomogeneous M := by
     apply IsHomogeneous.sum
     intro j _
@@ -45,7 +43,7 @@ private lemma homogeneousCoefficientMap_surjective {K : Type*} [Field K] (n M : 
 
 /-- When all degree-M relations are multiples of f, the evaluation
 kernel is exactly the image of the degree-allowed multiples. -/
-private theorem homogeneous_evaluation_kernel_eq_multiples {K : Type*} [Field K]
+theorem homogeneous_evaluation_kernel_eq_multiples {K : Type*} [Field K]
     {n d M t : ℕ} (f : MvPolynomial (Fin (n + 1)) K)
     (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hdM : d ≤ M)
     (points : Fin t → Fin (n + 1) → K) (hzero : ∀ i, eval (points i) f = 0)
@@ -79,7 +77,7 @@ private theorem homogeneous_evaluation_kernel_eq_multiples {K : Type*} [Field K]
     simp only [eval_mul, hzero i, zero_mul, Pi.zero_apply]
 
 /-- The exact Hilbert rank in the absence of an auxiliary polynomial. -/
-private theorem homogeneous_evaluation_rank_eq {K : Type*} [Field K]
+theorem homogeneous_evaluation_rank_eq {K : Type*} [Field K]
     {n d M t : ℕ} (f : MvPolynomial (Fin (n + 1)) K)
     (hf : f.IsHomogeneous d) (hf0 : f ≠ 0) (hdM : d ≤ M)
     (points : Fin t → Fin (n + 1) → K) (hzero : ∀ i, eval (points i) f = 0)
@@ -107,11 +105,10 @@ private theorem homogeneous_evaluation_rank_eq {K : Type*} [Field K]
     Fintype.card_fin] using h
 
 /-- Clearing denominators preserves a prescribed homogeneous degree. -/
-private theorem homogeneous_integer_multiple {n M : ℕ}
+theorem homogeneous_integer_multiple {n M : ℕ}
     (g : MvPolynomial (Fin (n + 1)) ℚ) (hg : g.IsHomogeneous M) :
     ∃ (b : ℤ) (u : MvPolynomial (Fin (n + 1)) ℤ), b ≠ 0 ∧
       u.IsHomogeneous M ∧ map (Int.castRingHom ℚ) u = C (b : ℚ) * g := by
-  classical
   obtain ⟨b, hb⟩ := IsLocalization.exist_integer_multiples_of_finite
     (nonZeroDivisors ℤ) (fun j => g.coeff (homogeneousMonomials n M j))
   choose v hv using hb
@@ -126,7 +123,7 @@ private theorem homogeneous_integer_multiple {n M : ℕ}
 
 /-- Absence of an integral auxiliary polynomial also rules out rational
 homogeneous relations outside the principal ideal. -/
-private theorem rational_relations_of_integer_relations {n M t : ℕ}
+theorem rational_relations_of_integer_relations {n M t : ℕ}
     (f : MvPolynomial (Fin (n + 1)) ℤ)
     (points : Fin t → Fin (n + 1) → ℤ)
     (hrel : ∀ u : MvPolynomial (Fin (n + 1)) ℤ, u.IsHomogeneous M →
@@ -193,7 +190,7 @@ lemma plane_homogeneous_rank_identity {s d M : ℕ} (hdM : d ≤ M)
     2 * s + d ^ 2 = d * (2 * M + 3) := by
   have hM := ternary_homogeneous_dimension M
   have hMd := ternary_homogeneous_dimension (M - d)
-  have hsub : M - d + d = M := Nat.sub_add_cancel hdM
+  have hsub := Nat.sub_add_cancel hdM
   nlinarith
 
 /-- Elementary rank bounds sufficient to compare the plane rank with d*M. -/
@@ -208,5 +205,4 @@ lemma plane_homogeneous_rank_bounds {s d M : ℕ} (hd : 0 < d) (hdM : d ≤ M)
   · nlinarith
   constructor <;> nlinarith
 
-end
 end CCDN

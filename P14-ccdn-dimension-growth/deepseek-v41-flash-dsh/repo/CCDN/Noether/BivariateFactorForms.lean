@@ -10,9 +10,8 @@ public import CCDN.Noether.BivariateClosedForms
 /-! Explicit closed forms from polynomial factors, including repeated factors.
 These supply reducibility obstructions for the differential matrix. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial
 
 /-- The inner and outer derivatives of a bivariate polynomial commute. -/
@@ -34,7 +33,7 @@ theorem bivariate_factor_closed_form {F : Type*} [Field F] (g h : F[X][X]) :
   ring
 
 /-- A repeated factor gives the closed form dg/g², after clearing f=g²h. -/
-private theorem bivariate_square_factor_closed_form {F : Type*} [Field F] (g h : F[X][X]) :
+theorem bivariate_square_factor_closed_form {F : Type*} [Field F] (g h : F[X][X]) :
     (bivariateCoefficientDerivative F) (h * g.derivative) * (g ^ 2 * h) -
       (h * g.derivative) * (bivariateCoefficientDerivative F) (g ^ 2 * h) =
     (h * (bivariateCoefficientDerivative F) g).derivative * (g ^ 2 * h) -
@@ -106,5 +105,4 @@ theorem power_factor_numerator_not_scalar_gradient
   rw [hz] at hg
   exact lt_irrefl _ hg
 
-end
 end CCDN

@@ -26,12 +26,11 @@ The affine residue points of an integer plane equation are the
 zeros of its reduction.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma planeResidue_card_eq_zero_card (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) :
+lemma planeResidue_card_eq_zero_card (f : MvPolynomial (Fin 2) ℤ) (p : ℕ) :
     Nat.card (PlaneResidue f p) =
       Nat.card {x : Fin 2 → ZMod p //
         eval x (MvPolynomial.map (Int.castRingHom (ZMod p)) f) = 0} := by
@@ -40,7 +39,6 @@ private lemma planeResidue_card_eq_zero_card (f : MvPolynomial (Fin 2) ℤ) (p :
   intro x
   simp only [eval_map]
 
-end
 end CCDN
 
 namespace CCDN
@@ -96,16 +94,14 @@ lemma stepanov_real_bound (d p A D N t : ℕ) (hd : 0 < d)
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial Real
 
 /-- Every box on a rational irreducible plane curve which splits over a field
 extension has at most d² integer points, independently of the radius. -/
-private theorem count_nonabsolute_plane_le {F : Type*} [Field F] [CharZero F]
+theorem count_nonabsolute_plane_le {F : Type*} [Field F] [CharZero F]
     (f : MvPolynomial (Fin 2) ℚ) (hf : Irreducible f) (hd : 0 < f.totalDegree)
     (hred : ¬ Irreducible (MvPolynomial.map (algebraMap ℚ F) f)) (B : ℝ) :
     count (zeroLocus f) B ≤ f.totalDegree ^ 2 := by
-  classical
   let S := integralPoints (zeroLocus f) B
   let z : S → Fin 2 → ℚ := fun i => rationalPoint i.val
   have hi : Function.Injective z := by
@@ -119,7 +115,7 @@ private theorem count_nonabsolute_plane_le {F : Type*} [Field F] [CharZero F]
 
 /-- The exact PlaneCurveBound target follows from the sharp finite-field
 estimate. The rational nonabsolute case is covered by the d² bound. -/
-private theorem planeCurveBound_of_residue_bound {C : ℝ}
+theorem planeCurveBound_of_residue_bound {C : ℝ}
     (hC : 0 ≤ C) (hres : PlaneResidueBound C) : PlaneCurveBound := by
   let K := 2 * Real.exp 1 * affineNonzeroConstantBound C
   have hK : 0 < K := mul_pos (by positivity) (affineNonzeroConstantBound_pos C)
@@ -139,11 +135,9 @@ private theorem planeCurveBound_of_residue_bound {C : ℝ}
     have hb := ht.trans (hpow.trans (degree_four_le_curveBound hd hB))
     exact hb.trans (by nlinarith)
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- An irreducible plane equation over the prime field has at most
@@ -171,7 +165,6 @@ holds with the absolute constant `planeResidueConstant = 161`. -/
 theorem planeResidueBound : PlaneResidueBound planeResidueConstant := by
   intro f _hd p hp hsize hir
   let : Fact p.Prime := ⟨hp⟩
-  classical
   let q := MvPolynomial.map (Int.castRingHom (ZMod p)) f
   have hqd : q.totalDegree ≤ f.totalDegree := totalDegree_map_le _ _
   have hs : stepanovThreshold (q.totalDegree : ℝ) < (p : ℝ) := by
@@ -189,5 +182,4 @@ theorem planeResidueBound : PlaneResidueBound planeResidueConstant := by
 theorem planeCurveBound : PlaneCurveBound :=
   planeCurveBound_of_residue_bound planeResidueConstant_pos.le planeResidueBound
 
-end
 end CCDN

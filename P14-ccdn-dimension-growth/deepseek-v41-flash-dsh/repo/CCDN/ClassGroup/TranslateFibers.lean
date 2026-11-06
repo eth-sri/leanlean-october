@@ -22,7 +22,6 @@ norm is a square. Both possible signs of the signed norm are retained.
 @[expose] public section
 namespace CCDN
 noncomputable section
-open scoped NumberField
 open NumberField NumberField.InfinitePlace
 
 variable (K : Type*) [Field K] [NumberField K]
@@ -57,21 +56,17 @@ theorem classGroupTwoTorsionCard_le_boundedSquareNormIntegers :
   obtain ⟨h0, hw, J, _, _, hnorm⟩ := hβ c
   exact ⟨h0, fun w ↦ (hw w).le, Ideal.absNorm (J : Ideal (𝓞 K)), hnorm⟩
 
-omit [NumberField K] in
 end
 end CCDN
 
 namespace CCDN
-noncomputable section
-open scoped NumberField
 open NumberField NumberField.InfinitePlace
 
 variable (K : Type*) [Field K] [NumberField K]
 
-private lemma bounded_infinite_places_norm_le (α : 𝓞 K) {B : ℝ}
+lemma bounded_infinite_places_norm_le (α : 𝓞 K) {B : ℝ}
     (hα : ∀ w : InfinitePlace K, w (α : K) ≤ B) :
     ((Algebra.norm ℤ α).natAbs : ℝ) ≤ B ^ Module.finrank ℚ K := by
-  classical
   have he : (∏ w : InfinitePlace K, w (α : K) ^ mult w) =
       ((Algebra.norm ℤ α).natAbs : ℝ) := by
     rw [prod_eq_abs_norm, ← Algebra.coe_norm_int]
@@ -84,12 +79,11 @@ private lemma bounded_infinite_places_norm_le (α : 𝓞 K) {B : ℝ}
   · intro w _
     exact pow_le_pow_left₀ (apply_nonneg _ _) (hα w) _
 
-private lemma integer_translate_coordinate_le (α β : 𝓞 K) {B : ℝ}
+lemma integer_translate_coordinate_le (α β : 𝓞 K) {B : ℝ}
     (hα : ∀ w : InfinitePlace K, w (α : K) ≤ B)
     (hβ : ∀ w : InfinitePlace K, w (β : K) ≤ B)
     {x : ℤ} (hx : α = algebraMap ℤ (𝓞 K) x - β) :
     |(x : ℝ)| ≤ 2 * B := by
-  classical
   let w : InfinitePlace K := Classical.arbitrary _
   have hxK : (x : K) = (α : K) + (β : K) := by
     have h := congrArg (fun z : 𝓞 K ↦ (z : K)) hx
@@ -128,7 +122,6 @@ theorem squareNormTranslateFiber_count_le (β : 𝓞 K) {B : ℝ}
       count (signedNormCurveLocus K β 1) (max (2 * B) (Real.sqrt (B ^ Module.finrank ℚ K))) +
       count (signedNormCurveLocus K β (-1))
         (max (2 * B) (Real.sqrt (B ^ Module.finrank ℚ K))) := by
-  classical
   let S := squareNormTranslateFiber K β B
   let H := max (2 * B) (Real.sqrt (B ^ Module.finrank ℚ K))
   let Z := signedNormCurveLocus K β 1 ∪ signedNormCurveLocus K β (-1)
@@ -176,5 +169,4 @@ theorem squareNormTranslateFiber_count_le (β : 𝓞 K) {B : ℝ}
       Fintype.card_coe, count, P] using h
   exact hcard.trans (count_union_le _ _ _)
 
-end
 end CCDN

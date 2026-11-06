@@ -30,7 +30,7 @@ def originShift {R σ : Type*} [CommRing R] (a : σ → R) :
     originShift a (X j) = X j + C (a j) := by
   simp [originShift]
 
-private lemma originShift_neg {R σ : Type*} [CommRing R] (a : σ → R) (f : MvPolynomial σ R) :
+lemma originShift_neg {R σ : Type*} [CommRing R] (a : σ → R) (f : MvPolynomial σ R) :
     originShift (-a) (originShift a f) = f := by
   induction f using MvPolynomial.induction_on with
   | C c => simp
@@ -75,7 +75,7 @@ lemma originShift_map {R S σ : Type*} [CommRing R] [CommRing S]
   | add f g hf hg => simp only [map_add, hf, hg]
   | mul_X f j hf => simp [hf]
 
-private lemma eval_originShift {R σ : Type*} [CommRing R] (a x : σ → R)
+lemma eval_originShift {R σ : Type*} [CommRing R] (a x : σ → R)
     (f : MvPolynomial σ R) :
     eval x (originShift a f) = eval (fun j => x j + a j) f := by
   induction f using MvPolynomial.induction_on with
@@ -100,7 +100,6 @@ lemma eval_zero_originShift {R σ : Type*} [CommRing R] (a : σ → R)
 lemma pderiv_originShift {R σ : Type*} [CommRing R] (a : σ → R)
     (f : MvPolynomial σ R) (j : σ) :
     pderiv j (originShift a f) = originShift a (pderiv j f) := by
-  classical
   induction f using MvPolynomial.induction_on with
   | C c => simp
   | add f g hf hg => simp only [map_add, hf, hg]

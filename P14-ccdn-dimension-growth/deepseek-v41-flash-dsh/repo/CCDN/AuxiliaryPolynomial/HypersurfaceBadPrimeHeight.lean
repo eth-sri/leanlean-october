@@ -25,12 +25,11 @@ plane polynomial on a bounded integer grid.
 Explicit height estimates for the evaluated universal bad-prime witness.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma universalPlaneBadWitness_eval {σ : Type*}
+lemma universalPlaneBadWitness_eval {σ : Type*}
     (f : MvPolynomial σ ℤ)
     (rows : Fin (2 * f.totalDegree ^ 2 - 1) → ℕ × ℕ)
     (cols : Fin (2 * f.totalDegree ^ 2 - 1) → ClosedFormColumns f.totalDegree)
@@ -45,7 +44,7 @@ private lemma universalPlaneBadWitness_eval {σ : Type*}
 
 /-- The evaluated witness is a leading coefficient times an integer
 minor; both are controlled by the height of the same plane section. -/
-private theorem universalPlaneBadWitness_eval_log_bound {σ : Type*} [Fintype σ]
+theorem universalPlaneBadWitness_eval_log_bound {σ : Type*} [Fintype σ]
     (f : MvPolynomial σ ℤ) (hd : 1 ≤ f.totalDegree)
     (rows : Fin (2 * f.totalDegree ^ 2 - 1) → ℕ × ℕ)
     (cols : Fin (2 * f.totalDegree ^ 2 - 1) → ClosedFormColumns f.totalDegree)
@@ -73,21 +72,18 @@ private theorem universalPlaneBadWitness_eval_log_bound {σ : Type*} [Fintype σ
     (abs_ne_zero.mpr (Int.cast_ne_zero.mpr hc)) (abs_ne_zero.mpr (Int.cast_ne_zero.mpr hD))]
   exact add_le_add hl hb
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma bad_prime_dvd_universalPlaneBadWitness_eval {σ : Type*} [Fintype σ]
+lemma bad_prime_dvd_universalPlaneBadWitness_eval {σ : Type*} [Fintype σ]
     (f : MvPolynomial σ ℤ) (hpos : 0 < f.totalDegree)
     (rows : Fin (2 * f.totalDegree ^ 2 - 1) → ℕ × ℕ)
     (cols : Fin (2 * f.totalDegree ^ 2 - 1) → ClosedFormColumns f.totalDegree)
     (v : PlaneParameters σ → ℤ) (p : ℕ)
     (hp : f.totalDegree < p) (hbad : HypersurfaceBadReduction f p) :
     (p : ℤ) ∣ eval v (universalPlaneBadWitness f rows cols) := by
-  classical
   obtain ⟨hpprime, hbad⟩ := hbad
   let : Fact p.Prime := ⟨hpprime⟩
   rw [eval_eq']
@@ -99,7 +95,7 @@ private lemma bad_prime_dvd_universalPlaneBadWitness_eval {σ : Type*} [Fintype 
 /-- The universal plane bad-prime witness of an absolutely irreducible integer polynomial
 takes a nonzero value at some integer parameter in the box `[0, 2d³]`, and every prime above
 `d` with bad geometric reduction divides that value. -/
-private theorem exists_bounded_integer_plane_witness
+theorem exists_bounded_integer_plane_witness
     {L σ : Type*} [Field L] [CharZero L] [IsAlgClosed L] [Fintype σ]
     (f : MvPolynomial (Option σ) ℤ)
     (hf : Irreducible (MvPolynomial.map (Int.castRingHom L) f))
@@ -116,11 +112,9 @@ private theorem exists_bounded_integer_plane_witness
   exact ⟨rows, cols, v, hv, he,
     fun p hp hbad => bad_prime_dvd_universalPlaneBadWitness_eval f hpos rows cols v p hp hbad⟩
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- An effective positive integer detecting every bad prime above the degree. -/
@@ -183,5 +177,4 @@ theorem hypersurface_bad_prime_charge
   · intro p hp
     exact_mod_cast hcut p hp
 
-end
 end CCDN

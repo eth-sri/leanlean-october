@@ -21,7 +21,7 @@ namespace CCDN
 noncomputable section
 open MvPolynomial Module
 
-private lemma eulerLowBasis_repr_apply {R : Type*} [CommRing R] (d : ℕ)
+lemma eulerLowBasis_repr_apply {R : Type*} [CommRing R] (d : ℕ)
     (f : restrictTotalDegree (Fin 2) R d) (i : EulerLowIndex d) :
     (eulerLowBasis R d).repr f i =
       f.val.coeff ((Finsupp.degreeLeEquivSym (Fin 2) d).symm i).val := by
@@ -74,11 +74,11 @@ def eulerCoefficientEntryLinear {R : Type*} [CommRing R] (k : ℕ)
   (LinearMap.proj row).comp ((bivariateCoefficients R).comp
     (closedFormEquationLinear (eulerBivariatePair R k (eulerPairBasis R k col))))
 
-private lemma eulerCoefficientEntryLinear_apply {R : Type*} [CommRing R] (k : ℕ)
+lemma eulerCoefficientEntryLinear_apply {R : Type*} [CommRing R] (k : ℕ)
     (row : ℕ × ℕ) (col : EulerColumns k) (f : Polynomial (Polynomial R)) :
     eulerCoefficientEntryLinear k row col f = eulerClosedFormCoefficientMatrix k f row col := rfl
 
-private lemma eulerCoefficientMatrix_expand {R : Type*} [CommRing R] (k : ℕ)
+lemma eulerCoefficientMatrix_expand {R : Type*} [CommRing R] (k : ℕ)
     (f : Polynomial (Polynomial R)) (hf : bivariateTotalDegree f ≤ k + 2)
     (row : ℕ × ℕ) (col : EulerColumns k) :
     ∑ i, eulerCoefficientData (k + 2) f i *
@@ -101,10 +101,8 @@ theorem universalEulerMatrix_specialize {R : Type*} [CommRing R]
     (k : ℕ) (f : Polynomial (Polynomial R)) (hf : bivariateTotalDegree f ≤ k + 2) :
     (universalEulerMatrix k).map (eval₂Hom (Int.castRingHom R) (eulerCoefficientData (k + 2) f)) =
       eulerClosedFormCoefficientMatrix k f := by
-  classical
   ext row col
-  simp only [Matrix.map_apply, universalEulerMatrix]
-  simp only [map_sum, map_mul, eval₂Hom_C, Int.coe_castRingHom]
+  simp only [Matrix.map_apply, universalEulerMatrix, map_sum, map_mul, eval₂Hom_C, Int.coe_castRingHom]
   have hX (i : EulerLowIndex (k + 2)) :
       eval₂Hom (Int.castRingHom R) (eulerCoefficientData (k + 2) f) (X i) =
         eulerCoefficientData (k + 2) f i := eval₂_X _ _ _

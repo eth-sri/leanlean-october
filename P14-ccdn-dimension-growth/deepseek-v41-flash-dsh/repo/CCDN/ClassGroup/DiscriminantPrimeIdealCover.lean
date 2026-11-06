@@ -19,7 +19,6 @@ is bounded by the field degree times their number. -/
 namespace CCDN
 noncomputable section
 open NumberField
-open scoped NumberField
 
 variable (K : Type*) [Field K] [NumberField K]
 
@@ -28,15 +27,15 @@ def rationalPrimeIdealFiber (p : ℕ) : Finset (Ideal (𝓞 K)) :=
   (Algebra.QuasiFinite.finite_primesOver
     (S := 𝓞 K) (Ideal.span {(p : ℤ)})).toFinset
 
-private theorem mem_rationalPrimeIdealFiber (p : ℕ) (Q : Ideal (𝓞 K)) :
+theorem mem_rationalPrimeIdealFiber (p : ℕ) (Q : Ideal (𝓞 K)) :
     Q ∈ rationalPrimeIdealFiber K p ↔
       Q.IsPrime ∧ Q.LiesOver (Ideal.span {(p : ℤ)}) := by
   exact Set.Finite.mem_toFinset _
 
-private theorem rationalPrimeIdealFiber_card_le (p : ℕ) (hp : p.Prime) :
+theorem rationalPrimeIdealFiber_card_le (p : ℕ) (hp : p.Prime) :
     (rationalPrimeIdealFiber K p).card ≤ Module.finrank ℚ K := by
-  have hpz : Prime (p : ℤ) := Nat.prime_iff_prime_int.mp hp
-  let P : Ideal ℤ := Ideal.span {(p : ℤ)}
+  have hpz := Nat.prime_iff_prime_int.mp hp
+  let P := Ideal.span {(p : ℤ)}
   have : P.IsPrime := (Ideal.span_singleton_prime hpz.ne_zero).mpr hpz
   let : Fintype (P.primesOver (𝓞 K)) :=
     (Algebra.QuasiFinite.finite_primesOver (S := 𝓞 K) P).fintype
@@ -98,13 +97,13 @@ theorem mem_discriminantPrimeIdealCover_of_ramification_two
     Q ∈ discriminantPrimeIdealCover K := by
   have : Q.IsMaximal := (inferInstance : Q.IsPrime).isMaximal hQ
   obtain ⟨p, _, _, hpQ, hp, _⟩ := Ideal.exists_prime_and_absNorm_eq_pow Q
-  have hpz : Prime (p : ℤ) := Nat.prime_iff_prime_int.mp hp
+  have hpz := Nat.prime_iff_prime_int.mp hp
   have hdiv : (p : ℤ) ∣ NumberField.discr K := by
     by_contra h
     have : Algebra.IsUnramifiedAt ℤ Q :=
       (NumberField.not_dvd_discr_iff_forall_mem K (𝓞 K) hpz).mp h
         Q inferInstance (by simpa only [Int.cast_natCast] using hpQ)
-    have habs : Q.ramificationIdx ℤ = 1 := Q.ramificationIdx_eq_one ℤ
+    have habs := Q.ramificationIdx_eq_one ℤ
     have hdvd : Q.ramificationIdx (𝓞 F) ∣ Q.ramificationIdx ℤ :=
       Ideal.ramificationIdx_above_dvd (R := ℤ) (Q.under (𝓞 F)) Q
     rw [he, habs] at hdvd

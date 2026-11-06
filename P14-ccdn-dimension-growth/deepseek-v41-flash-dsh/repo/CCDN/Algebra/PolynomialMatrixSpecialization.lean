@@ -13,9 +13,8 @@ import CCDN.Algebra.BoundedLinearSeparation
 specialization. Clearing a left inverse's denominators gives the assertion
 without selecting minors or assuming a generic-rank principle. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Matrix Polynomial
 
 /-- Clear all entries of a rational-function matrix with one nonzero
@@ -34,7 +33,7 @@ lemma ratFunc_matrix_common_denominator {K ι κ : Type*} [Field K]
 
 /-- An injective polynomial matrix has a polynomial left inverse up to one
 nonzero scalar polynomial. -/
-private theorem polynomial_matrix_scaled_left_inverse {K ι κ : Type*} [Field K]
+theorem polynomial_matrix_scaled_left_inverse {K ι κ : Type*} [Field K]
     [Fintype ι] [Fintype κ] [DecidableEq ι] [DecidableEq κ]
     (A : Matrix ι κ (Polynomial K))
     (hA : Function.Injective (A.map (algebraMap (Polynomial K) (RatFunc K))).mulVecLin) :
@@ -82,5 +81,4 @@ theorem polynomial_matrix_injective_specialization {K ι κ : Type*} [Field K] [
     Matrix.smul_mulVec, Matrix.one_mulVec, Matrix.one_mulVec] at hh
   exact (smul_right_injective _ hk) hh
 
-end
 end CCDN

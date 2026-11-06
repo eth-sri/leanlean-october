@@ -15,9 +15,8 @@ import CCDN.Determinant.SmoothCongruenceDeterminant
 /-! Congruence-refined determinant estimates for affine zeros and
 arbitrary bounded-degree polynomial evaluation columns. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Finset
 
 /-- The homogeneous coordinates `(1, x)` of an integer point `x` are primitive: their gcd is `1`. -/
@@ -45,7 +44,6 @@ theorem exists_affine_congruence_determinant_log_lower {n s N M : ℕ} (hs : 0 <
         (hypersurfaceDeterminantMain n s - (n + 2 : ℝ) * s) *
           (∑ p ∈ P, Real.log p) ≤
         Real.log (Int.Matrix.minorGcd (Matrix.of fun i j => eval (x i) (G j))) := by
-  classical
   let F := scaledHomogenize f.totalDegree 1 f
   have hf0 : f ≠ 0 := ne_zero_of_irreducible_map hir
   have hF : F.IsHomogeneous f.totalDegree := scaledHomogenize_homogeneous 1 f le_rfl
@@ -81,5 +79,4 @@ theorem exists_affine_congruence_determinant_log_lower {n s N M : ℕ} (hs : 0 <
   rw [he] at hbound
   exact ⟨bad, hbad, hbound⟩
 
-end
 end CCDN

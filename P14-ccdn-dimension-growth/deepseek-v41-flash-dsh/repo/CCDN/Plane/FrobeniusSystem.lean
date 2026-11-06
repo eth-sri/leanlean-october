@@ -13,12 +13,11 @@ import Mathlib.LinearAlgebra.FiniteDimensional.Lemmas
 /-! The finite linear system producing Frobenius auxiliary coefficients.
 A strict dimension inequality gives a nontrivial solution. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma planeTangent_totalDegree_le {K : Type*} [Field K]
+lemma planeTangent_totalDegree_le {K : Type*} [Field K]
     (f h : MvPolynomial (Fin 2) K) (j : Fin 2) :
     (planeTangent f j h).totalDegree ≤ h.totalDegree + f.totalDegree := by
   rw [planeTangent_apply]
@@ -33,7 +32,7 @@ private lemma planeTangent_totalDegree_le {K : Type*} [Field K]
       have h2 := pderiv_totalDegree_le h j.rev
       omega)
 
-private lemma planeTangent_iterate_totalDegree_le {K : Type*} [Field K]
+lemma planeTangent_iterate_totalDegree_le {K : Type*} [Field K]
     (f h : MvPolynomial (Fin 2) K) (j : Fin 2) (r : ℕ) :
     ((planeTangent f j)^[r] h).totalDegree ≤ h.totalDegree + r * f.totalDegree := by
   induction r with
@@ -56,8 +55,7 @@ theorem exists_planeFrobenius_coefficients {K ι κ : Type*} [Field K]
     ∃ a : ι → MvPolynomial (Fin 2) K,
       (∀ i, (a i).totalDegree ≤ A) ∧ (∃ i, ¬ f ∣ a i) ∧
       ∀ r < N, f ∣ ∑ i, (planeTangent f j)^[r] (h i) * a i := by
-  classical
-  let I : Ideal (MvPolynomial (Fin 2) K) := Ideal.span {f}
+  let I := Ideal.span {f}
   let π := Ideal.Quotient.mkₐ K I
   let V (r : Fin N) := filteredCoordinateSpace I (D + A + r.val * f.totalDegree)
   let v (r : Fin N) (t : ι × κ) : V r :=
@@ -83,7 +81,7 @@ theorem exists_planeFrobenius_coefficients {K ι κ : Type*} [Field K]
   obtain ⟨c, hFc, hc⟩ :=
     Submodule.exists_mem_ne_zero_of_ne_bot (LinearMap.ker_ne_bot_of_finrank_lt (f := F) hdim')
   rw [LinearMap.mem_ker] at hFc
-  let a : ι → MvPolynomial (Fin 2) K := fun i => ∑ k, c (i, k) • b k
+  let a := fun i => ∑ k, c (i, k) • b k
   refine ⟨a, ?_, ?_, ?_⟩
   · intro i
     apply totalDegree_finsetSum_le
@@ -106,5 +104,4 @@ theorem exists_planeFrobenius_coefficients {K ι κ : Type*} [Field K]
       Submodule.coe_smul, v, Fintype.sum_prod_type, a, Finset.mul_sum,
       mul_smul_comm, map_sum, map_smul, Pi.zero_apply, ZeroMemClass.coe_zero] using he
 
-end
 end CCDN

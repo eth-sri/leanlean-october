@@ -11,10 +11,8 @@ import Mathlib.Data.Nat.Prime.Int
 /-! A prime scaling preserves primitive integer equations when it does not
 divide the constant coefficient. This is the arithmetic input for affine scaling. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
-open MvPolynomial
 
 /-- If `f` is a primitive integer polynomial and the prime `p` does not divide its constant
 coefficient, then the scaled homogenization `scaledHomogenize d p f` is primitive. -/
@@ -26,7 +24,7 @@ theorem PrimitiveIntegerPolynomial.scaledHomogenize {n : ℕ} {f : MvPolynomial 
   apply Int.isUnit_iff_natAbs_eq.mpr
   by_contra hunit
   obtain ⟨l, hl, hlc⟩ := Nat.exists_prime_and_dvd hunit
-  have hlZ : Prime (l : ℤ) := Nat.prime_iff_prime_int.mp hl
+  have hlZ := Nat.prime_iff_prime_int.mp hl
   have hld : ∀ m, (l : ℤ) ∣ (CCDN.scaledHomogenize d (p : ℤ) f).coeff m :=
     fun m => (Int.natCast_dvd.mpr hlc).trans (hc m)
   have hlp : l ≠ p := by
@@ -38,7 +36,7 @@ theorem PrimitiveIntegerPolynomial.scaledHomogenize {n : ℕ} {f : MvPolynomial 
     exact hp0 h
   have hn : ¬ (l : ℤ) ∣ (p : ℤ) := by
     intro h
-    have h' : l ∣ p := by exact_mod_cast h
+    have h' := by exact_mod_cast h
     exact hlp ((Nat.prime_dvd_prime_iff_eq hl hp).mp h')
   have hcoeff : ∀ m, (l : ℤ) ∣ f.coeff m := by
     intro m
@@ -49,5 +47,4 @@ theorem PrimitiveIntegerPolynomial.scaledHomogenize {n : ℕ} {f : MvPolynomial 
     · exact h
   exact hlZ.not_isUnit (hf l hcoeff)
 
-end
 end CCDN

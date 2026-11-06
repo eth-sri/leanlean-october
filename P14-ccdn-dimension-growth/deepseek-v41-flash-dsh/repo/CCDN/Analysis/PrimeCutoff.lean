@@ -70,7 +70,7 @@ lemma primeBlockMass_pos : 0 < primeBlockMass := by
 
 /-- The Mertens bounded error bounds every factor-four prime interval by a
 constant independent of its location. -/
-private lemma prime_block_weight_le {L : ℝ} (hL : 1 ≤ L) (S : Finset ℕ)
+lemma prime_block_weight_le {L : ℝ} (hL : 1 ≤ L) (S : Finset ℕ)
     (hprime : ∀ p ∈ S, p.Prime) (hlo : ∀ p ∈ S, L < (p : ℝ))
     (hhi : ∀ p ∈ S, (p : ℝ) ≤ 4 * L) :
     ∑ p ∈ S, Real.log p / p ≤ primeBlockMass := by
@@ -101,7 +101,7 @@ private lemma prime_block_weight_le {L : ℝ} (hL : 1 ≤ L) (S : Finset ℕ)
 
 /-- A prime interval above L has weighted reciprocal-square-root mass
 bounded by its Mertens weight divided by sqrt(L). -/
-private lemma prime_block_sqrt_weight_le {L : ℝ} (hL : 1 ≤ L) (S : Finset ℕ)
+lemma prime_block_sqrt_weight_le {L : ℝ} (hL : 1 ≤ L) (S : Finset ℕ)
     (hprime : ∀ p ∈ S, p.Prime) (hlo : ∀ p ∈ S, L < (p : ℝ))
     (hhi : ∀ p ∈ S, (p : ℝ) ≤ 4 * L) :
     ∑ p ∈ S, Real.log p / p / Real.sqrt p ≤ primeBlockMass / Real.sqrt L := by
@@ -117,7 +117,7 @@ private lemma prime_block_sqrt_weight_le {L : ℝ} (hL : 1 ≤ L) (S : Finset �
 
 /-- Finite dyadic assembly retains a constant times L^(-1/2), rather than
 summing over every integer and losing a logarithm. -/
-private lemma prime_sqrt_tail_le_of_pow_bound (n : ℕ) {L : ℝ} (hL : 1 ≤ L)
+lemma prime_sqrt_tail_le_of_pow_bound (n : ℕ) {L : ℝ} (hL : 1 ≤ L)
     (S : Finset ℕ) (hprime : ∀ p ∈ S, p.Prime) (hlo : ∀ p ∈ S, L < (p : ℝ))
     (hhi : ∀ p ∈ S, (p : ℝ) ≤ 4 ^ n * L) :
     ∑ p ∈ S, Real.log p / p / Real.sqrt p ≤ 2 * primeBlockMass / Real.sqrt L := by
@@ -142,7 +142,7 @@ private lemma prime_sqrt_tail_le_of_pow_bound (n : ℕ) {L : ℝ} (hL : 1 ≤ L)
       (fun p hp => hprime p (mem_sdiff.mp hp).1)
       (fun p hp => by
         have hm := mem_sdiff.mp hp
-        have hn : ¬(p : ℝ) ≤ 4 * L := by simpa only [A, mem_filter, hm.1, true_and] using hm.2
+        have hn := by simpa only [A, mem_filter, hm.1, true_and] using hm.2
         exact lt_of_not_ge hn)
       (fun p hp => by
         have h := hhi p (mem_sdiff.mp hp).1
@@ -178,12 +178,12 @@ theorem prime_sqrt_tail_le {L : ℝ} (hL : 1 ≤ L) (S : Finset ℕ)
 
 /-- The exact reciprocal perturbation error, retaining the prime weight
 needed for the sharp tail estimate. -/
-private lemma log_div_sqrt_perturbation_exact {p C N : ℝ} (hp : 1 ≤ p) (hC : 0 ≤ C)
+lemma log_div_sqrt_perturbation_exact {p C N : ℝ} (hp : 1 ≤ p) (hC : 0 ≤ C)
     (hN : 0 < N) (hupper : N ≤ p + C * Real.sqrt p) :
     Real.log p / p - C * (Real.log p / p / Real.sqrt p) ≤ Real.log p / N := by
   have hp0 : 0 < p := by linarith
-  have hs0 : 0 < Real.sqrt p := Real.sqrt_pos.mpr hp0
-  have hs : Real.sqrt p ^ 2 = p := Real.sq_sqrt hp0.le
+  have hs0 := Real.sqrt_pos.mpr hp0
+  have hs := Real.sq_sqrt hp0.le
   have hrec : 1 / p - C / (p * Real.sqrt p) ≤ 1 / (p + C * Real.sqrt p) := by
     apply (le_div_iff₀ (by positivity : 0 < p + C * Real.sqrt p)).mpr
     field_simp
@@ -206,7 +206,6 @@ theorem weighted_prime_sum_lower_cutoff {x L C : ℝ} (hx : 1 ≤ x) (hL : 1 ≤
       C * (2 * primeBlockMass / Real.sqrt L) ≤
       ∑ p ∈ (((Ioc 0 ⌊x⌋₊).filter Nat.Prime) \ B).filter (fun p : ℕ => L < (p : ℝ)),
         Real.log p / N p := by
-  classical
   let T := (Ioc 0 ⌊x⌋₊).filter Nat.Prime
   let U := (Ioc 0 ⌊L⌋₊).filter Nat.Prime
   let S := (T \ B).filter (fun p : ℕ => L < (p : ℝ))

@@ -14,7 +14,6 @@ multiplicity and the number of rows, and admits sharp binomial cutoff bounds. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Deficit exponent from the cumulative bound μ binomial(n+k,n), where n
@@ -22,7 +21,7 @@ is the hypersurface dimension. -/
 def hypersurfaceMultiplicityExponent (n μ s : ℕ) : ℕ :=
   Finset.univ.sum fun k : Fin s => s - μ * (n + k.val).choose n
 
-private lemma hypersurfaceMultiplicityExponent_le_origin {K : Type*} [Field K] {n μ s : ℕ}
+lemma hypersurfaceMultiplicityExponent_le_origin {K : Type*} [Field K] {n μ s : ℕ}
     (f : MvPolynomial (Fin (n + 2)) K)
     (hf : f ∈ idealOfVars (Fin (n + 2)) K ^ μ)
     (hμ : homogeneousComponent μ f ≠ 0) :
@@ -35,7 +34,7 @@ private lemma hypersurfaceMultiplicityExponent_le_origin {K : Type*} [Field K] {
   rw [show n + k.val + 1 = n + 1 + k.val by omega] at h
   exact Nat.sub_le_sub_left h s
 
-private lemma hypersurface_cumulative_capacity_ge (n k : ℕ) {μ : ℕ} (hμ : 0 < μ) :
+lemma hypersurface_cumulative_capacity_ge (n k : ℕ) {μ : ℕ} (hμ : 0 < μ) :
     k + 1 ≤ μ * (n + 1 + k).choose (n + 1) := by
   have h := Nat.choose_le_choose k (show 1 + k ≤ n + 1 + k by omega)
   rw [Nat.choose_symm_add (a := n + 1)]
@@ -48,13 +47,12 @@ lemma sum_cumulative_binomial (n K : ℕ) :
   induction K with
   | zero => simp
   | succ K ih =>
-    rw [Finset.sum_range_succ, ih]
-    rw [show n + (K + 1) = (n + K) + 1 by omega, Nat.choose_succ_succ']
+    rw [Finset.sum_range_succ, ih, show n + (K + 1) = (n + K) + 1 by omega, Nat.choose_succ_succ']
     omega
 
 /-- Cutoffs beyond s add no positive deficits. Hence the finite
 exponent controls every numerical cutoff. -/
-private lemma sum_hypersurface_deficits_le (n s K : ℕ) {μ : ℕ} (hμ : 0 < μ) :
+lemma sum_hypersurface_deficits_le (n s K : ℕ) {μ : ℕ} (hμ : 0 < μ) :
     (∑ k ∈ Finset.range K, (s - μ * (n + 1 + k).choose (n + 1))) ≤
       hypersurfaceMultiplicityExponent (n + 1) μ s := by
   unfold hypersurfaceMultiplicityExponent
@@ -65,7 +63,7 @@ private lemma sum_hypersurface_deficits_le (n s K : ℕ) {μ : ℕ} (hμ : 0 < �
     have he := Finset.sum_subset hsub (f := fun k => s - μ * (n + 1 + k).choose (n + 1))
     apply le_of_eq (he ?_).symm
     intro k _ hk
-    have hs : s ≤ k := by simpa only [Finset.mem_range, not_lt] using hk
+    have hs := by simpa only [Finset.mem_range, not_lt] using hk
     have hc := hypersurface_cumulative_capacity_ge n k hμ
     omega
 
@@ -97,5 +95,4 @@ theorem hypersurface_pow_dvd_det_mod {p n μ s : ℕ} [Fact p.Prime]
   origin_filtration_pow_dvd_det_mod f x hx
     (hypersurfaceMultiplicityExponent_le_origin _ hf hμ) hfx F
 
-end
 end CCDN

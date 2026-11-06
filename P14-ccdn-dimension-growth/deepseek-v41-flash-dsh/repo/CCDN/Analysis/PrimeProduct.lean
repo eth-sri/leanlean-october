@@ -15,11 +15,11 @@ bound on the logarithm of a positive determinant gcd. Estimating these prime sum
 for curve reductions is a separate part of CCDN Proposition 3.2.6.
 -/
 
-@[expose] public section
+public section
 
 namespace CCDN
 
-private theorem prime_power_product_dvd (P : Finset ℕ) (e : ℕ → ℕ) (D : ℤ)
+theorem prime_power_product_dvd (P : Finset ℕ) (e : ℕ → ℕ) (D : ℤ)
     (hP : ∀ p ∈ P, Nat.Prime p) (hdiv : ∀ p ∈ P, (p : ℤ) ^ e p ∣ D) :
     (∏ p ∈ P, (p : ℤ) ^ e p) ∣ D := by
   apply Finset.prod_dvd_of_coprime ?_ hdiv

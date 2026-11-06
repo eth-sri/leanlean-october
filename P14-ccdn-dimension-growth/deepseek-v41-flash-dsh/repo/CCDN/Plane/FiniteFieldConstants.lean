@@ -19,7 +19,6 @@ the numerals are definitionally equal to statements using the names. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 
 /-- The prime cutoff `27 d⁴` of the Stepanov method. For `p > 27 d⁴` the integer Stepanov
 parameters `A = ⌊√p / d⌋`, `D = ⌊(p - 1) / d⌋`, `N = d A - 4 d²` exist with `N > 0`
@@ -103,5 +102,4 @@ lemma projectivePlaneDeterminantConstant_pos : 0 < projectivePlaneDeterminantCon
 lemma projectiveHypersurfaceResidueConstant_pos : 0 < projectiveHypersurfaceResidueConstant := by
   norm_num [projectiveHypersurfaceResidueConstant]
 
-end
 end CCDN

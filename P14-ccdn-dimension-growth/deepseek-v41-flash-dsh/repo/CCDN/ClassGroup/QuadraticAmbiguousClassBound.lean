@@ -22,7 +22,7 @@ noncomputable section
 open NumberField
 open scoped NumberField nonZeroDivisors
 
-private theorem card_le_subgroup_mul_obstruction
+theorem card_le_subgroup_mul_obstruction
     {G Q : Type*} [CommGroup G] [Finite G] [Finite Q]
     (S : Subgroup G) (o : G → Q)
     (ho : ∀ x y, o x = o y → x / y ∈ S) :
@@ -63,7 +63,7 @@ structure AmbiguousClassWitness (σ : K ≃ₐ[F] K) (c : ClassGroup (𝓞 K)) w
   /-- The relative norm of `scalar` is the base unit `baseUnit`. -/
   norm_eq : Algebra.norm F (scalar : K) = ((baseUnit : 𝓞 F) : F)
 
-private theorem nonempty_ambiguousClassWitness (σ : K ≃ₐ[F] K) (c : ClassGroup (𝓞 K))
+theorem nonempty_ambiguousClassWitness (σ : K ≃ₐ[F] K) (c : ClassGroup (𝓞 K))
     (hc : ClassGroup.mulEquiv (RingOfIntegers.mapAlgEquiv σ).toRingEquiv c = c) :
     Nonempty (AmbiguousClassWitness F K σ c) := by
   obtain ⟨I, rfl⟩ := ClassGroup.mk0_surjective c
@@ -79,7 +79,7 @@ private theorem nonempty_ambiguousClassWitness (σ : K ≃ₐ[F] K) (c : ClassGr
     change Algebra.norm F ((y : K) * (x : K)⁻¹) = ((u : 𝓞 F) : F)
     simpa only [div_eq_mul_inv] using hu
 
-private def chosenAmbiguousClassWitness (σ : K ≃ₐ[F] K)
+def chosenAmbiguousClassWitness (σ : K ≃ₐ[F] K)
     (c : fixedClassGroupTwoTorsion K σ.toRingEquiv) :
     AmbiguousClassWitness F K σ c.val.val :=
   Classical.choice (nonempty_ambiguousClassWitness F K σ c.val.val
@@ -87,11 +87,11 @@ private def chosenAmbiguousClassWitness (σ : K ≃ₐ[F] K)
 
 /-- A fixed choice of the unit-norm obstruction on fixed
 two-torsion classes. The cardinal argument only uses equality of values. -/
-private def fixedClassUnitObstruction (σ : K ≃ₐ[F] K) :
+def fixedClassUnitObstruction (σ : K ≃ₐ[F] K) :
     fixedClassGroupTwoTorsion K σ.toRingEquiv → quadraticUnitNormQuotient F K :=
   fun c => QuotientGroup.mk (chosenAmbiguousClassWitness F K σ c).baseUnit
 
-private theorem fixedClassUnitObstruction_eq_implies
+theorem fixedClassUnitObstruction_eq_implies
     (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1)
     (c e : fixedClassGroupTwoTorsion K σ.toRingEquiv)
     (hce : fixedClassUnitObstruction F K σ c = fixedClassUnitObstruction F K σ e) :
@@ -108,7 +108,7 @@ abbrev stronglyAmbiguousTwoTorsion (σ : K ≃ₐ[F] K) :=
   (powMonoidHom 2 : stronglyAmbiguousClassGroup F K σ →*
     stronglyAmbiguousClassGroup F K σ).ker
 
-private theorem fixedClassGroupTwoTorsion_card_le
+theorem fixedClassGroupTwoTorsion_card_le
     (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1) :
     Nat.card (fixedClassGroupTwoTorsion K σ.toRingEquiv) ≤
       Nat.card (stronglyAmbiguousTwoTorsion F K σ) *
@@ -134,7 +134,7 @@ private theorem fixedClassGroupTwoTorsion_card_le
 
 /-- The unit contribution to quadratic genus theory is bounded by the
 degree of the base field, with the strongly ambiguous term left explicit. -/
-private theorem fixedClassGroupTwoTorsion_card_le_degree
+theorem fixedClassGroupTwoTorsion_card_le_degree
     (hd : Module.finrank F K = 2) (σ : K ≃ₐ[F] K) (hσ : σ ≠ 1) :
     Nat.card (fixedClassGroupTwoTorsion K σ.toRingEquiv) ≤
       Nat.card (stronglyAmbiguousTwoTorsion F K σ) * 2 ^ Module.finrank ℚ F :=

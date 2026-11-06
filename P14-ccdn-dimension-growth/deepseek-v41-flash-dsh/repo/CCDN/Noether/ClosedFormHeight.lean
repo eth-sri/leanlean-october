@@ -13,7 +13,6 @@ import Mathlib.LinearAlgebra.Matrix.AbsoluteValue
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open Polynomial Matrix
 
 /-- Every coefficient of the integer bivariate polynomial `f` has absolute value at most `H`. -/
@@ -44,7 +43,7 @@ lemma bivariateCoefficientBound_monomial_mul
     · simpa using mul_nonneg (abs_nonneg (a : ℝ)) hH
   · simpa using mul_nonneg (abs_nonneg (a : ℝ)) hH
 
-private lemma bivariateCoefficientBound_sub {f g : ℤ[X][X]} {H K : ℝ}
+lemma bivariateCoefficientBound_sub {f g : ℤ[X][X]} {H K : ℝ}
     (hf : BivariateCoefficientBound f H) (hg : BivariateCoefficientBound g K) :
     BivariateCoefficientBound (f - g) (H + K) := by
   intro i j
@@ -56,11 +55,10 @@ lemma bivariateCoefficientBound_mono {f : ℤ[X][X]} {H K : ℝ}
     (hf : BivariateCoefficientBound f H) (h : H ≤ K) :
     BivariateCoefficientBound f K := fun i j => (hf i j).trans h
 
-private lemma bivariateGridPolynomial_single {R : Type*} [CommRing R] (d : ℕ)
+lemma bivariateGridPolynomial_single {R : Type*} [CommRing R] (d : ℕ)
     (i : BivariateGrid d) (a : R) :
     bivariateGridPolynomial R d (Pi.single i a) =
       monomial i.1.val (monomial i.2.val a) := by
-  classical
   simp [bivariateGridPolynomial, Pi.single_apply, apply_ite]
 
 /-- The standard basis vector of the first block decodes to the pair `(monomial, 0)` with the
@@ -69,7 +67,6 @@ lemma closedFormPair_single_inl {R : Type*} [CommRing R] (d : ℕ)
     (i : BivariateGrid d) :
     closedFormPair R d (Pi.single (.inl i) 1) =
       (monomial i.1.val (monomial i.2.val 1), 0) := by
-  classical
   apply Prod.ext
   · change bivariateGridPolynomial R d _ = _
     convert bivariateGridPolynomial_single d i (1 : R) using 1
@@ -86,7 +83,6 @@ lemma closedFormPair_single_inr {R : Type*} [CommRing R] (d : ℕ)
     (i : BivariateGrid d) :
     closedFormPair R d (Pi.single (.inr i) 1) =
       (0, monomial i.1.val (monomial i.2.val 1)) := by
-  classical
   apply Prod.ext
   · change bivariateGridPolynomial R d _ = 0
     simp only [Pi.single_apply, reduceCtorEq, ite_false]
@@ -98,7 +94,7 @@ lemma closedFormPair_single_inr {R : Type*} [CommRing R] (d : ℕ)
     simp [Pi.single_apply]
 
 /-- Inner differentiation costs at most the inner degree. -/
-private lemma bivariateCoefficientBound_innerDerivative
+lemma bivariateCoefficientBound_innerDerivative
     {f : ℤ[X][X]} {H : ℝ} (d : ℕ) (hH : 0 ≤ H)
     (hf : BivariateCoefficientBound f H)
     (hd : ∀ i, (f.coeff i).natDegree ≤ d) :
@@ -117,7 +113,7 @@ private lemma bivariateCoefficientBound_innerDerivative
     simpa using mul_nonneg (Nat.cast_nonneg d) hH
 
 /-- Outer differentiation costs at most the outer degree. -/
-private lemma bivariateCoefficientBound_outerDerivative
+lemma bivariateCoefficientBound_outerDerivative
     {f : ℤ[X][X]} {H : ℝ} (d : ℕ) (hH : 0 ≤ H)
     (hf : BivariateCoefficientBound f H) (hd : f.natDegree ≤ d) :
     BivariateCoefficientBound f.derivative (d * H) := by
@@ -136,7 +132,7 @@ private lemma bivariateCoefficientBound_outerDerivative
     simpa using mul_nonneg (Nat.cast_nonneg d) hH
 
 /-- Every matrix entry is at most 2*d*H in absolute value. -/
-private theorem closedFormCoefficientMatrix_entry_bound
+theorem closedFormCoefficientMatrix_entry_bound
     (d : ℕ) (f : ℤ[X][X]) (H : ℝ) (hH : 0 ≤ H)
     (hf : BivariateCoefficientBound f H) (houter : f.natDegree ≤ d)
     (hinner : ∀ i, (f.coeff i).natDegree ≤ d) :
@@ -197,5 +193,4 @@ theorem closedForm_integer_minor_bound
   rw [hd] at hb
   simpa [nsmul_eq_mul] using hb
 
-end
 end CCDN

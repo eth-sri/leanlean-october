@@ -11,10 +11,8 @@ import CCDN.ForMathlib.Log
 
 /-! Quantitative degree control from the plane determinant comparison. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
-open Real
 
 /-- The Hilbert function `s` of a plane curve of degree `d` in degree `M`, given by
 `2 s + d² = d (2 M + 3)`, is at least `M` when `0 < d ≤ M`. -/
@@ -150,5 +148,4 @@ lemma plane_degree_bound_of_log_bound {d M : ℕ} {B L A K : ℝ}
   push_cast
   ring
 
-end
 end CCDN

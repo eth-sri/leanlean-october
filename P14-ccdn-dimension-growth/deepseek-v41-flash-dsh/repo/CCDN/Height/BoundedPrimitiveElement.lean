@@ -11,9 +11,8 @@ import Mathlib.FieldTheory.PrimitiveElement
 
 /-! Quantitative primitive elements and separation by affine coordinates. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- A finite separating coordinate tuple has a primitive integer linear
 combination with coefficients (1,k,...), where k<=n*[F:R]^2. -/
@@ -35,7 +34,7 @@ theorem exists_bounded_primitive_element {R F : Type*} [Field R] [CharZero R] [F
 
 /-- Maps from a fraction field are determined by the images of the
 original affine coordinates, even when the scalar field contains a parameter. -/
-private theorem curve_coordinate_embeddings_injective {K R F L σ : Type*}
+theorem curve_coordinate_embeddings_injective {K R F L σ : Type*}
     [Field K] [Field R] [Field F] [Field L]
     [Algebra K R] [Algebra K F] [Algebra R F] [IsScalarTower K R F]
     [Algebra K L] [Algebra R L] [IsScalarTower K R L]
@@ -74,5 +73,4 @@ theorem exists_bounded_curve_primitive_element {K R F : Type*}
           ((Ideal.Quotient.mk I) (MvPolynomial.X j)) * (k : F) ^ j.val} = ⊤ := by
   exact exists_bounded_primitive_element _ (curve_coordinate_embeddings_injective I)
 
-end
 end CCDN

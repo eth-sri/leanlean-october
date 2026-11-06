@@ -13,19 +13,17 @@ import CCDN.Hilbert.PolynomialComparison
 affine variety. Multiplication by the section is injective in the original
 coordinate domain and is killed in the section quotient. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private theorem proper_section_filtered_hilbert_drop
+theorem proper_section_filtered_hilbert_drop
     {K σ : Type*} [Field K] [Fintype σ]
     (I : Ideal (MvPolynomial σ K)) [I.IsPrime]
     (f : MvPolynomial σ K) (hf : f ∉ I) (N : ℕ) :
     Module.finrank K (filteredCoordinateSpace (I ⊔ Ideal.span {f}) (f.totalDegree + N)) +
       Module.finrank K (filteredCoordinateSpace I N) ≤
         Module.finrank K (filteredCoordinateSpace I (f.totalDegree + N)) := by
-  classical
   let J := I ⊔ Ideal.span {f}
   let A := MvPolynomial σ K ⧸ I
   let q := Ideal.Quotient.mkₐ K I
@@ -146,5 +144,4 @@ theorem proper_section_hilbert_dimension_leadingCoeff
       (by rw [hPdeg, hdimsection]; exact hQdeg.symm) hle
     simpa only [hPlc, show Q.leadingCoeff = _ from hQlc] using h
 
-end
 end CCDN

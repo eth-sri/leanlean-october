@@ -14,7 +14,6 @@ The sharp finite-field estimate is stated as a proposition, not an axiom. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Real
 
 /-- The finite-field counting obligation `PlaneResidueCountBound` for every plane equation
@@ -60,5 +59,4 @@ theorem count_rational_plane_of_residue_bound
   have h := count_plane_of_residue_bound g hg hgi hgd hB hC (hres g hgd)
   rwa [hzero, hdeg] at h
 
-end
 end CCDN

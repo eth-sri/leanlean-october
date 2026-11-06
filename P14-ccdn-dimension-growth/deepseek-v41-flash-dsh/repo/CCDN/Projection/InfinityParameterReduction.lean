@@ -37,8 +37,7 @@ lemma leadingInfinityIdeal_component_mem {K σ : Type*} [Field K]
     (n : ℕ) :
     (Ideal.Quotient.mk I) (homogeneousComponent (n + 1) f) ∈ filteredCoordinateSpace I n := by
   have hm : quotientRadialMap I f ∈ projectiveInfinityIdeal I := by
-    apply Ideal.Quotient.eq_zero_iff_mem.mp
-    exact hf
+    exact Ideal.Quotient.eq_zero_iff_mem.mp hf
   rw [projectiveInfinityIdeal,
     Ideal.mem_span_singleton (α := projectiveCoordinateAlgebra I)] at hm
   obtain ⟨g, hg⟩ := hm
@@ -53,7 +52,7 @@ lemma leadingInfinityIdeal_component_mem {K σ : Type*} [Field K]
 
 /-- A coordinate-power certificate at infinity gives a balanced reduction in
 the original affine quotient. -/
-private theorem power_reduction_of_infinity_certificate {K σ : Type*} [Field K]
+theorem power_reduction_of_infinity_certificate {K σ : Type*} [Field K]
     (I : Ideal (MvPolynomial σ K)) (l : MvPolynomial σ K) (hl : l.IsHomogeneous 1)
     (j : σ) (N : ℕ) (hN : 0 < N)
     (hpow : X j ^ N ∈ leadingInfinityIdeal I ⊔ Ideal.span {l}) :
@@ -90,7 +89,6 @@ theorem exists_power_reductions_of_infinity_avoidance {K L σ : Type*}
       r.totalDegree ≤ N - 1 ∧ s.totalDegree ≤ N - 1 ∧
       (Ideal.Quotient.mk I) (X j ^ N) = (Ideal.Quotient.mk I) r +
         (Ideal.Quotient.mk I) l * (Ideal.Quotient.mk I) s := by
-  classical
   let J := leadingInfinityIdeal I ⊔ Ideal.span {l}
   have hp (j : σ) : ∃ m : ℕ, X j ^ m ∈ J := by
     have hm : X j ∈ vanishingIdeal K (MvPolynomial.zeroLocus L J) := by

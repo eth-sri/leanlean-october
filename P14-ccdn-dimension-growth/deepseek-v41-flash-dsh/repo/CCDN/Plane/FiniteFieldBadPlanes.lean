@@ -37,7 +37,7 @@ lemma bivariateMap_comp_apply {R S T : Type*} [CommRing R] [CommRing S] [CommRin
   ext i j
   simp only [bivariateMap_coeff, RingHom.comp_apply]
 
-private lemma badPlaneParameters_witness_zero {K σ : Type*} [Field K] {p : ℕ} [CharP K p]
+lemma badPlaneParameters_witness_zero {K σ : Type*} [Field K] {p : ℕ} [CharP K p]
     (f : MvPolynomial σ K) (hpos : 0 < f.totalDegree) (hchar : f.totalDegree < p)
     (rows : Fin (2 * f.totalDegree ^ 2 - 1) → ℕ × ℕ)
     (cols : Fin (2 * f.totalDegree ^ 2 - 1) → ClosedFormColumns f.totalDegree)
@@ -57,14 +57,13 @@ private lemma badPlaneParameters_witness_zero {K σ : Type*} [Field K] {p : ℕ}
     simpa only [bivariateMap_comp_apply, universalPlaneSection, φ] using hh.2.2
 
 /-- The proportion of geometrically bad plane parameters is at most 2*d^3/q. -/
-private theorem finite_field_bad_plane_parameters_mul_card
+theorem finite_field_bad_plane_parameters_mul_card
     {K σ : Type*} [Field K] [Fintype K] [Fintype σ] {p : ℕ} [CharP K p]
     (f : MvPolynomial (Option σ) K)
     (hf : Irreducible (MvPolynomial.map (algebraMap K (AlgebraicClosure K)) f))
     (hpos : 0 < f.totalDegree) (hchar : 2 * f.totalDegree ^ 2 < p) :
     Nat.card (BadPlaneParameters f) * Fintype.card K ≤
       (2 * f.totalDegree ^ 3) * Fintype.card K ^ Fintype.card (PlaneParameters (Option σ)) := by
-  classical
   obtain ⟨rows, cols, hw, hdeg⟩ := exists_universalPlane_badWitness f hf hpos
     (.of_charP hchar)
   let W := universalPlaneBadWitness f rows cols

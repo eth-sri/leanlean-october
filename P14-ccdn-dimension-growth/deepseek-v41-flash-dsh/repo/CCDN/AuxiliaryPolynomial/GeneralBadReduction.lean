@@ -17,19 +17,18 @@ The proof combines bounded integral normalization, coefficient growth and an
 integer minor witness; reducibility is tested over the residue field's
 algebraic closure. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial Real
 
-private lemma normalized_shear_height_one_le (d : ℕ) (H : ℝ) (hH : 1 ≤ H) :
+lemma normalized_shear_height_one_le (d : ℕ) (H : ℝ) (hH : 1 ≤ H) :
     1 ≤ ((d : ℝ) + 1) ^ (d + 2) * H := by
   have hp : 1 ≤ ((d : ℝ) + 1) ^ (d + 2) :=
     one_le_pow₀ (by have h : (0 : ℝ) ≤ d := Nat.cast_nonneg d; linarith)
   nlinarith
 
 /-- The normalization cost contributes an absolute constant at the d² scale. -/
-private lemma normalized_shear_scaled_log_height (d : ℕ) (hd : 1 ≤ d)
+lemma normalized_shear_scaled_log_height (d : ℕ) (hd : 1 ≤ d)
     (H : ℝ) (hH : 1 ≤ H) :
     1 + 2 * Real.log (((d : ℝ) + 1) ^ (d + 2) * H) / (d : ℝ) ^ 2 ≤
       7 * (1 + Real.log H / (d : ℝ) ^ 2) := by
@@ -65,7 +64,7 @@ theorem exists_plane_bad_prime_witness
   rw [hdeg] at ha hn ht
   let g := bivariateShear ℤ (a : ℤ) f
   let H' := ((d : ℝ) + 1) ^ (d + 2) * H
-  have hH' : 1 ≤ H' := normalized_shear_height_one_le d H hH
+  have hH' := normalized_shear_height_one_le d H hH
   have hgcoeff : BivariateCoefficientBound g H' :=
     bivariateShear_bounded_coefficient_bound a d ha f hdeg.le H (by linarith) hcoeff
   have hgir : Irreducible (bivariateMap (Int.castRingHom F) g) := by
@@ -109,5 +108,4 @@ theorem plane_geometric_bad_prime_charge
     (by linarith : 1 + Real.log H / (d : ℝ) ^ 2 ≠ 0)] at h
   linarith
 
-end
 end CCDN

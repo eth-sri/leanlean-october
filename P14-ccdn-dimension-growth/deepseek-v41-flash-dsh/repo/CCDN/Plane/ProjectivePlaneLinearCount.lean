@@ -13,16 +13,14 @@ import CCDN.Plane.ProjectivePlaneNonabsoluteCount
 /-! The elementary linear case completes the uniform plane-equation
 bound in every positive degree. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private lemma integer_ternary_zero_box_card_le (f : MvPolynomial (Fin 3) ℤ) (hf : f ≠ 0)
+lemma integer_ternary_zero_box_card_le (f : MvPolynomial (Fin 3) ℤ) (hf : f ≠ 0)
     {B : ℝ} (hB : 1 ≤ B) :
     (((integerBox 3 B).filter (fun x => eval x f = 0)).card : ℝ) ≤
       f.totalDegree * (3 * B) ^ 2 := by
-  classical
   let S := Finset.Icc (-⌊B⌋) ⌊B⌋
   have hfloor : 0 ≤ ⌊B⌋ := Int.floor_nonneg.mpr (by linarith)
   have hSne : S.Nonempty := ⟨0, Finset.mem_Icc.mpr ⟨by omega, hfloor⟩⟩
@@ -37,19 +35,17 @@ private lemma integer_ternary_zero_box_card_le (f : MvPolynomial (Fin 3) ℤ) (h
     exact_mod_cast h
   have hScard : (S.card : ℝ) ≤ 3 * B := by
     dsimp only [S]
-    rw [Int.card_Icc]
-    rw [← Int.cast_natCast, Int.toNat_of_nonneg (by omega)]
+    rw [Int.card_Icc, ← Int.cast_natCast, Int.toNat_of_nonneg (by omega)]
     push_cast
     have hh := Int.floor_le B
     linarith
   exact hcard.trans (mul_le_mul_of_nonneg_left
     (pow_le_pow_left₀ hSpos.le hScard 2) (by positivity))
 
-private theorem projective_plane_linear_count
+theorem projective_plane_linear_count
     (f : MvPolynomial (Fin 3) ℚ) (hf : f.IsHomogeneous 1) (hf0 : f ≠ 0)
     {B : ℝ} (hB : 1 ≤ B) :
     (projectiveCount (projectiveZeroLocus f) B : ℝ) ≤ 9 * B ^ 2 := by
-  classical
   obtain ⟨g, a, _, ha, he⟩ := exists_primitive_integer_model f hf0
   have hgh := rational_scalar_model_homogeneous he hf
   have hg0 : g ≠ 0 := by
@@ -68,8 +64,7 @@ private theorem projective_plane_linear_count
     intro i j heq
     have hzi : z i = z j := congrArg Subtype.val heq
     apply hinj
-    apply (Projectivization.mk_eq_mk_iff' ℚ _ _ _ _).mpr
-    exact ⟨1, by simp [hzi]⟩
+    exact (Projectivization.mk_eq_mk_iff' ℚ _ _ _ _).mpr ⟨1, by simp [hzi]⟩
   have hc := Fintype.card_le_of_injective ψ hψ
   have hcR : (t : ℝ) ≤ T.card := by
     exact_mod_cast (show t ≤ T.card by simpa only [Fintype.card_fin, Fintype.card_coe] using hc)
@@ -102,5 +97,4 @@ theorem projective_plane_equation_bound {d : ℕ}
     exact h.trans (mul_le_mul_of_nonneg_right hC (sq_nonneg B))
   · exact projective_plane_rational_count f hf (by omega) hir hB
 
-end
 end CCDN

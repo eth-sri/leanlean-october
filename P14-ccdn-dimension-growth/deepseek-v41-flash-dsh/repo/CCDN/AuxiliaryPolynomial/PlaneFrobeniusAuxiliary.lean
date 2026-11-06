@@ -24,12 +24,11 @@ All formal branches are constructed from the nonsingularity assumptions.
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- Successive tangent derivatives vanishing at distinct smooth points force
 N times their cardinality to be at most the section-degree product. -/
-private theorem plane_tangent_multiplicity_bound {K ι : Type*} [Field K]
+theorem plane_tangent_multiplicity_bound {K ι : Type*} [Field K]
     [Fintype ι] [DecidableEq ι]
     (f : MvPolynomial (Fin 2) K) (hf : Irreducible f)
     (z : ι → Fin 2 → K) (hz : Function.Injective z)
@@ -51,7 +50,7 @@ private theorem plane_tangent_multiplicity_bound {K ι : Type*} [Field K]
     (hsmooth i) g N hchar (hvan i)
 
 /-- Characteristic p allows all requested multiplicities up to p. -/
-private theorem plane_tangent_multiplicity_bound_charP {K ι : Type*} [Field K]
+theorem plane_tangent_multiplicity_bound_charP {K ι : Type*} [Field K]
     [Fintype ι] [DecidableEq ι] (p : ℕ) [CharP K p]
     (f : MvPolynomial (Fin 2) K) (hf : Irreducible f)
     (z : ι → Fin 2 → K) (hz : Function.Injective z)
@@ -63,7 +62,6 @@ private theorem plane_tangent_multiplicity_bound_charP {K ι : Type*} [Field K]
   plane_tangent_multiplicity_bound f hf z hz hzero j hsmooth g hnd N
     (fun _ hn hnN ↦ CharP.natCast_ne_zero_of_lt K hn.ne' (hnN.trans_le hN)) hvan
 
-end
 end CCDN
 
 namespace CCDN
@@ -71,11 +69,11 @@ noncomputable section
 open MvPolynomial
 
 /-- Polynomial used in the Stepanov construction. -/
-private def planeFrobeniusAuxiliary {K ι : Type*} [Field K] [Fintype ι]
+def planeFrobeniusAuxiliary {K ι : Type*} [Field K] [Fintype ι]
     (p : ℕ) (h a : ι → MvPolynomial (Fin 2) K) : MvPolynomial (Fin 2) K :=
   ∑ i, h i * (a i) ^ p
 
-private lemma planeFrobeniusAuxiliary_degree {K ι : Type*} [Field K] [Fintype ι]
+lemma planeFrobeniusAuxiliary_degree {K ι : Type*} [Field K] [Fintype ι]
     (p : ℕ) (h a : ι → MvPolynomial (Fin 2) K) {D A : ℕ}
     (hd : ∀ i, (h i).totalDegree ≤ D) (ha : ∀ i, (a i).totalDegree ≤ A) :
     (planeFrobeniusAuxiliary p h a).totalDegree ≤ D + p * A := by
@@ -86,7 +84,7 @@ private lemma planeFrobeniusAuxiliary_degree {K ι : Type*} [Field K] [Fintype �
 
 /-- A nontrivial coefficient class gives a proper section, with the precise
 low-degree restriction d*D<p. -/
-private theorem planeFrobeniusAuxiliary_not_dvd {K ι : Type*} [Field K]
+theorem planeFrobeniusAuxiliary_not_dvd {K ι : Type*} [Field K]
     [Fintype ι] [DecidableEq ι] (p : ℕ) [Fact p.Prime] [CharP K p]
     (f : MvPolynomial (Fin 2) K) (hf : Irreducible f)
     (z : Fin 2 → K) (j : Fin 2) (hz : eval z f = 0)
@@ -106,12 +104,12 @@ private theorem planeFrobeniusAuxiliary_not_dvd {K ι : Type*} [Field K]
   obtain ⟨i, hai⟩ := ha
   exact hai ((hfaith (a i)).mp (hzero i))
 
-private lemma derivation_prime_power_zero {K : Type*} [Field K] (p : ℕ) [CharP K p]
+lemma derivation_prime_power_zero {K : Type*} [Field K] (p : ℕ) [CharP K p]
     (D : Derivation K (MvPolynomial (Fin 2) K) (MvPolynomial (Fin 2) K))
     (g : MvPolynomial (Fin 2) K) : D (g ^ p) = 0 := by
   rw [Derivation.leibniz_pow, nsmul_eq_mul, CharP.cast_eq_zero, zero_mul]
 
-private lemma planeFrobeniusAuxiliary_iterate {K ι : Type*} [Field K] [Fintype ι]
+lemma planeFrobeniusAuxiliary_iterate {K ι : Type*} [Field K] [Fintype ι]
     (p : ℕ) [CharP K p]
     (D : Derivation K (MvPolynomial (Fin 2) K) (MvPolynomial (Fin 2) K))
     (h a : ι → MvPolynomial (Fin 2) K) (r : ℕ) :
@@ -128,7 +126,7 @@ private lemma planeFrobeniusAuxiliary_iterate {K ι : Type*} [Field K] [Fintype 
 
 /-- Divisibility constraints on the unpowered coefficients force all requested
 tangent derivatives to vanish at every rational point over the prime field. -/
-private theorem planeFrobeniusAuxiliary_tangent_vanishing {ι : Type*} [Fintype ι]
+theorem planeFrobeniusAuxiliary_tangent_vanishing {ι : Type*} [Fintype ι]
     (p : ℕ) [Fact p.Prime] (f : MvPolynomial (Fin 2) (ZMod p)) (j : Fin 2)
     (h a : ι → MvPolynomial (Fin 2) (ZMod p)) (r : ℕ)
     (hdiv : f ∣ ∑ i, (planeTangent f j)^[r] (h i) * a i)
@@ -156,7 +154,6 @@ theorem planeFrobeniusAuxiliary_point_bound {ι κ : Type*}
     (hne : ∃ k, ¬ f ∣ a k)
     (hdiv : ∀ r < N, f ∣ ∑ k, (planeTangent f j)^[r] (h k) * a k) :
     Fintype.card ι * N ≤ f.totalDegree * (D + p * A) := by
-  classical
   cases isEmpty_or_nonempty ι with
   | inl he => simp
   | inr he =>

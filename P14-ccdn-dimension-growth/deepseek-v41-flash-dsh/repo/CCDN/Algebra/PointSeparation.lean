@@ -18,9 +18,8 @@ Powers of any nonzero element vanishing at the selected points give
 independent classes.
 -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- Powers of a nonzero element times point separators are jointly independent
 when that element vanishes under all point evaluations. -/
@@ -30,7 +29,6 @@ theorem separator_powers_independent {K A ι : Type*} [Field K] [CommRing A]
     (hzero : ∀ i, φ i l = 0)
     (hsep : ∀ i j, φ i (h j) = if i = j then 1 else 0) (N : ℕ) :
     LinearIndependent K (fun t : ι × Fin N => h t.1 * l ^ t.2.val) := by
-  classical
   induction N with
   | zero => exact linearIndependent_empty_type
   | succ N ih =>
@@ -63,7 +61,6 @@ theorem exists_point_separators {K σ ι : Type*} [Field K] [Fintype ι] [Decida
     (z : ι → σ → K) (hz : Function.Injective z) :
     ∃ h : ι → MvPolynomial σ K, ∀ i j,
       MvPolynomial.eval (z i) (h j) = if i = j then 1 else 0 := by
-  classical
   have hex (i : ι) : ∃ h : MvPolynomial σ K,
       MvPolynomial.eval (z i) h = 1 ∧
       ∀ j, j ≠ i → MvPolynomial.eval (z j) h = 0 := by
@@ -92,5 +89,4 @@ theorem exists_point_separators {K σ ι : Type*} [Field K] [Fintype ι] [Decida
     simpa using hon i
   · simpa [he] using hoff j i he
 
-end
 end CCDN

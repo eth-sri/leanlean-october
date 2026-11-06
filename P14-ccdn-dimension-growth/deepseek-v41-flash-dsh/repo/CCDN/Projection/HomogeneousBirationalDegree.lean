@@ -17,12 +17,11 @@ import Mathlib.LinearAlgebra.FreeModule.PID
 Hilbert multiplicity. The conductor shifts the filtration by a fixed amount,
 which leaves the leading coefficient of the Hilbert polynomial unchanged. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private theorem conductor_filtered_finrank_le
+theorem conductor_filtered_finrank_le
     {K σ τ : Type*} [Field K] [Fintype σ] [Fintype τ]
     (I : Ideal (MvPolynomial τ K)) [I.IsPrime]
     (hI : IsHomogeneousIdeal I)
@@ -34,7 +33,6 @@ private theorem conductor_filtered_finrank_le
     Module.finrank K (filteredCoordinateSpace I N) ≤
       Module.finrank K (filteredCoordinateSpace
         (RingHom.ker (projectionCoordinateMap I a)) (c.totalDegree + N)) := by
-  classical
   let ψ := projectionCoordinateMap I a
   let J := RingHom.ker ψ
   let V := filteredCoordinateSpace I N
@@ -72,7 +70,7 @@ private theorem conductor_filtered_finrank_le
     exact he i
   simpa only [Fintype.card_fin] using hwi.fintype_card_le_finrank
 
-private theorem filteredHilbertPolynomial_leadingCoeff_le_of_shift
+theorem filteredHilbertPolynomial_leadingCoeff_le_of_shift
     {K L σ τ : Type*} [Field K] [Field L] [Fintype σ] [Fintype τ]
     [LinearOrder σ] [LinearOrder τ]
     (I : Ideal (MvPolynomial σ K)) (J : Ideal (MvPolynomial τ L))
@@ -129,5 +127,4 @@ theorem homogeneous_projection_leadingCoeff_eq
   · exact filteredHilbertPolynomial_leadingCoeff_le_of_shift _ _ hIproper hJproper hd.symm
       c.totalDegree (conductor_filtered_finrank_le I hI a ha c hc hconductor)
 
-end
 end CCDN

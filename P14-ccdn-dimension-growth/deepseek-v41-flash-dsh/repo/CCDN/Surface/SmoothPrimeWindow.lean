@@ -17,16 +17,14 @@ import CCDN.Height.PolynomialBoxHeight
 in one common finite window. The excluded primes divide one nonzero partial
 derivative value, whose height is bounded directly from the equation. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Finset
 
-private theorem integer_pderiv_coefficient_bound {σ : Type*} [Fintype σ]
+theorem integer_pderiv_coefficient_bound {σ : Type*} [Fintype σ]
     (f : MvPolynomial σ ℤ) (j : σ) {H : ℝ} (hH : 0 ≤ H)
     (hcoeff : CoefficientHeightLE f H) (e : σ →₀ ℕ) :
     |((pderiv j f).coeff e : ℝ)| ≤ ((f.totalDegree : ℝ) + 1) * H := by
-  classical
   rw [coeff_pderiv]
   by_cases hz : f.coeff (e + Finsupp.single j 1) = 0
   · simp only [hz, zero_mul, Int.cast_zero, abs_zero]
@@ -46,14 +44,14 @@ private theorem integer_pderiv_coefficient_bound {σ : Type*} [Fintype σ]
         mul_le_mul_of_nonneg_left heR hH
       _ = _ := by ring
 
-private theorem integer_pderiv_totalDegree_le {σ : Type*}
+theorem integer_pderiv_totalDegree_le {σ : Type*}
     (f : MvPolynomial σ ℤ) (j : σ) :
     (pderiv j f).totalDegree ≤ f.totalDegree := by
   rw [← rational_map_totalDegree (pderiv j f), ← pderiv_map]
   exact (pderiv_totalDegree_le (map (Int.castRingHom ℚ) f) j).trans
     (by rw [rational_map_totalDegree]; omega)
 
-private theorem integer_pderiv_evaluation_bound {n : ℕ}
+theorem integer_pderiv_evaluation_bound {n : ℕ}
     (f : MvPolynomial (Fin n) ℤ) (j : Fin n) {H B : ℝ}
     (hH : 0 ≤ H) (hB : 1 ≤ B)
     (hcoeff : CoefficientHeightLE f H)
@@ -70,7 +68,6 @@ private theorem integer_pderiv_evaluation_bound {n : ℕ}
       eval₂_comp_left (Int.castRingHom ℝ) (RingHom.id ℤ) x (pderiv j f)
   rw [← heval, Fintype.card_fin] at hb
   have hdeg := integer_pderiv_totalDegree_le f j
-  have hdegR : ((pderiv j f).totalDegree : ℝ) ≤ f.totalDegree := by exact_mod_cast hdeg
   calc
     _ ≤ (((pderiv j f).totalDegree : ℝ) + 1) ^ n *
         (((f.totalDegree : ℝ) + 1) * H) * B ^ (pderiv j f).totalDegree := hb
@@ -79,7 +76,7 @@ private theorem integer_pderiv_evaluation_bound {n : ℕ}
       gcongr
     _ = _ := by rw [pow_succ]; ring
 
-private theorem integer_pderiv_log_bound {n : ℕ}
+theorem integer_pderiv_log_bound {n : ℕ}
     (f : MvPolynomial (Fin n) ℤ) (j : Fin n) {H B : ℝ}
     (hH : 1 ≤ H) (hB : 1 ≤ B)
     (hcoeff : CoefficientHeightLE f H)
@@ -115,7 +112,6 @@ theorem exists_smooth_prime_window_subset {n : ℕ}
       Real.exp L ≤ ∏ p ∈ P, (p : ℝ) ∧
       ∀ p ∈ P, ∃ j, eval (fun i => (x i : ZMod p))
         (pderiv j (map (Int.castRingHom (ZMod p)) f)) ≠ 0 := by
-  classical
   obtain ⟨j, hj⟩ := hsmooth
   let D := eval x (pderiv j f)
   have hD : D ≠ 0 := hj
@@ -133,5 +129,4 @@ theorem exists_smooth_prime_window_subset {n : ℕ}
   rw [he]
   exact fun h => hnd ((ZMod.intCast_zmod_eq_zero_iff_dvd D p).mp h)
 
-end
 end CCDN

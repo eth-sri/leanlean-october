@@ -11,9 +11,8 @@ import CCDN.Algebra.RowSelection
 /-! Homogeneous equations give nonzero relations on the complete
 homogeneous evaluation matrix and hence strictly deficient row rank. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Matrix
 
 /-- A homogeneous polynomial of degree `M` in `n + 1` variables is the sum of its terms over
@@ -21,7 +20,6 @@ the degree-`M` monomials enumerated by `homogeneousMonomials n M`. -/
 lemma homogeneous_eq_sum_coeff {K : Type*} [CommSemiring K] {n M : ℕ}
     (f : MvPolynomial (Fin (n + 1)) K) (hf : f.IsHomogeneous M) :
     f = ∑ j, monomial (homogeneousMonomials n M j) (f.coeff (homogeneousMonomials n M j)) := by
-  classical
   ext p
   by_cases hp : p.degree = M
   · obtain ⟨j, rfl⟩ := homogeneousMonomials_surjective n M p hp
@@ -37,7 +35,7 @@ lemma homogeneous_eq_sum_coeff {K : Type*} [CommSemiring K] {n M : ℕ}
     rw [← h]
     exact homogeneousMonomials_degree n M j
 
-private lemma homogeneous_coefficients_ne_zero {n M : ℕ}
+lemma homogeneous_coefficients_ne_zero {n M : ℕ}
     (f : MvPolynomial (Fin (n + 1)) ℤ) (hf : f.IsHomogeneous M) (hf0 : f ≠ 0) :
     (fun j => f.coeff (homogeneousMonomials n M j)) ≠ 0 := by
   intro h
@@ -46,7 +44,7 @@ private lemma homogeneous_coefficients_ne_zero {n M : ℕ}
   have hz : ∀ j, f.coeff (homogeneousMonomials n M j) = 0 := fun j => congrFun h j
   simp only [hz, monomial_zero, Finset.sum_const_zero]
 
-private lemma homogeneous_evaluation_kernel {n M t : ℕ}
+lemma homogeneous_evaluation_kernel {n M t : ℕ}
     (f : MvPolynomial (Fin (n + 1)) ℤ) (hf : f.IsHomogeneous M)
     (points : Fin t → (Fin (n + 1) → ℤ)) (hzero : ∀ i, eval (points i) f = 0) :
     evaluationMatrix (homogeneousMonomials n M) points *ᵥ
@@ -98,5 +96,4 @@ theorem homogeneous_independent_evaluation_rows {n d M t : ℕ}
   obtain ⟨s, a, ha, hli, hspan, hs⟩ := exists_independent_spanning_rows_lt _ _ hv hkQ
   exact ⟨s, a, ha, hli, hspan, hs⟩
 
-end
 end CCDN

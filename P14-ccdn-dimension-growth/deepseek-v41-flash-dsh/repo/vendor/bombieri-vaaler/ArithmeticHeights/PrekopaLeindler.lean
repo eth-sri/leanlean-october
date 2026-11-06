@@ -152,7 +152,7 @@ theorem ENNReal.iSup_rpow {ι : Sort*} (u : ι → ENNReal) {p : ℝ} (hp : 0 < 
 
 /-- The one-dimensional Brunn–Minkowski inequality for compact sets: translate `s` by `sInf t` and
 `t` by `sSup s`; the two translates lie in `s + t` and meet only at `sSup s + sInf t`. -/
-private theorem Real.volume_add_volume_le_volume_add_of_isCompact {s t : Set ℝ} (hs : IsCompact s)
+theorem Real.volume_add_volume_le_volume_add_of_isCompact {s t : Set ℝ} (hs : IsCompact s)
     (ht : IsCompact t) (hsne : s.Nonempty) (htne : t.Nonempty) :
     volume s + volume t ≤ volume (s + t) := by
   set a := sSup s with hadef
@@ -225,7 +225,7 @@ theorem Real.volume_add_volume_le_volume_add {s t : Set ℝ} (hs : MeasurableSet
 
 /-- The Lebesgue measure of `{t | 0 < t ∧ ENNReal.ofReal t < c}` is `c`, for every `c : ℝ≥0∞`:
 the interval `Ioo 0 c.toReal` when `c` is finite, and `Ioi 0` when it is not. -/
-private theorem Real.volume_setOf_ofReal_lt (c : ENNReal) :
+theorem Real.volume_setOf_ofReal_lt (c : ENNReal) :
     volume {t : ℝ | 0 < t ∧ ENNReal.ofReal t < c} = c := by
   rcases eq_or_ne c ⊤ with hc | hc
   · subst hc
@@ -284,7 +284,7 @@ theorem MeasureTheory.lintegral_eq_lintegral_measure_ofReal_lt {α : Type*} [Mea
 *arithmetic mean* form `a * ∫⁻ f + b * ∫⁻ g ≤ ∫⁻ h`. This is where the one-dimensional
 Brunn–Minkowski inequality and the layer cake formula are used; everything else in the file is
 bookkeeping around it. -/
-private theorem Real.prekopaLeindler_of_le_one {a b : ℝ} (ha : 0 < a) (hb : 0 < b)
+theorem Real.prekopaLeindler_of_le_one {a b : ℝ} (ha : 0 < a) (hb : 0 < b)
     (hab : a + b = 1) {f g h : ℝ → ENNReal} (hf : Measurable f) (hg : Measurable g)
     (hh : Measurable h) (hf1 : ∀ x, f x ≤ 1) (hg1 : ∀ y, g y ≤ 1)
     (hfne : ∀ t : ℝ, 0 < t → t < 1 → {x | ENNReal.ofReal t < f x}.Nonempty)
@@ -356,7 +356,7 @@ private theorem Real.prekopaLeindler_of_le_one {a b : ℝ} (ha : 0 < a) (hb : 0 
 
 /-- Prékopa–Leindler on `ℝ` for functions bounded by `M` and `N` whose suprema are `M` and `N`:
 normalize by `M` and `N` and appeal to `Real.prekopaLeindler_of_le_one`. -/
-private theorem Real.prekopaLeindler_of_le {a b : ℝ} (ha : 0 < a) (hb : 0 < b) (hab : a + b = 1)
+theorem Real.prekopaLeindler_of_le {a b : ℝ} (ha : 0 < a) (hb : 0 < b) (hab : a + b = 1)
     {f g h : ℝ → ENNReal} (hf : Measurable f) (hg : Measurable g) (hh : Measurable h)
     {M N : ENNReal} (hM0 : M ≠ 0) (hMT : M ≠ ⊤) (hN0 : N ≠ 0) (hNT : N ≠ ⊤)
     (hfM : ∀ x, f x ≤ M) (hgN : ∀ y, g y ≤ N)

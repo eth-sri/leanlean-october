@@ -20,7 +20,6 @@ fixing the homogenizing coordinate is integral as well. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The coefficient bound `n! * (d + 1) ^ n` for the bounded linear Noether normalization of a
@@ -32,12 +31,12 @@ lemma integerNormalizationHeight_pos (n d : ℕ) : 0 < integerNormalizationHeigh
   dsimp [integerNormalizationHeight]
   positivity
 
-private lemma integerNormalizationHeight_mono (n : ℕ) {d e : ℕ} (h : d ≤ e) :
+lemma integerNormalizationHeight_mono (n : ℕ) {d e : ℕ} (h : d ≤ e) :
     integerNormalizationHeight n d ≤ integerNormalizationHeight n e := by
   dsimp [integerNormalizationHeight]
   gcongr
 
-private lemma integerNormalizationHeight_step (n d : ℕ) :
+lemma integerNormalizationHeight_step (n d : ℕ) :
     n * integerNormalizationHeight n d * (d + 1) ≤
       integerNormalizationHeight (n + 1) d := by
   dsimp [integerNormalizationHeight]
@@ -145,5 +144,4 @@ theorem exists_bounded_integer_normalization (m k : ℕ)
   obtain ⟨a, ha, hint, hinj, -⟩ := exists_bounded_integer_closure_normalization m k I d hdimdeg
   exact ⟨a, ha, hint, hinj⟩
 
-end
 end CCDN

@@ -15,13 +15,11 @@ import Mathlib.RingTheory.Polynomial.IsIntegral
 irreducible. Applied to the norm-polynomial factorization, this detects
 the even-index subfield exceptions. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial NumberField IntermediateField Module
-open scoped IntermediateField
 
-private lemma rootMultiplicity_pow_exact {F : Type*} [Field F] (p : F[X]) (hp : p ≠ 0)
+lemma rootMultiplicity_pow_exact {F : Type*} [Field F] (p : F[X]) (hp : p ≠ 0)
     (a : F) (n : ℕ) :
     rootMultiplicity a (p ^ n) = n * rootMultiplicity a p := by
   induction n with
@@ -30,7 +28,7 @@ private lemma rootMultiplicity_pow_exact {F : Type*} [Field F] (p : F[X]) (hp : 
     rw [pow_succ, rootMultiplicity_mul (mul_ne_zero (pow_ne_zero n hp) hp), ih]
     ring
 
-private lemma odd_rootMultiplicity_not_square_ratFunc {F : Type*} [Field F]
+lemma odd_rootMultiplicity_not_square_ratFunc {F : Type*} [Field F]
     (p : F[X]) (hp : p ≠ 0) (a : F) (ha : Odd (rootMultiplicity a p))
     (b : RatFunc F) :
     b ^ 2 ≠ algebraMap F[X] (RatFunc F) p := by
@@ -57,7 +55,7 @@ private lemma odd_rootMultiplicity_not_square_ratFunc {F : Type*} [Field F]
   obtain ⟨k, hk⟩ := ha
   omega
 
-private lemma double_cover_irreducible_of_odd_root_multiplicity {F : Type*} [Field F]
+lemma double_cover_irreducible_of_odd_root_multiplicity {F : Type*} [Field F]
     (p : F[X]) (hp : p ≠ 0) (a : F) (ha : Odd (rootMultiplicity a p)) :
     Irreducible (X ^ 2 - C p : F[X][X]) := by
   apply (Polynomial.Monic.irreducible_iff_irreducible_map_fraction_map
@@ -66,7 +64,7 @@ private lemma double_cover_irreducible_of_odd_root_multiplicity {F : Type*} [Fie
   exact X_pow_sub_C_irreducible_of_prime Nat.prime_two
     (odd_rootMultiplicity_not_square_ratFunc p hp a ha)
 
-private lemma separable_odd_power_double_cover_irreducible
+lemma separable_odd_power_double_cover_irreducible
     {F : Type*} [Field F] [IsAlgClosed F]
     (p : F[X]) (hp : p.Separable) (hd : 0 < p.natDegree)
     {c : F} (hc : c ≠ 0) {e : ℕ} (he : Odd e) :
@@ -110,5 +108,4 @@ theorem signedNormCurvePolynomial_absolute_irreducible_of_odd_subfield_index
   · change (ε : AlgebraicClosure ℚ) ≠ 0
     exact_mod_cast hε
 
-end
 end CCDN

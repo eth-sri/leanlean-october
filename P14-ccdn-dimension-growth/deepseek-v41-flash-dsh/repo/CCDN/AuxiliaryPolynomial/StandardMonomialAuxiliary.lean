@@ -14,9 +14,8 @@ import CCDN.Algebra.RowSelection
 /-! Vanishing maximal determinants on a standard-monomial family produce
 an integer auxiliary outside the original principal ideal. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial Matrix
 
 /-- If `mon` is an injective family of `N` standard monomials (for the degree-lexicographic order)
@@ -34,7 +33,6 @@ theorem exists_standard_auxiliary_of_zero_determinants {n N t M : ℕ}
     ∃ g : MvPolynomial (Fin n) ℤ, g ≠ 0 ∧
       ¬ f ∣ map (Int.castRingHom ℚ) g ∧ g.totalDegree ≤ M ∧
       ∀ i, eval (x i) g = 0 := by
-  classical
   let A := evaluationMatrix mon x
   obtain ⟨r, a, _, hli, hspan, hr⟩ := exists_independent_spanning_rows (A.map ((↑) : ℤ → ℚ))
   have hrN : r < N := by
@@ -82,5 +80,4 @@ theorem exists_standard_auxiliary_of_zero_determinants {n N t M : ℕ}
       ((↑) : ℤ → ℚ)).row) = Submodule.span ℚ (Set.range (A.map ((↑) : ℤ → ℚ)).row) from hspan]
     exact Submodule.subset_span ⟨i, rfl⟩
 
-end
 end CCDN

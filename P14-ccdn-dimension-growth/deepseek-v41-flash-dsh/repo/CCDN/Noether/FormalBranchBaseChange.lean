@@ -27,14 +27,14 @@ noncomputable section
 open scoped TensorProduct
 
 /-- Extend a power-series-valued algebra map by scalars. -/
-private def formalBranchBaseChange {K L A : Type*} [Field K] [Field L] [Algebra K L]
+def formalBranchBaseChange {K L A : Type*} [Field K] [Field L] [Algebra K L]
     [CommRing A] [Algebra K A] (ψ : A →ₐ[K] PowerSeries K) :
     L ⊗[K] A →ₐ[L] PowerSeries L :=
   AlgHom.liftEquiv K L A (PowerSeries L)
     ((PowerSeries.mapAlgHom (Algebra.ofId K L)).comp ψ)
 
 /-- Scalar extension of a faithful formal branch is faithful. -/
-private theorem formalBranchBaseChange_injective
+theorem formalBranchBaseChange_injective
     {K L A : Type*} [Field K] [Field L] [Algebra K L]
     [CommRing A] [Algebra K A] (ψ : A →ₐ[K] PowerSeries K)
     (hψ : Function.Injective ψ) :
@@ -48,7 +48,7 @@ private theorem formalBranchBaseChange_injective
 
 /-- Any algebra admitting a faithful power-series branch stays a domain under
 an arbitrary extension of its coefficient field. -/
-private theorem isDomain_tensor_of_faithful_formal_branch
+theorem isDomain_tensor_of_faithful_formal_branch
     {K L A : Type*} [Field K] [Field L] [Algebra K L]
     [CommRing A] [Algebra K A] (ψ : A →ₐ[K] PowerSeries K)
     (hψ : Function.Injective ψ) : IsDomain (L ⊗[K] A) :=
@@ -65,7 +65,7 @@ theorem isDomain_tensor_plane_quotient_of_smooth_point
     (hj : MvPolynomial.eval z (MvPolynomial.pderiv j f) ≠ 0) :
     IsDomain (L ⊗[K] (MvPolynomial (Fin 2) K ⧸ Ideal.span {f})) := by
   obtain ⟨ψ, _, _, hψ⟩ := exists_faithful_formal_plane_branch f hf z j hz hj
-  let I : Ideal (MvPolynomial (Fin 2) K) := Ideal.span {f}
+  let I := Ideal.span {f}
   have hkill : ∀ a ∈ I, ψ a = 0 := by
     intro a ha
     exact (hψ a).mpr (Ideal.mem_span_singleton.mp ha)

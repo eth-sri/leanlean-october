@@ -17,9 +17,8 @@ import Mathlib.RingTheory.Polynomial.UniqueFactorization
 on low-degree functions and verifies the jet condition in Frobenius
 noncancellation for irreducible plane curves. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- If `X ^ N` divides the power series `g`, then the images of `1, X, …, X ^ (N - 1)` in the
@@ -28,7 +27,6 @@ lemma powerSeries_quotient_powers_independent {K : Type*} [Field K]
     (g : PowerSeries K) (N : ℕ) (hvan : PowerSeries.X ^ N ∣ g) :
     LinearIndependent K (fun i : Fin N =>
       (Ideal.Quotient.mkₐ K (Ideal.span {g})) (PowerSeries.X ^ i.val)) := by
-  classical
   rw [Fintype.linearIndependent_iff]
   intro a ha i
   let P := ∑ j : Fin N, a j • (PowerSeries.X : PowerSeries K) ^ j.val
@@ -45,7 +43,7 @@ lemma powerSeries_quotient_powers_independent {K : Type*} [Field K]
 
 /-- If a proper degree-m section vanishes to order N on a formal plane
 branch, then N<=d*m. The parameter map and its equation are maps. -/
-private theorem formal_plane_vanishing_order_bound {K : Type*} [Field K]
+theorem formal_plane_vanishing_order_bound {K : Type*} [Field K]
     (f : MvPolynomial (Fin 2) K) (hf : Irreducible f)
     (ψ : MvPolynomial (Fin 2) K →ₐ[K] PowerSeries K) (hψ : ψ f = 0)
     (j : Fin 2) (a : K) (hparam : ψ (X j - C a) = PowerSeries.X)
@@ -81,7 +79,7 @@ private theorem formal_plane_vanishing_order_bound {K : Type*} [Field K]
   simpa only [Fintype.card_fin] using hh
 
 /-- Jets longer than d*D detect every degree-at-most-D function on the curve. -/
-private theorem formal_plane_jet_detects_divisibility {K : Type*} [Field K]
+theorem formal_plane_jet_detects_divisibility {K : Type*} [Field K]
     (f : MvPolynomial (Fin 2) K) (hf : Irreducible f)
     (ψ : MvPolynomial (Fin 2) K →ₐ[K] PowerSeries K) (hψ : ψ f = 0)
     (j : Fin 2) (a : K) (hparam : ψ (X j - C a) = PowerSeries.X)
@@ -95,7 +93,7 @@ private theorem formal_plane_jet_detects_divisibility {K : Type*} [Field K]
 
 /-- Low-degree independent classes give independent local jets, with the
 explicit length d*D+1 supplied by the preceding local intersection bound. -/
-private theorem formal_plane_independent_jets {K ι : Type*} [Field K] [Fintype ι] [DecidableEq ι]
+theorem formal_plane_independent_jets {K ι : Type*} [Field K] [Fintype ι] [DecidableEq ι]
     (f : MvPolynomial (Fin 2) K) (hf : Irreducible f)
     (ψ : MvPolynomial (Fin 2) K →ₐ[K] PowerSeries K) (hψ : ψ f = 0)
     (j : Fin 2) (a : K) (hparam : ψ (X j - C a) = PowerSeries.X)
@@ -131,5 +129,4 @@ theorem formal_plane_frobenius_relation_trivial {K ι : Type*} [Field K]
   powerSeries_frobenius_relation_trivial p r (fun i => ψ (h i))
     (formal_plane_independent_jets f hf ψ hψ j a hparam hD h hd hi) g hrel
 
-end
 end CCDN

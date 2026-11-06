@@ -14,7 +14,6 @@ lower bound replaces the first vector's norm in the monotone thresholds. -/
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open Module Submodule
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
@@ -35,7 +34,7 @@ omit [FiniteDimensional ℝ E]
 variable {L : Submodule ℤ E} {w : E} {k : ℕ} {v : Fin (k + 1) → E}
 
 /-- The vectors of a prescribed greedy family are linearly independent. -/
-private theorem IsPrescribedGreedyLatticeFamily.linearIndependent
+theorem IsPrescribedGreedyLatticeFamily.linearIndependent
     (hv : IsPrescribedGreedyLatticeFamily L w v) : LinearIndependent ℝ v := hv.1
 
 /-- The first vector of a prescribed greedy family is the prescribed vector. -/
@@ -56,7 +55,7 @@ theorem IsPrescribedGreedyLatticeFamily.norm_le
 end Projections
 
 omit [FiniteDimensional ℝ E] in
-private theorem IsPrescribedGreedyLatticeFamily.snoc
+theorem IsPrescribedGreedyLatticeFamily.snoc
     {L : Submodule ℤ E} {w : E} {k : ℕ} {v : Fin (k + 1) → E}
     (hv : IsPrescribedGreedyLatticeFamily L w v) {x : E} (hx : x ∈ L)
     (hxU : x ∉ span ℝ (Set.range v))
@@ -79,7 +78,7 @@ private theorem IsPrescribedGreedyLatticeFamily.snoc
 
 /-- Prescribed-first greedy independent lattice vectors of every possible
 length. -/
-private theorem exists_prescribed_greedy_lattice_family
+theorem exists_prescribed_greedy_lattice_family
     (L : Submodule ℤ E) [DiscreteTopology L] [IsZLattice ℝ L]
     (w : E) (hw : w ∈ L) (hw0 : w ≠ 0)
     (k : ℕ) (hk : k + 1 ≤ Module.finrank ℝ E) :
@@ -177,5 +176,4 @@ theorem prescribedLatticeMinima_prod {n : ℕ} (v : Fin (n + 1) → E)
   simp only [prescribedLatticeMinima, Fin.succ_ne_zero, ↓reduceIte, hw]
   rw [← mul_assoc, div_mul_cancel₀ _ hδ]
 
-end
 end CCDN

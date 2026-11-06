@@ -16,9 +16,8 @@ import CCDN.Surface.TopFormBadPrimes
 /-! The uniform surface auxiliary gives a finite curve cover of
 all bounded integer zeros, with total curve degree O(d^(9/2) B^(1/sqrt d)). -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- An absolutely irreducible top form supplies the auxiliary equation, the
@@ -48,7 +47,6 @@ theorem top_form_surface_curve_components
             (map (Int.castRingHom ℚ) g)).IsMinimalPrime P) ∧
           ∀ x : IntPoint 3, InBox x B → eval x f = 0 →
             ∃ P ∈ S, rationalPoint x ∈ idealZeroLocus P := by
-  classical
   have habs := absolute_irreducible_of_top_homogeneousComponent_irreducible f hir
   have hfQ : Irreducible (map (Int.castRingHom ℚ) f) :=
     rational_irreducible_of_charZero_map f habs
@@ -102,5 +100,4 @@ theorem top_form_surface_curve_components
     obtain ⟨hPS, hxP⟩ := Set.mem_iUnion.mp hxP
     exact ⟨P, hPS, hxP⟩
 
-end
 end CCDN

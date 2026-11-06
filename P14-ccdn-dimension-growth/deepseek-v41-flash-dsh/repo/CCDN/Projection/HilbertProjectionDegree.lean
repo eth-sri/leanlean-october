@@ -17,12 +17,11 @@ import CCDN.Projection.HilbertProjectionKernel
 The degree is bounded by the factorial-normalized leading coefficient of
 the original quotient's filtered Hilbert polynomial. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
-private theorem hypersurface_projection_equation_degree_le
+theorem hypersurface_projection_equation_degree_le
     {K τ : Type*} [Field K] [Fintype τ] [LinearOrder τ] {n : ℕ}
     (I : Ideal (MvPolynomial τ K)) (hI : I ≠ ⊤)
     (a : Fin (n + 1) → MvPolynomial τ K) (ha : ∀ i, (a i).totalDegree ≤ 1)
@@ -62,5 +61,4 @@ theorem exists_hypersurface_projection_equation_degree_le
   exact ⟨f, hf, hfdeg, hypersurface_projection_equation_degree_le I
     (Ideal.IsPrime.ne_top ‹I.IsPrime›) a ha d hdimdeg f hf.ne_zero hfdeg hker, hker⟩
 
-end
 end CCDN

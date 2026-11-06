@@ -24,7 +24,6 @@ is exactly its highest indicated homogeneous component.
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- For `f` of total degree at most `D`, the degree-`D` homogenization of `f`, restricted to the
@@ -33,7 +32,6 @@ theorem scaledHomogenize_one_eval_at_infinity {K : Type*} [Field K] {n D : ℕ}
     (f : MvPolynomial (Fin n) K) (hf : f.totalDegree ≤ D) (b : Fin n → K) :
     eval (Fin.cons 0 b) (scaledHomogenize D 1 f) =
       eval b (homogeneousComponent D f) := by
-  classical
   rw [scaledHomogenize, map_sum, homogeneousComponent_apply, map_sum,
     Finset.sum_filter]
   apply Finset.sum_congr rfl
@@ -48,11 +46,9 @@ theorem scaledHomogenize_one_eval_at_infinity {K : Type*} [Field K] {n D : ℕ}
       omega
     simp [h, zero_pow (Nat.ne_of_gt hpos)]
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The integer matrix whose `i`-th row is the linear form `b none * X (i + 1) - b (some i) * X 0`,
@@ -61,7 +57,7 @@ def finEliminationMatrix {n : ℕ} (b : Option (Fin n) → ℤ) :
     Fin n → Fin (n + 1) → ℤ :=
   fun i => Fin.cases (-b (some i)) (fun j => if j = i then b none else 0)
 
-private lemma integerLinearForm_finEliminationMatrix {n : ℕ}
+lemma integerLinearForm_finEliminationMatrix {n : ℕ}
     (b : Option (Fin n) → ℤ) (i : Fin n) :
     integerLinearForm (finEliminationMatrix b i) =
       C (b none : ℚ) * X i.succ - C (b (some i) : ℚ) * X 0 := by
@@ -82,11 +78,9 @@ lemma finEliminationMatrix_height {n d : ℕ} (b : Option (Fin n) → ℤ)
     · simp only [finEliminationMatrix, Fin.cases_succ, ite_eq_right he, abs_zero]
       positivity
 
-end
 end CCDN
 
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The reindexing of `Fin (n + 2)` that sends coordinate `1` to `none` and the remaining
@@ -128,11 +122,11 @@ def closurePivotEquiv (n : ℕ) : Fin (n + 2) ≃ Option (Fin (n + 1)) :=
     (closurePivotEquiv n).symm (some i.succ) = i.succ.succ := by
   exact (closurePivotEquiv n).symm_apply_eq.mpr (closurePivotEquiv_succ_succ i).symm
 
-private def closureEliminationDirection {n : ℕ} (b : Option (Fin n) → ℤ) :
+def closureEliminationDirection {n : ℕ} (b : Option (Fin n) → ℤ) :
     Option (Fin (n + 1)) → ℤ :=
   Option.elim' (b none) (Fin.cons 0 (fun i => b (some i)))
 
-private lemma closureEliminationDirection_comp {n : ℕ} (b : Option (Fin n) → ℤ) :
+lemma closureEliminationDirection_comp {n : ℕ} (b : Option (Fin n) → ℤ) :
     (fun i => (closureEliminationDirection b (closurePivotEquiv n i) : ℚ)) =
       Fin.cons 0 (Fin.cons (b none : ℚ) (fun i => (b (some i) : ℚ))) := by
   funext i
@@ -144,7 +138,7 @@ private lemma closureEliminationDirection_comp {n : ℕ} (b : Option (Fin n) →
     · rw [closurePivotEquiv_succ_succ]
       rfl
 
-private lemma closureEliminationDirection_eval {n : ℕ} (b : Option (Fin n) → ℤ)
+lemma closureEliminationDirection_eval {n : ℕ} (b : Option (Fin n) → ℤ)
     (f : MvPolynomial (Fin (n + 1)) ℚ) :
     eval (fun i => (closureEliminationDirection b i : ℚ))
         (rename (closurePivotEquiv n) (scaledHomogenize f.totalDegree 1 f)) =
@@ -232,5 +226,4 @@ theorem fixedCoordinateElimination_isIntegral {n : ℕ}
   rw [heq] at hcomp
   exact RingHom.IsIntegral.tower_top χ.toRingHom ψ.toRingHom hcomp
 
-end
 end CCDN

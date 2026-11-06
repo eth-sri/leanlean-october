@@ -68,8 +68,7 @@ theorem projectiveMonomial_mem_infinityIdeal {K σ : Type*} [Field K]
     exact g.property n
   · intro ha
     refine ⟨projectiveMonomialMap I n ⟨a, ha⟩, ?_⟩
-    apply Subtype.ext
-    exact (Polynomial.X_mul_monomial n (a : MvPolynomial σ K ⧸ I)).symm
+    exact Subtype.ext (Polynomial.X_mul_monomial n (a : MvPolynomial σ K ⧸ I)).symm
 
 /-- Map a homogeneous piece to the quotient by the infinity coordinate. -/
 def projectivePieceToInfinity {K σ : Type*} [Field K]
@@ -79,7 +78,7 @@ def projectivePieceToInfinity {K σ : Type*} [Field K]
   (Ideal.Quotient.mkₐ K (projectiveInfinityIdeal I)).toLinearMap.comp
     (projectiveMonomialMap I (n + 1))
 
-private lemma projectivePieceToInfinity_ker {K σ : Type*} [Field K]
+lemma projectivePieceToInfinity_ker {K σ : Type*} [Field K]
     (I : Ideal (MvPolynomial σ K)) (n : ℕ) :
     (projectivePieceToInfinity I n).ker =
       (filteredCoordinateSpace I n).comap (filteredCoordinateSpace I (n + 1)).subtype := by
@@ -101,7 +100,7 @@ instance infinityGradedSpace_finite {K σ : Type*} [Field K] [Finite σ]
   infer_instance
 
 /-- The exact Hilbert difference for the homogeneous infinity quotient. -/
-private theorem infinityGradedSpace_finrank {K σ : Type*} [Field K] [Finite σ]
+theorem infinityGradedSpace_finrank {K σ : Type*} [Field K] [Finite σ]
     (I : Ideal (MvPolynomial σ K)) (n : ℕ) :
     Module.finrank K (infinityGradedSpace I n) +
       Module.finrank K (filteredCoordinateSpace I n) =

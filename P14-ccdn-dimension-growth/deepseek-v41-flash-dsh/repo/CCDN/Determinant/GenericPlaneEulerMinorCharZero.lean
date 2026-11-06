@@ -16,12 +16,11 @@ import CCDN.Noether.ShearNormalization
 exactly d²−1, and the smooth-point argument constructs the geometric
 irreducibility needed by the characteristic-zero closed-form theorem. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 open Polynomial Matrix MvPolynomial
 
-private theorem exists_euler_minor_of_smooth_plane_point_charZero
+theorem exists_euler_minor_of_smooth_plane_point_charZero
     {K : Type*} [Field K] [CharZero K]
     (k : ℕ) (f : MvPolynomial (Fin 2) K) (hf : Irreducible f)
     (z : Fin 2 → K) (j : Fin 2)
@@ -38,7 +37,7 @@ private theorem exists_euler_minor_of_smooth_plane_point_charZero
     dsimp only [g]
     rw [bivariatePolynomialEquiv_map, MulEquiv.irreducible_iff (f := bivariatePolynomialEquiv L)]
     exact irreducible_map_of_smooth_plane_point f hf z j hz hj
-  have hgm : g.Monic := bivariateMap_monic φ hm
+  have hgm := bivariateMap_monic φ hm
   have hgd : g.natDegree = k + 2 := by
     rw [bivariateMap_natDegree_of_monic φ hm, hdeg]
   obtain ⟨a, c, hdet⟩ := exists_eulerClosedForm_nonzero_minor k g hgi
@@ -48,7 +47,7 @@ private theorem exists_euler_minor_of_smooth_plane_point_charZero
   apply hdet
   rw [← eulerClosedForm_minor_map, he, map_zero]
 
-private theorem exists_genericPlane_euler_minor_charZero
+theorem exists_genericPlane_euler_minor_charZero
     {K σ : Type*} [Field K] [CharZero K]
     (k : ℕ) (f : MvPolynomial (Option σ) K) (hf : Irreducible f)
     (hm : (optionEquivLeft K σ f).Monic)
@@ -84,5 +83,4 @@ theorem exists_positioned_genericPlane_euler_minor_charZero
   exact ⟨a, b, hb, hdir, exists_genericPlane_euler_minor_charZero k _ hg.irreducible hg.monic
     (hd ▸ hg.natDegree_eq) hg.eval_zero hg.pderiv_ne_zero⟩
 
-end
 end CCDN

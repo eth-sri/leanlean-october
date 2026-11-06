@@ -13,9 +13,8 @@ import Mathlib.Tactic.Positivity
 /-! Polynomial parameters of degree at most q have function-field degree
 at most the Hilbert multiplicity times q to the dimension. -/
 
-@[expose] public section
+public section
 namespace CCDN
-noncomputable section
 
 /-- If `I` has affine dimension `m` and degree `d`, and `r · (m + N).choose m` is at most the affine
 Hilbert function of `I` at `D + q N` for all `N`, then `r ≤ d · q ^ m`. -/
@@ -74,5 +73,4 @@ theorem hilbert_scaled_block_count_le_multiplicity
     ring
   exact_mod_cast hqbound
 
-end
 end CCDN

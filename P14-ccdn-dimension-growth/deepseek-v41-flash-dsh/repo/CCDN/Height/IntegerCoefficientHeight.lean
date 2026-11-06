@@ -13,7 +13,6 @@ public import Mathlib.Basic.Real.Basic
 
 @[expose] public section
 namespace CCDN
-noncomputable section
 open MvPolynomial
 
 /-- The height of an integer polynomial: the maximum absolute value of its coefficients, or `0` for
@@ -42,7 +41,6 @@ coefficient height of `f` is at most `H`. -/
 lemma integerCoefficientHeight_le {σ : Type*} (f : MvPolynomial σ ℤ)
     {H : ℝ} (hH : 0 ≤ H) (hc : CoefficientHeightLE f H) :
     (integerCoefficientHeight f : ℝ) ≤ H := by
-  classical
   by_cases hf : f.support.Nonempty
   · obtain ⟨m, _, hm⟩ := Finset.exists_mem_eq_sup f.support hf (fun m => (f.coeff m).natAbs)
     unfold integerCoefficientHeight
@@ -58,5 +56,4 @@ lemma integerCoefficientHeight_pos {σ : Type*} (f : MvPolynomial σ ℤ) (hf : 
   exact (Int.natAbs_pos.mpr hne).trans_le
     (Finset.le_sup (f := fun m => (f.coeff m).natAbs) (mem_support_iff.mpr hne))
 
-end
 end CCDN

@@ -26,13 +26,13 @@ def bivariateEulerContraction (R : Type*) [CommRing R] :
   map_smul' a u := by
     simp only [Prod.smul_fst, Prod.smul_snd, mul_smul_comm, smul_add, RingHom.id_apply]
 
-private lemma bivariateEulerContraction_gradient_leading {R : Type*} [CommRing R]
+lemma bivariateEulerContraction_gradient_leading {R : Type*} [CommRing R]
     (f : R[X][X]) (hm : f.Monic) (hd : 0 < f.natDegree) :
     (bivariateEulerContraction R (f.derivative, (bivariateCoefficientDerivative R) f)).coeff
       f.natDegree = (f.natDegree : R[X]) := by
   obtain ⟨d, he⟩ := Nat.exists_eq_succ_of_ne_zero (Nat.ne_of_gt hd)
   change (X * f.derivative + C X * (bivariateCoefficientDerivative R) f).coeff f.natDegree = _
-  have hc : f.coeff (d + 1) = 1 := by simpa only [he] using hm.coeff_natDegree
+  have hc := by simpa only [he] using hm.coeff_natDegree
   rw [he, coeff_add, coeff_X_mul, coeff_derivative, hc, coeff_C_mul,
     coeff_bivariateCoefficientDerivative, hc, derivative_one]
   simp
