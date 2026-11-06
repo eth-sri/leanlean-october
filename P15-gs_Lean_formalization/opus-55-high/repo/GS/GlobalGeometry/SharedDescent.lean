@@ -1,14 +1,37 @@
 module
 
 public import GS.GlobalGeometry.SharedFactorCurves
-public import GS.RiemannianCompletion.ExponentialStep
+public import Mathlib.LinearAlgebra.Matrix.NonsingularInverse
+public import Mathlib.LinearAlgebra.Matrix.DotProduct
+public import GS.GeometryAlgebra
+public import Mathlib.Analysis.Calculus.ContDiff.Operations
+public import Mathlib.Analysis.Normed.Module.FiniteDimension
+public import Mathlib.Analysis.Matrix.Normed
+public import Mathlib.Topology.Algebra.Group.Basic
+public import Mathlib.Topology.Algebra.Ring.Real
+public import Mathlib.Topology.Order.Compact
+public import Mathlib.Topology.Instances.Matrix
+public import GS.Core
+public import Mathlib.Analysis.CStarAlgebra.Matrix
+public import GS.Continuation.ExponentialCurves
+public import GS.Extensions.TwoFactorProjection
+public import GS.LieAction.Nonoverlap
+public import GS.ManifoldCompletion.OrbitDifferential
+public import GS.Frobenius
+public import GS.Extensions.TransportedProjection
+public import Mathlib.Analysis.Calculus.Deriv.Add
+public import Mathlib.Analysis.Calculus.Deriv.Comp
+public import Mathlib.Analysis.Calculus.Deriv.Mul
+public import Mathlib.Analysis.Calculus.Deriv.Slope
+public import Mathlib.Geometry.Manifold.ContMDiff.NormedSpace
+public import Mathlib.Geometry.Manifold.IsManifold.Basic
+public import Mathlib.Geometry.Manifold.MFDeriv.Basic
+public import Mathlib.LinearAlgebra.BilinearForm.Basic
 public import Mathlib.Analysis.SpecificLimits.Basic
 public import Mathlib.Analysis.Calculus.LocalExtr.Basic
 
 @[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
 /-!
 # Certified descent with actual tied orthogonal factors
@@ -27,39 +50,17 @@ is asserted here.
 
 noncomputable section
 attribute [local instance] Matrix.normedAddCommGroup Matrix.normedSpace
-open Matrix GS GS.Extensions GS.Continuation GS.RiemannianCompletion Filter
-open scoped Topology
 namespace GS.GlobalGeometry
 variable {n : ℕ}
 
-/-- A certified lift of the exact shared core projection. -/
-def sharedProjectionGenerators (b₁ b₂ : ℕ) (τ₁ τ₂ : ℕ → ℕ) (P L R Z : Mat n) :
-    sharedSkewSpace (n := n) b₂ τ₂ × sharedSkewSpace (n := n) b₁ τ₁ :=
-  Classical.choose (frobProjection_mem (sharedCore b₁ b₂ τ₁ τ₂ P) (pull L (P * R) Z))
 
-/-- Exponential step from the certified shared generator pair. -/
-def sharedExpStep (b₁ b₂ : ℕ) (τ₁ τ₂ : ℕ → ℕ) (P L R Z : Mat n) (t : ℝ) : Mat n :=
-  gsExpCurve L P R (sharedProjectionGenerators b₁ b₂ τ₁ τ₂ P L R Z).1.val
-    (sharedProjectionGenerators b₁ b₂ τ₁ τ₂ P L R Z).2.val t
 
-@[simp] theorem sharedExpStep_zero (b₁ b₂ : ℕ) (τ₁ τ₂ : ℕ → ℕ) (P L R Z : Mat n) :
-    sharedExpStep b₁ b₂ τ₁ τ₂ P L R Z 0 = product2 L P R :=
-  gsExpCurve_zero _ _ _ _ _
 
 /-- The image of the actual tied orthogonal factors. -/
 def InSharedA2Orth (b₁ b₂ : ℕ) (τ₁ τ₂ : ℕ → ℕ) (P X : Mat n) : Prop :=
   ∃ L R, SharedOrthogonalFactor b₂ τ₂ L ∧ SharedOrthogonalFactor b₁ τ₁ R ∧
     X = product2 L P R
 
-/-- The negative ambient gradient is first exactly projected and then lifted
-to a feasible exponential factor update. -/
-def sharedDescentStep (b₁ b₂ : ℕ) (τ₁ τ₂ : ℕ → ℕ)
-    (P L R : Mat n) (f : Mat n → ℝ) : ℝ → Mat n :=
-  sharedExpStep b₁ b₂ τ₁ τ₂ P L R (-ambientGradient f (product2 L P R))
 
-@[simp] theorem sharedDescentStep_zero (b₁ b₂ : ℕ) (τ₁ τ₂ : ℕ → ℕ)
-    (P L R : Mat n) (f : Mat n → ℝ) :
-    sharedDescentStep b₁ b₂ τ₁ τ₂ P L R f 0 = product2 L P R :=
-  sharedExpStep_zero _ _ _ _ _ _ _ _
 
 end GS.GlobalGeometry

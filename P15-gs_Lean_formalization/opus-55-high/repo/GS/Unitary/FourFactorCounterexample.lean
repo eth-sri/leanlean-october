@@ -4,8 +4,6 @@ public import GS.Unitary.FourFactor
 
 @[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
 /-!
 # Exact complex four-factor counterexample
@@ -16,20 +14,8 @@ obstruction rules out complex factors as well as real factors.
 -/
 
 noncomputable section
-open Matrix
 namespace GS.UnitaryFour
 open GS.UnitaryGeometry
-
-theorem ofRealMatrix_inA4 {n : ℕ} {b₁ b₂ b₃ b₄ : ℕ} {P₁ P₂ P₃ A : Mat n}
-    (h : InA4 b₁ b₂ b₃ b₄ P₁ P₂ P₃ A) :
-    CInA4 b₁ b₂ b₃ b₄ (ofRealMatrix P₁) (ofRealMatrix P₂)
-      (ofRealMatrix P₃) (ofRealMatrix A) := by
-  rcases h with ⟨B₁,B₂,B₃,B₄,hb₁,hb₂,hb₃,hb₄,he⟩
-  refine ⟨ofRealMatrix B₁,ofRealMatrix B₂,ofRealMatrix B₃,ofRealMatrix B₄,
-    ofRealMatrix_blockDiagonal hb₁,ofRealMatrix_blockDiagonal hb₂,
-    ofRealMatrix_blockDiagonal hb₃,ofRealMatrix_blockDiagonal hb₄,?_⟩
-  simpa only [GS.product4, GS.UnitaryGeometry.product4, ofRealMatrix_mul] using
-    congrArg ofRealMatrix he
 
 @[simp] theorem normDetBlock_ofRealMatrix (A : Mat 6) :
     normDetBlock (ofRealMatrix A) = GS.M4.absDetBlock A := by
@@ -41,24 +27,18 @@ theorem ofRealMatrix_inA4 {n : ℕ} {b₁ b₂ b₃ b₄ : ℕ} {P₁ P₂ P₃ 
 /-- The explicit algebraic matrix, now considered over ℂ. -/
 def Q : CMat 6 := ofRealMatrix GS.M4.Q
 
-theorem Q_unitary : Unitary Q := ofRealMatrix_unitary GS.M4.Q_orthogonal
-
-theorem Q_mem_A4 : CInA4 2 2 2 2 P P P Q :=
-  ofRealMatrix_inA4 GS.M4.Q_mem_A4
-
-theorem Q_not_mem_A4Unitary : ¬ CInA4Unitary 2 2 2 2 P P P Q := by
-  intro h
-  have hden : normDetBlock Q 2 1 * normDetBlock Q 1 0 * normDetBlock Q 1 1 ≠ 0 := by
-    simpa only [Q, normDetBlock_ofRealMatrix] using GS.M4.obstruction_denominator_nonzero
-  have hn := necessaryCondition Q h hden
-  have hr : GS.M4.determinantObstruction GS.M4.Q := by
-    simpa only [determinantObstruction, Q, normDetBlock_ofRealMatrix,
-      GS.M4.determinantObstruction] using hn
-  exact GS.M4.Q_violates_determinantObstruction hr
+theorem Q_not_mem_A4Unitary : ¬ CInA4Unitary 2 2 2 2 P P P Q := fun h => by
+  have := necessaryCondition Q h
+  have : GS.M4.root6^2 = 6 := by norm_num [GS.M4.root6, mul_pow]
+  simp [determinantObstruction, Q, GS.M4.absDetTable_Q, GS.M4.absDetTable, GS.M4.root6] at *
+  nlinarith
 
 /-- Unconditional insufficiency of four unitary block factors in the fixed GS family. -/
 theorem counterexample : CInA4 2 2 2 2 P P P Q ∧ Unitary Q ∧
     ¬ CInA4Unitary 2 2 2 2 P P P Q :=
-  ⟨Q_mem_A4, Q_unitary, Q_not_mem_A4Unitary⟩
+  have ⟨_,_,_,_,hb₁,hb₂,hb₃,hb₄,he⟩ := GS.M4.Q_mem_A4
+  ⟨⟨_,_,_,_,ofRealMatrix_blockDiagonal hb₁,ofRealMatrix_blockDiagonal hb₂,ofRealMatrix_blockDiagonal hb₃,
+    ofRealMatrix_blockDiagonal hb₄,
+    by simpa only [Q, P, GS.product4, GS.UnitaryGeometry.product4, ofRealMatrix_mul] using congrArg ofRealMatrix he⟩, ofRealMatrix_unitary GS.M4.Q_orthogonal, Q_not_mem_A4Unitary⟩
 
 end GS.UnitaryFour

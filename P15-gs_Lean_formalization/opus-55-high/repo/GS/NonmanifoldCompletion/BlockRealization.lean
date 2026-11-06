@@ -1,11 +1,10 @@
 module
 
 public import GS.NonmanifoldCompletion.SpectralTwo
+public import GS.Shared.Factorization
 
 @[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
 /-!
 # The original scalar perfect-shuffle family and its small-block coordinates
@@ -16,202 +15,267 @@ block formula.  Coordinate relabellings and the block factors are constructed.
 
 -/
 noncomputable section
-open Matrix GS GS.Extensions GS.Continuation
-open scoped BigOperators
+open Matrix GS GS.Shared GS.UnitaryCS
 namespace GS.NonmanifoldCompletion
 
 section Relabel
-variable {α β : Type*} [Fintype α] [Fintype β] [DecidableEq α] [DecidableEq β]
+variable {R α β : Type*} [Semiring R] [Star R] [Fintype α] [Fintype β] [DecidableEq α] [DecidableEq β]
 
+section
+variable (e : β ≃ α) (A : Matrix α α R)
 /-- Pull back both matrix indices along an equivalence. -/
-def pullMatrix (e : β ≃ α) (A : Matrix α α ℝ) : Matrix β β ℝ :=
+def pullMatrix : Matrix β β R :=
   fun i j => A (e i) (e j)
 
-@[simp] theorem pullMatrix_transpose (e : β ≃ α) (A : Matrix α α ℝ) :
+@[simp] theorem pullMatrix_transpose :
     pullMatrix e Aᵀ = (pullMatrix e A)ᵀ := rfl
 
-@[simp] theorem pullMatrix_one (e : β ≃ α) :
-    pullMatrix e (1 : Matrix α α ℝ) = 1 := by
-  ext i j
-  simp [pullMatrix, Matrix.one_apply, e.injective.eq_iff]
+@[simp] theorem pullMatrix_conjTranspose :
+    pullMatrix e Aᴴ = (pullMatrix e A)ᴴ := rfl
 
-theorem pullMatrix_mul (e : β ≃ α) (A B : Matrix α α ℝ) :
-    pullMatrix e (A*B) = pullMatrix e A * pullMatrix e B := by
-  classical
-  ext i j
-  change (∑ k : α, A (e i) k * B k (e j)) =
-    ∑ k : β, A (e i) (e k) * B (e k) (e j)
-  exact (Fintype.sum_equiv e _ _ (fun _ => rfl)).symm
+end
 
-theorem pullMatrix_orthogonal (e : β ≃ α) {A : Matrix α α ℝ}
-    (hA : Orthogonal A) : Orthogonal (pullMatrix e A) := by
-  constructor
-  · rw [← pullMatrix_transpose, ← pullMatrix_mul, hA.1, pullMatrix_one]
-  · rw [← pullMatrix_transpose, ← pullMatrix_mul, hA.2, pullMatrix_one]
+section
+variable (e : β ≃ α)
+@[simp] theorem pullMatrix_one :
+    pullMatrix e (1 : Matrix α α R) = 1 :=
+  submatrix_one_equiv e
+
+theorem pullMatrix_mul (A B : Matrix α α R) :
+    pullMatrix e (A*B) = pullMatrix e A * pullMatrix e B :=
+  (submatrix_mul_equiv A B e e e).symm
+
+@[simp] theorem pullMatrix_symm (A : Matrix α α R) :
+    pullMatrix e.symm (pullMatrix e A) = A := by
+  ext i j
+  simp [pullMatrix]
+
+end
 
 end Relabel
 
+
+section Blocks
+variable {R : Type*} [Semiring R] [Star R] {k b : ℕ}
+
+section
+variable (A : Matrix (Fin k × Fin b) (Fin k × Fin b) R)
 /-- Flatten the pair-indexed matrix using the SAME equivalence as originalF. -/
-def flattenBlocks {k b : ℕ}
-    (A : Matrix (Fin k × Fin b) (Fin k × Fin b) ℝ) : Mat (k*b) :=
+def flattenBlocks : Matrix (Fin (k*b)) (Fin (k*b)) R :=
   pullMatrix finProdFinEquiv.symm A
 
-@[simp] theorem flattenBlocks_apply {k b : ℕ}
-    (A : Matrix (Fin k × Fin b) (Fin k × Fin b) ℝ)
-    (i j : Fin k × Fin b) :
+@[simp] theorem flattenBlocks_apply (i j : Fin k × Fin b) :
     flattenBlocks A (finProdFinEquiv i) (finProdFinEquiv j) = A i j := by
   simp [flattenBlocks,pullMatrix]
 
-theorem flattenBlocks_mul {k b : ℕ}
-    (A B : Matrix (Fin k × Fin b) (Fin k × Fin b) ℝ) :
+end
+
+theorem flattenBlocks_mul (A B : Matrix (Fin k × Fin b) (Fin k × Fin b) R) :
     flattenBlocks (A*B) = flattenBlocks A * flattenBlocks B :=
   pullMatrix_mul _ A B
 
+section
+variable (A : Matrix (Fin (k*b)) (Fin (k*b)) R)
+def unflattenBlocks :
+    Matrix (Fin k × Fin b) (Fin k × Fin b) R := pullMatrix finProdFinEquiv A
+
+@[simp] theorem flatten_unflatten :
+    flattenBlocks (unflattenBlocks A) = A :=
+  pullMatrix_symm finProdFinEquiv A
+
+/-- Extract the consecutive diagonal blocks without any choice. -/
+def flatBlocks (i : Fin k) : Matrix (Fin b) (Fin b) R :=
+  fun a c => A (finProdFinEquiv (i,a)) (finProdFinEquiv (i,c))
+
+end
+
 /-- Blocks are indexed by the quotient in the original BlockDiagonal predicate. -/
-theorem flat_block_label {k b : ℕ} (p : Fin k × Fin b) :
+theorem flat_block_label (p : Fin k × Fin b) :
     (finProdFinEquiv p).val / b = p.1.val := by
-  have hb : 0 < b := lt_of_le_of_lt (Nat.zero_le _) p.2.isLt
-  change (p.2.val + b * p.1.val) / b = p.1.val
-  rw [Nat.add_mul_div_left _ _ hb, Nat.div_eq_of_lt p.2.isLt, Nat.zero_add]
+  simp [Nat.add_mul_div_left _ _ p.2.pos, Nat.div_eq_of_lt]
 
-theorem flatten_blockDiagonal {k b : ℕ} (B : Fin k → Mat b) :
-    BlockDiagonal b (flattenBlocks (blockMatrix B)) := by
-  intro i j hij
-  let x := finProdFinEquiv.symm i
-  let y := finProdFinEquiv.symm j
-  have hxy : x.1 ≠ y.1 := by
-    intro h
-    have hi := flat_block_label x
-    have hj := flat_block_label y
-    simp only [x,y,Equiv.apply_symm_apply] at hi hj
-    exact hij (hi.trans ((congrArg Fin.val h).trans hj.symm))
-  exact if_neg hxy
-
-@[simp] theorem blockMatrix_transpose {k b : ℕ} (B : Fin k → Mat b) :
-    (blockMatrix B)ᵀ = blockMatrix (fun i => (B i)ᵀ) := by
+section
+variable (A : Matrix (Fin (k*b)) (Fin (k*b)) R)
+theorem unflatten_supported (hA : ∀ i j : Fin (k*b), i.val / b ≠ j.val / b → A i j = 0) :
+    unflattenBlocks A = blockMatrix (flatBlocks A) := by
   ext ⟨i,a⟩ ⟨j,c⟩
-  by_cases h : i=j
-  · subst j; simp [blockMatrix]
-  · simp [blockMatrix, h, Ne.symm h]
-
-@[simp] theorem blockMatrix_mul {k b : ℕ} (B C : Fin k → Mat b) :
-    blockMatrix B * blockMatrix C = blockMatrix (fun i => B i * C i) := by
-  classical
-  ext ⟨i,a⟩ ⟨j,c⟩
-  by_cases h : i=j
+  by_cases hij : i=j
   · subst j
-    simp [Matrix.mul_apply,blockMatrix,Fintype.sum_prod_type]
-  · simp [Matrix.mul_apply,blockMatrix,Fintype.sum_prod_type,h]
+    simp [unflattenBlocks,pullMatrix,blockMatrix,flatBlocks]
+  · exact (hA _ _ (by simp only [flat_block_label]; grind)).trans (if_neg hij).symm
+
+theorem flatten_extracted_blocks (hA : ∀ i j : Fin (k*b), i.val / b ≠ j.val / b → A i j = 0) : flattenBlocks (blockMatrix (flatBlocks A)) = A := by
+  rw [← unflatten_supported A hA,flatten_unflatten]
+
+
+end
+
+@[simp] theorem blockMatrix_conjTranspose {R : Type*} [Ring R] [StarRing R] (B : Fin k → Matrix (Fin b) (Fin b) R) :
+    (blockMatrix B)ᴴ = blockMatrix (fun i => (B i)ᴴ) := by
+  ext ⟨i,a⟩ ⟨j,c⟩
+  by_cases h : i=j <;> simp [blockMatrix, h, eq_comm]
+
+@[simp] theorem blockMatrix_mul (B C : Fin k → Matrix (Fin b) (Fin b) R) :
+    blockMatrix B * blockMatrix C = blockMatrix (fun i => B i * C i) := by
+  ext ⟨i,a⟩ ⟨j,c⟩
+  by_cases h : i=j <;> simp [Matrix.mul_apply,blockMatrix,Fintype.sum_prod_type,h]
 
 @[simp] theorem blockMatrix_one (k b : ℕ) :
-    blockMatrix (fun _ : Fin k => (1 : Mat b)) = 1 := by
+    blockMatrix (fun _ : Fin k => (1 : Matrix (Fin b) (Fin b) R)) = 1 := by
   ext ⟨i,a⟩ ⟨j,c⟩
   by_cases hi : i=j <;> by_cases ha : a=c <;>
     simp [blockMatrix, Matrix.one_apply, hi, ha]
 
-theorem blockMatrix_orthogonal {k b : ℕ} (B : Fin k → Mat b)
-    (hB : ∀ i, Orthogonal (B i)) : Orthogonal (blockMatrix B) := by
-  constructor
-  · rw [blockMatrix_transpose,blockMatrix_mul]
-    have he : (fun i => (B i)ᵀ * B i) = (fun _ => (1 : Mat b)) :=
-      funext (fun i => (hB i).1)
-    rw [he,blockMatrix_one]
-  · rw [blockMatrix_transpose,blockMatrix_mul]
-    have he : (fun i => B i * (B i)ᵀ) = (fun _ => (1 : Mat b)) :=
-      funext (fun i => (hB i).2)
-    rw [he,blockMatrix_one]
+end Blocks
 
-/-- The central conjugate, displayed in q-by-q blocks of size two. -/
-def centralPair {q : ℕ} (A B : Mat q) :
-    Matrix (Fin q × Fin 2) (Fin q × Fin 2) ℝ :=
+variable {𝕜 : Type*} [RCLike 𝕜] {n : ℕ}
+
+theorem pullMatrix_unitary {α β : Type*} [Fintype α] [Fintype β] [DecidableEq α] [DecidableEq β]
+    (e : β ≃ α) {A : Matrix α α 𝕜} (hA : IsUnitary A) : IsUnitary (pullMatrix e A) := by
+  constructor <;> simp [← pullMatrix_conjTranspose, ← pullMatrix_mul, hA.1, hA.2]
+
+section
+variable {k b : ℕ} (B : Fin k → Matrix (Fin b) (Fin b) 𝕜)
+theorem flatten_blockDiagonal :
+    Supp (fun i : Fin (k*b) => i.val / b) (flattenBlocks (blockMatrix B)) := by
+  intro i j hij
+  have := flat_block_label (finProdFinEquiv.symm i)
+  have := flat_block_label (finProdFinEquiv.symm j)
+  exact if_neg (by grind)
+
+theorem blockMatrix_unitary (hB : ∀ i, IsUnitary (B i)) : IsUnitary (blockMatrix B) := by
+  constructor <;> simp [fun i => (hB i).1, fun i => (hB i).2]
+
+theorem blockMatrix_unitary_component (hB : IsUnitary (blockMatrix B)) (i : Fin k) : IsUnitary (B i) := by
+  constructor <;> ext a c
+  · simpa [blockMatrix, one_apply] using congr_fun₂ hB.1 (i,a) (i,c)
+  · simpa [blockMatrix, one_apply] using congr_fun₂ hB.2 (i,a) (i,c)
+
+end
+
+section
+variable (A B : 𝕄)
+/-- The central conjugate, displayed in n-by-n blocks of size two. -/
+def centralPair : Matrix (Fin n × Fin 2) (Fin n × Fin 2) 𝕜 :=
   fun i j => diagTwo (A i.1 j.1) (B i.1 j.1) i.2 j.2
 
-theorem centralPair_as_blocks {q : ℕ} (A B : Mat q) :
+theorem centralPair_as_blocks :
     centralPair A B = pullMatrix (Equiv.prodComm _ _) (blockMatrix ![A,B]) := by
   ext ⟨i,a⟩ ⟨j,b⟩
   fin_cases a <;> fin_cases b <;> simp [centralPair,pullMatrix,blockMatrix,diagTwo]
 
-theorem centralPair_orthogonal {q : ℕ} (A B : Mat q)
-    (hA : Orthogonal A) (hB : Orthogonal B) : Orthogonal (centralPair A B) := by
-  rw [centralPair_as_blocks]
-  apply pullMatrix_orthogonal
-  apply blockMatrix_orthogonal
-  intro i
-  fin_cases i
-  · exact hA
-  · exact hB
+end
 
-/-- Scalar middle factor, constructed by conjugation with the specified shuffle. -/
-def shuffledMiddle {q : ℕ} (A B : Mat q) : Mat (q*2) :=
-  let P := permMatrix (scalarShuffle q 2)
-  P * flattenBlocks (centralPair A B) * Pᵀ
+theorem centralPair_unitary {A B : 𝕄} : IsUnitary (centralPair A B) ↔ IsUnitary A ∧ IsUnitary B := by
+  rw [centralPair_as_blocks]
+  refine ⟨fun h => ?_, fun h => pullMatrix_unitary _ (blockMatrix_unitary _ (by simp_all))⟩
+  have hh := pullMatrix_unitary (Equiv.prodComm (Fin n) (Fin 2)).symm h
+  exact ⟨blockMatrix_unitary_component _ hh 0, blockMatrix_unitary_component _ hh 1⟩
 
 /-- The shuffle makes the inner pair coordinate the consecutive block label. -/
-theorem shuffle_block_label {q : ℕ} (i : Fin (q*2)) :
-    (scalarShuffle q 2 i).val / q = (finProdFinEquiv.symm i).2.val := by
-  let p := finProdFinEquiv.symm i
-  have hh := flat_block_label (p.2,p.1)
-  have hcast {m n : ℕ} (h : m = n) (a : Fin m) :
-      (cast (congrArg Fin h) a).val = a.val := by
-    cases h
-    rfl
-  change (cast (congrArg Fin (Nat.mul_comm 2 q))
-    (finProdFinEquiv (p.2,p.1))).val / q = p.2.val
-  rw [hcast (Nat.mul_comm 2 q)]
-  exact hh
+theorem shuffle_block_label {q b : ℕ} (i : Fin (q*b)) :
+    (scalarShuffle q b i).val / q = (finProdFinEquiv.symm i).2.val := by
+  rw [← flat_block_label ((finProdFinEquiv.symm i).2, (finProdFinEquiv.symm i).1)]
+  exact congrArg (·/q) ((Fin.heq_ext_iff (by ring)).1 (cast_heq _ _))
 
-theorem shuffledMiddle_blockDiagonal {q : ℕ} (A B : Mat q) :
-    BlockDiagonal q (shuffledMiddle A B) := by
-  intro i j hij
-  let σ := scalarShuffle q 2
-  let x := finProdFinEquiv.symm (σ.symm i)
-  let y := finProdFinEquiv.symm (σ.symm j)
-  have hxy : x.2 ≠ y.2 := by
-    intro h
-    have hi := shuffle_block_label (σ.symm i)
-    have hj := shuffle_block_label (σ.symm j)
-    simp only [σ,Equiv.apply_symm_apply] at hi hj
-    exact hij (hi.trans ((congrArg Fin.val h).trans hj.symm))
-  change (permMatrix σ * flattenBlocks (centralPair A B) * (permMatrix σ)ᵀ) i j = 0
-  rw [perm_conjugate_apply]
-  change diagTwo (A x.1 y.1) (B x.1 y.1) x.2 y.2 = 0
-  have hdiag (a b : Fin 2) (hab : a ≠ b) (s t : ℝ) : diagTwo s t a b = 0 := by
-    fin_cases a <;> fin_cases b <;> simp_all [diagTwo]
-  exact hdiag x.2 y.2 hxy _ _
-
-theorem small_block_sandwich {q : ℕ} (U V : Fin q → Mat 2) (A B : Mat q)
-    (i j : Fin q) (a b : Fin 2) :
+theorem small_block_sandwich (U V : Fin n → Matrix (Fin 2) (Fin 2) 𝕜) (A B : 𝕄)
+    (i j : Fin n) (a b : Fin 2) :
     (blockMatrix U * centralPair A B * blockMatrix V) (i,a) (j,b) =
       (U i * diagTwo (A i j) (B i j) * V j) a b := by
   classical
-  simp [Matrix.mul_apply, blockMatrix, centralPair, Fintype.sum_prod_type,
-    Finset.sum_mul, Finset.mul_sum]
+  simp [Matrix.mul_apply, blockMatrix, centralPair, Fintype.sum_prod_type]
 
-/-- Any orthogonal small-block sandwich is a member of the ORIGINAL family. -/
-theorem block_sandwich_mem_localFamily {q : ℕ} (U V : Fin q → Mat 2)
-    (A B : Mat q) (hU : ∀ i, Orthogonal (U i)) (hV : ∀ j, Orthogonal (V j))
-    (hA : Orthogonal A) (hB : Orthogonal B) :
-    flattenBlocks (blockMatrix U * centralPair A B * blockMatrix V) ∈ localFamily q := by
-  let P := permMatrix (scalarShuffle q 2)
-  let C := flattenBlocks (centralPair A B)
-  have hP : Orthogonal P := perm_orthogonal _
-  have hC : Orthogonal C := pullMatrix_orthogonal _ (centralPair_orthogonal A B hA hB)
-  refine ⟨flattenBlocks (blockMatrix V), shuffledMiddle A B,
-    flattenBlocks (blockMatrix U), flatten_blockDiagonal V,
-    shuffledMiddle_blockDiagonal A B, flatten_blockDiagonal U,
-    pullMatrix_orthogonal _ (blockMatrix_orthogonal V hV),
-    (hP.mul hC).mul hP.transpose,
-    pullMatrix_orthogonal _ (blockMatrix_orthogonal U hU), ?_⟩
-  change flattenBlocks (blockMatrix U * centralPair A B * blockMatrix V) =
-    flattenBlocks (blockMatrix U) * Pᵀ * (P*C*Pᵀ) * P * flattenBlocks (blockMatrix V)
-  rw [flattenBlocks_mul,flattenBlocks_mul]
-  change flattenBlocks (blockMatrix U) * C * flattenBlocks (blockMatrix V) = _
-  symm
-  calc
-    flattenBlocks (blockMatrix U) * Pᵀ * (P*C*Pᵀ) * P *
-        flattenBlocks (blockMatrix V) =
-        flattenBlocks (blockMatrix U) * (Pᵀ*P) * C * (Pᵀ*P) *
-          flattenBlocks (blockMatrix V) := by simp only [Matrix.mul_assoc]
-    _ = _ := by rw [hP.1,Matrix.mul_one,Matrix.mul_one]
+variable (𝕜) in
+/-- The scalar-shuffle three-factor family over `𝕜`. -/
+def sFamily (n : ℕ) : Set (Matrix (Fin (n*2)) (Fin (n*2)) 𝕜) :=
+  {M | ∃ B₁ B₂ B₃, Supp (fun i : Fin (n*2) => i.val / 2) B₁ ∧ Supp (fun i : Fin (n*2) => i.val / n) B₂ ∧
+    Supp (fun i : Fin (n*2) => i.val / 2) B₃ ∧ IsUnitary B₁ ∧ IsUnitary B₂ ∧ IsUnitary B₃ ∧
+    M = B₃ * (perm (scalarShuffle n 2))ᴴ * B₂ * perm (scalarShuffle n 2) * B₁}
+
+/-- Exact block description of the original scalar-shuffle family. -/
+theorem mem_localFamily_iff_block_sandwich (M : Matrix (Fin (n*2)) (Fin (n*2)) 𝕜) :
+    M ∈ sFamily 𝕜 n ↔
+      ∃ (U V : Fin n → Matrix (Fin 2) (Fin 2) 𝕜) (A B : 𝕄),
+        (∀ i, IsUnitary (U i)) ∧ (∀ j, IsUnitary (V j)) ∧ IsUnitary A ∧ IsUnitary B ∧
+        M = flattenBlocks (blockMatrix U * centralPair A B * blockMatrix V) := by
+  have hP := perm_uni (𝕜 := 𝕜) (scalarShuffle n 2)
+  constructor
+  · rintro ⟨B₁,D,B₃,hs₁,hs,hs₃,ho₁,hD,ho₃,rfl⟩
+    let σ := scalarShuffle n 2
+    let C := unflattenBlocks ((perm σ)ᴴ * D * perm σ)
+    have hcross (i j : Fin n) (a b : Fin 2) (hab : a≠b) : C (i,a) (j,b)=0 := by
+      have := shuffle_block_label (finProdFinEquiv (i,a))
+      have := shuffle_block_label (finProdFinEquiv (j,b))
+      simpa [C, σ, unflattenBlocks, pullMatrix] using hs _ _ (by grind)
+    let A : 𝕄 := fun i j => C (i,0) (j,0)
+    let B : 𝕄 := fun i j => C (i,1) (j,1)
+    have he : C = centralPair A B := by
+      ext ⟨i,a⟩ ⟨j,b⟩
+      fin_cases a <;> fin_cases b <;> simp [centralPair,diagTwo,A,B,hcross]
+    have hC : IsUnitary C := pullMatrix_unitary _ ((hP.conjTranspose.mul hD).mul hP)
+    rw [he, centralPair_unitary] at hC
+    have hb {k : ℕ} {b : ℕ} (A : Matrix (Fin (k*b)) (Fin (k*b)) 𝕜) (hs : Supp (fun i : Fin (k*b) => i.val / b) A)
+        (hA : IsUnitary A) (i : Fin k) : IsUnitary (flatBlocks A i) :=
+      blockMatrix_unitary_component _ (unflatten_supported A hs ▸ pullMatrix_unitary finProdFinEquiv hA) i
+    refine ⟨flatBlocks B₃,flatBlocks B₁,A,B,by grind, by grind,hC.1,hC.2,?_⟩
+    rw [flattenBlocks_mul,flattenBlocks_mul,flatten_extracted_blocks B₃ hs₃,
+      flatten_extracted_blocks B₁ hs₁, ← he, flatten_unflatten]
+    grind
+  · rintro ⟨U,V,A,B,hU,hV,hA,hB,rfl⟩
+    let P : Matrix (Fin (n*2)) (Fin (n*2)) 𝕜 := perm (scalarShuffle n 2)
+    let C := flattenBlocks (centralPair A B)
+    refine ⟨flattenBlocks (blockMatrix V), P * C * Pᴴ,
+      flattenBlocks (blockMatrix U), flatten_blockDiagonal V, fun i j hij => ?_, flatten_blockDiagonal U,
+      pullMatrix_unitary _ (blockMatrix_unitary V hV),
+      (hP.mul (pullMatrix_unitary _ (centralPair_unitary.2 (by grind)))).mul hP.conjTranspose,
+      pullMatrix_unitary _ (blockMatrix_unitary U hU), ?_⟩
+    · have := shuffle_block_label ((scalarShuffle n 2).symm i)
+      have := shuffle_block_label ((scalarShuffle n 2).symm j)
+      simp_all [P, C, flattenBlocks, pullMatrix, centralPair, diagTwo, Fin.ext_iff]
+    rw [flattenBlocks_mul,flattenBlocks_mul]
+    grind [hP.1]
+
+variable (𝕜) in
+/-- Parameters are ordered as left blocks, two middle blocks, and right blocks. -/
+abbrev SmallBlockParameters (n : ℕ) :=
+  (Fin n → Matrix (Fin 2) (Fin 2) 𝕜) × 𝕄 × 𝕄 × (Fin n → Matrix (Fin 2) (Fin 2) 𝕜)
+
+variable (𝕜) in
+def smallFactorSet (n : ℕ) : Set (SmallBlockParameters 𝕜 n) :=
+  {p | (∀ i, IsUnitary (p.1 i)) ∧ IsUnitary p.2.1 ∧ IsUnitary p.2.2.1 ∧ ∀ j, IsUnitary (p.2.2.2 j)}
+
+section
+variable (p : SmallBlockParameters 𝕜 n)
+def smallFactorMap : Matrix (Fin (n*2)) (Fin (n*2)) 𝕜 :=
+  flattenBlocks (blockMatrix p.1 * centralPair p.2.1 p.2.2.1 * blockMatrix p.2.2.2)
+
+theorem smallFactorMap_block (i j : Fin n) (a b : Fin 2) :
+    smallFactorMap p (finProdFinEquiv (i,a)) (finProdFinEquiv (j,b)) =
+      (p.1 i * diagTwo (p.2.1 i j) (p.2.2.1 i j) * p.2.2.2 j) a b := by
+  rw [smallFactorMap,flattenBlocks_apply,small_block_sandwich]
+
+end
+
+section
+variable (n : ℕ)
+theorem continuous_smallFactorMap : Continuous (@smallFactorMap 𝕜 _ n) := by
+  unfold smallFactorMap flattenBlocks pullMatrix blockMatrix centralPair diagTwo
+  fun_prop
+
+theorem isCompact_smallFactorSet : IsCompact (smallFactorSet 𝕜 n) := by
+  have hO (n : ℕ) : IsCompact {A : 𝕄 | IsUnitary A} :=
+    (isCompact_pi_infinite fun _ => isCompact_pi_infinite fun _ => isCompact_closedBall (0 : 𝕜) 1).of_isClosed_subset
+      ((isClosed_eq (by fun_prop) (by fun_prop)).inter (isClosed_eq (by fun_prop) (by fun_prop)))
+      fun A hA i j => by simpa using entry_norm_bound_of_unitary (mem_unitaryGroup_iff.2 hA.2) i j
+  have houter := isCompact_pi_infinite fun _ : Fin n => hO 2
+  exact houter.prod ((hO n).prod ((hO n).prod houter))
+
+/-- Every factorization in the scalar family is retained in the compact parameter space. -/
+theorem image_smallFactorMap : (@smallFactorMap 𝕜 _ n) '' smallFactorSet 𝕜 n = sFamily 𝕜 n := by
+  ext M
+  rw [mem_localFamily_iff_block_sandwich]
+  aesop (add simp [smallFactorSet, smallFactorMap])
+
+end
 
 end GS.NonmanifoldCompletion

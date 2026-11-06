@@ -4,8 +4,6 @@ public import GS.OverlapGeometry.SmoothMaps
 
 @[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
 /-!
 # Manifold-valued sources for the ambient slice criterion
@@ -26,25 +24,23 @@ variable {E F G H M : Type*}
   [NormedAddCommGroup G] [NormedSpace ℝ G]
   [TopologicalSpace H] [TopologicalSpace M] [ChartedSpace H M]
 
-theorem slice_contMDiff_of_ambient {S : Set F}
-    (s : S → SmoothSlice (E := E) S) (covers : ∀ x : S, x ∈ (s x).source)
+section
+variable {S : Set F} (s : S → SmoothSlice (E := E) S)
+theorem slice_contMDiff_of_ambient (covers : ∀ x : S, x ∈ (s x).source)
     (I : ModelWithCorners ℝ G H) (f : M → S)
     (hf : ContMDiff I (𝓘(ℝ, F)) ⊤ (fun x => (f x).val)) :
     letI := sliceChartedSpace s covers
     ContMDiff I (𝓘(ℝ, E)) ⊤ f := by
   letI := sliceChartedSpace s covers
-  have hc : Continuous f := hf.continuous.subtype_mk (fun x => (f x).property)
+  have hc : Continuous f := hf.continuous.subtype_mk (by simp)
   intro x
   rw [contMDiffAt_iff_target]
   refine ⟨hc.continuousAt, ?_⟩
-  change ContMDiffAt I (𝓘(ℝ, E)) ⊤
-    (fun y => (s (f x)).coordinates (f y).val) x
   exact ContDiffAt.comp_contMDiffAt
     (I := I) (f := fun y : M => (f y).val) (g := (s (f x)).coordinates)
-    ((s (f x)).coordinates_smooth (f x) (covers (f x))) (hf x)
+    ((s (f x)).coordinates_smooth (f x) (by grind)) (hf x)
 
-theorem slice_contMDiff_iff_ambient {S : Set F}
-    (s : S → SmoothSlice (E := E) S) (covers : ∀ x : S, x ∈ (s x).source)
+theorem slice_contMDiff_iff_ambient (covers : ∀ x : S, x ∈ (s x).source)
     (I : ModelWithCorners ℝ G H) (f : M → S) :
     letI := sliceChartedSpace s covers
     ContMDiff I (𝓘(ℝ, E)) ⊤ f ↔
@@ -54,5 +50,7 @@ theorem slice_contMDiff_iff_ambient {S : Set F}
   · intro hf
     exact (slice_val_contMDiff s covers).comp hf
   · exact slice_contMDiff_of_ambient s covers I f
+
+end
 
 end GS.OverlapGeometry

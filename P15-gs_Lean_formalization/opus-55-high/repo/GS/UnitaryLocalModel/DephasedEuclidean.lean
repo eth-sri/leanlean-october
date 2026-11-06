@@ -6,8 +6,6 @@ public import Mathlib.LinearAlgebra.Basis.VectorSpace
 
 @[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
 /-!
 # Standard real coordinates for the dephased unitary chart
@@ -17,75 +15,59 @@ to `Fin ((q - 1)^2) → ℝ`. No norm-preserving identification is asserted.
 -/
 noncomputable section
 attribute [local instance] Matrix.normedAddCommGroup Matrix.normedSpace
-open GS GS.UnitaryManifold Set
-open scoped Topology
 namespace GS.UnitaryLocalModel
 variable {q : ℕ}
 
+section
+variable (Q : FullUnitary q) (o : Fin q) (hQ : AnchorNonzero Q.val Q.val o)
 /-- A continuous linear coordinate identification with the computed dimension. -/
-def dephasedCoordinateEquiv (Q : FullUnitary q) (o : Fin q)
-    (hQ : AnchorNonzero Q.val Q.val o) :
+def dephasedCoordinateEquiv :
     DephasedModel Q o ≃L[ℝ] (Fin ((q-1)^2) → ℝ) := by
   letI : Module.Free ℝ (DephasedModel Q o) :=
     Module.Free.of_basis (Module.Basis.ofVectorSpace ℝ (DephasedModel Q o))
-  let b : Module.Basis (Fin ((q-1)^2)) ℝ (DephasedModel Q o) :=
+  let b :=
     Module.finBasisOfFinrankEq ℝ (DephasedModel Q o) (finrank_dephasedModel Q o hQ)
-  let e : DephasedModel Q o ≃ₗ[ℝ] (Fin ((q-1)^2) → ℝ) := b.equivFun
+  let e := b.equivFun
   exact LinearEquiv.toContinuousLinearEquiv
     (𝕜 := ℝ) (E := DephasedModel Q o) (F := Fin ((q-1)^2) → ℝ) e
 
-def euclideanDephasedDomain (Q : FullUnitary q) (o : Fin q)
-    (hQ : AnchorNonzero Q.val Q.val o) : Set (Fin ((q-1)^2) → ℝ) :=
+def euclideanDephasedDomain : Set (Fin ((q-1)^2) → ℝ) :=
   (dephasedCoordinateEquiv Q o hQ).symm ⁻¹' dephasedChartDomain Q o hQ
 
-def euclideanDephasedParametrization (Q : FullUnitary q) (o : Fin q)
-    (hQ : AnchorNonzero Q.val Q.val o) (x : Fin ((q-1)^2) → ℝ) : CMat q :=
+def euclideanDephasedParametrization (x : Fin ((q-1)^2) → ℝ) : CMat q :=
   dephasedParametrization Q o hQ ((dephasedCoordinateEquiv Q o hQ).symm x)
 
-def euclideanDephasedCoordinates (Q : FullUnitary q) (o : Fin q)
-    (hQ : AnchorNonzero Q.val Q.val o) (A : DephasedUnitary Q o) : Fin ((q-1)^2) → ℝ :=
+def euclideanDephasedCoordinates (A : DephasedUnitary Q o) : Fin ((q-1)^2) → ℝ :=
   dephasedCoordinateEquiv Q o hQ (dephasedCoordinates Q o hQ A)
 
-theorem euclideanDephasedDomain_open (Q : FullUnitary q) (o : Fin q)
-    (hQ : AnchorNonzero Q.val Q.val o) : IsOpen (euclideanDephasedDomain Q o hQ) :=
-  (dephasedChartDomain_open Q o hQ).preimage (dephasedCoordinateEquiv Q o hQ).symm.continuous
+theorem euclideanDephasedDomain_open : IsOpen (euclideanDephasedDomain Q o hQ) :=
+  (dephasedChartDomain_open Q o hQ).preimage (by fun_prop)
 
-theorem zero_mem_euclideanDephasedDomain (Q : FullUnitary q) (o : Fin q)
-    (hQ : AnchorNonzero Q.val Q.val o) :
+theorem zero_mem_euclideanDephasedDomain :
     (0 : Fin ((q-1)^2) → ℝ) ∈ euclideanDephasedDomain Q o hQ := by
   change (dephasedCoordinateEquiv Q o hQ).symm 0 ∈ dephasedChartDomain Q o hQ
   simpa using zero_mem_dephasedChartDomain Q o hQ
 
-@[simp] theorem euclideanDephasedParametrization_zero (Q : FullUnitary q) (o : Fin q)
-    (hQ : AnchorNonzero Q.val Q.val o) : euclideanDephasedParametrization Q o hQ 0 = Q.val := by
+@[simp] theorem euclideanDephasedParametrization_zero : euclideanDephasedParametrization Q o hQ 0 = Q.val := by
   simp [euclideanDephasedParametrization]
 
-theorem euclideanDephasedParametrization_continuousOn (Q : FullUnitary q) (o : Fin q)
-    (hQ : AnchorNonzero Q.val Q.val o) :
+theorem euclideanDephasedParametrization_continuousOn :
     ContinuousOn (euclideanDephasedParametrization Q o hQ) (euclideanDephasedDomain Q o hQ) :=
   (dephasedParametrization_continuousOn Q o hQ).comp
-    (dephasedCoordinateEquiv Q o hQ).symm.continuous.continuousOn (fun _ h => h)
+    (by fun_prop) (by tauto)
 
-theorem euclideanDephasedParametrization_injectiveOn (Q : FullUnitary q) (o : Fin q)
-    (hQ : AnchorNonzero Q.val Q.val o) :
+theorem euclideanDephasedParametrization_injectiveOn :
     Set.InjOn (euclideanDephasedParametrization Q o hQ) (euclideanDephasedDomain Q o hQ) := by
   intro x hx y hy he
   apply (dephasedCoordinateEquiv Q o hQ).symm.injective
   exact dephasedParametrization_injectiveOn Q o hQ hx hy he
 
-/-- The local homeomorphism in the standard real coordinate space. -/
-def euclideanDephasedChartHomeomorph (Q : FullUnitary q) (o : Fin q)
-    (hQ : AnchorNonzero Q.val Q.val o) :
-    dephasedChartSource Q o hQ ≃ₜ euclideanDephasedDomain Q o hQ :=
-  (dephasedChartHomeomorph Q o hQ).trans
-    ((dephasedCoordinateEquiv Q o hQ).toHomeomorph.subtype
-      (fun x => by simp [euclideanDephasedDomain]))
-
-theorem euclideanDephasedParametrization_coordinates (Q : FullUnitary q) (o : Fin q)
-    (hQ : AnchorNonzero Q.val Q.val o) (A : DephasedUnitary Q o)
+theorem euclideanDephasedParametrization_coordinates (A : DephasedUnitary Q o)
     (hA : A ∈ dephasedChartSource Q o hQ) :
     euclideanDephasedParametrization Q o hQ (euclideanDephasedCoordinates Q o hQ A) = A.val.val := by
   simpa [euclideanDephasedParametrization, euclideanDephasedCoordinates] using
     dephasedParametrization_coordinates Q o hQ A hA
+
+end
 
 end GS.UnitaryLocalModel

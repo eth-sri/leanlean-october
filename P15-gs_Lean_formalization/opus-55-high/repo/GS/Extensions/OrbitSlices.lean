@@ -4,8 +4,6 @@ public import GS.OverlapGeometry.SliceAtlas
 
 @[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
 /-!
 # Smooth slices from a parametrization and ambient inverse
@@ -14,9 +12,7 @@ The constructor keeps the model spaces abstract. Applications supply the
 relative openness and smooth inverse data before assembling an orbit atlas.
 -/
 
-set_option autoImplicit false
 noncomputable section
-open Set
 
 namespace GS.Extensions
 
@@ -37,17 +33,13 @@ def smoothSliceOfParametrization (p : E → S) (c : F → E) (U : Set E)
   open_source := himage
   open_target := hU
   coordinates_smooth := by
-    rintro y ⟨x, hx, rfl⟩
-    exact hc x hx
+    grind
   parametrization_smooth := hp
   maps_source := by
-    rintro y ⟨x, hx, rfl⟩
-    rw [hi x hx]
-    exact hx
-  maps_target := fun x hx => ⟨x, hx, rfl⟩
+    grind
+  maps_target := by grind
   left_inverse := by
-    rintro y ⟨x, hx, rfl⟩
-    rw [hi x hx]
+    grind
   right_inverse := hi
 
 def translateSmoothSlice (s : GS.OverlapGeometry.SmoothSlice (E := E) S)
@@ -62,29 +54,15 @@ def translateSmoothSlice (s : GS.OverlapGeometry.SmoothSlice (E := E) S)
   parametrization := fun h => T (s.parametrization h)
   open_source := s.open_source.preimage hUc
   open_target := s.open_target
-  coordinates_smooth := by
-    intro X hX
+  coordinates_smooth X hX := by
     have hc := s.coordinates_smooth (U X) hX
     rw [hU] at hc
-    exact hc.comp X.val hg.contDiffAt
+    fun_prop
   parametrization_smooth := by
     simpa only [hT, Function.comp_def] using hf.comp s.parametrization_smooth
-  maps_source := by
-    intro X hX
-    simpa only [hU] using s.maps_source (U X) hX
-  maps_target := by
-    intro h hh
-    change U (T (s.parametrization h)) ∈ s.source
-    rw [hUT]
-    exact s.maps_target h hh
-  left_inverse := by
-    intro X hX
-    have hi := congrArg T (s.left_inverse (U X) hX)
-    simpa only [hU, hTU] using hi
-  right_inverse := by
-    intro h hh
-    change s.coordinates (g (T (s.parametrization h)).val) = h
-    rw [← hU, hUT]
-    exact s.right_inverse h hh
+  maps_source X hX := by simpa only [hU] using s.maps_source (U X) hX
+  maps_target h hh := by simp [hUT, s.maps_target h hh]
+  left_inverse X hX := by grind [s.left_inverse (U X) hX]
+  right_inverse h hh := by simp [← hU, hUT, s.right_inverse h hh]
 
 end GS.Extensions

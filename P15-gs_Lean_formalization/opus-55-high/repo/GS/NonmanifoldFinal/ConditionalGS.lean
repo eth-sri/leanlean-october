@@ -6,10 +6,7 @@ public import GS.Specifications
 
 @[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
-set_option autoImplicit false
 
 /-!
 # Exact final GS reduction -- CONDITIONAL, not the finished theorem
@@ -30,21 +27,8 @@ theorem model_not_euclidean_of_cone_goal
     (hCone : GS.Specifications.ConeProductNonManifoldGoal)
     (q : ℕ) (hq : 3 ≤ q) : ¬ EuclideanAt (modelCoordinatesZero q) := by
   intro hModel
-  let d := Fintype.card (UpperIndex q)
-  let e := Fintype.card (FreeIndex q)
-  let S : Set ((Fin e → ℝ) × Matrix (Fin 2) (Fin d) ℝ) :=
-    {p | p.2.rank ≤ 1}
-  have hzero : ((0,0) : (Fin e → ℝ) × Matrix (Fin 2) (Fin d) ℝ) ∈ S := by
-    simp [S]
-  let h : ModelCoordinates q ≃ₜ S := (modelToFin q).trans flattenConeProduct
-  have hpoint : h (modelCoordinatesZero q) = ⟨(0,0),hzero⟩ := by
-    change flattenConeProduct (modelToFin q (modelCoordinatesZero q)) = _
-    rw [modelToFin_zero]
-    rfl
-  have hLocal : EuclideanAt (⟨(0,0),hzero⟩ : S) := by
-    rw [← hpoint]
-    exact (euclideanAt_homeomorph h (modelCoordinatesZero q)).mp hModel
-  exact hCone d e (model_width_ge_three q hq)
-    ((euclideanAtSubset_iff S (0,0) hzero).mpr hLocal)
+  refine hCone _ (Fintype.card (FreeIndex q)) (three_le_card_upperIndex q hq) ((euclideanAtSubset_iff _ (0,0) (by simp)).mpr ?_)
+  convert (euclideanAt_homeomorph ((modelToFin q).trans flattenConeProduct) _).mp hModel
+    <;> aesop
 
 end GS.NonmanifoldFinal

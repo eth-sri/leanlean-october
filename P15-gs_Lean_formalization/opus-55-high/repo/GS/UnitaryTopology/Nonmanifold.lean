@@ -1,13 +1,12 @@
 module
 
-public import GS.UnitaryTopology.RegularChart
+public import GS.NonmanifoldClosure.RegularConeChart
+public import GS.UnitaryTopology.QuaternionRetraction
 public import GS.UnitaryTopology.ProductRetraction
 public import GS.UnitaryTopology.IndexTransport
 
 @[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
 /-!
 # Unconditional topological obstruction at widths divisible by four
@@ -25,31 +24,26 @@ noncomputable section
 open Matrix GS GS.NonmanifoldObstruction GS.NonmanifoldFinal GS.NonmanifoldClosure
 namespace GS.UnitaryTopology
 
-theorem rankThreeProduct_not_euclidean_blocks (e r : ℕ) (hr : 0<r) :
-    ¬ EuclideanAt ((0,rankThreeZero) : (Fin e → ℝ) × RankThreeCone (Fin r × Fin 4)) := by
-  apply not_euclidean_of_retract_regular_charts (quaternionProductRetract e r)
-    (Fintype.card (Fin e)+Fintype.card (Fin r × Fin 4)+2) (by simp)
-  intro U hU h0
-  let j : Fin r × Fin 4 := (⟨0,hr⟩,0)
-  obtain ⟨p,hp,hpc⟩ := exists_regular_in_open3 (ι := Fin e) j U hU h0
-  exact ⟨pivotProductChart3 (ι := Fin e) j,p,hp,hpc⟩
-
-theorem rankThreeProduct_not_euclidean_mul_four (e r : ℕ) (hr : 0<r) :
-    ¬ EuclideanAt ((0,rankThreeZero) : (Fin e → ℝ) × RankThreeCone (Fin (r*4))) := by
-  let h := productRankThreeReindex e (finProdFinEquiv : Fin r × Fin 4 ≃ Fin (r*4))
-  intro he
-  apply rankThreeProduct_not_euclidean_blocks e r hr
-  apply (euclideanAt_homeomorph h (0,rankThreeZero)).mpr
-  simpa only [h,productRankThreeReindex_zero] using he
-
 theorem rankThreeProduct_not_euclidean_of_four_dvd (e d : ℕ)
     (hd : 0<d) (hdiv : 4∣d) :
     ¬ EuclideanAt ((0,rankThreeZero) : (Fin e → ℝ) × RankThreeCone (Fin d)) := by
-  obtain ⟨r,hr⟩ := hdiv
-  have hd' : d=r*4 := by omega
-  have hrpos : 0<r := by omega
-  rw [hd']
-  apply rankThreeProduct_not_euclidean_mul_four e r
-  exact hrpos
+  obtain ⟨r,rfl⟩ := hdiv
+  intro he
+  refine not_euclidean_of_retract_regular_charts
+    { sectionMap x := (((pairCoordinatesEuclidean e r).symm x).1, firstRowSection ((pairCoordinatesEuclidean e r).symm x).2)
+      projectionMap p := pairCoordinatesEuclidean e r (p.1, quaternionContraction p.2.val)
+      section_continuous := by have := continuous_firstRowSection (κ := Fin r × Fin 4); fun_prop
+      projection_continuous := by have := continuous_quaternionContraction r; fun_prop
+      projection_section x := by simp
+      section_zero := by
+        simp [(pairCoordinatesEuclidean e r).symm_apply_eq.mpr (pairCoordinatesEuclidean_zero e r).symm]
+      projection_zero_iff p := by
+        rw [← pairCoordinatesEuclidean_zero e r, (pairCoordinatesEuclidean e r).injective.eq_iff]
+        simp [Prod.ext_iff, quaternionContraction_zero_iff] }
+    (Fintype.card (Fin e)+Fintype.card (Fin r × Fin 4)+2) (by simp) (fun U hU h0 => ?_)
+    ((euclideanAt_homeomorph (productRankThreeReindex e (finProdFinEquiv.trans (finCongr (mul_comm r 4))))
+      (0,rankThreeZero)).mpr (by aesop))
+  obtain ⟨p,hp,hpc⟩ := exists_regular_in_open (ι := Fin e) ((⟨0,by omega⟩, 0) : Fin r × Fin 4) U hU h0
+  grind
 
 end GS.UnitaryTopology

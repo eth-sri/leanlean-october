@@ -5,8 +5,6 @@ public import GS.Extensions.FiniteTopology
 
 @[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
 /-!
 # Exact set-theoretic description of the ORIGINAL g(K)
@@ -22,29 +20,18 @@ obstruction are deliberately NOT claimed here.
 -/
 noncomputable section
 open Matrix GS GS.Extensions
-open scoped BigOperators
 namespace GS.GlobalGeometry
 variable {κ : Type*} [Fintype κ] [DecidableEq κ]
 
-/-- Rank <= 1 forces every two-column 2-by-2 determinant to vanish. -/
-theorem rank_le_one_two_column_minor (W : Matrix (Fin 2) κ ℝ)
-    (hW : W.rank ≤ 1) (j k : κ) : W 0 j * W 1 k = W 0 k * W 1 j := by
-  let D : Mat 2 := W.submatrix id ![j,k]
-  have hDW : D.rank ≤ W.rank := by
-    rw [Matrix.rank_eq_finrank_span_cols, Matrix.rank_eq_finrank_span_cols]
-    apply Submodule.finrank_mono
-    apply Submodule.span_mono
-    rintro x ⟨i, rfl⟩
-    exact ⟨![j,k] i, rfl⟩
-  have hr : D.rank ≤ 1 := hDW.trans hW
-  have hd : D.det = 0 := by
+/-- Rank <= 1 forces every 2-by-2 minor to vanish. -/
+theorem rank_le_one_minor {ρ : Type*} (W : Matrix ρ κ ℝ) (hW : W.rank ≤ 1) (a b : ρ) (j k : κ) :
+    W a j * W b k = W a k * W b j := by
+  have hd : (W.submatrix ![a,b] ![j,k]).det = 0 := by
     by_contra hn
-    have he : D.rank = 2 := by
-      simpa using Matrix.rank_of_isUnit D
-        ((Matrix.isUnit_iff_isUnit_det D).mpr (isUnit_iff_ne_zero.mpr hn))
-    omega
-  simpa only [D, Matrix.det_fin_two, Matrix.submatrix_apply, id_eq,
-    Matrix.cons_val_zero, Matrix.cons_val_one, Matrix.head_cons, sub_eq_zero] using hd
+    have := (rank_of_isUnit _ ((isUnit_iff_isUnit_det _).2 (isUnit_iff_ne_zero.2 hn))).symm.trans_le
+      ((rank_submatrix_le W _ _).trans hW)
+    simp_all
+  simpa [det_fin_two, sub_eq_zero] using (det_fin_two _).symm.trans hd
 
 /-- Normalized outer factorization, including W=0. Only the EXISTENCE of
 u,z is asserted; uniqueness or continuous selection is not assumed. -/
@@ -57,51 +44,27 @@ theorem exists_unit_outer_of_rank_le_one (W : Matrix (Fin 2) κ ℝ)
   · obtain ⟨j,hj⟩ := not_forall.mp hz
     let a := W 1 j / W 0 j
     let r := Real.sqrt (1+a^2)
-    have hr : 0 < r := Real.sqrt_pos.2 (by positivity)
-    have hr0 : r ≠ 0 := ne_of_gt hr
-    have hrs : r^2 = 1+a^2 := Real.sq_sqrt (by positivity)
+    have hr : 0 < r := by positivity
+    have hr0 := ne_of_gt hr
     have hrow (k : κ) : W 1 k = a * W 0 k := by
-      have hm := rank_le_one_two_column_minor W hW j k
-      dsimp [a]
-      field_simp [hj]
-      nlinarith [hm]
+      have hm := rank_le_one_minor W hW 0 1 j k
+      grind
     refine ⟨![1/r,a/r], ?_, fun k => r*W 0 k, ?_⟩
     · change (1/r)^2+(a/r)^2=1
-      field_simp [hr0]
-      nlinarith [hrs]
+      grind
     · ext i k
       fin_cases i
       · simp [outer, hr0]
       · change (a / r) * (r * W 0 k) = W 1 k
-        rw [hrow k]
-        field_simp [hr0]
-
-/-- If both rows of W represent skew matrices, so does the normalized second
-outer factor. This proof does not pick a nonzero row; it contracts with u. -/
-theorem outer_skew_factor {q : ℕ} (W : Matrix (Fin 2) (Fin q × Fin q) ℝ)
-    (u : CircleVector) (hu : OnCircle u) (z : Fin q × Fin q → ℝ)
-    (he : outer u z=W) (hrows : ∀ r, IsSkew (fun i j => W r (i,j))) :
-    IsSkew (fun i j => z (i,j)) := by
-  have hrecover (i j : Fin q) : z (i,j) =
-      u 0 * W 0 (i,j)+u 1 * W 1 (i,j) := by
-    rw [← he]
-    dsimp [outer]
-    nlinarith [congrArg (fun x : ℝ => x*z (i,j)) hu]
-  change (fun i j => z (j,i)) = -(fun i j => z (i,j))
-  ext i j
-  have h₀ := congrFun (congrFun (hrows 0) i) j
-  have h₁ := congrFun (congrFun (hrows 1) i) j
-  change W 0 (j,i) = -W 0 (i,j) at h₀
-  change W 1 (j,i) = -W 1 (i,j) at h₁
-  simp only [Pi.neg_apply]
-  rw [hrecover j i, hrecover i j, h₀, h₁]
-  ring
+        grind
 
 abbrev OriginalImageCoordinates (q : ℕ) :=
   (Fin q → ℝ) × (Fin q → ℝ) × Mat q × Matrix (Fin 2) (Fin q × Fin q) ℝ
 
+section
+variable (q : ℕ) (η : ℝ)
 /-- A rank cone in the row-skew subspace; no Euclidean dimension is yet asserted. -/
-def originalGImageSet (q : ℕ) (η : ℝ) : Set (OriginalImageCoordinates q) :=
+def originalGImageSet : Set (OriginalImageCoordinates q) :=
   {p | (∀ i, |p.1 i| ≤ η) ∧ (∀ j, |p.2.1 j| ≤ η) ∧
     (∀ j : Fin q, j.val=0 → p.2.1 j=0) ∧ IsSkew p.2.2.1 ∧
     frobSq p.2.2.1 ≤ η^2 ∧
@@ -109,7 +72,7 @@ def originalGImageSet (q : ℕ) (η : ℝ) : Set (OriginalImageCoordinates q) :=
     p.2.2.2.rank ≤ 1 ∧ frobSq p.2.2.2 ≤ η^2}
 
 /-- Exact image equality, with the ORIGINAL definitions of g and K. -/
-theorem originalG_image_eq (q : ℕ) (η : ℝ) :
+theorem originalG_image_eq :
     originalG '' originalK q η = originalGImageSet q η := by
   ext p
   constructor
@@ -125,14 +88,20 @@ theorem originalG_image_eq (q : ℕ) (η : ℝ) :
       simpa only [frobSq, frobInner, Fintype.sum_prod_type, pow_two] using hzn
   · rcases p with ⟨ell,r,c,W⟩
     rintro ⟨hell,hr,hr0,hc,hcn,hrows,hRank,hWn⟩
-    obtain ⟨u,hu,z,he⟩ := exists_unit_outer_of_rank_le_one W hRank
-    let Z : Mat q := fun i j => z (i,j)
-    have hz : IsSkew Z := outer_skew_factor W u hu z he hrows
-    have hn : frobSq Z ≤ η^2 := by
-      rw [← he, frobSq_outer hu] at hWn
-      simpa only [Z, frobSq, frobInner, Fintype.sum_prod_type, pow_two] using hWn
-    refine ⟨(ell,r,c,Z,u), ⟨hell,hr,hr0,hc,hz,hcn,hn,hu⟩,?_⟩
-    change (ell,r,c,outer u (fun ij => Z ij.1 ij.2))=(ell,r,c,W)
-    simpa only [Z] using congrArg (fun A => (ell,r,c,A)) he
+    obtain ⟨u,hu,z,rfl⟩ := exists_unit_outer_of_rank_le_one W hRank
+    rw [frobSq_outer hu] at hWn
+    refine ⟨(ell,r,c,fun i j => z (i,j),u), ⟨hell,hr,hr0,hc,?_,hcn,
+      by simpa only [frobSq, frobInner, Fintype.sum_prod_type, pow_two] using hWn,hu⟩, by aesop⟩
+    unfold IsSkew
+    ext i j
+    have h₀ := congrFun₂ (hrows 0) i j
+    have h₁ := congrFun₂ (hrows 1) i j
+    have hu : u 0^2+u 1^2 = 1 := hu
+    change u 0 * z (j,i) = -(u 0 * z (i,j)) at h₀
+    change u 1 * z (j,i) = -(u 1 * z (i,j)) at h₁
+    change z (j,i) = -z (i,j)
+    linear_combination u 0 * h₀ + u 1 * h₁ - (z (j,i) + z (i,j)) * hu
+
+end
 
 end GS.GlobalGeometry

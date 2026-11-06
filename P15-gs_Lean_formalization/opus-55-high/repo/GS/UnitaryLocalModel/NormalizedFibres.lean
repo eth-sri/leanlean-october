@@ -5,8 +5,6 @@ public import GS.UnitaryLocalModel.ChartFibres
 
 @[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
 /-!
 # Exact fibres including the normalized outer unitary factors
@@ -34,66 +32,29 @@ def NormalizedPositiveAnchors (Q : CMat q) (o : Fin q)
   (∀ i, ((Q i o)⁻¹ • N i o).PosDef) ∧
   (∀ j, ((Q o j)⁻¹ • N o j).PosDef)
 
-private theorem cancel_unitary_left (U A B : CMat 2) (hU : GS.Unitary U)
-    (he : U*A = U*B) : A = B := by
-  have h := congrArg (fun T => Uᴴ*T) he
-  simpa only [← Matrix.mul_assoc, hU.1, Matrix.one_mul] using h
-
-private theorem cancel_unitary_right (U A B : CMat 2) (hU : GS.Unitary U)
-    (he : A*U = B*U) : A = B := by
-  have h := congrArg (fun T => T*Uᴴ) he
-  simpa only [Matrix.mul_assoc, hU.2, Matrix.mul_one] using h
-
-/-- Recover both complete outer tuples and every middle block from the image. -/
-theorem normalized_outer_fibres (Q : CMat q) (o : Fin q)
-    (L R L' R' : Fin q → CMat 2) (N N' : Fin q → Fin q → CMat 2)
-    (hL : ∀ i, GS.Unitary (L i)) (hR : ∀ j, GS.Unitary (R j))
-    (hL' : ∀ i, GS.Unitary (L' i)) (hR' : ∀ j, GS.Unitary (R' j))
-    (hRo : R o = 1) (hRo' : R' o = 1)
-    (hN : NormalizedPositiveAnchors Q o N)
-    (hN' : NormalizedPositiveAnchors Q o N')
-    (he : normalizedBlockImage L R N = normalizedBlockImage L' R' N') :
-    L = L' ∧ R = R' ∧ N = N' := by
-  have hblocks (i j : Fin q) : L i * N i j * R j = L' i * N' i j * R' j :=
-    congrFun (congrFun he i) j
-  have hLL : L = L' := by
-    funext i
-    have hi : L i * N i o = L' i * N' i o := by
-      simpa only [hRo, hRo', Matrix.mul_one] using hblocks i o
-    have hscaled : L i * ((Q i o)⁻¹ • N i o) =
-        L' i * ((Q i o)⁻¹ • N' i o) := by
-      simpa only [Matrix.mul_smul] using congrArg (fun T => (Q i o)⁻¹ • T) hi
-    exact (positive_polar_unique _ _ _ _ (hL i) (hL' i) (hN.1 i) (hN'.1 i) hscaled).1
-  have hRR : R = R' := by
-    funext j
-    have hj : N o j * R j = N' o j * R' j := by
-      apply cancel_unitary_left (L o) _ _ (hL o)
-      simpa only [Matrix.mul_assoc, hLL] using hblocks o j
-    have hscaled : ((Q o j)⁻¹ • N o j) * R j =
-        ((Q o j)⁻¹ • N' o j) * R' j := by
-      simpa only [Matrix.smul_mul] using congrArg (fun T => (Q o j)⁻¹ • T) hj
-    exact (positive_polar_unique_right _ _ _ _ (hR j) (hR' j)
-      (hN.2 j) (hN'.2 j) hscaled).1
-  refine ⟨hLL, hRR, ?_⟩
-  funext i j
-  apply cancel_unitary_right (R j) _ _ (hR j)
-  apply cancel_unitary_left (L i) _ _ (hL i)
-  simpa only [Matrix.mul_assoc, hLL, hRR] using hblocks i j
-
+section
+variable (Q : CMat q) (o : Fin q) (L R L' R' : Fin q → CMat 2) (N N' : Fin q → Fin q → CMat 2)
 /-- The full normalized fibre relation, including all outer coordinates. -/
-theorem normalized_outer_fibres_iff (Q : CMat q) (o : Fin q)
-    (L R L' R' : Fin q → CMat 2) (N N' : Fin q → Fin q → CMat 2)
-    (hL : ∀ i, GS.Unitary (L i)) (hR : ∀ j, GS.Unitary (R j))
+theorem normalized_outer_fibres_iff (hL : ∀ i, GS.Unitary (L i)) (hR : ∀ j, GS.Unitary (R j))
     (hL' : ∀ i, GS.Unitary (L' i)) (hR' : ∀ j, GS.Unitary (R' j))
     (hRo : R o = 1) (hRo' : R' o = 1)
     (hN : NormalizedPositiveAnchors Q o N)
     (hN' : NormalizedPositiveAnchors Q o N') :
     normalizedBlockImage L R N = normalizedBlockImage L' R' N' ↔
       L = L' ∧ R = R' ∧ N = N' := by
-  constructor
-  · exact normalized_outer_fibres Q o L R L' R' N N' hL hR hL' hR' hRo hRo' hN hN'
-  · rintro ⟨rfl, rfl, rfl⟩
-    rfl
+  refine ⟨fun he => ?_, by grind⟩
+  have hb (i j : Fin q) : L i * N i j * R j = L' i * N' i j * R' j := congrFun₂ he i j
+  have cl {U A B : CMat 2} (hU : GS.Unitary U) (he : U*A = U*B) : A = B := by
+    simpa only [← Matrix.mul_assoc, hU.1, Matrix.one_mul] using congrArg (Uᴴ * ·) he
+  have cr {U A B : CMat 2} (hU : GS.Unitary U) (he : A*U = B*U) : A = B := by
+    simpa only [Matrix.mul_assoc, hU.2, Matrix.mul_one] using congrArg (· * Uᴴ) he
+  obtain rfl : L = L' := funext fun i => (positive_polar_unique _ _ _ _ (hL i) (hL' i) (hN.1 i) (hN'.1 i)
+    (by have := hb i o; simp_all)).1
+  obtain rfl : R = R' := funext fun j => (positive_polar_unique_right _ _ _ _ (hR j) (hR' j) (hN.2 j)
+    (hN'.2 j) (by have := cl (hL o) (by simpa [Matrix.mul_assoc] using hb o j); simp_all)).1
+  exact ⟨rfl, rfl, funext₂ fun i j => cl (hL i) (cr (hR j) (hb i j))⟩
+
+end
 
 /-- Exact outer-plus-cone coordinates after any injective local middle chart. -/
 theorem normalized_chart_fibres_on {d : ℕ}
@@ -113,16 +74,8 @@ theorem normalized_chart_fibres_on {d : ℕ}
     normalizedBlockImage L R (fun i j => chartMiddle ψ c z u (i,j)) =
         normalizedBlockImage L' R' (fun i j => chartMiddle ψ c' z' v (i,j)) ↔
       L = L' ∧ R = R' ∧ c = c' ∧ sphereOuter u z = sphereOuter v z' := by
-  rw [normalized_outer_fibres_iff Q o L R L' R' _ _ hL hR hL' hR' hRo hRo' hN hN']
-  have he : (fun i j => chartMiddle ψ c z u (i,j)) =
-      (fun i j => chartMiddle ψ c' z' v (i,j)) ↔
-      chartMiddle ψ c z u = chartMiddle ψ c' z' v := by
-    constructor
-    · intro h
-      funext p
-      exact congrFun (congrFun h p.1) p.2
-    · intro h
-      exact congrArg (fun F => fun i j => F (i,j)) h
-  rw [he, chartMiddle_fibres_on ψ U hψ c z c' z' hcp hcm hcp' hcm' hu hv]
+  rw [normalized_outer_fibres_iff Q o L R L' R' _ _ hL hR hL' hR' hRo hRo' hN hN',
+    ← chartMiddle_fibres_on ψ U hψ c z c' z' hcp hcm hcp' hcm' hu hv]
+  simp [funext_iff]
 
 end GS.UnitaryLocalModel

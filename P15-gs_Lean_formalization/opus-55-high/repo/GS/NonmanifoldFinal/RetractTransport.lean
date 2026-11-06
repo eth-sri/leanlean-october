@@ -5,10 +5,7 @@ public import GS.NonmanifoldObstruction.PuncturedNeighbourhood
 
 @[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
-set_option autoImplicit false
 
 /-!
 # Transport the existing sphere retract to all finite column sets
@@ -29,32 +26,21 @@ def transportSectionPair (p : ContinuousSectionPair A B)
     (hA : A' ≃ₜ A) (hB : B ≃ₜ B') : ContinuousSectionPair A' B' where
   sectionMap a := hB (p.sectionMap (hA a))
   retractionMap b := hA.symm (p.retractionMap (hB.symm b))
-  section_continuous := hB.continuous.comp (p.section_continuous.comp hA.continuous)
-  retraction_continuous := hA.symm.continuous.comp
-    (p.retraction_continuous.comp hB.symm.continuous)
-  retraction_section a := by simp only [Homeomorph.symm_apply_apply,
-    p.retraction_section]
+  section_continuous := by have := p.section_continuous; fun_prop
+  retraction_continuous := by have := p.retraction_continuous; fun_prop
+  retraction_section a := by simp [p.retraction_section]
 
 /-- Remove a SINGLE marked point from an open subset. -/
 abbrev PuncturedIn (U : Set X) (x : X) := {p : X // p ∈ U ∧ p ≠ x}
 
 def puncturedImage (h : X ≃ₜ Y) (U : Set X) (x : X) :
     PuncturedIn U x ≃ₜ PuncturedIn (h '' U) (h x) where
-  toFun p := ⟨h p.val,⟨p.val,p.property.1,rfl⟩,
-    fun he => p.property.2 (h.injective he)⟩
-  invFun p := ⟨h.symm p.val,by
-    obtain ⟨a,ha,he⟩ := p.property.1
-    simpa only [← he,Homeomorph.symm_apply_apply] using ha,
-    by
-      intro he
-      apply p.property.2
-      calc
-        p.val = h (h.symm p.val) := (h.apply_symm_apply p.val).symm
-        _ = h x := congrArg h he⟩
-  left_inv p := by apply Subtype.ext; exact h.symm_apply_apply p.val
-  right_inv p := by apply Subtype.ext; exact h.apply_symm_apply p.val
-  continuous_toFun := (h.continuous.comp continuous_subtype_val).subtype_mk _
-  continuous_invFun := (h.symm.continuous.comp continuous_subtype_val).subtype_mk _
+  toFun p := ⟨h p.val,by grind, by aesop⟩
+  invFun p := ⟨h.symm p.val,by aesop, by aesop⟩
+  left_inv p := by simp
+  right_inv p := by simp
+  continuous_toFun := by fun_prop
+  continuous_invFun := by fun_prop
 
 /-- No restriction to an artificially selected cone branch occurs here. -/
 theorem every_punctured_cone_open_has_standard_sphere_retract
@@ -63,18 +49,8 @@ theorem every_punctured_cone_open_has_standard_sphere_retract
     (hU : IsOpen U) (hzero : productZero ∈ U) :
     Nonempty (ContinuousSectionPair
       (UnitSphere (Fin (Fintype.card ι + 2))) (PuncturedIn U productZero)) := by
-  let d := Fintype.card κ - 2
-  let e : ConeSpace ι κ ≃ₜ ConeSpace ι (Fin (d+2)) := coneCoordinatesExtra hκ
-  let V : Set (ConeSpace ι (Fin (d+2))) := e '' U
-  have hV : IsOpen V := e.isOpenMap U hU
-  have he0 : e productZero = productZero := coneCoordinatesExtra_zero hκ
-  have hv0 : productZero ∈ V := ⟨productZero,hzero,he0⟩
-  obtain ⟨p⟩ := punctured_open_has_sphere_retract (ι := ι) d V hV hv0
-  have hPunctured : PuncturedIn U productZero ≃ₜ PuncturedOpen d V := by
-    change PuncturedIn U productZero ≃ₜ PuncturedIn V productZero
-    have hh := puncturedImage e U productZero
-    rw [he0] at hh
-    exact hh
-  exact ⟨transportSectionPair p planeSphereFinHomeomorph.symm hPunctured.symm⟩
+  obtain ⟨p⟩ := punctured_open_has_sphere_retract (ι := ι) _ _ ((coneCoordinatesExtra hκ).isOpenMap U hU)
+    ⟨_, hzero, rfl⟩
+  exact ⟨transportSectionPair p planeSphereFinHomeomorph.symm (puncturedImage (coneCoordinatesExtra hκ) U productZero).symm⟩
 
 end GS.NonmanifoldFinal

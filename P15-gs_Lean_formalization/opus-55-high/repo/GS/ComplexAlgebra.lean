@@ -6,8 +6,6 @@ public import Mathlib.LinearAlgebra.Matrix.Trace
 
 @[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
 /-! Definitions and basic algebra for the unitary extension.
 No assertion about the SU overlap projection is made here.
@@ -19,15 +17,15 @@ namespace GS
 
 abbrev CMat (n : ℕ) := Matrix (Fin n) (Fin n) ℂ
 
-def Unitary {n : ℕ} (A : CMat n) : Prop := Aᴴ*A=1 ∧ A*Aᴴ=1
+section
+variable {n : ℕ} (A : CMat n)
+def Unitary : Prop := Aᴴ*A=1 ∧ A*Aᴴ=1
 
-def IsSkewHermitian {n : ℕ} (A : CMat n) : Prop := Aᴴ = -A
+def IsSkewHermitian : Prop := Aᴴ = -A
 
-def skewHermitianPart {n : ℕ} (A : CMat n) : CMat n :=
-  (1/2 : ℂ) • (A-Aᴴ)
 
-def tracelessPart {n : ℕ} (A : CMat n) : CMat n :=
-  A - (A.trace/(n : ℂ)) • (1 : CMat n)
+
+end
 
 namespace Unitary
 variable {n : ℕ} {A B : CMat n}

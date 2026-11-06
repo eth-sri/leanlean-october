@@ -1,11 +1,10 @@
 module
 
 public import Mathlib.Topology.Homeomorph.Lemmas
+public import Mathlib.Topology.Instances.Matrix
 
 @[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
 /-!
 # Compact equal-fibre maps
@@ -17,29 +16,14 @@ bijection. It asserts a homeomorphism, not differentiability of the image.
 -/
 
 noncomputable section
-namespace GS
+attribute [fun_prop] continuous_if_const
 
-/-- A continuous surjection from a compact space to a Hausdorff space detects
-continuity of a descended map. The proof uses closed sets directly. -/
-theorem continuous_descend_compact
-    {K X Y : Type*} [TopologicalSpace K] [CompactSpace K]
-    [TopologicalSpace X] [T2Space X] [TopologicalSpace Y]
-    (f : K → X) (g : K → Y) (e : X → Y)
-    (hf : Continuous f) (hg : Continuous g) (hs : Function.Surjective f)
-    (he : ∀ k, e (f k) = g k) : Continuous e := by
-  apply continuous_iff_isClosed.mpr
-  intro s hclosed
-  have hc : IsCompact (g ⁻¹' s) := (hclosed.preimage hg).isCompact
-  have hset : e ⁻¹' s = f '' (g ⁻¹' s) := by
-    ext x
-    constructor
-    · intro hx
-      obtain ⟨k,rfl⟩ := hs x
-      exact ⟨k, by simpa only [Set.mem_preimage, he k] using hx, rfl⟩
-    · rintro ⟨k,hk,rfl⟩
-      simpa only [Set.mem_preimage, he k] using hk
-  rw [hset]
-  exact (hc.image hf).isClosed
+@[fun_prop] theorem continuous_val_row {X R α β : Type*} [TopologicalSpace X] [TopologicalSpace R]
+    {P : Matrix α β R → Prop} {f : X → {W : Matrix α β R // P W}} (hf : Continuous f) (i : α) :
+    Continuous fun x => (f x).val i :=
+  continuous_pi fun k => hf.subtype_val.matrix_elem i k
+
+namespace GS
 
 /-- Equal fibres give a homeomorphism which also respects the parameter maps.
 The compatibility records the image of each distinguished base point. -/
@@ -50,45 +34,19 @@ theorem exists_homeomorph_ranges_of_same_fibres
     (hfg : ∀ a b, f a = f b ↔ g a = g b) :
     ∃ h : Set.range f ≃ₜ Set.range g,
       ∀ k, h ⟨f k, ⟨k,rfl⟩⟩ = ⟨g k, ⟨k,rfl⟩⟩ := by
-  classical
   let f' : K → Set.range f := fun k => ⟨f k, ⟨k,rfl⟩⟩
   let g' : K → Set.range g := fun k => ⟨g k, ⟨k,rfl⟩⟩
-  have hf' : Continuous f' := hf.subtype_mk _
-  have hg' : Continuous g' := hg.subtype_mk _
-  have hsf : Function.Surjective f' := by
-    rintro ⟨y,k,hk⟩
-    exact ⟨k,Subtype.ext hk⟩
-  have hsg : Function.Surjective g' := by
-    rintro ⟨z,k,hk⟩
-    exact ⟨k,Subtype.ext hk⟩
-  let forward : Set.range f → Set.range g := fun y =>
-    g' (Classical.choose y.property)
-  let inv : Set.range g → Set.range f := fun z =>
-    f' (Classical.choose z.property)
-  have hto : ∀ k, forward (f' k) = g' k := by
-    intro k
-    apply Subtype.ext
-    apply (hfg _ _).mp
-    exact Classical.choose_spec (f' k).property
-  have hinv : ∀ k, inv (g' k) = f' k := by
-    intro k
-    apply Subtype.ext
-    apply (hfg _ _).mpr
-    exact Classical.choose_spec (g' k).property
-  have hleft : Function.LeftInverse inv forward := by
-    intro y
-    obtain ⟨k,rfl⟩ := hsf y
-    rw [hto,hinv]
-  have hright : Function.RightInverse inv forward := by
-    intro z
-    obtain ⟨k,rfl⟩ := hsg z
-    rw [hinv,hto]
+  have hsf : Function.Surjective f' := by rintro ⟨y,k,rfl⟩; exact ⟨k, rfl⟩
+  have hsg : Function.Surjective g' := by rintro ⟨y,k,rfl⟩; exact ⟨k, rfl⟩
   let e : Set.range f ≃ Set.range g :=
-    { toFun := forward, invFun := inv, left_inv := hleft, right_inv := hright }
-  exact ⟨{
-    toEquiv := e
-    continuous_toFun := continuous_descend_compact f' g' forward hf' hg' hsf hto
-    continuous_invFun := continuous_descend_compact g' f' inv hg' hf' hsg hinv
-  }, hto⟩
+    { toFun y := g' (Classical.choose y.property), invFun z := f' (Classical.choose z.property),
+      left_inv := by grind, right_inv := by grind }
+  have hto : ∀ k, e (f' k) = g' k := by grind
+  have hinv : ∀ k, e.symm (g' k) = f' k := by grind
+  refine ⟨⟨e, ?_, ?_⟩, hto⟩
+  · exact (Topology.IsQuotientMap.of_surjective_continuous hsf (hf.subtype_mk _)).continuous_iff.2
+      (by simpa [Function.comp_def, hto] using hg.subtype_mk _)
+  · exact (Topology.IsQuotientMap.of_surjective_continuous hsg (hg.subtype_mk _)).continuous_iff.2
+      (by simpa [Function.comp_def, hinv] using hf.subtype_mk _)
 
 end GS

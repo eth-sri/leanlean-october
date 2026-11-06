@@ -1,6 +1,15 @@
 module
 
-public import GSChecked
+public import GS.Shared.Factorization
+public import GS.Specifications
+public import GS.UnitaryCS.ColumnGram
+public import GS.GlobalGeometry.SharedDescent
+public import GS.Results.OriginalCellRank
+public import GS.UnitaryCS.Bridge
+public import GS.Shared.GradientSection
+public import GS.UnitarySharing.Orbit
+public import GS.UnitaryTopology.MatrixNonmanifold
+
 
 @[expose] public section
 
@@ -12,10 +21,7 @@ the paper correspondence and the additional results.
 -/
 
 noncomputable section
-set_option autoImplicit false
 set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
-set_option maxHeartbeats 1600000
 open Matrix
 open scoped BigOperators Manifold ContDiff
 attribute [local instance] Matrix.normedAddCommGroup Matrix.normedSpace
@@ -27,7 +33,7 @@ theorem two_factor (n : ℕ) (s₁ s₂ : GS.BlockSpec n)
     (σ : Equiv.Perm (Fin n)) (A : GS.Mat n) :
     GS.InA2 s₁.size s₂.size (GS.permMatrix σ) A ∧ GS.Orthogonal A ↔
       GS.InA2Orth s₁.size s₂.size (GS.permMatrix σ) A :=
-  GS.Extensions.twoFactorOrthogonalization n s₁ s₂ σ A
+  GS.Shared.twoFactor (𝕜 := ℝ) _ _ σ A
 
 /-- The same equality holds for three layers and arbitrary fixed permutations. -/
 theorem three_factor (n : ℕ) (s₁ s₂ s₃ : GS.BlockSpec n)
@@ -35,7 +41,7 @@ theorem three_factor (n : ℕ) (s₁ s₂ s₃ : GS.BlockSpec n)
     GS.InA3 s₁.size s₂.size s₃.size (GS.permMatrix σ₁) (GS.permMatrix σ₂) A ∧
       GS.Orthogonal A ↔
     GS.InA3Orth s₁.size s₂.size s₃.size (GS.permMatrix σ₁) (GS.permMatrix σ₂) A :=
-  GS.Extensions.threeFactorOrthogonalization n s₁ s₂ s₃ σ₁ σ₂ A
+  GS.Shared.threeFactor (𝕜 := ℝ) _ _ _ σ₁ σ₂ A
 
 /-- Four 2-by-2-block layers need not admit an orthogonal-layer realization. -/
 theorem four_factor_counterexample :
@@ -50,13 +56,13 @@ open GS GS.UnitaryGeometry
 theorem unitary_two_factor {n : ℕ} (b₁ b₂ : ℕ)
     (σ : Equiv.Perm (Fin n)) (A : CMat n) :
     CInA2 b₁ b₂ (cPermMatrix σ) A ∧ Unitary A ↔
-      CInA2Unitary b₁ b₂ (cPermMatrix σ) A := GS.UnitaryGeometry.twoFactorUnitarization b₁ b₂ σ A
+      CInA2Unitary b₁ b₂ (cPermMatrix σ) A := GS.Shared.twoFactor b₁ b₂ σ A
 
 /-- Unrestricted three-layer unitary matrices admit unitary layers. -/
 theorem unitary_three_factor {n : ℕ} (b₁ b₂ b₃ : ℕ)
     (σ₁ σ₂ : Equiv.Perm (Fin n)) (A : CMat n) :
     CInA3 b₁ b₂ b₃ (cPermMatrix σ₁) (cPermMatrix σ₂) A ∧ Unitary A ↔
-      CInA3Unitary b₁ b₂ b₃ (cPermMatrix σ₁) (cPermMatrix σ₂) A := GS.UnitaryGeometry.threeFactorUnitarization b₁ b₂ b₃ σ₁ σ₂ A
+      CInA3Unitary b₁ b₂ b₃ (cPermMatrix σ₁) (cPermMatrix σ₂) A := GS.Shared.threeFactor b₁ b₂ b₃ σ₁ σ₂ A
 
 /-- Allowing complex unitary layers does not remove the four-layer obstruction. -/
 theorem unitary_four_factor_counterexample :
@@ -66,12 +72,12 @@ theorem unitary_four_factor_counterexample :
 /-- The scalar (p,2,p) family fills the orthogonal group (including p=0). -/
 theorem real_cs_exhaustion {p : ℕ} {A : Mat (2*p)} :
     InA3Orth p 2 p (permMatrix (scalarShuffle 2 p))
-      (permMatrix (scalarShuffle 2 p))ᵀ A ↔ Orthogonal A := GS.Results.CosineSine.scalar_exhaustion
+      (permMatrix (scalarShuffle 2 p))ᵀ A ↔ Orthogonal A := GS.UnitaryCS.scalar_two_iff (𝕜 := ℝ)
 
 /-- Complex cosine-sine decomposition gives the entire unitary group. -/
 theorem unitary_cs_exhaustion {p : ℕ} {A : CMat (2*p)} :
     CInA3Unitary p 2 p (cPermMatrix (scalarShuffle 2 p))
-      (cPermMatrix (scalarShuffle 2 p))ᴴ A ↔ Unitary A := GS.Results.UnitaryCosineSine.scalar_exhaustion
+      (cPermMatrix (scalarShuffle 2 p))ᴴ A ↔ Unitary A := GS.UnitaryCS.scalar_two_iff
 
 /-- A rank-one determinantal singularity survives any Euclidean factor. -/
 theorem rank_one_cone_singularity (d e : ℕ) (hd : 2 ≤ d) :
@@ -141,6 +147,25 @@ def ComplexDirections {n : ℕ} (b₁ b₂ : ℕ) (τ₁ τ₂ : ℕ → ℕ) (X
     (CBlockDiagonal b₁ Ω ∧ Ωᴴ = -Ω ∧ GS.UnitarySharing.TiedEntries b₁ τ₁ Ω) ∧
     Z = C * X + X * Ω
 
+theorem shared_geometry {𝕜 : Type} [RCLike 𝕜] {n : ℕ} (right left : GS.Shared.Pattern 𝕜 n)
+    (P : Matrix (Fin n) (Fin n) 𝕜) :
+    EmbeddedGeometry GS.Shared.frob
+      {X | GS.Shared.InShared right.size left.size right.label left.label P X}
+      (fun X Z => Z ∈ GS.Shared.pointDirections right left X) := by
+  open GS.Shared in
+  rw [← orbit_set_eq_inShared (right := right) (left := left) P]
+  letI : NormedSpace ℝ (HorizontalModel right left P) := Submodule.normedSpace _
+  letI := sharedOrbitChartedSpace right left P
+  exact ⟨_, _, _, inferInstance, _, sharedOrbitIsManifold right left P,
+    sharedOrbit_val_contMDiff right left P, sharedOrbit_val_mfderiv_injective right left P,
+    fun X Z => (orbit_tangent_image_iff right left P X Z).symm,
+    ⟨_, pointProjection_contMDiff right left P, fun X Z =>
+      ⟨pointProjection_mem X.val Z, pointProjection_normal X.val Z⟩⟩,
+    ⟨_, cayleyRetraction_contMDiff right left P, cayleyRetraction_zero_section right left P,
+      cayleyRetraction_fibre_mfderiv_zero right left P⟩,
+    fun f hf => ⟨_, intrinsicGradientSection_smooth right left P f hf, fun X v =>
+      intrinsicGradient_characterization right left P f X ((hf.differentiable (by simp)) X) v⟩⟩
+
 /-- Smooth geometry of the actual orthogonal image, including arbitrary overlap,
 complete within-layer sharing, and arbitrary fixed carriers. -/
 theorem orthogonal_shared_geometry {n : ℕ} (b₁ b₂ : ℕ)
@@ -149,47 +174,17 @@ theorem orthogonal_shared_geometry {n : ℕ} (b₁ b₂ : ℕ)
     EmbeddedGeometry (fun A B : Mat n => ∑ i, ∑ j, A i j * B i j)
       {X | GS.GlobalGeometry.InSharedA2Orth b₁ b₂ τ₁ τ₂ P X}
       (RealDirections b₁ b₂ τ₁ τ₂) := by
-  let right : GS.SharedGeometry.Pattern n := ⟨b₁, hb₁, hd₁, τ₁⟩
-  let left : GS.SharedGeometry.Pattern n := ⟨b₂, hb₂, hd₂, τ₂⟩
-  have hset : {X | GS.GlobalGeometry.InSharedA2Orth b₁ b₂ τ₁ τ₂ P X} =
-      MulAction.orbit (GS.SharedGeometry.Factors right left) P :=
-    (GS.SharedGeometry.orbit_set_eq_inShared (right := right) (left := left) P).symm
-  rw [hset]
-  let E := GS.SharedGeometry.HorizontalModel right left P
-  letI : NormedSpace ℝ E := Submodule.normedSpace _
-  letI : ChartedSpace E (GS.SharedGeometry.MatrixOrbit right left P) :=
-    GS.SharedGeometry.sharedOrbitChartedSpace right left P
-  letI : IsManifold (𝓘(ℝ, E)) ⊤ (GS.SharedGeometry.MatrixOrbit right left P) :=
-    GS.SharedGeometry.sharedOrbitIsManifold right left P
-  have hdir (X Z : Mat n) : RealDirections b₁ b₂ τ₁ τ₂ X Z ↔
-      Z ∈ GS.SharedGeometry.pointDirections right left X := by
-    rw [GS.SharedGeometry.mem_pointDirections_iff]
-    constructor
-    · rintro ⟨C, Ω, hC, hΩ, he⟩
-      exact ⟨C, hC, Ω, hΩ, he⟩
-    · rintro ⟨C, hC, Ω, hΩ, he⟩
-      exact ⟨C, Ω, hC, hΩ, he⟩
-  refine ⟨E, inferInstance, inferInstance, inferInstance, inferInstance, inferInstance,
-    GS.SharedGeometry.sharedOrbit_val_contMDiff right left P,
-    GS.SharedGeometry.sharedOrbit_val_mfderiv_injective right left P, ?_, ?_, ?_, ?_⟩
-  · intro X Z
-    exact (hdir X.val Z).trans (GS.SharedGeometry.orbit_tangent_image_iff right left P X Z).symm
-  · refine ⟨fun p => GS.SharedGeometry.pointProjection right left p.1.val p.2,
-      GS.SharedGeometry.pointProjection_contMDiff right left P, ?_⟩
-    intro X Z
-    refine ⟨(hdir _ _).mpr (GS.SharedGeometry.pointProjection_mem X.val Z), ?_⟩
-    intro Y hY
-    exact GS.SharedGeometry.pointProjection_normal X.val Z Y ((hdir _ _).mp hY)
-  · exact ⟨GS.SharedGeometry.cayleyRetraction right left P,
-      GS.SharedGeometry.cayleyRetraction_contMDiff right left P,
-      GS.SharedGeometry.cayleyRetraction_zero_section right left P,
-      GS.SharedGeometry.cayleyRetraction_fibre_mfderiv_zero right left P⟩
-  · intro f hf
-    refine ⟨GS.SharedGeometry.intrinsicGradient right left P f,
-      GS.SharedGeometry.intrinsicGradientSection_smooth right left P f hf, ?_⟩
-    intro X v
-    exact GS.SharedGeometry.intrinsicGradient_characterization right left P f X
-      ((hf.differentiable (by simp)) X) v
+  convert shared_geometry (𝕜 := ℝ) ⟨b₁, hb₁, hd₁, τ₁⟩ ⟨b₂, hb₂, hd₂, τ₂⟩ P using 1
+  · ext A B
+    simp [GS.Shared.frob, Matrix.trace, Matrix.mul_apply]
+    exact Finset.sum_comm
+  · ext X
+    simp [GS.Shared.InShared, GS.GlobalGeometry.InSharedA2Orth, GS.Shared.SharedFactor,
+      GS.GlobalGeometry.SharedOrthogonalFactor, GS.Shared.Uni, Orthogonal, GS.product2,
+      BlockDiagonal, Supported, GS.Shared.Supp, GS.Shared.Tied, GS.GlobalGeometry.TiedEntries]
+  · ext X Z
+    simp [GS.Shared.mem_pointDirections_iff, RealDirections, GS.Shared.sharedSkewSpace,
+      BlockDiagonal, Supported, GS.Shared.Supp, GS.Shared.Tied, GS.GlobalGeometry.TiedEntries]
 
 /-- The same real differential geometry for shared unitary layers, with the
 full continuous stabilizer allowed. No special-unitary restriction is imposed. -/
@@ -200,47 +195,17 @@ theorem unitary_shared_geometry {n : ℕ} (b₁ b₂ : ℕ)
       ∑ i, ∑ j, ((A i j).re * (B i j).re + (A i j).im * (B i j).im))
       {X | GS.UnitarySharing.InSharedA2Unitary b₁ b₂ τ₁ τ₂ P X}
       (ComplexDirections b₁ b₂ τ₁ τ₂) := by
-  let right : GS.UnitarySharing.Pattern n := ⟨b₁, hb₁, hd₁, τ₁⟩
-  let left : GS.UnitarySharing.Pattern n := ⟨b₂, hb₂, hd₂, τ₂⟩
-  have hset : {X | GS.UnitarySharing.InSharedA2Unitary b₁ b₂ τ₁ τ₂ P X} =
-      MulAction.orbit (GS.UnitarySharing.Factors right left) P :=
-    (GS.UnitarySharing.orbit_set_eq_inShared (right := right) (left := left) P).symm
-  rw [hset]
-  let E := GS.UnitarySharing.HorizontalModel right left P
-  letI : NormedSpace ℝ E := Submodule.normedSpace _
-  letI : ChartedSpace E (GS.UnitarySharing.MatrixOrbit right left P) :=
-    GS.UnitarySharing.sharedOrbitChartedSpace right left P
-  letI : IsManifold (𝓘(ℝ, E)) ⊤ (GS.UnitarySharing.MatrixOrbit right left P) :=
-    GS.UnitarySharing.sharedOrbitIsManifold right left P
-  have hdir (X Z : CMat n) : ComplexDirections b₁ b₂ τ₁ τ₂ X Z ↔
-      Z ∈ GS.UnitarySharing.pointDirections right left X := by
-    rw [GS.UnitarySharing.mem_pointDirections_iff]
-    constructor
-    · rintro ⟨C, Ω, hC, hΩ, he⟩
-      exact ⟨C, hC, Ω, hΩ, he⟩
-    · rintro ⟨C, hC, Ω, hΩ, he⟩
-      exact ⟨C, Ω, hC, hΩ, he⟩
-  refine ⟨E, inferInstance, inferInstance, inferInstance, inferInstance, inferInstance,
-    GS.UnitarySharing.sharedOrbit_val_contMDiff right left P,
-    GS.UnitarySharing.sharedOrbit_val_mfderiv_injective right left P, ?_, ?_, ?_, ?_⟩
-  · intro X Z
-    exact (hdir X.val Z).trans (GS.UnitarySharing.orbit_tangent_image_iff right left P X Z).symm
-  · refine ⟨fun p => GS.UnitarySharing.pointProjection right left p.1.val p.2,
-      GS.UnitarySharing.pointProjection_contMDiff right left P, ?_⟩
-    intro X Z
-    refine ⟨(hdir _ _).mpr (GS.UnitarySharing.pointProjection_mem X.val Z), ?_⟩
-    intro Y hY
-    exact GS.UnitarySharing.pointProjection_normal X.val Z Y ((hdir _ _).mp hY)
-  · exact ⟨GS.UnitarySharing.cayleyRetraction right left P,
-      GS.UnitarySharing.cayleyRetraction_contMDiff right left P,
-      GS.UnitarySharing.cayleyRetraction_zero_section right left P,
-      GS.UnitarySharing.cayleyRetraction_fibre_mfderiv_zero right left P⟩
-  · intro f hf
-    refine ⟨GS.UnitarySharing.intrinsicGradient right left P f,
-      GS.UnitarySharing.intrinsicGradientSection_smooth right left P f hf, ?_⟩
-    intro X v
-    exact GS.UnitarySharing.intrinsicGradient_characterization right left P f X
-      ((hf.differentiable (by simp)) X) v
+  convert shared_geometry (𝕜 := ℂ) ⟨b₁, hb₁, hd₁, τ₁⟩ ⟨b₂, hb₂, hd₂, τ₂⟩ P using 1
+  · ext A B
+    simp [GS.Shared.frob, Matrix.trace, Matrix.mul_apply]
+    exact Finset.sum_comm
+  · ext X
+    simp [GS.Shared.InShared, GS.UnitarySharing.InSharedA2Unitary, GS.Shared.SharedFactor,
+      GS.UnitarySharing.SharedUnitaryFactor, GS.Shared.Uni, GS.Unitary, GS.UnitaryGeometry.product2,
+      CSupported, GS.Shared.Supp, GS.Shared.Tied, GS.UnitarySharing.TiedEntries]
+  · ext X Z
+    simp [GS.Shared.mem_pointDirections_iff, ComplexDirections, GS.Shared.sharedSkewSpace,
+      CBlockDiagonal, CSupported, GS.Shared.Supp, GS.Shared.Tied, GS.UnitarySharing.TiedEntries]
 
 /-- Exact cell-rank criterion, including singular matrices and empty cells. -/
 theorem two_factor_rank_criterion {n : ℕ} (b₁ b₂ : ℕ)
@@ -250,7 +215,7 @@ theorem two_factor_rank_criterion {n : ℕ} (b₁ b₂ : ℕ)
         (Matrix.of fun i j : Fin n =>
           if a = i.val / b₂ ∧ b = j.val / b₁ then A i j else 0).rank ≤
         Fintype.card {t : Fin n // a = (σ t).val / b₂ ∧ b = t.val / b₁} :=
-  GS.Results.OriginalCellRank.inA2_iff_block_rank b₁ b₂ σ A
+  (GS.Results.OriginalCellRank.inA2_iff_coordinate b₁ b₂ σ A).trans (GS.Results.OriginalCellRank.coordinate_iff_block_rank _ _ _ _ A)
 
 /-- With no off-diagonal overlap, the explicit shared block exponentials stay
 in the actual image and have normal ambient acceleration and constant speed.
@@ -273,50 +238,30 @@ theorem orthogonal_shared_block_geodesic {n : ℕ} (b₁ b₂ : ℕ)
       (∀ Z : Mat n, RealDirections b₁ b₂ τ₁ τ₂ (γ t) Z →
         (∑ i, ∑ j, deriv (deriv γ) t i j * Z i j) = 0) ∧
       (∑ i, ∑ j, (deriv γ t i j)^2) =
-        (∑ i, ∑ j, (C i j)^2) + (∑ i, ∑ j, (Ω i j)^2) :=
-by
-  let right : GS.SharedGeometry.Pattern n := ⟨b₁, hb₁, hd₁, τ₁⟩
-  let left : GS.SharedGeometry.Pattern n := ⟨b₂, hb₂, hd₂, τ₂⟩
-  let g : GS.SharedGeometry.Factors right left :=
-    (GS.SharedGeometry.Factor.ofMatrix L hL,
-     GS.SharedGeometry.Factor.ofMatrix Rᵀ (GS.SharedGeometry.shared_factor_transpose hR))
-  let c : GS.SharedGeometry.Generator left := ⟨C, hC⟩
-  let o : GS.SharedGeometry.Generator right := ⟨Ω, hΩ⟩
-  let γ : ℝ → Mat n := fun t =>
-    L * NormedSpace.exp (t • C) * permMatrix σ * (NormedSpace.exp (t • Ω) * R)
-  let v := GS.SharedGeodesics.orthogonalExpVelocity right left σ g c o
-  let a := GS.SharedGeodesics.orthogonalExpAcceleration right left σ g c o
-  have he : (fun t => (GS.SharedGeodesics.orthogonalExpCurve right left σ g c o t).val) = γ := by
-    funext t
-    simp only [GS.SharedGeodesics.orthogonalExpCurve_val, GS.Continuation.gsExpCurve,
-      GS.Continuation.gsExpLeft, GS.Continuation.gsExpRight, GS.Continuation.expLine,
-      GS.matrixExp_eq_exp, GS.product2, GS.SharedGeometry.Factor.matrix_ofMatrix,
-      Matrix.transpose_transpose, g, c, o, γ]
-  have hv (t : ℝ) : HasDerivAt γ (v t) t := by
-    rw [← he]
-    exact GS.SharedGeodesics.orthogonalExpCurve_hasDerivAt right left σ g c o t
-  have heV : deriv γ = v := funext fun t => (hv t).deriv
-  have ha (t : ℝ) : HasDerivAt v (a t) t :=
-    GS.SharedGeodesics.orthogonalExpVelocity_hasDerivAt right left σ g c o t
-  have heA : deriv (deriv γ) = a := by rw [heV]; exact funext fun t => (ha t).deriv
-  change ∀ t, GS.GlobalGeometry.InSharedA2Orth b₁ b₂ τ₁ τ₂ (permMatrix σ) (γ t) ∧ _
-  intro t
-  refine ⟨?_, ?_, ?_, ?_, ?_⟩
-  · rw [← he]
-    exact (GS.SharedGeometry.orbit_iff_inShared (right := right) (left := left) _ _).mp
-      (GS.SharedGeodesics.orthogonalExpCurve right left σ g c o t).property
-  · rw [heV]; exact hv t
-  · rw [heA, heV]; exact ha t
-  · intro Z hZ
-    have hz : Z ∈ GS.SharedGeometry.pointDirections right left (γ t) := by
-      rw [GS.SharedGeometry.mem_pointDirections_iff]
-      obtain ⟨A, B, hA, hB, hZ⟩ := hZ
-      exact ⟨A, hA, B, hB, hZ⟩
-    rw [← he] at hz
-    rw [heA]
-    exact GS.SharedGeodesics.orthogonalExpAcceleration_normal right left σ hno g c o t Z hz
-  · rw [heV]
-    simpa only [GS.frobSq, GS.frobInner, sq, v, c, o] using
-      GS.SharedGeodesics.orthogonalExpCurve_constant_speed right left σ hno g c o t
+        (∑ i, ∑ j, (C i j)^2) + (∑ i, ∑ j, (Ω i j)^2) := by
+  intro γ t
+  have hab := GS.ManifoldCompletion.noOverlap_offDiagonalDisjoint
+    (block₁ := fun i : Fin n => i.val / b₁) (block₂ := fun i : Fin n => i.val / b₂) σ hno
+  have hP := perm_orthogonal σ
+  have hγ : γ = GS.Continuation.gsExpCurve L (permMatrix σ) R C Ω := by
+    funext s
+    simp only [GS.Continuation.gsExpCurve, GS.Continuation.gsExpLeft, GS.Continuation.gsExpRight,
+      GS.Continuation.expLine, GS.matrixExp_eq_exp, GS.product2, Matrix.mul_assoc, γ]
+  rw [hγ, funext fun s => (GS.Continuation.gsExpCurve_hasDerivAt L _ R C Ω hP s).deriv,
+    funext fun s => (GS.Continuation.gsExpVelocity_hasDerivAt L _ R C Ω hP s).deriv]
+  have hL' := GS.GlobalGeometry.gsExpLeft_shared b₂ τ₂ hb₂ hd₂ L C hL hC t
+  have hR' := GS.GlobalGeometry.gsExpRight_shared b₁ τ₁ hb₁ hd₁ R Ω hR hΩ t
+  refine ⟨⟨_, _, hL', hR', rfl⟩, GS.Continuation.gsExpCurve_hasDerivAt L _ R C Ω hP t,
+    GS.Continuation.gsExpVelocity_hasDerivAt L _ R C Ω hP t, fun Z ⟨A, B, hA, hB, hZ⟩ =>
+      GS.Continuation.gsExpCurve_acceleration_normal _ _ σ L R C Ω hab hL.2.1 hR.2.1 hC.1 hΩ.1
+        hC.2.1 hΩ.2.1 t Z ⟨_, _, (hL'.1.transpose.mul hA.1).mul hL'.1, ?_,
+          (hR'.1.mul hB.1).mul hR'.1.transpose, ?_, ?_⟩, ?_⟩
+  · simp [IsSkew, Matrix.mul_assoc, hA.2.1]
+  · simp [IsSkew, Matrix.mul_assoc, hB.2.1]
+  · simp only [hZ, GS.tangentParam, GS.Continuation.gsExpCurve, GS.product2, Matrix.mul_assoc,
+      hR'.2.1.1, Matrix.mul_one]
+    simp only [← Matrix.mul_assoc, hL'.2.1.2, Matrix.one_mul]
+  simpa only [GS.frobSq, GS.frobInner, sq] using GS.Continuation.gsExpCurve_constant_speed _ _ σ
+    L R C Ω hab hL.2.1 hR.2.1 hC.1 hΩ.1 hC.2.1 hΩ.2.1 t
 
 end GSPalomar

@@ -5,8 +5,6 @@ public import GS.Continuation.PointedCompactImage
 
 @[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
 /-!
 # Membership of the original exponential parametrization in the GS family
@@ -21,64 +19,50 @@ noncomputable section
 open Matrix GS GS.Extensions GS.Continuation
 namespace GS.NonmanifoldCompletion
 
-private theorem skew_add {q : ℕ} {c z : Mat q} (hc : IsSkew c) (hz : IsSkew z) :
-    IsSkew (c+z) := by
-  change (c+z)ᵀ = -(c+z)
-  rw [Matrix.transpose_add,hc,hz]
-  abel
-
-private theorem skew_sub {q : ℕ} {c z : Mat q} (hc : IsSkew c) (hz : IsSkew z) :
-    IsSkew (c-z) := by
-  change (c-z)ᵀ = -(c-z)
-  rw [Matrix.transpose_sub,hc,hz]
-  abel
-
 /-- The middle q-by-q blocks are orthogonal globally in the skew coordinates. -/
-theorem originalPsi_orthogonal {q : ℕ} (Q₀ H : Mat q)
+theorem originalPsi_orthogonal (Q₀ H : Mat q)
     (hQ₀ : Orthogonal Q₀) (hH : IsSkew H) : Orthogonal (originalPsi Q₀ H) :=
   hQ₀.mul (matrixExp_orthogonal hH)
 
+section
+variable {q : ℕ} (Q₀ : Mat q)
 /-- Original f has a genuine three-factor GS representation without smallness. -/
-theorem originalF_mem_localFamily {q : ℕ} (Q₀ : Mat q) (hQ₀ : Orthogonal Q₀)
+theorem originalF_mem_localFamily (hQ₀ : Orthogonal Q₀)
     (ell r : Fin q → ℝ) (c z : Mat q) (u : CircleVector)
     (hc : IsSkew c) (hz : IsSkew z) (hu : OnCircle u) :
     originalF Q₀ (ell,r,c,z,u) ∈ localFamily q := by
   obtain ⟨S,hS,hdiag⟩ := exists_common_middle_diagonalizer u hu
   let A := originalPsi Q₀ (c+z)
   let B := originalPsi Q₀ (c-z)
-  let U : Fin q → Mat 2 := fun i => rotation (ell i) * S
-  let V : Fin q → Mat 2 := fun j => Sᵀ * rotation (r j)
-  have hU : ∀ i, Orthogonal (U i) :=
-    fun i => (rotation_orthogonal (ell i)).mul hS
-  have hV : ∀ j, Orthogonal (V j) :=
-    fun j => hS.transpose.mul (rotation_orthogonal (r j))
-  have hA : Orthogonal A := originalPsi_orthogonal Q₀ (c+z) hQ₀ (skew_add hc hz)
-  have hB : Orthogonal B := originalPsi_orthogonal Q₀ (c-z) hQ₀ (skew_sub hc hz)
+  let U := fun i => rotation (ell i) * S
+  let V := fun j => Sᵀ * rotation (r j)
+  have hA := originalPsi_orthogonal Q₀ (c+z) hQ₀ (by simp_all [IsSkew, add_comm])
+  have hB := originalPsi_orthogonal Q₀ (c-z) hQ₀ (by simp_all [IsSkew, add_comm, sub_eq_add_neg])
   have he : originalF Q₀ (ell,r,c,z,u) =
       flattenBlocks (blockMatrix U * centralPair A B * blockMatrix V) := by
     ext i j
-    let x : Fin q × Fin 2 := finProdFinEquiv.symm i
-    let y : Fin q × Fin 2 := finProdFinEquiv.symm j
+    let x := finProdFinEquiv.symm i
+    let y := finProdFinEquiv.symm j
     change (rotation (ell x.1) * middleBlock (A x.1 y.1) (B x.1 y.1) u *
       rotation (r y.1)) x.2 y.2 =
       (blockMatrix U * centralPair A B * blockMatrix V) x y
     rw [small_block_sandwich,hdiag]
     simp only [U,V,x,y,Matrix.mul_assoc]
-  rw [he]
-  exact block_sandwich_mem_localFamily U V A B hU hV hA hB
+  exact (mem_localFamily_iff_block_sandwich (𝕜 := ℝ) _).2 ⟨U, V, A, B, fun i => (rotation_orthogonal (ell i)).mul hS, fun j => hS.transpose.mul (rotation_orthogonal (r j)), hA, hB, he⟩
 
 /-- Every point of every original K_eta maps into the original family. -/
-theorem originalF_mem_of_mem_K {q : ℕ} (Q₀ : Mat q) (hQ₀ : Orthogonal Q₀)
+theorem originalF_mem_of_mem_K (hQ₀ : Orthogonal Q₀)
     {η : ℝ} {p : OriginalParameters q} (hp : p ∈ originalK q η) :
     originalF Q₀ p ∈ localFamily q := by
-  rcases p with ⟨ell,r,c,z,u⟩
-  rcases hp with ⟨_hell,_hr,_hr0,hc,hz,_hc,_hz,hu⟩
-  exact originalF_mem_localFamily Q₀ hQ₀ ell r c z u hc hz hu
+  obtain ⟨-,-,-,hc,hz,-,-,hu⟩ := hp
+  exact originalF_mem_localFamily Q₀ hQ₀ _ _ _ _ _ hc hz hu
 
 /-- In particular the distinguished base point belongs to the actual family. -/
-theorem basePoint_mem_localFamily {q : ℕ} (Q₀ : Mat q) (hQ₀ : Orthogonal Q₀) :
+theorem basePoint_mem_localFamily (hQ₀ : Orthogonal Q₀) :
     basePoint Q₀ ∈ localFamily q := by
-  have h := originalF_mem_of_mem_K Q₀ hQ₀ (originalBaseParameters_mem q (le_refl (0:ℝ)))
+  have h := originalF_mem_of_mem_K Q₀ hQ₀ (originalBaseParameters_mem q (by rfl))
   rwa [originalF_basePoint] at h
+
+end
 
 end GS.NonmanifoldCompletion

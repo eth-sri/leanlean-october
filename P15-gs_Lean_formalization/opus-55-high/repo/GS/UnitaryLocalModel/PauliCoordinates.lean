@@ -1,6 +1,6 @@
 module
 
-public import GS.UnitaryNonmanifold.ScalarBridge
+public import GS.UnitaryNonmanifold.BlockInvariant
 public import Mathlib.Tactic.FinCases
 public import Mathlib.Tactic.FunProp
 public import Mathlib.Tactic.Ring
@@ -8,8 +8,6 @@ public import Mathlib.Tactic.Linarith
 
 @[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
 /-!
 # The two-sphere of unitary local axes
@@ -22,89 +20,73 @@ this module does not assert the existence of a local topological chart.
 
 noncomputable section
 open Matrix
-open scoped BigOperators
 
 namespace GS.UnitaryLocalModel
-open GS.UnitaryGeometry GS.UnitaryNonmanifold
 
 abbrev AxisVector := Fin 3 → ℝ
 
-def OnSphere (u : AxisVector) : Prop := u 0 ^ 2 + u 1 ^ 2 + u 2 ^ 2 = 1
+section
+variable (u : AxisVector)
+def OnSphere : Prop := u 0 ^ 2 + u 1 ^ 2 + u 2 ^ 2 = 1
 
-def pauli (u : AxisVector) : CMat 2 :=
+def pauli : CMat 2 :=
   !![(u 0 : ℂ), (u 1 : ℂ) - Complex.I * (u 2 : ℂ);
       (u 1 : ℂ) + Complex.I * (u 2 : ℂ), -(u 0 : ℂ)]
 
-theorem continuous_pauli : Continuous pauli := by
-  apply continuous_pi
-  intro i
-  apply continuous_pi
-  intro j
-  fin_cases i <;> fin_cases j <;> simp [pauli] <;> fun_prop
+end
 
-theorem pauli_conjTranspose (u : AxisVector) : (pauli u)ᴴ = pauli u := by
+theorem continuous_pauli : Continuous pauli :=
+  continuous_pi fun i => continuous_pi fun j => by fin_cases i <;> fin_cases j <;> simp [pauli] <;> fun_prop
+
+section
+variable (u : AxisVector)
+theorem pauli_conjTranspose : (pauli u)ᴴ = pauli u := by
   ext i j
   fin_cases i <;> fin_cases j <;> simp [pauli, Matrix.conjTranspose_apply] <;> ring
 
-theorem pauli_square (u : AxisVector) :
+theorem pauli_square :
     pauli u * pauli u = ((u 0 ^ 2 + u 1 ^ 2 + u 2 ^ 2 : ℝ) : ℂ) •
       (1 : CMat 2) := by
   ext i j
   fin_cases i <;> fin_cases j <;>
-    simp [pauli, Matrix.mul_apply, Fin.sum_univ_two, Matrix.one_apply] <;>
-    ring_nf <;> simp [Complex.I_sq] <;> ring
+    simp [pauli, Matrix.mul_apply, Fin.sum_univ_two] <;>
+    ring_nf <;> simp [Complex.I_sq]
 
-theorem pauli_neg (u : AxisVector) : pauli (-u) = -pauli u := by
+theorem pauli_neg : pauli (-u) = -pauli u := by
   ext i j
   fin_cases i <;> fin_cases j <;> simp [pauli] <;> ring
 
-/-- Every traceless Hermitian two-by-two matrix has unique real Pauli coordinates. -/
-theorem exists_pauli_of_hermitian_traceless (H : CMat 2)
-    (hH : Hᴴ = H) (ht : Matrix.trace H = 0) :
-    ∃ u : AxisVector, pauli u = H := by
-  let u : AxisVector := ![(H 0 0).re, (H 1 0).re, (H 1 0).im]
-  have hd := congrFun (congrFun hH 0) 0
-  have ho := congrFun (congrFun hH 0) 1
-  have hdiag : (H 0 0).im = 0 := by
-    have hh := congrArg Complex.im hd
-    simp [Matrix.conjTranspose_apply] at hh
-    linarith
-  have htrace : H 1 1 = -H 0 0 := by
-    simpa [Matrix.trace, Fin.sum_univ_two, eq_neg_iff_add_eq_zero, add_comm] using ht
-  refine ⟨u, ?_⟩
-  ext i j
-  fin_cases i <;> fin_cases j
-  · apply Complex.ext <;> simp [pauli, u, hdiag]
-  · have hh : H 0 1 = star (H 1 0) := ho.symm
-    change pauli u 0 1 = H 0 1
-    rw [hh]
-    apply Complex.ext <;> simp [pauli, u]
-  · apply Complex.ext <;> simp [pauli, u]
-  · change pauli u 1 1 = H 1 1
-    rw [htrace]
-    apply Complex.ext <;> simp [pauli, u, hdiag]
+end
 
 /-- A traceless Hermitian involution is exactly a point of the Pauli sphere. -/
-theorem exists_sphere_pauli (H : CMat 2)
-    (hH : Hᴴ = H) (ht : Matrix.trace H = 0) (hs : H * H = 1) :
+theorem exists_sphere_pauli (H : CMat 2) (hH : Hᴴ = H) (ht : Matrix.trace H = 0) (hs : H * H = 1) :
     ∃ u : AxisVector, OnSphere u ∧ pauli u = H := by
-  obtain ⟨u, rfl⟩ := exists_pauli_of_hermitian_traceless H hH ht
+  obtain ⟨u, rfl⟩ : ∃ u, pauli u = H := by
+    have h1 := congrFun₂ hH 0 0
+    have h2 := congrFun₂ hH 0 1
+    refine ⟨![(H 0 0).re, (H 1 0).re, (H 1 0).im], ?_⟩
+    simp [Matrix.trace, Fin.sum_univ_two] at ht
+    ext i j
+    fin_cases i <;> fin_cases j <;> simp [pauli, Complex.ext_iff] at * <;> grind
   refine ⟨u, ?_, rfl⟩
   rw [pauli_square] at hs
-  have he := congrArg Complex.re (congrFun (congrFun hs 0) 0)
-  change u 0 ^ 2 + u 1 ^ 2 + u 2 ^ 2 = 1
-  simpa only [Matrix.smul_apply, Matrix.one_apply_eq, smul_eq_mul,
-    mul_one, Complex.ofReal_re, Complex.one_re] using he
+  have := congrFun₂ hs 0 0
+  simp at this
+  exact_mod_cast this
 
-def middleBlock (a b : ℂ) (u : AxisVector) : CMat 2 :=
+section
+variable (a b : ℂ) (u : AxisVector)
+def middleBlock : CMat 2 :=
   ((a+b)/2) • (1 : CMat 2) + ((a-b)/2) • pauli u
 
-theorem middleBlock_simultaneous_swap (a b : ℂ) (u : AxisVector) :
+theorem middleBlock_simultaneous_swap :
     middleBlock b a (-u) = middleBlock a b u := by
   rw [middleBlock, pauli_neg]
   ext i j
   simp [middleBlock]
   ring
+
+end
 
 theorem middleBlock_equal (a : ℂ) (u : AxisVector) :
     middleBlock a a u = a • (1 : CMat 2) := by

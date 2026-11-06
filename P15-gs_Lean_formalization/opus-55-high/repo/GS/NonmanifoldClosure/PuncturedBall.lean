@@ -11,10 +11,7 @@ public import Mathlib.Tactic.Ring
 
 @[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
-set_option autoImplicit false
 
 /-!
 # Explicit deformation of a punctured norm-ball to a unit sphere
@@ -25,137 +22,75 @@ assumption is used: in dimension zero both subtypes are empty.
 The homotopy endpoints and the fixed-sphere identity are proved explicitly below.
 -/
 noncomputable section
-open GS.NonmanifoldObstruction
 open GS.NonmanifoldFinal
-open scoped Topology
 namespace GS.NonmanifoldClosure
 
-abbrev NormSphere (E : Type*) [NormedAddCommGroup E] := {x : E // ‖x‖ = 1}
-abbrev PuncturedNormBall (E : Type*) [NormedAddCommGroup E] (r : ℝ) :=
+section
+variable (E : Type*) [NormedAddCommGroup E]
+abbrev NormSphere := {x : E // ‖x‖ = 1}
+abbrev PuncturedNormBall (r : ℝ) :=
   {x : E // ‖x‖ < r ∧ x ≠ 0}
+
+end
 
 /-- Reconcile norm-equality subtypes with the actual mathlib `Metric.sphere`.
 This homeomorphism uses no homology computation or homotopy invariance. -/
 def normSphereStandard (n : ℕ) :
     NormSphere (EuclideanSpace ℝ (Fin n)) ≃ₜ UnitSphere (Fin n) :=
-  Homeomorph.setCongr (by
-    ext x
-    change ‖x‖ = 1 ↔ dist x 0 = 1
-    rw [dist_zero_right])
+  Homeomorph.setCongr (by aesop)
 
 variable {E : Type*} [NormedAddCommGroup E] [NormedSpace ℝ E]
 
+section
+variable {r : ℝ}
 /-- Radial normalization. Its domain excludes only the origin. -/
-def ballNormalize {r : ℝ} (x : PuncturedNormBall E r) : NormSphere E :=
-  ⟨‖x.val‖⁻¹ • x.val, by
-    have hp : 0 < ‖x.val‖ := norm_pos_iff.mpr x.property.2
-    rw [norm_smul, Real.norm_eq_abs, abs_of_pos (inv_pos.mpr hp)]
-    exact inv_mul_cancel₀ (ne_of_gt hp)⟩
+def ballNormalize (x : PuncturedNormBall E r) : NormSphere E :=
+  ⟨‖x.val‖⁻¹ • x.val, by simp [norm_smul, x.property.2]⟩
 
-def ballSection {r : ℝ} (hr : 0 < r) (v : NormSphere E) :
-    PuncturedNormBall E r :=
-  ⟨(r / 2) • v.val, by
-    have hn : ‖(r / 2) • v.val‖ = r / 2 := by
-      rw [norm_smul, Real.norm_eq_abs, abs_of_pos (by linarith), v.property, mul_one]
-    refine ⟨by rw [hn]; linarith, ?_⟩
-    intro hz
-    rw [hz, norm_zero] at hn
-    linarith⟩
+def ballSection (hr : 0 < r) (v : NormSphere E) : PuncturedNormBall E r :=
+  ⟨(r / 2) • v.val, by simp [norm_smul, v.property, abs_of_pos hr]; linarith,
+    smul_ne_zero (by positivity) fun h => by simpa [h] using v.property⟩
 
-theorem continuous_ballNormalize (r : ℝ) :
-    Continuous (@ballNormalize E _ _ r) := by
-  apply Continuous.subtype_mk
-  exact ((continuous_norm.comp continuous_subtype_val).inv₀
-    (fun x => norm_ne_zero_iff.mpr x.property.2)).smul continuous_subtype_val
+theorem continuous_ballNormalize (r : ℝ) : Continuous (@ballNormalize E _ _ r) := by
+  unfold ballNormalize; fun_prop (disch := exact fun x => by simp [x.2.2])
 
-theorem continuous_ballSection {r : ℝ} (hr : 0 < r) :
-    Continuous (ballSection (E := E) hr) :=
-  (continuous_const.smul continuous_subtype_val).subtype_mk _
-
-@[simp] theorem ballNormalize_section {r : ℝ} (hr : 0 < r) (v : NormSphere E) :
-    ballNormalize (ballSection hr v) = v := by
-  apply Subtype.ext
-  have ht : 0 < r / 2 := by linarith
-  change ‖(r / 2) • v.val‖⁻¹ • ((r / 2) • v.val) = v.val
-  rw [norm_smul, Real.norm_eq_abs, abs_of_pos ht, v.property, mul_one,
-    smul_smul, inv_mul_cancel₀ (ne_of_gt ht), one_smul]
-
-@[simp] theorem norm_smul_ballNormalize {r : ℝ} (x : PuncturedNormBall E r) :
-    ‖x.val‖ • (ballNormalize x).val = x.val := by
-  change ‖x.val‖ • (‖x.val‖⁻¹ • x.val) = x.val
-  rw [smul_smul, mul_inv_cancel₀ (norm_ne_zero_iff.mpr x.property.2), one_smul]
+theorem continuous_ballSection (hr : 0 < r) : Continuous (ballSection (E := E) hr) := by
+  unfold ballSection; fun_prop
 
 /-- Convex interpolation of positive radii, not of arbitrary vectors. -/
-def radialRadius {r : ℝ} (p : unitInterval × PuncturedNormBall E r) : ℝ :=
+def radialRadius (p : unitInterval × PuncturedNormBall E r) : ℝ :=
   (1 - (p.1 : ℝ)) * (r / 2) + (p.1 : ℝ) * ‖p.2.val‖
 
-theorem radialRadius_pos {r : ℝ} (hr : 0 < r)
-    (p : unitInterval × PuncturedNormBall E r) : 0 < radialRadius p := by
-  have h0 := p.1.property.1
-  have h1 := p.1.property.2
-  have hx : 0 < ‖p.2.val‖ := norm_pos_iff.mpr p.2.property.2
-  have ha : 0 ≤ (1 - (p.1 : ℝ)) * (r / 2) :=
-    mul_nonneg (by linarith) (by linarith)
-  by_cases ht : (p.1 : ℝ) = 0
-  · simp [radialRadius, ht]; linarith
-  · have hp : 0 < (p.1 : ℝ) * ‖p.2.val‖ :=
-      mul_pos (by rcases lt_or_eq_of_le h0 with h | h; exact h; exact (ht h.symm).elim) hx
-    dsimp [radialRadius]
-    linarith
+section
+variable (hr : 0 < r) (p : unitInterval × PuncturedNormBall E r)
+include hr in
+theorem radialRadius_mem : 0 < radialRadius p ∧ radialRadius p < r := by
+  have := norm_pos_iff.mpr p.2.property.2
+  have := p.2.property.1
+  rcases p.1.2.2.lt_or_eq with h | h <;> simp only [radialRadius, h] <;> constructor <;> nlinarith [p.1.2.1]
 
-theorem radialRadius_lt {r : ℝ} (hr : 0 < r)
-    (p : unitInterval × PuncturedNormBall E r) : radialRadius p < r := by
-  have h0 := p.1.property.1
-  have h1 := p.1.property.2
-  have hx := p.2.property.1
-  by_cases ht : (p.1 : ℝ) = 1
-  · simpa [radialRadius, ht] using hx
-  · have ht' : (p.1 : ℝ) < 1 := by
-      rcases lt_or_eq_of_le h1 with h | h
-      · exact h
-      · exact (ht h).elim
-    have ha : 0 < (1 - (p.1 : ℝ)) * (r / 2) :=
-      mul_pos (by linarith) (by linarith)
-    have hb : 0 ≤ (p.1 : ℝ) * (r - ‖p.2.val‖) :=
-      mul_nonneg h0 (by linarith)
-    dsimp [radialRadius]
-    nlinarith
+end
 
-def radialDeform {r : ℝ} (hr : 0 < r)
-    (p : unitInterval × PuncturedNormBall E r) : PuncturedNormBall E r :=
-  ⟨radialRadius p • (ballNormalize p.2).val, by
-    have hn : ‖radialRadius p • (ballNormalize p.2).val‖ = radialRadius p := by
-      rw [norm_smul, Real.norm_eq_abs, abs_of_pos (radialRadius_pos hr p),
-        (ballNormalize p.2).property, mul_one]
-    refine ⟨by rw [hn]; exact radialRadius_lt hr p, ?_⟩
-    intro hz
-    rw [hz, norm_zero] at hn
-    linarith [radialRadius_pos hr p]⟩
+end
 
-theorem continuous_radialDeform {r : ℝ} (hr : 0 < r) :
-    Continuous (radialDeform (E := E) hr) := by
-  apply Continuous.subtype_mk
-  have hρ : Continuous (radialRadius : unitInterval × PuncturedNormBall E r → ℝ) := by
-    unfold radialRadius
-    fun_prop
-  exact hρ.smul (continuous_subtype_val.comp
-    ((continuous_ballNormalize r).comp continuous_snd))
-
+section
+variable {r : ℝ} (hr : 0 < r)
 /-- Normalization followed by the section is homotopic to the identity on the
 punctured ball. Together with ballNormalize_section this is a homotopy equivalence. -/
-def puncturedBallHomotopy {r : ℝ} (hr : 0 < r) :
+def puncturedBallHomotopy :
     ContinuousMap.Homotopy
       (⟨fun x => ballSection hr (ballNormalize x),
         (continuous_ballSection hr).comp (continuous_ballNormalize r)⟩ :
           C(PuncturedNormBall E r, PuncturedNormBall E r))
       (ContinuousMap.id (PuncturedNormBall E r)) where
-  toFun := radialDeform hr
-  continuous_toFun := continuous_radialDeform hr
-  map_zero_left x := by
-    apply Subtype.ext
-    simp [radialDeform, radialRadius, ballSection]
-  map_one_left x := by
-    apply Subtype.ext
-    simpa [radialDeform, radialRadius] using norm_smul_ballNormalize x
+  toFun p := ⟨radialRadius p • (ballNormalize p.2).val, by
+    simp [norm_smul, abs_of_pos (radialRadius_mem hr p).1, (ballNormalize p.2).property, (radialRadius_mem hr p).2],
+    smul_ne_zero (radialRadius_mem hr p).1.ne' fun h => by simpa [h] using (ballNormalize p.2).property⟩
+  continuous_toFun := by
+    unfold radialRadius ballNormalize; fun_prop (disch := exact fun x => by simp [x.2.2.2])
+  map_zero_left x := by simp [radialRadius, ballSection]
+  map_one_left x := by simp [radialRadius, ballNormalize, smul_smul, x.property.2]
+
+end
 
 end GS.NonmanifoldClosure

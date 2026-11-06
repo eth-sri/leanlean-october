@@ -6,8 +6,6 @@ public import GS.Continuation.CompactCoverageTools
 
 @[expose] public section
 
-set_option backward.isDefEq.respectTransparency false
-set_option backward.defeqAttrib.useBackward true
 
 /-!
 # Coverage of an actual GS neighbourhood by the original compact parametrization
@@ -23,7 +21,6 @@ proof.
 -/
 noncomputable section
 open Matrix GS GS.Extensions GS.Continuation GS.Nonmanifold
-open scoped Topology
 namespace GS.NonmanifoldCompletion
 attribute [local instance] Matrix.normedAddCommGroup
 
@@ -31,73 +28,31 @@ attribute [local instance] Matrix.normedAddCommGroup
 is contained in originalF(K_eta). Gauges are chosen locally, not globally. -/
 theorem factor_neighbourhood_in_original_image {q : ℕ} (hq : 0<q)
     (Q₀ : Mat q) (hQ₀ : Orthogonal Q₀) (hentries : ∀ i j, Q₀ i j≠0)
-    (η : ℝ) (hη : 0<η) (p : SmallBlockParameters q) (hp : p∈smallFactorSet q)
+    (η : ℝ) (hη : 0<η) (p : SmallBlockParameters ℝ q) (hp : p∈smallFactorSet ℝ q)
     (he : smallFactorMap p=basePoint Q₀) :
-    ∃ N : Set (SmallBlockParameters q), IsOpen N ∧ p∈N ∧
-      ∀ p'∈N, p'∈smallFactorSet q → smallFactorMap p' ∈ originalF Q₀ '' originalK q η := by
+    ∃ N : Set (SmallBlockParameters ℝ q), IsOpen N ∧ p∈N ∧
+      ∀ p'∈N, p'∈smallFactorSet ℝ q → smallFactorMap p' ∈ originalF Q₀ '' originalK q η := by
   rcases p with ⟨U,A,B,V⟩
   rcases hp with ⟨hU,hA,hB,hV⟩
   obtain ⟨S,D,E,hS,hD,hE,hleft,hright,hAg,hBg⟩ := normalize_scalar_base_fibre hq
     Q₀ A B hentries U V hU hV (smallFactorMap_eq_base_blocks Q₀ _ he)
   obtain ⟨L,hL,hQL,hlog⟩ := exists_open_frob_small_skew_log Q₀ hQ₀ η hη
-  let N : Set (SmallBlockParameters q) := {p' |
+  let N : Set (SmallBlockParameters ℝ q) := {p' |
     (∀ i, p'.1 i*D i*S ∈ rotationChartDomain (η/4)) ∧
     (∀ j, Sᵀ*E j*p'.2.2.2 j ∈ rotationChartDomain (η/4)) ∧
     gaugeMiddle D E 0 p'.2.1 ∈ L ∧ gaugeMiddle D E 1 p'.2.2.1 ∈ L}
-  have hNU : IsOpen {p' : SmallBlockParameters q |
-      ∀ i, p'.1 i*D i*S ∈ rotationChartDomain (η/4)} := by
-    simp only [Set.setOf_forall]
-    exact isOpen_iInter_of_finite (fun i => (isOpen_rotationChartDomain (η/4)).preimage (by fun_prop))
-  have hNV : IsOpen {p' : SmallBlockParameters q |
-      ∀ j, Sᵀ*E j*p'.2.2.2 j ∈ rotationChartDomain (η/4)} := by
-    simp only [Set.setOf_forall]
-    exact isOpen_iInter_of_finite (fun j => (isOpen_rotationChartDomain (η/4)).preimage (by fun_prop))
-  have hNA : IsOpen {p' : SmallBlockParameters q | gaugeMiddle D E 0 p'.2.1 ∈ L} := by
-    apply hL.preimage
-    unfold gaugeMiddle
-    fun_prop
-  have hNB : IsOpen {p' : SmallBlockParameters q | gaugeMiddle D E 1 p'.2.2.1 ∈ L} := by
-    apply hL.preimage
-    unfold gaugeMiddle
-    fun_prop
-  have hN : IsOpen N := hNU.inter (hNV.inter (hNA.inter hNB))
+  have hN : IsOpen N := by
+    refine .and ?_ (.and ?_ (.and ?_ ?_))
+    any_goals simp only [Set.setOf_forall]; exact isOpen_iInter_of_finite fun i => (isOpen_rotationChartDomain (η/4)).preimage (by fun_prop)
+    all_goals exact hL.preimage (by unfold gaugeMiddle; fun_prop)
   have hI : (1 : Mat 2) ∈ rotationChartDomain (η/4) := one_mem_rotationChartDomain (by positivity)
   have hpN : (U,A,B,V)∈N := by
-    refine ⟨?_,?_,?_,?_⟩
-    · intro i; simpa only [hleft] using hI
-    · intro j; simpa only [hright] using hI
-    · simpa only [hAg] using hQL
-    · simpa only [hBg] using hQL
+    grind
   refine ⟨N,hN,hpN,?_⟩
   rintro ⟨U',A',B',V'⟩ ⟨hUl,hVr,hAL,hBL⟩ ⟨hU',hA',hB',hV'⟩
   obtain ⟨p',hp',he'⟩ := original_coordinates_of_gauged_near hq Q₀ η hη L hlog
     S D E hS hD hE U' V' A' B' hU' hV' hA' hB' hUl hVr hAL hBL
-  exact ⟨p',hp',he'⟩
-
-/-- Compactness turns local image containment at EVERY point of a fibre into
-image containment over an actual neighbourhood of its image point. -/
-theorem compact_local_fibre_coverage
-    {K X : Type*} [TopologicalSpace K] [TopologicalSpace X] [T2Space K] [T2Space X]
-    (f : K → X) (hf : Continuous f) (s : Set K) (hs : IsCompact s)
-    (x : X) (T : Set X)
-    (hlocal : ∀ k∈s, f k=x → ∃ N : Set K, IsOpen N ∧ k∈N ∧
-      ∀ k'∈N, k'∈s → f k'∈T) :
-    ∃ W : Set X, IsOpen W ∧ x∈W ∧ ∀ y∈W, y∈f '' s → y∈T := by
-  let opens : Set (Set K) := {N | IsOpen N ∧ ∀ k∈N, k∈s → f k∈T}
-  let O : Set K := ⋃ N∈opens, N
-  have hO : IsOpen O := isOpen_iUnion (fun N => isOpen_iUnion (fun hN => hN.1))
-  have hfull : ∀ k∈s, f k=x → k∈O := by
-    intro k hk he
-    obtain ⟨N,hN,hkN,hmap⟩ := hlocal k hk he
-    exact Set.mem_iUnion.mpr ⟨N,Set.mem_iUnion.mpr ⟨⟨hN,hmap⟩,hkN⟩⟩
-  obtain ⟨W,hW,hx,hcover⟩ := compact_full_fibre_neighbourhood f hf s hs O hO x hfull
-  refine ⟨W,hW,hx,?_⟩
-  intro y hy himage
-  obtain ⟨k,⟨hks,hkO⟩,he⟩ := hcover y hy himage
-  obtain ⟨N,hkN⟩ := Set.mem_iUnion.mp hkO
-  obtain ⟨hN,hkN⟩ := Set.mem_iUnion.mp hkN
-  rw [← he]
-  exact hN.2 k hkN hks
+  tauto
 
 /-- FULL open-neighbourhood coverage for the unchanged original parametrization.
 The determinant-one condition is unnecessary for this statement. -/
@@ -106,14 +61,15 @@ theorem exists_open_original_local_coverage {q : ℕ} (hq : 0<q)
     (η : ℝ) (hη : 0<η) :
     ∃ W : Set (Mat (q*2)), IsOpen W ∧ basePoint Q₀∈W ∧
       ∀ M∈localFamily q, M∈W → ∃ p∈originalK q η, originalF Q₀ p=M := by
-  obtain ⟨W,hW,hbase,hcover⟩ := compact_local_fibre_coverage (@smallFactorMap q)
-    (continuous_smallFactorMap q) (smallFactorSet q) (isCompact_smallFactorSet q)
-    (basePoint Q₀) (originalF Q₀ '' originalK q η)
-    (factor_neighbourhood_in_original_image hq Q₀ hQ₀ hentries η hη)
-  refine ⟨W,hW,hbase,?_⟩
-  intro M hM hMW
-  have himage : M∈(@smallFactorMap q) '' smallFactorSet q := by
-    simpa only [image_smallFactorMap] using hM
-  exact hcover M hMW himage
+  obtain ⟨W,hW,hx,hcover⟩ := compact_full_fibre_neighbourhood (@smallFactorMap ℝ _ q) (continuous_smallFactorMap q) _
+    (isCompact_smallFactorSet q) (⋃ N ∈ {N | IsOpen N ∧ ∀ k∈N, k∈smallFactorSet ℝ q → smallFactorMap k ∈ originalF Q₀ '' originalK q η}, N)
+    (isOpen_biUnion fun N h => h.1) (basePoint Q₀) fun k hk he => by
+      obtain ⟨N,hN,hkN,hmap⟩ := factor_neighbourhood_in_original_image hq Q₀ hQ₀ hentries η hη k hk he
+      exact Set.mem_biUnion ⟨hN, hmap⟩ hkN
+  refine ⟨W,hW,hx,fun M hM hMW => ?_⟩
+  obtain ⟨k,⟨hks,hkO⟩,rfl⟩ := hcover M hMW (by rw [image_smallFactorMap]; aesop)
+  simp only [Set.mem_iUnion] at hkO
+  obtain ⟨N,⟨-,hN⟩,hkN⟩ := hkO
+  simpa using hN k hkN hks
 
 end GS.NonmanifoldCompletion
