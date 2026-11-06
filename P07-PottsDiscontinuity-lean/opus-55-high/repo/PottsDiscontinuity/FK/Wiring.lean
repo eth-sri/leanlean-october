@@ -16,22 +16,26 @@ These statements concern the component count. Actual paths still use only the
 selected original graph edges, and can change when such an edge is inserted.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 
 variable {V : Type*} {G : SimpleGraph V}
 
-theorem openGraph_mono {A B : Configuration G} (hAB : A ⊆ B) :
+section
+variable {A B : Configuration G} (hAB : A ⊆ B)
+include hAB
+theorem openGraph_mono  :
     openGraph G A ≤ openGraph G B := by
   intro u v h
   rw [openGraph_adj] at h ⊢
   rcases h with ⟨e, he, heuv⟩
   exact ⟨e, hAB he, heuv⟩
 
-theorem actualConnected_mono {A B : Configuration G} (hAB : A ⊆ B) {u v : V}
+theorem actualConnected_mono {u v : V}
     (h : ActualConnected G A u v) : ActualConnected G B u v :=
   h.mono (openGraph_mono hAB)
+end
 
 theorem componentSetoid_mono (ξ : BoundaryCondition V) {A B : Configuration G}
     (hAB : A ⊆ B) : componentSetoid G ξ A ≤ componentSetoid G ξ B := by
@@ -45,7 +49,7 @@ theorem componentSetoid_mono (ξ : BoundaryCondition V) {A B : Configuration G}
 theorem componentCount_antitone [Finite V] (ξ : BoundaryCondition V)
     {A B : Configuration G} (hAB : A ⊆ B) :
     componentCount G ξ B ≤ componentCount G ξ A := by
-  let f : Quotient (componentSetoid G ξ A) → Quotient (componentSetoid G ξ B) :=
+  let f :=
     Setoid.map_of_le (componentSetoid_mono ξ hAB)
   have hf : Function.Surjective f := by
     intro q
@@ -60,7 +64,7 @@ theorem reachableSetoid_le_of_adj (H : SimpleGraph V) (s : Setoid V)
   intro u v h
   obtain ⟨p⟩ := h
   induction p with
-  | nil => exact s.refl _
+  | nil => rfl
   | cons h _ ih => exact s.trans (hadj h) ih
 
 section Insertion
@@ -82,22 +86,22 @@ theorem componentSetoid_insert_eq_of_related (ξ : BoundaryCondition V)
       rcases Finset.mem_insert.mp he with he | he
       · subst e
         rcases Sym2.eq_iff.mp hexy with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-        · exact hrelated
-        · exact (componentSetoid G ξ A).symm hrelated
+        · omega
+        tauto
       · apply actualConnected_component G ξ A
         apply actualConnected_of_adj
         rw [openGraph_adj]
-        exact ⟨e, he, hexy⟩
+        tauto
     · intro x y hxy
       exact boundary_component G ξ A hxy
-  · exact componentSetoid_mono ξ (Finset.subset_insert _ _)
+  simp [componentSetoid_mono]
 
 theorem componentCount_insert_eq_of_related [Finite V] (ξ : BoundaryCondition V)
     (A : Configuration G) {u v : V} (huv : G.Adj u v)
     (hrelated : (componentSetoid G ξ A).r u v) :
     componentCount G ξ (insert ⟨s(u, v), G.mem_edgeSet.mpr huv⟩ A) =
       componentCount G ξ A := by
-  rw [componentCount, componentCount, componentSetoid_insert_eq_of_related ξ A huv hrelated]
+  simp_all [componentCount, componentSetoid_insert_eq_of_related]
 
 /-- Boundary identification alone suffices for insertion invariance. -/
 theorem componentSetoid_insert_eq_of_boundary (ξ : BoundaryCondition V)

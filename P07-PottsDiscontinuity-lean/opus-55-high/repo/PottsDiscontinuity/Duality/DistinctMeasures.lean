@@ -11,7 +11,7 @@ public import PottsDiscontinuity.Duality.LongConnectionBound
 This route uses the planar crossing alternative directly, without assuming
 positive wired percolation or a surrounding-circuit theorem. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Duality
 
@@ -33,7 +33,7 @@ theorem free_not_dual_invariant_of_exponential_decay (θ : Parameters)
   obtain ⟨n, hn⟩ := hsmall.exists
   let S := latticeRectangle (0, 0) n n
   let T := rectangleDualExpanded (0, 0) n n
-  let B : ℝ := ((n : ℝ) + 2) ^ 4 * (C * Real.exp (-c * (n : ℝ)))
+  let B := ((n : ℝ) + 2) ^ 4 * (C * Real.exp (-c * (n : ℝ)))
   have hb (U : Finset LatticeVertex)
       (hcard : (U.card : ℝ) ≤ ((n : ℝ) + 2) ^ 2) :
       μ.real (longConnectionEvent U n) ≤ B := by
@@ -44,18 +44,14 @@ theorem free_not_dual_invariant_of_exponential_decay (θ : Parameters)
       _ ≤ (((n : ℝ) + 2) ^ 2) ^ 2 * (C * Real.exp (-c * (n : ℝ))) :=
         mul_le_mul_of_nonneg_right (pow_le_pow_left₀ (Nat.cast_nonneg _) hcard 2)
           (mul_nonneg hC (Real.exp_nonneg _))
-      _ = B := by dsimp [B]; ring
-  have hS : μ.real (longConnectionEvent S n) ≤ B := hb S (by
-    dsimp [S]
+      _ = B := by linarith
+  have hS := hb S (by
     rw [card_latticeRectangle]
-    push_cast
-    nlinarith only [Nat.cast_nonneg (α := ℝ) n])
-  have hT : μ.real (longConnectionEvent T n) ≤ B := hb T (by
+    grind)
+  have hT := hb T (by
     dsimp [T]
-    rw [rectangleDualExpanded_card]
-    push_cast
-    ring_nf
-    exact le_rfl)
+    simp
+    grind)
   have hcover : longConnectionEvent S n ∪
       wholePlaneDualConfigurationHomeomorph ⁻¹' longConnectionEvent T n = Set.univ := by
     apply Set.eq_univ_iff_forall.2
@@ -70,10 +66,8 @@ theorem free_not_dual_invariant_of_exponential_decay (θ : Parameters)
   have hu := measureReal_union_le (μ := μ) (longConnectionEvent S n)
     (wholePlaneDualConfigurationHomeomorph ⁻¹' longConnectionEvent T n)
   rw [hcover, hpre] at hu
-  simp only [measureReal_def, measure_univ, ENNReal.toReal_one] at hu
-  change 1 ≤ μ.real (longConnectionEvent S n) + μ.real (longConnectionEvent T n) at hu
-  change B < 1 / 2 at hn
-  linarith only [hu, hS, hT, hn]
+  simp at hu
+  linarith
 
 /-- Exponential free decay at the exact frozen critical parameter implies
 that the actual free and wired infinite-volume measures are different. -/

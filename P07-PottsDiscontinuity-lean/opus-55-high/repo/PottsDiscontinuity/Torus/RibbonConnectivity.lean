@@ -18,57 +18,54 @@ namespace PottsDiscontinuity.Torus
 
 variable {N M : ℕ}
 
+section
+variable (hN : Even N) (hM : Even M)
 /-- The primal vertex incident to a canonical corner. -/
-def ribbonFace (hN : Even N) (hM : Even M)
-    (d : DirectedDart (checkerArrows N M)) : FaceVertex N M true :=
-  ⟨leftFace d.val, by rw [← dartOut_checker_eq_leftFace hN hM]; exact d.property⟩
+def ribbonFace (d : DirectedDart (checkerArrows N M)) : FaceVertex N M true :=
+  ⟨leftFace d.val, by rw [← dartOut_checker_eq_leftFace hN hM]; grind⟩
 
-@[simp] theorem ribbonFace_end (hN : Even N) (hM : Even M)
-    (v : Fin N × Fin M) (b : Bool) :
+@[simp] theorem ribbonFace_end (v : Fin N × Fin M) (b : Bool) :
     ribbonFace hN hM (ribbonEndEquiv hN hM (v, b)) =
       faceEndpoint hN hM true v b :=
   Subtype.ext (leftFace_ribbonEnd v b)
+end
 
+section
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M)
 /-- Generating moves within a ribbon vertex or across an attached ribbon. -/
-def ribbonAdjacent (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (d e : DirectedDart (checkerArrows N M)) : Prop :=
+def ribbonAdjacent (d e : DirectedDart (checkerArrows N M)) : Prop :=
   (faceRotation hN hM).SameCycle d e ∨ ribbonEdgePairing hN hM A d = e
 
 /-- Connectivity of the actual rotation-and-edge-pairing combinatorial map. -/
-def RibbonConnected (hN : Even N) (hM : Even M) (A : RCConfig N M) :=
+def RibbonConnected  :=
   Relation.EqvGen (ribbonAdjacent hN hM A)
 
-theorem ribbonConnected_of_face_eq (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    {d e : DirectedDart (checkerArrows N M)}
+theorem ribbonConnected_of_face_eq {d e : DirectedDart (checkerArrows N M)}
     (h : ribbonFace hN hM d = ribbonFace hN hM e) : RibbonConnected hN hM A d e := by
   apply Relation.EqvGen.rel
   exact Or.inl ((sameCycle_faceRotation hN hM d e).mpr (congrArg Subtype.val h))
 
-theorem diamond_endpoints_reachable (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (v : Fin N × Fin M) (hv : A v = true) :
+theorem diamond_endpoints_reachable (v : Fin N × Fin M) (hv : A v = true) :
     (diamondOpenGraph hN hM true A).Reachable
       (faceEndpoint hN hM true v false) (faceEndpoint hN hM true v true) := by
   by_cases he : faceEndpoint hN hM true v false = faceEndpoint hN hM true v true
-  · rw [he]
+  · simp_all
   · apply SimpleGraph.Adj.reachable
     rw [diamondOpenGraph, SimpleGraph.fromEdgeSet_adj]
-    exact ⟨⟨v, hv, rfl⟩, he⟩
+    grind
 
-theorem ribbonEdgePairing_reachable (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (d : DirectedDart (checkerArrows N M)) :
+theorem ribbonEdgePairing_reachable (d : DirectedDart (checkerArrows N M)) :
     (diamondOpenGraph hN hM true A).Reachable (ribbonFace hN hM d)
       (ribbonFace hN hM (ribbonEdgePairing hN hM A d)) := by
   obtain ⟨⟨v, b⟩, rfl⟩ := (ribbonEndEquiv hN hM).surjective d
   rw [ribbonEdgePairing_end, ribbonFace_end, ribbonFace_end]
   cases ha : A v
-  · simp only [Bool.false_xor]
-    exact SimpleGraph.Reachable.refl _
+  · simp
   · cases b
-    · exact diamond_endpoints_reachable hN hM A v ha
+    · simp_all [diamond_endpoints_reachable]
     · exact (diamond_endpoints_reachable hN hM A v ha).symm
 
-theorem ribbonConnected_reachable (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    {d e : DirectedDart (checkerArrows N M)} (h : RibbonConnected hN hM A d e) :
+theorem ribbonConnected_reachable {d e : DirectedDart (checkerArrows N M)} (h : RibbonConnected hN hM A d e) :
     (diamondOpenGraph hN hM true A).Reachable (ribbonFace hN hM d)
       (ribbonFace hN hM e) := by
   induction h with
@@ -76,22 +73,26 @@ theorem ribbonConnected_reachable (hN : Even N) (hM : Even M) (A : RCConfig N M)
     rcases h with h | rfl
     · have he : ribbonFace hN hM d = ribbonFace hN hM e :=
         Subtype.ext ((sameCycle_faceRotation hN hM d e).mp h)
-      rw [he]
-    · exact ribbonEdgePairing_reachable hN hM A d
-  | refl d => exact SimpleGraph.Reachable.refl _
-  | symm d e _ ih => exact ih.symm
+      simp_all
+    simp [ribbonEdgePairing_reachable]
+  | refl d => rfl
+  | symm d e _ ih => tauto
   | trans d e f _ _ ih₁ ih₂ => exact ih₁.trans ih₂
+end
 
+section
+variable (hN : Even N) (hM : Even M) (v : FaceVertex N M true)
 /-- A specified corner of each primal vertex, used only to construct the quotient inverse. -/
-def ribbonVertexDart (hN : Even N) (hM : Even M) (v : FaceVertex N M true) :
+def ribbonVertexDart  :
     DirectedDart (checkerArrows N M) := ribbonCornerEquiv hN hM (v, .east)
 
-@[simp] theorem ribbonFace_vertexDart (hN : Even N) (hM : Even M)
-    (v : FaceVertex N M true) : ribbonFace hN hM (ribbonVertexDart hN hM v) = v :=
-  Subtype.ext (leftFace_faceCorner v.val .east)
+@[simp] theorem ribbonFace_vertexDart  : ribbonFace hN hM (ribbonVertexDart hN hM v) = v :=
+  by rfl
+end
 
-theorem ribbonConnected_endpoints (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (v : Fin N × Fin M) (hv : A v = true) :
+section
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M)
+theorem ribbonConnected_endpoints (v : Fin N × Fin M) (hv : A v = true) :
     RibbonConnected hN hM A
       (ribbonVertexDart hN hM (faceEndpoint hN hM true v false))
       (ribbonVertexDart hN hM (faceEndpoint hN hM true v true)) := by
@@ -105,18 +106,15 @@ theorem ribbonConnected_endpoints (hN : Even N) (hM : Even M)
     (ribbonConnected_of_face_eq hN hM A (by simp))
     (Relation.EqvGen.trans _ _ _ he (ribbonConnected_of_face_eq hN hM A (by simp)))
 
-theorem ribbonConnected_vertices_of_adj (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) {u v : FaceVertex N M true}
+theorem ribbonConnected_vertices_of_adj {u v : FaceVertex N M true}
     (h : (diamondOpenGraph hN hM true A).Adj u v) :
     RibbonConnected hN hM A (ribbonVertexDart hN hM u) (ribbonVertexDart hN hM v) := by
-  rw [diamondOpenGraph, SimpleGraph.fromEdgeSet_adj] at h
   obtain ⟨⟨w, hw, he⟩, _⟩ := h
   rcases Sym2.eq_iff.mp he with ⟨rfl, rfl⟩ | ⟨rfl, rfl⟩
-  · exact ribbonConnected_endpoints hN hM A w hw
+  · simp_all [ribbonConnected_endpoints]
   · exact Relation.EqvGen.symm _ _ (ribbonConnected_endpoints hN hM A w hw)
 
-theorem ribbonConnected_vertices_of_reachable (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) {u v : FaceVertex N M true}
+theorem ribbonConnected_vertices_of_reachable {u v : FaceVertex N M true}
     (h : (diamondOpenGraph hN hM true A).Reachable u v) :
     RibbonConnected hN hM A (ribbonVertexDart hN hM u) (ribbonVertexDart hN hM v) := by
   rw [SimpleGraph.reachable_iff_reflTransGen] at h
@@ -126,13 +124,12 @@ theorem ribbonConnected_vertices_of_reachable (hN : Even N) (hM : Even M)
     exact Relation.EqvGen.trans _ _ _ ih (ribbonConnected_vertices_of_adj hN hM A ha)
 
 /-- Rotation-and-ribbon connectivity is precisely open diamond connectivity. -/
-theorem ribbonConnected_iff_reachable (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (d e : DirectedDart (checkerArrows N M)) :
+theorem ribbonConnected_iff_reachable (d e : DirectedDart (checkerArrows N M)) :
     RibbonConnected hN hM A d e ↔
       (diamondOpenGraph hN hM true A).Reachable (ribbonFace hN hM d)
         (ribbonFace hN hM e) := by
   constructor
-  · exact ribbonConnected_reachable hN hM A
+  · simp_all [ribbonConnected_reachable]
   · intro h
     exact Relation.EqvGen.trans _ _ _
       (ribbonConnected_of_face_eq hN hM A (by simp))
@@ -140,11 +137,11 @@ theorem ribbonConnected_iff_reachable (hN : Even N) (hM : Even M) (A : RCConfig 
         (ribbonConnected_of_face_eq hN hM A (by simp)))
 
 /-- Components of the primal ribbon subgraph, defined from its generating permutations. -/
-abbrev RibbonComponent (hN : Even N) (hM : Even M) (A : RCConfig N M) :=
+abbrev RibbonComponent  :=
   Quotient (Relation.EqvGen.setoid (ribbonAdjacent hN hM A))
 
 /-- The cellular ribbon components and the actual open clusters are canonically equivalent. -/
-def ribbonComponentEquiv (hN : Even N) (hM : Even M) (A : RCConfig N M) :
+def ribbonComponentEquiv  :
     RibbonComponent hN hM A ≃ (diamondOpenGraph hN hM true A).ConnectedComponent where
   toFun := Quotient.lift (fun d =>
     (diamondOpenGraph hN hM true A).connectedComponentMk (ribbonFace hN hM d))
@@ -159,14 +156,11 @@ def ribbonComponentEquiv (hN : Even N) (hM : Even M) (A : RCConfig N M) :
   right_inv := by
     intro x
     refine Quot.inductionOn x ?_
-    intro v
-    change (diamondOpenGraph hN hM true A).connectedComponentMk
-      (ribbonFace hN hM (ribbonVertexDart hN hM v)) = _
-    rw [ribbonFace_vertexDart]
-    rfl
+    tauto
 
-theorem card_ribbonComponent (hN : Even N) (hM : Even M) (A : RCConfig N M) :
+theorem card_ribbonComponent  :
     Nat.card (RibbonComponent hN hM A) = clusterCount hN hM true A :=
   Nat.card_congr (ribbonComponentEquiv hN hM A)
+end
 
 end PottsDiscontinuity.Torus

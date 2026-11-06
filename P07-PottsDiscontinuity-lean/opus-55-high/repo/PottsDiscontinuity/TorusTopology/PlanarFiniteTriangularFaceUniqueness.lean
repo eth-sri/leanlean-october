@@ -5,7 +5,7 @@ module
 public import PottsDiscontinuity.TorusTopology.PlanarFiniteTriangularFaceIndependence
 public import Mathlib.Tactic
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 
@@ -24,7 +24,7 @@ theorem faceSymmDiffList_eq_implies_toFinset_eq
   by_contra hLM
   let D := L.toFinset ∆ M.toFinset
   have hDne : D.Nonempty := by
-    exact Finset.symmDiff_nonempty.mpr hLM
+    aesop
   obtain ⟨f, hfD, hmax⟩ := D.exists_max_image rank hDne
   have hcommon : ∀ i, rank f < rank i →
       (i ∈ L.toFinset ↔ i ∈ M.toFinset) := by
@@ -35,85 +35,48 @@ theorem faceSymmDiffList_eq_implies_toFinset_eq
       have hiD : i ∈ D := by
         change i ∈ L.toFinset ∆ M.toFinset
         rw [Finset.mem_symmDiff]
-        exact Or.inl ⟨hiL, hiM⟩
-      have hbound := hmax i hiD
-      omega
+        simp_all
+      grind
     · intro hiM
       by_contra hiL
       have hiD : i ∈ D := by
         change i ∈ L.toFinset ∆ M.toFinset
         rw [Finset.mem_symmDiff]
-        exact Or.inr ⟨hiM, hiL⟩
-      have hbound := hmax i hiD
-      omega
+        simp_all
+      grind
   let P : I → Prop := fun i => p f ∈ (F i).edgeSet
   let CL : Finset I := L.toFinset.filter P
   let CM : Finset I := M.toFinset.filter P
   have herase : CL.erase f = CM.erase f := by
-    ext i
-    change i ∈ (L.toFinset.filter P).erase f ↔ i ∈ (M.toFinset.filter P).erase f
-    simp only [Finset.mem_erase, Finset.mem_filter, P]
-    constructor
-    · intro hi
-      have hne := hi.1
-      have hiL := hi.2.1
-      have hPi := hi.2.2
-      have hri : rank f < rank i := by
-        rcases htri i f hPi with hEq | hlt
-        · exact (hne hEq.symm).elim
-        · exact hlt
-      exact ⟨hne, (hcommon i hri).mp hiL, hPi⟩
-    · intro hi
-      have hne := hi.1
-      have hiM := hi.2.1
-      have hPi := hi.2.2
-      have hri : rank f < rank i := by
-        rcases htri i f hPi with hEq | hlt
-        · exact (hne hEq.symm).elim
-        · exact hlt
-      exact ⟨hne, (hcommon i hri).mpr hiM, hPi⟩
-  have hcountL : L.countP (fun i => p f ∈ (F i).edgeSet) = CL.card := by
-    exact (List.Nodup.card_eq_countP hLnodup).symm
-  have hcountM : M.countP (fun i => p f ∈ (F i).edgeSet) = CM.card := by
-    exact (List.Nodup.card_eq_countP hMnodup).symm
+    grind
+  have hcountL : L.countP (fun i => p f ∈ (F i).edgeSet) = CL.card :=
+    (List.Nodup.card_eq_countP hLnodup).symm
+  have hcountM : M.countP (fun i => p f ∈ (F i).edgeSet) = CM.card :=
+    (List.Nodup.card_eq_countP hMnodup).symm
   have hmod :
       (L.countP (fun i => p f ∈ (F i).edgeSet) % 2 = 1) ↔
       (M.countP (fun i => p f ∈ (F i).edgeSet) % 2 = 1) := by
     have hparL := faceSymmDiffList_edge_iff_countP_mod F L (p f)
     have hparM := faceSymmDiffList_edge_iff_countP_mod F M (p f)
-    have hEdge : p f ∈ (faceSymmDiffList F L).edgeSet ↔
-        p f ∈ (faceSymmDiffList F M).edgeSet := by rw [hEq]
-    exact hparL.symm.trans (hEdge.trans hparM)
+    simp_all
   rcases Finset.mem_symmDiff.mp hfD with ⟨hfL, hfM⟩ | ⟨hfM, hfL⟩
-  · have hpf : p f ∈ (F f).edgeSet := hpF f
-    have hfCL : f ∈ CL := Finset.mem_filter.mpr ⟨hfL,hpf⟩
+  · have hpf := hpF f
+    have hfCL : f ∈ CL := by grind
     have hfCM : f ∉ CM := by
-      intro h
-      exact hfM (Finset.mem_filter.mp h).1
+      grind
     have hcardL : CL.card = (CL.erase f).card + 1 := by
-      have h := Finset.card_erase_add_one hfCL
-      omega
+      grind
     have hcardM : CM.card = (CM.erase f).card := by
-      rw [Finset.erase_eq_of_notMem hfCM]
-    rw [← herase] at hcardM
-    have hplus : CL.card = CM.card + 1 := by omega
-    rw [hcountL, hcountM] at hmod
-    have hmL : (CL.card % 2 = 1) ↔ (CM.card % 2 = 1) := hmod
-    omega
-  · have hpf : p f ∈ (F f).edgeSet := hpF f
-    have hfCM : f ∈ CM := Finset.mem_filter.mpr ⟨hfM,hpf⟩
+      simp_all
+    grind
+  · have hpf := hpF f
+    have hfCM : f ∈ CM := by grind
     have hfCL : f ∉ CL := by
-      intro h
-      exact hfL (Finset.mem_filter.mp h).1
+      grind
     have hcardM : CM.card = (CM.erase f).card + 1 := by
-      have h := Finset.card_erase_add_one hfCM
-      omega
+      grind
     have hcardL : CL.card = (CL.erase f).card := by
       rw [Finset.erase_eq_of_notMem hfCL]
-    rw [← herase] at hcardM
-    have hplus : CM.card = CL.card + 1 := by omega
-    rw [hcountL, hcountM] at hmod
-    have hmL : (CL.card % 2 = 1) ↔ (CM.card % 2 = 1) := hmod
-    omega
+    grind
 
 end PottsDiscontinuity.TorusTopology.Planar.Medial

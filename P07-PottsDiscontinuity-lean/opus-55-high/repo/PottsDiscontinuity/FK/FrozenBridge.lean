@@ -26,28 +26,28 @@ def Parameters.toP (θ : Parameters) : Set.Icc (0 : ℝ) 1 :=
 def Parameters.toQ (θ : Parameters) : Set.Ioi (0 : ℝ) :=
   ⟨θ.val, clusterWeight_pos θ⟩
 
+section
+variable (S : Finset (ℤ × ℤ))
 /-- The frozen vertex boundary, as a subset of the finite vertex carrier. -/
-def frozenVertexBoundary (S : Finset (ℤ × ℤ)) : Set (S : Set (ℤ × ℤ)) :=
+def frozenVertexBoundary  : Set (S : Set (ℤ × ℤ)) :=
   {x | x.val ∈ vertexBoundary S}
 
 /-- Free or wired boundary conditions, with exactly the frozen boundary vertices. -/
-def frozenBoundaryCondition (S : Finset (ℤ × ℤ)) (i : Fin 2) :
+def frozenBoundaryCondition (i : Fin 2) :
     BoundaryCondition (S : Set (ℤ × ℤ)) :=
   if i = 0 then BoundaryCondition.free (frozenVertexBoundary S)
   else BoundaryCondition.wired (frozenVertexBoundary S)
 
-theorem componentCount_wired_eq_rcWiredClusterCount (S : Finset (ℤ × ℤ))
-    (ω : (PottsDiscontinuity.squareLattice.induce
+theorem componentCount_wired_eq_rcWiredClusterCount (ω : (PottsDiscontinuity.squareLattice.induce
       (S : Set (ℤ × ℤ))).edgeSet → Bool) :
     componentCount _ (BoundaryCondition.wired (frozenVertexBoundary S))
       (boolConfigurationEquiv _ ω) = rcWiredClusterCount S ω := by
   classical
   rw [componentCount_wired_eq_boundary_avoiding, rcOpenGraph_eq]
-  unfold rcWiredClusterCount
   congr 1
   exact @ite_cond_congr ℕ _ _ _ _ 1 0 rfl
 
-theorem componentCount_frozenBoundaryCondition (S : Finset (ℤ × ℤ)) (i : Fin 2)
+theorem componentCount_frozenBoundaryCondition (i : Fin 2)
     (ω : (PottsDiscontinuity.squareLattice.induce
       (S : Set (ℤ × ℤ))).edgeSet → Bool) :
     componentCount _ (frozenBoundaryCondition S i) (boolConfigurationEquiv _ ω) =
@@ -55,7 +55,8 @@ theorem componentCount_frozenBoundaryCondition (S : Finset (ℤ × ℤ)) (i : Fi
   unfold frozenBoundaryCondition
   split
   · exact componentCount_free_eq_rcFreeClusterCount S _ ω
-  · exact componentCount_wired_eq_rcWiredClusterCount S ω
+  grind [componentCount_wired_eq_rcWiredClusterCount]
+end
 
 /-- The ported weight is exactly the frozen weight on the corresponding configuration. -/
 theorem weight_eq_rcWeight (θ : Parameters) (S : Finset (ℤ × ℤ)) (i : Fin 2)
@@ -77,16 +78,13 @@ theorem partitionFunction_eq_rcPartition (θ : Parameters) (S : Finset (ℤ × �
   unfold partitionFunction FiniteProbability.partition
   symm
   refine Finset.sum_bij (fun ω _ => boolConfigurationEquiv _ ω) ?_ ?_ ?_ ?_
-  · intro ω _
-    simp only [Finset.mem_univ]
-  · intro ω _ η _ h
-    exact (boolConfigurationEquiv _).injective h
+  · simp
+  · simp
   · intro A _
     refine ⟨(boolConfigurationEquiv _).symm A, ?_,
       (boolConfigurationEquiv _).apply_symm_apply A⟩
-    simp only [Finset.mem_univ]
-  · intro ω _
-    exact (weight_eq_rcWeight θ S i ω).symm
+    simp
+  grind [weight_eq_rcWeight]
 
 /-- Exact normalized probability bridge for arbitrary finite induced domains. -/
 theorem configurationProbability_eq_rcProb (θ : Parameters) (S : Finset (ℤ × ℤ))

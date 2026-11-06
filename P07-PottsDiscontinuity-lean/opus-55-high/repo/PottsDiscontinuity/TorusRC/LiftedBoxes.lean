@@ -24,15 +24,13 @@ instance liftedBoxVertex_finite (c : RotatedVertex) (R : ℕ) :
       ↥(Set.Icc (c.val.2 - (R : ℤ)) (c.val.2 + R)) := fun z =>
     (⟨z.val.val.1, by
       have h := abs_le.mp z.property.1
-      constructor <;> omega⟩,
+      grind⟩,
      ⟨z.val.val.2, by
       have h := abs_le.mp z.property.2
-      constructor <;> omega⟩)
+      grind⟩)
   apply Finite.of_injective f
   intro u v huv
-  apply Subtype.ext
-  apply Subtype.ext
-  exact Prod.ext (congrArg (fun z => z.1.val) huv) (congrArg (fun z => z.2.val) huv)
+  grind
 
 /-- The native induced graph in the lifted square, with no periodic edges. -/
 def liftedBoxGraph (c : RotatedVertex) (R : ℕ) : SimpleGraph (LiftedBoxVertex c R) :=
@@ -73,10 +71,11 @@ theorem periodicCoordinate_eq_of_interval (hp : 0 < N) (L a b : ℤ)
     Int.emod_eq_of_lt (by omega) (by omega)] at hshift
   omega
 
+section
+variable (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M) (c : RotatedVertex) (R : ℕ)
 /-- An injective vertex projection of a box whose diameter is smaller than
 both periods. -/
-def liftedBoxProjection (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M)
-    (c : RotatedVertex) (R : ℕ) (hRN : 2 * R < N) (hRM : 2 * R < M) :
+def liftedBoxProjection (hRN : 2 * R < N) (hRM : 2 * R < M) :
     LiftedBoxVertex c R ↪ FaceVertex N M true where
   toFun z := liftedFaceVertex hN hM hNp hMp z.val
   inj' := by
@@ -87,29 +86,24 @@ def liftedBoxProjection (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M)
     have hvx := abs_le.mp v.property.1
     have huy := abs_le.mp u.property.2
     have hvy := abs_le.mp v.property.2
-    have hxeq : u.val.val.1 = v.val.val.1 :=
+    have hxeq :=
       periodicCoordinate_eq_of_interval hNp (c.val.1 - R) _ _
         ⟨by omega, by omega⟩ ⟨by omega, by omega⟩ hx
-    have hyeq : u.val.val.2 = v.val.val.2 :=
+    have hyeq :=
       periodicCoordinate_eq_of_interval hMp (c.val.2 - R) _ _
         ⟨by omega, by omega⟩ ⟨by omega, by omega⟩ hy
-    exact Subtype.ext (Subtype.ext (Prod.ext hxeq hyeq))
+    grind
 
 /-- Every native box edge projects to its actual indexed diamond edge. -/
-theorem liftedBoxGraph_map_projection_le (hN : Even N) (hM : Even M)
-    (hNp : 0 < N) (hMp : 0 < M) (c : RotatedVertex) (R : ℕ)
-    (hRN : 2 * R < N) (hRM : 2 * R < M) :
+theorem liftedBoxGraph_map_projection_le (hRN : 2 * R < N) (hRM : 2 * R < M) :
     (liftedBoxGraph c R).map (liftedBoxProjection hN hM hNp hMp c R hRN hRM) ≤
       fullDiamondGraph hN hM := by
   intro x y hxy
   rw [SimpleGraph.map_adj] at hxy
   rcases hxy with ⟨u, v, huv, rfl, rfl⟩
-  have hlat : rotatedLattice.Adj u.val v.val := huv
-  have hne := (liftedBoxProjection hN hM hNp hMp c R hRN hRM).injective.ne huv.ne
-  change (diamondOpenGraph hN hM true (fun _ => true)).Adj _ _
-  rw [diamondOpenGraph, SimpleGraph.fromEdgeSet_adj]
   exact ⟨⟨liftedEdgeIndex hNp hMp u.val v.val, rfl,
-    liftedFaceEndpoints_eq hN hM hNp hMp u.val v.val hlat⟩, hne⟩
+    liftedFaceEndpoints_eq hN hM hNp hMp u.val v.val huv⟩, ((liftedBoxProjection hN hM hNp hMp c R hRN hRM).injective.ne huv.ne)⟩
+end
 
 end
 

@@ -6,7 +6,7 @@ public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverGraph
 public import Mathlib.Data.Set.Card
 public import Mathlib.Tactic
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 
@@ -23,14 +23,12 @@ theorem parafermionicCoverGraph_neighborSet_eq_neighborLift_image
   constructor
   · intro hw
     have hadj : parafermionicCoverGraph.Adj u w :=
-      (by simpa only [SimpleGraph.mem_neighborSet] using hw)
+      by simp_all
     have hbase : w.1 ∈ squareLattice.neighborSet u.1 :=
-      (by simpa only [SimpleGraph.mem_neighborSet] using hadj.1)
+      (by simpa using hadj.1)
     have hlift := parafermionicCoverNeighborLift_unique u w.1 w rfl hadj
-    exact ⟨w.1, hbase, hlift.symm⟩
+    grind
   · rintro ⟨v, hv, rfl⟩
-    rw [SimpleGraph.mem_neighborSet]
-    exact parafermionicCoverNeighborLift_adj u v
-      (by simpa only [SimpleGraph.mem_neighborSet] using hv)
+    tauto
 
 end PottsDiscontinuity.TorusTopology.Planar.Medial

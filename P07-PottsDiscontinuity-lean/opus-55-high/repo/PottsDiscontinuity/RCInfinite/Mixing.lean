@@ -17,11 +17,10 @@ theorem translatedEdge_not_mem_box_of_far {e : Edge} {m k : ℕ} {a : LatticeVer
     translatedEdge (-a) e ∉ boxEdges (0, 0) m := by
   intro ht
   obtain ⟨⟨x, y⟩, hxy⟩ := Sym2.mk_surjective e.val
-  have hx : x ∈ e.val := by rw [← hxy]; simp
+  have hx : x ∈ e.val := by tauto
   have hxk := (mem_boxEdges_iff (0, 0) k e).mp he x hx
-  have hxt : latticeTranslate (-a) x ∈ (translatedEdge (-a) e).val := by
-    change latticeTranslate (-a) x ∈ Sym2.map (latticeTranslate (-a)) e.val
-    exact Sym2.mem_map.mpr ⟨x, hx, rfl⟩
+  have hxt : latticeTranslate (-a) x ∈ (translatedEdge (-a) e).val :=
+    Sym2.mem_map.mpr ⟨x, hx, rfl⟩
   have hxm := (mem_boxEdges_iff (0, 0) m _).mp ht _ hxt
   apply ha
   simp only [mem_latticeBox, latticeTranslate, Prod.fst_neg, Prod.snd_neg, zero_sub, zero_add] at hxk hxm ⊢
@@ -40,9 +39,10 @@ theorem eventually_cylinder_translate_outside_cofinite (m : ℕ)
   simpa only [edgeTranslate, latticeConfigurationTranslate_apply, translatedEdge] using
     hω _ (translatedEdge_not_mem_box_of_far (hk he) ha)
 
-theorem allOpen_cylinder_covariance_cofinite (θ : Parameters) (i : Fin 2)
-    (μ : Measure LatticeConfiguration) (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ i μ)
-    (F : Finset Edge) {B : Set LatticeConfiguration} (hB : IsCylinder B) :
+section
+variable (θ : Parameters) (i : Fin 2) (μ : Measure LatticeConfiguration) (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ i μ) (F : Finset Edge) {B : Set LatticeConfiguration}
+include θ i μ hμ
+theorem allOpen_cylinder_covariance_cofinite (hB : IsCylinder B) :
     Tendsto (fun a : LatticeVertex => covariance μ (LatticeConfiguration.allOpen F)
       ((edgeTranslate a) ⁻¹' B)) cofinite (𝓝 0) := by
   apply Metric.tendsto_nhds.mpr
@@ -54,48 +54,39 @@ theorem allOpen_cylinder_covariance_cofinite (θ : Parameters) (i : Fin 2)
     simpa only [sub_self, abs_zero] using
       ((tendsto_cylinder_probability θ i μ hμ (isCylinder_allOpen F)).sub
         (tendsto_const_nhds (x := μ.real (LatticeConfiguration.allOpen F)))).abs
-  have herr := herror.eventually (gt_mem_nhds hε)
-  obtain ⟨m, hFm, hm⟩ := ((eventually_finset_in_box F).and herr).exists
+  obtain ⟨m, hFm, hm⟩ := ((eventually_finset_in_box F).and (herror.eventually (gt_mem_nhds hε))).exists
   filter_upwards [eventually_cylinder_translate_outside_cofinite m hB] with a ha
   have hbound := cylinder_exterior_covariance_bound θ i μ hμ m F hFm
     ((edgeTranslate a) ⁻¹' B) (hB.preimage_translate a) ha
   simpa only [Real.dist_eq, sub_zero, covariance] using hbound.trans_lt hm
 
-theorem allOpen_measurable_covariance_cofinite (θ : Parameters) (i : Fin 2)
-    (μ : Measure LatticeConfiguration) (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ i μ)
-    (F : Finset Edge) {B : Set LatticeConfiguration} (hB : MeasurableSet B) :
+theorem allOpen_measurable_covariance_cofinite (hB : MeasurableSet B) :
     Tendsto (fun a : LatticeVertex => covariance μ (LatticeConfiguration.allOpen F)
       ((edgeTranslate a) ⁻¹' B)) cofinite (𝓝 0) := by
-  have : IsProbabilityMeasure μ := hμ.1
+  have  := hμ.1
   apply Metric.tendsto_nhds.mpr
   intro ε hε
   obtain ⟨C, hC, hCB⟩ := exists_cylinder_approx μ hB (show 0 < ε / 4 by positivity)
   have hlim := allOpen_cylinder_covariance_cofinite θ i μ hμ F hC
-  have hevent := (Metric.tendsto_nhds.mp hlim) (ε / 2) (half_pos hε)
-  filter_upwards [hevent] with a ha
+  filter_upwards [((Metric.tendsto_nhds.mp hlim) (ε / 2) (half_pos hε))] with a ha
   have hchange := covariance_change_right μ (isCylinder_allOpen F).measurableSet
     ((edgeTranslate_measurable a) hB) ((edgeTranslate_measurable a) hC.measurableSet)
   have hmass : μ.real (((edgeTranslate a) ⁻¹' B) ∆ ((edgeTranslate a) ⁻¹' C)) =
       μ.real (C ∆ B) := by
     rw [← Set.preimage_symmDiff, limit_translate_real θ i μ hμ a (hB.symmDiff hC.measurableSet),
       symmDiff_comm]
-  rw [hmass] at hchange
-  have htriangle := abs_sub_le (covariance μ (LatticeConfiguration.allOpen F) ((edgeTranslate a) ⁻¹' B))
-    (covariance μ (LatticeConfiguration.allOpen F) ((edgeTranslate a) ⁻¹' C)) 0
-  simp only [sub_zero, Real.dist_eq] at ha ⊢
-  simp only [sub_zero] at htriangle
-  nlinarith [htriangle, hchange]
+  simp at ha ⊢
+  grind
 
-theorem allOpen_measurable_joint_cofinite (θ : Parameters) (i : Fin 2)
-    (μ : Measure LatticeConfiguration) (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ i μ)
-    (F : Finset Edge) {B : Set LatticeConfiguration} (hB : MeasurableSet B) :
+theorem allOpen_measurable_joint_cofinite (hB : MeasurableSet B) :
     Tendsto (fun a : LatticeVertex => μ.real (LatticeConfiguration.allOpen F ∩
       (edgeTranslate a) ⁻¹' B)) cofinite
       (𝓝 (μ.real (LatticeConfiguration.allOpen F) * μ.real B)) := by
   have h := (allOpen_measurable_covariance_cofinite θ i μ hμ F hB).add
     (tendsto_const_nhds (x := μ.real (LatticeConfiguration.allOpen F) * μ.real B))
   have hmean (a : LatticeVertex) := limit_translate_real θ i μ hμ a hB
-  simpa only [covariance, hmean, sub_add_cancel, zero_add] using h
+  simp_all [covariance]
+end
 
 /-- On the compact bond space, convergence on all-open generators implies
 weak convergence. No monotonicity premise is needed when the limit is given. -/
@@ -114,55 +105,55 @@ theorem probabilityMeasures_tendsto_of_allOpen_real {ι : Type*} {l : Filter ι}
     change Tendsto (fun ζ => κ ζ F) (𝓝 η) (𝓝 (κ η F))
     have hn := LatticeConfiguration.tendsto_allOpen_of_weak
       (μs := fun ζ : ProbabilityMeasure LatticeConfiguration => ζ) (μ := η)
-      (l := 𝓝 η) tendsto_id F
-    simpa only [κ, ProbabilityMeasure.coeFn_def, Measure.real, ENNReal.toReal,
-      Function.comp_def] using (NNReal.continuous_coe.tendsto _).comp hn
+      tendsto_id F
+    aesop
   have hinj : Function.Injective κ := by
     intro η ζ heq
     apply LatticeConfiguration.probabilityMeasure_eq_of_allOpen
     intro F
     apply NNReal.coe_injective
     simpa only [κ, ProbabilityMeasure.coeFn_def, Measure.real, ENNReal.toReal] using congrFun heq F
-  have hemb : IsClosedEmbedding κ := hcont.isClosedEmbedding hinj
+  have hemb := hcont.isClosedEmbedding hinj
   apply hemb.tendsto_nhds_iff.mpr
   exact tendsto_pi_nhds.mpr h
 
+section
+variable (μ : Measure LatticeConfiguration) [IsFiniteMeasure μ] (B : Set LatticeConfiguration)
 /-- The actual normalized restriction to an event of positive mass. -/
-def conditionalLaw (μ : Measure LatticeConfiguration) [IsFiniteMeasure μ]
-    (B : Set LatticeConfiguration) (hB : μ B ≠ 0) : ProbabilityMeasure LatticeConfiguration :=
+def conditionalLaw (hB : μ B ≠ 0) : ProbabilityMeasure LatticeConfiguration :=
   ⟨ProbabilityTheory.cond μ B, ProbabilityTheory.cond_isProbabilityMeasure hB⟩
 
-theorem conditionalLaw_real (μ : Measure LatticeConfiguration) [IsFiniteMeasure μ]
-    (B : Set LatticeConfiguration) (hB : μ B ≠ 0)
+theorem conditionalLaw_real (hB : μ B ≠ 0)
     {A : Set LatticeConfiguration} (hA : MeasurableSet A) :
     (conditionalLaw μ B hB).toMeasure.real A = (μ.real B)⁻¹ * μ.real (A ∩ B) := by
   change (ProbabilityTheory.cond μ B A).toReal = _
   rw [ProbabilityTheory.cond_apply' hA μ, ENNReal.toReal_mul, ENNReal.toReal_inv, inter_comm]
   rfl
+end
 
 theorem cylinder_measurable_joint_cofinite (θ : Parameters) (i : Fin 2)
     (μ : Measure LatticeConfiguration) (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ i μ)
     {A B : Set LatticeConfiguration} (hA : IsCylinder A) (hB : MeasurableSet B) :
     Tendsto (fun a : LatticeVertex => μ.real (A ∩ (edgeTranslate a) ⁻¹' B)) cofinite
       (𝓝 (μ.real A * μ.real B)) := by
-  have hprob : IsProbabilityMeasure μ := hμ.1
+  have hprob := hμ.1
   have hmass (a : LatticeVertex) : μ ((edgeTranslate a) ⁻¹' B) = μ B := by
     rw [← Measure.map_apply (edgeTranslate_measurable a) hB,
       translation_invariant θ.toP θ.toQ θ.property i μ hμ a]
   by_cases hzero : μ B = 0
   · have hjoint (a : LatticeVertex) : μ (A ∩ (edgeTranslate a) ⁻¹' B) = 0 :=
-      measure_mono_null inter_subset_right (by rw [hmass a, hzero])
+      measure_mono_null inter_subset_right (by simp_all)
     simpa only [Measure.real, hjoint, hzero, ENNReal.toReal_zero, mul_zero] using
       (tendsto_const_nhds (x := (0 : ℝ)) : Tendsto (fun _ : LatticeVertex => (0 : ℝ)) cofinite (𝓝 0))
   have hbne : μ.real B ≠ 0 := by
     intro hh
     exact hzero (((ENNReal.toReal_eq_zero_iff (μ B)).mp hh).resolve_right (measure_ne_top μ B))
-  let ν : LatticeVertex → ProbabilityMeasure LatticeConfiguration := fun a =>
-    conditionalLaw μ ((edgeTranslate a) ⁻¹' B) (by rw [hmass a]; exact hzero)
+  let ν := fun a =>
+    conditionalLaw μ ((edgeTranslate a) ⁻¹' B) (by simp_all)
   have hformula (a : LatticeVertex) {S : Set LatticeConfiguration} (hS : MeasurableSet S) :
       (ν a).toMeasure.real S = (μ.real B)⁻¹ * μ.real (S ∩ (edgeTranslate a) ⁻¹' B) := by
     have ht := conditionalLaw_real μ ((edgeTranslate a) ⁻¹' B)
-      (show μ ((edgeTranslate a) ⁻¹' B) ≠ 0 by rw [hmass a]; exact hzero) hS
+      (show μ ((edgeTranslate a) ⁻¹' B) ≠ 0 by simp_all) hS
     simpa only [ν, limit_translate_real θ i μ hμ a hB] using ht
   let μp : ProbabilityMeasure LatticeConfiguration := ⟨μ, hprob⟩
   have hgen (F : Finset Edge) : Tendsto
@@ -172,17 +163,14 @@ theorem cylinder_measurable_joint_cofinite (θ : Parameters) (i : Fin 2)
       (allOpen_measurable_joint_cofinite θ i μ hμ F hB)
     have hcancel : (μ.real B)⁻¹ *
         (μ.real (LatticeConfiguration.allOpen F) * μ.real B) = μ.real (LatticeConfiguration.allOpen F) := by
-      calc
-        _ = μ.real (LatticeConfiguration.allOpen F) * ((μ.real B)⁻¹ * μ.real B) := by ring
-        _ = _ := by rw [inv_mul_cancel₀ hbne, mul_one]
+      grind
     simpa only [hformula _ (isCylinder_allOpen F).measurableSet, hcancel, μp,
       ProbabilityMeasure.coe_mk] using ht
-  have hweak : Tendsto ν cofinite (𝓝 μp) := probabilityMeasures_tendsto_of_allOpen_real hgen
-  have hNN := ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hweak hA.isClopen
+  have hweak := probabilityMeasures_tendsto_of_allOpen_real hgen
   have hreal : Tendsto (fun a => (ν a).toMeasure.real A) cofinite (𝓝 (μ.real A)) := by
     simpa only [ProbabilityMeasure.coeFn_def, Measure.real, ENNReal.toReal, Function.comp_def, μp,
       ProbabilityMeasure.coe_mk, ProbabilityMeasure.coeFn_mk]
-      using (NNReal.continuous_coe.tendsto _).comp hNN
+      using (NNReal.continuous_coe.tendsto _).comp (ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hweak hA.isClopen)
   have hjoint (a : LatticeVertex) : μ.real (A ∩ (edgeTranslate a) ⁻¹' B) =
       μ.real B * (ν a).toMeasure.real A := by
     rw [hformula a hA.measurableSet, ← mul_assoc, mul_inv_cancel₀ hbne, one_mul]
@@ -191,13 +179,14 @@ theorem cylinder_measurable_joint_cofinite (θ : Parameters) (i : Fin 2)
 
 theorem covariance_comm (μ : Measure LatticeConfiguration) (A B : Set LatticeConfiguration) :
     covariance μ A B = covariance μ B A := by
-  simp only [covariance, inter_comm, mul_comm]
+  grind [covariance]
 
-theorem measurable_covariance_cofinite (θ : Parameters) (i : Fin 2)
-    (μ : Measure LatticeConfiguration) (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ i μ)
-    {A B : Set LatticeConfiguration} (hA : MeasurableSet A) (hB : MeasurableSet B) :
+section
+variable (θ : Parameters) (i : Fin 2) (μ : Measure LatticeConfiguration) (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ i μ) {A B : Set LatticeConfiguration} (hA : MeasurableSet A) (hB : MeasurableSet B)
+include θ i μ hμ hA hB
+theorem measurable_covariance_cofinite  :
     Tendsto (fun a : LatticeVertex => covariance μ A ((edgeTranslate a) ⁻¹' B)) cofinite (𝓝 0) := by
-  have : IsProbabilityMeasure μ := hμ.1
+  have  := hμ.1
   apply Metric.tendsto_nhds.mpr
   intro ε hε
   obtain ⟨C, hC, hCA⟩ := exists_cylinder_approx μ hA (show 0 < ε / 4 by positivity)
@@ -206,30 +195,25 @@ theorem measurable_covariance_cofinite (θ : Parameters) (i : Fin 2)
       cofinite (𝓝 0) := by
     have ht := (cylinder_measurable_joint_cofinite θ i μ hμ hC hB).sub
       (tendsto_const_nhds (x := μ.real C * μ.real B))
-    simpa only [covariance, hmean, sub_self] using ht
-  have hevent := (Metric.tendsto_nhds.mp hlimC) (ε / 2) (half_pos hε)
-  filter_upwards [hevent] with a ha
+    simp_all [covariance]
+  filter_upwards [((Metric.tendsto_nhds.mp hlimC) (ε / 2) (half_pos hε))] with a ha
   have hchange := covariance_change_right μ ((edgeTranslate_measurable a) hB)
     hA hC.measurableSet
   rw [covariance_comm μ ((edgeTranslate a) ⁻¹' B) A,
     covariance_comm μ ((edgeTranslate a) ⁻¹' B) C, symmDiff_comm A C] at hchange
-  have htriangle := abs_sub_le (covariance μ A ((edgeTranslate a) ⁻¹' B))
-    (covariance μ C ((edgeTranslate a) ⁻¹' B)) 0
-  simp only [Real.dist_eq, sub_zero] at ha ⊢
-  simp only [sub_zero] at htriangle
-  nlinarith [htriangle, hchange]
+  simp at ha ⊢
+  grind
 
 /-- Strong mixing as the translation vector leaves every finite subset of
 the lattice, for arbitrary measurable events. -/
-theorem measurable_joint_cofinite (θ : Parameters) (i : Fin 2)
-    (μ : Measure LatticeConfiguration) (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ i μ)
-    {A B : Set LatticeConfiguration} (hA : MeasurableSet A) (hB : MeasurableSet B) :
+theorem measurable_joint_cofinite  :
     Tendsto (fun a : LatticeVertex => μ.real (A ∩ (edgeTranslate a) ⁻¹' B)) cofinite
       (𝓝 (μ.real A * μ.real B)) := by
   have ht := (measurable_covariance_cofinite θ i μ hμ hA hB).add
     (tendsto_const_nhds (x := μ.real A * μ.real B))
   have hmean (a : LatticeVertex) := limit_translate_real θ i μ hμ a hB
-  simpa only [covariance, hmean, sub_add_cancel, zero_add] using ht
+  simp_all [covariance]
+end
 
 def IsEdgeTranslationMixing (μ : Measure LatticeConfiguration) : Prop :=
   (∀ a : LatticeVertex, μ.map (edgeTranslate a) = μ) ∧

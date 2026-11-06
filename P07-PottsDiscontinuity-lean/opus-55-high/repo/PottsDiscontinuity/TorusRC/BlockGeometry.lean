@@ -4,7 +4,7 @@ public import PottsDiscontinuity.TorusRC.ReflectedPairs
 
 /-! # Actual lifted connections supplied by the reflected blocks -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusRC
 
@@ -18,8 +18,6 @@ theorem rectangleDoubleConnection_endpoint_even (hNp : 0 < N) (hMp : 0 < M)
     (n : ℕ) (i : Fin (3 * n + 1))
     (hE : (rectangleDoubleConnection hNp hMp n i).Nonempty) : Even (i.val : ℤ) := by
   obtain ⟨A,u,v,hu,_,_,_⟩ := hE
-  have h := u.property
-  rw [hu] at h
-  simpa using h
+  grind
 
 end PottsDiscontinuity.TorusRC

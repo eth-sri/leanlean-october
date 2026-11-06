@@ -5,7 +5,7 @@ module
 public import PottsDiscontinuity.TorusTopology.PlanarFiniteEvenTriangularElimination
 public import Mathlib.Tactic
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 
@@ -17,7 +17,6 @@ theorem faceSymmDiffList_edge_iff_countP_mod {V I : Type*}
     [DecidablePred (fun i => e ∈ (F i).edgeSet)] :
     e ∈ (faceSymmDiffList F L).edgeSet ↔
       (L.countP (fun i => decide (e ∈ (F i).edgeSet))) % 2 = 1 := by
-  classical
   induction L with
   | nil => simp [faceSymmDiffList]
   | cons i L ih =>

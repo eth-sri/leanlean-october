@@ -5,7 +5,7 @@ module
 public import PottsDiscontinuity.FK.EmbeddedBoundaryUpper
 public import PottsDiscontinuity.FK.EmbeddedClosedInteriorOuterBoundary
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 
@@ -27,8 +27,8 @@ theorem embeddedConfigurationRestriction_preimage_measure_le_wired_of_closedInte
     (S : Set (Configuration G)) (hS : IsUpperSet S) :
     (measure H q ξ
       {A | embeddedConfigurationRestriction G H f hGH A ∈ S}).toReal ≤
-      (measure G q (BoundaryCondition.wired B) S).toReal := by
-  exact embeddedConfigurationRestriction_preimage_measure_le_of_frozen_partition
+      (measure G q (BoundaryCondition.wired B) S).toReal :=
+  embeddedConfigurationRestriction_preimage_measure_le_of_frozen_partition
     G H f hGH q ξ (BoundaryCondition.wired B) S hS (by
       intro K
       exact isolatedExtensionPullback_frozenBoundary_partition_le_wired_of_closedInterior

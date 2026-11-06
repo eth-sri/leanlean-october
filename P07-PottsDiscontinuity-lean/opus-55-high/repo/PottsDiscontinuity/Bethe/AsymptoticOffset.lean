@@ -10,23 +10,28 @@ open Set
 
 namespace PottsDiscontinuity.Bethe
 
+section
+variable (N r : ℕ)
 /-- The full configuration root, or the mean of the two roots, aligned with
 an index of the deficient configuration in (2.13). -/
-noncomputable def alignedRoot (N r : ℕ) (hr : r ≤ N / 2)
+noncomputable def alignedRoot (hr : r ≤ N / 2)
     (p : Fin (N / 2) → ℝ) (j : Fin (N / 2 - r)) : ℝ :=
   if r % 2 = 0 then p ⟨j.val + r / 2, by omega⟩
   else (p ⟨j.val + (r - 1) / 2, by omega⟩ +
     p ⟨j.val + (r + 1) / 2, by omega⟩) / 2
 
-theorem offsetDisplacement_eq_alignedRoot (N r : ℕ) (hN : 4 ∣ N)
+theorem offsetDisplacement_eq_alignedRoot (hN : 4 ∣ N)
     (hr : r ≤ N / 2) (p : Fin (N / 2) → ℝ) (q : Fin (N / 2 - r) → ℝ)
     (j : Fin (N / 2 - r)) :
     offsetDisplacement N r hN hr p q j = (N : ℝ) * (q j - alignedRoot N r hr p j) := by
   simp only [offsetDisplacement, alignedRoot]
-  split <;> rfl
+  grind
+end
 
-theorem alignedRoot_mem_Icc {N r : ℕ} (hr : r ≤ N / 2)
-    {p : Fin (N / 2) → ℝ} (hp : p ∈ S_n (N / 2)) (j : Fin (N / 2 - r)) :
+section
+variable {N r : ℕ} (hr : r ≤ N / 2) {p : Fin (N / 2) → ℝ} (hp : p ∈ S_n (N / 2)) (j : Fin (N / 2 - r))
+include hp
+theorem alignedRoot_mem_Icc  :
     alignedRoot N r hr p j ∈ Icc (-Real.pi) Real.pi := by
   unfold alignedRoot
   split
@@ -36,32 +41,16 @@ theorem alignedRoot_mem_Icc {N r : ℕ} (hr : r ≤ N / 2)
       (hp.1 ⟨j.val + (r + 1) / 2, by omega⟩).1,
       (hp.1 ⟨j.val + (r + 1) / 2, by omega⟩).2]
 
-theorem alignedRoot_rev {N r : ℕ} (hr : r ≤ N / 2)
-    {p : Fin (N / 2) → ℝ} (hp : p ∈ S_n (N / 2)) (j : Fin (N / 2 - r)) :
+theorem alignedRoot_rev  :
     alignedRoot N r hr p (Fin.rev j) = -alignedRoot N r hr p j := by
   have hsym : ∀ i, p (Fin.rev i) = -p i := hp.2.2
   unfold alignedRoot
   split
   next he =>
-    have hi : (⟨(Fin.rev j).val + r / 2, by omega⟩ : Fin (N / 2)) =
-        Fin.rev ⟨j.val + r / 2, by omega⟩ := by
-      apply Fin.ext
-      simp only [Fin.val_rev]
-      omega
-    rw [hi, hsym]
+    grind
   next ho =>
-    have hi : (⟨(Fin.rev j).val + (r - 1) / 2, by omega⟩ : Fin (N / 2)) =
-        Fin.rev ⟨j.val + (r + 1) / 2, by omega⟩ := by
-      apply Fin.ext
-      simp only [Fin.val_rev]
-      omega
-    have hi' : (⟨(Fin.rev j).val + (r + 1) / 2, by omega⟩ : Fin (N / 2)) =
-        Fin.rev ⟨j.val + (r - 1) / 2, by omega⟩ := by
-      apply Fin.ext
-      simp only [Fin.val_rev]
-      omega
-    rw [hi, hi', hsym, hsym]
-    ring
+    grind
+end
 
 theorem offsetDisplacement_rev {N r : ℕ} (hN : 4 ∣ N) (hr : r ≤ N / 2)
     {p : Fin (N / 2) → ℝ} {q : Fin (N / 2 - r) → ℝ}

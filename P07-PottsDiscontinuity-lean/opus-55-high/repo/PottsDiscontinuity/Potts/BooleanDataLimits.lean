@@ -13,27 +13,27 @@ noncomputable section
 
 variable {X I : Type*} [MeasurableSpace X]
 
+section
+variable (E : I → Set X)
 /-- A finite pattern of required and forbidden relations. -/
-def booleanEventPattern (E : I → Set X) (T C : Finset I) : Set X :=
+def booleanEventPattern (T C : Finset I) : Set X :=
   {x | (∀ i ∈ T, x ∈ E i) ∧ ∀ i ∈ C, x ∉ E i}
 
-theorem booleanEventPattern_measurable (E : I → Set X) (hE : ∀ i, MeasurableSet (E i))
+theorem booleanEventPattern_measurable (hE : ∀ i, MeasurableSet (E i))
     (T C : Finset I) : MeasurableSet (booleanEventPattern E T C) := by
-  have hT : {x | ∀ i ∈ T, x ∈ E i} = ⋂ i ∈ T, E i := by ext x; simp
-  have hC : {x | ∀ i ∈ C, x ∉ E i} = ⋂ i ∈ C, (E i)ᶜ := by ext x; simp
+  have hT : {x | ∀ i ∈ T, x ∈ E i} = ⋂ i ∈ T, E i := by aesop
+  have hC : {x | ∀ i ∈ C, x ∉ E i} = ⋂ i ∈ C, (E i)ᶜ := by aesop
   change MeasurableSet ({x | ∀ i ∈ T, x ∈ E i} ∩ {x | ∀ i ∈ C, x ∉ E i})
   rw [hT, hC]
   exact (T.measurableSet_biInter (fun i _ => hE i)).inter
     (C.measurableSet_biInter (fun i _ => (hE i).compl))
+end
 
 omit [MeasurableSpace X] in
 theorem booleanEventPattern_insert (E : I → Set X) (T C : Finset I) (i : I) :
     booleanEventPattern E T (insert i C) =
       booleanEventPattern E T C \ booleanEventPattern E (insert i T) C := by
-  ext x
-  simp only [booleanEventPattern, Set.mem_ofPred_eq, Finset.mem_insert, forall_eq_or_imp,
-    Set.mem_sdiff]
-  tauto
+  grind [booleanEventPattern]
 
 /-- No uniqueness hypothesis is needed to recover the distribution of a finite
 connection partition: all its positive moments suffice. -/
@@ -48,8 +48,7 @@ theorem boolean_pattern_probability_tendsto
     Tendsto (fun n => (μs n).toMeasure.real (booleanEventPattern (E n) T C)) atTop
       (𝓝 (μ.toMeasure.real (booleanEventPattern Einf T C))) := by
   induction C using Finset.induction_on generalizing T with
-  | empty => simpa only [booleanEventPattern, Finset.notMem_empty, IsEmpty.forall_iff, implies_true,
-      and_true] using hmom T
+  | empty => simp_all [booleanEventPattern]
   | @insert i C hi ih =>
       have ht := (ih T).sub (ih (insert i T))
       have hsub (E' : I → Set X) : booleanEventPattern E' (insert i T) C ⊆ booleanEventPattern E' T C := by
@@ -65,8 +64,7 @@ theorem boolean_pattern_probability_tendsto
             μ.toMeasure.real (booleanEventPattern Einf (insert i T) C) := by
         rw [booleanEventPattern_insert, measureReal_sdiff (μ := μ.toMeasure)
           (hsub Einf) (booleanEventPattern_measurable Einf hEinf _ _)]
-      simp_rw [hn, hi']
-      exact ht
+      simp_all
 
 end
 end PottsDiscontinuity.Potts

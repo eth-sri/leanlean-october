@@ -12,25 +12,26 @@ open Classical MeasureTheory Filter Topology
 noncomputable section
 attribute [local instance] FK.configurationMeasurableSpace
 
- theorem cornerClosureEvent_support (θ : FK.Parameters) (n : ℕ) :
+ section
+variable (θ : FK.Parameters) (n : ℕ)
+theorem cornerClosureEvent_support  :
     ∃ C ∈ cornerClosureEvent n,
       C ∈ (FK.law (squareLattice.induce (box (n + 1) : Set (ℤ × ℤ))) θ (outerBoxWiring n)).support := by
   refine ⟨∅, Finset.disjoint_empty_right _, ?_⟩
   exact (FK.law_pos _ θ (outerBoxWiring n) ∅).ne'
 
 /-- The actual outer FK law conditioned on the four closed corner bonds. -/
-def conditionedOuterLaw (θ : FK.Parameters) (n : ℕ) :
+def conditionedOuterLaw  :
     PMF (FK.Configuration (squareLattice.induce (box (n + 1) : Set (ℤ × ℤ)))) :=
   (FK.law _ θ (outerBoxWiring n)).filter (cornerClosureEvent n) (cornerClosureEvent_support θ n)
 
-def conditionedOuterBoxProbabilityMeasure (θ : FK.Parameters) (n : ℕ) :
+def conditionedOuterBoxProbabilityMeasure  :
     ProbabilityMeasure FK.LatticeConfiguration :=
   ⟨((conditionedOuterLaw θ n).map (openExtension (box (n + 1)))).toMeasure,
     PMF.toMeasure.isProbabilityMeasure _⟩
 
 /-- Exact conditional probability on the common whole-lattice carrier. -/
-theorem conditionedOuterBox_allOpen (θ : FK.Parameters) (n : ℕ)
-    (F : Finset squareLattice.edgeSet) :
+theorem conditionedOuterBox_allOpen (F : Finset squareLattice.edgeSet) :
     (conditionedOuterBoxProbabilityMeasure θ n).toMeasure.real (FK.LatticeConfiguration.allOpen F) =
       (FK.measure _ θ (outerBoxWiring n)
         (openBoxCylinderEvent (n + 1) F ∩ cornerClosureEvent n)).toReal /
@@ -43,6 +44,7 @@ theorem conditionedOuterBox_allOpen (θ : FK.Parameters) (n : ℕ)
   congr 3
   ext C
   exact openExtension_mem_allOpen (n + 1) C F
+end
 
 /-- The conditioned full outer laws have the same wired weak limit. -/
 theorem conditionedOuterBox_tendsto (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β)
@@ -72,13 +74,14 @@ theorem conditionedOuterBox_tendsto (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0
     filter_upwards [hs, eventually_gt_atTop 0] with n hn hn0
     rw [conditionedOuterBox_allOpen, ghostBoxProbabilityMeasure_allOpen_eq_conditional q hq β hβ n hn0 F hn]
   have ht := hghost.congr' (heq.mono (fun _ h => h.symm))
-  simpa only [FK.cylinderProbabilityCoordinates, Function.comp_def,
-    ProbabilityMeasure.measureReal_eq_coe_coeFn] using ht
+  tauto
 
+section
+variable (θ : FK.Parameters) (n : ℕ) (hn : 0 < n)
+include hn
 /-- The conditional density is bounded by the reciprocal of the four-edge
 finite-energy constant, uniformly in the volume. -/
-theorem conditionedOuterLaw_density (θ : FK.Parameters) (n : ℕ) (hn : 0 < n)
-    (S : Set (FK.Configuration (squareLattice.induce (box (n + 1) : Set (ℤ × ℤ))))) :
+theorem conditionedOuterLaw_density (S : Set (FK.Configuration (squareLattice.induce (box (n + 1) : Set (ℤ × ℤ))))) :
     (1 - FK.edgeParameter θ) ^ 4 * (conditionedOuterLaw θ n).toMeasure.real S ≤
       (FK.measure _ θ (outerBoxWiring n) S).toReal := by
   change (1 - FK.edgeParameter θ) ^ 4 *
@@ -87,20 +90,16 @@ theorem conditionedOuterLaw_density (θ : FK.Parameters) (n : ℕ) (hn : 0 < n)
   have hb := cornerClosureEvent_probability_lower_bound θ n hn
   have hbpos : 0 < (FK.measure _ θ (outerBoxWiring n) (cornerClosureEvent n)).toReal :=
     (pow_pos (FK.one_sub_edgeParameter_pos θ) 4).trans_le hb
-  have ha : 0 ≤ (FK.measure _ θ (outerBoxWiring n) (S ∩ cornerClosureEvent n)).toReal /
-      (FK.measure _ θ (outerBoxWiring n) (cornerClosureEvent n)).toReal :=
-    div_nonneg ENNReal.toReal_nonneg hbpos.le
   calc
     _ ≤ (FK.measure _ θ (outerBoxWiring n) (cornerClosureEvent n)).toReal *
         ((FK.measure _ θ (outerBoxWiring n) (S ∩ cornerClosureEvent n)).toReal /
           (FK.measure _ θ (outerBoxWiring n) (cornerClosureEvent n)).toReal) :=
-      mul_le_mul_of_nonneg_right hb ha
+      mul_le_mul_of_nonneg_right hb (by positivity)
     _ = (FK.measure _ θ (outerBoxWiring n) (S ∩ cornerClosureEvent n)).toReal := by
-      rw [mul_comm, div_mul_cancel₀ _ hbpos.ne']
+      grind
     _ ≤ _ := ENNReal.toReal_mono (measure_ne_top _ _) (measure_mono Set.inter_subset_left)
 
-theorem conditionedOuterBox_density (θ : FK.Parameters) (n : ℕ) (hn : 0 < n)
-    (S : Set FK.LatticeConfiguration) (hS : MeasurableSet S) :
+theorem conditionedOuterBox_density (S : Set FK.LatticeConfiguration) (hS : MeasurableSet S) :
     (1 - FK.edgeParameter θ) ^ 4 * (conditionedOuterBoxProbabilityMeasure θ n).toMeasure.real S ≤
       (openBoxProbabilityMeasure θ (n + 1)).toMeasure.real S := by
   change (1 - FK.edgeParameter θ) ^ 4 *
@@ -109,6 +108,7 @@ theorem conditionedOuterBox_density (θ : FK.Parameters) (n : ℕ) (hn : 0 < n)
   rw [PMF.toMeasure_map_apply _ _ _ measurable_from_top hS,
     PMF.toMeasure_map_apply _ _ _ measurable_from_top hS]
   exact conditionedOuterLaw_density θ n hn _
+end
 
 end
 end PottsDiscontinuity.Potts

@@ -28,7 +28,9 @@ def squareWalkCyclicTurn {u : ℤ × ℤ} (p : FK.squareLattice.Walk u u) : ℤ 
   ((squareWalkCompassDirections p).zipWith primalCompassQuarterTurn
     ((squareWalkCompassDirections p).rotate 1)).sum
 
-def upperCoverHom (k : ℤ) :
+section
+variable (k : ℤ)
+def upperCoverHom  :
     FK.squareLattice.induce {v | 0 ≤ v.2 + k} →g Planar.parafermionicCoverGraph where
   toFun v := ((v.val.1, v.val.2+k),0)
   map_rel' := by
@@ -38,23 +40,15 @@ def upperCoverHom (k : ℤ) :
       have hh := (FK.squareLattice_adj_iff _ _).mp h
       dsimp at hh ⊢
       omega
-    · change (0 : ℤ) = 0 + Planar.parafermionicCoverSheetShift _ _
-      simp only [Planar.parafermionicCoverSheetShift]
-      have hu := u.property
-      dsimp at hu ⊢
-      simp [show ¬ u.val.2+k < 0 by omega]
+    grind [Planar.parafermionicCoverSheetShift]
 
-private lemma upperCoverHom_injective (k : ℤ) : Function.Injective (upperCoverHom k) := by
+theorem upperCoverHom_injective  : Function.Injective (upperCoverHom k) := by
   intro u v h
-  apply Subtype.ext
   have hh := congrArg Prod.fst h
   change (u.val.1,u.val.2+k) = (v.val.1,v.val.2+k) at hh
-  have hx := congrArg Prod.fst hh
-  have hy := congrArg Prod.snd hh
-  exact Prod.ext hx (by dsimp at hy; omega)
+  grind
 
-private lemma upperCoverHom_direction (k : ℤ)
-    (u v : {v : ℤ × ℤ | 0 ≤ v.2+k}) (h : FK.squareLattice.Adj u.val v.val) :
+theorem upperCoverHom_direction (u v : {v : ℤ × ℤ | 0 ≤ v.2+k}) (h : FK.squareLattice.Adj u.val v.val) :
     parafermionicCoverCompassDirection
       (upperCoverHom k u) (upperCoverHom k v)
       ((upperCoverHom k).map_rel h) = squareDartCompass ⟨⟨u.val,v.val⟩,h⟩ := by
@@ -65,16 +59,12 @@ private lemma upperCoverHom_direction (k : ℤ)
   unfold parafermionicCoverCompassNeighbor Planar.parafermionicCoverNeighborLift
   apply Prod.ext
   · have hh := (FK.squareLattice_adj_iff u.val v.val).mp h
-    rcases hh with ⟨hx|hx,hy⟩ | ⟨hx,hy|hy⟩
     all_goals
       simp only [parafermionicCoverCompassBaseNeighbor]
       split_ifs <;> apply Prod.ext <;> dsimp only at * <;> omega
-  · have hu : 0 ≤ u.val.2+k := u.property
-    change 0 + Planar.parafermionicCoverSheetShift (u.val.1,u.val.2+k) _ = 0
-    simp [Planar.parafermionicCoverSheetShift,show ¬u.val.2+k < 0 by omega]
+  grind [Planar.parafermionicCoverSheetShift]
 
-private lemma upperCoverHom_walkDirections (k : ℤ)
-    {u v : {v : ℤ × ℤ | 0 ≤ v.2+k}}
+theorem upperCoverHom_walkDirections {u v : {v : ℤ × ℤ | 0 ≤ v.2+k}}
     (p : (FK.squareLattice.induce {v | 0 ≤ v.2+k}).Walk u v) :
     parafermionicCoverWalkCompassDirections (p.map (upperCoverHom k)) =
       squareWalkCompassDirections
@@ -84,18 +74,16 @@ private lemma upperCoverHom_walkDirections (k : ℤ)
   apply List.map_congr_left
   intro d hd
   exact upperCoverHom_direction k d.fst d.snd d.adj
+end
 
-private lemma exists_upper_height (l : List (ℤ × ℤ)) :
+theorem exists_upper_height (l : List (ℤ × ℤ)) :
     ∃ k : ℤ, ∀ v ∈ l, 0 ≤ v.2+k := by
   induction l with
-  | nil => exact ⟨0, by simp⟩
+  | nil => simp
   | cons a l ih =>
     obtain ⟨k,hk⟩ := ih
     refine ⟨max k (-a.2),?_⟩
-    intro v hv
-    rcases List.mem_cons.mp hv with rfl | hv
-    · have := le_max_right k (-v.2); omega
-    · have := hk v hv; have := le_max_left k (-a.2); omega
+    grind
 
 /-- Every simple square-lattice cycle has total signed turn +4 or -4. -/
 theorem squareWalkCyclicTurn_eq_four_or_neg_four {u : ℤ × ℤ}
@@ -105,16 +93,13 @@ theorem squareWalkCyclicTurn_eq_four_or_neg_four {u : ℤ × ℤ}
   let q := p.induce {v : ℤ × ℤ | 0 ≤ v.2+k} hk
   have hq : q.IsCycle := by
     apply (Walk.isCycle_map_iff_of_injective
-      (f := (Embedding.induce (G := FK.squareLattice) {v : ℤ × ℤ | 0 ≤ v.2+k}).toHom)
+      (f := (Embedding.induce {v : ℤ × ℤ | 0 ≤ v.2+k}).toHom)
       (Embedding.induce (G := FK.squareLattice) {v : ℤ × ℤ | 0 ≤ v.2+k}).injective).mp
-    simpa [q] using hp
-  have hr := (Walk.isCycle_map_iff_of_injective (upperCoverHom_injective k)).mpr hq
+    aesop
   have ht := parafermionicCoverWalkCyclicCompassTurn_eq_four_or_neg_four
-    (q.map (upperCoverHom k)) hr
+    (q.map (upperCoverHom k)) ((Walk.isCycle_map_iff_of_injective (upperCoverHom_injective k)).mpr hq)
   have hd := upperCoverHom_walkDirections k q
-  simp only [q,Walk.map_induce] at hd
   unfold parafermionicCoverWalkCyclicCompassTurn at ht
-  rw [hd] at ht
-  exact ht
+  aesop
 
 end PottsDiscontinuity.TorusTopology

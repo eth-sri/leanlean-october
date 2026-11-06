@@ -44,38 +44,33 @@ theorem probabilityMeasures_tendsto_of_monotone_allOpen
   have hlimit (F : Finset squareLattice.edgeSet) :
       μ (LatticeConfiguration.allOpen F) =
         ⨆ n, μs n (LatticeConfiguration.allOpen F) := by
-    let f : ℕ → NNReal := fun n => μs n (LatticeConfiguration.allOpen F)
-    have hf : Monotone f := hmono F
+    let f := fun n => μs n (LatticeConfiguration.allOpen F)
     have hbounded : BddAbove (Set.range f) := by
       refine ⟨1, ?_⟩
       rintro x ⟨n, rfl⟩
-      exact ProbabilityMeasure.apply_le_one (μs n) (LatticeConfiguration.allOpen F)
-    have ht := tendsto_atTop_ciSup hf hbounded
-    have hsub := ht.comp hφ.tendsto_atTop
-    have hweakF := LatticeConfiguration.tendsto_allOpen_of_weak hweak F
-    exact tendsto_nhds_unique hweakF hsub
+      aesop
+    have ht := tendsto_atTop_ciSup (hmono F) hbounded
+    exact tendsto_nhds_unique (LatticeConfiguration.tendsto_allOpen_of_weak hweak F) (ht.comp hφ.tendsto_atTop)
   let κ := cylinderProbabilityCoordinates
-  have hκcont : Continuous κ := continuous_cylinderProbabilityCoordinates
+  have hκcont := continuous_cylinderProbabilityCoordinates
   have hκinj : Function.Injective κ := by
     intro μ₁ μ₂ h
     apply LatticeConfiguration.probabilityMeasure_eq_of_allOpen
     intro F
     exact congrFun h F
-  have hκembed : IsClosedEmbedding κ := hκcont.isClosedEmbedding hκinj
+  have hκembed := hκcont.isClosedEmbedding hκinj
   have hκtendsto : Tendsto (fun n => κ (μs n)) atTop (𝓝 (κ μ)) := by
     apply tendsto_pi_nhds.2
     intro F
-    let f : ℕ → NNReal := fun n => μs n (LatticeConfiguration.allOpen F)
-    have hf : Monotone f := hmono F
+    let f := fun n => μs n (LatticeConfiguration.allOpen F)
     have hbounded : BddAbove (Set.range f) := by
       refine ⟨1, ?_⟩
       rintro x ⟨n, rfl⟩
-      exact ProbabilityMeasure.apply_le_one (μs n) (LatticeConfiguration.allOpen F)
-    have ht := tendsto_atTop_ciSup hf hbounded
+      aesop
+    have ht := tendsto_atTop_ciSup (hmono F) hbounded
     change Tendsto f atTop (𝓝 (μ (LatticeConfiguration.allOpen F)))
-    rw [hlimit F]
-    exact ht
-  have hfull : Tendsto μs atTop (𝓝 μ) := hκembed.tendsto_nhds_iff.mpr hκtendsto
+    grind
+  have hfull := hκembed.tendsto_nhds_iff.mpr hκtendsto
   refine ⟨μ, hfull, ?_⟩
   intro ν hν
   exact tendsto_nhds_unique hν hfull

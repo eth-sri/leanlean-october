@@ -15,67 +15,69 @@ noncomputable section
 
 variable {A : Type*} [Fintype A]
 
-def observedFreePartition (v : A → ℤ × ℤ) (n : ℕ) (ω : FK.LatticeConfiguration) : Setoid A :=
+section
+variable (v : A → ℤ × ℤ)
+def observedFreePartition (n : ℕ) (ω : FK.LatticeConfiguration) : Setoid A :=
   (localFreeGraph (rcInfiniteOpenGraph ω) n).reachableSetoid.comap v
 
-def infiniteFreePartition (v : A → ℤ × ℤ) (ω : FK.LatticeConfiguration) : Setoid A :=
+def infiniteFreePartition (ω : FK.LatticeConfiguration) : Setoid A :=
   (rcInfiniteOpenGraph ω).reachableSetoid.comap v
+end
 
-def observedWiredPartition (v : A → Option (ℤ × ℤ)) (n : ℕ) (ω : FK.LatticeConfiguration) : Setoid A :=
+section
+variable (v : A → Option (ℤ × ℤ))
+def observedWiredPartition (n : ℕ) (ω : FK.LatticeConfiguration) : Setoid A :=
   (localWiredSetoid (rcInfiniteOpenGraph ω) (n + 1)).comap v
 
-def infiniteWiredPartition (v : A → Option (ℤ × ℤ)) (ω : FK.LatticeConfiguration) : Setoid A :=
+def infiniteWiredPartition (ω : FK.LatticeConfiguration) : Setoid A :=
   (infiniteMergedSetoid (rcInfiniteOpenGraph ω)).comap v
+end
 
 omit [Fintype A] in
-private theorem observedFree_moment_event (v : A → ℤ × ℤ) (n : ℕ) (F : Finset (A × A)) :
+theorem observedFree_moment_event (v : A → ℤ × ℤ) (n : ℕ) (F : Finset (A × A)) :
     {ω | ∀ z ∈ F, observedFreePartition v n ω z.1 z.2} =
       freeDataEvent n (F.image (fun z => (v z.1, v z.2))) := by
   ext ω
   change (∀ z ∈ F, (localFreeGraph (rcInfiniteOpenGraph ω) n).Reachable (v z.1) (v z.2)) ↔ _
   constructor
   · intro h z hz
-    obtain ⟨a, ha, rfl⟩ := Finset.mem_image.mp hz
-    exact h a ha
+    grind
   · intro h z hz
     exact h _ (Finset.mem_image.mpr ⟨z, hz, rfl⟩)
 
 omit [Fintype A] in
-private theorem infiniteFree_moment_event (v : A → ℤ × ℤ) (F : Finset (A × A)) :
+theorem infiniteFree_moment_event (v : A → ℤ × ℤ) (F : Finset (A × A)) :
     {ω | ∀ z ∈ F, infiniteFreePartition v ω z.1 z.2} =
       infiniteFreeDataEvent (F.image (fun z => (v z.1, v z.2))) := by
   ext ω
   change (∀ z ∈ F, (rcInfiniteOpenGraph ω).Reachable (v z.1) (v z.2)) ↔ _
   constructor
   · intro h z hz
-    obtain ⟨a, ha, rfl⟩ := Finset.mem_image.mp hz
-    exact h a ha
+    grind
   · intro h z hz
     exact h _ (Finset.mem_image.mpr ⟨z, hz, rfl⟩)
 
 omit [Fintype A] in
-private theorem observedWired_moment_event (v : A → Option (ℤ × ℤ)) (n : ℕ) (F : Finset (A × A)) :
+theorem observedWired_moment_event (v : A → Option (ℤ × ℤ)) (n : ℕ) (F : Finset (A × A)) :
     {ω | ∀ z ∈ F, observedWiredPartition v n ω z.1 z.2} =
       wiredDataEvent (n + 1) (F.image (fun z => (v z.1, v z.2))) := by
   ext ω
   change (∀ z ∈ F, localWiredSetoid (rcInfiniteOpenGraph ω) (n + 1) (v z.1) (v z.2)) ↔ _
   constructor
   · intro h z hz
-    obtain ⟨a, ha, rfl⟩ := Finset.mem_image.mp hz
-    exact h a ha
+    grind
   · intro h z hz
     exact h _ (Finset.mem_image.mpr ⟨z, hz, rfl⟩)
 
 omit [Fintype A] in
-private theorem infiniteWired_moment_event (v : A → Option (ℤ × ℤ)) (F : Finset (A × A)) :
+theorem infiniteWired_moment_event (v : A → Option (ℤ × ℤ)) (F : Finset (A × A)) :
     {ω | ∀ z ∈ F, infiniteWiredPartition v ω z.1 z.2} =
       infiniteMergedDataEvent (F.image (fun z => (v z.1, v z.2))) := by
   ext ω
   change (∀ z ∈ F, infiniteMergedSetoid (rcInfiniteOpenGraph ω) (v z.1) (v z.2)) ↔ _
   constructor
   · intro h z hz
-    obtain ⟨a, ha, rfl⟩ := Finset.mem_image.mp hz
-    exact h a ha
+    grind
   · intro h z hz
     exact h _ (Finset.mem_image.mpr ⟨z, hz, rfl⟩)
 
@@ -89,12 +91,12 @@ theorem free_observed_partition_tendsto (θ : FK.Parameters)
   apply partition_probability_tendsto
   · intro n a b
     have he : {ω | observedFreePartition v n ω a b} = freeDataEvent n {(v a, v b)} := by
-      ext ω; simp [freeDataEvent]; rfl
+      simp [freeDataEvent]; rfl
     rw [he]
     exact (freeDataEvent_isClopen _ _).isOpen.measurableSet
   · intro a b
     have he : {ω | infiniteFreePartition v ω a b} = infiniteFreeDataEvent {(v a, v b)} := by
-      ext ω; simp [infiniteFreeDataEvent]; rfl
+      simp [infiniteFreeDataEvent]; rfl
     rw [he, ← iUnion_freeDataEvent]
     exact MeasurableSet.iUnion (fun n => (freeDataEvent_isClopen n _).isOpen.measurableSet)
   · intro F
@@ -111,12 +113,12 @@ theorem wired_observed_partition_tendsto (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (h�
   apply partition_probability_tendsto
   · intro n a b
     have he : {ω | observedWiredPartition v n ω a b} = wiredDataEvent (n + 1) {(v a, v b)} := by
-      ext ω; simp [wiredDataEvent]; rfl
+      simp [wiredDataEvent]; rfl
     rw [he]
     exact (wiredDataEvent_isClopen _ _).isOpen.measurableSet
   · intro a b
     have he : {ω | infiniteWiredPartition v ω a b} = infiniteMergedDataEvent {(v a, v b)} := by
-      ext ω; simp [infiniteMergedDataEvent]; rfl
+      simp [infiniteMergedDataEvent]; rfl
     rw [he, ← iInter_wiredDataEvent]
     exact MeasurableSet.iInter (fun n => (wiredDataEvent_isClopen n _).isOpen.measurableSet)
   · intro F

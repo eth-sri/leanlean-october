@@ -12,7 +12,7 @@ Companion paper, Corollary `cor:expressionRsi`. Both ordinary orientations are
 reindexed with their actual weights; modulo-N distinctness is part of the finite sum.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Matrix Classical
 
@@ -20,8 +20,10 @@ namespace PottsDiscontinuity.BetheAnsatz
 
 open SixVertex
 
+section
+variable {N n : ℕ}
 /-- The finite gap reindexing, directly over the actual row states. -/
-theorem sum_distinctGapTuples_eq_sum_states {N n : ℕ} (x : State N (n + 1))
+theorem sum_distinctGapTuples_eq_sum_states (x : State N (n + 1))
     (F : (Fin (n + 1) → ℤ) → ℂ) :
     (∑ y ∈ distinctGapTuples N (positions x), F y) =
       (∑ y : State N (n + 1), if InterlacedLE y.1 x.1 then F (positions y) else 0) +
@@ -29,24 +31,24 @@ theorem sum_distinctGapTuples_eq_sum_states {N n : ℕ} (x : State N (n + 1))
         F (cyclicPredecessorPositions N (positions y)) else 0 := by
   rw [sum_distinctGapTuples_reindex (positions_mem_orderedTuples x)]
   congr 1
-  · rw [Finset.sum_filter, ← sum_states_eq_sum_orderedTuples (N := N)]
+  · rw [Finset.sum_filter, ← sum_states_eq_sum_orderedTuples]
     apply Finset.sum_congr rfl
     intro y _
     simp only [← interlacedLE_iff_positions_mem_gapTuples]
-  · rw [Finset.sum_filter, ← sum_states_eq_sum_orderedTuples (N := N)]
+  · rw [Finset.sum_filter, ← sum_states_eq_sum_orderedTuples]
     apply Finset.sum_congr rfl
     intro y _
     simp only [← interlacedLE_iff_shift_positions_mem_gapTuples]
 
 /-- The coordinate wave is invariant under the lifted cyclic predecessor shift. -/
-theorem coordinateWave_cyclicPredecessor {N n : ℕ} {Δ : ℝ} (hΔ : Δ < -1)
+theorem coordinateWave_cyclicPredecessor {Δ : ℝ} (hΔ : Δ < -1)
     (p : Fin (n + 1) → ℝ) (hBE : BetheEquations N Δ p) (y : Fin (n + 1) → ℤ) :
     coordinateWave Δ p y = coordinateWave Δ p (cyclicPredecessorPositions N y) := by
   simpa only [coordinateWave, mul_one] using
     toroidal_change_of_variables hΔ p hBE y (fun _ => 1)
 
 /-- Expanding the amplitude-weighted finite gap sums gives the coordinate wave summand. -/
-theorem sum_amplitude_cyclicGapSum {N n : ℕ} (c Δ : ℝ) (x : Fin (n + 1) → ℤ)
+theorem sum_amplitude_cyclicGapSum (c Δ : ℝ) (x : Fin (n + 1) → ℤ)
     (p : Fin (n + 1) → ℝ) :
     (∑ σ, amplitude Δ p σ * cyclicGapSum c N x p σ) =
       ∑ y ∈ distinctGapTuples N x, gapWeight c N x y * coordinateWave Δ p y := by
@@ -55,11 +57,11 @@ theorem sum_amplitude_cyclicGapSum {N n : ℕ} (c Δ : ℝ) (x : Fin (n + 1) →
   apply Finset.sum_congr rfl
   intro y _
   rw [coordinateWave, Finset.mul_sum]
-  exact Finset.sum_congr rfl fun σ _ => by ring
+  grind
 
 /-- Corollary `cor:expressionRsi`: the gap sum is the action of the actual transfer matrix.
 No relation between c and Δ is needed for this combinatorial/toroidal step. -/
-theorem transfer_betheVector_eq_cyclicGapSum {N n : ℕ} (c : ℝ) {Δ : ℝ} (hΔ : Δ < -1)
+theorem transfer_betheVector_eq_cyclicGapSum (c : ℝ) {Δ : ℝ} (hΔ : Δ < -1)
     (p : Fin (n + 1) → ℝ) (hBE : BetheEquations N Δ p) (x : State N (n + 1)) :
     ((transferMatrix N c).map (algebraMap ℝ ℂ) *ᵥ betheVector Δ p) x.1 =
       ∑ σ, amplitude Δ p σ * cyclicGapSum c N (positions x) p σ := by
@@ -72,18 +74,15 @@ theorem transfer_betheVector_eq_cyclicGapSum {N n : ℕ} (c : ℝ) {Δ : ℝ} (h
   change (transferMatrix N c x.1 y.1 : ℂ) * coordinateWave Δ p (positions y) = _
   rw [transferMatrix_eq_two_orientations]
   by_cases hl : InterlacedLE y.1 x.1 <;> by_cases hu : InterlacedLE x.1 y.1
-  · have hgl := (interlacedLE_iff_positions_mem_gapTuples x y).mp hl
-    have hgu := (interlacedLE_iff_shift_positions_mem_gapTuples x y).mp hu
-    rw [gapWeight_positions c x y hgl, gapWeight_shift_positions c x y hgu,
+  · rw [gapWeight_positions c x y ((interlacedLE_iff_positions_mem_gapTuples x y).mp hl), gapWeight_shift_positions c x y ((interlacedLE_iff_shift_positions_mem_gapTuples x y).mp hu),
       ← coordinateWave_cyclicPredecessor hΔ p hBE (positions y)]
     simp [hl, hu, add_mul]
-  · have hgl := (interlacedLE_iff_positions_mem_gapTuples x y).mp hl
-    rw [ite_eq_left hl, ite_eq_right hu, gapWeight_positions c x y hgl]
-    simp [hl, hu]
-  · have hgu := (interlacedLE_iff_shift_positions_mem_gapTuples x y).mp hu
-    rw [ite_eq_right hl, ite_eq_left hu, gapWeight_shift_positions c x y hgu,
+  · rw [ite_eq_left hl, ite_eq_right hu, gapWeight_positions c x y ((interlacedLE_iff_positions_mem_gapTuples x y).mp hl)]
+    simp_all
+  · rw [ite_eq_right hl, ite_eq_left hu, gapWeight_shift_positions c x y ((interlacedLE_iff_shift_positions_mem_gapTuples x y).mp hu),
       ← coordinateWave_cyclicPredecessor hΔ p hBE (positions y)]
-    simp [hl, hu]
-  · simp [hl, hu]
+    simp_all
+  simp_all
+end
 
 end PottsDiscontinuity.BetheAnsatz

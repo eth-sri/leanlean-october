@@ -21,15 +21,17 @@ open Equiv Equiv.Perm Module
 
 variable {α : Type*} [Fintype α] [DecidableEq α]
 
+section
+variable (p : Perm α)
 /-- Rational functions invariant on the cycles of a permutation. -/
-def cycleFunctions (p : Perm α) : Submodule ℚ (α → ℚ) where
+def cycleFunctions  : Submodule ℚ (α → ℚ) where
   carrier := {f | ∀ x, f (p x) = f x}
-  zero_mem' := by intro x; rfl
-  add_mem' := by intro f g hf hg x; change f (p x) + g (p x) = _; rw [hf, hg]; rfl
-  smul_mem' := by intro c f hf x; change c • f (p x) = _; rw [hf]; rfl
+  zero_mem' := by simp
+  add_mem' := by simp_all
+  smul_mem' := by simp_all
 
 /-- An invariant function is precisely a function on the actual orbit quotient. -/
-def cycleFunctionEquiv (p : Perm α) :
+def cycleFunctionEquiv  :
     (PermutationCycle p → ℚ) ≃ₗ[ℚ] cycleFunctions p where
   toFun f := ⟨fun x => f (Quotient.mk _ x), by
     intro x
@@ -41,6 +43,7 @@ def cycleFunctionEquiv (p : Perm α) :
   right_inv f := Subtype.ext rfl
   map_add' _ _ := Subtype.ext rfl
   map_smul' _ _ := Subtype.ext rfl
+end
 
 omit [DecidableEq α] in
 theorem finrank_cycleFunctions (p : Perm α) :
@@ -57,20 +60,12 @@ omit [Fintype α] [DecidableEq α] in
 @[simp] theorem cycleDifference_apply (p : Perm α) (a b : α) (f : cycleFunctions p) :
     cycleDifference p a b f = f.val a - f.val b := rfl
 
-omit [Fintype α] in
-theorem function_swap_eq_of_eq (f : α → ℚ) {a b : α} (hab : f a = f b) (x : α) :
-    f (swap a b x) = f x := by
-  by_cases ha : x = a
-  · subst x; rw [swap_apply_left, hab]
-  · by_cases hb : x = b
-    · subst x; rw [swap_apply_right, hab]
-    · rw [swap_apply_of_ne_of_ne ha hb]
 
 omit [Fintype α] in
 theorem cycleFunctions_swap_mul_iff (p : Perm α) (a b : α) (f : α → ℚ)
     (hab : f a = f b) : f ∈ cycleFunctions (swap a b * p) ↔ f ∈ cycleFunctions p := by
   change (∀ x, f (swap a b (p x)) = f x) ↔ ∀ x, f (p x) = f x
-  simp only [function_swap_eq_of_eq f hab]
+  grind
 
 /-- The common equal-value invariant space on the two sides of a transposition surgery. -/
 def cycleDifferenceKernelEquiv (p : Perm α) (a b : α) :
@@ -100,7 +95,6 @@ theorem permutationCycleCount_swap_bounds (p : Perm α) (a b : α) :
   have he := (cycleDifferenceKernelEquiv p a b).finrank_eq
   have hpr := finrank_cycleDifference_range_le p a b
   have hqr := finrank_cycleDifference_range_le (swap a b * p) a b
-  rw [finrank_cycleFunctions] at hp hq
-  omega
+  grind [finrank_cycleFunctions]
 
 end PottsDiscontinuity.Torus

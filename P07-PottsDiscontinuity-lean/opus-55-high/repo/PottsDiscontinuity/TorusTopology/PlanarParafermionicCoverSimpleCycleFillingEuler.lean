@@ -7,18 +7,19 @@ public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverSimpleCyc
 public import Mathlib.Combinatorics.SimpleGraph.Acyclic
 public import Mathlib.Tactic
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 
 open PottsDiscontinuity.TorusTopology.Planar
 open SimpleGraph
 
+section
+variable {n : ℕ} (hn : 1 ≤ n) {u : ParafermionicCoverBoxVertex n} (p : (parafermionicCoverBoxGraph n).Walk u u) (hp : p.IsCycle)
 /-- The actual pivot-deleted graph of a named actual simple-cycle filling is a
  tree when induced on the original carrier of its actual face union. -/
 theorem parafermionicCoverSimpleCycleFilling_inducedGraph_isTree
-    {n : ℕ} (hn : 1 ≤ n) {u : ParafermionicCoverBoxVertex n}
-    (p : (parafermionicCoverBoxGraph n).Walk u u) (hp : p.IsCycle) :
+     :
     ((parafermionicCoverFiniteFaceSetWithoutPivotsGraph
         (parafermionicCoverSimpleCycleFillingSet hn p hp)).induce
       (parafermionicCoverFiniteFaceUnionCarrier
@@ -30,14 +31,13 @@ theorem parafermionicCoverSimpleCycleFilling_inducedGraph_isTree
     simpa [R, C, S] using
       parafermionicCoverSimpleCyclePivotGraph_induce_carrier_connected hn p hp
   have hacyclic : R.IsAcyclic := by
-    simpa [R, S] using parafermionicCoverSimpleCyclePivotAcyclic hn p hp
+    simpa using parafermionicCoverSimpleCyclePivotAcyclic hn p hp
   exact ⟨hconnected, hacyclic.induce C⟩
 
 /-- Euler's vertex-edge count for the actual tree obtained from a named
 simple-cycle filling and its actual retained-face union carrier. -/
 theorem parafermionicCoverSimpleCycleFilling_euler_count
-    {n : ℕ} (hn : 1 ≤ n) {u : ParafermionicCoverBoxVertex n}
-    (p : (parafermionicCoverBoxGraph n).Walk u u) (hp : p.IsCycle) :
+     :
     Nat.card (parafermionicCoverFiniteFaceUnionCarrier
       (parafermionicCoverSimpleCycleFillingSet hn p hp)) +
       (parafermionicCoverSimpleCycleFillingSet hn p hp).card =
@@ -56,18 +56,19 @@ theorem parafermionicCoverSimpleCycleFilling_euler_count
     calc
       Nat.card {e // e ∈ H.edgeSet} + 1 =
           Fintype.card {e // e ∈ H.edgeSet} + 1 := by
-            rw [Nat.card_eq_fintype_card]
+            simp
       _ = Finset.card H.edgeFinset + 1 := by
         rw [← SimpleGraph.edgeFinset_card]
-      _ = Fintype.card C := by simpa [H] using htreeCard
-      _ = Nat.card C := by rw [Nat.card_eq_fintype_card]
+      _ = Fintype.card C := by omega
+      _ = Nat.card C := by simp
   have hcount :=
     parafermionicCoverFiniteFaceSetWithoutPivotsGraph_induce_carrier_edge_card_add_faces S
   have hcount' : Nat.card {e // e ∈ H.edgeSet} + S.card =
       (parafermionicCoverFiniteFaceSetEdgeSupport S).card := by
-    simpa [H, R, C] using hcount
+    omega
   change Nat.card C + S.card =
     (parafermionicCoverFiniteFaceSetEdgeSupport S).card + 1
   omega
+end
 
 end PottsDiscontinuity.TorusTopology.Planar.Medial

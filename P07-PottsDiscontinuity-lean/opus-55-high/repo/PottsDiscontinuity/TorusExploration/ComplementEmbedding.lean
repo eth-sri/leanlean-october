@@ -16,15 +16,16 @@ variable {N M : ℕ}
 noncomputable section
 open scoped Classical
 
+section
+variable (hN : Even N) (hM : Even M)
 /-- The entire seam-closed cylinder, including edges closed by a sample. -/
-def fullCylinderGraph (hN : Even N) (hM : Even M) : SimpleGraph (FaceVertex N M true) :=
+def fullCylinderGraph  : SimpleGraph (FaceVertex N M true) :=
   diamondOpenGraph hN hM true (TorusRC.torusRCSeamClosed (openRCConfig N M))
 
 /-- A finite FK cluster complement embeds after any one of its removed clusters
 crosses the cylinder. The only bridge premises are literal graph equalities and
 inclusions; no probability estimate or topological conclusion is assumed. -/
-theorem multiComplement_embedding (hN : Even N) (hM : Even M)
-    (hNp : 0 < N) (hMlarge : 1 < M) (G : SimpleGraph (FaceVertex N M true))
+theorem multiComplement_embedding (hNp : 0 < N) (hMlarge : 1 < M) (G : SimpleGraph (FaceVertex N M true))
     (hG : G ≤ fullCylinderGraph hN hM) (C : Configuration G)
     (A : RCConfig N M)
     (hopen : openGraph G C=diamondOpenGraph hN hM true (TorusRC.torusRCSeamClosed A))
@@ -51,7 +52,6 @@ theorem multiComplement_embedding (hN : Even N) (hM : Even M)
   obtain ⟨u,v,huv,rfl,rfl⟩ := (SimpleGraph.map_adj _ _ _ _).1 hab
   apply hf u.val v.val
   have hfull := hG huv
-  rw [fullCylinderGraph,diamondOpenGraph,SimpleGraph.fromEdgeSet_adj] at hfull
   obtain ⟨⟨e,he,hep⟩,hne⟩ := hfull
   have hrow : e.2.val ≠ 0 := by
     intro hz
@@ -64,19 +64,16 @@ theorem multiComplement_embedding (hN : Even N) (hM : Even M)
     · change u.val = faceEndpoint hN hM true e false at he0
       change v.val = faceEndpoint hN hM true e true at he1
       intro b
-      cases b
-      · rw [← he0]; exact hn u
-      · rw [← he1]; exact hn v
+      cases b <;> grind
     · change u.val = faceEndpoint hN hM true e true at he0
       change v.val = faceEndpoint hN hM true e false at he1
       intro b
-      cases b
-      · rw [← he1]; exact hn v
-      · rw [← he0]; exact hn u
-  have hd : unexploredCylinderConfig hN hM A s e=true := by
-    exact decide_eq_true ⟨hrow,hend⟩
+      cases b <;> grind
+  have hd : unexploredCylinderConfig hN hM A s e=true :=
+    decide_eq_true ⟨hrow,hend⟩
   rw [diamondOpenGraph,SimpleGraph.fromEdgeSet_adj]
-  exact ⟨⟨e,hd,hep⟩,hne⟩
+  tauto
+end
 
 end
 end PottsDiscontinuity.TorusExploration

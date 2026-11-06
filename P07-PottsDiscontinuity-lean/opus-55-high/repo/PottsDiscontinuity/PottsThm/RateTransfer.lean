@@ -4,7 +4,7 @@ public import PottsDiscontinuity.CorrLength.Positivity
 public import PottsDiscontinuity.Frozen.Defs.DiagonalSite
 public import PottsDiscontinuity.Potts.FreeSpinFormula
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 
@@ -32,14 +32,11 @@ theorem free_spin_rate_of_rc_rate (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 <
       (fun n : ℕ => -(1 / (n : ℝ)) * Real.log
         (μ.toMeasure.real {σ | σ (0, 0) = σ (diagonalSite n)} - 1 / (q : ℝ)))
       atTop (𝓝 L) := by
-  let θ : FK.Parameters := fkParameters q hq β hβ
-  let c : ℝ := 1 - 1 / (q : ℝ)
-  have hqpos : (0 : ℝ) < q := by exact_mod_cast (show 0 < q by omega)
-  have hqone : (1 : ℝ) < q := by exact_mod_cast (show 1 < q by omega)
+  let θ := fkParameters q hq β hβ
+  let c := 1 - 1 / (q : ℝ)
   have hc : 0 < c := by
-    dsimp [c]
     rw [sub_pos]
-    exact (div_lt_one hqpos).2 hqone
+    exact (div_lt_one (by positivity)).2 (by aesop)
   have hconn (n : ℕ) : 0 < φ.toMeasure.real
       {ω | (rcInfiniteOpenGraph ω).Reachable (0, 0) (diagonalSite n)} := by
     have hevent : connectionEvent (0, 0) (diagonalSite n) =
@@ -54,9 +51,7 @@ theorem free_spin_rate_of_rc_rate (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 <
       μ.toMeasure.real {σ | σ (0, 0) = σ (diagonalSite n)} - 1 / (q : ℝ) =
         c * φ.toMeasure.real
           {ω | (rcInfiniteOpenGraph ω).Reachable (0, 0) (diagonalSite n)} := by
-    rw [hcorr (0, 0) (diagonalSite n)]
-    dsimp [c]
-    ring
+    aesop
   have hlog (n : ℕ) :
       Real.log (μ.toMeasure.real {σ | σ (0, 0) = σ (diagonalSite n)} - 1 / (q : ℝ)) =
         Real.log c + Real.log
@@ -64,19 +59,15 @@ theorem free_spin_rate_of_rc_rate (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 <
             {ω | (rcInfiniteOpenGraph ω).Reachable (0, 0) (diagonalSite n)}) := by
     rw [hfactor]
     exact Real.log_mul hc.ne' (hconn n).ne'
-  have hinv : Tendsto (fun n : ℕ => (n : ℝ)⁻¹) atTop (𝓝 0) :=
-    tendsto_inv_atTop_zero.comp tendsto_natCast_atTop_atTop
   have hsmall : Tendsto (fun n : ℕ => -(1 / (n : ℝ)) * Real.log c) atTop (𝓝 0) := by
     have hprod : Tendsto (fun n : ℕ => (-Real.log c) * (n : ℝ)⁻¹) atTop
-        (𝓝 ((-Real.log c) * 0)) := tendsto_const_nhds.mul hinv
+        (𝓝 ((-Real.log c) * 0)) := tendsto_const_nhds.mul (tendsto_inv_atTop_zero.comp tendsto_natCast_atTop_atTop)
     have heq : (fun n : ℕ => -(1 / (n : ℝ)) * Real.log c) =
         (fun n : ℕ => (-Real.log c) * (n : ℝ)⁻¹) := by
       funext n
-      simp only [one_div]
       ring
     rw [heq]
     simpa using hprod
-  have hsum := hL.add hsmall
   have hseq :
       (fun n : ℕ => -(1 / (n : ℝ)) * Real.log
         (μ.toMeasure.real {σ | σ (0, 0) = σ (diagonalSite n)} - 1 / (q : ℝ))) =
@@ -89,6 +80,6 @@ theorem free_spin_rate_of_rc_rate (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 <
     rw [hlog n]
     ring
   rw [hseq]
-  simpa using hsum
+  simpa using (hL.add hsmall)
 
 end PottsDiscontinuity.PottsThm

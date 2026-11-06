@@ -4,11 +4,13 @@ public import PottsDiscontinuity.Bethe.AsymptoticBoundary
 
 /-! # From mean alignment to alignment of both shifted roots -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Bethe
 
-theorem offsetLowerUpper_gap {N r : ℕ} (hr : r ≤ N / 2)
+section
+variable {N r : ℕ}
+theorem offsetLowerUpper_gap (hr : r ≤ N / 2)
     {p : Fin (N / 2) → ℝ} (hp : p ∈ S_n (N / 2)) {D : ℝ} (hD : 0 ≤ D)
     (hgap : ∀ j (hj : j + 1 < N / 2),
       p ⟨j + 1, hj⟩ - p ⟨j, by omega⟩ ≤ D / N)
@@ -17,22 +19,17 @@ theorem offsetLowerUpper_gap {N r : ℕ} (hr : r ≤ N / 2)
       offsetUpperRoot N r hr p j - offsetLowerRoot N r hr p j ≤ D / N := by
   constructor
   · apply hp.2.1.monotone
-    change j.val + r / 2 ≤ j.val + (r - r / 2)
-    omega
+    grind
   · rcases (show r - r / 2 = r / 2 ∨ r - r / 2 = r / 2 + 1 by omega) with he | ho
     · have hi : (⟨j.val + (r - r / 2), by omega⟩ : Fin (N / 2)) =
-          ⟨j.val + r / 2, by omega⟩ := Fin.ext (by
-            change j.val + (r - r / 2) = j.val + r / 2
-            omega)
+          ⟨j.val + r / 2, by omega⟩ := by simp_all
       simp only [offsetLowerRoot, offsetUpperRoot, hi, sub_self]
-      exact div_nonneg hD (Nat.cast_nonneg N)
+      positivity
     · have hi : (⟨j.val + (r - r / 2), by omega⟩ : Fin (N / 2)) =
-          ⟨j.val + r / 2 + 1, by omega⟩ := Fin.ext (by
-            change j.val + (r - r / 2) = j.val + r / 2 + 1
-            omega)
-      simpa only [offsetLowerRoot, offsetUpperRoot, hi] using hgap (j.val + r / 2) (by omega)
+          ⟨j.val + r / 2 + 1, by omega⟩ := by grind
+      simp_all [offsetLowerRoot, offsetUpperRoot]
 
-theorem offset_shifted_roots_near {N r : ℕ} (h4 : 4 ∣ N) (hr : r ≤ N / 2)
+theorem offset_shifted_roots_near (h4 : 4 ∣ N) (hr : r ≤ N / 2)
     (hN : 0 < N) {p : Fin (N / 2) → ℝ} {q : Fin (N / 2 - r) → ℝ}
     (hp : p ∈ S_n (N / 2)) {B D : ℝ} (hD : 0 ≤ D)
     (hbound : ∀ j, |offsetDisplacement N r h4 hr p q j| ≤ B)
@@ -45,10 +42,11 @@ theorem offset_shifted_roots_near {N r : ℕ} (h4 : 4 ∣ N) (hr : r ≤ N / 2)
   have he := hbound j
   rw [offsetDisplacement_eq_alignedRoot, abs_mul, abs_of_pos (Nat.cast_pos.mpr hN)] at he
   have hm : |q j - alignedRoot N r hr p j| ≤ B / (N : ℝ) :=
-    (le_div_iff₀ (Nat.cast_pos.mpr hN)).mpr (by simpa only [mul_comm] using he)
+    (le_div_iff₀ (Nat.cast_pos.mpr hN)).mpr (by linarith)
   rw [alignedRoot_eq_mean hr] at hm
   rcases abs_le.mp hm with ⟨hm₁, hm₂⟩
   rw [add_div]
   constructor <;> apply abs_le.mpr <;> constructor <;> linarith [hg.1, hg.2]
+end
 
 end PottsDiscontinuity.Bethe

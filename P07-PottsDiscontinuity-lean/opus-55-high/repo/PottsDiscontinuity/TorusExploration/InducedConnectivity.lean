@@ -11,20 +11,18 @@ open FK
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 noncomputable section
 open scoped Classical
-local instance inducedConnectivityEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
-local instance inducedConnectivityEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 
 /-- The literal inclusion of an induced vertex set. -/
 def inducedVertexEmbedding (T : Set V) : T ↪ V := ⟨Subtype.val,Subtype.val_injective⟩
 
 omit [Finite V] in
-lemma inducedVertexGraph_le (T : Set V) : (G.induce T).map (inducedVertexEmbedding T) ≤ G := by
+theorem inducedVertexGraph_le (T : Set V) : (G.induce T).map (inducedVertexEmbedding T) ≤ G := by
   intro a b hab
   obtain ⟨u,v,huv,rfl,rfl⟩ := (SimpleGraph.map_adj _ _ _ _).1 hab
-  exact huv
+  tauto
 
 omit [Finite V] in
-lemma inducedRestriction_open_adj (T : Set V) (A : Configuration G) (u v : T) :
+theorem inducedRestriction_open_adj (T : Set V) (A : Configuration G) (u v : T) :
     (openGraph (G.induce T) (embeddedConfigurationRestriction (G.induce T) G
       (inducedVertexEmbedding T) (inducedVertexGraph_le G T) A)).Adj u v ↔
       (openGraph G A).Adj u.val v.val := by
@@ -33,20 +31,12 @@ lemma inducedRestriction_open_adj (T : Set V) (A : Configuration G) (u v : T) :
   · rintro ⟨e,he,hep⟩
     refine ⟨embeddedEdgeEmbedding _ _ _ _ e,
       (mem_embeddedConfigurationRestriction _ _ _ _ _ _).1 he,?_⟩
-    change Sym2.map Subtype.val e.val=s(u.val,v.val)
-    rw [hep]
-    rfl
+    aesop
   · rintro ⟨e,he,hep⟩
-    have hg : G.Adj u.val v.val := G.mem_edgeSet.1 (hep ▸ e.property)
+    have hg : G.Adj u.val v.val := by aesop
     let d : (G.induce T).edgeSet := ⟨s(u,v),hg⟩
     refine ⟨d,?_,rfl⟩
-    apply (mem_embeddedConfigurationRestriction (G.induce T) G (inducedVertexEmbedding T)
-      (inducedVertexGraph_le G T) A d).2
-    have hed : embeddedEdgeEmbedding (G.induce T) G (inducedVertexEmbedding T)
-        (inducedVertexGraph_le G T) d=e := by
-      apply Subtype.ext
-      exact hep.symm
-    rwa [hed]
+    aesop
 
 omit [Finite V] in
 /-- If the vertex set is closed under actual open steps, every actual path
@@ -64,11 +54,11 @@ theorem actualConnected_inducedRestriction (T : Set V) (A : Configuration G)
         (openGraph (G.induce T) (embeddedConfigurationRestriction (G.induce T) G
           (inducedVertexEmbedding T) (inducedVertexGraph_le G T) A)).Reachable ⟨a,ha⟩ ⟨b,hb⟩ := by
       induction p with
-      | nil => exact SimpleGraph.Reachable.refl _
+      | nil => rfl
       | @cons a b c hab p ih =>
         have hb' := hT a ha b hab
         exact ((inducedRestriction_open_adj G T A ⟨a,ha⟩ ⟨b,hb'⟩).2 hab).reachable.trans (ih hb' hb)
-    exact lift p u.property v.property
+    tauto
 
 end
 end PottsDiscontinuity.TorusExploration

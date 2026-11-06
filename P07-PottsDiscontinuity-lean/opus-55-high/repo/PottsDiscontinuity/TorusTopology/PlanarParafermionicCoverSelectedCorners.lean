@@ -11,28 +11,23 @@ namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 
 open PottsDiscontinuity.TorusTopology.Planar
 
+section
+variable {n : ℕ} (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
 /-- Actual corner labels contributed at a box vertex by selected retained
 lifted faces. -/
-noncomputable def parafermionicCoverFiniteFaceSelectedCorners {n : ℕ}
-    (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
-    (v : ParafermionicCoverBoxVertex n) : Finset (Fin 4) := by
+noncomputable def parafermionicCoverFiniteFaceSelectedCorners (v : ParafermionicCoverBoxVertex n) : Finset (Fin 4) := by
   classical
   exact Finset.univ.filter fun c =>
     ∃ i ∈ S, parafermionicCoverFaceCorner i.1 c = v.1
 
-theorem parafermionicCoverFiniteFaceSelectedCorners_mem_iff {n : ℕ}
-    (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
-    (v : ParafermionicCoverBoxVertex n) (c : Fin 4) :
+theorem parafermionicCoverFiniteFaceSelectedCorners_mem_iff (v : ParafermionicCoverBoxVertex n) (c : Fin 4) :
     c ∈ parafermionicCoverFiniteFaceSelectedCorners S v ↔
       ∃ i ∈ S, parafermionicCoverFaceCorner i.1 c = v.1 := by
-  classical
   simp [parafermionicCoverFiniteFaceSelectedCorners]
 
 /-- Counting actual selected corners is bijective with actual incident faces.
 The corner map is defined only on incident faces, with no default value. -/
-theorem parafermionicCoverFiniteFaceSelectedCorners_card {n : ℕ}
-    (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
-    (v : ParafermionicCoverBoxVertex n) :
+theorem parafermionicCoverFiniteFaceSelectedCorners_card (v : ParafermionicCoverBoxVertex n) :
     (parafermionicCoverFiniteFaceSelectedCorners S v).card =
       (parafermionicCoverFiniteFaceSelectedIncidentVertices S v).card := by
   classical
@@ -63,13 +58,11 @@ theorem parafermionicCoverFiniteFaceSelectedCorners_card {n : ℕ}
         (parafermionicCoverFiniteFaceBoundaryGraph_vertex_incident_iff_faceCorner i v).mpr ⟨q.val,hiq⟩⟩
     let ii : I := ⟨i,hi⟩
     refine ⟨ii,Subtype.ext ?_⟩
-    change c ii = q.val
     exact parafermionicCoverFaceCorner_injective_label i.val ((hc ii).trans hiq.symm)
   have hh := Fintype.card_congr (Equiv.ofBijective F ⟨hinj,hsurj⟩)
   simpa only [I,C,Fintype.card_coe] using hh.symm
 
 theorem parafermionicCoverFiniteFaceSelectedCorners_nonempty_iff_unionCarrier
-    {n : ℕ} (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
     (v : ParafermionicCoverBoxVertex n) :
     (parafermionicCoverFiniteFaceSelectedCorners S v).Nonempty ↔
       v ∈ parafermionicCoverFiniteFaceUnionCarrier S := by
@@ -78,14 +71,11 @@ theorem parafermionicCoverFiniteFaceSelectedCorners_nonempty_iff_unionCarrier
     apply (parafermionicCoverFiniteFaceUnionCarrier_iff_incidentVertices_nonempty S v).2
     have hpos : 0 <
         (parafermionicCoverFiniteFaceSelectedIncidentVertices S v).card := by
-      rw [← parafermionicCoverFiniteFaceSelectedCorners_card]
-      exact Finset.card_pos.mpr h
-    exact Finset.card_pos.mp hpos
+      grind [parafermionicCoverFiniteFaceSelectedCorners_card]
+    simp_all
   · intro h
-    have hi :=
-      (parafermionicCoverFiniteFaceUnionCarrier_iff_incidentVertices_nonempty S v).1 h
-    have hpos := Finset.card_pos.mpr hi
-    rw [← parafermionicCoverFiniteFaceSelectedCorners_card] at hpos
-    exact Finset.card_pos.mp hpos
+    have hpos := Finset.card_pos.mpr ((parafermionicCoverFiniteFaceUnionCarrier_iff_incidentVertices_nonempty S v).1 h)
+    grind [parafermionicCoverFiniteFaceSelectedCorners_card]
+end
 
 end PottsDiscontinuity.TorusTopology.Planar.Medial

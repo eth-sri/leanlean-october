@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticEndpoint
 
 /-! # Limit of the finite missing-root contribution -/
 
-@[expose] public section
+public section
 
 open Set Filter
 open scoped Topology BigOperators
@@ -24,21 +24,21 @@ theorem tendsto_offsetBoundarySum {ι : Type*} {l : Filter ι} {Δ : ℝ}
     Tendsto (fun i => offsetBoundarySum Δ (N i) r (hr i) (p i) (x i)) l
       (𝓝 ((r : ℝ) / 2 * (theta Δ a (-Real.pi) + theta Δ a Real.pi))) := by
   have hleft (s : ℕ) (hs : s ≤ r) (k : Fin s) :
-      Tendsto (fun i => p i ⟨k.val, by have := hr i; omega⟩) l (𝓝 (-Real.pi)) :=
+      Tendsto (fun i => p i ⟨k.val, by grind⟩) l (𝓝 (-Real.pi)) :=
     tendsto_root_at_left_of_mesh (fun i => N i / 2) hn p hp d hd hdnonneg hmesh _ r
-      (fun i => by change k.val ≤ r; omega)
+      (fun i => by grind)
   have hright (s t : ℕ) (hst : s + t = r) (k : Fin t) :
-      Tendsto (fun i => p i ⟨s + (N i / 2 - r) + k.val, by have := hr i; omega⟩) l
+      Tendsto (fun i => p i ⟨s + (N i / 2 - r) + k.val, by grind⟩) l
         (𝓝 Real.pi) :=
     tendsto_root_at_right_of_mesh (fun i => N i / 2) hn p hp d hd hdnonneg hmesh _ r
-      (fun i => by change N i / 2 - 1 - (s + (N i / 2 - r) + k.val) ≤ r; have := hr i; omega)
+      (fun i => by grind)
   have hθleft (s : ℕ) (hs : s ≤ r) (k : Fin s) :
-      Tendsto (fun i => theta Δ (x i) (p i ⟨k.val, by have := hr i; omega⟩)) l
+      Tendsto (fun i => theta Δ (x i) (p i ⟨k.val, by grind⟩)) l
         (𝓝 (theta Δ a (-Real.pi))) := by
     simpa only [Function.comp_def] using
       (continuous_theta hΔ).continuousAt.tendsto.comp (hx.prodMk_nhds (hleft s hs k))
   have hθright (s t : ℕ) (hst : s + t = r) (k : Fin t) :
-      Tendsto (fun i => theta Δ (x i) (p i ⟨s + (N i / 2 - r) + k.val, by have := hr i; omega⟩)) l
+      Tendsto (fun i => theta Δ (x i) (p i ⟨s + (N i / 2 - r) + k.val, by grind⟩)) l
         (𝓝 (theta Δ a Real.pi)) := by
     simpa only [Function.comp_def] using
       (continuous_theta hΔ).continuousAt.tendsto.comp (hx.prodMk_nhds (hright s t hst k))
@@ -54,8 +54,6 @@ theorem tendsto_offsetBoundarySum {ι : Type*} {l : Filter ι} {Δ : ℝ}
   convert ht using 1
   · rfl
   · simp only [Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
-    congr 1
-    rw [← hr']
-    ring
+    grind
 
 end PottsDiscontinuity.Bethe

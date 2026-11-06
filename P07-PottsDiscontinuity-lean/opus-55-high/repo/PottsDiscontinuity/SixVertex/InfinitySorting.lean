@@ -19,22 +19,19 @@ noncomputable def orderedSiteLift (s : Finset (Fin N)) (hs : s.card = k) : Fin k
 
 theorem defectGroundWeight_eq_orderedSiteLift (x : Finset (Fin N)) (hs : (defects x).card = k) :
     defectGroundWeight x = sineLiftWeight ((N : ℝ) + k) (orderedSiteLift (defects x) hs) := by
-  subst k
-  simp only [defectGroundWeight, sineLiftWeight, orderedSiteLift, defectCoordinate,
-    Int.cast_add, Int.cast_natCast, Nat.cast_add]
+  aesop
 
-private theorem strictMono_snoc {A : Type*} [Preorder A] {k : ℕ}
+theorem strictMono_snoc {A : Type*} [Preorder A] {k : ℕ}
     {f : Fin k → A} {a : A} (hf : StrictMono f) (ha : ∀ i, f i < a) :
     StrictMono (Fin.snoc f a) := by
   intro i j hij
   cases i using Fin.lastCases with
-  | last => exact ((not_lt_of_ge (Fin.le_last j)) hij).elim
+  | last => grind
   | cast i =>
     cases j using Fin.lastCases with
-    | last => simpa only [Fin.snoc_castSucc, Fin.snoc_last] using ha i
+    | last => simp_all
     | cast j =>
-      have hij' : i < j := hij
-      simpa only [Fin.snoc_castSucc] using hf hij'
+      aesop
 
 /-- With no seam crossing, the canonical ordered endpoint lift is the labelled lift. -/
 theorem sineLiftWeight_canonical_no_wrap (s : Finset (Fin N)) (hs : s.card = k)
@@ -45,20 +42,19 @@ theorem sineLiftWeight_canonical_no_wrap (s : Finset (Fin N)) (hs : s.card = k)
   have hfm : StrictMono f := by
     intro a b hab
     have hh := hu hab
-    rw [← hf a, ← hf b] at hh
-    exact_mod_cast hh
+    grind
   have he := Finset.orderEmbOfFin_unique hs hmem hfm
   have hcoord : orderedSiteLift s hs = fun a => u a + a.val := by
     funext a
-    unfold orderedSiteLift
-    rw [← congrFun he a, hf a]
-  rw [hcoord]
+    simp_all [orderedSiteLift]
+  simp_all
 
+section
+variable {k : ℕ} (hN : 0 < N) (s : Finset (Fin N)) (hs : s.card = k + 1) (u : Fin (k + 1) → ℤ) (hu : StrictMono u)
+include hN hu
 /-- A left seam crossing moves the old first endpoint to the end. The label
 change contributes a common translation by minus one, which cancels exactly. -/
-theorem sineLiftWeight_canonical_left_wrap {k : ℕ} (hN : 0 < N)
-    (s : Finset (Fin N)) (hs : s.card = k + 1) (u : Fin (k + 1) → ℤ)
-    (hu : StrictMono u) (h0 : u 0 = -1) (f : Fin (k + 1) → Fin N)
+theorem sineLiftWeight_canonical_left_wrap (h0 : u 0 = -1) (f : Fin (k + 1) → Fin N)
     (hmem : ∀ a, f a ∈ s) (hf0 : ((f 0).val : ℤ) = N - 1)
     (hfs : ∀ a : Fin k, ((f a.succ).val : ℤ) = u a.succ)
     (hbound : ∀ a : Fin k, u a.succ < (N : ℤ) - 1) :
@@ -68,26 +64,24 @@ theorem sineLiftWeight_canonical_left_wrap {k : ℕ} (hN : 0 < N)
   have hgm : StrictMono g := by
     apply strictMono_snoc
     · intro a b hab
-      have hab' : a.succ < b.succ := by change a.val + 1 < b.val + 1; omega
+      have hab' : a.succ < b.succ := by simp_all
       have hh := hu hab'
-      rw [← hfs a, ← hfs b] at hh
-      exact_mod_cast hh
+      grind
     · intro a
       have hh := hbound a
       rw [← hf0, ← hfs a] at hh
-      exact_mod_cast hh
+      omega
   have hgmemb : ∀ a, g a ∈ s := by
     intro a
     cases a using Fin.lastCases with
-    | last => simpa only [g, Fin.snoc_last] using hmem 0
-    | cast a => simpa only [g, Fin.snoc_castSucc] using hmem a.succ
-  have he := Finset.orderEmbOfFin_unique hs hgmemb hgm
+    | last => aesop
+    | cast a => aesop
   let P : ℤ := N + (k + 1)
-  let t : Fin (k + 1) → ℤ := fun a => u a + a.val
+  let t := fun a => u a + a.val
   have hcoord : orderedSiteLift s hs = fun a => cyclicLiftLeft P t a + (-1) := by
     funext a
     unfold orderedSiteLift
-    rw [← congrFun he a]
+    rw [← congrFun (Finset.orderEmbOfFin_unique hs hgmemb hgm) a]
     cases a using Fin.lastCases with
     | cast a =>
       simp only [g, Fin.snoc_castSucc, cyclicLiftLeft, Fin.snoc_castSucc,
@@ -98,15 +92,12 @@ theorem sineLiftWeight_canonical_left_wrap {k : ℕ} (hN : 0 < N)
         Fin.val_zero, Fin.val_last, Nat.cast_zero, P]
       ring
   rw [hcoord, sineLiftWeight_translate]
-  have hp : P ≠ 0 := by dsimp [P]; omega
   simpa only [P, t, Int.cast_add, Int.cast_natCast, Int.cast_one, Nat.cast_add, Nat.cast_one] using
-    sineLiftWeight_cyclicLiftLeft P hp t
+    sineLiftWeight_cyclicLiftLeft P (by omega) t
 
 /-- A right seam crossing puts the old last endpoint first. Applying the left
 cyclic cut to the canonical lift differs from the original lift by translation one. -/
-theorem sineLiftWeight_canonical_right_wrap {k : ℕ} (hN : 0 < N)
-    (s : Finset (Fin N)) (hs : s.card = k + 1) (u : Fin (k + 1) → ℤ)
-    (hu : StrictMono u) (hlast : u (Fin.last k) = N) (f : Fin (k + 1) → Fin N)
+theorem sineLiftWeight_canonical_right_wrap (hlast : u (Fin.last k) = N) (f : Fin (k + 1) → Fin N)
     (hmem : ∀ a, f a ∈ s) (hflast : ((f (Fin.last k)).val : ℤ) = 0)
     (hfs : ∀ a : Fin k, ((f a.castSucc).val : ℤ) = u a.castSucc)
     (hbound : ∀ a : Fin k, 0 < u a.castSucc) :
@@ -116,23 +107,19 @@ theorem sineLiftWeight_canonical_right_wrap {k : ℕ} (hN : 0 < N)
   have hgm : StrictMono g := by
     apply Fin.strictMono_cons.mpr
     constructor
-    · intro a
-      have hh := hbound a
-      rw [← hfs a, ← hflast] at hh
-      exact_mod_cast hh
+    · grind
     · intro a b hab
       have hab' : a.castSucc < b.castSucc := hab
       have hh := hu hab'
-      rw [← hfs a, ← hfs b] at hh
-      exact_mod_cast hh
+      grind
   have hgmemb : ∀ a, g a ∈ s := by
     intro a
     cases a using Fin.cases with
-    | zero => exact hmem (Fin.last k)
-    | succ a => exact hmem a.castSucc
+    | zero => tauto
+    | succ a => tauto
   have he := Finset.orderEmbOfFin_unique hs hgmemb hgm
   let P : ℤ := N + (k + 1)
-  let t : Fin (k + 1) → ℤ := fun a => u a + a.val
+  let t := fun a => u a + a.val
   have hcoord : cyclicLiftLeft P (orderedSiteLift s hs) = fun a => t a + 1 := by
     funext a
     cases a using Fin.lastCases with
@@ -148,9 +135,9 @@ theorem sineLiftWeight_canonical_right_wrap {k : ℕ} (hN : 0 < N)
       simp only [g, Fin.cons_zero, hflast, t, hlast, Fin.val_zero, Fin.val_last,
         Nat.cast_zero, P]
       ring
-  have hp : P ≠ 0 := by dsimp [P]; omega
-  have hc := sineLiftWeight_cyclicLiftLeft P hp (orderedSiteLift s hs)
+  have hc := sineLiftWeight_cyclicLiftLeft P (by omega) (orderedSiteLift s hs)
   rw [hcoord, sineLiftWeight_translate] at hc
-  simpa only [P, t, Int.cast_add, Int.cast_natCast, Int.cast_one, Nat.cast_add, Nat.cast_one] using hc.symm
+  aesop
+end
 
 end PottsDiscontinuity.SixVertex

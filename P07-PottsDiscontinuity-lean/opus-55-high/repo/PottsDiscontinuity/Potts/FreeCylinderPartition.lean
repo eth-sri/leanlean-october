@@ -6,7 +6,7 @@ public import PottsDiscontinuity.Potts.FreeBoundary
 
 /-! The exact finite free Potts cylinder is a function of the observed FK partition. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Potts
 
@@ -21,9 +21,6 @@ local instance cylinderEdgeDecidableEq (V : Finset (ℤ × ℤ)) :
     DecidableEq (squareLattice.induce (V : Set (ℤ × ℤ))).edgeSet := fun _ _ => Classical.propDecidable _
 local instance cylinderEdgeFintype (V : Finset (ℤ × ℤ)) :
     Fintype (squareLattice.induce (V : Set (ℤ × ℤ))).edgeSet := Fintype.ofFinite _
-local instance freeCylinderDiscrete {V : Type*} (G : SimpleGraph V) :
-    DiscreteMeasurableSpace (FK.Configuration G) := ⟨fun _ => trivial⟩
-
 variable {A : Type*} [Fintype A]
 
 theorem potts_free_cylinder_eq_partitionExpectation
@@ -37,10 +34,7 @@ theorem potts_free_cylinder_eq_partitionExpectation
     rcProb (box n) (fkParameters q hq β hβ).toP (fkParameters q hq β hβ).toQ 0 ω *
       clusterCylinderProbability (rcOpenGraph (box n) ω).reachableSetoid (fun a => ⟨v a, hv a⟩) ξ
   · apply Eq.trans _ (pottsProb_free_cylinder q hq (box n) β hβ (fun a => ⟨v a, hv a⟩) ξ)
-    apply Finset.sum_congr
-    · ext σ; simp
-    · intro σ _
-      split_ifs <;> rfl
+    ring
   symm
   change partitionExpectation (((FK.law _ (fkParameters q hq β hβ)
     (FK.frozenBoundaryCondition (box n) 0)).map (closedExtension (box n))).toMeasure)
@@ -48,12 +42,12 @@ theorem potts_free_cylinder_eq_partitionExpectation
   rw [partitionExpectation_map _ _ measurable_from_top _ _ (by
     intro a b
     have he : {ω | observedFreePartition v n ω a b} = freeDataEvent n {(v a, v b)} := by
-      ext ω; simp [freeDataEvent]; rfl
+      simp [freeDataEvent]; rfl
     rw [he]
     exact (freeDataEvent_isClopen _ _).isOpen.measurableSet), partitionExpectation_pmf]
   rw [← (FK.boolConfigurationEquiv (squareLattice.induce (box n : Set (ℤ × ℤ)))).sum_comp]
   apply Finset.sum_congr
-  · ext ω; simp
+  · rfl
   · intro ω _
     rw [FK.law_apply, ENNReal.toReal_ofReal (FK.configurationProbability_pos _ _ _ _).le,
       FK.configurationProbability_eq_rcProb]
@@ -67,8 +61,7 @@ theorem potts_free_cylinder_eq_partitionExpectation
       rw [localFreeGraph_reachable_inside n _ ⟨v a, hv a⟩ ⟨v b, hv b⟩,
         boxObservation_closedExtension_self, FK.rcOpenGraph_eq]
       rfl
-    simp only [Function.comp_def, hR]
-    rw [← clusterCylinderProbability_factor]
+    aesop
 
 end
 end PottsDiscontinuity.Potts

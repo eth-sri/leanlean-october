@@ -34,37 +34,27 @@ theorem isPiSystem_allOpenCylinders : IsPiSystem allOpenCylinders := by
   ext ω
   change (∀ e ∈ F ∪ G, ω e = true) ↔ (∀ e ∈ F, ω e = true) ∧
     (∀ e ∈ G, ω e = true)
-  simp only [Finset.mem_union]
-  constructor
-  · intro h
-    exact ⟨fun e he => h e (Or.inl he), fun e he => h e (Or.inr he)⟩
-  · rintro ⟨hF, hG⟩ e (he | he)
-    · exact hF e he
-    · exact hG e he
+  grind
 
 /-- Finite all-open cylinders generate the natural product σ-algebra. -/
 theorem generateFrom_allOpenCylinders :
     MeasurableSpace.generateFrom allOpenCylinders =
       (MeasurableSpace.pi : MeasurableSpace (squareLattice.edgeSet → Bool)) := by
-  classical
   apply le_antisymm
   · refine MeasurableSpace.generateFrom_le fun s hs => ?_
     rcases hs with ⟨F, rfl⟩
     induction F using Finset.induction_on with
-    | empty => simp [allOpen]
+    | empty => simp
     | @insert e F he ih =>
-      rw [allOpen_insert]
+      simp
       exact (measurable_pi_apply e (measurableSet_singleton true)).inter ih
-  · rw [MeasurableSpace.pi]
-    refine iSup_le fun e => ?_
-    change MeasurableSpace.comap (fun ω : LatticeConfiguration => ω e)
-      (inferInstance : MeasurableSpace Bool) ≤ MeasurableSpace.generateFrom allOpenCylinders
-    let cylinderDeterminationGeneratedMeasurableSpace : MeasurableSpace LatticeConfiguration :=
+  · refine iSup_le fun e => ?_
+    let cylinderDeterminationGeneratedMeasurableSpace :=
       MeasurableSpace.generateFrom allOpenCylinders
     have hf : Measurable (fun ω : LatticeConfiguration => ω e) :=
       measurable_to_bool (by
         apply MeasurableSpace.measurableSet_generateFrom
-        exact ⟨{e}, by ext ω; simp [allOpen]⟩)
+        exact ⟨{e}, by grind [allOpen]⟩)
     exact hf.comap_le
 
 /-- Probability measures on the whole-lattice edge-state space are determined
@@ -73,17 +63,14 @@ theorem probabilityMeasure_eq_of_allOpen {μ ν : ProbabilityMeasure LatticeConf
     (h : ∀ F : Finset squareLattice.edgeSet,
       μ (allOpen F) = ν (allOpen F)) : μ = ν := by
   apply Subtype.ext
-  let cylinderDeterminationProbabilityInstance :
-    IsProbabilityMeasure (μ : Measure LatticeConfiguration) := μ.property
-  have hfin : IsFiniteMeasure (μ : Measure LatticeConfiguration) := inferInstance
   exact @ext_of_generate_finite LatticeConfiguration (MeasurableSpace.pi)
     (μ : Measure LatticeConfiguration) (ν : Measure LatticeConfiguration)
-    allOpenCylinders generateFrom_allOpenCylinders.symm isPiSystem_allOpenCylinders hfin
+    allOpenCylinders generateFrom_allOpenCylinders.symm isPiSystem_allOpenCylinders inferInstance
     (fun s hs => by
       rcases hs with ⟨F, rfl⟩
       rw [← ProbabilityMeasure.ennreal_coeFn_eq_coeFn_toMeasure μ,
         ← ProbabilityMeasure.ennreal_coeFn_eq_coeFn_toMeasure ν]
-      exact_mod_cast h F) (by simp)
+      simp_all) (by simp)
 end LatticeConfiguration
 end
 end PottsDiscontinuity.FK

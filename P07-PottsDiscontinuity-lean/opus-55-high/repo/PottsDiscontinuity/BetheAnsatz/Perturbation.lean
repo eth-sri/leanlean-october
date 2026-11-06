@@ -15,21 +15,23 @@ open Finset Complex Filter Topology
 
 namespace PottsDiscontinuity.BetheAnsatz
 
+section
+variable {n : ℕ} (p : Fin (n + 1) → ℝ)
 /-- Replace one momentum while retaining the original parameter tuple elsewhere. -/
-noncomputable def perturbedMomenta {n : ℕ} (p : Fin (n + 1) → ℝ)
-    (l : Fin (n + 1)) (t : ℝ) : Fin (n + 1) → ℝ := Function.update p l (p l + t)
+noncomputable def perturbedMomenta (l : Fin (n + 1)) (t : ℝ) : Fin (n + 1) → ℝ := Function.update p l (p l + t)
 
-@[simp] theorem perturbedMomenta_at {n : ℕ} (p : Fin (n + 1) → ℝ)
-    (l : Fin (n + 1)) (t : ℝ) : perturbedMomenta p l t l = p l + t := by
+@[simp] theorem perturbedMomenta_at (l : Fin (n + 1)) (t : ℝ) : perturbedMomenta p l t l = p l + t := by
   simp [perturbedMomenta]
 
-theorem perturbedMomenta_of_ne {n : ℕ} (p : Fin (n + 1) → ℝ)
-    (l k : Fin (n + 1)) (t : ℝ) (hkl : k ≠ l) :
+theorem perturbedMomenta_of_ne (l k : Fin (n + 1)) (t : ℝ) (hkl : k ≠ l) :
     perturbedMomenta p l t k = p k := by
-  simp [perturbedMomenta, hkl]
+  simp_all [perturbedMomenta]
+end
 
+section
+variable {N n : ℕ}
 /-- One perturbed cyclic gap sum is continuous in the moved momentum. -/
-theorem continuous_cyclicGapSum_perturbed {N n : ℕ} (c : ℝ)
+theorem continuous_cyclicGapSum_perturbed (c : ℝ)
     (x : Fin (n + 1) → ℤ) (p : Fin (n + 1) → ℝ) (l : Fin (n + 1))
     (σ : Equiv.Perm (Fin (n + 1))) :
     Continuous (fun t : ℝ => cyclicGapSum c N x (perturbedMomenta p l t) σ) := by
@@ -37,7 +39,7 @@ theorem continuous_cyclicGapSum_perturbed {N n : ℕ} (c : ℝ)
   fun_prop
 
 /-- The finite amplitude-weighted sum is continuous with Aσ fixed at the original p. -/
-theorem tendsto_fixedAmplitude_gapSum {N n : ℕ} (c Δ : ℝ)
+theorem tendsto_fixedAmplitude_gapSum (c Δ : ℝ)
     (x : Fin (n + 1) → ℤ) (p : Fin (n + 1) → ℝ) (l : Fin (n + 1)) :
     Tendsto (fun t : ℝ =>
       ∑ σ : Equiv.Perm (Fin (n + 1)),
@@ -50,12 +52,9 @@ theorem tendsto_fixedAmplitude_gapSum {N n : ℕ} (c Δ : ℝ)
     intro σ _
     exact continuous_const.mul (continuous_cyclicGapSum_perturbed c x p l σ)
   have hzero : perturbedMomenta p l 0 = p := by
-    funext k
-    by_cases hk : k = l
-    · subst k
-      simp [perturbedMomenta]
-    · simp [perturbedMomenta, hk]
+    simp [perturbedMomenta]
   convert hcont.continuousAt.tendsto using 1
-  rw [hzero]
+  simp_all
+end
 
 end PottsDiscontinuity.BetheAnsatz

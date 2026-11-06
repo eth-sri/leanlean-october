@@ -4,7 +4,7 @@ public import Mathlib.Probability.UniformOn
 public import PottsDiscontinuity.PottsThm.ColoringErgodicity
 public import PottsDiscontinuity.RCInfinite.Mixing
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.PottsThm
 
@@ -25,25 +25,20 @@ theorem clusterColoring_map_ergodic_of_RCmixing {C : Type*} [MeasurableSpace C]
     IsTranslationErgodic
       ((φ.prod (iidFieldMeasure (ProbabilityTheory.uniformOn (Set.univ : Set C)))).map
         (clusterColoring c₀)) := by
-  let ν : Measure C := ProbabilityTheory.uniformOn (Set.univ : Set C)
-  have : IsProbabilityMeasure ν := by
-    dsimp [ν]
-    infer_instance
+  let ν := ProbabilityTheory.uniformOn (Set.univ : Set C)
   have : IsProbabilityMeasure (iidFieldMeasure (I := Vertex) ν) := by
     change IsProbabilityMeasure (Measure.infinitePi (fun _ : Vertex => ν))
     infer_instance
-  have hcolorPres (a : Vertex) :
-      MeasurePreserving (iidFieldShift (latticeShiftEquiv a))
-        (iidFieldMeasure ν) (iidFieldMeasure ν) :=
+  have hcolorPres (a : Vertex) :=
     iidFieldShift_measurePreserving ν (latticeShiftEquiv a)
   have hcolorMix (A B : Set (Vertex → C)) (hA : MeasurableSet A) (hB : MeasurableSet B) :
       Tendsto (fun a : Vertex => (iidFieldMeasure ν).real
         (A ∩ iidFieldShift (latticeShiftEquiv a) ⁻¹' B)) cofinite
-        (𝓝 ((iidFieldMeasure ν).real A * (iidFieldMeasure ν).real B)) := by
-    exact iidField_mixing_of_finite_separation ν c₀ latticeShiftEquiv
+        (𝓝 ((iidFieldMeasure ν).real A * (iidFieldMeasure ν).real B)) :=
+    iidField_mixing_of_finite_separation ν c₀ latticeShiftEquiv
       eventually_latticeShift_disjoint hA hB
   have hRCmix := isRCInfiniteVolumeLimit_interior_edge_mixing θ i φ hφ
-  let : IsProbabilityMeasure φ := hφ.1
+  let  := hφ.1
   exact mixingProduct_factor_translationErgodic
     (fun a ω => edgeTranslate a ω)
     (fun a u => iidFieldShift (latticeShiftEquiv a) u)

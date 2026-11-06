@@ -6,7 +6,7 @@ public import Mathlib.Topology.Homotopy.Path
 public import PottsDiscontinuity.Duality.Discontinuity
 public import PottsDiscontinuity.PottsThm.CriticalParameters
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 
@@ -31,14 +31,12 @@ theorem free_no_infinite_clusters (θ : FK.Parameters)
     have hpre : (RCInfinite.edgeTranslate x) ⁻¹' RCInfinite.infiniteAt x =
         RCInfinite.infiniteAt 0 := by
       simpa [latticeTranslate] using (RCInfinite.infiniteAt_preimage x 0)
-    rw [hpre] at htrans
-    simpa [Duality.infiniteClusterAt_eq_infiniteAt] using htrans.symm.trans hzero
+    simp_all
+    simpa using htrans.symm.trans hzero
   have hunion : μ RCInfinite.infiniteClusterEvent = 0 := by
     rw [RCInfinite.infiniteClusterEvent_eq_iUnion]
-    apply measure_iUnion_null
-    intro x
-    exact hsite x
-  simpa [Duality.existsInfiniteCluster_eq_infiniteClusterEvent] using hunion
+    simp_all
+  tauto
 
 /-- The positive RC rate premise gives the free no-infinite-cluster and wired
 positive-origin conclusions at the exact Potts critical parameters. -/
@@ -61,25 +59,13 @@ theorem rc_discontinuity_of_positive_rate (q : ℕ) (hq : 4 < q)
   have hparams := fkCritical_toP_toQ q hq
   have hφ₀' : IsRCInfiniteVolumeLimit (FK.criticalParameters qR).toP
       (FK.criticalParameters qR).toQ 0 φ₀.toMeasure := by
-    have hh := hφ₀
-    rw [(fkCritical_toP_toQ q hq).1, (fkCritical_toP_toQ q hq).2] at hh
-    simpa [qR] using hh
+    grind
   have hφ₁' : IsRCInfiniteVolumeLimit (FK.criticalParameters qR).toP
       (FK.criticalParameters qR).toQ 1 φ₁.toMeasure := by
-    have hh := hφ₁
-    rw [(fkCritical_toP_toQ q hq).1, (fkCritical_toP_toQ q hq).2] at hh
-    simpa [qR] using hh
+    grind
   have hrate' : Tendsto (fun n : ℕ => -(1 / (n : ℝ)) * Real.log
       (Duality.twoPoint φ₀.toMeasure (diagonalSite n))) atTop (𝓝 L) := by
-    apply hrate.congr'
-    filter_upwards with n
-    have hevent : Duality.connectionEvent (0, 0) (diagonalSite n) =
-        {ω | (rcInfiniteOpenGraph ω).Reachable (0, 0) (diagonalSite n)} := by
-      ext ω
-      simp [Duality.connectionEvent, Duality.cluster]
-    simp only [Duality.twoPoint, Measure.real_def]
-    rw [← hevent]
-    rfl
+    tauto
   exact ⟨
     (Duality.critical_discontinuity_of_pos_diagonal_rate qR φ₀.toMeasure φ₁.toMeasure
       hφ₀' hφ₁' L hL hrate').1,

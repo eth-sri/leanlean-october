@@ -27,65 +27,61 @@ def boolConfigurationEquiv : (G.edgeSet → Bool) ≃ Configuration G := by
     { toFun := fun ω => Finset.univ.filter (fun e => ω e = true)
       invFun := fun A e => decide (e ∈ A)
       left_inv := by
-        intro ω
-        funext e
-        simp only [Finset.mem_filter, Finset.mem_univ, true_and]
-        cases ω e <;> rfl
+        grind
       right_inv := by
-        intro A
-        ext e
-        simp }
+        grind }
 
-@[simp] theorem mem_boolConfigurationEquiv (ω : G.edgeSet → Bool) (e : G.edgeSet) :
+section
+variable (ω : G.edgeSet → Bool)
+@[simp] theorem mem_boolConfigurationEquiv (e : G.edgeSet) :
     e ∈ boolConfigurationEquiv G ω ↔ ω e = true := by
-  classical
   simp [boolConfigurationEquiv]
 
-@[simp] theorem card_boolConfigurationEquiv (ω : G.edgeSet → Bool) :
+@[simp] theorem card_boolConfigurationEquiv  :
     (boolConfigurationEquiv G ω).card = Nat.card {e // ω e = true} := by
-  classical
   rw [Nat.card_eq_fintype_card, Fintype.card_subtype]
   rfl
 
-theorem closed_card_boolConfigurationEquiv (ω : G.edgeSet → Bool) :
+theorem closed_card_boolConfigurationEquiv  :
     Nat.card {e // ω e = false} =
       Nat.card G.edgeSet - (boolConfigurationEquiv G ω).card := by
-  classical
   rw [card_boolConfigurationEquiv]
   simp only [Bool.eq_false_iff, Nat.card_eq_fintype_card, Fintype.card_subtype_compl]
 
-theorem openEdges_boolConfigurationEquiv (ω : G.edgeSet → Bool) :
+theorem openEdges_boolConfigurationEquiv  :
     openEdges G (boolConfigurationEquiv G ω) =
       {e | ∃ h : e ∈ G.edgeSet, ω ⟨e, h⟩ = true} := by
   ext e
   constructor
   · rintro ⟨f, hf, rfl⟩
-    exact ⟨f.property, (mem_boolConfigurationEquiv G ω f).mp hf⟩
+    simp_all
   · rintro ⟨h, hω⟩
     exact ⟨⟨e, h⟩, (mem_boolConfigurationEquiv G ω ⟨e, h⟩).mpr hω, rfl⟩
 
-theorem openGraph_boolConfigurationEquiv (ω : G.edgeSet → Bool) :
+theorem openGraph_boolConfigurationEquiv  :
     openGraph G (boolConfigurationEquiv G ω) =
       SimpleGraph.fromEdgeSet {e | ∃ h : e ∈ G.edgeSet, ω ⟨e, h⟩ = true} := by
   rw [openGraph, openEdges_boolConfigurationEquiv]
+end
 
+section
+variable (S : Finset (ℤ × ℤ))
 /-- The two configuration carriers give exactly the same frozen open graph. -/
-theorem rcOpenGraph_eq (S : Finset (ℤ × ℤ))
-    (ω : (PottsDiscontinuity.squareLattice.induce
+theorem rcOpenGraph_eq (ω : (PottsDiscontinuity.squareLattice.induce
       (S : Set (ℤ × ℤ))).edgeSet → Bool) :
     openGraph _ (boolConfigurationEquiv _ ω) = rcOpenGraph S ω :=
   openGraph_boolConfigurationEquiv _ ω
 
 /-- Free wiring counts precisely the frozen connected components, including
 isolated vertices. -/
-theorem componentCount_free_eq_rcFreeClusterCount (S : Finset (ℤ × ℤ))
-    (B : Set (S : Set (ℤ × ℤ)))
+theorem componentCount_free_eq_rcFreeClusterCount (B : Set (S : Set (ℤ × ℤ)))
     (ω : (PottsDiscontinuity.squareLattice.induce
       (S : Set (ℤ × ℤ))).edgeSet → Bool) :
     componentCount _ (BoundaryCondition.free B) (boolConfigurationEquiv _ ω) =
       rcFreeClusterCount S ω := by
   rw [componentCount, componentSetoid_free, rcOpenGraph_eq]
   rfl
+end
 
 end
 

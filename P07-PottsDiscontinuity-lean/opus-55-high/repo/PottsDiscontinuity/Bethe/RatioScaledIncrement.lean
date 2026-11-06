@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.RatioProfile
 
 /-! # Moving pairs of roots and scaled logarithmic increments -/
 
-@[expose] public section
+public section
 
 open Set Filter Asymptotics
 open scoped Topology
@@ -22,16 +22,13 @@ theorem ratio_scaled_increment_tendsto {ι : Type*} {l : Filter ι}
       (fun i => u i - v i) := by
     have h := (hasStrictDerivAt_iff_hasStrictFDerivAt.mp hf).isLittleO.comp_tendsto
       (hu.prodMk_nhds hv)
-    simpa only [Function.comp_def, ContinuousLinearMap.toSpanSingleton_apply, smul_eq_mul] using h
+    tauto
   have hmul := (isBigO_refl a l).smul_isLittleO hrem
   have hz : Tendsto (fun i => a i * (f (u i) - f (v i) - (u i - v i) * f')) l (𝓝 0) := by
     apply hmul.tendsto_zero_of_tendsto
-    simpa only [Pi.smul_apply, smul_eq_mul] using hd
+    simpa using hd
   have ht := hz.add (hd.const_mul f')
-  rw [zero_add] at ht
-  apply ht.congr
-  intro i
-  ring
+  grind
 
 theorem ratio_hasStrictDerivAt_ell {c x : ℝ} (hc : 2 < c)
     (hx : x ∈ Ioo (-Real.pi) Real.pi) (hx0 : x ≠ 0) :

@@ -20,53 +20,42 @@ def zeroRootZipperPerm {n : ℕ} : List (Fin (n + 1)) → Equiv.Perm (Fin (n + 1
   | [_] => 1
   | a :: b :: rest => Equiv.swap a b * zeroRootZipperPerm (b :: rest)
 
-theorem zeroRootZipperRun_perm {n : ℕ}
-    (path : List (Fin (n + 1))) (σ : Equiv.Perm (Fin (n + 1)))
+section
+variable {n : ℕ} (path : List (Fin (n + 1)))
+theorem zeroRootZipperRun_perm (σ : Equiv.Perm (Fin (n + 1)))
     (w : Fin (n + 1) → Bool) :
     (zeroRootZipperRun path (σ, w)).1 = σ * zeroRootZipperPerm path := by
   induction path generalizing σ w with
-  | nil => simp [zeroRootZipperPerm, zeroRootZipperRun]
+  | nil => rfl
   | cons a tail ih =>
       cases tail with
-      | nil => simp [zeroRootZipperPerm, zeroRootZipperRun]
+      | nil => rfl
       | cons b rest =>
-          simp only [zeroRootZipperRun]
-          rw [ih]
-          simp only [zeroRootZipperPerm]
-          group
+          tauto
 
-theorem zeroRootZipperPerm_apply_of_not_mem {n : ℕ}
-    (path : List (Fin (n + 1))) (k : Fin (n + 1))
+theorem zeroRootZipperPerm_apply_of_not_mem (k : Fin (n + 1))
     (hk : k ∉ path) : zeroRootZipperPerm path k = k := by
   induction path with
-  | nil => simp [zeroRootZipperPerm]
+  | nil => rfl
   | cons a tail ih =>
       cases tail with
-      | nil => simp [zeroRootZipperPerm]
+      | nil => rfl
       | cons b rest =>
-          have hka : k ≠ a := by
-            intro heq
-            exact hk (List.mem_cons.mpr (Or.inl heq))
-          have hkb : k ≠ b := by
-            intro heq
-            exact hk (List.mem_cons.mpr (Or.inr (List.mem_cons.mpr (Or.inl heq))))
           have htail : k ∉ b :: rest := by
-            intro hmem
-            exact hk (List.mem_cons.mpr (Or.inr hmem))
+            simp_all
           rw [zeroRootZipperPerm, Equiv.Perm.mul_apply, ih htail]
-          exact Equiv.swap_apply_of_ne_of_ne hka hkb
+          grind
 
-theorem zeroRootZipperPerm_getLast_eq_headD {n : ℕ}
-    (path : List (Fin (n + 1))) (hne : path ≠ []) :
+theorem zeroRootZipperPerm_getLast_eq_headD (hne : path ≠ []) :
     zeroRootZipperPerm path (path.getLast hne) = path.headD 0 := by
-  have hroot : (1 : Equiv.Perm (Fin (n + 1))) (path.headD 0) = path.headD 0 := rfl
-  have h := zeroRootZipperRun_root_at_last (l := path.headD 0)
-    path 1 (fun _ => false) hne hroot
-  rw [zeroRootZipperRun_perm] at h
-  simpa [zeroRootZipperPerm] using h
+  have h := zeroRootZipperRun_root_at_last
+    path 1 (fun _ => false) hne rfl
+  simp_all [zeroRootZipperRun_perm]
+end
 
-theorem t1PairZipperPath_left_not_mem {n : ℕ} {l : Fin (n + 1)}
-    (i : T1PairIndex n l) : t1EdgeLeft i.edge ∉ t1PairZipperPath i := by
+section
+variable {n : ℕ} {l : Fin (n + 1)} (i : T1PairIndex n l)
+theorem t1PairZipperPath_left_not_mem  : t1EdgeLeft i.edge ∉ t1PairZipperPath i := by
   intro hmem
   have htrue := t1PairZipperPath_letters i (t1EdgeLeft i.edge) hmem
   rw [i.hleft] at htrue
@@ -74,12 +63,10 @@ theorem t1PairZipperPath_left_not_mem {n : ℕ} {l : Fin (n + 1)}
 
 /-- The run changes only the labels on its path. In particular, the original
 ML left endpoint keeps its momentum label. -/
-theorem t1PairZipperRun_left {n : ℕ} {l : Fin (n + 1)}
-    (i : T1PairIndex n l) :
+theorem t1PairZipperRun_left  :
     (zeroRootZipperRun (t1PairZipperPath i) (i.σ, i.w)).1
       (t1EdgeLeft i.edge) = i.σ (t1EdgeLeft i.edge) := by
-  rw [zeroRootZipperRun_perm]
-  rw [Equiv.Perm.mul_apply,
-    zeroRootZipperPerm_apply_of_not_mem _ _ (t1PairZipperPath_left_not_mem i)]
+  simp [zeroRootZipperRun_perm, zeroRootZipperPerm_apply_of_not_mem, t1PairZipperPath_left_not_mem]
+end
 
 end PottsDiscontinuity.BetheAnsatz

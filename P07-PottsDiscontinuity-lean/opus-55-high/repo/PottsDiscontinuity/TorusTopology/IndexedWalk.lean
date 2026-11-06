@@ -42,40 +42,38 @@ def winding : {u v : FaceVertex N M true} → IndexedWalk hN hM A u v → ℤ
   | _,_,.forward e p => (if e.val.2.val=0 then -1 else 0) + winding p
   | _,_,.backward e p => -(if e.val.2.val=0 then -1 else 0) + winding p
 
+section
+variable (p : IndexedWalk hN hM A u v)
 /-- Every coordinate of the rational chain is an actual integer. -/
-theorem chain_integral (p : IndexedWalk hN hM A u v) (e : OpenDiamondEdge A) :
+theorem chain_integral (e : OpenDiamondEdge A) :
     ∃ z : ℤ, chain p e = z := by
   induction p with
-  | nil => exact ⟨0,rfl⟩
+  | nil => tauto
   | forward d p ih =>
     obtain ⟨z,hz⟩ := ih
     refine ⟨(if e=d then 1 else 0)+z,?_⟩
     simp only [chain,Pi.add_apply,Pi.single_apply,hz]
-    split_ifs <;> push_cast <;> rfl
+    simp
   | backward d p ih =>
     obtain ⟨z,hz⟩ := ih
     refine ⟨-(if e=d then 1 else 0)+z,?_⟩
     simp only [chain,Pi.add_apply,Pi.neg_apply,Pi.single_apply,hz]
-    split_ifs <;> push_cast <;> rfl
+    simp
 
 /-- Boundary telescopes to terminal vertex minus initial vertex. -/
-theorem boundary_chain (p : IndexedWalk hN hM A u v) :
+theorem boundary_chain  :
     diamondBoundary hN hM A (chain p) = Pi.single v 1 - Pi.single u 1 := by
   induction p with
   | nil => simp [chain]
   | forward e p ih =>
     rw [chain,map_add,diamondBoundary_single,ih]
-    ext w
-    simp only [Pi.add_apply,Pi.sub_apply]
-    ring
+    simp
   | backward e p ih =>
     rw [chain,map_add,map_neg,diamondBoundary_single,ih]
-    ext w
-    simp only [Pi.add_apply,Pi.sub_apply,Pi.neg_apply]
-    ring
+    simp
 
 /-- The rational seam functional is exactly the embedded integer walk winding. -/
-theorem winding_chain (p : IndexedWalk hN hM A u v) :
+theorem winding_chain  :
     diamondWindingY A (chain p) = (winding p : ℚ) := by
   induction p with
   | nil => simp [chain,winding,diamondWindingY]
@@ -97,30 +95,31 @@ theorem winding_chain (p : IndexedWalk hN hM A u v) :
     simp [Pi.single_apply,mul_ite,diamondSeamCrossY,winding]
 
 /-- Every nonzero chain coefficient belongs to the initial vertex's cluster. -/
-theorem chain_supported (p : IndexedWalk hN hM A u v) :
+theorem chain_supported  :
     ∀ e : OpenDiamondEdge A,
       diamondEdgeCluster hN hM A e ≠ (diamondOpenGraph hN hM true A).connectedComponentMk u →
         chain p e = 0 := by
   induction p with
-  | nil => intro e _; rfl
+  | nil => tauto
   | @forward e v p ih =>
     intro d hd
     have hcomp := SimpleGraph.ConnectedComponent.sound
       (diamond_endpoints_reachable hN hM A e.val e.property)
-    have hde : d ≠ e := by intro he; subst d; exact hd rfl
+    have hde : d ≠ e := by tauto
     have hdt : diamondEdgeCluster hN hM A d ≠
         (diamondOpenGraph hN hM true A).connectedComponentMk (faceEndpoint hN hM true e.val true) := by
-      rwa [← hcomp]
+      grind
     simp only [chain,Pi.add_apply,Pi.single_apply,hde,ite_false,zero_add,ih d hdt]
   | @backward e v p ih =>
     intro d hd
     have hcomp := SimpleGraph.ConnectedComponent.sound
       (diamond_endpoints_reachable hN hM A e.val e.property)
-    have hde : d ≠ e := by intro he; subst d; exact hd hcomp
+    have hde : d ≠ e := by intro he; subst d; tauto
     have hdf : diamondEdgeCluster hN hM A d ≠
         (diamondOpenGraph hN hM true A).connectedComponentMk (faceEndpoint hN hM true e.val false) := by
-      rwa [hcomp]
+      grind
     simp only [chain,Pi.add_apply,Pi.neg_apply,Pi.single_apply,hde,ite_false,neg_zero,zero_add,ih d hdf]
+end
 
 end
 end IndexedWalk
@@ -131,10 +130,9 @@ theorem exists_indexedWalk_of_reachable (hN : Even N) (hM : Even M) (A : RCConfi
     Nonempty (IndexedWalk hN hM A u v) := by
   obtain ⟨p⟩ := h
   induction p with
-  | nil => exact ⟨.nil _⟩
+  | nil => tauto
   | @cons u v w hadj p ih =>
     obtain ⟨p'⟩ := ih
-    rw [diamondOpenGraph,SimpleGraph.fromEdgeSet_adj] at hadj
     obtain ⟨⟨e,he,hep⟩,_⟩ := hadj
     rcases Sym2.eq_iff.1 hep with ⟨rfl,rfl⟩ | ⟨rfl,rfl⟩
     · exact ⟨.forward ⟨e,he⟩ p'⟩

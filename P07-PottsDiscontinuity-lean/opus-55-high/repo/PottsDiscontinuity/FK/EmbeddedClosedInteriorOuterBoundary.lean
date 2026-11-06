@@ -7,13 +7,13 @@ public import PottsDiscontinuity.FK.ComponentBoundarySupport
 public import PottsDiscontinuity.FK.IsolatedBoundaryComponents
 public import PottsDiscontinuity.FK.SubgraphComparison
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 
 noncomputable section
 
-private theorem removedEdge_endpoint_not_image_compl_general
+theorem removedEdge_endpoint_not_image_compl_general
     {V W : Type*} [Finite V] [Finite W]
     {G : SimpleGraph V} {H : SimpleGraph W} (f : V ↪ W)
     (_hGH : G.map f ≤ H) (B : Set V)
@@ -22,45 +22,24 @@ private theorem removedEdge_endpoint_not_image_compl_general
     (K : RemovedConfiguration H (subgraphRemovedEdges (G.map f) H)) :
     ∀ ⦃e : H.edgeSet⦄, e ∈ K.val → ∀ ⦃w : W⦄, w ∈ e.1 →
       w ∉ f '' Bᶜ := by
-  classical
   intro e he w hw himage
   rcases himage with ⟨x, hxB, hfx⟩
-  have hnot : e.1 ∉ (G.map f).edgeSet :=
+  have hnot :=
     (mem_subgraphRemovedEdges e).mp (K.property he)
   obtain ⟨⟨a, b⟩, hab⟩ := Sym2.mk_surjective e.1
-  have heval : e.1 = Sym2.mk a b := by simpa using hab.symm
+  have heval : e.1 = Sym2.mk a b := by simp_all
   have habAdj : H.Adj a b := by
     apply H.mem_edgeSet.mp
-    rw [← heval]
-    exact e.2
+    grind
   have hwAB : w = a ∨ w = b := by
-    rw [heval] at hw
-    exact (Sym2.mem_iff').mp hw
+    simp_all
   rcases hwAB with hwa | hwb
-  · have hxa : f x = a := hfx.trans hwa
-    obtain ⟨z, hzb, hxz⟩ := hclosed hxB (by simpa [hxa] using habAdj)
-    have hmapAdj : (G.map f).Adj (f x) (f z) :=
-      (SimpleGraph.map_adj _ _ _ _).mpr ⟨x, z, hxz, rfl, rfl⟩
+  · obtain ⟨z, hzb, hxz⟩ := hclosed hxB (by simpa [(hfx.trans hwa)] using habAdj)
+    aesop
+  · obtain ⟨z, hza, hxz⟩ := hclosed hxB (by simpa [(hfx.trans hwb)] using habAdj.symm)
     have he' : e.1 = Sym2.mk (f x) (f z) := by
-      calc
-        e.1 = Sym2.mk a b := heval
-        _ = Sym2.mk (f x) (f z) := by rw [← hxa, ← hzb]
-    apply hnot
-    rw [he']
-    exact (G.map f).mem_edgeSet.mpr hmapAdj
-  · have hxb : f x = b := hfx.trans hwb
-    obtain ⟨z, hza, hxz⟩ := hclosed hxB (by simpa [hxb] using habAdj.symm)
-    have hmapAdj : (G.map f).Adj (f x) (f z) :=
-      (SimpleGraph.map_adj _ _ _ _).mpr ⟨x, z, hxz, rfl, rfl⟩
-    have he' : e.1 = Sym2.mk (f x) (f z) := by
-      calc
-        e.1 = Sym2.mk a b := heval
-        _ = Sym2.mk (f x) (f z) := by
-          apply Sym2.eq_iff.mpr
-          exact Or.inr ⟨hza.symm, hxb.symm⟩
-    apply hnot
-    rw [he']
-    exact (G.map f).mem_edgeSet.mpr hmapAdj
+      grind
+    aesop
 
 /-- Frozen configurations in an exterior region pull back to a partition
 finer than the partition wiring `B`, for any outer boundary whose boundary
@@ -77,32 +56,21 @@ theorem isolatedExtensionPullback_frozenBoundary_partition_le_wired_of_closedInt
     (K : RemovedConfiguration H (subgraphRemovedEdges (G.map f) H)) :
     (isolatedExtensionPullbackBoundary f (frozenBoundary ξ K.val)).partition ≤
       (BoundaryCondition.wired B).partition := by
-  classical
-  let D : Set W := (f '' Bᶜ)ᶜ
-  have hcomp : componentSetoid H ξ K.val ≤
-      (BoundaryCondition.wired (ξ.boundary ∪ D)).partition :=
+  let D := (f '' Bᶜ)ᶜ
+  have hcomp :=
     componentSetoid_le_wired_union_of_edge_endpoints ξ D K.val (by
-      intro e he w hw
-      exact removedEdge_endpoint_not_image_compl_general f hGH B hclosed K he hw)
+      grind [removedEdge_endpoint_not_image_compl_general])
   intro x y hxy
   have houter : (componentSetoid H ξ K.val).r (f x) (f y) :=
-    (Setoid.comap_rel f (frozenBoundary ξ K.val).partition x y).mp hxy
-  have hbig : (BoundaryCondition.wired (ξ.boundary ∪ D)).partition.r
-      (f x) (f y) := hcomp houter
-  rcases (BoundaryCondition.wired_rel (ξ.boundary ∪ D) (f x) (f y)).mp hbig with
+    by tauto
+  rcases (BoundaryCondition.wired_rel (ξ.boundary ∪ D) (f x) (f y)).mp (hcomp houter) with
     heq | ⟨hx, hy⟩
-  · exact (BoundaryCondition.wired_rel B x y).mpr (Or.inl (f.injective heq))
+  · simp_all
   · have hxB : x ∈ B := by
-      by_contra hxB
-      rcases hx with hξ | hD
-      · exact False.elim (hξavoid hxB hξ)
-      · exact hD ⟨x, hxB, rfl⟩
+      grind
     have hyB : y ∈ B := by
-      by_contra hyB
-      rcases hy with hξ | hD
-      · exact False.elim (hξavoid hyB hξ)
-      · exact hD ⟨y, hyB, rfl⟩
-    exact (BoundaryCondition.wired_rel B x y).mpr (Or.inr ⟨hxB, hyB⟩)
+      grind
+    simp_all
 
 end
 end PottsDiscontinuity.FK

@@ -6,7 +6,7 @@ public import Mathlib.Topology.Homotopy.Path
 public import PottsDiscontinuity.Duality.DiagonalComparison
 public import PottsDiscontinuity.RCMProof.XiLower
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 
@@ -15,48 +15,51 @@ namespace PottsDiscontinuity.RCMProof
 open PottsDiscontinuity
 open FK Duality CorrLength
 
-def routeBRotatedBoundaryEvent (n : ℕ) : Set CorrLength.RotatedConfiguration :=
+section
+variable (n : ℕ)
+def routeBRotatedBoundaryEvent  : Set CorrLength.RotatedConfiguration :=
   ⋃ v : {v : CorrLength.RotatedVertex //
       max v.1.1.natAbs v.1.2.natAbs = n},
     CorrLength.rotatedConnectionEvent CorrLength.rotatedLatticeOrigin v.1
 
-def routeBSquareBoundaryEvent (n : ℕ) : Set FK.LatticeConfiguration :=
+def routeBSquareBoundaryEvent  : Set FK.LatticeConfiguration :=
   ⋃ v : {v : CorrLength.RotatedVertex //
       max v.1.1.natAbs v.1.2.natAbs = n},
     CorrLength.connectionEvent (0, 0) (CorrLength.rotatedVertexEquiv v.1)
+end
 
 def routeBSquareBoundaryTail (N : ℕ) : Set FK.LatticeConfiguration :=
   ⋃ k : {k : ℕ // N ≤ k}, routeBSquareBoundaryEvent k.1
 
-private theorem routeBSquareBoundaryEvent_measurable (n : ℕ) :
+section
+variable (n : ℕ)
+theorem routeBSquareBoundaryEvent_measurable  :
     MeasurableSet (routeBSquareBoundaryEvent n) := by
   apply MeasurableSet.iUnion
   intro v
   exact CorrLength.connectionEvent_isMeasurableSet _ _
 
-private theorem routeBSquareBoundaryTail_measurable (n : ℕ) :
+theorem routeBSquareBoundaryTail_measurable  :
     MeasurableSet (routeBSquareBoundaryTail n) := by
   apply MeasurableSet.iUnion
-  intro k
-  exact routeBSquareBoundaryEvent_measurable k.1
+  simp [routeBSquareBoundaryEvent_measurable]
+end
 
-private theorem routeBSquareBoundaryTail_antitone :
+theorem routeBSquareBoundaryTail_antitone :
     Antitone routeBSquareBoundaryTail := by
   intro m n hmn ω hω
   rcases Set.mem_iUnion.mp hω with ⟨k, hk⟩
   exact Set.mem_iUnion.mpr ⟨⟨k.1, hmn.trans k.2⟩, hk⟩
 
-private theorem routeBSquareBoundaryTail_inter_finiteCluster_empty
+theorem routeBSquareBoundaryTail_inter_finiteCluster_empty
     (ω : FK.LatticeConfiguration) (hfinite : (Duality.cluster ω (0, 0)).Finite) :
     ω ∉ ⋂ n, routeBSquareBoundaryTail n := by
-  classical
-  let S : Set ℕ := (fun x : ℤ × ℤ => max x.1.natAbs x.2.natAbs) ''
+  let S := (fun x : ℤ × ℤ => max x.1.natAbs x.2.natAbs) ''
     Duality.cluster ω (0, 0)
   have hSfinite : S.Finite := hfinite.image _
   obtain ⟨K, hK⟩ := hSfinite.bddAbove
   intro hω
-  have htail := Set.mem_iInter.mp hω (2 * K + 1)
-  rcases Set.mem_iUnion.mp htail with ⟨k, hk⟩
+  rcases Set.mem_iUnion.mp (Set.mem_iInter.mp hω (2 * K + 1)) with ⟨k, hk⟩
   rcases Set.mem_iUnion.mp hk with ⟨v, hv⟩
   let x := CorrLength.rotatedVertexEquiv v.1
   have hxconn : x ∈ Duality.cluster ω (0, 0) :=
@@ -65,35 +68,13 @@ private theorem routeBSquareBoundaryTail_inter_finiteCluster_empty
       (CorrLength.squareToRotated_rotatedToSquare v.1)
   have hfirst : v.1.1.1 = x.1 - x.2 := by
     have h := congrArg Prod.fst hcoords
-    simpa [x, CorrLength.rotatedVertexEquiv, CorrLength.rotatedToSquareVertex,
-      CorrLength.squareToRotatedVertex] using h.symm
+    tauto
   have hsecond : v.1.1.2 = x.1 + x.2 := by
     have h := congrArg Prod.snd hcoords
-    simpa [x, CorrLength.rotatedVertexEquiv, CorrLength.rotatedToSquareVertex,
-      CorrLength.squareToRotatedVertex] using h.symm
-  have hfirstBound : v.1.1.1.natAbs ≤ x.1.natAbs + x.2.natAbs := by
-    have hcast : (v.1.1.1.natAbs : ℤ) ≤
-        ((x.1.natAbs + x.2.natAbs : ℕ) : ℤ) := by
-      rw [Int.natCast_natAbs, Int.natCast_add,
-        Int.natCast_natAbs, Int.natCast_natAbs, hfirst]
-      simpa using abs_sub_le x.1 0 x.2
-    exact_mod_cast hcast
-  have hsecondBound : v.1.1.2.natAbs ≤ x.1.natAbs + x.2.natAbs := by
-    have hcast : (v.1.1.2.natAbs : ℤ) ≤
-        ((x.1.natAbs + x.2.natAbs : ℕ) : ℤ) := by
-      rw [Int.natCast_natAbs, Int.natCast_add,
-        Int.natCast_natAbs, Int.natCast_natAbs, hsecond]
-      simpa using abs_sub_le x.1 0 (-x.2)
-    exact_mod_cast hcast
-  have hshell : max v.1.1.1.natAbs v.1.1.2.natAbs = k.1 := by
-    exact v.2
-  have hknorm : k.1 ≤ x.1.natAbs + x.2.natAbs := by
-    rw [← hshell]
-    exact max_le hfirstBound hsecondBound
+    tauto
   have hxK : max x.1.natAbs x.2.natAbs ≤ K := by
     apply hK
-    exact ⟨x, hxconn, rfl⟩
-  have hkK : k.1 ≤ 2 * K := by omega
+    grind
   omega
 
 /-- A free rotated boundary connection tends to zero when the square-lattice
@@ -109,14 +90,13 @@ theorem rotatedBoundaryConnectionProbability_tendsto_zero_of_ae_finite_cluster
   have := hμ.1
   let ν : ProbabilityMeasure FK.LatticeConfiguration :=
     Classical.choose (FK.freeBoxLimit_existsUnique θ)
-  have hweak : Filter.Tendsto (fun n => FK.boxProbabilityMeasure θ (0, 0) n)
-      Filter.atTop (nhds ν) :=
+  have hweak :=
     (Classical.choose_spec (FK.freeBoxLimit_existsUnique θ)).1
       (fun _ => (0, 0)) (fun n => n)
       FK.origin_latticeBox_nested FK.origin_latticeBox_exhaustive
-  have hν : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 ν.toMeasure :=
+  have hν :=
     FK.isRCInfiniteVolumeLimit_of_freeBox_tendsto θ ν hweak
-  have hμν : μ = ν.toMeasure :=
+  have hμν :=
     PottsDiscontinuity.rc_limit_unique θ.toP θ.toQ 0 μ ν.toMeasure hμ hν
   let H := CorrLength.rotatedConfigurationHomeomorph
   have hrotMeas (n : ℕ) : MeasurableSet (routeBRotatedBoundaryEvent n) := by
@@ -151,26 +131,19 @@ theorem rotatedBoundaryConnectionProbability_tendsto_zero_of_ae_finite_cluster
         {ω | ¬ (Duality.cluster ω (0, 0)).Finite} := by
       intro ω hω hfiniteω
       exact routeBSquareBoundaryTail_inter_finiteCluster_empty ω hfiniteω hω
-    have hfiniteNull : μ {ω | ¬ (Duality.cluster ω (0, 0)).Finite} = 0 := by
-      rw [← MeasureTheory.ae_iff]
-      exact hfinite
+    have hfiniteNull :=
+      hfinite
     exact measure_mono_null hsubset hfiniteNull
   have hcontinuous := MeasureTheory.tendsto_measure_iInter_atTop
-    (μ := μ) (s := routeBSquareBoundaryTail)
+    (μ := μ)
     (fun n => (routeBSquareBoundaryTail_measurable n).nullMeasurableSet)
     routeBSquareBoundaryTail_antitone
     ⟨0, measure_ne_top μ _⟩
   have htailENN : Filter.Tendsto (fun n => μ (routeBSquareBoundaryTail n))
       Filter.atTop (nhds 0) := by
     simpa [Function.comp_def, hnull] using hcontinuous
-  have htailReal : Filter.Tendsto
-      (fun n => (μ (routeBSquareBoundaryTail n)).toReal)
-      Filter.atTop (nhds 0) := by
-    have h := (ENNReal.continuousAt_toReal (by simp)).tendsto.comp htailENN
-    change Filter.Tendsto
-      (ENNReal.toReal ∘ (fun n => μ (routeBSquareBoundaryTail n)))
-      Filter.atTop (nhds (ENNReal.toReal 0))
-    exact h
+  have htailReal :=
+    ((ENNReal.continuousAt_toReal (by simp)).tendsto.comp htailENN)
   have hprobSmall : Filter.Tendsto
       (fun n => μ.real (routeBSquareBoundaryEvent n))
       Filter.atTop (nhds 0) := by
@@ -190,8 +163,7 @@ theorem rotatedBoundaryConnectionProbability_tendsto_zero_of_ae_finite_cluster
       (fun n => μ.real (routeBSquareBoundaryEvent n)) := by
     funext n
     exact hprob n
-  rw [hseq]
-  exact hprobSmall
+  rwa [hseq]
 
 /-- Absence of percolation for the critical free measure, derived from the positive lower
 bound on the inverse correlation length, as the input of Lemma 3.14: (3.24) and Identity (4.4)
@@ -222,7 +194,6 @@ theorem routeB_free_nonpercolation_and_boundary_decay
     hW12i hW12ii hW21 q hh319 hq μ hμ ξinv hRate
   let lam := Real.arcosh (Real.sqrt q.val / 2)
   have hlam : 0 < lam := by
-    dsimp [lam]
     apply Real.arcosh_pos
     have hqpos : 0 < q.val := by linarith
     have hsquare := Real.sq_sqrt (le_of_lt hqpos)
@@ -231,13 +202,9 @@ theorem routeB_free_nonpercolation_and_boundary_decay
     linarith
   obtain ⟨S₀, T, hS₀, hT, hpositive, hidentity⟩ :=
     PottsDiscontinuity.identity44 lam hlam
-  have hS_eq : S = S₀ := tendsto_nhds_unique hS hS₀
-  have hRpositive : 0 < lam + 2 * S := by
-    rw [hS_eq]
-    exact hpositive
+  have hS_eq := tendsto_nhds_unique hS hS₀
   have hxiPositive : 0 < ξinv := by
-    have hxi' : lam + 2 * S ≤ ξinv := by simpa [lam] using hxi
-    exact lt_of_lt_of_le hRpositive hxi'
+    linarith
   have hRateDual : Filter.Tendsto (fun n : ℕ =>
       -(1 / (n : ℝ)) * Real.log
         (Duality.twoPoint μ (diagonalSite n))) Filter.atTop (nhds ξinv) := by
@@ -252,7 +219,6 @@ theorem routeB_free_nonpercolation_and_boundary_decay
     simp only [Duality.twoPoint]
     rw [show Duality.connectionEvent (0, 0) (diagonalSite n) =
       Duality.connectionEvent 0 (diagonalSite n) by rfl]
-    rw [div_eq_mul_inv]
     ring
   obtain ⟨C, c, hC, hc, hdecay⟩ :=
     Duality.free_exponential_decay_of_pos_diagonal_rate
@@ -263,14 +229,11 @@ theorem routeB_free_nonpercolation_and_boundary_decay
     intro x
     rw [← ENNReal.ofReal_toReal (measure_ne_top μ _)]
     apply ENNReal.ofReal_le_ofReal
-    change μ.real (Duality.connectionEvent 0 x) ≤ _
-    exact hdecay x
-  have hfinite : ∀ᵐ ω ∂μ, (Duality.cluster ω (0, 0)).Finite :=
+    tauto
+  have hfinite :=
     Duality.ae_finite_cluster_of_exponential_decay μ (0, 0) C c hc hclusterBound
   have hno : μ (Duality.infiniteClusterAt (0, 0)) = 0 :=
-    Duality.infiniteClusterAt_zero_of_exponential_decay μ C c hc hclusterBound
-  have hboundary := rotatedBoundaryConnectionProbability_tendsto_zero_of_ae_finite_cluster
-    (FK.criticalParameters q) μ hμ hfinite
-  exact ⟨S, hS, hxi, hno, hboundary⟩
+    by tauto
+  grind [rotatedBoundaryConnectionProbability_tendsto_zero_of_ae_finite_cluster, FK.criticalParameters]
 
 end PottsDiscontinuity.RCMProof

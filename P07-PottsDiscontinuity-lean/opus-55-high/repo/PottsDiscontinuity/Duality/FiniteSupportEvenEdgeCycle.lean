@@ -6,7 +6,7 @@ public import PottsDiscontinuity.Duality.FiniteEvenEdgeCycle
 public import Mathlib.Combinatorics.SimpleGraph.Finite
 public import Mathlib.Tactic
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 
@@ -20,16 +20,14 @@ theorem edge_mem_some_isCycle_of_even_degree_of_finite_edgeSet
     (heven : ∀ x : V, Even (G.neighborSet x).ncard)
     {u w : V} (huw : G.Adj u w) :
     ∃ (z : V) (p : G.Walk z z), p.IsCycle ∧ s(u,w) ∈ p.edges := by
-  classical
-  let U : Set V := {x | ∃ e ∈ G.edgeSet, x ∈ e.toFinset}
+  let U := {x | ∃ e ∈ G.edgeSet, x ∈ e.toFinset}
   have hUfinite : U.Finite := by
     rw [show U = ⋃ e ∈ G.edgeSet, (e.toFinset : Set V) by
-      ext x
-      simp [U]]
+      aesop]
     exact hfinite.biUnion fun e he => Finset.finite_toSet _
   let : Finite ↑U := hUfinite
-  let : Fintype U := Fintype.ofFinite U
-  let H : SimpleGraph U := G.induce U
+  let  := Fintype.ofFinite U
+  let H := G.induce U
   have hu : u ∈ U := by
     refine ⟨s(u,w), G.mem_edgeSet.mpr huw, ?_⟩
     simp
@@ -43,30 +41,24 @@ theorem edge_mem_some_isCycle_of_even_degree_of_finite_edgeSet
   have hevenH : ∀ x : U, Even (H.degree x) := by
     intro x
     have hnc : (H.neighborSet x).ncard = (G.neighborSet x.1).ncard := by
-      refine Set.ncard_congr (s := H.neighborSet x) (t := G.neighborSet x.1)
+      refine Set.ncard_congr
         (fun y hy => (y : V)) ?_ ?_ ?_
+      · tauto
+      · simp
       · intro y hy
-        exact (G.mem_neighborSet x.1 y.1).mpr ((H.mem_neighborSet x y).mp hy)
-      · intro y z hy hz heq
-        exact Subtype.ext heq
-      · intro y hy
-        have hyU : y ∈ U := hneighbors x.1 x.2 hy
-        exact ⟨⟨y,hyU⟩, (G.mem_neighborSet x.1 y).mpr hy, rfl⟩
-    rw [← H.ncard_neighborSet, hnc]
-    exact heven x.1
+        exact ⟨⟨y,(by grind)⟩, (G.mem_neighborSet x.1 y).mpr hy, rfl⟩
+    simp_all
   have hAdj : H.Adj ⟨u,hu⟩ ⟨w,hw⟩ := huw
   obtain ⟨z,q,hq,he⟩ := edge_mem_some_isCycle_of_even_degree H hevenH hAdj
-  let f : H →g G := { toFun := Subtype.val, map_rel' := by intro a b h; exact h }
+  let f : H →g G := { toFun := Subtype.val, map_rel' := by tauto }
   let p := q.map f
-  have hp : p.IsCycle := (q.isCycle_map_iff_of_injective Subtype.val_injective).mpr hq
   have he' : s(u,w) ∈ p.edges := by
     have hmap : p.edges = q.edges.map (Sym2.map f) := by
       change (q.map f).edges = q.edges.map (Sym2.map f)
-      rw [Walk.edges_map]
+      simp
     rw [hmap]
     exact List.mem_map.mpr ⟨s(⟨u,hu⟩,⟨w,hw⟩), he, by
-      change Sym2.map (fun a : U => (a : V)) (s(⟨u,hu⟩,⟨w,hw⟩)) = s(u,w)
-      simp⟩
-  exact ⟨f z, p, hp, he'⟩
+      rfl⟩
+  exact ⟨f z, p, ((q.isCycle_map_iff_of_injective Subtype.val_injective).mpr hq), he'⟩
 
 end PottsDiscontinuity.FK

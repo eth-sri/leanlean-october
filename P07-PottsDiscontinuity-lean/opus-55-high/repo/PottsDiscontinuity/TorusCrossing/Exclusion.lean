@@ -28,61 +28,62 @@ variable (R : Rect)
 def collarAll : Finset Cell :=
   collar R.y0 R.x0 (R.x0 + R.w) ∪ collar (R.y0 + R.h + 1) R.x0 (R.x0 + R.w)
 
+section
+variable (A : Finset Cell)
 /-- The relation "joined by a chain of open edges and collar zigzags", as a `ZMod 2` cochain. -/
-def cochainRel (A : Finset Cell) (x y : R.pcells) : Prop :=
+def cochainRel (x y : R.pcells) : Prop :=
   ∃ f : Cell → ZMod 2, (∀ m, f m ≠ 0 → m ∈ A ∨ m ∈ R.collarAll) ∧
     ∀ c, IsPrimal c → cdeg f c = (if c = x.1 then 1 else 0) + (if c = y.1 then 1 else 0)
 
-theorem cochainRel_refl (A : Finset Cell) (x : R.pcells) : R.cochainRel A x x := by
+theorem cochainRel_refl (x : R.pcells) : R.cochainRel A x x := by
   refine ⟨fun _ => 0, fun m hm => absurd rfl hm, fun c _ => ?_⟩
-  rw [cdeg_zero]
-  split_ifs <;> decide
+  aesop
 
-theorem cochainRel_symm (A : Finset Cell) {x y : R.pcells} (h : R.cochainRel A x y) :
+theorem cochainRel_symm {x y : R.pcells} (h : R.cochainRel A x y) :
     R.cochainRel A y x := by
   obtain ⟨f, hf, hdeg⟩ := h
-  exact ⟨f, hf, fun c hc => by rw [hdeg c hc, add_comm]⟩
+  exact ⟨f, hf, fun c hc => by grind⟩
 
-theorem cochainRel_trans (A : Finset Cell) {x y z : R.pcells} (h : R.cochainRel A x y)
+theorem cochainRel_trans {x y z : R.pcells} (h : R.cochainRel A x y)
     (h' : R.cochainRel A y z) : R.cochainRel A x z := by
   obtain ⟨f, hf, hdeg⟩ := h
   obtain ⟨g, hg, hdeg'⟩ := h'
   refine ⟨fun m => f m + g m, ?_, ?_⟩
-  · intro m hm
-    change f m + g m ≠ 0 at hm
-    by_cases h1 : f m = 0
-    · rw [h1, zero_add] at hm; exact hg m hm
-    · exact hf m h1
+  · grind
   · intro c hc
     rw [cdeg_add, hdeg c hc, hdeg' c hc]
-    generalize (if c = x.1 then (1 : ZMod 2) else 0) = a
-    generalize (if c = y.1 then (1 : ZMod 2) else 0) = b
-    generalize (if c = z.1 then (1 : ZMod 2) else 0) = d
-    revert a b d; decide
+    grind
 
 /-- The setoid of chain-connected primal cells. -/
-def cochainSetoid (A : Finset Cell) : Setoid R.pcells where
+def cochainSetoid  : Setoid R.pcells where
   r := R.cochainRel A
   iseqv := ⟨R.cochainRel_refl A, R.cochainRel_symm A, R.cochainRel_trans A⟩
+end
 
-theorem collar_bottom_subset (lo hi : ℤ) (h1 : R.x0 ≤ lo) (h2 : hi ≤ R.x0 + R.w) :
+section
+variable (lo hi : ℤ) (h1 : R.x0 ≤ lo) (h2 : hi ≤ R.x0 + R.w)
+include h1 h2
+theorem collar_bottom_subset  :
     collar R.y0 lo hi ⊆ R.collarAll := by
   intro m hm
   rw [mem_collar] at hm
   unfold collarAll
   rw [Finset.mem_union, mem_collar, mem_collar]
-  left; omega
+  omega
 
-theorem collar_top_subset (lo hi : ℤ) (h1 : R.x0 ≤ lo) (h2 : hi ≤ R.x0 + R.w) :
+theorem collar_top_subset  :
     collar (R.y0 + R.h + 1) lo hi ⊆ R.collarAll := by
   intro m hm
   rw [mem_collar] at hm
   unfold collarAll
   rw [Finset.mem_union, mem_collar, mem_collar]
-  right; omega
+  omega
+end
 
+section
+variable (A : Finset Cell)
 /-- A wiring relation between two cells of the same boundary row is a chain relation. -/
-theorem cochainRel_of_row (A : Finset Cell) (a b : R.pcells) (r r' : ℤ)
+theorem cochainRel_of_row (a b : R.pcells) (r r' : ℤ)
     (hr : r' = R.y0 ∧ r = R.y0 ∨ r' = R.y0 + R.h ∧ r = R.y0 + R.h + 1)
     (ha : a.1.2 = r') (hb : b.1.2 = r') : R.cochainRel A a b := by
   have hac := mem_cells.1 (mem_pcells.1 a.2).1
@@ -103,13 +104,11 @@ theorem cochainRel_of_row (A : Finset Cell) (a b : R.pcells) (r r' : ℤ)
         exact R.collar_top_subset _ _ hac.1 hbc.2.1 this
     · intro c hc
       have hlo : IsPrimal (a.1.1, r') := by
-        have := hap; unfold IsPrimal at *; rw [ha] at this; exact this
+        grind
       have hhi : IsPrimal (b.1.1, r') := by
-        have := hbp; unfold IsPrimal at *; rw [hb] at this; exact this
+        grind
       rw [cdeg_collar r a.1.1 b.1.1 hab r' hrr hlo hhi c hc]
-      have ea : (a.1.1, r') = a.1 := Prod.ext rfl ha.symm
-      have eb : (b.1.1, r') = b.1 := Prod.ext rfl hb.symm
-      rw [ea, eb]
+      grind
   · refine ⟨ind (collar r b.1.1 a.1.1), ?_, ?_⟩
     · intro m hm
       right
@@ -122,20 +121,17 @@ theorem cochainRel_of_row (A : Finset Cell) (a b : R.pcells) (r r' : ℤ)
         exact R.collar_top_subset _ _ hbc.1 hac.2.1 this
     · intro c hc
       have hlo : IsPrimal (b.1.1, r') := by
-        have := hbp; unfold IsPrimal at *; rw [hb] at this; exact this
+        grind
       have hhi : IsPrimal (a.1.1, r') := by
-        have := hap; unfold IsPrimal at *; rw [ha] at this; exact this
+        grind
       rw [cdeg_collar r b.1.1 a.1.1 hab r' hrr hlo hhi c hc]
-      have ea : (a.1.1, r') = a.1 := Prod.ext rfl ha.symm
-      have eb : (b.1.1, r') = b.1 := Prod.ext rfl hb.symm
-      rw [ea, eb, add_comm]
+      grind
 
 /-- Open connectivity with wired rows is a chain relation. -/
-theorem sep_le_cochain (A : Finset Cell) (hA : A ⊆ R.inner) :
+theorem sep_le_cochain (hA : A ⊆ R.inner) :
     FK.componentSetoid R.pG R.sepBC (cfgOf R.pData A) ≤ R.cochainSetoid A := by
   apply FK.componentSetoid_le
-  · intro u v huv
-    have hle : (FK.openGraph R.pG (cfgOf R.pData A)).reachableSetoid ≤ R.cochainSetoid A := by
+  · have hle : (FK.openGraph R.pG (cfgOf R.pData A)).reachableSetoid ≤ R.cochainSetoid A := by
       apply FK.reachableSetoid_le_of_adj
       intro x y hxy
       have hxy' := (openGraph_adj_iff R.pData (cfgOf R.pData A) x y).1 hxy
@@ -143,36 +139,39 @@ theorem sep_le_cochain (A : Finset Cell) (hA : A ⊆ R.inner) :
       obtain ⟨m, hm, hmxy⟩ := hxy'
       refine ⟨ind {m}, ?_, ?_⟩
       · intro m' hm'
-        left
         have : m' ∈ ({m} : Finset Cell) := by
           by_contra hn; exact hm' (ind_apply_of_not_mem hn)
-        rw [Finset.mem_singleton] at this; rw [this]; exact hm
+        simp_all
       · intro c hc
         rw [cdeg_ind_single m c hc]
         rcases hmxy with h | h
-        · rw [h]
-        · rw [h, add_comm]
-    exact hle huv
+        · simp_all
+        grind
+    tauto
   · intro a b hab
     rcases hab with h | h | h
-    · subst h; exact R.cochainRel_refl A a
+    · simp_all
     · exact R.cochainRel_of_row A a b R.y0 R.y0 (Or.inl ⟨rfl, rfl⟩) h.1 h.2
     · exact R.cochainRel_of_row A a b (R.y0 + R.h + 1) (R.y0 + R.h)
         (Or.inr ⟨rfl, rfl⟩) h.1 h.2
+end
 
 
-theorem not_mem_collarAll_of_inner {m : Cell} (hm : m ∈ R.inner) : m ∉ R.collarAll := by
+section
+variable {m : Cell}
+theorem not_mem_collarAll_of_inner (hm : m ∈ R.inner) : m ∉ R.collarAll := by
   intro h
   unfold collarAll at h
   rw [Finset.mem_union, mem_collar, mem_collar] at h
   rw [mem_inner] at hm
   omega
 
-theorem mem_collarAll {m : Cell} (h : m ∈ R.collarAll) :
+theorem mem_collarAll (h : m ∈ R.collarAll) :
     R.x0 < m.1 ∧ m.1 ≤ R.x0 + R.w ∧ (m.2 = R.y0 ∨ m.2 = R.y0 + R.h + 1) := by
   unfold collarAll at h
   rw [Finset.mem_union, mem_collar, mem_collar] at h
   omega
+end
 
 /-- The dual wiring: left and right columns of odd cells. -/
 def dualBC : FK.BoundaryCondition R.dcells :=
@@ -192,18 +191,14 @@ theorem exclusion (A : Finset Cell) (hA : A ⊆ R.inner) (m : Cell) (hm : m ∈ 
   have hclosed : ∀ c, IsPrimal c → cdeg C₀ c = 0 := by
     intro c hc
     rw [hC₀, cdeg_add, hdeg c hc, cdeg_ind_single m c hc, hu, hv]
-    generalize (if c = (primalEnds m).1 then (1 : ZMod 2) else 0) = a
-    generalize (if c = (primalEnds m).2 then (1 : ZMod 2) else 0) = b
-    revert a b; decide
+    grind
   have hsupp : ∀ m', C₀ m' ≠ 0 → R.x0 < m'.1 ∧ m'.1 ≤ R.x0 + R.w ∧ R.y0 ≤ m'.2 := by
     intro m' hm'
-    change f m' + ind {m} m' ≠ 0 at hm'
     by_cases h1 : f m' = 0
-    · rw [h1, zero_add] at hm'
+    · simp_all
       have : m' ∈ ({m} : Finset Cell) := by
         by_contra hn; exact hm' (ind_apply_of_not_mem hn)
-      rw [Finset.mem_singleton] at this; subst this
-      rw [mem_inner] at hm; omega
+      simp_all; rw [mem_inner] at hm; omega
     · rcases hf m' h1 with h | h
       · have := hA h; rw [mem_inner] at this; omega
       · have := R.mem_collarAll h; omega
@@ -213,8 +208,6 @@ theorem exclusion (A : Finset Cell) (hA : A ⊆ R.inner) (m : Cell) (hm : m ∈ 
     intro m' h; by_contra hne; have := hsupp m' hne; omega
   have hy0 : ∀ m' : Cell, m'.2 ≤ R.y0 - 1 → C₀ m' = 0 := by
     intro m' h; by_contra hne; have := hsupp m' hne; omega
-  have hclosed' : ∀ c : Cell, IsPrimal c → R.x0 ≤ c.1 → c.1 ≤ R.x0 + R.w → cdeg C₀ c = 0 :=
-    fun c hc _ _ => hclosed c hc
   set g : Cell → ZMod 2 := leftPotential R.x0 (R.y0 - 1) C₀ with hg
   have hprim : ∀ m' : Cell, R.x0 < m'.1 → m'.1 ≤ R.x0 + R.w →
       g (dualEnds m').1 + g (dualEnds m').2 = C₀ m' := fun m' h1 h2 =>
@@ -222,7 +215,7 @@ theorem exclusion (A : Finset Cell) (hA : A ⊆ R.inner) (m : Cell) (hm : m ∈ 
       (fun c hc _ _ => hclosed c hc) m' h1 h2
   have hzero : ∀ z : Cell, z.1 = R.x0 ∨ z.1 = R.x0 + R.w → g z = 0 := by
     intro z hz
-    exact leftPotential_zero_of_closed R.x0 (R.y0 - 1) R.w C₀ hx0 hxw hy0 hclosed' (by positivity)
+    exact leftPotential_zero_of_closed R.x0 (R.y0 - 1) R.w C₀ hx0 hxw hy0 (fun c hc _ _ => hclosed c hc) (by positivity)
       z (by omega)
   -- the dual component relation is contained in the kernel of `g`
   have hker : FK.componentSetoid R.dG R.dualBC (cfgOf R.dData (R.inner \ insert m A)) ≤
@@ -244,44 +237,37 @@ theorem exclusion (A : Finset Cell) (hA : A ⊆ R.inner) (m : Cell) (hm : m ∈ 
           have e1 : f m' = 0 := by
             by_contra hne
             rcases hf m' hne with h | h
-            · exact hm2 h
+            · tauto
             · exact R.not_mem_collarAll_of_inner hmi h
-          have e2 : ind {m} m' = 0 := ind_apply_of_not_mem (by simpa using hm1)
-          rw [e1, e2]; simp
+          rw [e1, (ind_apply_of_not_mem (by simpa using hm1))]; simp
         have hs := hprim m' (by omega) (by omega)
-        rw [h0] at hs
-        show g x.1 = g y.1
         rcases hmxy with h | h
-        · rw [h] at hs
-          have := zmod2_two (g x.1)
-          have h3 : g x.1 + g y.1 = 0 := hs
+        · simp_all
           calc g x.1 = g x.1 + (g y.1 + g y.1) := by rw [zmod2_two, add_zero]
             _ = (g x.1 + g y.1) + g y.1 := by ring
-            _ = g y.1 := by rw [h3, zero_add]
-        · rw [h] at hs
-          have h3 : g y.1 + g x.1 = 0 := hs
+            _ = g y.1 := by rw [hs, zero_add]
+        · simp_all
           calc g x.1 = g x.1 + (g y.1 + g y.1) := by rw [zmod2_two, add_zero]
             _ = (g y.1 + g x.1) + g y.1 := by ring
-            _ = g y.1 := by rw [h3, zero_add]
+            _ = g y.1 := by rw [hs, zero_add]
       exact hle hxy
     · intro a b hab
       rcases hab with h | ⟨ha, hb⟩
       · subst h; rfl
       · show g a.1 = g b.1
         rw [hzero a.1 ha, hzero b.1 hb]
-  have hker' := hker hdual
-  have hgeq : g u'.1 = g v'.1 := hker'
+  have hgeq : g u'.1 = g v'.1 := (hker hdual)
   have hs := hprim m (by rw [mem_inner] at hm; omega) (by rw [mem_inner] at hm; omega)
   have hfm : f m = 0 := by
     by_contra hne
     rcases hf m hne with h | h
-    · exact hmA h
+    · simp_all
     · exact R.not_mem_collarAll_of_inner hm h
   have hCm : C₀ m = 1 := by
     change f m + ind {m} m = 1
     rw [hfm, ind_apply_of_mem (Finset.mem_singleton_self m)]; simp
   rw [hCm, ← hu', ← hv', hgeq, zmod2_two] at hs
-  exact absurd hs (by decide)
+  tauto
 
 end Rect
 

@@ -9,13 +9,13 @@ public import PottsDiscontinuity.Duality.InfiniteDuality
 /-! Applying the planar dual transform twice translates face-base coordinates.
 Translation invariance therefore also gives wired-to-free infinite-volume duality. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Duality
 open FK FK.Medial MeasureTheory
 noncomputable section
 
-lemma dualConfiguration_twice (ω : LatticeConfiguration) :
+theorem dualConfiguration_twice (ω : LatticeConfiguration) :
     wholePlaneDualConfigurationHomeomorph (wholePlaneDualConfigurationHomeomorph ω) =
       latticeConfigurationIsoHomeomorph (latticeTranslationIso (-1,-1)) ω := by
   funext e

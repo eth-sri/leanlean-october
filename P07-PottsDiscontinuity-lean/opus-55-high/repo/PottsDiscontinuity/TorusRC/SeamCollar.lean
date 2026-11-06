@@ -21,10 +21,8 @@ def columnCollarOpen (hNp : 0 < N) (hMp : 0 < M) (x : ℤ) (L : ℕ)
 
 theorem columnZigzagSite_chain (x : ℤ) (hx : Even x) (n j : ℕ) :
     columnZigzagSite x hx (2 * n * j) = liftedChainSite x hx n j := by
-  have ht : Even (2 * n * j) := ⟨n * j, by ring⟩
-  rw [columnZigzagSite_even x hx _ ht]
-  apply Subtype.ext
-  dsimp [liftedChainSite, liftedColumnSite]
+  rw [columnZigzagSite_even x hx _ (by simp)]
+  rfl
 
 /-- Only boxes meeting the horizontal seam require forced zigzags. Their
 required edges lie in collars of width R+2n, independently of the height M. -/
@@ -42,33 +40,30 @@ theorem liftedCPrime_of_interior_and_collar (hNp : 0 < N) (hMp : 0 < M)
     simpa [Nat.mul_comm] using Nat.div_mul_le_self M (2 * n)
   have hmod := Nat.mod_lt M (show 0 < 2 * n by omega)
   have hdecomp := Nat.mod_add_div M (2 * n)
-  have hterminal : M - 2 * n * (M / (2 * n)) ≤ R := by omega
-  change (∀ j < M / (2 * n), _) ∧ _
   constructor
   · intro j hj
     by_cases hbottom : R < 2 * n * j
     · by_cases htop : 2 * n * j + R < M
-      · exact hinterior j hj hbottom htop
+      · simp_all
       · have ht : 2 * n * (j + 1) ≤ M :=
           (Nat.mul_le_mul_left (2 * n) (Nat.succ_le_of_lt hj)).trans hdiv
         have hconn := columnZigzag_box_connection hNp hMp A a b x hx
           (2 * n * j) (2 * n * (j + 1)) R (Nat.mul_le_mul_left _ (Nat.le_succ j))
-          (by simpa [Nat.mul_add, Nat.mul_one] using hR) hR1 ha hb
+          (by omega) hR1 ha hb
           (fun k hsk hkt => hcollar k (by omega) (Or.inr (by omega)))
-        rwa [columnZigzagSite_chain, columnZigzagSite_chain] at hconn
+        simp_all [columnZigzagSite_chain]
     · have ht : 2 * n * (j + 1) ≤ M :=
         (Nat.mul_le_mul_left (2 * n) (Nat.succ_le_of_lt hj)).trans hdiv
       have hconn := columnZigzag_box_connection hNp hMp A a b x hx
         (2 * n * j) (2 * n * (j + 1)) R (Nat.mul_le_mul_left _ (Nat.le_succ j))
         (by simpa [Nat.mul_add, Nat.mul_one] using hR) hR1 ha hb
         (fun k hsk hkt => hcollar k (by omega) (Or.inl (by
-          have heq : 2 * n * (j + 1) = 2 * n * j + 2 * n := by ring
-          omega)))
-      rwa [columnZigzagSite_chain, columnZigzagSite_chain] at hconn
+          grind)))
+      simp_all [columnZigzagSite_chain]
   · have hconn := columnZigzag_box_connection hNp hMp A a b x hx
-      (2 * n * (M / (2 * n))) M R hdiv hterminal hR1 ha hb
+      (2 * n * (M / (2 * n))) M R hdiv (by omega) hR1 ha hb
       (fun k hsk hkt => hcollar k hkt (Or.inr (by omega)))
     rw [columnZigzagSite_chain, columnZigzagSite_even x hx M hMeven] at hconn
-    exact hconn
+    omega
 
 end PottsDiscontinuity.TorusRC

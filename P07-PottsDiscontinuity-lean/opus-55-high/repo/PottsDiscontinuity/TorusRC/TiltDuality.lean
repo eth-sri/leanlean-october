@@ -4,7 +4,7 @@ public import PottsDiscontinuity.TorusRC.TiltProbability
 
 /-! # Complementary duality invariance of the tilted torus law -/
 
-@[expose] public section
+public section
 
 open Finset
 open scoped BigOperators
@@ -15,7 +15,7 @@ open Torus PottsDiscontinuity.SixVertex
 
 variable {N M : ℕ}
 
-private theorem translatedDualConfig_apply_nxt (A : RCConfig N M)
+theorem translatedDualConfig_apply_nxt (A : RCConfig N M)
     (v : Fin N × Fin M) :
     translatedDualConfig A (nxt v.1, v.2) = Bool.not (A v) := by
   rw [translatedDualConfig, shiftRCConfig_nxt]
@@ -29,27 +29,26 @@ def translatedDualConfigEquiv : RCConfig N M ≃ RCConfig N M where
   left_inv A := by
     funext v
     change Bool.not (translatedDualConfig A (nxt v.1, v.2)) = A v
-    rw [translatedDualConfig_apply_nxt]
-    simp
+    grind [translatedDualConfig_apply_nxt]
   right_inv A := by
     funext v
     have h := translatedDualConfig_apply_nxt
       (fun w => Bool.not (A (nxt w.1, w.2))) (prv v.1, v.2)
-    simpa only [nxt, prv, Equiv.apply_symm_apply, Bool.not_not] using h
+    grind
 
-private theorem torusRCTiltEventWeight_translatedDual
-    (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ))
-    (E : Set (RCConfig N M)) :
+section
+variable (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ)) (E : Set (RCConfig N M))
+theorem torusRCTiltEventWeight_translatedDual
+     :
     torusRCTiltEventWeight hN hM q E =
       torusRCTiltEventWeight hN hM q
         (translatedDualConfig ⁻¹' E) := by
   classical
-  unfold torusRCTiltEventWeight
   calc
     (∑ A, E.indicator (torusRCTiltWeight hN hM q) A) =
         ∑ A, E.indicator (torusRCTiltWeight hN hM q)
-          (translatedDualConfigEquiv A) := by
-      exact (Equiv.sum_comp translatedDualConfigEquiv
+          (translatedDualConfigEquiv A) :=
+      (Equiv.sum_comp translatedDualConfigEquiv
         (fun A => E.indicator (torusRCTiltWeight hN hM q) A)).symm
     _ = ∑ A, (translatedDualConfig ⁻¹' E).indicator
           (torusRCTiltWeight hN hM q) A := by
@@ -61,25 +60,22 @@ private theorem torusRCTiltEventWeight_translatedDual
       by_cases hA : translatedDualConfig A ∈ E
       · simp only [hA, ite_true]
         exact (torusRCTiltWeight_translatedDual hN hM q A).symm
-      · simp only [hA, ite_false]
+      simp_all
 
 /-- The normalized self-dual tilt assigns the same probability to an event and
 to its inverse image under translated complementary duality. -/
-theorem torusRCTiltProbability_translatedDual (hN : Even N) (hM : Even M)
-    (q : Set.Ici (1 : ℝ)) (E : Set (RCConfig N M)) :
+theorem torusRCTiltProbability_translatedDual  :
     torusRCTiltProbability hN hM q E =
       torusRCTiltProbability hN hM q (translatedDualConfig ⁻¹' E) := by
-  unfold torusRCTiltProbability
-  rw [torusRCTiltEventWeight_translatedDual hN hM q E]
+  grind [torusRCTiltProbability, torusRCTiltEventWeight_translatedDual]
 
 /-- Translated complementary duality transfers a standard-law event bound with
 the exact `q^2` loss used for the source's torus duality step. -/
-theorem torusRCProbability_translatedDual_lower (hN : Even N) (hM : Even M)
-    (q : Set.Ici (1 : ℝ)) (E : Set (RCConfig N M)) :
+theorem torusRCProbability_translatedDual_lower  :
     torusRCProbability hN hM q (translatedDualConfig ⁻¹' E) / q.val ^ 2 ≤
       torusRCProbability hN hM q E := by
-  have hqpos : 0 < q.val := lt_of_lt_of_le zero_lt_one q.property
-  have hq2 : 0 < q.val ^ 2 := pow_pos hqpos _
+  have hqpos : 0 < q.val := by grind
+  have hq2 : 0 < q.val ^ 2 := by positivity
   have hE := torusRCTiltProbability_comparison hN hM q E
   have hdual := torusRCTiltProbability_comparison hN hM q
     (translatedDualConfig ⁻¹' E)
@@ -90,8 +86,8 @@ theorem torusRCProbability_translatedDual_lower (hN : Even N) (hM : Even M)
           q.val ^ 2 :=
       div_le_div_of_nonneg_right hdual.2 hq2.le
     _ = torusRCTiltProbability hN hM q E / q.val := by
-      rw [hinv]
-      field_simp [hqpos.ne']
+      grind
     _ ≤ torusRCProbability hN hM q E := hE.1
+end
 
 end PottsDiscontinuity.TorusRC

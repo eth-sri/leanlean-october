@@ -12,7 +12,7 @@ marked component-colouring patterns. Consequently the finite Potts cylinder
 formula uses only the connection partition of the observed vertices and ghost.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Potts
 
@@ -26,10 +26,10 @@ local instance ghostCylinderLiteralBondDecidableEq (V : Finset (ℤ × ℤ)) :
 local instance ghostCylinderBoundaryVertexFintype (V : Finset (ℤ × ℤ)) :
     Fintype (BoundaryVertex V) := Fintype.ofFinite _
 
+section
+variable (q : ℕ) (V : Finset (ℤ × ℤ)) (i : Fin (q + 1)) (hi : 1 ≤ (i : ℕ)) (ω : LiteralBond V → Bool) {A : Type*} (v : A → ↥(V : Set (ℤ × ℤ))) (ξ : A → Set.Icc 1 q)
 /-- The literal colouring correspondence preserves every observed spin. -/
-def literalCylinderEquiv (q : ℕ) (V : Finset (ℤ × ℤ))
-    (i : Fin (q + 1)) (hi : 1 ≤ (i : ℕ)) (ω : LiteralBond V → Bool)
-    {A : Type*} (v : A → ↥(V : Set (ℤ × ℤ))) (ξ : A → Set.Icc 1 q) :
+def literalCylinderEquiv  :
     {σ : SpinConfiguration q V //
       (∀ e, ω e = true → literalAgreement q V i σ e) ∧ ∀ a, σ (v a) = ξ a} ≃
       {τ : PinnedClusterColoring (ghostOpenGraph V ω).reachableSetoid none (boundaryColor q i hi) //
@@ -43,9 +43,7 @@ def literalCylinderEquiv (q : ℕ) (V : Finset (ℤ × ℤ))
 
 /-- Number of original spin configurations realizing a compatible cylinder
 under the literal ghost-bond constraints. -/
-theorem card_literalAgreement_cylinder (q : ℕ) (V : Finset (ℤ × ℤ))
-    (i : Fin (q + 1)) (hi : 1 ≤ (i : ℕ)) (ω : LiteralBond V → Bool)
-    {A : Type*} (v : A → ↥(V : Set (ℤ × ℤ))) (ξ : A → Set.Icc 1 q) :
+theorem card_literalAgreement_cylinder  :
     Nat.card {σ : SpinConfiguration q V //
       (∀ e, ω e = true → literalAgreement q V i σ e) ∧ ∀ a, σ (v a) = ξ a} =
       if (ghostOpenGraph V ω).reachableSetoid.comap (markedMap (some ∘ v) none) ≤
@@ -56,17 +54,20 @@ theorem card_literalAgreement_cylinder (q : ℕ) (V : Finset (ℤ × ℤ))
   rw [Nat.card_congr (literalCylinderEquiv q V i hi ω v ξ),
     card_pinnedClusterColoring_cylinder, card_pottsColors]
   rfl
+end
 
+section
+variable (q : ℕ) (hq : 2 ≤ q) (V : Finset (ℤ × ℤ))
+include hq
 /-- The original-spin cylinder mass under uniform ghost-pinned component
 colours depends only on the marked connection partition. -/
-theorem ghostColoringProbability_cylinder (q : ℕ) (hq : 2 ≤ q) (V : Finset (ℤ × ℤ))
-    (i : Fin (q + 1)) (hi : 1 ≤ (i : ℕ)) (ω : LiteralBond V → Bool)
+theorem ghostColoringProbability_cylinder (i : Fin (q + 1)) (hi : 1 ≤ (i : ℕ)) (ω : LiteralBond V → Bool)
     {A : Type*} (v : A → ↥(V : Set (ℤ × ℤ))) (ξ : A → Set.Icc 1 q) :
     (∑ σ : SpinConfiguration q V,
       if ∀ a, σ (v a) = ξ a then ghostColoringProbability q V i hi ω σ else 0) =
       pinnedClusterCylinderProbability (ghostOpenGraph V ω).reachableSetoid
         (some ∘ v) ξ none (boundaryColor q i hi) := by
-  have hq0 : (q : ℝ) ≠ 0 := by exact_mod_cast (show q ≠ 0 by omega)
+  have hq0 : (q : ℝ) ≠ 0 := by positivity
   have ht (σ : SpinConfiguration q V) :
       (if ∀ a, σ (v a) = ξ a then ghostColoringProbability q V i hi ω σ else 0) =
       if (∀ e, ω e = true → literalAgreement q V i σ e) ∧ ∀ a, σ (v a) = ξ a then
@@ -79,7 +80,7 @@ theorem ghostColoringProbability_cylinder (q : ℕ) (hq : 2 ≤ q) (V : Finset (
     card_literalAgreement_cylinder q V i hi ω v ξ, pinnedClusterCylinderProbability, card_pottsColors]
   by_cases hξ : (ghostOpenGraph V ω).reachableSetoid.comap (markedMap (some ∘ v) none) ≤
       Setoid.ker (markedMap ξ (boundaryColor q i hi))
-  · simp only [hξ, ↓reduceIte, Nat.cast_pow]
+  · simp
     have hm := observedClassCount_marked_pos (ghostOpenGraph V ω).reachableSetoid (some ∘ v) none
     have hmk : observedClassCount (ghostOpenGraph V ω).reachableSetoid
         (markedMap (some ∘ v) none) ≤ ghostComponentCount V ω :=
@@ -95,7 +96,7 @@ theorem ghostColoringProbability_cylinder (q : ℕ) (hq : 2 ≤ q) (V : Finset (
 
 /-- Exact cylinder formula for the frozen finite Potts law with its literal
 one-field-term-per-boundary-vertex Hamiltonian and positive boundary colour. -/
-theorem pottsProb_ghost_cylinder (q : ℕ) (hq : 2 ≤ q) (V : Finset (ℤ × ℤ)) (β : ℝ)
+theorem pottsProb_ghost_cylinder (β : ℝ)
     (i : Fin (q + 1)) (hi : 1 ≤ (i : ℕ))
     {A : Type*} (v : A → ↥(V : Set (ℤ × ℤ))) (ξ : A → Set.Icc 1 q) :
     (∑ σ : SpinConfiguration q V,
@@ -103,8 +104,8 @@ theorem pottsProb_ghost_cylinder (q : ℕ) (hq : 2 ≤ q) (V : Finset (ℤ × �
       ∑ ω : LiteralBond V → Bool, ghostRCProbability q V β ω *
         pinnedClusterCylinderProbability (ghostOpenGraph V ω).reachableSetoid
           (some ∘ v) ξ none (boundaryColor q i hi) := by
-  have h := pottsProb_event_eq_ghostMixture q hq V β i hi {σ | ∀ a, σ (v a) = ξ a}
-  simpa only [Set.mem_ofPred_eq, ghostColoringProbability_cylinder q hq V i hi] using h
+  simpa only [Set.mem_ofPred_eq, ghostColoringProbability_cylinder q hq V i hi] using (pottsProb_event_eq_ghostMixture q hq V β i hi {σ | ∀ a, σ (v a) = ξ a})
+end
 
 end
 

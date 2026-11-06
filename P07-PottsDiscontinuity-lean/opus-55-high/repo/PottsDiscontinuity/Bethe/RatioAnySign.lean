@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.RatioFourierLimit
 
 /-! # Sign-invariant formulation for the parameter `c` -/
 
-@[expose] public section
+public section
 
 open Set Filter MeasureTheory Finset
 open scoped Topology BigOperators
@@ -13,49 +13,49 @@ namespace PottsDiscontinuity.Bethe
 
 open BetheAnsatz
 
+section
+variable (c : ℝ) (w : ℂ)
 /-- The Bethe factors depend on `c` only through `c²`. -/
-theorem ratio_L_abs (c : ℝ) (w : ℂ) : L (|c|) w = L c w := by
+theorem ratio_L_abs  : L (|c|) w = L c w := by
   have hsquare : (((|c| : ℝ) : ℂ) ^ 2) = (c : ℂ) ^ 2 := by
     exact_mod_cast (sq_abs c)
-  unfold L
-  rw [hsquare]
+  simp_all [L]
 
-theorem ratio_M_abs (c : ℝ) (w : ℂ) : M (|c|) w = M c w := by
+theorem ratio_M_abs  : M (|c|) w = M c w := by
   have hsquare : (((|c| : ℝ) : ℂ) ^ 2) = (c : ℂ) ^ 2 := by
     exact_mod_cast (sq_abs c)
-  unfold M
-  rw [hsquare]
+  simp_all [M]
+end
 
-theorem ratio_eigenvalueRegular_abs {n : ℕ} (c : ℝ) (p : Fin n → ℝ) :
+section
+variable {n : ℕ}
+theorem ratio_eigenvalueRegular_abs (c : ℝ) (p : Fin n → ℝ) :
     eigenvalueRegular (|c|) p = eigenvalueRegular c p := by
-  simp only [eigenvalueRegular, ratio_L_abs, ratio_M_abs]
+  simp [eigenvalueRegular, ratio_L_abs, ratio_M_abs]
 
-theorem ratio_eigenvalueZero_abs {n : ℕ} (N : ℕ) (c : ℝ)
+theorem ratio_eigenvalueZero_abs (N : ℕ) (c : ℝ)
     (p : Fin n → ℝ) (l : Fin n) :
     eigenvalueZero N (|c|) p l = eigenvalueZero N c p l := by
   have hani : anisotropy (|c|) = anisotropy c := by
-    unfold anisotropy
-    rw [sq_abs]
+    simp [anisotropy]
   have hsquare : (((|c| : ℝ) : ℂ) ^ 2) = (c : ℂ) ^ 2 := by
     exact_mod_cast (sq_abs c)
-  unfold eigenvalueZero
-  rw [hsquare, hani]
-  simp only [ratio_M_abs]
+  simp_all [eigenvalueZero, ratio_M_abs]
+end
 
+section
+variable {Δ c : ℝ}
 /-- The relation `anisotropy c = Δ < -1` forces `|c| > 2`. -/
-theorem ratio_abs_gt_two {Δ c : ℝ} (hΔ : Δ < -1) (hcΔ : anisotropy c = Δ) :
+theorem ratio_abs_gt_two (hΔ : Δ < -1) (hcΔ : anisotropy c = Δ) :
     2 < |c| := by
   have hc2 : 4 < c ^ 2 := by
-    unfold anisotropy at hcΔ
-    nlinarith
+    grind [anisotropy]
   nlinarith [sq_abs c, abs_nonneg c]
 
-theorem ratio_anisotropy_abs {Δ c : ℝ} (hcΔ : anisotropy c = Δ) :
+theorem ratio_anisotropy_abs (hcΔ : anisotropy c = Δ) :
     anisotropy (|c|) = Δ := by
-  have h := hcΔ
-  unfold anisotropy at h ⊢
-  rw [sq_abs]
-  exact h
+  simp_all [anisotropy]
+end
 
 section
 
@@ -94,12 +94,10 @@ theorem ratio_even_eigenvalue_limit_fourier_any_sign (heven : r % 2 = 0)
     hp hq hpBE hqBE hNlim hbp hbq hK hrate heven hrpos (ratio_abs_gt_two hΔ hcΔ)
     (ratio_anisotropy_abs hcΔ)
   refine ⟨S, hS, ?_⟩
-  apply hlimit.congr
-  intro i
-  rw [ratio_eigenvalueRegular_abs c (q i), ratio_eigenvalueRegular_abs c (p i)]
+  simp_all [ratio_eigenvalueRegular_abs]
 
 theorem ratio_odd_eigenvalue_limit_fourier_any_sign (hodd : r % 2 ≠ 0)
-    (hrpos : 1 ≤ r) {c : ℝ} (hcΔ : anisotropy c = Δ) :
+    {c : ℝ} (hcΔ : anisotropy c = Δ) :
     ∃ S : ℝ,
       Tendsto (PottsDiscontinuity.altTanhPartial (lamOf Δ)) atTop (𝓝 S) ∧
       Tendsto (fun i => eigenvalueZero (N i) c (q i)
@@ -107,13 +105,10 @@ theorem ratio_odd_eigenvalue_limit_fourier_any_sign (hodd : r % 2 ≠ 0)
           eigenvalueRegular c (p i)) atTop
         (𝓝 ((Real.exp (-(r : ℝ) * (lamOf Δ + 2 * S)) : ℝ) : ℂ)) := by
   obtain ⟨S, hS, hlimit⟩ := ratio_odd_eigenvalue_limit_fourier hΔ r N h4 hr hN hn p q
-    hp hq hpBE hqBE hNlim hbp hbq hK hrate hodd hrpos (ratio_abs_gt_two hΔ hcΔ)
+    hp hq hpBE hqBE hNlim hbp hbq hK hrate hodd (ratio_abs_gt_two hΔ hcΔ)
     (ratio_anisotropy_abs hcΔ)
   refine ⟨S, hS, ?_⟩
-  apply hlimit.congr
-  intro i
-  rw [ratio_eigenvalueZero_abs (N i) c (q i) _,
-    ratio_eigenvalueRegular_abs c (p i)]
+  simp_all [ratio_eigenvalueZero_abs, ratio_eigenvalueRegular_abs]
 
 end
 

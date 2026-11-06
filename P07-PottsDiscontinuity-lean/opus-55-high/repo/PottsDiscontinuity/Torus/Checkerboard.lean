@@ -22,54 +22,46 @@ variable {N M : ℕ}
 /-- Checkerboard colour of a medial vertex. -/
 def checker (v : Fin N × Fin M) : Bool := decide ((v.1.val + v.2.val) % 2 = 0)
 
-private theorem nxt_mod_two (hN : Even N) (i : Fin N) :
+section
+variable (hN : Even N) (i : Fin N)
+include hN
+theorem nxt_mod_two  :
     (nxt i).val % 2 = 1 - i.val % 2 := by
-  have hn : N % 2 = 0 := by rcases hN with ⟨k, hk⟩; omega
   obtain ⟨n, rfl⟩ := Nat.exists_eq_succ_of_ne_zero (Fin.pos i).ne'
   rw [nxt, coe_finRotate]
-  split_ifs with hi
-  · subst i
-    simp only [Fin.val_last]
-    omega
-  · omega
+  grind
 
-theorem checker_nxt_x (hN : Even N) (i : Fin N) (j : Fin M) :
+theorem checker_nxt_x (j : Fin M) :
     checker (nxt i, j) = !checker (i, j) := by
   have hn := nxt_mod_two hN i
-  by_cases ha : ((nxt i).val + j.val) % 2 = 0
-  · have hb : (i.val + j.val) % 2 ≠ 0 := by omega
-    simp only [checker, ha, hb, decide_true, decide_false, Bool.not_false]
-  · have hb : (i.val + j.val) % 2 = 0 := by omega
-    simp only [checker, ha, hb, decide_true, decide_false, Bool.not_true]
+  by_cases ha : ((nxt i).val + j.val) % 2 = 0 <;> grind [checker]
+end
 
 theorem checker_nxt_y (hM : Even M) (i : Fin N) (j : Fin M) :
     checker (i, nxt j) = !checker (i, j) := by
   have hm := nxt_mod_two hM j
-  by_cases ha : (i.val + (nxt j).val) % 2 = 0
-  · have hb : (i.val + j.val) % 2 ≠ 0 := by omega
-    simp only [checker, ha, hb, decide_true, decide_false, Bool.not_false]
-  · have hb : (i.val + j.val) % 2 = 0 := by omega
-    simp only [checker, ha, hb, decide_true, decide_false, Bool.not_true]
+  by_cases ha : (i.val + (nxt j).val) % 2 = 0 <;> grind [checker]
 
 theorem checker_prv_x (hN : Even N) (i : Fin N) (j : Fin M) :
     checker (prv i, j) = !checker (i, j) := by
   have h := checker_nxt_x hN (prv i) j
-  simp only [nxt, prv, Equiv.apply_symm_apply] at h
-  rw [h, Bool.not_not]
+  grind
 
 theorem checker_prv_y (hM : Even M) (i : Fin N) (j : Fin M) :
     checker (i, prv j) = !checker (i, j) := by
   have h := checker_nxt_y hM i (prv j)
-  simp only [nxt, prv, Equiv.apply_symm_apply] at h
-  rw [h, Bool.not_not]
+  grind
 
 /-- Orient each edge with its black checkerboard face on the same side. -/
 def checkerArrows (N M : ℕ) : ArrowConfig N M where
   horiz v := checker v
   vert v := !checker v
 
+section
+variable (hN : Even N) (hM : Even M) (s : Smoothing N M)
+include hN hM
 /-- Both pairings are compatible with the canonical checkerboard orientation. -/
-theorem checkerArrows_compatible (hN : Even N) (hM : Even M) (s : Smoothing N M) :
+theorem checkerArrows_compatible  :
     CompatibleConfig (checkerArrows N M) s := by
   rintro ⟨i, j⟩
   change Compatible (s (i, j)) (checker (prv i, j)) (checker (i, j))
@@ -78,11 +70,12 @@ theorem checkerArrows_compatible (hN : Even N) (hM : Even M) (s : Smoothing N M)
   cases s (i, j) <;> cases checker (i, j) <;> decide
 
 /-- The canonically oriented loops of a smoothing, as cyclic classes of directed darts. -/
-abbrev Loop (hN : Even N) (hM : Even M) (s : Smoothing N M) :=
+abbrev Loop  :=
   DirectedLoop (checkerArrows N M) s (checkerArrows_compatible hN hM s)
 
 /-- Number of smoothed loops, with one canonical orientation per loop. -/
-noncomputable def loopCount (hN : Even N) (hM : Even M) (s : Smoothing N M) : ℕ :=
+noncomputable def loopCount  : ℕ :=
   Fintype.card (Loop hN hM s)
+end
 
 end PottsDiscontinuity.Torus

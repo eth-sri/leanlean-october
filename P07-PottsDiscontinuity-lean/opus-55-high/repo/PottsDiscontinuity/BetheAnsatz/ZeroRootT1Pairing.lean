@@ -10,7 +10,7 @@ first order. This lemma isolates the analytic multiplication step from the
 permutation and word combinatorics.
 -/
 
-@[expose] public section
+public section
 
 open Complex Filter Topology
 
@@ -30,22 +30,18 @@ theorem tendsto_pole_mul_one_sub_of_hasDerivAt {f g : ℝ → ℂ} {h d : ℂ}
         fun t => -(t⁻¹ • (f (0 + t) - f 0)) := by
       funext t
       simp only [zero_add, hf0]
-      simp [div_eq_mul_inv, sub_eq_add_neg]
+      simp
       ring
-    rw [hfun]
-    exact hslope
+    simp_all
   have hprod := hg.mul hquot
   have hlim : (I * h) * (-(I * d)) = h * d := by
     calc
       (I * h) * (-(I * d)) = -(I * I) * (h * d) := by ring
-      _ = h * d := by simp [I_mul_I]
-  rw [hlim] at hprod
+      _ = h * d := by simp
+  simp_all
   apply hprod.congr'
   filter_upwards [self_mem_nhdsWithin] with t ht
-  have htC : (t : ℂ) ≠ 0 := by exact_mod_cast ht
-  calc
-    (t : ℂ) * g t * ((1 - f t) / (t : ℂ)) =
-        (t : ℂ) * g t * ((1 - f t) * (t : ℂ)⁻¹) := by rw [div_eq_mul_inv]
-    _ = g t * (1 - f t) := by field_simp
+  have htC : (t : ℂ) ≠ 0 := by simp_all
+  grind
 
 end PottsDiscontinuity.BetheAnsatz

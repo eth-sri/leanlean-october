@@ -12,14 +12,14 @@ open Torus CorrLength
 
 variable {N M : ℕ}
 
+section
+variable (hNp : 0 < N) (hMp : 0 < M) (n : ℕ) (i : Fin (3 * n + 1))
 /-- Reflect the base double-height block into block j of the lifted chain. -/
-def rectangleBlockEvent (hNp : 0 < N) (hMp : 0 < M) (n : ℕ)
-    (i : Fin (3 * n + 1)) (j : ℕ) : Set (RCConfig N M) :=
+def rectangleBlockEvent (j : ℕ) : Set (RCConfig N M) :=
   reflectRCConfig hMp (2 * (n : ℤ) * ((j : ℤ) + 1)) ⁻¹'
     rectangleDoubleConnection hNp hMp n i
 
-theorem rectangleDoubleConnection_mono (hNp : 0 < N) (hMp : 0 < M)
-    (n : ℕ) (i : Fin (3 * n + 1)) {A B : RCConfig N M} (hAB : A ≤ B)
+theorem rectangleDoubleConnection_mono {A B : RCConfig N M} (hAB : A ≤ B)
     (hA : A ∈ rectangleDoubleConnection hNp hMp n i) :
     B ∈ rectangleDoubleConnection hNp hMp n i := by
   obtain ⟨u,v,hu,hv,w,hw⟩ := hA
@@ -30,9 +30,9 @@ theorem rectangleDoubleConnection_mono (hNp : 0 < N) (hMp : 0 < M)
   intro z hz
   rw [SimpleGraph.Walk.support_map] at hz
   obtain ⟨z',hz',heq⟩ := List.mem_map.mp hz
-  change z' = z at heq
   subst z
   exact hw z' hz'
+end
 
 /-- FKG k times, using the exact reflection symmetry at every block. -/
 theorem rectangleBlocks_probability_ge_power (hN : Even N) (hM : Even M)
@@ -40,7 +40,6 @@ theorem rectangleBlocks_probability_ge_power (hN : Even N) (hM : Even M)
     (n : ℕ) (i : Fin (3 * n + 1)) (k : ℕ) :
     torusRCProbability hN hM q (rectangleDoubleConnection hNp hMp n i) ^ k ≤
       torusRCProbability hN hM q {A | ∀ j < k, A ∈ rectangleBlockEvent hNp hMp n i j} := by
-  classical
   let E : Fin k → Set (RCConfig N M) := fun j => rectangleBlockEvent hNp hMp n i j.val
   have hE : ∀ j ⦃A B⦄, A ≤ B → A ∈ E j → B ∈ E j := by
     intro j A B hAB hA
@@ -55,12 +54,11 @@ theorem rectangleBlocks_probability_ge_power (hN : Even N) (hM : Even M)
   have hset : {A | ∀ j ∈ (Finset.univ : Finset (Fin k)), A ∈ E j} =
       {A | ∀ j < k, A ∈ rectangleBlockEvent hNp hMp n i j} := by
     ext A
-    simp only [Finset.mem_univ, true_implies]
+    simp
     constructor
     · intro h j hj
       exact h ⟨j,hj⟩
-    · intro h j
-      exact h j.val j.isLt
+    grind
   rwa [hset] at h
 
 end PottsDiscontinuity.TorusRC

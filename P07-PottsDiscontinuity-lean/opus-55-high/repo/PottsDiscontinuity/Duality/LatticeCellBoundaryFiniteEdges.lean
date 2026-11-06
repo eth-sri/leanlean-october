@@ -5,24 +5,23 @@ module
 public import PottsDiscontinuity.Duality.LatticeCellBoundary
 public import Mathlib.Tactic
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 
 open Medial
 
+section
+variable (S : Finset LatticeVertex)
 /-- The graph edge set is exactly the image of the finite set of normalized
 boundary bonds under their primal Sym2 representation. -/
-theorem latticeCellBoundaryGraph_edgeSet_eq_image (S : Finset LatticeVertex) :
+theorem latticeCellBoundaryGraph_edgeSet_eq_image  :
     (latticeCellBoundaryGraph S).edgeSet =
       LatticeBond.toSym2 '' (↑(latticeCellBoundaryBonds S) : Set LatticeBond) := by
-  classical
   ext edge
   obtain ⟨⟨u, v⟩, hEdge⟩ := Sym2.mk_surjective edge
   subst edge
-  change s(u, v) ∈ (latticeCellBoundaryGraph S).edgeSet ↔
-    s(u, v) ∈ LatticeBond.toSym2 '' (↑(latticeCellBoundaryBonds S) : Set LatticeBond)
-  simp only [SimpleGraph.mem_edgeSet, Set.mem_image]
+  simp
   rw [latticeCellBoundaryGraph_adj_iff]
   constructor
   · rintro ⟨hadj, e, heq, hfaces⟩
@@ -30,13 +29,13 @@ theorem latticeCellBoundaryGraph_edgeSet_eq_image (S : Finset LatticeVertex) :
   · rintro ⟨e, he, hEq⟩
     have hsq : squareLattice.Adj u v := by
       have hedge := LatticeBond.toSym2_mem_edgeSet e
-      rw [hEq] at hedge
-      exact squareLattice.mem_edgeSet.mp hedge
+      simp_all
     exact ⟨hsq, e, hEq, (mem_latticeCellBoundaryBonds S e).mp he⟩
 
-theorem latticeCellBoundaryGraph_edgeSet_finite (S : Finset LatticeVertex) :
+theorem latticeCellBoundaryGraph_edgeSet_finite  :
     ((latticeCellBoundaryGraph S).edgeSet : Set (Sym2 LatticeVertex)).Finite := by
   rw [latticeCellBoundaryGraph_edgeSet_eq_image]
   exact (latticeCellBoundaryBonds_finite S).image LatticeBond.toSym2
+end
 
 end PottsDiscontinuity.FK

@@ -20,7 +20,7 @@ hypothesis of the assembly; it is supplied by `TorusCrossing.h319_proved` in `Pr
 None of these propositions is a conclusion of the Theorem 1.2 assembly, and none is an axiom.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 open Finset
 
@@ -29,23 +29,24 @@ namespace PottsDiscontinuity.RCMProof
 open PottsDiscontinuity
 open Torus
 
-noncomputable def torusLoopWeightFactor {N M : ℕ} (hN : Even N) (hM : Even M)
-    (q : Set.Ici (1 : ℝ)) (hNpos : 0 < N) (hMpos : 0 < M)
+section
+variable {N M : ℕ} (hN : Even N) (hM : Even M)
+def torusLoopWeightFactor (q : Set.Ici (1 : ℝ)) (hNpos : 0 < N) (hMpos : 0 < M)
     (A : Torus.RCConfig N M) : ℝ :=
   Real.rpow (2 / Real.sqrt q.val)
       (TorusLoops.windingLoopCount hN hM ⟨0, hNpos⟩ ⟨0, hMpos⟩ A : ℝ) *
     Real.rpow q.val (-(Torus.rcNetIndicator hN hM A : ℝ))
 
-noncomputable def torusWeightedRCMass {N M : ℕ} (hN : Even N) (hM : Even M)
-    (q : Set.Ici (1 : ℝ)) (hNpos : 0 < N) (hMpos : 0 < M)
+def torusWeightedRCMass (q : Set.Ici (1 : ℝ)) (hNpos : 0 < N) (hMpos : 0 < M)
     (A : Torus.RCConfig N M) : ℝ :=
   Torus.torusRCWeight hN hM q A * torusLoopWeightFactor hN hM q hNpos hMpos A
+end
 
-noncomputable def torusCorrespondenceScale (q : Set.Ici (1 : ℝ)) (N M : ℕ) : ℝ :=
+def torusCorrespondenceScale (q : Set.Ici (1 : ℝ)) (N M : ℕ) : ℝ :=
   Real.rpow q.val ((N * M : ℝ) / 4) *
     Real.rpow (1 + Real.sqrt q.val) (-(N * M : ℝ))
 
-noncomputable def criticalSixVertexParameter (q : Set.Ici (1 : ℝ)) : ℝ :=
+def criticalSixVertexParameter (q : Set.Ici (1 : ℝ)) : ℝ :=
   Real.sqrt (2 + Real.sqrt q.val)
 
 /- Provider statement for Corollary 3.13(i) of the torus correspondence (`Torus/`), with the

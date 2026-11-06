@@ -31,34 +31,28 @@ theorem reachable_isolatedExtension (x y : W) :
   · intro h
     rw [SimpleGraph.reachable_iff_reflTransGen] at h
     induction h with
-    | refl => exact Or.inl rfl
+    | refl => simp
     | @tail y z h hyz ih =>
       obtain ⟨u, v, huv, hu, hv⟩ := (SimpleGraph.map_adj f G y z).mp hyz
       rcases ih with rfl | ⟨a, b, hab, ha, hb⟩
       · exact Or.inr ⟨u, v, huv.reachable, hu, hv⟩
-      · have hbu : b = u := f.injective (hb.trans hu.symm)
+      · have hbu : b = u := by grind
         subst u
         exact Or.inr ⟨a, v, hab.trans huv.reachable, ha, hv⟩
   · rintro (rfl | ⟨u, v, huv, rfl, rfl⟩)
-    · exact .refl _
+    · rfl
     · exact huv.map (SimpleGraph.Embedding.map f G).toHom
 
 /-- No new connection is created between original vertices. -/
 theorem reachable_isolatedExtension_apply (u v : V) :
     (G.map f).Reachable (f u) (f v) ↔ G.Reachable u v := by
   rw [reachable_isolatedExtension]
-  constructor
-  · rintro (h | ⟨a, b, hab, ha, hb⟩)
-    · exact f.injective h ▸ SimpleGraph.Reachable.refl _
-    · simpa only [f.injective ha, f.injective hb] using hab
-  · intro h
-    exact Or.inr ⟨u, v, h, rfl, rfl⟩
+  simp_all
 
 /-- Each added vertex really is isolated, including for actual path connectivity. -/
 theorem reachable_isolatedExtension_outside {x y : W} (hx : x ∉ Set.range f) :
     (G.map f).Reachable x y ↔ x = y := by
-  rw [reachable_isolatedExtension]
-  exact ⟨fun h => h.elim id (fun ⟨u, _, _, hu, _⟩ => (hx ⟨u, hu⟩).elim), Or.inl⟩
+  simp_all [reachable_isolatedExtension]
 
 /-- Original connected components and the added singleton vertices enumerate all
 components of the extended graph, without dropping isolated original vertices. -/
@@ -74,19 +68,17 @@ def isolatedExtensionComponentEquiv :
         | h u =>
           induction b using SimpleGraph.ConnectedComponent.ind with
           | h v =>
-            exact SimpleGraph.ConnectedComponent.sound
-              ((reachable_isolatedExtension_apply G f u v).mp
-                (SimpleGraph.ConnectedComponent.exact h))
+            simp_all [reachable_isolatedExtension_apply]
       · induction a using SimpleGraph.ConnectedComponent.ind with
         | h u =>
           have hconn := (SimpleGraph.ConnectedComponent.exact h).symm
           have heq := (reachable_isolatedExtension_outside G f b.property).mp hconn
-          exact (b.property ⟨u, heq.symm⟩).elim
+          aesop
       · induction b using SimpleGraph.ConnectedComponent.ind with
         | h v =>
           have hconn := SimpleGraph.ConnectedComponent.exact h
           have heq := (reachable_isolatedExtension_outside G f a.property).mp hconn
-          exact (a.property ⟨v, heq.symm⟩).elim
+          aesop
       · apply congrArg Sum.inr
         apply Subtype.ext
         exact (reachable_isolatedExtension_outside G f a.property).mp
@@ -103,11 +95,11 @@ def isolatedExtensionComponentEquiv :
 def isolatedExtensionEdgeEquiv : G.edgeSet ≃ (G.map f).edgeSet :=
   Equiv.ofBijective (SimpleGraph.Embedding.map f G).mapEdgeSet (by
     constructor
-    · exact (SimpleGraph.Embedding.map f G).mapEdgeSet.injective
+    · grind
     · rintro ⟨e, he⟩
       rw [SimpleGraph.edgeSet_map] at he
       obtain ⟨a, ha, rfl⟩ := he
-      exact ⟨⟨a, ha⟩, rfl⟩)
+      tauto)
 
 @[simp] theorem isolatedExtensionEdgeEquiv_coe (e : G.edgeSet) :
     (isolatedExtensionEdgeEquiv G f e).val = f.sym2Map e.val := rfl
@@ -125,11 +117,13 @@ def isolatedExtensionConfigurationOrderIso : Configuration G ≃o Configuration 
   toEquiv := isolatedExtensionConfigurationEquiv G f
   map_rel_iff' := Finset.map_subset_map
 
-@[simp] theorem card_isolatedExtensionConfigurationEquiv (A : Configuration G) :
+section
+variable (A : Configuration G)
+@[simp] theorem card_isolatedExtensionConfigurationEquiv  :
     (isolatedExtensionConfigurationEquiv G f A).card = A.card := Finset.card_map _
 
 /-- The open graph is exactly the injective image of the original open graph. -/
-theorem openGraph_isolatedExtension (A : Configuration G) :
+theorem openGraph_isolatedExtension  :
     openGraph (G.map f) (isolatedExtensionConfigurationEquiv G f A) =
       (openGraph G A).map f := by
   apply SimpleGraph.edgeSet_injective
@@ -137,6 +131,7 @@ theorem openGraph_isolatedExtension (A : Configuration G) :
   simp only [openEdges, isolatedExtensionConfigurationEquiv_val, Finset.coe_map,
     Set.image_image]
   rfl
+end
 
 /-- The count includes exactly one additional component for every new vertex. -/
 theorem componentCount_isolatedExtension [Finite V] [Finite W]
@@ -153,8 +148,7 @@ theorem componentCount_isolatedExtension [Finite V] [Finite W]
 theorem actualConnected_isolatedExtension (A : Configuration G) (u v : V) :
     ActualConnected (G.map f) (isolatedExtensionConfigurationEquiv G f A) (f u) (f v) ↔
       ActualConnected G A u v := by
-  rw [ActualConnected, ActualConnected, openGraph_isolatedExtension,
-    reachable_isolatedExtension_apply]
+  grind [ActualConnected, openGraph_isolatedExtension, reachable_isolatedExtension_apply]
 
 section Finite
 
@@ -167,18 +161,17 @@ omit [Finite V] [Finite W] in
 theorem isolatedExtension_edge_card : Nat.card (G.map f).edgeSet = Nat.card G.edgeSet :=
   (Nat.card_congr (isolatedExtensionEdgeEquiv G f)).symm
 
+section
+variable (q : Parameters) (B : Set V) (C : Set W)
 /-- Added isolated vertices contribute a fixed positive factor to every weight.
 The labels of the free boundary sets can be arbitrary on either vertex carrier. -/
-theorem weight_isolatedExtension (q : Parameters) (B : Set V) (C : Set W)
-    (A : Configuration G) :
+theorem weight_isolatedExtension (A : Configuration G) :
     weight (G.map f) q (BoundaryCondition.free C) (isolatedExtensionConfigurationEquiv G f A) =
       weight G q (BoundaryCondition.free B) A * q.val ^ Nat.card {w : W // w ∉ Set.range f} := by
-  rw [weight, weight, card_isolatedExtensionConfigurationEquiv, isolatedExtension_edge_card,
-    componentCount_isolatedExtension G f B C A, pow_add]
-  simp only [mul_assoc]
+  grind [weight, card_isolatedExtensionConfigurationEquiv, isolatedExtension_edge_card, componentCount_isolatedExtension]
 
 /-- The very same factor appears in the complete finite partition function. -/
-theorem partitionFunction_isolatedExtension (q : Parameters) (B : Set V) (C : Set W) :
+theorem partitionFunction_isolatedExtension  :
     partitionFunction (G.map f) q (BoundaryCondition.free C) =
       partitionFunction G q (BoundaryCondition.free B) * q.val ^ Nat.card {w : W // w ∉ Set.range f} := by
   unfold partitionFunction FiniteProbability.partition
@@ -187,8 +180,7 @@ theorem partitionFunction_isolatedExtension (q : Parameters) (B : Set V) (C : Se
   rw [Finset.sum_mul]
 
 /-- The isolated-vertex factor cancels, yielding exact normalized probabilities. -/
-theorem configurationProbability_isolatedExtension (q : Parameters)
-    (B : Set V) (C : Set W) (A : Configuration G) :
+theorem configurationProbability_isolatedExtension (A : Configuration G) :
     configurationProbability (G.map f) q (BoundaryCondition.free C)
         (isolatedExtensionConfigurationEquiv G f A) =
       configurationProbability G q (BoundaryCondition.free B) A := by
@@ -198,13 +190,14 @@ theorem configurationProbability_isolatedExtension (q : Parameters)
 
 /-- The entire free FK probability law is unchanged by adding isolated vertices,
 under the proved bijection of actual original-edge configurations. -/
-theorem law_isolatedExtension_map (q : Parameters) (B : Set V) (C : Set W) :
+theorem law_isolatedExtension_map  :
     (law G q (BoundaryCondition.free B)).map (isolatedExtensionConfigurationEquiv G f) =
       law (G.map f) q (BoundaryCondition.free C) := by
   ext A
   obtain ⟨A, rfl⟩ := (isolatedExtensionConfigurationEquiv G f).surjective A
   rw [FiniteProbability.map_equiv_apply, Equiv.symm_apply_apply, law_apply, law_apply,
     configurationProbability_isolatedExtension G f q B C A]
+end
 
 end Finite
 end

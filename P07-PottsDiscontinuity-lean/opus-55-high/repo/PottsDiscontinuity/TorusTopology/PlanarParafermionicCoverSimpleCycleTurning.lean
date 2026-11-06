@@ -7,7 +7,7 @@ public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverSimpleCyc
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverSimpleCycleBoundaryDefect
 public import Mathlib.Tactic
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 
@@ -28,14 +28,13 @@ theorem parafermionicCoverPrimalCycleTurnSum_eq_four_or_neg_four
       (fun v => k * (2 -
         ((parafermionicCoverFiniteFaceSelectedIncidentVertices S v).card : ℤ)))
       (by
-        intro v hv
-        simpa [S] using hlocal v hv)
+        omega)
   have hboundary := parafermionicCoverSimpleCycleFilling_boundary_defect hn p hp
   have hboundarySupport :
       Finset.sum p.support.toFinset (fun v => (2 : ℤ) -
         ((parafermionicCoverFiniteFaceSelectedIncidentVertices S v).card : ℤ)) = 4 := by
     rw [← parafermionicCoverSimpleCycleFillingSet_boundarySupport_toFinset hn p hp]
-    exact hboundary
+    omega
   have htotal : parafermionicCoverPrimalCycleTurnSum p hp = k * 4 := by
     rw [hturn]
     calc
@@ -45,11 +44,7 @@ theorem parafermionicCoverPrimalCycleTurnSum_eq_four_or_neg_four
         k * Finset.sum p.support.toFinset (fun v => (2 : ℤ) -
           ((parafermionicCoverFiniteFaceSelectedIncidentVertices S v).card : ℤ)) := by
             rw [← Finset.mul_sum]
-      _ = k * 4 := by rw [hboundarySupport]
-  rcases hk with hk | hk
-  · right
-    simpa [hk] using htotal
-  · left
-    simpa [hk] using htotal
+      _ = k * 4 := by grind
+  omega
 
 end PottsDiscontinuity.TorusTopology.Planar.Medial

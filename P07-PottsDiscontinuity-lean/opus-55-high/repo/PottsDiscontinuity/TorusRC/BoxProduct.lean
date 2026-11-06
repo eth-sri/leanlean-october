@@ -4,7 +4,7 @@ public import PottsDiscontinuity.TorusRC.BoxInterior
 
 /-! # Products of local free-box bounds on an exact right-half fiber -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusRC
 
@@ -46,7 +46,6 @@ theorem liftedBoxFreeConnectionProbability_prod_le_fiber
         (torusRCFiberLaw hN hM hN4 hM4 q (rightHalfFrozenEdges hN hM hN4 hM4) H)
         {A | ∀ i ∈ s, liftedBoxConnection hNp hMp
           (rightHalfRestore hN hM hN4 hM4 H A) (N / 2 : ℤ) (N : ℤ) R (c i) (v i)} := by
-  classical
   apply torusRCFiberEventProbability_finset_inter_ge_prod
     hN hM hN4 hM4 q (rightHalfFrozenEdges hN hM hN4 hM4) H s
   · intro i A B hAB hA
@@ -54,9 +53,7 @@ theorem liftedBoxFreeConnectionProbability_prod_le_fiber
       (rightHalfRestore_mono hN hM hN4 hM4 H hAB) hA
   · intro i _
     apply FK.FiniteProbability.expectation_nonneg
-    intro A
-    by_cases hA : A ∈ liftedBoxFreeConnectionEvent (c i) R (c i) (v i) <;>
-      simp [Set.indicator, hA]
+    grind [liftedBoxFreeConnectionEvent, Set.indicator]
   · intro i hi
     exact liftedBoxFreeConnectionProbability_le_free_remaining hN hM hN4 hM4 hNp hMp
       q (c i) R (v i) hRN hRM (hleft i hi) (hright i hi)

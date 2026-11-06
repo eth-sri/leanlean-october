@@ -16,7 +16,7 @@ vertices are retained here. Passing between different box vertex carriers is
 a separate obligation, not an assumption in these theorems.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 
@@ -35,11 +35,12 @@ omit [Finite V] in
 theorem boundary_le_frozenBoundary (ξ : BoundaryCondition V) (H : Configuration G) :
     ξ.partition ≤ (frozenBoundary ξ H).partition := le_sup_right
 
+section
+variable (q : Parameters) (ξ : BoundaryCondition V) (R : Configuration G) (f : RemainingConfiguration G R → ℝ) (hf0 : ∀ A, 0 ≤ f A) (hf : Monotone f)
+include hf0 hf
 /-- Deleting edges while keeping the original partition decreases every
 nonnegative increasing observable of the edges that remain. -/
-theorem remainingLaw_le_original_marginal (q : Parameters) (ξ : BoundaryCondition V)
-    (R : Configuration G) (f : RemainingConfiguration G R → ℝ)
-    (hf0 : ∀ A, 0 ≤ f A) (hf : Monotone f) :
+theorem remainingLaw_le_original_marginal  :
     expectation (remainingLaw G q ξ R) f ≤
       expectation ((law G q ξ).map (fun C => (configurationSplitEquiv G R C).1)) f := by
   rw [law_map_remaining_eq_bind_frozen]
@@ -50,12 +51,11 @@ theorem remainingLaw_le_original_marginal (q : Parameters) (ξ : BoundaryConditi
 
 /-- The comparison expressed directly as an observable of the full original
 configuration, without replacing the genuine marginal by a new model. -/
-theorem remainingLaw_le_original_expectation (q : Parameters) (ξ : BoundaryCondition V)
-    (R : Configuration G) (f : RemainingConfiguration G R → ℝ)
-    (hf0 : ∀ A, 0 ≤ f A) (hf : Monotone f) :
+theorem remainingLaw_le_original_expectation  :
     expectation (remainingLaw G q ξ R) f ≤
       expectation (law G q ξ) (fun C => f (configurationSplitEquiv G R C).1) := by
   simpa only [expectation_map] using remainingLaw_le_original_marginal q ξ R f hf0 hf
+end
 
 end
 end PottsDiscontinuity.FK

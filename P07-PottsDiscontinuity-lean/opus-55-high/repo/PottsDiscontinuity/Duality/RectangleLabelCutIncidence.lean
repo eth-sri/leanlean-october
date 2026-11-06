@@ -17,18 +17,15 @@ def rectangleCutDualEdgeOfBond (a : LatticeVertex) (w h : ℕ)
     (ht : b.target ∈ latticeRectangle a w h) : RectangleDualEdgeCarrier a w h :=
   rectanglePrimalDualEdgeEquiv a w h (rectangleCutEdgeOfBond a w h b hs ht)
 
-theorem rectangleCutEdgeOfBond_mem_cut_iff (a : LatticeVertex) (w h : ℕ)
-    (σ : RectangleVertex a w h → Bool) (b : LatticeBond)
-    (hs : b.source ∈ latticeRectangle a w h) (ht : b.target ∈ latticeRectangle a w h) :
+section
+variable (a : LatticeVertex) (w h : ℕ) (σ : RectangleVertex a w h → Bool) (b : LatticeBond) (hs : b.source ∈ latticeRectangle a w h) (ht : b.target ∈ latticeRectangle a w h)
+theorem rectangleCutEdgeOfBond_mem_cut_iff  :
     rectangleCutEdgeOfBond a w h b hs ht ∈ rectangleLabelCutEdgeCarrier a w h σ ↔
       σ ⟨b.source, hs⟩ != σ ⟨b.target, ht⟩ := by
-  rw [mem_rectangleLabelCutEdgeCarrier]
   simp [rectangleLabelCutEndpointStates,
     rectanglePrimalEdgeBond_of_rectangleCutEdgeOfBond]
 
-theorem rectangleCutDualEdgeOfBond_adj_iff (a : LatticeVertex) (w h : ℕ)
-    (σ : RectangleVertex a w h → Bool) (b : LatticeBond)
-    (hs : b.source ∈ latticeRectangle a w h) (ht : b.target ∈ latticeRectangle a w h) :
+theorem rectangleCutDualEdgeOfBond_adj_iff  :
     (rectangleLabelCutDualGraph a w h σ).Adj
       (rectangleDualEdgeSource a w h (rectangleCutDualEdgeOfBond a w h b hs ht))
       (rectangleDualEdgeTarget a w h (rectangleCutDualEdgeOfBond a w h b hs ht)) ↔
@@ -40,51 +37,39 @@ theorem rectangleCutDualEdgeOfBond_adj_iff (a : LatticeVertex) (w h : ℕ)
     have hpair' : (rectangleCutDualEdgeOfBond a w h b hs ht).crossingBond.toSym2 =
         e.crossingBond.toSym2 := by
       have h := congrArg (Sym2.map (fun z : RectangleDualVertex a w h => z.1)) hpair
-      simpa [rectangleDualCarrierPair, LatticeBond.toSym2,
-        rectangleDualEdgeSource_val, rectangleDualEdgeTarget_val] using h
+      tauto
     have hcross := LatticeBond.toSym2_injective hpair'
     have hbond : rectanglePrimalEdgeBond a w h e.primalEdge = b := by
-      have hd := congrArg primalBondOfDual hcross
       have hleft : primalBondOfDual
           (rectangleCutDualEdgeOfBond a w h b hs ht).crossingBond = b := by
-        rw [rectangleDualEdge_crossedPrimalBond]
-        change rectanglePrimalEdgeBond a w h
-          (rectangleCutEdgeOfBond a w h b hs ht) = b
+        simp
         exact rectanglePrimalEdgeBond_of_rectangleCutEdgeOfBond a w h b hs ht
-      rw [hleft, rectangleDualEdge_crossedPrimalBond] at hd
-      exact hd.symm
-    have hcut' := (mem_rectangleLabelCutEdgeCarrier a w h σ e.primalEdge).mp hcut
-    simpa [rectangleLabelCutEndpointStates, hbond] using hcut'
+      simp_all
+    aesop
   · intro hdiff
     have hcut := (rectangleCutEdgeOfBond_mem_cut_iff a w h σ b hs ht).2 hdiff
     apply (rectangleLabelCutDual_adj_iff a w h σ _ _).2
-    refine ⟨rectangleCutDualEdgeOfBond a w h b hs ht, ?_, ?_⟩
-    · simpa [rectangleCutDualEdgeOfBond, rectanglePrimalDualEdgeEquiv] using hcut
-    · simp [rectangleDualCarrierPair, rectangleCutDualEdgeOfBond]
+    aesop
+end
 
-theorem rectangleCutDualEdgeOfBond_crossingBond (a : LatticeVertex) (w h : ℕ)
-    (b : LatticeBond) (hs : b.source ∈ latticeRectangle a w h)
-    (ht : b.target ∈ latticeRectangle a w h) :
+section
+variable (a : LatticeVertex) (w h : ℕ) (b : LatticeBond) (hs : b.source ∈ latticeRectangle a w h) (ht : b.target ∈ latticeRectangle a w h)
+theorem rectangleCutDualEdgeOfBond_crossingBond  :
     (rectangleCutDualEdgeOfBond a w h b hs ht).crossingBond = dualBondOfPrimal b := by
   change rectangleCrossingDualBond a w h
     (rectangleCutEdgeOfBond a w h b hs ht) = dualBondOfPrimal b
   simp [rectangleCrossingDualBond, rectanglePrimalEdgeBond_of_rectangleCutEdgeOfBond]
 
-theorem rectangleCutDualEdgeOfBond_source_val (a : LatticeVertex) (w h : ℕ)
-    (b : LatticeBond) (hs : b.source ∈ latticeRectangle a w h)
-    (ht : b.target ∈ latticeRectangle a w h) :
+theorem rectangleCutDualEdgeOfBond_source_val  :
     (rectangleDualEdgeSource a w h
       (rectangleCutDualEdgeOfBond a w h b hs ht)).val = b.faceBase false := by
-  rw [rectangleDualEdgeSource_val, rectangleCutDualEdgeOfBond_crossingBond,
-    dualBondOfPrimal_source]
+  simp [rectangleCutDualEdgeOfBond_crossingBond]
 
-theorem rectangleCutDualEdgeOfBond_target_val (a : LatticeVertex) (w h : ℕ)
-    (b : LatticeBond) (hs : b.source ∈ latticeRectangle a w h)
-    (ht : b.target ∈ latticeRectangle a w h) :
+theorem rectangleCutDualEdgeOfBond_target_val  :
     (rectangleDualEdgeTarget a w h
       (rectangleCutDualEdgeOfBond a w h b hs ht)).val = b.faceBase true := by
-  rw [rectangleDualEdgeTarget_val, rectangleCutDualEdgeOfBond_crossingBond,
-    dualBondOfPrimal_target]
+  simp [rectangleCutDualEdgeOfBond_crossingBond]
+end
 
 theorem rectangleLabelCutDual_adj_iff_bond (a : LatticeVertex) (w h : ℕ)
     (σ : RectangleVertex a w h → Bool) (u v : RectangleDualVertex a w h) :
@@ -99,58 +84,35 @@ theorem rectangleLabelCutDual_adj_iff_bond (a : LatticeVertex) (w h : ℕ)
     obtain ⟨e, hcut, hpair⟩ :=
       (rectangleLabelCutDual_adj_iff a w h σ u v).mp hadj
     let b := rectanglePrimalEdgeBond a w h e.primalEdge
-    have hs : b.source ∈ latticeRectangle a w h :=
-      rectanglePrimalEdgeBond_endpoints_mem_public a w h e.primalEdge |>.1
-    have ht : b.target ∈ latticeRectangle a w h :=
-      rectanglePrimalEdgeBond_endpoints_mem_public a w h e.primalEdge |>.2
-    have hdiff : σ ⟨b.source, hs⟩ != σ ⟨b.target, ht⟩ := by
-      have hh := (mem_rectangleLabelCutEdgeCarrier a w h σ e.primalEdge).mp hcut
-      simpa [b, rectangleLabelCutEndpointStates] using hh
+    have hdiff : σ ⟨b.source, (rectanglePrimalEdgeBond_endpoints_mem_public a w h e.primalEdge |>.1)⟩ != σ ⟨b.target, (rectanglePrimalEdgeBond_endpoints_mem_public a w h e.primalEdge |>.2)⟩ := by
+      aesop
     have hcross : e.crossingBond = dualBondOfPrimal b := by
       rw [e.crossingBond_eq]
       rfl
     have hpair' : s(u.val, v.val) = s(b.faceBase false, b.faceBase true) := by
       have hh := congrArg (Sym2.map (fun z : RectangleDualVertex a w h => z.1)) hpair
-      simpa [rectangleDualCarrierPair, LatticeBond.toSym2, hcross,
-        dualBondOfPrimal_source, dualBondOfPrimal_target] using hh
-    rcases Sym2.eq_iff.mp hpair' with ⟨hu, hv⟩ | ⟨hu, hv⟩
-    · exact ⟨b, hs, ht, hdiff, Or.inl ⟨hu, hv⟩⟩
-    · exact ⟨b, hs, ht, hdiff, Or.inr ⟨hu, hv⟩⟩
+      simp_all [rectangleDualCarrierPair]
+    rcases Sym2.eq_iff.mp hpair' with ⟨hu, hv⟩ | ⟨hu, hv⟩ <;> grind
   · rintro ⟨b, hs, ht, hdiff, huv | huv⟩
     · have hadj := (rectangleCutDualEdgeOfBond_adj_iff a w h σ b hs ht).2 hdiff
-      have hs' : (rectangleDualEdgeSource a w h
-          (rectangleCutDualEdgeOfBond a w h b hs ht)).val = b.faceBase false :=
+      have hs' :=
         rectangleCutDualEdgeOfBond_source_val a w h b hs ht
-      have ht' : (rectangleDualEdgeTarget a w h
-          (rectangleCutDualEdgeOfBond a w h b hs ht)).val = b.faceBase true :=
+      have ht' :=
         rectangleCutDualEdgeOfBond_target_val a w h b hs ht
-      have hu : u = rectangleDualEdgeSource a w h
-          (rectangleCutDualEdgeOfBond a w h b hs ht) := by
-        apply Subtype.ext
-        exact huv.1.trans hs'.symm
-      have hv : v = rectangleDualEdgeTarget a w h
-          (rectangleCutDualEdgeOfBond a w h b hs ht) := by
-        apply Subtype.ext
-        exact huv.2.trans ht'.symm
-      rw [hu, hv]
-      exact hadj
+      grind
     · have hadj := (rectangleCutDualEdgeOfBond_adj_iff a w h σ b hs ht).2 hdiff
-      have hs' : (rectangleDualEdgeSource a w h
-          (rectangleCutDualEdgeOfBond a w h b hs ht)).val = b.faceBase false :=
+      have hs' :=
         rectangleCutDualEdgeOfBond_source_val a w h b hs ht
-      have ht' : (rectangleDualEdgeTarget a w h
-          (rectangleCutDualEdgeOfBond a w h b hs ht)).val = b.faceBase true :=
+      have ht' :=
         rectangleCutDualEdgeOfBond_target_val a w h b hs ht
       have hu : u = rectangleDualEdgeTarget a w h
           (rectangleCutDualEdgeOfBond a w h b hs ht) := by
-        apply Subtype.ext
-        exact huv.1.trans ht'.symm
+        grind
       have hv : v = rectangleDualEdgeSource a w h
           (rectangleCutDualEdgeOfBond a w h b hs ht) := by
-        apply Subtype.ext
-        exact huv.2.trans hs'.symm
+        grind
       rw [hu, hv]
-      exact hadj.symm
+      tauto
 
 end
 

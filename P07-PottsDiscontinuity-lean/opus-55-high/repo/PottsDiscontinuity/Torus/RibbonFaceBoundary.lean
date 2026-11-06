@@ -22,42 +22,39 @@ open Module
 
 variable {N M : ℕ}
 
+section
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M)
 /-- The actual ribbon boundary component containing a corner. -/
-def ribbonBoundaryOf (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (d : DirectedDart (checkerArrows N M)) : RibbonBoundaryComponent hN hM A :=
+def ribbonBoundaryOf (d : DirectedDart (checkerArrows N M)) : RibbonBoundaryComponent hN hM A :=
   Quotient.mk _ d
 
-@[simp] theorem ribbonBoundaryOf_step (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (d : DirectedDart (checkerArrows N M)) :
-    ribbonBoundaryOf hN hM A (ribbonBoundary hN hM A d) = ribbonBoundaryOf hN hM A d := by
-  exact Quotient.sound (Equiv.Perm.SameCycle.rfl.apply_left)
+@[simp] theorem ribbonBoundaryOf_step (d : DirectedDart (checkerArrows N M)) :
+    ribbonBoundaryOf hN hM A (ribbonBoundary hN hM A d) = ribbonBoundaryOf hN hM A d :=
+  Quotient.sound (Equiv.Perm.SameCycle.rfl.apply_left)
 
 /-- Signed boundary chains of the capped ribbon faces, on the indexed open edges. -/
-def ribbonFaceBoundary (hN : Even N) (hM : Even M) (A : RCConfig N M) :
+def ribbonFaceBoundary  :
     (RibbonBoundaryComponent hN hM A → ℚ) →ₗ[ℚ] (OpenDiamondEdge A → ℚ) where
   toFun f e := f (ribbonBoundaryOf hN hM A (ribbonEndEquiv hN hM (e.val, true))) -
     f (ribbonBoundaryOf hN hM A (ribbonEndEquiv hN hM (e.val, false)))
   map_add' f g := by ext e; simp only [Pi.add_apply]; ring
   map_smul' c f := by ext e; simp only [Pi.smul_apply, smul_eq_mul, RingHom.id_apply]; ring
 
-theorem ribbonFaceBoundary_kernel_pairing (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (f : LinearMap.ker (ribbonFaceBoundary hN hM A))
+theorem ribbonFaceBoundary_kernel_pairing (f : LinearMap.ker (ribbonFaceBoundary hN hM A))
     (d : DirectedDart (checkerArrows N M)) :
     f.val (ribbonBoundaryOf hN hM A (ribbonEdgePairing hN hM A d)) =
       f.val (ribbonBoundaryOf hN hM A d) := by
   obtain ⟨⟨v, b⟩, rfl⟩ := (ribbonEndEquiv hN hM).surjective d
   rw [ribbonEdgePairing_end]
   cases ha : A v
-  · rw [Bool.false_xor]
+  · simp
   · have he := congrFun f.property (⟨v, ha⟩ : OpenDiamondEdge A)
     change f.val (ribbonBoundaryOf hN hM A (ribbonEndEquiv hN hM (v, true))) -
       f.val (ribbonBoundaryOf hN hM A (ribbonEndEquiv hN hM (v, false))) = 0 at he
-    cases b
-    · exact sub_eq_zero.mp he
-    · exact (sub_eq_zero.mp he).symm
+    cases b <;> grind
 
 /-- Zero face boundaries are precisely functions on the connected ribbon components. -/
-def ribbonFaceBoundaryKernelEquiv (hN : Even N) (hM : Even M) (A : RCConfig N M) :
+def ribbonFaceBoundaryKernelEquiv  :
     LinearMap.ker (ribbonFaceBoundary hN hM A) ≃ₗ[ℚ] ribbonFunctions hN hM A where
   toFun f := ⟨fun d => f.val (ribbonBoundaryOf hN hM A d), by
     constructor
@@ -84,18 +81,19 @@ def ribbonFaceBoundaryKernelEquiv (hN : Even N) (hM : Even M) (A : RCConfig N M)
   map_add' _ _ := Subtype.ext rfl
   map_smul' _ _ := Subtype.ext rfl
 
-theorem finrank_ker_ribbonFaceBoundary (hN : Even N) (hM : Even M) (A : RCConfig N M) :
+theorem finrank_ker_ribbonFaceBoundary  :
     finrank ℚ (LinearMap.ker (ribbonFaceBoundary hN hM A)) = clusterCount hN hM true A := by
   rw [(ribbonFaceBoundaryKernelEquiv hN hM A).finrank_eq, finrank_ribbonFunctions]
 
 /-- The capped boundary image has dimension ell minus k, expressed without subtraction. -/
-theorem finrank_range_ribbonFaceBoundary (hN : Even N) (hM : Even M) (A : RCConfig N M) :
+theorem finrank_range_ribbonFaceBoundary  :
     finrank ℚ (LinearMap.range (ribbonFaceBoundary hN hM A)) + clusterCount hN hM true A =
       rcLoopCount hN hM A := by
   let : Fintype (RibbonBoundaryComponent hN hM A) := Fintype.ofFinite _
   have he := LinearMap.finrank_range_add_finrank_ker (ribbonFaceBoundary hN hM A)
   rw [finrank_ker_ribbonFaceBoundary, Module.finrank_pi,
     ← Nat.card_eq_fintype_card, card_ribbonBoundaryComponent] at he
-  exact he
+  omega
+end
 
 end PottsDiscontinuity.Torus

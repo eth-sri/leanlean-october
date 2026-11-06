@@ -4,7 +4,7 @@ public import Mathlib
 
 /-! # A centered discrete Gronwall estimate -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Bethe
 
@@ -15,18 +15,14 @@ theorem centered_anchor_bound {n N : ℕ} {C : ℝ} {u : ℕ → ℝ}
     (hsym : ∀ j ≤ n, u (n - j) = -u j)
     (hstep : ∀ j < n, |u (j + 1) - u j| ≤ C / N * (|u j| + 1)) :
     |u (n / 2)| ≤ C / N := by
-  have hNp : (0 : ℝ) < N := Nat.cast_pos.mpr hN
-  have hq : 0 ≤ C / N := div_nonneg hC hNp.le
-  have hq1 : C / N ≤ 1 := (div_le_one hNp).mpr hsmall
-  have hc : n / 2 ≤ n := Nat.div_le_self _ _
-  have hs := hsym (n / 2) hc
+  have hq : 0 ≤ C / N := by positivity
+  have hq1 := (div_le_one (Nat.cast_pos.mpr hN)).mpr hsmall
+  have hs := hsym (n / 2) (by omega)
   by_cases he : n % 2 = 0
   · have heq : n - n / 2 = n / 2 := by omega
-    rw [heq] at hs
-    have hz : u (n / 2) = 0 := by linarith
-    simpa [hz] using hq
+    grind
   · have heq : n - n / 2 = n / 2 + 1 := by omega
-    rw [heq] at hs
+    simp_all
     have hd := hstep (n / 2) (by omega)
     rw [hs, show -u (n / 2) - u (n / 2) = -(2 * u (n / 2)) by ring,
       abs_neg, abs_mul, abs_of_pos (by norm_num : (0 : ℝ) < 2)] at hd
@@ -42,21 +38,17 @@ theorem discrete_gronwall_right {n c : ℕ} {q : ℝ} {u : ℕ → ℝ}
     ∀ t, c + t ≤ n → |u (c + t)| + 1 ≤ 2 * (1 + q) ^ t := by
   intro t
   induction t with
-  | zero => intro _; simpa using (show |u c| + 1 ≤ 2 by linarith)
+  | zero => grind
   | succ t ih =>
     intro ht
-    have hi := ih (by omega)
-    have hd := hstep (c + t) (by omega)
-    have ha := abs_add_le (u (c + t + 1) - u (c + t)) (u (c + t))
     have hn : |u (c + t + 1)| + 1 ≤ (1 + q) * (|u (c + t)| + 1) := by
-      simp only [sub_add_cancel] at ha
-      nlinarith only [ha, hd]
+      grind
     calc
-      |u (c + (t + 1))| + 1 = |u (c + t + 1)| + 1 := by rw [Nat.add_assoc]
+      |u (c + (t + 1))| + 1 = |u (c + t + 1)| + 1 := by rfl
       _ ≤ (1 + q) * (|u (c + t)| + 1) := hn
       _ ≤ (1 + q) * (2 * (1 + q) ^ t) :=
-        mul_le_mul_of_nonneg_left hi (by positivity)
-      _ = 2 * (1 + q) ^ (t + 1) := by rw [pow_succ]; ring
+        mul_le_mul_of_nonneg_left (ih (by omega)) (by positivity)
+      _ = 2 * (1 + q) ^ (t + 1) := by ring
 
 theorem one_add_div_pow_le_exp {N t : ℕ} {C : ℝ}
     (hN : 0 < N) (hC : 0 ≤ C) (ht : t ≤ N) :
@@ -69,8 +61,7 @@ theorem one_add_div_pow_le_exp {N t : ℕ} {C : ℝ}
     _ = Real.exp ((t : ℝ) * (C / N)) := (Real.exp_nat_mul _ _).symm
     _ ≤ Real.exp C := Real.exp_le_exp.mpr (by
       have htc : (t : ℝ) ≤ N := Nat.cast_le.mpr ht
-      have := mul_le_mul_of_nonneg_right htc (div_nonneg hC hNp.le)
-      simpa [mul_div_cancel₀ C hNp.ne', mul_div_assoc, mul_comm (N : ℝ) C] using this)
+      simpa [mul_div_cancel₀ C hNp.ne', mul_div_assoc, mul_comm (N : ℝ) C] using (mul_le_mul_of_nonneg_right htc (div_nonneg hC hNp.le)))
 
 /-- A centered local recurrence gives a uniform bound without any prior
 alignment estimate. The same bound then improves every increment to `O(1/N)`. -/
@@ -81,28 +72,28 @@ theorem centered_discrete_gronwall {n N : ℕ} {C : ℝ} {u : ℕ → ℝ}
     (∀ j ≤ n, |u j| ≤ 2 * Real.exp C) ∧
       (∀ j < n, |u (j + 1) - u j| ≤ C * (2 * Real.exp C + 1) / N) := by
   have hNp : (0 : ℝ) < N := Nat.cast_pos.mpr hN
-  have hanchor : |u (n / 2)| ≤ 1 :=
+  have hanchor :=
     (centered_anchor_bound hN hC hsmall hsym hstep).trans
       ((div_le_one hNp).mpr hsmall)
   have hright : ∀ j ≤ n, n / 2 ≤ j → |u j| ≤ 2 * Real.exp C := by
     intro j hj hc
     have hi := discrete_gronwall_right (div_nonneg hC hNp.le) hanchor hstep
       (j - n / 2) (by omega)
-    rw [Nat.add_sub_of_le hc] at hi
+    simp_all
     have hp := one_add_div_pow_le_exp hN hC (show j - n / 2 ≤ N by omega)
     linarith
   have hbound : ∀ j ≤ n, |u j| ≤ 2 * Real.exp C := by
     intro j hj
     by_cases hc : n / 2 ≤ j
-    · exact hright j hj hc
+    · simp_all
     · have hi := hright (n - j) (by omega) (by omega)
-      simpa [hsym j hj] using hi
+      simp_all
   refine ⟨hbound, ?_⟩
   intro j hj
   calc
     _ ≤ C / N * (|u j| + 1) := hstep j hj
     _ ≤ C / N * (2 * Real.exp C + 1) :=
-      mul_le_mul_of_nonneg_left (by have := hbound j (by omega); linarith)
+      mul_le_mul_of_nonneg_left (by grind)
         (div_nonneg hC hNp.le)
     _ = C * (2 * Real.exp C + 1) / N := by ring
 

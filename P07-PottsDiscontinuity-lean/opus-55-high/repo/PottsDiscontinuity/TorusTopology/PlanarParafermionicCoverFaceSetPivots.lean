@@ -18,15 +18,13 @@ noncomputable def parafermionicCoverFiniteFaceSetPivots {n : ℕ}
     Finset (Sym2 (ParafermionicCoverBoxVertex n)) :=
   S.image (parafermionicCoverFiniteFaceTopPivot n)
 
-theorem parafermionicCoverFiniteFaceSetPivots_card {n : ℕ}
-    (S : Finset (ParafermionicCoverFiniteFaceTopIndex n)) :
-    (parafermionicCoverFiniteFaceSetPivots S).card = S.card := by
-  classical
-  unfold parafermionicCoverFiniteFaceSetPivots
-  exact Finset.card_image_of_injective _ (parafermionicCoverFiniteFaceTopPivot_injective n)
+section
+variable {n : ℕ} (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
+theorem parafermionicCoverFiniteFaceSetPivots_card  :
+    (parafermionicCoverFiniteFaceSetPivots S).card = S.card :=
+  Finset.card_image_of_injective _ (parafermionicCoverFiniteFaceTopPivot_injective n)
 
-theorem parafermionicCoverFiniteFaceSetPivots_subset_edgeSupport {n : ℕ}
-    (S : Finset (ParafermionicCoverFiniteFaceTopIndex n)) :
+theorem parafermionicCoverFiniteFaceSetPivots_subset_edgeSupport  :
     parafermionicCoverFiniteFaceSetPivots S ⊆
       parafermionicCoverFiniteFaceSetEdgeSupport S := by
   classical
@@ -35,30 +33,27 @@ theorem parafermionicCoverFiniteFaceSetPivots_subset_edgeSupport {n : ℕ}
   have htop := parafermionicCoverFiniteFaceTopEdgeBox_mem_boundaryGraph i.1 i.2
   have heq : parafermionicCoverFiniteFaceTopEdgeBox i.1 i.2 =
       parafermionicCoverFiniteFaceTopPivot n i := by
-    simp [parafermionicCoverFiniteFaceTopEdgeBox,
-      parafermionicCoverFiniteFaceTopPivot]
+    rfl
   have hmem : parafermionicCoverFiniteFaceTopPivot n i ∈
       (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).edgeSet := by
-    simpa [heq] using htop
+    simp_all
   have hinc : i ∈ parafermionicCoverFiniteFaceIncidentFaces
-      (parafermionicCoverFiniteFaceTopPivot n i) := by
-    exact Finset.mem_filter.mpr ⟨Finset.mem_univ _, hmem⟩
-  have hselected : i ∈ parafermionicCoverFiniteFaceSelectedIncidentFaces S
-      (parafermionicCoverFiniteFaceTopPivot n i) := by
-    exact Finset.mem_filter.mpr ⟨hinc, hi⟩
+      (parafermionicCoverFiniteFaceTopPivot n i) :=
+    Finset.mem_filter.mpr ⟨Finset.mem_univ _, hmem⟩
+  have hselected :=
+    Finset.mem_filter.mpr ⟨hinc, hi⟩
   apply Finset.mem_filter.mpr
   exact ⟨Finset.mem_univ _, ⟨i, hselected⟩⟩
 
-theorem parafermionicCoverFiniteFaceSetEdgeSupport_sdiff_pivots_card {n : ℕ}
-    (S : Finset (ParafermionicCoverFiniteFaceTopIndex n)) :
+theorem parafermionicCoverFiniteFaceSetEdgeSupport_sdiff_pivots_card  :
     (parafermionicCoverFiniteFaceSetEdgeSupport S \ parafermionicCoverFiniteFaceSetPivots S).card +
       S.card = (parafermionicCoverFiniteFaceSetEdgeSupport S).card := by
-  have hsubset := parafermionicCoverFiniteFaceSetPivots_subset_edgeSupport S
   calc
     _ = (parafermionicCoverFiniteFaceSetEdgeSupport S \ parafermionicCoverFiniteFaceSetPivots S).card +
         (parafermionicCoverFiniteFaceSetPivots S).card := by
           rw [parafermionicCoverFiniteFaceSetPivots_card]
     _ = (parafermionicCoverFiniteFaceSetEdgeSupport S).card :=
-      Finset.card_sdiff_add_card_eq_card hsubset
+      Finset.card_sdiff_add_card_eq_card (parafermionicCoverFiniteFaceSetPivots_subset_edgeSupport S)
+end
 
 end PottsDiscontinuity.TorusTopology.Planar.Medial

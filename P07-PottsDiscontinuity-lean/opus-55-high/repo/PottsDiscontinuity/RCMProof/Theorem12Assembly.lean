@@ -5,7 +5,7 @@ public import Mathlib.Topology.Homotopy.Lifting
 public import Mathlib.Topology.Homotopy.Path
 public import PottsDiscontinuity.RCMProof.Item3
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology Real
 
@@ -31,8 +31,8 @@ theorem rc_theorem_1_2_assembled
               (-1 : ℝ) ^ k / k * Real.tanh (k * lam)) atTop (𝓝 S) ∧
           Tendsto (fun n : ℕ => -(1 / (n : ℝ)) *
               Real.log ((φ 0).real {ω | (rcInfiniteOpenGraph ω).Reachable
-                (0, 0) (diagonalSite n)})) atTop (𝓝 (lam + 2 * S))) := by
-  exact rc_theorem_1_2_from_item3 q hq
+                (0, 0) (diagonalSite n)})) atTop (𝓝 (lam + 2 * S))) :=
+  rc_theorem_1_2_from_item3 q hq
     (rcItem3ForEveryFreeLimit_proved hW21h319 q hq)
 
 end PottsDiscontinuity.RCMProof

@@ -19,15 +19,17 @@ namespace PottsDiscontinuity.Torus
 variable {N M : ℕ}
 variable (ω₀ : ArrowConfig N M) (s : Smoothing N M) (h₀ : CompatibleConfig ω₀ s)
 
+section
+variable (F : DirectedLoop ω₀ s h₀ → Bool)
 /-- Orient each edge according to the Boolean attached to its canonical loop. -/
-def orientArrows (F : DirectedLoop ω₀ s h₀ → Bool) : ArrowConfig N M where
+def orientArrows  : ArrowConfig N M where
   horiz v := if ω₀.horiz v then F (loopOfDart ω₀ s h₀ (v, .east))
     else !F (loopOfDart ω₀ s h₀ (v, .east))
   vert v := if ω₀.vert v then F (loopOfDart ω₀ s h₀ (v, .north))
     else !F (loopOfDart ω₀ s h₀ (v, .north))
 
 /-- The reconstructed orientation, evaluated on any edge slot. -/
-theorem dartOut_orientArrows (F : DirectedLoop ω₀ s h₀ → Bool) (d : Dart N M) :
+theorem dartOut_orientArrows (d : Dart N M) :
     dartOut (orientArrows ω₀ s h₀ F) d =
       if dartOut ω₀ d then F (loopOfDart ω₀ s h₀ d) else !F (loopOfDart ω₀ s h₀ d) := by
   have hb : ∀ a b : Bool, Bool.not (if a then b else !b) = (if !a then b else !b) := by decide
@@ -36,20 +38,12 @@ theorem dartOut_orientArrows (F : DirectedLoop ω₀ s h₀ → Bool) (d : Dart 
   | east => rfl
   | north => rfl
   | west =>
-    have hq : loopOfDart ω₀ s h₀ ((prv i, j), .east) =
-        loopOfDart ω₀ s h₀ ((i, j), .west) :=
-      loopOfDart_edgeReverse ω₀ s h₀ ((i, j), .west)
-    simp only [dartOut, localOut, ArrowConfig.left, orientArrows, hq]
-    exact hb _ _
+    tauto
   | south =>
-    have hq : loopOfDart ω₀ s h₀ ((i, prv j), .north) =
-        loopOfDart ω₀ s h₀ ((i, j), .south) :=
-      loopOfDart_edgeReverse ω₀ s h₀ ((i, j), .south)
-    simp only [dartOut, localOut, ArrowConfig.below, orientArrows, hq]
-    exact hb _ _
+    tauto
 
 /-- Independent loop reversals preserve every local in-to-out strand pairing. -/
-theorem orientArrows_compatible (F : DirectedLoop ω₀ s h₀ → Bool) :
+theorem orientArrows_compatible  :
     CompatibleConfig (orientArrows ω₀ s h₀ F) s := by
   have hlocal : ∀ b l r d u : Bool,
       (∀ p : Port, localOut l r d u (pairedPort b p) = !localOut l r d u p) →
@@ -61,12 +55,11 @@ theorem orientArrows_compatible (F : DirectedLoop ω₀ s h₀ → Bool) :
       !dartOut (orientArrows ω₀ s h₀ F) (v, p) := by
     rw [dartOut_orientArrows, dartOut_orientArrows,
       loopOfDart_strandReverse, dartOut_strandReverse h₀]
-    have hb : ∀ a b : Bool, (if !a then b else !b) = Bool.not (if a then b else !b) := by decide
-    exact hb _ _
-  exact hd
+    grind
+  tauto
 
 /-- Encoding recovers every prescribed loop orientation. -/
-theorem loopOrientation_orientArrows (F : DirectedLoop ω₀ s h₀ → Bool) :
+theorem loopOrientation_orientArrows  :
     loopOrientation ω₀ s h₀ (orientArrows ω₀ s h₀ F)
       (orientArrows_compatible ω₀ s h₀ F) = F := by
   funext q
@@ -76,6 +69,7 @@ theorem loopOrientation_orientArrows (F : DirectedLoop ω₀ s h₀ → Bool) :
   rw [dartOut_orientArrows]
   simp only [d.property, ite_true]
   rw [loopOfDart_of_out ω₀ s h₀ d.val d.property]
+end
 
 /-- Decoding the orientation of a compatible arrow field recovers all of its arrows. -/
 theorem orientArrows_loopOrientation (ω : ArrowConfig N M) (h : CompatibleConfig ω s) :

@@ -10,7 +10,7 @@ An attached ribbon imposes equality of the values at its two ends on component
 functions. Rank-nullity then gives the exact cluster-count change.
 -/
 
-@[expose] public section
+public section
 
 open PottsDiscontinuity.SixVertex
 
@@ -20,9 +20,10 @@ open Module
 
 variable {N M : ℕ}
 
-theorem ribbonFunctions_toggle_iff (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (v : Fin N × Fin M) (hv : A v = false)
-    (f : DirectedDart (checkerArrows N M) → ℚ) :
+section
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M) (v : Fin N × Fin M) (hv : A v = false)
+include hv
+theorem ribbonFunctions_toggle_iff (f : DirectedDart (checkerArrows N M) → ℚ) :
     f ∈ ribbonFunctions hN hM (toggleEdge A v) ↔
       f ∈ ribbonFunctions hN hM A ∧
         f (ribbonEndEquiv hN hM (v, false)) = f (ribbonEndEquiv hN hM (v, true)) := by
@@ -40,9 +41,7 @@ theorem ribbonFunctions_toggle_iff (hN : Even N) (hM : Even M)
       exact hf.2
     have hab : f a = f b := by
       have he := hfq a
-      change f (Equiv.swap a b (ribbonEdgePairing hN hM A a)) = f a at he
-      rw [hpa, Equiv.swap_apply_left] at he
-      exact he.symm
+      simp_all
     exact ⟨⟨hf.1, (cycleFunctions_swap_mul_iff _ a b f hab).mp hfq⟩, hab⟩
   · rintro ⟨hf, hab⟩
     refine ⟨hf.1, ?_⟩
@@ -50,8 +49,7 @@ theorem ribbonFunctions_toggle_iff (hN : Even N) (hM : Even M)
     exact (cycleFunctions_swap_mul_iff _ a b f hab).mpr hf.2
 
 /-- Component functions after attachment are the kernel of the old end-value difference. -/
-def ribbonAttachmentKernelEquiv (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (v : Fin N × Fin M) (hv : A v = false) :
+def ribbonAttachmentKernelEquiv  :
     ribbonFunctions hN hM (toggleEdge A v) ≃ₗ[ℚ]
       LinearMap.ker (ribbonDifference hN hM A v) where
   toFun f := ⟨⟨f.val, ((ribbonFunctions_toggle_iff hN hM A v hv f.val).mp f.property).1⟩,
@@ -63,43 +61,36 @@ def ribbonAttachmentKernelEquiv (hN : Even N) (hM : Even M)
   map_add' _ _ := Subtype.ext (Subtype.ext rfl)
   map_smul' _ _ := Subtype.ext (Subtype.ext rfl)
 
-theorem clusterCount_toggle_of_connected (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (v : Fin N × Fin M) (hv : A v = false)
-    (h : RibbonConnected hN hM A (ribbonEndEquiv hN hM (v, false))
+theorem clusterCount_toggle_of_connected (h : RibbonConnected hN hM A (ribbonEndEquiv hN hM (v, false))
       (ribbonEndEquiv hN hM (v, true))) :
     clusterCount hN hM true (toggleEdge A v) = clusterCount hN hM true A := by
   rw [← finrank_ribbonFunctions, (ribbonAttachmentKernelEquiv hN hM A v hv).finrank_eq,
     ribbonDifference_eq_zero_of_connected hN hM A v h, LinearMap.ker_zero,
     finrank_top, finrank_ribbonFunctions]
 
-theorem clusterCount_toggle_of_not_connected (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (v : Fin N × Fin M) (hv : A v = false)
-    (h : ¬RibbonConnected hN hM A (ribbonEndEquiv hN hM (v, false))
+theorem clusterCount_toggle_of_not_connected (h : ¬RibbonConnected hN hM A (ribbonEndEquiv hN hM (v, false))
       (ribbonEndEquiv hN hM (v, true))) :
     clusterCount hN hM true (toggleEdge A v) + 1 = clusterCount hN hM true A := by
   have hd := Module.Dual.finrank_ker_add_one_of_ne_zero
     (ribbonDifference_ne_zero_of_not_connected hN hM A v h)
   rw [← (ribbonAttachmentKernelEquiv hN hM A v hv).finrank_eq,
     finrank_ribbonFunctions, finrank_ribbonFunctions] at hd
-  exact hd
+  omega
 
-theorem clusterCount_toggle_of_reachable (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (v : Fin N × Fin M) (hv : A v = false)
-    (h : (diamondOpenGraph hN hM true A).Reachable
+theorem clusterCount_toggle_of_reachable (h : (diamondOpenGraph hN hM true A).Reachable
       (faceEndpoint hN hM true v false) (faceEndpoint hN hM true v true)) :
     clusterCount hN hM true (toggleEdge A v) = clusterCount hN hM true A := by
   apply clusterCount_toggle_of_connected hN hM A v hv
   apply (ribbonConnected_iff_reachable hN hM A _ _).mpr
-  simpa only [ribbonFace_end] using h
+  simp_all
 
-theorem clusterCount_toggle_of_not_reachable (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (v : Fin N × Fin M) (hv : A v = false)
-    (h : ¬(diamondOpenGraph hN hM true A).Reachable
+theorem clusterCount_toggle_of_not_reachable (h : ¬(diamondOpenGraph hN hM true A).Reachable
       (faceEndpoint hN hM true v false) (faceEndpoint hN hM true v true)) :
     clusterCount hN hM true (toggleEdge A v) + 1 = clusterCount hN hM true A := by
   apply clusterCount_toggle_of_not_connected hN hM A v hv
   intro he
   apply h
-  simpa only [ribbonFace_end] using ribbonConnected_reachable hN hM A he
+  simpa using ribbonConnected_reachable hN hM A he
+end
 
 end PottsDiscontinuity.Torus

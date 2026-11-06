@@ -20,19 +20,19 @@ open Torus
 
 variable {N M : ℕ}
 
+section
+variable (hN : Even N) (hM : Even M)
 /-- The underlying simple connectivity graph, with every indexed edge open. -/
-def fullDiamondGraph (hN : Even N) (hM : Even M) : SimpleGraph (FaceVertex N M true) :=
+def fullDiamondGraph  : SimpleGraph (FaceVertex N M true) :=
   diamondOpenGraph hN hM true (fun _ => true)
 
 /-- Forget multiplicity and loops only when computing open connectivity. -/
-noncomputable def simpleConfiguration (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) : FK.Configuration (fullDiamondGraph hN hM) := by
+noncomputable def simpleConfiguration (A : RCConfig N M) : FK.Configuration (fullDiamondGraph hN hM) := by
   classical
   exact univ.filter fun e => ∃ v, A v = true ∧
     e.val = s(faceEndpoint hN hM true v false, faceEndpoint hN hM true v true)
 
-theorem openGraph_simpleConfiguration (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) :
+theorem openGraph_simpleConfiguration (A : RCConfig N M) :
     FK.openGraph (fullDiamondGraph hN hM) (simpleConfiguration hN hM A) =
       diamondOpenGraph hN hM true A := by
   classical
@@ -42,60 +42,50 @@ theorem openGraph_simpleConfiguration (hN : Even N) (hM : Even M)
   · rintro ⟨e, he, heq⟩
     obtain ⟨i, hi, hie⟩ := (mem_filter.mp he).2
     have huv : u ≠ v := (fullDiamondGraph hN hM).mem_edgeSet.mp
-      (by rw [← heq]; exact e.property) |>.ne
+      (by grind) |>.ne
     exact ⟨⟨i, hi, heq.symm.trans hie⟩, huv⟩
   · rintro ⟨⟨i, hi, hie⟩, huv⟩
     have he : s(u, v) ∈ (fullDiamondGraph hN hM).edgeSet := by
       rw [SimpleGraph.mem_edgeSet, fullDiamondGraph, diamondOpenGraph,
         SimpleGraph.fromEdgeSet_adj]
-      exact ⟨⟨i, rfl, hie⟩, huv⟩
+      grind
     refine ⟨⟨s(u,v), he⟩, mem_filter.mpr ⟨mem_univ _, ⟨i, hi, hie⟩⟩, rfl⟩
 
-theorem clusterCount_eq_componentCount (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) :
+theorem clusterCount_eq_componentCount (A : RCConfig N M) :
     clusterCount hN hM true A = FK.componentCount (fullDiamondGraph hN hM)
       (FK.BoundaryCondition.free ∅) (simpleConfiguration hN hM A) := by
   rw [FK.componentCount, FK.componentSetoid_free, openGraph_simpleConfiguration]
   rfl
 
-theorem simpleConfiguration_mono (hN : Even N) (hM : Even M)
-    {A B : RCConfig N M} (hAB : A ≤ B) :
+theorem simpleConfiguration_mono {A B : RCConfig N M} (hAB : A ≤ B) :
     simpleConfiguration hN hM A ⊆ simpleConfiguration hN hM B := by
   classical
   intro e he
   obtain ⟨i, hi, hie⟩ := (mem_filter.mp he).2
   have hbi : B i = true := by
-    have h := hAB i
-    rw [hi] at h
-    cases hB : B i
-    · exact False.elim ((by decide : ¬ (true ≤ false)) (by simpa [hB] using h))
-    · rfl
+    aesop
   exact mem_filter.mpr ⟨mem_univ _, ⟨i, hbi, hie⟩⟩
+end
 
-theorem simpleConfiguration_sup (hN : Even N) (hM : Even M)
-    (A B : RCConfig N M) :
+section
+variable (hN : Even N) (hM : Even M) (A B : RCConfig N M)
+theorem simpleConfiguration_sup  :
     simpleConfiguration hN hM (A ⊔ B) =
       simpleConfiguration hN hM A ∪ simpleConfiguration hN hM B := by
-  classical
   ext e
   simp only [simpleConfiguration, mem_filter, mem_univ, true_and, mem_union]
   constructor
   · rintro ⟨i, hi, he⟩
     have hior : A i = true ∨ B i = true := by
-      cases hA : A i <;> cases hB : B i <;> simp_all
-    exact hior.elim (fun h => Or.inl ⟨i, h, he⟩) (fun h => Or.inr ⟨i, h, he⟩)
+      simp_all
+    grind
   · rintro (⟨i, hi, he⟩ | ⟨i, hi, he⟩)
     · refine ⟨i, ?_, he⟩
-      change (A i ⊔ B i) = true
-      rw [hi]
-      cases B i <;> rfl
+      simp_all
     · refine ⟨i, ?_, he⟩
-      change (A i ⊔ B i) = true
-      rw [hi]
-      cases A i <;> rfl
+      simp_all
 
-theorem simpleConfiguration_inf_subset (hN : Even N) (hM : Even M)
-    (A B : RCConfig N M) :
+theorem simpleConfiguration_inf_subset  :
     simpleConfiguration hN hM (A ⊓ B) ⊆
       simpleConfiguration hN hM A ∩ simpleConfiguration hN hM B :=
   subset_inter (simpleConfiguration_mono hN hM inf_le_left)
@@ -104,16 +94,15 @@ theorem simpleConfiguration_inf_subset (hN : Even N) (hM : Even M)
 /-- The indexed component count is supermodular even for small periods.
 Forgetting parallel edges preserves unions but only gives an inclusion for
 intersections; component-count antitonicity has the required direction. -/
-theorem clusterCount_supermodular (hN : Even N) (hM : Even M)
-    (A B : RCConfig N M) :
+theorem clusterCount_supermodular  :
     clusterCount hN hM true A + clusterCount hN hM true B ≤
       clusterCount hN hM true (A ⊓ B) + clusterCount hN hM true (A ⊔ B) := by
-  classical
   simp only [clusterCount_eq_componentCount, simpleConfiguration_sup]
   have h := FK.componentCount_supermodular (FK.BoundaryCondition.free ∅)
     (simpleConfiguration hN hM A) (simpleConfiguration hN hM B)
-  have hm := FK.componentCount_antitone (G := fullDiamondGraph hN hM)
+  have hm := FK.componentCount_antitone
     (FK.BoundaryCondition.free ∅) (simpleConfiguration_inf_subset hN hM A B)
   omega
+end
 
 end PottsDiscontinuity.TorusRC

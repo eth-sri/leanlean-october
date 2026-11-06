@@ -7,7 +7,7 @@ public import Mathlib.Combinatorics.SimpleGraph.Paths
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFiniteEdgeCount
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFiniteFaceCount
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 
@@ -20,30 +20,16 @@ theorem parafermionicCoverFiniteEulerCount (n : ℕ) (hn : 1 ≤ n) :
     Fintype.card (ParafermionicCoverBoxVertex n) +
         (parafermionicCoverFiniteOrdinaryFaces n).card =
       (parafermionicCoverBoxGraph n).edgeFinset.card + 1 := by
-  let S : ℕ := 2*n^5+1
-  let V : ℕ := Fintype.card (ParafermionicCoverBoxVertex n)
-  let F : ℕ := (parafermionicCoverFiniteOrdinaryFaces n).card
-  let E : ℕ := (parafermionicCoverBoxGraph n).edgeFinset.card
-  have hV : V = (2*n+1)^2*S := by
-    dsimp [V,S]
-    exact parafermionicCoverBoxVertex_card n
-  have hF : F + S + (n-1) = (2*n)^2*S := by
-    dsimp [F,S]
-    exact parafermionicCoverFiniteOrdinaryFaces_card n hn
-  have hE : E+n = 4*n*(2*n+1)*S := by
-    dsimp [E,S]
-    have hn0 : 0 < n := by omega
-    exact parafermionicCoverBoxGraph_edgeFinset_card_add_n n hn0
-  have hF' : F+S+n = (2*n)^2*S+1 := by omega
-  have hpoly : V+(2*n)^2*S = 4*n*(2*n+1)*S+S := by
-    rw [hV]
-    ring
-  have hsum : V+F+S+n = E+n+S+1 := by
-    calc
-      V+F+S+n = V+(F+S+n) := by omega
-      _ = V+((2*n)^2*S+1) := by rw [hF']
-      _ = (4*n*(2*n+1)*S+S)+1 := by omega
-      _ = E+n+S+1 := by rw [hE]
-  omega
+  let S := 2*n^5+1
+  let V := Fintype.card (ParafermionicCoverBoxVertex n)
+  let F := (parafermionicCoverFiniteOrdinaryFaces n).card
+  let E := (parafermionicCoverBoxGraph n).edgeFinset.card
+  have hV :=
+    parafermionicCoverBoxVertex_card n
+  have hF :=
+    parafermionicCoverFiniteOrdinaryFaces_card n hn
+  have hE :=
+    parafermionicCoverBoxGraph_edgeFinset_card_add_n n (by omega)
+  grind
 
 end PottsDiscontinuity.TorusTopology.Planar.Medial

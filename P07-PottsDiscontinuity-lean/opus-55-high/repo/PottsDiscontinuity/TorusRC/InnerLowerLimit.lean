@@ -39,9 +39,8 @@ theorem torusRCU_one_inner_liminf_of_h319 (q : Set.Ici (1 : ℝ)) (hh319 : h319 
     apply tendsto_atTop.2
     intro k
     filter_upwards [eventually_ge_atTop k] with m hm
-    dsimp [height,positiveEvenPeriod]
-    omega
-  let p : ℕ → ℝ := fun m => torusRCProbability hN (positiveEvenPeriod_even m) q
+    grind [positiveEvenPeriod]
+  let p := fun m => torusRCProbability hN (positiveEvenPeriod_even m) q
     {A | rcVerticalWinding hN (positiveEvenPeriod_even m)
       ⟨0,positiveEvenPeriod_pos m⟩ A = 1}
   let b := liftedBoxFreeConnectionProbability (torusRCBridgeParameters q)
@@ -57,14 +56,7 @@ theorem torusRCU_one_inner_liminf_of_h319 (q : Set.Ici (1 : ℝ)) (hh319 : h319 
       C * (c/(9*(n:ℝ)^2))^((height m:ℝ)/(n:ℝ)) * b^(height m/(2*n)) ≤ p m := by
     filter_upwards [hheight.eventually (eventually_ge_atTop (max 4 (max (4*n) (N/2+1))))]
       with m hm
-    have hM4 : 4 ≤ height m := (le_max_left _ _).trans hm
-    have h4nM : 4*n ≤ height m := (le_max_left _ _).trans ((le_max_right _ _).trans hm)
-    have hNM : N/2 < height m := by
-      have h := (le_max_right (4*n) (N/2+1)).trans ((le_max_right _ _).trans hm)
-      omega
-    have h := hfinite N (height m) n hN (positiveEvenPeriod_even m) hN4 hM4 hNdiv hn h8nN h4nM hNM
-    change _ ≤ p m at h
-    convert h using 1; dsimp [C,b]; ring
+    grind
   exact log_block_product_liminf height hheight p C (c/(9*(n:ℝ)^2)) b hC
     (by positivity) hb n (2*n) (by omega) (by omega) hp
 

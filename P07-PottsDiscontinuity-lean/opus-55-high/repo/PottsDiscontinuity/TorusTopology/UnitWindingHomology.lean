@@ -6,7 +6,7 @@ public import Mathlib.LinearAlgebra.Dimension.FreeAndStrongRankCondition
 /-! The complete homological form of U=1: the two essential loops have opposite
 classes (a,1) and (-a,-1), with no restriction on the integer a. -/
 
-@[expose] public section
+public section
 
 open PottsDiscontinuity.SixVertex
 namespace PottsDiscontinuity.TorusTopology
@@ -24,7 +24,7 @@ theorem loop_displacement_determinant_zero (hN : Even N) (hM : Even M)
     ⟨loopDisplacementX hN hM A,loopDisplacementX_mem_incidenceCycleSpace hN hM A⟩
   let Y : LinearMap.ker (loopIncidenceBoundary hN hM A) :=
     ⟨loopDisplacementY hN hM A,loopDisplacementY_mem_incidenceCycleSpace hN hM A⟩
-  obtain ⟨v,hv⟩ := (finrank_le_one_iff (K := ℚ)).mp
+  obtain ⟨v,hv⟩ := (finrank_le_one_iff).mp
     (finrank_loopIncidenceCycleSpace_le_one hN hM hNp hMp A)
   obtain ⟨a,ha⟩ := hv X
   obtain ⟨b,hb⟩ := hv Y
@@ -35,10 +35,10 @@ theorem loop_displacement_determinant_zero (hN : Even N) (hM : Even M)
   rw [hX,hX,hY,hY]
   ring
 
+section
+variable (hN : Even N) (hM : Even M) (i : Fin N) (j : Fin M) (A : RCConfig N M)
 /-- Exact integer parallelism, for both signed seam coordinates. -/
-theorem loop_winding_determinant_zero (hN : Even N) (hM : Even M)
-    (i : Fin N) (j : Fin M) (A : RCConfig N M)
-    (q r : Loop hN hM (rcSmoothing A)) :
+theorem loop_winding_determinant_zero (q r : Loop hN hM (rcSmoothing A)) :
     loopSum (checkerArrows N M) (rcSmoothing A)
       (checkerArrows_compatible hN hM _) (horizontalCross i) q *
       loopVertical (checkerArrows N M) (rcSmoothing A)
@@ -53,28 +53,24 @@ theorem loop_winding_determinant_zero (hN : Even N) (hM : Even M)
         (checkerArrows_compatible hN hM _) (horizontalCross i) t : ℚ) := by
     unfold loopDisplacementX
     rw [loop_horizontal_displacement _ _ _ i]
-    push_cast
-    rfl
+    simp
   have hY (t) : loopDisplacementY hN hM A t = (M : ℚ) *
       (loopVertical (checkerArrows N M) (rcSmoothing A)
         (checkerArrows_compatible hN hM _) j t : ℚ) := by
     unfold loopDisplacementY
     rw [loop_vertical_displacement _ _ _ j]
-    push_cast
-    rfl
-  rw [hX,hX,hY,hY] at he
+    simp
+  simp_all
   have hN0 : (N : ℚ) ≠ 0 := by exact_mod_cast (Fin.pos i).ne'
   have hM0 : (M : ℚ) ≠ 0 := by exact_mod_cast (Fin.pos j).ne'
   have hc : ∀ a b c d : ℚ, (N*a)*(M*b)-(N*c)*(M*d) =
-      (N : ℚ)*M*(a*b-c*d) := by intros; ring
+      (N : ℚ)*M*(a*b-c*d) := by grind
   rw [hc] at he
-  have hz := (mul_eq_zero.mp he).resolve_left (mul_ne_zero hN0 hM0)
-  exact_mod_cast hz
+  exact_mod_cast ((mul_eq_zero.mp he).resolve_left (mul_ne_zero hN0 hM0))
 
 /-- U=1 permits an arbitrary common integer horizontal slope. This is the
 strongest homological replacement for the erroneous horizontal-zero clause. -/
 theorem U_one_horizontal_multiple_vertical
-    (hN : Even N) (hM : Even M) (i : Fin N) (j : Fin M) (A : RCConfig N M)
     (hU : rcVerticalWinding hN hM j A = 1) :
     ∃ a : ℤ, ∀ q : Loop hN hM (rcSmoothing A),
       loopSum (checkerArrows N M) (rcSmoothing A)
@@ -83,9 +79,7 @@ theorem U_one_horizontal_multiple_vertical
         (checkerArrows_compatible hN hM _) j q := by
   obtain ⟨q,r,_,_,hq,_⟩ := U_one_vertical_loop_structure hN hM j A hU
   refine ⟨loopSum _ _ (checkerArrows_compatible hN hM _) (horizontalCross i) q,?_⟩
-  intro t
-  have he := loop_winding_determinant_zero hN hM i j A t q
-  rw [hq,mul_one] at he
-  exact sub_eq_zero.mp he
+  grind [loop_winding_determinant_zero]
+end
 
 end PottsDiscontinuity.TorusTopology

@@ -19,27 +19,29 @@ open scoped BigOperators
 noncomputable section
 variable {α β : Type*} [Fintype α] [Fintype β]
 
+section
+variable (p : PMF α)
 /-- Real expectation on a finite sample space. -/
-def expectation (p : PMF α) (f : α → ℝ) : ℝ := ∑ a, (p a).toReal * f a
+def expectation (f : α → ℝ) : ℝ := ∑ a, (p a).toReal * f a
 
-theorem sum_mass_toReal (p : PMF α) : ∑ a, (p a).toReal = 1 := by
-  have hs : ∑ a, p a = 1 := by simpa only [tsum_fintype] using p.tsum_coe
+theorem sum_mass_toReal  : ∑ a, (p a).toReal = 1 := by
+  have hs : ∑ a, p a = 1 := by simpa using p.tsum_coe
   rw [← ENNReal.toReal_sum (fun a _ => p.apply_ne_top a),
     hs, ENNReal.toReal_one]
 
-theorem expectation_const (p : PMF α) (c : ℝ) : expectation p (fun _ => c) = c := by
+theorem expectation_const (c : ℝ) : expectation p (fun _ => c) = c := by
   rw [expectation, ← Finset.sum_mul, sum_mass_toReal, one_mul]
 
-theorem expectation_nonneg (p : PMF α) (f : α → ℝ) (hf : ∀ a, 0 ≤ f a) :
+theorem expectation_nonneg (f : α → ℝ) (hf : ∀ a, 0 ≤ f a) :
     0 ≤ expectation p f :=
   Finset.sum_nonneg (fun a _ => mul_nonneg ENNReal.toReal_nonneg (hf a))
 
-theorem expectation_mono (p : PMF α) (f g : α → ℝ) (h : ∀ a, f a ≤ g a) :
+theorem expectation_mono (f g : α → ℝ) (h : ∀ a, f a ≤ g a) :
     expectation p f ≤ expectation p g :=
   Finset.sum_le_sum (fun a _ => mul_le_mul_of_nonneg_left (h a) ENNReal.toReal_nonneg)
 
 /-- Conditional expectations are averaged against the actual outer PMF. -/
-theorem expectation_bind (p : PMF α) (q : α → PMF β) (f : β → ℝ) :
+theorem expectation_bind (q : α → PMF β) (f : β → ℝ) :
     expectation (p.bind q) f = expectation p (fun a => expectation (q a) f) := by
   unfold expectation
   simp_rw [PMF.bind_apply, tsum_fintype,
@@ -49,9 +51,8 @@ theorem expectation_bind (p : PMF α) (q : α → PMF β) (f : β → ℝ) :
   apply Finset.sum_congr rfl
   intro a ha
   rw [Finset.mul_sum]
-  apply Finset.sum_congr rfl
-  intro b hb
-  exact mul_assoc _ _ _
+  ring
+end
 
 @[simp] theorem expectation_pure (a : α) (f : α → ℝ) :
     expectation (PMF.pure a) f = f a := by
@@ -61,20 +62,21 @@ theorem expectation_bind (p : PMF α) (q : α → PMF β) (f : β → ℝ) :
 /-- Pushforward expectations retain the original random variable exactly. -/
 theorem expectation_map (p : PMF α) (g : α → β) (f : β → ℝ) :
     expectation (p.map g) f = expectation p (fun a => f (g a)) := by
-  rw [PMF.map, expectation_bind]
-  simp only [Function.comp_apply, expectation_pure]
+  simp [PMF.map, expectation_bind, expectation_pure]
 
+section
+variable (p : PMF α) (q : α → PMF β) (f : β → ℝ) (c : ℝ)
+include p
 /-- Any proved lower bound for every genuine conditional law bounds the mixture. -/
-theorem le_expectation_bind (p : PMF α) (q : α → PMF β) (f : β → ℝ)
-    (c : ℝ) (h : ∀ a, c ≤ expectation (q a) f) : c ≤ expectation (p.bind q) f := by
+theorem le_expectation_bind (h : ∀ a, c ≤ expectation (q a) f) : c ≤ expectation (p.bind q) f := by
   rw [expectation_bind, ← expectation_const p c]
-  exact expectation_mono p _ _ h
+  simp_all [expectation_mono]
 
 /-- A proved upper bound for every genuine conditional law bounds the mixture. -/
-theorem expectation_bind_le (p : PMF α) (q : α → PMF β) (f : β → ℝ)
-    (c : ℝ) (h : ∀ a, expectation (q a) f ≤ c) : expectation (p.bind q) f ≤ c := by
+theorem expectation_bind_le (h : ∀ a, expectation (q a) f ≤ c) : expectation (p.bind q) f ≤ c := by
   rw [expectation_bind, ← expectation_const p c]
-  exact expectation_mono p _ _ h
+  simp_all [expectation_mono]
+end
 
 end
 end PottsDiscontinuity.FK.FiniteProbability

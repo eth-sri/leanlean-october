@@ -22,16 +22,19 @@ noncomputable section
 /-- The bond probability corresponding to inverse temperature `β`. -/
 def bondProbability (β : ℝ) : ℝ := 1 - Real.exp (-β)
 
-theorem bondProbability_pos {β : ℝ} (hβ : 0 < β) : 0 < bondProbability β := by
-  exact sub_pos.mpr ((Real.exp_lt_one_iff).2 (neg_neg_of_pos hβ))
+theorem bondProbability_pos {β : ℝ} (hβ : 0 < β) : 0 < bondProbability β :=
+  sub_pos.mpr ((Real.exp_lt_one_iff).2 (neg_neg_of_pos hβ))
 
-theorem bondProbability_lt_one (β : ℝ) : bondProbability β < 1 := by
-  exact sub_lt_self 1 (Real.exp_pos (-β))
+section
+variable (β : ℝ)
+theorem bondProbability_lt_one  : bondProbability β < 1 :=
+  sub_lt_self 1 (Real.exp_pos (-β))
 
-@[simp] theorem one_sub_bondProbability (β : ℝ) :
+@[simp] theorem one_sub_bondProbability  :
     1 - bondProbability β = Real.exp (-β) := by
   unfold bondProbability
   ring
+end
 
 /-- The independent FK parameter carrier at the actual Potts parameters. -/
 def fkParameters (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β) : FK.Parameters where
@@ -39,11 +42,14 @@ def fkParameters (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β) : FK.Paramet
   property := by exact_mod_cast (show 1 ≤ q by omega)
   edgeProbability := ⟨bondProbability β, bondProbability_pos hβ, bondProbability_lt_one β⟩
 
-@[simp] theorem fkParameters_val (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β) :
+section
+variable (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β)
+@[simp] theorem fkParameters_val  :
     (fkParameters q hq β hβ).val = q := rfl
 
-@[simp] theorem fkParameters_edgeParameter (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β) :
+@[simp] theorem fkParameters_edgeParameter  :
     FK.edgeParameter (fkParameters q hq β hβ) = 1 - Real.exp (-β) := rfl
+end
 
 /-- The explicit critical parameters satisfy the corrected identity `p_c = 1 - e^{-β_c}`
 (the source prints `p_c = 1 - e^{β_c}` in consequence 1 of Theorem 3.19). -/
@@ -55,8 +61,7 @@ theorem bondProbability_pottsCriticalBeta (q : ℕ) (hq : 2 ≤ q) :
   have hpos : 0 < 1 + Real.sqrt (q : ℝ) := by positivity
   simp only [bondProbability, pottsCriticalBeta, rcCriticalParameter,
     Real.exp_neg, Real.exp_log hpos]
-  field_simp
-  ring
+  grind
 
 end
 

@@ -23,16 +23,15 @@ variable {N M : ℕ}
 
 noncomputable section
 
-local instance clusterFintype (hN : Even N) (hM : Even M) (A : RCConfig N M) :
-    Fintype (diamondOpenGraph hN hM true A).ConnectedComponent := Fintype.ofFinite _
 
-def loopDisplacementX (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (q : Loop hN hM (rcSmoothing A)) : ℚ :=
+section
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M) (q : Loop hN hM (rcSmoothing A))
+def loopDisplacementX  : ℚ :=
   (loopSum _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) horizontalIncrement q : ℤ)
 
-def loopDisplacementY (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (q : Loop hN hM (rcSmoothing A)) : ℚ :=
+def loopDisplacementY  : ℚ :=
   (loopSum _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) verticalIncrement q : ℤ)
+end
 
 open scoped Classical in
 theorem sum_loopBoundaryCycle_fiber (hN : Even N) (hM : Even M) (A : RCConfig N M)
@@ -59,8 +58,7 @@ theorem loopDisplacementX_primal_sum (hN : Even N) (hM : Even M) (A : RCConfig N
   intro e _
   rw [← Finset.mul_sum]
   have he := congrFun (sum_loopBoundaryCycle_fiber hN hM A c) e
-  simp only [Finset.sum_apply, Pi.zero_apply] at he
-  rw [he, mul_zero]
+  simp_all
 
 open scoped Classical in
 theorem loopDisplacementY_primal_sum (hN : Even N) (hM : Even M) (A : RCConfig N M)
@@ -72,10 +70,11 @@ theorem loopDisplacementY_primal_sum (hN : Even N) (hM : Even M) (A : RCConfig N
   apply Finset.sum_eq_zero
   intro e _
   have he := congrFun (sum_loopBoundaryCycle_fiber hN hM A c) e
-  simpa only [Finset.sum_apply, Pi.zero_apply] using he
+  simp_all
 
-theorem loopDisplacementX_translatedDual (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (q : Loop hN hM (rcSmoothing A)) :
+section
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M) (q : Loop hN hM (rcSmoothing A))
+theorem loopDisplacementX_translatedDual  :
     loopDisplacementX hN hM (translatedDual A) (translatedDualLoopEquiv hN hM A q) =
       -loopDisplacementX hN hM A q := by
   unfold loopDisplacementX
@@ -86,10 +85,9 @@ theorem loopDisplacementX_translatedDual (hN : Even N) (hM : Even M)
     rcases d with ⟨v, p⟩
     cases p <;> rfl
   rw [hf]
-  simp only [loopSum, Finset.sum_neg_distrib, Int.cast_neg]
+  simp [loopSum]
 
-theorem loopDisplacementY_translatedDual (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (q : Loop hN hM (rcSmoothing A)) :
+theorem loopDisplacementY_translatedDual  :
     loopDisplacementY hN hM (translatedDual A) (translatedDualLoopEquiv hN hM A q) =
       -loopDisplacementY hN hM A q := by
   unfold loopDisplacementY
@@ -100,7 +98,8 @@ theorem loopDisplacementY_translatedDual (hN : Even N) (hM : Even M)
     rcases d with ⟨v, p⟩
     cases p <;> rfl
   rw [hf]
-  simp only [loopSum, Finset.sum_neg_distrib, Int.cast_neg]
+  simp [loopSum]
+end
 
 open scoped Classical in
 theorem loopDisplacementX_dual_sum (hN : Even N) (hM : Even M) (A : RCConfig N M)
@@ -114,11 +113,8 @@ theorem loopDisplacementX_dual_sum (hN : Even N) (hM : Even M) (A : RCConfig N M
       -(∑ q with loopDualCluster hN hM A q = c, loopDisplacementX hN hM A q) := by
     rw [← Finset.sum_neg_distrib, Finset.sum_filter]
     apply Finset.sum_congr rfl
-    intro q _
-    rw [loopDisplacementX_translatedDual]
-    by_cases hc : loopDualCluster hN hM A q = c <;> simp [loopDualCluster] at hc ⊢ <;> simp [hc]
-  rw [he] at h
-  exact neg_eq_zero.mp h
+    grind [loopDisplacementX_translatedDual, loopDualCluster]
+  linarith
 
 open scoped Classical in
 theorem loopDisplacementY_dual_sum (hN : Even N) (hM : Even M) (A : RCConfig N M)
@@ -132,16 +128,13 @@ theorem loopDisplacementY_dual_sum (hN : Even N) (hM : Even M) (A : RCConfig N M
       -(∑ q with loopDualCluster hN hM A q = c, loopDisplacementY hN hM A q) := by
     rw [← Finset.sum_neg_distrib, Finset.sum_filter]
     apply Finset.sum_congr rfl
-    intro q _
-    rw [loopDisplacementY_translatedDual]
-    by_cases hc : loopDualCluster hN hM A q = c <;> simp [loopDualCluster] at hc ⊢ <;> simp [hc]
-  rw [he] at h
-  exact neg_eq_zero.mp h
+    grind [loopDisplacementY_translatedDual, loopDualCluster]
+  linarith
 
-theorem loopDisplacementX_mem_incidenceCycleSpace (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) :
+section
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M)
+theorem loopDisplacementX_mem_incidenceCycleSpace  :
     loopDisplacementX hN hM A ∈ LinearMap.ker (loopIncidenceBoundary hN hM A) := by
-  classical
   have he : loopIncidenceBoundary hN hM A =
       Bipartite.boundary (loopPrimalCluster hN hM A) (loopDualCluster hN hM A) := rfl
   ext v
@@ -150,10 +143,8 @@ theorem loopDisplacementX_mem_incidenceCycleSpace (hN : Even N) (hM : Even M)
   | inl c => rw [Bipartite.boundary_inl, loopDisplacementX_primal_sum]; rfl
   | inr c => rw [Bipartite.boundary_inr, loopDisplacementX_dual_sum]; rfl
 
-theorem loopDisplacementY_mem_incidenceCycleSpace (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) :
+theorem loopDisplacementY_mem_incidenceCycleSpace  :
     loopDisplacementY hN hM A ∈ LinearMap.ker (loopIncidenceBoundary hN hM A) := by
-  classical
   have he : loopIncidenceBoundary hN hM A =
       Bipartite.boundary (loopPrimalCluster hN hM A) (loopDualCluster hN hM A) := rfl
   ext v
@@ -161,6 +152,7 @@ theorem loopDisplacementY_mem_incidenceCycleSpace (hN : Even N) (hM : Even M)
   cases v with
   | inl c => rw [Bipartite.boundary_inl, loopDisplacementY_primal_sum]; rfl
   | inr c => rw [Bipartite.boundary_inr, loopDisplacementY_dual_sum]; rfl
+end
 
 end
 end PottsDiscontinuity.TorusLoops

@@ -24,7 +24,7 @@ Here `pfRoot A = sSup (spectrum ℝ A)` is the largest eigenvalue.
   nonnegative vectors / the sum of all entries.
 -/
 
-@[expose] public section
+public section
 
 open Matrix Filter Topology
 
@@ -39,18 +39,17 @@ theorem nonneg_and_exists_pow_pos_of_isIrreducible (hirr : A.IsIrreducible) :
     (∀ i j, 0 ≤ A i j) ∧ ∀ i j, ∃ k > 0, 0 < (A ^ k) i j :=
   ⟨hirr.nonneg, (Matrix.isIrreducible_iff_exists_pow_pos hirr.nonneg).1 hirr⟩
 
-theorem finrank_eigenspace_pfRoot_eq_one (hA : A.IsHermitian) (hirr : A.IsIrreducible) :
+section
+variable (hA : A.IsHermitian)
+include hA
+theorem finrank_eigenspace_pfRoot_eq_one (hirr : A.IsIrreducible) :
     Module.finrank ℝ (Module.End.eigenspace (Matrix.toLin' A) (pfRoot A)) = 1 := by
   obtain ⟨hnn, hirr'⟩ := nonneg_and_exists_pow_pos_of_isIrreducible hirr
   obtain ⟨v, hv, hv'⟩ := exists_pos_eigenvector hnn hirr' hA
   have hmem : v ∈ Module.End.eigenspace (Matrix.toLin' A) (pfRoot A) := by
-    rw [Module.End.mem_eigenspace_iff, Matrix.toLin'_apply]
-    exact hv'
+    simp_all
   have hne : (⟨v, hmem⟩ : Module.End.eigenspace (Matrix.toLin' A) (pfRoot A)) ≠ 0 := by
-    intro h
-    have := congrArg (fun z : Module.End.eigenspace (Matrix.toLin' A) (pfRoot A) => (z : ι → ℝ)) h
-    have h0 : v (Classical.arbitrary ι) = 0 := congrFun this (Classical.arbitrary ι)
-    exact (hv _).ne' h0
+    aesop
   rw [finrank_eq_one_iff_of_nonzero' _ hne]
   intro w
   have hw : A *ᵥ (w : ι → ℝ) = pfRoot A • (w : ι → ℝ) := by
@@ -65,7 +64,7 @@ The largest eigenvalue `ρ = pfRoot A` is positive, is the maximum of the spectr
 maximum of the absolute values of the eigenvalues, has a strictly positive eigenvector, its
 eigenspace is a line, it is a simple root of the characteristic polynomial and the eigenvalue
 `-ρ` has algebraic multiplicity at most one. -/
-theorem perronFrobenius_irreducible (hA : A.IsHermitian) (hirr : A.IsIrreducible) :
+theorem perronFrobenius_irreducible (hirr : A.IsIrreducible) :
     0 < pfRoot A ∧
     IsGreatest (spectrum ℝ A) (pfRoot A) ∧
     IsGreatest ((fun μ : ℝ => |μ|) '' spectrum ℝ A) (pfRoot A) ∧
@@ -77,12 +76,11 @@ theorem perronFrobenius_irreducible (hA : A.IsHermitian) (hirr : A.IsIrreducible
     (∃! i, hA.eigenvalues i = pfRoot A) ∧
     A.charpoly.rootMultiplicity (-pfRoot A) ≤ 1 := by
   obtain ⟨hnn, hirr'⟩ := nonneg_and_exists_pow_pos_of_isIrreducible hirr
-  have hmem := (isGreatest_pfRoot hA).1
   refine ⟨pfRoot_pos_of_irreducible hnn hirr' hA, isGreatest_pfRoot hA, ?_,
     exists_pos_eigenvector hnn hirr' hA, ?_, finrank_eigenspace_pfRoot_eq_one hA hirr,
     rootMultiplicity_charpoly_pfRoot hnn hirr' hA, existsUnique_eigenvalues_eq_pfRoot hnn hirr' hA,
     rootMultiplicity_charpoly_neg_pfRoot_le_one hnn hirr' hA⟩
-  · refine ⟨⟨pfRoot A, hmem, abs_of_nonneg (pfRoot_nonneg hA hnn)⟩, ?_⟩
+  · refine ⟨⟨pfRoot A, ((isGreatest_pfRoot hA).1), abs_of_nonneg (pfRoot_nonneg hA hnn)⟩, ?_⟩
     rintro _ ⟨μ, hμ, rfl⟩
     exact abs_le_pfRoot_of_mem_spectrum hA hnn hμ
   · intro v w hv hv' hw
@@ -91,7 +89,7 @@ theorem perronFrobenius_irreducible (hA : A.IsHermitian) (hirr : A.IsIrreducible
 /-- **Perron-Frobenius for primitive symmetric nonnegative matrices**: besides the conclusions of
 `perronFrobenius_irreducible`, every eigenvalue other than `pfRoot A` has strictly smaller absolute
 value (`-pfRoot A` is not an eigenvalue). -/
-theorem perronFrobenius_primitive (hA : A.IsHermitian) (hprim : A.IsPrimitive) :
+theorem perronFrobenius_primitive (hprim : A.IsPrimitive) :
     (0 < pfRoot A ∧
       IsGreatest (spectrum ℝ A) (pfRoot A) ∧
       (∃ v : ι → ℝ, (∀ i, 0 < v i) ∧ A *ᵥ v = pfRoot A • v) ∧
@@ -99,20 +97,15 @@ theorem perronFrobenius_primitive (hA : A.IsHermitian) (hprim : A.IsPrimitive) :
       A.charpoly.rootMultiplicity (pfRoot A) = 1) ∧
     (∀ μ ∈ spectrum ℝ A, μ ≠ pfRoot A → |μ| < pfRoot A) ∧
     (∀ i, hA.eigenvalues i = pfRoot A ∨ |hA.eigenvalues i| < pfRoot A) := by
-  have hirr := hprim.isIrreducible
-  obtain ⟨h1, h2, -, h4, -, h6, h7, -, -⟩ := perronFrobenius_irreducible hA hirr
+  obtain ⟨h1, h2, -, h4, -, h6, h7, -, -⟩ := perronFrobenius_irreducible hA hprim.isIrreducible
   obtain ⟨k, hk0, hk⟩ := hprim.exists_pos_pow
   have hgap : ∀ μ ∈ spectrum ℝ A, μ ≠ pfRoot A → |μ| < pfRoot A :=
     fun μ hμ hne => abs_lt_pfRoot_of_primitive hprim.nonneg hk0 hk hA hμ hne
   refine ⟨⟨h1, h2, h4, h6, h7⟩, hgap, fun i => ?_⟩
   by_cases h : hA.eigenvalues i = pfRoot A
-  · exact Or.inl h
+  · simp_all
   · exact Or.inr (hgap _ (hA.eigenvalues_mem_spectrum_real i) h)
 
-/-- `(1/M) log tr (A ^ M) → log (pfRoot A)` for a primitive symmetric nonnegative matrix. -/
-theorem tendsto_log_trace_pow (hA : A.IsHermitian) (hprim : A.IsPrimitive) :
-    Tendsto (fun M : ℕ => (1 / (M : ℝ)) * Real.log (Matrix.trace (A ^ M))) atTop
-      (𝓝 (Real.log (pfRoot A))) :=
-  tendsto_log_trace_pow_primitive hA hprim
+end
 
 end PottsDiscontinuity.PerronFrobenius

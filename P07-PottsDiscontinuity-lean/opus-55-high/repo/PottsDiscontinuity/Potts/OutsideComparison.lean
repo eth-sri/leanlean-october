@@ -8,7 +8,7 @@ public import PottsDiscontinuity.Potts.FiniteEnergyBounds
 
 /-! Domain-Markov comparison retaining an arbitrary event on exterior edges. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Potts
 
@@ -23,10 +23,11 @@ local instance outsideEdgeDecidable : DecidableEq H.edgeSet := Classical.decEq _
 local instance outsideRemovedFintype (R : FK.Configuration H) :
     Fintype (FK.RemovedConfiguration H R) := Fintype.ofFinite _
 
+section
+variable (q : FK.Parameters) (ξ : FK.BoundaryCondition W)
 /-- The joint probability of an increasing inner event and any outside event
 is at most the wired-inner probability times the outside probability. -/
-theorem embedded_joint_outside_le (q : FK.Parameters) (ξ : FK.BoundaryCondition W)
-    (η : FK.BoundaryCondition V)
+theorem embedded_joint_outside_le (η : FK.BoundaryCondition V)
     (hpart : ∀ K : FK.RemovedConfiguration H (FK.subgraphRemovedEdges (G.map f) H),
       (FK.isolatedExtensionPullbackBoundary f (FK.frozenBoundary ξ K.val)).partition ≤
         η.partition)
@@ -39,7 +40,7 @@ theorem embedded_joint_outside_le (q : FK.Parameters) (ξ : FK.BoundaryCondition
         (FK.configurationSplitEquiv H (FK.subgraphRemovedEdges (G.map f) H) C).2 ∈ T}).toReal := by
   let R := FK.subgraphRemovedEdges (G.map f) H
   let r := fun C => (FK.configurationSplitEquiv H R C).2
-  let U : Set (FK.Configuration H) :=
+  let U :=
     {C | FK.embeddedConfigurationRestriction G H f hGH C ∈ S}
   have hfiber (K : FK.RemovedConfiguration H R) :
       {C | r C = K} = FK.frozenStateEvent R K := by
@@ -58,26 +59,25 @@ theorem embedded_joint_outside_le (q : FK.Parameters) (ξ : FK.BoundaryCondition
       apply ENNReal.toReal_pos
       · exact ((FK.measure_pos_iff H q ξ (FK.frozenStateEvent R K)).mpr
           ⟨K.val, Finset.inter_eq_left.mpr K.property⟩).ne'
-      · exact measure_ne_top _ _
+      simp
     rw [hfiber]
     exact (div_le_iff₀ hpos).mp hcond
   change (FK.law H q ξ).toMeasure.real {C | C ∈ U ∧ r C ∈ T} ≤
     (FK.measure G q η S).toReal * (FK.law H q ξ).toMeasure.real {C | r C ∈ T}
   rw [finite_measure_fibers]
   have hm := finite_measure_fibers (FK.law H q ξ) r Set.univ T
-  simp only [Set.mem_univ, true_and, Set.univ_inter] at hm
+  simp at hm
   rw [hm, Finset.mul_sum]
   apply Finset.sum_le_sum
   intro K _
   by_cases hK : K ∈ T
   · simp only [hK, ite_true]
-    exact hbound K
+    tauto
   · simp [hK]
 
 /-- Exterior closed-edge corrections retain the wired-interior upper bound,
 even after selecting the complement of the correction event. -/
-theorem embedded_joint_not_allClosed_le (q : FK.Parameters) (ξ : FK.BoundaryCondition W)
-    (B : Set V)
+theorem embedded_joint_not_allClosed_le (B : Set V)
     (hclosed : ∀ ⦃x : V⦄, x ∉ B → ∀ ⦃y : W⦄, H.Adj (f x) y →
       ∃ z : V, f z = y ∧ G.Adj x z)
     (hξavoid : ∀ ⦃x : V⦄, x ∉ B → f x ∉ ξ.boundary)
@@ -91,30 +91,25 @@ theorem embedded_joint_not_allClosed_le (q : FK.Parameters) (ξ : FK.BoundaryCon
   let T : Set (FK.RemovedConfiguration H R) := {K | ¬ Disjoint F K.val}
   have hdisj (C : FK.Configuration H) : Disjoint F (C ∩ R) ↔ Disjoint F C := by
     rw [Finset.disjoint_left, Finset.disjoint_left]
-    constructor
-    · intro h e he hc
-      exact h he (Finset.mem_inter.mpr ⟨hc, hF he⟩)
-    · intro h e he hc
-      exact h he (Finset.mem_inter.mp hc).1
+    grind
   have hcmp := embedded_joint_outside_le G H f hGH q ξ (FK.BoundaryCondition.wired B)
     (fun K => FK.isolatedExtensionPullback_frozenBoundary_partition_le_wired_of_closedInterior
       f hGH B hclosed ξ hξavoid K) S hS T
   have ht (C : FK.Configuration H) :
-      (FK.configurationSplitEquiv H R C).2 ∈ T ↔ C ∈ (allClosedEdges F)ᶜ := by
-    exact not_congr (hdisj C)
+      (FK.configurationSplitEquiv H R C).2 ∈ T ↔ C ∈ (allClosedEdges F)ᶜ :=
+    not_congr (hdisj C)
   have hevent : {C | (FK.configurationSplitEquiv H R C).2 ∈ T} =
       (allClosedEdges F)ᶜ := Set.ext ht
   have hjoint : {C | FK.embeddedConfigurationRestriction G H f hGH C ∈ S ∧
       (FK.configurationSplitEquiv H R C).2 ∈ T} =
       {C | FK.embeddedConfigurationRestriction G H f hGH C ∈ S} ∩ (allClosedEdges F)ᶜ := by
     ext C
-    exact and_congr_right (fun _ => ht C)
-  rw [hevent, hjoint] at hcmp
+    grind
   have hc := measureReal_compl (μ := FK.measure H q ξ)
     (MeasurableSpace.measurableSet_top (s := allClosedEdges F))
   simp only [Measure.real, measure_univ, ENNReal.toReal_one] at hc
-  rw [hc] at hcmp
-  exact hcmp
+  grind
+end
 
 end
 end PottsDiscontinuity.Potts

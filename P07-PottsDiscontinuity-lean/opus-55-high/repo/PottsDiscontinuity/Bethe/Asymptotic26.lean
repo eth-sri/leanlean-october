@@ -11,7 +11,7 @@ infinity. No discrete Bethe equation and no rate of density convergence are
 assumed.
 -/
 
-@[expose] public section
+public section
 
 open Set Filter MeasureTheory
 open scoped Topology BigOperators
@@ -44,56 +44,51 @@ theorem theorem26_integrals {ι : Type*} {l : Filter ι} {Δ : ℝ} (hΔ : Δ < 
       (hb i)) l (𝓝 0))
     (g : ℝ → ℝ) (hg : Continuous g) :
     Tendsto (fun i => ∫ x, g x ∂empiricalMeasure (N i)
-      (by have := hs i; omega) (k i + 1) (p i)) l
+      (by simp_all) (k i + 1) (p i)) l
       (𝓝 (∫ x in (-Real.pi)..Real.pi, g x * rho Δ x)) := by
-  have hNpos (i : ι) : 0 < N i := by have := hs i; omega
-  have hNreal (i : ι) : (0 : ℝ) < N i := by exact_mod_cast hNpos i
-  let E : ι → ℝ := fun i => densityNorm Δ hΔ
+  let E := fun i => densityNorm Δ hΔ
     (fun x => rootStepDensity (N i) (k i + 1) (p i) (hp i) (by omega) (hs i) x - rho Δ x)
     (hb i) / (Real.sinh (lamOf Δ) / (Real.cosh (lamOf Δ) + 1))
-  have hE : Tendsto E l (𝓝 0) :=
+  have hE :=
     tendsto_densityNorm_div hΔ
       (fun i x => rootStepDensity (N i) (k i + 1) (p i) (hp i) (by omega) (hs i) x - rho Δ x)
       hb hlim
   have hEnonneg (i : ι) : 0 ≤ E i :=
     div_nonneg (densityNorm_nonneg hΔ _ (hb i)) (density_weight_lower_pos hΔ).le
-  have herror (i : ι) (x : ℝ) (hx : x ∈ Icc (-Real.pi) Real.pi) :
-      |rootStepDensity (N i) (k i + 1) (p i) (hp i) (by omega) (hs i) x - rho Δ x| ≤ E i :=
+  have herror (i : ι) (x : ℝ) (hx : x ∈ Icc (-Real.pi) Real.pi) :=
     abs_le_densityNorm_div hΔ
       (fun x => rootStepDensity (N i) (k i + 1) (p i) (hp i) (by omega) (hs i) x - rho Δ x)
       (hb i) hx
   obtain ⟨m, hm, hmesh⟩ := eventually_rootPartition_gap_le hΔ r N (fun i => k i + 1) p hp
     (fun i => by omega) hs hcount hb hlim
-  let d : ι → ℝ := fun i => 2 * (2 * r + 1 : ℝ) / (m * (N i : ℝ))
+  let d := fun i => 2 * (2 * r + 1 : ℝ) / (m * (N i : ℝ))
   have hinv : Tendsto (fun i => (N i : ℝ)⁻¹) l (𝓝 0) := tendsto_inv_atTop_zero.comp hNlim
   have hd : Tendsto d l (𝓝 0) := by
-    have ht := hinv.const_mul (2 * (2 * r + 1 : ℝ) / m)
-    simpa only [mul_zero, d, div_mul_eq_div_mul_one_div, one_div] using ht
-  have hdnonneg (i : ι) : 0 ≤ d i := by dsimp [d]; positivity
+    simpa only [mul_zero, d, div_mul_eq_div_mul_one_div, one_div] using (hinv.const_mul (2 * (2 * r + 1 : ℝ) / m))
   obtain ⟨G₀, hG₀⟩ := isCompact_Icc.exists_bound_of_continuousOn hg.continuousOn
   obtain ⟨M₀, hM₀⟩ := isCompact_Icc.exists_bound_of_continuousOn (continuous_rho hΔ).continuousOn
   let G := max G₀ 1
   let M := max M₀ 1
-  have hGpos : 0 < G := lt_of_lt_of_le zero_lt_one (le_max_right _ _)
-  have hMpos : 0 < M := lt_of_lt_of_le zero_lt_one (le_max_right _ _)
+  have hGpos : 0 < G := by positivity
+  have hMpos : 0 < M := by positivity
   have hgBound : ∀ x ∈ Icc (-Real.pi) Real.pi, |g x| ≤ G := by
     intro x hx
-    exact (show |g x| ≤ G₀ by simpa only [Real.norm_eq_abs] using hG₀ x hx).trans (le_max_left _ _)
+    exact (show |g x| ≤ G₀ by tauto).trans (le_max_left _ _)
   have hρBound : ∀ x ∈ Icc (-Real.pi) Real.pi, |rho Δ x| ≤ M := by
     intro x hx
-    exact (show |rho Δ x| ≤ M₀ by simpa only [Real.norm_eq_abs] using hM₀ x hx).trans (le_max_left _ _)
-  let B : ι → ℝ := fun i => 2 * Real.pi * G * E i + 2 * G * M * d i + G * (N i : ℝ)⁻¹
+    exact (show |rho Δ x| ≤ M₀ by tauto).trans (le_max_left _ _)
+  let B := fun i => 2 * Real.pi * G * E i + 2 * G * M * d i + G * (N i : ℝ)⁻¹
   have hB : Tendsto B l (𝓝 0) := by
     have ht := ((hE.const_mul (2 * Real.pi * G)).add (hd.const_mul (2 * G * M))).add
       (hinv.const_mul G)
-    simpa only [mul_zero, add_zero] using ht
+    grind
   apply Metric.tendsto_nhds.mpr
   intro ε hε
-  let w : ℝ := ε / (4 * Real.pi * M)
-  have hwpos : 0 < w := by dsimp [w]; positivity
+  let w := ε / (4 * Real.pi * M)
+  have hwpos : 0 < w := by positivity
   have hwid : 2 * Real.pi * (w * M) = ε / 2 := by
     dsimp [w]
-    field_simp [hMpos.ne', Real.pi_ne_zero]
+    field_simp
     ring
   obtain ⟨δ, hδ, hmod⟩ := Metric.uniformContinuousOn_iff_le.mp
     (isCompact_Icc.uniformContinuousOn_of_continuous hg.continuousOn) w hwpos
@@ -105,15 +100,7 @@ theorem theorem26_integrals {ι : Type*} {l : Filter ι} {Δ : ℝ} (hΔ : Δ < 
     (fun x hx y hy hxy => by
       apply hmod x hx y hy
       rw [Real.dist_eq]
-      exact hxy.trans hdi.le)
-  apply hquad.trans_lt
-  have hidentity : 2 * Real.pi * (w * M + G * E i) + 2 * G * M * d i + G / (N i : ℝ) =
-      ε / 2 + B i := by
-    rw [mul_add, hwid]
-    dsimp [B]
-    rw [div_eq_mul_inv]
-    ring
-  rw [hidentity]
-  linarith
+      linarith)
+  grind
 
 end PottsDiscontinuity.Bethe

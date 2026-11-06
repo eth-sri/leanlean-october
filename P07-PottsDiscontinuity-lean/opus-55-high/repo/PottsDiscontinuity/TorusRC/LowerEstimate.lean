@@ -5,7 +5,7 @@ public import PottsDiscontinuity.TorusRC.TopologyBounds
 
 /-! # The complete finite-volume lower estimate for U=1 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusRC
 

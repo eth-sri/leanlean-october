@@ -7,20 +7,20 @@ public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFacePivot
 public import Mathlib.Combinatorics.SimpleGraph.DeleteEdges
 public import Mathlib.Tactic
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 
 open PottsDiscontinuity.TorusTopology.Planar
 open SimpleGraph
 
-private theorem reachable_of_sym2_pair_eq {V : Type*} (G : SimpleGraph V)
+theorem reachable_of_sym2_pair_eq {V : Type*} (G : SimpleGraph V)
     {e : Sym2 V} {x y : V} (he : e = s(x,y))
     (h : G.Reachable x y) : G.Reachable e.out.1 e.out.2 := by
   have hout : s(e.out.1,e.out.2) = s(x,y) := by
-    rw [Sym2.mk, e.out_eq, he]
+    simp_all [Sym2.mk]
   rcases Sym2.eq_iff.mp hout with ⟨h₁,h₂⟩ | ⟨h₁,h₂⟩
-  · simpa [h₁,h₂] using h
+  · simp_all
   · simpa [h₁,h₂] using h.symm
 
 /-- The three nonpivot sides of an actual retained lifted face connect the
@@ -31,7 +31,6 @@ theorem parafermionicCoverFiniteFaceTopPivot_bypass {n : ℕ}
       {parafermionicCoverFiniteFaceTopPivot n i}).Reachable
         (parafermionicCoverFiniteFaceTopPivot n i).out.1
         (parafermionicCoverFiniteFaceTopPivot n i).out.2 := by
-  classical
   let f := i.1
   let hf := i.2
   let b0 : ParafermionicCoverBoxVertex n :=
@@ -52,16 +51,16 @@ theorem parafermionicCoverFiniteFaceTopPivot_bypass {n : ℕ}
   let G := parafermionicCoverFiniteFaceBoundaryGraph f hf
   let p := parafermionicCoverFiniteFaceTopPivot n i
   have hp : p = s(b2,b3) := by
-    simp [p, parafermionicCoverFiniteFaceTopPivot, b2, b3, f]
+    rfl
   have hmapRight : Sym2.map Subtype.val (s(b1,b2)) =
       parafermionicCoverFiniteFaceRightEdge f := by
-    simp [b1, b2, parafermionicCoverFiniteFaceRightEdge, Sym2.map_mk]
+    rfl
   have hmapBottom : Sym2.map Subtype.val (s(b0,b1)) =
       parafermionicCoverFiniteFaceBottomEdge f := by
-    simp [b0, b1, parafermionicCoverFiniteFaceBottomEdge, Sym2.map_mk]
+    rfl
   have hmapLeft : Sym2.map Subtype.val (s(b3,b0)) =
       parafermionicCoverFiniteFaceLeftEdge f := by
-    simp [b0, b3, parafermionicCoverFiniteFaceLeftEdge, Sym2.map_mk]
+    rfl
   have hEdgeOfRaw (e : Sym2 (ParafermionicCoverBoxVertex n))
       (he : Sym2.map Subtype.val e ∈
         ({parafermionicCoverFiniteFaceBottomEdge f,
@@ -72,20 +71,16 @@ theorem parafermionicCoverFiniteFaceTopPivot_bypass {n : ℕ}
     have himg : Sym2.map Subtype.val e ∈
         Sym2.map Subtype.val '' G.edgeSet := by
       rw [parafermionicCoverFiniteFaceBoundaryGraph_actualEdgeSet]
-      exact he
+      omega
     rcases (Set.mem_image _ _ _).mp himg with ⟨e', he', heq⟩
-    have heq' : e' = e := Sym2.map.injective Subtype.val_injective heq
-    simpa [heq'] using he'
+    simpa [(Sym2.map.injective Subtype.val_injective heq)] using he'
   have hright : G.Adj b1 b2 := by
     apply (SimpleGraph.mem_edgeSet G).mp
     apply hEdgeOfRaw
-    rw [hmapRight]
-    simp
+    tauto
   have hbottom : G.Adj b0 b1 := by
     apply (SimpleGraph.mem_edgeSet G).mp
-    apply hEdgeOfRaw
-    rw [hmapBottom]
-    simp
+    tauto
   have hleft : G.Adj b3 b0 := by
     apply (SimpleGraph.mem_edgeSet G).mp
     apply hEdgeOfRaw
@@ -95,23 +90,17 @@ theorem parafermionicCoverFiniteFaceTopPivot_bypass {n : ℕ}
     intro he
     have hm := (hmapRight.symm.trans (congrArg (Sym2.map Subtype.val) he)).trans
       (parafermionicCoverFiniteFaceTopPivot_map n i)
-    have hraw : parafermionicCoverFiniteFaceRightEdge f =
-        parafermionicCoverFiniteFaceTopEdge f := by simpa using hm
-    exact parafermionicCoverFiniteFaceRightEdge_ne_topEdge hf hf hraw
+    exact parafermionicCoverFiniteFaceRightEdge_ne_topEdge hf hf (by omega)
   have hbottom_ne : s(b0,b1) ≠ p := by
     intro he
     have hm := (hmapBottom.symm.trans (congrArg (Sym2.map Subtype.val) he)).trans
       (parafermionicCoverFiniteFaceTopPivot_map n i)
-    have hraw : parafermionicCoverFiniteFaceBottomEdge f =
-        parafermionicCoverFiniteFaceTopEdge f := by simpa using hm
-    exact parafermionicCoverFiniteFaceBottomEdge_ne_topEdge_of_height_le hf hf (le_rfl) hraw
+    exact parafermionicCoverFiniteFaceBottomEdge_ne_topEdge_of_height_le hf hf (le_rfl) (by omega)
   have hleft_ne : s(b3,b0) ≠ p := by
     intro he
     have hm := (hmapLeft.symm.trans (congrArg (Sym2.map Subtype.val) he)).trans
       (parafermionicCoverFiniteFaceTopPivot_map n i)
-    have hraw : parafermionicCoverFiniteFaceLeftEdge f =
-        parafermionicCoverFiniteFaceTopEdge f := by simpa using hm
-    exact parafermionicCoverFiniteFaceLeftEdge_ne_topEdge hf hf hraw
+    exact parafermionicCoverFiniteFaceLeftEdge_ne_topEdge hf hf (by omega)
   have hright' : (G.deleteEdges {p}).Adj b2 b1 := by
     apply (SimpleGraph.deleteEdges_adj).2
     have hne : s(b2,b1) ≠ p := by
@@ -120,7 +109,7 @@ theorem parafermionicCoverFiniteFaceTopPivot_bypass {n : ℕ}
       calc
         s(b1,b2) = s(b2,b1) := Sym2.eq_swap
         _ = p := he
-    exact ⟨hright.symm, by simpa using hne⟩
+    exact ⟨hright.symm, by tauto⟩
   have hbottom' : (G.deleteEdges {p}).Adj b1 b0 := by
     apply (SimpleGraph.deleteEdges_adj).2
     have hne : s(b1,b0) ≠ p := by
@@ -129,7 +118,7 @@ theorem parafermionicCoverFiniteFaceTopPivot_bypass {n : ℕ}
       calc
         s(b0,b1) = s(b1,b0) := Sym2.eq_swap
         _ = p := he
-    exact ⟨hbottom.symm, by simpa using hne⟩
+    exact ⟨hbottom.symm, by tauto⟩
   have hleft' : (G.deleteEdges {p}).Adj b0 b3 := by
     apply (SimpleGraph.deleteEdges_adj).2
     have hne : s(b0,b3) ≠ p := by
@@ -138,9 +127,9 @@ theorem parafermionicCoverFiniteFaceTopPivot_bypass {n : ℕ}
       calc
         s(b3,b0) = s(b0,b3) := Sym2.eq_swap
         _ = p := he
-    exact ⟨hleft.symm, by simpa using hne⟩
-  have hwalk : (G.deleteEdges {p}).Walk b2 b3 :=
+    exact ⟨hleft.symm, by tauto⟩
+  have hwalk :=
     Walk.cons hright' (Walk.cons hbottom' (Walk.cons hleft' Walk.nil))
-  exact reachable_of_sym2_pair_eq (G.deleteEdges {p}) (e := p) (x := b2) (y := b3) hp hwalk.reachable
+  exact reachable_of_sym2_pair_eq (G.deleteEdges {p}) hp hwalk.reachable
 
 end PottsDiscontinuity.TorusTopology.Planar.Medial

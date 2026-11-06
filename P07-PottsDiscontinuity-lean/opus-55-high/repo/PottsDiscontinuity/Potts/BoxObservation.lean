@@ -17,15 +17,16 @@ def boxObservation (n : ℕ) (ω : FK.LatticeConfiguration) :
     FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ))) :=
   FK.boolConfigurationEquiv _ (fun e => ω (FK.frozenEdgeEmbedding (box n) e))
 
-def boxObservationEvent (n : ℕ)
-    (S : Set (FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ))))) :
+section
+variable (n : ℕ) (S : Set (FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ)))))
+def boxObservationEvent  :
     Set FK.LatticeConfiguration := {ω | boxObservation n ω ∈ S}
 
-theorem boxObservationEvent_isClopen (n : ℕ)
-    (S : Set (FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ))))) :
-    IsClopen (boxObservationEvent n S) := by
-  exact (isClopen_discrete {η | FK.boolConfigurationEquiv _ η ∈ S}).preimage
+theorem boxObservationEvent_isClopen  :
+    IsClopen (boxObservationEvent n S) :=
+  (isClopen_discrete {η | FK.boolConfigurationEquiv _ η ∈ S}).preimage
     (continuous_pi (fun e => continuous_apply (FK.frozenEdgeEmbedding (box n) e)))
+end
 
 theorem boxObservation_openExtension {m n : ℕ} (h : m ≤ n)
     (C : FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ)))) :
@@ -33,10 +34,12 @@ theorem boxObservation_openExtension {m n : ℕ} (h : m ≤ n)
       FK.embeddedConfigurationRestriction _ _ (nestedBoxEmbedding h) (nestedBox_map_le h) C := by
   ext e
   unfold boxObservation
-  rw [FK.mem_embeddedConfigurationRestriction, FK.mem_boolConfigurationEquiv]
+  simp
   rw [← nestedEdgeEmbedding_compatible h e, openExtension_at, decide_eq_true_eq]
 
-theorem openBoxProbabilityMeasure_observation (θ : FK.Parameters) {m n : ℕ} (h : m ≤ n)
+section
+variable (θ : FK.Parameters)
+theorem openBoxProbabilityMeasure_observation {m n : ℕ} (h : m ≤ n)
     (S : Set (FK.Configuration (squareLattice.induce (box m : Set (ℤ × ℤ))))) :
     (openBoxProbabilityMeasure θ n).toMeasure (boxObservationEvent m S) =
       FK.measure _ θ (FK.BoundaryCondition.wired {x | x.val ∈ vertexBoundary (box n)})
@@ -51,8 +54,7 @@ theorem openBoxProbabilityMeasure_observation (θ : FK.Parameters) {m n : ℕ} (
 
 /-- Every increasing event on a finite box has wired-limit probability at
 most its probability with that finite box boundary wired. -/
-theorem wired_limit_observation_le (θ : FK.Parameters)
-    (μ : ProbabilityMeasure FK.LatticeConfiguration)
+theorem wired_limit_observation_le (μ : ProbabilityMeasure FK.LatticeConfiguration)
     (hμ : Tendsto (fun n => FK.wiredBoxProbabilityMeasure θ (0, 0) n) atTop (𝓝 μ))
     (m : ℕ) (S : Set (FK.Configuration (squareLattice.induce (box m : Set (ℤ × ℤ)))))
     (hS : IsUpperSet S) :
@@ -73,6 +75,7 @@ theorem wired_limit_observation_le (θ : FK.Parameters)
     {x | x.val ∈ vertexBoundary (box m)}
     (fun _ hx _ hxy => nestedBox_interior_closed _ hx hxy)
     (fun _ hx => nestedBox_avoids_boundary _ hx) S hS
+end
 
 theorem nestedBoxEvent_refl (n : ℕ)
     (S : Set (FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ))))) :
@@ -81,23 +84,20 @@ theorem nestedBoxEvent_refl (n : ℕ)
   have hC : FK.embeddedConfigurationRestriction _ _ (nestedBoxEmbedding (Nat.le_refl n))
       (nestedBox_map_le (Nat.le_refl n)) C = C := by
     ext e
-    rw [FK.mem_embeddedConfigurationRestriction]
     have he : FK.embeddedEdgeEmbedding _ _ (nestedBoxEmbedding (Nat.le_refl n))
         (nestedBox_map_le (Nat.le_refl n)) e = e := by
       apply Subtype.ext
-      change Sym2.map (nestedBoxEmbedding (Nat.le_refl n)) e.val = e.val
       have hf : (nestedBoxEmbedding (Nat.le_refl n) : _ → _) = id :=
-        funext (fun x => Subtype.ext rfl)
-      rw [hf, Sym2.map_id]
-      rfl
-    rw [he]
+        by rfl
+      simp_all
+    simp_all
   exact congrArg (fun A => A ∈ S) hC |>.to_iff
 
 theorem openBoxProbabilityMeasure_observation_self (θ : FK.Parameters) (n : ℕ)
     (S : Set (FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ))))) :
     (openBoxProbabilityMeasure θ n).toMeasure (boxObservationEvent n S) =
       FK.measure _ θ (FK.BoundaryCondition.wired {x | x.val ∈ vertexBoundary (box n)}) S := by
-  rw [openBoxProbabilityMeasure_observation θ (Nat.le_refl n), nestedBoxEvent_refl]
+  simp [openBoxProbabilityMeasure_observation, nestedBoxEvent_refl]
 
 @[simp] theorem boxObservation_openExtension_self (n : ℕ)
     (C : FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ)))) :

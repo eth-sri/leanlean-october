@@ -6,26 +6,28 @@ public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFaceCorne
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverCompass
 public import Mathlib.Tactic
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 
 open PottsDiscontinuity.TorusTopology.Planar
 
-private theorem parafermionicCoverFiniteFaceCorner_next_adjacent
-    {n : ℕ} (i : ParafermionicCoverFiniteFaceTopIndex n) (c : Fin 4) :
+section
+variable {n : ℕ} (i : ParafermionicCoverFiniteFaceTopIndex n) (c : Fin 4)
+include n i
+theorem parafermionicCoverFiniteFaceCorner_next_adjacent
+     :
     (parafermionicCoverFaceCorner i.1 c,
       parafermionicCoverFaceCorner i.1 (c + 1)) ∈
       parafermionicCoverFiniteFaceDarts i.1 := by
   fin_cases c <;>
     simp [parafermionicCoverFiniteFaceDarts, parafermionicCoverFaceCorner]
 
-private theorem parafermionicCoverFiniteFaceCorner_next_base
-    {n : ℕ} (i : ParafermionicCoverFiniteFaceTopIndex n) (c : Fin 4) :
+theorem parafermionicCoverFiniteFaceCorner_next_base
+     :
     parafermionicCoverCompassBaseNeighbor
       (parafermionicCoverFaceCorner i.1 c) c =
         (parafermionicCoverFaceCorner i.1 (c + 1)).1 := by
-  rcases i with ⟨⟨⟨x,y⟩,k⟩,hi⟩
   fin_cases c <;>
     simp [parafermionicCoverCompassBaseNeighbor,
       parafermionicCoverFaceCorner,
@@ -37,14 +39,13 @@ private theorem parafermionicCoverFiniteFaceCorner_next_base
 compass neighbor. The final step uses the non-branch condition of the finite
 ordinary face. -/
 theorem parafermionicCoverFiniteFaceCorner_next_compass
-    {n : ℕ} (i : ParafermionicCoverFiniteFaceTopIndex n) (c : Fin 4) :
+     :
     parafermionicCoverFaceCorner i.1 (c + 1) =
       parafermionicCoverCompassNeighbor
         (parafermionicCoverFaceCorner i.1 c) c := by
   have hbase := parafermionicCoverFiniteFaceCorner_next_base i c
   have hadj := parafermionicCoverFiniteFaceDart_adjacent n i.1 i.2
     (parafermionicCoverFiniteFaceCorner_next_adjacent i c)
-  unfold parafermionicCoverCompassNeighbor
   exact parafermionicCoverNeighborLift_unique
     (parafermionicCoverFaceCorner i.1 c)
     (parafermionicCoverCompassBaseNeighbor
@@ -53,14 +54,12 @@ theorem parafermionicCoverFiniteFaceCorner_next_compass
 
 /-- The preceding corner is the actual opposite compass neighbor. -/
 theorem parafermionicCoverFiniteFaceCorner_prev_compass
-    {n : ℕ} (i : ParafermionicCoverFiniteFaceTopIndex n) (c : Fin 4) :
+     :
     parafermionicCoverFaceCorner i.1 (c - 1) =
       parafermionicCoverCompassNeighbor
         (parafermionicCoverFaceCorner i.1 c) (c + 1) := by
-  have hidx : (c - 1) + 1 = c := by fin_cases c <;> decide
-  have hdir : (c - 1) + 2 = c + 1 := by fin_cases c <;> decide
+  have hdir : (c - 1) + 2 = c + 1 := by omega
   have hnext := parafermionicCoverFiniteFaceCorner_next_compass i (c - 1)
-  rw [hidx] at hnext
   calc
     parafermionicCoverFaceCorner i.1 (c - 1) =
         parafermionicCoverCompassNeighbor
@@ -70,7 +69,8 @@ theorem parafermionicCoverFiniteFaceCorner_prev_compass
       (parafermionicCoverCompassNeighbor_reverse
         (parafermionicCoverFaceCorner i.1 (c - 1)) (c - 1)).symm
     _ = parafermionicCoverCompassNeighbor
-        (parafermionicCoverFaceCorner i.1 c) (c + 1) := by rw [← hnext, hdir]
+        (parafermionicCoverFaceCorner i.1 c) (c + 1) := by simp_all
+end
 
 /-- The positive raw darts of a retained ordinary face are exactly the
 successive corner-to-compass-neighbor steps, including the closed final step. -/
@@ -88,13 +88,11 @@ theorem parafermionicCoverFiniteFaceDart_iff_corner_compass
     · rcases Prod.mk.inj h0 with ⟨hu, hw⟩
       refine ⟨0, hu, ?_⟩
       rw [hw, hu]
-      simpa [parafermionicCoverFaceCorner] using
-        (parafermionicCoverFiniteFaceCorner_next_compass i 0)
+      rfl
     · rcases Prod.mk.inj h1 with ⟨hu, hw⟩
       refine ⟨1, hu, ?_⟩
       rw [hw, hu]
-      simpa [parafermionicCoverFaceCorner] using
-        (parafermionicCoverFiniteFaceCorner_next_compass i 1)
+      rfl
     · rcases Prod.mk.inj h2 with ⟨hu, hw⟩
       refine ⟨2, hu, ?_⟩
       rw [hw, hu]

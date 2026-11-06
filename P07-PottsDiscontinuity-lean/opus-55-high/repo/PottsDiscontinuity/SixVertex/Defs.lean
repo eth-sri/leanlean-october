@@ -34,7 +34,7 @@ Sources: arXiv:1611.09877v2, (1.4) (`eq:w_6V`), (1.5) (`eq:V`) and §3.3 (defini
   `Fin N = {0, …, N-1}` replaces `{1, …, N}` (same order).
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 open Finset
 
@@ -42,11 +42,14 @@ namespace PottsDiscontinuity.SixVertex
 
 /-! ### The torus and arrow configurations -/
 
+section
+variable {n : ℕ} (i : Fin n)
 /-- Cyclic successor on `Fin n` (`i + 1 mod n`). -/
-abbrev nxt {n : ℕ} (i : Fin n) : Fin n := finRotate n i
+abbrev nxt  : Fin n := finRotate n i
 
 /-- Cyclic predecessor on `Fin n` (`i - 1 mod n`). -/
-abbrev prv {n : ℕ} (i : Fin n) : Fin n := (finRotate n).symm i
+abbrev prv  : Fin n := (finRotate n).symm i
+end
 
 /-- An arrow configuration on the torus `ℤ/N × ℤ/M`: one orientation per edge.
 `horiz v = true` iff the edge `{v, v + (1,0)}` points right; `vert v = true` iff the edge
@@ -67,9 +70,6 @@ def ArrowConfig.equivProd (N M : ℕ) :
 instance (N M : ℕ) : Fintype (ArrowConfig N M) :=
   Fintype.ofEquiv _ (ArrowConfig.equivProd N M).symm
 
-instance (N M : ℕ) : DecidableEq (ArrowConfig N M) := fun ω ω' =>
-  decidable_of_iff (ω.horiz = ω'.horiz ∧ ω.vert = ω'.vert)
-    ⟨fun h => ArrowConfig.ext h.1 h.2, fun h => h ▸ ⟨rfl, rfl⟩⟩
 
 variable {N M : ℕ}
 
@@ -150,16 +150,19 @@ for configurations satisfying the ice rule, see `rowUp_eq_absUp`). -/
 def ArrowConfig.absUp (ω : ArrowConfig N M) : ℕ :=
   if h : 0 < M then ω.rowUp ⟨0, h⟩ else 0
 
+section
+variable (c : ℝ)
 /-- `Z_6V(N, M) = ∑_ω w(ω)` over all arrow configurations of the torus `T_{N,M}` (weights
 `a = b = 1`, `c`). -/
-def Z6V (c : ℝ) (N M : ℕ) : ℝ := ∑ ω : ArrowConfig N M, w6V1 c ω
+def Z6V (N M : ℕ) : ℝ := ∑ ω : ArrowConfig N M, w6V1 c ω
 
 /-- The part of `Z_6V(N,M)` with `n` up arrows per row: `∑_{ω : |ω| = n} w(ω)`. -/
-def Z6Vn (c : ℝ) (N M n : ℕ) : ℝ := ∑ ω : ArrowConfig N M with ω.absUp = n, w6V1 c ω
+def Z6Vn (N M n : ℕ) : ℝ := ∑ ω : ArrowConfig N M with ω.absUp = n, w6V1 c ω
 
 /-- `Z^{(r)}_{6V}(N, M) = ∑_{ω : |ω| = N/2 - r} w(ω)`, written as `|ω| + r = N / 2` so that no
 truncated subtraction occurs (`N` even in the source; for `r > N/2` the sum is empty). -/
-def Z6Vr (c : ℝ) (N M r : ℕ) : ℝ := ∑ ω : ArrowConfig N M with ω.absUp + r = N / 2, w6V1 c ω
+def Z6Vr (N M r : ℕ) : ℝ := ∑ ω : ArrowConfig N M with ω.absUp + r = N / 2, w6V1 c ω
+end
 
 /-! ### The transfer matrix (1.5) -/
 
@@ -178,13 +181,13 @@ def InterlacedLE (x y : Finset (Fin N)) : Prop :=
 def Interlaced (x y : Finset (Fin N)) : Prop := InterlacedLE x y ∨ InterlacedLE y x
 
 open Classical in
-noncomputable instance (x y : Finset (Fin N)) : Decidable (Interlaced x y) :=
+instance (x y : Finset (Fin N)) : Decidable (Interlaced x y) :=
   Classical.propDecidable _
 
 /-- The transfer matrix `V = V(N, c)` of (1.5), indexed by the basis vectors `Ψ_x`,
 `x ⊆ {0, …, N-1}`: `V(x,x) = 2`; `V(x,y) = c^{|{i : Ψ_x(i) ≠ Ψ_y(i)}|}` if `x ≠ y` are interlaced;
 `0` otherwise. -/
-noncomputable def transferMatrix (N : ℕ) (c : ℝ) :
+def transferMatrix (N : ℕ) (c : ℝ) :
     Matrix (Finset (Fin N)) (Finset (Fin N)) ℝ :=
   fun x y =>
     if x = y then 2
@@ -195,7 +198,7 @@ noncomputable def transferMatrix (N : ℕ) (c : ℝ) :
 abbrev State (N n : ℕ) : Type := {x : Finset (Fin N) // x.card = n}
 
 /-- The block `V^{[n]}` of the transfer matrix: the action of `V` on `Ω_n = Vect(Ψ_x : |x| = n)`. -/
-noncomputable def transferBlock (N : ℕ) (c : ℝ) (n : ℕ) : Matrix (State N n) (State N n) ℝ :=
+def transferBlock (N : ℕ) (c : ℝ) (n : ℕ) : Matrix (State N n) (State N n) ℝ :=
   (transferMatrix N c).submatrix Subtype.val Subtype.val
 
 end PottsDiscontinuity.SixVertex

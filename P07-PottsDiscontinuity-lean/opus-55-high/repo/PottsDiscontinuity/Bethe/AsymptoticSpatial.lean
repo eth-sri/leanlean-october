@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticOffsetControl
 
 /-! # Linear control and asymptotic equicontinuity of the step offsets -/
 
-@[expose] public section
+public section
 
 open Set
 
@@ -26,7 +26,7 @@ theorem root_spacing_lower_at {N n : ℕ} {p : Fin n → ℝ}
     1 ≤ M * ((N : ℝ) * (p ⟨j + 1, hj⟩ - p ⟨j, by omega⟩)) := by
   obtain ⟨k, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hn.ne'
   have hg : p (⟨j, by omega⟩ : Fin k).castSucc < p (⟨j, by omega⟩ : Fin k).succ :=
-    hp.2.1 (by change j < j + 1; omega)
+    hp.2.1 (by simp)
   have he := hupper (p (⟨j, by omega⟩ : Fin k).castSucc)
     ⟨(hp.1 _).1.le, (hp.1 _).2.le⟩
   rw [rootStepDensity_interior hp hs ⟨j, by omega⟩ ⟨le_rfl, hg⟩] at he
@@ -50,7 +50,7 @@ theorem offset_root_lipschitz {N r : ℕ} (h4 : 4 ∣ N) (hr : r ≤ N / 2)
     apply (hinc j hj).trans
     apply (div_le_iff₀ (Nat.cast_pos.mpr hN : (0 : ℝ) < N)).mpr
     have hb := mul_le_mul_of_nonneg_left (root_spacing_lower_at hq hn (by omega) hupper j hj) hH
-    nlinarith only [hb]
+    linarith
   exact abs_sub_le_mul_root_dist_of_pos hn q (offsetDisplacement N r h4 hr p q)
     hq.2.1.monotone hlocal
 

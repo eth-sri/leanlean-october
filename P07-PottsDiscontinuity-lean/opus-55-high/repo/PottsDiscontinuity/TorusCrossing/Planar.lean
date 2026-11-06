@@ -46,17 +46,20 @@ variable {R}
 
 theorem mem_cells {c : Cell} :
     c ∈ R.cells ↔ R.x0 ≤ c.1 ∧ c.1 ≤ R.x0 + R.w ∧ R.y0 ≤ c.2 ∧ c.2 ≤ R.y0 + R.h := by
-  unfold cells; simp only [Finset.mem_product, Finset.mem_Icc]; tauto
+  grind [cells]
 
 theorem mem_inner {m : Cell} :
     m ∈ R.inner ↔ R.x0 + 1 ≤ m.1 ∧ m.1 ≤ R.x0 + R.w ∧ R.y0 + 1 ≤ m.2 ∧ m.2 ≤ R.y0 + R.h := by
-  unfold inner; simp only [Finset.mem_product, Finset.mem_Icc]; tauto
+  grind [inner]
 
-theorem mem_pcells {c : Cell} : c ∈ R.pcells ↔ c ∈ R.cells ∧ IsPrimal c := by
-  unfold pcells; simp [Finset.mem_filter]
+section
+variable {c : Cell}
+theorem mem_pcells  : c ∈ R.pcells ↔ c ∈ R.cells ∧ IsPrimal c := by
+  simp [pcells]
 
-theorem mem_dcells {c : Cell} : c ∈ R.dcells ↔ c ∈ R.cells ∧ ¬ IsPrimal c := by
-  unfold dcells; simp [Finset.mem_filter]
+theorem mem_dcells  : c ∈ R.dcells ↔ c ∈ R.cells ∧ ¬ IsPrimal c := by
+  simp [dcells]
+end
 
 theorem pData (R : Rect) : EndData primalEnds R.pcells R.inner where
   mem m hm := by
@@ -96,27 +99,21 @@ def sepBC : FK.BoundaryCondition R.pcells where
       iseqv :=
         { refl := fun a => Or.inl rfl
           symm := by
-            rintro a b (h | h | h)
-            · exact Or.inl h.symm
-            · exact Or.inr (Or.inl ⟨h.2, h.1⟩)
-            · exact Or.inr (Or.inr ⟨h.2, h.1⟩)
+            rintro a b (h | h | h) <;> tauto
           trans := by
             rintro a b c (h | h | h) (h' | h' | h')
             · exact Or.inl (h.trans h')
-            · subst h; exact Or.inr (Or.inl h')
-            · subst h; exact Or.inr (Or.inr h')
-            · subst h'; exact Or.inr (Or.inl h)
-            · exact Or.inr (Or.inl ⟨h.1, h'.2⟩)
+            · subst h; tauto
+            · subst h; tauto
+            · subst h'; tauto
+            · tauto
             · exact Or.inr (Or.inr ⟨by omega, h'.2⟩)
-            · subst h'; exact Or.inr (Or.inr h)
+            · subst h'; tauto
             · exact Or.inr (Or.inl ⟨by omega, h'.2⟩)
-            · exact Or.inr (Or.inr ⟨h.1, h'.2⟩) }}
+            tauto }}
   supported := by
     intro a b h
-    rcases h with h | h | h
-    · exact Or.inl h
-    · exact Or.inr ⟨Or.inl h.1, Or.inl h.2⟩
-    · exact Or.inr ⟨Or.inr h.1, Or.inr h.2⟩
+    rcases h with h | h | h <;> simp_all
 
 end Rect
 

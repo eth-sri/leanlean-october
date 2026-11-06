@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.AsymptoticTaylor
 
 /-! # The averaged Taylor expansion, uniform in both offset parities -/
 
-@[expose] public section
+public section
 
 open Set
 open scoped BigOperators
@@ -14,11 +14,7 @@ namespace PottsDiscontinuity.Bethe
 theorem abs_average_four_le {a b c d R : ℝ}
     (ha : |a| ≤ R) (hb : |b| ≤ R) (hc : |c| ≤ R) (hd : |d| ≤ R) :
     |(a + b + c + d) / 4| ≤ R := by
-  rcases abs_le.mp ha with ⟨ha₁, ha₂⟩
-  rcases abs_le.mp hb with ⟨hb₁, hb₂⟩
-  rcases abs_le.mp hc with ⟨hc₁, hc₂⟩
-  rcases abs_le.mp hd with ⟨hd₁, hd₂⟩
-  exact abs_le.mpr ⟨by linarith, by linarith⟩
+  grind
 
 theorem theta_sum_mean_remainder {Δ : ℝ} (hΔ : Δ < -1) :
     ∃ K : ℝ, 0 ≤ K ∧ ∀ (N n : ℕ), 0 < N → n ≤ N →
@@ -35,20 +31,14 @@ theorem theta_sum_mean_remainder {Δ : ℝ} (hΔ : Δ < -1) :
   obtain ⟨K, hK, hTaylor⟩ := theta_sum_linearized_remainder hΔ
   refine ⟨K, hK, ?_⟩
   intro N n hN hn x x₀ x₁ y y₀ y₁ hx hx₀ hx₁ hy hy₀ hy₁ B hB h₀ h₁ hy₀B hy₁B
-  have h₀₀ := hTaylor N n hN hn x x₀ y y₀ hx hx₀ hy hy₀ B hB h₀ hy₀B
-  have h₀₁ := hTaylor N n hN hn x x₀ y y₁ hx hx₀ hy hy₁ B hB h₀ hy₁B
-  have h₁₀ := hTaylor N n hN hn x x₁ y y₀ hx hx₁ hy hy₀ B hB h₁ hy₀B
-  have h₁₁ := hTaylor N n hN hn x x₁ y y₁ hx hx₁ hy hy₁ B hB h₁ hy₁B
-  have hb := abs_average_four_le h₀₀ h₀₁ h₁₀ h₁₁
+  have hb := abs_average_four_le (hTaylor N n hN hn x x₀ y y₀ hx hx₀ hy hy₀ B hB h₀ hy₀B) (hTaylor N n hN hn x x₀ y y₁ hx hx₀ hy hy₁ B hB h₀ hy₁B) (hTaylor N n hN hn x x₁ y y₀ hx hx₁ hy hy₀ B hB h₁ hy₀B) (hTaylor N n hN hn x x₁ y y₁ hx hx₁ hy hy₁ B hB h₁ hy₁B)
   have hmean : (∑ j, d2Theta Δ x (y j) * ((y₀ j + y₁ j) / 2 - y j)) =
       ((∑ j, d2Theta Δ x (y j) * (y₀ j - y j)) +
         ∑ j, d2Theta Δ x (y j) * (y₁ j - y j)) / 2 := by
     rw [← Finset.sum_add_distrib, Finset.sum_div]
     apply Finset.sum_congr rfl
-    intro j _
-    ring
-  rw [hmean]
+    grind
   simp only [Finset.sum_sub_distrib, ← Finset.sum_div, Finset.sum_add_distrib] at hb ⊢
-  convert hb using 1; ring
+  grind
 
 end PottsDiscontinuity.Bethe

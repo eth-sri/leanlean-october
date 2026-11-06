@@ -10,18 +10,16 @@ open MeasureTheory Set
 namespace PottsDiscontinuity.RCInfinite
 open FK
 
+section
+variable (a : LatticeVertex)
 /-- Translate a bond field by `a`; the new value at `e` is the old value at `e-a`. -/
-abbrev edgeTranslate (a : LatticeVertex) : LatticeConfiguration ≃ LatticeConfiguration :=
+abbrev edgeTranslate  : LatticeConfiguration ≃ LatticeConfiguration :=
   latticeConfigurationTranslate a
 
-theorem edgeTranslate_measurable (a : LatticeVertex) : Measurable (edgeTranslate a) :=
+theorem edgeTranslate_measurable  : Measurable (edgeTranslate a) :=
   latticeConfigurationTranslate_measurable a
+end
 
-@[simp] theorem edgeTranslate_zero (ω : LatticeConfiguration) : edgeTranslate 0 ω = ω := by
-  funext e
-  have hz : latticeTranslate (0 : LatticeVertex) = id := funext latticeTranslate_zero
-  simp [edgeTranslate, latticeConfigurationTranslate_apply, latticeTranslationIso,
-    SimpleGraph.Iso.mapEdgeSet, SimpleGraph.Hom.mapEdgeSet, hz]
 
 /-- Translation invariance and the null-or-conull property for measurable
 strictly invariant events of the original bond configuration. -/
@@ -35,10 +33,6 @@ theorem IsEdgeTranslationErgodic.zero_one {μ : Measure LatticeConfiguration}
     {A : Set LatticeConfiguration} (hA : MeasurableSet A)
     (hinv : ∀ a : LatticeVertex, (edgeTranslate a) ⁻¹' A = A) :
     μ A = 0 ∨ μ A = 1 := by
-  rcases hμ.2 A hA hinv with h | h
-  · exact Or.inl h
-  · right
-    have hadd := measure_add_measure_compl (μ := μ) hA
-    simpa [h] using hadd
+  rcases hμ.2 A hA hinv with h | h <;> simp_all
 
 end PottsDiscontinuity.RCInfinite

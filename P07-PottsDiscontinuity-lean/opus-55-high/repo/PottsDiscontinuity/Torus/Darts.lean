@@ -62,34 +62,40 @@ def edgeReverse : Dart N M → Dart N M
 def edgePerm (N M : ℕ) : Equiv.Perm (Dart N M) :=
   ⟨edgeReverse, edgeReverse, edgeReverse_involutive, edgeReverse_involutive⟩
 
+section
+variable (s : Smoothing N M)
 /-- Reverse direction along the local strand, without crossing a torus edge. -/
-def strandReverse (s : Smoothing N M) (d : Dart N M) : Dart N M :=
+def strandReverse (d : Dart N M) : Dart N M :=
   (d.1, pairedPort (s d.1) d.2)
 
-@[simp] theorem strandReverse_involutive (s : Smoothing N M) :
+@[simp] theorem strandReverse_involutive  :
     Function.Involutive (strandReverse s) := by
   rintro ⟨v, p⟩
   exact Prod.ext rfl (pairedPort_involutive (s v) p)
 
 /-- The local strand-reversal permutation. -/
-def strandPerm (s : Smoothing N M) : Equiv.Perm (Dart N M) :=
+def strandPerm  : Equiv.Perm (Dart N M) :=
   ⟨strandReverse s, strandReverse s,
     strandReverse_involutive s, strandReverse_involutive s⟩
 
 /-- Traverse one torus edge and then turn along the chosen strand at its endpoint. -/
-def stepPerm (s : Smoothing N M) : Equiv.Perm (Dart N M) :=
+def stepPerm  : Equiv.Perm (Dart N M) :=
   (edgePerm N M).trans (strandPerm s)
+end
 
-@[simp] theorem stepPerm_apply (s : Smoothing N M) (d : Dart N M) :
+section
+variable (s : Smoothing N M) (d : Dart N M)
+@[simp] theorem stepPerm_apply  :
     stepPerm s d = strandReverse s (edgeReverse d) := rfl
 
-@[simp] theorem stepPerm_symm_apply (s : Smoothing N M) (d : Dart N M) :
+@[simp] theorem stepPerm_symm_apply  :
     (stepPerm s).symm d = edgeReverse (strandReverse s d) := rfl
 
 /-- Edge reversal conjugates a path step into its inverse. -/
-theorem edgeReverse_step (s : Smoothing N M) (d : Dart N M) :
+theorem edgeReverse_step  :
     edgeReverse (stepPerm s d) = (stepPerm s).symm (edgeReverse d) := by
   simp
+end
 
 /-- Whether a local edge slot points out of its vertex. -/
 def localOut (l r d u : Bool) : Port → Bool
@@ -114,48 +120,51 @@ theorem localOut_pairedPort (s l r d u : Bool) (h : Compatible s l r d u) (p : P
   revert s l r d u p
   decide
 
-theorem dartOut_strandReverse {ω : ArrowConfig N M} {s : Smoothing N M}
-    (h : CompatibleConfig ω s) (d : Dart N M) :
+section
+variable {ω : ArrowConfig N M} {s : Smoothing N M} (h : CompatibleConfig ω s) (d : Dart N M)
+include h
+theorem dartOut_strandReverse  :
     dartOut ω (strandReverse s d) = !dartOut ω d :=
   localOut_pairedPort _ _ _ _ _ (h d.1) d.2
 
 /-- Compatible arrows are preserved when following a full smoothed-path step. -/
-theorem dartOut_step {ω : ArrowConfig N M} {s : Smoothing N M}
-    (h : CompatibleConfig ω s) (d : Dart N M) :
+theorem dartOut_step  :
     dartOut ω (stepPerm s d) = dartOut ω d := by
-  rw [stepPerm_apply, dartOut_strandReverse h, dartOut_edgeReverse, Bool.not_not]
+  simp_all [stepPerm_apply, dartOut_strandReverse, dartOut_edgeReverse]
+end
 
 /-- One directed representative of every edge, selected by its arrow. -/
 abbrev DirectedDart (ω : ArrowConfig N M) := {d : Dart N M // dartOut ω d = true}
 
+section
+variable (ω : ArrowConfig N M) (s : Smoothing N M)
 /-- Following the arrows and smoothing gives a permutation of directed edges. -/
-def directedStep (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) : Equiv.Perm (DirectedDart ω) :=
-  (stepPerm s).subtypeEquiv (fun d => by rw [dartOut_step h])
+def directedStep (h : CompatibleConfig ω s) : Equiv.Perm (DirectedDart ω) :=
+  (stepPerm s).subtypeEquiv (fun d => by grind [dartOut_step])
 
-@[simp] theorem directedStep_val (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (d : DirectedDart ω) :
+@[simp] theorem directedStep_val (h : CompatibleConfig ω s) (d : DirectedDart ω) :
     (directedStep ω s h d).val = stepPerm s d.val := rfl
 
 /-- Cyclic reindexing of a directed smoothed loop is precisely the same-cycle relation. -/
-abbrev DirectedLoop (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) :=
+abbrev DirectedLoop (h : CompatibleConfig ω s) :=
   Quotient (Equiv.Perm.SameCycle.setoid (directedStep ω s h))
+end
 
 noncomputable instance (ω : ArrowConfig N M) (s : Smoothing N M)
     (h : CompatibleConfig ω s) : Fintype (DirectedLoop ω s h) :=
   Fintype.ofFinite _
 
+section
+variable (ω : ArrowConfig N M) (s : Smoothing N M) (h : CompatibleConfig ω s) (d : DirectedDart ω)
 /-- The loop containing a directed edge. Every directed edge has exactly one such class. -/
-def directedLoopOf (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (d : DirectedDart ω) : DirectedLoop ω s h :=
+def directedLoopOf  : DirectedLoop ω s h :=
   Quotient.mk _ d
 
 /-- A full path step stays on the same loop. -/
-theorem directedLoopOf_step (ω : ArrowConfig N M) (s : Smoothing N M)
-    (h : CompatibleConfig ω s) (d : DirectedDart ω) :
+theorem directedLoopOf_step  :
     directedLoopOf ω s h (directedStep ω s h d) = directedLoopOf ω s h d := by
   apply Quotient.sound
   exact (Equiv.Perm.SameCycle.refl (directedStep ω s h) d).apply_left
+end
 
 end PottsDiscontinuity.Torus

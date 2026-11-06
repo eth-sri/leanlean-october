@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.RatioLogDifference
 
 /-! # Uniform domination of the actual logarithmic quadrature tests -/
 
-@[expose] public section
+public section
 
 open Set Finset
 open scoped BigOperators
@@ -28,16 +28,14 @@ theorem ratio_scaled_root_log_bound {c x y C : ℝ} {N : ℕ}
       2 * (Real.pi * (c ^ 2 - 1) / (c ^ 2 - 2) ^ 2 + Real.pi ^ 2 / 4) * C := by
   have hNp : (0 : ℝ) < N := Nat.cast_pos.mpr hN
   by_cases hx0 : x = 0
-  · have heq : (N : ℝ) * (x - y) = 0 := abs_nonpos_iff.mp (by simpa [hx0] using hshift)
-    have hxy := sub_eq_zero.mp ((mul_eq_zero.mp heq).resolve_left hNp.ne')
-    rw [hxy, sub_self, mul_zero, abs_zero]
+  · have heq : (N : ℝ) * (x - y) = 0 := abs_nonpos_iff.mp (by simp_all)
+    rw [(sub_eq_zero.mp ((mul_eq_zero.mp heq).resolve_left hNp.ne')), sub_self, mul_zero, abs_zero]
     exact mul_nonneg (mul_nonneg (by norm_num) (ratio_profile_bound_nonneg hc)) hC
   have hsmall : |y - x| ≤ C * |x| / N := by
     apply (le_div_iff₀ hNp).mpr
-    rw [abs_mul, abs_of_pos hNp, abs_sub_comm x y] at hshift
-    nlinarith only [hshift]
+    grind
   have hh := ratio_scaled_ell_difference_bound hc hN hlarge hx hy hx0 hsmall
-  simpa only [abs_mul, abs_sub_comm (ratioEll c y) (ratioEll c x)] using hh
+  grind
 
 /-- A single compactly supported majorant for the logarithmic step tests. -/
 theorem ratio_log_step_bound {k N : ℕ} {q a : Fin (k + 1) → ℝ}
@@ -54,6 +52,6 @@ theorem ratio_log_step_bound {k N : ℕ} {q a : Fin (k + 1) → ℝ}
     (mul_nonneg (mul_nonneg (by norm_num) (ratio_profile_bound_nonneg hc)) hC) hM
   · intro j
     exact ratio_scaled_root_log_bound hc hN hC hlarge (hq.1 j) (ha j) (hshift j)
-  · exact hρ
+  omega
 
 end PottsDiscontinuity.Bethe

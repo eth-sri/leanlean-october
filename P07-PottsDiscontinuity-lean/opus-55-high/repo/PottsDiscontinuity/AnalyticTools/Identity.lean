@@ -28,7 +28,7 @@ theorem analytic_eqOn_of_eqOn_open_preconnected
   obtain ⟨x, hx⟩ := hVne
   have hlocal : f =ᶠ[𝓝 x] g := by
     filter_upwards [hV.mem_nhds hx] with y hy
-    exact hfg hy
+    grind
   exact AnalyticOnNhd.eqOn_of_preconnected_of_eventuallyEq hf hg hU (hVU hx) hlocal
 
 end PottsDiscontinuity.AnalyticTools

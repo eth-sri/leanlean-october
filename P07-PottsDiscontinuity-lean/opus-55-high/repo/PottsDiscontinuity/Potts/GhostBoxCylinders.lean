@@ -13,14 +13,13 @@ open Classical MeasureTheory Filter Topology
 noncomputable section
 attribute [local instance] FK.configurationMeasurableSpace
 
+section
+variable (V : Finset (ℤ × ℤ)) (C : FK.Configuration (squareLattice.induce (V : Set (ℤ × ℤ))))
 /-- Open exterior extension, retaining all sampled internal bonds. -/
-def openExtension (V : Finset (ℤ × ℤ))
-    (C : FK.Configuration (squareLattice.induce (V : Set (ℤ × ℤ)))) : FK.LatticeConfiguration :=
+def openExtension  : FK.LatticeConfiguration :=
   fun e => decide (∀ f, FK.frozenEdgeEmbedding V f = e → f ∈ C)
 
-@[simp] theorem openExtension_at (V : Finset (ℤ × ℤ))
-    (C : FK.Configuration (squareLattice.induce (V : Set (ℤ × ℤ))))
-    (f : (squareLattice.induce (V : Set (ℤ × ℤ))).edgeSet) :
+@[simp] theorem openExtension_at (f : (squareLattice.induce (V : Set (ℤ × ℤ))).edgeSet) :
     openExtension V C (FK.frozenEdgeEmbedding V f) = decide (f ∈ C) := by
   have h : (∀ g, FK.frozenEdgeEmbedding V g = FK.frozenEdgeEmbedding V f → g ∈ C) ↔ f ∈ C := by
     constructor
@@ -28,6 +27,7 @@ def openExtension (V : Finset (ℤ × ℤ))
     · intro hf g hg
       exact (FK.frozenEdgeEmbedding V).injective hg ▸ hf
   simp only [openExtension, h]
+end
 
 /-- The literal ghost measure on a common edge-configuration space. -/
 def ghostBoxConfiguration (n : ℕ) (ω : LiteralBond (box n) → Bool) : FK.LatticeConfiguration :=
@@ -38,13 +38,14 @@ def ghostBoxProbabilityMeasure (q : ℕ) (hq : 2 ≤ q) (β : ℝ) (hβ : 0 < β
   ⟨((ghostRCLaw q hq (box n) β hβ).map (ghostBoxConfiguration n)).toMeasure,
     PMF.toMeasure.isProbabilityMeasure _⟩
 
+section
+variable (θ : FK.Parameters) (n : ℕ)
 /-- The same extension applied to the ordinary wired box law. -/
-def openBoxProbabilityMeasure (θ : FK.Parameters) (n : ℕ) : ProbabilityMeasure FK.LatticeConfiguration :=
+def openBoxProbabilityMeasure  : ProbabilityMeasure FK.LatticeConfiguration :=
   FK.frozenExtendedProbabilityMeasure θ (box n) 1 (openExtension (box n))
 
-theorem openBoxProbabilityMeasure_eq_wired (θ : FK.Parameters) (n : ℕ) :
+theorem openBoxProbabilityMeasure_eq_wired  :
     openBoxProbabilityMeasure θ n = FK.wiredBoxProbabilityMeasure θ (0, 0) n := by
-  unfold openBoxProbabilityMeasure
   have key : ∀ (c : FK.LatticeVertex) (r : ℕ) (S : Finset (ℤ × ℤ)), FK.latticeBox c r = S →
       FK.frozenExtendedProbabilityMeasure θ S 1 (openExtension S) =
         FK.wiredBoxProbabilityMeasure θ c r := by
@@ -53,18 +54,20 @@ theorem openBoxProbabilityMeasure_eq_wired (θ : FK.Parameters) (n : ℕ) :
       funext C e
       unfold openExtension FK.wiredBoxConfiguration
       exact decide_eq_decide.mpr Iff.rfl
-    rw [hext]
-    exact FK.frozenExtendedProbabilityMeasure_wired θ c r
+    aesop
   exact key (0, 0) n _ (FK.latticeBox_origin_eq_box n)
+end
 
-def openBoxCylinderEvent (n : ℕ) (F : Finset squareLattice.edgeSet) :
+section
+variable (n : ℕ) (F : Finset squareLattice.edgeSet)
+def openBoxCylinderEvent  :
     Set (FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ)))) :=
   {C | ∀ e ∈ F, ∀ f, FK.frozenEdgeEmbedding (box n) f = e → f ∈ C}
 
-theorem openBoxCylinderEvent_upper (n : ℕ) (F : Finset squareLattice.edgeSet) :
+theorem openBoxCylinderEvent_upper  :
     IsUpperSet (openBoxCylinderEvent n F) := by
-  intro C D hCD hC e he f hf
-  exact hCD (hC e he f hf)
+  tauto
+end
 
 theorem openExtension_mem_allOpen (n : ℕ)
     (C : FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ))))
@@ -83,11 +86,11 @@ theorem openBoxProbabilityMeasure_allOpen (θ : FK.Parameters) (n : ℕ)
   rw [PMF.toMeasure_map_apply _ _ _ measurable_from_top
     (FK.LatticeConfiguration.allOpen_isClopen F).isOpen.measurableSet]
   congr 1
-  ext C
-  exact openExtension_mem_allOpen n C F
+  grind [openExtension_mem_allOpen]
 
-theorem nestedEdgeEmbedding_compatible {m n : ℕ} (h : m ≤ n)
-    (e : (squareLattice.induce (box m : Set (ℤ × ℤ))).edgeSet) :
+section
+variable {m n : ℕ} (h : m ≤ n)
+theorem nestedEdgeEmbedding_compatible (e : (squareLattice.induce (box m : Set (ℤ × ℤ))).edgeSet) :
     FK.frozenEdgeEmbedding (box n)
       (FK.embeddedEdgeEmbedding _ _ (nestedBoxEmbedding h) (nestedBox_map_le h) e) =
       FK.frozenEdgeEmbedding (box m) e := by
@@ -98,8 +101,7 @@ theorem nestedEdgeEmbedding_compatible {m n : ℕ} (h : m ≤ n)
   rfl
 
 /-- Once the support lies in the smaller box, the local event is unchanged by restriction. -/
-theorem nestedBoxEvent_openBoxCylinderEvent {m n : ℕ} (h : m ≤ n)
-    (F : Finset squareLattice.edgeSet)
+theorem nestedBoxEvent_openBoxCylinderEvent (F : Finset squareLattice.edgeSet)
     (hF : ∀ e ∈ F, ∃ f, FK.frozenEdgeEmbedding (box m) f = e) :
     nestedBoxEvent h (openBoxCylinderEvent m F) = openBoxCylinderEvent n F := by
   ext C
@@ -108,13 +110,14 @@ theorem nestedBoxEvent_openBoxCylinderEvent {m n : ℕ} (h : m ≤ n)
     obtain ⟨g, hg⟩ := hF e he
     have hread := hC e he g hg
     rw [FK.mem_embeddedConfigurationRestriction] at hread
-    have hfg : FK.embeddedEdgeEmbedding _ _ (nestedBoxEmbedding h) (nestedBox_map_le h) g = f :=
+    have hfg :=
       (FK.frozenEdgeEmbedding (box n)).injective ((nestedEdgeEmbedding_compatible h g).trans
         (hg.trans hf.symm))
-    exact hfg ▸ hread
+    grind
   · intro hC e he f hf
-    rw [FK.mem_embeddedConfigurationRestriction]
+    simp
     exact hC e he _ ((nestedEdgeEmbedding_compatible h f).trans hf)
+end
 
 end
 end PottsDiscontinuity.Potts

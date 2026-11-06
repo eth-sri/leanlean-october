@@ -6,7 +6,7 @@ public import PottsDiscontinuity.Bethe.RatioWallis
 
 /-! # Half-integer root scales give the logarithmic Wallis factors -/
 
-@[expose] public section
+public section
 
 open Set Filter
 open scoped Topology
@@ -26,34 +26,24 @@ theorem ratio_half_integer_midpoint_log_tendsto {ι : Type*} {l : Filter ι}
       (𝓝 (Real.log (ratioWallisFactor k))) := by
   have hxlim : Tendsto x l (𝓝 0) := by
     have ht := hscaleX.div_atTop hNlim
-    apply ht.congr
-    intro i
-    field_simp [hN i]
+    simp_all
   have hylim : Tendsto y l (𝓝 0) := by
     have ht := hscaleY.div_atTop hNlim
-    apply ht.congr
-    intro i
-    field_simp [hN i]
-  have ha : 0 < ((k : ℝ) + 1 / 2) / ρ := by positivity
-  have hb : 0 < ((k : ℝ) + 3 / 2) / ρ := by positivity
-  have ht := ratio_midpoint_factor_tendsto hc ha hb N hN x y hx hy hxpos hypos hxlim hylim hscaleX hscaleY
+    simp_all
+  have ht := ratio_midpoint_factor_tendsto hc (by positivity) (by positivity) N hN x y hx hy hxpos hypos hxlim hylim hscaleX hscaleY
   have hvalue : 4 * (((k : ℝ) + 1 / 2) / ρ) * (((k : ℝ) + 3 / 2) / ρ) /
       ((((k : ℝ) + 1 / 2) / ρ + ((k : ℝ) + 3 / 2) / ρ) ^ 2) = ratioWallisFactor k := by
     unfold ratioWallisFactor
     have hk : (k : ℝ) + 1 ≠ 0 := by positivity
-    have hsum : ((k : ℝ) + 1 / 2) / ρ + ((k : ℝ) + 3 / 2) / ρ = 2 * ((k : ℝ) + 1) / ρ := by ring
-    rw [hsum]
-    field_simp [hρ.ne', hk]
-    ring
-  rw [hvalue] at ht
+    grind
+  simp_all
   have hlog := (Real.continuousAt_log (ratio_wallisFactor_pos k).ne').tendsto.comp ht
   apply hlog.congr
   intro i
-  dsimp only [Function.comp_def]
+  dsimp
   have hmx : ‖M c (z (x i))‖ ≠ 0 := norm_ne_zero_iff.mpr (ratio_M_ne_zero hc _)
   have hmy : ‖M c (z (y i))‖ ≠ 0 := norm_ne_zero_iff.mpr (ratio_M_ne_zero hc _)
-  have hmm : ‖M c (z ((x i + y i) / 2))‖ ≠ 0 := norm_ne_zero_iff.mpr (ratio_M_ne_zero hc _)
-  rw [Real.log_div (pow_ne_zero 2 hmm) (mul_ne_zero hmx hmy), Real.log_pow, Real.log_mul hmx hmy]
+  rw [Real.log_div (pow_ne_zero 2 (norm_ne_zero_iff.mpr (ratio_M_ne_zero hc _))) (mul_ne_zero hmx hmy), Real.log_pow, Real.log_mul hmx hmy]
   unfold ratioEll
   ring
 

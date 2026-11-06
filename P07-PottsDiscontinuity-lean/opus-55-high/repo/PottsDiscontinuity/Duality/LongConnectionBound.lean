@@ -8,7 +8,7 @@ public import PottsDiscontinuity.Duality.PlanarConnectionAlternative
 
 /-! Quantitative bounds on long connections with finitely many possible endpoints. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Duality
 
@@ -24,7 +24,6 @@ theorem free_longConnectionEvent_bound (θ : Parameters)
     (S : Finset LatticeVertex) (n : ℕ) :
     μ.real (longConnectionEvent S n) ≤
       (S.card : ℝ) ^ 2 * (C * Real.exp (-c * (n : ℝ))) := by
-  classical
   have := hμ.1
   let E := fun u v : LatticeVertex =>
     if (n : ℤ) ≤ |v.1 - u.1| + |v.2 - u.2| then connectionEvent u v else ∅
@@ -43,43 +42,37 @@ theorem free_longConnectionEvent_bound (θ : Parameters)
       apply mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 ?_) hC
       have hd : (n : ℝ) ≤ |((v - u).1 : ℝ)| + |((v - u).2 : ℝ)| := by
         exact_mod_cast hn
-      nlinarith only [mul_le_mul_of_nonneg_left hd hc.le]
+      simp_all
     · simp only [measureReal_empty]
-      exact mul_nonneg hC (Real.exp_nonneg _)
+      positivity
   rw [heq]
   calc
     μ.real (⋃ u ∈ S, ⋃ v ∈ S, E u v) ≤
         ∑ u ∈ S, μ.real (⋃ v ∈ S, E u v) := measureReal_biUnion_finset_le S _
-    _ ≤ ∑ u ∈ S, ∑ v ∈ S, μ.real (E u v) := by
-      exact Finset.sum_le_sum fun u _ => measureReal_biUnion_finset_le S _
-    _ ≤ ∑ _u ∈ S, ∑ _v ∈ S, C * Real.exp (-c * (n : ℝ)) := by
-      exact Finset.sum_le_sum fun u _ => Finset.sum_le_sum fun v _ => hp u v
+    _ ≤ ∑ u ∈ S, ∑ v ∈ S, μ.real (E u v) :=
+      Finset.sum_le_sum fun u _ => measureReal_biUnion_finset_le S _
+    _ ≤ ∑ _u ∈ S, ∑ _v ∈ S, C * Real.exp (-c * (n : ℝ)) :=
+      Finset.sum_le_sum fun u _ => Finset.sum_le_sum fun v _ => hp u v
     _ = (S.card : ℝ) ^ 2 * (C * Real.exp (-c * (n : ℝ))) := by
       simp only [Finset.sum_const, nsmul_eq_mul]
       ring
 
 /-- The polynomial endpoint factor is negligible compared with any positive
 exponential rate. The shift allows the expanded dual vertex domain. -/
-lemma tendsto_square_longConnection_bound (C c : ℝ) (hc : 0 < c) :
+theorem tendsto_square_longConnection_bound (C c : ℝ) (hc : 0 < c) :
     Tendsto (fun n : ℕ => ((n : ℝ) + 2) ^ 4 * (C * Real.exp (-c * (n : ℝ))))
       atTop (𝓝 0) := by
   have hs := (Real.summable_pow_mul_exp_neg_nat_mul 4 hc).tendsto_atTop_zero
   have hshift := hs.comp (tendsto_add_atTop_nat 2)
   have hm := hshift.mul_const (C * Real.exp (2 * c))
-  simp only [zero_mul] at hm
+  simp at hm
   convert hm using 1
   ext n
-  simp only [Function.comp_apply, Nat.cast_add, Nat.cast_ofNat]
   have he : Real.exp (-c * ((n : ℝ) + 2)) * Real.exp (2 * c) =
       Real.exp (-c * (n : ℝ)) := by
     rw [← Real.exp_add]
-    congr 1
     ring
-  rw [show ((n : ℝ) + 2) ^ 4 * Real.exp (-c * ((n : ℝ) + 2)) *
-      (C * Real.exp (2 * c)) =
-        ((n : ℝ) + 2) ^ 4 * C *
-          (Real.exp (-c * ((n : ℝ) + 2)) * Real.exp (2 * c)) by ring, he]
-  ring
+  grind
 
 end
 end PottsDiscontinuity.Duality

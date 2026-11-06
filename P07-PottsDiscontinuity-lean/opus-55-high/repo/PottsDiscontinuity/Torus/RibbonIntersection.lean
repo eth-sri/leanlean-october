@@ -21,20 +21,19 @@ namespace PottsDiscontinuity.Torus
 
 variable {N M : ℕ}
 
+section
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M)
 /-- The edge coefficient of the cyclic-order intersection form. -/
-def ribbonIntersectionCoefficient (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (f : diamondCycleSpace hN hM A) (e : OpenDiamondEdge A) : ℚ :=
+def ribbonIntersectionCoefficient (f : diamondCycleSpace hN hM A) (e : OpenDiamondEdge A) : ℚ :=
   ribbonCornerPrimitive hN hM A f (ribbonEndEquiv hN hM (e.val, true)) -
     ribbonCornerPrimitive hN hM A f (ribbonEndEquiv hN hM (e.val, false)) - f.val e
 
 /-- The cyclic-order intersection pairing on actual conserved indexed flows. -/
-def ribbonIntersection (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (f g : diamondCycleSpace hN hM A) : ℚ :=
+def ribbonIntersection (f g : diamondCycleSpace hN hM A) : ℚ :=
   ∑ e, ribbonIntersectionCoefficient hN hM A f e * g.val e
 
 /-- Compatible corner primitives along vertices and ribbons descend to boundary cycles. -/
-theorem exists_ribbonFaceFunction_of_primitive (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (f : diamondCycleSpace hN hM A)
+theorem exists_ribbonFaceFunction_of_primitive (f : diamondCycleSpace hN hM A)
     (D : DirectedDart (checkerArrows N M) → ℚ)
     (hR : ∀ d, D ((faceRotation hN hM).symm d) - D d = ribbonHalfFlow hN hM A f.val d)
     (hE : ∀ d, D (ribbonEdgePairing hN hM A d) - D d = ribbonHalfFlow hN hM A f.val d) :
@@ -53,11 +52,10 @@ theorem exists_ribbonFaceFunction_of_primitive (hN : Even N) (hM : Even M)
   have he := hE (ribbonEndEquiv hN hM (e.val, false))
   rw [ribbonEdgePairing_end, e.property, ribbonHalfFlow_end,
     extendDiamondChain_open A f.val e.val e.property] at he
-  exact he
+  tauto
 
 /-- A potential intersection coefficient can be removed by shifting each vertex primitive. -/
-theorem exists_ribbonFaceFunction_of_intersection_potential (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (f : diamondCycleSpace hN hM A) (g : FaceVertex N M true → ℚ)
+theorem exists_ribbonFaceFunction_of_intersection_potential (f : diamondCycleSpace hN hM A) (g : FaceVertex N M true → ℚ)
     (hg : diamondCoboundary hN hM A g = ribbonIntersectionCoefficient hN hM A f) :
     ∃ F : RibbonBoundaryComponent hN hM A → ℚ, ribbonFaceBoundary hN hM A F = f.val := by
   let D := fun d => ribbonCornerPrimitive hN hM A f d - g (ribbonFace hN hM d)
@@ -67,15 +65,12 @@ theorem exists_ribbonFaceFunction_of_intersection_potential (hN : Even N) (hM : 
     have hf : ribbonFace hN hM ((faceRotation hN hM).symm d) = ribbonFace hN hM d :=
       Subtype.ext ((sameCycle_faceRotation hN hM _ _).mp
         (Equiv.Perm.SameCycle.rfl.symm_apply_left))
-    dsimp [D]
-    rw [hf]
-    linarith
+    grind
   · intro d
     obtain ⟨⟨v, b⟩, rfl⟩ := (ribbonEndEquiv hN hM).surjective d
     rw [ribbonEdgePairing_end, ribbonHalfFlow_end]
     cases ha : A v
-    · simp only [Bool.false_xor, extendDiamondChain_closed A f.val v ha,
-        neg_zero, ite_self, sub_self]
+    · simp_all
     · have he := congrFun hg (⟨v, ha⟩ : OpenDiamondEdge A)
       change g (faceEndpoint hN hM true v true) - g (faceEndpoint hN hM true v false) =
         ribbonCornerPrimitive hN hM A f (ribbonEndEquiv hN hM (v, true)) -
@@ -83,16 +78,16 @@ theorem exists_ribbonFaceFunction_of_intersection_potential (hN : Even N) (hM : 
       rw [extendDiamondChain_open A f.val v ha]
       cases b <;> simp only [Bool.true_xor, Bool.not_false, Bool.not_true,
         Bool.false_eq_true, ite_false, ite_true]
-      all_goals dsimp [D]; simp only [ribbonFace_end]; linarith
+      all_goals dsimp [D]; simp; linarith
 
 /-- The radical of the intersection pairing is contained in the actual cellular boundaries. -/
-theorem mem_ribbonBoundarySpace_of_intersection_zero (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (f : diamondCycleSpace hN hM A)
+theorem mem_ribbonBoundarySpace_of_intersection_zero (f : diamondCycleSpace hN hM A)
     (h : ∀ g : diamondCycleSpace hN hM A, ribbonIntersection hN hM A f g = 0) :
     f ∈ ribbonBoundarySpace hN hM A := by
   obtain ⟨g, hg⟩ := exists_diamondPotential_of_cycle_annihilator hN hM A
     (ribbonIntersectionCoefficient hN hM A f) h
   obtain ⟨F, hF⟩ := exists_ribbonFaceFunction_of_intersection_potential hN hM A f g hg
   exact ⟨F, Subtype.ext hF⟩
+end
 
 end PottsDiscontinuity.Torus

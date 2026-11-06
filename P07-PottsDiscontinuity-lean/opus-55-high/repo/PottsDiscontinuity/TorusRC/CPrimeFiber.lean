@@ -53,7 +53,6 @@ theorem liftedCPrime_fiber_lower_bound (hN : Even N) (hM : Even M)
         (torusRCFiberLaw hN hM hN4 hM4 q (rightHalfFrozenEdges hN hM hN4 hM4) H)
         {A | rightHalfRestore hN hM hN4 hM4 H A ∈
           liftedCPrime hNp hMp (N / 2 : ℤ) (N : ℤ) x hx hM n R} := by
-  classical
   let F := rightHalfFrozenEdges hN hM hN4 hM4
   let y := liftedChainSite x hx n
   let I := interiorChainIndices M n R
@@ -63,7 +62,7 @@ theorem liftedCPrime_fiber_lower_bound (hN : Even N) (hM : Even M)
   let s := columnCollarEdges hNp hMp x (R + 2 * n)
   have hxleft : (N / 2 : ℤ) ≤ x := by omega
   have hxright : x + 1 ≤ (N : ℤ) := by omega
-  have hs : ∀ e ∈ s, rightHalfInteriorSite e :=
+  have hs :=
     columnCollarEdges_interior hNp hMp x (R + 2 * n) hxleft hxright
   let S := rightHalfRetainedSet hN hM hN4 hM4 s hs
   have hbox := liftedBoxFreeConnectionProbability_prod_le_fiber hN hM hN4 hM4 hNp hMp q
@@ -71,18 +70,16 @@ theorem liftedCPrime_fiber_lower_bound (hN : Even N) (hM : Even M)
     (fun _ _ => hleft) (fun _ _ => hright)
     (fun j hj => by
       have hb := (Finset.mem_filter.mp hj).2.1
-      have hb' : (R : ℤ) < 2 * (n : ℤ) * j := by exact_mod_cast hb
-      change 0 < 2 * (n : ℤ) * j - R
-      omega)
+      have hb' : (R : ℤ) < 2 * (n : ℤ) * j := by linarith
+      positivity)
     (fun j hj => by
       have ht := (Finset.mem_filter.mp hj).2.2
       change 2 * (n : ℤ) * j + R < (M : ℤ)
-      exact_mod_cast ht) H
+      linarith) H
   have hE : IsUpperSet E := by
     intro A B hAB hA j hj
     exact liftedBoxConnection_mono hNp hMp _ _ R (y j) (y (j + 1))
       (rightHalfRestore_mono hN hM hN4 hM4 H hAB) (hA j hj)
-  have hopen := torusRCFiber_allOpen_inter_ge hN hM hN4 hM4 q F H S E hE
   have hcard : S.card ≤ 2 * (R + 2 * n) := by
     rw [rightHalfRetainedSet_card]
     exact columnCollarEdges_card_le hNp hMp x (R + 2 * n)
@@ -95,7 +92,7 @@ theorem liftedCPrime_fiber_lower_bound (hN : Even N) (hM : Even M)
     intro j _
     exact torusRCFiberEventProbability_nonneg _ _
   have hmul := mul_le_mul hcost hbox hprod0 (pow_nonneg hc0 S.card)
-  apply (hmul.trans hopen).trans
+  apply (hmul.trans (torusRCFiber_allOpen_inter_ge hN hM hN4 hM4 q F H S E hE)).trans
   apply FK.FiniteProbability.expectation_mono
   intro A
   have hsub : A ∈ ({A | (FK.edgeRestrictionConfigurationEquiv (fullDiamondGraph hN hM)
@@ -103,20 +100,16 @@ theorem liftedCPrime_fiber_lower_bound (hN : Even N) (hM : Even M)
       rightHalfRestore hN hM hN4 hM4 H A ∈
         liftedCPrime hNp hMp (N / 2 : ℤ) (N : ℤ) x hx hM n R := by
     rintro ⟨hopenA, hEA⟩
-    have hB : rightHalfRestore hN hM hN4 hM4 H A ∈ torusRCBarrier hNp hMp n :=
-      (barrier_rightHalfRestore_iff hN hM hN4 hM4 hNp hMp n hnleft H A _).mpr hH
     apply liftedCPrime_of_interior_and_collar hNp hMp _ _ x hx hM n R hn hnR
       hxleft hxright _
     · apply columnCollarOpen_of_barrier_and_edges hNp hMp x (R + 2 * n) n
-        hxleft hxright hnleft _ hB
+        hxleft hxright hnleft _ ((barrier_rightHalfRestore_iff hN hM hN4 hM4 hNp hMp n hnleft H A _).mpr hH)
       exact rightHalfRetainedSet_open hN hM hN4 hM4 s hs H A hopenA
     · intro j hj hb ht
       exact hEA j (Finset.mem_filter.mpr ⟨Finset.mem_range.mpr hj, hb, ht⟩)
   by_cases hA : A ∈ ({A | (FK.edgeRestrictionConfigurationEquiv (fullDiamondGraph hN hM)
         F S).val ⊆ A.val} ∩ E)
-  · have hC : A ∈ {A | rightHalfRestore hN hM hN4 hM4 H A ∈
-        liftedCPrime hNp hMp (N / 2 : ℤ) (N : ℤ) x hx hM n R} := hsub hA
-    simp only [Set.indicator_of_mem hA, Set.indicator_of_mem hC, le_refl]
+  · simp_all
   · simp only [Set.indicator_of_notMem hA]
     by_cases hC : rightHalfRestore hN hM hN4 hM4 H A ∈
         liftedCPrime hNp hMp (N / 2 : ℤ) (N : ℤ) x hx hM n R <;>

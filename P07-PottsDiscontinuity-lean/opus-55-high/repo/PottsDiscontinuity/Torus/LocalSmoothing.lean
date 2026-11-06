@@ -45,16 +45,17 @@ theorem Compatible.iceRule {s l r d u : Bool} (h : Compatible s l r d u) :
     inDegree l r d u = 2 :=
   (exists_compatible_iff l r d u).1 ⟨s, h⟩
 
+section
+variable (lam : ℝ) (s l r d u : Bool)
 /-- The local exponential turn factor, with zero weight for incompatible smoothings. -/
-noncomputable def turnWeight (lam : ℝ) (s l r d u : Bool) : ℝ :=
+noncomputable def turnWeight  : ℝ :=
   if Compatible s l r d u then Real.exp (lam / 4 * (quarterTurn s l r : ℝ)) else 0
 
-theorem turnWeight_nonneg (lam : ℝ) (s l r d u : Bool) :
+theorem turnWeight_nonneg  :
     0 ≤ turnWeight lam s l r d u := by
   unfold turnWeight
-  split_ifs
-  · exact (Real.exp_pos _).le
-  · exact le_rfl
+  positivity
+end
 
 /-- The sum of the two local turn factors is exactly the existing six-vertex local weight.
 This is the local algebra behind Lemma 3.12, without any global turning-number input. -/

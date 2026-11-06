@@ -10,7 +10,7 @@ public import PottsDiscontinuity.Frozen.Defs.RCInfiniteOpenGraph
 
 /-! The copied whole-plane geometry uses the exact frozen open graph. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Duality
 
@@ -22,9 +22,7 @@ theorem wholePlaneOpenPrimalGraph_eq_rcInfiniteOpenGraph (ω : LatticeConfigurat
   ext u v
   rw [rcInfiniteOpenGraph, SimpleGraph.fromEdgeSet_adj]
   constructor
-  · rintro ⟨hadj, hopen⟩
-    exact ⟨⟨squareLattice.mem_edgeSet.mpr hadj, hopen⟩, hadj.ne⟩
-  · rintro ⟨⟨he, hopen⟩, _⟩
-    exact ⟨squareLattice.mem_edgeSet.mp he, hopen⟩
+  · aesop
+  tauto
 
 end PottsDiscontinuity.Duality

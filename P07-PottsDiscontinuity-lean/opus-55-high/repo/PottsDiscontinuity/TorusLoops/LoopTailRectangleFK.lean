@@ -27,7 +27,7 @@ noncomputable def rectangleFKCrossingEvent (hN : Even N) (hM : Even M)
   {C | k ≤ (rectangleCrossingComponents hN hM
     (rectangleRCConfigOfConfiguration hN hM C)).card}
 
-private theorem rectangleSeamsClosed_iff_finset
+theorem rectangleSeamsClosed_iff_finset
     (A : RCConfig N M) :
     rectangleSeamsClosed A ↔
       ∀ v ∈ rectangleSeamIndices (N := N) (M := M), A v = false := by
@@ -35,21 +35,22 @@ private theorem rectangleSeamsClosed_iff_finset
   · intro h v hv
     exact h v (Finset.mem_filter.mp hv).2
   · intro h v hv
-    apply h v
-    simp [rectangleSeamIndices, hv]
+    grind [rectangleSeamIndices]
 
+section
+variable (hN : Even N) (hM : Even M)
+include hN hM
 /-- On the closed seam fiber, the torus crossing event is exactly the lifted
 rectangle FK crossing event. -/
 theorem rectangleCrossings_closedEvent_eq_lift
-    (hN : Even N) (hM : Even M) (k : ℕ) :
+    (k : ℕ) :
     hasAtLeastRectangleCrossings hN hM k ∩
         {A | ∀ v ∈ rectangleSeamIndices (N := N) (M := M), A v = false} =
       rectangleClosedLiftEvent hN hM (rectangleFKCrossingEvent hN hM k) := by
-  classical
   ext A
   constructor
   · rintro ⟨hcross, hclosed⟩
-    have hseam : rectangleSeamsClosed A :=
+    have hseam :=
       (rectangleSeamsClosed_iff_finset A).2 hclosed
     refine ⟨hseam, ?_⟩
     change k ≤ (rectangleCrossingComponents hN hM
@@ -57,12 +58,11 @@ theorem rectangleCrossings_closedEvent_eq_lift
         (rectangleConfigurationOfRC hN hM A))).card
     have hA := rectangleRCConfigOfConfiguration_rectangleConfigurationOfRC
       hN hM A (by
-        intro v hv
-        exact hseam v hv)
+        tauto)
     have hcard := congrArg
       (fun B : RCConfig N M => (rectangleCrossingComponents hN hM B).card) hA
     rw [hcard]
-    exact hcross
+    tauto
   · rintro ⟨hseam, hcross⟩
     refine ⟨?_, (rectangleSeamsClosed_iff_finset A).1 hseam⟩
     change k ≤ (rectangleCrossingComponents hN hM A).card
@@ -71,18 +71,14 @@ theorem rectangleCrossings_closedEvent_eq_lift
         (rectangleConfigurationOfRC hN hM A))).card at hcross
     have hA := rectangleRCConfigOfConfiguration_rectangleConfigurationOfRC
       hN hM A (by
-        intro v hv
-        exact hseam v hv)
-    have hcard := congrArg
-      (fun B : RCConfig N M => (rectangleCrossingComponents hN hM B).card) hA
-    rw [← hcard]
-    exact hcross
+        tauto)
+    grind
 
 /-- Corrected (3.17): a large winding-loop tail is bounded by a free-rectangle
 FK event, with the exact seam finite-energy factor and rounded factor-two
 crossing threshold. -/
 theorem torusRCProbability_windingTail_le_rectangleFKCrossings
-    (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M)
+    (hNp : 0 < N) (hMp : 0 < M)
     (q : Set.Ici (1 : ℝ)) (m : ℕ) :
     (1 - (rcCriticalParameter q).val) ^
         (rectangleSeamIndices (N := N) (M := M)).card *
@@ -95,5 +91,6 @@ theorem torusRCProbability_windingTail_le_rectangleFKCrossings
     ((m - 3 * N + 1) / 2)] at hfinite
   exact hfinite.trans (phi_T_probability_rectangleClosedLift_le_rectangleFK
     hN hM q (rectangleFKCrossingEvent hN hM ((m - 3 * N + 1) / 2)))
+end
 
 end PottsDiscontinuity.TorusLoops

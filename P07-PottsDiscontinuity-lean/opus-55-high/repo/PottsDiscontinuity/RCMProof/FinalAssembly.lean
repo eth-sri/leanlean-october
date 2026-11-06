@@ -21,8 +21,10 @@ open MeasureTheory Filter Topology Real
 
 namespace PottsDiscontinuity.RCMProof
 
+section
+variable (q : ℝ)
 /-- Item 3 of Theorem 1.2, uniformly for every free critical box limit. -/
-def rcItem3ForEveryFreeLimit (q : ℝ) (hq : 4 < q) : Prop :=
+def rcItem3ForEveryFreeLimit (hq : 4 < q) : Prop :=
   ∀ (μ : Measure (squareLattice.edgeSet → Bool)),
     IsRCInfiniteVolumeLimit
       (rcCriticalParameter ⟨q, le_trans (by norm_num : (1 : ℝ) ≤ 4) hq.le⟩)
@@ -38,7 +40,7 @@ def rcItem3ForEveryFreeLimit (q : ℝ) (hq : 4 < q) : Prop :=
 /-- Exact Theorem 1.2 conclusion from FK box-limit existence and the item-3
 rate statement.  The rate is positive by Identity (4.4), so the existing
 critical-discontinuity theorem supplies items 1 and 2. -/
-theorem rc_theorem_1_2_from_item3 (q : ℝ) (hq : 4 < q)
+theorem rc_theorem_1_2_from_item3 (hq : 4 < q)
     (hitem3 : rcItem3ForEveryFreeLimit q hq) :
     ∃ φ : Fin 2 → Measure (squareLattice.edgeSet → Bool),
       (∀ i, IsRCInfiniteVolumeLimit
@@ -64,17 +66,12 @@ theorem rc_theorem_1_2_from_item3 (q : ℝ) (hq : 4 < q)
     fun i => if i = 0 then μ₀ else μ₁
   have hφ : ∀ i, IsRCInfiniteVolumeLimit
       (rcCriticalParameter qI) qO i (φ i) := by
-    intro i
-    fin_cases i <;> simp [φ, hμ₀, hμ₁]
+    grind
   have hφFrozen : ∀ i, IsRCInfiniteVolumeLimit
       (rcCriticalParameter ⟨q, le_trans (by norm_num : (1 : ℝ) ≤ 4) hq.le⟩)
       ⟨q, lt_trans (by norm_num : (0 : ℝ) < 4) hq⟩ i (φ i) := by
-    intro i
-    simpa [qI, qO] using hφ i
-  have hfree : IsRCInfiniteVolumeLimit
-      (rcCriticalParameter ⟨q, le_trans (by norm_num : (1 : ℝ) ≤ 4) hq.le⟩)
-      ⟨q, lt_trans (by norm_num : (0 : ℝ) < 4) hq⟩ 0 (φ 0) := hφFrozen 0
-  have hitem3free := hitem3 (φ 0) hfree
+    omega
+  have hitem3free := hitem3 (φ 0) (by simp_all)
   obtain ⟨hLam, hcosh⟩ := PottsDiscontinuity.arcosh_pos_of_gt4 q hq
   let lam := Real.arcosh (Real.sqrt q / 2)
   obtain ⟨S, hS, hRate⟩ := hitem3free lam hLam hcosh
@@ -83,19 +80,14 @@ theorem rc_theorem_1_2_from_item3 (q : ℝ) (hq : 4 < q)
   have hS₀' : Tendsto (fun N : ℕ => ∑ k ∈ Finset.Icc 1 N,
       (-1 : ℝ) ^ k / k * Real.tanh (k * lam))
       atTop (𝓝 S₀) := by
-    simpa [lam] using hS₀
-  have hS' : Tendsto (fun N : ℕ => ∑ k ∈ Finset.Icc 1 N,
-      (-1 : ℝ) ^ k / k * Real.tanh (k * lam))
-      atTop (𝓝 S) := by
-    simpa [lam] using hS
-  have hSS : S = S₀ := tendsto_nhds_unique hS hS₀'
+    omega
+  have hSS := tendsto_nhds_unique hS hS₀'
   have hL : 0 < lam + 2 * S := by
-    rw [hSS]
-    exact hpositive
+    linarith
   have hitems := Duality.rcm_items_one_two_of_pos_diagonal_rate
     q hq φ hφFrozen (lam + 2 * S) hL hRate
   refine ⟨φ, hφFrozen, hitems.1, hitems.2, ?_⟩
-  intro lam hlam hcoshlam
-  exact hitem3free lam hlam hcoshlam
+  omega
+end
 
 end PottsDiscontinuity.RCMProof

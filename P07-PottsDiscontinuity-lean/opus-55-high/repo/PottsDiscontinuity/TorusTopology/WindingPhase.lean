@@ -7,7 +7,7 @@ public import PottsDiscontinuity.TorusTopology.IndexedWalk
 seam-closed components. The construction integrates indexed walks, so parallel
 edges and their seam crossings are retained. -/
 
-@[expose] public section
+public section
 
 open Finset PottsDiscontinuity.SixVertex
 namespace PottsDiscontinuity.TorusTopology
@@ -32,9 +32,9 @@ theorem exists_winding_phase_of_integral_divisor
   obtain ⟨u₀,hu₀⟩ : ∃ u : FaceVertex N M true,
       (diamondOpenGraph hN hM true A).connectedComponentMk u = c := by
     induction c using Quot.inductionOn with
-    | h u => exact ⟨u,rfl⟩
+    | h u => tauto
   let V := {u : FaceVertex N M true // (diamondOpenGraph hN hM true A).connectedComponentMk u = c}
-  have hpaths (u : V) : Nonempty (IndexedWalk hN hM A u₀ u.val) :=
+  have hpaths (u : V) :=
     exists_indexedWalk_of_reachable hN hM A
       (SimpleGraph.ConnectedComponent.eq.1 (hu₀.trans u.property.symm))
   let p (u : V) := Classical.choice (hpaths u)
@@ -43,26 +43,22 @@ theorem exists_winding_phase_of_integral_divisor
       then ((p ⟨u,hu⟩).winding : ℤ) else 0
   refine ⟨g,?_⟩
   intro e hec
-  have ht : (diamondOpenGraph hN hM true A).connectedComponentMk
-      (faceEndpoint hN hM true e.val true) = c :=
+  have ht :=
     (SimpleGraph.ConnectedComponent.sound
       (diamond_endpoints_reachable hN hM A e.val e.property)).symm.trans hec
   let pu := p ⟨faceEndpoint hN hM true e.val false,hec⟩
   let pv := p ⟨faceEndpoint hN hM true e.val true,ht⟩
-  let F : OpenDiamondEdge A → ℚ := pu.chain + Pi.single e 1 - pv.chain
+  let F := pu.chain + Pi.single e 1 - pv.chain
   have hF : F ∈ diamondCycleSpace hN hM A := by
     change diamondBoundary hN hM A F = 0
-    dsimp [F]
     rw [map_sub,map_add,pu.boundary_chain,pv.boundary_chain,diamondBoundary_single]
-    ext u
-    simp only [Pi.sub_apply,Pi.add_apply,Pi.zero_apply]
-    ring
+    simp
   let f : diamondCycleSpace hN hM A := ⟨F,hF⟩
   have hs : SupportedOnDiamondCluster hN hM A c f := by
     intro d hd
     have hd₀ : diamondEdgeCluster hN hM A d ≠
         (diamondOpenGraph hN hM true A).connectedComponentMk u₀ := by rwa [hu₀]
-    have hde : d ≠ e := by intro he; subst d; exact hd hec
+    have hde : d ≠ e := by aesop
     change pu.chain d + (Pi.single e (1 : ℚ) : OpenDiamondEdge A → ℚ) d - pv.chain d = 0
     rw [pu.chain_supported d hd₀,pv.chain_supported d hd₀]
     simp [hde]
@@ -73,8 +69,8 @@ theorem exists_winding_phase_of_integral_divisor
     refine ⟨zu+(if d=e then 1 else 0)-zv,?_⟩
     change pu.chain d + (Pi.single e (1 : ℚ) : OpenDiamondEdge A → ℚ) d - pv.chain d = _
     simp only [hzu,hzv,Pi.single_apply]
-    split_ifs <;> push_cast <;> rfl
-  let s : ℤ := if e.val.2.val=0 then -1 else 0
+    simp
+  let s := if e.val.2.val=0 then -1 else 0
   have hw : diamondWindingY A f.val = ((pu.winding+s-pv.winding : ℤ) : ℚ) := by
     change diamondWindingY A (pu.chain + Pi.single e 1 - pv.chain) = _
     unfold diamondWindingY
@@ -85,16 +81,14 @@ theorem exists_winding_phase_of_integral_divisor
     rw [pu.winding_chain,pv.winding_chain]
     simp [Pi.single_apply,mul_ite,diamondSeamCrossY,s]
   obtain ⟨z,hz⟩ := hdiv f hs hint
-  have hz' : pu.winding+s-pv.winding = (b : ℤ)*z := by exact_mod_cast (hw.symm.trans hz)
-  have hcast := congrArg (fun z : ℤ => (z : ZMod b)) hz'
-  simp only [Int.cast_sub,Int.cast_add,Int.cast_mul,Int.cast_natCast,ZMod.natCast_self,zero_mul] at hcast
+  have hcast := congrArg (fun z : ℤ => (z : ZMod b)) (by exact_mod_cast (hw.symm.trans hz))
+  simp at hcast
   have hg : g (faceEndpoint hN hM true e.val true) -
       g (faceEndpoint hN hM true e.val false) = (s : ZMod b) := by
     have hf₀ : (diamondOpenGraph hN hM true A).connectedComponentMk
         (faceEndpoint hN hM true e.val false) = c := hec
     dsimp only [g]
     rw [dite_eq_left ht,dite_eq_left hf₀]
-    change ((pv.winding : ℤ) : ZMod b) - ((pu.winding : ℤ) : ZMod b) = _
     linear_combination -hcast
   rw [hg]
   dsimp [s]

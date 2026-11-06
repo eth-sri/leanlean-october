@@ -3,7 +3,7 @@ module
 public import PottsDiscontinuity.RCMProof.Contracts
 public import PottsDiscontinuity.TorusRC.Eq315
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.RCMProof
 

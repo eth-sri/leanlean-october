@@ -15,32 +15,32 @@ open Finset
 
 namespace PottsDiscontinuity.BetheAnsatz
 
+section
+variable {n : ℕ} (w : Fin (n + 1) → Bool)
 /-- Cyclic edges whose letters are `ML` (false, then true). -/
-def t1MLBoundarySet {n : ℕ} (w : Fin (n + 1) → Bool) :
+def t1MLBoundarySet  :
     Finset (Fin (n + 1)) :=
   univ.filter (fun k => w k = false ∧ w (finRotate (n + 1) k) = true)
 
 /-- Cyclic edges whose letters are `LM` (true, then false). -/
-def t1LMBoundarySet {n : ℕ} (w : Fin (n + 1) → Bool) :
+def t1LMBoundarySet  :
     Finset (Fin (n + 1)) :=
   univ.filter (fun k => w k = true ∧ w (finRotate (n + 1) k) = false)
 
 /-- Around a cyclic word, the number of transitions from M to L equals the
 number of transitions from L to M. -/
-theorem t1TransitionCounts_eq {n : ℕ} (w : Fin (n + 1) → Bool) :
+theorem t1TransitionCounts_eq  :
     (t1MLBoundarySet w).card = (t1LMBoundarySet w).card := by
   let b (k : Fin (n + 1)) : ℤ := if w k then 1 else 0
-  have hcycle : (∑ k, b (finRotate (n + 1) k)) = ∑ k, b k :=
+  have hcycle :=
     Equiv.sum_comp (finRotate (n + 1)) b
   have hzero : (∑ k, (b (finRotate (n + 1) k) - b k)) = 0 := by
-    rw [Finset.sum_sub_distrib, hcycle]
-    simp
+    simp_all
   have hpoint (k : Fin (n + 1)) :
       b (finRotate (n + 1) k) - b k =
         (if w k = false ∧ w (finRotate (n + 1) k) = true then (1 : ℤ) else 0) -
         (if w k = true ∧ w (finRotate (n + 1) k) = false then (1 : ℤ) else 0) := by
-    rw [finRotate_apply]
-    cases hw : w k <;> cases hn : w (k + 1) <;> simp [b, hw, hn]
+    grind
   have hsum : (∑ k, (b (finRotate (n + 1) k) - b k)) =
       ((t1MLBoundarySet w).card : ℤ) - (t1LMBoundarySet w).card := by
     calc
@@ -48,25 +48,19 @@ theorem t1TransitionCounts_eq {n : ℕ} (w : Fin (n + 1) → Bool) :
             then (1 : ℤ) else 0) -
           (if w k = true ∧ w (finRotate (n + 1) k) = false
             then (1 : ℤ) else 0)) := by
-        apply Finset.sum_congr rfl
-        intro k _
-        exact hpoint k
+        simp_all
       _ = _ := by
-        rw [Finset.sum_sub_distrib]
-        simp [t1MLBoundarySet, t1LMBoundarySet, Finset.sum_boole]
-  have hcardCast : ((t1MLBoundarySet w).card : ℤ) = (t1LMBoundarySet w).card := by
-    have := hsum.symm.trans hzero
-    exact sub_eq_zero.mp this
-  exact_mod_cast hcardCast
+        simp [t1MLBoundarySet, t1LMBoundarySet]
+  omega
+end
 
+section
+variable {n : ℕ} {l : Fin (n + 1)} (i : T1PairIndex n l)
+include l i
 /-- A canonical T₁ word has a unique LM edge. -/
-theorem t1PairIndex_existsUnique_LM {n : ℕ} {l : Fin (n + 1)}
-    (i : T1PairIndex n l) :
+theorem t1PairIndex_existsUnique_LM  :
     ∃! e, i.w e = true ∧ i.w (finRotate (n + 1) e) = false := by
-  have hrot : finRotate (n + 1) (t1EdgeLeft i.edge) = t1EdgeRight i.edge := by
-    cases i.edge with
-    | none => exact finRotate_last
-    | some a => exact finRotate_of_lt a.isLt
+  have hrot := t1EdgeLeft_rotate i.edge
   have hML : t1MLBoundarySet i.w = {t1EdgeLeft i.edge} := by
     ext k
     simp only [t1MLBoundarySet, Finset.mem_filter, Finset.mem_univ, true_and,
@@ -77,29 +71,26 @@ theorem t1PairIndex_existsUnique_LM {n : ℕ} {l : Fin (n + 1)}
     · intro hk
       subst k
       exact ⟨i.hleft, hrot ▸ i.hright⟩
-  have hMLcard : (t1MLBoundarySet i.w).card = 1 := by rw [hML]; simp
   have hLMcard : (t1LMBoundarySet i.w).card = 1 := by
-    rw [← t1TransitionCounts_eq i.w, hMLcard]
+    grind [t1TransitionCounts_eq]
   obtain ⟨e, he⟩ := Finset.card_eq_one.mp hLMcard
   refine ⟨e, ?_, ?_⟩
-  · have hemem : e ∈ t1LMBoundarySet i.w := by rw [he]; simp
+  · have hemem : e ∈ t1LMBoundarySet i.w := by simp_all
     exact (Finset.mem_filter.mp hemem).2
   · intro j hj
     have hjmem : j ∈ t1LMBoundarySet i.w :=
       Finset.mem_filter.mpr ⟨Finset.mem_univ _, hj⟩
-    rw [he] at hjmem
-    simpa using hjmem
+    simp_all
 
 /-- The end of the unique L-run, selected from its unique LM edge. -/
-noncomputable def t1PairRunEnd {n : ℕ} {l : Fin (n + 1)}
-    (i : T1PairIndex n l) : Fin (n + 1) :=
+noncomputable def t1PairRunEnd  : Fin (n + 1) :=
   Classical.choose (t1PairIndex_existsUnique_LM i)
 
 /-- The selected run endpoint is the unique LM edge. -/
-theorem t1PairRunEnd_spec {n : ℕ} {l : Fin (n + 1)}
-    (i : T1PairIndex n l) :
+theorem t1PairRunEnd_spec  :
     i.w (t1PairRunEnd i) = true ∧
       i.w (finRotate (n + 1) (t1PairRunEnd i)) = false :=
   (Classical.choose_spec (t1PairIndex_existsUnique_LM i)).1
+end
 
 end PottsDiscontinuity.BetheAnsatz

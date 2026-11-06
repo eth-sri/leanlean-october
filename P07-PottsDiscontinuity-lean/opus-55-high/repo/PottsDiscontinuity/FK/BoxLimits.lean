@@ -6,7 +6,7 @@ public import PottsDiscontinuity.FK.FreeBoxLimit
 public import PottsDiscontinuity.FK.WiredBoxLimits
 public import PottsDiscontinuity.FK.BoundaryPartitionLaw
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 
@@ -16,58 +16,42 @@ noncomputable section
 
 /-- The origin-centered ported box is exactly the frozen box. -/
 theorem latticeBox_origin_eq_box (n : ℕ) : latticeBox (0, 0) n = box n := by
-  simp only [latticeBox, box, zero_sub, zero_add]
+  simp [latticeBox, box]
 
-/-- The generic frozen-law extension agrees with the ported free finite-box law. -/
-theorem frozenExtendedProbabilityMeasure_free (θ : Parameters) (c : LatticeVertex) (r : ℕ) :
-    frozenExtendedProbabilityMeasure θ (latticeBox c r) 0 (boxConfiguration c r) =
-      boxProbabilityMeasure θ c r := by
-  apply ProbabilityMeasure.toMeasure_injective
-  change ((law (boxGraph c r) θ (frozenBoundaryCondition (latticeBox c r) 0)).map
-    (boxConfiguration c r)).toMeasure =
-    ((law (boxGraph c r) θ (BoundaryCondition.free ∅)).map (boxConfiguration c r)).toMeasure
-  have hlaw : law (boxGraph c r) θ (frozenBoundaryCondition (latticeBox c r) 0) =
-      law (boxGraph c r) θ (BoundaryCondition.free ∅) := by
-    apply law_eq_of_boundary_partition_eq
-    simp [frozenBoundaryCondition, BoundaryCondition.free]
-  rw [hlaw]
+section
+variable (θ : Parameters) (c : LatticeVertex) (r : ℕ)
 
-/-- The generic frozen-law extension agrees with the ported wired finite-box law. -/
-theorem frozenExtendedProbabilityMeasure_wired (θ : Parameters) (c : LatticeVertex) (r : ℕ) :
-    frozenExtendedProbabilityMeasure θ (latticeBox c r) 1 (wiredBoxConfiguration c r) =
-      wiredBoxProbabilityMeasure θ c r := by
-  rfl
+end
 
+section
+variable (θ : Parameters) (μ : ProbabilityMeasure LatticeConfiguration)
 /-- Every weak limit of the ported free origin-box laws has the exact frozen characterization. -/
-theorem isRCInfiniteVolumeLimit_of_freeBox_tendsto (θ : Parameters)
-    (μ : ProbabilityMeasure LatticeConfiguration)
-    (hμ : Tendsto (fun n => boxProbabilityMeasure θ (0, 0) n) atTop (𝓝 μ)) :
+theorem isRCInfiniteVolumeLimit_of_freeBox_tendsto (hμ : Tendsto (fun n => boxProbabilityMeasure θ (0, 0) n) atTop (𝓝 μ)) :
     IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ.toMeasure := by
   refine isRCInfiniteVolumeLimit_of_extended_tendsto θ 0
     (fun n => latticeBox (0, 0) n) latticeBox_origin_eq_box
     (fun n => boxConfiguration (0, 0) n) ?_ μ ?_
   · intro n C f
     exact boxConfiguration_at (0, 0) n C f
-  · simpa only [frozenExtendedProbabilityMeasure_free] using hμ
+  tauto
 
 /-- Every weak limit of the ported wired origin-box laws has the exact frozen characterization. -/
-theorem isRCInfiniteVolumeLimit_of_wiredBox_tendsto (θ : Parameters)
-    (μ : ProbabilityMeasure LatticeConfiguration)
-    (hμ : Tendsto (fun n => wiredBoxProbabilityMeasure θ (0, 0) n) atTop (𝓝 μ)) :
+theorem isRCInfiniteVolumeLimit_of_wiredBox_tendsto (hμ : Tendsto (fun n => wiredBoxProbabilityMeasure θ (0, 0) n) atTop (𝓝 μ)) :
     IsRCInfiniteVolumeLimit θ.toP θ.toQ 1 μ.toMeasure := by
   refine isRCInfiniteVolumeLimit_of_extended_tendsto θ 1
     (fun n => latticeBox (0, 0) n) latticeBox_origin_eq_box
     (fun n => wiredBoxConfiguration (0, 0) n) ?_ μ ?_
   · intro n C f
     exact wiredBoxConfiguration_at (0, 0) n C f
-  · simpa only [frozenExtendedProbabilityMeasure_wired] using hμ
+  tauto
+end
 
 /-- For independent interior edge probabilities and cluster weights at least one,
 both frozen boundary conditions have infinite-volume limits. -/
 theorem exists_isRCInfiniteVolumeLimit_interior (θ : Parameters) (i : Fin 2) :
     ∃ μ, IsRCInfiniteVolumeLimit θ.toP θ.toQ i μ := by
   fin_cases i
-  · obtain ⟨μ, hμ, _⟩ := Internal.freeBoxLimit_existsUnique (q := θ)
+  · obtain ⟨μ, hμ, _⟩ := freeBoxLimit_existsUnique (q := θ)
     exact ⟨μ.toMeasure, isRCInfiniteVolumeLimit_of_freeBox_tendsto θ μ
       (hμ (fun _ => (0, 0)) (fun n => n)
         origin_latticeBox_nested origin_latticeBox_exhaustive)⟩

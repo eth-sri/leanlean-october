@@ -10,7 +10,7 @@ The index here is exactly the frozen index: `diagonalSite n = (⌊n/2⌋,⌊n/2�
 The theorem does not substitute `(n,n)` or infer off-diagonal bounds.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 
@@ -27,24 +27,21 @@ theorem exponential_bound_of_pos_logarithmic_rate
   refine ⟨Real.exp (c * (N : ℝ)), Real.exp_pos _, ?_⟩
   intro n
   by_cases hn : N ≤ n
-  · have hnpos : 0 < (n : ℝ) := by exact_mod_cast (hN n hn).2
-    have hdiv : c < -Real.log (f n) / (n : ℝ) := by
-      convert (hN n hn).1 using 1; ring
+  · have hdiv : c < -Real.log (f n) / (n : ℝ) := by
+      grind
     have hlog : Real.log (f n) ≤ -c * (n : ℝ) := by
-      have hmul := (lt_div_iff₀ hnpos).1 hdiv
-      linarith only [hmul]
-    have hC : 1 ≤ Real.exp (c * (N : ℝ)) :=
-      Real.one_le_exp_iff.2 (mul_nonneg hc.le (Nat.cast_nonneg _))
+      have hmul := (lt_div_iff₀ (by exact_mod_cast (hN n hn).2)).1 hdiv
+      linarith
     calc
       f n ≤ Real.exp (-c * (n : ℝ)) := Real.le_exp_of_log_le hlog
-      _ ≤ Real.exp (c * (N : ℝ)) * Real.exp (-c * (n : ℝ)) := by
-        exact le_mul_of_one_le_left (Real.exp_nonneg _) hC
+      _ ≤ Real.exp (c * (N : ℝ)) * Real.exp (-c * (n : ℝ)) :=
+        le_mul_of_one_le_left (Real.exp_nonneg _) (by simp_all)
   · have hnN : (n : ℝ) ≤ (N : ℝ) := by exact_mod_cast (Nat.le_of_lt (lt_of_not_ge hn))
     calc
       f n ≤ 1 := hf n
       _ ≤ Real.exp (c * (N : ℝ)) * Real.exp (-c * (n : ℝ)) := by
         rw [← Real.exp_add, Real.one_le_exp_iff]
-        nlinarith only [mul_nonneg hc.le (sub_nonneg.2 hnN)]
+        simp_all
 
 /-- Apply the quantitative rate lemma to the exact frozen diagonal two-point
 probabilities of any probability measure on lattice configurations. -/
@@ -57,7 +54,7 @@ theorem diagonal_exponential_bound_of_pos_rate
       μ.real (connectionEvent 0 (diagonalSite n)) ≤ C * Real.exp (-c * (n : ℝ)) := by
   obtain ⟨C, hC, hbound⟩ := exponential_bound_of_pos_logarithmic_rate
     (fun n => μ.real (connectionEvent 0 (diagonalSite n)))
-    (fun _ => measureReal_le_one) L (L / 2) (by positivity) (by linarith only [hL]) hrate
+    (fun _ => measureReal_le_one) L (L / 2) (by positivity) (by linarith) hrate
   exact ⟨C, L / 2, hC, by positivity, hbound⟩
 
 end PottsDiscontinuity.Duality

@@ -13,10 +13,11 @@ namespace PottsDiscontinuity.Duality
 open FK FK.Medial MeasureTheory
 noncomputable section
 
+section
+variable (a : LatticeVertex) (w h : ℕ)
 /-- The wired exterior class of the true dual is precisely the vertex boundary
 of the expanded induced lattice domain, including the degenerate primal boxes. -/
-lemma rectangleDualBoundary_eq_vertexBoundary (a : LatticeVertex) (w h : ℕ)
-    (x : LatticeVertex) :
+theorem rectangleDualBoundary_eq_vertexBoundary (x : LatticeVertex) :
     x ∈ rectangleDualBoundary a w h ↔ x ∈ vertexBoundary (rectangleDualExpanded a w h) := by
   have hcoords (z : LatticeVertex) : z ∈ rectangleDualExpanded a w h ↔
       (a.1 - 1 ≤ z.1 ∧ z.1 ≤ a.1 + (w : ℤ)) ∧
@@ -37,53 +38,55 @@ lemma rectangleDualBoundary_eq_vertexBoundary (a : LatticeVertex) (w h : ℕ)
     refine ⟨hxS, ?_⟩
     rcases hside with hx | hx | hx | hx
     · refine ⟨(x.1 - 1, x.2), ?_, ?_⟩
-      · rw [squareLattice_adj_iff]; dsimp; omega
-      · rw [hcoords]; dsimp; omega
+      · rw [squareLattice_adj_iff]; omega
+      simp_all
     · refine ⟨(x.1 + 1, x.2), ?_, ?_⟩
-      · rw [squareLattice_adj_iff]; dsimp; omega
-      · rw [hcoords]; dsimp; omega
+      · rw [squareLattice_adj_iff]; omega
+      simp_all
     · refine ⟨(x.1, x.2 - 1), ?_, ?_⟩
-      · rw [squareLattice_adj_iff]; dsimp; omega
-      · rw [hcoords]; dsimp; omega
+      · rw [squareLattice_adj_iff]; omega
+      simp_all
     · refine ⟨(x.1, x.2 + 1), ?_, ?_⟩
-      · rw [squareLattice_adj_iff]; dsimp; omega
-      · rw [hcoords]; dsimp; omega
+      · rw [squareLattice_adj_iff]; omega
+      simp_all
   · rintro ⟨hxS, y, hxy, hyS⟩
     apply Finset.mem_filter.2
     refine ⟨hxS, ?_⟩
     intro hxI
     have hxcoord := (Finset.mem_filter.1 hxI).2
     have hxycoord := (squareLattice_adj_iff x y).1 hxy
-    apply hyS
-    rw [hcoords]
-    omega
+    grind
 
-lemma rectangleDualBoundaryCondition_eq_frozen (a : LatticeVertex) (w h : ℕ) :
+theorem rectangleDualBoundaryCondition_eq_frozen  :
     rectangleDualBoundaryCondition a w h =
       BoundaryCondition.wired (frozenVertexBoundary (rectangleDualExpanded a w h)) := by
   unfold rectangleDualBoundaryCondition
   congr 1
   ext x
   exact rectangleDualBoundary_eq_vertexBoundary a w h x.val
+end
 
+section
+variable (θ : Parameters)
 /-- The genuine free finite-domain law extended by closed exterior edges. -/
-def freeDomainProbabilityMeasure (θ : Parameters) (S : Finset LatticeVertex) :
+def freeDomainProbabilityMeasure (S : Finset LatticeVertex) :
     ProbabilityMeasure LatticeConfiguration :=
   ⟨((law (domainGraph S) θ (BoundaryCondition.free ∅)).map
     (fun A e => decide (e ∈ A.map (frozenEdgeEmbedding S)))).toMeasure,
       PMF.toMeasure.isProbabilityMeasure _⟩
 
 /-- The actual free rectangle law with closed exterior extension. -/
-def freeRectangleProbabilityMeasure (θ : Parameters) (a : LatticeVertex) (w h : ℕ) :
+def freeRectangleProbabilityMeasure (a : LatticeVertex) (w h : ℕ) :
     ProbabilityMeasure LatticeConfiguration :=
   freeDomainProbabilityMeasure θ (latticeRectangle a w h)
 
-lemma freeRectangleProbabilityMeasure_box (θ : Parameters) (c : LatticeVertex) (r : ℕ) :
+theorem freeRectangleProbabilityMeasure_box (c : LatticeVertex) (r : ℕ) :
     freeRectangleProbabilityMeasure θ (c.1 - (r : ℤ), c.2 - (r : ℤ)) (2 * r) (2 * r) =
       boxProbabilityMeasure θ c r := by
   unfold freeRectangleProbabilityMeasure
   rw [latticeRectangle_box_eq]
   rfl
+end
 
 /-- The finite true-dual cylinder event, with its original lattice-edge labels. -/
 def trueDualCylinderEvent (a : LatticeVertex) (w h : ℕ)
@@ -101,7 +104,6 @@ theorem freeRectangle_dual_allOpen (θ : Parameters) (a : LatticeVertex) (w h : 
       Measure LatticeConfiguration) (LatticeConfiguration.allOpen F) =
     (wiredDomainProbabilityMeasure (dualParameters θ) (rectangleDualExpanded a w h) :
       Measure LatticeConfiguration) (LatticeConfiguration.allOpen F) := by
-  classical
   let E := trueDualCylinderEvent a w h F
   have hprimal : (fun A : Configuration (rectangleGraph a w h) =>
       wholePlaneDualConfigurationHomeomorph (closedRectangleConfiguration a w h A)) ⁻¹'
@@ -112,22 +114,20 @@ theorem freeRectangle_dual_allOpen (θ : Parameters) (a : LatticeVertex) (w h : 
     · intro hA e he g hg
       have ht := hA e he
       change wholePlaneDualConfigurationHomeomorph (closedRectangleConfiguration a w h A) e = true at ht
-      rw [← hg] at ht
-      rw [dual_closedRectangleConfiguration_at a w h A g, decide_eq_true_eq] at ht
-      exact ht
+      rw [← hg, dual_closedRectangleConfiguration_at a w h A g, decide_eq_true_eq] at ht
+      omega
     · intro hA e he
       obtain ⟨g, hg⟩ := hF e he
       change wholePlaneDualConfigurationHomeomorph (closedRectangleConfiguration a w h A) e = true
-      rw [← hg]
-      rw [dual_closedRectangleConfiguration_at a w h A g, decide_eq_true_eq]
-      exact hA e he g hg
+      rw [← hg, dual_closedRectangleConfiguration_at a w h A g, decide_eq_true_eq]
+      tauto
   have hambient : wiredDomainCylinderEvent (rectangleDualExpanded a w h) F =
       (subgraphConfigurationRestriction (rectangleDualGraph_le_ambient a w h)) ⁻¹' E := by
     ext A
     constructor
     · intro hA e he g hg
       apply (mem_subgraphConfigurationRestriction (rectangleDualGraph_le_ambient a w h) A g).2
-      exact hA e he (subgraphEdgeEmbedding (rectangleDualGraph_le_ambient a w h) g) hg
+      tauto
     · intro hA e he f hf
       obtain ⟨g, hg⟩ := hF e he
       have hgf : subgraphEdgeEmbedding (rectangleDualGraph_le_ambient a w h) g = f := by

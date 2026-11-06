@@ -26,15 +26,15 @@ def squareLattice : SimpleGraph LatticeVertex where
   Adj u v :=
     ((u.1 + 1 = v.1 ∨ v.1 + 1 = u.1) ∧ u.2 = v.2) ∨
     (u.1 = v.1 ∧ (u.2 + 1 = v.2 ∨ v.2 + 1 = u.2))
-  symm := ⟨by intro u v h; omega⟩
-  loopless := ⟨by intro u; omega⟩
+  symm := ⟨by omega⟩
+  loopless := ⟨by omega⟩
 
 instance : DecidableRel squareLattice.Adj := by
   intro u v
   unfold squareLattice
   infer_instance
 
-lemma squareLattice_adj_iff (u v : LatticeVertex) :
+theorem squareLattice_adj_iff (u v : LatticeVertex) :
     squareLattice.Adj u v ↔
       ((u.1 + 1 = v.1 ∨ v.1 + 1 = u.1) ∧ u.2 = v.2) ∨
       (u.1 = v.1 ∧ (u.2 + 1 = v.2 ∨ v.2 + 1 = u.2)) := Iff.rfl
@@ -44,28 +44,21 @@ def latticeBox (c : LatticeVertex) (r : ℕ) : Finset LatticeVertex :=
   (Finset.Icc (c.1 - (r : ℤ)) (c.1 + (r : ℤ))) ×ˢ
     (Finset.Icc (c.2 - (r : ℤ)) (c.2 + (r : ℤ)))
 
-lemma mem_latticeBox (c v : LatticeVertex) (r : ℕ) :
+theorem mem_latticeBox (c v : LatticeVertex) (r : ℕ) :
     v ∈ latticeBox c r ↔
       (c.1 - (r : ℤ) ≤ v.1 ∧ v.1 ≤ c.1 + (r : ℤ)) ∧
       (c.2 - (r : ℤ) ≤ v.2 ∧ v.2 ≤ c.2 + (r : ℤ)) := by
-  simp only [latticeBox, Finset.mem_product, Finset.mem_Icc]
+  simp [latticeBox]
 
-lemma card_latticeBox (c : LatticeVertex) (r : ℕ) :
+section
+variable (c : LatticeVertex) (r : ℕ)
+theorem card_latticeBox  :
     (latticeBox c r).card = (2 * r + 1) ^ 2 := by
   rw [latticeBox, Finset.card_product, Int.card_Icc, Int.card_Icc]
-  have hx : (c.1 + (r : ℤ) + 1 - (c.1 - (r : ℤ))).toNat = 2 * r + 1 := by omega
-  have hy : (c.2 + (r : ℤ) + 1 - (c.2 - (r : ℤ))).toNat = 2 * r + 1 := by omega
-  rw [hx, hy, pow_two]
+  grind
 
-/-- All vertices of a finite box, regardless of whether they meet an open edge. -/
-abbrev BoxVertex (c : LatticeVertex) (r : ℕ) := {v : LatticeVertex // v ∈ latticeBox c r}
 
-/-- The induced square-lattice graph on the full box carrier. -/
-def boxGraph (c : LatticeVertex) (r : ℕ) : SimpleGraph (BoxVertex c r) :=
-  squareLattice.induce (latticeBox c r : Set LatticeVertex)
+end
 
-instance (c : LatticeVertex) (r : ℕ) : DecidableRel (boxGraph c r).Adj := by
-  unfold boxGraph
-  infer_instance
 
 end PottsDiscontinuity.TorusTopology.Planar

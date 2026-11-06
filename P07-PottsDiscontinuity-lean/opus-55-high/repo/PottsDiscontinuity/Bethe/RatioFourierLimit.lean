@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.RatioOddLimit
 
 /-! # Section 4 Fourier composition for the even eigenvalue-ratio limit -/
 
-@[expose] public section
+public section
 
 open Set Filter MeasureTheory
 open scoped Topology BigOperators
@@ -49,23 +49,13 @@ theorem ratio_even_eigenvalue_limit_fourier (heven : r % 2 = 0)
       Tendsto (PottsDiscontinuity.altTanhPartial (lamOf Δ)) atTop (𝓝 S) ∧
       Tendsto (fun i => eigenvalueRegular c (q i) / eigenvalueRegular c (p i)) atTop
         (𝓝 ((Real.exp (-(r : ℝ) * (lamOf Δ + 2 * S)) : ℝ) : ℂ)) := by
-  have hlam : 0 < lamOf Δ := lamOf_pos hΔ
-  have hrnat : 0 < r := by omega
   obtain ⟨S, hS, hW15⟩ := PottsDiscontinuity.fourierRatioExponent
-    (lam := lamOf Δ) (r := (r : ℝ)) hlam
+    (r := (r : ℝ)) (lamOf_pos hΔ)
   have hparam : -Real.cosh (lamOf Δ) = Δ := by rw [cosh_lamOf hΔ]; ring
-  have hlog : Real.log |Δ| = Real.log |-(Real.cosh (lamOf Δ))| := by rw [hparam]
   have hIntegral := ratio_integral_eq_fourier hΔ hc hcΔ
-  have hExponent : -(r : ℝ) * Real.log |Δ| +
-      (r : ℝ) * ∫ x in (-Real.pi)..Real.pi, ratioEllPrime c x * tauCont Δ x =
-      -(r : ℝ) * (lamOf Δ + 2 * S) := by
-    simpa only [hlog, hIntegral] using hW15
   have hlimit := ratio_even_eigenvalue_limit hΔ r N h4 hr hN hn p q hp hq
     hpBE hqBE hNlim hbp hbq hK hrate heven hc hcΔ
-  have hcomposed : Tendsto (fun i => eigenvalueRegular c (q i) / eigenvalueRegular c (p i)) atTop
-      (𝓝 ((Real.exp (-(r : ℝ) * (lamOf Δ + 2 * S)) : ℝ) : ℂ)) := by
-    simpa only [hExponent] using hlimit
-  exact ⟨S, hS, hcomposed⟩
+  grind
 
 end
 

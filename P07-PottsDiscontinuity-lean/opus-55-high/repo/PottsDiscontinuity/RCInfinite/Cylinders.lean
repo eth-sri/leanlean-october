@@ -19,9 +19,6 @@ def DependsOn (E : Set Edge) (A : Set LatticeConfiguration) : Prop :=
 def IsCylinder (A : Set LatticeConfiguration) : Prop :=
   ∃ F : Finset Edge, DependsOn (F : Set Edge) A
 
-theorem DependsOn.mono {E F : Set Edge} {A : Set LatticeConfiguration}
-    (h : DependsOn E A) (hEF : E ⊆ F) : DependsOn F A :=
-  fun ω η hω => h ω η (fun e he => hω e (hEF he))
 
 theorem DependsOn.compl {E : Set Edge} {A : Set LatticeConfiguration}
     (h : DependsOn E A) : DependsOn E Aᶜ := by
@@ -49,51 +46,53 @@ theorem isCylinder_coordinate (e : Edge) (b : Bool) :
     IsCylinder {ω : LatticeConfiguration | ω e = b} := by
   refine ⟨{e}, ?_⟩
   intro ω η hω
-  change ω e = b ↔ η e = b
-  rw [hω e (by simp)]
+  simp_all
 
 theorem isCylinder_allOpen (F : Finset Edge) :
     IsCylinder (LatticeConfiguration.allOpen F) := by
   refine ⟨F, ?_⟩
   intro ω η hω
   change (∀ e ∈ F, ω e = true) ↔ (∀ e ∈ F, η e = true)
-  constructor <;> intro h e he
-  · rw [← hω e he]; exact h e he
-  · rw [hω e he]; exact h e he
+  grind
 
-theorem IsCylinder.isClopen {A : Set LatticeConfiguration} (hA : IsCylinder A) :
+section
+variable {A : Set LatticeConfiguration} (hA : IsCylinder A)
+include hA
+theorem IsCylinder.isClopen  :
     IsClopen A := by
-  classical
   obtain ⟨F, hF⟩ := hA
   let restrict : LatticeConfiguration → (F → Bool) := fun ω e => ω e
   let extend : (F → Bool) → LatticeConfiguration :=
     fun ξ e => if he : e ∈ F then ξ ⟨e, he⟩ else false
-  have hcont : Continuous restrict := continuous_pi fun e => continuous_apply e.val
   have heq : A = restrict ⁻¹' (extend ⁻¹' A) := by
     ext ω
     exact hF ω (extend (restrict ω)) (by
-      intro e he
-      have he' : e ∈ F := he
-      simp [extend, restrict, he'])
+      grind)
   rw [heq]
-  exact (isClopen_discrete (extend ⁻¹' A)).preimage hcont
+  exact (isClopen_discrete (extend ⁻¹' A)).preimage (by fun_prop)
 
-theorem IsCylinder.measurableSet {A : Set LatticeConfiguration} (hA : IsCylinder A) :
+theorem IsCylinder.measurableSet  :
     MeasurableSet A := hA.isClopen.isOpen.measurableSet
+end
 
 /-- The two actual finite-box laws, with their respective exterior extensions. -/
 noncomputable def boxMeasure (θ : Parameters) (i : Fin 2) (c : LatticeVertex) (r : ℕ) :
     ProbabilityMeasure LatticeConfiguration :=
   if i = 0 then boxProbabilityMeasure θ c r else wiredBoxProbabilityMeasure θ c r
 
-@[simp] theorem boxMeasure_free (θ : Parameters) (c : LatticeVertex) (r : ℕ) :
-    boxMeasure θ 0 c r = boxProbabilityMeasure θ c r := by simp [boxMeasure]
+section
+variable (θ : Parameters) (c : LatticeVertex) (r : ℕ)
+@[simp] theorem boxMeasure_free  :
+    boxMeasure θ 0 c r = boxProbabilityMeasure θ c r := by rfl
 
-@[simp] theorem boxMeasure_wired (θ : Parameters) (c : LatticeVertex) (r : ℕ) :
-    boxMeasure θ 1 c r = wiredBoxProbabilityMeasure θ c r := by simp [boxMeasure]
+@[simp] theorem boxMeasure_wired  :
+    boxMeasure θ 1 c r = wiredBoxProbabilityMeasure θ c r := by rfl
+end
 
-theorem boxMeasure_tendsto (θ : Parameters) (i : Fin 2)
-    (μ : Measure LatticeConfiguration) (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ i μ) :
+section
+variable (θ : Parameters) (i : Fin 2) (μ : Measure LatticeConfiguration) (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ i μ)
+include μ hμ
+theorem boxMeasure_tendsto  :
     Tendsto (fun n => boxMeasure θ i (0, 0) n) atTop
       (𝓝 (⟨μ, hμ.1⟩ : ProbabilityMeasure LatticeConfiguration)) := by
   fin_cases i
@@ -102,14 +101,13 @@ theorem boxMeasure_tendsto (θ : Parameters) (i : Fin 2)
   · simpa using wired_box_exhaustion θ μ hμ (fun _ => (0, 0)) (fun n => n)
       origin_latticeBox_nested origin_latticeBox_exhaustive
 
-theorem tendsto_cylinder_probability (θ : Parameters) (i : Fin 2)
-    (μ : Measure LatticeConfiguration) (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ i μ)
-    {A : Set LatticeConfiguration} (hA : IsCylinder A) :
+theorem tendsto_cylinder_probability {A : Set LatticeConfiguration} (hA : IsCylinder A) :
     Tendsto (fun n => (boxMeasure θ i (0, 0) n : Measure LatticeConfiguration).real A)
       atTop (𝓝 (μ.real A)) := by
   have h := ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto
     (boxMeasure_tendsto θ i μ hμ) hA.isClopen
   simpa [ProbabilityMeasure.coeFn_def, Measure.real, ENNReal.toReal, Function.comp_def] using
     (NNReal.continuous_coe.tendsto _).comp h
+end
 
 end PottsDiscontinuity.RCInfinite

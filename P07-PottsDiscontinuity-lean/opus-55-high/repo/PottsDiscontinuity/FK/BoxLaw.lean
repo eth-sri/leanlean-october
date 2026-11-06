@@ -23,44 +23,44 @@ abbrev LatticeConfiguration := squareLattice.edgeSet → Bool
 
 noncomputable section
 
+section
+variable (c : LatticeVertex) (r : ℕ)
 /-- Inclusion of the genuine box-induced graph into the original lattice. -/
-def boxGraphEmbedding (c : LatticeVertex) (r : ℕ) : boxGraph c r ↪g squareLattice where
+def boxGraphEmbedding  : boxGraph c r ↪g squareLattice where
   toFun := Subtype.val
   inj' := Subtype.val_injective
   map_rel_iff' := Iff.rfl
 
 /-- Each original box edge is retained as that same unordered lattice edge. -/
-def boxEdgeEmbedding (c : LatticeVertex) (r : ℕ) :
+def boxEdgeEmbedding  :
     (boxGraph c r).edgeSet ↪ squareLattice.edgeSet :=
   (boxGraphEmbedding c r).mapEdgeSet
 
 /-- Literal closed extension of the sampled box configuration to all lattice edges. -/
-def boxConfiguration (c : LatticeVertex) (r : ℕ) (A : Configuration (boxGraph c r)) :
+def boxConfiguration (A : Configuration (boxGraph c r)) :
     LatticeConfiguration := by
   classical
   exact fun e => decide (e ∈ A.map (boxEdgeEmbedding c r))
+end
 
-theorem boxConfiguration_open_iff (c : LatticeVertex) (r : ℕ)
-    (A : Configuration (boxGraph c r)) (e : squareLattice.edgeSet) :
+section
+variable (c : LatticeVertex) (r : ℕ) (A : Configuration (boxGraph c r))
+theorem boxConfiguration_open_iff (e : squareLattice.edgeSet) :
     boxConfiguration c r A e = true ↔ e ∈ A.map (boxEdgeEmbedding c r) := by
-  classical
-  simp only [boxConfiguration, decide_eq_true_eq]
+  grind [boxConfiguration]
 
-@[simp] theorem boxConfiguration_at (c : LatticeVertex) (r : ℕ)
-    (A : Configuration (boxGraph c r)) (e : (boxGraph c r).edgeSet) :
+@[simp] theorem boxConfiguration_at (e : (boxGraph c r).edgeSet) :
     boxConfiguration c r A (boxEdgeEmbedding c r e) = decide (e ∈ A) := by
-  classical
   simp [boxConfiguration]
 
 /-- No edge outside the original induced box edge set is artificially opened. -/
-theorem boxConfiguration_outside (c : LatticeVertex) (r : ℕ)
-    (A : Configuration (boxGraph c r)) (e : squareLattice.edgeSet)
+theorem boxConfiguration_outside (e : squareLattice.edgeSet)
     (he : e ∉ Set.range (boxEdgeEmbedding c r)) : boxConfiguration c r A e = false := by
-  classical
   simp only [boxConfiguration, decide_eq_false_iff_not]
   intro h
   obtain ⟨a, ha, hmap⟩ := Finset.mem_map.mp h
   exact he ⟨a,hmap⟩
+end
 
 /-- The actual free finite-box FK law, pushed to a common whole-lattice carrier. -/
 def boxLaw (q : Parameters) (c : LatticeVertex) (r : ℕ) : PMF LatticeConfiguration :=

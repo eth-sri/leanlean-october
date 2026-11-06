@@ -11,28 +11,24 @@ printed `eq:ArbitrarySetCalc`, the formula below includes adjacent collisions:
 the corresponding local factor is zero, since every gap has positive length.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Classical
 
 namespace PottsDiscontinuity.BetheAnsatz
 
+section
+variable {N n : ℕ}
 /-- Collision constraints expressed at each individual coordinate. -/
-theorem gapCollision_constraints_iff {N n : ℕ} (x y : Fin (n + 1) → ℤ)
+theorem gapCollision_constraints_iff (x y : Fin (n + 1) → ℤ)
     (S : Finset (Fin (n + 1))) :
     (∀ k ∈ S, gapCollision N x y k) ↔
       ∀ k, (k ∈ S → y k = x k) ∧
         ((finRotate (n + 1)).symm k ∈ S → y k = cyclicPredecessorPositions N x k) := by
-  constructor
-  · intro h k
-    refine ⟨fun hk => (h k hk).1, ?_⟩
-    intro hk
-    simpa only [gapCollision, Equiv.apply_symm_apply] using (h _ hk).2
-  · intro h k hk
-    exact ⟨(h k).1 hk, (h _).2 (by simpa only [Equiv.symm_apply_apply] using hk)⟩
+  grind [gapCollision]
 
 /-- Product domain for a collision set, including the empty domain when constraints conflict. -/
-theorem restricted_gapTuples_eq_pi {N n : ℕ} (x : Fin (n + 1) → ℤ)
+theorem restricted_gapTuples_eq_pi (x : Fin (n + 1) → ℤ)
     (S : Finset (Fin (n + 1))) :
     (gapTuples N x).filter (fun y => ∀ k ∈ S, gapCollision N x y k) =
       Fintype.piFinset (fun k => (Icc (cyclicPredecessorPositions N x k) (x k)).filter
@@ -41,11 +37,8 @@ theorem restricted_gapTuples_eq_pi {N n : ℕ} (x : Fin (n + 1) → ℤ)
   ext y
   simp only [mem_filter, mem_gapTuples, gapCollision_constraints_iff,
     Fintype.mem_piFinset, mem_Icc]
-  constructor
-  · rintro ⟨hg, hc⟩ k
-    exact ⟨hg k, hc k⟩
-  · intro h
-    exact ⟨fun k => (h k).1, fun k => (h k).2⟩
+  grind
+end
 
 /-- Evaluate one gap with either, both, or neither endpoint forced. -/
 theorem sum_constrained_gap_geometric (c p : ℝ) {a b : ℤ} (hab : a < b)
@@ -57,46 +50,30 @@ theorem sum_constrained_gap_geometric (c p : ℝ) {a b : ℤ} (hab : a < b)
         else L c (z p) * positionPhase p a + M c (z p) * positionPhase p b) := by
   by_cases hA : A <;> by_cases hB : B
   · have he : (Icc a b).filter (fun u => (A → u = b) ∧ (B → u = a)) = ∅ := by
-      ext u
-      constructor
-      · intro hu
-        have hu' := (mem_filter.mp hu).2
-        have h1 := hu'.1 hA
-        have h2 := hu'.2 hB
-        omega
-      · intro hu
-        exact False.elim (Finset.notMem_empty u hu)
-    rw [he]
-    simp only [Finset.sum_empty, hA, hB, ↓reduceIte]
+      grind
+    grind
   · have he : (Icc a b).filter (fun u => (A → u = b) ∧ (B → u = a)) = {b} := by
-      ext u
-      simp only [mem_filter, mem_Icc, hA, hB, true_implies, false_implies,
-        and_true, mem_singleton]
-      omega
-    rw [he]
-    simp only [sum_singleton, hA, hB, ↓reduceIte, or_true, one_mul]
+      grind
+    simp_all
   · have he : (Icc a b).filter (fun u => (A → u = b) ∧ (B → u = a)) = {a} := by
-      ext u
-      simp only [mem_filter, mem_Icc, hA, hB, true_implies, false_implies,
-        true_and, mem_singleton]
-      omega
-    rw [he]
-    simp only [sum_singleton, hA, hB, ↓reduceIte, true_or, one_mul]
+      grind
+    simp_all
   · simpa only [hA, hB, false_implies, and_self, filter_true, ↓reduceIte] using
       sum_gap_geometric c p hab hp
 
+section
+variable {N n : ℕ}
 /-- Strictly positive lengths of the predecessor gaps. -/
-theorem cyclicPredecessorPositions_lt {N n : ℕ} {x : Fin (n + 1) → ℤ}
+theorem cyclicPredecessorPositions_lt {x : Fin (n + 1) → ℤ}
     (hx : StrictMono x) (hspan : x (Fin.last n) - x 0 < (N : ℤ)) (k : Fin (n + 1)) :
     cyclicPredecessorPositions N x k < x k := by
   induction k using Fin.cases with
-  | zero => rw [cyclicPredecessorPositions_zero]; omega
+  | zero => simp; omega
   | succ k =>
-    rw [cyclicPredecessorPositions_succ]
-    exact hx (by change k.val < k.val + 1; omega)
+    aesop
 
 /-- Equation `eq:ArbitrarySetCalc`, extended to every collision set by zero factors. -/
-theorem restrictedGapSum_eq_product {N n : ℕ} (c : ℝ) (x : Fin (n + 1) → ℤ)
+theorem restrictedGapSum_eq_product (c : ℝ) (x : Fin (n + 1) → ℤ)
     (p : Fin (n + 1) → ℝ) (σ : Equiv.Perm (Fin (n + 1)))
     (S : Finset (Fin (n + 1))) (hx : StrictMono x)
     (hspan : x (Fin.last n) - x 0 < (N : ℤ)) (hp : ∀ j, z (p j) ≠ 1) :
@@ -125,7 +102,7 @@ theorem restrictedGapSum_eq_product {N n : ℕ} (c : ℝ) (x : Fin (n + 1) → �
   have hlocal := sum_constrained_gap_geometric c (p (σ k))
     (cyclicPredecessorPositions_lt hx hspan k) (hp (σ k))
     (k ∈ S) ((finRotate (n + 1)).symm k ∈ S)
-  by_cases hk : k ∈ S <;> by_cases hl : (finRotate (n + 1)).symm k ∈ S <;>
-    simpa only [hk, hl, true_implies, false_implies, true_and, and_true, ↓reduceIte] using hlocal
+  simp_all
+end
 
 end PottsDiscontinuity.BetheAnsatz

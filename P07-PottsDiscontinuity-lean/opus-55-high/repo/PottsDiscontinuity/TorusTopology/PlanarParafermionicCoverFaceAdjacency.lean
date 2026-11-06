@@ -27,13 +27,10 @@ def parafermionicCoverFiniteFaceAdjacencyGraph (n : ℕ) :
     e ∈ (parafermionicCoverFiniteFaceBoundaryGraph j.1 j.2).edgeSet
   symm := by
     constructor
-    intro i j h
-    rcases h with ⟨hne, e, hi, hj⟩
-    exact ⟨hne.symm, e, hj, hi⟩
+    grind
   loopless := by
     constructor
-    intro i h
-    exact h.1 rfl
+    grind
 
 theorem parafermionicCoverFiniteFaceAdjacencyGraph_adj_iff {n : ℕ}
     (i j : ParafermionicCoverFiniteFaceTopIndex n) :
@@ -61,24 +58,21 @@ def parafermionicCoverFiniteFaceAdjacencyWithBoundaryGraph (n : ℕ) :
     intro x y h
     cases x with
     | none =>
-      cases y with
-      | none => exact h.elim
-      | some j => exact h
+      grind
     | some i =>
       cases y with
-      | none => exact h
+      | none => omega
       | some j =>
         rcases h with ⟨hne, e, hi, hj⟩
         exact ⟨hne.symm, e, hj, hi⟩
   loopless := by
     constructor
-    intro x h
-    cases x with
-    | none => exact h
-    | some i => exact (parafermionicCoverFiniteFaceAdjacencyGraph n).loopless.irrefl i h
+    grind
 
+section
+variable {n : ℕ}
 theorem parafermionicCoverFiniteFaceAdjacencyWithBoundaryGraph_adj_none_some_iff
-    {n : ℕ} (i : ParafermionicCoverFiniteFaceTopIndex n) :
+    (i : ParafermionicCoverFiniteFaceTopIndex n) :
     (parafermionicCoverFiniteFaceAdjacencyWithBoundaryGraph n).Adj none (some i) ↔
       ∃ e,
         e ∈ (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).edgeSet ∧
@@ -86,10 +80,11 @@ theorem parafermionicCoverFiniteFaceAdjacencyWithBoundaryGraph_adj_none_some_iff
           (parafermionicCoverFiniteFaceBoundaryGraph j.1 j.2).edgeSet := Iff.rfl
 
 theorem parafermionicCoverFiniteFaceAdjacencyWithBoundaryGraph_adj_some_some_iff
-    {n : ℕ} (i j : ParafermionicCoverFiniteFaceTopIndex n) :
+    (i j : ParafermionicCoverFiniteFaceTopIndex n) :
     (parafermionicCoverFiniteFaceAdjacencyWithBoundaryGraph n).Adj (some i) (some j) ↔
       i ≠ j ∧ ∃ e,
         e ∈ (parafermionicCoverFiniteFaceBoundaryGraph i.1 i.2).edgeSet ∧
         e ∈ (parafermionicCoverFiniteFaceBoundaryGraph j.1 j.2).edgeSet := Iff.rfl
+end
 
 end PottsDiscontinuity.TorusTopology.Planar.Medial

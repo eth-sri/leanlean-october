@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.Theorem23Quadrature
 
 /-! # Exact physical masses of the discrete and continuous densities -/
 
-@[expose] public section
+public section
 
 open Set MeasureTheory intervalIntegral
 open scoped BigOperators
@@ -19,12 +19,11 @@ theorem root_step_subcell_mass {N n : ℕ} {p : Fin n → ℝ}
       (b - a) * rootGapMultiplicity N n hs j /
         ((N : ℝ) * (rootPartitionPoint n p hn j.succ - rootPartitionPoint n p hn j.castSucc)) := by
   have heq := intervalIntegral.integral_congr_Ioo_of_le (μ := volume) hab
-    (f := rootStepDensity N n p hp hn hs)
+   
     (g := fun _ : ℝ => rootGapMultiplicity N n hs j /
       ((N : ℝ) * (rootPartitionPoint n p hn j.succ - rootPartitionPoint n p hn j.castSucc)))
     (fun x hx => rootStepDensity_on_cell hp hn hs j ⟨ha.trans hx.1.le, hx.2.trans_le hb⟩)
-  rw [heq, intervalIntegral.integral_const, smul_eq_mul]
-  ring
+  simp_all
 
 theorem root_step_physical_mass {N k r : ℕ} {p : Fin (k + 1) → ℝ}
     (hp : p ∈ S_n (k + 1)) (hs : 2 * (k + 1) ≤ N)
@@ -32,90 +31,53 @@ theorem root_step_physical_mass {N k r : ℕ} {p : Fin (k + 1) → ℝ}
     (∫ x in (-Real.pi)..Real.pi, rootStepDensity N (k + 1) p hp (by omega) hs x) =
       1 / 2 + (r : ℝ) / N := by
   have hNnat : 0 < N := by omega
-  have hN : (0 : ℝ) < N := by exact_mod_cast hNnat
   let s := rootStepDensity N (k + 1) p hp (by omega) hs
-  have hi : ∀ a b, IntervalIntegrable s volume a b := by
-    intro a b
+  have hi : ∀ a b, IntervalIntegrable s volume a b := fun a b => by
     simpa [s] using intervalIntegrable_mul_rootStepDensity p hp (by omega) hs
       (g := fun _ => (1 : ℝ)) continuous_const a b
-  have hsym : p (Fin.last k) = -p 0 := by
-    have h := hp.2.2 (0 : Fin (k + 1))
-    simpa using h
+  have hsym : p (Fin.last k) = -p 0 := by simpa using hp.2.2 0
   have hfirstpos : 0 < p 0 + Real.pi := by linarith [(hp.1 0).1]
   have hzero : rootPartitionPoint (k + 1) p (by omega) (0 : Fin (k + 2)).castSucc =
-      p (Fin.last k) - 2 * Real.pi := by
-    convert rootPartitionPoint_zero p (by omega) using 1 <;> congr 1
-  have hfirst : rootPartitionPoint (k + 1) p (by omega) (0 : Fin (k + 2)).succ = p 0 := by
-    convert rootPartitionPoint_root p (by omega) (0 : Fin (k + 1)) using 1
-    congr 1
+      p (Fin.last k) - 2 * Real.pi := rfl
+  have hfirst : rootPartitionPoint (k + 1) p (by omega) (0 : Fin (k + 2)).succ = p 0 := rfl
   have hlast : rootPartitionPoint (k + 1) p (by omega) (Fin.last (k + 1)).castSucc =
-      p (Fin.last k) := by
-    convert rootPartitionPoint_root p (by omega) (Fin.last k) using 1
-    congr 1
+      p (Fin.last k) := rootPartitionPoint_root p _ (Fin.last k)
   have hend : rootPartitionPoint (k + 1) p (by omega) (Fin.last (k + 1)).succ =
-      p 0 + 2 * Real.pi := by
-    convert rootPartitionPoint_end p (by omega) using 1 <;> congr 1
+      p 0 + 2 * Real.pi := rootPartitionPoint_end p _
   have hnat : N + 1 - 2 * (k + 1) = 2 * r + 1 := by omega
   have hmult (j : Fin (k + 2)) (hj : j.val = 0 ∨ j.val = k + 1) :
       rootGapMultiplicity N (k + 1) hs j = (2 * r + 1 : ℝ) := by
-    rw [rootGapMultiplicity, ite_eq_left hj, hnat]
-    push_cast
-    ring
+    simp_all [rootGapMultiplicity]
   have hleft : (∫ x in (-Real.pi)..p 0, s x) = (2 * r + 1 : ℝ) / (2 * (N : ℝ)) := by
     have h := root_step_subcell_mass hp (by omega) hs (0 : Fin (k + 2))
-      (hp.1 0).1.le (by rw [hzero]; linarith [(hp.1 (Fin.last k)).2]) (by rw [hfirst])
-    change (∫ x in (-Real.pi)..p 0, s x) = _ at h
+      (hp.1 0).1.le (by linarith) (by rfl)
     rw [hzero, hfirst, hmult _ (by simp), hsym] at h
-    rw [h]
-    have hden : p 0 - (-p 0 - 2 * Real.pi) = 2 * (p 0 + Real.pi) := by ring
-    rw [hden]
-    field_simp [ne_of_gt hN, ne_of_gt hfirstpos]
+    rw [h, show p 0 - (-p 0 - 2 * Real.pi) = 2 * (p 0 + Real.pi) by ring]
+    field_simp
     ring
   have hright : (∫ x in p (Fin.last k)..Real.pi, s x) =
       (2 * r + 1 : ℝ) / (2 * (N : ℝ)) := by
     have h := root_step_subcell_mass hp (by omega) hs (Fin.last (k + 1))
-      (hp.1 (Fin.last k)).2.le (by rw [hlast])
-      (by rw [hend]; linarith [(hp.1 0).1])
-    change (∫ x in p (Fin.last k)..Real.pi, s x) = _ at h
+      (hp.1 (Fin.last k)).2.le (by linarith)
+      (by linarith)
     rw [hlast, hend, hmult _ (by simp), hsym] at h
-    rw [hsym, h]
-    have hden : p 0 + 2 * Real.pi - -p 0 = 2 * (p 0 + Real.pi) := by ring
-    rw [hden]
-    field_simp [ne_of_gt hN, ne_of_gt hfirstpos]
+    rw [hsym, h, show p 0 + 2 * Real.pi - -p 0 = 2 * (p 0 + Real.pi) by ring]
+    field_simp
     ring
   have hcell (j : Fin k) : (∫ x in p j.castSucc..p j.succ, s x) = 1 / (N : ℝ) := by
-    let cell : Fin (k + 2) := ⟨j.val + 1, by omega⟩
-    have ha : rootPartitionPoint (k + 1) p (by omega) cell.castSucc = p j.castSucc := by
-      convert rootPartitionPoint_root p (by omega) j.castSucc using 1
-      congr 1
-    have hb : rootPartitionPoint (k + 1) p (by omega) cell.succ = p j.succ := by
-      convert rootPartitionPoint_root p (by omega) j.succ using 1
-      congr 1
-    have hm : rootGapMultiplicity N (k + 1) hs cell = 1 := by
-      simp only [rootGapMultiplicity, cell,
-        ite_eq_right (by omega : ¬ (j.val + 1 = 0 ∨ j.val + 1 = k + 1))]
-    simpa only [ha, hb, hm] using root_step_full_cell_mass hp (by omega) hs cell
-  have hmiddle : (∫ x in p 0..p (Fin.last k), s x) = (k : ℝ) / N := by
-    rw [← sum_fin_step_integrals_adjacent k p hi]
-    simp_rw [hcell]
-    simp
-    ring
-  have hsplit : (∫ x in (-Real.pi)..Real.pi, s x) =
-      (∫ x in (-Real.pi)..p 0, s x) + (∫ x in p 0..p (Fin.last k), s x) +
-        (∫ x in p (Fin.last k)..Real.pi, s x) := by
-    rw [integral_add_adjacent_intervals (hi _ _) (hi _ _),
-      integral_add_adjacent_intervals (hi _ _) (hi _ _)]
-  rw [hsplit, hleft, hright, hmiddle]
+    obtain ⟨ha, hb⟩ := rootPartitionPoint_cell p j
+    have hm : rootGapMultiplicity N (k + 1) hs ⟨j + 1, by omega⟩ = 1 := by grind [rootGapMultiplicity]
+    simpa only [ha, hb, hm] using root_step_full_cell_mass hp (by omega) hs ⟨j + 1, by omega⟩
+  rw [← integral_add_adjacent_intervals (hi _ (p 0)) (hi _ _), ← integral_add_adjacent_intervals (hi (p 0) (p (Fin.last k))) (hi _ _), ← sum_fin_integrals_adjacent k p hi, hleft, hright]
+  simp only [hcell, Finset.sum_const, Finset.card_univ, Fintype.card_fin, nsmul_eq_mul]
   have hcountc : (N : ℝ) = 2 * ((k : ℝ) + 1 + (r : ℝ)) := by exact_mod_cast hcount
-  field_simp [ne_of_gt hN]
-  nlinarith only [hcountc]
+  field_simp
+  nlinarith
 
 theorem integral_Rsech {lam : ℝ} (hlam : 0 < lam) :
     (∫ α in (-Real.pi)..Real.pi, Rsech lam α) = Real.pi := by
-  have heq : Rsech lam = trigSeries (1 / 2) (secCoeff lam) (fun _ => 0) :=
-    funext (Rsech_eq_trigSeries hlam)
   have h := cosCoeff_trigSeries_zero (summable_secCoeff hlam) summable_zero (1 / 2)
-  rw [← heq, cosCoeff_zero] at h
+  rw [← (funext (Rsech_eq_trigSeries hlam)), cosCoeff_zero] at h
   linarith
 
 theorem integral_rho_mass {Δ : ℝ} (hΔ : Δ < -1) :
@@ -128,7 +90,7 @@ theorem integral_rho_mass {Δ : ℝ} (hΔ : Δ < -1) :
     have h := Rtrans_rho hΔ α
     rw [Rtrans_eq hΔ] at h
     field_simp
-    nlinarith only [h]
+    linarith
   rw [heq, intervalIntegral.integral_const_mul, integral_Rsech hlam]
   field_simp
 

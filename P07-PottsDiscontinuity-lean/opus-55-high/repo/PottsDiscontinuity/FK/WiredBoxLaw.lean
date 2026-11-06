@@ -18,24 +18,21 @@ noncomputable section
 def boxVertexBoundary (c : LatticeVertex) (r : ℕ) : Set (BoxVertex c r) :=
   {x | x.val ∈ vertexBoundary (latticeBox c r)}
 
+section
+variable (c : LatticeVertex) (r : ℕ) (A : Configuration (boxGraph c r))
 /-- Extend an actual box configuration by open edges outside the box. -/
-def wiredBoxConfiguration (c : LatticeVertex) (r : ℕ)
-    (A : Configuration (boxGraph c r)) : LatticeConfiguration := by
+def wiredBoxConfiguration  : LatticeConfiguration := by
   classical
   exact fun e => decide (∀ f, boxEdgeEmbedding c r f = e → f ∈ A)
 
-theorem wiredBoxConfiguration_open_iff (c : LatticeVertex) (r : ℕ)
-    (A : Configuration (boxGraph c r)) (e : squareLattice.edgeSet) :
+theorem wiredBoxConfiguration_open_iff (e : squareLattice.edgeSet) :
     wiredBoxConfiguration c r A e = true ↔
       ∀ f, boxEdgeEmbedding c r f = e → f ∈ A := by
-  classical
-  simp only [wiredBoxConfiguration, decide_eq_true_eq]
+  grind [wiredBoxConfiguration]
 
 /-- Open extension preserves every edge state sampled in the finite graph. -/
-@[simp] theorem wiredBoxConfiguration_at (c : LatticeVertex) (r : ℕ)
-    (A : Configuration (boxGraph c r)) (e : (boxGraph c r).edgeSet) :
+@[simp] theorem wiredBoxConfiguration_at (e : (boxGraph c r).edgeSet) :
     wiredBoxConfiguration c r A (boxEdgeEmbedding c r e) = decide (e ∈ A) := by
-  classical
   have h : (∀ f, boxEdgeEmbedding c r f = boxEdgeEmbedding c r e → f ∈ A) ↔ e ∈ A := by
     constructor
     · exact fun h => h e rfl
@@ -43,40 +40,41 @@ theorem wiredBoxConfiguration_open_iff (c : LatticeVertex) (r : ℕ)
       exact (boxEdgeEmbedding c r).injective hf ▸ he
   simp only [wiredBoxConfiguration, h]
 
-theorem wiredBoxConfiguration_outside (c : LatticeVertex) (r : ℕ)
-    (A : Configuration (boxGraph c r)) (e : squareLattice.edgeSet)
+theorem wiredBoxConfiguration_outside (e : squareLattice.edgeSet)
     (he : e ∉ Set.range (boxEdgeEmbedding c r)) :
     wiredBoxConfiguration c r A e = true := by
   rw [wiredBoxConfiguration_open_iff]
-  intro f hf
-  exact (he ⟨f, hf⟩).elim
+  tauto
+end
 
+section
+variable (θ : Parameters) (c : LatticeVertex) (r : ℕ)
 /-- The exact finite wired law, followed by the open exterior extension. -/
-def wiredBoxLaw (θ : Parameters) (c : LatticeVertex) (r : ℕ) : PMF LatticeConfiguration :=
+def wiredBoxLaw  : PMF LatticeConfiguration :=
   (law (boxGraph c r) θ (BoundaryCondition.wired (boxVertexBoundary c r))).map
     (wiredBoxConfiguration c r)
 
 /-- The wired box law as a probability measure on the natural product space. -/
-def wiredBoxProbabilityMeasure (θ : Parameters) (c : LatticeVertex) (r : ℕ) :
+def wiredBoxProbabilityMeasure  :
     ProbabilityMeasure LatticeConfiguration :=
   ⟨(wiredBoxLaw θ c r).toMeasure, PMF.toMeasure.isProbabilityMeasure _⟩
+end
 
+section
+variable (c : LatticeVertex) (r : ℕ)
 /-- The finite event seen by an all-open cylinder under open extension. -/
-def wiredBoxCylinderEvent (c : LatticeVertex) (r : ℕ)
-    (F : Finset squareLattice.edgeSet) : Set (Configuration (boxGraph c r)) :=
+def wiredBoxCylinderEvent (F : Finset squareLattice.edgeSet) : Set (Configuration (boxGraph c r)) :=
   {A | ∀ e ∈ F, ∀ f, boxEdgeEmbedding c r f = e → f ∈ A}
 
-theorem wiredBoxCylinderEvent_upper (c : LatticeVertex) (r : ℕ)
-    (F : Finset squareLattice.edgeSet) : IsUpperSet (wiredBoxCylinderEvent c r F) := by
-  intro A B hAB hA e he f hf
-  exact hAB (hA e he f hf)
+theorem wiredBoxCylinderEvent_upper (F : Finset squareLattice.edgeSet) : IsUpperSet (wiredBoxCylinderEvent c r F) := by
+  tauto
 
-theorem wiredBoxConfiguration_mem_allOpen (c : LatticeVertex) (r : ℕ)
-    (A : Configuration (boxGraph c r)) (F : Finset squareLattice.edgeSet) :
+theorem wiredBoxConfiguration_mem_allOpen (A : Configuration (boxGraph c r)) (F : Finset squareLattice.edgeSet) :
     wiredBoxConfiguration c r A ∈ LatticeConfiguration.allOpen F ↔
       A ∈ wiredBoxCylinderEvent c r F := by
   simp only [LatticeConfiguration.allOpen, wiredBoxCylinderEvent, Set.mem_ofPred_eq,
     wiredBoxConfiguration_open_iff]
+end
 
 attribute [local instance] configurationMeasurableSpace
 
@@ -92,8 +90,7 @@ theorem wiredBoxProbabilityMeasure_allOpen (θ : Parameters) (c : LatticeVertex)
   rw [PMF.toMeasure_map_apply _ _ _ measurable_from_top
     (LatticeConfiguration.allOpen_isClopen F).isOpen.measurableSet]
   congr 1
-  ext A
-  exact wiredBoxConfiguration_mem_allOpen c r A F
+  grind [wiredBoxConfiguration_mem_allOpen]
 
 end
 end PottsDiscontinuity.FK

@@ -56,12 +56,7 @@ theorem exists_compatibleConfig_iff (ω : ArrowConfig N M) :
     refine ⟨fun v => !decide (Compatible false (ω.left v) (ω.right v)
       (ω.below v) (ω.above v)), fun v => ?_⟩
     obtain ⟨b, hb⟩ := (exists_compatible_iff _ _ _ _).2 (h v)
-    by_cases hf : Compatible false (ω.left v) (ω.right v) (ω.below v) (ω.above v)
-    · simp only [hf, decide_true, Bool.not_true]
-    · cases b
-      · exact (hf hb).elim
-      · simp only [hf, decide_false, Bool.not_false]
-        exact hb
+    grind [Compatible]
 
 theorem smoothingWeight_nonneg (lam : ℝ) (ω : ArrowConfig N M) (s : Smoothing N M) :
     0 ≤ smoothingWeight lam ω s :=
@@ -76,12 +71,13 @@ theorem smoothingWeight_eq_exp {ω : ArrowConfig N M} {s : Smoothing N M}
   unfold CompatibleConfig at h
   simp only [turnWeight, h, ↓reduceIte]
   rw [← Real.exp_sum]
-  congr 1
   simp only [Int.cast_sum, Finset.mul_sum]
 
+section
+variable (lam : ℝ)
 /-- The product of the local sums equals the sum over all independent smoothings.
 The result uses the existing six-vertex weight, including zero off the ice rule. -/
-theorem sum_smoothingWeight (lam : ℝ) (ω : ArrowConfig N M) :
+theorem sum_smoothingWeight (ω : ArrowConfig N M) :
     ∑ s : Smoothing N M, smoothingWeight lam ω s =
       w6V1 (Real.exp (lam / 2) + Real.exp (-lam / 2)) ω := by
   unfold smoothingWeight
@@ -94,16 +90,17 @@ theorem sum_smoothingWeight (lam : ℝ) (ω : ArrowConfig N M) :
 
 /-- Summing the local smoothing expansion gives exactly `SixVertex.Z6V`.
 No FK partition function or global loop statistic occurs in this intermediate identity. -/
-theorem sum_smoothingWeight_eq_Z6V (lam : ℝ) :
+theorem sum_smoothingWeight_eq_Z6V  :
     (∑ ω : ArrowConfig N M, ∑ s : Smoothing N M, smoothingWeight lam ω s) =
       Z6V (Real.exp (lam / 2) + Real.exp (-lam / 2)) N M := by
-  simp only [sum_smoothingWeight, Z6V]
+  simp [sum_smoothingWeight, Z6V]
 
 /-- The same expansion preserves the existing row sector, with no truncated subtraction. -/
-theorem sum_smoothingWeight_eq_Z6Vr (lam : ℝ) (r : ℕ) :
+theorem sum_smoothingWeight_eq_Z6Vr (r : ℕ) :
     (∑ ω : ArrowConfig N M with ω.absUp + r = N / 2,
       ∑ s : Smoothing N M, smoothingWeight lam ω s) =
       Z6Vr (Real.exp (lam / 2) + Real.exp (-lam / 2)) N M r := by
-  simp only [sum_smoothingWeight, Z6Vr]
+  simp [sum_smoothingWeight, Z6Vr]
+end
 
 end PottsDiscontinuity.Torus

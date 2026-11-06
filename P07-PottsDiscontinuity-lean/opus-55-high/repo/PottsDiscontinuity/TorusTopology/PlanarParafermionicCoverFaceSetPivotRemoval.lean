@@ -15,19 +15,19 @@ namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 open PottsDiscontinuity.TorusTopology.Planar
 open SimpleGraph
 
+section
+variable {n : ℕ} (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
 /-- The actual selected-face union graph after deleting precisely its selected
 top-pivot edges, on the same original box-vertex carrier. -/
-noncomputable def parafermionicCoverFiniteFaceSetWithoutPivotsGraph {n : ℕ}
-    (S : Finset (ParafermionicCoverFiniteFaceTopIndex n)) :
+noncomputable def parafermionicCoverFiniteFaceSetWithoutPivotsGraph  :
     SimpleGraph (ParafermionicCoverBoxVertex n) :=
   (parafermionicCoverFiniteFaceUnionGraph S).deleteEdges
     (parafermionicCoverFiniteFaceSetPivots S : Set _)
 
 theorem parafermionicCoverFiniteFaceSetWithoutPivotsGraph_reachable_eq
-    {n : ℕ} (S : Finset (ParafermionicCoverFiniteFaceTopIndex n)) :
+     :
     (parafermionicCoverFiniteFaceSetWithoutPivotsGraph S).Reachable =
       (parafermionicCoverFiniteFaceUnionGraph S).Reachable := by
-  classical
   let I := {i : ParafermionicCoverFiniteFaceTopIndex n // i ∈ S}
   let U := parafermionicCoverFiniteFaceUnionGraph S
   let F : I → SimpleGraph (ParafermionicCoverBoxVertex n) :=
@@ -41,25 +41,21 @@ theorem parafermionicCoverFiniteFaceSetWithoutPivotsGraph_reachable_eq
   have htri : ∀ i j, p j ∈ (F i).edgeSet → j = i ∨ rank j < rank i := by
     intro i j hj
     have hclass := parafermionicCoverFiniteFacePivot_boundary_classification
-      i.1 j.1 (by simpa [F, p] using hj)
-    rcases hclass with hEq | hlt
-    · exact Or.inl (Subtype.ext hEq)
-    · exact Or.inr (by simpa [rank] using hlt)
+      i.1 j.1 (by omega)
+    grind
   have halt : ∀ i,
       ((F i).deleteEdges {p i}).Reachable (p i).out.1 (p i).out.2 := by
     intro i
-    simpa [F, p] using parafermionicCoverFiniteFaceTopPivot_bypass i.1
+    simpa using parafermionicCoverFiniteFaceTopPivot_bypass i.1
   have hrange : Set.range p =
       (parafermionicCoverFiniteFaceSetPivots S : Set (Sym2 (ParafermionicCoverBoxVertex n))) := by
     ext e
     simp only [Set.mem_range, Finset.mem_coe, parafermionicCoverFiniteFaceSetPivots,
       Finset.mem_image]
     constructor
-    · rintro ⟨i, rfl⟩
-      exact ⟨i.1, i.2, rfl⟩
-    · rintro ⟨i, hi, he⟩
-      exact ⟨⟨i, hi⟩, he⟩
-  have hreach := finiteTriangularPivotReachability U F p rank hsub htri halt
-  simpa [parafermionicCoverFiniteFaceSetWithoutPivotsGraph, U, hrange] using hreach
+    · grind
+    tauto
+  simpa [parafermionicCoverFiniteFaceSetWithoutPivotsGraph, U, hrange] using (finiteTriangularPivotReachability U F p rank hsub htri halt)
+end
 
 end PottsDiscontinuity.TorusTopology.Planar.Medial

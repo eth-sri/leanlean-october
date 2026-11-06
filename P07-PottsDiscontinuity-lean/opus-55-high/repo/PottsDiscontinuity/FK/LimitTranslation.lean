@@ -13,7 +13,7 @@ the canonical free and wired limits to every measure satisfying that
 characterization. The endpoint measures are invariant Dirac measures.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory Filter Topology
 
@@ -24,10 +24,9 @@ noncomputable section
 theorem dirac_constant_translation_invariant (b : Bool) (a : LatticeVertex) :
     (Measure.dirac (fun _ : squareLattice.edgeSet => b)).map
       (latticeConfigurationTranslate a) = Measure.dirac (fun _ => b) := by
-  rw [Measure.map_dirac]
+  simp
   congr 1
-  funext e
-  rw [latticeConfigurationTranslate_apply]
+  aesop
 
 /-- Every interior-parameter frozen limit is invariant under every lattice translation. -/
 theorem isRCInfiniteVolumeLimit_interior_translation_invariant
@@ -39,7 +38,7 @@ theorem isRCInfiniteVolumeLimit_interior_translation_invariant
     have hν := (Classical.choose_spec (freeBoxLimit_existsUnique θ)).1
       (fun _ => (0, 0)) (fun n => n)
       origin_latticeBox_nested origin_latticeBox_exhaustive
-    have heq : μ = ν.toMeasure := rc_limit_unique θ.toP θ.toQ 0 μ ν.toMeasure hμ
+    have heq := rc_limit_unique θ.toP θ.toQ 0 μ ν.toMeasure hμ
       (isRCInfiniteVolumeLimit_of_freeBox_tendsto θ ν hν)
     rw [heq]
     exact congrArg ProbabilityMeasure.toMeasure
@@ -48,7 +47,7 @@ theorem isRCInfiniteVolumeLimit_interior_translation_invariant
     have hν := (Classical.choose_spec (wiredBoxLimit_existsUnique θ)).1
       (fun _ => (0, 0)) (fun n => n)
       origin_latticeBox_nested origin_latticeBox_exhaustive
-    have heq : μ = ν.toMeasure := rc_limit_unique θ.toP θ.toQ 1 μ ν.toMeasure hμ
+    have heq := rc_limit_unique θ.toP θ.toQ 1 μ ν.toMeasure hμ
       (isRCInfiniteVolumeLimit_of_wiredBox_tendsto θ ν hν)
     rw [heq]
     exact congrArg ProbabilityMeasure.toMeasure (wiredBoxLimit_translation_invariant θ a)

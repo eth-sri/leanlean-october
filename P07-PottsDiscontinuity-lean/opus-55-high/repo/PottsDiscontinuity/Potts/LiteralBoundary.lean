@@ -25,13 +25,16 @@ open Classical
 abbrev SpinConfiguration (q : ℕ) (V : Finset (ℤ × ℤ)) :=
   ↥(V : Set (ℤ × ℤ)) → Set.Icc 1 q
 
+section
+variable (V : Finset (ℤ × ℤ))
 /-- One ghost bond is indexed by one boundary vertex. -/
-abbrev BoundaryVertex (V : Finset (ℤ × ℤ)) :=
+abbrev BoundaryVertex  :=
   {x : ↥(V : Set (ℤ × ℤ)) // x.val ∈ vertexBoundary V}
 
 /-- Interior bonds and one ghost bond per boundary vertex. -/
-abbrev LiteralBond (V : Finset (ℤ × ℤ)) :=
+abbrev LiteralBond  :=
   (squareLattice.induce (V : Set (ℤ × ℤ))).edgeSet ⊕ BoundaryVertex V
+end
 
 local instance literalBondDecidableEq (V : Finset (ℤ × ℤ)) : DecidableEq (LiteralBond V) :=
   fun _ _ => Classical.propDecidable _
@@ -39,17 +42,16 @@ local instance literalBondDecidableEq (V : Finset (ℤ × ℤ)) : DecidableEq (L
 local instance boundaryVertexFintype (V : Finset (ℤ × ℤ)) : Fintype (BoundaryVertex V) :=
   Fintype.ofFinite _
 
+section
+variable (q : ℕ) (V : Finset (ℤ × ℤ)) (i : Fin (q + 1)) (σ : SpinConfiguration q V)
 /-- The agreement enforced by an open interior or ghost bond. -/
-abbrev literalAgreement (q : ℕ) (V : Finset (ℤ × ℤ)) (i : Fin (q + 1))
-    (σ : SpinConfiguration q V) : LiteralBond V → Prop
+abbrev literalAgreement  : LiteralBond V → Prop
   | Sum.inl e => ∀ x ∈ e.val, ∀ y ∈ e.val, σ x = σ y
   | Sum.inr x => (σ x.val : ℕ) = (i : ℕ)
 
-theorem sum_literalAgreement (q : ℕ) (V : Finset (ℤ × ℤ)) (i : Fin (q + 1))
-    (σ : SpinConfiguration q V) :
+theorem sum_literalAgreement  :
     (∑ e : LiteralBond V, if literalAgreement q V i σ e then (1 : ℝ) else 0) =
       -pottsHamiltonian q V i σ := by
-  classical
   rw [Fintype.sum_sum_type]
   have hb :
       (∑ x : BoundaryVertex V, if (σ x.val : ℕ) = (i : ℕ) then (1 : ℝ) else 0) =
@@ -58,64 +60,45 @@ theorem sum_literalAgreement (q : ℕ) (V : Finset (ℤ × ℤ)) (i : Fin (q + 1
     rw [← Finset.sum_subtype (Finset.univ.filter (fun x : ↥(V : Set (ℤ × ℤ)) =>
       x.val ∈ vertexBoundary V)) (by simp) (fun x => if (σ x : ℕ) = (i : ℕ) then (1 : ℝ) else 0)]
     rw [Finset.sum_filter]
-    apply Finset.sum_congr rfl
-    intro x _
-    by_cases hx : x.val ∈ vertexBoundary V <;> simp [hx]
-  dsimp only [literalAgreement]
+    grind
   unfold pottsHamiltonian
   conv_rhs => rw [neg_sub, sub_neg_eq_add, add_comm]
   apply congrArg₂ (fun a b : ℝ => a + b)
-  · apply Finset.sum_congr rfl
-    intro e _
-    congr 1
-  · convert hb using 1
-    congr 1
-    funext x
-    split_ifs <;> rfl
+  · ring
+  · grind
+end
 
-theorem constraintGibbsWeight_literalAgreement (q : ℕ) (V : Finset (ℤ × ℤ))
-    (β : ℝ) (i : Fin (q + 1)) (σ : SpinConfiguration q V) :
+section
+variable (q : ℕ) (V : Finset (ℤ × ℤ)) (β : ℝ) (i : Fin (q + 1)) (σ : SpinConfiguration q V)
+theorem constraintGibbsWeight_literalAgreement  :
     constraintGibbsWeight β (literalAgreement q V i) σ =
       Real.exp (-β * pottsHamiltonian q V i σ) := by
-  rw [constraintGibbsWeight, sum_literalAgreement]
-  congr 1
-  ring
+  grind [constraintGibbsWeight, sum_literalAgreement]
 
 /-- The actual joint spin-bond probability mass for the frozen Hamiltonian. -/
-abbrev literalJointProbability (q : ℕ) (V : Finset (ℤ × ℤ)) (β : ℝ) (i : Fin (q + 1))
-    (σ : SpinConfiguration q V) (ω : LiteralBond V → Bool) : ℝ :=
+abbrev literalJointProbability (ω : LiteralBond V → Bool) : ℝ :=
   constraintJointProbability β (literalAgreement q V i) σ ω
+end
 
+section
+variable (q : ℕ) (hq : 2 ≤ q) (V : Finset (ℤ × ℤ)) (β : ℝ)
+include hq
 /-- Summing the bonds recovers the exact frozen Potts probability, including
 its literal soft boundary term. -/
-theorem literalJointProbability_spin_marginal (q : ℕ) (hq : 2 ≤ q)
-    (V : Finset (ℤ × ℤ)) (β : ℝ) (i : Fin (q + 1)) (σ : SpinConfiguration q V) :
+theorem literalJointProbability_spin_marginal (i : Fin (q + 1)) (σ : SpinConfiguration q V) :
     ∑ ω : LiteralBond V → Bool, literalJointProbability q V β i σ ω =
       pottsProb q V β i σ := by
-  let : Nonempty (Set.Icc 1 q) := ⟨⟨1, le_rfl, by omega⟩⟩
-  simp only [literalJointProbability]
+  let : Nonempty (Set.Icc 1 q) := by aesop
   have h := constraintJointProbability_spin_marginal β (literalAgreement q V i) σ
-  simp only [constraintGibbsWeight_literalAgreement] at h
-  unfold pottsProb
-  convert h using 1
+  grind [constraintGibbsWeight_literalAgreement, pottsProb]
 
-theorem sum_literalJointProbability (q : ℕ) (hq : 2 ≤ q)
-    (V : Finset (ℤ × ℤ)) (β : ℝ) (i : Fin (q + 1)) :
+theorem sum_literalJointProbability (i : Fin (q + 1)) :
     ∑ σ : SpinConfiguration q V, ∑ ω : LiteralBond V → Bool,
       literalJointProbability q V β i σ ω = 1 := by
-  let : Nonempty (Set.Icc 1 q) := ⟨⟨1, le_rfl, by omega⟩⟩
+  let : Nonempty (Set.Icc 1 q) := by aesop
   exact sum_constraintJointProbability β (literalAgreement q V i)
 
-/-- A genuine probability mass function realizing the literal finite-volume
-spin-bond expansion. -/
-def literalJointLaw (q : ℕ) (hq : 2 ≤ q) (V : Finset (ℤ × ℤ))
-    (β : ℝ) (hβ : 0 < β) (i : Fin (q + 1)) :
-    PMF (SpinConfiguration q V × (LiteralBond V → Bool)) := by
-  let : Nonempty (Set.Icc 1 q) := ⟨⟨1, le_rfl, by omega⟩⟩
-  exact PMF.ofFintype (fun z => ENNReal.ofReal (literalJointProbability q V β i z.1 z.2)) (by
-    rw [← ENNReal.ofReal_sum_of_nonneg (fun z _ =>
-      constraintJointProbability_nonneg hβ (literalAgreement q V i) z.1 z.2),
-      Fintype.sum_prod_type, sum_literalJointProbability q hq, ENNReal.ofReal_one])
+end
 
 end
 

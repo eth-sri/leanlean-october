@@ -30,7 +30,7 @@ estimate (3.19), is `TorusCrossing.h319_proved`), together with the positivity `
 `identity44` (the analytic part of Theorem 1.2).
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Provider
 
@@ -48,7 +48,7 @@ theorem potts_rc_rate_input (q : ℕ) (hq : 4 < q) :
             exact_mod_cast (show 1 ≤ q by omega)⟩)
           ⟨(q : ℝ), by
             change (0 : ℝ) < (q : ℝ)
-            exact_mod_cast (show 0 < q by omega)⟩ 0 φ₀ →
+            positivity⟩ 0 φ₀ →
         ∃ S : ℝ,
           Tendsto (fun N : ℕ => ∑ k ∈ Finset.Icc 1 N,
             (-1 : ℝ) ^ k / k * Real.tanh (k * lam)) atTop (𝓝 S) ∧
@@ -56,12 +56,11 @@ theorem potts_rc_rate_input (q : ℕ) (hq : 4 < q) :
             (φ₀.real {ω | (rcInfiniteOpenGraph ω).Reachable (0, 0) (diagonalSite n)}))
             atTop (𝓝 (lam + 2 * S)) ∧ 0 < lam + 2 * S := by
   intro lam hlam hcosh φ₀ hφ₀
-  have hq' : (4 : ℝ) < (q : ℝ) := by exact_mod_cast hq
   obtain ⟨S, hS, hrate⟩ := RCMProof.rcItem3ForEveryFreeLimit_proved
-    (fun q => TorusCrossing.h319_proved q) (q : ℝ) hq' φ₀ hφ₀ lam hlam hcosh
+    (fun q => TorusCrossing.h319_proved q) (q : ℝ) (by simp_all) φ₀ hφ₀ lam hlam hcosh
   obtain ⟨S₀, _T, hS₀, _hT, hpos, _hid⟩ := identity44 lam hlam
-  have hSS₀ : S = S₀ := tendsto_nhds_unique hS hS₀
-  exact ⟨S, hS, hrate, hSS₀ ▸ hpos⟩
+  have hSS₀ := tendsto_nhds_unique hS hS₀
+  grind
 
 /-- Theorem 1.1, in the form used to close the statement `potts_theorem_1_1`. -/
 theorem potts_theorem_1_1 {q : ℕ} (hq : 4 < q := by assumption) :

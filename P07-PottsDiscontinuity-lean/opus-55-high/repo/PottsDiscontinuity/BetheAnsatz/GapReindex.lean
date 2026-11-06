@@ -15,48 +15,52 @@ open Finset Complex Classical
 
 namespace PottsDiscontinuity.BetheAnsatz
 
+section
+variable {n : ℕ} (N : ℕ) (y : Fin (n + 1) → ℤ)
 /-- Inverse of the predecessor shift, on the integer cover. -/
-def cyclicSuccessorPositions {n : ℕ} (N : ℕ) (y : Fin (n + 1) → ℤ) :
+def cyclicSuccessorPositions  :
     Fin (n + 1) → ℤ :=
   fun k => y (finRotate (n + 1) k) + if finRotate (n + 1) k = 0 then (N : ℤ) else 0
 
-@[simp] theorem cyclicPredecessor_successor {n : ℕ} (N : ℕ) (y : Fin (n + 1) → ℤ) :
+@[simp] theorem cyclicPredecessor_successor  :
     cyclicPredecessorPositions N (cyclicSuccessorPositions N y) = y := by
   funext k
   simp only [cyclicPredecessorPositions, cyclicSuccessorPositions, Equiv.apply_symm_apply,
     add_sub_cancel_right]
 
-@[simp] theorem cyclicSuccessor_predecessor {n : ℕ} (N : ℕ) (y : Fin (n + 1) → ℤ) :
+@[simp] theorem cyclicSuccessor_predecessor  :
     cyclicSuccessorPositions N (cyclicPredecessorPositions N y) = y := by
   funext k
   simp only [cyclicPredecessorPositions, cyclicSuccessorPositions, Equiv.symm_apply_apply,
     sub_add_cancel]
+end
 
 theorem cyclicPredecessorPositions_injective {n N : ℕ} :
     Function.Injective (cyclicPredecessorPositions (n := n) N) :=
   Function.LeftInverse.injective (cyclicSuccessor_predecessor N)
 
-@[simp] theorem cyclicSuccessorPositions_castSucc {n : ℕ} (N : ℕ)
-    (y : Fin (n + 1) → ℤ) (k : Fin n) :
+section
+variable {n : ℕ} (N : ℕ) (y : Fin (n + 1) → ℤ)
+@[simp] theorem cyclicSuccessorPositions_castSucc (k : Fin n) :
     cyclicSuccessorPositions N y k.castSucc = y k.succ := by
   have hr : finRotate (n + 1) k.castSucc = k.succ := finRotate_of_lt k.isLt
   simp only [cyclicSuccessorPositions, hr, Fin.succ_ne_zero, ↓reduceIte, add_zero]
 
-@[simp] theorem cyclicSuccessorPositions_last {n : ℕ} (N : ℕ) (y : Fin (n + 1) → ℤ) :
+@[simp] theorem cyclicSuccessorPositions_last  :
     cyclicSuccessorPositions N y (Fin.last n) = y 0 + N := by
   simp only [cyclicSuccessorPositions, finRotate_last, ↓reduceIte]
 
-theorem cyclicPredecessor_residue {n : ℕ} (N : ℕ) (y : Fin (n + 1) → ℤ) (k : Fin (n + 1)) :
+theorem cyclicPredecessor_residue (k : Fin (n + 1)) :
     cyclicPredecessorPositions N y k % (N : ℤ) = y ((finRotate (n + 1)).symm k) % (N : ℤ) := by
   unfold cyclicPredecessorPositions
-  split_ifs <;> simp
+  aesop
 
-theorem cyclicSuccessor_residue {n : ℕ} (N : ℕ) (y : Fin (n + 1) → ℤ) (k : Fin (n + 1)) :
+theorem cyclicSuccessor_residue (k : Fin (n + 1)) :
     cyclicSuccessorPositions N y k % (N : ℤ) = y (finRotate (n + 1) k) % (N : ℤ) := by
   unfold cyclicSuccessorPositions
-  split_ifs <;> simp
+  aesop
 
-theorem cyclicPredecessor_residue_injective_iff {n : ℕ} (N : ℕ) (y : Fin (n + 1) → ℤ) :
+theorem cyclicPredecessor_residue_injective_iff  :
     Function.Injective (fun k => cyclicPredecessorPositions N y k % (N : ℤ)) ↔
       Function.Injective (fun k => y k % (N : ℤ)) := by
   simp_rw [cyclicPredecessor_residue]
@@ -64,11 +68,11 @@ theorem cyclicPredecessor_residue_injective_iff {n : ℕ} (N : ℕ) (y : Fin (n 
   · intro h i j he
     apply (finRotate (n + 1)).injective
     apply h
-    simpa only [Equiv.symm_apply_apply] using he
+    simp_all
   · intro h
     exact h.comp (finRotate (n + 1)).symm.injective
 
-theorem cyclicSuccessor_residue_injective_iff {n : ℕ} (N : ℕ) (y : Fin (n + 1) → ℤ) :
+theorem cyclicSuccessor_residue_injective_iff  :
     Function.Injective (fun k => cyclicSuccessorPositions N y k % (N : ℤ)) ↔
       Function.Injective (fun k => y k % (N : ℤ)) := by
   simp_rw [cyclicSuccessor_residue]
@@ -76,9 +80,10 @@ theorem cyclicSuccessor_residue_injective_iff {n : ℕ} (N : ℕ) (y : Fin (n + 
   · intro h i j he
     apply (finRotate (n + 1)).symm.injective
     apply h
-    simpa only [Equiv.apply_symm_apply] using he
+    simp_all
   · intro h
     exact h.comp (finRotate (n + 1)).injective
+end
 
 theorem orderedTuples_residue_injective {N n : ℕ} {y : Fin n → ℤ}
     (hy : y ∈ orderedTuples N n) : Function.Injective (fun k => y k % (N : ℤ)) := by
@@ -103,16 +108,18 @@ theorem cyclicSuccessor_monotone {N n : ℕ} {y : Fin (n + 1) → ℤ}
     Monotone (cyclicSuccessorPositions N y) := by
   apply Fin.monotone_iff_le_succ.mpr
   intro k
-  rw [cyclicSuccessorPositions_castSucc]
+  simp
   by_cases hk : k.succ = Fin.last n
   · rw [hk, cyclicSuccessorPositions_last]
     omega
   · obtain ⟨l, hl⟩ := Fin.exists_castSucc_eq.mpr hk
     rw [← hl, cyclicSuccessorPositions_castSucc]
-    exact hy (by change l.val ≤ l.val + 1; omega)
+    tauto
 
-theorem nonnegative_gapTuple_ordered {N n : ℕ} {x y : Fin (n + 1) → ℤ}
-    (hx : x ∈ orderedTuples N (n + 1)) (hy : y ∈ distinctGapTuples N x) (h0 : 0 ≤ y 0) :
+section
+variable {N n : ℕ} {x y : Fin (n + 1) → ℤ} (hx : x ∈ orderedTuples N (n + 1)) (hy : y ∈ distinctGapTuples N x)
+include x hx hy
+theorem nonnegative_gapTuple_ordered (h0 : 0 ≤ y 0) :
     y ∈ orderedTuples N (n + 1) := by
   obtain ⟨hg, hi⟩ := mem_filter.mp hy
   have hm := gapTuples_monotone hg
@@ -121,32 +128,32 @@ theorem nonnegative_gapTuple_ordered {N n : ℕ} {x y : Fin (n + 1) → ℤ}
   have hu := ((mem_gapTuples.mp hg) k).2
   exact hu.trans_lt ((mem_orderedTuples.mp hx).1 k).2
 
-theorem negative_gapTuple_successor_ordered {N n : ℕ} {x y : Fin (n + 1) → ℤ}
-    (hx : x ∈ orderedTuples N (n + 1)) (hy : y ∈ distinctGapTuples N x) (h0 : y 0 < 0) :
+theorem negative_gapTuple_successor_ordered (h0 : y 0 < 0) :
     cyclicSuccessorPositions N y ∈ orderedTuples N (n + 1) := by
   obtain ⟨hg, hi⟩ := mem_filter.mp hy
   have hxm := (mem_orderedTuples.mp hx).2
   have hb0 := gapTuples_global_bounds hxm hg 0
   have hbl := gapTuples_global_bounds hxm hg (Fin.last n)
-  have hm := cyclicSuccessor_monotone (N := N) (gapTuples_monotone hg) (by omega)
-  have hir := (cyclicSuccessor_residue_injective_iff N y).mpr hi
-  refine mem_orderedTuples.mpr ⟨?_, strictMono_of_monotone_residues hm hir⟩
+  refine mem_orderedTuples.mpr ⟨?_, strictMono_of_monotone_residues (cyclicSuccessor_monotone (gapTuples_monotone hg) (by omega)) ((cyclicSuccessor_residue_injective_iff N y).mpr hi)⟩
   intro k
   by_cases hk : k = Fin.last n
   · rw [hk, cyclicSuccessorPositions_last]
     have hxlast := ((mem_orderedTuples.mp hx).1 (Fin.last n)).1
-    constructor <;> omega
+    omega
   · obtain ⟨l, rfl⟩ := Fin.exists_castSucc_eq.mpr hk
-    rw [cyclicSuccessorPositions_castSucc]
+    simp
     have hyb := (mem_gapTuples.mp hg) l.succ
     rw [cyclicPredecessorPositions_succ] at hyb
     have hxlo := ((mem_orderedTuples.mp hx).1 l.castSucc).1
     have hxhi := ((mem_orderedTuples.mp hx).1 l.succ).2
-    constructor <;> omega
+    omega
+end
 
+section
+variable {N n : ℕ} {x : Fin (n + 1) → ℤ} (hx : x ∈ orderedTuples N (n + 1))
+include hx
 /-- The nonnegative-first gap tuples are exactly the ordinary lower orientation. -/
-theorem nonnegative_distinctGapTuples {N n : ℕ} {x : Fin (n + 1) → ℤ}
-    (hx : x ∈ orderedTuples N (n + 1)) :
+theorem nonnegative_distinctGapTuples  :
     (distinctGapTuples N x).filter (fun y => 0 ≤ y 0) =
       (orderedTuples N (n + 1)).filter (fun y => y ∈ gapTuples N x) := by
   ext y
@@ -159,8 +166,7 @@ theorem nonnegative_distinctGapTuples {N n : ℕ} {x : Fin (n + 1) → ℤ}
       ((mem_orderedTuples.mp hy).1 0).1⟩
 
 /-- The negative-first gap tuples are precisely the shifted ordinary upper orientation. -/
-theorem negative_distinctGapTuples {N n : ℕ} {x : Fin (n + 1) → ℤ}
-    (hx : x ∈ orderedTuples N (n + 1)) :
+theorem negative_distinctGapTuples  :
     (distinctGapTuples N x).filter (fun y => ¬ 0 ≤ y 0) =
       ((orderedTuples N (n + 1)).filter
         (fun y => cyclicPredecessorPositions N y ∈ gapTuples N x)).image
@@ -171,20 +177,17 @@ theorem negative_distinctGapTuples {N n : ℕ} {x : Fin (n + 1) → ℤ}
     obtain ⟨hg, h0⟩ := mem_filter.mp hy
     refine mem_image.mpr ⟨cyclicSuccessorPositions N y, ?_, cyclicPredecessor_successor N y⟩
     exact mem_filter.mpr ⟨negative_gapTuple_successor_ordered hx hg (lt_of_not_ge h0),
-      by simpa only [cyclicPredecessor_successor] using (mem_filter.mp hg).1⟩
+      by simpa using (mem_filter.mp hg).1⟩
   · intro hy
     obtain ⟨z, hz, rfl⟩ := mem_image.mp hy
     obtain ⟨ho, hg⟩ := mem_filter.mp hz
     refine mem_filter.mpr ⟨mem_filter.mpr ⟨hg, ?_⟩, ?_⟩
     · exact (cyclicPredecessor_residue_injective_iff N z).mpr (orderedTuples_residue_injective ho)
-    · rw [cyclicPredecessorPositions_zero]
-      have hb := ((mem_orderedTuples.mp ho).1 (Fin.last n)).2
-      omega
+    simp_all
 
 /-- The exact finite cyclic-gap reindexing, for an arbitrary complex summand.
 The diagonal has one representative in each of these disjoint sign classes. -/
-theorem sum_distinctGapTuples_reindex {N n : ℕ} {x : Fin (n + 1) → ℤ}
-    (hx : x ∈ orderedTuples N (n + 1)) (F : (Fin (n + 1) → ℤ) → ℂ) :
+theorem sum_distinctGapTuples_reindex (F : (Fin (n + 1) → ℤ) → ℂ) :
     (∑ y ∈ distinctGapTuples N x, F y) =
       (∑ y ∈ (orderedTuples N (n + 1)).filter (fun y => y ∈ gapTuples N x), F y) +
       ∑ y ∈ (orderedTuples N (n + 1)).filter
@@ -192,6 +195,7 @@ theorem sum_distinctGapTuples_reindex {N n : ℕ} {x : Fin (n + 1) → ℤ}
           F (cyclicPredecessorPositions N y) := by
   rw [← Finset.sum_filter_add_sum_filter_not (distinctGapTuples N x) (fun y => 0 ≤ y 0) F,
     nonnegative_distinctGapTuples hx, negative_distinctGapTuples hx,
-    Finset.sum_image (cyclicPredecessorPositions_injective (N := N) (n := n)).injOn]
+    Finset.sum_image (cyclicPredecessorPositions_injective).injOn]
+end
 
 end PottsDiscontinuity.BetheAnsatz

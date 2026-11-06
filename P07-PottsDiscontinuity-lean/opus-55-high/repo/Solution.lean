@@ -20,7 +20,6 @@ import PottsDiscontinuity.Duality.BondStates
 import PottsDiscontinuity.Duality.BoxDihedral
 import PottsDiscontinuity.Duality.DualConfigurationBridge
 import PottsDiscontinuity.Duality.FiniteDuality
-import PottsDiscontinuity.Duality.LatticeEmbedding
 import PottsDiscontinuity.Duality.LatticePorts
 import PottsDiscontinuity.Duality.PlanarConnectionAlternative
 import PottsDiscontinuity.Duality.Rectangle

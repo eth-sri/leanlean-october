@@ -11,7 +11,7 @@ region, no two vertices embedded in its complement become identified by the
 induced frozen boundary partition.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusLoops
 
@@ -33,21 +33,14 @@ theorem isolatedExtensionPullbackFrozenFree_of_openEdges_inside
   change (Setoid.comap f
       (componentSetoid H (BoundaryCondition.free ∅) K.val)).r x y at hxy
   have hrel : (componentSetoid H (BoundaryCondition.free ∅) K.val).r
-      (f x) (f y) := (Setoid.comap_rel f _ x y).mp hxy
+      (f x) (f y) := by omega
   rw [componentSetoid_free] at hrel
-  change ActualConnected H K.val (f x) (f y) at hrel
   have hreachable_eq : ∀ {a b : W}, (openGraph H K.val).Reachable a b →
       a ∉ U → a = b := by
     intro a b hab ha
     rw [SimpleGraph.reachable_iff_reflTransGen] at hab
-    induction hab with
-    | refl => rfl
-    | @tail z w hpath hadj ih =>
-      have haz : a = z := ih
-      subst z
-      rcases hK hadj with ⟨hau, _⟩
-      exact (ha hau).elim
-  have hxy' : f x = f y := hreachable_eq hrel (hf x)
-  exact (BoundaryCondition.free_rel ∅ x y).2 (f.injective hxy')
+    grind
+  have hxy' : f x = f y := by tauto
+  simp_all
 
 end PottsDiscontinuity.TorusLoops

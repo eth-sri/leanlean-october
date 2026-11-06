@@ -20,26 +20,25 @@ def boundedRectangleChain (hNp : 0 < N) (hMp : 0 < M) (n : ℕ)
   {A | liftedBoundedConnection hNp hMp A 0 (3 * (n : ℤ)) 0 (2 * (n : ℤ) * k)
     (liftedChainSite i.val hi n 0) (liftedChainSite i.val hi n k)}
 
-theorem rectangleBlockEvent_bounded_connection (hNp : 0 < N) (hMp : 0 < M)
-    (n : ℕ) (i : Fin (3 * n + 1)) (hi : Even (i.val : ℤ)) (j : ℕ)
+section
+variable (hNp : 0 < N) (hMp : 0 < M) (n : ℕ) (i : Fin (3 * n + 1)) (hi : Even (i.val : ℤ))
+theorem rectangleBlockEvent_bounded_connection (j : ℕ)
     (A : RCConfig N M) (hA : A ∈ rectangleBlockEvent hNp hMp n i j) :
     liftedBoundedConnection hNp hMp A 0 (3 * (n : ℤ))
       (2 * (n : ℤ) * j) (2 * (n : ℤ) * ((j : ℤ) + 1))
       (liftedChainSite i.val hi n j) (liftedChainSite i.val hi n (j + 1)) := by
   obtain ⟨u,v,hu,hv,w,hw⟩ := hA
-  let t : ℤ := 2 * (n : ℤ) * ((j : ℤ) + 1)
-  let ht : Even t := ⟨(n : ℤ) * (j + 1),by dsimp [t]; ring⟩
+  let t := 2 * (n : ℤ) * ((j : ℤ) + 1)
+  let ht : Even t := by grind
   let F := liftedReflectionStripHom hNp hMp t ht A 0 (3 * (n : ℤ))
   have hstart : F v = liftedChainSite i.val hi n j := by
     apply Subtype.ext
     change (v.val.1,t-v.val.2) = _
-    rw [hv]
-    ext <;> dsimp [t,liftedChainSite,liftedColumnSite]; ring
+    grind [liftedChainSite, liftedColumnSite]
   have hend : F u = liftedChainSite i.val hi n (j + 1) := by
     apply Subtype.ext
     change (u.val.1,t-u.val.2) = _
-    rw [hu]
-    ext <;> dsimp [t,liftedChainSite,liftedColumnSite]; ring
+    grind [liftedChainSite, liftedColumnSite]
   have hconn : liftedBoundedConnection hNp hMp A 0 (3 * (n : ℤ))
       (2 * (n : ℤ) * j) t (F v) (F u) := by
     refine ⟨(w.map F).reverse,?_⟩
@@ -47,14 +46,11 @@ theorem rectangleBlockEvent_bounded_connection (hNp : 0 < N) (hMp : 0 < M)
     rw [SimpleGraph.Walk.support_reverse,List.mem_reverse,SimpleGraph.Walk.support_map] at hz
     obtain ⟨z',hzmem,heq⟩ := List.mem_map.mp hz
     subst z
-    have h := hw z' hzmem
     change 2 * (n : ℤ) * j ≤ t - z'.val.2 ∧ t - z'.val.2 ≤ t
-    have heq : t = 2 * (n : ℤ) * j + 2 * n := by dsimp [t]; ring
-    constructor <;> omega
-  simpa only [hstart,hend] using hconn
+    grind
+  grind
 
-theorem rectangleBlocks_subset_boundedChain (hNp : 0 < N) (hMp : 0 < M)
-    (n : ℕ) (i : Fin (3 * n + 1)) (hi : Even (i.val : ℤ)) (k : ℕ) :
+theorem rectangleBlocks_subset_boundedChain (k : ℕ) :
     {A | ∀ j < k, A ∈ rectangleBlockEvent hNp hMp n i j} ⊆
       boundedRectangleChain hNp hMp n i hi k := by
   intro A hA
@@ -62,10 +58,7 @@ theorem rectangleBlocks_subset_boundedChain (hNp : 0 < N) (hMp : 0 < M)
     induction l with
     | zero =>
       refine ⟨.nil,?_⟩
-      intro z hz
-      simp only [SimpleGraph.Walk.support_nil,List.mem_singleton] at hz
-      subst z
-      simp [liftedChainSite,liftedColumnSite]
+      aesop
     | succ l ih =>
       obtain ⟨w,hw⟩ := ih (by omega)
       obtain ⟨p,hp⟩ := rectangleBlockEvent_bounded_connection hNp hMp n i hi l A
@@ -74,15 +67,11 @@ theorem rectangleBlocks_subset_boundedChain (hNp : 0 < N) (hMp : 0 < M)
       intro z hz
       rw [SimpleGraph.Walk.support_append] at hz
       rcases List.mem_append.mp hz with hz | hz
-      · have h := hw z hz
-        have hmul : 2 * (n : ℤ) * l ≤ 2 * (n : ℤ) * (l + 1) := by
-          have hn : 0 ≤ (n : ℤ) := by omega
-          nlinarith
-        constructor <;> push_cast <;> omega
+      · grind
       · have h := hp z (List.mem_of_mem_tail hz)
-        have hlo : 0 ≤ 2 * (n : ℤ) * l := by positivity
-        constructor <;> push_cast <;> omega
-  exact hchain k le_rfl
+        grind
+  simp_all
+end
 
 theorem boundedRectangleChain_probability_ge (hN : Even N) (hM : Even M)
     (hNp : 0 < N) (hMp : 0 < M) (q : Set.Ici (1 : ℝ))
@@ -100,6 +89,6 @@ theorem boundedRectangleChain_toggle_seam (hNp : 0 < N) (hMp : 0 < M)
     A ∈ boundedRectangleChain hNp hMp n i hi k ↔
       toggleEdge A e ∈ boundedRectangleChain hNp hMp n i hi k :=
   liftedBoundedConnection_toggle_seam hNp hMp A 0 (3 * (n : ℤ)) 0
-    (2 * (n : ℤ) * k) le_rfl (by exact_mod_cast hheight) e he _ _
+    (2 * (n : ℤ) * k) le_rfl (by linarith) e he _ _
 
 end PottsDiscontinuity.TorusRC

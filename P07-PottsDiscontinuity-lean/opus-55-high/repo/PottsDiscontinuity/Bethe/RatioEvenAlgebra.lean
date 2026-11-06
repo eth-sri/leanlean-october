@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.RatioProducts
 
 /-! # The exact finite even-ratio factorization (3.7) -/
 
-@[expose] public section
+public section
 
 open Finset
 open scoped BigOperators
@@ -28,13 +28,7 @@ theorem ratio_product_symmetric_split {m n s : ℕ} (hcount : s + n + s = m)
       ∏ j : Fin s, f ⟨j.val, by omega⟩ := by
     calc
       _ = ∏ j : Fin s, f ⟨(Fin.rev j).val, by omega⟩ := by
-        apply prod_congr rfl
-        intro j hj
-        rw [← hsym ⟨(Fin.rev j).val, by omega⟩]
-        congr 1
-        apply Fin.ext
-        simp only [Fin.val_rev]
-        omega
+        grind
       _ = _ := Equiv.prod_comp (Fin.revPerm : Equiv.Perm (Fin s))
         (fun j => f ⟨j.val, by omega⟩)
   have hprod : (∏ j, f j) = (∏ j : Fin s, f ⟨j.val, by omega⟩) *
@@ -42,14 +36,7 @@ theorem ratio_product_symmetric_split {m n s : ℕ} (hcount : s + n + s = m)
       ∏ j : Fin s, f ⟨s + n + j.val, by omega⟩ := by
     rw [Fin.prod_univ_add, Fin.prod_univ_add]
     rfl
-  have hmid : (∏ j : Fin n, f ⟨s + j.val, by omega⟩) =
-      ∏ j : Fin n, f ⟨j.val + s, by omega⟩ := by
-    apply prod_congr rfl
-    intro j hj
-    congr 1
-    exact Fin.ext (Nat.add_comm _ _)
-  rw [hprod, hR, hmid]
-  ring
+  grind
 
 /-- A regular-branch quotient before the symmetric block decomposition. -/
 theorem ratio_regular_quotient {m n : ℕ} {p : Fin m → ℝ} {q : Fin n → ℝ}
@@ -58,7 +45,6 @@ theorem ratio_regular_quotient {m n : ℕ} {p : Fin m → ℝ} {q : Fin n → �
       (((∏ j, ‖M c (z (q j))‖) / ∏ j, ‖M c (z (p j))‖ : ℝ) : ℂ) := by
   rw [ratio_eigenvalueRegular hc hq, ratio_eigenvalueRegular hc hp]
   push_cast
-  simp only [div_eq_mul_inv, mul_inv_rev]
   ring
 
 /-- Exact source equation (3.7), expressed with the half-deficit s. -/
@@ -72,7 +58,6 @@ theorem ratio_even_quotient_split {m n s : ℕ} (hcount : s + n + s = m)
   congr 1
   rw [ratio_product_symmetric_split hcount (fun j => ‖M c (z (p j))‖)
     (ratio_modulus_reflection hp c), prod_div_distrib]
-  simp only [div_eq_mul_inv, mul_inv_rev]
   ring
 
 end PottsDiscontinuity.Bethe

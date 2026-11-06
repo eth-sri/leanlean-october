@@ -7,41 +7,31 @@ public import PottsDiscontinuity.TorusExploration.CylinderProduct
 
 /-! Union over actual bottom and top endpoints of distinct cylinder crossings. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusExploration
 open Torus FK CorrLength MeasureTheory
 variable {N M : ℕ}
 noncomputable section
 open scoped Classical
-local instance cylinderUnionEdgeDecidableEq (hN : Even N) (hM : Even M) :
-    DecidableEq (fullCylinderGraph hN hM).edgeSet := Classical.decEq _
-local instance cylinderUnionVertexDecidableEq : DecidableEq (FaceVertex N M true) := Classical.decEq _
 
-abbrev BottomVertex (N M : ℕ) := {v : FaceVertex N M true // v.val.2.val=0}
-abbrev TopVertex (N M : ℕ) := {v : FaceVertex N M true // v.val.2.val+1=M}
+section
+variable (N M : ℕ)
+abbrev BottomVertex  := {v : FaceVertex N M true // v.val.2.val=0}
+abbrev TopVertex  := {v : FaceVertex N M true // v.val.2.val+1=M}
+end
 
-lemma card_bottomVertex_le : Fintype.card (BottomVertex N M) ≤ N := by
+theorem card_bottomVertex_le : Fintype.card (BottomVertex N M) ≤ N := by
   suffices h : Fintype.card (BottomVertex N M) ≤ Fintype.card (Fin N) by simpa using h
   apply Fintype.card_le_of_injective (fun v : BottomVertex N M => v.val.val.1)
   intro u v h
-  apply Subtype.ext
-  apply Subtype.ext
-  apply Prod.ext h
-  apply Fin.ext
-  exact u.property.trans v.property.symm
+  grind
 
-lemma card_topVertex_le : Fintype.card (TopVertex N M) ≤ N := by
+theorem card_topVertex_le : Fintype.card (TopVertex N M) ≤ N := by
   suffices h : Fintype.card (TopVertex N M) ≤ Fintype.card (Fin N) by simpa using h
   apply Fintype.card_le_of_injective (fun v : TopVertex N M => v.val.val.1)
   intro u v h
-  apply Subtype.ext
-  apply Subtype.ext
-  apply Prod.ext h
-  apply Fin.ext
-  have hu := u.property
-  have hv := v.property
-  omega
+  grind
 
 /-- Periodic continuation of a finite list, with no distinguished default vertex. -/
 def periodicEndpoints {V : Type*} {r : ℕ} (hr : 0 < r) (x : Fin r → V) : ℕ → V :=
@@ -56,8 +46,9 @@ def cylinderEndpointEvent (hN : Even N) (hM : Even M) (r : ℕ) (hr : 0 < r)
     (fun n => (periodicEndpoints hr z.1 n).val)
     (fun n => (periodicEndpoints hr z.2 n).val) r
 
-lemma cylinderCrossings_subset_endpoint_union (hN : Even N) (hM : Even M)
-    (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (r : ℕ) (hr : 0 < r) :
+section
+variable (hN : Even N) (hM : Even M) (hN4 : 4 ≤ N) (hM4 : 4 ≤ M)
+theorem cylinderCrossings_subset_endpoint_union (r : ℕ) (hr : 0 < r) :
     {C | TorusRC.torusRCSeamClosedCylinderCrossings hN hM r
       (cylinderIndexedConfiguration hN hM hN4 hM4 C)} ⊆
       ⋃ z, cylinderEndpointEvent hN hM r hr z := by
@@ -70,18 +61,14 @@ lemma cylinderCrossings_subset_endpoint_union (hN : Even N) (hM : Even M)
   have hg := openGraph_cylinderIndexedConfiguration hN hM hN4 hM4 C
   rw [cylinderIndexedConfiguration_eq_seamClosed] at hg
   constructor
-  · intro i hi
-    have hc := hyConn ⟨i,hi⟩
-    rw [← hg] at hc
-    simpa only [FK.ActualConnected,z,periodicEndpoints,Nat.mod_eq_of_lt hi,Subtype.coe_mk] using hc
+  · grind [FK.ActualConnected, periodicEndpoints]
   · intro i hi k hk hik hc
     apply hd ⟨i,hi⟩ ⟨k,hk⟩ (fun h => hik (congrArg Fin.val h))
     rw [← hg]
     simpa only [FK.ActualConnected,z,periodicEndpoints,Nat.mod_eq_of_lt hi,Nat.mod_eq_of_lt hk,Subtype.coe_mk] using hc
 
 /-- Union bound over at most N^(2r) bottom/top endpoint choices. -/
-theorem cylinderCrossings_probability_le (hN : Even N) (hM : Even M)
-    (hN4 : 4 ≤ N) (hM4 : 4 ≤ M) (θ : Parameters)
+theorem cylinderCrossings_probability_le (θ : Parameters)
     (μ : Measure LatticeConfiguration) (hμ : IsRCInfiniteVolumeLimit θ.toP θ.toQ 0 μ)
     (r : ℕ) (hr : 1 ≤ r) :
     (measure (fullCylinderGraph hN hM) θ (BoundaryCondition.free ∅)
@@ -90,7 +77,6 @@ theorem cylinderCrossings_probability_le (hN : Even N) (hM : Even M)
       (N : ℝ)^(2*r) *
         (Real.sqrt (μ.real (CorrLength.connectionEvent (0,0) (diagonalSite (2*(M-1))))))^(r-1) := by
   let G := fullCylinderGraph hN hM
-  let : Fintype G.edgeSet := Fintype.ofFinite _
   let ν := measure G θ (BoundaryCondition.free ∅)
   let Z := (Fin r → BottomVertex N M) × (Fin r → TopVertex N M)
   let c := Real.sqrt (μ.real (CorrLength.connectionEvent (0,0) (diagonalSite (2*(M-1)))))
@@ -99,7 +85,7 @@ theorem cylinderCrossings_probability_le (hN : Even N) (hM : Even M)
     calc
       _ ≤ N^r*N^r := Nat.mul_le_mul
         (Nat.pow_le_pow_left card_bottomVertex_le r) (Nat.pow_le_pow_left card_topVertex_le r)
-      _ = _ := by rw [← pow_add]; congr 1; omega
+      _ = _ := by ring
   calc
     _ ≤ ν.real (⋃ z : Z, cylinderEndpointEvent hN hM r (by omega) z) :=
       measureReal_mono (cylinderCrossings_subset_endpoint_union hN hM hN4 hM4 r (by omega))
@@ -115,6 +101,7 @@ theorem cylinderCrossings_probability_le (hN : Even N) (hM : Even M)
         (fun n => (periodicEndpoints (by omega) z.2 n).property) r hr
     _ = (Fintype.card Z : ℝ)*c^(r-1) := by simp
     _ ≤ _ := mul_le_mul_of_nonneg_right (by exact_mod_cast hcard) (by positivity)
+end
 
 end
 end PottsDiscontinuity.TorusExploration

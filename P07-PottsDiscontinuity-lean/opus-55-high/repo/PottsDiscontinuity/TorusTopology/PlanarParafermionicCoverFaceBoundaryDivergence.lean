@@ -5,13 +5,15 @@ module
 public import Mathlib.Tactic
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverFaceOrientedBoundary
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 
 open PottsDiscontinuity.TorusTopology.Planar
 
-def coverFaceDartList (f : ParafermionicCoverVertex) :
+section
+variable (f : ParafermionicCoverVertex)
+def coverFaceDartList  :
     List (ParafermionicCoverVertex × ParafermionicCoverVertex) :=
   [(f, parafermionicCoverFaceRightLift f.1.1 f.1.2 f.2),
    (parafermionicCoverFaceRightLift f.1.1 f.1.2 f.2,
@@ -20,46 +22,30 @@ def coverFaceDartList (f : ParafermionicCoverVertex) :
      parafermionicCoverFaceRightUpLeftLift f.1.1 f.1.2 f.2),
    (parafermionicCoverFaceRightUpLeftLift f.1.1 f.1.2 f.2, f)]
 
-private theorem coverFaceVertices_nodup (f : ParafermionicCoverVertex) :
-    [f, parafermionicCoverFaceRightLift f.1.1 f.1.2 f.2,
-      parafermionicCoverFaceRightUpLift f.1.1 f.1.2 f.2,
-      parafermionicCoverFaceRightUpLeftLift f.1.1 f.1.2 f.2].Nodup := by
-  rcases f with ⟨⟨x,y⟩,k⟩
-  simp only [List.nodup_cons, List.mem_cons]
-  repeat' constructor <;> simp [parafermionicCoverFaceRightLift_formula,
-    parafermionicCoverFaceRightUpLift_formula,
-    parafermionicCoverFaceRightUpLeftLift_formula]
 
-private theorem coverFaceDartList_nodup (f : ParafermionicCoverVertex) :
+theorem coverFaceDartList_nodup  :
     (coverFaceDartList f).Nodup := by
   rcases f with ⟨⟨x,y⟩,k⟩
-  have hv := coverFaceVertices_nodup ((⟨(x,y),k⟩ : ParafermionicCoverVertex))
-  simp only [coverFaceDartList, List.nodup_cons, List.mem_cons]
-  repeat' constructor <;> simp [parafermionicCoverFaceRightLift_formula,
-    parafermionicCoverFaceRightUpLift_formula,
-    parafermionicCoverFaceRightUpLeftLift_formula]
+  simp [ParafermionicCoverVertex, coverFaceDartList]
 
-private theorem coverFaceDartList_toFinset (f : ParafermionicCoverVertex) :
+theorem coverFaceDartList_toFinset  :
     (coverFaceDartList f).toFinset = parafermionicCoverFiniteFaceDarts f := by
-  ext d
   simp [coverFaceDartList, parafermionicCoverFiniteFaceDarts]
+end
 
-private theorem sum_outgoing_dart_indicator {n : ℕ}
-    (D : Finset (ParafermionicCoverVertex × ParafermionicCoverVertex))
-    (hend : ∀ d ∈ D, d.2 ∈ parafermionicCoverBoxVertices n)
+section
+variable {n : ℕ} (D : Finset (ParafermionicCoverVertex × ParafermionicCoverVertex))
+theorem sum_outgoing_dart_indicator (hend : ∀ d ∈ D, d.2 ∈ parafermionicCoverBoxVertices n)
     (u : ParafermionicCoverBoxVertex n) :
     (∑ v : ParafermionicCoverBoxVertex n,
       if (u.1,v.1) ∈ D then (1 : ℤ) else 0) =
       ∑ d ∈ D, if d.1 = u.1 then (1 : ℤ) else 0 := by
-  classical
   calc
     (∑ v : ParafermionicCoverBoxVertex n,
       if (u.1,v.1) ∈ D then (1 : ℤ) else 0) =
         ∑ v : ParafermionicCoverBoxVertex n,
           ∑ d ∈ D, if d = (u.1,v.1) then (1 : ℤ) else 0 := by
-      apply Finset.sum_congr rfl
-      intro v hv
-      rw [Finset.sum_ite_eq']
+      simp
     _ = ∑ d ∈ D, ∑ v : ParafermionicCoverBoxVertex n,
         if d = (u.1,v.1) then (1 : ℤ) else 0 := by
       rw [Finset.sum_comm]
@@ -69,41 +55,24 @@ private theorem sum_outgoing_dart_indicator {n : ℕ}
       let w : ParafermionicCoverBoxVertex n := ⟨d.2, hend d hd⟩
       by_cases hsource : d.1 = u.1
       · rw [Finset.sum_eq_single w]
-        · have hselected : d = (u.1,w.1) := by
-            exact Prod.ext hsource rfl
-          simp [hselected]
-        · intro v hv hvne
-          have hpair : d ≠ (u.1,v.1) := by
-            intro heq
-            apply hvne
-            apply Subtype.ext
-            exact (congrArg Prod.snd heq).symm
-          simp [hpair]
-        · simp
+        · grind
+        · grind
+        grind
       · rw [Finset.sum_eq_zero]
-        · simp [hsource]
-        · intro v hv
-          have hpair : d ≠ (u.1,v.1) := by
-            intro heq
-            exact hsource (congrArg Prod.fst heq)
-          simp [hpair]
+        · simp_all
+        grind
 
-private theorem sum_incoming_dart_indicator {n : ℕ}
-    (D : Finset (ParafermionicCoverVertex × ParafermionicCoverVertex))
-    (hstart : ∀ d ∈ D, d.1 ∈ parafermionicCoverBoxVertices n)
+theorem sum_incoming_dart_indicator (hstart : ∀ d ∈ D, d.1 ∈ parafermionicCoverBoxVertices n)
     (u : ParafermionicCoverBoxVertex n) :
     (∑ v : ParafermionicCoverBoxVertex n,
       if (v.1,u.1) ∈ D then (1 : ℤ) else 0) =
       ∑ d ∈ D, if d.2 = u.1 then (1 : ℤ) else 0 := by
-  classical
   calc
     (∑ v : ParafermionicCoverBoxVertex n,
       if (v.1,u.1) ∈ D then (1 : ℤ) else 0) =
         ∑ v : ParafermionicCoverBoxVertex n,
           ∑ d ∈ D, if d = (v.1,u.1) then (1 : ℤ) else 0 := by
-      apply Finset.sum_congr rfl
-      intro v hv
-      rw [Finset.sum_ite_eq']
+      simp
     _ = ∑ d ∈ D, ∑ v : ParafermionicCoverBoxVertex n,
         if d = (v.1,u.1) then (1 : ℤ) else 0 := by
       rw [Finset.sum_comm]
@@ -113,39 +82,26 @@ private theorem sum_incoming_dart_indicator {n : ℕ}
       let w : ParafermionicCoverBoxVertex n := ⟨d.1, hstart d hd⟩
       by_cases htarget : d.2 = u.1
       · rw [Finset.sum_eq_single w]
-        · have hselected : d = (w.1,u.1) := by exact Prod.ext rfl htarget
-          simp [hselected]
-        · intro v hv hvne
-          have hpair : d ≠ (v.1,u.1) := by
-            intro heq
-            apply hvne
-            apply Subtype.ext
-            exact (congrArg Prod.fst heq).symm
-          simp [hpair]
-        · simp
+        · grind
+        · grind
+        grind
       · rw [Finset.sum_eq_zero]
-        · simp [htarget]
-        · intro v hv
-          have hpair : d ≠ (v.1,u.1) := by
-            intro heq
-            exact htarget (congrArg Prod.snd heq)
-          simp [hpair]
+        · simp_all
+        grind
+end
 
-private theorem coverFaceDartSourceSum_eq_targetSum (f : ParafermionicCoverVertex)
+theorem coverFaceDartSourceSum_eq_targetSum (f : ParafermionicCoverVertex)
     (u : ParafermionicCoverVertex) :
     (∑ d ∈ parafermionicCoverFiniteFaceDarts f,
       if d.1 = u then (1 : ℤ) else 0) =
     ∑ d ∈ parafermionicCoverFiniteFaceDarts f,
       if d.2 = u then (1 : ℤ) else 0 := by
-  classical
-  rw [← coverFaceDartList_toFinset f]
-  rw [List.sum_toFinset _ (coverFaceDartList_nodup f)]
-  rw [List.sum_toFinset _ (coverFaceDartList_nodup f)]
+  rw [← coverFaceDartList_toFinset f, List.sum_toFinset _ (coverFaceDartList_nodup f), List.sum_toFinset _ (coverFaceDartList_nodup f)]
   simp only [coverFaceDartList, List.map_cons, List.map_nil,
     List.sum_cons, List.sum_nil]
   ring
 
-private theorem coverFaceVertexDartDivergence {n : ℕ}
+theorem coverFaceVertexDartDivergence {n : ℕ}
     (i : ParafermionicCoverFiniteFaceTopIndex n)
     (u : ParafermionicCoverBoxVertex n) :
     (∑ v : ParafermionicCoverBoxVertex n,
@@ -158,22 +114,16 @@ private theorem coverFaceVertexDartDivergence {n : ℕ}
     (parafermionicCoverFiniteFaceDart_endpoints_mem n i.1 i.2 hd).1) u]
   exact coverFaceDartSourceSum_eq_targetSum i.1 u.1
 
-private theorem coverFacePositiveCount_eq_sum {n : ℕ}
-    (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
-    (u v : ParafermionicCoverBoxVertex n) :
+section
+variable {n : ℕ} (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
+theorem coverFacePositiveCount_eq_sum (u v : ParafermionicCoverBoxVertex n) :
     (parafermionicCoverFacePositiveDartCount S u v : ℤ) =
       ∑ i ∈ S, if (u.1,v.1) ∈ parafermionicCoverFiniteFaceDarts i.1 then 1 else 0 := by
-  classical
-  unfold parafermionicCoverFacePositiveDartCount
-  rw [Finset.card_filter]
-  norm_cast
+  aesop
 
-theorem parafermionicCoverFaceBoundaryCoefficient_divergence {n : ℕ}
-    (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
-    (u : ParafermionicCoverBoxVertex n) :
+theorem parafermionicCoverFaceBoundaryCoefficient_divergence (u : ParafermionicCoverBoxVertex n) :
     ∑ v : ParafermionicCoverBoxVertex n,
       parafermionicCoverFaceBoundaryCoefficient S u v = 0 := by
-  classical
   unfold parafermionicCoverFaceBoundaryCoefficient
   rw [Finset.sum_sub_distrib]
   have hpos :
@@ -186,9 +136,7 @@ theorem parafermionicCoverFaceBoundaryCoefficient_divergence {n : ℕ}
         (parafermionicCoverFacePositiveDartCount S u v : ℤ)) =
           ∑ v : ParafermionicCoverBoxVertex n, ∑ i ∈ S,
             if (u.1,v.1) ∈ parafermionicCoverFiniteFaceDarts i.1 then (1 : ℤ) else 0 := by
-        apply Finset.sum_congr rfl
-        intro v hv
-        exact coverFacePositiveCount_eq_sum S u v
+        grind [coverFacePositiveCount_eq_sum]
       _ = ∑ i ∈ S, ∑ v : ParafermionicCoverBoxVertex n,
           if (u.1,v.1) ∈ parafermionicCoverFiniteFaceDarts i.1 then (1 : ℤ) else 0 := by
         rw [Finset.sum_comm]
@@ -202,16 +150,14 @@ theorem parafermionicCoverFaceBoundaryCoefficient_divergence {n : ℕ}
         (parafermionicCoverFacePositiveDartCount S v u : ℤ)) =
           ∑ v : ParafermionicCoverBoxVertex n, ∑ i ∈ S,
             if (v.1,u.1) ∈ parafermionicCoverFiniteFaceDarts i.1 then (1 : ℤ) else 0 := by
-        apply Finset.sum_congr rfl
-        intro v hv
-        exact coverFacePositiveCount_eq_sum S v u
+        simp [coverFacePositiveCount_eq_sum]
       _ = ∑ i ∈ S, ∑ v : ParafermionicCoverBoxVertex n,
           if (v.1,u.1) ∈ parafermionicCoverFiniteFaceDarts i.1 then (1 : ℤ) else 0 := by
         rw [Finset.sum_comm]
-  rw [hpos, hneg]
-  rw [← Finset.sum_sub_distrib]
+  rw [hpos, hneg, ← Finset.sum_sub_distrib]
   apply Finset.sum_eq_zero
   intro i hi
   exact sub_eq_zero.mpr (coverFaceVertexDartDivergence i u)
+end
 
 end PottsDiscontinuity.TorusTopology.Planar.Medial

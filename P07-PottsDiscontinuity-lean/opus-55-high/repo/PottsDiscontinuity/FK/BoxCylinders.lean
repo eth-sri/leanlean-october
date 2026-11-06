@@ -28,22 +28,19 @@ def allOpen (F : Finset squareLattice.edgeSet) : Set LatticeConfiguration :=
   {ω | ∀ e ∈ F, ω e = true}
 
 @[simp] theorem allOpen_empty : allOpen ∅ = Set.univ := by
-  ext ω
   simp [allOpen]
 
 @[simp] theorem allOpen_insert (e : squareLattice.edgeSet) (F : Finset squareLattice.edgeSet) :
     allOpen (insert e F) = {ω | ω e = true} ∩ allOpen F := by
-  classical
   ext ω
   simp [allOpen]
 
 /-- These actual finite-edge events are simultaneously open and closed. -/
 theorem allOpen_isClopen (F : Finset squareLattice.edgeSet) : IsClopen (allOpen F) := by
-  classical
   induction F using Finset.induction_on with
-  | empty => rw [allOpen_empty]; exact isClopen_univ
+  | empty => simp; exact isClopen_univ
   | insert e F he ih =>
-    rw [allOpen_insert]
+    simp
     exact ((isClopen_discrete ({true} : Set Bool)).preimage (continuous_apply e)).inter ih
 
 /-- A weakly convergent family has convergent probabilities for each genuine
@@ -81,8 +78,7 @@ theorem boxProbabilityMeasure_allOpen (q : Parameters) (c : LatticeVertex) (r : 
   rw [PMF.toMeasure_map_apply _ _ _ measurable_from_top
     (LatticeConfiguration.allOpen_isClopen F).isOpen.measurableSet]
   congr 1
-  ext A
-  exact boxConfiguration_mem_allOpen c r A F
+  grind [boxConfiguration_mem_allOpen]
 
 end
 end PottsDiscontinuity.FK

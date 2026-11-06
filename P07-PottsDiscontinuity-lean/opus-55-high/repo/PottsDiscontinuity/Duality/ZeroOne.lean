@@ -10,16 +10,15 @@ of an infinite cluster, given a zero–one law for the existence event. Neither
 positive origin percolation nor the zero–one law is established here.
 -/
 
-@[expose] public section
+public section
 
 open MeasureTheory
 
 namespace PottsDiscontinuity.Duality
 
-lemma infiniteClusterAt_subset_existsInfiniteCluster (v : ℤ × ℤ) :
+theorem infiniteClusterAt_subset_existsInfiniteCluster (v : ℤ × ℤ) :
     infiniteClusterAt v ⊆ existsInfiniteCluster := by
-  intro ω hω
-  exact ⟨v, hω⟩
+  tauto
 
 /-- The ergodicity-dependent last step, with its zero–one input explicit.
 This is not the exponential-decay-to-wired-positivity implication. -/
@@ -30,8 +29,7 @@ theorem existsInfiniteCluster_eq_one_of_zero_one
     μ existsInfiniteCluster = 1 := by
   rcases hzero_one with hzero | hone
   · have hle := measure_mono (μ := μ) (infiniteClusterAt_subset_existsInfiniteCluster v)
-    rw [hzero] at hle
-    exact False.elim (not_lt_of_ge hle hpos)
-  · exact hone
+    simp_all
+  omega
 
 end PottsDiscontinuity.Duality

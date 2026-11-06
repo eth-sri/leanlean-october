@@ -4,7 +4,7 @@ public import PottsDiscontinuity.Bethe.Theorem23Admissible
 
 /-! # Interior of the separated gap region -/
 
-@[expose] public section
+public section
 
 open Set Filter
 open scoped Topology
@@ -20,8 +20,7 @@ theorem mem_interior_betheGapRegion {k : ℕ} {ell u : ℝ}
   have hnear (j : Fin (k + 2)) : ∀ᶠ v in 𝓝 q,
       rootPartitionPoint (k + 1) (discreteSymLift (k + 1) v) (by omega) j.succ -
         rootPartitionPoint (k + 1) (discreteSymLift (k + 1) v) (by omega) j.castSucc ∈ Ioo ell u := by
-    have hc (i : Fin (k + 3)) : Continuous (fun v : Fin ((k + 1) / 2) → ℝ =>
-        rootPartitionPoint (k + 1) (discreteSymLift (k + 1) v) (by omega) i) :=
+    have hc (i : Fin (k + 3)) :=
       (continuous_rootPartitionPoint k i).comp (discreteSymLift (k + 1)).continuous_of_finiteDimensional
     exact ((hc j.succ).sub (hc j.castSucc)).continuousAt.eventually
       (isOpen_Ioo.mem_nhds (hq j))

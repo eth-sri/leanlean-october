@@ -13,8 +13,10 @@ namespace PottsDiscontinuity.TorusRC
 
 open CorrLength
 
+section
+variable (q : Set.Ici (1 : ℝ))
 /-- Fekete's theorem gives a unique real limit for the source rate sequence. -/
-theorem critical_rotated_rate_existsUnique (q : Set.Ici (1 : ℝ)) :
+theorem critical_rotated_rate_existsUnique  :
     ∃! a : ℝ, Tendsto (fun n : ℕ =>
       -Real.log ((rotatedDiagonalConnectionProbability (torusRCBridgeParameters q) n : NNReal):ℝ) /
         ((2*n:ℕ):ℝ)) atTop (𝓝 a) := by
@@ -25,13 +27,14 @@ theorem critical_rotated_rate_existsUnique (q : Set.Ici (1 : ℝ)) :
 
 /-- The source ξ(q)⁻¹: the unique limit of -log φ⁰_L(0↔(0,2n))/(2n).
 The existence and uniqueness proof holds for every q in the whole carrier. -/
-noncomputable def inverseCorrelationLength (q : Set.Ici (1 : ℝ)) : ℝ :=
+noncomputable def inverseCorrelationLength  : ℝ :=
   Classical.choose (critical_rotated_rate_existsUnique q)
 
-theorem tendsto_inverseCorrelationLength (q : Set.Ici (1 : ℝ)) :
+theorem tendsto_inverseCorrelationLength  :
     Tendsto (fun n : ℕ =>
       -Real.log ((rotatedDiagonalConnectionProbability (torusRCBridgeParameters q) n : NNReal):ℝ) /
         ((2*n:ℕ):ℝ)) atTop (𝓝 (inverseCorrelationLength q)) :=
   (Classical.choose_spec (critical_rotated_rate_existsUnique q)).1
+end
 
 end PottsDiscontinuity.TorusRC

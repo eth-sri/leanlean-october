@@ -9,30 +9,26 @@ public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverSelectedC
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverSelectedCornerNeighbors
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverSimpleCycleOrientation
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 
 open PottsDiscontinuity.TorusTopology.Planar
 open SimpleGraph
 
-private theorem primalCycleRotate_isCycle {n : ℕ} {x : ParafermionicCoverBoxVertex n}
-    (p : (parafermionicCoverBoxGraph n).Walk x x) (hp : p.IsCycle)
-    (v : ParafermionicCoverBoxVertex n) (hv : v ∈ p.support) :
+section
+variable {n : ℕ} {x : ParafermionicCoverBoxVertex n} (p : (parafermionicCoverBoxGraph n).Walk x x) (hp : p.IsCycle)
+include hp
+theorem primalCycleRotate_isCycle (v : ParafermionicCoverBoxVertex n) (hv : v ∈ p.support) :
     (parafermionicCoverPrimalCycleRotate p v hv).IsCycle := by
-  simpa [parafermionicCoverPrimalCycleRotate] using hp.rotate hv
+  simp_all [parafermionicCoverPrimalCycleRotate]
 
-private theorem primalCycleRotate_not_nil {n : ℕ} {x : ParafermionicCoverBoxVertex n}
-    (p : (parafermionicCoverBoxGraph n).Walk x x) (hp : p.IsCycle)
-    (v : ParafermionicCoverBoxVertex n) (hv : v ∈ p.support) :
+theorem primalCycleRotate_not_nil (v : ParafermionicCoverBoxVertex n) (hv : v ∈ p.support) :
     ¬ (parafermionicCoverPrimalCycleRotate p v hv).Nil := by
   have hlen := (primalCycleRotate_isCycle p hp v hv).three_le_length
-  exact (SimpleGraph.Walk.not_nil_iff_lt_length).2 (by omega)
+  grind
 
-private theorem primalCycle_selectedCoefficient_outgoing {n : ℕ}
-    {x : ParafermionicCoverBoxVertex n}
-    (p : (parafermionicCoverBoxGraph n).Walk x x) (hp : p.IsCycle)
-    (S : Finset (ParafermionicCoverFiniteFaceTopIndex n)) (k : ℤ)
+theorem primalCycle_selectedCoefficient_outgoing (S : Finset (ParafermionicCoverFiniteFaceTopIndex n)) (k : ℤ)
     (hconst : ∀ d ∈ p.darts,
       parafermionicCoverFaceBoundaryCoefficient S d.fst d.snd = k)
     (v : ParafermionicCoverBoxVertex n) (hv : v ∈ p.support) :
@@ -41,14 +37,10 @@ private theorem primalCycle_selectedCoefficient_outgoing {n : ℕ}
   let r := parafermionicCoverPrimalCycleRotate p v hv
   have hnil := primalCycleRotate_not_nil p hp v hv
   have hmemR := r.firstDart_mem_darts hnil
-  have hmemP : r.firstDart hnil ∈ p.darts := (p.rotate_darts v hv).mem_iff.mp hmemR
-  have hc := hconst (r.firstDart hnil) hmemP
-  simpa [r] using hc
+  have hc := hconst (r.firstDart hnil) ((p.rotate_darts v hv).mem_iff.mp hmemR)
+  tauto
 
-private theorem primalCycle_selectedCoefficient_incoming {n : ℕ}
-    {x : ParafermionicCoverBoxVertex n}
-    (p : (parafermionicCoverBoxGraph n).Walk x x) (hp : p.IsCycle)
-    (S : Finset (ParafermionicCoverFiniteFaceTopIndex n)) (k : ℤ)
+theorem primalCycle_selectedCoefficient_incoming (S : Finset (ParafermionicCoverFiniteFaceTopIndex n)) (k : ℤ)
     (hconst : ∀ d ∈ p.darts,
       parafermionicCoverFaceBoundaryCoefficient S d.fst d.snd = k)
     (v : ParafermionicCoverBoxVertex n) (hv : v ∈ p.support) :
@@ -57,17 +49,13 @@ private theorem primalCycle_selectedCoefficient_incoming {n : ℕ}
   let r := parafermionicCoverPrimalCycleRotate p v hv
   have hnil := primalCycleRotate_not_nil p hp v hv
   have hmemR := r.lastDart_mem_darts hnil
-  have hmemP : r.lastDart hnil ∈ p.darts := (p.rotate_darts v hv).mem_iff.mp hmemR
-  have hc := hconst (r.lastDart hnil) hmemP
+  have hc := hconst (r.lastDart hnil) ((p.rotate_darts v hv).mem_iff.mp hmemR)
   have hlast : parafermionicCoverFaceBoundaryCoefficient S
-      r.penultimate v = k := by simpa [r] using hc
+      r.penultimate v = k := by simp_all
   rw [parafermionicCoverFaceBoundaryCoefficient_antisymm]
   linarith
 
-private theorem primalCycle_selectedCoefficient_nonzero_neighbor {n : ℕ}
-    {x : ParafermionicCoverBoxVertex n}
-    (p : (parafermionicCoverBoxGraph n).Walk x x) (hp : p.IsCycle)
-    (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
+theorem primalCycle_selectedCoefficient_nonzero_neighbor (S : Finset (ParafermionicCoverFiniteFaceTopIndex n))
     (hcoeff : ∀ a b : ParafermionicCoverBoxVertex n,
       parafermionicCoverFaceBoundaryCoefficient S a b ≠ 0 ↔ s(a,b) ∈ p.edges)
     (v w : ParafermionicCoverBoxVertex n) (hv : v ∈ p.support)
@@ -75,13 +63,13 @@ private theorem primalCycle_selectedCoefficient_nonzero_neighbor {n : ℕ}
     w = (parafermionicCoverPrimalCycleRotate p v hv).snd ∨
       w = (parafermionicCoverPrimalCycleRotate p v hv).penultimate := by
   let r := parafermionicCoverPrimalCycleRotate p v hv
-  have hedge : s(v,w) ∈ p.edges := (hcoeff v w).mp h
-  have hedgeR : s(v,w) ∈ r.edges := (p.rotate_edges v hv).mem_iff.mpr hedge
-  have hadj : r.toSubgraph.Adj v w := r.adj_toSubgraph_iff_mem_edges.mpr hedgeR
+  have hedge : s(v,w) ∈ p.edges := by grind
+  have hadj := r.adj_toSubgraph_iff_mem_edges.mpr ((p.rotate_edges v hv).mem_iff.mpr hedge)
   have hmem : w ∈ r.toSubgraph.neighborSet v :=
-    (r.toSubgraph.mem_neighborSet v w).mpr hadj
+    by tauto
   rw [(primalCycleRotate_isCycle p hp v hv).neighborSet_toSubgraph_endpoint] at hmem
-  simpa [r] using hmem
+  grind
+end
 
 /-- At every vertex of the actual cycle, the selected-face sector boundary has
 the single global orientation profile determined by its incoming and outgoing
@@ -97,7 +85,6 @@ theorem parafermionicCoverSimpleCycleSectorProfile {n : ℕ}
             if d = parafermionicCoverPrimalCycleOutgoingDirection p hp v hv then k
             else if d = parafermionicCoverPrimalCycleIncomingDirection p hp v hv + 2
               then -k else 0 := by
-  classical
   let S := parafermionicCoverSimpleCycleFillingSet hn p hp
   obtain ⟨k, hk, hconst⟩ :=
     parafermionicCoverSimpleCycleFilling_coefficient_orientation hn p hp
@@ -110,15 +97,12 @@ theorem parafermionicCoverSimpleCycleSectorProfile {n : ℕ}
   change compassSectorBoundary
       (parafermionicCoverFiniteFaceSelectedCorners S v) d =
     if d = dout then k else if d = din + 2 then -k else 0
-  have hnil := primalCycleRotate_not_nil p hp v hv
-  have hcycle := primalCycleRotate_isCycle p hp v hv
   have hout : parafermionicCoverCompassNeighbor v.1 dout = r.snd.1 := by
     simpa [dout, r, parafermionicCoverPrimalCycleRotate] using
       parafermionicCoverPrimalCycleOutgoingDirection_neighbor p hp v hv
   have hprevAdj : parafermionicCoverGraph.Adj r.penultimate.1 v.1 := by
-    have h := r.adj_penultimate hnil
-    change parafermionicCoverGraph.Adj r.penultimate.1 v.1 at h
-    exact h
+    have h := r.adj_penultimate (primalCycleRotate_not_nil p hp v hv)
+    tauto
   have hrevDir :
       parafermionicCoverCompassDirection v.1 r.penultimate.1 hprevAdj.symm = din + 2 := by
     simpa [din, r, parafermionicCoverPrimalCycleIncomingDirection,
@@ -127,17 +111,7 @@ theorem parafermionicCoverSimpleCycleSectorProfile {n : ℕ}
   have hhin : parafermionicCoverCompassNeighbor v.1 (din + 2) = r.penultimate.1 := by
     have h := parafermionicCoverCompassDirection_neighbor v.1 r.penultimate.1 hprevAdj.symm
     rw [hrevDir] at h
-    simpa [r] using h
-  have hnonback : din ≠ dout + 2 := by
-    simpa [din, dout, r, parafermionicCoverPrimalCycleRotate] using
-      parafermionicCoverPrimalCycleIncomingDirection_ne_outgoing_opposite p hp v hv
-  have hdouble (a : Fin 4) : a + 2 + 2 = a := by fin_cases a <;> decide
-  have hdoutNe : dout ≠ din + 2 := by
-    intro heq
-    apply hnonback
-    calc
-      din = din + 2 + 2 := (hdouble din).symm
-      _ = dout + 2 := by rw [← heq]
+    omega
   have houtCoeff : parafermionicCoverFaceBoundaryCoefficient S v r.snd = k := by
     simpa [S, r, parafermionicCoverPrimalCycleRotate] using
       primalCycle_selectedCoefficient_outgoing p hp S k hconst v hv
@@ -163,7 +137,7 @@ theorem parafermionicCoverSimpleCycleSectorProfile {n : ℕ}
           _ = parafermionicCoverCompassNeighbor v.1 dout := by rw [hdout]
           _ = r.snd.1 := hout
       rw [hsector, hweq, houtCoeff]
-      simp [hdout]
+      omega
     · by_cases hdin : d = din + 2
       · have hweq : w = r.penultimate := by
           apply Subtype.ext
@@ -172,13 +146,7 @@ theorem parafermionicCoverSimpleCycleSectorProfile {n : ℕ}
             _ = parafermionicCoverCompassNeighbor v.1 (din + 2) := by rw [hdin]
             _ = r.penultimate.1 := hhin
         rw [hsector, hweq, hprevCoeff]
-        have hdirNe : d ≠ dout := by
-          intro h
-          apply hdoutNe
-          calc
-            dout = d := h.symm
-            _ = din + 2 := hdin
-        simp [hdin, Ne.symm hdoutNe]
+        omega
       · have hcoeffzero : parafermionicCoverFaceBoundaryCoefficient S v w = 0 := by
           by_contra hnonzero
           rcases primalCycle_selectedCoefficient_nonzero_neighbor p hp S
@@ -189,16 +157,15 @@ theorem parafermionicCoverSimpleCycleSectorProfile {n : ℕ}
                 parafermionicCoverCompassNeighbor v.1 d = w.1 := hw.symm
                 _ = r.snd.1 := congrArg Subtype.val hnext
                 _ = parafermionicCoverCompassNeighbor v.1 dout := hout.symm
-            exact hdout heq
+            omega
           · have heq : d = din + 2 := by
               apply parafermionicCoverCompassNeighbor_injective v.1
               calc
                 parafermionicCoverCompassNeighbor v.1 d = w.1 := hw.symm
                 _ = r.penultimate.1 := congrArg Subtype.val hprev
                 _ = parafermionicCoverCompassNeighbor v.1 (din + 2) := hhin.symm
-            exact hdin heq
-        rw [hsector, hcoeffzero]
-        simp [hdout, hdin]
+            omega
+        omega
   · have hmissing :=
       parafermionicCoverFiniteFaceSelectedCorners_missing_of_outside_neighbor
         S v d hbox
@@ -206,12 +173,12 @@ theorem parafermionicCoverSimpleCycleSectorProfile {n : ℕ}
       intro heq
       apply hbox
       rw [heq, hout]
-      exact r.snd.2
+      simp
     have hdin : d ≠ din + 2 := by
       intro heq
       apply hbox
       rw [heq, hhin]
-      exact r.penultimate.2
+      simp
     simp [compassSectorBoundary, hmissing.1, hmissing.2, hdout, hdin]
 
 end PottsDiscontinuity.TorusTopology.Planar.Medial

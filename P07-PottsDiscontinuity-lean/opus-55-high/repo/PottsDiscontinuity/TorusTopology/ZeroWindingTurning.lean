@@ -5,7 +5,7 @@ public import PottsDiscontinuity.TorusTopology.MidpointCyclicTurning
 /-! The contractible-loop turning classification, on the exact torus loop carrier
 `Torus.Loop` used in Corollary 3.13. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology
 open Torus TorusLoops
@@ -28,12 +28,8 @@ theorem loopRotationNumber_eq_pm_one_of_zero_winding
   let ω := checkerArrows N M
   let s := rcSmoothing A
   let h := checkerArrows_compatible hN hM s
-  have hp := closedLoopMidpointWalk_isCycle ω s h d i j hv hh
-  have ht := squareWalkCyclicTurn_eq_four_or_neg_four _ hp
+  have ht := squareWalkCyclicTurn_eq_four_or_neg_four _ (closedLoopMidpointWalk_isCycle ω s h d i j hv hh)
   rw [closedLoopMidpointWalk_cyclicTurn ω s h d i j hv hh] at ht
-  dsimp [ω,s,h,directedLoopOf] at ht
-  rcases ht with ht | ht
-  · left; omega
-  · right; omega
+  grind [directedLoopOf]
 
 end PottsDiscontinuity.TorusTopology

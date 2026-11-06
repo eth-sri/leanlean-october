@@ -23,7 +23,7 @@ theorem torusRCSeamRow_card (hM : 0 < M) :
   rw [torusRCSeamRow, Finset.card_image_iff.mpr]
   · simp
   · intro i _ j _ hij
-    exact congrArg Prod.fst hij
+    simp_all
 
 /-- Configurations with every edge in the seam row closed. -/
 def torusRCSeamRowClosed (hM : 0 < M) : Set (RCConfig N M) :=
@@ -39,11 +39,9 @@ theorem torusRCSeamClosed_toggle (A : RCConfig N M) (v : Fin N × Fin M)
     torusRCSeamClosed (toggleEdge A v) = torusRCSeamClosed A := by
   funext e
   by_cases he : e.2.val = 0
-  · simp [torusRCSeamClosed, he]
+  · simp_all [torusRCSeamClosed]
   · have hne : e ≠ v := by
-      intro h
-      subst e
-      exact he hv
+      grind
     simp only [torusRCSeamClosed, he, ite_false]
     rw [toggleEdge_away A hne]
 
@@ -54,12 +52,13 @@ theorem torusRCSeamClosedCrossingEvent_toggle_stable
       toggleEdge A v ∈ torusRCSeamClosedCrossingEvent hN hM r := by
   change torusRCSeamClosedCylinderCrossings hN hM r (torusRCSeamClosed A) ↔
     torusRCSeamClosedCylinderCrossings hN hM r (torusRCSeamClosed (toggleEdge A v))
-  rw [torusRCSeamClosed_toggle A v hv]
+  simp_all [torusRCSeamClosed_toggle]
 
+section
+variable (hN : Even N) (hM : Even M) (hMpos : 0 < M)
 /-- Forcing all seam edges closed costs at most one finite-energy factor per
 edge for an event determined by the seam-closed configuration. -/
-theorem torusRCProbability_close_seam (hN : Even N) (hM : Even M)
-    (hMpos : 0 < M) (q : Set.Ici (1 : ℝ)) (r : ℕ) :
+theorem torusRCProbability_close_seam (q : Set.Ici (1 : ℝ)) (r : ℕ) :
     (1 - (rcCriticalParameter q).val) ^ N *
         torusRCProbability hN hM q (torusRCSeamClosedCrossingEvent hN hM r) ≤
       torusRCProbability hN hM q
@@ -70,8 +69,8 @@ theorem torusRCProbability_close_seam (hN : Even N) (hM : Even M)
     intro v hv A
     have hv0 : v.2.val = 0 := by
       obtain ⟨i, _, hEq⟩ := Finset.mem_image.mp hv
-      rw [← hEq]
-    exact torusRCSeamClosedCrossingEvent_toggle_stable hN hM r v hv0 A
+      grind
+    grind [torusRCSeamClosedCrossingEvent_toggle_stable]
   have hfinite := TorusLoops.torusRCProbability_close_finite_set hN hM q S E hstable
   change (1 - (rcCriticalParameter q).val) ^ S.card *
       TorusLoops.phi_T_probability hN hM q E ≤
@@ -90,25 +89,22 @@ theorem torusRCProbability_close_seam (hN : Even N) (hM : Even M)
       intro v hv
       obtain ⟨i, _, hEq⟩ := Finset.mem_image.mp hv
       rw [← hEq]
-      exact hcl i
-  rw [hclosed, hcard] at hfinite
-  simpa [E, TorusLoops.phi_T_probability] using hfinite
+      tauto
+  grind
 
 /-- The premise `hUr` (`U ≥ r` forces `r` distinct bottom-to-top clusters after the seam
 row is closed) turns the vertical-winding tail into the seam-closed cylinder crossing event. -/
 theorem torusRCVerticalTail_subset_seamClosedCrossings
-    (hN : Even N) (hM : Even M) (hMpos : 0 < M) (r : ℕ)
+    (r : ℕ)
     (hhUr : hUr hN hM hMpos r) :
     torusRCVerticalTail hN hM ⟨0, hMpos⟩ r ⊆
       torusRCSeamClosedCrossingEvent hN hM r := by
-  intro A hA
-  exact hhUr A hA
+  tauto
 
 /-- Under the premise `hUr`, the winding tail is bounded by the probability of
 the distinct-crossing event with the seam closed, up to its finite-energy
 cost. This is the seam-cut step in the reduction to (3.21). -/
 theorem torusRCVerticalTail_close_seam_le
-    (hN : Even N) (hM : Even M) (hMpos : 0 < M)
     (q : Set.Ici (1 : ℝ)) (r : ℕ)
     (hhUr : hUr hN hM hMpos r) :
     (1 - (rcCriticalParameter q).val) ^ N *
@@ -116,21 +112,13 @@ theorem torusRCVerticalTail_close_seam_le
           (torusRCVerticalTail hN hM ⟨0, hMpos⟩ r) ≤
       torusRCProbability hN hM q
         (torusRCSeamClosedCrossingEvent hN hM r ∩ torusRCSeamRowClosed hMpos) := by
-  have hsub := torusRCVerticalTail_subset_seamClosedCrossings hN hM hMpos r hhUr
-  have hmono := torusRCProbability_mono hN hM q hsub
+  have hmono := torusRCProbability_mono hN hM q (torusRCVerticalTail_subset_seamClosedCrossings hN hM hMpos r hhUr)
   have hclose := torusRCProbability_close_seam hN hM hMpos q r
-  have hclosePos : 0 < 1 - (rcCriticalParameter q).val :=
+  have hclosePos :=
     sub_pos.mpr (criticalParameter_lt_one q)
   have hfac : 0 ≤ (1 - (rcCriticalParameter q).val) ^ N :=
-    pow_nonneg hclosePos.le N
-  calc
-    (1 - (rcCriticalParameter q).val) ^ N *
-        torusRCProbability hN hM q
-          (torusRCVerticalTail hN hM ⟨0, hMpos⟩ r) ≤
-      (1 - (rcCriticalParameter q).val) ^ N *
-        torusRCProbability hN hM q (torusRCSeamClosedCrossingEvent hN hM r) :=
-      mul_le_mul_of_nonneg_left hmono hfac
-    _ ≤ torusRCProbability hN hM q
-          (torusRCSeamClosedCrossingEvent hN hM r ∩ torusRCSeamRowClosed hMpos) := hclose
+    by positivity
+  nlinarith
+end
 
 end PottsDiscontinuity.TorusRC

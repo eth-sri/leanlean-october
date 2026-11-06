@@ -7,7 +7,7 @@ public import PottsDiscontinuity.TorusExploration.ConditionalConnectionBound
 
 /-! The exploration product bound, with the first crossing charged at most one. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusExploration
 open FK FK.FiniteProbability
@@ -15,7 +15,6 @@ variable {V : Type*} [Finite V] (G : SimpleGraph V)
 noncomputable section
 open scoped Classical
 local instance distinctProductEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
-local instance distinctProductEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 
 /-- The exact finite exploration product: each successive distinct connection
 costs at most c, starting after the first explored cluster. -/
@@ -31,7 +30,6 @@ theorem distinctConnections_probability_le_pow (θ : Parameters) (x y : ℕ → 
   rw [fk_measureReal_eq_expectation]
   induction r,hr using Nat.le_induction with
   | base =>
-    simp only [Nat.sub_self,pow_zero]
     calc
       _ ≤ expectation (law G θ (BoundaryCondition.free ∅)) (fun _ => 1) := by
         apply expectation_mono

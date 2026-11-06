@@ -32,24 +32,24 @@ noncomputable def infinityBlock (N n : ℕ) : Matrix (State N n) (State N n) ℝ
 theorem arrowDistance_eq (x y : Finset (Fin N)) :
     arrowDistance x y = (x \ y).card + (y \ x).card := by
   have he : (univ.filter fun i => Psi x i ≠ Psi y i) = (x \ y) ∪ (y \ x) := by
-    ext i
-    simp only [Finset.mem_filter, Finset.mem_univ, true_and, Finset.mem_union, Finset.mem_sdiff]
-    by_cases hx : i ∈ x <;> by_cases hy : i ∈ y <;> simp [Psi, hx, hy]
+    grind [Psi]
   rw [arrowDistance, he, card_union_of_disjoint]
-  exact disjoint_left.mpr (by simp only [Finset.mem_sdiff]; tauto)
+  exact disjoint_left.mpr (by simp_all)
 
-theorem arrowDistance_state (x y : State N n) :
+section
+variable (x y : State N n)
+include x y
+theorem arrowDistance_state  :
     arrowDistance x.1 y.1 = 2 * (x.1 \ y.1).card := by
-  rw [arrowDistance_eq, card_sdiff_comm (y.2.trans x.2.symm)]
-  omega
+  grind [arrowDistance_eq]
 
-theorem arrowDistance_eq_two_mul_iff (x y : State N n) :
+theorem arrowDistance_eq_two_mul_iff  :
     arrowDistance x.1 y.1 = 2 * n ↔ Disjoint x.1 y.1 := by
   rw [arrowDistance_state]
   have hc := card_sdiff_add_card_inter x.1 y.1
-  rw [x.2] at hc
   rw [disjoint_iff_inter_eq_empty, ← card_eq_zero]
   omega
+end
 
 @[simp] theorem infinityBlock_apply_self (x : State N n) :
     infinityBlock N n x x = if n = 0 then 2 else 0 := by
@@ -58,26 +58,18 @@ theorem arrowDistance_eq_two_mul_iff (x y : State N n) :
 theorem infinityBlock_eq_one_iff (hn : 0 < n) (x y : State N n) :
     infinityBlock N n x y = 1 ↔ Interlaced x.1 y.1 ∧ Disjoint x.1 y.1 := by
   by_cases hxy : x = y
-  · subst y
-    have hx : ¬ Disjoint x.1 x.1 := by
-      simp only [disjoint_self, Finset.bot_eq_empty, ← card_eq_zero, x.2]
-      omega
-    simp only [infinityBlock_apply_self, Nat.ne_of_gt hn, ↓reduceIte, hx, and_false]
-    norm_num
-  · simp only [infinityBlock, hxy, ↓reduceIte]
-    split_ifs <;> simp_all
+  · aesop
+  simp_all [infinityBlock]
 
 theorem infinityBlock_symm (x y : State N n) :
     infinityBlock N n x y = infinityBlock N n y x := by
   simp only [infinityBlock, eq_comm, interlaced_comm x.1 y.1, disjoint_comm]
 
 theorem infinityBlock_isHermitian : (infinityBlock N n).IsHermitian := by
-  rw [Matrix.isHermitian_iff_isSymm]
   ext x y
   exact infinityBlock_symm y x
 
 theorem infinityBlock_nonneg (x y : State N n) : 0 ≤ infinityBlock N n x y := by
-  unfold infinityBlock
-  split_ifs <;> norm_num
+  grind [infinityBlock]
 
 end PottsDiscontinuity.SixVertex

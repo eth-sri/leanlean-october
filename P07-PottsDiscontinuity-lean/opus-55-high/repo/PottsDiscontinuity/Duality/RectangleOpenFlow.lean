@@ -18,8 +18,6 @@ variable (A : Configuration (rectangleGraph a w h))
 
 local instance rectangleOpenIndexFintype :
     Fintype (OpenEdgeIndex (rectangleGraph a w h) A) := Fintype.ofFinite _
-local instance rectangleOpenIndexDecidableEq :
-    DecidableEq (OpenEdgeIndex (rectangleGraph a w h) A) := Classical.decEq _
 
 local instance rectangleOpenFlowCarrierFintype :
     Fintype (rectanglePrimalEdgeCarrier a w h) := by
@@ -39,44 +37,35 @@ local instance rectangleOpenFlowBondFintype :
 def rectangleBondToGraphEdge (b : RectanglePrimalBond a w h) :
     (rectangleGraph a w h).edgeSet := rectanglePrimalBondToEdge a w h b
 
+section
+variable (f : OpenEdgeIndex (rectangleGraph a w h) A → ℝ)
 /-- Extend an open-edge flow by zero to every normalized primal bond of the
 rectangle. The selected-edge equivalence keeps the original unordered edge. -/
 noncomputable def rectangleOpenFlowZeroExtend
-    (f : OpenEdgeIndex (rectangleGraph a w h) A → ℝ) : RectanglePrimalFlow a w h := by
+     : RectanglePrimalFlow a w h := by
   classical
   exact fun b =>
     let e := rectangleBondToGraphEdge a w h b
     if hb : e ∈ A then f ⟨e, hb⟩ else 0
 
 @[simp] theorem rectangleOpenFlowZeroExtend_onOpen
-    (f : OpenEdgeIndex (rectangleGraph a w h) A → ℝ)
     (e : OpenEdgeIndex (rectangleGraph a w h) A) :
     rectangleOpenFlowZeroExtend a w h A f ((rectanglePrimalEdgeBondEquiv a w h) e.1) = f e := by
-  classical
   have he : rectangleBondToGraphEdge a w h
-      ((rectanglePrimalEdgeBondEquiv a w h) e.1) = e.1 := by
-    change rectanglePrimalBondToEdge a w h
-      ((rectanglePrimalEdgeBondEquiv a w h) e.1) = e.1
-    exact (rectanglePrimalEdgeBondEquiv a w h).left_inv e.1
+      ((rectanglePrimalEdgeBondEquiv a w h) e.1) = e.1 :=
+    (rectanglePrimalEdgeBondEquiv a w h).left_inv e.1
   unfold rectangleOpenFlowZeroExtend
-  change (if hb : rectangleBondToGraphEdge a w h
-      ((rectanglePrimalEdgeBondEquiv a w h) e.1) ∈ A then
-        f ⟨rectangleBondToGraphEdge a w h
-          ((rectanglePrimalEdgeBondEquiv a w h) e.1), hb⟩ else 0) = f e
   rw [he]
   simp
 
 
 
 theorem rectangleOpenFlowZeroExtend_onClosed
-    (f : OpenEdgeIndex (rectangleGraph a w h) A → ℝ)
     (b : RectanglePrimalBond a w h)
     (hb : rectangleBondToGraphEdge a w h b ∉ A) :
     rectangleOpenFlowZeroExtend a w h A f b = 0 := by
-  classical
-  unfold rectangleOpenFlowZeroExtend
-  change (if h : rectangleBondToGraphEdge a w h b ∈ A then _ else 0) = 0
-  simp [hb]
+  simp_all [rectangleOpenFlowZeroExtend, rectangleBondToGraphEdge]
+end
 
 
 /-- The full-bond flow subspace supported on actual selected open rectangle edges. -/
@@ -88,8 +77,7 @@ def rectangleOpenFlowSubmodule : Submodule ℝ (RectanglePrimalFlow a w h) where
     intro F H hF hH b hb
     simp [hF b hb, hH b hb]
   smul_mem' := by
-    intro c F hF b hb
-    simp [hF b hb]
+    simp_all
 
 /-- Zero extension is linear in the values on the actual open-edge set. -/
 def rectangleOpenFlowZeroExtendLinear :
@@ -124,11 +112,10 @@ noncomputable def rectangleOpenFlowZeroExtendEquiv :
       rectangleOpenFlowSubmodule a w h A where
   toFun f := ⟨rectangleOpenFlowZeroExtend a w h A f, by
     intro b hb
-    exact rectangleOpenFlowZeroExtend_onClosed a w h A f b hb⟩
+    simp_all [rectangleOpenFlowZeroExtend_onClosed]⟩
   invFun F e := F.1 ((rectanglePrimalEdgeBondEquiv a w h)
     (e.1 : rectanglePrimalEdgeCarrier a w h))
   left_inv f := by
-    funext e
     simp
   right_inv F := by
     apply Subtype.ext
@@ -137,10 +124,7 @@ noncomputable def rectangleOpenFlowZeroExtendEquiv :
       F.1 ((rectanglePrimalEdgeBondEquiv a w h)
         (rectangleBondToGraphEdge a w h b)) else 0) = F.1 b
     split_ifs with hb
-    · have hbond : (rectanglePrimalEdgeBondEquiv a w h)
-          (rectanglePrimalBondToEdge a w h b) = b :=
-        Equiv.apply_symm_apply _ _
-      simpa [rectangleBondToGraphEdge] using congrArg F.1 hbond
+    · grind [rectanglePrimalEdgeBondEquiv, rectanglePrimalBondToEdge, rectangleBondToGraphEdge]
     · simpa using (F.2 b hb).symm
   map_add' f g := by
     apply Subtype.ext
@@ -170,17 +154,11 @@ noncomputable def rectangleOpenBondEquiv :
       (rectanglePrimalEdgeBondEquiv a w h) e.1
     have hEdge : rectangleBondToGraphEdge a w h b = e.1 := by
       change (rectanglePrimalEdgeBondEquiv a w h).symm b = e.1
-      rw [show b = (rectanglePrimalEdgeBondEquiv a w h) e.1 by rfl]
-      exact (rectanglePrimalEdgeBondEquiv a w h).left_inv e.1
-    exact ⟨b, by rw [hEdge]; exact e.2⟩
+      grind
+    exact ⟨b, by simp_all⟩
   invFun b := ⟨rectangleBondToGraphEdge a w h b.1, b.2⟩
   left_inv e := by
-    apply Subtype.ext
-    change rectangleBondToGraphEdge a w h
-      ((rectanglePrimalEdgeBondEquiv a w h) e.1) = e.1
-    change (rectanglePrimalEdgeBondEquiv a w h).symm
-      ((rectanglePrimalEdgeBondEquiv a w h) e.1) = e.1
-    exact (rectanglePrimalEdgeBondEquiv a w h).left_inv e.1
+    grind [rectangleBondToGraphEdge, rectanglePrimalEdgeBondEquiv]
   right_inv b := by
     apply Subtype.ext
     change (rectanglePrimalEdgeBondEquiv a w h)
@@ -188,16 +166,16 @@ noncomputable def rectangleOpenBondEquiv :
     exact Equiv.apply_symm_apply _ _
 
 
-def rectangleBondSignedTerm (F : RectanglePrimalFlow a w h)
-    (v : LatticeVertex) (b : RectanglePrimalBond a w h) : ℝ :=
+section
+variable (F : RectanglePrimalFlow a w h) (v : LatticeVertex)
+def rectangleBondSignedTerm (b : RectanglePrimalBond a w h) : ℝ :=
   (if b.1.source = v then F b else 0) -
     (if b.1.target = v then F b else 0)
 
 theorem rectanglePrimalFlowDivergence_eq_allBonds
-    (F : RectanglePrimalFlow a w h) (v : LatticeVertex) :
+     :
     rectanglePrimalFlowDivergence a w h F v =
       ∑ b : RectanglePrimalBond a w h, rectangleBondSignedTerm a w h F v b := by
-  classical
   let p : RectanglePrimalBond a w h → Prop :=
     fun b => b.1.source = v ∨ b.1.target = v
   let T := rectangleBondSignedTerm a w h F v
@@ -207,44 +185,38 @@ theorem rectanglePrimalFlowDivergence_eq_allBonds
     · have hne : b.1.1.target ≠ v := by
         intro h
         exact b.1.1.source_ne_target (hs.trans h.symm)
-      simp [T, rectangleBondSignedTerm, hs, hne]
+      grind [rectangleBondSignedTerm]
     · have hne : b.1.1.source ≠ v := by
         intro h
         exact b.1.1.source_ne_target (h.trans ht.symm)
-      simp [T, rectangleBondSignedTerm, hne, ht]
+      grind [rectangleBondSignedTerm]
   let incidentEquiv : rectangleActualIncidentBonds a w h v ≃
       {b : RectanglePrimalBond a w h // p b} := {
-    toFun := fun b => ⟨b.1, by simpa [p] using b.2⟩
-    invFun := fun b => ⟨b.1, by simpa [p] using b.2⟩
-    left_inv := by intro b; apply Subtype.ext; rfl
-    right_inv := by intro b; apply Subtype.ext; rfl }
+    toFun := fun b => ⟨b.1, by grind⟩
+    invFun := fun b => ⟨b.1, by grind⟩
+    left_inv := by tauto
+    right_inv := by grind }
   have hsub :
       (∑ b ∈ Finset.univ.filter p, T b) =
         ∑ b : {b : RectanglePrimalBond a w h // p b}, T b.1 :=
-    Finset.sum_subtype (p := p) (Finset.univ.filter p)
-      (by intro b; simp [p]) T
+    Finset.sum_subtype (Finset.univ.filter p)
+      (by simp) T
   have hzero (b : RectanglePrimalBond a w h) (hb : ¬ p b) : T b = 0 := by
-    have hs : b.1.source ≠ v := by intro h; exact hb (Or.inl h)
-    have ht : b.1.target ≠ v := by intro h; exact hb (Or.inr h)
-    simp [T, rectangleBondSignedTerm, hs, ht]
+    grind [rectangleBondSignedTerm]
   calc
     rectanglePrimalFlowDivergence a w h F v =
         ∑ b : rectangleActualIncidentBonds a w h v, T b.1 := by
       unfold rectanglePrimalFlowDivergence
-      apply Finset.sum_congr rfl
-      intro b hb
-      exact hterm b
-    _ = ∑ b : {b : RectanglePrimalBond a w h // p b}, T b.1 := by
-      exact Equiv.sum_comp incidentEquiv (fun b => T b.1)
+      grind
+    _ = ∑ b : {b : RectanglePrimalBond a w h // p b}, T b.1 :=
+      Equiv.sum_comp incidentEquiv (fun b => T b.1)
     _ = ∑ b ∈ Finset.univ.filter p, T b := hsub.symm
     _ = ∑ b : RectanglePrimalBond a w h, T b := by
       rw [Finset.sum_filter]
       apply Finset.sum_congr rfl
       intro b hb
-      by_cases hp : p b
-      · simp [p, hp]
-      · have hz := hzero b hp
-        simp [p, hp, hz]
+      by_cases hp : p b <;> grind
+end
 
 
 theorem rectangleOpenFlowZeroExtend_signedDivergence
@@ -254,48 +226,34 @@ theorem rectangleOpenFlowZeroExtend_signedDivergence
       (rectangleOpenEdgeOrientation a w h A) f v =
       rectanglePrimalFlowDivergence a w h
         (rectangleOpenFlowZeroExtend a w h A f) v.1 := by
-  classical
   let F := rectangleOpenFlowZeroExtend a w h A f
-  let q : RectanglePrimalBond a w h → Prop :=
+  let q :=
     fun b => rectangleBondToGraphEdge a w h b ∈ A
-  let : DecidablePred q := Classical.decPred q
-  let : Fintype (RectanglePrimalBond a w h) := rectangleOpenFlowBondFintype a w h
-  let : Fintype (rectangleOpenBondIndex a w h A) :=
-    rectangleOpenBondIndexFintype a w h A
   let T := rectangleBondSignedTerm a w h F v.1
   let hindexEquiv : {b : RectanglePrimalBond a w h // q b} ≃
       rectangleOpenBondIndex a w h A := {
-    toFun := fun b => ⟨b.1, by simpa [q, rectangleOpenBondIndex] using b.2⟩
-    invFun := fun b => ⟨b.1, by simpa [q, rectangleOpenBondIndex] using b.2⟩
-    left_inv := by intro b; apply Subtype.ext; rfl
-    right_inv := by intro b; apply Subtype.ext; rfl }
+    toFun := fun b => ⟨b.1, by grind⟩
+    invFun := fun b => ⟨b.1, by grind⟩
+    left_inv := by grind
+    right_inv := by tauto }
   have hsub :
       (∑ b ∈ Finset.univ.filter q, T b) =
         ∑ b : rectangleOpenBondIndex a w h A, T b.1 := by
     calc
       _ = ∑ b : {b : RectanglePrimalBond a w h // q b}, T b.1 :=
-        Finset.sum_subtype (p := q) (Finset.univ.filter q)
-          (by intro b; simp [q]) T
+        Finset.sum_subtype (Finset.univ.filter q)
+          (by simp) T
       _ = ∑ b : {b : RectanglePrimalBond a w h // q b},
           T (hindexEquiv b).1 := by
-        apply Finset.sum_congr rfl
-        intro b hb
-        change T b.1 = T b.1
         rfl
       _ = _ := Equiv.sum_comp hindexEquiv (fun b => T b.1)
   have hzero (b : RectanglePrimalBond a w h) (hb : ¬ q b) : T b = 0 := by
-    have hb' : rectangleBondToGraphEdge a w h b ∉ A := by simpa [q] using hb
-    have hz := rectangleOpenFlowZeroExtend_onClosed a w h A f b hb'
-    simp [T, rectangleBondSignedTerm, F, hz]
+    grind [rectangleBondToGraphEdge, rectangleOpenFlowZeroExtend_onClosed, rectangleBondSignedTerm]
   have hfull :
       (∑ b : RectanglePrimalBond a w h, T b) =
         ∑ b ∈ Finset.univ.filter q, T b := by
     rw [Finset.sum_filter]
-    apply Finset.sum_congr rfl
-    intro b hb
-    by_cases hq : q b
-    · simp [q, hq]
-    · simp [q, hq, hzero b hq]
+    grind
   have hedge (e : OpenEdgeIndex (rectangleGraph a w h) A) :
       T ((rectanglePrimalEdgeBondEquiv a w h) e.1) =
         (if (rectangleOpenEdgeOrientation a w h A).source e = v then f e else 0) -
@@ -316,7 +274,7 @@ theorem rectangleOpenFlowZeroExtend_signedDivergence
         exact Subtype.ext h
     have hf : F ((rectanglePrimalEdgeBondEquiv a w h) e.1) = f e := by
       simp [F]
-    simp [T, rectangleBondSignedTerm, hs, ht, hf]
+    grind [rectangleBondSignedTerm]
 
   calc
     signedDivergence (rectangleGraph a w h) A
@@ -325,19 +283,17 @@ theorem rectangleOpenFlowZeroExtend_signedDivergence
         ((if (rectangleOpenEdgeOrientation a w h A).source e = v then f e else 0) -
           (if (rectangleOpenEdgeOrientation a w h A).target e = v then f e else 0)) := by
       rw [signedDivergence_apply]
-      rw [Finset.sum_sub_distrib]
+      simp
     _ = ∑ e : OpenEdgeIndex (rectangleGraph a w h) A,
         T ((rectanglePrimalEdgeBondEquiv a w h) e.1) := by
-      apply Finset.sum_congr rfl
-      intro e he
-      exact (hedge e).symm
-    _ = ∑ b : rectangleOpenBondIndex a w h A, T b.1 := by
-      exact Equiv.sum_comp (rectangleOpenBondEquiv a w h A)
+      grind
+    _ = ∑ b : rectangleOpenBondIndex a w h A, T b.1 :=
+      Equiv.sum_comp (rectangleOpenBondEquiv a w h A)
         (fun b => T b.1)
     _ = ∑ b ∈ Finset.univ.filter q, T b := hsub.symm
     _ = ∑ b : RectanglePrimalBond a w h, T b := hfull.symm
     _ = rectanglePrimalFlowDivergence a w h F v.1 := by
-      simpa [T] using (rectanglePrimalFlowDivergence_eq_allBonds a w h F v.1).symm
+      grind [rectanglePrimalFlowDivergence_eq_allBonds]
 
 
 
@@ -356,48 +312,31 @@ noncomputable def rectangleOpenFlowDivergenceKernelEquiv :
       ↑((rectangleOpenFlowZeroExtendEquiv a w h A) f.1) ∈
         rectangleDivergenceFreeFlowSubmodule a w h
     constructor
-    · exact (rectangleOpenFlowZeroExtendEquiv a w h A f.1).2
+    · simp
     · intro z hz
       change rectanglePrimalFlowDivergence a w h
         (rectangleOpenFlowZeroExtend a w h A f.1) z = 0
       rw [← rectangleOpenFlowZeroExtend_signedDivergence a w h A f.1 ⟨z, hz⟩]
-      exact congrFun f.2 ⟨z, hz⟩
+      simp
   invFun F := by
     let g := (rectangleOpenFlowZeroExtendEquiv a w h A).symm
       ⟨F.1, (Submodule.mem_inf.mp F.2).1⟩
     refine ⟨g, ?_⟩
     funext v
-    have hF : rectangleOpenFlowZeroExtend a w h A g = F.1 := by
-      exact congrArg Subtype.val
+    have hF : rectangleOpenFlowZeroExtend a w h A g = F.1 :=
+      congrArg Subtype.val
         (LinearEquiv.apply_symm_apply (rectangleOpenFlowZeroExtendEquiv a w h A)
           ⟨F.1, (Submodule.mem_inf.mp F.2).1⟩)
-    rw [rectangleOpenFlowZeroExtend_signedDivergence]
-    rw [hF]
+    rw [rectangleOpenFlowZeroExtend_signedDivergence, hF]
     exact (Submodule.mem_inf.mp F.2).2 v.1 v.2
   left_inv f := by
-    apply Subtype.ext
-    exact (rectangleOpenFlowZeroExtendEquiv a w h A).left_inv f.1
+    simp
   right_inv F := by
-    apply Subtype.ext
-    change rectangleOpenFlowZeroExtend a w h A
-      ((rectangleOpenFlowZeroExtendEquiv a w h A).symm
-        ⟨F.1, (Submodule.mem_inf.mp F.2).1⟩) = F.1
-    exact congrArg Subtype.val
-      ((rectangleOpenFlowZeroExtendEquiv a w h A).apply_symm_apply
-        ⟨F.1, (Submodule.mem_inf.mp F.2).1⟩)
+    simp
   map_add' f g := by
-    apply Subtype.ext
-    change rectangleOpenFlowZeroExtend a w h A (f.1 + g.1) =
-      rectangleOpenFlowZeroExtend a w h A f.1 +
-        rectangleOpenFlowZeroExtend a w h A g.1
-    exact congrArg Subtype.val
-      (map_add (rectangleOpenFlowZeroExtendEquiv a w h A) f.1 g.1)
+    simp
   map_smul' c f := by
-    apply Subtype.ext
-    change rectangleOpenFlowZeroExtend a w h A (c • f.1) =
-      c • rectangleOpenFlowZeroExtend a w h A f.1
-    exact congrArg Subtype.val
-      (map_smul (rectangleOpenFlowZeroExtendEquiv a w h A) c f.1)
+    simp
 
 end
 end PottsDiscontinuity.FK

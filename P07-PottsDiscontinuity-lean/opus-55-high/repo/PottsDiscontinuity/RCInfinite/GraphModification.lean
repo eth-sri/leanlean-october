@@ -2,7 +2,7 @@ module
 
 public import PottsDiscontinuity.RCInfinite.OpeningPaths
 
-@[expose] public section
+public section
 
 open Set
 
@@ -21,35 +21,35 @@ theorem infinite_component_contains_old
   have hwalk {u v : V} (w : H.Walk u v) :
       ∃ z, (z = u ∨ z ∈ S) ∧ G.Reachable z v := by
     induction w with
-    | nil => exact ⟨_, Or.inl rfl, .refl _⟩
+    | nil => simp
     | @cons u v t huv w ih =>
       obtain ⟨z, hz, hzt⟩ := ih
       rcases hz with hz | hz
       · subst z
         by_cases hold : G.Adj u v
         · exact ⟨u, Or.inl rfl, hold.reachable.trans hzt⟩
-        · exact ⟨v, Or.inr (hnew u v huv hold).2, hzt⟩
-      · exact ⟨z, Or.inr hz, hzt⟩
+        grind
+      grind
   let T : Finset V := (insert x S).filter fun z => H.Reachable x z
   have hcover : {y | H.Reachable x y} ⊆ ⋃ z ∈ (T : Set V), {y | G.Reachable z y} := by
     intro y hxy
     obtain ⟨w⟩ := hxy
     obtain ⟨z, hz, hzy⟩ := hwalk w
-    have hxz : H.Reachable x z := w.reachable.trans (hzy.mono hGH).symm
+    have hxz := w.reachable.trans (hzy.mono hGH).symm
     refine mem_iUnion.mpr ⟨z, mem_iUnion.mpr ⟨?_, hzy⟩⟩
-    exact Finset.mem_filter.mpr ⟨Finset.mem_insert.mpr hz, hxz⟩
+    grind
   by_contra! hnone
   have hfinite : (⋃ z ∈ (T : Set V), {y | G.Reachable z y}).Finite := by
     apply T.finite_toSet.biUnion
-    intro z hz
-    exact hnone z (Finset.mem_filter.mp hz).2
+    grind
   exact hinf (hfinite.subset hcover)
 
 def edgeEndpoints (F : Finset Edge) : Finset LatticeVertex :=
   F.biUnion fun e => e.val.toFinset
 
-theorem opening_new_edge_endpoints (F : Finset Edge) (ω : LatticeConfiguration)
-    (x y : LatticeVertex)
+section
+variable (F : Finset Edge) (ω : LatticeConfiguration)
+theorem opening_new_edge_endpoints (x y : LatticeVertex)
     (hnew : (rcInfiniteOpenGraph (setEdges F (fun _ => true) ω)).Adj x y)
     (hold : ¬(rcInfiniteOpenGraph ω).Adj x y) :
     x ∈ edgeEndpoints F ∧ y ∈ edgeEndpoints F := by
@@ -58,18 +58,16 @@ theorem opening_new_edge_endpoints (F : Finset Edge) (ω : LatticeConfiguration)
     by_contra hF
     apply hold
     apply (rcInfiniteOpenGraph_adj _ x y).mpr
-    exact ⟨he, by simpa only [setEdges, hF, ite_false] using hω⟩
-  constructor
-  · exact Finset.mem_biUnion.mpr ⟨⟨s(x, y), he⟩, hF, by simp [Sym2.toFinset_mk_eq]⟩
-  · exact Finset.mem_biUnion.mpr ⟨⟨s(x, y), he⟩, hF, by simp [Sym2.toFinset_mk_eq]⟩
+    simp_all [setEdges]
+  constructor <;> exact Finset.mem_biUnion.mpr ⟨⟨s(x, y), he⟩, hF, by simp⟩
 
-theorem opening_infinite_component_contains_old (F : Finset Edge)
-    (ω : LatticeConfiguration) (x : LatticeVertex)
+theorem opening_infinite_component_contains_old (x : LatticeVertex)
     (hx : setEdges F (fun _ => true) ω ∈ infiniteAt x) :
     ∃ z, (rcInfiniteOpenGraph (setEdges F (fun _ => true) ω)).Reachable x z ∧
       ω ∈ infiniteAt z :=
   infinite_component_contains_old (opening_graph_mono F ω) (edgeEndpoints F)
     (opening_new_edge_endpoints F ω) x hx
+end
 
 end
 end PottsDiscontinuity.RCInfinite

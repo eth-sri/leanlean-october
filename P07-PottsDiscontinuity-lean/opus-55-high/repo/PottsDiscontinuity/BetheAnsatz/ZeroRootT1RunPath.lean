@@ -11,138 +11,116 @@ through the unique LM edge. Enumerating that interval gives a zipper path in
 the original cyclic coordinates.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 open Finset
 
 namespace PottsDiscontinuity.BetheAnsatz
 
+section
+variable {n : ℕ}
 /-- The unique LM endpoint expressed in the shifted coordinates. -/
-noncomputable def t1ShiftedRunEnd {n : ℕ} {l : Fin (n + 1)}
+def t1ShiftedRunEnd {l : Fin (n + 1)}
     (i : T1PairIndex n l) : Fin (n + 1) :=
   (t1RunShift i).symm (t1PairRunEnd i)
 
 /-- View an initial interval index as a slot of the full cyclic word. -/
-def t1RunPathIndex {n : ℕ} (e : Fin (n + 1))
+def t1RunPathIndex (e : Fin (n + 1))
     (q : Fin (e.val + 1)) : Fin (n + 1) :=
   ⟨q.val, by omega⟩
 
 /-- The L-run beginning at the zero-root slot, in cyclic order. -/
-noncomputable def t1PairZipperPath {n : ℕ} {l : Fin (n + 1)}
+def t1PairZipperPath {l : Fin (n + 1)}
     (i : T1PairIndex n l) : List (Fin (n + 1)) :=
   List.ofFn (fun q : Fin ((t1ShiftedRunEnd i).val + 1) =>
     t1RunShift i (t1RunPathIndex (t1ShiftedRunEnd i) q))
+end
 
-private theorem zipperPathAdjacent_ofFn {m n : ℕ}
+theorem zipperPathAdjacent_ofFn {m n : ℕ}
     (f : Fin (m + 1) → Fin (n + 1))
     (hstep : ∀ j : Fin m, f j.succ = finRotate (n + 1) (f j.castSucc)) :
     zipperPathAdjacent (List.ofFn f) := by
   induction m with
-  | zero => simp [List.ofFn_succ, zipperPathAdjacent]
+  | zero => tauto
   | succ m ih =>
       simp only [List.ofFn_succ, zipperPathAdjacent]
       constructor
-      · simpa using hstep 0
+      · tauto
       · have htail : zipperPathAdjacent
             (List.ofFn (fun j : Fin (m + 1) => f j.succ)) := by
-          apply ih
-          intro j
-          simpa using hstep j.succ
-        simpa only [List.ofFn_succ, zipperPathAdjacent] using htail
+          grind
+        simpa using htail
 
-theorem t1PairZipperPath_nodup {n : ℕ} {l : Fin (n + 1)}
-    (i : T1PairIndex n l) : (t1PairZipperPath i).Nodup := by
+section
+variable {n : ℕ} {l : Fin (n + 1)} (i : T1PairIndex n l)
+theorem t1PairZipperPath_nodup  : (t1PairZipperPath i).Nodup := by
   apply List.nodup_ofFn.mpr
   intro a b hab
-  have h := (t1RunShift i).injective hab
   apply Fin.ext
-  simpa [t1RunPathIndex] using congrArg Fin.val h
+  simp_all [t1RunPathIndex]
 
-theorem t1PairZipperPath_adjacent {n : ℕ} {l : Fin (n + 1)}
-    (i : T1PairIndex n l) : zipperPathAdjacent (t1PairZipperPath i) := by
+theorem t1PairZipperPath_adjacent  : zipperPathAdjacent (t1PairZipperPath i) := by
   let e := t1ShiftedRunEnd i
-  let f : Fin (e.val + 1) → Fin (n + 1) := fun j =>
+  let f := fun j =>
     t1RunShift i (t1RunPathIndex e j)
-  change zipperPathAdjacent (List.ofFn f)
   apply zipperPathAdjacent_ofFn f
   intro q
   have hidx : t1RunPathIndex e q.succ =
       finRotate (n + 1) (t1RunPathIndex e q.castSucc) := by
     have hlt : (t1RunPathIndex e q.castSucc).val < n := by
-      simp [t1RunPathIndex]
-      have hq := q.isLt
-      have he := e.isLt
-      omega
+      grind [t1RunPathIndex]
     have hstep := finRotate_of_lt hlt
-    have hval : t1RunPathIndex e q.succ =
-        (⟨q.val + 1, by have hq := q.isLt; have he := e.isLt; omega⟩ : Fin (n + 1)) := by
-      apply Fin.ext
-      simp [t1RunPathIndex]
-    calc
-      t1RunPathIndex e q.succ = _ := hval
-      _ = finRotate (n + 1) (t1RunPathIndex e q.castSucc) := by
-        simpa [t1RunPathIndex] using hstep.symm
-  change f q.succ = finRotate (n + 1) (f q.castSucc)
+    tauto
   change t1RunShift i (t1RunPathIndex e q.succ) =
     finRotate (n + 1) (t1RunShift i (t1RunPathIndex e q.castSucc))
   rw [hidx]
   exact t1RunShift_commute i _
 
-theorem t1PairZipperPath_letters {n : ℕ} {l : Fin (n + 1)}
-    (i : T1PairIndex n l) (k : Fin (n + 1))
+theorem t1PairZipperPath_letters (k : Fin (n + 1))
     (hk : k ∈ t1PairZipperPath i) : i.w k = true := by
   change k ∈ List.ofFn (fun q : Fin ((t1ShiftedRunEnd i).val + 1) =>
     t1RunShift i (t1RunPathIndex (t1ShiftedRunEnd i) q)) at hk
   rw [List.mem_ofFn'] at hk
   obtain ⟨q, rfl⟩ := hk
   have hle : t1RunPathIndex (t1ShiftedRunEnd i) q ≤ t1ShiftedRunEnd i := by
-    apply Fin.le_iff_val_le_val.mpr
-    simp [t1RunPathIndex]
-    omega
+    grind [t1RunPathIndex]
   have htrue := (t1ShiftedWord_true_iff_le_end i
     (t1RunPathIndex (t1ShiftedRunEnd i) q)).2 hle
-  simpa [t1ShiftedWord, t1ShiftedRunEnd] using htrue
+  tauto
 
-theorem t1PairZipperPath_covers {n : ℕ} {l : Fin (n + 1)}
-    (i : T1PairIndex n l) :
+theorem t1PairZipperPath_covers  :
     ∀ k, i.w k = true → k ∈ t1PairZipperPath i := by
   intro k hk
   let q := (t1RunShift i).symm k
   have htrue : t1ShiftedWord i q = true := by
     change i.w (t1RunShift i q) = true
-    simpa [q] using hk
+    grind
   have hle : q ≤ t1ShiftedRunEnd i :=
     (t1ShiftedWord_true_iff_le_end i q).1 htrue
   let q' : Fin ((t1ShiftedRunEnd i).val + 1) :=
-    ⟨q.val, by have := Fin.le_iff_val_le_val.mp hle; omega⟩
+    ⟨q.val, by omega⟩
   have hindex : t1RunPathIndex (t1ShiftedRunEnd i) q' = q := by
-    apply Fin.ext
     rfl
   have hmap : t1RunShift i (t1RunPathIndex (t1ShiftedRunEnd i) q') = k := by
-    rw [hindex]
-    exact (t1RunShift i).apply_symm_apply k
+    grind
   exact (List.mem_ofFn' (fun q : Fin ((t1ShiftedRunEnd i).val + 1) =>
     t1RunShift i (t1RunPathIndex (t1ShiftedRunEnd i) q)) k).2
       (Set.mem_range.mpr ⟨q', hmap⟩)
 
-theorem t1PairZipperPath_nonempty {n : ℕ} {l : Fin (n + 1)}
-    (i : T1PairIndex n l) : t1PairZipperPath i ≠ [] := by
+theorem t1PairZipperPath_nonempty  : t1PairZipperPath i ≠ [] := by
   intro h
   have h0 : t1RunShift i (t1RunPathIndex (t1ShiftedRunEnd i) 0) ∈
       t1PairZipperPath i := by
     change _ ∈ List.ofFn _
-    apply (List.mem_ofFn' _ _).2
-    exact Set.mem_range.mpr ⟨0, rfl⟩
-  rw [h] at h0
-  exact List.not_mem_nil h0
+    simp
+  simp_all
 
-theorem t1PairZipperPath_head {n : ℕ} {l : Fin (n + 1)}
-    (i : T1PairIndex n l) :
+theorem t1PairZipperPath_head  :
     (t1PairZipperPath i).headD 0 = t1EdgeRight i.edge := by
   change (List.ofFn (fun q : Fin ((t1ShiftedRunEnd i).val + 1) =>
     t1RunShift i (t1RunPathIndex (t1ShiftedRunEnd i) q))).headD 0 = _
-  rw [List.ofFn_succ]
   simp [t1RunPathIndex, t1RunShift_zero]
+end
 
 theorem zeroRootZipperRun_root_at_last {n : ℕ}
     (path : List (Fin (n + 1))) (σ : Equiv.Perm (Fin (n + 1)))
@@ -154,42 +132,29 @@ theorem zeroRootZipperRun_root_at_last {n : ℕ}
   | cons a tail ih =>
       cases tail with
       | nil =>
-          have hroot' : σ a = l := by simpa using hroot
-          simp [zeroRootZipperRun, hroot']
+          tauto
       | cons b rest =>
-          have htailNe : (b :: rest) ≠ [] := by simp
-          let σ' := σ * Equiv.swap a b
-          let w' := Function.update w a false
-          have hroot' : σ' ((b :: rest).headD 0) = l := by
-            simpa [σ', Equiv.Perm.mul_apply] using hroot
-          have hlast : (a :: b :: rest).getLast hne = (b :: rest).getLast htailNe := by
-            simp
-          change (zeroRootZipperRun (b :: rest) (σ', w')).1
-            ((b :: rest).getLast htailNe) = l
-          rw [← hlast]
-          simpa [σ', w'] using ih σ' w' htailNe hroot'
+          simp_all [zeroRootZipperRun]
 
+section
+variable {n : ℕ} {l : Fin (n + 1)} (i : T1PairIndex n l)
 /-- The last path slot is the unique LM endpoint in the original cyclic
 coordinates. -/
-noncomputable def t1PairZipperPathLast {n : ℕ} {l : Fin (n + 1)}
-    (i : T1PairIndex n l) : Fin (n + 1) :=
+def t1PairZipperPathLast  : Fin (n + 1) :=
   (t1PairZipperPath i).getLast (t1PairZipperPath_nonempty i)
 
-theorem t1PairZipperPathLast_eq_runEnd {n : ℕ} {l : Fin (n + 1)}
-    (i : T1PairIndex n l) : t1PairZipperPathLast i = t1PairRunEnd i := by
+theorem t1PairZipperPathLast_eq_runEnd  : t1PairZipperPathLast i = t1PairRunEnd i := by
   let e := t1ShiftedRunEnd i
   have hlast := List.getLast_ofFn_succ
     (fun q : Fin (e.val + 1) => t1RunShift i (t1RunPathIndex e q))
   have hindex : t1RunPathIndex e (Fin.last e.val) = e := by
-    apply Fin.ext
     rfl
   unfold t1PairZipperPathLast t1PairZipperPath
   rw [hlast, hindex]
   exact (t1RunShift i).apply_symm_apply (t1PairRunEnd i)
 
 /-- Zipping the canonical run sends the zero root to its unique LM endpoint. -/
-theorem t1PairZipperRun_root {n : ℕ} {l : Fin (n + 1)}
-    (i : T1PairIndex n l) :
+theorem t1PairZipperRun_root  :
     (zeroRootZipperRun (t1PairZipperPath i) (i.σ, i.w)).1
       (t1PairRunEnd i) = l := by
   have hroot : i.σ ((t1PairZipperPath i).headD 0) = l := by
@@ -198,7 +163,8 @@ theorem t1PairZipperRun_root {n : ℕ} {l : Fin (n + 1)}
   have hlast := zeroRootZipperRun_root_at_last (t1PairZipperPath i) i.σ i.w
     (t1PairZipperPath_nonempty i) hroot
   rw [← t1PairZipperPathLast_eq_runEnd i]
-  exact hlast
+  tauto
+end
 
 /-- The zipper run preserves the regularized zero-root term. -/
 theorem t1PairZipperRun_preserves {N n : ℕ} {c : ℝ}
@@ -221,8 +187,8 @@ theorem t1PairZipperRun_preserves {N n : ℕ} {c : ℝ}
 /-- Every letter is M after the full T₁ zipper run. -/
 theorem t1PairZipperRun_word_eq_false {n : ℕ} {l : Fin (n + 1)}
     (i : T1PairIndex n l) :
-    ∀ k, (zeroRootZipperRun (t1PairZipperPath i) (i.σ, i.w)).2 k = false := by
-  exact zeroRootZipperRun_word_eq_false (t1PairZipperPath i) i.σ i.w
+    ∀ k, (zeroRootZipperRun (t1PairZipperPath i) (i.σ, i.w)).2 k = false :=
+  zeroRootZipperRun_word_eq_false (t1PairZipperPath i) i.σ i.w
     (t1PairZipperPath_covers i)
 
 end PottsDiscontinuity.BetheAnsatz

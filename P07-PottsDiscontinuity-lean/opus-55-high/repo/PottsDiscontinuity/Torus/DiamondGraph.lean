@@ -14,7 +14,7 @@ for small periods. Only the connectivity graph forgets loops and edge multiplici
 the configuration and its weight keep the complete indexed edge set.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 open Finset PottsDiscontinuity.SixVertex
 
@@ -22,11 +22,14 @@ namespace PottsDiscontinuity.Torus
 
 variable {N M : ℕ}
 
+section
+variable (N M : ℕ)
 /-- Face centres of one checkerboard colour: `true` primal, `false` dual. -/
-abbrev FaceVertex (N M : ℕ) (c : Bool) := {v : Fin N × Fin M // checker v = c}
+abbrev FaceVertex (c : Bool) := {v : Fin N × Fin M // checker v = c}
 
 /-- An independent open/closed state on every diamond edge, indexed by its medial midpoint. -/
-abbrev RCConfig (N M : ℕ) := Fin N × Fin M → Bool
+abbrev RCConfig  := Fin N × Fin M → Bool
+end
 
 /-- The raw endpoints of the diamond edge at a medial vertex. -/
 def faceEndpointRaw (c : Bool) (v : Fin N × Fin M) (b : Bool) : Fin N × Fin M :=
@@ -34,48 +37,53 @@ def faceEndpointRaw (c : Bool) (v : Fin N × Fin M) (b : Bool) : Fin N × Fin M 
     if b then (prv v.1, prv v.2) else v
   else if b then (v.1, prv v.2) else (prv v.1, v.2)
 
-theorem checker_faceEndpointRaw (hN : Even N) (hM : Even M) (c : Bool)
-    (v : Fin N × Fin M) (b : Bool) : checker (faceEndpointRaw c v b) = c := by
+section
+variable (hN : Even N) (hM : Even M) (c : Bool) (v : Fin N × Fin M) (b : Bool)
+include hN hM
+theorem checker_faceEndpointRaw  : checker (faceEndpointRaw c v b) = c := by
   rcases v with ⟨i, j⟩
   unfold faceEndpointRaw
   by_cases hc : checker (i, j) = c
   · simp only [hc, ite_true]
     cases b
-    · exact hc
+    · simp_all
     · change checker (prv i, prv j) = c
       rw [checker_prv_x hN, checker_prv_y hM, Bool.not_not, hc]
   · simp only [hc, ite_false]
     cases b
     · change checker (prv i, j) = c
       rw [checker_prv_x hN]
-      cases ha : checker (i, j) <;> cases c <;> simp_all
+      grind [checker]
     · change checker (i, prv j) = c
       rw [checker_prv_y hM]
-      cases ha : checker (i, j) <;> cases c <;> simp_all
+      grind [checker]
 
 /-- The two endpoints with their actual face-colour membership proved. -/
-def faceEndpoint (hN : Even N) (hM : Even M) (c : Bool)
-    (v : Fin N × Fin M) (b : Bool) : FaceVertex N M c :=
+def faceEndpoint  : FaceVertex N M c :=
   ⟨faceEndpointRaw c v b, checker_faceEndpointRaw hN hM c v b⟩
+end
 
+section
+variable (hN : Even N) (hM : Even M) (c : Bool) (A : RCConfig N M)
 /-- The open connectivity graph, on all vertices including isolated ones. -/
-def diamondOpenGraph (hN : Even N) (hM : Even M) (c : Bool)
-    (A : RCConfig N M) : SimpleGraph (FaceVertex N M c) :=
+def diamondOpenGraph  : SimpleGraph (FaceVertex N M c) :=
   SimpleGraph.fromEdgeSet {p | ∃ v, A v = true ∧
     p = s(faceEndpoint hN hM c v false, faceEndpoint hN hM c v true)}
 
 /-- The finite cluster count; endpoint multiplicity has no effect on connectivity. -/
-noncomputable def clusterCount (hN : Even N) (hM : Even M) (c : Bool)
-    (A : RCConfig N M) : ℕ :=
+def clusterCount  : ℕ :=
   Nat.card (diamondOpenGraph hN hM c A).ConnectedComponent
+end
 
+section
+variable (A : RCConfig N M)
 /-- Number of open indexed edges. -/
-def openCount (A : RCConfig N M) : ℕ := (univ.filter fun v => A v = true).card
+def openCount  : ℕ := (univ.filter fun v => A v = true).card
 
 /-- Number of closed indexed edges. -/
-def closedCount (A : RCConfig N M) : ℕ := (univ.filter fun v => A v = false).card
+def closedCount  : ℕ := (univ.filter fun v => A v = false).card
 
-theorem openCount_add_closedCount (A : RCConfig N M) :
+theorem openCount_add_closedCount  :
     openCount A + closedCount A = N * M := by
   have hc := Finset.card_filter_add_card_filter_not (s := univ)
     (fun v : Fin N × Fin M => A v = true)
@@ -83,14 +91,12 @@ theorem openCount_add_closedCount (A : RCConfig N M) :
     Fintype.card_prod, Fintype.card_fin] using hc
 
 /-- The closed dual edge is open exactly when the primal edge is closed. -/
-def dualConfig (A : RCConfig N M) : RCConfig N M := fun v => !A v
+def dualConfig  : RCConfig N M := fun v => !A v
 
-@[simp] theorem dualConfig_dualConfig (A : RCConfig N M) : dualConfig (dualConfig A) = A := by
-  funext v
-  exact Bool.not_not _
 
 /-- The open/closed-to-pairing dictionary at a primal/dual crossing. -/
-def rcSmoothing (A : RCConfig N M) : Smoothing N M := fun v => Bool.xor (checker v) (A v)
+def rcSmoothing  : Smoothing N M := fun v => Bool.xor (checker v) (A v)
+end
 
 /-- Recover the primal edge states from the pairing field. -/
 def smoothingRC (s : Smoothing N M) : RCConfig N M := fun v => Bool.xor (checker v) (s v)
@@ -113,7 +119,7 @@ def rcSmoothingEquiv (N M : ℕ) : RCConfig N M ≃ Smoothing N M where
   right_inv := rcSmoothing_smoothingRC
 
 /-- The critical torus RC weight on the actual indexed diamond graph. -/
-noncomputable def torusRCWeight (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ))
+def torusRCWeight (hN : Even N) (hM : Even M) (q : Set.Ici (1 : ℝ))
     (A : RCConfig N M) : ℝ :=
   (rcCriticalParameter q).val ^ openCount A *
     (1 - (rcCriticalParameter q).val) ^ closedCount A *

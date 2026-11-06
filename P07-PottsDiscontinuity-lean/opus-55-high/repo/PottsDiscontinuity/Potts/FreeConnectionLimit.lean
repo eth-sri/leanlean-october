@@ -6,7 +6,7 @@ public import PottsDiscontinuity.Potts.MonotoneEventLimits
 
 /-! Free connection-data limits use actual connections, without merging. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Potts
 

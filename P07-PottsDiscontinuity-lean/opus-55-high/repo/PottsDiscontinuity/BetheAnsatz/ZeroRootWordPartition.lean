@@ -11,7 +11,7 @@ its two endpoints. The two choices of endpoint are the two summands of a
 canonical `T1PairIndex` pair.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 open Finset Complex Classical
 
@@ -41,7 +41,6 @@ theorem RootIncidentTermIndex.ext {n : ℕ} {l : Fin (n + 1)}
     | mk edge' side' σ' w' hleft' hright' hunique' =>
       change edge = edge' at hedge
       change side = side' at hside
-      change σ.1 = σ'.1 at hσ
       change w = w' at hw
       subst edge'
       subst side'
@@ -52,7 +51,7 @@ theorem RootIncidentTermIndex.ext {n : ℕ} {l : Fin (n + 1)}
       subst σ'
       rfl
 
-noncomputable instance rootIncidentTermIndexFintype {n : ℕ} {l : Fin (n + 1)} :
+instance rootIncidentTermIndexFintype {n : ℕ} {l : Fin (n + 1)} :
     Fintype (RootIncidentTermIndex n l) := by
   classical
   apply Fintype.ofInjective
@@ -62,9 +61,10 @@ noncomputable instance rootIncidentTermIndexFintype {n : ℕ} {l : Fin (n + 1)} 
   rcases hij with ⟨hedge, hside, hσ, hw⟩
   exact RootIncidentTermIndex.ext hedge hside hσ hw
 
+section
+variable {n : ℕ} {l : Fin (n + 1)}
 /-- Put the zero label at the right (false) or left (true) end of a pair's ML edge. -/
-noncomputable def t1PairSideForward {n : ℕ} {l : Fin (n + 1)}
-    (v : T1PairIndex n l × Bool) : RootIncidentTermIndex n l := by
+def t1PairSideForward (v : T1PairIndex n l × Bool) : RootIncidentTermIndex n l := by
   rcases v with ⟨i, side⟩
   cases side
   · exact ⟨i.edge, false, ⟨i.σ, i.hσ⟩, i.w, i.hleft, i.hright, i.hunique⟩
@@ -77,23 +77,19 @@ noncomputable def t1PairSideForward {n : ℕ} {l : Fin (n + 1)}
 
 /-- Recover the canonical orientation, undoing the endpoint swap on the
 member whose root is at the left endpoint. -/
-noncomputable def rootIncidentToPair {n : ℕ} {l : Fin (n + 1)}
-    (j : RootIncidentTermIndex n l) : T1PairIndex n l × Bool := by
+def rootIncidentToPair (j : RootIncidentTermIndex n l) : T1PairIndex n l × Bool := by
   cases j with
   | mk edge side σ w hleft hright hunique =>
     cases side
     · exact ⟨⟨σ.1, w, edge, σ.2, hleft, hright, hunique⟩, false⟩
     · have hroot : (σ.1 * Equiv.swap (t1EdgeLeft edge) (t1EdgeRight edge))
           (t1EdgeRight edge) = l := by
-        change σ.1 (Equiv.swap (t1EdgeLeft edge) (t1EdgeRight edge)
-          (t1EdgeRight edge)) = l
-        rw [Equiv.swap_apply_right]
-        exact σ.2
+        aesop
       exact ⟨⟨σ.1 * Equiv.swap (t1EdgeLeft edge) (t1EdgeRight edge),
         w, edge, hroot, hleft, hright, hunique⟩, true⟩
 
 /-- The canonical pair and a choice of which member carries the zero root. -/
-noncomputable def t1PairSideEquiv {n : ℕ} {l : Fin (n + 1)} :
+def t1PairSideEquiv  :
     T1PairIndex n l × Bool ≃ RootIncidentTermIndex n l where
   toFun := t1PairSideForward
   invFun := rootIncidentToPair
@@ -103,11 +99,10 @@ noncomputable def t1PairSideEquiv {n : ℕ} {l : Fin (n + 1)} :
     · rfl
     · apply Prod.ext
       · apply T1PairIndex.ext
-        · ext k
-          simp [t1PairSideForward, rootIncidentToPair]
+        · simp [t1PairSideForward, rootIncidentToPair]
         · rfl
-        · rfl
-      · rfl
+        rfl
+      rfl
   right_inv := by
     intro j
     cases j with
@@ -116,29 +111,27 @@ noncomputable def t1PairSideEquiv {n : ℕ} {l : Fin (n + 1)} :
         simp [t1PairSideForward, rootIncidentToPair]
 
 /-- The raw permutation and word underlying a root-incident index. -/
-noncomputable def rootIncidentUnderlying {n : ℕ} {l : Fin (n + 1)}
-    (i : RootIncidentTermIndex n l) :
+def rootIncidentUnderlying (i : RootIncidentTermIndex n l) :
     Equiv.Perm (Fin (n + 1)) × (Fin (n + 1) → Bool) := (i.σ.1, i.w)
+end
 
+section
+variable {n : ℕ}
 /-- The endpoints of a cyclic edge are distinct when the cycle has at least
 two vertices. -/
-theorem t1EdgeLeft_ne_right {n : ℕ} (hn : 0 < n) (e : Option (Fin n)) :
+theorem t1EdgeLeft_ne_right (hn : 0 < n) (e : Option (Fin n)) :
     t1EdgeLeft e ≠ t1EdgeRight e := by
   cases e with
   | none =>
       intro h
-      have hv := congrArg Fin.val h
-      simp [t1EdgeLeft, t1EdgeRight] at hv
-      omega
+      simp_all [t1EdgeLeft, t1EdgeRight]
   | some a =>
-      intro h
-      have hv := congrArg Fin.val h
-      simp [t1EdgeLeft, t1EdgeRight] at hv
+      grind [t1EdgeLeft, t1EdgeRight]
 
 /-- Forgetting the unique-edge and orientation witnesses is injective: the
 word determines its unique ML edge, and the permutation determines which
 endpoint carries the distinguished label. -/
-theorem rootIncidentUnderlying_injective {n : ℕ} {l : Fin (n + 1)}
+theorem rootIncidentUnderlying_injective {l : Fin (n + 1)}
     (hn : 0 < n) : Function.Injective (rootIncidentUnderlying (n := n) (l := l)) := by
   intro i j hij
   have hσ : i.σ.1 = j.σ.1 := congrArg Prod.fst hij
@@ -150,62 +143,34 @@ theorem rootIncidentUnderlying_injective {n : ℕ} {l : Fin (n + 1)}
       exact j.hleft
     · rw [hw, t1EdgeLeft_rotate]
       exact j.hright
-  have hedge : i.edge = j.edge := t1EdgeLeftEquiv.injective hleft
+  have hedge := t1EdgeLeftEquiv.injective hleft
   have hroot : (if i.side then t1EdgeLeft i.edge else t1EdgeRight i.edge) =
       (if j.side then t1EdgeLeft j.edge else t1EdgeRight j.edge) := by
     apply i.σ.1.injective
-    calc
-      i.σ.1 (if i.side then t1EdgeLeft i.edge else t1EdgeRight i.edge) = l := i.σ.2
-      _ = j.σ.1 (if j.side then t1EdgeLeft j.edge else t1EdgeRight j.edge) := j.σ.2.symm
-      _ = i.σ.1 (if j.side then t1EdgeLeft j.edge else t1EdgeRight j.edge) := by rw [← hσ]
+    grind
   have hside : i.side = j.side := by
     have hne := t1EdgeLeft_ne_right hn j.edge
-    cases hi : i.side <;> cases hj : j.side
-    · rfl
-    · have h := hroot
-      simp [hi, hj, hedge] at h
-      exact False.elim (hne h.symm)
-    · have h := hroot
-      simp [hi, hj, hedge] at h
-      exact False.elim (hne h)
-    · rfl
-  exact RootIncidentTermIndex.ext hedge hside hσ hw
+    grind
+  aesop
 
 /-- Two ML edges both touching the same slot must be the same cyclic edge. -/
-theorem mlEdge_incident_unique {n : ℕ} (w : Fin (n + 1) → Bool)
+theorem mlEdge_incident_unique (w : Fin (n + 1) → Bool)
     (r a b : Fin (n + 1))
     (ha₀ : w a = false) (ha₁ : w (finRotate (n + 1) a) = true)
     (haI : r = a ∨ r = finRotate (n + 1) a)
     (hb₀ : w b = false) (hb₁ : w (finRotate (n + 1) b) = true)
     (hbI : r = b ∨ r = finRotate (n + 1) b) : a = b := by
-  rcases haI with haL | haR <;> rcases hbI with hbL | hbR
-  · exact haL.symm.trans hbL
-  · have hEq : a = finRotate (n + 1) b := haL.symm.trans hbR
-    have htrue : w a = true := by rw [hEq]; exact hb₁
-    have hfalse : false = true := ha₀.symm.trans htrue
-    cases hfalse
-  · have hEq : b = finRotate (n + 1) a := hbL.symm.trans haR
-    have htrue : w b = true := by rw [hEq]; exact ha₁
-    have hfalse : false = true := hb₀.symm.trans htrue
-    cases hfalse
-  · exact (finRotate (n + 1)).injective (haR.symm.trans hbR)
+  aesop
 
 /-- A nonconstant cyclic Boolean word has at least one ML edge. -/
-theorem exists_cyclicML_of_nonconstant {n : ℕ} (w : Fin (n + 1) → Bool)
+theorem exists_cyclicML_of_nonconstant (w : Fin (n + 1) → Bool)
     (hL : w ≠ fun _ => true) (hM : w ≠ fun _ => false) :
     ∃ a, w a = false ∧ w (finRotate (n + 1) a) = true := by
-  rcases nonconstant_word_has_ML w hL hM with ⟨a, ha, hb⟩ | ⟨ha, hb⟩
-  · refine ⟨a.castSucc, ha, ?_⟩
-    have hr : finRotate (n + 1) a.castSucc = a.succ := finRotate_of_lt a.isLt
-    rw [hr]
-    exact hb
-  · refine ⟨Fin.last n, ha, ?_⟩
-    rw [finRotate_last]
-    exact hb
+  rcases nonconstant_word_has_ML w hL hM with ⟨a, ha, hb⟩ | ⟨ha, hb⟩ <;> aesop
 
 /-- If all ML edges touch the zero-root slot, a nonconstant word determines
 one unique edge and therefore a canonical root-incident T₁ term. -/
-theorem exists_rootIncidentTerm_of_allMLIncident {n : ℕ} {l : Fin (n + 1)}
+theorem exists_rootIncidentTerm_of_allMLIncident {l : Fin (n + 1)}
     (r : Fin (n + 1)) (σ : RootSlotPerm l r) (w : Fin (n + 1) → Bool)
     (hL : w ≠ fun _ => true) (hM : w ≠ fun _ => false)
     (hAll : ∀ a, w a = false → w (finRotate (n + 1) a) = true →
@@ -220,22 +185,17 @@ theorem exists_rootIncidentTerm_of_allMLIncident {n : ℕ} {l : Fin (n + 1)}
   have hunique : ∀ k, w k = false → w (finRotate (n + 1) k) = true →
       k = t1EdgeLeft edge := by
     intro k hk₀ hk₁
-    have hkI := hAll k hk₀ hk₁
-    have heq := mlEdge_incident_unique w r k a hk₀ hk₁ hkI ha hb hInc
-    rw [hleft]
-    exact heq
+    have heq := mlEdge_incident_unique w r k a hk₀ hk₁ (hAll k hk₀ hk₁) ha hb hInc
+    omega
   rcases hInc with hrootL | hrootR
   · refine ⟨⟨edge, true, ⟨σ.1, ?_⟩, w, ?_, ?_, hunique⟩, rfl, rfl⟩
-    · change σ.1 (t1EdgeLeft edge) = l
-      rw [hleft, ← hrootL]
-      exact σ.2
-    · simpa [hleft] using ha
-    · simpa [hright] using hb
+    · grind
+    · grind
+    grind
   · refine ⟨⟨edge, false, ⟨σ.1, ?_⟩, w, ?_, ?_, hunique⟩, rfl, rfl⟩
-    · change σ.1 (t1EdgeRight edge) = l
-      rw [hright, ← hrootR]
-      exact σ.2
-    · simpa [hleft] using ha
-    · simpa [hright] using hb
+    · grind
+    · grind
+    grind
+end
 
 end PottsDiscontinuity.BetheAnsatz

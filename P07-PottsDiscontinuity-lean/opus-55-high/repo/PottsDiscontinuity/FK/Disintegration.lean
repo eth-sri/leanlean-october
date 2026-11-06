@@ -13,7 +13,7 @@ remaining edges is asserted: the induced boundary partition depends on the
 actually sampled frozen configuration.
 -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 
@@ -26,16 +26,16 @@ local instance disintegrationEdgeDecidableEq : DecidableEq G.edgeSet := Classica
 local instance disintegrationRemainingFintype (R : Configuration G) : Fintype (RemainingConfiguration G R) := Fintype.ofFinite _
 local instance disintegrationRemovedFintype (R : Configuration G) : Fintype (RemovedConfiguration G R) := Fintype.ofFinite _
 
+section
+variable (q : Parameters) (ξ : BoundaryCondition V) (R : Configuration G)
 /-- The actual marginal of all original edges in the frozen set. -/
-def frozenMarginalLaw (q : Parameters) (ξ : BoundaryCondition V) (R : Configuration G) :
+def frozenMarginalLaw  :
     PMF (RemovedConfiguration G R) :=
   (law G q ξ).map (fun C => (configurationSplitEquiv G R C).2)
 
-theorem frozenMarginalLaw_apply (q : Parameters) (ξ : BoundaryCondition V)
-    (R : Configuration G) (H : RemovedConfiguration G R) :
+theorem frozenMarginalLaw_apply (H : RemovedConfiguration G R) :
     frozenMarginalLaw q ξ R H =
       ∑ A : RemainingConfiguration G R, law G q ξ (A.val ∪ H.val) := by
-  classical
   have hsplit (B : RemainingConfiguration G R) (K : RemovedConfiguration G R) :
       configurationSplitEquiv G R (B.val ∪ K.val) = (B,K) :=
     (configurationSplitEquiv G R).apply_symm_apply (B,K)
@@ -46,9 +46,7 @@ theorem frozenMarginalLaw_apply (q : Parameters) (ξ : BoundaryCondition V)
 
 /-- The probability of the full configuration is its frozen-state marginal
 times the exact induced conditional probability of all remaining edges. -/
-theorem law_restore_eq_conditional_mul_marginal (q : Parameters)
-    (ξ : BoundaryCondition V) (R : Configuration G)
-    (H : RemovedConfiguration G R) (A : RemainingConfiguration G R) :
+theorem law_restore_eq_conditional_mul_marginal (H : RemovedConfiguration G R) (A : RemainingConfiguration G R) :
     law G q ξ (A.val ∪ H.val) =
       remainingLaw G q (frozenBoundary ξ H.val) R A * frozenMarginalLaw q ξ R H := by
   rw [frozenMarginalLaw_apply]
@@ -64,16 +62,14 @@ theorem law_restore_eq_conditional_mul_marginal (q : Parameters)
     remainingPartitionFunction G q (frozenBoundary ξ H.val) R) * _
   rw [← ENNReal.ofReal_mul (div_pos (remainingWeight_pos G q (frozenBoundary ξ H.val) R A)
     (remainingPartitionFunction_pos G q (frozenBoundary ξ H.val) R)).le]
-  exact congrArg ENNReal.ofReal hr
+  simp_all
 
 /-- The entire remaining-edge marginal is a mixture of the actual induced FK
 laws, weighted by the true joint marginal of all frozen edges. -/
-theorem law_map_remaining_eq_bind_frozen (q : Parameters) (ξ : BoundaryCondition V)
-    (R : Configuration G) :
+theorem law_map_remaining_eq_bind_frozen  :
     (law G q ξ).map (fun C => (configurationSplitEquiv G R C).1) =
       (frozenMarginalLaw q ξ R).bind (fun H =>
         remainingLaw G q (frozenBoundary ξ H.val) R) := by
-  classical
   ext A
   have hsplit (B : RemainingConfiguration G R) (K : RemovedConfiguration G R) :
       configurationSplitEquiv G R (B.val ∪ K.val) = (B,K) :=
@@ -82,10 +78,11 @@ theorem law_map_remaining_eq_bind_frozen (q : Parameters) (ξ : BoundaryConditio
     Fintype.sum_prod_type, Finset.sum_comm]
   simp only [configurationSplitEquiv_symm_apply, hsplit, Finset.sum_ite_eq,
     Finset.mem_univ, ite_true]
-  rw [PMF.bind_apply, tsum_fintype]
+  simp
   apply Finset.sum_congr rfl
   intro H hH
   rw [law_restore_eq_conditional_mul_marginal, mul_comm]
+end
 
 end
 end PottsDiscontinuity.FK

@@ -8,18 +8,17 @@ public import PottsDiscontinuity.TorusExploration.FiniteFreeComparison
 /-! A uniform diagonal bound for a finite free FK connection in any planar
 unrolling, independent of the horizontal displacement of its endpoints. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusExploration
 open FK CorrLength MeasureTheory
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 noncomputable section
-local instance planarConnectionBoundEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 
-lemma rotatedVertexEquiv_sum (v : RotatedVertex) :
+theorem rotatedVertexEquiv_sum (v : RotatedVertex) :
     (rotatedVertexEquiv v).1+(rotatedVertexEquiv v).2=v.val.2 := by
   have h := congrArg (fun w : RotatedVertex => w.val.2) (squareToRotated_rotatedToSquare v)
-  exact h
+  tauto
 
 /-- The free connection cost between endpoints of vertical separation k in
 any embedded finite rotated graph is at most the square root of the diagonal
@@ -43,11 +42,10 @@ theorem finiteFree_connectivity_sq_le_diagonal (θ : Parameters)
   have heq : μ.real (CorrLength.connectionEvent (g u) (g v)) =
       μ.real (CorrLength.connectionEvent (0,0) x) := by
     have hzero : latticeTranslate (-(g u)) (g u) = (0,0) := by
-      ext <;> simp [latticeTranslate]
+      simp [latticeTranslate]
     have hdiff : latticeTranslate (-(g u)) (g v) = x := by
-      ext <;> simp [x,latticeTranslate,sub_eq_add_neg]
-    rw [hzero,hdiff] at ht
-    exact ht.symm
+      rfl
+    simp_all
   rw [heq] at hc
   have hx : x.1+x.2=(k : ℤ) := by
     have hu := rotatedVertexEquiv_sum (f u)

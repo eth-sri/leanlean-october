@@ -14,27 +14,27 @@ finite-geometric-sum identity. This is only the scalar boundary calculation, not
 for the entire permutation sum.
 -/
 
-@[expose] public section
+public section
 
 open Finset Complex Filter Topology
 
 namespace PottsDiscontinuity.BetheAnsatz
 
+section
+variable (c : ℝ)
 /-- The corrected decomposition of the two constant-word scalar factors. -/
-theorem constant_words_boundary_decomposition (c : ℝ) (w : ℂ) (N : ℕ) :
+theorem constant_words_boundary_decomposition (w : ℂ) (N : ℕ) :
     M c w + L c w * (w ^ N)⁻¹ =
       (M c w + L c w) + L c w * ((w ^ N)⁻¹ - 1) := by ring
 
 /-- Remove the apparent pole by a finite geometric sum. -/
-theorem L_mul_inv_pow_sub_one (c : ℝ) (N : ℕ) {w : ℂ} (hw0 : w ≠ 0) (hw1 : w ≠ 1) :
+theorem L_mul_inv_pow_sub_one (N : ℕ) {w : ℂ} (hw0 : w ≠ 0) (hw1 : w ≠ 1) :
     L c w * ((w ^ N)⁻¹ - 1) =
       (1 - w + (c : ℂ) ^ 2 * w) * (∑ k ∈ range N, w ^ k) / w ^ N := by
   rw [geom_sum_eq hw1]
-  have hd : 1 - w ≠ 0 := sub_ne_zero.mpr hw1.symm
-  have hd' : w - 1 ≠ 0 := sub_ne_zero.mpr hw1
-  have hp : w ^ N ≠ 0 := pow_ne_zero N hw0
+  have hp : w ^ N ≠ 0 := by positivity
   unfold L
-  field_simp
-  ring
+  grind
+end
 
 end PottsDiscontinuity.BetheAnsatz

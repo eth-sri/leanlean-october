@@ -14,18 +14,18 @@ noncomputable section
 
 variable {V : Type*} [Finite V] (G : SimpleGraph V)
 
-local instance adaptiveDomainMarkovEdgeFintype : Fintype G.edgeSet := Fintype.ofFinite _
 local instance adaptiveDomainMarkovEdgeDecidableEq : DecidableEq G.edgeSet := Classical.decEq _
 
+section
+variable (reveal : Configuration G → Configuration G) (C₀ : Configuration G)
 /-- The record produced by a revealed edge set stores both which edges were
 revealed and their open/closed states. -/
-def revealRecordEvent (reveal : Configuration G → Configuration G)
-    (C₀ : Configuration G) : Set (Configuration G) :=
+def revealRecordEvent  : Set (Configuration G) :=
   {C | reveal C = reveal C₀ ∧ C ∩ reveal C₀ = C₀ ∩ reveal C₀}
 
-def revealRecordConfiguration (reveal : Configuration G → Configuration G)
-    (C₀ : Configuration G) : RemovedConfiguration G (reveal C₀) :=
+def revealRecordConfiguration  : RemovedConfiguration G (reveal C₀) :=
   ⟨C₀ ∩ reveal C₀, Finset.inter_subset_right⟩
+end
 
 omit [Finite V] in
 /-- A stopping-set consistency condition makes the record event exactly the
@@ -40,9 +40,7 @@ theorem revealRecordEvent_eq_frozenStateEvent
   constructor
   · intro h
     exact h.2
-  · intro h
-    have hrevealed := hstable C₀ C (by simpa [h])
-    exact ⟨hrevealed, h⟩
+  tauto
 
 end
 

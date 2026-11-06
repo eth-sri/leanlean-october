@@ -20,24 +20,24 @@ def frozenEdgeEmbedding (S : Finset (ℤ × ℤ)) :
   (show squareLattice.induce (S : Set (ℤ × ℤ)) ↪g squareLattice from
     { toFun := Subtype.val, inj' := Subtype.val_injective, map_rel_iff' := Iff.rfl }).mapEdgeSet
 
+section
+variable (A : Finset squareLattice.edgeSet) (ξ : squareLattice.edgeSet → Bool)
 /-- A finite prescribed pattern on the original lattice edges. -/
-def patternCylinder (A : Finset squareLattice.edgeSet)
-    (ξ : squareLattice.edgeSet → Bool) : Set LatticeConfiguration :=
+def patternCylinder  : Set LatticeConfiguration :=
   {ω | ∀ e ∈ A, ω e = ξ e}
 
 /-- Every finite edge pattern is clopen in the product topology. -/
-theorem patternCylinder_isClopen (A : Finset squareLattice.edgeSet)
-    (ξ : squareLattice.edgeSet → Bool) : IsClopen (patternCylinder A ξ) := by
+theorem patternCylinder_isClopen  : IsClopen (patternCylinder A ξ) := by
   classical
   induction A using Finset.induction_on with
   | empty => simpa [patternCylinder] using isClopen_univ (X := LatticeConfiguration)
   | insert e A he ih =>
       have h : patternCylinder (insert e A) ξ =
           {ω : LatticeConfiguration | ω e = ξ e} ∩ patternCylinder A ξ := by
-        ext ω
-        simp [patternCylinder]
+        grind [patternCylinder]
       rw [h]
       exact ((isClopen_discrete ({ξ e} : Set Bool)).preimage (continuous_apply e)).inter ih
+end
 
 /-- The exact frozen finite law, mapped by any chosen whole-lattice extension. -/
 def frozenExtendedProbabilityMeasure (θ : Parameters) (S : Finset (ℤ × ℤ)) (i : Fin 2)
@@ -69,19 +69,18 @@ theorem frozenExtendedProbabilityMeasure_pattern (θ : Parameters)
     have hvalue (f : (squareLattice.induce (S : Set (ℤ × ℤ))).edgeSet) :
         ext (boolConfigurationEquiv _ ω) (frozenEdgeEmbedding S f) = ω f := by
       rw [hExt]
-      simp only [mem_boolConfigurationEquiv]
-      cases ω f <;> rfl
+      simp
     constructor
     · intro h e he
       obtain ⟨f, hf⟩ := hA e he
       refine ⟨f, congrArg Subtype.val hf, ?_⟩
       rw [← hvalue, hf]
-      exact h e he
+      tauto
     · intro h e he
       obtain ⟨f, hf, hω⟩ := h e he
       have hf' : frozenEdgeEmbedding S f = e := Subtype.ext hf
       rw [← hf', hvalue]
-      simpa only [hf'] using hω
+      grind
   change (((law _ θ (frozenBoundaryCondition S i)).map ext).toMeasure
     (patternCylinder A ξ)).toReal = _
   rw [PMF.toMeasure_map_apply _ _ _ measurable_from_top
@@ -90,17 +89,14 @@ theorem frozenExtendedProbabilityMeasure_pattern (θ : Parameters)
   rw [measure_toReal_eq_indicator_sum]
   symm
   refine Finset.sum_bij (fun ω _ => boolConfigurationEquiv _ ω) ?_ ?_ ?_ ?_
-  · intro ω _
-    simp only [Finset.mem_univ]
-  · intro ω _ η _ h
-    exact (boolConfigurationEquiv _).injective h
+  · simp
+  · simp
   · intro C _
     exact ⟨(boolConfigurationEquiv _).symm C, Finset.mem_univ _,
       (boolConfigurationEquiv _).apply_symm_apply C⟩
   · intro ω _
     rw [configurationProbability_eq_rcProb]
-    simp only [Set.indicator, Set.mem_preimage, hpoint]
-    split <;> simp
+    grind [Set.indicator]
 
 open Classical in
 /-- Weak convergence of extensions preserving sampled edges implies the exact frozen cylinder limit. -/
@@ -136,11 +132,7 @@ theorem isRCInfiniteVolumeLimit_of_extended_tendsto (θ : Parameters) (i : Fin 2
     have h := frozenExtendedProbabilityMeasure_pattern θ (box n) i (ext n)
       (hExt n) A ξ hA
     rw [h]
-    refine Finset.sum_congr ?_ ?_
-    · ext ω
-      simp only [Finset.mem_univ]
-    · intro ω _
-      split_ifs <;> rfl
+    refine Finset.sum_congr ?_ ?_ <;> grind
 
 end
 end PottsDiscontinuity.FK

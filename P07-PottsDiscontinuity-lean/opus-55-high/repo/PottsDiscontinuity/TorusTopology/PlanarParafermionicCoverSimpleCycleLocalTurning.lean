@@ -5,7 +5,7 @@ module
 public import Mathlib.Tactic
 public import PottsDiscontinuity.TorusTopology.PlanarParafermionicCoverSimpleCycleSectorProfile
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 
@@ -33,27 +33,19 @@ theorem parafermionicCoverSimpleCycleLocalTurning {n : ℕ}
     simpa [din, dout] using
       parafermionicCoverPrimalCycleIncomingDirection_ne_outgoing_opposite p hp v hv
   have hdouble (d : Fin 4) : d + 2 + 2 = d := by
-    fin_cases d <;> decide
+    omega
   have hab : din + 2 ≠ dout := by
-    intro h
-    apply hnonback
-    calc
-      din = din + 2 + 2 := (hdouble din).symm
-      _ = dout + 2 := by rw [h]
+    omega
   have hlocal := primalCompassQuarterTurn_eq_sector_boundary_formula
     Q (din + 2) dout k hab hk (by
-      intro d
-      simpa [Q, S, din, dout] using hprofile v hv d)
+      grind)
   have hcard := parafermionicCoverFiniteFaceSelectedCorners_card S v
-  change primalCompassQuarterTurn din dout =
-    k * (2 -
-      ((parafermionicCoverFiniteFaceSelectedIncidentVertices S v).card : ℤ))
   calc
     primalCompassQuarterTurn din dout =
         primalCompassQuarterTurn (din + 2 + 2) dout := by rw [hdouble]
     _ = k * (2 - (Q.card : ℤ)) := hlocal
     _ = k * (2 -
         ((parafermionicCoverFiniteFaceSelectedIncidentVertices S v).card : ℤ)) := by
-      rw [parafermionicCoverFiniteFaceSelectedCorners_card]
+      grind
 
 end PottsDiscontinuity.TorusTopology.Planar.Medial

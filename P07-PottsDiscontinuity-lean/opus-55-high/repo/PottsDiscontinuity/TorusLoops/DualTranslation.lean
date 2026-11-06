@@ -26,15 +26,18 @@ def columnShift : Equiv.Perm (Fin N × Fin M) :=
 def dartColumnShift : Equiv.Perm (Dart N M) :=
   Equiv.prodCongr columnShift (Equiv.refl _)
 
+section
+variable (A : RCConfig N M)
 /-- The dual indexed configuration, translated back to the primal face colour. -/
-def translatedDual (A : RCConfig N M) : RCConfig N M :=
+def translatedDual  : RCConfig N M :=
   fun v => !(A (prv v.1, v.2))
 
-@[simp] theorem translatedDual_shift (A : RCConfig N M) (v : Fin N × Fin M) :
+@[simp] theorem translatedDual_shift (v : Fin N × Fin M) :
     translatedDual A (columnShift v) = !A v := by
   rcases v with ⟨i, j⟩
   change (!(A ((finRotate N).symm (finRotate N i), j))) = (!(A (i, j)))
   rw [Equiv.symm_apply_apply]
+end
 
 theorem smoothing_translatedDual_shift (hN : Even N) (A : RCConfig N M)
     (v : Fin N × Fin M) :
@@ -43,23 +46,29 @@ theorem smoothing_translatedDual_shift (hN : Even N) (A : RCConfig N M)
   rw [translatedDual_shift]
   change Bool.xor (checker (nxt v.1, v.2)) (!A v) = _
   rw [checker_nxt_x hN]
-  cases checker v <;> cases A v <;> rfl
+  simp
 
-theorem edgeReverse_columnShift (d : Dart N M) :
+section
+variable (d : Dart N M)
+theorem edgeReverse_columnShift  :
     edgeReverse (dartColumnShift d) = dartColumnShift (edgeReverse d) := by
   rcases d with ⟨⟨i, j⟩, p⟩
   cases p <;> simp only [dartColumnShift, columnShift, Equiv.prodCongr_apply,
     Prod.map_apply, Equiv.refl_apply, edgeReverse, nxt, prv, Equiv.symm_apply_apply,
     Equiv.apply_symm_apply]
 
-theorem leftFace_columnShift (d : Dart N M) :
+theorem leftFace_columnShift  :
     leftFace (dartColumnShift d) = columnShift (leftFace d) := by
   rcases d with ⟨⟨i, j⟩, p⟩
   cases p <;> simp only [dartColumnShift, columnShift, Equiv.prodCongr_apply,
     Prod.map_apply, Equiv.refl_apply, leftFace, prv, Equiv.symm_apply_apply,
     Equiv.apply_symm_apply]
+end
 
-theorem step_columnShift (hN : Even N) (A : RCConfig N M) (d : Dart N M) :
+section
+variable (hN : Even N)
+include hN
+theorem step_columnShift (A : RCConfig N M) (d : Dart N M) :
     stepPerm (rcSmoothing (translatedDual A)) (dartColumnShift d) =
       dartColumnShift (stepPerm (rcSmoothing A) d) := by
   rw [stepPerm_apply, edgeReverse_columnShift]
@@ -69,13 +78,14 @@ theorem step_columnShift (hN : Even N) (A : RCConfig N M) (d : Dart N M) :
   rw [smoothing_translatedDual_shift hN]
   rfl
 
-theorem dartOut_columnShift (hN : Even N) (hM : Even M) (d : Dart N M) :
+theorem dartOut_columnShift (hM : Even M) (d : Dart N M) :
     dartOut (checkerArrows N M) (dartColumnShift d) =
       !dartOut (checkerArrows N M) d := by
   rcases d with ⟨⟨i, j⟩, p⟩
   change dartOut (checkerArrows N M) ((nxt i, j), p) = _
   rw [dartOut_checker_at hN hM, dartOut_checker_at hN hM, checker_nxt_x hN]
-  cases p <;> simp
+  grind
+end
 
 /-- Reverse an edge and translate it into the canonical dual orientation. -/
 def dualDartEquiv (hN : Even N) (hM : Even M) :
@@ -83,20 +93,21 @@ def dualDartEquiv (hN : Even N) (hM : Even M) :
   ((edgePerm N M).trans dartColumnShift).subtypeEquiv (fun d => by
     change dartOut (checkerArrows N M) d = true ↔
       dartOut (checkerArrows N M) (dartColumnShift (edgeReverse d)) = true
-    rw [dartOut_columnShift hN hM, dartOut_edgeReverse, Bool.not_not])
+    simp_all [dartOut_columnShift])
 
-@[simp] theorem dualDartEquiv_val (hN : Even N) (hM : Even M)
-    (d : DirectedDart (checkerArrows N M)) :
+section
+variable (hN : Even N) (hM : Even M)
+@[simp] theorem dualDartEquiv_val (d : DirectedDart (checkerArrows N M)) :
     (dualDartEquiv hN hM d).val = dartColumnShift (edgeReverse d.val) := rfl
 
-theorem dualDartEquiv_step (hN : Even N) (hM : Even M) (A : RCConfig N M)
+theorem dualDartEquiv_step (A : RCConfig N M)
     (d : DirectedDart (checkerArrows N M)) :
     dualDartEquiv hN hM (directedStep _ _ (checkerArrows_compatible hN hM (rcSmoothing A)) d) =
       (directedStep _ _ (checkerArrows_compatible hN hM
         (rcSmoothing (translatedDual A)))).symm (dualDartEquiv hN hM d) := by
   apply (directedStep _ _ (checkerArrows_compatible hN hM
     (rcSmoothing (translatedDual A)))).injective
-  rw [Equiv.apply_symm_apply]
+  simp
   apply Subtype.ext
   change stepPerm (rcSmoothing (translatedDual A))
       (dartColumnShift (edgeReverse (stepPerm (rcSmoothing A) d.val))) =
@@ -104,7 +115,7 @@ theorem dualDartEquiv_step (hN : Even N) (hM : Even M) (A : RCConfig N M)
   rw [step_columnShift hN, edgeReverse_step, Equiv.apply_symm_apply]
 
 /-- Dual translation identifies the loop partitions, reversing their traversal. -/
-def translatedDualLoopEquiv (hN : Even N) (hM : Even M) (A : RCConfig N M) :
+def translatedDualLoopEquiv (A : RCConfig N M) :
     Loop hN hM (rcSmoothing A) ≃ Loop hN hM (rcSmoothing (translatedDual A)) := by
   let P := directedStep _ _ (checkerArrows_compatible hN hM (rcSmoothing A))
   let Q := directedStep _ _ (checkerArrows_compatible hN hM
@@ -116,21 +127,19 @@ def translatedDualLoopEquiv (hN : Even N) (hM : Even M) (A : RCConfig N M) :
     change g (P (g.symm d)) = Q.symm d
     calc
       g (P (g.symm d)) = Q.symm (g (g.symm d)) := dualDartEquiv_step hN hM A _
-      _ = Q.symm d := by rw [Equiv.apply_symm_apply]
+      _ = Q.symm d := by simp
   exact Quotient.congr g (fun d e => by
     change P.SameCycle d e ↔ Q.SameCycle (g d) (g e)
     have hc := Equiv.Perm.sameCycle_conj (f := P) (g := g) (x := g d) (y := g e)
-    rw [he] at hc
-    simpa using hc.symm)
+    simp_all)
 
-@[simp] theorem translatedDualLoopEquiv_loopOf (hN : Even N) (hM : Even M)
-    (A : RCConfig N M) (d : DirectedDart (checkerArrows N M)) :
+@[simp] theorem translatedDualLoopEquiv_loopOf (A : RCConfig N M) (d : DirectedDart (checkerArrows N M)) :
     translatedDualLoopEquiv hN hM A (directedLoopOf _ _
       (checkerArrows_compatible hN hM (rcSmoothing A)) d) =
       directedLoopOf _ _ (checkerArrows_compatible hN hM (rcSmoothing (translatedDual A)))
         (dualDartEquiv hN hM d) := rfl
 
-theorem loopSum_translatedDual (hN : Even N) (hM : Even M) (A : RCConfig N M)
+theorem loopSum_translatedDual (A : RCConfig N M)
     (f : Dart N M → ℤ) (q : Loop hN hM (rcSmoothing A)) :
     loopSum _ _ (checkerArrows_compatible hN hM (rcSmoothing (translatedDual A))) f
       (translatedDualLoopEquiv hN hM A q) =
@@ -146,8 +155,7 @@ theorem loopSum_translatedDual (hN : Even N) (hM : Even M) (A : RCConfig N M)
 
 /-- The two primal ribbon ends become the two dual endpoints, with the
 checkerboard-dependent endpoint order. -/
-theorem ribbonFace_dualDart_end (hN : Even N) (hM : Even M)
-    (v : Fin N × Fin M) (b : Bool) :
+theorem ribbonFace_dualDart_end (v : Fin N × Fin M) (b : Bool) :
     ribbonFace hN hM (dualDartEquiv hN hM (ribbonEndEquiv hN hM (v, b))) =
       faceEndpoint hN hM true (columnShift v) (Bool.xor (checker v) b) := by
   apply Subtype.ext
@@ -155,8 +163,6 @@ theorem ribbonFace_dualDart_end (hN : Even N) (hM : Even M)
     faceEndpointRaw true (columnShift v) (Bool.xor (checker v) b)
   rw [leftFace_columnShift]
   rcases v with ⟨i, j⟩
-  change columnShift (leftFace (edgeReverse (ribbonEnd (i, j) b))) =
-    faceEndpointRaw true (nxt i, j) (Bool.xor (checker (i, j)) b)
   cases hc : checker (i, j) <;> cases b <;>
     simp only [ribbonEnd, Bool.false_eq_true, ite_true, ite_false, edgeReverse,
       leftFace, faceEndpointRaw, checker_nxt_x hN, hc, Bool.not_true, Bool.not_false,
@@ -164,13 +170,13 @@ theorem ribbonFace_dualDart_end (hN : Even N) (hM : Even M)
       columnShift, Equiv.prodCongr_apply, Prod.map_apply, Equiv.refl_apply,
       nxt, prv, Equiv.symm_apply_apply, Equiv.apply_symm_apply]
 
-theorem rcLoopCount_translatedDual (hN : Even N) (hM : Even M) (A : RCConfig N M) :
+theorem rcLoopCount_translatedDual (A : RCConfig N M) :
     rcLoopCount hN hM (translatedDual A) = rcLoopCount hN hM A :=
   (Fintype.card_congr (translatedDualLoopEquiv hN hM A)).symm
+end
 
 theorem openCount_translatedDual (A : RCConfig N M) :
     openCount (translatedDual A) = closedCount A := by
-  classical
   have hf : (univ.filter fun v => translatedDual A v = true) =
       (univ.filter fun v => A v = false).image columnShift := by
     ext v
@@ -178,14 +184,8 @@ theorem openCount_translatedDual (A : RCConfig N M) :
     · intro hv
       refine Finset.mem_image.mpr ⟨columnShift.symm v, ?_, by simp⟩
       have ht := translatedDual_shift A (columnShift.symm v)
-      rw [Equiv.apply_symm_apply] at ht
-      simp only [mem_filter, mem_univ, true_and] at hv ⊢
-      rw [ht] at hv
-      cases hh : A (columnShift.symm v) <;> simp_all
-    · intro hv
-      obtain ⟨w, hw, rfl⟩ := Finset.mem_image.mp hv
-      have hw' := (Finset.mem_filter.mp hw).2
-      simp [translatedDual_shift, hw']
+      simp_all
+    · grind [translatedDual_shift]
   unfold openCount closedCount
   rw [hf, Finset.card_image_of_injective _ columnShift.injective]
 
@@ -199,7 +199,6 @@ theorem rcLoopCount_le_primal_dual_clusters (hN : Even N) (hM : Even M)
   have hd := euler_ribbonHandleCount hN hM (translatedDual A)
   rw [rcLoopCount_translatedDual, openCount_translatedDual] at hd
   have he := openCount_add_closedCount A
-  have hv : 2 * (N * M / 2) = N * M := Nat.mul_div_cancel' (hN.mul_right M).two_dvd
   omega
 
 end PottsDiscontinuity.TorusLoops

@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Potts.MonotoneEventLimits
 
 /-! Convergence of wired connection data with every infinite cluster merged. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Potts
 
@@ -24,9 +24,8 @@ theorem wired_connection_moments_tendsto (θ : FK.Parameters)
   apply decreasing_event_diagonal_tendsto _ μ _ (wiredDataEvent_antitone F)
     (fun n => (wiredDataEvent_isClopen n F).isOpen.measurableSet)
   · intro m
-    have ht := ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hμ (wiredDataEvent_isClopen m F)
     simpa only [openBoxProbabilityMeasure_eq_wired, ProbabilityMeasure.measureReal_eq_coe_coeFn,
-      Function.comp_def] using NNReal.continuous_coe.continuousAt.tendsto.comp ht
+      Function.comp_def] using NNReal.continuous_coe.continuousAt.tendsto.comp (ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hμ (wiredDataEvent_isClopen m F))
   · intro n
     rw [wiredDataEvent_eq_observation]
     simp only [Measure.real]

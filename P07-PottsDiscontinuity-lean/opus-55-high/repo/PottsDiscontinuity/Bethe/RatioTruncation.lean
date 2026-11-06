@@ -9,7 +9,7 @@ profile: this finite estimate applies to every derivative with `|x l'(x)|`
 bounded. The zero root is explicitly excluded.
 -/
 
-@[expose] public section
+public section
 
 open Set Finset
 open scoped BigOperators
@@ -28,8 +28,8 @@ theorem ratio_offset_root_linear {N r : ℕ} (h4 : 4 ∣ N) (hr : r ≤ N / 2)
   have h := hpair j (Fin.rev j)
   rw [offsetDisplacement_rev h4 hr hp hq, show q (Fin.rev j) = -q j from hq.2.2 j] at h
   have he (x : ℝ) : |x - -x| = 2 * |x| := by
-    rw [sub_neg_eq_add, ← two_mul, abs_mul, abs_of_pos (by norm_num : (0 : ℝ) < 2)]
-  rw [he, he] at h
+    grind
+  simp_all
   linarith
 
 end PottsDiscontinuity.Bethe

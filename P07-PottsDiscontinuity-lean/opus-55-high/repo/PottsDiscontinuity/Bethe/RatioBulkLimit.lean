@@ -10,7 +10,7 @@ root families are specialized separately: their displacement limit is
 Theorem 2.9 and their finite bounds come from the density-rate geometry.
 -/
 
-@[expose] public section
+public section
 
 open Set Filter MeasureTheory Finset
 open scoped Topology BigOperators
@@ -40,13 +40,12 @@ theorem ratio_logsum_tendsto_of_geometry {ι : Type*} {l : Filter ι} [l.IsCount
     Tendsto (fun i => ∑ j, (ratioEll c (q i j) - ratioEll c (a i j))) l
       (𝓝 (∫ x in Icc (-Real.pi) Real.pi, ratioEllPrime c x * E x * w x)) := by
   let B := Real.pi * (c ^ 2 - 1) / (c ^ 2 - 2) ^ 2 + Real.pi ^ 2 / 4
-  have hB : 0 ≤ B := ratio_profile_bound_nonneg hc
   let L := 2 * B * C
-  let F : ι → ℝ → ℝ := fun i => ratioInteriorTest (N i) (q i) (hq i)
+  let F := fun i => ratioInteriorTest (N i) (q i) (hq i)
     (fun j => (N i : ℝ) * (ratioEll c (q i j) - ratioEll c (a i j)))
-  let g : ℝ → ℝ := (Icc (-Real.pi) Real.pi).indicator
+  let g := (Icc (-Real.pi) Real.pi).indicator
     (fun x => ratioEllPrime c x * E x * w x)
-  let bound : ℝ → ℝ := (Icc (-Real.pi) Real.pi).indicator (fun _ => L * M)
+  let bound := (Icc (-Real.pi) Real.pi).indicator (fun _ => L * M)
   have hmeas : ∀ᶠ i in l, AEStronglyMeasurable (F i) := Eventually.of_forall (fun i =>
     (ratio_interiorTest_integrable (hq i) _).aestronglyMeasurable)
   have hbound : ∀ᶠ i in l, ∀ᵐ x, ‖F i x‖ ≤ bound x := by
@@ -54,7 +53,6 @@ theorem ratio_logsum_tendsto_of_geometry {ι : Type*} {l : Filter ι} [l.IsCount
       with i hi hu hiN
     apply Eventually.of_forall
     intro x
-    rw [Real.norm_eq_abs]
     exact ratio_log_step_bound hc (hN i) hC hM hiN (hq i) (ha i) (hs i) hi hu x
   have hboundInt : Integrable bound := by
     apply (integrable_indicator_iff measurableSet_Icc).mpr
@@ -64,7 +62,7 @@ theorem ratio_logsum_tendsto_of_geometry {ι : Type*} {l : Filter ι} [l.IsCount
       Measure.ae_ne volume (-Real.pi)] with x hx0 hxp hxm
     by_cases hx : x ∈ Icc (-Real.pi) Real.pi
     · have hxoo : x ∈ Ioo (-Real.pi) Real.pi :=
-        ⟨lt_of_le_of_ne hx.1 (Ne.symm hxm), lt_of_le_of_ne hx.2 hxp⟩
+        by grind
       have ht := ratio_log_step_tendsto hc N k hN q a hq hs hNlim d hd hdnonneg hmesh w E
         hxoo hx0 (hρ x hxoo) (he x hxoo hx0)
       simpa only [g, indicator_of_mem hx] using ht
@@ -72,9 +70,7 @@ theorem ratio_logsum_tendsto_of_geometry {ι : Type*} {l : Filter ι} [l.IsCount
       simpa only [g, heq, indicator_of_notMem hx] using
         (tendsto_const_nhds : Tendsto (fun _ : ι => (0 : ℝ)) l (𝓝 0))
   have hInt := tendsto_integral_filter_of_dominated_convergence bound hmeas hbound hboundInt hpoint
-  have hgInt : (∫ x, g x) = ∫ x in Icc (-Real.pi) Real.pi, ratioEllPrime c x * E x * w x :=
-    integral_indicator measurableSet_Icc
-  rw [hgInt] at hInt
+  rw [(integral_indicator measurableSet_Icc)] at hInt
   have hlast : Tendsto
       (fun i => ratioEll c (q i (Fin.last (k i))) - ratioEll c (a i (Fin.last (k i)))) l (𝓝 0) := by
     have hLlim : Tendsto (fun i => L / (N i : ℝ)) l (𝓝 0) :=
@@ -90,13 +86,12 @@ theorem ratio_logsum_tendsto_of_geometry {ι : Type*} {l : Filter ι} [l.IsCount
     change (N i : ℝ) * |ratioEll c (q i (Fin.last (k i))) - ratioEll c (a i (Fin.last (k i)))| ≤ L at hb
     have hb' : |ratioEll c (q i (Fin.last (k i))) - ratioEll c (a i (Fin.last (k i)))| ≤ L / N i := by
       apply (le_div_iff₀ hNp).mpr
-      nlinarith only [hb]
-    rw [Real.dist_eq, sub_zero]
-    exact hb'.trans_lt hLi
+      linarith
+    simp
+    linarith
   have hi (i : ι) : (∫ x, F i x) =
       ∑ j : Fin (k i), (ratioEll c (q i j.castSucc) - ratioEll c (a i j.castSucc)) := by
-    rw [ratio_integral_interiorTest (hN i) (hq i)]
-    rw [Finset.sum_div]
+    rw [ratio_integral_interiorTest (hN i) (hq i), Finset.sum_div]
     apply Finset.sum_congr rfl
     intro j hj
     have hn : (N i : ℝ) ≠ 0 := by exact_mod_cast (hN i).ne'

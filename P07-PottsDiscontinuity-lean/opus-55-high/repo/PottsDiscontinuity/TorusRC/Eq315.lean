@@ -6,7 +6,7 @@ public import PottsDiscontinuity.TorusRC.BlockLogRate
 
 /-! # Lemma 3.15, equation (3.15), with h319 as the sole external premise -/
 
-@[expose] public section
+public section
 
 open Filter Topology
 
@@ -31,9 +31,9 @@ theorem eq315 (q : Set.Ici (1 : ℝ)) (hh319 : h319 q) :
         Real.log ((rotatedDiagonalConnectionProbability (torusRCBridgeParameters q) n : NNReal):ℝ) /
           ((2*n:ℕ):ℝ):ℝ):EReal)) atTop (𝓝 ((-inverseCorrelationLength q:ℝ):EReal)) := by
     apply EReal.tendsto_coe.mpr
-    simpa only [zero_add] using (tendsto_block_log_rate_zero c hc).add hrate
+    simpa using (tendsto_block_log_rate_zero c hc).add hrate
   apply le_of_tendsto hlim
   filter_upwards [eventually_ge_atTop 2] with n hn
-  exact hbound n hn
+  simp_all
 
 end PottsDiscontinuity.TorusRC

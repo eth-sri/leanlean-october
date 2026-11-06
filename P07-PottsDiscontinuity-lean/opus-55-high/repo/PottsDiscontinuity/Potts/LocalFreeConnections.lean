@@ -18,27 +18,27 @@ def localFreeGraph (H : SimpleGraph (ℤ × ℤ)) (n : ℕ) : SimpleGraph (ℤ �
   Adj x y := H.Adj x y ∧ x ∈ box n ∧ y ∈ box n
   symm := by
     constructor
-    rintro x y ⟨hxy, hx, hy⟩
-    exact ⟨hxy.symm, hy, hx⟩
+    tauto
   loopless := by
     constructor
-    intro x h
-    exact H.irrefl h.1
+    simp
 
-theorem localFreeGraph_le (H : SimpleGraph (ℤ × ℤ)) (n : ℕ) : localFreeGraph H n ≤ H :=
+section
+variable (H : SimpleGraph (ℤ × ℤ))
+theorem localFreeGraph_le (n : ℕ) : localFreeGraph H n ≤ H :=
   fun _ _ h => h.1
 
-theorem localFreeGraph_mono (H : SimpleGraph (ℤ × ℤ)) : Monotone (localFreeGraph H) := by
+theorem localFreeGraph_mono  : Monotone (localFreeGraph H) := by
   intro m n hmn x y hxy
   exact ⟨hxy.1, box_mono hmn hxy.2.1, box_mono hmn hxy.2.2⟩
 
-theorem localFreeGraph_reachable_mono (H : SimpleGraph (ℤ × ℤ)) (x y : ℤ × ℤ) :
+theorem localFreeGraph_reachable_mono (x y : ℤ × ℤ) :
     Monotone (fun n => (localFreeGraph H n).Reachable x y) := by
   intro m n hmn hxy
   exact hxy.mono (localFreeGraph_mono H hmn)
 
 /-- Every actual open path is contained in a finite box. -/
-theorem reachable_iff_exists_localFree (H : SimpleGraph (ℤ × ℤ)) (x y : ℤ × ℤ) :
+theorem reachable_iff_exists_localFree (x y : ℤ × ℤ) :
     H.Reachable x y ↔ ∃ n, (localFreeGraph H n).Reachable x y := by
   constructor
   · rintro ⟨w⟩
@@ -55,8 +55,7 @@ theorem reachable_iff_exists_localFree (H : SimpleGraph (ℤ × ℤ)) (x y : ℤ
 
 /-- On finitely many observed pairs, all actual connections eventually appear
 simultaneously in the finite-box graph. -/
-theorem finite_free_connections_eventually (H : SimpleGraph (ℤ × ℤ))
-    (F : Finset ((ℤ × ℤ) × (ℤ × ℤ))) :
+theorem finite_free_connections_eventually (F : Finset ((ℤ × ℤ) × (ℤ × ℤ))) :
     ∀ᶠ n : ℕ in atTop, ∀ z ∈ F,
       ((localFreeGraph H n).Reachable z.1 z.2 ↔ H.Reachable z.1 z.2) := by
   apply (eventually_all_finset F).mpr
@@ -67,6 +66,7 @@ theorem finite_free_connections_eventually (H : SimpleGraph (ℤ × ℤ))
     exact ⟨fun _ => h, fun _ => localFreeGraph_reachable_mono H z.1 z.2 hn hm⟩
   · exact Filter.Eventually.of_forall (fun n =>
       ⟨fun hn => (h (hn.mono (localFreeGraph_le H n))).elim, fun hn => (h hn).elim⟩)
+end
 
 end
 end PottsDiscontinuity.Potts

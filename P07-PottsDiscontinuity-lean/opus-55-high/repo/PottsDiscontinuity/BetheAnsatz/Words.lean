@@ -10,31 +10,30 @@ set visible in each coefficient. Summing these coefficients by inclusion-exclusi
 is an exact word expansion before the coefficient is collected into ML factors.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 open Finset Complex Classical
 
 namespace PottsDiscontinuity.BetheAnsatz
 
 /-- Endpoint phase of a word, in the integer predecessor convention. -/
-noncomputable def wordPhase {N n : ℕ} (x : Fin (n + 1) → ℤ)
+def wordPhase {N n : ℕ} (x : Fin (n + 1) → ℤ)
     (p : Fin (n + 1) → ℝ) (σ : Equiv.Perm (Fin (n + 1))) (w : Fin (n + 1) → Bool) : ℂ :=
   ∏ k, positionPhase (p (σ k)) (if w k then cyclicPredecessorPositions N x k else x k)
 
+section
+variable {n : ℕ} (c : ℝ) (p : Fin (n + 1) → ℝ) (σ : Equiv.Perm (Fin (n + 1))) (S : Finset (Fin (n + 1)))
 /-- Local coefficient with the two endpoint constraints recorded explicitly. -/
-noncomputable def restrictedLetterCoefficient {n : ℕ} (c : ℝ)
-    (p : Fin (n + 1) → ℝ) (σ : Equiv.Perm (Fin (n + 1)))
-    (S : Finset (Fin (n + 1))) (k : Fin (n + 1)) (b : Bool) : ℂ :=
+def restrictedLetterCoefficient (k : Fin (n + 1)) (b : Bool) : ℂ :=
   if b then (if k ∈ S then 0 else
     if (finRotate (n + 1)).symm k ∈ S then 1 else L c (z (p (σ k))))
   else (if (finRotate (n + 1)).symm k ∈ S then 0 else
     if k ∈ S then 1 else M c (z (p (σ k))))
 
 /-- Coefficient of a word before the sum over collision sets. -/
-noncomputable def restrictedWordCoefficient {n : ℕ} (c : ℝ)
-    (p : Fin (n + 1) → ℝ) (σ : Equiv.Perm (Fin (n + 1)))
-    (S : Finset (Fin (n + 1))) (w : Fin (n + 1) → Bool) : ℂ :=
+def restrictedWordCoefficient (w : Fin (n + 1) → Bool) : ℂ :=
   ∏ k, restrictedLetterCoefficient c p σ S k (w k)
+end
 
 /-- The restricted geometric product expanded over all words. -/
 theorem restrictedGapSum_eq_sum_words {N n : ℕ} (c : ℝ) (x : Fin (n + 1) → ℤ)
@@ -57,7 +56,7 @@ theorem restrictedGapSum_eq_sum_words {N n : ℕ} (c : ℝ) (x : Fin (n + 1) →
     simp only [hk, hl, ↓reduceIte, zero_mul, one_mul, zero_add, add_zero]
 
 /-- Exact inclusion-exclusion coefficient, prior to collecting the ML factors. -/
-noncomputable def inclusionWordCoefficient {n : ℕ} (c : ℝ)
+def inclusionWordCoefficient {n : ℕ} (c : ℝ)
     (p : Fin (n + 1) → ℝ) (σ : Equiv.Perm (Fin (n + 1))) (w : Fin (n + 1) → Bool) : ℂ :=
   ∑ S ∈ (univ : Finset (Fin (n + 1))).powerset,
     (-1 : ℂ) ^ S.card * restrictedWordCoefficient c p σ S w
@@ -76,8 +75,6 @@ theorem cyclicGapSum_eq_sum_words_uncollected {N n : ℕ} (c : ℝ) (x : Fin (n 
   intro w _
   unfold inclusionWordCoefficient
   rw [Finset.sum_mul]
-  apply Finset.sum_congr rfl
-  intro S _
-  ring
+  grind
 
 end PottsDiscontinuity.BetheAnsatz

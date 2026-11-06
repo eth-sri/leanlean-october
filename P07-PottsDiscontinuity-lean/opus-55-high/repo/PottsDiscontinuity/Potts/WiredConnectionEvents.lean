@@ -13,26 +13,27 @@ namespace PottsDiscontinuity.Potts
 open Classical MeasureTheory Filter Topology
 noncomputable section
 
-local instance eventBoundaryFintype (n : ℕ) : Fintype (BoundaryVertex (box n)) := Fintype.ofFinite _
 
+section
+variable (ω : FK.LatticeConfiguration)
 /-- The frozen infinite open graph retains exactly the sampled lattice bonds. -/
-theorem infiniteOpenGraph_adj_iff (ω : FK.LatticeConfiguration) (x y : ℤ × ℤ) :
+theorem infiniteOpenGraph_adj_iff (x y : ℤ × ℤ) :
     (rcInfiniteOpenGraph ω).Adj x y ↔
       ∃ h : squareLattice.Adj x y, ω ⟨s(x, y), squareLattice.mem_edgeSet.mpr h⟩ = true := by
   rw [rcInfiniteOpenGraph, SimpleGraph.fromEdgeSet_adj]
   constructor
-  · rintro ⟨⟨h, hω⟩, _⟩
-    exact ⟨squareLattice.mem_edgeSet.mp h, hω⟩
-  · rintro ⟨h, hω⟩
-    exact ⟨⟨squareLattice.mem_edgeSet.mpr h, hω⟩, h.ne⟩
+  · simp_all
+  grind
 
-theorem infiniteOpenGraph_le (ω : FK.LatticeConfiguration) : rcInfiniteOpenGraph ω ≤ squareLattice := by
+theorem infiniteOpenGraph_le  : rcInfiniteOpenGraph ω ≤ squareLattice := by
   intro x y hxy
-  exact ((infiniteOpenGraph_adj_iff ω x y).mp hxy).choose
+  grind [infiniteOpenGraph_adj_iff]
+end
 
+section
+variable (n : ℕ)
 /-- Wire the boundary of a sampled finite edge configuration to the ghost. -/
-def wiredObservationGraph (n : ℕ)
-    (C : FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ)))) :
+def wiredObservationGraph (C : FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ)))) :
     SimpleGraph (Option ↥(box n : Set (ℤ × ℤ))) :=
   { Adj := fun a b => match a, b with
       | none, none => False
@@ -43,56 +44,54 @@ def wiredObservationGraph (n : ℕ)
       constructor
       intro a b h
       cases a <;> cases b
-      · exact h
-      · exact h
-      · exact h
+      · omega
+      · omega
+      · omega
       · exact h.symm
     loopless := by
       constructor
-      intro a h
-      cases a
-      · exact h
-      · exact SimpleGraph.irrefl _ h }
+      grind }
 
-theorem wiredObservationGraph_eq (n : ℕ) (ω : FK.LatticeConfiguration) :
+theorem wiredObservationGraph_eq (ω : FK.LatticeConfiguration) :
     wiredObservationGraph n (boxObservation n ω) = finiteWiredConnectionGraph (rcInfiniteOpenGraph ω) n := by
   ext a b
   cases a with
   | none =>
     cases b with
     | none => rfl
-    | some y => simp [wiredObservationGraph, finiteWiredConnectionGraph]
+    | some y => rfl
   | some x =>
     cases b with
-    | none => simp [wiredObservationGraph, finiteWiredConnectionGraph]
+    | none => rfl
     | some y =>
       change (FK.openGraph _ (boxObservation n ω)).Adj x y ↔ (rcInfiniteOpenGraph ω).Adj x.val y.val
       unfold boxObservation
       rw [openGraph_bool_adj_iff, infiniteOpenGraph_adj_iff]
-      constructor
-      · rintro ⟨h, he⟩
-        exact ⟨h, he⟩
-      · rintro ⟨h, he⟩
-        exact ⟨h, he⟩
+      rfl
+end
 
+section
+variable (n : ℕ) (F : Finset (Option (ℤ × ℤ) × Option (ℤ × ℤ)))
 /-- The finite FK event asserting the indicated connections, including marks. -/
-def wiredDataFiniteEvent (n : ℕ) (F : Finset (Option (ℤ × ℤ) × Option (ℤ × ℤ))) :
+def wiredDataFiniteEvent  :
     Set (FK.Configuration (squareLattice.induce (box n : Set (ℤ × ℤ)))) :=
   {C | ∀ z ∈ F, (wiredObservationGraph n C).Reachable
     (boxGhostProjection n z.1) (boxGhostProjection n z.2)}
 
 /-- Positive moments of the finite wired connection partition. -/
-def wiredDataEvent (n : ℕ) (F : Finset (Option (ℤ × ℤ) × Option (ℤ × ℤ))) :
+def wiredDataEvent  :
     Set FK.LatticeConfiguration :=
   {ω | ∀ z ∈ F, localWiredSetoid (rcInfiniteOpenGraph ω) n z.1 z.2}
+end
 
 /-- Positive moments of the partition with every infinite cluster merged. -/
 def infiniteMergedDataEvent (F : Finset (Option (ℤ × ℤ) × Option (ℤ × ℤ))) :
     Set FK.LatticeConfiguration :=
   {ω | ∀ z ∈ F, infiniteMergedSetoid (rcInfiniteOpenGraph ω) z.1 z.2}
 
-theorem wiredDataEvent_eq_observation (n : ℕ)
-    (F : Finset (Option (ℤ × ℤ) × Option (ℤ × ℤ))) :
+section
+variable (n : ℕ) (F : Finset (Option (ℤ × ℤ) × Option (ℤ × ℤ)))
+theorem wiredDataEvent_eq_observation  :
     wiredDataEvent n F = boxObservationEvent n (wiredDataFiniteEvent n F) := by
   ext ω
   change (∀ z ∈ F, localWiredSetoid (rcInfiniteOpenGraph ω) n z.1 z.2) ↔
@@ -101,25 +100,28 @@ theorem wiredDataEvent_eq_observation (n : ℕ)
   rw [wiredObservationGraph_eq]
   rfl
 
-theorem wiredDataEvent_isClopen (n : ℕ)
-    (F : Finset (Option (ℤ × ℤ) × Option (ℤ × ℤ))) : IsClopen (wiredDataEvent n F) := by
+theorem wiredDataEvent_isClopen  : IsClopen (wiredDataEvent n F) := by
   rw [wiredDataEvent_eq_observation]
   exact boxObservationEvent_isClopen _ _
+end
 
-theorem wiredDataEvent_antitone (F : Finset (Option (ℤ × ℤ) × Option (ℤ × ℤ))) :
+section
+variable (F : Finset (Option (ℤ × ℤ) × Option (ℤ × ℤ)))
+theorem wiredDataEvent_antitone  :
     Antitone (fun n => wiredDataEvent n F) := by
   intro m n hmn ω hω z hz
   exact localWiredSetoid_antitone _ (infiniteOpenGraph_le ω) hmn (hω z hz)
 
-theorem iInter_wiredDataEvent (F : Finset (Option (ℤ × ℤ) × Option (ℤ × ℤ))) :
+theorem iInter_wiredDataEvent  :
     (⋂ n, wiredDataEvent n F) = infiniteMergedDataEvent F := by
   ext ω
-  simp only [Set.mem_iInter, wiredDataEvent, infiniteMergedDataEvent, Set.mem_ofPred_eq]
+  simp
   constructor
   · intro h z hz
     exact (localWiredSetoid_limit _ (infiniteOpenGraph_le ω) _ _).mp (fun n => h n z hz)
   · intro h n z hz
     exact (localWiredSetoid_limit _ (infiniteOpenGraph_le ω) _ _).mpr (h z hz) n
+end
 
 theorem wiredDataFiniteEvent_upper (n : ℕ)
     (F : Finset (Option (ℤ × ℤ) × Option (ℤ × ℤ))) : IsUpperSet (wiredDataFiniteEvent n F) := by
@@ -127,9 +129,9 @@ theorem wiredDataFiniteEvent_upper (n : ℕ)
   have hg : wiredObservationGraph n C ≤ wiredObservationGraph n D := by
     intro a b hab
     cases a <;> cases b
-    · exact hab.elim
-    · exact hab
-    · exact hab
+    · simp_all
+    · tauto
+    · tauto
     · change (FK.openGraph _ C).Adj _ _ at hab
       change (FK.openGraph _ D).Adj _ _
       rw [FK.openGraph_adj] at hab ⊢

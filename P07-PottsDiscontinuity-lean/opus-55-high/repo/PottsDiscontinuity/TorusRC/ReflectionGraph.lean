@@ -17,25 +17,21 @@ variable {N M : ℕ}
 /-- The canonical integer representative of a primal face. -/
 def canonicalPrimalLift (v : FaceVertex N M true) : RotatedVertex :=
   ⟨((v.val.1.val : ℤ), (v.val.2.val : ℤ)), by
-    have hp : (v.val.1.val + v.val.2.val) % 2 = 0 := by
-      simpa only [checker, decide_eq_true_eq] using v.property
-    change Even ((v.val.1.val : ℤ) + (v.val.2.val : ℤ))
-    exact_mod_cast (Nat.even_iff.mpr hp)⟩
+    grind [checker, Even]⟩
 
-def reflectPrimalFace (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M)
-    (t : ℤ) (ht : Even t) (v : FaceVertex N M true) : FaceVertex N M true :=
+section
+variable (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M) (t : ℤ) (ht : Even t)
+def reflectPrimalFace (v : FaceVertex N M true) : FaceVertex N M true :=
   liftedFaceVertex hN hM hNp hMp (liftedHorizontalReflect t ht (canonicalPrimalLift v))
 
-theorem reflectPrimalFace_val (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M)
-    (t : ℤ) (ht : Even t) (v : FaceVertex N M true) :
+theorem reflectPrimalFace_val (v : FaceVertex N M true) :
     (reflectPrimalFace hN hM hNp hMp t ht v).val =
       (v.val.1, periodicReflect hMp t v.val.2) := by
   apply Prod.ext
   · exact periodicCoordinate_nat hNp v.val.1
-  · rfl
+  rfl
 
-def reflectPrimalFaceEquiv (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M)
-    (t : ℤ) (ht : Even t) : FaceVertex N M true ≃ FaceVertex N M true where
+def reflectPrimalFaceEquiv  : FaceVertex N M true ≃ FaceVertex N M true where
   toFun := reflectPrimalFace hN hM hNp hMp t ht
   invFun := reflectPrimalFace hN hM hNp hMp t ht
   left_inv v := by
@@ -47,13 +43,13 @@ def reflectPrimalFaceEquiv (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < 
     rw [reflectPrimalFace_val, reflectPrimalFace_val]
     exact Prod.ext rfl ((periodicReflect hMp t).left_inv v.val.2)
 
-theorem reflectPrimalFace_projects (hN : Even N) (hM : Even M)
-    (hNp : 0 < N) (hMp : 0 < M) (t : ℤ) (ht : Even t) (u : RotatedVertex) :
+theorem reflectPrimalFace_projects (u : RotatedVertex) :
     reflectPrimalFace hN hM hNp hMp t ht (liftedFaceVertex hN hM hNp hMp u) =
       liftedFaceVertex hN hM hNp hMp (liftedHorizontalReflect t ht u) := by
   apply Subtype.ext
   rw [reflectPrimalFace_val]
   exact Prod.ext rfl (periodicReflect_periodicCoordinate hMp t u.val.2)
+end
 
 /-- The actual indexed edge reflection has its offset t+1, while primal
 vertices reflect with offset t. This retains the midpoint convention. -/
@@ -74,39 +70,41 @@ theorem reflectPrimalFace_edge (hN : Even N) (hM : Even M)
     (liftedHorizontalReflect t ht (edgeLift e true))
     (liftedHorizontalReflect_adj t ht (edgeLift_adj e))
   rw [liftedHorizontalReflect_index hNp hMp t ht (edgeLift_adj e), edgeLift_index] at h
-  exact h
+  tauto
 
-theorem reflectEdgeIndex_involutive (hMp : 0 < M) (t : ℤ) :
+section
+variable (hMp : 0 < M) (t : ℤ)
+include hMp t
+theorem reflectEdgeIndex_involutive  :
     Function.Involutive (reflectEdgeIndex (N := N) hMp t) := by
   intro e
   exact Prod.ext rfl ((periodicReflect hMp (t + 1)).left_inv e.2)
 
-def reflectRCConfig (hMp : 0 < M) (t : ℤ) (A : RCConfig N M) : RCConfig N M :=
+def reflectRCConfig (A : RCConfig N M) : RCConfig N M :=
   fun e => A (reflectEdgeIndex hMp t e)
 
-theorem reflectRCConfig_involutive (hMp : 0 < M) (t : ℤ) :
+theorem reflectRCConfig_involutive  :
     Function.Involutive (reflectRCConfig (N := N) hMp t) := by
   intro A
   funext e
   exact congrArg A (reflectEdgeIndex_involutive hMp t e)
+end
 
-theorem diamondOpenGraph_reflect_adj (hN : Even N) (hM : Even M)
-    (hNp : 0 < N) (hMp : 0 < M) (t : ℤ) (ht : Even t) (A : RCConfig N M)
-    {u v : FaceVertex N M true} (huv : (diamondOpenGraph hN hM true A).Adj u v) :
+section
+variable (hN : Even N) (hM : Even M) (hNp : 0 < N) (hMp : 0 < M) (t : ℤ) (ht : Even t) (A : RCConfig N M)
+include hNp ht
+theorem diamondOpenGraph_reflect_adj {u v : FaceVertex N M true} (huv : (diamondOpenGraph hN hM true A).Adj u v) :
     (diamondOpenGraph hN hM true (reflectRCConfig hMp t A)).Adj
       (reflectPrimalFace hN hM hNp hMp t ht u) (reflectPrimalFace hN hM hNp hMp t ht v) := by
-  rw [diamondOpenGraph, SimpleGraph.fromEdgeSet_adj] at huv ⊢
   obtain ⟨⟨e,he,hpair⟩,hne⟩ := huv
   refine ⟨⟨reflectEdgeIndex hMp t e, ?_, ?_⟩,
     (reflectPrimalFaceEquiv hN hM hNp hMp t ht).injective.ne hne⟩
   · simpa only [reflectRCConfig, reflectEdgeIndex_involutive hMp t e] using he
   · have h := congrArg (Sym2.map (reflectPrimalFace hN hM hNp hMp t ht)) hpair
-    simp only [Sym2.map_mk] at h
-    exact h.trans (reflectPrimalFace_edge hN hM hNp hMp t ht e)
+    simp_all [reflectPrimalFace_edge]
 
 /-- Horizontal reflection is an isomorphism of the actual open primal graphs. -/
-def diamondReflectIso (hN : Even N) (hM : Even M)
-    (hNp : 0 < N) (hMp : 0 < M) (t : ℤ) (ht : Even t) (A : RCConfig N M) :
+def diamondReflectIso  :
     diamondOpenGraph hN hM true A ≃g
       diamondOpenGraph hN hM true (reflectRCConfig hMp t A) where
   toEquiv := reflectPrimalFaceEquiv hN hM hNp hMp t ht
@@ -123,9 +121,9 @@ def diamondReflectIso (hN : Even N) (hM : Even M)
       simpa only [reflectRCConfig_involutive hMp t A, Equiv.symm_apply_apply] using h'
     · exact diamondOpenGraph_reflect_adj hN hM hNp hMp t ht A
 
-theorem clusterCount_reflect (hN : Even N) (hM : Even M)
-    (hNp : 0 < N) (hMp : 0 < M) (t : ℤ) (ht : Even t) (A : RCConfig N M) :
+theorem clusterCount_reflect  :
     clusterCount hN hM true (reflectRCConfig hMp t A) = clusterCount hN hM true A :=
   Nat.card_congr (diamondReflectIso hN hM hNp hMp t ht A).connectedComponentEquiv.symm
+end
 
 end PottsDiscontinuity.TorusRC

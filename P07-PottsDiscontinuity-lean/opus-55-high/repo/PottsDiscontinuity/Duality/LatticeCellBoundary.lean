@@ -21,19 +21,20 @@ theorem mem_cellBoundaryBonds_faceBase (c : LatticeVertex) (e : LatticeBond) :
   rcases e with ⟨⟨a,b⟩, ax⟩
   cases ax <;> simp [cellBoundaryBonds, LatticeBond.faceBase] <;> omega
 
+section
+variable (S : Finset LatticeVertex)
 /-- Actual primal bonds separating a selected finite set of unit faces from its complement. -/
-def latticeCellBoundaryBonds (S : Finset LatticeVertex) : Finset LatticeBond := by
+def latticeCellBoundaryBonds  : Finset LatticeBond := by
   classical
   exact (S.biUnion cellBoundaryBonds).filter
     (fun e => (e.faceBase true ∈ S) ≠ (e.faceBase false ∈ S))
 
-theorem mem_latticeCellBoundaryBonds (S : Finset LatticeVertex) (e : LatticeBond) :
+theorem mem_latticeCellBoundaryBonds (e : LatticeBond) :
     e ∈ latticeCellBoundaryBonds S ↔
       ((e.faceBase true ∈ S) ≠ (e.faceBase false ∈ S)) := by
-  classical
   simp only [latticeCellBoundaryBonds, Finset.mem_filter]
   constructor
-  · exact fun h => h.2
+  · simp
   · intro h
     refine ⟨?_, h⟩
     rw [Finset.mem_biUnion]
@@ -41,40 +42,39 @@ theorem mem_latticeCellBoundaryBonds (S : Finset LatticeVertex) (e : LatticeBond
     · exact ⟨e.faceBase true, ht,
         (mem_cellBoundaryBonds_faceBase _ _).2 (Or.inr rfl)⟩
     · have hf : e.faceBase false ∈ S := by
-        by_contra hf
-        exact h (by simp [ht, hf])
+        simp_all
       exact ⟨e.faceBase false, hf,
         (mem_cellBoundaryBonds_faceBase _ _).2 (Or.inl rfl)⟩
 
-theorem latticeCellBoundaryBonds_finite (S : Finset LatticeVertex) :
+theorem latticeCellBoundaryBonds_finite  :
     (latticeCellBoundaryBonds S : Set LatticeBond).Finite := by
-  exact Finset.finite_toSet _
+  simp
 
 /-- The graph whose edges are precisely the actual bonds crossing the face boundary. -/
-def latticeCellBoundaryGraph (S : Finset LatticeVertex) : SimpleGraph LatticeVertex where
+def latticeCellBoundaryGraph  : SimpleGraph LatticeVertex where
   Adj u v := squareLattice.Adj u v ∧ ∃ e ∈ latticeCellBoundaryBonds S, e.toSym2 = s(u,v)
   symm := ⟨by
     intro u v h
     rcases h with ⟨hadj, e, he, hsym⟩
     exact ⟨hadj.symm, e, he, hsym.trans Sym2.eq_swap⟩⟩
   loopless := ⟨by
-    intro u h
-    exact squareLattice.loopless.irrefl u h.1⟩
+    simp⟩
 
-theorem latticeCellBoundaryGraph_le (S : Finset LatticeVertex) :
+theorem latticeCellBoundaryGraph_le  :
     latticeCellBoundaryGraph S ≤ squareLattice := by
   intro u v h
   exact h.1
 
-theorem latticeCellBoundaryGraph_adj_iff (S : Finset LatticeVertex) (u v : LatticeVertex) :
+theorem latticeCellBoundaryGraph_adj_iff (u v : LatticeVertex) :
     (latticeCellBoundaryGraph S).Adj u v ↔
       squareLattice.Adj u v ∧ ∃ e : LatticeBond,
         e.toSym2 = s(u,v) ∧
         ((e.faceBase true ∈ S) ≠ (e.faceBase false ∈ S)) := by
   constructor
   · rintro ⟨hadj, e, he, hedge⟩
-    exact ⟨hadj, e, hedge, (mem_latticeCellBoundaryBonds S e).mp he⟩
+    grind [mem_latticeCellBoundaryBonds]
   · rintro ⟨hadj, e, hedge, hfaces⟩
     exact ⟨hadj, e, (mem_latticeCellBoundaryBonds S e).mpr hfaces, hedge⟩
+end
 
 end PottsDiscontinuity.FK

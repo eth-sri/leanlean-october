@@ -13,38 +13,35 @@ open Torus CorrLength
 
 variable {N M : ℕ}
 
+section
+variable (hNp : 0 < N) (hMp : 0 < M) (n : ℕ)
 /-- A rectangle crossing with the two horizontal endpoint coordinates fixed.
 Impossible parity choices simply give an empty event. -/
-def rectanglePairConnection (hNp : 0 < N) (hMp : 0 < M) (n : ℕ)
-    (i j : Fin (3 * n + 1)) : Set (RCConfig N M) :=
+def rectanglePairConnection (i j : Fin (3 * n + 1)) : Set (RCConfig N M) :=
   {A | ∃ u v : RotatedVertex,
     u.val = ((i.val : ℤ), 0) ∧ v.val = ((j.val : ℤ), (n : ℤ)) ∧
       ∃ w : (liftedStripGraph hNp hMp A 0 (3 * (n : ℤ))).Walk u v,
         ∀ z ∈ w.support, 0 ≤ z.val.2 ∧ z.val.2 ≤ (n : ℤ)}
 
-theorem rectangleCrossing_covered_by_pairs (hNp : 0 < N) (hMp : 0 < M)
-    (n : ℕ) (hn : 0 < n) (A : RCConfig N M)
+theorem rectangleCrossing_covered_by_pairs (hn : 0 < n) (A : RCConfig N M)
     (hA : torusRCVerticalRectangleCrossing hNp hMp n A) :
     ∃ ij : Fin (3 * n + 1) × Fin (3 * n + 1),
       A ∈ rectanglePairConnection hNp hMp n ij.1 ij.2 := by
   obtain ⟨u,v,hu,hv,w,hw⟩ := hA
   have huv : u ≠ v := by
-    intro h
-    subst v
-    omega
+    grind
   have hend {a b : RotatedVertex}
       (p : (liftedStripGraph hNp hMp A 0 (3 * (n : ℤ))).Walk a b) (hab : a ≠ b) :
       0 ≤ a.val.1 ∧ a.val.1 ≤ 3 * (n : ℤ) := by
     cases p with
-    | nil => exact (hab rfl).elim
+    | nil => grind
     | cons hadj _ => exact hadj.2.2.1
   have hux := hend w huv
   have hvx := hend w.reverse huv.symm
   let i : Fin (3 * n + 1) := ⟨u.val.1.toNat, by omega⟩
   let j : Fin (3 * n + 1) := ⟨v.val.1.toNat, by omega⟩
-  refine ⟨(i,j),u,v,?_,?_,w,hw⟩
-  · apply Prod.ext <;> dsimp [i] <;> omega
-  · apply Prod.ext <;> dsimp [j] <;> omega
+  refine ⟨(i,j),u,v,?_,?_,w,hw⟩ <;> grind
+end
 
 /-- A finite union bound for the exact normalized indexed torus law. -/
 theorem torusRCProbability_le_sum_of_cover {ι : Type*} [Fintype ι]
@@ -52,8 +49,6 @@ theorem torusRCProbability_le_sum_of_cover {ι : Type*} [Fintype ι]
     (E : Set (RCConfig N M)) (F : ι → Set (RCConfig N M))
     (hcover : ∀ A ∈ E, ∃ i, A ∈ F i) :
     torusRCProbability hN hM q E ≤ ∑ i, torusRCProbability hN hM q (F i) := by
-  classical
-  rw [torusRCProbability_eq_sum]
   simp_rw [torusRCProbability_eq_sum]
   rw [Finset.sum_comm]
   apply Finset.sum_le_sum
@@ -82,7 +77,6 @@ theorem rectanglePair_probability_ge (hN : Even N) (hM : Even M)
     ∃ ij : Fin (3 * n + 1) × Fin (3 * n + 1),
       c / ((3 * (n : ℝ) + 1) ^ 2) ≤
         torusRCProbability hN hM q (rectanglePairConnection hNp hMp n ij.1 ij.2) := by
-  classical
   let F := fun ij : Fin (3 * n + 1) × Fin (3 * n + 1) =>
     rectanglePairConnection hNp hMp n ij.1 ij.2
   have hsum := torusRCProbability_le_sum_of_cover hN hM q _ F
@@ -93,9 +87,7 @@ theorem rectanglePair_probability_ge (hN : Even N) (hM : Even M)
     (fun i _ => h i)
   have heq : (∑ _ : Fin (3 * n + 1) × Fin (3 * n + 1),
       c / ((3 * (n : ℝ) + 1) ^ 2)) = c := by
-    simp only [Finset.sum_const, Finset.card_univ, Fintype.card_prod, Fintype.card_fin,
-      nsmul_eq_mul]
-    push_cast
+    simp
     field_simp
   rw [heq] at hlt
   exact (not_lt_of_ge (hc.trans hsum)) hlt
@@ -122,11 +114,10 @@ theorem point_pair_of_h319 (q : Set.Ici (1 : ℝ)) (hh319 : h319 q) :
   refine ⟨ij, ?_⟩
   have hnR : 1 ≤ (n : ℝ) := by exact_mod_cast hn
   have hsq : (3 * (n : ℝ) + 1) ^ 2 ≤ 16 * (n : ℝ) ^ 2 := by nlinarith
-  have hdiv : c / (16 * (n : ℝ) ^ 2) ≤ c / ((3 * (n : ℝ) + 1) ^ 2) :=
+  have hdiv :=
     div_le_div_of_nonneg_left hc.le (by positivity) hsq
   have heq : (c * 9 / 16) / (9 * (n : ℝ) ^ 2) = c / (16 * (n : ℝ) ^ 2) := by
     field_simp
-  rw [heq]
-  exact hdiv.trans hij
+  linarith
 
 end PottsDiscontinuity.TorusRC

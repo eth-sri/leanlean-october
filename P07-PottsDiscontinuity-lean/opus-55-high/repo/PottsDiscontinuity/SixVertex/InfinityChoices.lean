@@ -13,16 +13,19 @@ namespace PottsDiscontinuity.SixVertex
 
 variable {N n : ℕ}
 
+section
+variable (x : Finset (Fin N))
 /-- Defects indexed by their actual cyclic sites. -/
-abbrev DefectSite (x : Finset (Fin N)) := {i : Fin N // i ∈ defects x}
+abbrev DefectSite  := {i : Fin N // i ∈ defects x}
 
 /-- `true` chooses a left unit move and `false` a right unit move. -/
-abbrev DefectChoice (x : Finset (Fin N)) := DefectSite x → Bool
+abbrev DefectChoice  := DefectSite x → Bool
 
 /-- A right-then-left choice at adjacent defects would exchange them and is forbidden. -/
-def AdmissibleDefectChoice (x : Finset (Fin N)) (d : DefectChoice x) : Prop :=
+def AdmissibleDefectChoice (d : DefectChoice x) : Prop :=
   ∀ i : DefectSite x, ∀ hj : nxt i.1 ∈ defects x,
     d i = false → d ⟨nxt i.1, hj⟩ = false
+end
 
 instance (x : Finset (Fin N)) (d : DefectChoice x) : Decidable (AdmissibleDefectChoice x d) := by
   unfold AdmissibleDefectChoice
@@ -32,37 +35,40 @@ instance (x : Finset (Fin N)) (d : DefectChoice x) : Decidable (AdmissibleDefect
 def horizontalOfDefectChoice (x : Finset (Fin N)) (d : DefectChoice x) : Fin N → Bool :=
   fun i => if hd : nxt i ∈ defects x then d ⟨nxt i, hd⟩ else decide (i ∈ x)
 
+section
+variable (h : Fin N → Bool)
 /-- The upper up arrows are exactly the down switches of the horizontal arrows. -/
-def upperOfHorizontal (h : Fin N → Bool) : Finset (Fin N) :=
+def upperOfHorizontal  : Finset (Fin N) :=
   univ.filter fun i => h (prv i) = true ∧ h i = false
 
-@[simp] theorem mem_upperOfHorizontal (h : Fin N → Bool) (i : Fin N) :
+@[simp] theorem mem_upperOfHorizontal (i : Fin N) :
     i ∈ upperOfHorizontal h ↔ h (prv i) = true ∧ h i = false := by
   simp only [upperOfHorizontal, mem_filter, mem_univ, true_and]
+end
 
 /-- A choice is recovered exactly at the predecessor of its defect. -/
 theorem horizontalOfDefectChoice_prv (x : Finset (Fin N)) (d : DefectChoice x)
     (i : DefectSite x) : horizontalOfDefectChoice x d (prv i.1) = d i := by
   unfold horizontalOfDefectChoice
-  simp only [nxt, prv, Equiv.apply_symm_apply, dite_eq_left i.2]
+  grind
 
-theorem horizontalOfDefectChoice_up {x : Finset (Fin N)} (hx : NoConsecutiveUp x)
-    (d : DefectChoice x) {i : Fin N} (hi : i ∈ x) :
+section
+variable {x : Finset (Fin N)} (hx : NoConsecutiveUp x) (d : DefectChoice x)
+include hx
+theorem horizontalOfDefectChoice_up {i : Fin N} (hi : i ∈ x) :
     horizontalOfDefectChoice x d (prv i) = false ∧ horizontalOfDefectChoice x d i = true := by
   have hn : nxt i ∉ defects x := by
     rw [mem_defects_iff]
-    simp only [prv, nxt, Equiv.symm_apply_apply]
-    tauto
-  have hd : i ∉ defects x := by simp only [mem_defects_iff]; tauto
+    grind
+  have hd : i ∉ defects x := by simp_all
   have hp : prv i ∉ x := by
     intro hp
-    exact hx (prv i) hp (by simpa only [nxt, prv, Equiv.apply_symm_apply] using hi)
+    exact hx (prv i) hp (by grind)
   simp only [horizontalOfDefectChoice, nxt, prv, Equiv.apply_symm_apply,
     dite_eq_right hd, dite_eq_right hn, decide_eq_false hp, decide_eq_true hi, and_self]
 
 /-- Admissibility excludes every additional up switch. -/
-theorem horizontalOfDefectChoice_up_iff {x : Finset (Fin N)} (hx : NoConsecutiveUp x)
-    (d : DefectChoice x) (ha : AdmissibleDefectChoice x d) (i : Fin N) :
+theorem horizontalOfDefectChoice_up_iff (ha : AdmissibleDefectChoice x d) (i : Fin N) :
     i ∈ x ↔ horizontalOfDefectChoice x d (prv i) = false ∧
       horizontalOfDefectChoice x d i = true := by
   constructor
@@ -70,37 +76,26 @@ theorem horizontalOfDefectChoice_up_iff {x : Finset (Fin N)} (hx : NoConsecutive
   · rintro ⟨hp, hi⟩
     by_contra hix
     by_cases hdi : i ∈ defects x
-    · have hp' : d ⟨i, hdi⟩ = false := by
-        exact (horizontalOfDefectChoice_prv x d ⟨i, hdi⟩).symm.trans hp
+    · have hp' :=
+        (horizontalOfDefectChoice_prv x d ⟨i, hdi⟩).symm.trans hp
       by_cases hdn : nxt i ∈ defects x
       · have hdnext := ha ⟨i, hdi⟩ hdn hp'
-        simp only [horizontalOfDefectChoice, dite_eq_left hdn, hdnext] at hi
-        contradiction
-      · simp only [horizontalOfDefectChoice, dite_eq_right hdn, decide_eq_false hix] at hi
-        contradiction
-    · have hprev : prv i ∈ x := by
-        rw [mem_defects_iff] at hdi
-        tauto
-      have hp' := (horizontalOfDefectChoice_up hx d hprev).2
-      rw [hp] at hp'
-      contradiction
+        grind [horizontalOfDefectChoice]
+      grind [horizontalOfDefectChoice]
+    simp_all [prv, horizontalOfDefectChoice_up]
 
 /-- Every admissible choice realizes an ice-rule row. -/
-theorem flux_horizontalOfDefectChoice {x : Finset (Fin N)} (hx : NoConsecutiveUp x)
-    (d : DefectChoice x) (ha : AdmissibleDefectChoice x d) :
+theorem flux_horizontalOfDefectChoice (ha : AdmissibleDefectChoice x d) :
     Flux x (upperOfHorizontal (horizontalOfDefectChoice x d)) (horizontalOfDefectChoice x d) := by
   intro i
-  have hu := horizontalOfDefectChoice_up_iff hx d ha i
-  simp only [mem_upperOfHorizontal, hu]
+  simp only [mem_upperOfHorizontal, (horizontalOfDefectChoice_up_iff hx d ha i)]
   cases hp : horizontalOfDefectChoice x d (prv i) <;>
     cases hi : horizontalOfDefectChoice x d i <;> norm_num [toInt]
 
-theorem disjoint_upperOfDefectChoice {x : Finset (Fin N)} (hx : NoConsecutiveUp x)
-    (d : DefectChoice x) : Disjoint x (upperOfHorizontal (horizontalOfDefectChoice x d)) := by
+theorem disjoint_upperOfDefectChoice  : Disjoint x (upperOfHorizontal (horizontalOfDefectChoice x d)) := by
   apply disjoint_left.mpr
-  intro i hi hy
-  have hh := horizontalOfDefectChoice_up hx d hi
-  exact Bool.noConfusion (hh.1.symm.trans ((mem_upperOfHorizontal _ _).mp hy).1)
+  simp_all [horizontalOfDefectChoice_up, mem_upperOfHorizontal]
+end
 
 /-- Cardinality conservation for the generic cyclic flux equation. -/
 theorem Flux.card_eq_generic {x y : Finset (Fin N)} {h : Fin N → Bool} (hf : Flux x y h) :
@@ -130,9 +125,11 @@ theorem infinityRestriction_defectChoiceUpperState (hn : 0 < n) (x : Independent
 def defectChoiceOfHorizontal (x : Finset (Fin N)) (h : Fin N → Bool) : DefectChoice x :=
   fun i => h (prv i.1)
 
+section
+variable {x y : Finset (Fin N)} {h : Fin N → Bool} (hf : Flux x y h) (hd : Disjoint x y)
+include x y hf hd
 /-- Every disjoint transfer row is recovered from its choices at the defects. -/
-theorem Flux.horizontalOfDefectChoice_inverse {x y : Finset (Fin N)} {h : Fin N → Bool}
-    (hf : Flux x y h) (hd : Disjoint x y) :
+theorem Flux.horizontalOfDefectChoice_inverse  :
     horizontalOfDefectChoice x (defectChoiceOfHorizontal x h) = h := by
   funext i
   by_cases hi : nxt i ∈ defects x
@@ -140,24 +137,21 @@ theorem Flux.horizontalOfDefectChoice_inverse {x y : Finset (Fin N)} {h : Fin N 
       prv, nxt, Equiv.symm_apply_apply]
   · have hdi : i ∈ x ∨ nxt i ∈ x := by
       rw [mem_defects_iff] at hi
-      simp only [prv, nxt, Equiv.symm_apply_apply] at hi
-      tauto
+      grind
     simp only [horizontalOfDefectChoice, dite_eq_right hi]
     rcases hdi with hx | hx
     · have hh := (hf.local_disjoint hd i).1.mp hx
-      simp only [decide_eq_true hx, hh.2]
+      simp_all
     · have hh := (hf.local_disjoint hd (nxt i)).1.mp hx |>.1
       simp only [prv, nxt, Equiv.symm_apply_apply] at hh
       have hix : i ∉ x := by
         intro hix
         have hi' := (hf.local_disjoint hd i).1.mp hix |>.2
-        rw [hh] at hi'
-        contradiction
-      simp only [decide_eq_false hix, hh]
+        simp_all
+      simp_all
 
 /-- The choices of a disjoint transfer row cannot exchange adjacent defects. -/
-theorem Flux.admissibleDefectChoice {x y : Finset (Fin N)} {h : Fin N → Bool}
-    (hf : Flux x y h) (hd : Disjoint x y) :
+theorem Flux.admissibleDefectChoice  :
     AdmissibleDefectChoice x (defectChoiceOfHorizontal x h) := by
   intro i hj hi
   change h (prv i.1) = false at hi
@@ -165,24 +159,19 @@ theorem Flux.admissibleDefectChoice {x y : Finset (Fin N)} {h : Fin N → Bool}
   rw [show prv (nxt i.1) = i.1 from (finRotate N).symm_apply_apply i.1]
   have hix := (mem_defects_iff x i.1).mp i.2 |>.1
   have hup := (hf.local_disjoint hd i.1).1
-  cases hh : h i.1
-  · rfl
-  · exact (hix (hup.mpr ⟨hi, hh⟩)).elim
+  simp_all
 
 /-- The upper row of a disjoint flux configuration is its set of horizontal down switches. -/
-theorem Flux.upperOfHorizontal_eq {x y : Finset (Fin N)} {h : Fin N → Bool}
-    (hf : Flux x y h) (hd : Disjoint x y) : upperOfHorizontal h = y := by
+theorem Flux.upperOfHorizontal_eq  : upperOfHorizontal h = y := by
   ext i
   exact (mem_upperOfHorizontal h i).trans (hf.local_disjoint hd i).2.symm
+end
 
 /-- Nonempty disjoint vertical states admit at most one horizontal flux solution. -/
 theorem Flux.unique_of_disjoint {x y : Finset (Fin N)} {h g : Fin N → Bool}
     (hf : Flux x y h) (hg : Flux x y g) (hd : Disjoint x y) (hx : x.Nonempty) : h = g := by
-  classical
   have hxy : x ≠ y := by
-    rintro rfl
-    have he := disjoint_self.mp hd
-    exact hx.ne_empty he
+    grind
   cases N with
   | zero =>
     obtain ⟨i, _⟩ := hx
@@ -191,13 +180,15 @@ theorem Flux.unique_of_disjoint {x y : Finset (Fin N)} {h g : Fin N → Bool}
     have hc := card_flux x y
     rw [ite_eq_right hxy, ite_eq_left (interlaced_of_flux hf)] at hc
     obtain ⟨a, ha⟩ := card_eq_one.mp hc
-    have hh : h ∈ (univ.filter fun h : Fin (k + 1) → Bool => Flux x y h) := mem_filter.mpr ⟨mem_univ _, hf⟩
-    have hh' : g ∈ (univ.filter fun h : Fin (k + 1) → Bool => Flux x y h) := mem_filter.mpr ⟨mem_univ _, hg⟩
-    rw [ha, mem_singleton] at hh hh'
-    exact hh.trans hh'.symm
+    have hh : h ∈ (univ.filter fun h : Fin (k + 1) → Bool => Flux x y h) := by grind
+    have hh' : g ∈ (univ.filter fun h : Fin (k + 1) → Bool => Flux x y h) := by grind
+    simp_all
 
+section
+variable (hn : 0 < n)
+include hn
 /-- Distinct admissible labelled choices give distinct neighboring row states. -/
-theorem defectChoiceUpperState_injective (hn : 0 < n) (x : IndependentState N n) :
+theorem defectChoiceUpperState_injective (x : IndependentState N n) :
     Function.Injective (defectChoiceUpperState x) := by
   intro d e he
   have hd := flux_horizontalOfDefectChoice x.2 d.1 d.2
@@ -206,16 +197,14 @@ theorem defectChoiceUpperState_injective (hn : 0 < n) (x : IndependentState N n)
   change upperOfHorizontal (horizontalOfDefectChoice x.1.1 d.1) =
     upperOfHorizontal (horizontalOfDefectChoice x.1.1 e.1) at hval
   rw [← hval] at he'
-  have hx : x.1.1.Nonempty := card_pos.mp (by rw [x.1.2]; exact hn)
-  have hh := hd.unique_of_disjoint he' (disjoint_upperOfDefectChoice x.2 d.1) hx
+  have hx : x.1.1.Nonempty := by grind
   apply Subtype.ext
   funext i
-  have hh' := congrFun hh (prv i.1)
-  simpa only [horizontalOfDefectChoice_prv x.1.1 d.1 i,
-    horizontalOfDefectChoice_prv x.1.1 e.1 i] using hh'
+  have hh' := congrFun (hd.unique_of_disjoint he' (disjoint_upperOfDefectChoice x.2 d.1) hx) (prv i.1)
+  grind [horizontalOfDefectChoice_prv]
 
 /-- Every genuine neighbor comes from an admissible labelled choice. -/
-theorem exists_defectChoiceUpperState (hn : 0 < n) (x y : IndependentState N n)
+theorem exists_defectChoiceUpperState (x y : IndependentState N n)
     (hxy : infinityRestriction N n x y = 1) :
     ∃ d : {d : DefectChoice x.1.1 // AdmissibleDefectChoice x.1.1 d},
       defectChoiceUpperState x d = y := by
@@ -230,24 +219,18 @@ theorem exists_defectChoiceUpperState (hn : 0 < n) (x y : IndependentState N n)
   rw [hf.horizontalOfDefectChoice_inverse hd, hf.upperOfHorizontal_eq hd]
 
 /-- Exact finite-state row summation over the admissible labelled choices. -/
-theorem infinityRestriction_mulVec_eq_sum_choices (hn : 0 < n) (x : IndependentState N n)
+theorem infinityRestriction_mulVec_eq_sum_choices (x : IndependentState N n)
     (v : IndependentState N n → ℝ) :
     (infinityRestriction N n *ᵥ v) x =
       ∑ d : {d : DefectChoice x.1.1 // AdmissibleDefectChoice x.1.1 d}, v (defectChoiceUpperState x d) := by
-  classical
   have hs : (∑ d : {d : DefectChoice x.1.1 // AdmissibleDefectChoice x.1.1 d},
       v (defectChoiceUpperState x d)) =
       ∑ y ∈ univ.filter (fun y => infinityRestriction N n x y = 1), v y := by
     apply sum_bij (fun d _ => defectChoiceUpperState x d)
-    · intro d _
-      exact mem_filter.mpr ⟨mem_univ _, infinityRestriction_defectChoiceUpperState hn x d⟩
-    · intro d _ e _ he
-      exact defectChoiceUpperState_injective hn x he
-    · intro y hy
-      obtain ⟨d, hd⟩ := exists_defectChoiceUpperState hn x y (mem_filter.mp hy).2
-      exact ⟨d, mem_univ _, hd⟩
-    · intro d _
-      rfl
+    · simp_all [infinityRestriction_defectChoiceUpperState]
+    · grind [defectChoiceUpperState_injective]
+    · grind [exists_defectChoiceUpperState]
+    simp
   rw [hs, Matrix.mulVec, dotProduct, sum_filter]
   apply sum_congr rfl
   intro y _
@@ -255,5 +238,6 @@ theorem infinityRestriction_mulVec_eq_sum_choices (hn : 0 < n) (x : IndependentS
     if infinityBlock N n x.1 y.1 = 1 then v y else 0
   unfold infinityBlock
   split_ifs <;> simp_all [Nat.ne_of_gt hn]
+end
 
 end PottsDiscontinuity.SixVertex

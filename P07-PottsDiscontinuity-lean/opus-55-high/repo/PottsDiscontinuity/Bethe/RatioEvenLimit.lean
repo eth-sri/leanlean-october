@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.RatioEvenAlgebra
 
 /-! # The complete even-deficit eigenvalue ratio limit -/
 
-@[expose] public section
+public section
 
 open Set Filter MeasureTheory
 open scoped Topology BigOperators
@@ -51,36 +51,30 @@ theorem ratio_even_eigenvalue_limit (heven : r % 2 = 0) {c : ℝ} (hc : 2 < c)
         (r : ℝ) * ∫ x in (-Real.pi)..Real.pi, ratioEllPrime c x * tauCont Δ x) : ℝ) : ℂ)) := by
   let s := r / 2
   have hcount (i : ℕ) : s + (N i / 2 - r) + s = N i / 2 := by
-    dsimp [s]
-    have := hr i
-    omega
+    grind
   have hbulk := ratio_bulk_product_limit hΔ r N h4 hr hN hn p q hp hq hpBE hqBE hNlim hbp hbq hK hrate hc
   have halign (i : ℕ) (j : Fin (N i / 2 - r)) :
-      alignedRoot (N i) r (hr i) (p i) j = p i ⟨j.val + s, by have := hcount i; omega⟩ := by
-    simp only [alignedRoot, heven, ite_eq_left, s]
+      alignedRoot (N i) r (hr i) (p i) j = p i ⟨j.val + s, by omega⟩ := by
+    grind [alignedRoot]
   simp_rw [halign] at hbulk
-  have hnormP : Tendsto (fun i => densityNorm Δ hΔ
-      (fun x => rootStepDensity (N i) (N i / 2) (p i) (hp i)
-        (half_pos_of_half_sub_pos N r hn i) (two_mul_half_le N i) x - rho Δ x) (hbp i)) atTop (𝓝 0) :=
+  have hnormP :=
     ratio_densityNorm_tendsto_of_rate hΔ N hNlim _ hbp (hrate.mono (fun i hi => hi.1))
-  have hnP (i : ℕ) : 0 < N i / 2 := by have := hn i; omega
+  have hnP (i : ℕ) : 0 < N i / 2 := by grind
   have hcountP (i : ℕ) : N i = 2 * (N i / 2 + 0) := by
-    obtain ⟨z, hz⟩ := h4 i
-    omega
-  let x : ℕ → Fin s → ℝ := fun i j => p i ⟨j.val, by have := hcount i; omega⟩
+    grind
+  let x : ℕ → Fin s → ℝ := fun i j => p i ⟨j.val, by grind⟩
   have hx (j : Fin s) : Tendsto (fun i => x i j) atTop (𝓝 (-Real.pi)) :=
     ratio_tendsto_root_left hΔ 0 N (fun i => N i / 2) p hp hnP (fun i => by omega)
-      hcountP hNlim hbp hnormP (fun i => ⟨j.val, by have := hcount i; omega⟩) s
-      (fun i => by change j.val ≤ s; omega)
+      hcountP hNlim hbp hnormP (fun i => ⟨j.val, by grind⟩) s
+      (fun i => by simp)
   have hboundary := ratio_even_boundary_tendsto hc s x hx
-  have hs2 : s * 2 = r := by dsimp [s]; omega
-  have habs : 0 < |Δ| := abs_pos.mpr (by linarith)
+  have hs2 : s * 2 = r := by omega
+  have habs : 0 < |Δ| := by grind
   have hpow : Real.exp ((r : ℝ) * Real.log |Δ|) = |Δ| ^ r := by
     rw [Real.exp_nat_mul, Real.exp_log habs]
   have hboundaryValue : ((|anisotropy c| ^ s) ^ 2)⁻¹ = Real.exp (-(r : ℝ) * Real.log |Δ|) := by
     rw [hcΔ, ← pow_mul, hs2, ← hpow, ← Real.exp_neg]
-    congr 1
-    ring
+    simp
   rw [hboundaryValue] at hboundary
   have hreal := hbulk.mul hboundary
   have htarget : Real.exp ((r : ℝ) * ∫ x in (-Real.pi)..Real.pi, ratioEllPrime c x * tauCont Δ x) *
@@ -88,7 +82,6 @@ theorem ratio_even_eigenvalue_limit (heven : r % 2 = 0) {c : ℝ} (hc : 2 < c)
       Real.exp (-(r : ℝ) * Real.log |Δ| +
         (r : ℝ) * ∫ x in (-Real.pi)..Real.pi, ratioEllPrime c x * tauCont Δ x) := by
     rw [← Real.exp_add]
-    congr 1
     ring
   rw [htarget] at hreal
   have hcomplex := Complex.continuous_ofReal.continuousAt.tendsto.comp hreal

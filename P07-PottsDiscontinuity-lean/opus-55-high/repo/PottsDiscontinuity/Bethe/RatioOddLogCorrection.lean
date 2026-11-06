@@ -5,7 +5,7 @@ public import PottsDiscontinuity.Bethe.RatioOddSums
 
 /-! # Exact logarithmic bookkeeping for the odd aligned-root quotient -/
 
-@[expose] public section
+public section
 
 open Finset
 open scoped BigOperators
@@ -17,13 +17,13 @@ theorem ratio_odd_log_correction (c : ℝ) (s N : ℕ) (h4 : 4 ∣ N)
     (p : Fin (N / 2) → ℝ) (hp : p ∈ S_n (N / 2)) :
     (∑ j, ratioEll c (alignedRoot N (2 * s + 1) hr p j)) - (∑ j, ratioEll c (p j)) =
       (∑ j : Fin (N / 4 - s - 1), ratioMidpointLog c N h4 p s j) -
-        ratioEll c (ratioPositiveRoot N h4 p ⟨0, by obtain ⟨z, hz⟩ := h4; omega⟩) -
+        ratioEll c (ratioPositiveRoot N h4 p ⟨0, by omega⟩) -
         ratioEll c (p ⟨s, by omega⟩) -
         2 * ∑ j : Fin s, ratioEll c (p ⟨j.val, by omega⟩) := by
   let m := N / 4
   let t := N / 4 - s - 1
-  have hNcount : 2 * m = N / 2 := by dsimp [m]; obtain ⟨z, hz⟩ := h4; omega
-  have hmt : t + 1 + s = m := by dsimp [m, t]; obtain ⟨z, hz⟩ := h4; omega
+  have hNcount : 2 * m = N / 2 := by omega
+  have hmt : t + 1 + s = m := by omega
   have hqcount : 2 * t + 1 = N / 2 - (2 * s + 1) := by omega
   have hm : 0 < m := by omega
   have href (j : Fin (N / 2)) : ratioEll c (p (Fin.rev j)) = ratioEll c (p j) := by
@@ -35,13 +35,10 @@ theorem ratio_odd_log_correction (c : ℝ) (s N : ℕ) (h4 : 4 ∣ N)
   have hP : (∑ j, ratioEll c (p j)) = 2 * ∑ j, f j :=
     ratio_sum_even_reflection hNcount (fun j => ratioEll c (p j)) href
   have hrev : Fin.rev (⟨t, by omega⟩ : Fin (N / 2 - (2 * s + 1))) = ⟨t, by omega⟩ := by
-    apply Fin.ext
-    simp only [Fin.val_rev]
-    omega
+    grind
   have hzeroRoot : alignedRoot N (2 * s + 1) hr p ⟨t, by omega⟩ = 0 := by
     have h := alignedRoot_rev hr hp ⟨t, by omega⟩
-    rw [hrev] at h
-    linarith
+    grind
   have hA := ratio_sum_odd_reflection hqcount
     (fun j => ratioEll c (alignedRoot N (2 * s + 1) hr p j))
     (fun j => by rw [alignedRoot_rev hr hp, ratio_ell_neg])
@@ -52,26 +49,20 @@ theorem ratio_odd_log_correction (c : ℝ) (s N : ℕ) (h4 : 4 ∣ N)
     have hodd : (2 * s + 1) % 2 ≠ 0 := by omega
     have hidx₀ : (⟨t + 1 + j.val + (2 * s + 1 - 1) / 2, by omega⟩ : Fin (N / 2)) =
         ⟨m + j.val, by omega⟩ := by
-      apply Fin.ext
-      change t + 1 + j.val + (2 * s + 1 - 1) / 2 = m + j.val
-      omega
+      grind
     have hidx₁ : (⟨t + 1 + j.val + (2 * s + 1 + 1) / 2, by omega⟩ : Fin (N / 2)) =
         ⟨m + (j.val + 1), by omega⟩ := by
-      apply Fin.ext
-      change t + 1 + j.val + (2 * s + 1 + 1) / 2 = m + (j.val + 1)
-      omega
+      grind
     simp only [alignedRoot, ite_eq_right hodd]
     rw [hidx₀, hidx₁]
     rfl
   have hA' : (∑ j, ratioEll c (alignedRoot N (2 * s + 1) hr p j)) = 2 * ∑ j, g j := by
-    simpa only [hmid] using hA
+    grind
   have hft : f ⟨t, by omega⟩ = ratioEll c (p ⟨s, by omega⟩) := by
     have hidx : Fin.rev (⟨m + t, by omega⟩ : Fin (N / 2)) = ⟨s, by omega⟩ := by
-      apply Fin.ext
-      simp only [Fin.val_rev]
-      omega
+      grind
     change ratioEll c (p ⟨m + t, by omega⟩) = _
-    rw [← href ⟨m + t, by omega⟩, hidx]
+    grind
   have htail : (∑ j : Fin s, f ⟨j.val + (t + 1), by omega⟩) =
       ∑ j : Fin s, ratioEll c (p ⟨j.val, by omega⟩) := by
     calc
@@ -80,11 +71,9 @@ theorem ratio_odd_log_correction (c : ℝ) (s N : ℕ) (h4 : 4 ∣ N)
         intro j hj
         have hidx : Fin.rev (⟨m + (j.val + (t + 1)), by omega⟩ : Fin (N / 2)) =
             ⟨(Fin.rev j).val, by omega⟩ := by
-          apply Fin.ext
-          simp only [Fin.val_rev]
-          omega
+          grind
         change ratioEll c (p ⟨m + (j.val + (t + 1)), by omega⟩) = _
-        rw [← href ⟨m + (j.val + (t + 1)), by omega⟩, hidx]
+        grind
       _ = _ := Equiv.sum_comp (Fin.revPerm : Equiv.Perm (Fin s))
         (fun j => ratioEll c (p ⟨j.val, by omega⟩))
   have htel := ratio_midpoint_sum_telescoping hmt f g

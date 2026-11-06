@@ -9,45 +9,49 @@ public import Mathlib.Tactic
 
 namespace PottsDiscontinuity.TorusTopology.Planar.Medial
 
+section
+variable (x y k : ℤ)
 /-- The actual lift after taking the right edge of a positively oriented unit face. -/
-def parafermionicCoverFaceRightLift (x y k : ℤ) : ParafermionicCoverVertex :=
+def parafermionicCoverFaceRightLift  : ParafermionicCoverVertex :=
   parafermionicCoverNeighborLift ((x,y),k) (x+1,y)
 
 /-- Continue the same lifted face traversal upward. -/
-def parafermionicCoverFaceRightUpLift (x y k : ℤ) : ParafermionicCoverVertex :=
+def parafermionicCoverFaceRightUpLift  : ParafermionicCoverVertex :=
   parafermionicCoverNeighborLift (parafermionicCoverFaceRightLift x y k) (x+1,y+1)
 
 /-- Continue the same lifted face traversal to the left. -/
-def parafermionicCoverFaceRightUpLeftLift (x y k : ℤ) : ParafermionicCoverVertex :=
+def parafermionicCoverFaceRightUpLeftLift  : ParafermionicCoverVertex :=
   parafermionicCoverNeighborLift (parafermionicCoverFaceRightUpLift x y k) (x,y+1)
 
 /-- The endpoint after the four actual lifts around a unit square. -/
-def parafermionicCoverFaceLiftEndpoint (x y k : ℤ) : ParafermionicCoverVertex :=
+def parafermionicCoverFaceLiftEndpoint  : ParafermionicCoverVertex :=
   parafermionicCoverNeighborLift (parafermionicCoverFaceRightUpLeftLift x y k) (x,y)
+end
 
-private theorem coverFace_base_right (x y : ℤ) :
+section
+variable (x y : ℤ)
+theorem coverFace_base_right  :
     squareLattice.Adj (x,y) (x+1,y) := by
-  rw [squareLattice_adj_iff]
-  exact Or.inl ⟨Or.inl (by omega), rfl⟩
+  tauto
 
-private theorem coverFace_base_up (x y : ℤ) :
+theorem coverFace_base_up  :
     squareLattice.Adj (x+1,y) (x+1,y+1) := by
-  rw [squareLattice_adj_iff]
-  exact Or.inr ⟨rfl, Or.inl (by omega)⟩
+  tauto
 
-private theorem coverFace_base_left (x y : ℤ) :
+theorem coverFace_base_left  :
     squareLattice.Adj (x+1,y+1) (x,y+1) := by
-  rw [squareLattice_adj_iff]
-  exact Or.inl ⟨Or.inr (by omega), rfl⟩
+  tauto
 
-private theorem coverFace_base_down (x y : ℤ) :
+theorem coverFace_base_down  :
     squareLattice.Adj (x,y+1) (x,y) := by
-  rw [squareLattice_adj_iff]
-  exact Or.inr ⟨rfl, Or.inr (by omega)⟩
+  tauto
+end
 
+section
+variable (x y k : ℤ)
 /-- The four successive lifts are actual edges of the cover graph in the stated
 right/up/left/down order. -/
-theorem parafermionicCoverFaceLift_steps_adj (x y k : ℤ) :
+theorem parafermionicCoverFaceLift_steps_adj  :
     parafermionicCoverGraph.Adj ((x,y),k) (parafermionicCoverFaceRightLift x y k) ∧
     parafermionicCoverGraph.Adj (parafermionicCoverFaceRightLift x y k)
       (parafermionicCoverFaceRightUpLift x y k) ∧
@@ -68,7 +72,7 @@ theorem parafermionicCoverFaceLift_steps_adj (x y k : ℤ) :
       (parafermionicCoverFaceRightUpLeftLift x y k) (x,y)
       (coverFace_base_down x y)
 
-theorem parafermionicCoverFaceLiftEndpoint_formula (x y k : ℤ) :
+theorem parafermionicCoverFaceLiftEndpoint_formula  :
     parafermionicCoverFaceLiftEndpoint x y k =
       ((x,y), k + if (x,y) = (0,-1) then 1 else 0) := by
   simp [parafermionicCoverFaceLiftEndpoint,
@@ -77,12 +81,12 @@ theorem parafermionicCoverFaceLiftEndpoint_formula (x y k : ℤ) :
     parafermionicCoverFaceRightLift,
     parafermionicCoverNeighborLift,
     parafermionicCoverSheetShift]
-  split_ifs <;> omega
+  grind
 
 theorem parafermionicCoverFaceLiftEndpoint_eq_start_of_not_branch
-    (x y k : ℤ) (h : (x,y) ≠ (0,-1)) :
+    (h : (x,y) ≠ (0,-1)) :
     parafermionicCoverFaceLiftEndpoint x y k = ((x,y),k) := by
-  rw [parafermionicCoverFaceLiftEndpoint_formula]
-  simp [h]
+  simp_all [parafermionicCoverFaceLiftEndpoint_formula]
+end
 
 end PottsDiscontinuity.TorusTopology.Planar.Medial

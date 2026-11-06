@@ -41,21 +41,15 @@ cylinder with distinct bottom and top rows. -/
 def torusRCSeamClosed (A : RCConfig N M) : RCConfig N M :=
   fun e => if e.2.val = 0 then false else A e
 
-@[simp] theorem torusRCSeamClosed_seam (hM : 0 < M) (A : RCConfig N M)
-    (i : Fin N) : torusRCSeamClosed A (i, (⟨0, hM⟩ : Fin M)) = false := by
-  simp [torusRCSeamClosed]
 
-@[simp] theorem torusRCSeamClosed_away (A : RCConfig N M)
-    (i : Fin N) (j : Fin M) (hj : j.val ≠ 0) :
-    torusRCSeamClosed A (i, j) = A (i, j) := by
-  simp [torusRCSeamClosed, hj]
 
+section
+variable (hN : Even N) (hM : Even M)
 /-- The clean cylinder crossing event used in the premise `hUr` below: there are `r` different
 open primal clusters of the seam-closed configuration, each joining row zero
 to the top row. The vertices are existential, so the event handles every
 horizontal location and both checkerboard parities. -/
-def torusRCSeamClosedCylinderCrossings (hN : Even N) (hM : Even M)
-    (r : ℕ) (A : RCConfig N M) : Prop :=
+def torusRCSeamClosedCylinderCrossings (r : ℕ) (A : RCConfig N M) : Prop :=
   ∃ x : Fin r → FaceVertex N M true,
     (∀ i, (x i).val.2.val = 0) ∧
       (∀ i, ∃ y : FaceVertex N M true,
@@ -67,7 +61,7 @@ def torusRCSeamClosedCylinderCrossings (hN : Even N) (hM : Even M)
 /-- Exact topological premise that B ∩ C′ forces `U = 1`, where the event B is
 `torusRCBarrier` and C′ is `torusCPrime`. It is discharged by `TorusTopology.hBCU_proved`
 in `TorusTopology/BarrierEvent.lean`. -/
-def hBCU (hN : Even N) (hM : Even M) (hNpos : 0 < N) (hMpos : 0 < M)
+def hBCU (hNpos : 0 < N) (hMpos : 0 < M)
     (hNdiv : 8 ∣ N) (n : ℕ) : Prop :=
   8 * n ≤ N → N / 2 < M →
     ∀ A : RCConfig N M,
@@ -78,9 +72,10 @@ def hBCU (hN : Even N) (hM : Even M) (hNpos : 0 < N) (hMpos : 0 < M)
 /-- Exact topological premise that `U ≥ r` forces `r` distinct bottom-to-top clusters
 after the seam row is closed. It is discharged by `TorusTopology.hUr_proved` in
 `TorusTopology/CylinderCount.lean`. -/
-def hUr (hN : Even N) (hM : Even M) (hMpos : 0 < M) (r : ℕ) : Prop :=
+def hUr (hMpos : 0 < M) (r : ℕ) : Prop :=
   ∀ A : RCConfig N M,
     r ≤ rcVerticalWinding hN hM ⟨0, hMpos⟩ A →
       torusRCSeamClosedCylinderCrossings hN hM r (torusRCSeamClosed A)
+end
 
 end PottsDiscontinuity.TorusRC

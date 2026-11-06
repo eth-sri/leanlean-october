@@ -18,23 +18,26 @@ namespace PottsDiscontinuity.Torus
 
 variable {N M : ℕ}
 
-theorem sum_port (t : Port → ℚ) :
+section
+variable (t : Port → ℚ)
+theorem sum_port  :
     ∑ p : Port, t p = t .west + t .east + t .south + t .north := by
   have hu : (univ : Finset Port) = {.west, .east, .south, .north} := by decide
   rw [hu]
   simp [add_assoc]
 
 /-- The zero-east-corner primitive of a four-component zero-sum flow. -/
-def cornerPrimitiveValue (t : Port → ℚ) : Port → ℚ
+def cornerPrimitiveValue  : Port → ℚ
   | .east => 0
   | .north => -t .north
   | .west => -t .north - t .west
   | .south => t .east
 
-theorem cornerPrimitiveValue_cw_sub (t : Port → ℚ) (ht : ∑ p : Port, t p = 0) (p : Port) :
+theorem cornerPrimitiveValue_cw_sub (ht : ∑ p : Port, t p = 0) (p : Port) :
     cornerPrimitiveValue t (cwPort p) - cornerPrimitiveValue t p = t p := by
   rw [sum_port] at ht
   cases p <;> simp only [cwPort, cornerPrimitiveValue] <;> linarith
+end
 
 theorem faceRotation_symm_corner (hN : Even N) (hM : Even M)
     (v : FaceVertex N M true) (p : Port) :
@@ -44,27 +47,27 @@ theorem faceRotation_symm_corner (hN : Even N) (hM : Even M)
   rw [Equiv.apply_symm_apply, faceRotation_corner]
   cases p <;> rfl
 
+section
+variable (hN : Even N) (hM : Even M) (A : RCConfig N M)
 /-- The normalized primitive on every actual primal ribbon vertex. -/
-def ribbonCornerPrimitive (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (f : diamondCycleSpace hN hM A) (d : DirectedDart (checkerArrows N M)) : ℚ :=
+def ribbonCornerPrimitive (f : diamondCycleSpace hN hM A) (d : DirectedDart (checkerArrows N M)) : ℚ :=
   let x := (ribbonCornerEquiv hN hM).symm d
   cornerPrimitiveValue
     (fun p => ribbonHalfFlow hN hM A f.val (ribbonCornerEquiv hN hM (x.1, p))) x.2
 
-@[simp] theorem ribbonCornerPrimitive_corner (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (f : diamondCycleSpace hN hM A) (v : FaceVertex N M true) (p : Port) :
+@[simp] theorem ribbonCornerPrimitive_corner (f : diamondCycleSpace hN hM A) (v : FaceVertex N M true) (p : Port) :
     ribbonCornerPrimitive hN hM A f (ribbonCornerEquiv hN hM (v, p)) =
       cornerPrimitiveValue
         (fun q => ribbonHalfFlow hN hM A f.val (ribbonCornerEquiv hN hM (v, q))) p := by
   simp only [ribbonCornerPrimitive, Equiv.symm_apply_apply]
 
 /-- Differentiation around the cyclic vertex order recovers the actual half-edge flow. -/
-theorem ribbonCornerPrimitive_rotation_sub (hN : Even N) (hM : Even M) (A : RCConfig N M)
-    (f : diamondCycleSpace hN hM A) (d : DirectedDart (checkerArrows N M)) :
+theorem ribbonCornerPrimitive_rotation_sub (f : diamondCycleSpace hN hM A) (d : DirectedDart (checkerArrows N M)) :
     ribbonCornerPrimitive hN hM A f ((faceRotation hN hM).symm d) -
       ribbonCornerPrimitive hN hM A f d = ribbonHalfFlow hN hM A f.val d := by
   obtain ⟨⟨v, p⟩, rfl⟩ := (ribbonCornerEquiv hN hM).surjective d
   rw [faceRotation_symm_corner, ribbonCornerPrimitive_corner, ribbonCornerPrimitive_corner]
   exact cornerPrimitiveValue_cw_sub _ (sum_ribbonHalfFlow_corners hN hM A f v) p
+end
 
 end PottsDiscontinuity.Torus

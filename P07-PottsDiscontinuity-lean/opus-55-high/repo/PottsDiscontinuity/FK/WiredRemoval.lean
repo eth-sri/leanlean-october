@@ -15,7 +15,7 @@ count. Consequently the full FK weight factors into the FK weight on the
 remaining sampled edges and an ordinary Bernoulli weight on `R`.
 -/
 
-@[expose] public section
+@[expose] public noncomputable section
 
 namespace PottsDiscontinuity.FK
 
@@ -23,19 +23,22 @@ open scoped BigOperators
 
 variable {V : Type*} (G : SimpleGraph V)
 
+section
+variable (R : Configuration G)
 /-- Configurations on the original edges that remain sampled after removing `R`. -/
-abbrev RemainingConfiguration (R : Configuration G) :=
+abbrev RemainingConfiguration  :=
   {A : Configuration G // Disjoint A R}
 
 /-- Configurations of the edges in `R`. -/
-abbrev RemovedConfiguration (R : Configuration G) :=
+abbrev RemovedConfiguration  :=
   {B : Configuration G // B ⊆ R}
+end
 
 instance remainingConfiguration_nonempty (R : Configuration G) :
     Nonempty (RemainingConfiguration G R) := ⟨⟨∅, Finset.disjoint_empty_left R⟩⟩
 
 instance removedConfiguration_nonempty (R : Configuration G) :
-    Nonempty (RemovedConfiguration G R) := ⟨⟨∅, Finset.empty_subset R⟩⟩
+    Nonempty (RemovedConfiguration G R) := by aesop
 
 instance remainingConfiguration_finite [Finite V] (R : Configuration G) :
     Finite (RemainingConfiguration G R) := by
@@ -49,8 +52,10 @@ instance removedConfiguration_finite [Finite V] (R : Configuration G) :
 
 variable [DecidableEq G.edgeSet]
 
+section
+variable (R : Configuration G)
 /-- Splitting a full configuration into its open edges outside and inside `R`. -/
-def configurationSplitEquiv (R : Configuration G) :
+def configurationSplitEquiv  :
     Configuration G ≃ RemainingConfiguration G R × RemovedConfiguration G R where
   toFun C := (⟨C \ R, Finset.sdiff_disjoint⟩, ⟨C ∩ R, Finset.inter_subset_right⟩)
   invFun P := P.1.val ∪ P.2.val
@@ -62,16 +67,16 @@ def configurationSplitEquiv (R : Configuration G) :
       change (A.val ∪ B.val) \ R = A.val
       rw [Finset.union_sdiff_distrib, Finset.sdiff_eq_empty_iff_subset.mpr B.property,
         Finset.union_empty]
-      exact sdiff_eq_left.mpr A.property
+      aesop
     · apply Subtype.ext
       change (A.val ∪ B.val) ∩ R = B.val
       rw [Finset.union_inter_distrib_right,
         Finset.disjoint_iff_inter_eq_empty.mp A.property, Finset.empty_union]
-      exact Finset.inter_eq_left.mpr B.property
+      grind
 
-@[simp] theorem configurationSplitEquiv_symm_apply (R : Configuration G)
-    (A : RemainingConfiguration G R) (B : RemovedConfiguration G R) :
+@[simp] theorem configurationSplitEquiv_symm_apply (A : RemainingConfiguration G R) (B : RemovedConfiguration G R) :
     (configurationSplitEquiv G R).symm (A, B) = A.val ∪ B.val := rfl
+end
 
 omit [DecidableEq G.edgeSet] in
 theorem remaining_disjoint_removed (R : Configuration G)
@@ -80,7 +85,7 @@ theorem remaining_disjoint_removed (R : Configuration G)
 
 theorem remaining_card_add_removedSet_card_le [Finite V] (R : Configuration G)
     (A : RemainingConfiguration G R) : A.val.card + R.card ≤ Nat.card G.edgeSet := by
-  let : Fintype G.edgeSet := Fintype.ofFinite G.edgeSet
+  let  := Fintype.ofFinite G.edgeSet
   rw [← Finset.card_union_of_disjoint A.property, Nat.card_eq_fintype_card]
   exact Finset.card_le_univ _
 
@@ -100,41 +105,43 @@ theorem componentSetoid_union_removed (ξ : BoundaryCondition V) (R : Configurat
     intro S
     induction S using Finset.induction_on with
     | empty =>
-      intro _
-      rw [Finset.union_empty]
+      simp
     | @insert e S _ ih =>
       intro hS
-      have heR : e ∈ R := hS (Finset.mem_insert_self e S)
+      have heR := hS (Finset.mem_insert_self e S)
       have hSR : S ⊆ R := fun _ h => hS (Finset.mem_insert_of_mem h)
       have hendpoints : ∃ (u v : V) (huv : G.Adj u v),
           e = ⟨s(u, v), G.mem_edgeSet.mpr huv⟩ := by
         rcases e with ⟨e, heG⟩
         induction e using Sym2.inductionOn with
-        | _ u v => exact ⟨u, v, G.mem_edgeSet.mp heG, rfl⟩
+        | _ u v => tauto
       rcases hendpoints with ⟨u, v, huv, rfl⟩
       rw [Finset.union_insert, componentSetoid_insert_eq_of_boundary ξ (A ∪ S) huv
         (hR u v huv heR)]
-      exact ih hSR
-  exact haux B.val B.property
+      simp_all
+  grind
 
-theorem componentCount_union_removed [Finite V] (ξ : BoundaryCondition V)
+section
+variable [Finite V]
+theorem componentCount_union_removed (ξ : BoundaryCondition V)
     (R : Configuration G)
     (hR : ∀ (u v : V) (huv : G.Adj u v),
       (⟨s(u, v), G.mem_edgeSet.mpr huv⟩ : G.edgeSet) ∈ R → ξ.partition.r u v)
     (A : Configuration G) (B : RemovedConfiguration G R) :
     componentCount G ξ (A ∪ B.val) = componentCount G ξ A := by
-  rw [componentCount, componentCount, componentSetoid_union_removed G ξ R hR A B]
+  simp_all [componentCount, componentSetoid_union_removed]
 
 /-- The FK weight with only edges outside `R` sampled. The component count is
 still taken on all original vertices with the same boundary partition. -/
-noncomputable def remainingWeight [Finite V] (q : Parameters)
+def remainingWeight (q : Parameters)
     (ξ : BoundaryCondition V) (R : Configuration G) (A : RemainingConfiguration G R) : ℝ :=
   edgeParameter q ^ A.val.card *
     (1 - edgeParameter q) ^ (Nat.card G.edgeSet - R.card - A.val.card) *
     q.val ^ componentCount G ξ A.val
+end
 
 /-- The ordinary Bernoulli weight of the open subset of the removed edge set. -/
-noncomputable def removedWeight (q : Parameters) (R : Configuration G)
+def removedWeight (q : Parameters) (R : Configuration G)
     (B : RemovedConfiguration G R) : ℝ :=
   edgeParameter q ^ B.val.card * (1 - edgeParameter q) ^ (R.card - B.val.card)
 
@@ -151,8 +158,10 @@ theorem removedWeight_pos (q : Parameters) (R : Configuration G)
     (B : RemovedConfiguration G R) : 0 < removedWeight G q R B :=
   mul_pos (pow_pos (edgeParameter_pos q) _) (pow_pos (one_sub_edgeParameter_pos q) _)
 
+section
+variable [Finite V]
 /-- The closed-edge exponents split without any truncated-subtraction artifact. -/
-theorem closed_edge_count_split [Finite V] (R : Configuration G)
+theorem closed_edge_count_split (R : Configuration G)
     (A : RemainingConfiguration G R) (B : RemovedConfiguration G R) :
     Nat.card G.edgeSet - (A.val.card + B.val.card) =
       (Nat.card G.edgeSet - R.card - A.val.card) + (R.card - B.val.card) := by
@@ -162,7 +171,7 @@ theorem closed_edge_count_split [Finite V] (R : Configuration G)
 
 /-- The original FK weight factors into the remaining FK weight and the
 independent Bernoulli weight on the prewired edges. -/
-theorem weight_union_factorization [Finite V] (q : Parameters)
+theorem weight_union_factorization (q : Parameters)
     (ξ : BoundaryCondition V) (R : Configuration G)
     (hR : ∀ (u v : V) (huv : G.Adj u v),
       (⟨s(u, v), G.mem_edgeSet.mpr huv⟩ : G.edgeSet) ∈ R → ξ.partition.r u v)
@@ -173,5 +182,6 @@ theorem weight_union_factorization [Finite V] (q : Parameters)
     componentCount_union_removed G ξ R hR A.val B,
     closed_edge_count_split G R A B, pow_add, pow_add]
   ring
+end
 
 end PottsDiscontinuity.FK

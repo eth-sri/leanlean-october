@@ -6,7 +6,7 @@ public import PottsDiscontinuity.Potts.WiredConnectionLimit
 
 /-! Merged connection-data limits survive the literal corner correction. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.Potts
 
@@ -22,8 +22,7 @@ noncomputable section
     intro n
     exact wiredDataEvent_antitone F (Nat.le_succ n) (hω n)
   · intro ω hω
-    simp only [Set.mem_iInter] at hω ⊢
-    exact fun n => hω (n + 1)
+    simp_all
 
 /-- Positive moments of the full marked connection data under the actual
 conditioned outer law converge to the merged infinite wired data. -/
@@ -49,13 +48,11 @@ theorem conditioned_connection_moments_tendsto
   · intro m
     have ht := ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hweak
       (wiredDataEvent_isClopen (m + 1) F)
-    simpa only [ProbabilityMeasure.measureReal_eq_coe_coeFn, Function.comp_def] using
-      NNReal.continuous_coe.continuousAt.tendsto.comp ht
+    simp_all
   · intro m
     have ht := ProbabilityMeasure.tendsto_measure_of_isClopen_of_tendsto hν
       (wiredDataEvent_isClopen (m + 1) F)
-    simpa only [ProbabilityMeasure.measureReal_eq_coe_coeFn, Function.comp_def] using
-      NNReal.continuous_coe.continuousAt.tendsto.comp ht
+    aesop
   · rw [iInter_wiredDataEvent_succ]
     exact (wired_connection_moments_tendsto θ μ hμ F).comp (tendsto_add_atTop_nat 1)
 

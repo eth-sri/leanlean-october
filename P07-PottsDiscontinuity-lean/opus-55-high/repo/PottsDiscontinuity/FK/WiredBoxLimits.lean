@@ -8,15 +8,16 @@ public import PottsDiscontinuity.FK.BoxExhaustion
 
 /-! A common weak limit of wired FK laws along every nested exhaustive box sequence. -/
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 
 open MeasureTheory Filter Topology
 noncomputable section
 
-private theorem wiredAllOpen_antitone_nnreal (θ : Parameters)
-    (c d : LatticeVertex) (r s : ℕ)
+section
+variable (θ : Parameters)
+theorem wiredAllOpen_antitone_nnreal (c d : LatticeVertex) (r s : ℕ)
     (hbox : latticeBox c r ⊆ latticeBox d s) (F : Finset squareLattice.edgeSet) :
     wiredBoxProbabilityMeasure θ d s (LatticeConfiguration.allOpen F) ≤
       wiredBoxProbabilityMeasure θ c r (LatticeConfiguration.allOpen F) := by
@@ -27,13 +28,13 @@ private theorem wiredAllOpen_antitone_nnreal (θ : Parameters)
 
 /-- The wired finite-volume laws have a unique common weak limit along every
 nested exhaustive sequence of translated square boxes. -/
-theorem wiredBoxLimit_existsUnique (θ : Parameters) :
+theorem wiredBoxLimit_existsUnique  :
     ∃! μ : ProbabilityMeasure LatticeConfiguration,
       ∀ (c : ℕ → LatticeVertex) (r : ℕ → ℕ),
         (∀ n, latticeBox (c n) (r n) ⊆ latticeBox (c (n + 1)) (r (n + 1))) →
         (∀ v : LatticeVertex, ∃ n, v ∈ latticeBox (c n) (r n)) →
         Tendsto (fun n => wiredBoxProbabilityMeasure θ (c n) (r n)) atTop (𝓝 μ) := by
-  let originLaw : ℕ → ProbabilityMeasure LatticeConfiguration :=
+  let originLaw :=
     fun n => wiredBoxProbabilityMeasure θ (0, 0) n
   have originAntitone : ∀ F : Finset squareLattice.edgeSet,
       Antitone (fun n => originLaw n (LatticeConfiguration.allOpen F)) := by
@@ -54,14 +55,9 @@ theorem wiredBoxLimit_existsUnique (θ : Parameters) :
       exact wiredAllOpen_antitone_nnreal θ (c m) (c n) (r m) (r n)
         (latticeBox_subset_of_nested hnest hmn) F
     obtain ⟨ν, hν, _⟩ := probabilityMeasures_tendsto_of_antitone_allOpen arbitraryAntitone
-    have hμF (F : Finset squareLattice.edgeSet) :
-        Tendsto (fun n => originLaw n (LatticeConfiguration.allOpen F)) atTop
-          (𝓝 (μ (LatticeConfiguration.allOpen F))) :=
+    have hμF (F : Finset squareLattice.edgeSet) :=
       LatticeConfiguration.tendsto_allOpen_of_weak hμ F
-    have hνF (F : Finset squareLattice.edgeSet) :
-        Tendsto (fun n => wiredBoxProbabilityMeasure θ (c n) (r n)
-          (LatticeConfiguration.allOpen F)) atTop
-          (𝓝 (ν (LatticeConfiguration.allOpen F))) :=
+    have hνF (F : Finset squareLattice.edgeSet) :=
       LatticeConfiguration.tendsto_allOpen_of_weak hν F
     have hμleν (F : Finset squareLattice.edgeSet) :
         μ (LatticeConfiguration.allOpen F) ≤ ν (LatticeConfiguration.allOpen F) := by
@@ -88,23 +84,22 @@ theorem wiredBoxLimit_existsUnique (θ : Parameters) :
         (Eventually.of_forall hfixed)
     have hμν : μ = ν := by
       apply LatticeConfiguration.probabilityMeasure_eq_of_allOpen
-      intro F
-      exact le_antisymm (hμleν F) (hνleμ F)
-    rw [hμν]
-    exact hν
+      grind
+    grind
   refine ⟨μ, hproperty, ?_⟩
   intro ν hν
   have hνorigin := hν (fun _ => (0, 0)) (fun n => n)
     origin_latticeBox_nested origin_latticeBox_exhaustive
-  exact tendsto_nhds_unique hνorigin hμ
+  grind
 
 /-- In particular, the canonical wired boxes converge weakly to a probability measure. -/
-theorem wiredBoxProbabilityMeasure_exists_limit (θ : Parameters) :
+theorem wiredBoxProbabilityMeasure_exists_limit  :
     ∃ μ : ProbabilityMeasure LatticeConfiguration,
       Tendsto (fun n => wiredBoxProbabilityMeasure θ (0, 0) n) atTop (𝓝 μ) := by
   obtain ⟨μ, hμ, _⟩ := wiredBoxLimit_existsUnique θ
   exact ⟨μ, hμ (fun _ => (0, 0)) (fun n => n)
     origin_latticeBox_nested origin_latticeBox_exhaustive⟩
+end
 
 end
 end PottsDiscontinuity.FK

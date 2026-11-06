@@ -52,12 +52,15 @@ def loopReorientEquiv : DirectedLoop ω₀ s h₀ ≃ DirectedLoop ω₁ s h₁ 
 def edgeReorientEquiv : DirectedDart ω₀ ≃ DirectedDart ω₁ :=
   (edgeDirectedEquiv ω₀).symm.trans (edgeDirectedEquiv ω₁)
 
-@[simp] theorem edgeReorientEquiv_val (d : DirectedDart ω₀) :
+section
+variable (d : DirectedDart ω₀)
+@[simp] theorem edgeReorientEquiv_val  :
     (edgeReorientEquiv ω₀ ω₁ d).val = arrowDart ω₁ (dartEdge d.val) := rfl
 
-theorem loopReorientEquiv_apply (d : DirectedDart ω₀) :
+theorem loopReorientEquiv_apply  :
     loopReorientEquiv ω₀ ω₁ s h₀ h₁ (directedLoopOf ω₀ s h₀ d) =
       directedLoopOf ω₁ s h₁ (edgeReorientEquiv ω₀ ω₁ d) := rfl
+end
 
 /-- A cycle sum after reorientation is a sum over the same indexed edges. -/
 theorem loopSum_reorient_edges (f : Dart N M → ℤ) (q : DirectedLoop ω₀ s h₀) :
@@ -68,16 +71,17 @@ theorem loopSum_reorient_edges (f : Dart N M → ℤ) (q : DirectedLoop ω₀ s 
   rw [Finset.sum_filter, ← (edgeReorientEquiv ω₀ ω₁).sum_comp, Finset.sum_filter]
   refine Finset.sum_congr rfl fun d _ => ?_
   rw [← loopReorientEquiv_apply ω₀ ω₁ s h₀ h₁ d]
-  simp only [Equiv.apply_eq_iff_eq, edgeReorientEquiv_val]
+  simp
 
+section
+variable (f : Dart N M → ℤ) (hf : ∀ d, f (edgeReverse d) = -f d)
+include hf
 /-- An edge-antisymmetric function changes sign exactly when its loop is reversed. -/
-theorem edgeReorient_value (f : Dart N M → ℤ)
-    (hf : ∀ d, f (edgeReverse d) = -f d) (d : DirectedDart ω₀) :
+theorem edgeReorient_value (d : DirectedDart ω₀) :
     f (edgeReorientEquiv ω₀ ω₁ d).val =
       if loopOrientation ω₀ s h₀ ω₁ h₁ (directedLoopOf ω₀ s h₀ d)
       then f d.val else -f d.val := by
-  rw [loopOrientation_apply]
-  change f (arrowDart ω₁ (dartEdge d.val)) = _
+  simp
   by_cases hd : dartOut ω₁ d.val = true
   · simp only [hd, ite_true]
     rw [arrowDart_dartEdge ω₁ ⟨d.val, hd⟩]
@@ -88,8 +92,7 @@ theorem edgeReorient_value (f : Dart N M → ℤ)
     rw [← dartEdge_edgeReverse d.val, arrowDart_dartEdge ω₁ ⟨edgeReverse d.val, hd'⟩, hf]
 
 /-- A signed cycle sum of an edge-antisymmetric function is preserved or negated. -/
-theorem loopSum_reorient (f : Dart N M → ℤ) (hf : ∀ d, f (edgeReverse d) = -f d)
-    (q : DirectedLoop ω₀ s h₀) :
+theorem loopSum_reorient (q : DirectedLoop ω₀ s h₀) :
     loopSum ω₁ s h₁ f (loopReorientEquiv ω₀ ω₁ s h₀ h₁ q) =
       if loopOrientation ω₀ s h₀ ω₁ h₁ q then loopSum ω₀ s h₀ f q
       else -loopSum ω₀ s h₀ f q := by
@@ -101,13 +104,10 @@ theorem loopSum_reorient (f : Dart N M → ℤ) (hf : ∀ d, f (edgeReverse d) =
       ∑ d : DirectedDart ω₀ with directedLoopOf ω₀ s h₀ d = q,
         if loopOrientation ω₀ s h₀ ω₁ h₁ q then f d.val else -f d.val := by
     refine Finset.sum_congr rfl fun d hd => ?_
-    rw [← edgeReorientEquiv_val ω₀ ω₁ d]
-    rw [edgeReorient_value ω₀ ω₁ s h₀ h₁ f hf]
-    rw [(Finset.mem_filter.mp hd).2]
+    rw [← edgeReorientEquiv_val ω₀ ω₁ d, edgeReorient_value ω₀ ω₁ s h₀ h₁ f hf]
+    grind
   rw [hv]
-  by_cases hq : loopOrientation ω₀ s h₀ ω₁ h₁ q = true
-  · simp only [hq, ite_true]
-  · simp only [Bool.eq_false_iff.mpr hq, Bool.false_eq_true, ite_false]
-    rw [Finset.sum_neg_distrib]
+  by_cases hq : loopOrientation ω₀ s h₀ ω₁ h₁ q = true <;> simp
+end
 
 end PottsDiscontinuity.Torus

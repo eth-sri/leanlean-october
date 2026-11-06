@@ -5,7 +5,7 @@ module
 public import PottsDiscontinuity.Duality.RectangleDualAmbient
 public import PottsDiscontinuity.FK.SubgraphComparison
 
-@[expose] public section
+public section
 
 namespace PottsDiscontinuity.FK
 
@@ -18,7 +18,6 @@ theorem rectangleDualAmbient_law_restrict_to_dual
     (law (rectangleDualAmbientGraph a w h) q (rectangleDualBoundaryCondition a w h)).map
       (subgraphConfigurationRestriction (rectangleDualGraph_le_ambient a w h)) =
     law (rectangleDualGraph a w h) q (rectangleDualBoundaryCondition a w h) := by
-  classical
   have hfiniteSet : (rectangleDualExpanded a w h : Set LatticeVertex).Finite :=
     Finset.finite_toSet _
   let rectangleDualAmbientVertexFinite : Finite (RectangleDualVertex a w h) := hfiniteSet
@@ -34,10 +33,7 @@ theorem rectangleDualAmbient_law_restrict_to_dual
     rw [rectangleDualBoundaryCondition_rel]
     right
     have hnot : ¬ G.Adj u v := by
-      intro hadj
-      have hedge : s(u, v) ∈ G.edgeSet := G.mem_edgeSet.mpr hadj
-      have hremoved := (mem_subgraphRemovedEdges (G := G) (H := H) _).mp he
-      exact hremoved (by simpa using hedge)
+      aesop
     exact rectangleDualAmbient_extraEdge_endpoints_boundary a w h u v huv hnot
   have hremove := law_map_remove H q (rectangleDualBoundaryCondition a w h) R hR
   have hsubgraph := law_subgraphRemaining_map hGH q (rectangleDualBoundaryCondition a w h)
@@ -55,13 +51,12 @@ theorem rectangleDualAmbient_law_restrict_to_dual
     _ = ((law G q (rectangleDualBoundaryCondition a w h)).map
         (subgraphRemainingConfigurationEquiv hGH)).map
           (subgraphRemainingConfigurationEquiv hGH).symm := by
-        rw [hremove, hsubgraph]
+        grind
     _ = law G q (rectangleDualBoundaryCondition a w h) := by
         rw [PMF.map_comp]
         have heq : ((subgraphRemainingConfigurationEquiv hGH).symm ∘
             subgraphRemainingConfigurationEquiv hGH) = id := by
-          funext A
-          exact Equiv.symm_apply_apply (subgraphRemainingConfigurationEquiv hGH) A
+          simp
         rw [heq, PMF.map_id]
 
 end
