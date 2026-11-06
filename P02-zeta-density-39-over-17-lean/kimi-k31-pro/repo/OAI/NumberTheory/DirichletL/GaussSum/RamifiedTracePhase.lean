@@ -93,37 +93,6 @@ theorem finiteSquarefreeRow_sixth_power
     rw [canonicalSextic_sixth_power_mask]
     simp [show a ∉ P i by intro hai; exact hex ⟨i, hi, hai⟩]
 
-theorem finiteSquarefreeRow_difference
-    {ι N : Type*} [DecidableEq N]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hgood : ∀ i, lambda ∉ P i)
-    (columns : Finset N) (support : N → Finset ι)
-    (weight : N → ℂ) (a : O) :
-    (∑ n ∈ columns, weight n) -
-      (∑ n ∈ columns,
-        weight n * finiteSquarefreeRow P hgood (support n) (a ^ 6)) =
-      ∑ n ∈ columns.filter (fun n => ∃ i ∈ support n, a ∈ P i), weight n := by
-  classical
-  rw [← Finset.sum_sub_distrib]
-  rw [Finset.sum_filter]
-  apply Finset.sum_congr rfl
-  intro n hn
-  rw [finiteSquarefreeRow_sixth_power]
-  by_cases h : ∃ i ∈ support n, a ∈ P i <;> simp [h]
-
-theorem finiteSquarefreeRow_difference_norm
-    {ι N : Type*} [DecidableEq N]
-    (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hgood : ∀ i, lambda ∉ P i)
-    (columns : Finset N) (support : N → Finset ι)
-    (weight : N → ℂ) (a : O) :
-    ‖(∑ n ∈ columns, weight n) -
-      (∑ n ∈ columns,
-        weight n * finiteSquarefreeRow P hgood (support n) (a ^ 6))‖ ≤
-      ∑ n ∈ columns.filter (fun n => ∃ i ∈ support n, a ∈ P i), ‖weight n‖ := by
-  rw [finiteSquarefreeRow_difference]
-  exact norm_sum_le _ _
-
 end ActualEisensteinCubic
 
 namespace AnalyticBridge

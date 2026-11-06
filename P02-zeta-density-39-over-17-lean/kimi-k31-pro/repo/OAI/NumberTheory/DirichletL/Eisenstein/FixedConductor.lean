@@ -84,9 +84,6 @@ section
 open ActualEisensteinCubic
 local notation "Eis" => ActualEisensteinCubic.O
 
-def fixedCuspLevelBound (c:Eis) : ℝ :=
-  243*(Ideal.absNorm (Ideal.span {c}):ℝ)^2
-
 end
 
 section
@@ -102,26 +99,6 @@ lemma A4_traceLambda_pow_four : ramifiedTraceLambda^4=(9:Eis) := by
   calc
     _=(eisLam^2)^2:=by ring
     _=9:=by rw [TraceLambdaPhase.eisLam_sq];norm_num
-
-structure PrincipalStratumArithmetic {ι:Type*} [Fintype ι]
-    (p:ι→Eis) (N a0 c0:Eis) where
-  lift : (∀i,(Eis⧸Ideal.span {p i})ˣ)→ι→Eis
-  lift_period : ∀v i,N^2∣lift v i
-  lift_residue : ∀v i,Ideal.Quotient.mk (Ideal.span {p i}) (lift v i)=(v i:Eis⧸Ideal.span {p i})
-  U : Eis
-  w : Eis
-  bezout : U*(∏i,p i)+(ramifiedTraceLambda^3*w)*c0=1
-  sigma : ∀i,(Eis⧸Ideal.span {p i})ˣ
-  epsilon : ∀i,(Eis⧸Ideal.span {p i})ˣ
-  sigma_value : ∀i,(sigma i:Eis⧸Ideal.span {p i})=
-    Ideal.Quotient.mk (Ideal.span {p i}) (ramifiedTraceLambda^2*c0*cofactor p i)
-  epsilon_value : ∀i,Ideal.Quotient.mk (Ideal.span {p i}) (ramifiedTraceLambda^3*c0*cofactor p i)*
-    (sigma i:Eis⧸Ideal.span {p i})*(epsilon i:Eis⧸Ideal.span {p i})=-1
-  gamma : (∀i,(Eis⧸Ideal.span {p i})ˣ)→levelThree
-  numerator : ∀v,(gamma v:SL(2,Eis)) 0 0=finiteCrossNumerator a0 c0 ramifiedTraceLambda p (lift v)
-  denominator : ∀v,(gamma v:SL(2,Eis)) 1 0=c0*∏i,p i
-  numerator_fixed : ∀v,(9:Eis)*c0∣(gamma v:SL(2,Eis)) 0 0-(gamma (fun _=>1):SL(2,Eis)) 0 0
-  inverse_fixed : ∀v,ramifiedTraceLambda^3*c0∣(gamma v:SL(2,Eis)) 1 1-(gamma (fun _=>1):SL(2,Eis)) 1 1
 
 end
 

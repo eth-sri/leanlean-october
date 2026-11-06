@@ -37,7 +37,7 @@ def GMAffineHeightFourierMassProfileAtDepth
     (f : SchwartzMap ℝ ℝ) : Prop :=
   ∀ n : ℕ,
     GMAffineHeightFourierMassBound epsilon T n
-      ((2 : ℝ) ^ depth * D n) f
+      (twoR ^ depth * D n) f
 
 /-- All epsilon budgets and derivative orders required by the finite
 Proposition 9.1 descent.  The coefficient family is fixed before the
@@ -48,7 +48,7 @@ def GMAffineHeightFourierMassFamilyAtDepth
     (f : SchwartzMap ℝ ℝ) : Prop :=
   ∀ epsilon : ℝ, 0 < epsilon → ∀ n : ℕ,
     GMAffineHeightFourierMassBound epsilon T n
-      ((2 : ℝ) ^ depth * D epsilon n) f
+      (twoR ^ depth * D epsilon n) f
 
 /-- The actual Section 10 source is supported on `[1/4,9/4]`; this is the
 corresponding support envelope after `depth` adaptive smoothings. -/
@@ -191,7 +191,7 @@ theorem gmAffineTildeSchwartz_heightFourierMassFamilyAtDepth_succ
     GMAffineHeightFourierMassFamilyAtDepth T D (depth + 1)
       (gmAffineTildeSchwartz S hS f) := by
   intro epsilon hepsilon n
-  have hcurrent : 0 ≤ (2 : ℝ) ^ depth * D epsilon n :=
+  have hcurrent : 0 ≤ twoR ^ depth * D epsilon n :=
     mul_nonneg (pow_nonneg (by norm_num) _) (hD epsilon n)
   have hnext := gmAffineTildeSchwartz_heightFourierMassBound
     hT hS hcurrent n f hf (hprofile epsilon hepsilon n)
@@ -300,7 +300,7 @@ theorem gmAffineRegionIITailSourceBound_le_heightMass
   have hB :
       0 ≤ (512 * Cdiv *
           SchwartzMap.seminorm ℝ 0 0 gmAffineLocalBumpDual ^ 2) *
-        (192 * 3 * (4 : ℝ) ^ n * D ^ 2 *
+        (192 * 3 * fourR ^ n * D ^ 2 *
           (∫ u : ℝ, f u) ^ 2) := by positivity
   have hC :
       0 ≤ 4 * (gmAffineRegionIFarConstant n * (∫ x : ℝ, f x)) ^ 2 := by
@@ -314,9 +314,9 @@ theorem gmAffineRegionIITailSourceBound_le_heightMass
         D ^ 2 * T ^ (4 : ℕ) * (∫ x : ℝ, f x) ^ 2 := by
     rw [← mul_pow, hproduct]
     ring
-  rw [show 192 * 3 * (4 : ℝ) ^ n * Ctail ^ 2 *
+  rw [show 192 * 3 * fourR ^ n * Ctail ^ 2 *
       SchwartzMap.seminorm ℝ 0 0 (gmAffineComplexify f) ^ 2 =
-      192 * 3 * (4 : ℝ) ^ n *
+      192 * 3 * fourR ^ n *
         (Ctail ^ 2 * SchwartzMap.seminorm ℝ 0 0
           (gmAffineComplexify f) ^ 2) by ring,
     hproductSq]
@@ -338,13 +338,13 @@ theorem gmAffineRegionIITailSourceBound_le_heightMass
   have hsecondExact :
       (512 * Cdiv *
           SchwartzMap.seminorm ℝ 0 0 gmAffineLocalBumpDual ^ 2) *
-        (192 * 3 * (4 : ℝ) ^ n *
+        (192 * 3 * fourR ^ n *
           (D ^ 2 * T ^ (4 : ℕ) * (∫ x : ℝ, f x) ^ 2)) *
           (T ^ (26 + 11 * gmAffineIterationEta delta) /
             ((T ^ gmAffineIterationEta delta) ^ n) ^ 2) ≤
       (512 * Cdiv *
           SchwartzMap.seminorm ℝ 0 0 gmAffineLocalBumpDual ^ 2) *
-        (192 * 3 * (4 : ℝ) ^ n * D ^ 2 *
+        (192 * 3 * fourR ^ n * D ^ 2 *
           (∫ u : ℝ, f u) ^ 2) := by
     convert hsecondTerm using 1 <;> ring
   have hhighExact :
@@ -362,7 +362,7 @@ theorem gmAffineRegionIITailSourceBound_le_heightMass
             (T ^ gmAffineIterationEta delta) ^ n) +
       (512 * Cdiv *
           SchwartzMap.seminorm ℝ 0 0 gmAffineLocalBumpDual ^ 2) *
-        (192 * 3 * (4 : ℝ) ^ n *
+        (192 * 3 * fourR ^ n *
           (D ^ 2 * T ^ (4 : ℕ) * (∫ x : ℝ, f x) ^ 2)) *
           (T ^ (26 + 11 * gmAffineIterationEta delta) /
             ((T ^ gmAffineIterationEta delta) ^ n) ^ 2) +
@@ -374,13 +374,13 @@ theorem gmAffineRegionIITailSourceBound_le_heightMass
         (64 * gmAffineMiddleFarSourceConstant n * (∫ x : ℝ, f x) ^ 2) +
       (512 * Cdiv *
           SchwartzMap.seminorm ℝ 0 0 gmAffineLocalBumpDual ^ 2) *
-        (192 * 3 * (4 : ℝ) ^ n * D ^ 2 * (∫ x : ℝ, f x) ^ 2) +
+        (192 * 3 * fourR ^ n * D ^ 2 * (∫ x : ℝ, f x) ^ 2) +
       4 * (gmAffineRegionIFarConstant n * (∫ x : ℝ, f x)) ^ 2 := by
         exact add_le_add (add_le_add hfirstExact hsecondExact) hhighExact
     _ = (512 * Cdiv *
           SchwartzMap.seminorm ℝ 0 0 gmAffineLocalBumpDual ^ 2 *
           (64 * gmAffineMiddleFarSourceConstant n +
-            192 * 3 * (4 : ℝ) ^ n * D ^ 2) +
+            192 * 3 * fourR ^ n * D ^ 2) +
         4 * gmAffineRegionIFarConstant n ^ 2) *
           (∫ x : ℝ, f x) ^ 2 := by ring
 
@@ -441,7 +441,7 @@ theorem gmAffineIterationRegionIII_height_scale_le_one
     _ = T ^ ((2 * gmAffineIterationEta delta + 2 * ((n : ℝ) + 2)) +
         (2 * gmAffineIterationEta delta + 30 - 4 * (n : ℝ))) :=
       (Real.rpow_add hTpos _ _).symm
-    _ ≤ T ^ (0 : ℝ) := Real.rpow_le_rpow_of_exponent_le hTone hexponent
+    _ ≤ T ^ zeroR := Real.rpow_le_rpow_of_exponent_le hTone hexponent
     _ = 1 := by simp
 
 /-- Height-aware Region-III absorption.  The final coefficient is uniform
@@ -454,30 +454,30 @@ theorem gmAffineRegionIIISourceBound_le_heightMass
       (gmAffineIterationEta delta) T n D f) :
     gmAffineRegionIIISourceBound n (T ^ (6 : ℕ)) f M
         (T ^ gmAffineIterationEta delta) ≤
-      2 * (16 * (2 : ℝ) ^ n * D *
+      2 * (16 * twoR ^ n * D *
         gmAffineRegionIIIKernelConstant n) ^ 2 *
           (∫ x : ℝ, f x) ^ 2 := by
   have hmass : 0 ≤ ∫ x : ℝ, f x := integral_nonneg hf
   have hkernel := gmAffineRegionIIIKernelConstant_nonneg n
   have henv :
       gmAffineRegionIIIEnvelopeConstant n f ≤
-        (16 * (2 : ℝ) ^ n * D * gmAffineRegionIIIKernelConstant n) *
+        (16 * twoR ^ n * D * gmAffineRegionIIIKernelConstant n) *
           (T ^ gmAffineIterationEta delta * T ^ (n + 2)) *
             ∫ x : ℝ, f x := by
     unfold gmAffineRegionIIIEnvelopeConstant
     unfold GMAffineHeightFourierMassBound at hbound
     calc
-      16 * (2 : ℝ) ^ n *
+      16 * twoR ^ n *
           SchwartzMap.seminorm ℝ n 0 (fourier (gmAffineComplexify f)) *
             gmAffineRegionIIIKernelConstant n ≤
-        16 * (2 : ℝ) ^ n *
+        16 * twoR ^ n *
           (D * T ^ gmAffineIterationEta delta * T ^ (n + 2) *
             ∫ x : ℝ, f x) * gmAffineRegionIIIKernelConstant n := by
           gcongr
       _ = _ := by ring
   have henvNonneg := gmAffineRegionIIIEnvelopeConstant_nonneg n f
   have henvRhs :
-      0 ≤ (16 * (2 : ℝ) ^ n * D * gmAffineRegionIIIKernelConstant n) *
+      0 ≤ (16 * twoR ^ n * D * gmAffineRegionIIIKernelConstant n) *
           (T ^ gmAffineIterationEta delta * T ^ (n + 2)) *
             ∫ x : ℝ, f x := by positivity
   have henvSq := (sq_le_sq₀ henvNonneg henvRhs).2 henv
@@ -488,19 +488,19 @@ theorem gmAffineRegionIIISourceBound_le_heightMass
     (gmAffineRegionIIIEnvelopeConstant n f *
           T ^ gmAffineIterationEta delta * (M : ℝ) ^ (n + 3)) ^ 2 *
         (2 * (T ^ (6 : ℕ)) ^ (1 - 2 * (n : ℝ))) ≤
-      (((16 * (2 : ℝ) ^ n * D * gmAffineRegionIIIKernelConstant n) *
+      (((16 * twoR ^ n * D * gmAffineRegionIIIKernelConstant n) *
             (T ^ gmAffineIterationEta delta * T ^ (n + 2)) *
               ∫ x : ℝ, f x) *
           T ^ gmAffineIterationEta delta * (M : ℝ) ^ (n + 3)) ^ 2 *
         (2 * (T ^ (6 : ℕ)) ^ (1 - 2 * (n : ℝ))) := by
           gcongr
-    _ = 2 * (16 * (2 : ℝ) ^ n * D *
+    _ = 2 * (16 * twoR ^ n * D *
           gmAffineRegionIIIKernelConstant n) ^ 2 *
         (∫ x : ℝ, f x) ^ 2 *
           ((T ^ gmAffineIterationEta delta * T ^ (n + 2)) ^ 2 *
             ((T ^ gmAffineIterationEta delta * (M : ℝ) ^ (n + 3)) ^ 2 *
               (T ^ (6 : ℕ)) ^ (1 - 2 * (n : ℝ)))) := by ring
-    _ ≤ 2 * (16 * (2 : ℝ) ^ n * D *
+    _ ≤ 2 * (16 * twoR ^ n * D *
           gmAffineRegionIIIKernelConstant n) ^ 2 *
         (∫ x : ℝ, f x) ^ 2 * 1 :=
       mul_le_mul_of_nonneg_left hscale (by positivity)
@@ -572,7 +572,7 @@ theorem gmAffineLemma92ComponentsAt_to_heightMassRecurrence
     (Ctail := Ctail) hdelta hT hCdiv f hf hproduct hMT hn
   have hnReal : (20 : ℝ) ≤ n := by
     have hetaUpper := gmAffineIterationEta_le_one delta
-    have hnNonneg : (0 : ℝ) ≤ n := by positivity
+    have hnNonneg : zeroR ≤ n := by positivity
     nlinarith
   have hnNat : 20 ≤ n := by exact_mod_cast hnReal
   have hhigh := gmAffineRegionIIISourceBound_le_heightMass
@@ -632,10 +632,10 @@ theorem exists_n_Cdiv_forall_gmAffineLemma92HeightMassRecurrence
     (eta := gmAffineIterationEta delta) (A := 31) hetaPos
   have hnUpper : gmAffineIterationEta delta * n ≤ (n : ℝ) := by
     have hetaUpper := gmAffineIterationEta_le_one delta
-    have hnNonneg : (0 : ℝ) ≤ n := by positivity
+    have hnNonneg : zeroR ≤ n := by positivity
     nlinarith
   have hnReal : (31 : ℝ) ≤ n := hn.trans hnUpper
-  have hnNat : 1 ≤ n := by exact_mod_cast (show (1 : ℝ) ≤ n by linarith)
+  have hnNat : 1 ≤ n := by exact_mod_cast (show oneR ≤ n by linarith)
   obtain ⟨Cdiv, hCdiv, hcard⟩ :=
     exists_global_card_gmAffineFirstPoissonPairs_middle_real_le hetaPos
   refine ⟨n, Cdiv, hn, hCdiv, ?_⟩
@@ -699,7 +699,7 @@ theorem exists_uniform_gmAffineJ_le_height_finite_descent
       have halpha : 0 < delta / 8 := by positivity
       obtain ⟨n, Cdiv, _hn, hCdiv, hfamily⟩ :=
         exists_n_Cdiv_forall_gmAffineLemma92HeightMassRecurrence halpha
-      let Dcur : ℝ := (2 : ℝ) ^ depth *
+      let Dcur : ℝ := twoR ^ depth *
         D₀ (gmAffineIterationEta (delta / 8)) n
       let Acoef : ℝ := gmAffineRegionIConstant n ^ 2
       let Bcoef : ℝ := Cdiv * gmAffineRegionIICoreConstant
@@ -813,9 +813,9 @@ theorem exists_uniform_gmAffineJ_le_height_finite_descent
         dsimp only [X, W]
         exact le_add_of_nonneg_right (by positivity)
       have hmassX : massSq ≤ X := by
-        have hMreal : (1 : ℝ) ≤ M := by exact_mod_cast hM
-        have hMpow : (1 : ℝ) ≤ (M : ℝ) ^ 6 := by
-          simpa using pow_le_pow_left₀ (by norm_num : (0 : ℝ) ≤ 1) hMreal 6
+        have hMreal : oneR ≤ M := by exact_mod_cast hM
+        have hMpow : oneR ≤ (M : ℝ) ^ 6 := by
+          simpa using pow_le_pow_left₀ (by norm_num : zeroR ≤ 1) hMreal 6
         dsimp only [massSq, X]
         nlinarith [mul_le_mul_of_nonneg_right hMpow
           (sq_nonneg (∫ x : ℝ, f x))]

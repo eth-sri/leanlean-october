@@ -145,24 +145,6 @@ theorem fixedFactor_norm (D:ControlledStratumArithmetic p N a0 c0 mode)
     · exact A3_ramified_relative_primary (D.matrix (fun _=>1)) c0
         (D.ramified_relative h3N hr hbase c0 (by simp) (fun _=>1))
 
-noncomputable def fourierWeight [∀i,(Ideal.span {p i}).IsMaximal]
-    (hp:∀i,p i≠0) (hg:∀i,lambda∉Ideal.span {p i}) (j:ι→ℕ)
-    (v:∀i,(Eis⧸Ideal.span {p i})ˣ) : ℂ := by
-  letI (i:ι):Fintype (Eis⧸Ideal.span {p i}):=Fintype.ofFinite _
-  exact ∏i,finiteAdditiveFourierCoeff (quotientTrace (p i) (hp i))
-    (fun t=>(actualSextic (Ideal.span {p i}) (hg i)^j i) t) (v i)
-
-noncomputable def multiplierSum (D:ControlledStratumArithmetic p N a0 c0 mode)
-    [∀i,(Ideal.span {p i}).IsMaximal]
-    (hN:(9:Eis)*c0∣N) (hr:lambda^2∣(∏i,p i)-1)
-    (hbase:if mode then lambda^2∣a0-1 else lambda^2∣c0-1)
-    (hp:∀i,p i≠0) (hg:∀i,lambda∉Ideal.span {p i}) (j:ι→ℕ) (x:Eis) : ℂ := by
-  letI (i:ι):Fintype (Eis⧸Ideal.span {p i}):=Fintype.ofFinite _
-  exact ∑v:∀i,(Eis⧸Ideal.span {p i})ˣ,
-    fourierWeight hp hg j v*star (complexCharacter (D.relativeGamma hN hr hbase v))*
-      ShortDraftTrace.breveE (-(eisEmbedding (D.matrix v 1 1)*(eisEmbedding x/eisLam^4))/
-        (eisEmbedding c0*eisEmbedding (∏i,p i)))
-
 noncomputable def bracketProduct (D:ControlledStratumArithmetic p N a0 c0 mode)
     [∀i,(Ideal.span {p i}).IsMaximal]
     (hp:∀i,p i≠0) (hg:∀i,lambda∉Ideal.span {p i}) (j:ι→ℕ) (x:Eis) : ℂ := by
@@ -225,17 +207,6 @@ lemma datum_point (D:ControlledStratumArithmetic p N a0 c0 mode)
   simpa only [ramifiedEmbedding_traceLambda] using
     finiteCrossNumerator_fraction a0 c0 ramifiedTraceLambda p (D.lift v) hc0 hp
 
-noncomputable def smoothedValue (D:ControlledStratumArithmetic p N a0 c0 mode)
-    [∀i,(Ideal.span {p i}).IsMaximal]
-    (hN:(9:Eis)*c0∣N) (hr:lambda^2∣(∏i,p i)-1)
-    (hbase:if mode then lambda^2∣a0-1 else lambda^2∣c0-1)
-    (s:FixedCuspShape (fixedCusp a0 c0 mode))
-    (hp:∀i,p i≠0) (hc0:c0≠0) (hg:∀i,lambda∉Ideal.span {p i})
-    (j:ι→ℕ) (W:ℝ→ℂ) (X:ℝ) : ℂ := by
-  letI (i:ι):Fintype (Eis⧸Ideal.span {p i}):=Fintype.ofFinite _
-  exact ∑v:∀i,(Eis⧸Ideal.span {p i})ˣ,fourierWeight hp hg j v*
-    (D.datum hN hr hbase s hp hc0 v).smoothedKernel W X
-
 end ControlledStratumArithmetic
 
 end
@@ -276,24 +247,7 @@ def fixedFourierGeometry (c:Eis) (hc:c≠0) (h:Eis⧸Ideal.span {c}) :
 namespace FixedFourierGeometry
 variable {c:Eis} {h:Eis⧸Ideal.span {c}} (G:FixedFourierGeometry c h)
 
-abbrev PhaseResidue := Eis⧸Ideal.span {ramifiedTraceLambda^3*G.c0}
-
-instance phaseResidue_finite : Finite G.PhaseResidue :=
-  finite_quotient_span (A4_bad_modulus_ne_zero G.c0 G.denominator_ne_zero)
-
 end FixedFourierGeometry
-
-def FixedReflectionRay (c:Eis) (hc:c≠0) :=
-  Σh:Eis⧸Ideal.span {c},(fixedFourierGeometry c hc h).PhaseResidue×Eisˣ
-
-instance fixedReflectionRay_finite (c:Eis) (hc:c≠0) : Finite (FixedReflectionRay c hc) := by
-  let:Finite (Eis⧸Ideal.span {c}):=finite_quotient_span hc
-  let:Finite Eisˣ:=PrimaryIdealUnitReindex.finite_units
-  unfold FixedReflectionRay
-  infer_instance
-
-noncomputable instance fixedReflectionRay_fintype (c:Eis) (hc:c≠0) :
-    Fintype (FixedReflectionRay c hc) := Fintype.ofFinite _
 
 end
 

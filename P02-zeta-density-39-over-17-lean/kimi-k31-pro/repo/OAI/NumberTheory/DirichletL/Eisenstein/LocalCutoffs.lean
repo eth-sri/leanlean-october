@@ -337,11 +337,6 @@ end CubicEisenstein
 open scoped BigOperators Classical SchwartzMap ContDiff
 namespace CompletedGauss
 
-section
-open ActualEisensteinCubic CanonicalQuadraticSieve CompletedDyadic
-
-end
-
 open ActualEisensteinCubic CanonicalQuadraticSieve
 
 structure ReflectedBranchData (levelBound K : ℝ) (I F Q : Ideal O) where
@@ -391,8 +386,6 @@ def value {rays : ℕ} {levelBound K : ℝ} {I F Q : Ideal O} (d : ReflectedFibe
   ∑b,d.weight b*(d.branch b).value W X ρ q k
 
 end ReflectedFiberData
-
-open ActualEisensteinCubic CanonicalQuadraticSieve
 
 namespace ReflectedFiberData
 

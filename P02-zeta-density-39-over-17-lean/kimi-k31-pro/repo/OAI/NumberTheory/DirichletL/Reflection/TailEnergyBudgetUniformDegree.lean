@@ -1,5 +1,5 @@
 module
-public import OAI.NumberTheory.DirichletL.Reflection.TailEnergyBudget
+public import OAI.NumberTheory.DirichletL.Reflection.TailAbsorption
 
 @[expose] public section
 

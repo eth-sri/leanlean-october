@@ -463,7 +463,7 @@ theorem gmNonzeroTailBinMoment_le_reflection
           (A * (∫ u in -H..H,
             ‖gmReflectionDirichletPoly (p.1 - p.2) M u‖) - E)]
   have hIntegral := sum_bin_sq_integral_norm_gmReflectionDirichletPoly_le
-    W j hM H ((by norm_num : (0 : ℝ) ≤ 1).trans hH)
+    W j hM H ((by norm_num : zeroR ≤ 1).trans hH)
   unfold gmNonzeroTailBinMoment
   calc
     (∑ p ∈ heathBrownDifferenceBin W j,
@@ -493,85 +493,6 @@ theorem gmNonzeroTailBinMoment_le_reflection
         · positivity
       · exact le_rfl
     _ = _ := by rfl
-
-/-- The native Heath--Brown theorem inserted into the complete dyadic
-prefix majorant.  All logarithmic factors remain explicit at this stage;
-they are absorbed only in the later epsilon-budget theorem. -/
-theorem heathBrownReflectionDyadicMoment_le_native
-    (η : ℝ) (hη : 0 < η) :
-    ∃ C T_min : ℝ, 0 < C ∧ 1 ≤ T_min ∧
-      ∀ {M : ℕ} {T : ℝ} (W : Finset ℝ),
-        0 < M → T_min ≤ T → IsSeparated 1 W → InBaseInterval T W →
-        heathBrownReflectionDyadicMoment W M ≤
-          2 * ((Nat.clog 2 M : ℝ) + 1) *
-            ((W.card : ℝ) ^ 2 +
-              (Nat.clog 2 M : ℝ) * C * T ^ η *
-                ((W.card : ℝ) ^ 2 * M +
-                  (W.card : ℝ) * M ^ 2 +
-                  (W.card : ℝ) ^ (5 / 4 : ℝ) *
-                    T ^ (1 / 2 : ℝ) * M)) := by
-  obtain ⟨C, T_min, hC, hT_min, hHB⟩ :=
-    heathBrownCoefficientOneMeanSquare_native η hη
-  refine ⟨C, T_min, hC, hT_min, ?_⟩
-  intro M T W hM hT hSep hBase
-  have hTOne : 1 ≤ T := hT_min.trans hT
-  have hTNonneg : 0 ≤ T := zero_le_one.trans hTOne
-  let k : ℕ := Nat.clog 2 M
-  let R : ℝ := W.card
-  let B : ℝ := C * T ^ η *
-    (R ^ 2 * M + R * M ^ 2 +
-      R ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ) * M)
-  have hBNonneg : 0 ≤ B := by
-    dsimp only [B, R]
-    positivity
-  have hCTNonneg : 0 ≤ C * T ^ η :=
-    mul_nonneg hC.le (Real.rpow_nonneg hTNonneg η)
-  have hRTailNonneg : 0 ≤
-      R ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ) := by
-    exact mul_nonneg (Real.rpow_nonneg (by dsimp only [R]; positivity) _)
-      (Real.rpow_nonneg hTNonneg _)
-  have hEach : ∀ r ∈ Finset.range k,
-      heathBrownCoefficientOneMoment (2 ^ r) W ≤ B := by
-    intro r hr
-    have hrk : r < k := Finset.mem_range.mp hr
-    have hScaleNat : 2 ^ r ≤ M :=
-      (Nat.pow_lt_of_lt_clog hrk).le
-    have hScale : ((2 ^ r : ℕ) : ℝ) ≤ M := by exact_mod_cast hScaleNat
-    have hScaleSq : (((2 ^ r : ℕ) : ℝ)) ^ 2 ≤ (M : ℝ) ^ 2 := by
-      exact pow_le_pow_left₀ (by positivity) hScale 2
-    have hAt := hHB (2 ^ r) T W (by positivity) hT hSep hBase
-    calc
-      heathBrownCoefficientOneMoment (2 ^ r) W ≤
-          C * T ^ η *
-            ((R ^ 2 * ((2 ^ r : ℕ) : ℝ)) +
-              (R * (((2 ^ r : ℕ) : ℝ)) ^ 2) +
-              (R ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ) *
-                ((2 ^ r : ℕ) : ℝ))) := by
-        simpa only [heathBrownCoefficientOneMoment, R] using hAt
-      _ ≤ C * T ^ η *
-            (R ^ 2 * M + R * M ^ 2 +
-              R ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ) * M) := by
-        gcongr
-      _ = B := by rfl
-  have hSum :
-      (∑ r ∈ Finset.range k,
-          heathBrownCoefficientOneMoment (2 ^ r) W) ≤ (k : ℝ) * B := by
-    calc
-      _ ≤ ∑ _r ∈ Finset.range k, B := Finset.sum_le_sum hEach
-      _ = (k : ℝ) * B := by simp
-  rw [heathBrownReflectionDyadicMoment_eq]
-  dsimp only [k] at hSum ⊢
-  calc
-    2 * ((Nat.clog 2 M : ℝ) + 1) *
-        ((W.card : ℝ) ^ 2 +
-          ∑ r ∈ Finset.range (Nat.clog 2 M),
-            heathBrownCoefficientOneMoment (2 ^ r) W) ≤
-      2 * ((Nat.clog 2 M : ℝ) + 1) *
-        ((W.card : ℝ) ^ 2 + (Nat.clog 2 M : ℝ) * B) := by
-          gcongr
-    _ = _ := by
-      dsimp only [B, R]
-      ring
 
 /-! ## The arbitrary-coefficient powering step, equations (6.2)--(6.3) -/
 
@@ -934,7 +855,7 @@ theorem le_rpow_inv_nat_of_pow_le
     {x y : ℝ} {k : ℕ} (hx : 0 ≤ x)
     (hk : 0 < k) (hxy : x ^ k ≤ y) :
     x ≤ y ^ (1 / (k : ℝ)) := by
-  have hkR : (0 : ℝ) < k := by exact_mod_cast hk
+  have hkR : zeroR < k := by exact_mod_cast hk
   have hRoot := Real.rpow_le_rpow (pow_nonneg hx k) hxy
     (by positivity : 0 ≤ (1 / (k : ℝ)))
   calc
@@ -950,7 +871,7 @@ theorem le_rpow_inv_nat_of_pow_le
 theorem pow_rpow_inv_nat
     {x : ℝ} {k : ℕ} (hx : 0 ≤ x) (hk : 0 < k) :
     (x ^ k) ^ (1 / (k : ℝ)) = x := by
-  have hkR : (0 : ℝ) < k := by exact_mod_cast hk
+  have hkR : zeroR < k := by exact_mod_cast hk
   have hkNe : (k : ℝ) ≠ 0 := ne_of_gt hkR
   rw [← Real.rpow_natCast]
   rw [← Real.rpow_mul hx]
@@ -979,7 +900,7 @@ theorem gm_r_exponent_second_identity
     {R : ℝ} {k : ℕ} (hR : 0 < R) (hk : 0 < k) :
     ((R ^ 2) ^ (k - 1) * R) ^ (1 / (k : ℝ)) =
       R ^ (2 - 1 / (k : ℝ)) := by
-  have hkR : (0 : ℝ) < k := by exact_mod_cast hk
+  have hkR : zeroR < k := by exact_mod_cast hk
   have hkSub : ((k - 1 : ℕ) : ℝ) = (k : ℝ) - 1 := by
     have hNat := congrArg (fun n : ℕ => (n : ℝ))
       (Nat.sub_add_cancel hk)
@@ -1003,7 +924,7 @@ theorem gm_r_exponent_third_identity
     ((R ^ 2) ^ (k - 1) * R ^ (5 / 4 : ℝ)) ^
         (1 / (k : ℝ)) =
       R ^ (2 - 3 / (4 * (k : ℝ))) := by
-  have hkR : (0 : ℝ) < k := by exact_mod_cast hk
+  have hkR : zeroR < k := by exact_mod_cast hk
   have hkSub : ((k - 1 : ℕ) : ℝ) = (k : ℝ) - 1 := by
     have hNat := congrArg (fun n : ℕ => (n : ℝ))
       (Nat.sub_add_cancel hk)
@@ -1079,7 +1000,7 @@ theorem rpow_inv_nat_add_three_le
     (A + B + C) ^ (1 / (k : ℝ)) ≤
       A ^ (1 / (k : ℝ)) + B ^ (1 / (k : ℝ)) +
         C ^ (1 / (k : ℝ)) := by
-  have hkR : (0 : ℝ) < k := by exact_mod_cast hk
+  have hkR : zeroR < k := by exact_mod_cast hk
   have hExp0 : 0 ≤ (1 / (k : ℝ)) := by positivity
   have hExp1 : 1 / (k : ℝ) ≤ 1 := by
     rw [div_le_one hkR]
@@ -1407,7 +1328,7 @@ theorem gmCubicS2FirstOffDiagonal_quantitative
   refine ⟨K, by dsimp only [K]; positivity, ?_⟩
   intro N T δ W hN hT hNT hδ hSep hBase
   have hTPos : 0 < T := zero_lt_one.trans_le hT
-  have hNOne : (1 : ℝ) ≤ N := by exact_mod_cast hN
+  have hNOne : oneR ≤ N := by exact_mod_cast hN
   let major : ℝ := K * T ^ 5 / δ ^ q
   have hMajorNonneg : 0 ≤ major := by dsimp only [major, K]; positivity
   have hTerm : ∀ (t u v : GMRow W), v ≠ t →
@@ -1577,23 +1498,23 @@ epsilon budget from obscuring the physical reflected length. -/
 theorem gm_powered_scale_rpow_inv
     (k M : ℕ) (hk : 0 < k) :
     (((2 ^ k * M ^ k : ℕ) : ℝ)) ^ (1 / (k : ℝ)) = 2 * M := by
-  have hM : (0 : ℝ) ≤ M := by positivity
+  have hM : zeroR ≤ M := by positivity
   norm_num only [Nat.cast_mul, Nat.cast_pow, Nat.cast_ofNat]
   have hmul :
-      (((2 : ℝ) ^ k * (M : ℝ) ^ k) ^ (1 / (k : ℝ))) =
-        ((2 : ℝ) ^ k) ^ (1 / (k : ℝ)) *
+      ((twoR ^ k * (M : ℝ) ^ k) ^ (1 / (k : ℝ))) =
+        (twoR ^ k) ^ (1 / (k : ℝ)) *
           ((M : ℝ) ^ k) ^ (1 / (k : ℝ)) :=
-    Real.mul_rpow (pow_nonneg (by norm_num : (0 : ℝ) ≤ 2) k)
+    Real.mul_rpow (pow_nonneg (by norm_num : zeroR ≤ 2) k)
       (pow_nonneg hM k)
   rw [hmul]
-  rw [pow_rpow_inv_nat (by norm_num : (0 : ℝ) ≤ 2) hk,
+  rw [pow_rpow_inv_nat (by norm_num : zeroR ≤ 2) hk,
     pow_rpow_inv_nat hM hk]
 
 /-- The corresponding squared scale is `4M²`. -/
 theorem gm_powered_scale_rpow_two_inv
     (k M : ℕ) (hk : 0 < k) :
     (((2 ^ k * M ^ k : ℕ) : ℝ)) ^ (2 / (k : ℝ)) = 4 * (M : ℝ) ^ 2 := by
-  have hU : (0 : ℝ) ≤ ((2 ^ k * M ^ k : ℕ) : ℝ) := by positivity
+  have hU : zeroR ≤ ((2 ^ k * M ^ k : ℕ) : ℝ) := by positivity
   calc
     (((2 ^ k * M ^ k : ℕ) : ℝ)) ^ (2 / (k : ℝ)) =
         ((((2 ^ k * M ^ k : ℕ) : ℝ)) ^ (1 / (k : ℝ))) ^ 2 := by
@@ -1651,7 +1572,7 @@ theorem gm_powered_common_factor_eq
       (2 * (M : ℝ)) ^ (2 * η) := by
     rw [← Real.rpow_natCast]
     rw [← Real.rpow_mul hUpow, ← Real.rpow_mul hU]
-    have hExp : η * ((2 : ℝ) * (1 / (k : ℝ))) =
+    have hExp : η * (twoR * (1 / (k : ℝ))) =
         (1 / (k : ℝ)) * (2 * η) := by ring
     norm_num only [Nat.cast_ofNat]
     rw [hExp, Real.rpow_mul hU]
@@ -1759,7 +1680,7 @@ theorem gmS2ReflectionCoefficient_mul_source_le_physical
     T ^ (η / (k : ℝ)) * (2 * m) ^ (2 * η)
   have hX : 0 < X := by dsimp only [X]; positivity
   have hn : 0 < n := by
-    simpa only [n] using (Nat.cast_pos.mpr hN : (0 : ℝ) < (N : ℝ))
+    simpa only [n] using (Nat.cast_pos.mpr hN : zeroR < (N : ℝ))
   have hh : 0 ≤ h := by positivity
   have hm : 0 ≤ m := by positivity
   have hmUpper : m ≤ X * h / n + 1 := by
@@ -1960,8 +1881,8 @@ theorem gmRetainedSignedReflection_near_bound
   have hC : 0 < C := by dsimp only [C]; positivity
   refine ⟨C, 2 * K₀, hC, by positivity, ?_⟩
   intro N M t hN hM htN
-  have hNr : (0 : ℝ) < N := by exact_mod_cast hN
-  have hMr : (0 : ℝ) < M := by exact_mod_cast hM
+  have hNr : zeroR < N := by exact_mod_cast hN
+  have hMr : zeroR < M := by exact_mod_cast hM
   let fpos : ℝ → ℝ := fun r =>
     (1 / (2 * Real.pi) : ℝ) * ‖gmCutoffMellin cutoff r‖ *
       ‖gmReflectionIntegral (t - r) N (2 * N * M)‖ *
@@ -1977,7 +1898,7 @@ theorem gmRetainedSignedReflection_near_bound
     simpa only [fneg] using
       integrable_norm_gmPositiveDualAggregate cutoff (-t) (M := M) hN
   have hAB : (N : ℝ) ≤ 2 * N * M := by
-    have hMOne : (1 : ℝ) ≤ M := by exact_mod_cast hM
+    have hMOne : oneR ≤ M := by exact_mod_cast hM
     nlinarith
   have hCorePos : ∫ r : ℝ in Set.Icc (-(N : ℝ)) N, fpos r ≤
       (L₁ / (2 * Real.pi)) * (M : ℝ) / (N : ℝ) := by
@@ -2144,8 +2065,8 @@ theorem exists_norm_gmTraceNonzeroTailAt_le_sqrt_near
   intro N t hN htN
   let M : ℕ := Nat.sqrt N + 1
   let S : ℝ := Real.sqrt N
-  have hNr : (0 : ℝ) < N := by exact_mod_cast hN
-  have hNOne : (1 : ℝ) ≤ N := by exact_mod_cast hN
+  have hNr : zeroR < N := by exact_mod_cast hN
+  have hNOne : oneR ≤ N := by exact_mod_cast hN
   have hS : 0 < S := by
     dsimp only [S]
     exact Real.sqrt_pos.2 hNr
@@ -2168,7 +2089,7 @@ theorem exists_norm_gmTraceNonzeroTailAt_le_sqrt_near
     dsimp only [M]
     push_cast
     linarith
-  have hMnonneg : (0 : ℝ) ≤ M := by positivity
+  have hMnonneg : zeroR ≤ M := by positivity
   have hMtwo : (M : ℝ) ^ 2 ≤ 4 * (N : ℝ) := by
     have hSq := pow_le_pow_left₀ hMnonneg hMupper 2
     rw [mul_pow, hSsq] at hSq
@@ -2200,8 +2121,8 @@ theorem exists_norm_gmTraceNonzeroTailAt_le_sqrt_near
       rw [hInv]
       have hKN : K * (M : ℝ) ^ 2 ≤ K * (4 * (N : ℝ)) :=
         mul_le_mul_of_nonneg_left hMtwo hK.le
-      have hScale : (1 : ℝ) ≤ S * (N : ℝ) ^ 2 := by
-        have hN2 : (1 : ℝ) ≤ (N : ℝ) ^ 2 := one_le_pow₀ hNOne
+      have hScale : oneR ≤ S * (N : ℝ) ^ 2 := by
+        have hN2 : oneR ≤ (N : ℝ) ^ 2 := one_le_pow₀ hNOne
         nlinarith
       calc
         (N : ℝ) * (K * (M : ℝ) ^ 2 * ((N : ℝ) ^ 4)⁻¹) =
@@ -2332,7 +2253,7 @@ theorem gmNearScaleBinSum_le_sqrt
     intro j hj
     exact (hBin j).symm
   rw [hRewrite]
-  have hNr : (0 : ℝ) < N := by exact_mod_cast hN
+  have hNr : zeroR < N := by exact_mod_cast hN
   have hCardNat : (heathBrownOffDiagonalPairs W).card ≤ W.card ^ 2 := by
     calc
       (heathBrownOffDiagonalPairs W).card ≤ (W ×ˢ W).card := by
@@ -2419,7 +2340,7 @@ theorem gmTraceNonzeroDifferenceMoment_le_source_schedule
     hB, hT_ref, ?_⟩
   intro N H T δ W hT hN hH hHδ hSep hBase hW
   have hδOne : 1 ≤ δ := by
-    have hHOne : (1 : ℝ) ≤ H := by exact_mod_cast hH
+    have hHOne : oneR ≤ H := by exact_mod_cast hH
     linarith
   have hSepOne : IsSeparated 1 W := by
     intro x hx y hy hxy
@@ -2446,14 +2367,14 @@ theorem gmTraceNonzeroDifferenceMoment_le_source_schedule
             hSep p.1 hpW.1 p.2 hpW.2 hpOff.2
         have hBounds := heathBrownDifferenceBin_bounds hSepOne hp
         have hjTwo : 2 ≤ j := by
-          have hFour : (4 : ℝ) ≤ δ := by
-            have hHOne : (1 : ℝ) ≤ H := by exact_mod_cast hH
+          have hFour : fourR ≤ δ := by
+            have hHOne : oneR ≤ H := by exact_mod_cast hH
             linarith
           by_contra hnot
           have hjSmall : j ≤ 1 := by omega
           interval_cases j <;> norm_num at hBounds ⊢ <;>
             linarith [hBounds.2, hDelta, hFour]
-        have hHeightLower : (1 : ℝ) ≤ H := by exact_mod_cast hH
+        have hHeightLower : oneR ≤ H := by exact_mod_cast hH
         have hHeightUpper : (H : ℝ) ≤ ((2 ^ j : ℕ) : ℝ) / 2 := by
           have hPowSucc : (((2 ^ (j + 1) : ℕ) : ℝ)) =
               2 * (((2 ^ j : ℕ) : ℝ)) := by
@@ -2524,7 +2445,7 @@ theorem gmS2_not_near_inverse_scale
     rw [pow_succ] at hCast
     push_cast at hCast
     simpa [mul_comm] using hCast
-  have hXPos : (0 : ℝ) < ((2 ^ j : ℕ) : ℝ) := by positivity
+  have hXPos : zeroR < ((2 ^ j : ℕ) : ℝ) := by positivity
   rw [div_le_iff₀ hXPos]
   have hNReal : 0 ≤ (N : ℝ) := by positivity
   nlinarith
@@ -2532,11 +2453,11 @@ theorem gmS2_not_near_inverse_scale
 theorem gmS2_card_rpow_sub_inv_le_sq
     {W : Finset ℝ} {k : ℕ} (hW : W.Nonempty) (hk : 0 < k) :
     (W.card : ℝ) ^ (2 - 1 / (k : ℝ)) ≤ (W.card : ℝ) ^ 2 := by
-  have hR : (1 : ℝ) ≤ W.card := by exact_mod_cast hW.card_pos
-  have hkReal : (0 : ℝ) < k := by exact_mod_cast hk
+  have hR : oneR ≤ W.card := by exact_mod_cast hW.card_pos
+  have hkReal : zeroR < k := by exact_mod_cast hk
   calc
     (W.card : ℝ) ^ (2 - 1 / (k : ℝ)) ≤
-        (W.card : ℝ) ^ (2 : ℝ) :=
+        (W.card : ℝ) ^ twoR :=
       Real.rpow_le_rpow_of_exponent_le hR (by
         have hInv : 0 ≤ 1 / (k : ℝ) := by positivity
         linarith)
@@ -2545,11 +2466,11 @@ theorem gmS2_card_rpow_sub_inv_le_sq
 theorem gmS2_card_rpow_sub_three_quarter_inv_le_sq
     {W : Finset ℝ} {k : ℕ} (hW : W.Nonempty) (hk : 0 < k) :
     (W.card : ℝ) ^ (2 - 3 / (4 * (k : ℝ))) ≤ (W.card : ℝ) ^ 2 := by
-  have hR : (1 : ℝ) ≤ W.card := by exact_mod_cast hW.card_pos
-  have hkReal : (0 : ℝ) < k := by exact_mod_cast hk
+  have hR : oneR ≤ W.card := by exact_mod_cast hW.card_pos
+  have hkReal : zeroR < k := by exact_mod_cast hk
   calc
     (W.card : ℝ) ^ (2 - 3 / (4 * (k : ℝ))) ≤
-        (W.card : ℝ) ^ (2 : ℝ) :=
+        (W.card : ℝ) ^ twoR :=
       Real.rpow_le_rpow_of_exponent_le hR (by
         have hInv : 0 ≤ 3 / (4 * (k : ℝ)) := by positivity
         linarith)
@@ -2588,8 +2509,8 @@ theorem gmS2_occupied_far_stationary
     simpa only [Real.dist_eq] using
       hSep p.1 hpW.1 p.2 hpW.2 hpOff.2
   have hBounds := heathBrownDifferenceBin_bounds hSepOne hp
-  have hHOne : (1 : ℝ) ≤ H := by exact_mod_cast hH
-  have hFour : (4 : ℝ) ≤ δ := by linarith
+  have hHOne : oneR ≤ H := by exact_mod_cast hH
+  have hFour : fourR ≤ δ := by linarith
   have hjTwo : 2 ≤ j := by
     by_contra hnot
     have hjSmall : j ≤ 1 := by omega
@@ -2605,7 +2526,7 @@ theorem gmS2_occupied_far_stationary
     linarith
   constructor
   · exact hjTwo
-  · exact_mod_cast (show (2 : ℝ) * H ≤ (2 ^ j : ℕ) by linarith)
+  · exact_mod_cast (show twoR * H ≤ (2 ^ j : ℕ) by linarith)
 
 /-- After excluding the nonstationary range, one reflected physical bin has
 exactly the three scale shapes appearing in equation (6.4), up to the
@@ -2995,13 +2916,13 @@ theorem sum_gmS2ScheduledError_le_decay
           (heathBrownReflectionDerivativeOrder 2 η) N W H j) ≤
       ((Nat.log 2 (Nat.floor T) + 1 : ℕ) : ℝ) *
         (8 * (W.card : ℝ) * T *
-          ((16 * K + L * (3 : ℝ) ^
+          ((16 * K + L * threeR ^
               (heathBrownReflectionDerivativeOrder 2 η + 2)) *
-            T ^ (-(2 : ℝ))) ^ 2) := by
+            T ^ (-twoR)) ^ 2) := by
   let q : ℕ := heathBrownReflectionDerivativeOrder 2 η
-  let E : ℝ := 16 * K + L * (3 : ℝ) ^ (q + 2)
+  let E : ℝ := 16 * K + L * threeR ^ (q + 2)
   let B : ℝ := 8 * (W.card : ℝ) * T *
-    (E * T ^ (-(2 : ℝ))) ^ 2
+    (E * T ^ (-twoR)) ^ 2
   have hTOne : 1 ≤ T := by linarith
   have hT0 : 0 ≤ T := zero_le_one.trans hTOne
   have hE0 : 0 ≤ E := by dsimp only [E]; positivity
@@ -3020,12 +2941,12 @@ theorem sum_gmS2ScheduledError_le_decay
           q N (heathBrownFixedReflectionLength N H j) H
           (((2 ^ (j + 1) : ℕ) : ℝ)) (((2 ^ j : ℕ) : ℝ)) K L
         have hSmooth := heathBrownSharpUniformReflectionError_smoothing_le
-          (A := (2 : ℝ)) (η := η) (T := T) (K := K) (L := L) (D := 0)
+          (A := twoR) (η := η) (T := T) (K := K) (L := L) (D := 0)
           (Q := N) hη hηOne hTOne hN hNT hK hL (by norm_num)
         rw [← hHeight] at hSmooth
         have hErr : gmNonzeroTailBinError q N
             (heathBrownFixedReflectionLength N H j) H
-            (((2 ^ (j + 1) : ℕ) : ℝ)) K L ≤ E * T ^ (-(2 : ℝ)) := by
+            (((2 ^ (j + 1) : ℕ) : ℝ)) K L ≤ E * T ^ (-twoR) := by
           rw [hErrEq]
           exact hErrHB.trans (by
             simpa [q, E] using hSmooth)
@@ -3062,9 +2983,9 @@ theorem sum_gmS2ScheduledError_le_decay
                 (heathBrownFixedReflectionLength N H j) H
                 (((2 ^ (j + 1) : ℕ) : ℝ)) K L) ^ 2 ≤
             2 * ((W.card : ℝ) * (4 * T)) *
-              (E * T ^ (-(2 : ℝ))) ^ 2 := by gcongr
+              (E * T ^ (-twoR)) ^ 2 := by gcongr
           _ = 8 * (W.card : ℝ) * T *
-              (E * T ^ (-(2 : ℝ))) ^ 2 := by ring
+              (E * T ^ (-twoR)) ^ 2 := by ring
     · simp [gmS2ScheduledError, hOcc, hB0]
   calc
     (∑ j ∈ Finset.range (Nat.log 2 (Nat.floor T) + 1),
@@ -3098,7 +3019,7 @@ theorem gmTraceNonzeroDifferenceMoment_le_profile_paperShape
     gmTraceNonzeroDifferenceMoment_le_source_schedule
       cutoff q k hq η hk hη
   let J₀ : ℝ := (((k : ℝ) ^ 2 * C ^ 3) ^ (1 / (k : ℝ))) * A ^ 2
-  let E : ℝ := 16 * K + L * (3 : ℝ) ^ (q + 2)
+  let E : ℝ := 16 * K + L * threeR ^ (q + 2)
   let Q₀ : ℝ := 2 + D ^ 2 + B ^ 2 + 400 * (1 + A ^ 2 + J₀) + 8 * E ^ 2
   let T_min : ℝ := max 2 T_ref
   have hQ₀ : 0 < Q₀ := by dsimp only [Q₀]; positivity
@@ -3118,7 +3039,7 @@ theorem gmTraceNonzeroDifferenceMoment_le_profile_paperShape
     exact heathBrownSmoothingHeight_pos T η
   have hHeight : H = heathBrownSmoothingHeight T η := rfl
   have hδOne : 1 ≤ δ := by
-    have hHOne : (1 : ℝ) ≤ H := by exact_mod_cast hH
+    have hHOne : oneR ≤ H := by exact_mod_cast hH
     linarith
   have hSepOne : IsSeparated 1 W := by
     intro x hx y hy hxy
@@ -3149,8 +3070,8 @@ theorem gmTraceNonzeroDifferenceMoment_le_profile_paperShape
   have hP0 : 0 ≤ P := by
     dsimp only [P]
     exact gmS2TracePaperShape_nonneg (zero_le_one.trans hTOne)
-  have hRone : (1 : ℝ) ≤ W.card := by exact_mod_cast hW.card_pos
-  have hNone : (1 : ℝ) ≤ N := by exact_mod_cast hN
+  have hRone : oneR ≤ W.card := by exact_mod_cast hW.card_pos
+  have hNone : oneR ≤ N := by exact_mod_cast hN
   have hRleFirst : (W.card : ℝ) ≤ (N : ℝ) * (W.card : ℝ) ^ 2 := by
     nlinarith [sq_nonneg ((W.card : ℝ) - 1)]
   have hFirstP : (N : ℝ) * (W.card : ℝ) ^ 2 ≤ P := by
@@ -3163,7 +3084,7 @@ theorem gmTraceNonzeroDifferenceMoment_le_profile_paperShape
   have hRleP : (W.card : ℝ) ≤ P := hRleFirst.trans hFirstP
   have hDiagTerm : (W.card : ℝ) *
       (B / (N : ℝ) ^ (q - 1)) ^ 2 ≤ B ^ 2 * P := by
-    have hDenOne : (1 : ℝ) ≤ (N : ℝ) ^ (q - 1) :=
+    have hDenOne : oneR ≤ (N : ℝ) ^ (q - 1) :=
       one_le_pow₀ hNone
     have hDiv : B / (N : ℝ) ^ (q - 1) ≤ B :=
       div_le_self hB.le hDenOne
@@ -3182,8 +3103,8 @@ theorem gmTraceNonzeroDifferenceMoment_le_profile_paperShape
     dsimp only [G]
     exact heathBrownLocalRecurrenceProfile_components.2.1
   have hTPos : 0 < T := by linarith
-  have hDecay : T * (T ^ (-(2 : ℝ))) ^ 2 ≤ 1 := by
-    have heq : T * (T ^ (-(2 : ℝ))) ^ 2 = (T ^ 3)⁻¹ := by
+  have hDecay : T * (T ^ (-twoR)) ^ 2 ≤ 1 := by
+    have heq : T * (T ^ (-twoR)) ^ 2 = (T ^ 3)⁻¹ := by
       rw [Real.rpow_neg hTPos.le, Real.rpow_two]
       field_simp [hTPos.ne']
     rw [heq]
@@ -3193,11 +3114,11 @@ theorem gmTraceNonzeroDifferenceMoment_le_profile_paperShape
           gmS2ScheduledError K L q N W H j) ≤ 8 * E ^ 2 * G * P := by
     have hCore :
         8 * (W.card : ℝ) * E ^ 2 *
-            (T * (T ^ (-(2 : ℝ))) ^ 2) ≤ 8 * P * E ^ 2 := by
+            (T * (T ^ (-twoR)) ^ 2) ≤ 8 * P * E ^ 2 := by
       have hEightE : 0 ≤ 8 * E ^ 2 := by positivity
       calc
         8 * (W.card : ℝ) * E ^ 2 *
-              (T * (T ^ (-(2 : ℝ))) ^ 2) ≤
+              (T * (T ^ (-twoR)) ^ 2) ≤
             8 * (W.card : ℝ) * E ^ 2 :=
               mul_le_of_le_one_right (by positivity) hDecay
         _ ≤ 8 * P * E ^ 2 := by
@@ -3207,11 +3128,11 @@ theorem gmTraceNonzeroDifferenceMoment_le_profile_paperShape
     calc
       _ ≤ ((Nat.log 2 (Nat.floor T) + 1 : ℕ) : ℝ) *
           (8 * (W.card : ℝ) * T *
-            (E * T ^ (-(2 : ℝ))) ^ 2) := by
+            (E * T ^ (-twoR)) ^ 2) := by
               simpa only [q, E] using hError
       _ = ((Nat.log 2 (Nat.floor T) + 1 : ℕ) : ℝ) *
           (8 * (W.card : ℝ) * E ^ 2 *
-            (T * (T ^ (-(2 : ℝ))) ^ 2)) := by ring
+            (T * (T ^ (-twoR)) ^ 2)) := by ring
       _ ≤ G * (8 * P * E ^ 2) := by
         exact mul_le_mul hCountG hCore (by positivity) (by positivity)
       _ = 8 * E ^ 2 * G * P := by ring
@@ -3413,7 +3334,7 @@ theorem gmTraceNonzeroDifferenceMoment_estimate
       Cp * T ^ (20 * η) := by
     exact hProfile T N H hProfileT hN rfl
   have hkOneNat : 1 ≤ k := hk
-  have hkOne : (1 : ℝ) ≤ (k : ℝ) := by exact_mod_cast hkOneNat
+  have hkOne : oneR ≤ (k : ℝ) := by exact_mod_cast hkOneNat
   have hExp : η / (k : ℝ) ≤ η := div_le_self hη.le hkOne
   have hPowK : T ^ (η / (k : ℝ)) ≤ T ^ η :=
     Real.rpow_le_rpow_of_exponent_le hTOne hExp
@@ -3496,9 +3417,9 @@ theorem gmCubicS2_estimate
     have hShape0 : 0 ≤ gmS2PaperShape k N T W :=
       gmS2PaperShape_nonneg hTPos.le
     have hTpowOne : 1 ≤ T ^ ε := Real.one_le_rpow hTOne hε.le
-    have hNone : (1 : ℝ) ≤ N := by exact_mod_cast hN
-    have hRone : (1 : ℝ) ≤ W.card := by exact_mod_cast hW.card_pos
-    have hRsq : (1 : ℝ) ≤ (W.card : ℝ) ^ 2 := by
+    have hNone : oneR ≤ N := by exact_mod_cast hN
+    have hRone : oneR ≤ W.card := by exact_mod_cast hW.card_pos
+    have hRsq : oneR ≤ (W.card : ℝ) ^ 2 := by
       rw [pow_two]
       simpa only [one_mul] using
         mul_le_mul hRone hRone (by norm_num) (by linarith)
@@ -3561,7 +3482,7 @@ theorem gmCubicS2_estimate
       _ ≤ C * T ^ ε * gmS2PaperShape k N T W := by
         dsimp only [C]
         have hScale0 : 0 ≤ T ^ ε * gmS2PaperShape k N T W := by positivity
-        nlinarith [mul_nonneg (by positivity : 0 ≤ (3 : ℝ)) hScale0]
+        nlinarith [mul_nonneg (by positivity : 0 ≤ threeR) hScale0]
   · have hEmpty : W = ∅ := Finset.not_nonempty_iff_eq_empty.mp hW
     subst W
     have hShape0 : 0 ≤ gmS2PaperShape k N T ∅ :=

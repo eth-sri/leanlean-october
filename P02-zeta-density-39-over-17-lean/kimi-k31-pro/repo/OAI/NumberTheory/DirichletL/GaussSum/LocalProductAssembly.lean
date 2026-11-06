@@ -74,21 +74,6 @@ section
 
 open AddChar MulChar
 
-@[instance_reducible] noncomputable def crtIntersectionFintype
-    {ι : Type*} [Fintype ι]
-    (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hdistinct : Function.Injective (fun i => Ideal.span {p i})) :
-    Fintype (O ⧸ ⨅ i, Ideal.span {p i}) := by
-  classical
-  letI (i : ι) : Fintype (O ⧸ Ideal.span {p i}) := Fintype.ofFinite _
-  have hcop : Pairwise
-      (fun i k => IsCoprime (Ideal.span {p i}) (Ideal.span {p k})) := by
-    intro i k hik
-    exact Ideal.isCoprime_of_isMaximal (hdistinct.ne hik)
-  let e := Ideal.quotientInfRingEquivPiQuotient
-    (fun i => Ideal.span {p i}) hcop
-  exact Fintype.ofEquiv (∀ i, O ⧸ Ideal.span {p i}) e.symm.toEquiv
-
 end
 
 theorem canonicalSextic_sixth_power_mask (P : Ideal O) [P.IsMaximal]

@@ -1,5 +1,6 @@
 module
-public import OAI.NumberTheory.DirichletL.Reflection.FamilyTail
+public import OAI.NumberTheory.DirichletL.Reflection.UniformTail
+public import OAI.NumberTheory.DirichletL.Reflection.TruncatedSource
 public import OAI.NumberTheory.DirichletL.Inversion.ReflectedArithmeticHeight
 
 @[expose] public section

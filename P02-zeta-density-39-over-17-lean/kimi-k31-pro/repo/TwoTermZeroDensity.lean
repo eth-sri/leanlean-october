@@ -1,6 +1,7 @@
 module
 public import TwoTermLargeValues
 public import TwoTermDetectorCover
+public import GeneralDetectorCover
 public import TwoTermWindowParameters
 
 @[expose] public section
@@ -13,9 +14,17 @@ set_option maxHeartbeats 1200000
 noncomputable section
 namespace Montgomery.RationalMoment
 
-/-- Actual Type-I detection with every powered length covered. -/
-theorem two_term_typeI_separated_count {σ a p α ε : ℝ}
-    (hw : TwoTermWindow σ a p α) (hε : 0 < ε) :
+/-- Shared Type-I count from a full-window large-value estimate. -/
+theorem typeI_separated_count_of_large_values {σ a p ε : ℝ}
+    (ha_low : 69/100 ≤ a) (ha_high : a ≤ 4/5) (hσlow : 9/13 ≤ σ) (hε : 0 < ε)
+    (hLV : ∀ δ, 0 < δ → δ ≤ 1/100 → ∃ C : ℝ, 0 < C ∧
+      ∀ (T N t₀ : ℝ) (b : ℕ → ℂ) (W : Finset ℝ),
+      2 ≤ T → 2 ≤ N → T^a ≤ N → N ≤ T^(3*a/2+δ) →
+      (∀ n ∈ sourceRatioIndices N, ‖b n‖ ≤ 1) →
+      (∀ t ∈ W, t₀ ≤ t ∧ t ≤ t₀+T) →
+      (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
+      (∀ t ∈ W, N^σ*T^(-2*δ) ≤ ‖boundedPolynomial N b t‖) →
+      (W.card:ℝ) ≤ C*T^(p+18*δ)) :
     ∃ C : ℝ, 0 < C ∧ ∀ᶠ H : ℝ in atTop, ∀ (t₀ : ℝ) (R : Finset ℂ),
       (R.image Complex.im).card = R.card → oneSeparated (R.image Complex.im) →
       (∀ ρ ∈ R, σ ≤ ρ.re ∧ ρ.re ≤ 1 ∧ ρ.im ∈ Icc t₀ (t₀+H) ∧
@@ -26,14 +35,14 @@ theorem two_term_typeI_separated_count {σ a p α ε : ℝ}
   have hη : 0 < η := lt_min (by positivity) (by norm_num)
   have hηsmall : η ≤ 1/100 := min_le_right _ _
   have hηeps : η ≤ ε/1000 := min_le_left _ _
-  obtain ⟨C,hC,hLV⟩ := two_term_full_window_large_values hw hη hηsmall
+  obtain ⟨C,hC,hLV⟩ := hLV η hη hηsmall
   have hloglim := (isLittleO_log_rpow_rpow_atTop (2:ℝ) hη).tendsto_div_nhds_zero
   norm_num at hloglim
   refine ⟨C,hC,?_⟩
-  filter_upwards [eventually_ge_atTop (2:ℝ), two_term_powered_cover hη,
+  filter_upwards [eventually_ge_atTop (2:ℝ), general_powered_cover hη,
     shortPoweredDetectorFamily_coefficients hη,
     (tendsto_rpow_atTop hη).eventually_ge_atTop ((2:ℝ)^99),
-    (tendsto_rpow_atTop (show (0:ℝ)<7/10 by norm_num)).eventually_ge_atTop 2,
+    (tendsto_rpow_atTop (show (0:ℝ)<69/100 by norm_num)).eventually_ge_atTop 2,
     hloglim.eventually (gt_mem_nhds (show (0:ℝ)<1/600000 by norm_num))]
     with H hH hfamily hcoeff hconst hlength hlog
   intro t₀ R hcard hsep hR
@@ -51,7 +60,7 @@ theorem two_term_typeI_separated_count {σ a p α ε : ℝ}
     intro q hp
     obtain ⟨hp,hlow,hhigh,hsupport⟩ := Finset.mem_filter.mp hp
     have hN : 2 ≤ (shortPoweredDetectorScale q:ℝ) :=
-      hlength.trans ((Real.rpow_le_rpow_of_exponent_le hHa hw.a_low).trans hlow)
+      hlength.trans ((Real.rpow_le_rpow_of_exponent_le hHa ha_low).trans hlow)
     have hupper : (shortPoweredDetectorScale q:ℝ) ≤ H^(3*a/2+η) := by
       calc
         _ ≤ (2:ℝ)^99*H^(3*a/2) := hhigh
@@ -77,7 +86,7 @@ theorem two_term_typeI_separated_count {σ a p α ε : ℝ}
     obtain ⟨ρ,hρ,rfl⟩ := Finset.mem_image.mp ht
     obtain ⟨hβ,hβ',_hloc,hd⟩ := hR ρ hρ
     obtain ⟨q,hp,hlo,hhi,hsupport,hlarge⟩ := hfamily.2 (a) σ ρ
-      hw.a_low hw.a_high (by linarith [hw.sigma_low]) hβ hβ' hd
+      ha_low ha_high (by linarith) hβ hβ' hd
     apply Finset.mem_biUnion.mpr
     refine ⟨q,Finset.mem_filter.mpr ⟨hp,hlo,hhi,hsupport⟩,?_⟩
     exact Finset.mem_filter.mpr ⟨Finset.mem_image.mpr ⟨ρ,hρ,rfl⟩,hlarge⟩
@@ -105,6 +114,18 @@ theorem two_term_typeI_separated_count {σ a p α ε : ℝ}
       congr 2
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hpow hC.le
+
+/-- Actual Type-I detection with every powered length covered. -/
+theorem two_term_typeI_separated_count {σ a p α ε : ℝ}
+    (hw : TwoTermWindow σ a p α) (hε : 0 < ε) :
+    ∃ C : ℝ, 0 < C ∧ ∀ᶠ H : ℝ in atTop, ∀ (t₀ : ℝ) (R : Finset ℂ),
+      (R.image Complex.im).card = R.card → oneSeparated (R.image Complex.im) →
+      (∀ ρ ∈ R, σ ≤ ρ.re ∧ ρ.re ≤ 1 ∧ ρ.im ∈ Icc t₀ (t₀+H) ∧
+        (1/3:ℝ) ≤ ‖shortFiniteDetector ρ H‖) →
+      (R.card:ℝ) ≤ C*H^(p+ε) := by
+  apply typeI_separated_count_of_large_values (by linarith [hw.a_low]) hw.a_high (by linarith [hw.sigma_low]) hε
+  intro δ hδ hδ'
+  exact two_term_full_window_large_values hw hδ hδ'
 
 /-- The Type-I branch count on actual zeta zero representatives. -/
 theorem two_term_typeI_zero_slab_count {σ a p α ε : ℝ}

@@ -14,7 +14,7 @@ namespace MathCollab.Density
 /-- The exact infinite contour identity, with no Weyl premise or fixed relation
 between the independent mollifier and smoothing parameters. -/
 theorem smoothedDetector_contour_identity {ρ : ℂ} {X Y : ℝ}
-    (hY : 1 ≤ Y) (hβ : 3/4 ≤ ρ.re) (hβ' : ρ.re < 1)
+    (hY : 1 ≤ Y) (hβ : 9/13 ≤ ρ.re) (hβ' : ρ.re < 1)
     (hZero : riemannZeta ρ = 0) :
     smoothedDetector ρ X (1/Y) = detectorResidue ρ X Y +
       (((1/(2*Real.pi) : ℝ) : ℂ) * ∫ t : ℝ,
@@ -44,7 +44,7 @@ theorem smoothedDetector_contour_identity {ρ : ℂ} {X Y : ℝ}
   have heq : ∀ᶠ R : ℝ in atTop, RectangleIntegral' F
       ((a : ℂ)-(R : ℂ)*I) (((1/2 : ℝ) : ℂ)+(R : ℂ)*I) = detectorResidue ρ X Y := by
     filter_upwards [eventually_gt_atTop |ρ.im|] with R hR
-    exact detector_finite_rectangle_kernel hYpos hβ hβ' hR hZero
+    exact detector_finite_rectangle_kernel hYpos (by linarith) hβ' hR hZero
   have he : c*(I*Jr-I*Jl) = detectorResidue ρ X Y :=
     tendsto_nhds_unique hlim ((tendsto_congr' heq).mpr tendsto_const_nhds)
   rw [smoothedDetector_eq_rightContour hYpos hβ]

@@ -48,11 +48,11 @@ theorem continuous_logSum (S : Finset ℕ) : Continuous (logSum S) := by
   fun_prop
 
 theorem logSum_sixth_eq (S : Finset ℕ) (T : ℝ) :
-    (∫ p : ℝ × ℝ in Icc (0:ℝ) 1 ×ˢ Icc (-T) T, ‖logSum S p‖^6) =
+    (∫ p : ℝ × ℝ in Icc zeroR 1 ×ˢ Icc (-T) T, ‖logSum S p‖^6) =
       logarithmicSixMoment T S (fun _ => 1) (fun n => (n:ℤ)) := by
   have hc : Continuous (fun p => ‖logSum S p‖^6) := (continuous_logSum S).norm.pow 6
   have hi := hc.continuousOn.integrableOn_compact (μ:=volume)
-    (isCompact_Icc.prod isCompact_Icc : IsCompact (Icc (0:ℝ) 1 ×ˢ Icc (-T) T))
+    (isCompact_Icc.prod isCompact_Icc : IsCompact (Icc zeroR 1 ×ˢ Icc (-T) T))
   rw [IntegrableOn,Measure.volume_eq_prod,←Measure.prod_restrict] at hi
   have hh := integral_prod_symm (fun p => ‖logSum S p‖^6) hi
   rw [Measure.prod_restrict,←Measure.volume_eq_prod] at hh
@@ -83,21 +83,21 @@ theorem normalized_triple_bound (a A : Fin 3 → ℝ) (hA : ∀j, 0 < A j) :
                                                                           
                                                                          
 theorem exists_mixed_logarithmic_sixth {ε : ℝ} (hε : 0 < ε) :
-    ∃ C > (0:ℝ), ∀ (N : ℕ), 1 ≤ N → ∀ (T : ℝ), 0 ≤ T →
+    ∃ C > zeroR, ∀ (N : ℕ), 1 ≤ N → ∀ (T : ℝ), 0 ≤ T →
       ∀ (M : Fin 3 → ℕ), (∀j, 1 ≤ M j ∧ M j ≤ N) →
       ∀ (S : Fin 3 → Finset ℕ), (∀j, ∀n∈S j, 1 ≤ n ∧ n ≤ M j) →
-      (∫ p : ℝ × ℝ in Icc (0:ℝ) 1 ×ˢ Icc (-T) T,
+      (∫ p : ℝ × ℝ in Icc zeroR 1 ×ˢ Icc (-T) T,
         ∏j, ‖logSum (S j) p‖^2) ≤
-        C*(T+N)*(∏j, (M j:ℝ))^((1:ℝ)+ε) := by
+        C*(T+N)*(∏j, (M j:ℝ))^(oneR+ε) := by
   classical
   obtain ⟨C,hC,h⟩ := exists_logarithmic_sixth (ε:=3*ε) (by positivity)
   refine ⟨C,hC,?_⟩
   intro N _hN T hT M hM S hS
-  let R := Icc (0:ℝ) 1 ×ˢ Icc (-T) T
-  let A := fun j => (M j:ℝ)^((1:ℝ)+ε)
-  have hM₀ (j : Fin 3) : (0:ℝ) < M j := by exact_mod_cast (by have := (hM j).1; omega : 0 < M j)
+  let R := Icc zeroR 1 ×ˢ Icc (-T) T
+  let A := fun j => (M j:ℝ)^(oneR+ε)
+  have hM₀ (j : Fin 3) : zeroR < M j := by exact_mod_cast (by have := (hM j).1; omega : 0 < M j)
   have hA (j : Fin 3) : 0 < A j := Real.rpow_pos_of_pos (hM₀ j) _
-  have hAcube (j : Fin 3) : (A j)^3=(M j:ℝ)^((3:ℝ)+3*ε) := by
+  have hAcube (j : Fin 3) : (A j)^3=(M j:ℝ)^(threeR+3*ε) := by
     dsimp only [A]
     rw [←Real.rpow_mul_natCast (hM₀ j).le]
     congr 1
@@ -110,7 +110,7 @@ theorem exists_mixed_logarithmic_sixth {ε : ℝ} (hε : 0 < ε) :
     have hm (n : ℕ) (hn : n∈S j) : (1:ℤ) ≤ n ∧ (n:ℤ) ≤ M j := by
       exact_mod_cast hS j n hn
     have hz (k : ℤ) :
-        (∑ _n∈(S j).filter (fun n : ℕ => (n:ℤ)=k), ‖(1:ℂ)‖) ≤ (1:ℝ) := by
+        (∑ _n∈(S j).filter (fun n : ℕ => (n:ℤ)=k), ‖(1:ℂ)‖) ≤ oneR := by
       simp only [norm_one,Finset.sum_const,nsmul_eq_mul,mul_one]
       have hc : ((S j).filter (fun n : ℕ => (n:ℤ)=k)).card ≤ 1 := by
         apply Finset.card_le_one.mpr
@@ -141,7 +141,7 @@ theorem exists_mixed_logarithmic_sixth {ε : ℝ} (hε : 0 < ε) :
   rw [integral_const_mul,integral_finsetSum _ (fun j _ => (hint j).div_const _)] at hmain
   have hsum := Finset.sum_le_sum (fun j (_hj : j∈Finset.univ) => hsingle j)
   simp only [Finset.sum_const,Finset.card_univ,Fintype.card_fin,nsmul_eq_mul] at hsum
-  have hprod : (∏j, A j)=(∏j, (M j:ℝ))^((1:ℝ)+ε) := by
+  have hprod : (∏j, A j)=(∏j, (M j:ℝ))^(oneR+ε) := by
     dsimp only [A]
     exact Real.finsetProd_rpow _ _ (fun j _ => (hM₀ j).le) _
   have hbound := hmain.trans (mul_le_mul_of_nonneg_left hsum
@@ -189,20 +189,20 @@ theorem logSum_periodic (S : Finset ℕ) (t : ℝ) :
 
 theorem periodic_integral_two (f : ℝ → ℝ) (hf : Continuous f)
     (hp : Function.Periodic f 1) :
-    (∫ α : ℝ in Icc (-1:ℝ) 1, f α)=2*∫ α : ℝ in Icc (0:ℝ) 1, f α := by
+    (∫ α : ℝ in Icc (-1:ℝ) 1, f α)=2*∫ α : ℝ in Icc zeroR 1, f α := by
   rw [integral_Icc_eq_integral_Ioc,
     ←intervalIntegral.integral_of_le (by norm_num : (-1:ℝ) ≤ 1)]
   have hh := hp.intervalIntegral_add_zsmul_eq (2:ℤ) (-1)
     (fun a b => hf.intervalIntegrable a b)
   rw [hp.intervalIntegral_add_eq (-1) 0] at hh
   norm_num only [zsmul_eq_mul,Int.cast_ofNat,mul_one,zero_add,neg_add_cancel] at hh
-  rw [hh,intervalIntegral.integral_of_le (by norm_num : (0:ℝ) ≤ 1),
+  rw [hh,intervalIntegral.integral_of_le (by norm_num : zeroR ≤ 1),
     ←integral_Icc_eq_integral_Ioc]
 
 theorem logBoxSum_central_integral (q : ℤ) (S : Fin 3 → Finset ℕ) (T : ℝ) :
     (∫ α : ℝ in Icc (-1:ℝ) 1, ∫ t : ℝ in Icc (-T) T,
       ‖logBoxSum q S (α,t)‖^2)=
-      2*(∫ p : ℝ × ℝ in Icc (0:ℝ) 1 ×ˢ Icc (-T) T,
+      2*(∫ p : ℝ × ℝ in Icc zeroR 1 ×ˢ Icc (-T) T,
         ∏j, ‖logSum (S j) p‖^2) := by
   let F := fun p : ℝ × ℝ => ∏j, ‖logSum (S j) p‖^2
   have hc : Continuous F := by unfold F logSum fordAdditiveCharacter; fun_prop
@@ -219,7 +219,7 @@ theorem logBoxSum_central_integral (q : ℤ) (S : Fin 3 → Finset ℕ) (T : ℝ
     change logSum (S j) (α+1,t)=logSum (S j) (α,t) at he
     rw [he]
   have hinner (t : ℝ) : (∫ α : ℝ in Icc (-1:ℝ) 1, F (α,t))=
-      2*∫ α : ℝ in Icc (0:ℝ) 1, F (α,t) :=
+      2*∫ α : ℝ in Icc zeroR 1, F (α,t) :=
     periodic_integral_two _ (hc.comp (continuous_id.prodMk continuous_const)) (hp t)
   simp_rw [logBoxSum_norm_sq]
   change (∫ α : ℝ in Icc (-1:ℝ) 1, ∫ t : ℝ in Icc (-T) T, F (α,t))=_
@@ -307,24 +307,24 @@ theorem logBoxFamily_central_le (q : Fin 2 → ℤ)
   exact hmain
 
 theorem exists_two_box_central_moment {ε : ℝ} (hε : 0 < ε) :
-    ∃ C > (0:ℝ), ∀ (N : ℕ), 1 ≤ N → ∀ (T : ℝ), 0 ≤ T →
+    ∃ C > zeroR, ∀ (N : ℕ), 1 ≤ N → ∀ (T : ℝ), 0 ≤ T →
       ∀ (M : Fin 2 → Fin 3 → ℕ), (∀j r, 1 ≤ M j r ∧ M j r ≤ N) →
       ∀ (S : Fin 2 → Fin 3 → Finset ℕ), (∀j r, ∀n∈S j r, 1 ≤ n ∧ n ≤ M j r) →
       ∀ (q : Fin 2 → ℤ),
       (∫ α : ℝ in Icc (-1:ℝ) 1, ∫ t : ℝ in Icc (-T) T,
         ‖sargosPlanarSum (logBoxFamily S) (fun _ => 1)
           (logBoxFamilySquare q) logBoxFamilyLog α t‖^2) ≤
-        C*(T+N)*∑j, (∏r, (M j r:ℝ))^((1:ℝ)+ε) := by
+        C*(T+N)*∑j, (∏r, (M j r:ℝ))^(oneR+ε) := by
   obtain ⟨C,hC,h⟩ := exists_mixed_logarithmic_sixth hε
   refine ⟨4*C,by positivity,?_⟩
   intro N hN T hT M hM S hS q
   have hbox (j : Fin 2) :
       (∫ α : ℝ in Icc (-1:ℝ) 1, ∫ t : ℝ in Icc (-T) T,
         ‖logBoxSum (q j) (S j) (α,t)‖^2) ≤
-        2*C*(T+N)*(∏r, (M j r:ℝ))^((1:ℝ)+ε) := by
+        2*C*(T+N)*(∏r, (M j r:ℝ))^(oneR+ε) := by
     rw [logBoxSum_central_integral]
     exact (mul_le_mul_of_nonneg_left (h N hN T hT (M j) (hM j) (S j) (hS j))
-      (by norm_num : (0:ℝ) ≤ 2)).trans_eq (by ring)
+      (by norm_num : zeroR ≤ 2)).trans_eq (by ring)
   have hsum := Finset.sum_le_sum (fun j (_hj : j∈Finset.univ) => hbox j)
   rw [←Finset.mul_sum] at hsum
   exact ((logBoxFamily_central_le q S T).trans
@@ -333,21 +333,21 @@ theorem exists_two_box_central_moment {ε : ℝ} (hε : 0 < ε) :
                                                                      
                                                                           
 theorem exists_two_box_log_near_count {ε : ℝ} (hε : 0 < ε) :
-    ∃ C > (0:ℝ), ∀ (N : ℕ), 1 ≤ N → ∀ (T : ℝ), 0 < T →
+    ∃ C > zeroR, ∀ (N : ℕ), 1 ≤ N → ∀ (T : ℝ), 0 < T →
       ∀ (M : Fin 2 → Fin 3 → ℕ), (∀j r, 1 ≤ M j r ∧ M j r ≤ N) →
       ∀ (S : Fin 2 → Fin 3 → Finset ℕ), (∀j r, ∀n∈S j r, 1 ≤ n ∧ n ≤ M j r) →
       ∀ (q : Fin 2 → ℤ),
       ((sargosNearPairs (logBoxFamily S) (logBoxFamilySquare q) logBoxFamilyLog
         (1/2) (1/(2*T))).card : ℝ) ≤
-        C*(1+N/T)*∑j, (∏r, (M j r:ℝ))^((1:ℝ)+ε) := by
+        C*(1+N/T)*∑j, (∏r, (M j r:ℝ))^(oneR+ε) := by
   obtain ⟨C,hC,h⟩ := exists_two_box_central_moment hε
   refine ⟨16*C,by positivity,?_⟩
   intro N hN T hT M hM S hS q
   have hmom := h N hN T hT.le M hM S hS q
   have hk := sargosNearPairs_card_le_central (logBoxFamily S)
     (logBoxFamilySquare q) logBoxFamilyLog (Δ:=2) (μ:=2*T) (by norm_num) (by positivity)
-  norm_num only [show (2:ℝ)/2=1 by norm_num,show 2*T/2=T by ring] at hk
-  have hcoef : 64/((2:ℝ)*(2*T))=16/T := by field_simp; ring
+  norm_num only [show twoR/2=1 by norm_num,show 2*T/2=T by ring] at hk
+  have hcoef : 64/(twoR*(2*T))=16/T := by field_simp; ring
   rw [hcoef] at hk
   apply hk.trans ((mul_le_mul_of_nonneg_left hmom (by positivity : 0 ≤ 16/T)).trans_eq ?_)
   field_simp
@@ -378,7 +378,7 @@ theorem logCrossPairs_card_le_near (S : Fin 2 → Fin 3 → Finset ℕ)
       · exact Finset.mem_sigma.mpr ⟨Finset.mem_univ _,hleft⟩
       · exact Finset.mem_sigma.mpr ⟨Finset.mem_univ _,hright⟩
     · constructor
-      · change |logBoxSquare (q 0) p.1-logBoxSquare (q 1) p.2| ≤ (1/2:ℝ)
+      · change |logBoxSquare (q 0) p.1-logBoxSquare (q 1) p.2| ≤ halfR
         rw [he,sub_self,abs_zero]
         norm_num
       · exact hlog
@@ -388,12 +388,12 @@ theorem logCrossPairs_card_le_near (S : Fin 2 → Fin 3 → Finset ℕ)
     exact Prod.ext ha hb
 
 theorem exists_logCrossPairs_bound {ε : ℝ} (hε : 0 < ε) :
-    ∃ C > (0:ℝ), ∀ (N : ℕ), 1 ≤ N → ∀ (δ : ℝ), 0 < δ →
+    ∃ C > zeroR, ∀ (N : ℕ), 1 ≤ N → ∀ (δ : ℝ), 0 < δ →
       ∀ (M : Fin 2 → Fin 3 → ℕ), (∀j r, 1 ≤ M j r ∧ M j r ≤ N) →
       ∀ (S : Fin 2 → Fin 3 → Finset ℕ), (∀j r, ∀n∈S j r, 1 ≤ n ∧ n ≤ M j r) →
       ∀ (q : Fin 2 → ℤ),
       ((logCrossPairs S q δ).card : ℝ) ≤
-        C*(1+N*δ)*∑j, (∏r, (M j r:ℝ))^((1:ℝ)+ε) := by
+        C*(1+N*δ)*∑j, (∏r, (M j r:ℝ))^(oneR+ε) := by
   obtain ⟨C,hC,h⟩ := exists_two_box_log_near_count hε
   refine ⟨2*C,by positivity,?_⟩
   intro N hN δ hδ M hM S hS q
@@ -404,7 +404,7 @@ theorem exists_logCrossPairs_bound {ε : ℝ} (hε : 0 < ε) :
       (sargosNearPairs (logBoxFamily S) (logBoxFamilySquare q) logBoxFamilyLog (1/2) δ).card := by
     exact_mod_cast logCrossPairs_card_le_near S q δ
   apply (hcard.trans hh).trans
-  have hsum : 0 ≤ ∑j, (∏r, (M j r:ℝ))^((1:ℝ)+ε) :=
+  have hsum : 0 ≤ ∑j, (∏r, (M j r:ℝ))^(oneR+ε) :=
     Finset.sum_nonneg (fun j _ => Real.rpow_nonneg (Finset.prod_nonneg (fun r _ => Nat.cast_nonneg _)) _)
   have he : 1+(N:ℝ)/(1/(2*δ))=1+2*N*δ := by field_simp
   rw [he]
@@ -413,7 +413,7 @@ theorem exists_logCrossPairs_bound {ε : ℝ} (hε : 0 < ε) :
 
 theorem logBoxLog_eq_log_product (n : Fin 3 → ℕ) (hn : ∀j, 1 ≤ n j) :
     logBoxLog n=Real.log (∏j, (n j:ℝ)) := by
-  exact (Real.log_prod (fun j _ => (show (0:ℝ) < n j by exact_mod_cast (hn j)).ne')).symm
+  exact (Real.log_prod (fun j _ => (show zeroR < n j by exact_mod_cast (hn j)).ne')).symm
 
 theorem abs_log_sub_le_gap {a b L P : ℝ} (hL : 0 < L)
     (ha : L ≤ a) (hb : L ≤ b) (hd : |a-b| ≤ P) :
@@ -505,7 +505,7 @@ theorem boxProduct_comparison {M n : Fin 3 → ℕ}
       (f:=fun j => (M j:ℝ)) (g:=fun j => 2*(n j:ℝ))
       (fun j _ => Nat.cast_nonneg _) (fun j _ => hlow j)
     rw [Finset.prod_mul_distrib] at hh
-    norm_num only [Finset.prod_const,Finset.card_univ,Fintype.card_fin,show (2:ℝ)^3=8 by norm_num] at hh
+    norm_num only [Finset.prod_const,Finset.card_univ,Fintype.card_fin,show twoR^3=8 by norm_num] at hh
     exact hh
   · exact Finset.prod_le_prod₀ (fun j _ => Nat.cast_nonneg _) (fun j _ => by exact_mod_cast hhigh j)
 
@@ -606,13 +606,13 @@ theorem zeroAdjustedPairs_subset_high
 theorem boxProduct_rpow_budget {N : ℕ} {M : Fin 2 → Fin 3 → ℕ}
     (hM : ∀j r, 1 ≤ M j r ∧ M j r ≤ N) {η : ℝ} (hη : 0 ≤ η)
     {U : ℝ} (hU : U=max (boxProduct (M 0)) (boxProduct (M 1))) :
-    (∑j, (boxProduct (M j))^((1:ℝ)+η)) ≤ 2*U*(N:ℝ)^(3*η) := by
+    (∑j, (boxProduct (M j))^(oneR+η)) ≤ 2*U*(N:ℝ)^(3*η) := by
   have hupper (j : Fin 2) : boxProduct (M j) ≤ U := by
     rw [hU]
     fin_cases j
     · exact le_max_left _ _
     · exact le_max_right _ _
-  have hterm (j : Fin 2) : (boxProduct (M j))^((1:ℝ)+η) ≤ U*(N:ℝ)^(3*η) := by
+  have hterm (j : Fin 2) : (boxProduct (M j))^(oneR+η) ≤ U*(N:ℝ)^(3*η) := by
     have hp := boxProduct_pos (fun r => (hM j r).1)
     have hc := boxProduct_le_cube (fun r => (hM j r).2)
     have hpow := Real.rpow_le_rpow hp.le hc hη
@@ -628,14 +628,14 @@ theorem boxProduct_rpow_budget {N : ℕ} {M : Fin 2 → Fin 3 → ℕ}
                                                                          
                                               
 theorem exists_zeroAdjustedPairs_box_bound {ε : ℝ} (hε : 0 < ε) :
-    ∃ C > (0:ℝ), ∀ (N : ℕ), 1 ≤ N → ∀ (P : ℝ), 0 ≤ P →
+    ∃ C > zeroR, ∀ (N : ℕ), 1 ≤ N → ∀ (P : ℝ), 0 ≤ P →
       ∀ (M : Fin 2 → Fin 3 → ℕ), (∀j r, 1 ≤ M j r ∧ M j r ≤ N) →
       ∀ (S : Fin 2 → Fin 3 → Finset ℕ),
         (∀j r, ∀n∈S j r, 1 ≤ n ∧ n ≤ M j r ∧ (M j r:ℝ) ≤ 2*n) →
       ∀ (q : Fin 2 → ℤ) (z : Fin 2 → Bool),
         (∀j, z j=true → ∃r, M j r=1) →
       ((zeroAdjustedPairs S q z P).card : ℝ) ≤
-        C*((N:ℝ)^2+P+1)*(N:ℝ)^((1:ℝ)+ε)*(1+Real.log N) := by
+        C*((N:ℝ)^2+P+1)*(N:ℝ)^(oneR+ε)*(1+Real.log N) := by
   obtain ⟨C,hC,h⟩ := exists_logCrossPairs_bound (ε:=ε/3) (by positivity)
   refine ⟨96*C,by positivity,?_⟩
   intro N hN P hP M hM S hS q z hzero
@@ -643,8 +643,8 @@ theorem exists_zeroAdjustedPairs_box_bound {ε : ℝ} (hε : 0 < ε) :
   let D := (N:ℝ)^2+P+1
   let K := (N:ℝ)^ε
   let L := 1+Real.log N
-  have hN₁ : (1:ℝ) ≤ N := by exact_mod_cast hN
-  have hN₀ : (0:ℝ) < N := by linarith
+  have hN₁ : oneR ≤ N := by exact_mod_cast hN
+  have hN₀ : zeroR < N := by linarith
   have hlog : 0 ≤ Real.log N := Real.log_nonneg hN₁
   have hL : 1 ≤ L := by dsimp [L]; linarith
   have hD : 0 < D := by dsimp [D]; positivity
@@ -654,9 +654,9 @@ theorem exists_zeroAdjustedPairs_box_bound {ε : ℝ} (hε : 0 < ε) :
     (boxProduct_le_cube (fun r => (hM 0 r).2)) (boxProduct_le_cube (fun r => (hM 1 r).2))
   have hSbasic (j : Fin 2) (r : Fin 3) (n : ℕ) (hn : n∈S j r) : 1 ≤ n ∧ n ≤ M j r :=
     ⟨(hS j r n hn).1,(hS j r n hn).2.1⟩
-  have hsum : (∑j, (∏r, (M j r:ℝ))^((1:ℝ)+ε/3)) ≤ 2*U*K := by
+  have hsum : (∑j, (∏r, (M j r:ℝ))^(oneR+ε/3)) ≤ 2*U*K := by
     have hh := boxProduct_rpow_budget hM (show 0 ≤ ε/3 by positivity) (U:=U) rfl
-    norm_num only [show (3:ℝ)*(ε/3)=ε by ring] at hh
+    norm_num only [show threeR*(ε/3)=ε by ring] at hh
     exact hh
   have hcommon : ((zeroAdjustedPairs S q z P).card : ℝ) ≤ 96*C*D*N*K*L := by
     by_cases hsmall : U ≤ 16*D
@@ -696,7 +696,7 @@ theorem exists_zeroAdjustedPairs_box_bound {ε : ℝ} (hε : 0 < ε) :
         have hh := mul_le_mul_of_nonneg_left hL (show 0 ≤ 96*C*D*N*K by positivity)
         nlinarith only [hh,mul_nonneg (show 0 ≤ C*D*N by positivity) hK]
       exact hb'.trans hbudget
-  have he : (N:ℝ)^((1:ℝ)+ε)=(N:ℝ)*K := by rw [Real.rpow_add hN₀,Real.rpow_one]
+  have he : (N:ℝ)^(oneR+ε)=(N:ℝ)*K := by rw [Real.rpow_add hN₀,Real.rpow_one]
   rw [he]
   exact hcommon.trans_eq (by dsimp [D,L]; ring)
 
@@ -811,10 +811,10 @@ theorem signedBoxShift_square {N : ℕ} {a : Fin 3 → ℤ} {l : Fin 3 → Signe
     logBoxSquare (signedBoxShift l) (positiveTriple a)=∑r, (a r:ℝ)^2 := by
   have hz (r : Fin 3) : (l r).1=decide (a r=0) :=
     (congrArg (fun v : SignedBoxLabel N => v.1) (hl r)).symm
-  have hshift : (signedBoxShift l:ℝ)=-(∑r, if a r=0 then (1:ℝ) else 0) := by
+  have hshift : (signedBoxShift l:ℝ)=-(∑r, if a r=0 then oneR else 0) := by
     simp [signedBoxShift,hz]
   have hs : (∑r, (a r:ℝ)^2)=(∑r, (positiveCode (a r):ℝ)^2)-
-      ∑r, if a r=0 then (1:ℝ) else 0 := by
+      ∑r, if a r=0 then oneR else 0 := by
     simp_rw [positiveCode_square]
     rw [Finset.sum_sub_distrib]
   rw [hs]
@@ -928,20 +928,20 @@ theorem signedPairLabel_card (N : ℕ) :
   ring
 
 theorem exists_signed_square_product_count_log_loss {ε : ℝ} (hε : 0 < ε) :
-    ∃ C > (0:ℝ), ∀ (N : ℕ), 1 ≤ N → ∀ (P : ℝ), 0 ≤ P →
+    ∃ C > zeroR, ∀ (N : ℕ), 1 ≤ N → ∀ (P : ℝ), 0 ≤ P →
       ∀ (Q : Finset SignedPair),
         (∀p∈Q, ∀r, |p.1 r| ≤ N ∧ |p.2 r| ≤ N) →
         (∀p∈Q, (∑r, (p.1 r:ℝ)^2)=(∑r, (p.2 r:ℝ)^2)) →
         (∀p∈Q, |(∏r, (p.1 r:ℝ))-(∏r, (p.2 r:ℝ))| ≤ P) →
       (Q.card:ℝ) ≤ C*((4*(Nat.log 2 N+1):ℕ):ℝ)^6*
-        ((N:ℝ)^2+P+1)*(N:ℝ)^((1:ℝ)+ε)*(1+Real.log N) := by
+        ((N:ℝ)^2+P+1)*(N:ℝ)^(oneR+ε)*(1+Real.log N) := by
   classical
   obtain ⟨C,hC,h⟩ := exists_zeroAdjustedPairs_box_bound hε
   refine ⟨C,hC,?_⟩
   intro N hN P hP Q hbox hsq hprod
   have hcell (l : SignedPairLabel N) :
       ((Q.filter (fun p => signedPairLabel N p=l)).card : ℝ) ≤
-        C*((N:ℝ)^2+P+1)*(N:ℝ)^((1:ℝ)+ε)*(1+Real.log N) := by
+        C*((N:ℝ)^2+P+1)*(N:ℝ)^(oneR+ε)*(1+Real.log N) := by
     have hc : ((Q.filter (fun p => signedPairLabel N p=l)).card : ℝ) ≤
         (zeroAdjustedPairs (fun j r => signedBoxSet N (signedLabelRow l j r))
           (fun j => signedBoxShift (signedLabelRow l j))
@@ -963,16 +963,16 @@ theorem exists_signed_square_product_count_log_loss {ε : ℝ} (hε : 0 < ε) :
 theorem signed_label_log_budget {η : ℝ} (hη : 0 < η) {N : ℕ} (hN : 1 ≤ N) :
     (((4*(Nat.log 2 N+1):ℕ):ℝ))^6*(1+Real.log N) ≤
       (8:ℝ)^6*(1+7/η)^7*(N:ℝ)^η := by
-  have hN₁ : (1:ℝ) ≤ N := by exact_mod_cast hN
-  have hN₀ : (0:ℝ) < N := by linarith
+  have hN₁ : oneR ≤ N := by exact_mod_cast hN
+  have hN₀ : zeroR < N := by linarith
   have hL : 0 ≤ 1+Real.log N := by linarith [Real.log_nonneg hN₁]
-  have hlogtwo : (1/2:ℝ) ≤ Real.log 2 := by
-    have hh := Real.one_sub_inv_le_log_of_pos (by norm_num : (0:ℝ) < 2)
+  have hlogtwo : halfR ≤ Real.log 2 := by
+    have hh := Real.one_sub_inv_le_log_of_pos (by norm_num : zeroR < 2)
     norm_num at hh ⊢
     exact hh
   have hn := Real.natLog_le_logb N 2
   norm_num only [Nat.cast_ofNat,Real.logb] at hn
-  have hh := (le_div_iff₀ (Real.log_pos (by norm_num : (1:ℝ) < 2))).mp hn
+  have hh := (le_div_iff₀ (Real.log_pos (by norm_num : oneR < 2))).mp hn
   have hmul := mul_le_mul_of_nonneg_left hlogtwo (Nat.cast_nonneg (Nat.log 2 N))
   have hc : ((4*(Nat.log 2 N+1):ℕ):ℝ) ≤ 8*(1+Real.log N) := by
     push_cast
@@ -988,46 +988,46 @@ theorem signed_label_log_budget {η : ℝ} (hη : 0 < η) {N : ℕ} (hN : 1 ≤ 
   rw [mul_pow,←Real.rpow_mul_natCast hN₀.le] at hraised
   norm_num only [Nat.cast_ofNat,show η/7*7=η by ring] at hraised
   exact hfirst.trans ((mul_le_mul_of_nonneg_left hraised
-    (by positivity : (0:ℝ) ≤ 8^6)).trans_eq (by ring))
+    (by positivity : zeroR ≤ 8^6)).trans_eq (by ring))
 
                                                                           
                                                        
 theorem exists_signed_square_product_count {ε : ℝ} (hε : 0 < ε) :
-    ∃ C > (0:ℝ), ∀ (N : ℕ), 1 ≤ N → ∀ (P : ℝ), 0 ≤ P →
+    ∃ C > zeroR, ∀ (N : ℕ), 1 ≤ N → ∀ (P : ℝ), 0 ≤ P →
       ∀ (Q : Finset SignedPair),
         (∀p∈Q, ∀r, |p.1 r| ≤ N ∧ |p.2 r| ≤ N) →
         (∀p∈Q, (∑r, (p.1 r:ℝ)^2)=(∑r, (p.2 r:ℝ)^2)) →
         (∀p∈Q, |(∏r, (p.1 r:ℝ))-(∏r, (p.2 r:ℝ))| ≤ P) →
-      (Q.card:ℝ) ≤ C*((N:ℝ)^2+P)*(N:ℝ)^((1:ℝ)+ε) := by
+      (Q.card:ℝ) ≤ C*((N:ℝ)^2+P)*(N:ℝ)^(oneR+ε) := by
   obtain ⟨C,hC,h⟩ := exists_signed_square_product_count_log_loss (ε:=ε/2) (by positivity)
   let D := (8:ℝ)^6*(1+7/(ε/2))^7
   have hD : 0 < D := by dsimp [D]; positivity
   refine ⟨2*C*D,by positivity,?_⟩
   intro N hN P hP Q hbox hsq hprod
-  have hN₁ : (1:ℝ) ≤ N := by exact_mod_cast hN
-  have hN₀ : (0:ℝ) < N := by linarith
+  have hN₁ : oneR ≤ N := by exact_mod_cast hN
+  have hN₀ : zeroR < N := by linarith
   have hh := h N hN P hP Q hbox hsq hprod
   have hbudget := signed_label_log_budget (show 0 < ε/2 by positivity) hN
   change (((4*(Nat.log 2 N+1):ℕ):ℝ))^6*(1+Real.log N) ≤ D*(N:ℝ)^(ε/2) at hbudget
-  have he : C*((4*(Nat.log 2 N+1):ℕ):ℝ)^6*((N:ℝ)^2+P+1)*(N:ℝ)^((1:ℝ)+ε/2)*(1+Real.log N)=
-      (C*((N:ℝ)^2+P+1)*(N:ℝ)^((1:ℝ)+ε/2))*
+  have he : C*((4*(Nat.log 2 N+1):ℕ):ℝ)^6*((N:ℝ)^2+P+1)*(N:ℝ)^(oneR+ε/2)*(1+Real.log N)=
+      (C*((N:ℝ)^2+P+1)*(N:ℝ)^(oneR+ε/2))*
         (((4*(Nat.log 2 N+1):ℕ):ℝ)^6*(1+Real.log N)) := by ring
   rw [he] at hh
   have hm := hh.trans (mul_le_mul_of_nonneg_left hbudget (by positivity))
-  have hpow : (N:ℝ)^((1:ℝ)+ε/2)*(N:ℝ)^(ε/2)=(N:ℝ)^((1:ℝ)+ε) := by
+  have hpow : (N:ℝ)^(oneR+ε/2)*(N:ℝ)^(ε/2)=(N:ℝ)^(oneR+ε) := by
     rw [←Real.rpow_add hN₀]
     congr 1
     ring
-  have he' : (C*((N:ℝ)^2+P+1)*(N:ℝ)^((1:ℝ)+ε/2))*(D*(N:ℝ)^(ε/2))=
-      C*D*((N:ℝ)^2+P+1)*(N:ℝ)^((1:ℝ)+ε) := by
+  have he' : (C*((N:ℝ)^2+P+1)*(N:ℝ)^(oneR+ε/2))*(D*(N:ℝ)^(ε/2))=
+      C*D*((N:ℝ)^2+P+1)*(N:ℝ)^(oneR+ε) := by
     calc
-      _ = C*D*((N:ℝ)^2+P+1)*((N:ℝ)^((1:ℝ)+ε/2)*(N:ℝ)^(ε/2)) := by ring
+      _ = C*D*((N:ℝ)^2+P+1)*((N:ℝ)^(oneR+ε/2)*(N:ℝ)^(ε/2)) := by ring
       _ = _ := by rw [hpow]
   rw [he'] at hm
   have hscale : (N:ℝ)^2+P+1 ≤ 2*((N:ℝ)^2+P) := by nlinarith
   apply hm.trans
   have hs := mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hscale (by positivity : 0 ≤ C*D))
-    (Real.rpow_nonneg hN₀.le ((1:ℝ)+ε))
+    (Real.rpow_nonneg hN₀.le (oneR+ε))
   exact hs.trans_eq (by ring)
 
 namespace CubicEight
@@ -1192,9 +1192,9 @@ theorem cubic_eight_count_le_six (N P : ℕ)
 
 
 theorem exists_sixSquareProductSolutions_bound {ε : ℝ} (hε : 0 < ε) :
-    ∃ C > (0:ℝ), ∀ (N : ℕ), 1 ≤ N → ∀ (P : ℕ),
+    ∃ C > zeroR, ∀ (N : ℕ), 1 ≤ N → ∀ (P : ℕ),
       ((sixSquareProductSolutions N P).card : ℝ) ≤
-        C*((N:ℝ)^2+P)*(N:ℝ)^((1:ℝ)+ε) := by
+        C*((N:ℝ)^2+P)*(N:ℝ)^(oneR+ε) := by
   obtain ⟨C,hC,h⟩ := exists_signed_square_product_count hε
   refine ⟨C,hC,?_⟩
   intro N hN P
@@ -1214,18 +1214,18 @@ theorem exists_sixSquareProductSolutions_bound {ε : ℝ} (hε : 0 < ε) :
                                                                          
                                                      
 theorem exists_cubic_eight_count {ε : ℝ} (hε : 0 < ε) :
-    ∃ C > (0:ℝ), ∀ (N : ℕ), 1 ≤ N → ∀ (P : ℕ),
+    ∃ C > zeroR, ∀ (N : ℕ), 1 ≤ N → ∀ (P : ℕ),
       ∀ (S : Finset ((Fin 4 → ℤ) × (Fin 4 → ℤ))),
         (∀p∈S, (∀r, |p.1 r| ≤ (N:ℤ)) ∧ ∀r, |p.2 r| ≤ (N:ℤ)) →
         (∀p∈S, (∑r, p.1 r)=∑r, p.2 r) →
         (∀p∈S, (∑r, (p.1 r)^2)=∑r, (p.2 r)^2) →
         (∀p∈S, |(∑r, (p.1 r)^3)-∑r, (p.2 r)^3| ≤ (P:ℤ)) →
-      (S.card:ℝ) ≤ C*((N:ℝ)^2+P)*(N:ℝ)^((2:ℝ)+ε) := by
+      (S.card:ℝ) ≤ C*((N:ℝ)^2+P)*(N:ℝ)^(twoR+ε) := by
   obtain ⟨C,hC,h⟩ := exists_sixSquareProductSolutions_bound hε
-  refine ⟨144*C*(4:ℝ)^((1:ℝ)+ε),by positivity,?_⟩
+  refine ⟨144*C*fourR^(oneR+ε),by positivity,?_⟩
   intro N hN P S hbox hfirst hsecond hthird
-  have hN₁ : (1:ℝ) ≤ N := by exact_mod_cast hN
-  have hN₀ : (0:ℝ) < N := by linarith
+  have hN₁ : oneR ≤ N := by exact_mod_cast hN
+  have hN₀ : zeroR < N := by linarith
   have hc : (S.card:ℝ) ≤ (8*N+1)*((sixSquareProductSolutions (4*N) (8*P)).card:ℝ) := by
     exact_mod_cast cubic_eight_count_le_six N P S hbox hfirst hsecond hthird
   have hh := h (4*N) (by omega) (8*P)
@@ -1233,13 +1233,13 @@ theorem exists_cubic_eight_count {ε : ℝ} (hε : 0 < ε) :
   have hm := hc.trans (mul_le_mul_of_nonneg_left hh (by positivity))
   rw [Real.mul_rpow (by norm_num) hN₀.le] at hm
   have hscale : (4*(N:ℝ))^2+8*P ≤ 16*((N:ℝ)^2+P) := by
-    nlinarith [(Nat.cast_nonneg P : (0:ℝ) ≤ P)]
+    nlinarith [(Nat.cast_nonneg P : zeroR ≤ P)]
   have hlen : 8*(N:ℝ)+1 ≤ 9*N := by linarith
-  have hbound : (8*(N:ℝ)+1)*(C*((4*N)^2+8*P)*((4:ℝ)^((1:ℝ)+ε)*(N:ℝ)^((1:ℝ)+ε))) ≤
-      (9*N)*(C*(16*((N:ℝ)^2+P))*((4:ℝ)^((1:ℝ)+ε)*(N:ℝ)^((1:ℝ)+ε))) := by gcongr
+  have hbound : (8*(N:ℝ)+1)*(C*((4*N)^2+8*P)*(fourR^(oneR+ε)*(N:ℝ)^(oneR+ε))) ≤
+      (9*N)*(C*(16*((N:ℝ)^2+P))*(fourR^(oneR+ε)*(N:ℝ)^(oneR+ε))) := by gcongr
   apply hm.trans (hbound.trans_eq ?_)
-  have he : (N:ℝ)^((2:ℝ)+ε)=(N:ℝ)*(N:ℝ)^((1:ℝ)+ε) := by
-    rw [show (2:ℝ)+ε=1+(1+ε) by ring,Real.rpow_add hN₀,Real.rpow_one]
+  have he : (N:ℝ)^(twoR+ε)=(N:ℝ)*(N:ℝ)^(oneR+ε) := by
+    rw [show twoR+ε=1+(1+ε) by ring,Real.rpow_add hN₀,Real.rpow_one]
   rw [he]
   ring
 
@@ -1329,7 +1329,7 @@ theorem cubicTupleCoefficient_norm {N : ℕ} {z : ℤ → ℂ}
     ‖cubicTupleCoefficient z n‖ ≤ 1 := by
   unfold cubicTupleCoefficient
   rw [norm_prod]
-  have hh := Finset.prod_le_prod₀ (s:=Finset.univ) (f:=fun r => ‖z (n r)‖) (g:=fun _ => (1:ℝ))
+  have hh := Finset.prod_le_prod₀ (s:=Finset.univ) (f:=fun r => ‖z (n r)‖) (g:=fun _ => oneR)
     (fun r _ => norm_nonneg _) (fun r _ => hz _ (Fintype.mem_piFinset.mp hn r))
   simpa only [Finset.prod_const_one] using hh
 
@@ -1339,10 +1339,10 @@ theorem int_eq_of_real_half_gap {a b : ℤ} (h : |(a:ℝ)-(b:ℝ)| ≤ 1/2) : a=
   exact sub_eq_zero.mp (abs_eq_zero.mp (le_antisymm (by omega) (abs_nonneg _)))
 
 theorem exists_cubic_combined_near_count {ε : ℝ} (hε : 0 < ε) :
-    ∃ C > (0:ℝ), ∀ (N : ℕ), 1 ≤ N → ∀ (P : ℝ), 0 ≤ P →
+    ∃ C > zeroR, ∀ (N : ℕ), 1 ≤ N → ∀ (P : ℝ), 0 ≤ P →
       ((sargosNearPairs (cubicTupleSet N) (fun n => (cubicCombined N n:ℝ))
         (fun n => (cubicThird n:ℝ)) (1/2) P).card:ℝ) ≤
-        C*((N:ℝ)^2+P)*(N:ℝ)^((2:ℝ)+ε) := by
+        C*((N:ℝ)^2+P)*(N:ℝ)^(twoR+ε) := by
   obtain ⟨C,hC,h⟩ := exists_cubic_eight_count hε
   refine ⟨2*C,by positivity,?_⟩
   intro N hN P hP
@@ -1365,12 +1365,12 @@ theorem exists_cubic_combined_near_count {ε : ℝ} (hε : 0 < ε) :
     exact_mod_cast hb
   have hh := h N hN ⌈P⌉₊ S hbox (fun p hp => (hcollision p hp).1)
     (fun p hp => (hcollision p hp).2) hthird
-  have hN₁ : (1:ℝ) ≤ N := by exact_mod_cast hN
+  have hN₁ : oneR ≤ N := by exact_mod_cast hN
   have hceil : (⌈P⌉₊:ℝ) ≤ P+1 := (Nat.ceil_lt_add_one hP).le
   have hscale : (N:ℝ)^2+⌈P⌉₊ ≤ 2*((N:ℝ)^2+P) := by nlinarith
   apply hh.trans
   have hs := mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hscale hC.le)
-    (Real.rpow_nonneg (Nat.cast_nonneg N) ((2:ℝ)+ε))
+    (Real.rpow_nonneg (Nat.cast_nonneg N) (twoR+ε))
   exact hs.trans_eq (by ring)
 
 end CubicMoment
@@ -1447,7 +1447,7 @@ theorem cubic_frequency_pairs_subset (N : ℕ) {a δ : Fin 4 → ℝ}
         (fun n => (cubicThird n:ℝ)) (1/2) (1/(δ 2+2*a 2)) := by
   intro p hp
   obtain ⟨hp,hnear⟩ := Finset.mem_filter.mp hp
-  have htol (d : Fin 4) (hd : 2 ≤ δ d) : 1/(δ d+2*a d) ≤ (1/2:ℝ) := by
+  have htol (d : Fin 4) (hd : 2 ≤ δ d) : 1/(δ d+2*a d) ≤ halfR := by
     apply one_div_le_one_div_of_le (by norm_num)
     linarith [ha d]
   have hfirst : cubicFirst p.1=cubicFirst p.2 :=
@@ -1458,14 +1458,14 @@ theorem cubic_frequency_pairs_subset (N : ℕ) {a δ : Fin 4 → ℝ}
     simp only [cubicCombined,hfirst,hsecond]
   apply Finset.mem_filter.mpr
   refine ⟨hp,?_,hnear 2⟩
-  simpa only [hcombined,sub_self,abs_zero] using (by norm_num : (0:ℝ) ≤ 1/2)
+  simpa only [hcombined,sub_self,abs_zero] using (by norm_num : zeroR ≤ 1/2)
 
 theorem exists_cubic_frequency_pair_bound {ε : ℝ} (hε : 0 < ε) :
-    ∃ C > (0:ℝ), ∀ N : ℕ, 1 ≤ N → ∀ a δ : Fin 4 → ℝ,
+    ∃ C > zeroR, ∀ N : ℕ, 1 ≤ N → ∀ a δ : Fin 4 → ℝ,
       (∀ d, 0 < a d) → (∀ d, 0 < δ d) → 2 ≤ δ 0 → 2 ≤ δ 1 →
       ((((cubicTupleSet N) ×ˢ (cubicTupleSet N)).filter (fun ij => ∀ d,
         |cubicTuplePoint ij.1 d-cubicTuplePoint ij.2 d| ≤ 1/(δ d+2*a d))).card:ℝ) ≤
-        C*((N:ℝ)^2+1/(δ 2+2*a 2))*(N:ℝ)^((2:ℝ)+ε) := by
+        C*((N:ℝ)^2+1/(δ 2+2*a 2))*(N:ℝ)^(twoR+ε) := by
   obtain ⟨C,hC,h⟩ := exists_cubic_combined_near_count hε
   refine ⟨C,hC,?_⟩
   intro N hN a δ ha hδ hδ₀ hδ₁
@@ -1493,7 +1493,7 @@ def cubicSamplingWidth (μ : ℝ) : Fin 4 → ℝ := ![2,2,μ,1]
 
 theorem cubicSamplingScale_pos {N : ℕ} (hN : 1 ≤ N) (d : Fin 4) :
     0 < cubicSamplingScale N d := by
-  have hN₀ : (0:ℝ) < N := by exact_mod_cast (show 0 < N by omega)
+  have hN₀ : zeroR < N := by exact_mod_cast (show 0 < N by omega)
   fin_cases d
   · change 0 < 1/(8*(N:ℝ))
     positivity
@@ -1511,7 +1511,7 @@ theorem cubicSamplingWidth_pos {μ : ℝ} (hμ : 0 < μ) (d : Fin 4) :
 theorem cubicTuplePoint_scale {N : ℕ} (hN : 1 ≤ N)
     {n : Fin 4 → ℤ} (hn : n∈cubicTupleSet N) (d : Fin 4) :
     cubicSamplingScale N d*|cubicTuplePoint n d| ≤ 1/2 := by
-  have hN₀ : (0:ℝ) < N := by exact_mod_cast (show 0 < N by omega)
+  have hN₀ : zeroR < N := by exact_mod_cast (show 0 < N by omega)
   have h₁ : |(cubicFirst n:ℝ)| ≤ 4*(N:ℝ) := by
     simpa [cubicFirst] using cubicTuple_power_abs hn 1
   have h₂ : |(cubicSecond n:ℝ)| ≤ 4*(N:ℝ)^2 := by
@@ -1537,8 +1537,8 @@ theorem cubic_sampling_box_factor {N : ℕ} (hN : 1 ≤ N) {μ : ℝ} (hμ : 0 <
     ((∏ d, (cubicSamplingWidth μ d+2*cubicSamplingScale N d))/
       (∏ d, cubicSamplingScale N d)) ≤
       7776*(μ+1/(4*(N:ℝ)^3))*(N:ℝ)^6 := by
-  have hN₁ : (1:ℝ) ≤ N := by exact_mod_cast hN
-  have hN₀ : (0:ℝ) < N := by linarith
+  have hN₁ : oneR ≤ N := by exact_mod_cast hN
+  have hN₀ : zeroR < N := by linarith
   have he : ((∏ d, (cubicSamplingWidth μ d+2*cubicSamplingScale N d))/
       (∏ d, cubicSamplingScale N d)) =
       (16*(N:ℝ)+2)*(16*(N:ℝ)^2+2)*(8*(μ+1/(4*(N:ℝ)^3))*(N:ℝ)^3)*3 := by
@@ -1557,13 +1557,13 @@ theorem cubic_sampling_box_factor {N : ℕ} (hN : 1 ≤ N) {μ : ℝ} (hμ : 0 <
 
 theorem cubic_sampling_moment_factor {N : ℕ} (hN : 1 ≤ N) {μ ε : ℝ} (hμ : 0 < μ) :
     (μ+1/(4*(N:ℝ)^3))*(N:ℝ)^6*((N:ℝ)^2+1/(μ+1/(4*(N:ℝ)^3)))*
-      (N:ℝ)^((2:ℝ)+ε) ≤ 2*(1+μ*(N:ℝ)^2)*(N:ℝ)^((8:ℝ)+ε) := by
-  have hN₁ : (1:ℝ) ≤ N := by exact_mod_cast hN
-  have hN₀ : (0:ℝ) < N := by linarith
+      (N:ℝ)^(twoR+ε) ≤ 2*(1+μ*(N:ℝ)^2)*(N:ℝ)^((8:ℝ)+ε) := by
+  have hN₁ : oneR ≤ N := by exact_mod_cast hN
+  have hN₀ : zeroR < N := by linarith
   have hW : 0 < μ+1/(4*(N:ℝ)^3) := by positivity
   have he : (μ+1/(4*(N:ℝ)^3))*((N:ℝ)^2+1/(μ+1/(4*(N:ℝ)^3)))=
       1+μ*(N:ℝ)^2+1/(4*(N:ℝ)) := by field_simp; ring
-  have hn : (N:ℝ)^6*(N:ℝ)^((2:ℝ)+ε)=(N:ℝ)^((8:ℝ)+ε) := by
+  have hn : (N:ℝ)^6*(N:ℝ)^(twoR+ε)=(N:ℝ)^((8:ℝ)+ε) := by
     rw [←Real.rpow_natCast,←Real.rpow_add hN₀]
     congr 1
     ring
@@ -1572,7 +1572,7 @@ theorem cubic_sampling_moment_factor {N : ℕ} (hN : 1 ≤ N) {μ ε : ℝ} (hμ
     linarith
   calc
     _ = ((μ+1/(4*(N:ℝ)^3))*((N:ℝ)^2+1/(μ+1/(4*(N:ℝ)^3))))*
-        ((N:ℝ)^6*(N:ℝ)^((2:ℝ)+ε)) := by ring
+        ((N:ℝ)^6*(N:ℝ)^(twoR+ε)) := by ring
     _ = (1+μ*(N:ℝ)^2+1/(4*(N:ℝ)))*(N:ℝ)^((8:ℝ)+ε) := by rw [he,hn]
     _ ≤ _ := mul_le_mul_of_nonneg_right (by nlinarith) (Real.rpow_nonneg (Nat.cast_nonneg N) _)
 
@@ -1584,10 +1584,10 @@ def cubicSamplePairs {ι : Type*} (S : Finset ι) (N : ℕ) (α β γ : ι → �
       cubicSamplePoint (α ij.2) (β ij.2) (γ ij.2) d| ≤ 2*cubicSamplingScale N d)
 
 theorem exists_cubic_sample_bound {ε : ℝ} (hε : 0 < ε) :
-    ∃ C > (0:ℝ), ∀ (ι : Type) (S : Finset ι) (N : ℕ), 1 ≤ N →
+    ∃ C > zeroR, ∀ (ι : Type) (S : Finset ι) (N : ℕ), 1 ≤ N →
       ∀ (z : ℤ → ℂ) (α β γ : ι → ℝ) (c μ : ℝ), 0 < μ →
       (∀ n∈Finset.Icc (1:ℤ) N, ‖z n‖ ≤ 1) →
-      (∀ i∈S, α i∈Icc (0:ℝ) 1 ∧ β i∈Icc (0:ℝ) 1 ∧ γ i∈Icc c (c+μ)) →
+      (∀ i∈S, α i∈Icc zeroR 1 ∧ β i∈Icc zeroR 1 ∧ γ i∈Icc c (c+μ)) →
       (∑ i∈S, ‖cubicSourceSum N z (α i) (β i) (γ i)‖)^8 ≤
         C*(S.card:ℝ)^6*(cubicSamplePairs S N α β γ).card*
           (1+μ*(N:ℝ)^2)*(N:ℝ)^((8:ℝ)+ε) := by
@@ -1597,7 +1597,7 @@ theorem exists_cubic_sample_bound {ε : ℝ} (hε : 0 < ε) :
   let a := cubicSamplingScale N
   let δ := cubicSamplingWidth μ
   let W := μ+1/(4*(N:ℝ)^3)
-  have hN₀ : (0:ℝ) < N := by exact_mod_cast (show 0 < N by omega)
+  have hN₀ : zeroR < N := by exact_mod_cast (show 0 < N by omega)
   have hW : 0 < W := by dsimp only [W]; positivity
   have ha : ∀ d, 0 < a d := cubicSamplingScale_pos hN
   have hδ : ∀ d, 0 < δ d := cubicSamplingWidth_pos hμ
@@ -1606,9 +1606,9 @@ theorem exists_cubic_sample_bound {ε : ℝ} (hε : 0 < ε) :
     intro i hi d
     obtain ⟨hα,hβ,hγ⟩ := hx i hi
     fin_cases d
-    · change α i∈Icc (0:ℝ) (0+2)
+    · change α i∈Icc zeroR (0+2)
       exact ⟨hα.1,by linarith [hα.2]⟩
-    · change β i∈Icc (0:ℝ) (0+2)
+    · change β i∈Icc zeroR (0+2)
       exact ⟨hβ.1,by linarith [hβ.2]⟩
     · exact hγ
     · norm_num [cubicSamplePoint,δ,cubicSamplingWidth]
@@ -1624,29 +1624,29 @@ theorem exists_cubic_sample_bound {ε : ℝ} (hε : 0 < ε) :
   change (∏ d, (δ d+2*a d))/(∏ d, a d) ≤ 7776*W*(N:ℝ)^6 at hf
   have hf' : 16777216*(∏ d, (δ d+2*a d))/(∏ d, a d) ≤
       16777216*7776*W*(N:ℝ)^6 := by
-    have hh := mul_le_mul_of_nonneg_left hf (by norm_num : (0:ℝ) ≤ 16777216)
+    have hh := mul_le_mul_of_nonneg_left hf (by norm_num : zeroR ≤ 16777216)
     exact (by convert hh using 1 <;> ring)
   have hmain :
       (∑ i∈S, ‖cubicSourceSum N z (α i) (β i) (γ i)‖)^8 ≤
       (S.card:ℝ)^6*(16777216*7776*W*(N:ℝ)^6)*(cubicSamplePairs S N α β γ).card*
-        (C*((N:ℝ)^2+1/W)*(N:ℝ)^((2:ℝ)+ε)) := by
+        (C*((N:ℝ)^2+1/W)*(N:ℝ)^(twoR+ε)) := by
     apply hs.trans
     change (S.card:ℝ)^6*(16777216*(∏ d, (δ d+2*a d))/(∏ d, a d))*
       (cubicSamplePairs S N α β γ).card*_ ≤ _
     gcongr
   have hm := cubic_sampling_moment_factor (ε:=ε) hN hμ
-  change W*(N:ℝ)^6*((N:ℝ)^2+1/W)*(N:ℝ)^((2:ℝ)+ε) ≤ _ at hm
+  change W*(N:ℝ)^6*((N:ℝ)^2+1/W)*(N:ℝ)^(twoR+ε) ≤ _ at hm
   calc
     _ ≤ _ := hmain
     _ = (16777216*7776*C)*(S.card:ℝ)^6*(cubicSamplePairs S N α β γ).card*
-        (W*(N:ℝ)^6*((N:ℝ)^2+1/W)*(N:ℝ)^((2:ℝ)+ε)) := by ring
+        (W*(N:ℝ)^6*((N:ℝ)^2+1/W)*(N:ℝ)^(twoR+ε)) := by ring
     _ ≤ (16777216*7776*C)*(S.card:ℝ)^6*(cubicSamplePairs S N α β γ).card*
         (2*(1+μ*(N:ℝ)^2)*(N:ℝ)^((8:ℝ)+ε)) :=
       mul_le_mul_of_nonneg_left hm (by positivity)
     _ = _ := by ring
 
 theorem exists_cubic_sample_bound_fract {ε : ℝ} (hε : 0 < ε) :
-    ∃ C > (0:ℝ), ∀ (ι : Type) (S : Finset ι) (N : ℕ), 1 ≤ N →
+    ∃ C > zeroR, ∀ (ι : Type) (S : Finset ι) (N : ℕ), 1 ≤ N →
       ∀ (z : ℤ → ℂ) (α β γ : ι → ℝ) (c μ : ℝ), 0 < μ →
       (∀ n∈Finset.Icc (1:ℤ) N, ‖z n‖ ≤ 1) →
       (∀ i∈S, γ i∈Icc c (c+μ)) →
@@ -1693,7 +1693,7 @@ theorem cubicSourceSum_prefix {J N : ℕ} (hJN : J ≤ N) (α β γ : ℝ) :
                                                                    
                                                                         
 theorem exists_C4_cubic_sample_bound {ε : ℝ} (hε : 0 < ε) :
-    ∃ C > (0:ℝ), ∀ (ι : Type) (S : Finset ι) (f : ι → ℝ → ℝ)
+    ∃ C > zeroR, ∀ (ι : Type) (S : Finset ι) (f : ι → ℝ → ℝ)
       (m : ι → ℝ) (H : ℕ), 1 ≤ H → ∀ (B c μ : ℝ), 0 ≤ B → 0 < μ →
       B*((H:ℝ)+1)^4 ≤ 1 →
       (∀ i∈S, ∀ y∈Icc (m i-((H:ℝ)+1)) (m i+((H:ℝ)+1)), ContDiffAt ℝ 4 (f i) y) →
@@ -1713,13 +1713,13 @@ theorem exists_C4_cubic_sample_bound {ε : ℝ} (hε : 0 < ε) :
   intro ι S f m H hH B c μ hB hμ hsmall hf hfour hγ
   let L := (H:ℝ)+1
   have hL : 0 ≤ L := by dsimp only [L]; positivity
-  have hRange : ∀ x∈Icc (1:ℝ) (1+H), |x| ≤ L := by
+  have hRange : ∀ x∈Icc oneR (1+H), |x| ≤ L := by
     intro x hx
     rw [abs_of_nonneg (by linarith [hx.1] : 0 ≤ x)]
     dsimp only [L]
     linarith [hx.2]
   obtain ⟨J,hJ,hprefix⟩ := bourgain_cubic_taylor_common_prefix S f m
-    (fun i => iteratedDeriv 2 (f i) (m i)/2) 1 H hL hB (le_refl (0:ℝ))
+    (fun i => iteratedDeriv 2 (f i) (m i)/2) 1 H hL hB (le_refl zeroR)
     hRange hf hfour (fun _ _ => by simp)
   have hcost : 1+2*Real.pi*H*(B*L^3+2*0*L) ≤ K := by
     have hHL : (H:ℝ) ≤ L := by dsimp only [L]; linarith
@@ -1810,7 +1810,7 @@ def cubicDerivativePairs (f : ℝ → ℝ) (M H : ℕ) : Finset (ℕ × ℕ) :=
                                                                        
                                                                                
 theorem exists_C4_source_eighth_reduction {ε : ℝ} (hε : 0 < ε) :
-    ∃ C > (0:ℝ), ∀ (f : ℝ → ℝ) (M H : ℕ), 1 ≤ H →
+    ∃ C > zeroR, ∀ (f : ℝ → ℝ) (M H : ℕ), 1 ≤ H →
       ∀ B c μ : ℝ, 0 ≤ B → 0 < μ → B*((H:ℝ)+1)^4 ≤ 1 →
       (∀ m∈Finset.range M, ∀ y∈Icc ((m:ℝ)-H) ((m:ℝ)+H+2), ContDiffAt ℝ 4 f y) →
       (∀ m∈Finset.range M, ∀ y∈Icc ((m:ℝ)-H) ((m:ℝ)+H+2), |iteratedDeriv 4 f y| ≤ B) →
@@ -1820,7 +1820,7 @@ theorem exists_C4_source_eighth_reduction {ε : ℝ} (hε : 0 < ε) :
   obtain ⟨C,hC,hfamily⟩ := exists_C4_cubic_sample_bound hε
   refine ⟨128*C+32768,by positivity,?_⟩
   intro f M H hH B c μ hB hμ hsmall hf hfour hγ
-  have hH₀ : (0:ℝ) < H := by exact_mod_cast (show 0 < H by omega)
+  have hH₀ : zeroR < H := by exact_mod_cast (show 0 < H by omega)
   let A := ‖∑ m∈Finset.range M, fordAdditiveCharacter (f ((m:ℝ)+1))‖
   let F := ∑ m∈Finset.range M, ‖∑ j∈Finset.range H,
     fordAdditiveCharacter (f ((m:ℝ)+1+(1+(j:ℝ))))‖
@@ -1955,12 +1955,12 @@ theorem double_dual_physical_scales
   have hK : 0 < K := by dsimp [K]; positivity
   have hE : B^(θ-1)*B=B^θ := by
     calc
-      _ = B^(θ-1)*B^(1:ℝ) := by rw [Real.rpow_one]
+      _ = B^(θ-1)*B^oneR := by rw [Real.rpow_one]
       _ = B^((θ-1)+1) := (Real.rpow_add hB _ _).symm
       _ = _ := by congr 1; ring
   have hAexp : A^(τ-1)*A^2=A^(τ+1) := by
     calc
-      _ = A^(τ-1)*A^(2:ℝ) := by rw [Real.rpow_two]
+      _ = A^(τ-1)*A^twoR := by rw [Real.rpow_two]
       _ = A^((τ-1)+2) := (Real.rpow_add hA _ _).symm
       _ = _ := by congr 1; ring
   refine ⟨hM,hH,hK,?_,?_,?_⟩
@@ -2098,7 +2098,7 @@ theorem moving_double_dual_resonance
     (hδJ : δJ ≤ min (modelPhaseCurvatureLower (σ⁻¹+1)) 1)
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hA : 0 < A) (hB : 0 < B) (ha : 0 < a) (hc : 0 < c)
-    (hh : 0 < h) (hg : 0 < g) (hy : y ∈ Ioo (1:ℝ) 2)
+    (hh : 0 < h) (hg : 0 < g) (hy : y ∈ Ioo oneR 2)
     (hu : 0 < A*aProcessShiftPoint η 0 y)
     (huk : 0 < A*aProcessShiftPoint η 1 y)
     (hret₀ : A*aProcessShiftPoint η 0 y ∈
@@ -2150,7 +2150,7 @@ theorem finite_moving_double_dual_realization
       ∃ P Q₁ : ℕ, 1 ≤ P ∧
         ∀ (F : ℝ → ℝ) (η : ℝ), IsApproximateModelPhaseFunction F σ P δ →
           0 < η → η ≤ η₀ → ∀ (ι : Type*) (S : Finset ι) (y : ι → ℝ),
-          (∀ i∈S, y i ∈ Ioo (1:ℝ) 2) →
+          (∀ i∈S, y i ∈ Ioo oneR 2) →
           (∀ i∈S, A*aProcessShiftPoint η 0 (y i) ∈ modelPhaseSlopeRange F) →
           (∀ i∈S, A*aProcessShiftPoint η 1 (y i) ∈ modelPhaseSlopeRange F) →
           let u := fun i => A*aProcessShiftPoint η 0 (y i)
@@ -2165,7 +2165,7 @@ theorem finite_moving_double_dual_realization
             let c := deriv J (3/2)
             let G := canonicalTaylorLegendrePhase J (σ⁻¹+1) B Q c g
             IsApproximateModelPhaseFunction G (σ⁻¹+1)⁻¹ Q ε ∧
-              (∀ i∈S, s*A*(1-η)*d i∈Icc ((2:ℝ)^(-(σ⁻¹+1))/2) 2) ∧
+              (∀ i∈S, s*A*(1-η)*d i∈Icc (twoR^(-(σ⁻¹+1))/2) 2) ∧
               ∀ i∈S, G (s*A*(1-η)*d i/B) =
                 B^((σ⁻¹+1)⁻¹-1)*(-s/2*R i-s*k*d i-modelPhaseLegendreDual J c)+
                   referenceModelPrimitive (σ⁻¹+1)⁻¹ (c/B) := by
@@ -2185,7 +2185,7 @@ theorem finite_moving_double_dual_realization
   have hFQ := approximateModelPhase_mono hF (le_max_right _ _) le_rfl
   have hwin := modelPhaseSlopeRange_eq_endpoint_Ioo hσ hsmall hF₁
   have hpositive {v:ℝ} (hv:v∈modelPhaseSlopeRange F) : 0 < v :=
-    lt_of_lt_of_le (by positivity : (0:ℝ) < (2:ℝ)^(-σ)/2)
+    lt_of_lt_of_le (by positivity : zeroR < twoR^(-σ)/2)
       (modelPhaseSlopeRange_positive_window hσ hpos hF hv).1
   have ha : deriv F (3/2) ∈ modelPhaseSlopeRange F := ⟨3/2,by norm_num,rfl⟩
   have hai := ha
@@ -2236,7 +2236,7 @@ theorem finite_moving_double_dual_realization
   have hci := hc
   rw [hwinJ] at hci
   have hpositiveJ {v:ℝ} (hv:v∈modelPhaseSlopeRange J) : 0 < v :=
-    lt_of_lt_of_le (by positivity : (0:ℝ) < (2:ℝ)^(-(σ⁻¹+1))/2)
+    lt_of_lt_of_le (by positivity : zeroR < twoR^(-(σ⁻¹+1))/2)
       (modelPhaseSlopeRange_positive_window hτ hpos₂ hJ hv).1
   obtain ⟨g,hg,hg₁,hgapJ,hvaluesJ⟩ := finite_slope_values_retained S
     (lt_trans hci.1 hci.2) w (fun i hi => by simpa only [hwinJ] using hw i hi)
@@ -2259,7 +2259,7 @@ theorem actual_displacement_interval_exponent_pair_bound
         ∀ (F : ℝ → ℝ) (η P V : ℝ) (a b : ℕ) (K : ℤ) (y : ℕ → ℝ),
           IsApproximateModelPhaseFunction F σ Q δ → 0 < η → η ≤ η₀ →
           0 < P → 0 < V →
-          (∀ n∈Finset.Icc a b, y n ∈ Ioo (1:ℝ) 2) →
+          (∀ n∈Finset.Icc a b, y n ∈ Ioo oneR 2) →
           (∀ n∈Finset.Icc a b, A*aProcessShiftPoint η 0 (y n) ∈ modelPhaseSlopeRange F) →
           (∀ n∈Finset.Icc a b, A*aProcessShiftPoint η 1 (y n) ∈ modelPhaseSlopeRange F) →
           let u := fun n => A*aProcessShiftPoint η 0 (y n)
@@ -2366,12 +2366,12 @@ theorem positive_slope_chart_compressed_coordinate
     let η := k/A
     let y := (v/A-η)/(1-η)
     j ∈ positiveSlopeChartIndices d ∧ 0 < A ∧ A ≤ 3/2 ∧
-      0 ≤ η ∧ η ≤ 1/3 ∧ y ∈ Ioo (1:ℝ) 2 ∧
+      0 ≤ η ∧ η ≤ 1/3 ∧ y ∈ Ioo oneR 2 ∧
         A*aProcessShiftPoint η 0 y=v ∧ A*aProcessShiftPoint η 1 y=v+k := by
   intro j A η y
   have hj : j ∈ positiveSlopeChartIndices d := positiveSlopeChartIndex_mem hd hv
   obtain ⟨hA,hA₂⟩ := positiveSlopeChartScale_bounds hd hj
-  have hj₄ : (4:ℝ) ≤ j := by exact_mod_cast (Finset.mem_Icc.mp hj).1
+  have hj₄ : fourR ≤ j := by exact_mod_cast (Finset.mem_Icc.mp hj).1
   have hjd := mul_le_mul_of_nonneg_right hj₄ hd.le
   have hAd : 3*d ≤ A := by dsimp [A,positiveSlopeChartScale]; nlinarith only [hjd]
   have hη : 0 ≤ η := div_nonneg hk hA.le
@@ -2379,13 +2379,13 @@ theorem positive_slope_chart_compressed_coordinate
     apply (div_le_iff₀ hA).mpr
     linarith only [hkd,hAd]
   have hden : 0 < 1-η := by linarith
-  have hvpos : 0 ≤ v := (by positivity : (0:ℝ) ≤ 4*d).trans hv.1
+  have hvpos : 0 ≤ v := (by positivity : zeroR ≤ 4*d).trans hv.1
   have hcell := (positiveSlopeChartIndex_eq_iff hd hvpos j).mp (show _=j from rfl)
   have hcoord := positiveSlopeChart_coordinate hd (Finset.mem_Icc.mp hj).1 hcell
   have hupper : v+k < 2*A := by
     dsimp [A,positiveSlopeChartScale]
     nlinarith only [hcell.2,hkd,hjd]
-  have hy : y ∈ Ioo (1:ℝ) 2 := by
+  have hy : y ∈ Ioo oneR 2 := by
     constructor
     · apply (one_lt_div hden).mpr
       linarith only [hcoord.1]
@@ -2416,7 +2416,7 @@ theorem actual_displacement_interval_near_count
         ∀ (F : ℝ → ℝ) (η P V : ℝ) (a b : ℕ) (K : ℤ) (y : ℕ → ℝ),
           IsApproximateModelPhaseFunction F σ Q δ → 0 < η → η ≤ η₀ →
           0 < P → 0 < V →
-          (∀ n∈Finset.Icc a b, y n ∈ Ioo (1:ℝ) 2) →
+          (∀ n∈Finset.Icc a b, y n ∈ Ioo oneR 2) →
           (∀ n∈Finset.Icc a b, A*aProcessShiftPoint η 0 (y n) ∈ modelPhaseSlopeRange F) →
           (∀ n∈Finset.Icc a b, A*aProcessShiftPoint η 1 (y n) ∈ modelPhaseSlopeRange F) →
           let u := fun n => A*aProcessShiftPoint η 0 (y n)
@@ -2477,7 +2477,7 @@ theorem finite_actual_displacement_interval_completion
     (hF : IsApproximateModelPhaseFunction F σ 1 δ)
     (hA : 0 < A) (hη : η < 1)
     (S : Finset ℕ) (hne : S.Nonempty) (y : ℕ → ℝ)
-    (hy : ∀ n∈S, y n∈Ioo (1:ℝ) 2)
+    (hy : ∀ n∈S, y n∈Ioo oneR 2)
     (hu : ∀ n∈S, A*aProcessShiftPoint η 0 (y n)∈modelPhaseSlopeRange F)
     (huk : ∀ n∈S, A*aProcessShiftPoint η 1 (y n)∈modelPhaseSlopeRange F)
     (hn : ∀ n∈S, P*(modelPhaseInverseSlope F (A*aProcessShiftPoint η 0 (y n))-
@@ -2485,7 +2485,7 @@ theorem finite_actual_displacement_interval_completion
     ∃ z : ℕ → ℝ,
       (∀ n∈S, z n=y n) ∧
       ∀ n∈Finset.Icc (S.min' hne) (S.max' hne),
-        z n∈Ioo (1:ℝ) 2 ∧
+        z n∈Ioo oneR 2 ∧
         A*aProcessShiftPoint η 0 (z n)∈modelPhaseSlopeRange F ∧
         A*aProcessShiftPoint η 1 (z n)∈modelPhaseSlopeRange F ∧
         P*(modelPhaseInverseSlope F (A*aProcessShiftPoint η 0 (z n))-
@@ -2502,11 +2502,11 @@ theorem finite_actual_displacement_interval_completion
     dsimp [U,aProcessShiftPoint]
     gcongr
   have hpoint (v : ℝ) (hv : v∈uIcc (y a) (y b)) :
-      v∈Ioo (1:ℝ) 2 ∧ U 0 v∈modelPhaseSlopeRange F ∧ U 1 v∈modelPhaseSlopeRange F := by
+      v∈Ioo oneR 2 ∧ U 0 v∈modelPhaseSlopeRange F ∧ U 1 v∈modelPhaseSlopeRange F := by
     have hconv : Set.OrdConnected (modelPhaseSlopeRange F) := by
       rw [modelPhaseSlopeRange_eq_endpoint_Ioo hσ hδ hF]
       exact (convex_Ioo _ _).ordConnected
-    refine ⟨(convex_Ioo (1:ℝ) 2).ordConnected.uIcc_subset (hy a ha) (hy b hb) hv,?_,?_⟩
+    refine ⟨(convex_Ioo oneR 2).ordConnected.uIcc_subset (hy a ha) (hy b hb) hv,?_,?_⟩
     · exact hconv.uIcc_subset (hu a ha) (hu b hb) ((hmono 0).image_uIcc_subset ⟨v,hv,rfl⟩)
     · exact hconv.uIcc_subset (huk a ha) (huk b hb) ((hmono 1).image_uIcc_subset ⟨v,hv,rfl⟩)
   have hD : ContinuousOn D (uIcc (y a) (y b)) := by
@@ -2518,7 +2518,7 @@ theorem finite_actual_displacement_interval_completion
     exact ((hc 0 (hpoint v hv).2.1).sub (hc 1 (hpoint v hv).2.2)).const_mul P
       |>.continuousWithinAt
   have hex (n : ℕ) (hni : n∈Finset.Icc a b) :
-      ∃ v : ℝ, v∈Ioo (1:ℝ) 2 ∧ U 0 v∈modelPhaseSlopeRange F ∧
+      ∃ v : ℝ, v∈Ioo oneR 2 ∧ U 0 v∈modelPhaseSlopeRange F ∧
         U 1 v∈modelPhaseSlopeRange F ∧ D v=(n:ℝ) ∧ (n∈S → v=y n) := by
     by_cases hns : n∈S
     · exact ⟨y n,hy n hns,hu n hns,huk n hns,hn n hns,fun _ => rfl⟩
@@ -2554,7 +2554,7 @@ theorem actual_displacement_finite_near_count
         ∀ (F : ℝ → ℝ) (η P V : ℝ) (K : ℤ) (S : Finset ℕ) (y : ℕ → ℝ),
           IsApproximateModelPhaseFunction F σ Q δ → 0 < η → η ≤ η₀ →
           0 < P → 0 < V →
-          (∀ n∈S, y n ∈ Ioo (1:ℝ) 2) →
+          (∀ n∈S, y n ∈ Ioo oneR 2) →
           (∀ n∈S, A*aProcessShiftPoint η 0 (y n) ∈ modelPhaseSlopeRange F) →
           (∀ n∈S, A*aProcessShiftPoint η 1 (y n) ∈ modelPhaseSlopeRange F) →
           let u := fun n => A*aProcessShiftPoint η 0 (y n)
@@ -2602,7 +2602,7 @@ theorem actual_displacement_finite_near_count
       ⟨Finset.min'_le S n hni,Finset.le_max' S n hni⟩
     have hMa : M ≤ (a:ℝ) := (hbox a ha).1
     have hbM : (b:ℝ) ≤ 2*M := (hbox b hb).2
-    have hz₀ : ∀ n∈Finset.Icc a b, z n∈Ioo (1:ℝ) 2 :=
+    have hz₀ : ∀ n∈Finset.Icc a b, z n∈Ioo oneR 2 :=
       fun n hni => (hcomplete n hni).1
     have hz₁ : ∀ n∈Finset.Icc a b, A*aProcessShiftPoint η 0 (z n)∈modelPhaseSlopeRange F :=
       fun n hni => (hcomplete n hni).2.1
@@ -2647,17 +2647,17 @@ theorem finite_moving_displacement_window
       ∃ Q : ℕ, 1 ≤ Q ∧
         ∀ (F : ℝ → ℝ) (η : ℝ), IsApproximateModelPhaseFunction F σ Q δ →
           0 < η → η ≤ η₀ → ∀ (ι : Type*) (S : Finset ι) (y : ι → ℝ),
-          (∀ i∈S, y i∈Ioo (1:ℝ) 2) →
+          (∀ i∈S, y i∈Ioo oneR 2) →
           (∀ i∈S, A*aProcessShiftPoint η 0 (y i)∈modelPhaseSlopeRange F) →
           (∀ i∈S, A*aProcessShiftPoint η 1 (y i)∈modelPhaseSlopeRange F) →
           let u := fun i => A*aProcessShiftPoint η 0 (y i)
           let k := A*η
           let d := fun i => modelPhaseInverseSlope F (u i)-modelPhaseInverseSlope F (u i+k)
           let s := A^(σ⁻¹-1)/(σ⁻¹*η)
-          ∀ i∈S, s*A*(1-η)*d i∈Icc ((2:ℝ)^(-(σ⁻¹+1))/2) 2 := by
+          ∀ i∈S, s*A*(1-η)*d i∈Icc (twoR^(-(σ⁻¹+1))/2) 2 := by
   obtain ⟨δ,η₀,hδ,hη₀,hηhalf,Q,Q₁,hQ,hrealize⟩ :=
-    finite_moving_double_dual_realization hσ hA hA₂ (by norm_num : (0:ℝ)<1)
-      (by norm_num : (1:ℝ)≤2) 0 (by norm_num : (0:ℝ)<1)
+    finite_moving_double_dual_realization hσ hA hA₂ (by norm_num : zeroR<1)
+      (by norm_num : oneR≤2) 0 (by norm_num : zeroR<1)
   refine ⟨δ,η₀,hδ,hη₀,hηhalf,Q,hQ,?_⟩
   intro F η hF hη hηle ι S y hy hu huk u k d s
   obtain ⟨h,g,_hh,_hh1,_hg,_hg1,_hG,hwindow,_hvalues⟩ :=
@@ -2675,7 +2675,7 @@ theorem displacement_second_chart_geometry
   intro j B M
   have hj := positiveSlopeChartIndex_mem hd hw
   have hBj := positiveSlopeChartScale_bounds hd hj
-  have hw0 : 0 ≤ w := (by positivity : (0:ℝ) ≤ 4*mesh).trans hw.1
+  have hw0 : 0 ≤ w := (by positivity : zeroR ≤ 4*mesh).trans hw.1
   have hcell := (positiveSlopeChartIndex_eq_iff hd hw0 j).mp (show _=j from rfl)
   have hc := positiveSlopeChart_coordinate hd (Finset.mem_Icc.mp hj).1 hcell
   have hB : 0 < B := hBj.1
@@ -2684,7 +2684,7 @@ theorem displacement_second_chart_geometry
     rw [he]
     dsimp only [M]
     field_simp
-  change w/B∈Ioo (1:ℝ) 2 at hc
+  change w/B∈Ioo oneR 2 at hc
   rw [harg] at hc
   have hlo : M < n := (one_lt_div hM).mp hc.1
   have hhi : n < 2*M := (div_lt_iff₀ hM).mp hc.2
@@ -2699,7 +2699,7 @@ theorem actual_displacement_physical_chart_count
         ∀ (F : ℝ → ℝ) (η P V N : ℝ) (K : ℤ) (S : Finset ℕ) (y : ℕ → ℝ),
           IsApproximateModelPhaseFunction F σ Q δ → 0 < η → η ≤ η₀ →
           0 < P → 0 < V → 0 < N →
-          (∀ n∈S, y n ∈ Ioo (1:ℝ) 2) →
+          (∀ n∈S, y n ∈ Ioo oneR 2) →
           (∀ n∈S, A*aProcessShiftPoint η 0 (y n) ∈ modelPhaseSlopeRange F) →
           (∀ n∈S, A*aProcessShiftPoint η 1 (y n) ∈ modelPhaseSlopeRange F) →
           let u := fun n => A*aProcessShiftPoint η 0 (y n)
@@ -2721,7 +2721,7 @@ theorem actual_displacement_physical_chart_count
   let q := l₀+ε
   let θ := (σ⁻¹+1)⁻¹
   let c := A*B^(-θ)
-  let D := (4+4/(1-p))*C₀*(2*c)^p*(2:ℝ)^q
+  let D := (4+4/(1-p))*C₀*(2*c)^p*twoR^q
   let E := 2*C₀/c
   let C := 8+D+E
   have hp₀ : 0 ≤ p := by dsimp [p]; linarith [hpair.1.1]
@@ -2755,8 +2755,8 @@ theorem actual_displacement_physical_chart_count
     have hfreq : (H/M)^p ≤ (2*c)^p*(V/P)^p := by
       rw [← Real.mul_rpow (by positivity : 0 ≤ 2*c) (div_nonneg hV.le hP.le)]
       exact Real.rpow_le_rpow (div_nonneg hH.le hMpos.le) hhi hp₀
-    have hlength : M^q ≤ (2:ℝ)^q*N^q := by
-      rw [← Real.mul_rpow (by norm_num : (0:ℝ) ≤ 2) hN.le]
+    have hlength : M^q ≤ twoR^q*N^q := by
+      rw [← Real.mul_rpow (by norm_num : zeroR ≤ 2) hN.le]
       exact Real.rpow_le_rpow hMpos.le hMN hq₀
     have hh := hcount F η P V K S y hF hη hηle hP hV hy hu huk
       hM hbox hK hn W hW hWhalf hnear
@@ -2765,7 +2765,7 @@ theorem actual_displacement_physical_chart_count
     have hmain : (4+4/(1-p))*(C₀*(H/M)^p*M^q)*W^(-p) ≤
         D*((V/P)^p*N^q*W^(-p)) := by
       calc
-        _ ≤ (4+4/(1-p))*(C₀*((2*c)^p*(V/P)^p)*((2:ℝ)^q*N^q))*W^(-p) := by
+        _ ≤ (4+4/(1-p))*(C₀*((2*c)^p*(V/P)^p)*(twoR^q*N^q))*W^(-p) := by
           gcongr
         _ = _ := by dsimp [D]; ring
     have htail' : 2*(C₀*M/H) ≤ E*(P/V) := by
@@ -2794,7 +2794,7 @@ theorem actual_displacement_first_chart_count
         ∀ (F : ℝ → ℝ) (η P V N : ℝ) (K : ℤ) (S : Finset ℕ) (y : ℕ → ℝ),
           IsApproximateModelPhaseFunction F σ Q δ → 0 < η → η ≤ η₀ →
           0 < P → 0 < V → 0 < N →
-          (∀ n∈S, y n ∈ Ioo (1:ℝ) 2) →
+          (∀ n∈S, y n ∈ Ioo oneR 2) →
           (∀ n∈S, A*aProcessShiftPoint η 0 (y n) ∈ modelPhaseSlopeRange F) →
           (∀ n∈S, A*aProcessShiftPoint η 1 (y n) ∈ modelPhaseSlopeRange F) →
           let u := fun n => A*aProcessShiftPoint η 0 (y n)
@@ -2808,10 +2808,10 @@ theorem actual_displacement_first_chart_count
           (∀ n∈S, ∃ e : ℤ, |V*R n-(e:ℝ)| ≤ W/2) →
             (S.card:ℝ) ≤ C*(W*N+(V/P)^(k₀+ε)*N^(l₀+ε)*W^(-(k₀+ε))+P/V) := by
   classical
-  let mesh := (2:ℝ)^(-(σ⁻¹+1))/8
+  let mesh := twoR^(-(σ⁻¹+1))/8
   have hmesh : 0 < mesh := by dsimp [mesh]; positivity
   have hmesh₂ : 4*mesh ≤ 2 := by
-    have hh : (2:ℝ)^(-(σ⁻¹+1)) ≤ 1 :=
+    have hh : twoR^(-(σ⁻¹+1)) ≤ 1 :=
       Real.rpow_le_one_of_one_le_of_nonpos (by norm_num) (by have := inv_pos.mpr hσ; linarith)
     dsimp [mesh]
     linarith
@@ -2852,9 +2852,9 @@ theorem actual_displacement_first_chart_count
   have hw₀ := hwindow F η hFwindow hη hηwle ℕ S y hy hu huk
   have hw (n : ℕ) (hns : n∈S) : w n∈Icc (4*mesh) 2 := by
     have hh := hw₀ n hns
-    change L*d n ∈ Icc ((2:ℝ)^(-(σ⁻¹+1))/2) 2 at hh
+    change L*d n ∈ Icc (twoR^(-(σ⁻¹+1))/2) 2 at hh
     change L*d n∈Icc (4*mesh) 2
-    rw [show 4*mesh=(2:ℝ)^(-(σ⁻¹+1))/2 by dsimp [mesh]; ring]
+    rw [show 4*mesh=twoR^(-(σ⁻¹+1))/2 by dsimp [mesh]; ring]
     exact hh
   let label := fun n => positiveSlopeChartIndex mesh (w n)
   have hlabel : ∀ n∈S, label n∈J := fun n hns => positiveSlopeChartIndex_mem hmesh (hw n hns)
@@ -2896,7 +2896,7 @@ theorem actual_displacement_first_chart_count
         (fun n hn => hnear n (Finset.mem_filter.mp hn).1)
     · have he : cell j=∅ := Finset.not_nonempty_iff_eq_empty.mp hne
       rw [he,Finset.card_empty,Nat.cast_zero]
-      have hCj₀ : 0 ≤ Cj j := (by norm_num : (0:ℝ)≤1).trans (hCj j)
+      have hCj₀ : 0 ≤ Cj j := (by norm_num : zeroR≤1).trans (hCj j)
       positivity
   have hcard : (S.card:ℝ)=∑ j∈J.attach, ((cell j).card:ℝ) := by
     dsimp only [cell]
@@ -2929,10 +2929,10 @@ theorem actual_displacement_near_curve_count
           (∀ n∈S, ∃ e : ℤ, |V*R n-(e:ℝ)| ≤ W/2) →
             (S.card:ℝ) ≤ C*(W*N+(V/P)^(k₀+ε)*N^(l₀+ε)*W^(-(k₀+ε))+P/V) := by
   classical
-  let mesh := (2:ℝ)^(-σ)/8
+  let mesh := twoR^(-σ)/8
   have hmesh : 0 < mesh := by dsimp [mesh]; positivity
   have hmesh₂ : 4*mesh ≤ 2 := by
-    have hh : (2:ℝ)^(-σ) ≤ 1 :=
+    have hh : twoR^(-σ) ≤ 1 :=
       Real.rpow_le_one_of_one_le_of_nonpos (by norm_num) (by linarith)
     dsimp [mesh]
     linarith
@@ -2947,7 +2947,7 @@ theorem actual_displacement_near_curve_count
   have hlocal (j : {j // j∈J}) := actual_displacement_first_chart_count
     hσ (hAj j).1 (hAj j).2 hpair hε hp
   choose δj ηj hδj hηj hηhalfj Qj hQj Cj hCj hcount using hlocal
-  let δ := min (min ((2:ℝ)^(-σ)/2) 1) (J.attach.inf' ht δj)
+  let δ := min (min (twoR^(-σ)/2) 1) (J.attach.inf' ht δj)
   let ηmin := J.attach.inf' ht ηj
   let κ₀ := min mesh (3*mesh*ηmin)
   let Q := max 1 (J.attach.sup Qj)
@@ -2965,7 +2965,7 @@ theorem actual_displacement_near_curve_count
   intro F κ P V N K S u hF hκ hκle hP hV hN hu huk d R hbox hK hn W hW hWhalf hnear
   have hκmesh : κ ≤ mesh := hκle.trans (min_le_left _ _)
   have hw (n : ℕ) (hns : n∈S) : u n∈Icc (4*mesh) 2 := by
-    rw [show 4*mesh=(2:ℝ)^(-σ)/2 by dsimp [mesh]; ring]
+    rw [show 4*mesh=twoR^(-σ)/2 by dsimp [mesh]; ring]
     exact modelPhaseSlopeRange_positive_window hσ (min_le_left _ _) hF (hu n hns)
   let label := fun n => positiveSlopeChartIndex mesh (u n)
   have hlabel : ∀ n∈S, label n∈J := fun n hns => positiveSlopeChartIndex_mem hmesh (hw n hns)
@@ -2978,7 +2978,7 @@ theorem actual_displacement_near_curve_count
     have hk : A j*η=κ := mul_div_cancel₀ κ (hAj j).1.ne'
     have hηle : η ≤ ηj j := by
       have hAmesh : 3*mesh ≤ A j := by
-        have hj4 : (4:ℝ) ≤ j.val := by exact_mod_cast (Finset.mem_Icc.mp j.property).1
+        have hj4 : fourR ≤ j.val := by exact_mod_cast (Finset.mem_Icc.mp j.property).1
         dsimp [A,positiveSlopeChartScale]
         nlinarith [mul_le_mul_of_nonneg_right hj4 hmesh.le]
       have hcap : κ ≤ 3*mesh*ηmin := hκle.trans (min_le_right _ _)
@@ -2989,7 +2989,7 @@ theorem actual_displacement_near_curve_count
         _ ≤ A j*ηj j := mul_le_mul hAmesh hmin hηmin.le (hAj j).1.le
         _ = ηj j*A j := by ring
     have hgeom (n : ℕ) (hni : n∈cell j) :
-        y n∈Ioo (1:ℝ) 2 ∧
+        y n∈Ioo oneR 2 ∧
           A j*aProcessShiftPoint η 0 (y n)=u n ∧
           A j*aProcessShiftPoint η 1 (y n)=u n+κ := by
       have hns := (Finset.mem_filter.mp hni).1
@@ -3040,7 +3040,7 @@ theorem actual_displacement_near_curve_count
 theorem negative_first_derivative_point
     {σ δ z : ℝ} {P : ℕ} {F : ℝ → ℝ}
     (hF : IsApproximateModelPhaseFunction F σ P δ)
-    (hz : z∈Ioo (1:ℝ) 2) :
+    (hz : z∈Ioo oneR 2) :
     let G := fun u => -σ⁻¹*iteratedDerivWithin 1 F phaseInterval u
     G z=-σ⁻¹*deriv F z ∧ deriv G z=-σ⁻¹*deriv (deriv F) z := by
   intro G
@@ -3061,7 +3061,7 @@ theorem original_derivative_resonance_displacement
     (hσ : 0 < σ) (hT : 0 < T) (hN : 0 < N) (hP : 1 ≤ P)
     (hδ : δ/σ ≤ min (modelPhaseCurvatureLower (σ+1)) 1)
     (hF : IsApproximateModelPhaseFunction F σ (P+1) δ)
-    (hx : x/N∈Ioo (1:ℝ) 2) (hxq : (x+q)/N∈Ioo (1:ℝ) 2) :
+    (hx : x/N∈Ioo oneR 2) (hxq : (x+q)/N∈Ioo oneR 2) :
     let f := fun z => T*F (z/N)
     let G := fun u => -σ⁻¹*iteratedDerivWithin 1 F phaseInterval u
     let κ := 2*(K:ℝ)*N^2/(σ*T)
@@ -3083,7 +3083,7 @@ theorem original_derivative_resonance_displacement
   have hf : modelPhaseFrequencyPhase F T N 0=f := by
     funext z
     simp [modelPhaseFrequencyPhase,f]
-  have hd (z : ℝ) (hz : z/N∈Ioo (1:ℝ) 2) :
+  have hd (z : ℝ) (hz : z/N∈Ioo oneR 2) :
       iteratedDeriv 1 f z=T/N*deriv F (z/N) ∧
       iteratedDeriv 2 f z=T/N^2*deriv (deriv F) (z/N) := by
     constructor
@@ -3129,8 +3129,8 @@ theorem original_second_level_near_curve_count
           IsApproximateModelPhaseFunction F σ Q δ →
           0 < T → 0 < N → 0 < D → 0 < K →
           2*(K:ℝ)*N^2/(σ*T) ≤ κ₀ →
-          (∀ n∈S, x n/N ∈ Ioo (1:ℝ) 2) →
-          (∀ n∈S, (x n+(n:ℝ))/N ∈ Ioo (1:ℝ) 2) →
+          (∀ n∈S, x n/N ∈ Ioo oneR 2) →
+          (∀ n∈S, (x n+(n:ℝ))/N ∈ Ioo oneR 2) →
           (∀ n∈S, 2 ≤ (n:ℝ) ∧ (n:ℝ) ≤ 2*D) →
           let f := fun z => T*F (z/N)
           (∀ n∈S, (iteratedDeriv 2 f (x n+(n:ℝ))-iteratedDeriv 2 f (x n))/2=(K:ℝ)) →
@@ -3403,8 +3403,8 @@ theorem cubicDerivativePairs_integer_resonances
   · have hh := hnear 2
     change |iteratedDeriv 3 f ((p.1:ℝ)+1)/6-iteratedDeriv 3 f ((p.2:ℝ)+1)/6| ≤
       2*(1/(8*(H:ℝ)^3)) at hh
-    rw [abs_sub_comm,←sub_div,abs_div,abs_of_pos (by norm_num : (0:ℝ)<6)] at hh
-    have he := (div_le_iff₀ (by norm_num : (0:ℝ)<6)).mp hh
+    rw [abs_sub_comm,←sub_div,abs_div,abs_of_pos (by norm_num : zeroR<6)] at hh
+    have he := (div_le_iff₀ (by norm_num : zeroR<6)).mp hh
     exact he.trans_eq (by ring)
 
 theorem cubicDerivativePairs_displacement
@@ -3415,7 +3415,7 @@ theorem cubicDerivativePairs_displacement
     (hfour : ∀ t∈Icc ((p.1:ℝ)+1) ((p.2:ℝ)+1), iteratedDeriv 4 f t ≤ -lam) :
     (p.2:ℝ)-p.1 ≤ 3/(2*lam*(H:ℝ)^3) := by
   obtain ⟨_,_,e,K,_hfirst,_hsecond,hthird⟩ := cubicDerivativePairs_integer_resonances f hp
-  have hHpos : (0:ℝ) < H := by exact_mod_cast (show 0 < H by omega)
+  have hHpos : zeroR < H := by exact_mod_cast (show 0 < H by omega)
   have hxy : (p.1:ℝ)+1 < (p.2:ℝ)+1 := by exact_mod_cast Nat.add_lt_add_right hlt 1
   have hd (t : ℝ) (ht : t∈Icc ((p.1:ℝ)+1) ((p.2:ℝ)+1)) :
       HasDerivAt (iteratedDeriv 3 f) (iteratedDeriv 4 f t) t :=
@@ -3512,9 +3512,9 @@ theorem cubic_second_level_positive
   have hhi := mul_le_mul_of_nonneg_right (hthree t ⟨ht.1.le,ht.2.le⟩).2 hqpos.le
   have hab := abs_le.mp hnear
   have hLq : L ≤ L*q := by nlinarith only [mul_le_mul_of_nonneg_left hq hL.le]
-  have hKpos : (0:ℝ) < K := by nlinarith only [he',hlo,hab.2,hδL,hLq,hL]
+  have hKpos : zeroR < K := by nlinarith only [he',hlo,hab.2,hδL,hLq,hL]
   have hKi : 0 < K := by exact_mod_cast hKpos
-  have hK1 : (1:ℝ) ≤ K := by exact_mod_cast (show (1:ℤ) ≤ K by omega)
+  have hK1 : oneR ≤ K := by exact_mod_cast (show (1:ℤ) ≤ K by omega)
   refine ⟨hKi,hU,?_,?_⟩
   · apply (div_le_iff₀ hU).mpr
     nlinarith only [he',hhi,hab.1,hδhalf,hK1]
@@ -3557,7 +3557,7 @@ theorem original_joint_level_block_count
     obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hq
     exact (hbox p hp).2
   have hnorm (t : ℝ) (ht : t∈Icc (a-R) (b+R+2*D)) :
-      t/N∈Ioo (1:ℝ) 2 := by
+      t/N∈Ioo oneR 2 := by
     constructor
     · apply (one_lt_div hN).mpr
       linarith [ht.1]
@@ -3568,7 +3568,7 @@ theorem original_joint_level_block_count
       (show ContDiffAt ℝ ∞ (fun z : ℝ => z/N) t by fun_prop)
     exact (contDiffAt_const.mul hc).of_le (ENat.natCast_le_of_coe_top_le_withTop le_rfl 4)
   have hex (q : ℕ) (hq : q∈J) :
-      ∃ x : ℝ, x/N∈Ioo (1:ℝ) 2 ∧ (x+(q:ℝ))/N∈Ioo (1:ℝ) 2 ∧
+      ∃ x : ℝ, x/N∈Ioo oneR 2 ∧ (x+(q:ℝ))/N∈Ioo oneR 2 ∧
         (iteratedDeriv 2 f (x+(q:ℝ))-iteratedDeriv 2 f x)/2=(K:ℝ) ∧
         ∃ e : ℤ, |iteratedDeriv 1 f (x+(q:ℝ))-iteratedDeriv 1 f x-
           2*(K:ℝ)*x-(e:ℝ)| ≤ W/2 := by
@@ -3598,7 +3598,7 @@ theorem original_joint_level_block_count
         (mul_nonneg hB (sq_nonneg R))]).trans hwidth)
   let x := fun q => if hq : q∈J then Classical.choose (hex q hq) else 0
   have hx (q : ℕ) (hq : q∈J) :
-      x q/N∈Ioo (1:ℝ) 2 ∧ (x q+(q:ℝ))/N∈Ioo (1:ℝ) 2 ∧
+      x q/N∈Ioo oneR 2 ∧ (x q+(q:ℝ))/N∈Ioo oneR 2 ∧
         (iteratedDeriv 2 f (x q+(q:ℝ))-iteratedDeriv 2 f (x q))/2=(K:ℝ) ∧
         ∃ e : ℤ, |iteratedDeriv 1 f (x q+(q:ℝ))-iteratedDeriv 1 f (x q)-
           2*(K:ℝ)*x q-(e:ℝ)| ≤ W/2 := by
@@ -3713,7 +3713,7 @@ theorem original_joint_dyadic_block_count
   let J := S.image level
   have hJbound : (J.card:ℝ) ≤ 2*U*D := by
     by_cases hne : J.Nonempty
-    · have hJ (K : ℤ) (hK : K∈J) : (1:ℝ) ≤ K ∧ (K:ℝ) ≤ 2*U*D := by
+    · have hJ (K : ℤ) (hK : K∈J) : oneR ≤ K ∧ (K:ℝ) ≤ 2*U*D := by
         obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hK
         have hh := hlevels p hp
         exact ⟨by exact_mod_cast (show (1:ℤ)≤level p by omega),hh.2⟩
@@ -3806,7 +3806,7 @@ theorem cubic_short_displacement_count
     have hqpos : 0 < (q:ℝ) := zero_lt_one.trans_le (hqbox q hq).1
     have hI : (I.card:ℝ) ≤ U*(q:ℝ) := by
       by_cases hne : I.Nonempty
-      · have hi (K : ℤ) (hK : K∈I) : (1:ℝ) ≤ K ∧ (K:ℝ) ≤ U*(q:ℝ) := by
+      · have hi (K : ℤ) (hK : K∈I) : oneR ≤ K ∧ (K:ℝ) ≤ U*(q:ℝ) := by
           obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hK
           have hh := hlevels p (Finset.mem_filter.mp hp).1
           rw [(Finset.mem_filter.mp hp).2] at hh
@@ -3893,15 +3893,15 @@ theorem cubic_free_width_and_buffer
     nlinarith only [hsize]
   have hW : 0 < W := (one_div_pos.mpr hYpos).trans_le (le_max_right _ _)
   have hquarter : 1/(2*H) ≤ 1/4 := by
-    apply (div_le_div_iff₀ (by positivity : 0 < 2*H) (by norm_num : (0:ℝ)<4)).mpr
+    apply (div_le_div_iff₀ (by positivity : 0 < 2*H) (by norm_num : zeroR<4)).mpr
     linarith
   have hother : B/(lam^2*D*H^4) ≤ 1/4 := by
-    apply (div_le_div_iff₀ (by positivity : 0 < lam^2*D*H^4) (by norm_num : (0:ℝ)<4)).mpr
+    apply (div_le_div_iff₀ (by positivity : 0 < lam^2*D*H^4) (by norm_num : zeroR<4)).mpr
     nlinarith only [hraw]
   have hWhalf : W ≤ 1/2 := by
     apply max_le
     · linarith
-    · exact one_div_le_one_div_of_le (by norm_num : (0:ℝ)<2) hY
+    · exact one_div_le_one_div_of_le (by norm_num : zeroR<2) hY
   have hbuffer : 1/(4*H^2)=lam*D*R/2 := by dsimp [R]; field_simp; norm_num
   have hwidth : 1/(4*H)+2*B*D*R^2 ≤ W/2 := by
     have he : 1/(4*H)+2*B*D*R^2=(1/(2*H)+B/(lam^2*D*H^4))/2 := by
@@ -3986,7 +3986,7 @@ theorem original_full_joint_derivative_count
       ∃ Q : ℕ, 3 ≤ Q ∧ ∃ C : ℝ, 1 ≤ C ∧
         ∀ (F : ℝ → ℝ) (T N H Y a b Qcut : ℝ) (M : ℕ) (S : Finset (ℤ × ℕ)),
           IsApproximateModelPhaseFunction F σ Q δ →
-          0 < T → 0 < N → 2 ≤ H → 2 ≤ Y → 1 ≤ Qcut → Qcut ≤ (2:ℝ)^M →
+          0 < T → 0 < N → 2 ≤ H → 2 ≤ Y → 1 ≤ Qcut → Qcut ≤ twoR^M →
           N < a-H^2 → b+H^2+2*Qcut < 2*N →
           let lam := modelPhaseJetLower σ 3*T/N^4
           let B := (modelPhaseJetCoefficient σ 3+1)*T/N^4
@@ -4033,7 +4033,7 @@ theorem original_full_joint_derivative_count
     dsimp [lam,B]
     gcongr
   have hδhalf : 1/(4*H^2) ≤ 1/2 := by
-    apply (div_le_div_iff₀ (by positivity : 0 < 4*H^2) (by norm_num : (0:ℝ)<2)).mpr
+    apply (div_le_div_iff₀ (by positivity : 0 < 4*H^2) (by norm_num : zeroR<2)).mpr
     nlinarith only [hH]
   have hp₀ : 0 ≤ k₀+ε := by linarith [hpair.1.1]
   have hq₀ : 0 ≤ l₀+ε := by linarith [hpair.1.2.2.1]
@@ -4092,14 +4092,14 @@ theorem original_full_joint_derivative_count
       _ ≤ (8*X)*V := mul_le_mul_of_nonneg_right hDX hV.le
       _ ≤ (C*X)*V := by gcongr
       _ = A := by dsimp [A]; ring
-  let scale := fun j : ℕ => D₀*(2:ℝ)^j
+  let scale := fun j : ℕ => D₀*twoR^j
   let block := fun j : ℕ => S.filter (fun p => scale j ≤ (p.2:ℝ) ∧ (p.2:ℝ)<2*scale j)
   have hblock (j : ℕ) : ((block j).card:ℝ) ≤ A := by
     by_cases hne : (block j).Nonempty
     · obtain ⟨p,hps⟩ := hne
       let D := scale j
       have hDlow : D₀ ≤ D := by
-        have hh : (1:ℝ) ≤ 2^j := one_le_pow₀ (by norm_num)
+        have hh : oneR ≤ 2^j := one_le_pow₀ (by norm_num)
         dsimp [D,scale]
         simpa only [mul_one] using mul_le_mul_of_nonneg_left hh
           (show 0 ≤ D₀ by linarith only [hD₀])
@@ -4142,9 +4142,9 @@ theorem original_full_joint_derivative_count
     intro p hp
     by_cases hs : (p.2:ℝ)<D₀
     · exact Finset.mem_union_left _ (Finset.mem_filter.mpr ⟨hp,hs⟩)
-    have hterminal : (p.2:ℝ)<D₀*(2:ℝ)^(M+1) := by
+    have hterminal : (p.2:ℝ)<D₀*twoR^(M+1) := by
       have hh := (hbox p hp).2.2.trans hQpow
-      have hpowpos : (0:ℝ)<2^M := by positivity
+      have hpowpos : zeroR<2^M := by positivity
       rw [pow_succ]
       nlinarith only [hh,hpowpos,hD₀]
     obtain ⟨j,hj,hlo,hhi⟩ := exists_bourgain_dyadic_amplitude (le_of_not_gt hs) hterminal
@@ -4235,7 +4235,7 @@ theorem cubic_shifted_positive_pair_resonances
   rw [hder,hder,he₀,he₁] at hfirst hsecond
   refine ⟨?_,?_,by dsimp [q]; omega,e,K,hfirst,hsecond⟩
   · rw [hn]
-    have hh : (0:ℝ) ≤ p.1 := Nat.cast_nonneg _
+    have hh : zeroR ≤ p.1 := Nat.cast_nonneg _
     linarith only [hh]
   · rw [hn]
     have hh : (p.1:ℝ)+1 ≤ M := by exact_mod_cast (show p.1+1 ≤ M by omega)
@@ -4254,7 +4254,7 @@ theorem original_cubicDerivativePairs_count
           let L := modelPhaseJetLower σ 2*T/N^3
           let U := (modelPhaseJetCoefficient σ 2+1)*T/N^3
           let Qcut := 3/(2*lam*(H:ℝ)^3)
-          1 ≤ Qcut → Qcut ≤ (2:ℝ)^J →
+          1 ≤ Qcut → Qcut ≤ twoR^J →
           N < (A:ℝ)+1-(H:ℝ)^2 → (A:ℝ)+M+(H:ℝ)^2+2*Qcut < 2*N →
           1/(4*(H:ℝ)^2) ≤ L/4 → 4*U*Qcut*N^2/(σ*T) ≤ κ₀ →
           let g := fun x => T*F (((A:ℝ)+x)/N)
@@ -4278,8 +4278,8 @@ theorem original_cubicDerivativePairs_count
   let up := pairs.filter (fun p => p.1<p.2)
   let label := fun p : ℕ × ℕ => (A+(p.1:ℤ)+1,p.2-p.1)
   let S := up.image label
-  have hHr : (2:ℝ) ≤ H := by exact_mod_cast hH
-  have hHpos : (0:ℝ) < H := by linarith only [hHr]
+  have hHr : twoR ≤ H := by exact_mod_cast hH
+  have hHpos : zeroR < H := by linarith only [hHr]
   have hlam : 0 < lam := by dsimp [lam]; positivity [modelPhaseJetLower_pos hσ 3]
   have hQpos : 0 < Qcut := zero_lt_one.trans_le hQcut
   have hder (j : ℕ) (x : ℝ) : iteratedDeriv j g x=iteratedDeriv j f ((A:ℝ)+x) :=
@@ -4293,7 +4293,7 @@ theorem original_cubicDerivativePairs_count
       cubicDerivativePairs_integer_resonances g hpairs
     have hsub (x : ℝ) (hx : x∈Icc ((p.1:ℝ)+1) ((p.2:ℝ)+1)) : x∈Icc 1 (M:ℝ) := by
       have hm : (p.2:ℝ)+1 ≤ M := by exact_mod_cast (show p.2+1≤M by omega)
-      have hp0 : (0:ℝ) ≤ p.1 := Nat.cast_nonneg _
+      have hp0 : zeroR ≤ p.1 := Nat.cast_nonneg _
       constructor <;> linarith only [hx.1,hx.2,hm,hp0]
     have hgc : ∀ x∈Icc ((p.1:ℝ)+1) ((p.2:ℝ)+1), ContDiffAt ℝ 4 g x := by
       intro x hx
@@ -4364,7 +4364,7 @@ theorem exists_original_cubic_eighth_estimate
           let L := modelPhaseJetLower σ 2*T/N^3
           let U := (modelPhaseJetCoefficient σ 2+1)*T/N^3
           let Qcut := 3/(2*lam*(H:ℝ)^3)
-          1 ≤ Qcut → Qcut ≤ (2:ℝ)^J →
+          1 ≤ Qcut → Qcut ≤ twoR^J →
           N < (A:ℝ)+1-(H:ℝ)^2 → (A:ℝ)+M+(H:ℝ)^2+2*Qcut < 2*N →
           1/(4*(H:ℝ)^2) ≤ L/4 → 4*U*Qcut*N^2/(σ*T) ≤ κ₀ →
           B*((H:ℝ)+1)^4 ≤ 1 →
@@ -4389,8 +4389,8 @@ theorem exists_original_cubic_eighth_estimate
   obtain ⟨hreg,hthree,hfour,_hsecondabs⟩ := hdata F T N hT hN hFd
   let f := fun x => T*F (x/N)
   let g := fun x => f ((A:ℝ)+x)
-  have hHr : (2:ℝ) ≤ H := by exact_mod_cast hH
-  have hHpos : (0:ℝ) < H := by linarith only [hHr]
+  have hHr : twoR ≤ H := by exact_mod_cast hH
+  have hHpos : zeroR < H := by linarith only [hHr]
   have hlam : 0 < lam := by dsimp [lam]; positivity [modelPhaseJetLower_pos hσ 3]
   have hL : 0 < L := by dsimp [L]; positivity [modelPhaseJetLower_pos hσ 2]
   have hU : 0 < U := by dsimp [U]; positivity [modelPhaseJetCoefficient_pos hσ 2]
@@ -4401,7 +4401,7 @@ theorem exists_original_cubic_eighth_estimate
   have hHbuf : (H:ℝ)+1 ≤ (H:ℝ)^2 := by nlinarith only [hHr]
   have hpoint (m : ℕ) (hm : m∈Finset.range M) (y : ℝ)
       (hy : y∈Icc ((m:ℝ)-H) ((m:ℝ)+H+2)) : (A:ℝ)+y∈Ioo N (2*N) := by
-    have hm0 : (0:ℝ) ≤ m := Nat.cast_nonneg _
+    have hm0 : zeroR ≤ m := Nat.cast_nonneg _
     have hmM : (m:ℝ)+1 ≤ M := by
       exact_mod_cast (show m+1≤M by have := Finset.mem_range.mp hm; omega)
     constructor <;> linarith only [hy.1,hy.2,hm0,hmM,hHbuf,hleft,hright,hQpos]
@@ -4416,7 +4416,7 @@ theorem exists_original_cubic_eighth_estimate
     apply abs_le.mpr
     exact ⟨hh.1,by linarith only [hh.2,hlam,hB]⟩
   have hthree' (m : ℕ) (hm : m∈Finset.range M) :
-      iteratedDeriv 3 g ((m:ℝ)+1)/6∈Icc (0:ℝ) (0+U/6) := by
+      iteratedDeriv 3 g ((m:ℝ)+1)/6∈Icc zeroR (0+U/6) := by
     rw [hder]
     have hcenter : (m:ℝ)+1∈Icc ((m:ℝ)-H) ((m:ℝ)+H+2) := by
       constructor <;> linarith only [hHpos]
@@ -4433,7 +4433,7 @@ theorem exists_original_cubic_eighth_estimate
       convert hnear using 1
       dsimp [E]
       ring
-    have hm : (0:ℝ) ≤ M := Nat.cast_nonneg _
+    have hm : zeroR ≤ M := Nat.cast_nonneg _
     have hx : 0 ≤ 2*C₀*(M:ℝ) := by positivity
     nlinarith only [hh,hE,hx]
   have hUwidth : 1+(U/6)*(H:ℝ)^2 ≤ 1+U*(H:ℝ)^2 := by
@@ -4466,12 +4466,12 @@ theorem cubic_source_trim
   have hleft : ‖∑ i∈Finset.range (K+1), z (a+i)‖ ≤ (K:ℝ)+1 := by
     calc
       _ ≤ ∑ i∈Finset.range (K+1), ‖z (a+i)‖ := norm_sum_le _ _
-      _ ≤ ∑ _i∈Finset.range (K+1), (1:ℝ) := Finset.sum_le_sum (fun i _ => hz (a+i))
+      _ ≤ ∑ _i∈Finset.range (K+1), oneR := Finset.sum_le_sum (fun i _ => hz (a+i))
       _ = _ := by simp
   have hright : ‖∑ i∈Finset.range K, z (a+((K+1)+M+i))‖ ≤ (K:ℝ) := by
     calc
       _ ≤ ∑ i∈Finset.range K, ‖z (a+((K+1)+M+i))‖ := norm_sum_le _ _
-      _ ≤ ∑ _i∈Finset.range K, (1:ℝ) := Finset.sum_le_sum (fun i _ => hz _)
+      _ ≤ ∑ _i∈Finset.range K, oneR := Finset.sum_le_sum (fun i _ => hz _)
       _ = _ := by simp
   have hmid : (∑ i∈Finset.range M, z (a+(K+1+i))) =
       ∑ i∈Finset.range M, z (a+K+i+1) := by
@@ -4507,7 +4507,7 @@ theorem exists_complete_cubic_eighth_estimate
           let L := modelPhaseJetLower σ 2*T/N^3
           let U := (modelPhaseJetCoefficient σ 2+1)*T/N^3
           let Qcut := 3/(2*lam*(H:ℝ)^3)
-          1 ≤ Qcut → Qcut ≤ (2:ℝ)^J →
+          1 ≤ Qcut → Qcut ≤ twoR^J →
           1/(4*(H:ℝ)^2) ≤ L/4 → 4*U*Qcut*N^2/(σ*T) ≤ κ₀ →
           B*((H:ℝ)+1)^4 ≤ 1 →
           let E := ((J:ℝ)+2)*(U/(lam*(H:ℝ)^2))*
@@ -4554,7 +4554,7 @@ theorem exists_complete_cubic_eighth_estimate
       ring
     have hMN : (M:ℝ) ≤ N := by
       rw [hM]
-      linarith only [ha,hb,(Nat.cast_nonneg K : (0:ℝ) ≤ K)]
+      linarith only [ha,hb,(Nat.cast_nonneg K : zeroR ≤ K)]
     have hleft : N < (A:ℝ)+1-(H:ℝ)^2 := by
       rw [hAr]
       linarith only [ha,hKlo,hQpos]
@@ -4646,7 +4646,7 @@ private theorem cubic_dyadic_index_bound
     {T X : VariableObject ℝ} (hT : ∀ i, 1 ≤ T i) (hTunbounded : T.IsUnbounded)
     {q η : ℝ} (hq : 0 < q) (hη : 0 < η)
     (hX : ∀ᶠ i in atTop, 1 ≤ X i ∧ X i ≤ (T i)^q) :
-    ∀ᶠ i in atTop, ∃ J : ℕ, X i ≤ (2:ℝ)^J ∧ (J:ℝ)+2 ≤ (T i)^η := by
+    ∀ᶠ i in atTop, ∃ J : ℕ, X i ≤ twoR^J ∧ (J:ℝ)+2 ≤ (T i)^η := by
   let γ := η/(2*q)
   have hγ : 0 < γ := by dsimp [γ]; positivity
   obtain ⟨D,hD,hcount⟩ := exists_dyadic_count_sq_le_rpow hγ
@@ -4654,19 +4654,19 @@ private theorem cubic_dyadic_index_bound
     (VariableObject.isUnbounded_iff_tendsto_atTop
       (fun i => zero_le_one.trans (hT i))).mp hTunbounded
   have hconstant := hTtop.eventually (eventually_const_mul_rpow_le_rpow
-    (D := 2*D*(2:ℝ)^γ) (a := η/2) (b := η) (by linarith))
+    (D := 2*D*twoR^γ) (a := η/2) (b := η) (by linarith))
   filter_upwards [hX,hconstant] with i hi hconst
   obtain ⟨J,hJlo,hJhi⟩ := exists_dyadic_cutoff hi.1
   refine ⟨J,hJlo,?_⟩
   have hJ := hcount J
   have hj : (J:ℝ)+2 ≤ 2*((J:ℝ)+1)^2 := by
-    nlinarith only [(Nat.cast_nonneg J : (0:ℝ) ≤ J),sq_nonneg (J:ℝ)]
+    nlinarith only [(Nat.cast_nonneg J : zeroR ≤ J),sq_nonneg (J:ℝ)]
   have hTp : 0 < T i := zero_lt_one.trans_le (hT i)
   calc
-    _ ≤ 2*(D*((2:ℝ)^J)^γ) := hj.trans (by gcongr)
+    _ ≤ 2*(D*(twoR^J)^γ) := hj.trans (by gcongr)
     _ ≤ 2*(D*(2*(T i)^q)^γ) := by gcongr; exact hJhi.trans (by gcongr; exact hi.2)
     _ = (2*D*2^γ)*(T i)^(η/2) := by
-      rw [Real.mul_rpow (by norm_num : (0:ℝ) ≤ 2) (by positivity),
+      rw [Real.mul_rpow (by norm_num : zeroR ≤ 2) (by positivity),
         ← Real.rpow_mul hTp.le]
       have he : q*γ=η/2 := by dsimp [γ]; field_simp
       rw [he]
@@ -4691,7 +4691,7 @@ theorem eventually_cubic_bourgain_parameters
     let U := fun i => (modelPhaseJetCoefficient σ 2+1)*T i/(N i)^3
     let Qcut := fun i => 3/(2*lam i*(H i:ℝ)^3)
     ∀ᶠ i in atTop, 0 < N i ∧ 2 ≤ H i ∧ 2 ≤ Y i ∧
-      ∃ J : ℕ, 1 ≤ Qcut i ∧ Qcut i ≤ (2:ℝ)^J ∧ (J:ℝ)+2 ≤ (T i)^η ∧
+      ∃ J : ℕ, 1 ≤ Qcut i ∧ Qcut i ≤ twoR^J ∧ (J:ℝ)+2 ≤ (T i)^η ∧
         1/(4*(H i:ℝ)^2) ≤ L i/4 ∧
         4*U i*Qcut i*(N i)^2/(σ*T i) ≤ κ₀ ∧
         B i*((H i:ℝ)+1)^4 ≤ 1 := by
@@ -4754,7 +4754,7 @@ theorem eventually_cubic_bourgain_parameters
     (eventually_lt_nhds hκ₀)
   have htaylorsmall := (htaylor.tendsto_zero_of_neg
     (by dsimp [h]; linarith only [hlo] : 1-4*α+4*h < 0) hT hTunbounded).eventually
-    (eventually_lt_nhds (by norm_num : (0:ℝ) < 1))
+    (eventually_lt_nhds (by norm_num : zeroR < 1))
   have hindex := cubic_dyadic_index_bound hT hTunbounded
     (by linarith only [hq] : 0 < q+1) hη
     (hQlarge.and (cubic_power_eventually_le hQ hT (by linarith : q<q+1)))
@@ -4762,14 +4762,14 @@ theorem eventually_cubic_bourgain_parameters
     with i hNi hHi hYi hLHi hsi hti hJi hQi
   obtain ⟨J,hJq,hJcount⟩ := hJi
   refine ⟨hNi,by exact_mod_cast hHi,hYi,J,hQi,hJq,hJcount,?_,hsi.le,?_⟩
-  · have hHp : (0:ℝ) < H i := by linarith only [hHi]
+  · have hHp : zeroR < H i := by linarith only [hHi]
     apply (div_le_iff₀ (by positivity : 0 < 4*(H i:ℝ)^2)).mpr
     nlinarith only [hLHi]
   · have hBp : 0 < B i := by
       dsimp [B]
       positivity [modelPhaseJetCoefficient_pos hσ 3,zero_lt_one.trans_le (hT i)]
     have hsum : (H i:ℝ)+1 ≤ 2*(H i:ℝ) := by linarith only [hHi]
-    have hp := pow_le_pow_left₀ (by positivity : (0:ℝ) ≤ (H i:ℝ)+1) hsum 4
+    have hp := pow_le_pow_left₀ (by positivity : zeroR ≤ (H i:ℝ)+1) hsum 4
     have hm := mul_le_mul_of_nonneg_left hp hBp.le
     nlinarith only [hm,hti]
 
@@ -4898,7 +4898,7 @@ theorem eventually_cubic_bourgain_cost
     with i h₁ h₂ h₃ h₄ h₅ h₆ hm hHi hH₂i hQi hwi hNi
   intro J hJ E
   have hTi : 0 < T i := zero_lt_one.trans_le (hT i)
-  have hHp : (0:ℝ) < H i := by exact_mod_cast floorRpow_pos T h i
+  have hHp : zeroR < H i := by exact_mod_cast floorRpow_pos T h i
   have hUp : 0 < U i := by dsimp [U]; positivity [modelPhaseJetCoefficient_pos hσ 2]
   have hlampos : 0 < lam i := by dsimp [lam]; positivity [modelPhaseJetLower_pos hσ 3]
   have hQp : 0 < Qcut i := by dsimp [Qcut]; positivity
@@ -5035,7 +5035,7 @@ theorem bourgain_d_target_outside_gap
         linarith only [h,hhalf]
       · have h := exponentSumGrowthExponent_le_bourgain_baseline
           (α:=α) (le_of_not_ge hsecond) hhalf
-        have hα : (3:ℝ)/7 ≤ (α:ℝ) := le_of_not_ge hsecond
+        have hα : threeR/7 ≤ (α:ℝ) := le_of_not_ge hsecond
         linarith only [h,hα]
 
 theorem exponentPair_sargosD_bourgain : ExponentPair (18/199) (593/796) := by
@@ -5093,7 +5093,7 @@ theorem original_joint_level_displacement_count
     obtain ⟨p,hp,rfl⟩ := Finset.mem_image.mp hq
     exact (hbox p hp).2
   have hnorm (t : ℝ) (ht : t∈Icc (a-R) (b+R+2*D)) :
-      t/N∈Ioo (1:ℝ) 2 := by
+      t/N∈Ioo oneR 2 := by
     constructor
     · apply (one_lt_div hN).mpr
       linarith [ht.1]
@@ -5104,7 +5104,7 @@ theorem original_joint_level_displacement_count
       (show ContDiffAt ℝ ∞ (fun z : ℝ => z/N) t by fun_prop)
     exact (contDiffAt_const.mul hc).of_le (ENat.natCast_le_of_coe_top_le_withTop le_rfl 4)
   have hex (q : ℕ) (hq : q∈J) :
-      ∃ x : ℝ, x/N∈Ioo (1:ℝ) 2 ∧ (x+(q:ℝ))/N∈Ioo (1:ℝ) 2 ∧
+      ∃ x : ℝ, x/N∈Ioo oneR 2 ∧ (x+(q:ℝ))/N∈Ioo oneR 2 ∧
         (iteratedDeriv 2 f (x+(q:ℝ))-iteratedDeriv 2 f x)/2=(K:ℝ) ∧
         ∃ e : ℤ, |iteratedDeriv 1 f (x+(q:ℝ))-iteratedDeriv 1 f x-
           2*(K:ℝ)*x-(e:ℝ)| ≤ W/2 := by
@@ -5134,7 +5134,7 @@ theorem original_joint_level_displacement_count
         (mul_nonneg hB (sq_nonneg R))]).trans hwidth)
   let x := fun q => if hq : q∈J then Classical.choose (hex q hq) else 0
   have hx (q : ℕ) (hq : q∈J) :
-      x q/N∈Ioo (1:ℝ) 2 ∧ (x q+(q:ℝ))/N∈Ioo (1:ℝ) 2 ∧
+      x q/N∈Ioo oneR 2 ∧ (x q+(q:ℝ))/N∈Ioo oneR 2 ∧
         (iteratedDeriv 2 f (x q+(q:ℝ))-iteratedDeriv 2 f (x q))/2=(K:ℝ) ∧
         ∃ e : ℤ, |iteratedDeriv 1 f (x q+(q:ℝ))-iteratedDeriv 1 f (x q)-
           2*(K:ℝ)*x q-(e:ℝ)| ≤ W/2 := by
@@ -5186,7 +5186,7 @@ theorem original_model_block_source_pair_count
     hF hT hN hd hD hR hB hlam hδ₂ hH hleft hright hbuffer hwidth hK hκle hW hWhalf
     hspan hmul hcenter hVS hdisp f hfour hsecond hfirst
   have hdp : 0 < d := by linarith
-  have hHr : (0:ℝ) < H := by exact_mod_cast hH
+  have hHr : zeroR < H := by exact_mod_cast hH
   let n := fun p : ι × ι => (center p.2-center p.1).toNat
   let E := V.image (fun p => (center p.1,n p))
   let J := E.image Prod.snd
@@ -5213,7 +5213,7 @@ theorem original_model_block_source_pair_count
       obtain ⟨v,hv,rfl⟩ := Finset.mem_image.mp hp
       simpa only [hpoints v hv] using hfirst v hv
   have hf t (ht : t∈Ioo (a-R) (b+R+2*D)) : ContDiffAt ℝ 4 f t := by
-    have hnrm : t/N∈Ioo (1:ℝ) 2 := by
+    have hnrm : t/N∈Ioo oneR 2 := by
       constructor
       · apply (one_lt_div hN).mpr
         linarith [ht.1]
@@ -5232,7 +5232,7 @@ theorem original_model_block_source_pair_count
     · obtain ⟨v,hv⟩ := hvq
       obtain ⟨hv,he⟩ := Finset.mem_filter.mp hv
       have hqd : d ≤ (q:ℝ) := by rw [←he,hn v hv]; exact (hdisp v hv).1
-      have hqp : (0:ℝ)<q := hdp.trans_le hqd
+      have hqp : zeroR<q := hdp.trans_le hqd
       have hb := fixed_displacement_source_pair_fibers S Vq center block H Bmul s f
         hH hlam hqp hδ₂ hspan hmul hf
         (fun t ht => (hfour t ⟨ht.1.le,ht.2.le⟩).2) hcent
@@ -5309,8 +5309,8 @@ theorem original_model_rounded_shift_count
   have hL : 0 < L := by dsimp only [L]; positivity [modelPhaseJetLower_pos hσ 2]
   have hU : 0 < U := by dsimp only [U]; positivity [modelPhaseJetCoefficient_pos hσ 2]
   have hB : 0 ≤ B := by dsimp only [B]; positivity [modelPhaseJetCoefficient_pos hσ 3]
-  have hKr : (1:ℝ) ≤ K := by exact_mod_cast (show (1:ℤ) ≤ K by omega)
-  have hKp : (0:ℝ) < K := zero_lt_one.trans_le hKr
+  have hKr : oneR ≤ K := by exact_mod_cast (show (1:ℤ) ≤ K by omega)
+  have hKp : zeroR < K := zero_lt_one.trans_le hKr
   have hd : 2 ≤ d := by
     apply (le_div_iff₀ (by positivity : 0 < 6*U)).mpr
     linarith
@@ -5463,8 +5463,8 @@ theorem original_model_uniform_positive_shift_count
   have hL : 0 < L := by dsimp only [L]; positivity [modelPhaseJetLower_pos hσ 2]
   have hU : 0 < U := by dsimp only [U]; positivity [modelPhaseJetCoefficient_pos hσ 2]
   have hB : 0 ≤ B := by dsimp only [B]; positivity [modelPhaseJetCoefficient_pos hσ 3]
-  have hKr : (1:ℝ) ≤ K := by exact_mod_cast (show (1:ℤ) ≤ K by omega)
-  have hKp : (0:ℝ) < K := zero_lt_one.trans_le hKr
+  have hKr : oneR ≤ K := by exact_mod_cast (show (1:ℤ) ≤ K by omega)
+  have hKp : zeroR < K := zero_lt_one.trans_le hKr
   let R := 36*U^2/(lam*(K:ℝ))
   let D := (K:ℝ)/L+1
   let W := max (2*η+4*B*D*R^2) w
@@ -5747,7 +5747,7 @@ theorem original_model_four_coordinate_count
       L ≤ iteratedDeriv 3 f t ∧ iteratedDeriv 3 f t ≤ 6*U := by
     have hh := hthree t ht
     exact ⟨hh.1,by linarith [hh.2]⟩
-  have hQr : (0:ℝ) < Qden := by exact_mod_cast hQden
+  have hQr : zeroR < Qden := by exact_mod_cast hQden
   have hD₀ : 0 ≤ D₀ := by dsimp only [D₀]; positivity
   have hη : 0 ≤ η := by dsimp only [η]; positivity
   have hRmem p (hp : p∈R) : p.1∈S ∧ p.2∈S :=
@@ -5811,7 +5811,7 @@ theorem original_model_four_coordinate_count
       (hq _ hi).1 (hq _ hj).1 (hq _ hi).2.1 (hq _ hj).2.1 hthin
       (hinverse _ hi) (hinverse _ hj) hmui hmuj hmuiU (parity p.1) (parity p.2)
       (hRnear p hp)
-    have hqr : (0:ℝ) < q p.1 := by exact_mod_cast (hq _ hi).1
+    have hqr : zeroR < q p.1 := by exact_mod_cast (hq _ hi).1
     have hQq : (Qden:ℝ) ≤ 2*(q p.1:ℝ) := by exact_mod_cast (hq _ hi).2.2
     refine ⟨e,he.trans ?_⟩
     change 2*D₀/(q p.1:ℝ) ≤ 4*D₀/Qden
@@ -5829,7 +5829,7 @@ theorem exists_model_refined_frozen_source
     {σ k₀ l₀ ε : ℝ} (hσ : 0 < σ)
     (hpair : ExponentPair k₀ l₀) (hε : 0 < ε) (hp : k₀+ε < 1) :
     ∃ δ κ₀ : ℝ, 0 < δ ∧ 0 < κ₀ ∧
-      ∃ Qphase : ℕ, 3 ≤ Qphase ∧ ∃ C > (0:ℝ), ∃ Cp : ℝ, 1 ≤ Cp ∧
+      ∃ Qphase : ℕ, 3 ≤ Qphase ∧ ∃ C > zeroR, ∃ Cp : ℝ, 1 ≤ Cp ∧
       ∀ (ι : Type*) [DecidableEq ι] (S : Finset ι)
       (G : ℝ → ℝ) (T P : ℝ) (r : ι → ℚ) (z : ι → ℝ) (m k : ι → ℤ)
       (H : ι → ℕ) (N Q Bmul : ℕ) (s : ℤ) (A B w : ℝ),
@@ -5912,8 +5912,8 @@ theorem exists_model_refined_frozen_source
     rw [abs_of_neg (by linarith only [hh.2,hlam])]
     constructor <;> linarith only [hh.1,hh.2]
   let H₀ := L*(Q:ℝ)*(N:ℝ)^2/12
-  have hNr : (0:ℝ) < N := Nat.cast_pos.mpr hN
-  have hQr : (0:ℝ) < Q := Nat.cast_pos.mpr hQ
+  have hNr : zeroR < N := Nat.cast_pos.mpr hN
+  have hQr : zeroR < Q := Nat.cast_pos.mpr hQ
   have hcard : (S.card:ℝ) ≤ Z := le_rfl
   let W := fun i => (s+(N:ℤ)*k i-m i).toNat
   let mu := fun i => iteratedDeriv 3 f (m i)/6
@@ -5961,7 +5961,7 @@ theorem exists_model_refined_frozen_source
     exact hh.trans (by linarith only [hr])
   have hscale i (hi : i∈S) : mu i*(W i:ℝ)^2 ≤ 1 := by
     have ha : (W i:ℝ)^2 ≤ (2*(W i:ℝ)+1)^2 := by
-      nlinarith only [show (0:ℝ) ≤ W i from Nat.cast_nonneg _]
+      nlinarith only [show zeroR ≤ W i from Nat.cast_nonneg _]
     calc
       _ ≤ U*(2*(W i:ℝ)+1)^2 :=
         mul_le_mul (hmu i hi).2.2 ha (sq_nonneg _) hU.le
@@ -6065,7 +6065,7 @@ theorem exists_model_refined_frozen_source
         (hW i hi).1 (hW i hi).2.1 (hmu i hi).2.1 hQq
 
     have hlog : 0≤Real.log (6*(N:ℝ)) := by
-      have hn : (1:ℝ)≤N := by exact_mod_cast hN
+      have hn : oneR≤N := by exact_mod_cast hN
       exact Real.log_nonneg (by linarith only [hn])
     have hErr0 : 0≤Err := by dsimp only [Err]; positivity
     let ErrorSum := ∑ i∈S,(Real.sqrt (W i)*Real.log (2*(W i:ℝ))+1/(mu i*(W i:ℝ)^2)+
@@ -6073,7 +6073,7 @@ theorem exists_model_refined_frozen_source
     have hErrorSum0 : 0≤ErrorSum := by
       apply Finset.sum_nonneg
       intro i hi
-      have hw1 : (1:ℝ)≤W i := by exact_mod_cast hWp i hi
+      have hw1 : oneR≤W i := by exact_mod_cast hWp i hi
       have hl := Real.log_nonneg (by linarith only [hw1] : 1≤2*(W i:ℝ))
       have hmup := (hmu i hi).1
       positivity
@@ -6108,7 +6108,7 @@ theorem exists_model_refined_frozen_source
 theorem refined_count_physical_majorant
     {l a b u n p q : ℝ} (hl : 0<l) (ha : 0<a) (hb : 0≤b)
     (hu : 0<u) (hn : 0≤n) (hq : 0≤q) :
-    ∃ C > (0:ℝ), ∀ P U K η w : ℝ,
+    ∃ C > zeroR, ∀ P U K η w : ℝ,
       0<P → 0<U → U≤1 → 1≤P*U*Real.sqrt U →
       0≤K → K≤n*(P*U*Real.sqrt U) →
       0≤η → η≤4*Real.sqrt U → 0<w →
@@ -6178,7 +6178,7 @@ theorem exists_model_refined_source_bands
     {σ k₀ l₀ ε : ℝ} (hσ : 0 < σ)
     (hpair : ExponentPair k₀ l₀) (hε : 0 < ε) (hp : k₀+ε < 1) :
     ∃ δ κ₀ : ℝ, 0 < δ ∧ 0 < κ₀ ∧
-      ∃ Qphase : ℕ, 3 ≤ Qphase ∧ ∃ Cd ≥ (1:ℝ), ∃ Cf > (0:ℝ),
+      ∃ Qphase : ℕ, 3 ≤ Qphase ∧ ∃ Cd ≥ oneR, ∃ Cf > zeroR,
       ∃ Cp : ℝ, 1 ≤ Cp ∧ ∀ (ι : Type*) [DecidableEq ι]
       (S : Finset ι) (F : ℝ → ℝ) (T P : ℝ) (k : ι → ℤ) (H : ι → ℕ)
       (N : ℕ) (s : ℤ) (A B w : ℝ),
@@ -6268,7 +6268,7 @@ theorem exists_model_refined_source_bands
     linarith only [hh.1]
   have hcurv t (ht : t∈Icc A B) : |iteratedDeriv 2 f t/2| ≤ X :=
     hcurvModel t (hdomain ht)
-  have hNr : (1:ℝ) ≤ N := by exact_mod_cast hN
+  have hNr : oneR ≤ N := by exact_mod_cast hN
   have ht i (hi : i∈S) : base i∈Icc A B :=
     hbuffer i hi ⟨by linarith only [hNr],by linarith only [hNr]⟩
   obtain ⟨r,z,hr,htail₀⟩ := exists_bourgain_C3_minimal_curvature_arc_count S f k N 1
@@ -6377,9 +6377,9 @@ theorem refined_elementary_twelfth
     (hbound : Z≤C*P*U^r*Log^2) :
     Z^12 ≤ C^12*P^ε*Log^24*(P^11*U) := by
   have hPp : 0<P := zero_lt_one.trans_le hP
-  have hUquarter : U^r≤U^((1:ℝ)/4) :=
+  have hUquarter : U^r≤U^(oneR/4) :=
     Real.rpow_le_rpow_of_exponent_ge hU hU1 hr
-  have hpower : (U^((1:ℝ)/4))^12=U^3 := by
+  have hpower : (U^(oneR/4))^12=U^3 := by
     rw [←Real.rpow_mul_natCast hU.le]
     norm_num
   have hbase : P^12*U^3≤P^11*U := by
@@ -6387,7 +6387,7 @@ theorem refined_elementary_twelfth
     nlinarith only [hh]
   have hPe : 1≤P^ε := Real.one_le_rpow hP hε
   calc
-    _ ≤ (C*P*U^((1:ℝ)/4)*Log^2)^12 := by
+    _ ≤ (C*P*U^(oneR/4)*Log^2)^12 := by
       apply pow_le_pow_left₀ hZ
       exact hbound.trans (by gcongr)
     _ = C^12*Log^24*(P^12*U^3) := by
@@ -6422,7 +6422,7 @@ theorem refined_spacing_physical_product
       P^(11+p+q)*U^(2+p+q/2) := by
     rw [Real.mul_rpow hP.le hU.le,Real.mul_rpow hP.le (Real.sqrt_nonneg U),
       Real.sqrt_eq_rpow,←Real.rpow_mul hU.le,hpowers,hupowers]
-    rw [show (1/2:ℝ)*q=q/2 by ring]
+    rw [show halfR*q=q/2 by ring]
     ring
   have hinv : P^11*U^2*(1/(P*U))=P^10*U := by
     field_simp
@@ -6452,7 +6452,7 @@ theorem refined_spacing_physical_product_bound
                                                                              
 theorem exists_refined_uniform_frozen_rhs
     {l ε Cc p q : ℝ} (hl : 0<l) (hε : 0<ε) (hCc : 1≤Cc) :
-    ∃ C > (0:ℝ), ∀ (P U Z w : ℝ) (Q : ℕ),
+    ∃ C > zeroR, ∀ (P U Z w : ℝ) (Q : ℕ),
       0<P → 0<U → U≤1/3600 → 1≤P*U → P*U^2≤1 → 0≤Z → 0<w →
       0<Q → (Q:ℝ)≤P →
       Z≤Cc*P*U*(Q:ℝ)^2 → Z≤Cc*(P/(Q:ℝ)^2)*(1+Real.log P) →
@@ -6480,8 +6480,8 @@ theorem exists_refined_uniform_frozen_rhs
     N L M V W d Loss Err E R
   have hU1 : U≤1 := by linarith only [hUsmall]
   have hP1 : 1≤P := hPU.trans (by nlinarith only [mul_le_mul_of_nonneg_left hU1 hP.le])
-  have hQr : (0:ℝ)<Q := Nat.cast_pos.mpr hQ
-  have hQ1 : (1:ℝ)≤Q := by exact_mod_cast hQ
+  have hQr : zeroR<Q := Nat.cast_pos.mpr hQ
+  have hQ1 : oneR≤Q := by exact_mod_cast hQ
   let J := 1+Real.log P
   let B := Cc*P*J
   let Cost := P^11*U+w*P^12*U^((5:ℝ)/2)+P^(11+p+q)*U^(2+p+q/2)*w^(-p)
@@ -6547,23 +6547,23 @@ theorem exists_refined_uniform_frozen_rhs
         mul_le_mul_of_nonneg_left hRprod (by positivity)
       _ = Cl*Cc^10*(Cc+2)*P^ε*J^23*Cost := by ring
       _ ≤ _ := by gcongr; norm_num
-  have hErr : Err ≤ Ce*U^(-(1:ℝ)/4)*J := herror P U Q hP hU hUsmall hPU hQ1
+  have hErr : Err ≤ Ce*U^(-oneR/4)*J := herror P U Q hP hU hUsmall hPU hQ1
   have hErr0 : 0 ≤ Err := by
-    have hN1 : (1:ℝ) ≤ N := by exact_mod_cast (displacement_block_scale hU hUsmall).1
+    have hN1 : oneR ≤ N := by exact_mod_cast (displacement_block_scale hU hUsmall).1
     have hlogN := Real.log_nonneg (show 1 ≤ 6*(N:ℝ) by linarith only [hN1])
     dsimp only [Err,L]
     positivity
-  have hquarter : Real.sqrt U*U^(-(1:ℝ)/4)=U^((1:ℝ)/4) := by
+  have hquarter : Real.sqrt U*U^(-oneR/4)=U^(oneR/4) := by
     rw [Real.sqrt_eq_rpow,←Real.rpow_add hU]
     norm_num
-  have hZE : Z*Err ≤ Cc*Ce*P*U^((1:ℝ)/4)*J^2 := by
+  have hZE : Z*Err ≤ Cc*Ce*P*U^(oneR/4)*J^2 := by
     calc
-      _ ≤ (Cc*P*J*Real.sqrt U)*(Ce*U^(-(1:ℝ)/4)*J) :=
+      _ ≤ (Cc*P*J*Real.sqrt U)*(Ce*U^(-oneR/4)*J) :=
         mul_le_mul hZgeo hErr hErr0 (by positivity)
-      _ = Cc*Ce*P*(Real.sqrt U*U^(-(1:ℝ)/4))*J^2 := by ring
+      _ = Cc*Ce*P*(Real.sqrt U*U^(-oneR/4))*J^2 := by ring
       _ = _ := by rw [hquarter]
   have herror₀ := refined_elementary_twelfth hP1 hU hU1 (mul_nonneg hZ hErr0)
-    (mul_nonneg hCcp.le hCe.le) hJ1 hε.le (le_refl ((1:ℝ)/4)) hsmall hZE
+    (mul_nonneg hCcp.le hCe.le) hJ1 hε.le (le_refl (oneR/4)) hsmall hZE
   have herror' : (Z*Err)^12≤(Cc*Ce)^12*P^ε*J^24*Cost :=
     herror₀.trans (mul_le_mul_of_nonneg_left hFirst (by positivity))
   calc
@@ -6576,7 +6576,7 @@ theorem exists_refined_uniform_frozen_rhs
 theorem exists_refined_physical_pair_bound
     {l a b u p q Cp : ℝ} (hl : 0<l) (ha : 0<a) (hb : 0≤b)
     (hu : 0<u) (hq : 0≤q) (hCp : 1≤Cp) :
-    ∃ Ca ≥ (1:ℝ), ∀ P U M Q Z w : ℝ,
+    ∃ Ca ≥ oneR, ∀ P U M Q Z w : ℝ,
       0<P → 0<U → U≤1/3600 → 1≤P*U*Real.sqrt U →
       1≤M → 0<Q → Q≤4*M → 0≤Z → 0<w →
       let N := ⌊1/(10*Real.sqrt U)⌋₊
@@ -6619,7 +6619,7 @@ theorem exists_refined_physical_pair_bound
   change 1≤K ∧ (K:ℝ)≤n*(P*U*Real.sqrt U) ∧ η≤4*Real.sqrt U ∧
     Dweight≤(1728/a)*(P*U*Real.sqrt U) at hcut
   have hη : 0≤η := by dsimp only [η,D₀]; positivity
-  have hN : (0:ℝ)<N := Nat.cast_pos.mpr (displacement_block_scale hU hUsmall).1
+  have hN : zeroR<N := Nat.cast_pos.mpr (displacement_block_scale hU hUsmall).1
   have hlam : 0<lam := by dsimp only [lam]; positivity
   have hDweight : 0≤Dweight := by dsimp only [Dweight]; positivity
   have hcount' : Count≤(Cp*Ce)*E := by
@@ -6718,7 +6718,7 @@ theorem exists_model_uniform_refined_source_bands
     let n := 2+48/a
     let m := 36/a+2*(n/l+1)+1
     ∃ δ κ₀ : ℝ, 0<δ ∧ 0<κ₀ ∧
-      ∃ Qphase : ℕ, 3≤Qphase ∧ ∃ Cd ≥ (1:ℝ), ∃ C > (0:ℝ),
+      ∃ Qphase : ℕ, 3≤Qphase ∧ ∃ Cd ≥ oneR, ∃ C > zeroR,
       ∀ (ι : Type*) [DecidableEq ι] (S : Finset ι) (F : ℝ→ℝ)
         (T P : ℝ) (k : ι→ℤ) (H : ι→ℕ) (s : ℤ) (A B w : ℝ),
       IsApproximateModelPhaseFunction F σ Qphase δ →
@@ -6783,7 +6783,7 @@ theorem exists_model_uniform_refined_source_bands
   have hscale := displacement_block_physical_scale hP hU hUsmall hK
   have hblock := displacement_block_scale hU hUsmall
   have hN : 0<N := hblock.1
-  have hNr : (0:ℝ)<N := Nat.cast_pos.mpr hN
+  have hNr : zeroR<N := Nat.cast_pos.mpr hN
   have hL : 0<L := by dsimp only [L]; positivity
   have hmargin : 0 < m*(P*Real.sqrt U) := by positivity
   have hA₀ : P<A := by linarith only [hA,hmargin]
@@ -6814,8 +6814,8 @@ theorem exists_model_uniform_refined_source_bands
   · simp only [hempty,Finset.sum_empty,zero_pow (by norm_num : (12:ℕ)≠0)]
     positivity
   have hQ : 0<Q := by dsimp only [Q]; positivity
-  have hQr : (0:ℝ)<Q := Nat.cast_pos.mpr hQ
-  have hQ1 : (1:ℝ)≤Q := by exact_mod_cast hQ
+  have hQr : zeroR<Q := Nat.cast_pos.mpr hQ
+  have hQ1 : oneR≤Q := by exact_mod_cast hQ
   obtain ⟨i,hi⟩ := Finset.nonempty_iff_ne_empty.mpr hempty
   obtain ⟨hi',hlog⟩ := Finset.mem_filter.mp hi
   have hiN := (Finset.mem_filter.mp hi').2
@@ -6847,7 +6847,7 @@ theorem exists_model_uniform_refined_source_bands
   let Weight := 3*(K:ℝ)+Dweight*(harmonic K:ℝ)
   let Pair := 4*(G.card:ℝ)+6*Count*Weight
   let R := (G.card:ℝ)+(P*U*Real.sqrt U)*E*(1+Real.log P)
-  have hM1 : (1:ℝ)≤M := by
+  have hM1 : oneR≤M := by
     have hh : 1≤M := by dsimp only [M]; omega
     exact_mod_cast hh
   have hMscale := hblock.2.2.2.2.2 Q hQ
@@ -6917,7 +6917,7 @@ theorem exists_model_refined_source_global
     let n := 2+48/a
     let m := 36/a+2*(n/l+1)+1
     ∃ δ κ₀ : ℝ, 0<δ ∧ 0<κ₀ ∧
-      ∃ Qphase : ℕ, 3≤Qphase ∧ ∃ C > (0:ℝ),
+      ∃ Qphase : ℕ, 3≤Qphase ∧ ∃ C > zeroR,
       ∀ (ι : Type*) [DecidableEq ι] (S : Finset ι) (F : ℝ→ℝ)
         (T P : ℝ) (k : ι→ℤ) (H : ι→ℕ) (s : ℤ) (A B w : ℝ),
       IsApproximateModelPhaseFunction F σ Qphase δ →
@@ -7022,23 +7022,23 @@ theorem exists_model_refined_source_global
         _ ≤ _ := hm
         _ ≤ _ := hsize)
   have htailMoment : (∑ i∈R,weight i)^12 ≤ Budget := by
-    have hh : (∑ i∈R,weight i) ≤ Ct*P*U^((1:ℝ)/2)*Log^2 := by
+    have hh : (∑ i∈R,weight i) ≤ Ct*P*U^(oneR/2)*Log^2 := by
       rw [←Real.sqrt_eq_rpow]
       exact htail'.trans (le_mul_of_one_le_right (by positivity) (one_le_pow₀ hlog1))
     exact (refined_elementary_twelfth hscale.2.1 hU hU1 (Finset.sum_nonneg (fun i _ => hw i))
-      hCt.le hlog1 hε.le (by norm_num : (1:ℝ)/4 ≤ 1/2) hsmall₀ hh).trans (hbaseBudget _ (by positivity) hCt₀)
+      hCt.le hlog1 hε.le (by norm_num : oneR/4 ≤ 1/2) hsmall₀ hh).trans (hbaseBudget _ (by positivity) hCt₀)
   have hboundary : (1+23*(N:ℝ))^12 ≤ Budget := by
-    have hh : 1+23*(N:ℝ) ≤ 24*P*U^((1:ℝ)/2)*Log^2 := by
+    have hh : 1+23*(N:ℝ) ≤ 24*P*U^(oneR/2)*Log^2 := by
       rw [←Real.sqrt_eq_rpow]
       exact (htailSize P U hP hU hUsmall hscale.1).1.trans
         (le_mul_of_one_le_right (by positivity) (one_le_pow₀ hlog1))
     exact (refined_elementary_twelfth hscale.2.1 hU hU1 (by positivity)
-      (by norm_num : (0:ℝ)≤24) hlog1 hε.le (by norm_num : (1:ℝ)/4 ≤ 1/2) hsmall₀ hh).trans
+      (by norm_num : zeroR≤24) hlog1 hε.le (by norm_num : oneR/4 ≤ 1/2) hsmall₀ hh).trans
         (hbaseBudget _ (by positivity) hCb₀)
   have hbands (j : ℕ) : (g j)^12 ≤ Budget := by
     let Q : ℕ := 2^(j+1)
-    have hQ1 : (1:ℝ) ≤ Q := by dsimp only [Q]; exact_mod_cast (one_le_pow₀ (by norm_num : (1:ℕ) ≤ 2) : 1 ≤ 2^(j+1))
-    have hQ : (0:ℝ) < Q := lt_of_lt_of_le zero_lt_one hQ1
+    have hQ1 : oneR ≤ Q := by dsimp only [Q]; exact_mod_cast (one_le_pow₀ (by norm_num : (1:ℕ) ≤ 2) : 1 ≤ 2^(j+1))
+    have hQ : zeroR < Q := lt_of_lt_of_le zero_lt_one hQ1
     by_cases hlarge : 1 ≤ j ∧ 12 ≤ L*(Q:ℝ)*(N:ℝ)^2 ∧ 384 ≤ L^2*(Q:ℝ)^3*(N:ℝ)^3
     · exact ((hband j).2 hlarge.1 hlarge.2.1 hlarge.2.2).trans (hbudget _ hCf₀)
     have hcases : (Q:ℝ) ≤ 2 ∨ l*U*(Q:ℝ)*(N:ℝ)^2 < 12 ∨ (l*U)^2*(Q:ℝ)^3*(N:ℝ)^3 < 384 := by
@@ -7052,23 +7052,23 @@ theorem exists_model_refined_source_global
     have hcut := hcutoff U Q hU hUsmall hQ hcases
     have hs := hsmall P U Q hP hU hUsmall hscale.1 hQ1 hcut
     have hm := mul_le_mul_of_nonneg_left hs (show 0 ≤ Cd by linarith only [hCd])
-    have hg : g j ≤ (Cd*Cs)*P*U^((1:ℝ)/3)*Log := by
+    have hg : g j ≤ (Cd*Cs)*P*U^(oneR/3)*Log := by
       calc
         _ ≤ _ := (hband j).1
         _ ≤ _ := by convert hm using 1 <;> ring
-    have hg' : g j≤(Cd*Cs)*P*U^((1:ℝ)/3)*Log^2 :=
+    have hg' : g j≤(Cd*Cs)*P*U^(oneR/3)*Log^2 :=
       hg.trans (by
         have hh : Log≤Log^2 := by nlinarith only [hlog1]
         gcongr)
     exact (refined_elementary_twelfth hscale.2.1 hU hU1 (Finset.sum_nonneg (fun i _ => hw i))
-      (mul_nonneg hCdp hCs.le) hlog1 hε.le (by norm_num : (1:ℝ)/4 ≤ 1/3) hsmall₀ hg').trans
+      (mul_nonneg hCdp hCs.le) hlog1 hε.le (by norm_num : oneR/4 ≤ 1/3) hsmall₀ hg').trans
         (hbaseBudget _ (by positivity) hCs₀)
   have hfinite := displacement_finite_moment_budget g J (by positivity)
     (Finset.sum_nonneg (fun i _ => hw i)) (fun j => Finset.sum_nonneg (fun i _ => hw i))
     hboundary htailMoment (fun j _ => hbands j)
   have hJbound : (J:ℝ)+2 ≤ 1000*Log :=
     (physical_dyadic_geometry (by norm_num : (1000:ℝ) ≤ 1000) hscale.2.1 hN
-      (by linarith only [hscale.2.2,show (0:ℝ) ≤ N by positivity])).1
+      (by linarith only [hscale.2.2,show zeroR ≤ N by positivity])).1
   change (1+23*(N:ℝ)+∑ i∈S,weight i)^12 ≤ _
   rw [sum_by_denominator_bands S (fun i => (r i).den) weight N]
   change (1+23*(N:ℝ)+((∑ i∈R,weight i)+∑ j∈Finset.range J,g j))^12 ≤ _
@@ -7117,7 +7117,7 @@ theorem exists_model_refined_global_bound
     let b := (modelPhaseJetCoefficient σ 3+1)/u
     let n := 2+48/a
     ∃ δ κ₀ : ℝ, 0<δ ∧ 0<κ₀ ∧
-      ∃ Qphase : ℕ, 3≤Qphase ∧ ∃ C > (0:ℝ),
+      ∃ Qphase : ℕ, 3≤Qphase ∧ ∃ C > zeroR,
       ∀ (F : ℝ→ℝ) (T P : ℝ) (aa bb : ℕ) (w : ℝ),
       IsApproximateModelPhaseFunction F σ Qphase δ →
       0<T → 0<P → P≤aa → (bb:ℝ)≤2*P → 0<w → w≤1/2 →
@@ -7179,11 +7179,11 @@ theorem exists_model_refined_global_bound
     dsimp only [Ctrim]
     nlinarith only [hKhi,hPS]
   have htrimMoment : (2*(K:ℝ)+1)^12≤Ctrim^12*Budget := by
-    have hh : 2*(K:ℝ)+1≤Ctrim*P*U^((1:ℝ)/2)*Log^2 := by
+    have hh : 2*(K:ℝ)+1≤Ctrim*P*U^(oneR/2)*Log^2 := by
       rw [←Real.sqrt_eq_rpow]
       exact htrimBound.trans (le_mul_of_one_le_right (by positivity) (one_le_pow₀ hLog1))
     have he := refined_elementary_twelfth hscale.2.1 hU hU1 (by positivity)
-      hCtrim.le hLog1 hε.le (by norm_num : (1:ℝ)/4≤1/2) hsmall hh
+      hCtrim.le hLog1 hε.le (by norm_num : oneR/4≤1/2) hsmall hh
     calc
       _ ≤ Ctrim^12*P^ε*Log^24*(P^11*U) := he
       _ ≤ Ctrim^12*P^ε*Log^36*E := by gcongr; norm_num
@@ -7229,7 +7229,7 @@ theorem exists_model_refined_global_bound
     have hp₀ := (pow_le_pow_left₀ (norm_nonneg _) hnorm 12).trans
       (add_pow_le hCore (by positivity : 0≤2*(K:ℝ)+1) 12)
     have hm := mul_le_mul_of_nonneg_left (add_le_add hs' htrimMoment)
-      (show (0:ℝ)≤2^(12-1) by positivity)
+      (show zeroR≤2^(12-1) by positivity)
     exact hp₀.trans (by
       rw [←add_mul,←mul_assoc] at hm
       simpa only [C,Budget,Log,E,mul_assoc,Nat.reduceSub] using hm)
@@ -7240,7 +7240,7 @@ theorem exists_model_refined_global_bound
       exact (norm_exponentialSumAt_le_card F T P aa bb).trans hc
     have hCtrimC : Ctrim^12≤C := by
       exact (le_add_of_nonneg_left hCf.le).trans
-        (le_mul_of_one_le_left (by positivity) (by norm_num : (1:ℝ)≤2^11))
+        (le_mul_of_one_le_left (by positivity) (by norm_num : oneR≤2^11))
     exact ((pow_le_pow_left₀ (norm_nonneg _) hnorm 12).trans htrimMoment).trans
       (by
         simpa only [Budget,Log,E,mul_assoc] using mul_le_mul_of_nonneg_right hCtrimC hBudget)
@@ -7275,7 +7275,7 @@ theorem eventually_refined_bourgain_parameters
     convert ((hc u hu).mul hTscale hT).div (cubic_power_natpow hPT hT 3) hT using 1
     ring
   have hroot : IsPowerAsymptotic (fun i => Real.sqrt (U i)) T (v/2) := by
-    simpa only [Real.sqrt_eq_rpow,mul_one_div] using cubic_power_rpow hU hT ((1:ℝ)/2)
+    simpa only [Real.sqrt_eq_rpow,mul_one_div] using cubic_power_rpow hU hT (oneR/2)
   have hPU : IsPowerAsymptotic (fun i => P i*U i) T (α+v) := hPT.mul hU hT
   have hcurve : IsPowerAsymptotic (fun i => P i*U i*Real.sqrt (U i)) T (α+v+v/2) :=
     hPU.mul hroot hT
@@ -7290,9 +7290,9 @@ theorem eventually_refined_bourgain_parameters
   have hrootzero := hroot.tendsto_zero_of_neg (by linarith only [hv]) hT hTunbounded
   have hliftzero := hlifting.tendsto_zero_of_neg
     (by dsimp only [v]; linarith only [hlo] : α+2*v<0) hT hTunbounded
-  have hsmall := hUzero.eventually (eventually_lt_nhds (by norm_num : (0:ℝ)<1/3600))
+  have hsmall := hUzero.eventually (eventually_lt_nhds (by norm_num : zeroR<1/3600))
   have hwsmall := (hw.tendsto_zero_of_neg homegaScale hT hTunbounded).eventually
-    (eventually_lt_nhds (by norm_num : (0:ℝ)<1/2))
+    (eventually_lt_nhds (by norm_num : zeroR<1/2))
   have hcurveLarge := (hcurve.tendsto_atTop_of_pos
     (by dsimp only [v]; linarith only [hhi] : 0<α+v+v/2) hT hTunbounded).eventually
     (eventually_ge_atTop 1)
@@ -7300,11 +7300,11 @@ theorem eventually_refined_bourgain_parameters
     (by dsimp only [v]; linarith only [hhi] : 0<α+v) hT hTunbounded).eventually
     (eventually_ge_atTop b)
   have hLsmall := (hUzero.const_mul l).eventually
-    (by simpa using (eventually_lt_nhds (by norm_num : (0:ℝ)<1)))
-  have hLiftSmall := hliftzero.eventually (eventually_lt_nhds (by norm_num : (0:ℝ)<1))
+    (by simpa using (eventually_lt_nhds (by norm_num : zeroR<1)))
+  have hLiftSmall := hliftzero.eventually (eventually_lt_nhds (by norm_num : zeroR<1))
   have hsourceLift := ((hrootzero.const_mul 8).add
     (hliftzero.const_mul (10368*b/(a^2*l)))).eventually
-      (by simpa using (eventually_lt_nhds (by norm_num : (0:ℝ)<1/2)))
+      (by simpa using (eventually_lt_nhds (by norm_num : zeroR<1/2)))
   have hshift := (hrootzero.const_mul (2*n*u/σ)).eventually
     (by simpa using (eventually_lt_nhds hκ₀))
   filter_upwards [hPpos,hwsmall,hsmall,hcurveLarge,hPULarge,hLsmall,hLiftSmall,hsourceLift,hshift]
@@ -7386,7 +7386,7 @@ theorem eventually_refined_bourgain_cost
     (VariableObject.isUnbounded_iff_tendsto_atTop (fun i => zero_le_one.trans (hT i))).mp hTunbounded
   have hlogT := (Real.tendsto_log_atTop.comp hTtop).eventually (eventually_ge_atTop 1)
   have hlogPower := hTtop.eventually
-    (eventually_const_log_pow_le_rpow ((2:ℝ)^36) (by positivity) 36 hη)
+    (eventually_const_log_pow_le_rpow (twoR^36) (by positivity) 36 hη)
   filter_upwards [hb₁,hb₂,hb₃,hP1,hPTle,hlogT,hlogPower] with i hi₁ hi₂ hi₃ hPi hPTi hlogi hlogPoweri
   have hTi : 0<T i := zero_lt_one.trans_le (hT i)
   have hPp : 0<P i := zero_lt_one.trans_le hPi
@@ -7399,7 +7399,7 @@ theorem eventually_refined_bourgain_cost
     calc
       _ ≤ (2*Real.log (T i))^36 :=
         pow_le_pow_left₀ (by positivity) (by linarith only [hlogPT,hlogi]) 36
-      _ = (2:ℝ)^36*(Real.log (T i))^36 := mul_pow _ _ _
+      _ = twoR^36*(Real.log (T i))^36 := mul_pow _ _ _
       _ ≤ _ := hlogPoweri
   have hsum : g₁ i+g₂ i+g₃ i≤3*(T i)^(12*β+4*η) := by
     linarith only [hi₁,hi₂,hi₃]

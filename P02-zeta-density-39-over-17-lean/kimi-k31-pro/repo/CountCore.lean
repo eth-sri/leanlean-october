@@ -75,4 +75,28 @@ theorem bound_of_literal {σ p ε : ℝ}
   rw [zeroCount_eq_finset σ T F hF, ← ENNReal.ofReal_natCast]
   exact ENNReal.ofReal_le_ofReal (hb T hT F hF)
 
+/-- Transfer a uniform real-valued enumeration bound over an interval of cutoffs. -/
+theorem bound_of_uniform_literal {lo hi : ℝ} {p : ℝ → ℝ} {ε : ℝ}
+    (h : ∃ C : ℝ, 0 < C ∧ ∀ σ T : ℝ, lo ≤ σ → σ ≤ hi → 2 ≤ T → ∀ F : Finset ℂ,
+      (∀ ρ : ℂ, ρ ∈ F ↔ riemannZeta ρ = 0 ∧ 0 < ρ.re ∧ ρ.re < 1 ∧
+        σ ≤ ρ.re ∧ |ρ.im| ≤ T) →
+      ((∑ ρ ∈ F, analyticOrderNatAt riemannZeta ρ : ℕ) : ℝ) ≤ C * T ^ (p σ + ε)) :
+    ∃ C : ℝ, 0 < C ∧ ∀ σ T : ℝ, lo ≤ σ → σ ≤ hi → 2 ≤ T →
+      zeroCount σ T ≤ ENNReal.ofReal (C * T ^ (p σ + ε)) := by
+  obtain ⟨C, hC, hb⟩ := h
+  refine ⟨C, hC, ?_⟩
+  intro σ T hlo hhi hT
+  obtain ⟨F, hF⟩ := exact_zero_set_exists σ T
+  rw [zeroCount_eq_finset σ T F hF, ← ENNReal.ofReal_natCast]
+  exact ENNReal.ofReal_le_ofReal (hb σ T hlo hhi hT F hF)
+
+/-- Generate one pointwise zero-density wrapper from its interval and exponent. -/
+syntax "density_decl " ident ident ident "(" term ")" "(" term ")" "(" term ")" : command
+macro_rules
+  | `(density_decl $name $src $σ ($lo) ($hi) ($p)) =>
+    `(theorem $name {$σ : ℝ} {ε : ℝ} (hlo : $lo) (hhi : $hi) (hε : 0 < ε) :
+        ∃ C : ℝ, 0 < C ∧ ∀ T : ℝ, 2 ≤ T →
+          zeroCount $σ T ≤ ENNReal.ofReal (C * T ^ (($p) + ε)) := by
+      exact bound_of_literal ($src hlo hhi hε))
+
 end LewkoDensityPalomar

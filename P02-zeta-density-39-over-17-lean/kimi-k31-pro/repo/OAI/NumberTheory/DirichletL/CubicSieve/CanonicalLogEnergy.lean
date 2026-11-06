@@ -150,17 +150,6 @@ theorem cubeIdeal_row (F : Finset (Ideal ActualEisensteinCubic.O)) (hF : ∀ I �
     exact Finset.prod_congr rfl (fun i _ => by rw [poolPrimary_span F hF i])
   rw [hprod, idealRowHom_prime_powers]
 
-def outsideCanonicalBin (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ) (hbad : fixedBadPrimes ⊆ S)
-    (Q : Finset (primePool (InitialMeanSquare.outsideSquarefreeIdeals S D) →₀ ℕ))
-    (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : ActualEisensteinCubic.O) (W : ℝ → ℂ) (X H₀ : ℝ) : ℂ :=
-  let F := InitialMeanSquare.outsideSquarefreeIdeals S D
-  ∑ v ∈ Q,
-    (largeCubeCoefficient H₀ (cubeIdeal F v) *
-      cubeWeight (rowTwist Ψ (m*excludedGenerator S) f 1) (cubeIdeal F v) *
-      (Real.sqrt (X/(Ideal.absNorm (cubeIdeal F v) : ℝ)^3) : ℂ)⁻¹) *
-      idealRowHom z (cubeIdeal F v)^3 *
-      outsideCanonicalRow S D hbad Ψ m f z W (X/(Ideal.absNorm (cubeIdeal F v) : ℝ)^3)
-
 end
 
 section

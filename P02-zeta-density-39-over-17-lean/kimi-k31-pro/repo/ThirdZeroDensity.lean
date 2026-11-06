@@ -3,6 +3,7 @@ public import ThirdLargeValues
 public import ThirdWindowParameters
 public import HalfLossTypeIISlab
 public import GeneralDetectorCover
+public import TwoTermZeroDensity
 
 @[expose] public section
 
@@ -22,90 +23,9 @@ theorem third_typeI_separated_count {σ a p α ε : ℝ}
       (∀ ρ ∈ R, σ ≤ ρ.re ∧ ρ.re ≤ 1 ∧ ρ.im ∈ Icc t₀ (t₀+H) ∧
         (1/3:ℝ) ≤ ‖shortFiniteDetector ρ H‖) →
       (R.card:ℝ) ≤ C*H^(p+ε) := by
-  classical
-  let η : ℝ := min (ε/1000) (1/100)
-  have hη : 0 < η := lt_min (by positivity) (by norm_num)
-  have hηsmall : η ≤ 1/100 := min_le_right _ _
-  have hηeps : η ≤ ε/1000 := min_le_left _ _
-  obtain ⟨C,hC,hLV⟩ := third_full_window_large_values hw hη hηsmall
-  have hloglim := (isLittleO_log_rpow_rpow_atTop (2:ℝ) hη).tendsto_div_nhds_zero
-  norm_num at hloglim
-  refine ⟨C,hC,?_⟩
-  filter_upwards [eventually_ge_atTop (2:ℝ), general_powered_cover hη,
-    shortPoweredDetectorFamily_coefficients hη,
-    (tendsto_rpow_atTop hη).eventually_ge_atTop ((2:ℝ)^99),
-    (tendsto_rpow_atTop (show (0:ℝ)<69/100 by norm_num)).eventually_ge_atTop 2,
-    hloglim.eventually (gt_mem_nhds (show (0:ℝ)<1/600000 by norm_num))]
-    with H hH hfamily hcoeff hconst hlength hlog
-  intro t₀ R hcard hsep hR
-  have hHpos : 0 < H := by linarith
-  have hHa : 1 ≤ H := by linarith
-  let J := (shortPoweredDetectorIndices H).filter (fun q =>
-    H^(a) ≤ (shortPoweredDetectorScale q:ℝ) ∧
-    (shortPoweredDetectorScale q:ℝ) ≤ (2:ℝ)^99*H^(3*a/2) ∧
-    2*(shortPoweredDetectorScale q:ℝ) ≤ H^2)
-  let W := R.image Complex.im
-  let Wj := fun q => W.filter (fun t =>
-    (shortPoweredDetectorScale q:ℝ)^σ*H^(-2*η) ≤
-      ‖detectingPolynomial (shortPoweredDetectorScale q) (shortPoweredDetectorFamilyCoeff η H q) t‖)
-  have hWj : ∀ q ∈ J, ((Wj q).card:ℝ) ≤ C*H^(p+18*η) := by
-    intro q hp
-    obtain ⟨hp,hlow,hhigh,hsupport⟩ := Finset.mem_filter.mp hp
-    have hN : 2 ≤ (shortPoweredDetectorScale q:ℝ) :=
-      hlength.trans ((Real.rpow_le_rpow_of_exponent_le hHa hw.a_low).trans hlow)
-    have hupper : (shortPoweredDetectorScale q:ℝ) ≤ H^(3*a/2+η) := by
-      calc
-        _ ≤ (2:ℝ)^99*H^(3*a/2) := hhigh
-        _ ≤ H^η*H^(3*a/2) := mul_le_mul_of_nonneg_right hconst (by positivity)
-        _ = _ := by rw [← Real.rpow_add hHpos]; congr 1; ring
-    have hc : ∀ n ∈ sourceRatioIndices (shortPoweredDetectorScale q:ℝ),
-        ‖shortPoweredDetectorFamilyCoeff η H q n‖ ≤ 1 := by
-      intro n hn
-      apply hcoeff q hp hsupport n
-      simpa only [sourceRatioIndices, show 2*(shortPoweredDetectorScale q:ℝ) =
-        ((2*shortPoweredDetectorScale q:ℕ):ℝ) by push_cast; rfl, Nat.floor_natCast] using hn
-    apply hLV H (shortPoweredDetectorScale q:ℝ) t₀
-      (shortPoweredDetectorFamilyCoeff η H q) (Wj q) hH hN hlow hupper hc
-    · intro t ht
-      obtain ⟨ρ,hρ,rfl⟩ := Finset.mem_image.mp (Finset.mem_filter.mp ht).1
-      exact (hR ρ hρ).2.2.1
-    · intro t ht s hs hne
-      exact hsep t (Finset.mem_filter.mp ht).1 s (Finset.mem_filter.mp hs).1 hne
-    · intro t ht
-      simpa only [← detectingPolynomial_eq_boundedPolynomial] using (Finset.mem_filter.mp ht).2
-  have hcover : W ⊆ J.biUnion Wj := by
-    intro t ht
-    obtain ⟨ρ,hρ,rfl⟩ := Finset.mem_image.mp ht
-    obtain ⟨hβ,hβ',_hloc,hd⟩ := hR ρ hρ
-    obtain ⟨q,hp,hlo,hhi,hsupport,hlarge⟩ := hfamily.2 (a) σ ρ
-      hw.a_low hw.a_high (by linarith [hw.sigma_low]) hβ hβ' hd
-    apply Finset.mem_biUnion.mpr
-    refine ⟨q,Finset.mem_filter.mpr ⟨hp,hlo,hhi,hsupport⟩,?_⟩
-    exact Finset.mem_filter.mpr ⟨Finset.mem_image.mpr ⟨ρ,hρ,rfl⟩,hlarge⟩
-  have hJ : (J.card:ℝ) ≤ H^η := by
-    have hsmall : 600000*(Real.log H)^2 ≤ H^η := by
-      have hh := (div_lt_iff₀ (Real.rpow_pos_of_pos hHpos η)).mp hlog
-      linarith
-    exact (show (J.card:ℝ) ≤ (shortPoweredDetectorIndices H).card by
-      exact_mod_cast Finset.card_le_card (Finset.filter_subset _ _)).trans (hfamily.1.trans hsmall)
-  have hsum : (W.card:ℝ) ≤ (J.card:ℝ)*(C*H^(p+18*η)) := by
-    calc
-      _ ≤ ∑ q ∈ J, ((Wj q).card:ℝ) := by
-        exact_mod_cast (Finset.card_le_card hcover).trans Finset.card_biUnion_le
-      _ ≤ ∑ _p ∈ J, C*H^(p+18*η) := Finset.sum_le_sum hWj
-      _ = _ := by simp
-  have hpow : H^(p+19*η) ≤ H^(p+ε) :=
-    Real.rpow_le_rpow_of_exponent_le hHa (by linarith)
-  calc
-    _ = (W.card:ℝ) := by rw [hcard]
-    _ ≤ (J.card:ℝ)*(C*H^(p+18*η)) := hsum
-    _ ≤ H^η*(C*H^(p+18*η)) :=
-      mul_le_mul_of_nonneg_right hJ (by positivity)
-    _ = C*H^(p+19*η) := by
-      rw [← mul_left_comm, ← Real.rpow_add hHpos]
-      congr 2
-      ring
-    _ ≤ _ := mul_le_mul_of_nonneg_left hpow hC.le
+  apply typeI_separated_count_of_large_values hw.a_low hw.a_high (by linarith [hw.sigma_low]) hε
+  intro δ hδ hδ'
+  exact third_full_window_large_values hw hδ hδ'
 
 /-- The Type-I branch count on actual zeta zero representatives. -/
 theorem third_typeI_zero_slab_count {σ a p α ε : ℝ}

@@ -65,9 +65,9 @@ theorem uniform_detector_integral_bound :
       _ ≤ (Y^a*‖g t‖)*(2*Real.sqrt X)*(C*(3*T^q*(1+|t|))) :=
         mul_le_mul (mul_le_mul_of_nonneg_left hm (by positivity)) hz (norm_nonneg _) (by positivity)
       _ = _ := by dsimp [B]; ring
-  have hint := integrable_detectorKernel_left (X := X) hY hβ hβ'
-  have hw := (hmass ρ.re hβ hβ').2.1
-  have hm := (hmass ρ.re hβ hβ').2.2
+  have hint := integrable_detectorKernel_left (X := X) hY (by linarith) hβ'
+  have hw := (hmass ρ.re (by linarith) hβ').2.1
+  have hm := (hmass ρ.re (by linarith) hβ').2.2
   have hnorm : ‖∫ t : ℝ, F t‖ ≤ B*G := by
     calc
       _ ≤ ∫ t : ℝ, ‖F t‖ := norm_integral_le_integral_norm _
@@ -163,7 +163,7 @@ theorem firstDetector_eventually_small_of_zeta_bound {η C δ : ℝ}
   have hint : ‖detectorIntegral ρ (firstDetectorX T) T‖ < δ/2 := by
     apply (hi.trans _).trans_lt hsmall
     simpa only [firstDetectorY, mul_assoc] using hs
-  rw [smoothedDetector_contour_identity hT hβ hβ' hzero]
+  rw [smoothedDetector_contour_identity hT (by linarith) hβ' hzero]
   change ‖detectorResidue ρ (firstDetectorX T) T + detectorIntegral ρ (firstDetectorX T) T‖ < δ
   exact (norm_add_le _ _).trans_lt (by linarith [hpole ρ hβ hβ'.le hγ hγ'])
 

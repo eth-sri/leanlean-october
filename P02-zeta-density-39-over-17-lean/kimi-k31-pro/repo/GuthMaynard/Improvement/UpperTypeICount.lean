@@ -13,21 +13,30 @@ set_option maxRecDepth 2000
 noncomputable section
 namespace GuthMaynard.Improvement
 
-/-- Actual upper-window Type-I count, with fixed powering exponent 3/4.
-The constant and threshold precede sigma, translation and the zero family. -/
-theorem upper_typeI_separated_count {ε : ℝ} (hε : 0 < ε) :
+/-- The common Type-I count obtained from any compatible upper-window
+large-values estimate. -/
+theorem typeI_separated_count_of_large_values (A : ℝ)
+    (hLV : ∀ {δ : ℝ}, 0 < δ → δ ≤ 1/100 →
+      ∃ C : ℝ, 0 < C ∧ ∀ (σ H N t₀ : ℝ) (a : ℕ → ℂ) (W : Finset ℝ),
+        5/7 ≤ σ → σ ≤ 3/4 → 2 ≤ H → 2 ≤ N →
+        H^(3/4:ℝ) ≤ N → N ≤ H^(9/8+δ) →
+        (∀ n ∈ sourceRatioIndices N, ‖a n‖ ≤ 1) →
+        (∀ t ∈ W, t₀ ≤ t ∧ t ≤ t₀+H) →
+        (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
+        (∀ t ∈ W, N^σ*H^(-2*δ) ≤ ‖boundedPolynomial N a t‖) →
+        (W.card:ℝ) ≤ C*H^(A*(1-σ)+10*δ)) {ε : ℝ} (hε : 0 < ε) :
     ∃ C : ℝ, 0 < C ∧ ∀ᶠ H : ℝ in atTop, ∀ (σ t₀ : ℝ) (R : Finset ℂ),
       5/7 ≤ σ → σ ≤ 3/4 →
       (R.image Complex.im).card = R.card → oneSeparated (R.image Complex.im) →
       (∀ ρ ∈ R, σ ≤ ρ.re ∧ ρ.re ≤ 1 ∧ ρ.im ∈ Icc t₀ (t₀+H) ∧
         (1/3:ℝ) ≤ ‖shortFiniteDetector ρ H‖) →
-      (R.card:ℝ) ≤ C*H^(((39/17)*(1-σ))+ε) := by
+      (R.card:ℝ) ≤ C*H^((A*(1-σ))+ε) := by
   classical
   let η : ℝ := min (ε/100) (1/100)
   have hη : 0 < η := lt_min (by positivity) (by norm_num)
   have hηsmall : η ≤ 1/100 := min_le_right _ _
   have hηeps : η ≤ ε/100 := min_le_left _ _
-  obtain ⟨C,hC,hLV⟩ := upper_window_large_values hη hηsmall
+  obtain ⟨C,hC,hLV⟩ := hLV hη hηsmall
   have hloglim := (isLittleO_log_rpow_rpow_atTop (2:ℝ) hη).tendsto_div_nhds_zero
   norm_num at hloglim
   refine ⟨C,hC,?_⟩
@@ -48,11 +57,10 @@ theorem upper_typeI_separated_count {ε : ℝ} (hε : 0 < ε) :
   let Wj := fun p => W.filter (fun t =>
     (shortPoweredDetectorScale p:ℝ)^σ*H^(-2*η) ≤
       ‖detectingPolynomial (shortPoweredDetectorScale p) (shortPoweredDetectorFamilyCoeff η H p) t‖)
-  have hWj : ∀ p ∈ J, ((Wj p).card:ℝ) ≤ C*H^(((39/17)*(1-σ))+10*η) := by
+  have hWj : ∀ p ∈ J, ((Wj p).card:ℝ) ≤ C*H^((A*(1-σ))+10*η) := by
     intro p hp
     obtain ⟨hp,hlow,hhigh,hsupport⟩ := Finset.mem_filter.mp hp
-    have hN : 2 ≤ (shortPoweredDetectorScale p:ℝ) :=
-      hlength.trans hlow
+    have hN : 2 ≤ (shortPoweredDetectorScale p:ℝ) := hlength.trans hlow
     have hupper : (shortPoweredDetectorScale p:ℝ) ≤ H^((9/8:ℝ)+η) := by
       calc
         _ ≤ (2:ℝ)^99*H^((9/8:ℝ)) := hhigh
@@ -89,24 +97,34 @@ theorem upper_typeI_separated_count {ε : ℝ} (hε : 0 < ε) :
       linarith
     exact (show (J.card:ℝ) ≤ (shortPoweredDetectorIndices H).card by
       exact_mod_cast Finset.card_le_card (Finset.filter_subset _ _)).trans (hfamily.1.trans hsmall)
-  have hsum : (W.card:ℝ) ≤ (J.card:ℝ)*(C*H^(((39/17)*(1-σ))+10*η)) := by
+  have hsum : (W.card:ℝ) ≤ (J.card:ℝ)*(C*H^((A*(1-σ))+10*η)) := by
     calc
       _ ≤ ∑ p ∈ J, ((Wj p).card:ℝ) := by
         exact_mod_cast (Finset.card_le_card hcover).trans Finset.card_biUnion_le
-      _ ≤ ∑ _p ∈ J, C*H^(((39/17)*(1-σ))+10*η) := Finset.sum_le_sum hWj
+      _ ≤ ∑ _p ∈ J, C*H^((A*(1-σ))+10*η) := Finset.sum_le_sum hWj
       _ = _ := by simp
-  have hpow : H^(((39/17)*(1-σ))+11*η) ≤ H^(((39/17)*(1-σ))+ε) :=
+  have hpow : H^((A*(1-σ))+11*η) ≤ H^((A*(1-σ))+ε) :=
     Real.rpow_le_rpow_of_exponent_le hHa (by linarith)
   calc
     _ = (W.card:ℝ) := by rw [hcard]
-    _ ≤ (J.card:ℝ)*(C*H^(((39/17)*(1-σ))+10*η)) := hsum
-    _ ≤ H^η*(C*H^(((39/17)*(1-σ))+10*η)) :=
+    _ ≤ (J.card:ℝ)*(C*H^((A*(1-σ))+10*η)) := hsum
+    _ ≤ H^η*(C*H^((A*(1-σ))+10*η)) :=
       mul_le_mul_of_nonneg_right hJ (by positivity)
-    _ = C*H^(((39/17)*(1-σ))+11*η) := by
+    _ = C*H^((A*(1-σ))+11*η) := by
       rw [← mul_left_comm, ← Real.rpow_add hHpos]
       congr 2
       ring
     _ ≤ _ := mul_le_mul_of_nonneg_left hpow hC.le
+
+/-- Actual upper-window Type-I count, with fixed powering exponent 3/4. -/
+theorem upper_typeI_separated_count {ε : ℝ} (hε : 0 < ε) :
+    ∃ C : ℝ, 0 < C ∧ ∀ᶠ H : ℝ in atTop, ∀ (σ t₀ : ℝ) (R : Finset ℂ),
+      5/7 ≤ σ → σ ≤ 3/4 →
+      (R.image Complex.im).card = R.card → oneSeparated (R.image Complex.im) →
+      (∀ ρ ∈ R, σ ≤ ρ.re ∧ ρ.re ≤ 1 ∧ ρ.im ∈ Icc t₀ (t₀+H) ∧
+        (1/3:ℝ) ≤ ‖shortFiniteDetector ρ H‖) →
+      (R.card:ℝ) ≤ C*H^(((39/17)*(1-σ))+ε) :=
+  typeI_separated_count_of_large_values (39/17) upper_window_large_values hε
 
 /-- The Type-I branch count on actual zero-slab representatives. -/
 theorem upper_typeI_zero_slab_count {ε : ℝ} (hε : 0 < ε) :

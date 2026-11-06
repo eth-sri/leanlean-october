@@ -1,5 +1,8 @@
 module
 public import OAI.NumberTheory.DirichletL.CompactProfileFamily
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.InitialBound
+public import OAI.NumberTheory.DirichletL.QuadraticSieve.MainTermDifference
+public import Mathlib.Analysis.SpecialFunctions.Log.Basic
 
 @[expose] public section
 

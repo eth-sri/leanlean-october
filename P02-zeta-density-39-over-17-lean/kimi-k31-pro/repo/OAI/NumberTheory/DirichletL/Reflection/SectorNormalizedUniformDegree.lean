@@ -1,5 +1,5 @@
 module
-public import OAI.NumberTheory.DirichletL.Reflection.SectorNormalized
+public import OAI.NumberTheory.DirichletL.Reflection.SectorData
 public import OAI.NumberTheory.DirichletL.Reflection.UniformNormalizedUniformDegree
 
 @[expose] public section

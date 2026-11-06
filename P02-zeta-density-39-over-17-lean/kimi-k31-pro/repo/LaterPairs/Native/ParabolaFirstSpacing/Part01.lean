@@ -1047,7 +1047,7 @@ theorem parabolaRapidWeight_band {δ R : ℝ} (hR : 0 < R)
     have hh : 3*(1/(100*R)) ≤ δ^2 := by
       simpa only [div_eq_mul_inv,one_mul] using hwidth
     have ht : |κ-2*ξ| ≤ |κ|+2*|ξ| := by
-      simpa only [abs_mul,abs_of_pos (by norm_num : (0:ℝ)<2)] using abs_sub κ (2*ξ)
+      simpa only [abs_mul,abs_of_pos (by norm_num : zeroR<2)] using abs_sub κ (2*ξ)
     have hm : parabolaBandGauge ξ κ < δ^2 :=
       max_lt (by linarith [h.2,show 0 < 1/(100*R) by positivity])
         (by linarith [h.1,h.2])
@@ -1366,10 +1366,10 @@ theorem parabolaWeightedSixNorm_pow_six {ι : Type*} (W : ℝ × ℝ → ℝ)
   unfold parabolaWeightedSixNorm
   rw [lpNorm_eq_integral_norm_rpow_toReal (by norm_num) (by norm_num)
     (parabolaWeighted_memLp hW S z x).aestronglyMeasurable]
-  norm_num only [ENNReal.toReal_ofNat, show (6:ℝ) = ((6:ℕ):ℝ) from rfl,
+  norm_num only [ENNReal.toReal_ofNat, show sixR = ((6:ℕ):ℝ) from rfl,
     Real.rpow_natCast]
   simp only [one_div]
-  have hroot (m : ℝ) (hm : 0 ≤ m) : (m^((6:ℝ)⁻¹))^6 = m := by
+  have hroot (m : ℝ) (hm : 0 ≤ m) : (m^(sixR⁻¹))^6 = m := by
     simpa only [Nat.cast_ofNat] using Real.rpow_inv_natCast_pow hm (by norm_num : (6:ℕ) ≠ 0)
   rw [hroot _ (integral_nonneg fun _ => by positivity)]
   rw [integral_withDensity_eq_integral_toReal_smul₀
@@ -1460,7 +1460,7 @@ theorem exists_parabolaWeightedSixNorm_rescale (a σ : ℝ) (hσ : σ ≠ 0) :
         C*parabolaWeightedSixNorm W S z x := by
   let e := parabolaRescaling a σ hσ
   obtain ⟨d,hd,hint⟩ := parabolaRescaling_integral (F:=ℝ) e.symm
-  let C := d^((6:ℝ)⁻¹)
+  let C := d^(sixR⁻¹)
   have hC : 0 < C := Real.rpow_pos_of_pos hd _
   have hCpow : C^6 = d := by
     simpa only [C,Nat.cast_ofNat] using
@@ -1644,8 +1644,8 @@ by
       gcongr
     _ ≤ _ := by
       dsimp only [n]
-      have hd := mul_le_mul_of_nonneg_left hdiag (by positivity : (0:ℝ) ≤ 64*7^6)
-      have hc := mul_le_mul_of_nonneg_left hcross (by positivity : (0:ℝ) ≤ 64*(J.card:ℝ)^5)
+      have hd := mul_le_mul_of_nonneg_left hdiag (by positivity : zeroR ≤ 64*7^6)
+      have hc := mul_le_mul_of_nonneg_left hcross (by positivity : zeroR ≤ 64*(J.card:ℝ)^5)
       nlinarith only [hd,hc]
 
 theorem parabolaWeightedSixNorm_bilinear_reduction {ι : Type*}
@@ -1996,7 +1996,7 @@ theorem ParabolaBilinearSixBound.localization {k m q : ℕ} {δ ν K : ℝ}
     · have hz : 0 ≤ δ*q := by positivity
       rw [abs_of_nonneg (by linarith)]
       linarith
-  have hq₁ : (1:ℝ) ≤ q := by exact_mod_cast hq
+  have hq₁ : oneR ≤ q := by exact_mod_cast hq
   have hwidth : δ^2 ≤ (δ*q)^2 :=
     pow_le_pow_left₀ hδ.le (by nlinarith) 2
   have hloc := parabolaWeightedBilinearMoment_fin_localization hk T U Z C X Y
@@ -2040,7 +2040,7 @@ theorem ParabolaBilinearSixBound.localization {k m q : ℕ} {δ ν K : ℝ}
   rw [ht]
   refine hloc.trans ?_
   have hp := Finset.sum_le_sum (fun i (_hi : i ∈ Finset.univ) => hpiece i)
-  have hp' := mul_le_mul_of_nonneg_left hp (by positivity : (0:ℝ) ≤ 7/ν)
+  have hp' := mul_le_mul_of_nonneg_left hp (by positivity : zeroR ≤ 7/ν)
   have he : (∑ i : Fin k, K*(∑ j : Fin m,
       (parabolaWeightedSixNorm W (S (e (i,j))) (z (e (i,j))) (x (e (i,j))))^2)*EV^2) =
       K*(∑ r, (parabolaWeightedSixNorm W (S r) (z r) (x r))^2)*EV^2 := by
@@ -2123,15 +2123,15 @@ private theorem parabolaWeightedSixNorm_bilinear_budget {ι : Type*}
           (sum_nonneg_powers_le J E hE (by norm_num : (2:ℕ) ≠ 0))
           (mul_nonneg hK (Finset.sum_nonneg hE))
       _ = _ := by ring
-  have hd := mul_le_mul_of_nonneg_left hds (by positivity : (0:ℝ) ≤ 64*7^6)
-  have hf := mul_le_mul_of_nonneg_left hcs (by positivity : (0:ℝ) ≤ 64*(J.card:ℝ)^5)
+  have hd := mul_le_mul_of_nonneg_left hds (by positivity : zeroR ≤ 64*7^6)
+  have hf := mul_le_mul_of_nonneg_left hcs (by positivity : zeroR ≤ 64*(J.card:ℝ)^5)
   nlinarith only [hmain,hd,hf]
 
 private theorem parabola_sixth_budget_to_square {L E A K k : ℝ}
     (hE : 0 ≤ E) (hA : 0 ≤ A) (hK : 0 ≤ K) (hk : 1 ≤ k)
     (h : L^6 ≤ ((64*7^6:ℝ)*A^6+64*k^5*K)*E^3) :
-    L^2 ≤ (14*A+2*k*K^((6:ℝ)⁻¹))^2*E := by
-  let R := K^((6:ℝ)⁻¹)
+    L^2 ≤ (14*A+2*k*K^(sixR⁻¹))^2*E := by
+  let R := K^(sixR⁻¹)
   have hR : 0 ≤ R := Real.rpow_nonneg hK _
   have hR₆ : R^6 = K := by
     simpa only [R,Nat.cast_ofNat] using
@@ -2147,7 +2147,7 @@ private theorem parabola_sixth_budget_to_square {L E A K k : ℝ}
       rw [mul_pow, mul_pow, mul_pow,hR₆]
       ring
     rw [he] at hab
-    have hp := mul_le_mul_of_nonneg_right hkp (mul_nonneg (by norm_num : (0:ℝ) ≤ 64) hK)
+    have hp := mul_le_mul_of_nonneg_right hkp (mul_nonneg (by norm_num : zeroR ≤ 64) hK)
     nlinarith only [hab,hp]
   have hc := h.trans (mul_le_mul_of_nonneg_right hb (pow_nonneg hE 3))
   apply (pow_le_pow_iff_left₀ (sq_nonneg L) (by positivity)
@@ -2162,7 +2162,7 @@ set_option maxHeartbeats 1000000 in
 theorem ParabolaDecouplingBound.of_bilinear {k l : ℕ} {A K : ℝ}
     (hk : 0 < k) (hl : 0 < l) (hA : ParabolaDecouplingBound.{u} l A)
     (hK : ParabolaBilinearSixBound.{u} (1/((k*l:ℕ):ℝ)) l l (1/(k:ℝ)) K) :
-    ParabolaDecouplingBound.{u} (k*l) (14*A+2*k*K^((6:ℝ)⁻¹)) := by
+    ParabolaDecouplingBound.{u} (k*l) (14*A+2*k*K^(sixR⁻¹)) := by
   have hA₀ := hA.1
   have hK₀ := hK.1
   refine ⟨by positivity,fun ι W hW S z x hx => ?_⟩
@@ -2176,8 +2176,8 @@ theorem ParabolaDecouplingBound.of_bilinear {k l : ℕ} {A K : ℝ}
   let ai := fun i : Fin k => (i:ℕ)/(k:ℝ)
   let R := parabolaIntGridIndex k hk
   let J := Finset.Ico 0 (k:ℤ)
-  have hk' : (0:ℝ) < k := by positivity
-  have hl' : (0:ℝ) < l := by positivity
+  have hk' : zeroR < k := by positivity
+  have hl' : zeroR < l := by positivity
   have hδ : 0 < δ := by dsimp [δ]; positivity
   have hδl : δ*l = 1/(k:ℝ) := by
     dsimp [δ]
@@ -2249,7 +2249,7 @@ theorem ParabolaDecouplingBound.of_bilinear {k l : ℕ} {A K : ℝ}
   have hcard : (J.card:ℝ) = k := by simp [J,Int.card_Ico]
   rw [hcard] at hbudget
   have hsq := parabola_sixth_budget_to_square (Finset.sum_nonneg hE) hA.1 hK.1
-    (show (1:ℝ) ≤ k by exact_mod_cast hk) hbudget
+    (show oneR ≤ k by exact_mod_cast hk) hbudget
   have hsum : (∑ i ∈ J, E (R i)) =
       ∑ r, (parabolaWeightedSixNorm W (S r) (z r) (x r))^2 := by
     calc
@@ -2277,9 +2277,9 @@ theorem ParabolaDecouplingBound.of_bilinear {k l : ℕ} {A K : ℝ}
 
 theorem ParabolaDecouplingBound.of_bilinear_dyadic {n r : ℕ} {A K : ℝ}
     (hr : r ≤ n) (hA : ParabolaDecouplingBound.{u} (2^(n-r)) A)
-    (hK : ParabolaBilinearSixBound.{u} (1/(2:ℝ)^n)
-      (2^(n-r)) (2^(n-r)) (1/(2:ℝ)^r) K) :
-    ParabolaDecouplingBound.{u} (2^n) (14*A+2*(2:ℝ)^r*K^((6:ℝ)⁻¹)) := by
+    (hK : ParabolaBilinearSixBound.{u} (1/twoR^n)
+      (2^(n-r)) (2^(n-r)) (1/twoR^r) K) :
+    ParabolaDecouplingBound.{u} (2^n) (14*A+2*twoR^r*K^(sixR⁻¹)) := by
   have hcount : (2:ℕ)^r*2^(n-r) = 2^n := by
     rw [← pow_add]
     congr 1
@@ -2300,42 +2300,42 @@ namespace TaoTrudgianYang2025
 universe u
 
 private theorem dyadic_width_mul_cells {a n : ℕ} (ha : a ≤ n) :
-    (1/(2:ℝ)^n)*(2:ℝ)^(n-a) = 1/(2:ℝ)^a := by
-  rw [pow_sub₀ (2:ℝ) (by norm_num) ha]
+    (1/twoR^n)*twoR^(n-a) = 1/twoR^a := by
+  rw [pow_sub₀ twoR (by norm_num) ha]
   field_simp
 
 private theorem dyadic_width_sq (b : ℕ) :
-    (1/(2:ℝ)^b)^2 = 1/(2:ℝ)^(2*b) := by
+    (1/twoR^b)^2 = 1/twoR^(2*b) := by
   rw [div_pow,one_pow,← pow_mul]
   congr 2
   omega
 
 theorem ParabolaBilinearSixBound.dyadic_step {n a b r : ℕ} {K B : ℝ}
     (ha : a ≤ 2*b) (hb : 2*b ≤ n) (hr : r ≤ a)
-    (hK : ParabolaBilinearSixBound.{u} (1/(2:ℝ)^n)
-      (2^(n-b)) (2^(n-2*b)) (1/(2:ℝ)^r) K)
+    (hK : ParabolaBilinearSixBound.{u} (1/twoR^n)
+      (2^(n-b)) (2^(n-2*b)) (1/twoR^r) K)
     (hB : ParabolaDecouplingBound.{u} (2^(n-b)) B) :
-    ParabolaBilinearSixBound.{u} (1/(2:ℝ)^n)
-      (2^(n-a)) (2^(n-b)) (1/(2:ℝ)^r)
-      ((7/(1/(2:ℝ)^r))*(Real.sqrt K*B^3)) := by
+    ParabolaBilinearSixBound.{u} (1/twoR^n)
+      (2^(n-a)) (2^(n-b)) (1/twoR^r)
+      ((7/(1/twoR^r))*(Real.sqrt K*B^3)) := by
   have hcount : (2:ℕ)^(2*b-a)*2^(n-2*b) = 2^(n-a) := by
     rw [← pow_add]
     congr 1
     omega
-  have hsmall : (1/(2:ℝ)^n)*((2:ℕ)^(2*b-a)*(2:ℕ)^(n-2*b)) ≤ 1/(2:ℝ)^r := by
+  have hsmall : (1/twoR^n)*((2:ℕ)^(2*b-a)*(2:ℕ)^(n-2*b)) ≤ 1/twoR^r := by
     push_cast
     rw [← pow_add,show (2*b-a)+(n-2*b) = n-a by omega,
       dyadic_width_mul_cells (ha.trans hb)]
     exact one_div_le_one_div_of_le (by positivity)
-      (pow_le_pow_right₀ (by norm_num : (1:ℝ) ≤ 2) hr)
-  have hscale : (1/(2:ℝ)^n)*(((2:ℕ)^(n-2*b):ℕ):ℝ) =
-      ((1/(2:ℝ)^n)*(((2:ℕ)^(n-b):ℕ):ℝ))^2 := by
+      (pow_le_pow_right₀ (by norm_num : oneR ≤ 2) hr)
+  have hscale : (1/twoR^n)*(((2:ℕ)^(n-2*b):ℕ):ℝ) =
+      ((1/twoR^n)*(((2:ℕ)^(n-b):ℕ):ℝ))^2 := by
     push_cast
     rw [dyadic_width_mul_cells hb,dyadic_width_mul_cells (by omega : b ≤ n),
       dyadic_width_sq]
-  have hν₁ : 1/(2:ℝ)^r ≤ 1 := by
-    apply (div_le_iff₀ (by positivity : (0:ℝ) < 2^r)).mpr
-    simpa only [one_mul] using one_le_pow₀ (by norm_num : (1:ℝ) ≤ 2) (n:=r)
+  have hν₁ : 1/twoR^r ≤ 1 := by
+    apply (div_le_iff₀ (by positivity : zeroR < 2^r)).mpr
+    simpa only [one_mul] using one_le_pow₀ (by norm_num : oneR ≤ 2) (n:=r)
   have h := hK.localization_holder (k:=2^(2*b-a)) (by positivity) (by positivity)
     (by positivity) (by positivity) hν₁ (by simpa only [Nat.cast_pow,Nat.cast_ofNat] using hsmall) hscale hB
   simpa only [hcount] using h
@@ -2350,15 +2350,15 @@ universe u
 
 def parabolaDyadicBilinearBudget (D : ℕ → ℝ) (n r : ℕ) : ℕ → ℕ → ℕ → ℝ
   | 0,a,b => (D (n-a))^2*(D (n-b))^4
-  | t+1,_,b => (7/(1/(2:ℝ)^r))*
+  | t+1,_,b => (7/(1/twoR^r))*
       (Real.sqrt (parabolaDyadicBilinearBudget D n r t b (2*b))*(D (n-b))^3)
 
 theorem parabolaBilinearSixBound_dyadic_iterate (D : ℕ → ℝ)
     {n r a b t : ℕ} (hr : 0 < r) (hra : r ≤ a) (hab : a ≤ b)
     (hb : b*2^t ≤ n)
     (hD : ∀ j < n, ParabolaDecouplingBound.{u} (2^j) (D j)) :
-    ParabolaBilinearSixBound.{u} (1/(2:ℝ)^n) (2^(n-a)) (2^(n-b))
-      (1/(2:ℝ)^r) (parabolaDyadicBilinearBudget D n r t a b) := by
+    ParabolaBilinearSixBound.{u} (1/twoR^n) (2^(n-a)) (2^(n-b))
+      (1/twoR^r) (parabolaDyadicBilinearBudget D n r t a b) := by
   induction t generalizing a b with
   | zero =>
     simp only [pow_zero,mul_one] at hb
@@ -2379,8 +2379,8 @@ theorem parabolaDecouplingBound_dyadic_iterate (D : ℕ → ℝ)
     {n r t : ℕ} (hr : 0 < r) (hn : r*2^t ≤ n)
     (hD : ∀ j < n, ParabolaDecouplingBound.{u} (2^j) (D j)) :
     ParabolaDecouplingBound.{u} (2^n)
-      (14*D (n-r)+2*(2:ℝ)^r*
-        (parabolaDyadicBilinearBudget D n r t r r)^((6:ℝ)⁻¹)) := by
+      (14*D (n-r)+2*twoR^r*
+        (parabolaDyadicBilinearBudget D n r t r r)^(sixR⁻¹)) := by
   have hpow : (1:ℕ) ≤ 2^t := Nat.succ_le_iff.mpr (by positivity)
   have hrn : r ≤ n :=
     (show r ≤ r*2^t by simpa only [mul_one] using
@@ -2395,28 +2395,28 @@ open scoped BigOperators
 namespace TaoTrudgianYang2025
 
 private theorem two_rpow_product (C x y : ℝ) (m k : ℕ) :
-    (C*(2:ℝ)^x)^m*(C*(2:ℝ)^y)^k =
-      C^(m+k)*(2:ℝ)^(x*m+y*k) := by
+    (C*twoR^x)^m*(C*twoR^y)^k =
+      C^(m+k)*twoR^(x*m+y*k) := by
   rw [Real.rpow_add (by norm_num), Real.rpow_mul_natCast (by norm_num),
     Real.rpow_mul_natCast (by norm_num), pow_add]
   ring
 
 theorem parabolaDyadicBilinearBudget_exponential {C ε : ℝ} (hC : 0 ≤ C)
     {n r a b t : ℕ} (ht : 1 ≤ t) (hb : b*2^t ≤ n) :
-    parabolaDyadicBilinearBudget (fun j => C*(2:ℝ)^(ε*j)) n r t a b ≤
-      49*C^6*(2:ℝ)^(6*ε*n-(3*(t:ℝ)+5)*ε*b+2*r) := by
+    parabolaDyadicBilinearBudget (fun j => C*twoR^(ε*j)) n r t a b ≤
+      49*C^6*twoR^(6*ε*n-(3*(t:ℝ)+5)*ε*b+2*r) := by
   obtain ⟨s,rfl⟩ := Nat.exists_eq_add_of_le ht
   induction s generalizing a b with
   | zero =>
     have hb₂ : 2*b ≤ n := by simpa [mul_comm] using hb
     have hb₁ : b ≤ n := by omega
-    have hx : 0 ≤ C*(2:ℝ)^(ε*((n-b:ℕ):ℝ)) := by positivity
-    have hy : 0 ≤ C*(2:ℝ)^(ε*((n-2*b:ℕ):ℝ)) := by positivity
+    have hx : 0 ≤ C*twoR^(ε*((n-b:ℕ):ℝ)) := by positivity
+    have hy : 0 ≤ C*twoR^(ε*((n-2*b:ℕ):ℝ)) := by positivity
     simp only [Nat.add_zero,parabolaDyadicBilinearBudget]
-    rw [show (C*(2:ℝ)^(ε*((n-b:ℕ):ℝ)))^2*
-        (C*(2:ℝ)^(ε*((n-2*b:ℕ):ℝ)))^4 =
-        ((C*(2:ℝ)^(ε*((n-b:ℕ):ℝ)))*
-          (C*(2:ℝ)^(ε*((n-2*b:ℕ):ℝ)))^2)^2 by ring,
+    rw [show (C*twoR^(ε*((n-b:ℕ):ℝ)))^2*
+        (C*twoR^(ε*((n-2*b:ℕ):ℝ)))^4 =
+        ((C*twoR^(ε*((n-b:ℕ):ℝ)))*
+          (C*twoR^(ε*((n-2*b:ℕ):ℝ)))^2)^2 by ring,
       Real.sqrt_sq (by positivity)]
     have hp := two_rpow_product C (ε*((n-b:ℕ):ℝ))
       (ε*((n-2*b:ℕ):ℝ)) 4 2
@@ -2426,28 +2426,28 @@ theorem parabolaDyadicBilinearBudget_exponential {C ε : ℝ} (hC : 0 ≤ C)
     norm_num only [show (4+2:ℕ)=6 by omega] at hp
     rw [he] at hp
     have hmain :
-        7/(1/(2:ℝ)^r)*
-          (C*(2:ℝ)^(ε*((n:ℝ)-b))*
-            (C*(2:ℝ)^(ε*((n:ℝ)-2*b)))^2*
-              (C*(2:ℝ)^(ε*((n:ℝ)-b)))^3) =
-        7*(2:ℝ)^r*(C^6*(2:ℝ)^(6*ε*n-8*ε*b)) := by
+        7/(1/twoR^r)*
+          (C*twoR^(ε*((n:ℝ)-b))*
+            (C*twoR^(ε*((n:ℝ)-2*b)))^2*
+              (C*twoR^(ε*((n:ℝ)-b)))^3) =
+        7*twoR^r*(C^6*twoR^(6*ε*n-8*ε*b)) := by
       rw [div_div_eq_mul_div,div_one]
       calc
-        _ = 7*(2:ℝ)^r*((C*(2:ℝ)^(ε*((n:ℝ)-b)))^4*
-          (C*(2:ℝ)^(ε*((n:ℝ)-2*b)))^2) := by ring
+        _ = 7*twoR^r*((C*twoR^(ε*((n:ℝ)-b)))^4*
+          (C*twoR^(ε*((n:ℝ)-2*b)))^2) := by ring
         _ = _ := by rw [hp]
     rw [hmain]
-    have hrpow : (2:ℝ)^r ≤ (2:ℝ)^(2*(r:ℝ)) := by
+    have hrpow : twoR^r ≤ twoR^(2*(r:ℝ)) := by
       rw [←Real.rpow_natCast]
-      exact Real.rpow_le_rpow_of_exponent_le (by norm_num) (by have hr0 : (0:ℝ) ≤ r := Nat.cast_nonneg r; linarith)
-    have he' : 6*ε*n-(3*(1:ℝ)+5)*ε*b+2*r =
+      exact Real.rpow_le_rpow_of_exponent_le (by norm_num) (by have hr0 : zeroR ≤ r := Nat.cast_nonneg r; linarith)
+    have he' : 6*ε*n-(3*oneR+5)*ε*b+2*r =
         (6*ε*n-8*ε*b)+2*r := by ring
     simp only [Nat.cast_one]
     rw [he',Real.rpow_add (by norm_num)]
     have hmul := mul_le_mul_of_nonneg_right hrpow
-      (show 0 ≤ C^6*(2:ℝ)^(6*ε*n-8*ε*b) by positivity)
-    nlinarith [mul_nonneg (show 0 ≤ C^6*(2:ℝ)^(6*ε*n-8*ε*b) by positivity)
-      (show 0 ≤ (2:ℝ)^(2*(r:ℝ)) by positivity)]
+      (show 0 ≤ C^6*twoR^(6*ε*n-8*ε*b) by positivity)
+    nlinarith [mul_nonneg (show 0 ≤ C^6*twoR^(6*ε*n-8*ε*b) by positivity)
+      (show 0 ≤ twoR^(2*(r:ℝ)) by positivity)]
   | succ s ih =>
     have hp : (1:ℕ) ≤ 2^(1+s) := Nat.succ_le_iff.mpr (by positivity)
     have he : (2*b)*2^(1+s)=b*2^(1+(s+1)) := by
@@ -2459,29 +2459,29 @@ theorem parabolaDyadicBilinearBudget_exponential {C ε : ℝ} (hC : 0 ≤ C)
     have hb₁ : b ≤ n := by omega
     have hprev := ih (a:=b) (by omega) hbnext
     have hsquare :
-        (7*C^3*(2:ℝ)^(3*ε*n-(3*((1+s:ℕ):ℝ)+5)*ε*b+r))^2 =
-        49*C^6*(2:ℝ)^(6*ε*n-(3*((1+s:ℕ):ℝ)+5)*ε*(2*b)+2*r) := by
+        (7*C^3*twoR^(3*ε*n-(3*((1+s:ℕ):ℝ)+5)*ε*b+r))^2 =
+        49*C^6*twoR^(6*ε*n-(3*((1+s:ℕ):ℝ)+5)*ε*(2*b)+2*r) := by
       rw [mul_pow,mul_pow,←pow_mul,←Real.rpow_mul_natCast (by norm_num)]
       norm_num only [show (3*2:ℕ)=6 by omega,show (7:ℝ)^2=49 by norm_num,Nat.cast_ofNat]
       congr 1
       congr 1
       ring
     have hsqrt : Real.sqrt
-        (parabolaDyadicBilinearBudget (fun j => C*(2:ℝ)^(ε*j)) n r (1+s) b (2*b)) ≤
-        7*C^3*(2:ℝ)^(3*ε*n-(3*((1+s:ℕ):ℝ)+5)*ε*b+r) := by
+        (parabolaDyadicBilinearBudget (fun j => C*twoR^(ε*j)) n r (1+s) b (2*b)) ≤
+        7*C^3*twoR^(3*ε*n-(3*((1+s:ℕ):ℝ)+5)*ε*b+r) := by
       apply Real.sqrt_le_iff.mpr
       refine ⟨by positivity,?_⟩
       rw [hsquare]
       simpa only [Nat.cast_mul,Nat.cast_ofNat] using hprev
     rw [show 1+(s+1)=(1+s)+1 by omega,parabolaDyadicBilinearBudget]
     calc
-      _ ≤ (7/(1/(2:ℝ)^r))*
-          ((7*C^3*(2:ℝ)^(3*ε*n-(3*((1+s:ℕ):ℝ)+5)*ε*b+r))*
-            (C*(2:ℝ)^(ε*((n-b:ℕ):ℝ)))^3) := by
+      _ ≤ (7/(1/twoR^r))*
+          ((7*C^3*twoR^(3*ε*n-(3*((1+s:ℕ):ℝ)+5)*ε*b+r))*
+            (C*twoR^(ε*((n-b:ℕ):ℝ)))^3) := by
         gcongr
       _ = _ := by
         rw [div_div_eq_mul_div,div_one,mul_pow,←Real.rpow_mul_natCast (by norm_num)]
-        rw [←Real.rpow_natCast (2:ℝ) r]
+        rw [←Real.rpow_natCast twoR r]
         simp only [Nat.cast_sub hb₁,Nat.cast_add,Nat.cast_one,Nat.cast_ofNat]
         have he' : 6*ε*n-(3*(1+(s:ℝ)+1)+5)*ε*b+2*r =
             (r:ℝ)+(3*ε*n-(3*(1+s:ℝ)+5)*ε*b+r)+(ε*((n:ℝ)-b))*3 := by ring
@@ -2506,17 +2506,17 @@ theorem ParabolaDecouplingBound.mono {n : ℕ} {A B : ℝ}
 
 private theorem parabola_dyadic_exponential_root {C ε : ℝ} (hC : 0 ≤ C)
     {n r t : ℕ} (ht : 1 ≤ t) (hn : r*2^t ≤ n) :
-    (parabolaDyadicBilinearBudget (fun j => C*(2:ℝ)^(ε*j)) n r t r r)^((6:ℝ)⁻¹) ≤
-      2*C*(2:ℝ)^(ε*n-((3*(t:ℝ)+5)/6)*ε*r+(r:ℝ)/3) := by
+    (parabolaDyadicBilinearBudget (fun j => C*twoR^(ε*j)) n r t r r)^(sixR⁻¹) ≤
+      2*C*twoR^(ε*n-((3*(t:ℝ)+5)/6)*ε*r+(r:ℝ)/3) := by
   have hbudget : 0 ≤
-      parabolaDyadicBilinearBudget (fun j => C*(2:ℝ)^(ε*j)) n r t r r := by
+      parabolaDyadicBilinearBudget (fun j => C*twoR^(ε*j)) n r t r r := by
     cases t <;> simp only [parabolaDyadicBilinearBudget] <;> positivity
   have hmajor := parabolaDyadicBilinearBudget_exponential (ε:=ε) (r:=r) hC (a:=r) ht hn
   have hpower :
-      (2*C*(2:ℝ)^(ε*n-((3*(t:ℝ)+5)/6)*ε*r+(r:ℝ)/3))^6 =
-        64*C^6*(2:ℝ)^(6*ε*n-(3*(t:ℝ)+5)*ε*r+2*r) := by
+      (2*C*twoR^(ε*n-((3*(t:ℝ)+5)/6)*ε*r+(r:ℝ)/3))^6 =
+        64*C^6*twoR^(6*ε*n-(3*(t:ℝ)+5)*ε*r+2*r) := by
     rw [mul_pow,mul_pow,←Real.rpow_mul_natCast (by norm_num)]
-    norm_num only [show (2:ℝ)^6=64 by norm_num,Nat.cast_ofNat]
+    norm_num only [show twoR^6=64 by norm_num,Nat.cast_ofNat]
     congr 1
     congr 1
     ring
@@ -2530,30 +2530,30 @@ private theorem parabola_dyadic_exponential_root {C ε : ℝ} (hC : 0 ≤ C)
 private theorem parabola_dyadic_exponential_iteration {C ε : ℝ} (hC : 0 ≤ C)
     {n r t : ℕ} (ht : 1 ≤ t) (hn : r*2^t ≤ n)
     (hεt : 8 ≤ (3*(t:ℝ)-1)*ε) :
-    14*(C*(2:ℝ)^(ε*((n-r:ℕ):ℝ)))+2*(2:ℝ)^r*
-      (parabolaDyadicBilinearBudget (fun j => C*(2:ℝ)^(ε*j)) n r t r r)^((6:ℝ)⁻¹) ≤
-        18*C*(2:ℝ)^(ε*((n-r:ℕ):ℝ)) := by
+    14*(C*twoR^(ε*((n-r:ℕ):ℝ)))+2*twoR^r*
+      (parabolaDyadicBilinearBudget (fun j => C*twoR^(ε*j)) n r t r r)^(sixR⁻¹) ≤
+        18*C*twoR^(ε*((n-r:ℕ):ℝ)) := by
   have hpow : (1:ℕ) ≤ 2^t := Nat.succ_le_iff.mpr (by positivity)
   have hrn : r ≤ n :=
     (show r ≤ r*2^t by simpa only [mul_one] using
       mul_le_mul_of_nonneg_left hpow (Nat.zero_le r)).trans hn
   have hroot := parabola_dyadic_exponential_root (ε:=ε) hC ht hn
   have hexp : ε*n-((3*(t:ℝ)+5)/6)*ε*r+(r:ℝ)/3+r ≤ ε*((n:ℝ)-r) := by
-    have hmul := mul_le_mul_of_nonneg_right hεt (Nat.cast_nonneg r : (0:ℝ) ≤ r)
+    have hmul := mul_le_mul_of_nonneg_right hεt (Nat.cast_nonneg r : zeroR ≤ r)
     nlinarith
-  have hterm : 2*(2:ℝ)^r*
-      (2*C*(2:ℝ)^(ε*n-((3*(t:ℝ)+5)/6)*ε*r+(r:ℝ)/3)) ≤
-        4*C*(2:ℝ)^(ε*((n-r:ℕ):ℝ)) := by
+  have hterm : 2*twoR^r*
+      (2*C*twoR^(ε*n-((3*(t:ℝ)+5)/6)*ε*r+(r:ℝ)/3)) ≤
+        4*C*twoR^(ε*((n-r:ℕ):ℝ)) := by
     rw [Nat.cast_sub hrn]
     calc
-      _ = 4*C*(2:ℝ)^(ε*n-((3*(t:ℝ)+5)/6)*ε*r+(r:ℝ)/3+r) := by
+      _ = 4*C*twoR^(ε*n-((3*(t:ℝ)+5)/6)*ε*r+(r:ℝ)/3+r) := by
         rw [Real.rpow_add (by norm_num)
           (ε*n-((3*(t:ℝ)+5)/6)*ε*r+(r:ℝ)/3) (r:ℝ),
           Real.rpow_natCast]
         ring
       _ ≤ _ := mul_le_mul_of_nonneg_left
         (Real.rpow_le_rpow_of_exponent_le (by norm_num) hexp) (by positivity)
-  have h := mul_le_mul_of_nonneg_left hroot (show 0 ≤ 2*(2:ℝ)^r by positivity)
+  have h := mul_le_mul_of_nonneg_left hroot (show 0 ≤ 2*twoR^r by positivity)
   linarith
 
 end TaoTrudgianYang2025
@@ -2565,7 +2565,7 @@ universe u
 
 theorem exists_parabolaDecouplingBound_dyadic {ε : ℝ} (hε : 0 < ε) :
     ∃ C > 0, ∀ n : ℕ,
-      ParabolaDecouplingBound.{u} (2^n) (C*(2:ℝ)^(ε*n)) := by
+      ParabolaDecouplingBound.{u} (2^n) (C*twoR^(ε*n)) := by
   obtain ⟨s,hs⟩ := exists_nat_gt ((8:ℝ)/ε)
   let t := s+1
   have ht : 1 ≤ t := by omega
@@ -2575,17 +2575,17 @@ theorem exists_parabolaDecouplingBound_dyadic {ε : ℝ} (hε : 0 < ε) :
     push_cast
     nlinarith
   obtain ⟨r,hr'⟩ := exists_nat_gt ((5:ℝ)/ε)
-  have hr0 : (0:ℝ) < r := (div_pos (by norm_num) hε).trans hr'
+  have hr0 : zeroR < r := (div_pos (by norm_num) hε).trans hr'
   have hr : 0 < r := by exact_mod_cast hr0
   have hεr : 5 ≤ ε*r := by
     have h := (div_lt_iff₀ hε).mp hr'
     nlinarith
-  have hcontract : (18:ℝ) ≤ (2:ℝ)^(ε*r) := by
+  have hcontract : (18:ℝ) ≤ twoR^(ε*r) := by
     calc
-      18 ≤ (2:ℝ)^(5:ℝ) := by norm_num
+      18 ≤ twoR^(5:ℝ) := by norm_num
       _ ≤ _ := Real.rpow_le_rpow_of_exponent_le (by norm_num) hεr
   let N := r*2^t
-  let C : ℝ := (2:ℝ)^N
+  let C : ℝ := twoR^N
   have hC : 0 < C := by dsimp [C]; positivity
   refine ⟨C,hC,?_⟩
   intro n
@@ -2593,7 +2593,7 @@ theorem exists_parabolaDecouplingBound_dyadic {ε : ℝ} (hε : 0 < ε) :
   | h n ih =>
     by_cases hn : N ≤ n
     · have hactual := parabolaDecouplingBound_dyadic_iterate
-        (fun j => C*(2:ℝ)^(ε*j)) hr hn ih
+        (fun j => C*twoR^(ε*j)) hr hn ih
       apply hactual.mono
       have hnum := parabola_dyadic_exponential_iteration hC.le ht hn hεt
       have hpow : (1:ℕ) ≤ 2^t := Nat.succ_le_iff.mpr (by positivity)
@@ -2603,24 +2603,24 @@ theorem exists_parabolaDecouplingBound_dyadic {ε : ℝ} (hε : 0 < ε) :
       have he : ε*(n:ℝ)=ε*((n-r:ℕ):ℝ)+ε*r := by
         rw [Nat.cast_sub hrn]; ring
       calc
-        _ ≤ 18*C*(2:ℝ)^(ε*((n-r:ℕ):ℝ)) := hnum
-        _ ≤ (2:ℝ)^(ε*r)*C*(2:ℝ)^(ε*((n-r:ℕ):ℝ)) := by
+        _ ≤ 18*C*twoR^(ε*((n-r:ℕ):ℝ)) := hnum
+        _ ≤ twoR^(ε*r)*C*twoR^(ε*((n-r:ℕ):ℝ)) := by
           gcongr
-        _ = C*(2:ℝ)^(ε*n) := by
+        _ = C*twoR^(ε*n) := by
           rw [he,Real.rpow_add (by norm_num) (ε*((n-r:ℕ):ℝ)) (ε*r)]
           ring
     · have hnN : n ≤ N := by omega
-      have htrivial : ParabolaDecouplingBound.{u} (2^n) (Real.sqrt ((2:ℝ)^n)) := by
+      have htrivial : ParabolaDecouplingBound.{u} (2^n) (Real.sqrt (twoR^n)) := by
         simpa only [Nat.cast_pow,Nat.cast_ofNat] using parabolaDecouplingBound_trivial.{u} (2^n)
       apply htrivial.mono
-      have hpow : (1:ℝ) ≤ (2:ℝ)^n := one_le_pow₀ (by norm_num)
+      have hpow : oneR ≤ twoR^n := one_le_pow₀ (by norm_num)
       calc
-        Real.sqrt ((2:ℝ)^n) ≤ (2:ℝ)^n := by
+        Real.sqrt (twoR^n) ≤ twoR^n := by
           apply Real.sqrt_le_iff.mpr
           exact ⟨by positivity,by nlinarith⟩
         _ ≤ C := pow_le_pow_right₀ (by norm_num) hnN
-        _ ≤ C*(2:ℝ)^(ε*n) := by
-          have h := Real.one_le_rpow (by norm_num : (1:ℝ) ≤ 2)
+        _ ≤ C*twoR^(ε*n) := by
+          have h := Real.one_le_rpow (by norm_num : oneR ≤ 2)
             (show 0 ≤ ε*(n:ℝ) by positivity)
           nlinarith
 end TaoTrudgianYang2025
@@ -2633,7 +2633,7 @@ universe u
 
 theorem exists_parabolaBox_dyadic_decoupling {ε : ℝ} (hε : 0 < ε) :
     ∃ C > 0, ∀ (n : ℕ) (R r t : ℝ), 0 < R →
-      3/(100*R) ≤ (1/(2:ℝ)^n)^2 →
+      3/(100*R) ≤ (1/twoR^n)^2 →
       ∀ (ι : Type u) (S : Fin (2^n) → Finset ι)
         (z : Fin (2^n) → ι → ℂ) (x : Fin (2^n) → ι → ℝ),
         (∀ j, ∀ k ∈ S j, x j k ∈ Icc
@@ -2641,7 +2641,7 @@ theorem exists_parabolaBox_dyadic_decoupling {ε : ℝ} (hε : 0 < ε) :
         parabolaBoxBilinearMoment (Finset.univ.sigma S) (Finset.univ.sigma S)
           (fun jk => z jk.1 jk.2) (fun jk => z jk.1 jk.2)
           (fun jk => x jk.1 jk.2) (fun jk => x jk.1 jk.2) R r t ≤
-          C*(2:ℝ)^(ε*n)*
+          C*twoR^(ε*n)*
             (∑ j, (parabolaWeightedSixNorm
               (fun p : ℝ × ℝ => parabolaRapidWeight R r t p.1 p.2)
               (S j) (z j) (x j))^2)^3 := by
@@ -2655,7 +2655,7 @@ theorem exists_parabolaBox_dyadic_decoupling {ε : ℝ} (hε : 0 < ε) :
   have hnorm := (hD n).2 ι W hW S z x hx
   have hcube := pow_le_pow_left₀ (sq_nonneg _) hnorm 3
   simp only [mul_pow,←pow_mul] at hcube
-  have hcoef : (D*(2:ℝ)^((ε/6)*n))^6 = D^6*(2:ℝ)^(ε*n) := by
+  have hcoef : (D*twoR^((ε/6)*n))^6 = D^6*twoR^(ε*n) := by
     rw [mul_pow,←Real.rpow_mul_natCast (by norm_num)]
     congr 1
     congr 1
@@ -2690,7 +2690,7 @@ private theorem parabola_sixNorm_weight_comparison {ι : Type*}
     (hV : Integrable V) (hW : Integrable W) (hVW : ∀ p, V p ≤ C*W p)
     (S : Finset ι) (z : ι → ℂ) (x : ι → ℝ) :
     (parabolaWeightedSixNorm V S z x)^2 ≤
-      C^((3:ℝ)⁻¹)*(parabolaWeightedSixNorm W S z x)^2 := by
+      C^(threeR⁻¹)*(parabolaWeightedSixNorm W S z x)^2 := by
   have hm : parabolaWeightedBilinearMoment V S S z z x x ≤
       C*parabolaWeightedBilinearMoment W S S z z x x := by
     have h := integral_mono
@@ -2721,7 +2721,7 @@ universe u
 
 theorem exists_parabolaBox_sourceWeight_decoupling {ε : ℝ} (hε : 0 < ε) :
     ∃ C > 0, ∀ (n : ℕ) (R r t : ℝ), 0 < R →
-      3/(100*R) ≤ (1/(2:ℝ)^n)^2 →
+      3/(100*R) ≤ (1/twoR^n)^2 →
       ∀ (ι : Type u) (S : Fin (2^n) → Finset ι)
         (z : Fin (2^n) → ι → ℂ) (x : Fin (2^n) → ι → ℝ),
         (∀ j, ∀ k ∈ S j, x j k ∈ Icc
@@ -2729,7 +2729,7 @@ theorem exists_parabolaBox_sourceWeight_decoupling {ε : ℝ} (hε : 0 < ε) :
         parabolaBoxBilinearMoment (Finset.univ.sigma S) (Finset.univ.sigma S)
           (fun jk => z jk.1 jk.2) (fun jk => z jk.1 jk.2)
           (fun jk => x jk.1 jk.2) (fun jk => x jk.1 jk.2) R r t ≤
-          C*(2:ℝ)^(ε*n)*
+          C*twoR^(ε*n)*
             (∑ j, (parabolaWeightedSixNorm
               (fun p : ℝ × ℝ => parabolaSourceWeight R r t p.1 p.2)
               (S j) (z j) (x j))^2)^3 := by
@@ -2755,7 +2755,7 @@ theorem exists_parabolaBox_sourceWeight_decoupling {ε : ℝ} (hε : 0 < ε) :
   rw [hroot] at hcube
   calc
     _ ≤ _ := hm
-    _ ≤ C*(2:ℝ)^(ε*n)*(K*
+    _ ≤ C*twoR^(ε*n)*(K*
         (∑ j, (parabolaWeightedSixNorm
           (fun p : ℝ × ℝ => parabolaSourceWeight R r t p.1 p.2)
           (S j) (z j) (x j))^2)^3) :=
@@ -2824,7 +2824,7 @@ private theorem bourgainCubicQuarticCutoff_support (a b : ℝ) :
     apply subset_closure
     intro hz
     exact hs (by rw [bourgainCubicQuarticCutoff,hz,Complex.ofReal_zero,zero_mul])
-  have hb := modelPhaseBufferedCutoff_tsupport (by norm_num : (0:ℝ)<1/2) hk
+  have hb := modelPhaseBufferedCutoff_tsupport (by norm_num : zeroR<1/2) hk
   constructor <;> linarith [hb.1,hb.2]
 
 private theorem norm_vertical_slice_iteratedFDeriv
@@ -2922,7 +2922,7 @@ private theorem bourgainCubicQuarticCutoff_derivative_integrals (Q : ℕ) :
 
 private theorem bourgainCubicQuarticCutoff_fourier_moment (a b ξ : ℝ) (m : ℕ) :
     |ξ|^m*‖𝓕 (bourgainCubicQuarticCutoff a b) ξ‖ ≤
-      (2:ℝ)^m*∑ j ∈ Finset.range (m+1),
+      twoR^m*∑ j ∈ Finset.range (m+1),
         ∫ s : ℝ, ‖iteratedFDeriv ℝ j (bourgainCubicQuarticCutoff a b) s‖ := by
   have hI (k n : ℕ) (hk : (k:ℕ∞) ≤ 0) (_hn : (n:ℕ∞) ≤ ⊤) :
       Integrable (fun s : ℝ => ‖s‖^k*
@@ -2949,8 +2949,8 @@ private theorem bourgainCubicQuarticCutoff_fourier_decay (Q : ℕ) :
     ∃ C : ℝ, 0 < C ∧ ∀ a ∈ Icc (-1:ℝ) 1, ∀ b ∈ Icc (-1:ℝ) 1,
       ∀ ξ : ℝ, (1+|ξ|)^Q*‖𝓕 (bourgainCubicQuarticCutoff a b) ξ‖ ≤ C := by
   obtain ⟨D,hD,hjet⟩ := bourgainCubicQuarticCutoff_derivative_integrals Q
-  let E := (2:ℝ)^Q*((Q+1:ℕ):ℝ)*D
-  refine ⟨(2:ℝ)^Q*(D+E),by dsimp [E]; positivity,?_⟩
+  let E := twoR^Q*((Q+1:ℕ):ℝ)*D
+  refine ⟨twoR^Q*(D+E),by dsimp [E]; positivity,?_⟩
   intro a ha b hb ξ
   have hz : ‖𝓕 (bourgainCubicQuarticCutoff a b) ξ‖ ≤ D := by
     have h := bourgainCubicQuarticCutoff_fourier_moment a b ξ 0
@@ -2958,26 +2958,26 @@ private theorem bourgainCubicQuarticCutoff_fourier_decay (Q : ℕ) :
   have hp : |ξ|^Q*‖𝓕 (bourgainCubicQuarticCutoff a b) ξ‖ ≤ E := by
     apply (bourgainCubicQuarticCutoff_fourier_moment a b ξ Q).trans
     calc
-      _ ≤ (2:ℝ)^Q*∑ _j ∈ Finset.range (Q+1), D := by
+      _ ≤ twoR^Q*∑ _j ∈ Finset.range (Q+1), D := by
         apply mul_le_mul_of_nonneg_left _ (by positivity)
         exact Finset.sum_le_sum (fun j hj => hjet a ha b hb j
           (Nat.lt_succ_iff.mp (Finset.mem_range.mp hj)))
       _ = E := by simp [E,mul_assoc]
-  have hscale : (1+|ξ|)^Q ≤ (2:ℝ)^Q*(1+|ξ|^Q) := by
+  have hscale : (1+|ξ|)^Q ≤ twoR^Q*(1+|ξ|^Q) := by
     by_cases hξ : |ξ| ≤ 1
-    · have h := pow_le_pow_left₀ (by positivity : (0:ℝ)≤1+|ξ|)
+    · have h := pow_le_pow_left₀ (by positivity : zeroR≤1+|ξ|)
         (by linarith : 1+|ξ| ≤ 2) Q
-      have hnonneg : 0 ≤ (2:ℝ)^Q*|ξ|^Q := by positivity
+      have hnonneg : 0 ≤ twoR^Q*|ξ|^Q := by positivity
       nlinarith
     · have hξ' : 1 ≤ |ξ| := le_of_lt (lt_of_not_ge hξ)
       calc
         _ ≤ (2*|ξ|)^Q := pow_le_pow_left₀ (by positivity) (by linarith) Q
-        _ = (2:ℝ)^Q*|ξ|^Q := mul_pow _ _ _
-        _ ≤ _ := by nlinarith [show (0:ℝ)≤(2:ℝ)^Q by positivity]
+        _ = twoR^Q*|ξ|^Q := mul_pow _ _ _
+        _ ≤ _ := by nlinarith [show zeroR≤twoR^Q by positivity]
   calc
-    _ ≤ (2:ℝ)^Q*(1+|ξ|^Q)*‖𝓕 (bourgainCubicQuarticCutoff a b) ξ‖ :=
+    _ ≤ twoR^Q*(1+|ξ|^Q)*‖𝓕 (bourgainCubicQuarticCutoff a b) ξ‖ :=
       mul_le_mul_of_nonneg_right hscale (norm_nonneg _)
-    _ = (2:ℝ)^Q*(‖𝓕 (bourgainCubicQuarticCutoff a b) ξ‖+
+    _ = twoR^Q*(‖𝓕 (bourgainCubicQuarticCutoff a b) ξ‖+
         |ξ|^Q*‖𝓕 (bourgainCubicQuarticCutoff a b) ξ‖) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left (add_le_add hz hp) (by positivity)
 
@@ -3061,7 +3061,7 @@ theorem exists_bourgainCubicQuartic_multiplier_kernel :
       (innerSL ℝ).continuous₂ hi
   have hKi : Integrable K :=
     hkernel.1.mono' hhat.aestronglyMeasurable (Filter.Eventually.of_forall (fun ξ => by
-      have hp : (1:ℝ) ≤ (1+|ξ|)^100 := one_le_pow₀ (by linarith [abs_nonneg ξ])
+      have hp : oneR ≤ (1+|ξ|)^100 := one_le_pow₀ (by linarith [abs_nonneg ξ])
       simpa only [one_mul] using mul_le_mul_of_nonneg_right hp (norm_nonneg (K ξ))))
   refine ⟨K,hhat,hkernel.1,hkernel.2.trans (le_max_left _ _),?_,?_⟩
   · intro ξ
@@ -3161,7 +3161,7 @@ public  theorem bourgainRemainderEnvelope_integrable :
   have hc : Continuous (fun ξ : ℝ => ((1+|ξ|)^102)⁻¹) :=
     (show Continuous (fun ξ : ℝ => (1+|ξ|)^102) from
       (continuous_const.add continuous_abs).pow 102).inv₀
-      (fun ξ => ne_of_gt (by positivity : (0:ℝ) < (1+|ξ|)^102))
+      (fun ξ => ne_of_gt (by positivity : zeroR < (1+|ξ|)^102))
   apply integrable_inv_one_add_sq.mono' hc.aestronglyMeasurable
   filter_upwards with ξ
   rw [Real.norm_eq_abs,abs_of_nonneg (by positivity)]
@@ -3191,7 +3191,7 @@ theorem bourgain_finite_multiplier_moment {ι : Type*}
       _ = M := by simp only [M,norm_mul,sargos_character_norm,mul_one]
   have hweight (ξ : ℝ) : ‖K ξ‖ ≤ (1+|ξ|)^100*‖K ξ‖ := by
     simpa only [one_mul] using mul_le_mul_of_nonneg_right
-      (one_le_pow₀ (by linarith [abs_nonneg ξ]) : (1:ℝ) ≤ (1+|ξ|)^100)
+      (one_le_pow₀ (by linarith [abs_nonneg ξ]) : oneR ≤ (1+|ξ|)^100)
       (norm_nonneg (K ξ))
   have hK : Integrable K :=
     hKi.mono' hKc.aestronglyMeasurable (Filter.Eventually.of_forall hweight)
@@ -3251,7 +3251,7 @@ theorem exists_bourgainCubicQuartic_finite_moment :
   obtain ⟨K,hKc,hKi,hmass,henv,hrep⟩ := hkern a ha b hb
   have hK : Integrable K :=
     hKi.mono' hKc.aestronglyMeasurable (Filter.Eventually.of_forall (fun ξ => by
-      have hp : (1:ℝ) ≤ (1+|ξ|)^100 := one_le_pow₀ (by linarith [abs_nonneg ξ])
+      have hp : oneR ≤ (1+|ξ|)^100 := one_le_pow₀ (by linarith [abs_nonneg ξ])
       simpa only [one_mul] using mul_le_mul_of_nonneg_right hp (norm_nonneg (K ξ))))
   have hterm (i : ι) :
       Integrable (fun ξ : ℝ => z i*(K ξ*fordAdditiveCharacter (ξ*s i))) := by
@@ -3304,7 +3304,7 @@ private theorem parabola_sourceWeight_modulation {ι : Type*}
     (parabolaWeightedSixNorm
       (fun p : ℝ × ℝ => parabolaSourceWeight R r t p.1 p.2)
       S (fun i => z i*fordAdditiveCharacter (ξ*x i)) x)^2 ≤
-      ((1+|ξ|/R)^100)^((3:ℝ)⁻¹)*
+      ((1+|ξ|/R)^100)^(threeR⁻¹)*
         (parabolaWeightedSixNorm
           (fun p : ℝ × ℝ => parabolaSourceWeight R r t p.1 p.2) S z x)^2 := by
   let W := fun p : ℝ × ℝ => parabolaSourceWeight R r t p.1 p.2
@@ -3580,7 +3580,7 @@ private theorem bourgainQuartic_remainder_bounds
     (mul_le_mul hc (hx 3) (abs_nonneg _) (by norm_num)).trans_eq (one_mul _)
   have hs : |x 2+4*c*x 3| ≤ 5*R := by
     have h := abs_add_le (x 2) (4*c*x 3)
-    rw [abs_mul,abs_mul,abs_of_pos (by norm_num : (0:ℝ)<4)] at h
+    rw [abs_mul,abs_mul,abs_of_pos (by norm_num : zeroR<4)] at h
     nlinarith [hx 2]
   constructor
   · rw [abs_mul,abs_of_nonneg (pow_nonneg hσ 3)]
@@ -3597,7 +3597,7 @@ private theorem bourgainQuartic_remainder_bounds
 universe u
 
 theorem exists_bourgainQuartic_scaled_moment :
-    ∃ C > (0:ℝ), ∀ {ι : Type u} (S : Finset ι) (z : ι → ℂ) (s : ι → ℝ),
+    ∃ C > zeroR, ∀ {ι : Type u} (S : Finset ι) (z : ι → ℂ) (s : ι → ℝ),
       (∀ i ∈ S, s i ∈ Icc (-1:ℝ) 1) →
       ∀ (c σ R : ℝ), |c| ≤ 1 → 0 ≤ σ → σ ≤ 1 → 0 ≤ R → 5*R*σ^3 ≤ 1 →
       ∀ x : Fin 4 → ℝ, (∀ j, |x j| ≤ R) →
@@ -3714,7 +3714,7 @@ private theorem integrable_bourgain_modulated_box {ι : Type*}
   have hiV : Integrable V := bourgainRemainderEnvelope_integrable
   have hiF : Integrable (fun q : ℝ × (ℝ × ℝ) => V q.1*F q.1 q.2)
       (volume.prod (volume.restrict B)) := by
-    have hiConst : IntegrableOn (fun _p : ℝ × ℝ => (1:ℝ)) B :=
+    have hiConst : IntegrableOn (fun _p : ℝ × ℝ => oneR) B :=
       integrableOn_const (isCompact_Icc.prod isCompact_Icc).measure_ne_top
     have hprod := hiV.mul_prod hiConst
     have h := hprod.mul_bdd hFc.aestronglyMeasurable
@@ -3783,7 +3783,7 @@ universe u
 set_option maxHeartbeats 400000 in
 
 theorem exists_bourgainQuartic_bilinear_reduction :
-    ∃ C > (0:ℝ), ∀ (ι τ : Type u) (S : Finset ι) (V : Finset τ)
+    ∃ C > zeroR, ∀ (ι τ : Type u) (S : Finset ι) (V : Finset τ)
       (z : ι → ℂ) (c : τ → ℂ) (s : ι → ℝ) (v : τ → ℝ),
       (∀ i ∈ S, s i ∈ Icc (-1:ℝ) 1) →
       (∀ j ∈ V, v j ∈ Icc (-1:ℝ) 1) →
@@ -3848,7 +3848,7 @@ theorem exists_bourgainQuartic_bilinear_reduction :
   have hiH : Integrable (fun qx : (ℝ × ℝ) × (Fin 4 → ℝ) =>
       W qx.1.1*W qx.1.2*(F qx.1.1 qx.2*G qx.1.2 qx.2))
       (volume.prod (volume.restrict B)) := by
-    have hconst : IntegrableOn (fun _x : Fin 4 → ℝ => (1:ℝ)) B :=
+    have hconst : IntegrableOn (fun _x : Fin 4 → ℝ => oneR) B :=
       integrableOn_const isCompact_Icc.measure_ne_top
     have hprod := (hW.mul_prod hW).mul_prod hconst
     have h := hprod.mul_bdd hcont.aestronglyMeasurable
@@ -3941,10 +3941,10 @@ noncomputable section
 namespace TaoTrudgianYang2025
 
 public  theorem bourgain_source_quartic_phase {t : ℝ} (ht : 0 ≤ t) (x : Fin 4 → ℝ) :
-    x 0*t+x 1*t^2+x 2*t^((3:ℝ)/2)+x 3*Real.sqrt t =
+    x 0*t+x 1*t^2+x 2*t^(threeR/2)+x 3*Real.sqrt t =
       x 3*Real.sqrt t+x 0*(Real.sqrt t)^2+
         x 2*(Real.sqrt t)^3+x 1*(Real.sqrt t)^4 := by
-  have h3 : (Real.sqrt t)^3 = t^((3:ℝ)/2) := by
+  have h3 : (Real.sqrt t)^3 = t^(threeR/2) := by
     rw [Real.sqrt_eq_rpow,←Real.rpow_natCast,←Real.rpow_mul ht]
     congr 1
     norm_num
@@ -4017,7 +4017,7 @@ namespace TaoTrudgianYang2025
 universe u
 
 theorem exists_bourgainSourceCurve_bilinear_reduction :
-    ∃ C > (0:ℝ), ∀ (ι τ : Type u) (S : Finset ι) (V : Finset τ)
+    ∃ C > zeroR, ∀ (ι τ : Type u) (S : Finset ι) (V : Finset τ)
       (z : ι → ℂ) (c : τ → ℂ) (w : ι → ℝ) (v : τ → ℝ),
       (∀ i ∈ S, 0 ≤ w i) → (∀ j ∈ V, 0 ≤ v j) →
       ∀ (a b σ R : ℝ), |a| ≤ 1 → |b| ≤ 1 → a ≠ b →
@@ -4026,9 +4026,9 @@ theorem exists_bourgainSourceCurve_bilinear_reduction :
       (∀ j ∈ V, |Real.sqrt (v j)-b| ≤ σ) →
       (∫ x : Fin 4 → ℝ in Icc (fun _ => -R) (fun _ => R),
         ‖∑ i ∈ S, z i*fordAdditiveCharacter
-          (x 0*w i+x 1*(w i)^2+x 2*(w i)^((3:ℝ)/2)+x 3*Real.sqrt (w i))‖^6*
+          (x 0*w i+x 1*(w i)^2+x 2*(w i)^(threeR/2)+x 3*Real.sqrt (w i))‖^6*
         ‖∑ j ∈ V, c j*fordAdditiveCharacter
-          (x 0*v j+x 1*(v j)^2+x 2*(v j)^((3:ℝ)/2)+x 3*Real.sqrt (v j))‖^6) ≤
+          (x 0*v j+x 1*(v j)^2+x 2*(v j)^(threeR/2)+x 3*Real.sqrt (v j))‖^6) ≤
         C*(6*(b-a)^4)⁻¹*
           (∫ ξ : ℝ, ((1+|ξ|)^102)⁻¹*
             parabolaBoxBilinearMoment S S
@@ -4071,7 +4071,7 @@ theorem exists_bourgainSourceCurve_bilinear_reduction :
     (y 0*(b+σ*t j)+y 1*(b+σ*t j)^2+y 2*(b+σ*t j)^3+y 3*(b+σ*t j)^4)‖^6
   have heS (x : Fin 4 → ℝ) :
       (∑ i ∈ S, z i*fordAdditiveCharacter
-        (x 0*w i+x 1*(w i)^2+x 2*(w i)^((3:ℝ)/2)+x 3*Real.sqrt (w i))) =
+        (x 0*w i+x 1*(w i)^2+x 2*(w i)^(threeR/2)+x 3*Real.sqrt (w i))) =
       ∑ i ∈ S, z i*fordAdditiveCharacter
         ((bourgainSourcePermutation x) 0*(a+σ*s i)+
           (bourgainSourcePermutation x) 1*(a+σ*s i)^2+
@@ -4084,7 +4084,7 @@ theorem exists_bourgainSourceCurve_bilinear_reduction :
       (bourgain_source_quartic_phase (hw i hi) x)
   have heV (x : Fin 4 → ℝ) :
       (∑ j ∈ V, c j*fordAdditiveCharacter
-        (x 0*v j+x 1*(v j)^2+x 2*(v j)^((3:ℝ)/2)+x 3*Real.sqrt (v j))) =
+        (x 0*v j+x 1*(v j)^2+x 2*(v j)^(threeR/2)+x 3*Real.sqrt (v j))) =
       ∑ j ∈ V, c j*fordAdditiveCharacter
         ((bourgainSourcePermutation x) 0*(b+σ*t j)+
           (bourgainSourcePermutation x) 1*(b+σ*t j)^2+
@@ -4117,7 +4117,7 @@ universe u
 
 private theorem exists_parabolaBox_scaled_rapid_decoupling {ε : ℝ} (hε : 0 < ε) :
     ∃ C > 0, ∀ (n : ℕ) (σ R r t : ℝ), 0 < σ → σ ≤ 1 → 0 < R →
-      3/(100*R) ≤ (σ/(2:ℝ)^n)^2 →
+      3/(100*R) ≤ (σ/twoR^n)^2 →
       ∀ (ι : Type u) (S : Fin (2^n) → Finset ι)
         (z : Fin (2^n) → ι → ℂ) (x : Fin (2^n) → ι → ℝ),
         (∀ j, ∀ k ∈ S j, x j k ∈ Icc
@@ -4125,7 +4125,7 @@ private theorem exists_parabolaBox_scaled_rapid_decoupling {ε : ℝ} (hε : 0 <
         parabolaBoxBilinearMoment (Finset.univ.sigma S) (Finset.univ.sigma S)
           (fun jk => z jk.1 jk.2) (fun jk => z jk.1 jk.2)
           (fun jk => x jk.1 jk.2) (fun jk => x jk.1 jk.2) R r t ≤
-          C*(2:ℝ)^(ε*n)*
+          C*twoR^(ε*n)*
             (∑ j, (parabolaWeightedSixNorm
               (fun p : ℝ × ℝ => parabolaRapidWeight R r t p.1 p.2)
               (S j) (z j) (x j))^2)^3 := by
@@ -4140,7 +4140,7 @@ private theorem exists_parabolaBox_scaled_rapid_decoupling {ε : ℝ} (hε : 0 <
     (by simpa using hσ₁) ι W hW S z x (by simpa only [zero_add] using hx)
   have hcube := pow_le_pow_left₀ (sq_nonneg _) hnorm 3
   simp only [mul_pow,←pow_mul] at hcube
-  have hcoef : (D*(2:ℝ)^((ε/6)*n))^6 = D^6*(2:ℝ)^(ε*n) := by
+  have hcoef : (D*twoR^((ε/6)*n))^6 = D^6*twoR^(ε*n) := by
     rw [mul_pow,←Real.rpow_mul_natCast (by norm_num)]
     congr 1
     congr 1
@@ -4164,7 +4164,7 @@ private theorem exists_parabolaBox_scaled_rapid_decoupling {ε : ℝ} (hε : 0 <
 
 private theorem exists_parabolaBox_scaled_source_decoupling {ε : ℝ} (hε : 0 < ε) :
     ∃ C > 0, ∀ (n : ℕ) (σ R r t : ℝ), 0 < σ → σ ≤ 1 → 0 < R →
-      3/(100*R) ≤ (σ/(2:ℝ)^n)^2 →
+      3/(100*R) ≤ (σ/twoR^n)^2 →
       ∀ (ι : Type u) (S : Fin (2^n) → Finset ι)
         (z : Fin (2^n) → ι → ℂ) (x : Fin (2^n) → ι → ℝ),
         (∀ j, ∀ k ∈ S j, x j k ∈ Icc
@@ -4172,7 +4172,7 @@ private theorem exists_parabolaBox_scaled_source_decoupling {ε : ℝ} (hε : 0 
         parabolaBoxBilinearMoment (Finset.univ.sigma S) (Finset.univ.sigma S)
           (fun jk => z jk.1 jk.2) (fun jk => z jk.1 jk.2)
           (fun jk => x jk.1 jk.2) (fun jk => x jk.1 jk.2) R r t ≤
-          C*(2:ℝ)^(ε*n)*
+          C*twoR^(ε*n)*
             (∑ j, (parabolaWeightedSixNorm
               (fun p : ℝ × ℝ => parabolaSourceWeight R r t p.1 p.2)
               (S j) (z j) (x j))^2)^3 := by
@@ -4198,7 +4198,7 @@ private theorem exists_parabolaBox_scaled_source_decoupling {ε : ℝ} (hε : 0 
   rw [hroot] at hcube
   calc
     _ ≤ _ := hm
-    _ ≤ C*(2:ℝ)^(ε*n)*(K*
+    _ ≤ C*twoR^(ε*n)*(K*
         (∑ j, (parabolaWeightedSixNorm
           (fun p : ℝ × ℝ => parabolaSourceWeight R r t p.1 p.2)
           (S j) (z j) (x j))^2)^3) :=
@@ -4214,7 +4214,7 @@ universe u
 
 theorem exists_parabolaBox_scaled_modulation_decoupling {ε : ℝ} (hε : 0 < ε) :
     ∃ C > 0, ∀ (n : ℕ) (σ R r t : ℝ), 0 < σ → σ ≤ 1 → 1 ≤ σ*R →
-      3/(100*R) ≤ (σ/(2:ℝ)^n)^2 →
+      3/(100*R) ≤ (σ/twoR^n)^2 →
       ∀ (ι : Type u) (S : Fin (2^n) → Finset ι)
         (z : Fin (2^n) → ι → ℂ) (s : Fin (2^n) → ι → ℝ),
         (∀ j, ∀ k ∈ S j, s j k ∈ Icc
@@ -4224,7 +4224,7 @@ theorem exists_parabolaBox_scaled_modulation_decoupling {ε : ℝ} (hε : 0 < ε
             (fun jk => z jk.1 jk.2*fordAdditiveCharacter (ξ*s jk.1 jk.2))
             (fun jk => z jk.1 jk.2*fordAdditiveCharacter (ξ*s jk.1 jk.2))
             (fun jk => σ*s jk.1 jk.2) (fun jk => σ*s jk.1 jk.2) R r t) ≤
-          C*(2:ℝ)^(ε*n)*
+          C*twoR^(ε*n)*
             (∑ j, (parabolaWeightedSixNorm
               (fun p : ℝ × ℝ => parabolaSourceWeight R r t p.1 p.2)
               (S j) (z j) (fun i => σ*s j i))^2)^3 := by
@@ -4246,7 +4246,7 @@ theorem exists_parabolaBox_scaled_modulation_decoupling {ε : ℝ} (hε : 0 < ε
         (fun jk => z jk.1 jk.2*fordAdditiveCharacter (ξ*s jk.1 jk.2))
         (fun jk => z jk.1 jk.2*fordAdditiveCharacter (ξ*s jk.1 jk.2))
         (fun jk => σ*s jk.1 jk.2) (fun jk => σ*s jk.1 jk.2) R r t ≤
-        D*(2:ℝ)^(ε*n)*(1+|ξ|/(σ*R))^100*Q^3 := by
+        D*twoR^(ε*n)*(1+|ξ|/(σ*R))^100*Q^3 := by
     have hd := hdec n σ R r t hσ hσ₁ hR hwidth ι S
       (fun j i => z j i*fordAdditiveCharacter (ξ*s j i)) (fun j i => σ*s j i) hx
     have hmod (v : ℝ) : (ξ/σ)*(σ*v) = ξ*v := by field_simp
@@ -4259,23 +4259,23 @@ theorem exists_parabolaBox_scaled_modulation_decoupling {ε : ℝ} (hε : 0 < ε
       (Finset.sum_nonneg (fun _ _ => sq_nonneg _)) hsum 3
     rw [mul_pow] at hc
     have hroot := Real.rpow_inv_natCast_pow
-      (by positivity : (0:ℝ) ≤ (1+|ξ|/(σ*R))^100) (by norm_num : (3:ℕ) ≠ 0)
+      (by positivity : zeroR ≤ (1+|ξ|/(σ*R))^100) (by norm_num : (3:ℕ) ≠ 0)
     simp only [Nat.cast_ofNat] at hroot
     rw [hroot] at hc
     calc
       _ ≤ _ := hd
-      _ ≤ D*(2:ℝ)^(ε*n)*((1+|ξ|/(σ*R))^100*Q^3) :=
+      _ ≤ D*twoR^(ε*n)*((1+|ξ|/(σ*R))^100*Q^3) :=
         mul_le_mul_of_nonneg_left hc (by positivity)
       _ = _ := by ring
   have hi := integrable_bourgain_modulated_box (Finset.univ.sigma S)
     (fun jk => z jk.1 jk.2) (fun jk => s jk.1 jk.2) (fun jk => σ*s jk.1 jk.2) R r t
-  have hj := integrable_inv_one_add_sq.const_mul (D*(2:ℝ)^(ε*n)*Q^3)
+  have hj := integrable_inv_one_add_sq.const_mul (D*twoR^(ε*n)*Q^3)
   have hm := integral_mono hi hj (fun ξ => by
     calc
-      _ ≤ ((1+|ξ|)^102)⁻¹*(D*(2:ℝ)^(ε*n)*(1+|ξ|/(σ*R))^100*Q^3) :=
+      _ ≤ ((1+|ξ|)^102)⁻¹*(D*twoR^(ε*n)*(1+|ξ|/(σ*R))^100*Q^3) :=
         mul_le_mul_of_nonneg_left (hpoint ξ) (by positivity)
-      _ = D*(2:ℝ)^(ε*n)*Q^3*(((1+|ξ|)^102)⁻¹*(1+|ξ|/(σ*R))^100) := by ring
-      _ ≤ D*(2:ℝ)^(ε*n)*Q^3*(1+ξ^2)⁻¹ :=
+      _ = D*twoR^(ε*n)*Q^3*(((1+|ξ|)^102)⁻¹*(1+|ξ|/(σ*R))^100) := by ring
+      _ ≤ D*twoR^(ε*n)*Q^3*(1+ξ^2)⁻¹ :=
         mul_le_mul_of_nonneg_left (bourgain_modulation_envelope hσR ξ) (by positivity))
   rw [integral_const_mul,integral_univ_inv_one_add_sq] at hm
   calc
@@ -4294,7 +4294,7 @@ theorem exists_bourgainSourceCurve_parabolic_cell_bound {ε : ℝ} (hε : 0 < ε
     ∃ C > 0, ∀ (n : ℕ) (a b σ R : ℝ),
       |a| ≤ 1 → |b| ≤ 1 → a ≠ b → 0 < σ → σ ≤ 1 → 0 ≤ R →
       5*R*σ^3 ≤ 1 → 1 ≤ σ*(10*R) →
-      3/(100*(10*R)) ≤ (σ/(2:ℝ)^n)^2 →
+      3/(100*(10*R)) ≤ (σ/twoR^n)^2 →
       ∀ (ι τ : Type u) (S : Fin (2^n) → Finset ι) (V : Fin (2^n) → Finset τ)
         (z : Fin (2^n) → ι → ℂ) (c : Fin (2^n) → τ → ℂ)
         (w : Fin (2^n) → ι → ℝ) (v : Fin (2^n) → τ → ℝ),
@@ -4306,11 +4306,11 @@ theorem exists_bourgainSourceCurve_parabolic_cell_bound {ε : ℝ} (hε : 0 < ε
         (∫ x : Fin 4 → ℝ in Icc (fun _ => -R) (fun _ => R),
           ‖∑ ji ∈ Finset.univ.sigma S, z ji.1 ji.2*fordAdditiveCharacter
             (x 0*w ji.1 ji.2+x 1*(w ji.1 ji.2)^2+
-              x 2*(w ji.1 ji.2)^((3:ℝ)/2)+x 3*Real.sqrt (w ji.1 ji.2))‖^6*
+              x 2*(w ji.1 ji.2)^(threeR/2)+x 3*Real.sqrt (w ji.1 ji.2))‖^6*
           ‖∑ jk ∈ Finset.univ.sigma V, c jk.1 jk.2*fordAdditiveCharacter
             (x 0*v jk.1 jk.2+x 1*(v jk.1 jk.2)^2+
-              x 2*(v jk.1 jk.2)^((3:ℝ)/2)+x 3*Real.sqrt (v jk.1 jk.2))‖^6) ≤
-          C*(2:ℝ)^(ε*n)*(6*(b-a)^4)⁻¹*
+              x 2*(v jk.1 jk.2)^(threeR/2)+x 3*Real.sqrt (v jk.1 jk.2))‖^6) ≤
+          C*twoR^(ε*n)*(6*(b-a)^4)⁻¹*
             (∑ j, (parabolaWeightedSixNorm
               (fun p : ℝ × ℝ => parabolaSourceWeight (10*R) 0 0 p.1 p.2)
               (S j) (z j) (fun i => Real.sqrt (w j i)-a))^2)^3*
@@ -4348,8 +4348,8 @@ theorem exists_bourgainSourceCurve_parabolic_cell_bound {ε : ℝ} (hε : 0 < ε
       nlinarith [(hvgrid j k hk).2]
   have hunit (j : Fin (2^n)) {y : ℝ}
       (hy : y ∈ Icc ((j:ℕ)/((2^n:ℕ):ℝ)) (((j:ℕ)+1)/((2^n:ℕ):ℝ))) :
-      y ∈ Icc (0:ℝ) 1 := by
-    have hl : (0:ℝ) ≤ (j:ℕ)/((2^n:ℕ):ℝ) := by positivity
+      y ∈ Icc zeroR 1 := by
+    have hl : zeroR ≤ (j:ℕ)/((2^n:ℕ):ℝ) := by positivity
     have hh : ((j:ℕ)+1:ℝ)/((2^n:ℕ):ℝ) ≤ 1 := by
       apply (div_le_one (by positivity)).mpr
       exact_mod_cast (show (j:ℕ)+1 ≤ 2^n from j.isLt)
@@ -4390,7 +4390,7 @@ theorem exists_bourgainSourceCurve_parabolic_cell_bound {ε : ℝ} (hε : 0 < ε
   have hprod := mul_le_mul hS hV hnonnegV (by positivity)
   have hm := mul_le_mul_of_nonneg_left hprod
     (show 0 ≤ E*(6*(b-a)^4)⁻¹ by positivity)
-  have he : ((2:ℝ)^((ε/2)*n))^2 = (2:ℝ)^(ε*n) := by
+  have he : (twoR^((ε/2)*n))^2 = twoR^(ε*n) := by
     rw [←Real.rpow_mul_natCast (by norm_num)]
     congr 1
     push_cast
@@ -4399,10 +4399,10 @@ theorem exists_bourgainSourceCurve_parabolic_cell_bound {ε : ℝ} (hε : 0 < ε
     _ ≤ _ := hmain
     _ ≤ _ := by simpa only [s,t,mul_assoc] using hm
     _ = _ := by
-      have he' : (2:ℝ)^((ε/2)*n)*(2:ℝ)^((ε/2)*n) = (2:ℝ)^(ε*n) := by
+      have he' : twoR^((ε/2)*n)*twoR^((ε/2)*n) = twoR^(ε*n) := by
         rw [←pow_two,he]
       calc
-        _ = E*D^2*((2:ℝ)^((ε/2)*n)*(2:ℝ)^((ε/2)*n))*(6*(b-a)^4)⁻¹*
+        _ = E*D^2*(twoR^((ε/2)*n)*twoR^((ε/2)*n))*(6*(b-a)^4)⁻¹*
             (∑ j, (parabolaWeightedSixNorm
               (fun p : ℝ × ℝ => parabolaSourceWeight (10*R) 0 0 p.1 p.2)
               (S j) (z j) (fun i => Real.sqrt (w j i)-a))^2)^3*
@@ -4420,7 +4420,7 @@ namespace TaoTrudgianYang2025
 universe u
 
 private theorem exists_bourgainCubicQuartic_inverse_moment :
-    ∃ C > (0:ℝ), ∀ a ∈ Icc (-1:ℝ) 1, ∀ b ∈ Icc (-1:ℝ) 1,
+    ∃ C > zeroR, ∀ a ∈ Icc (-1:ℝ) 1, ∀ b ∈ Icc (-1:ℝ) 1,
       ∀ {ι : Type u} (S : Finset ι) (z : ι → ℂ) (s θ : ι → ℝ),
         (∀ i ∈ S, s i ∈ Icc (-1:ℝ) 1) →
         ‖∑ i ∈ S, z i*fordAdditiveCharacter (θ i)‖^6 ≤
@@ -4516,7 +4516,7 @@ public  theorem norm_bourgain_character_sum_add {ι : Type*}
   rw [he,norm_mul,sargos_character_norm,mul_one]
 
 private theorem exists_bourgainCurveCell_inverse_pointwise :
-    ∃ C > (0:ℝ), ∀ {ι : Type u} (S : Finset ι) (z : ι → ℂ) (s : ι → ℝ),
+    ∃ C > zeroR, ∀ {ι : Type u} (S : Finset ι) (z : ι → ℂ) (s : ι → ℝ),
       (∀ i ∈ S, s i ∈ Icc (-1:ℝ) 1) →
       ∀ (a c δ R : ℝ), |c| ≤ 1 → 0 ≤ δ → δ ≤ 1 → 0 ≤ R → 5*R*δ^3 ≤ 1 →
       ∀ y : Fin 4 → ℝ, |y 2| ≤ R → |y 3| ≤ R →
@@ -4651,7 +4651,7 @@ private theorem bourgainCurveCellFrame_weight_bound {a c R δ : ℝ}
   change 1/(1+q)^100 ≤ (32:ℝ)^100*(1+L)^100*
     ((1+‖R⁻¹ • ((bourgainCurveCellFrame a c).mulVec y+![ξ/δ,0,0,0])‖)^100)⁻¹
   rw [←div_eq_mul_inv,le_div_iff₀ (by positivity),one_div_mul_eq_div]
-  apply (div_le_iff₀ (by positivity : (0:ℝ) < (1+q)^100)).mpr
+  apply (div_le_iff₀ (by positivity : zeroR < (1+q)^100)).mpr
   calc
     _ ≤ _ := hp
     _ = _ := by ac_rfl
@@ -4742,7 +4742,7 @@ namespace TaoTrudgianYang2025
 
 private def bourgainCurveCellBaseWeight (R : ℝ) (y : Fin 4 → ℝ) : ℝ :=
   parabolaSourceWeight R 0 0 (y 0) (y 1)*
-    (Icc (-R) R ×ˢ Icc (-R) R).indicator (fun _ : ℝ × ℝ => (1:ℝ)) (y 2,y 3)
+    (Icc (-R) R ×ˢ Icc (-R) R).indicator (fun _ : ℝ × ℝ => oneR) (y 2,y 3)
 
 private theorem bourgainCurveCellBaseWeight_nonneg (R : ℝ) (y : Fin 4 → ℝ) :
     0 ≤ bourgainCurveCellBaseWeight R y :=
@@ -4752,7 +4752,7 @@ private theorem bourgainCurveCellBaseWeight_nonneg (R : ℝ) (y : Fin 4 → ℝ)
 private theorem integrable_bourgainCurveCellBaseWeight {R : ℝ} (hR : 0 < R) :
     Integrable (bourgainCurveCellBaseWeight R) := by
   let B := Icc (-R) R ×ˢ Icc (-R) R
-  have hi : Integrable (B.indicator (fun _ : ℝ × ℝ => (1:ℝ))) :=
+  have hi : Integrable (B.indicator (fun _ : ℝ × ℝ => oneR)) :=
     (integrableOn_const (isCompact_Icc.prod isCompact_Icc).measure_ne_top).integrable_indicator
       (measurableSet_Icc.prod measurableSet_Icc)
   have h := bourgainFourCoordinates_measurePreserving.integrable_comp_of_integrable
@@ -4762,7 +4762,7 @@ private theorem integrable_bourgainCurveCellBaseWeight {R : ℝ} (hR : 0 < R) :
 
 private theorem bourgainCurveCell_transverse_mass {R : ℝ} (hR : 0 ≤ R) :
     (∫ q : ℝ × ℝ, (Icc (-R) R ×ˢ Icc (-R) R).indicator
-      (fun _ : ℝ × ℝ => (1:ℝ)) q) = 4*R^2 := by
+      (fun _ : ℝ × ℝ => oneR) q) = 4*R^2 := by
   rw [integral_indicator (measurableSet_Icc.prod measurableSet_Icc),integral_const,
     smul_eq_mul,mul_one,measureReal_restrict_apply_univ]
   change (volume.prod volume).real (Icc (-R) R ×ˢ Icc (-R) R) = _
@@ -4832,7 +4832,7 @@ universe u
 
 set_option maxHeartbeats 400000 in
 private theorem exists_bourgainQuartic_cell_return :
-    ∃ C > (0:ℝ), ∀ {ι : Type u} (S : Finset ι) (z : ι → ℂ) (s : ι → ℝ),
+    ∃ C > zeroR, ∀ {ι : Type u} (S : Finset ι) (z : ι → ℂ) (s : ι → ℝ),
       (∀ i ∈ S, s i ∈ Icc (-1:ℝ) 1) →
       ∀ (a c δ R : ℝ), |a| ≤ 1 → |c| ≤ 1 → 0 < δ → δ ≤ 1 →
       0 < R → 5*R*δ^3 ≤ 1 → 1 ≤ δ*R →
@@ -4933,17 +4933,17 @@ private theorem exists_bourgainQuartic_cell_return :
     calc
       _ = ∫ y : Fin 4 → ℝ,
           (parabolaSourceWeight R 0 0 (y 0) (y 1)*P (y 0,y 1))*
-            (Icc (-R) R ×ˢ Icc (-R) R).indicator (fun _ : ℝ × ℝ => (1:ℝ)) (y 2,y 3) := by
+            (Icc (-R) R ×ˢ Icc (-R) R).indicator (fun _ : ℝ × ℝ => oneR) (y 2,y 3) := by
         apply integral_congr_ae
         filter_upwards with y
         dsimp [F,bourgainCurveCellBaseWeight]
         ring
       _ = (∫ p : ℝ × ℝ, parabolaSourceWeight R 0 0 p.1 p.2*P p)*
           (∫ q : ℝ × ℝ, (Icc (-R) R ×ˢ Icc (-R) R).indicator
-            (fun _ : ℝ × ℝ => (1:ℝ)) q) :=
+            (fun _ : ℝ × ℝ => oneR) q) :=
         bourgainFourCoordinates_integral_product
           (fun p : ℝ × ℝ => parabolaSourceWeight R 0 0 p.1 p.2*P p)
-          ((Icc (-R) R ×ˢ Icc (-R) R).indicator (fun _ : ℝ × ℝ => (1:ℝ)))
+          ((Icc (-R) R ×ˢ Icc (-R) R).indicator (fun _ : ℝ × ℝ => oneR))
       _ = _ := by rw [bourgainCurveCell_transverse_mass hR.le]; ring
   rw [hleft] at hmain
   have hfinal := hmain.trans (mul_le_mul_of_nonneg_left hout hE.le)
@@ -4977,7 +4977,7 @@ public  theorem bourgainSourcePermutation_norm (x : Fin 4 → ℝ) :
         exact norm_le_pi_norm (bourgainSourcePermutation x) 0
 
 theorem exists_bourgainSourceCurve_cell_return :
-    ∃ C > (0:ℝ), ∀ {ι : Type u} (S : Finset ι) (z : ι → ℂ) (w : ι → ℝ),
+    ∃ C > zeroR, ∀ {ι : Type u} (S : Finset ι) (z : ι → ℂ) (w : ι → ℝ),
       (∀ i ∈ S, 0 ≤ w i) →
       ∀ (a c δ R : ℝ), |a| ≤ 1 → |c| ≤ 1 → 0 < δ → δ ≤ 1 →
       0 < R → 5*R*δ^3 ≤ 1 → 1 ≤ δ*R →
@@ -4987,7 +4987,7 @@ theorem exists_bourgainSourceCurve_cell_return :
           ((Real.sqrt (w i)-a)*p.1+(Real.sqrt (w i)-a)^2*p.2)‖^6) ≤
         C/R^2*(∫ x : Fin 4 → ℝ, ((1+‖R⁻¹ • x‖)^100)⁻¹*
           ‖∑ i ∈ S, z i*fordAdditiveCharacter
-            (x 0*w i+x 1*(w i)^2+x 2*(w i)^((3:ℝ)/2)+x 3*Real.sqrt (w i))‖^6) := by
+            (x 0*w i+x 1*(w i)^2+x 2*(w i)^(threeR/2)+x 3*Real.sqrt (w i))‖^6) := by
   obtain ⟨C,hC,h⟩ := exists_bourgainQuartic_cell_return.{u}
   refine ⟨C,hC,?_⟩
   intro ι S z w hw a c δ R ha hc hδ hδ₁ hR hrem hδR hwindow
@@ -5011,7 +5011,7 @@ theorem exists_bourgainSourceCurve_cell_return :
   have he : (∫ x : Fin 4 → ℝ, f x) =
       ∫ x : Fin 4 → ℝ, ((1+‖R⁻¹ • x‖)^100)⁻¹*
         ‖∑ i ∈ S, z i*fordAdditiveCharacter
-          (x 0*w i+x 1*(w i)^2+x 2*(w i)^((3:ℝ)/2)+x 3*Real.sqrt (w i))‖^6 := by
+          (x 0*w i+x 1*(w i)^2+x 2*(w i)^(threeR/2)+x 3*Real.sqrt (w i))‖^6 := by
     calc
       _ = ∫ x : Fin 4 → ℝ, f (bourgainSourcePermutation x) :=
         (bourgainSourcePermutation_measurePreserving.integral_comp
@@ -5048,8 +5048,8 @@ theorem exists_bourgainSourceCurve_local_cell_decoupling {ε : ℝ} (hε : 0 < �
     ∃ C > 0, ∀ (n : ℕ) (a b σ R : ℝ),
       0 ≤ a → a+σ ≤ 1 → 0 ≤ b → b+σ ≤ 1 → a ≠ b →
       0 < σ → σ ≤ 1 → 0 < R → 5*R*σ^3 ≤ 1 →
-      5*(10*R)*(σ/(2:ℝ)^n)^3 ≤ 1 → 1 ≤ (σ/(2:ℝ)^n)*(10*R) →
-      3/(100*(10*R)) ≤ (σ/(2:ℝ)^n)^2 →
+      5*(10*R)*(σ/twoR^n)^3 ≤ 1 → 1 ≤ (σ/twoR^n)*(10*R) →
+      3/(100*(10*R)) ≤ (σ/twoR^n)^2 →
       ∀ (ι τ : Type u) (S : Fin (2^n) → Finset ι) (V : Fin (2^n) → Finset τ)
         (z : Fin (2^n) → ι → ℂ) (c : Fin (2^n) → τ → ℂ)
         (w : Fin (2^n) → ι → ℝ) (v : Fin (2^n) → τ → ℝ),
@@ -5061,30 +5061,30 @@ theorem exists_bourgainSourceCurve_local_cell_decoupling {ε : ℝ} (hε : 0 < �
         (∫ x : Fin 4 → ℝ in Icc (fun _ => -R) (fun _ => R),
           ‖∑ ji ∈ Finset.univ.sigma S, z ji.1 ji.2*fordAdditiveCharacter
             (x 0*w ji.1 ji.2+x 1*(w ji.1 ji.2)^2+
-              x 2*(w ji.1 ji.2)^((3:ℝ)/2)+x 3*Real.sqrt (w ji.1 ji.2))‖^6*
+              x 2*(w ji.1 ji.2)^(threeR/2)+x 3*Real.sqrt (w ji.1 ji.2))‖^6*
           ‖∑ jk ∈ Finset.univ.sigma V, c jk.1 jk.2*fordAdditiveCharacter
             (x 0*v jk.1 jk.2+x 1*(v jk.1 jk.2)^2+
-              x 2*(v jk.1 jk.2)^((3:ℝ)/2)+x 3*Real.sqrt (v jk.1 jk.2))‖^6) ≤
-          C*(2:ℝ)^((ε+4)*n)/(10*R)^4*(6*(b-a)^4)⁻¹*
+              x 2*(v jk.1 jk.2)^(threeR/2)+x 3*Real.sqrt (v jk.1 jk.2))‖^6) ≤
+          C*twoR^((ε+4)*n)/(10*R)^4*(6*(b-a)^4)⁻¹*
             (∑ j, ∫ x : Fin 4 → ℝ, ((1+‖(10*R)⁻¹ • x‖)^100)⁻¹*
               ‖∑ i ∈ S j, z j i*fordAdditiveCharacter
-                (x 0*w j i+x 1*(w j i)^2+x 2*(w j i)^((3:ℝ)/2)+
+                (x 0*w j i+x 1*(w j i)^2+x 2*(w j i)^(threeR/2)+
                   x 3*Real.sqrt (w j i))‖^6)*
             (∑ j, ∫ x : Fin 4 → ℝ, ((1+‖(10*R)⁻¹ • x‖)^100)⁻¹*
               ‖∑ k ∈ V j, c j k*fordAdditiveCharacter
-                (x 0*v j k+x 1*(v j k)^2+x 2*(v j k)^((3:ℝ)/2)+
+                (x 0*v j k+x 1*(v j k)^2+x 2*(v j k)^(threeR/2)+
                   x 3*Real.sqrt (v j k))‖^6) := by
   obtain ⟨D,hD,hSource⟩ := exists_bourgainSourceCurve_parabolic_cell_bound.{u} hε
   obtain ⟨E,hE,hReturn⟩ := exists_bourgainSourceCurve_cell_return.{u}
   refine ⟨D*E^2,by positivity,?_⟩
   intro n a b σ R ha haσ hb hbσ hab hσ hσ₁ hR hrem hfine hδR hwidth
     ι τ S V z c w v hw hv hwgrid hvgrid
-  let δ := σ/(2:ℝ)^n
+  let δ := σ/twoR^n
   let W := fun p : ℝ × ℝ => parabolaSourceWeight (10*R) 0 0 p.1 p.2
   let J {κ : Type u} (K : Finset κ) (q : κ → ℂ) (f : κ → ℝ) :=
     ∫ x : Fin 4 → ℝ, ((1+‖(10*R)⁻¹ • x‖)^100)⁻¹*
       ‖∑ i ∈ K, q i*fordAdditiveCharacter
-        (x 0*f i+x 1*(f i)^2+x 2*(f i)^((3:ℝ)/2)+x 3*Real.sqrt (f i))‖^6
+        (x 0*f i+x 1*(f i)^2+x 2*(f i)^(threeR/2)+x 3*Real.sqrt (f i))‖^6
   have hδ : 0 < δ := div_pos hσ (by positivity)
   have hδσ : δ ≤ σ := div_le_self hσ.le (one_le_pow₀ (by norm_num))
   have hδ₁ : δ ≤ 1 := hδσ.trans hσ₁
@@ -5102,13 +5102,13 @@ theorem exists_bourgainSourceCurve_local_cell_decoupling {ε : ℝ} (hε : 0 < �
         (d+σ*((j:ℕ)/((2^n:ℕ):ℝ))) (d+σ*(((j:ℕ)+1)/((2^n:ℕ):ℝ)))) :
       (∑ j, (parabolaWeightedSixNorm W (K j) (q j)
         (fun i => Real.sqrt (f j i)-d))^2)^3 ≤
-        ((2:ℝ)^n)^2*(E/(10*R)^2)*(∑ j, J (K j) (q j) (f j)) := by
+        (twoR^n)^2*(E/(10*R)^2)*(∑ j, J (K j) (q j) (f j)) := by
     have hdabs : |d| ≤ 1 := abs_le.mpr ⟨by linarith,by linarith⟩
     have hcell (j : Fin (2^n)) :
         (parabolaWeightedSixNorm W (K j) (q j)
           (fun i => Real.sqrt (f j i)-d))^6 ≤ E/(10*R)^2*J (K j) (q j) (f j) := by
       let e := d+σ*((j:ℕ)/((2^n:ℕ):ℝ))
-      have hj : (0:ℝ) ≤ (j:ℕ)/((2^n:ℕ):ℝ) := by positivity
+      have hj : zeroR ≤ (j:ℕ)/((2^n:ℕ):ℝ) := by positivity
       have hj₁ : ((j:ℕ):ℝ)/((2^n:ℕ):ℝ) ≤ 1 := by
         apply (div_le_one (by positivity)).mpr
         exact_mod_cast Nat.le_of_lt j.isLt
@@ -5148,11 +5148,11 @@ theorem exists_bourgainSourceCurve_local_cell_decoupling {ε : ℝ} (hε : 0 < �
     have hsum := Finset.sum_le_sum (fun j (_ : j ∈ Finset.univ) => hcell j)
     rw [←Finset.mul_sum] at hsum
     calc
-      _ ≤ ((2:ℝ)^n)^2*∑ j, (parabolaWeightedSixNorm W (K j) (q j)
+      _ ≤ (twoR^n)^2*∑ j, (parabolaWeightedSixNorm W (K j) (q j)
           (fun i => Real.sqrt (f j i)-d))^6 := by
         simpa only [pow_mul] using hh
-      _ ≤ ((2:ℝ)^n)^2*(E/(10*R)^2*(∑ j, J (K j) (q j) (f j))) :=
-        mul_le_mul_of_nonneg_left hsum (sq_nonneg ((2:ℝ)^n))
+      _ ≤ (twoR^n)^2*(E/(10*R)^2*(∑ j, J (K j) (q j) (f j))) :=
+        mul_le_mul_of_nonneg_left hsum (sq_nonneg (twoR^n))
       _ = _ := by ring
 
   have hS := hQ ι S z w a ha haσ hw hwgrid
@@ -5165,10 +5165,10 @@ theorem exists_bourgainSourceCurve_local_cell_decoupling {ε : ℝ} (hε : 0 < �
     positivity
   have hprod := mul_le_mul hS hV (by positivity) (by positivity)
   have hm := mul_le_mul_of_nonneg_left hprod
-    (show 0 ≤ D*(2:ℝ)^(ε*n)*(6*(b-a)^4)⁻¹ by positivity)
-  have hpow : (2:ℝ)^(ε*n)*((2:ℝ)^n)^4 = (2:ℝ)^((ε+4)*n) := by
-    have he : ((2:ℝ)^n)^4 = (2:ℝ)^((4:ℝ)*n) := by
-      rw [←Real.rpow_natCast (2:ℝ) n,←Real.rpow_mul_natCast (by norm_num)]
+    (show 0 ≤ D*twoR^(ε*n)*(6*(b-a)^4)⁻¹ by positivity)
+  have hpow : twoR^(ε*n)*(twoR^n)^4 = twoR^((ε+4)*n) := by
+    have he : (twoR^n)^4 = twoR^(fourR*n) := by
+      rw [←Real.rpow_natCast twoR n,←Real.rpow_mul_natCast (by norm_num)]
       congr 1
       push_cast
       ring
@@ -5176,9 +5176,9 @@ theorem exists_bourgainSourceCurve_local_cell_decoupling {ε : ℝ} (hε : 0 < �
     congr 1
     ring
   have halg (A B : ℝ) :
-      (D*(2:ℝ)^(ε*n)*(6*(b-a)^4)⁻¹)*
-        ((((2:ℝ)^n)^2*(E/(10*R)^2)*A)*(((2:ℝ)^n)^2*(E/(10*R)^2)*B)) =
-      (D*E^2)*(2:ℝ)^((ε+4)*n)/(10*R)^4*(6*(b-a)^4)⁻¹*A*B := by
+      (D*twoR^(ε*n)*(6*(b-a)^4)⁻¹)*
+        (((twoR^n)^2*(E/(10*R)^2)*A)*((twoR^n)^2*(E/(10*R)^2)*B)) =
+      (D*E^2)*twoR^((ε+4)*n)/(10*R)^4*(6*(b-a)^4)⁻¹*A*B := by
     rw [←hpow]
     ring
   calc
@@ -5249,7 +5249,7 @@ private theorem bourgain_scalar_weight_product {K R X A B : ℝ}
     (hK : 0 < K) (hKR : K ≤ R) (hX : 0 ≤ X) (hA : 0 ≤ A) (hB : 0 ≤ B)
     (htriangle : X ≤ A+B) :
     ((1+A/K)^100)⁻¹*((1+B/R)^100)⁻¹ ≤
-      (4:ℝ)^100*((1+X/R)^100)⁻¹*
+      fourR^100*((1+X/R)^100)⁻¹*
         (((1+A/K)^100)⁻¹+(K/R)^4*((1+B/R)^100)⁻¹) := by
   have hR : 0 < R := hK.trans_le hKR
   have hp : 0 < 1+A/K := by positivity
@@ -5259,14 +5259,14 @@ private theorem bourgain_scalar_weight_product {K R X A B : ℝ}
   have hratio₁ : K/R ≤ 1 := (div_le_one hR).mpr hKR
   have hW : ((1+B/R)^100)⁻¹ ≤ 1 :=
     inv_le_one_of_one_le₀ (one_le_pow₀ (by linarith [div_nonneg hB hR.le]))
-  have hfirst (hh : ((1+B/R)^100)⁻¹ ≤ (4:ℝ)^100*((1+X/R)^100)⁻¹) :
+  have hfirst (hh : ((1+B/R)^100)⁻¹ ≤ fourR^100*((1+X/R)^100)⁻¹) :
       ((1+A/K)^100)⁻¹*((1+B/R)^100)⁻¹ ≤
-        (4:ℝ)^100*((1+X/R)^100)⁻¹*
+        fourR^100*((1+X/R)^100)⁻¹*
           (((1+A/K)^100)⁻¹+(K/R)^4*((1+B/R)^100)⁻¹) := by
     calc
-      _ ≤ ((1+A/K)^100)⁻¹*((4:ℝ)^100*((1+X/R)^100)⁻¹) :=
+      _ ≤ ((1+A/K)^100)⁻¹*(fourR^100*((1+X/R)^100)⁻¹) :=
         mul_le_mul_of_nonneg_left hh (by positivity)
-      _ = (4:ℝ)^100*((1+X/R)^100)⁻¹*((1+A/K)^100)⁻¹ := by ac_rfl
+      _ = fourR^100*((1+X/R)^100)⁻¹*((1+A/K)^100)⁻¹ := by ac_rfl
       _ ≤ _ := mul_le_mul_of_nonneg_left (le_add_of_nonneg_right (by positivity)) (by positivity)
   by_cases hXB : X ≤ 2*B
   · have hdiv : X/R ≤ 2*(B/R) := by
@@ -5279,8 +5279,8 @@ private theorem bourgain_scalar_weight_product {K R X A B : ℝ}
     exact hh
   by_cases hXR : X ≤ R
   · have hxdiv : X/R ≤ 1 := (div_le_one hR).mpr hXR
-    have hh := bourgain_inverse_power_ratio (by norm_num : (0:ℝ)<1) hr
-      (show 1+X/R ≤ (4:ℝ)*1 by linarith)
+    have hh := bourgain_inverse_power_ratio (by norm_num : zeroR<1) hr
+      (show 1+X/R ≤ fourR*1 by linarith)
     simp only [one_pow,inv_one] at hh
     exact hfirst (hW.trans hh)
   have hXA : X ≤ 2*A := by linarith
@@ -5295,17 +5295,17 @@ private theorem bourgain_scalar_weight_product {K R X A B : ℝ}
     rw [show (100:ℕ)=4+96 by omega,pow_add]
     have h := pow_le_one₀ hratio₀ hratio₁ (n:=96)
     simpa only [mul_one] using mul_le_mul_of_nonneg_left h (pow_nonneg hratio₀ 4)
-  have hlast : ((1+A/K)^100)⁻¹ ≤ (4:ℝ)^100*(K/R)^4*((1+X/R)^100)⁻¹ := by
+  have hlast : ((1+A/K)^100)⁻¹ ≤ fourR^100*(K/R)^4*((1+X/R)^100)⁻¹ := by
     calc
       _ ≤ _ := hh
-      _ = (4:ℝ)^100*(K/R)^100*((1+X/R)^100)⁻¹ := by
+      _ = fourR^100*(K/R)^100*((1+X/R)^100)⁻¹ := by
         rw [show 4*K/R=4*(K/R) by ring,mul_pow]
       _ ≤ _ := mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_left hpow (by positivity)) (by positivity)
   calc
-    _ ≤ ((4:ℝ)^100*(K/R)^4*((1+X/R)^100)⁻¹)*((1+B/R)^100)⁻¹ :=
+    _ ≤ (fourR^100*(K/R)^4*((1+X/R)^100)⁻¹)*((1+B/R)^100)⁻¹ :=
       mul_le_mul_of_nonneg_right hlast (by positivity)
-    _ = (4:ℝ)^100*((1+X/R)^100)⁻¹*((K/R)^4*((1+B/R)^100)⁻¹) := by ac_rfl
+    _ = fourR^100*((1+X/R)^100)⁻¹*((K/R)^4*((1+B/R)^100)⁻¹) := by ac_rfl
     _ ≤ _ := mul_le_mul_of_nonneg_left (le_add_of_nonneg_left (by positivity)) (by positivity)
 
 end TaoTrudgianYang2025
@@ -5318,7 +5318,7 @@ namespace TaoTrudgianYang2025
 private theorem bourgainRadialWeight_product {K R : ℝ}
     (hK : 0 < K) (hKR : K ≤ R) (x y : Fin 4 → ℝ) :
     bourgainRadialWeight K y*bourgainRadialWeight R (x-y) ≤
-      (4:ℝ)^100*bourgainRadialWeight R x*
+      fourR^100*bourgainRadialWeight R x*
         (bourgainRadialWeight K y+(K/R)^4*bourgainRadialWeight R (x-y)) := by
   have hR : 0 < R := hK.trans_le hKR
   have ht : ‖x‖ ≤ ‖y‖+‖x-y‖ := by
@@ -5330,12 +5330,12 @@ private theorem bourgainRadialWeight_product {K R : ℝ}
       (norm_nonneg (x-y)) ht
 
 private theorem exists_bourgainRadialWeight_convolution :
-    ∃ C > (0:ℝ), ∀ K R : ℝ, 0 < K → K ≤ R → ∀ x : Fin 4 → ℝ,
+    ∃ C > zeroR, ∀ K R : ℝ, 0 < K → K ≤ R → ∀ x : Fin 4 → ℝ,
       (∫ y : Fin 4 → ℝ, bourgainRadialWeight K y*bourgainRadialWeight R (x-y)) ≤
         C*K^4*bourgainRadialWeight R x := by
   let M := ∫ y : Fin 4 → ℝ, bourgainRadialWeight 1 y
   have hM : 0 ≤ M := integral_nonneg (bourgainRadialWeight_nonneg 1)
-  refine ⟨2*(4:ℝ)^100*(M+1),by positivity,?_⟩
+  refine ⟨2*fourR^100*(M+1),by positivity,?_⟩
   intro K R hK hKR x
   have hR : 0 < R := hK.trans_le hKR
   have hiK : Integrable (bourgainRadialWeight K) := integrable_bourgainCurveCellWeight hK
@@ -5350,7 +5350,7 @@ private theorem exists_bourgainRadialWeight_convolution :
         exact bourgainRadialWeight_le_one _ _))
   have hm := integral_mono hiProd
     ((hiK.add (hiShift.const_mul ((K/R)^4))).const_mul
-      ((4:ℝ)^100*bourgainRadialWeight R x))
+      (fourR^100*bourgainRadialWeight R x))
     (bourgainRadialWeight_product hK hKR x)
   simp only [Pi.add_apply] at hm
   rw [integral_const_mul,integral_add hiK (hiShift.const_mul ((K/R)^4)),
@@ -5360,7 +5360,7 @@ private theorem exists_bourgainRadialWeight_convolution :
     rw [←mul_pow,div_mul_cancel₀ _ hR.ne']
   calc
     _ ≤ _ := hm
-    _ = 2*(4:ℝ)^100*M*K^4*bourgainRadialWeight R x := by
+    _ = 2*fourR^100*M*K^4*bourgainRadialWeight R x := by
       rw [←mul_assoc ((K/R)^4) (R^4) M,he]
       ring
     _ ≤ _ := by
@@ -5376,7 +5376,7 @@ open scoped BigOperators
 namespace TaoTrudgianYang2025
 
 private theorem exists_bourgainRadialWeight_shift_average :
-    ∃ C > (0:ℝ), ∀ K R : ℝ, 0 < K → K ≤ R →
+    ∃ C > zeroR, ∀ K R : ℝ, 0 < K → K ≤ R →
       ∀ (f : (Fin 4 → ℝ) → ℝ) (M : ℝ), Continuous f →
       (∀ x, 0 ≤ f x) → (∀ x, ‖f x‖ ≤ M) →
       (∫ z : Fin 4 → ℝ, bourgainRadialWeight K z*
@@ -5472,7 +5472,7 @@ universe u
 
 set_option maxHeartbeats 400000 in
 private theorem exists_bourgainQuartic_cell_return_quantitative :
-    ∃ C > (0:ℝ), ∀ {ι : Type u} (S : Finset ι) (z : ι → ℂ) (s : ι → ℝ),
+    ∃ C > zeroR, ∀ {ι : Type u} (S : Finset ι) (z : ι → ℂ) (s : ι → ℝ),
       (∀ i ∈ S, s i ∈ Icc (-1:ℝ) 1) →
       ∀ (a c δ R : ℝ), |a| ≤ 1 → |c| ≤ 1 → 0 < δ → δ ≤ 1 →
       0 < R → 5*R*δ^3 ≤ 1 →
@@ -5576,17 +5576,17 @@ private theorem exists_bourgainQuartic_cell_return_quantitative :
     calc
       _ = ∫ y : Fin 4 → ℝ,
           (parabolaSourceWeight R 0 0 (y 0) (y 1)*P (y 0,y 1))*
-            (Icc (-R) R ×ˢ Icc (-R) R).indicator (fun _ : ℝ × ℝ => (1:ℝ)) (y 2,y 3) := by
+            (Icc (-R) R ×ˢ Icc (-R) R).indicator (fun _ : ℝ × ℝ => oneR) (y 2,y 3) := by
         apply integral_congr_ae
         filter_upwards with y
         dsimp [F,bourgainCurveCellBaseWeight]
         ring
       _ = (∫ p : ℝ × ℝ, parabolaSourceWeight R 0 0 p.1 p.2*P p)*
           (∫ q : ℝ × ℝ, (Icc (-R) R ×ˢ Icc (-R) R).indicator
-            (fun _ : ℝ × ℝ => (1:ℝ)) q) :=
+            (fun _ : ℝ × ℝ => oneR) q) :=
         bourgainFourCoordinates_integral_product
           (fun p : ℝ × ℝ => parabolaSourceWeight R 0 0 p.1 p.2*P p)
-          ((Icc (-R) R ×ˢ Icc (-R) R).indicator (fun _ : ℝ × ℝ => (1:ℝ)))
+          ((Icc (-R) R ×ˢ Icc (-R) R).indicator (fun _ : ℝ × ℝ => oneR))
       _ = _ := by rw [bourgainCurveCell_transverse_mass hR.le]; ring
   rw [hleft] at hmain
   have hfinal := hmain.trans (mul_le_mul_of_nonneg_left hout hE.le)
@@ -5605,7 +5605,7 @@ namespace TaoTrudgianYang2025
 universe u
 
 private theorem exists_bourgainSourceCurve_cell_return_quantitative :
-    ∃ C > (0:ℝ), ∀ {ι : Type u} (S : Finset ι) (z : ι → ℂ) (w : ι → ℝ),
+    ∃ C > zeroR, ∀ {ι : Type u} (S : Finset ι) (z : ι → ℂ) (w : ι → ℝ),
       (∀ i ∈ S, 0 ≤ w i) →
       ∀ (a c δ R : ℝ), |a| ≤ 1 → |c| ≤ 1 → 0 < δ → δ ≤ 1 →
       0 < R → 5*R*δ^3 ≤ 1 →
@@ -5615,7 +5615,7 @@ private theorem exists_bourgainSourceCurve_cell_return_quantitative :
           ((Real.sqrt (w i)-a)*p.1+(Real.sqrt (w i)-a)^2*p.2)‖^6) ≤
         C*(1+(δ*R)⁻¹)^100/R^2*(∫ x : Fin 4 → ℝ, ((1+‖R⁻¹ • x‖)^100)⁻¹*
           ‖∑ i ∈ S, z i*fordAdditiveCharacter
-            (x 0*w i+x 1*(w i)^2+x 2*(w i)^((3:ℝ)/2)+x 3*Real.sqrt (w i))‖^6) := by
+            (x 0*w i+x 1*(w i)^2+x 2*(w i)^(threeR/2)+x 3*Real.sqrt (w i))‖^6) := by
   obtain ⟨C,hC,h⟩ := exists_bourgainQuartic_cell_return_quantitative.{u}
   refine ⟨C,hC,?_⟩
   intro ι S z w hw a c δ R ha hc hδ hδ₁ hR hrem hwindow
@@ -5639,7 +5639,7 @@ private theorem exists_bourgainSourceCurve_cell_return_quantitative :
   have he : (∫ x : Fin 4 → ℝ, f x) =
       ∫ x : Fin 4 → ℝ, ((1+‖R⁻¹ • x‖)^100)⁻¹*
         ‖∑ i ∈ S, z i*fordAdditiveCharacter
-          (x 0*w i+x 1*(w i)^2+x 2*(w i)^((3:ℝ)/2)+x 3*Real.sqrt (w i))‖^6 := by
+          (x 0*w i+x 1*(w i)^2+x 2*(w i)^(threeR/2)+x 3*Real.sqrt (w i))‖^6 := by
     calc
       _ = ∫ x : Fin 4 → ℝ, f (bourgainSourcePermutation x) :=
         (bourgainSourcePermutation_measurePreserving.integral_comp
@@ -5671,7 +5671,7 @@ namespace TaoTrudgianYang2025
 universe u
 
 private theorem exists_bourgainParabola_unit_average :
-    ∃ C > (0:ℝ), ∀ {ι : Type u} (S : Finset ι) (z : ι → ℂ) (x : ι → ℝ),
+    ∃ C > zeroR, ∀ {ι : Type u} (S : Finset ι) (z : ι → ℂ) (x : ι → ℝ),
       (∫ ξ : ℝ, ((1+|ξ|)^102)⁻¹*
         parabolaBoxBilinearMoment S S
           (fun i => z i*fordAdditiveCharacter (ξ*x i))
@@ -5695,10 +5695,10 @@ private theorem exists_bourgainParabola_unit_average :
         (fun i => z i*fordAdditiveCharacter (ξ*x i)) x x 1 0 0 ≤
           (1+|ξ|)^100*J := by
     have hn := pow_le_pow_left₀ (sq_nonneg _)
-      (parabola_sourceWeight_modulation S z x (by norm_num : (0:ℝ)<1) 0 0 ξ) 3
+      (parabola_sourceWeight_modulation S z x (by norm_num : zeroR<1) 0 0 ξ) 3
     rw [mul_pow,←pow_mul,←pow_mul] at hn
     have hr := Real.rpow_inv_natCast_pow
-      (by positivity : (0:ℝ) ≤ (1+|ξ|/1)^100) (by norm_num : (3:ℕ) ≠ 0)
+      (by positivity : zeroR ≤ (1+|ξ|/1)^100) (by norm_num : (3:ℕ) ≠ 0)
     simp only [Nat.cast_ofNat] at hr
     rw [hr] at hn
     norm_num only [show (2*3:ℕ)=6 by omega,div_one] at hn
@@ -5712,10 +5712,10 @@ private theorem exists_bourgainParabola_unit_average :
           K*J*(1+ξ^2)⁻¹ := by
     have hb := (parabolaBox_le_rapid S S
       (fun i => z i*fordAdditiveCharacter (ξ*x i))
-      (fun i => z i*fordAdditiveCharacter (ξ*x i)) x x (by norm_num : (0:ℝ)<1) 0 0).trans
+      (fun i => z i*fordAdditiveCharacter (ξ*x i)) x x (by norm_num : zeroR<1) 0 0).trans
       (parabolaRapid_le_source S S
         (fun i => z i*fordAdditiveCharacter (ξ*x i))
-        (fun i => z i*fordAdditiveCharacter (ξ*x i)) x x (by norm_num : (0:ℝ)<1) hcomp 0 0)
+        (fun i => z i*fordAdditiveCharacter (ξ*x i)) x x (by norm_num : zeroR<1) hcomp 0 0)
     have he := bourgain_modulation_envelope (R:=1) (by norm_num) ξ
     simp only [div_one] at he
     calc
@@ -5807,10 +5807,10 @@ universe u
 public  def bourgainSourceSixMoment {ι : Type*} (S : Finset ι)
     (z : ι → ℂ) (w : ι → ℝ) (x : Fin 4 → ℝ) : ℝ :=
   ‖∑ i ∈ S, z i*fordAdditiveCharacter
-    (x 0*w i+x 1*(w i)^2+x 2*(w i)^((3:ℝ)/2)+x 3*Real.sqrt (w i))‖^6
+    (x 0*w i+x 1*(w i)^2+x 2*(w i)^(threeR/2)+x 3*Real.sqrt (w i))‖^6
 
 private theorem exists_bourgainSourceCurve_small_box :
-    ∃ C > (0:ℝ), ∀ {ι τ : Type u} (S : Finset ι) (V : Finset τ)
+    ∃ C > zeroR, ∀ {ι τ : Type u} (S : Finset ι) (V : Finset τ)
       (z : ι → ℂ) (c : τ → ℂ) (w : ι → ℝ) (v : τ → ℝ),
       (∀ i ∈ S, 0 ≤ w i) → (∀ j ∈ V, 0 ≤ v j) →
       (∀ i ∈ S, Real.sqrt (w i) ∈ Icc 0 1) →
@@ -5822,9 +5822,9 @@ private theorem exists_bourgainSourceCurve_small_box :
   obtain ⟨D,hD,hframe⟩ := exists_bourgainSourceCurve_bilinear_reduction.{u}
   obtain ⟨P,hP,hpar⟩ := exists_bourgainParabola_unit_average.{u}
   obtain ⟨Q,hQ,hret⟩ := exists_bourgainSourceCurve_cell_return_quantitative.{u}
-  let A := P*Q*(3:ℝ)^100
+  let A := P*Q*threeR^100
   have hA : 0 < A := by dsimp [A]; positivity
-  refine ⟨D*(6:ℝ)⁻¹*A^2,by positivity,?_⟩
+  refine ⟨D*sixR⁻¹*A^2,by positivity,?_⟩
   intro ι τ S V z c w v hw hv hs ht
   have hsingle {κ : Type u} (U : Finset κ) (d : κ → ℂ) (u : κ → ℝ)
       (hu : ∀ i ∈ U, 0 ≤ u i) (hr : ∀ i ∈ U, Real.sqrt (u i) ∈ Icc 0 1)
@@ -5839,7 +5839,7 @@ private theorem exists_bourgainSourceCurve_small_box :
     have hc := hret U d u hu a (1/2) (1/2) 1 ha
       (by norm_num) (by norm_num) (by norm_num) (by norm_num) (by norm_num)
       (fun i hi => abs_le.mpr ⟨by linarith [(hr i hi).1],by linarith [(hr i hi).2]⟩)
-    rw [show (1+((1/2:ℝ)*1)⁻¹)=3 by norm_num] at hc
+    rw [show (1+(halfR*1)⁻¹)=3 by norm_num] at hc
     simp only [one_pow,div_one] at hc
     have hh := hb.trans (mul_le_mul_of_nonneg_left hc hP.le)
     change _ ≤ A*_
@@ -5867,11 +5867,11 @@ private theorem exists_bourgainSourceCurve_small_box :
         unfold bourgainSourceSixMoment
         positivity)))
   have hprod := mul_le_mul hS hV hV₀ hSJ₀
-  have hmain := mul_le_mul_of_nonneg_left hprod (by positivity : 0 ≤ D*(6:ℝ)⁻¹)
+  have hmain := mul_le_mul_of_nonneg_left hprod (by positivity : 0 ≤ D*sixR⁻¹)
   change _ ≤ _ at hframe'
   calc
     _ ≤ _ := hframe'
-    _ = D*(6:ℝ)⁻¹*(_*_) := by ring
+    _ = D*sixR⁻¹*(_*_) := by ring
     _ ≤ _ := hmain
     _ = _ := by ring
 
@@ -5883,10 +5883,10 @@ namespace TaoTrudgianYang2025
 
 private theorem bourgainRadialWeight_translate_large {R : ℝ}
     (hR : 1 ≤ R) {q : Fin 4 → ℝ} (hq : ‖q‖ ≤ 2*R) (x : Fin 4 → ℝ) :
-    bourgainRadialWeight 1 (x-q) ≤ (2:ℝ)^100*bourgainRadialWeight (20*R) x := by
+    bourgainRadialWeight 1 (x-q) ≤ twoR^100*bourgainRadialWeight (20*R) x := by
   have hR₀ : 0 < R := lt_of_lt_of_le zero_lt_one hR
   have h20 : 0 < 20*R := by positivity
-  rw [bourgainRadialWeight_distance (by norm_num : (0:ℝ)<1),
+  rw [bourgainRadialWeight_distance (by norm_num : zeroR<1),
     bourgainRadialWeight_distance h20,div_one]
   apply bourgain_inverse_power_ratio (by positivity) (by positivity)
   have hn : ‖x‖ ≤ ‖x-q‖+2*R := by
@@ -5904,7 +5904,7 @@ private theorem bourgainRadialWeight_translated_integral {R : ℝ}
     (f : (Fin 4 → ℝ) → ℝ) (M : ℝ) (hc : Continuous f)
     (h₀ : ∀ x, 0 ≤ f x) (hb : ∀ x, ‖f x‖ ≤ M) :
     (∫ x : Fin 4 → ℝ, bourgainRadialWeight 1 x*f (x+q)) ≤
-      (2:ℝ)^100*(∫ x : Fin 4 → ℝ, bourgainRadialWeight (20*R) x*f x) := by
+      twoR^100*(∫ x : Fin 4 → ℝ, bourgainRadialWeight (20*R) x*f x) := by
   have hR₀ : 0 < R := lt_of_lt_of_le zero_lt_one hR
   have hw1 : Integrable (bourgainRadialWeight 1) :=
     integrable_bourgainCurveCellWeight (by norm_num)
@@ -5914,7 +5914,7 @@ private theorem bourgainRadialWeight_translated_integral {R : ℝ}
     (Filter.Eventually.of_forall hb)
   have hiR := hwR.mul_bdd hc.aestronglyMeasurable
     (Filter.Eventually.of_forall hb)
-  have hh := integral_mono hi1 (hiR.const_mul ((2:ℝ)^100))
+  have hh := integral_mono hi1 (hiR.const_mul (twoR^100))
     (fun x => (mul_le_mul_of_nonneg_right
       (bourgainRadialWeight_translate_large hR hq x) (h₀ x)).trans_eq (by ring))
   rw [integral_const_mul] at hh
@@ -5948,7 +5948,7 @@ public  theorem continuous_bourgainSourceSixMoment {ι : Type*}
 public  theorem bourgainSourceSixMoment_translate {ι : Type*}
     (S : Finset ι) (z : ι → ℂ) (w : ι → ℝ) (q x : Fin 4 → ℝ) :
     bourgainSourceSixMoment S (fun i => z i*fordAdditiveCharacter
-      (q 0*w i+q 1*(w i)^2+q 2*(w i)^((3:ℝ)/2)+q 3*Real.sqrt (w i))) w x =
+      (q 0*w i+q 1*(w i)^2+q 2*(w i)^(threeR/2)+q 3*Real.sqrt (w i))) w x =
         bourgainSourceSixMoment S z w (x+q) := by
   unfold bourgainSourceSixMoment
   apply congrArg (fun v : ℂ => ‖v‖^6)
@@ -5960,7 +5960,7 @@ public  theorem bourgainSourceSixMoment_translate {ι : Type*}
   ring
 
 private theorem exists_bourgainSourceCurve_box_base :
-    ∃ C > (0:ℝ), ∀ R : ℝ, 1 ≤ R →
+    ∃ C > zeroR, ∀ R : ℝ, 1 ≤ R →
       ∀ {ι τ : Type u} (S : Finset ι) (V : Finset τ)
         (z : ι → ℂ) (c : τ → ℂ) (w : ι → ℝ) (v : τ → ℝ),
         (∀ i ∈ S, 0 ≤ w i) → (∀ j ∈ V, 0 ≤ v j) →
@@ -5973,7 +5973,7 @@ private theorem exists_bourgainSourceCurve_box_base :
             (∫ x : Fin 4 → ℝ, bourgainRadialWeight (20*R) x*
               bourgainSourceSixMoment V c v x) := by
   obtain ⟨D,hD,hsmall⟩ := exists_bourgainSourceCurve_small_box.{u}
-  refine ⟨D*(2:ℝ)^200*20^4,by positivity,?_⟩
+  refine ⟨D*twoR^200*20^4,by positivity,?_⟩
   intro R hR ι τ S V z c w v hw hv hs ht
   let B := fun r : ℝ => Icc (fun _ : Fin 4 => -r) (fun _ => r)
   let F := fun x : Fin 4 → ℝ => bourgainSourceSixMoment S z w x*bourgainSourceSixMoment V c v x
@@ -5990,14 +5990,14 @@ private theorem exists_bourgainSourceCurve_box_base :
   have havg := bourgain_finite_box_average (K:=1/10) (R:=R)
     (by norm_num) (by linarith) F hFc hF₀
   have hpoint (q : Fin 4 → ℝ) (hq : q ∈ B (2*R)) :
-      (∫ y in B (1/10), F (q+y)) ≤ D*(2:ℝ)^200*JS*JV := by
+      (∫ y in B (1/10), F (q+y)) ≤ D*twoR^200*JS*JV := by
     have hqnorm : ‖q‖ ≤ 2*R := (pi_norm_le_iff_of_nonneg (by linarith)).mpr
       (fun i => by rw [Real.norm_eq_abs]; exact abs_le.mpr ⟨hq.1 i,hq.2 i⟩)
     have hmoment {κ : Type u} (U : Finset κ) (d : κ → ℂ) (u : κ → ℝ) :
         (∫ x : Fin 4 → ℝ, bourgainRadialWeight 1 x*
           bourgainSourceSixMoment U (fun i => d i*fordAdditiveCharacter
-            (q 0*u i+q 1*(u i)^2+q 2*(u i)^((3:ℝ)/2)+q 3*Real.sqrt (u i))) u x) ≤
-          (2:ℝ)^100*(∫ x : Fin 4 → ℝ,
+            (q 0*u i+q 1*(u i)^2+q 2*(u i)^(threeR/2)+q 3*Real.sqrt (u i))) u x) ≤
+          twoR^100*(∫ x : Fin 4 → ℝ,
             bourgainRadialWeight (20*R) x*bourgainSourceSixMoment U d u x) := by
       simp_rw [bourgainSourceSixMoment_translate]
       exact bourgainRadialWeight_translated_integral hR hqnorm
@@ -6005,21 +6005,21 @@ private theorem exists_bourgainSourceCurve_box_base :
         (continuous_bourgainSourceSixMoment U d u)
         (bourgainSourceSixMoment_nonneg U d u)
         (fun x => bourgain_character_six_bound U d
-          (fun i => x 0*u i+x 1*(u i)^2+x 2*(u i)^((3:ℝ)/2)+x 3*Real.sqrt (u i)))
+          (fun i => x 0*u i+x 1*(u i)^2+x 2*(u i)^(threeR/2)+x 3*Real.sqrt (u i)))
     have hlocal := hsmall S V
       (fun i => z i*fordAdditiveCharacter
-        (q 0*w i+q 1*(w i)^2+q 2*(w i)^((3:ℝ)/2)+q 3*Real.sqrt (w i)))
+        (q 0*w i+q 1*(w i)^2+q 2*(w i)^(threeR/2)+q 3*Real.sqrt (w i)))
       (fun j => c j*fordAdditiveCharacter
-        (q 0*v j+q 1*(v j)^2+q 2*(v j)^((3:ℝ)/2)+q 3*Real.sqrt (v j)))
+        (q 0*v j+q 1*(v j)^2+q 2*(v j)^(threeR/2)+q 3*Real.sqrt (v j)))
       w v hw hv hs ht
     have hmS := hmoment S z w
     have hmV := hmoment V c v
     have hleft : (∫ y in B (1/10), F (q+y)) =
         ∫ y in B (1/10),
           bourgainSourceSixMoment S (fun i => z i*fordAdditiveCharacter
-            (q 0*w i+q 1*(w i)^2+q 2*(w i)^((3:ℝ)/2)+q 3*Real.sqrt (w i))) w y*
+            (q 0*w i+q 1*(w i)^2+q 2*(w i)^(threeR/2)+q 3*Real.sqrt (w i))) w y*
           bourgainSourceSixMoment V (fun j => c j*fordAdditiveCharacter
-            (q 0*v j+q 1*(v j)^2+q 2*(v j)^((3:ℝ)/2)+q 3*Real.sqrt (v j))) v y := by
+            (q 0*v j+q 1*(v j)^2+q 2*(v j)^(threeR/2)+q 3*Real.sqrt (v j))) v y := by
       simp only [bourgainSourceSixMoment_translate,F,add_comm]
     rw [hleft]
     refine hlocal.trans ?_
@@ -6028,26 +6028,26 @@ private theorem exists_bourgainSourceCurve_box_base :
         (bourgainSourceSixMoment_nonneg _ _ _ _)))
       (mul_nonneg (by positivity) hJS)
     have hh' := mul_le_mul_of_nonneg_left hh hD.le
-    change D*_ * _ ≤ D*(2:ℝ)^200*JS*JV
+    change D*_ * _ ≤ D*twoR^200*JS*JV
     calc
       _ = D*(_*_) := by ring
-      _ ≤ D*(((2:ℝ)^100*JS)*((2:ℝ)^100*JV)) := hh'
+      _ ≤ D*((twoR^100*JS)*(twoR^100*JV)) := hh'
       _ = _ := by ring
   have hi : Integrable (fun p : (Fin 4 → ℝ) × (Fin 4 → ℝ) => F (p.1+p.2))
       ((volume.restrict (B (2*R))).prod (volume.restrict (B (1/10)))) := by
     rw [Measure.prod_restrict]
     exact ContinuousOn.integrableOn_compact (isCompact_Icc.prod isCompact_Icc)
       (hFc.comp (continuous_fst.add continuous_snd)).continuousOn
-  have hconst : IntegrableOn (fun _q : Fin 4 → ℝ => D*(2:ℝ)^200*JS*JV) (B (2*R)) :=
+  have hconst : IntegrableOn (fun _q : Fin 4 → ℝ => D*twoR^200*JS*JV) (B (2*R)) :=
     integrableOn_const isCompact_Icc.measure_ne_top
   have hh := setIntegral_mono_on hi.integral_prod_left hconst measurableSet_Icc hpoint
   rw [integral_const,measureReal_restrict_apply_univ] at hh
-  change _ ≤ volume.real (B (2*R))*(D*(2:ℝ)^200*JS*JV) at hh
+  change _ ≤ volume.real (B (2*R))*(D*twoR^200*JS*JV) at hh
   rw [bourgain_cube_mass (by linarith : 0 ≤ 2*R)] at hh
   have hfinal := havg.trans hh
-  apply (mul_le_mul_iff_right₀ (by norm_num : (0:ℝ)<(2*(1/10:ℝ))^4)).mp
+  apply (mul_le_mul_iff_right₀ (by norm_num : zeroR<(2*(1/10:ℝ))^4)).mp
   change (2*(1/10:ℝ))^4*(∫ x in B R, F x) ≤
-    (2*(1/10:ℝ))^4*((D*(2:ℝ)^200*20^4)*R^4*JS*JV)
+    (2*(1/10:ℝ))^4*((D*twoR^200*20^4)*R^4*JS*JV)
   exact hfinal.trans_eq (by ring)
 
 end TaoTrudgianYang2025
@@ -6064,7 +6064,7 @@ public  theorem integrable_bourgainSource_weighted {ι : Type*}
   (integrable_bourgainCurveCellWeight hR).mul_bdd
     (continuous_bourgainSourceSixMoment S z w).aestronglyMeasurable
     (Filter.Eventually.of_forall (fun x => bourgain_character_six_bound S z
-      (fun i => x 0*w i+x 1*(w i)^2+x 2*(w i)^((3:ℝ)/2)+x 3*Real.sqrt (w i))))
+      (fun i => x 0*w i+x 1*(w i)^2+x 2*(w i)^(threeR/2)+x 3*Real.sqrt (w i))))
 
 private theorem bourgainSourceSixMoment_finite_sum {N : ℕ} {ι : Type*}
     (S : Fin N → Finset ι) (z : Fin N → ι → ℂ) (w : Fin N → ι → ℝ)
@@ -6073,7 +6073,7 @@ private theorem bourgainSourceSixMoment_finite_sum {N : ℕ} {ι : Type*}
       (fun ji => w ji.1 ji.2) x ≤
         (N:ℝ)^5*∑ j, bourgainSourceSixMoment (S j) (z j) (w j) x := by
   let A := fun j : Fin N => ∑ i ∈ S j, z j i*fordAdditiveCharacter
-    (x 0*w j i+x 1*(w j i)^2+x 2*(w j i)^((3:ℝ)/2)+x 3*Real.sqrt (w j i))
+    (x 0*w j i+x 1*(w j i)^2+x 2*(w j i)^(threeR/2)+x 3*Real.sqrt (w j i))
   have hn := pow_le_pow_left₀ (norm_nonneg (∑ j, A j)) (norm_sum_le Finset.univ A) 6
   have hh := pow_sum_le_card_mul_sum_pow (s:=Finset.univ)
     (f:=fun j => ‖A j‖) (fun _ _ => norm_nonneg _) 5
@@ -6104,31 +6104,31 @@ private theorem bourgainSource_weighted_finite_sum {N : ℕ} {ι : Type*}
   exact hh
 
 theorem exists_bourgainSourceCurve_polynomial_base :
-    ∃ C > (0:ℝ), ∀ (n : ℕ) (ι τ : Type u)
+    ∃ C > zeroR, ∀ (n : ℕ) (ι τ : Type u)
       (S : Fin (2^n) → Finset ι) (V : Fin (2^n) → Finset τ)
       (z : Fin (2^n) → ι → ℂ) (c : Fin (2^n) → τ → ℂ)
       (w : Fin (2^n) → ι → ℝ) (v : Fin (2^n) → τ → ℝ),
       (∀ j, ∀ i ∈ S j, 0 ≤ w j i) → (∀ j, ∀ k ∈ V j, 0 ≤ v j k) →
       (∀ j, ∀ i ∈ S j, Real.sqrt (w j i) ∈ Icc 0 1) →
       (∀ j, ∀ k ∈ V j, Real.sqrt (v j k) ∈ Icc 0 1) →
-      (∫ x : Fin 4 → ℝ in Icc (fun _ => -((2:ℝ)^n)^2) (fun _ => ((2:ℝ)^n)^2),
+      (∫ x : Fin 4 → ℝ in Icc (fun _ => -(twoR^n)^2) (fun _ => (twoR^n)^2),
         ‖∑ ji ∈ Finset.univ.sigma S, z ji.1 ji.2*fordAdditiveCharacter
           (x 0*w ji.1 ji.2+x 1*(w ji.1 ji.2)^2+
-            x 2*(w ji.1 ji.2)^((3:ℝ)/2)+x 3*Real.sqrt (w ji.1 ji.2))‖^6*
+            x 2*(w ji.1 ji.2)^(threeR/2)+x 3*Real.sqrt (w ji.1 ji.2))‖^6*
         ‖∑ jk ∈ Finset.univ.sigma V, c jk.1 jk.2*fordAdditiveCharacter
           (x 0*v jk.1 jk.2+x 1*(v jk.1 jk.2)^2+
-            x 2*(v jk.1 jk.2)^((3:ℝ)/2)+x 3*Real.sqrt (v jk.1 jk.2))‖^6) ≤
-        C*((2:ℝ)^n)^22/(((2:ℝ)^n)^2)^2*
-          (∑ j, ∫ x : Fin 4 → ℝ, ((1+‖(20*((2:ℝ)^n)^2)⁻¹ • x‖)^100)⁻¹*
+            x 2*(v jk.1 jk.2)^(threeR/2)+x 3*Real.sqrt (v jk.1 jk.2))‖^6) ≤
+        C*(twoR^n)^22/((twoR^n)^2)^2*
+          (∑ j, ∫ x : Fin 4 → ℝ, ((1+‖(20*(twoR^n)^2)⁻¹ • x‖)^100)⁻¹*
             ‖∑ i ∈ S j, z j i*fordAdditiveCharacter
-              (x 0*w j i+x 1*(w j i)^2+x 2*(w j i)^((3:ℝ)/2)+x 3*Real.sqrt (w j i))‖^6)*
-          (∑ j, ∫ x : Fin 4 → ℝ, ((1+‖(20*((2:ℝ)^n)^2)⁻¹ • x‖)^100)⁻¹*
+              (x 0*w j i+x 1*(w j i)^2+x 2*(w j i)^(threeR/2)+x 3*Real.sqrt (w j i))‖^6)*
+          (∑ j, ∫ x : Fin 4 → ℝ, ((1+‖(20*(twoR^n)^2)⁻¹ • x‖)^100)⁻¹*
             ‖∑ k ∈ V j, c j k*fordAdditiveCharacter
-              (x 0*v j k+x 1*(v j k)^2+x 2*(v j k)^((3:ℝ)/2)+x 3*Real.sqrt (v j k))‖^6) := by
+              (x 0*v j k+x 1*(v j k)^2+x 2*(v j k)^(threeR/2)+x 3*Real.sqrt (v j k))‖^6) := by
   obtain ⟨C,hC,hbase⟩ := exists_bourgainSourceCurve_box_base.{u}
   refine ⟨C,hC,?_⟩
   intro n ι τ S V z c w v hw hv hs ht
-  let N := (2:ℝ)^n
+  let N := twoR^n
   let R := N^2
   let JS := ∑ j, ∫ x : Fin 4 → ℝ, bourgainRadialWeight (20*R) x*
     bourgainSourceSixMoment (S j) (z j) (w j) x
@@ -6192,7 +6192,7 @@ public  theorem bourgain_radial_bilinear_fubini
     bourgainRadialWeight K p.1*bourgainRadialWeight K p.2*(f (q+p.1)*g (q+p.2))
   have hMf : 0 ≤ Mf := (norm_nonneg (f 0)).trans (hfb 0)
   have hw : Integrable (bourgainRadialWeight K) := integrable_bourgainCurveCellWeight hK
-  have hconst : IntegrableOn (fun _q : Fin 4 → ℝ => (1:ℝ)) B :=
+  have hconst : IntegrableOn (fun _q : Fin 4 → ℝ => oneR) B :=
     integrableOn_const isCompact_Icc.measure_ne_top
   have hc : Continuous (fun p : ((Fin 4 → ℝ) × (Fin 4 → ℝ)) × (Fin 4 → ℝ) =>
       f (p.2+p.1.1)*g (p.2+p.1.2)) :=
@@ -6276,11 +6276,11 @@ private theorem integrable_bourgainSource_shift_sum
     (bourgainSourceSixMoment (S j) (z j) (w j)) ((∑ i ∈ S j, ‖z j i‖)^6)
     (continuous_bourgainSourceSixMoment (S j) (z j) (w j))
     (fun x => bourgain_character_six_bound (S j) (z j)
-      (fun i => x 0*w j i+x 1*(w j i)^2+x 2*(w j i)^((3:ℝ)/2)+x 3*Real.sqrt (w j i)))
+      (fun i => x 0*w j i+x 1*(w j i)^2+x 2*(w j i)^(threeR/2)+x 3*Real.sqrt (w j i)))
   simpa only [Finset.mul_sum] using integrable_finsetSum Finset.univ (fun j _ => hi j)
 
 private theorem exists_bourgainSource_shift_sum :
-    ∃ C > (0:ℝ), ∀ K R : ℝ, 0 < K → K ≤ R →
+    ∃ C > zeroR, ∀ K R : ℝ, 0 < K → K ≤ R →
       ∀ (N : ℕ) {ι : Type u} (S : Fin N → Finset ι)
         (z : Fin N → ι → ℂ) (w : Fin N → ι → ℝ),
         (∫ y : Fin 4 → ℝ, bourgainRadialWeight K y*
@@ -6296,7 +6296,7 @@ private theorem exists_bourgainSource_shift_sum :
     (bourgainSourceSixMoment (S j) (z j) (w j)) ((∑ i ∈ S j, ‖z j i‖)^6)
     (continuous_bourgainSourceSixMoment (S j) (z j) (w j))
     (fun x => bourgain_character_six_bound (S j) (z j)
-      (fun i => x 0*w j i+x 1*(w j i)^2+x 2*(w j i)^((3:ℝ)/2)+x 3*Real.sqrt (w j i)))
+      (fun i => x 0*w j i+x 1*(w j i)^2+x 2*(w j i)^(threeR/2)+x 3*Real.sqrt (w j i)))
   simp_rw [Finset.mul_sum]
   rw [integral_finsetSum Finset.univ (fun j _ => hi j)]
   apply Finset.sum_le_sum
@@ -6306,7 +6306,7 @@ private theorem exists_bourgainSource_shift_sum :
     (continuous_bourgainSourceSixMoment (S j) (z j) (w j))
     (bourgainSourceSixMoment_nonneg (S j) (z j) (w j))
     (fun x => bourgain_character_six_bound (S j) (z j)
-      (fun i => x 0*w j i+x 1*(w j i)^2+x 2*(w j i)^((3:ℝ)/2)+x 3*Real.sqrt (w j i)))
+      (fun i => x 0*w j i+x 1*(w j i)^2+x 2*(w j i)^(threeR/2)+x 3*Real.sqrt (w j i)))
 
 end TaoTrudgianYang2025
 
@@ -6320,15 +6320,15 @@ public  theorem bourgainSourceSixMoment_norm_bound {ι : Type*}
     (S : Finset ι) (z : ι → ℂ) (w : ι → ℝ) (x : Fin 4 → ℝ) :
     ‖bourgainSourceSixMoment S z w x‖ ≤ (∑ i ∈ S, ‖z i‖)^6 :=
   bourgain_character_six_bound S z
-    (fun i => x 0*w i+x 1*(w i)^2+x 2*(w i)^((3:ℝ)/2)+x 3*Real.sqrt (w i))
+    (fun i => x 0*w i+x 1*(w i)^2+x 2*(w i)^(threeR/2)+x 3*Real.sqrt (w i))
 
 set_option maxHeartbeats 400000 in
 public  theorem exists_bourgainSourceCurve_averaged_local_decoupling {ε : ℝ} (hε : 0 < ε) :
-    ∃ C > (0:ℝ), ∀ (n : ℕ) (a b σ R K : ℝ),
+    ∃ C > zeroR, ∀ (n : ℕ) (a b σ R K : ℝ),
       0 ≤ a → a+σ ≤ 1 → 0 ≤ b → b+σ ≤ 1 → a ≠ b →
       0 < σ → σ ≤ 1 → 0 < R → 5*R*σ^3 ≤ 1 →
-      5*(10*R)*(σ/(2:ℝ)^n)^3 ≤ 1 → 1 ≤ (σ/(2:ℝ)^n)*(10*R) →
-      3/(100*(10*R)) ≤ (σ/(2:ℝ)^n)^2 → 0 < K → K ≤ 10*R →
+      5*(10*R)*(σ/twoR^n)^3 ≤ 1 → 1 ≤ (σ/twoR^n)*(10*R) →
+      3/(100*(10*R)) ≤ (σ/twoR^n)^2 → 0 < K → K ≤ 10*R →
       ∀ (ι τ : Type u) (S : Fin (2^n) → Finset ι) (V : Fin (2^n) → Finset τ)
         (z : Fin (2^n) → ι → ℂ) (c : Fin (2^n) → τ → ℂ)
         (w : Fin (2^n) → ι → ℝ) (v : Fin (2^n) → τ → ℝ),
@@ -6344,7 +6344,7 @@ public  theorem exists_bourgainSourceCurve_averaged_local_decoupling {ε : ℝ} 
           (∫ y : Fin 4 → ℝ, bourgainRadialWeight K y*
             bourgainSourceSixMoment (Finset.univ.sigma V)
               (fun ji => c ji.1 ji.2) (fun ji => v ji.1 ji.2) (q+y))) ≤
-          C*K^8*(2:ℝ)^((ε+4)*n)/(10*R)^4*(6*(b-a)^4)⁻¹*
+          C*K^8*twoR^((ε+4)*n)/(10*R)^4*(6*(b-a)^4)⁻¹*
             (∑ j, ∫ x : Fin 4 → ℝ, bourgainRadialWeight (10*R) x*
               bourgainSourceSixMoment (S j) (z j) (w j) x)*
             (∑ j, ∫ x : Fin 4 → ℝ, bourgainRadialWeight (10*R) x*
@@ -6366,7 +6366,7 @@ public  theorem exists_bourgainSourceCurve_averaged_local_decoupling {ε : ℝ} 
     bourgainSourceSixMoment (S j) (z j) (w j) x
   let AV := ∑ j, ∫ x : Fin 4 → ℝ, bourgainRadialWeight (10*R) x*
     bourgainSourceSixMoment (V j) (c j) (v j) x
-  let A := D*(2:ℝ)^((ε+4)*n)/(10*R)^4*(6*(b-a)^4)⁻¹
+  let A := D*twoR^((ε+4)*n)/(10*R)^4*(6*(b-a)^4)⁻¹
   have hA : 0 ≤ A := by dsimp [A]; positivity
   have h10 : 0 < 10*R := by positivity
   have hFub := bourgain_radial_bilinear_fubini (R:=R) hK F G
@@ -6386,29 +6386,29 @@ public  theorem exists_bourgainSourceCurve_averaged_local_decoupling {ε : ℝ} 
     have hh := hlocal n a b σ R ha haσ hb hbσ hab hσ hσ₁ hR hrem hfine hδR hwidth
       ι τ S V
       (fun j i => z j i*fordAdditiveCharacter
-        (p.1 0*w j i+p.1 1*(w j i)^2+p.1 2*(w j i)^((3:ℝ)/2)+p.1 3*Real.sqrt (w j i)))
+        (p.1 0*w j i+p.1 1*(w j i)^2+p.1 2*(w j i)^(threeR/2)+p.1 3*Real.sqrt (w j i)))
       (fun j i => c j i*fordAdditiveCharacter
-        (p.2 0*v j i+p.2 1*(v j i)^2+p.2 2*(v j i)^((3:ℝ)/2)+p.2 3*Real.sqrt (v j i)))
+        (p.2 0*v j i+p.2 1*(v j i)^2+p.2 2*(v j i)^(threeR/2)+p.2 3*Real.sqrt (v j i)))
       w v hw hv hs ht
     change (∫ q : Fin 4 → ℝ in Icc (fun _ => -R) (fun _ => R),
       bourgainSourceSixMoment (Finset.univ.sigma S)
         (fun ji => z ji.1 ji.2*fordAdditiveCharacter
           (p.1 0*w ji.1 ji.2+p.1 1*(w ji.1 ji.2)^2+
-            p.1 2*(w ji.1 ji.2)^((3:ℝ)/2)+p.1 3*Real.sqrt (w ji.1 ji.2)))
+            p.1 2*(w ji.1 ji.2)^(threeR/2)+p.1 3*Real.sqrt (w ji.1 ji.2)))
         (fun ji => w ji.1 ji.2) q*
       bourgainSourceSixMoment (Finset.univ.sigma V)
         (fun ji => c ji.1 ji.2*fordAdditiveCharacter
           (p.2 0*v ji.1 ji.2+p.2 1*(v ji.1 ji.2)^2+
-            p.2 2*(v ji.1 ji.2)^((3:ℝ)/2)+p.2 3*Real.sqrt (v ji.1 ji.2)))
+            p.2 2*(v ji.1 ji.2)^(threeR/2)+p.2 3*Real.sqrt (v ji.1 ji.2)))
         (fun ji => v ji.1 ji.2) q) ≤
       A*(∑ j, ∫ x : Fin 4 → ℝ, bourgainRadialWeight (10*R) x*
         bourgainSourceSixMoment (S j)
           (fun i => z j i*fordAdditiveCharacter
-            (p.1 0*w j i+p.1 1*(w j i)^2+p.1 2*(w j i)^((3:ℝ)/2)+p.1 3*Real.sqrt (w j i))) (w j) x)*
+            (p.1 0*w j i+p.1 1*(w j i)^2+p.1 2*(w j i)^(threeR/2)+p.1 3*Real.sqrt (w j i))) (w j) x)*
         (∑ j, ∫ x : Fin 4 → ℝ, bourgainRadialWeight (10*R) x*
           bourgainSourceSixMoment (V j)
             (fun i => c j i*fordAdditiveCharacter
-              (p.2 0*v j i+p.2 1*(v j i)^2+p.2 2*(v j i)^((3:ℝ)/2)+p.2 3*Real.sqrt (v j i))) (v j) x) at hh
+              (p.2 0*v j i+p.2 1*(v j i)^2+p.2 2*(v j i)^(threeR/2)+p.2 3*Real.sqrt (v j i))) (v j) x) at hh
     simpa only [bourgainSourceSixMoment_translate,F,G,JS,JV] using hh
   have hiS := integrable_bourgainSource_shift_sum hK h10 S z w
   have hiV := integrable_bourgainSource_shift_sum hK h10 V c v
@@ -6439,7 +6439,7 @@ public  theorem exists_bourgainSourceCurve_averaged_local_decoupling {ε : ℝ} 
   have hprod := mul_le_mul hmS hmV hJV (mul_nonneg (by positivity) hAS)
   have hmain := hout.trans (mul_le_mul_of_nonneg_left hprod hA)
   rw [hFub.2.1]
-  change _ ≤ (D*E^2)*K^8*(2:ℝ)^((ε+4)*n)/(10*R)^4*(6*(b-a)^4)⁻¹*AS*AV
+  change _ ≤ (D*E^2)*K^8*twoR^((ε+4)*n)/(10*R)^4*(6*(b-a)^4)⁻¹*AS*AV
   exact hmain.trans_eq (by dsimp [A]; ring)
 
 end TaoTrudgianYang2025
@@ -6484,38 +6484,38 @@ public  theorem bourgain_bootstrap_depth {n : ℕ} (hn : 9 ≤ n) :
 
 public  theorem bourgain_bootstrap_scale_conditions {n m : ℕ}
     (hm : m ≤ n) (hlarge : 2*n+6 ≤ 3*m) (hn : 7 ≤ n) :
-    let N := (2:ℝ)^n
-    let M := (2:ℝ)^m
+    let N := twoR^n
+    let M := twoR^m
     let σ := 1/M
-    let δ := σ/(2:ℝ)^(n-m)
+    let δ := σ/twoR^(n-m)
     0 < σ ∧ σ ≤ 1 ∧ δ=1/N ∧
       5*(2*N^2)*σ^3 ≤ 1 ∧
       5*(10*(2*N^2))*δ^3 ≤ 1 ∧
       1 ≤ δ*(10*(2*N^2)) ∧
       3/(100*(10*(2*N^2))) ≤ δ^2 ∧
       0 < 20*M^2 ∧ 20*M^2 ≤ 10*(2*N^2) := by
-  let N := (2:ℝ)^n
-  let M := (2:ℝ)^m
+  let N := twoR^n
+  let M := twoR^m
   have hN : 0 < N := by dsimp [N]; positivity
   have hM : 0 < M := by dsimp [M]; positivity
   have hN₁ : 1 ≤ N := one_le_pow₀ (by norm_num)
   have hM₁ : 1 ≤ M := one_le_pow₀ (by norm_num)
   have hMN : M ≤ N := pow_le_pow_right₀ (by norm_num) hm
   have hN128 : (128:ℝ) ≤ N := by
-    have h := pow_le_pow_right₀ (by norm_num : (1:ℝ) ≤ 2) hn
-    norm_num only [show (2:ℝ)^7=128 by norm_num] at h
+    have h := pow_le_pow_right₀ (by norm_num : oneR ≤ 2) hn
+    norm_num only [show twoR^7=128 by norm_num] at h
     exact h
   have hpow : N^2*64 ≤ M^3 := by
-    have h := pow_le_pow_right₀ (by norm_num : (1:ℝ) ≤ 2)
+    have h := pow_le_pow_right₀ (by norm_num : oneR ≤ 2)
       (by omega : n*2+6 ≤ m*3)
     rw [pow_add,pow_mul,pow_mul] at h
-    norm_num only [show (2:ℝ)^6=64 by norm_num] at h
+    norm_num only [show twoR^6=64 by norm_num] at h
     exact h
-  have hδ : (1/M)/(2:ℝ)^(n-m)=1/N := by
+  have hδ : (1/M)/twoR^(n-m)=1/N := by
     dsimp [M,N]
-    rw [pow_sub₀ (2:ℝ) (by norm_num) hm]
+    rw [pow_sub₀ twoR (by norm_num) hm]
     field_simp
-  change 0 < 1/M ∧ 1/M ≤ 1 ∧ (1/M)/(2:ℝ)^(n-m)=1/N ∧ _
+  change 0 < 1/M ∧ 1/M ≤ 1 ∧ (1/M)/twoR^(n-m)=1/N ∧ _
   refine ⟨by positivity,(div_le_one hM).mpr hM₁,hδ,?_,?_,?_,?_,by positivity,?_⟩
   · have he : 5*(2*N^2)*(1/M)^3 = 10*N^2/M^3 := by ring
     rw [he]
@@ -6581,8 +6581,8 @@ public  theorem bourgainSourceGridBound_mono {N : ℕ} {ν D E : ℝ}
     (mul_le_mul_of_nonneg_right (div_le_div_of_nonneg_right hDE (by positivity)) hS) hV)
 
 public  theorem exists_bourgainSourceGridBound_polynomial :
-    ∃ C > (0:ℝ), ∀ (n : ℕ) (ν : ℝ),
-      BourgainSourceGridBound.{u} (2^n) ν (C*((2:ℝ)^n)^22) := by
+    ∃ C > zeroR, ∀ (n : ℕ) (ν : ℝ),
+      BourgainSourceGridBound.{u} (2^n) ν (C*(twoR^n)^22) := by
   obtain ⟨C,hC,hbase⟩ := exists_bourgainSourceCurve_polynomial_base.{u}
   refine ⟨C,hC,?_⟩
   intro n ν
@@ -6593,7 +6593,7 @@ public  theorem exists_bourgainSourceGridBound_polynomial :
         ((j:ℕ)/((2^n:ℕ):ℝ)) (((j:ℕ)+1)/((2^n:ℕ):ℝ))) :
       ∀ j, ∀ i ∈ U j, Real.sqrt (u j i) ∈ Icc 0 1 := by
     intro j i hi
-    refine ⟨(by positivity : (0:ℝ) ≤ (j:ℕ)/((2^n:ℕ):ℝ)).trans (hu j i hi).1,?_⟩
+    refine ⟨(by positivity : zeroR ≤ (j:ℕ)/((2^n:ℕ):ℝ)).trans (hu j i hi).1,?_⟩
     apply (hu j i hi).2.trans
     apply (div_le_one (by positivity)).mpr
     exact_mod_cast Nat.succ_le_of_lt j.isLt
@@ -6622,7 +6622,7 @@ public  theorem bourgainSource_grid_coarse_interval {k l : ℕ}
     (((finProdFinEquiv (i,ji.1) : Fin (k*l)):ℕ)/(k*l:ℝ))
     ((((finProdFinEquiv (i,ji.1) : Fin (k*l)):ℕ)+1)/(k*l:ℝ)) at hf
   rw [hcell.1,hcell.2] at hf
-  have hj₀ : (0:ℝ) ≤ (ji.1:ℕ)/(l:ℝ) := by positivity
+  have hj₀ : zeroR ≤ (ji.1:ℕ)/(l:ℝ) := by positivity
   have hj₁ : ((ji.1:ℕ)+1)/(l:ℝ) ≤ 1 := by
     apply (div_le_one (by positivity)).mpr
     exact_mod_cast Nat.succ_le_of_lt ji.1.isLt
@@ -6647,7 +6647,7 @@ public  theorem bourgainSourceSixMoment_grid_reindex {k l : ℕ} {ι : Type*}
   apply congrArg (fun q : ℂ => ‖q‖^6)
   simp only [Finset.sum_sigma]
   exact finGrid_sum (fun r => ∑ i ∈ S r, z r i*fordAdditiveCharacter
-    (x 0*w r i+x 1*(w r i)^2+x 2*(w r i)^((3:ℝ)/2)+x 3*Real.sqrt (w r i)))
+    (x 0*w r i+x 1*(w r i)^2+x 2*(w r i)^(threeR/2)+x 3*Real.sqrt (w r i)))
 
 -- Generated closures: source context is replayed in the next part.
 end TaoTrudgianYang2025

@@ -452,4 +452,18 @@ theorem logarithmic_weyl_exponent_pair_prefix_with_slack
       _ ≤ 30 * Real.sqrt (X * (A : Real) * Y) := by
         nlinarith [Real.sqrt_nonneg (X * (A : Real) * Y)]
 
+theorem simpleLogarithmicCorrelationBound_le_four_hundred
+    (Y : Real) (A H : Nat) (hY : 1 ≤ Y) (hA : 0 < A)
+    (hHY : (H : Real) * Y ≤ A) (hAY : (A : Real) ^ 2 ≤ Y ^ 3) :
+    simpleLogarithmicCorrelationBound (Y ^ 3) A A H ≤ 400 * Y := by
+  simpa using simpleLogarithmicCorrelationBound_le_four_hundred_mul
+    Y 1 A H hY (by norm_num) hA hHY (by simpa using hAY)
+
+theorem logarithmic_weyl_exponent_pair_prefix
+    (Y : Real) (A N : Nat) (hY : 1 ≤ Y) (hA : 0 < A)
+    (hYA : Y ≤ A) (hAY : (A : Real) ^ 2 ≤ Y ^ 3) (hNA : N ≤ A) :
+    ‖logarithmicSum (Y ^ 3) A (A + N)‖ ≤ 30 * Real.sqrt ((A : Real) * Y) := by
+  simpa using logarithmic_weyl_exponent_pair_prefix_with_slack
+    Y 1 A N hY (by norm_num) hA hYA (by simpa using hAY) hNA
+
 end GuthMaynard.NativeMoment

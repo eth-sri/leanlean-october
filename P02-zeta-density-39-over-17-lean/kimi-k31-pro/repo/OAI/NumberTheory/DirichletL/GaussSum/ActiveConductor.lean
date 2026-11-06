@@ -120,22 +120,6 @@ open ConcreteTraceCRT EisensteinSchwartzPoisson
   rw [canonicalNormalizedGauss, canonicalGaussSum_of_isEmpty,
     finitePrimeModulus_norm_of_isEmpty, Complex.ofReal_one, div_one]
 
-noncomputable def squarefreePairPoissonZeroMode
-    {ι : Type*} [DecidableEq ι] (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hinj : Function.Injective P) (hgood : ∀ i, lambda ∉ P i)
-    (S T : Finset ι) (W : 𝓢(ℝ, ℂ)) (scale : ℝ) : ℂ :=
-  let Q := activePrimes P S T
-  let hQ := activePrimes_pairwise_isCoprime P hinj S T
-  let row := finiteSexticRow Q (fun i => hgood i.val) (activeExponent S T)
-  let c := finitePrimeModulus Q
-  ((scale : ℂ) * canonicalNormalizedGauss Q hQ (fun i => hgood i.val)
-      (activeExponent S T) / (‖eisEmbedding c‖ : ℂ)) *
-    ∑ E ∈ (S ∩ T).powerset,
-      let d := primeSubsetGenerator P E
-      ((UniqueFactorizationMonoid.moebius (∏ i ∈ E, P i) : ℂ) * row d /
-        (‖eisEmbedding d‖ ^ 2 : ℝ)) *
-        (star (row 0) * paperRadialFourier W 0)
-
 end
 
 open EisensteinSchwartzPoisson
@@ -173,16 +157,6 @@ end ActualEisensteinCubic
 
 namespace ConcretePrimeRowBridge
 open ActualEisensteinCubic ShortDraftHeckeBridge EisensteinSchwartzPoisson
-
-noncomputable def idealPairPoissonZeroMode
-    (F : Finset (Ideal O)) (hFpos : ∀ I ∈ F, I ≠ ⊥)
-    (hFgood : ∀ I ∈ F,
-      ∀ P ∈ UniqueFactorizationMonoid.normalizedFactors I, goodLambda ∉ P)
-    (I J : Ideal O) (W : 𝓢(ℝ, ℂ)) (scale : ℝ) : ℂ := by
-  letI : ∀ i : primePool F, (i.1).IsMaximal := primePool_maximal F hFpos
-  exact squarefreePairPoissonZeroMode (fun i : primePool F => i.1)
-    Subtype.val_injective (primePool_good F hFgood)
-    (idealSupport F I) (idealSupport F J) W scale
 
 end ConcretePrimeRowBridge
 

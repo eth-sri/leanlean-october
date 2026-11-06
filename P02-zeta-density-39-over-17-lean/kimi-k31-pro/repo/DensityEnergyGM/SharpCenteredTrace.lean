@@ -8,17 +8,28 @@ noncomputable section
 open Finset MeasureTheory
 namespace Montgomery.RationalMoment
 
-/-- The sharp second moment reflected through every shell of the actual
-centered cutoff kernel, with the original ordered energy. -/
-theorem centered_energy_sharp (w : MathCollab.Density.ReflectionCutoff)
-    {η : ℝ} (hη : 0 < η) :
+/-- The common dyadic-shell argument for centered second moments. -/
+theorem centered_energy_of_shell (budget : ℝ → ℝ → ℝ → ℝ → ℝ)
+    (hbudget : ∀ {T L R E : ℝ}, 0 ≤ T → 0 ≤ L → 0 ≤ R → 0 ≤ E → 0 ≤ budget T L R E)
+    (hQuad : ∀ {T t₀ L : ℝ}, 2 ≤ T → 0 ≤ L → ∀ W : Finset ℝ,
+      (∀ t ∈ W, t ∈ Set.Icc t₀ (t₀+T)) →
+      (W.card:ℝ)^2 ≤ 2*budget T L W.card (discreteAdditiveEnergy W))
+    (hshellBound : ∀ (w : MathCollab.Density.ReflectionCutoff) {η : ℝ}, 0 < η →
+      ∃ C B : ℝ, 0 < C ∧ 0 ≤ B ∧ ∀ T t₀ L H : ℝ,
+        2 ≤ T → Real.sqrt T ≤ L → 0 < H → H ≤ 2*T → ∀ W : Finset ℝ,
+        (∀ t ∈ W, t ∈ Set.Icc t₀ (t₀+T)) →
+        (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
+        MathCollab.Density.shellEnergy w L H W ≤
+          C*T^η*budget T L W.card (discreteAdditiveEnergy W)+
+            B*(W.card:ℝ)^2*L^(2-2*(2:ℝ)))
+    (w : MathCollab.Density.ReflectionCutoff) {η : ℝ} (hη : 0 < η) :
     ∃ C : ℝ, 0 < C ∧ ∀ T t₀ L : ℝ, 2 ≤ T → Real.sqrt T ≤ L → ∀ W : Finset ℝ,
       (∀ t ∈ W, t ∈ Set.Icc t₀ (t₀+T)) →
       (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
       (∑ t ∈ W, ∑ u ∈ W, ‖MathCollab.Density.hKernel w L (t-u)‖^2) ≤
-        C*T^η*sharpCenteredBudget T L W.card (discreteAdditiveEnergy W) := by
+        C*T^η*budget T L W.card (discreteAdditiveEnergy W) := by
   have hδ : 0 < η/2 := by positivity
-  obtain ⟨C,B,hC,hB,hshell⟩ := centered_shell_sharp w (A := 2) (by norm_num) hδ
+  obtain ⟨C,B,hC,hB,hshell⟩ := hshellBound w hδ
   obtain ⟨B₀,hB₀,hnear⟩ := GuthMaynard.Improvement.centeredKernel_near w (A := 2) (by norm_num)
   let D : ℝ := 4+1/((η/2)*Real.log 2)
   have htwo : 0 < Real.log 2 := Real.log_pos (by norm_num)
@@ -55,14 +66,13 @@ theorem centered_energy_sharp (w : MathCollab.Density.ReflectionCutoff)
         sum_le_sum (fun p hp => hn _ (mem_filter.mp hp).2.le)
       _ ≤ ∑ _p ∈ W ×ˢ W, B₀^2 := sum_le_sum_of_subset_of_nonneg (filter_subset _ _) (by intros; positivity)
       _ = _ := by simp [card_product]; ring
-  have hX : 0 ≤ sharpCenteredBudget T L W.card (discreteAdditiveEnergy W) :=
-    sharpCenteredBudget_nonneg (by linarith) (by linarith) (Nat.cast_nonneg _) (Nat.cast_nonneg _)
-  have hQuad := card_sq_le_twice_sharpCenteredBudget hT (by linarith : 0 ≤ L) W hW
-  have hbase : B₀^2*(W.card:ℝ)^2 ≤ 2*B₀^2*T^η*
-      sharpCenteredBudget T L W.card (discreteAdditiveEnergy W) := by
+  have hX : 0 ≤ budget T L W.card (discreteAdditiveEnergy W) :=
+    hbudget (by linarith) (by linarith) (Nat.cast_nonneg _) (Nat.cast_nonneg _)
+  have hQuad := hQuad hT (by linarith : 0 ≤ L) W hW
+  have hbase : B₀^2*(W.card:ℝ)^2 ≤ 2*B₀^2*T^η*budget T L W.card (discreteAdditiveEnergy W) := by
     have h₁ := mul_le_mul_of_nonneg_left hQuad (sq_nonneg B₀)
     have h₂ := mul_le_mul_of_nonneg_left hη1
-      (show 0 ≤ 2*B₀^2*sharpCenteredBudget T L W.card (discreteAdditiveEnergy W) by positivity)
+      (show 0 ≤ 2*B₀^2*budget T L W.card (discreteAdditiveEnergy W) by positivity)
     nlinarith
   by_cases hYT : Y ≤ T
   · obtain ⟨J,hcover,hmin,hJ⟩ := reflection_shell_count (by linarith) hL hYT
@@ -77,7 +87,7 @@ theorem centered_energy_sharp (w : MathCollab.Density.ReflectionCutoff)
         (∑ p ∈ (W ×ˢ W).filter
           (fun p => (2:ℝ)^j*Y ≤ |p.1-p.2| ∧ |p.1-p.2| < (2:ℝ)^(j+1)*Y),
           ‖MathCollab.Density.hKernel w L (p.1-p.2)‖^2) ≤
-        (C+2*B)*T^(η/2)*sharpCenteredBudget T L W.card (discreteAdditiveEnergy W) := by
+        (C+2*B)*T^(η/2)*budget T L W.card (discreteAdditiveEnergy W) := by
       let H := (2:ℝ)^j*Y
       have hHp : 0 < H := by dsimp [H]; positivity
       have hHT : H < 2*T := hmin j (mem_range.mp hj)
@@ -96,14 +106,14 @@ theorem centered_energy_sharp (w : MathCollab.Density.ReflectionCutoff)
         congr 3; ring
       rw [heq]
       calc
-        _ ≤ C*T^(η/2)*sharpCenteredBudget T L W.card (discreteAdditiveEnergy W)+
+        _ ≤ C*T^(η/2)*budget T L W.card (discreteAdditiveEnergy W)+
             B*(W.card:ℝ)^2*L^(2-2*(2:ℝ)) := hh
-        _ ≤ C*T^(η/2)*sharpCenteredBudget T L W.card (discreteAdditiveEnergy W)+
+        _ ≤ C*T^(η/2)*budget T L W.card (discreteAdditiveEnergy W)+
             B*(W.card:ℝ)^2 := by
           exact add_le_add le_rfl
             ((mul_le_mul_of_nonneg_left her (by positivity : 0 ≤ B * (W.card : ℝ) ^ 2)).trans_eq (mul_one _))
-        _ ≤ C*T^(η/2)*sharpCenteredBudget T L W.card (discreteAdditiveEnergy W)+
-            B*(2*sharpCenteredBudget T L W.card (discreteAdditiveEnergy W)) := by
+        _ ≤ C*T^(η/2)*budget T L W.card (discreteAdditiveEnergy W)+
+            B*(2*budget T L W.card (discreteAdditiveEnergy W)) := by
           exact add_le_add le_rfl (mul_le_mul_of_nonneg_left hQuad hB)
         _ ≤ _ := by nlinarith [mul_le_mul_of_nonneg_left hd1 (mul_nonneg hB hX)]
     have hJD : (J:ℝ) ≤ D*T^(η/2) := by
@@ -116,11 +126,11 @@ theorem centered_energy_sharp (w : MathCollab.Density.ReflectionCutoff)
     calc
       _ = ∑ p ∈ W ×ˢ W, ‖MathCollab.Density.hKernel w L (p.1-p.2)‖^2 := (sum_product _ _ _).symm
       _ = _ := he
-      _ ≤ B₀^2*(W.card:ℝ)^2+∑ _j ∈ range J, (C+2*B)*T^(η/2)*sharpCenteredBudget T L W.card (discreteAdditiveEnergy W) :=
+      _ ≤ B₀^2*(W.card:ℝ)^2+∑ _j ∈ range J, (C+2*B)*T^(η/2)*budget T L W.card (discreteAdditiveEnergy W) :=
         add_le_add hnearSum (sum_le_sum hs)
-      _ = B₀^2*(W.card:ℝ)^2+(J:ℝ)*((C+2*B)*T^(η/2)*sharpCenteredBudget T L W.card (discreteAdditiveEnergy W)) := by simp
-      _ ≤ 2*B₀^2*T^η*sharpCenteredBudget T L W.card (discreteAdditiveEnergy W)+(D*T^(η/2))*((C+2*B)*T^(η/2)*sharpCenteredBudget T L W.card (discreteAdditiveEnergy W)) := by gcongr
-      _ = (2*B₀^2+D*(C+2*B))*T^η*sharpCenteredBudget T L W.card (discreteAdditiveEnergy W) := by rw [← hpow]; ring
+      _ = B₀^2*(W.card:ℝ)^2+(J:ℝ)*((C+2*B)*T^(η/2)*budget T L W.card (discreteAdditiveEnergy W)) := by simp
+      _ ≤ 2*B₀^2*T^η*budget T L W.card (discreteAdditiveEnergy W)+(D*T^(η/2))*((C+2*B)*T^(η/2)*budget T L W.card (discreteAdditiveEnergy W)) := by gcongr
+      _ = (2*B₀^2+D*(C+2*B))*T^η*budget T L W.card (discreteAdditiveEnergy W) := by rw [← hpow]; ring
       _ ≤ _ := by gcongr; linarith
   · have hfull : (∑ t ∈ W, ∑ u ∈ W, ‖MathCollab.Density.hKernel w L (t-u)‖^2) ≤
         B₀^2*(W.card:ℝ)^2 := by
@@ -133,6 +143,20 @@ theorem centered_energy_sharp (w : MathCollab.Density.ReflectionCutoff)
           exact hn _ ((hdist t ht u hu).trans (le_of_not_ge hYT))
         _ = _ := by simp; ring
     exact hfull.trans (hbase.trans (by gcongr; nlinarith))
+
+/-- The sharp second moment reflected through every shell of the actual
+centered cutoff kernel, with the original ordered energy. -/
+theorem centered_energy_sharp (w : MathCollab.Density.ReflectionCutoff)
+    {η : ℝ} (hη : 0 < η) :
+    ∃ C : ℝ, 0 < C ∧ ∀ T t₀ L : ℝ, 2 ≤ T → Real.sqrt T ≤ L → ∀ W : Finset ℝ,
+      (∀ t ∈ W, t ∈ Set.Icc t₀ (t₀+T)) →
+      (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
+      (∑ t ∈ W, ∑ u ∈ W, ‖MathCollab.Density.hKernel w L (t-u)‖^2) ≤
+        C*T^η*sharpCenteredBudget T L W.card (discreteAdditiveEnergy W) :=
+  centered_energy_of_shell sharpCenteredBudget
+    (fun hT hL hR hE => sharpCenteredBudget_nonneg hT hL hR hE)
+    (fun hT hL W hW => card_sq_le_twice_sharpCenteredBudget hT hL W hW)
+    (fun w {η} hη => centered_shell_sharp w (A := 2) (by norm_num) hη) w hη
 
 /-- The actual squared-cutoff centered matrix satisfies the improved
 quadratic trace bound, with no analytic estimate among the premises. -/

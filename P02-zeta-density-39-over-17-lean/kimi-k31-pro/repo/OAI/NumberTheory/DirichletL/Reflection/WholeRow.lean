@@ -92,6 +92,29 @@ theorem literalWholeRow_eq_dyadic (F : PrimeFamily φ) (K : Ideal Eis) (hK : Adm
   simp_rw [hp]
   rw [←Finset.mul_sum,sum_tsum_tsum_finite_middle Finset.univ (fun P u i => wt P*block P u i) (fun P _ u => hs P u)]
   rfl
+
+lemma finite_weighted_truncation {α β : Type*} [Fintype α]
+    (f : α→β→ℂ) (w : α→ℂ) (J : Finset β)
+    (hf : ∀ p, Summable (f p)) :
+    (∑' i,∑ p,w p*f p i)-(∑ i∈J,∑ p,w p*f p i)=
+      ∑ p,w p*((∑' i,f p i)-∑ i∈J,f p i) := by
+  rw [Summable.tsum_finsetSum (fun p _ => (hf p).mul_left (w p)),Finset.sum_comm]
+  simp only [tsum_mul_left,←Finset.mul_sum,mul_sub,Finset.sum_sub_distrib]
+
+lemma finite_weighted_truncation_norm {α β : Type*} [Fintype α]
+    (f : α→β→ℂ) (w : α→ℂ) (J : Finset β) (E : ℝ)
+    (hf : ∀ p, Summable (f p)) (hw : ∀ p,‖w p‖≤1)
+    (he : ∀ p, ‖(∑' i,f p i)-∑ i∈J,f p i‖≤E) :
+    ‖(∑' i,∑ p,w p*f p i)-(∑ i∈J,∑ p,w p*f p i)‖≤Fintype.card α*E := by
+  rw [finite_weighted_truncation f w J hf]
+  calc
+    _ ≤ ∑ p,‖w p*((∑' i,f p i)-∑ i∈J,f p i)‖ := norm_sum_le _ _
+    _ ≤ ∑ _p : α,E := by
+      apply Finset.sum_le_sum
+      intro p hp
+      rw [norm_mul]
+      exact (mul_le_mul_of_nonneg_right (hw p) (norm_nonneg _)).trans (by simpa using he p)
+    _ = _ := by simp
 end
 end SevenEighths.InverseReflectedPhase
 

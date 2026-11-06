@@ -95,21 +95,6 @@ end
 open ActualEisensteinCubic SecondPassArithmetic SecondPassIntegration JointLogSeparation
 open FirstPassCubeLabels (primeProductNorm columnLog)
 
-def initialBinCost {ι : Type*} [DecidableEq ι]
-    (p : ι → O) (hp : ∀ i, p i ≠ 0) [∀ i, (Ideal.span {p i}).IsMaximal]
-    (hcop : Pairwise (Function.onFun IsCoprime (fun i => Ideal.span {p i})))
-    (hg : ∀ i, lambda ∉ Ideal.span {p i})
-    (F R : Finset ι) (Ψ : O →* ℂ) (m : O) (ray : SecondRayIndex)
-    (K : Finset ι → Finset ι → Finset O) (Z H M ε : ℝ) (j : SecondLogIndex)
-    (windows : Fin 7 → ℝ → ℂ) (B : Frequency → ℝ) : ℝ :=
-  let s := secondLogSector p ∅ F K R Z M j
-  let X := initialLogColumn Z (primeProductNorm p R) j
-  let r := primeSubsetGenerator (fun i => Ideal.span {p i}) R
-  (H*primeProductNorm p R/Z^2*‖secondRayCoefficient ray‖*(secondLogK j*Real.exp 2)^ε)*
-    (∫ t₁ : ℝ, ∫ t₂ : ℝ, ∫ t₃ : ℝ, B (t₁,t₂,t₃)*
-      sourceGeometricMean p hp hcop hg F (secondRayMinus Ψ ray) (secondRayPlus Ψ ray)
-        (m*r) (s.image (sourceObservation p)) (windows 5) (windows 6) X X (t₁,t₂,t₃))
-
 end InitialMeanSquare
 
 open scoped BigOperators Classical SchwartzMap ContDiff

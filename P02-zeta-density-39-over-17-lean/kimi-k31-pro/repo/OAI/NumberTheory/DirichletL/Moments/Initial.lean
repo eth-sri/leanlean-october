@@ -14,7 +14,7 @@ namespace SevenEighths.CenteredMomentInitial
 open ActualEisensteinCubic ConcretePrimeRowBridge ConcreteTraceCRT EisensteinSchwartzPoisson
 open CanonicalRowCompletion CanonicalQuadraticSieve
 open CenteredMomentCommonSupport CenteredMomentFourier CenteredMomentSupportedCorrelation
-open CenteredMomentPrimitive CenteredMomentBridge
+open CenteredMomentPrimitive
 
 variable {ι : Type*}
 

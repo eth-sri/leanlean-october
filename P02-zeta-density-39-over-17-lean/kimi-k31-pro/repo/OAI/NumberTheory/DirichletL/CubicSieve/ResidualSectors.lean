@@ -256,7 +256,6 @@ end SecondPassArithmetic
 open scoped BigOperators Classical SchwartzMap
 namespace SecondPassIntegration
 open ActualEisensteinCubic FirstPassCubeLabels
-open SecondPassArithmetic (SecondSupportData)
 
 end SecondPassIntegration
 

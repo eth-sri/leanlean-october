@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.UniformNormalized
 public import OAI.NumberTheory.DirichletL.Reflection.SectorData
+public import OAI.NumberTheory.DirichletL.Reflection.SectorNormalizedUniformDegree
 
 @[expose] public section
 
@@ -62,17 +63,9 @@ theorem sector_normalized_physical_energy
             (InverseTerminalWidths.ramifiedWidth Z m)
             (InverseTerminalWidths.terminalDualWidth Z (Real.logb Z X) (Real.logb Z L) (Real.logb Z T) F.ideal jF e)+
           ε*(Real.logb Z X+Real.logb Z U+Real.logb Z Bb+Real.logb Z L)+η/2))*(C₀*(1+‖θ‖)^degree)^2 := by
-  obtain ⟨degree,C₀,C,Z₀,hC₀,hC,hZ₀,hsource⟩ := normalized_surviving_physical_source_energy_type_uniform
-    (N:=N) (a:=a) (c:=c) (mode:=mode) ε hε a₀ b₀ ha₀ windows M hM hwindowNorm hwindows
-    W hWsupport hW s hc kK kP kn kb η hkK hkP hkn hkb hη
-  refine ⟨degree,C₀,C,Z₀,hC₀,hC,hZ₀,?_⟩
-  intro φ σ _ _ Z hZ X Y B L hX hY hB hL F jF hN hbase hac hF hNF hcharF hj
-    u m T θ QK QP Qn Qb hT hQK hQP hQn hQb hsX hsY hsB hsL
-    rows nset bset Pset S hrows E r₀ aw₀ w₀ hrowcop hproducts hScop hSN hSchar hn hb hP hr₀ haw₀ hw₀
-  exact hsource Z hZ X Y B L hX hY hB hL F jF hN hbase hac hF hNF hcharF hj
-    E.referencePrimes E.referenceArithmetic u m T θ QK QP Qn Qb hT hQK hQP hQn hQb hsX hsY hsB hsL
-    rows nset bset Pset S hrows E.completion r₀ aw₀ w₀ hrowcop hproducts hScop hSN hSchar hn hb hP
-    E.fixedFactor_eq E.cuspColumn_eq hr₀ haw₀ hw₀
+  obtain ⟨degree,h⟩ := sector_normalized_physical_energy_uniform_degree
+    ε hε a₀ b₀ ha₀ windows M hM hwindowNorm hwindows W hWsupport hW
+  exact ⟨degree, h s hc⟩
 end
 end SevenEighths.InverseReflectedPhase
 

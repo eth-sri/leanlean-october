@@ -1,4 +1,5 @@
 module
+public import TaoTrudgianYang2025.BProcessBaseline
 public import GuthMaynard.NativeSource.GuthMaynard.ClassicalDichotomy
 public import GuthMaynard.NativeSource.GuthMaynard.TypeIFiniteWindow
 public import GuthMaynard.NativeSource.GuthMaynard.TypeISmoothing
@@ -47,14 +48,14 @@ theorem hasCompactSupport_typeIZeroMellinKernel (σ : ℝ) :
   have hcut : typeIDyadicCutoff (Real.exp (-u)) = 0 := by
     by_cases hLow : u < -Real.log 2
     · apply typeIDyadicCutoff_eq_zero_of_two_le
-      rw [← Real.exp_log (by norm_num : (0 : ℝ) < 2)]
+      rw [← Real.exp_log (by norm_num : zeroR < 2)]
       apply Real.exp_le_exp.mpr
       linarith
     · have hHigh : Real.log 2 < u := by
         exact lt_of_not_ge fun hu' => hu ⟨le_of_not_gt hLow, hu'⟩
       apply typeIDyadicCutoff_eq_zero_of_le_half
       rw [show (1 / 2 : ℝ) = Real.exp (-Real.log 2) by
-        rw [Real.exp_neg, Real.exp_log (by norm_num : (0 : ℝ) < 2)]
+        rw [Real.exp_neg, Real.exp_log (by norm_num : zeroR < 2)]
         norm_num]
       exact Real.exp_le_exp.mpr (by linarith)
   simp [typeIZeroMellinKernel, typeINormalizedAmplitude, hcut]
@@ -88,7 +89,7 @@ theorem typeINormalizedFourier_zero_eq_mellin (σ t : ℝ) :
       ∫ x : ℝ, typeINormalizedKernel σ t x =
         ∫ x : ℝ in Set.Ioi 0, typeINormalizedKernel σ t x := by
     have hSplit := integral_add_compl
-      (measurableSet_Ioi : MeasurableSet (Set.Ioi (0 : ℝ))) hIntegrable
+      (measurableSet_Ioi : MeasurableSet (Set.Ioi zeroR)) hIntegrable
     rw [hOutside, add_zero] at hSplit
     exact hSplit.symm
   rw [typeINormalizedFourier, SchwartzMap.fourier_coe, Real.fourier_eq']
@@ -196,10 +197,10 @@ theorem hasCompactSupport_typeIInteriorLogProfile (σ : ℝ) :
   have hcut : typeIDyadicCutoff (Real.exp u) = 0 := by
     rcases hu with hu | hu
     · apply typeIDyadicCutoff_eq_zero_of_le_half
-      rw [← Real.exp_log (by norm_num : (0 : ℝ) < 1 / 2)]
+      rw [← Real.exp_log (by norm_num : zeroR < 1 / 2)]
       exact Real.exp_le_exp.mpr (le_of_lt (lt_of_not_ge hu))
     · apply typeIDyadicCutoff_eq_zero_of_two_le
-      rw [← Real.exp_log (by norm_num : (0 : ℝ) < 2)]
+      rw [← Real.exp_log (by norm_num : zeroR < 2)]
       exact Real.exp_le_exp.mpr (le_of_lt (lt_of_not_ge hu))
   unfold typeIInteriorLogProfile
   rw [hcut]
@@ -246,14 +247,14 @@ theorem exists_positive_power_scale_reduction
     have hyLt : y < (k : ℝ) + 1 := by
       exact_mod_cast Nat.lt_floor_add_one y
     have hτkUpper : τ / k ≤ τ₀ := by
-      rw [div_le_iff₀ (by exact_mod_cast hkPos : (0 : ℝ) < k)]
+      rw [div_le_iff₀ (by exact_mod_cast hkPos : zeroR < k)]
       have hTwo : 2 * τ₀ < τ := lt_of_not_ge hUpper
       have hyLt' : 3 * τ < ((k : ℝ) + 1) * (2 * τ₀) := by
         apply (div_lt_iff₀ (by positivity : 0 < 2 * τ₀)).1
         simpa only [y] using hyLt
       nlinarith
     have hτkLower : 2 * τ₀ / 3 ≤ τ / k := by
-      rw [le_div_iff₀ (by exact_mod_cast hkPos : (0 : ℝ) < k)]
+      rw [le_div_iff₀ (by exact_mod_cast hkPos : zeroR < k)]
       have hkUpper' : (k : ℝ) * (2 * τ₀) ≤ 3 * τ := by
         apply (le_div_iff₀ (by positivity : 0 < 2 * τ₀)).1
         simpa only [y] using hkUpper
@@ -273,8 +274,8 @@ theorem natCast_clog_two_le_one_add_log (n : ℕ) (hn : 1 ≤ n) :
       Nat.clog_pos Nat.one_lt_two hnTwo
     have hpowNat : 2 ^ (Nat.clog 2 n - 1) < n :=
       Nat.pow_pred_clog_lt_self Nat.one_lt_two hnTwo
-    have hpow : (0 : ℝ) < (2 ^ (Nat.clog 2 n - 1) : ℕ) := by positivity
-    have hnPos : (0 : ℝ) < n := by exact_mod_cast (Nat.zero_lt_of_lt hnTwo)
+    have hpow : zeroR < (2 ^ (Nat.clog 2 n - 1) : ℕ) := by positivity
+    have hnPos : zeroR < n := by exact_mod_cast (Nat.zero_lt_of_lt hnTwo)
     have hlog := Real.strictMonoOn_log (Set.mem_Ioi.mpr hpow)
       (Set.mem_Ioi.mpr hnPos) (by exact_mod_cast hpowNat)
     rw [Nat.cast_pow, Real.log_pow] at hlog
@@ -301,15 +302,15 @@ theorem sharp_cutoff_clog_le_log_majorant (T : ℝ) (hT : 8 ≤ T) :
     apply (Nat.le_floor_iff hCutNonneg).2
     norm_num only [Nat.cast_one]
     exact (calc
-      (1 : ℝ) ≤ 4 * T := by nlinarith
+      oneR ≤ 4 * T := by nlinarith
       _ < sharpZetaCutoff T := four_mul_lt_sharpZetaCutoff T).le
   have hFloor : (⌊sharpZetaCutoff T⌋₊ : ℝ) ≤ 6 * T := by
     exact (Nat.floor_le hCutNonneg).trans
       (sharpZetaCutoff_le_six_mul (by linarith))
-  have hFloorPos : (0 : ℝ) < ⌊sharpZetaCutoff T⌋₊ := by exact_mod_cast hAOne
+  have hFloorPos : zeroR < ⌊sharpZetaCutoff T⌋₊ := by exact_mod_cast hAOne
   have hLog : Real.log (⌊sharpZetaCutoff T⌋₊ : ℝ) ≤ Real.log (6 * T) :=
     Real.log_le_log hFloorPos hFloor
-  rw [Real.log_mul (by norm_num : (6 : ℝ) ≠ 0) hTPos.ne'] at hLog
+  rw [Real.log_mul (by norm_num : sixR ≠ 0) hTPos.ne'] at hLog
   exact (natCast_clog_two_le_one_add_log _ hAOne).trans (by
     have hlogTwo : 0 < Real.log 2 := Real.log_pos (by norm_num)
     gcongr)
@@ -327,20 +328,20 @@ theorem localMultiplicityCap_lt_log_majorant (T : ℝ) (hT : 8 ≤ T) :
       (Real.log (500 / 3 : ℝ) + 3 * Real.log T) /
           Real.log (35 / 32 : ℝ) + 1 := by
   have hTPos : 0 < T := by linarith
-  have hConst : (0 : ℝ) < 500 / 3 := by norm_num
-  have hArg : (100 * T ^ (3 : ℝ)) / (0.6 : ℝ) =
-      (500 / 3 : ℝ) * T ^ (3 : ℝ) := by ring
-  have hLogPow : Real.log (T ^ (3 : ℝ)) = 3 * Real.log T := by
+  have hConst : zeroR < 500 / 3 := by norm_num
+  have hArg : (100 * T ^ threeR) / (0.6 : ℝ) =
+      (500 / 3 : ℝ) * T ^ threeR := by ring
+  have hLogPow : Real.log (T ^ threeR) = 3 * Real.log T := by
     rw [Real.log_rpow hTPos]
-  have hArgOne : 1 ≤ (100 * T ^ (3 : ℝ)) / (0.6 : ℝ) := by
+  have hArgOne : 1 ≤ (100 * T ^ threeR) / (0.6 : ℝ) := by
     rw [hArg]
-    have hPowOne : 1 ≤ T ^ (3 : ℝ) :=
+    have hPowOne : 1 ≤ T ^ threeR :=
       Real.one_le_rpow (by linarith) (by norm_num)
     nlinarith
   have hDenNonneg : 0 ≤ Real.log ((7 / 4 : ℝ) / (8 / 5 : ℝ)) :=
     Real.log_nonneg (by norm_num)
   have hRatioNonneg : 0 ≤
-      Real.log ((100 * T ^ (3 : ℝ)) / (0.6 : ℝ)) /
+      Real.log ((100 * T ^ threeR) / (0.6 : ℝ)) /
         Real.log ((7 / 4 : ℝ) / (8 / 5 : ℝ)) :=
     div_nonneg (Real.log_nonneg hArgOne) hDenNonneg
   have hCeil := Nat.ceil_lt_add_one hRatioNonneg
@@ -391,7 +392,7 @@ theorem typeIReflectedMellinPolynomial_eq_fixed
   apply Finset.sum_congr rfl
   intro m hm
   have hmPos : 0 < m := lt_of_lt_of_le Nat.zero_lt_one (Finset.mem_Icc.mp hm).1
-  have hmRealPos : (0 : ℝ) < m := by exact_mod_cast hmPos
+  have hmRealPos : zeroR < m := by exact_mod_cast hmPos
   have hmComplex : (m : ℂ) ≠ 0 := by exact_mod_cast hmPos.ne'
   have hQComplex : (Q : ℂ) ≠ 0 := by exact_mod_cast hQ.ne'
   have hmLog : Complex.log (m : ℂ) = (Real.log (m : ℝ) : ℂ) :=
@@ -481,7 +482,7 @@ theorem tsum_typeIReflectionKernel_eq_typeISourceSmoothBlock
       simpa only [Finset.mem_Icc, not_and_or, not_le] using hz
     rcases hzOutside with hzLow | hzHigh
     · have hzReal : (z : ℝ) < (Y : ℝ) := by
-        have hYReal : (1 : ℝ) ≤ Y := by exact_mod_cast hY
+        have hYReal : oneR ≤ Y := by exact_mod_cast hY
         exact_mod_cast hzLow.trans_le (by exact_mod_cast hYReal)
       have hleft : Real.smoothTransition ((z : ℝ) - (Y : ℝ)) = 0 :=
         Real.smoothTransition.zero_of_nonpos (by linarith)
@@ -575,7 +576,7 @@ theorem typeISourceSmoothBlock_eq_scaled_normalized_tsum_of_interior
             ((n : ℝ) / ((2 ^ r * Y : ℕ) : ℝ)) := by
   let Q : ℕ := 2 ^ r * Y
   have hQ : 0 < Q := by dsimp only [Q]; positivity
-  have hQr : (0 : ℝ) < Q := by exact_mod_cast hQ
+  have hQr : zeroR < Q := by exact_mod_cast hQ
   rw [← tsum_typeIReflectionKernel_eq_typeISourceSmoothBlock Y A r σ t hY]
   rw [typeIReflectionKernel_eq_dyadicPhysical_of_interior hLower hUpper]
   rw [← tsum_mul_left]
@@ -773,8 +774,8 @@ theorem norm_normalizedTypeIReflectedCoeff_le_one
   unfold normalizedTypeIReflectedCoeff
   split_ifs with h
   · have hmPos : 0 < m := lt_of_lt_of_le Nat.zero_lt_one h.1
-    have hmReal : (0 : ℝ) < m := by exact_mod_cast hmPos
-    have hMReal : (0 : ℝ) < M := by exact_mod_cast hM
+    have hmReal : zeroR < m := by exact_mod_cast hmPos
+    have hMReal : zeroR < M := by exact_mod_cast hM
     have hmM : (m : ℝ) ≤ M := by exact_mod_cast h.2
     rw [Complex.norm_real, Real.norm_eq_abs,
       abs_of_nonneg (div_nonneg (Real.rpow_nonneg hmReal.le _)
@@ -792,7 +793,7 @@ theorem wideDirichletPoly_normalizedTypeIReflectedCoeff
           (((M : ℝ) ^ sigma : ℝ) : ℂ) -
         (((M : ℝ) ^ (-sigma) : ℝ) : ℂ) := by
   have hMPos : 0 < M := lt_trans Nat.zero_lt_one hM
-  have hMReal : (0 : ℝ) < M := by exact_mod_cast hMPos
+  have hMReal : zeroR < M := by exact_mod_cast hMPos
   have hCover : M ≤ 2 ^ Nat.clog 2 M :=
     (Nat.clog_le_iff_le_pow Nat.one_lt_two).mp le_rfl
   unfold wideDirichletPoly typeIReflectedFixedPolynomial
@@ -1087,7 +1088,7 @@ theorem integral_norm_gmReflectionPowerWeight_deriv_le
     (∫ v in A..B,
         ‖(((-sigma / v : ℝ) : ℂ) * gmReflectionPowerWeight sigma v)‖) ≤
       A ^ (-sigma) := by
-  have hzero : (0 : ℝ) ∉ Set.uIcc A B := by
+  have hzero : zeroR ∉ Set.uIcc A B := by
     rw [Set.uIcc_of_le hAB]
     intro h
     linarith [h.1]
@@ -1756,7 +1757,7 @@ theorem exists_typeIDyadicCutoffMellin_tail_bound (n : ℕ) (hn : 1 < n) :
   refine ⟨C, lt_of_lt_of_le zero_lt_one (le_max_left _ _), ?_⟩
   intro H hH
   have hHPos : 0 < H := zero_lt_one.trans_le hH
-  have hnReal : (1 : ℝ) < n := by exact_mod_cast hn
+  have hnReal : oneR < n := by exact_mod_cast hn
   have hDomInt : IntegrableOn
       (fun r : ℝ => C₀ * |r| ^ (-(n : ℝ))) (Set.Icc (-H) H)ᶜ :=
     (integrableOn_abs_rpow_compl_Icc_typeI (by linarith) hHPos).const_mul C₀
@@ -1804,7 +1805,7 @@ theorem sourceScalar_mul_negativeModes_eq_reflectedMellinIntegral
             typeIDyadicCutoffMellin r *
               typeIPowerReflectionIntegral sigma (t + r)
                 ((Q : ℝ) / 2) (2 * M * Q) := by
-  have hQr : (0 : ℝ) < Q := by exact_mod_cast hQ
+  have hQr : zeroR < Q := by exact_mod_cast hQ
   rw [typeINormalizedNegativeModes, Finset.mul_sum]
   have hEach : ∀ m ∈ Finset.Icc 1 M,
       typeISourceNormalizationScalar sigma t (Q : ℝ) *
@@ -1873,9 +1874,9 @@ theorem tendsto_typeI_terminal_ratio
       atTop (𝓝 0) := by
     have hDiv := (isLittleO_log_rpow_atTop hd).tendsto_div_nhds_zero
     apply hDiv.congr'
-    filter_upwards [eventually_gt_atTop (0 : ℝ)] with T hT
+    filter_upwards [eventually_gt_atTop zeroR] with T hT
     rw [Real.rpow_neg hT.le, div_eq_mul_inv]
-  have hlogTwo : Real.log (2 : ℝ) ≠ 0 :=
+  have hlogTwo : Real.log twoR ≠ 0 :=
     (Real.log_pos (by norm_num)).ne'
   have hExpanded : Tendsto
       (fun T : ℝ =>
@@ -1886,7 +1887,7 @@ theorem tendsto_typeI_terminal_ratio
       (hLogPow.const_mul (1 / Real.log 2)) using 1
     all_goals norm_num
   apply Tendsto.congr' _ hExpanded
-  filter_upwards [eventually_gt_atTop (0 : ℝ)] with T hT
+  filter_upwards [eventually_gt_atTop zeroR] with T hT
   have hExp : δ₂ - σ = -d := by dsimp [d]; ring
   rw [hExp]
   field_simp [hlogTwo]
@@ -1919,7 +1920,7 @@ theorem eventually_typeI_start_lt_ordinate
   have hTscale' : Tscale ≤ T := (le_max_right _ _).trans hT
   have hTPos : 0 < T := by linarith
   have htPos : 0 < t := by linarith
-  have hNPos : (0 : ℝ) < N := by exact_mod_cast hN
+  have hNPos : zeroR < N := by exact_mod_cast hN
   have hCUpper : (C : ℝ) ≤ 6 * T := by
     subst C
     have hCutNonneg : 0 ≤ sharpZetaCutoff T := by
@@ -1946,7 +1947,7 @@ theorem eventually_typeI_start_lt_ordinate
       _ = (T / 2) ^ (-σ) * (72 * Real.pi) := by ring
   have hClogPos : 0 < Nat.clog 2 C := by
     apply Nat.clog_pos Nat.one_lt_two
-    have hCutLower : (2 : ℝ) ≤ sharpZetaCutoff T := by
+    have hCutLower : twoR ≤ sharpZetaCutoff T := by
       linarith [four_mul_lt_sharpZetaCutoff T]
     subst C
     exact lt_of_lt_of_le (by omega : 1 < 2)
@@ -1961,8 +1962,8 @@ theorem eventually_typeI_start_lt_ordinate
     positivity
   have hPowerIdentity : (T / 2) ^ (-σ) * T ^ δ₂ =
       2 ^ σ * T ^ (δ₂ - σ) := by
-    rw [Real.div_rpow (by linarith : 0 ≤ T) (by norm_num : (0 : ℝ) ≤ 2),
-      div_eq_mul_inv, Real.rpow_neg (by positivity : (0 : ℝ) ≤ 2),
+    rw [Real.div_rpow (by linarith : 0 ≤ T) (by norm_num : zeroR ≤ 2),
+      div_eq_mul_inv, Real.rpow_neg (by positivity : zeroR ≤ 2),
       inv_inv]
     calc
       T ^ (-σ) * 2 ^ σ * T ^ δ₂ =
@@ -1992,7 +1993,7 @@ theorem eventually_typeI_start_lt_ordinate
   have hThreshold :
       (72 * Real.pi) * (T / 2) ^ (-σ) <
         ((3 / 4) * (T ^ (-δ₂) / 2)) / Nat.clog 2 C := by
-    have hClogReal : (0 : ℝ) < Nat.clog 2 C := by exact_mod_cast hClogPos
+    have hClogReal : zeroR < Nat.clog 2 C := by exact_mod_cast hClogPos
     have hTPow : 0 < T ^ δ₂ := Real.rpow_pos_of_pos hTPos _
     rw [show (3 / 4) * (T ^ (-δ₂) / 2) =
         (3 / 8) / T ^ δ₂ by
@@ -2076,7 +2077,7 @@ theorem physical_height_le_sq_of_basic_endpoint_scale
     (hT : 0 < T) (hQ : 1 < Q)
     (hτUpper : typeILogarithmicScale T Q ≤ τ₀) :
     T ≤ (Q : ℝ) ^ (2 : ℕ) := by
-  have hBase : (1 : ℝ) < Q := by exact_mod_cast hQ
+  have hBase : oneR < Q := by exact_mod_cast hQ
   have hTauTwo : typeILogarithmicScale T Q ≤ 2 :=
     hτUpper.trans (endpointScaleCertificate_tau0_lt_two
       hσLower hσUpper hcert).le
@@ -2096,7 +2097,7 @@ noncomputable def typeIDirectPowerLossConstant : ℝ :=
 losses after the exact `N^σ` cancellation. -/
 noncomputable def classicalTypeIIPowerLoss
     (A d T : ℝ) (k Q : ℕ) : ℝ :=
-  A * (((2 : ℝ) ^ k) * Q) ^ (2 * d) * (k : ℝ) *
+  A * ((twoR ^ k) * Q) ^ (2 * d) * (k : ℝ) *
     (4 * Real.log T) ^ k
 
 theorem typeIDirectPowerLossConstant_pos : 0 < typeIDirectPowerLossConstant := by
@@ -2110,7 +2111,7 @@ theorem typeI_direct_normalized_threshold_lower
       (N : ℝ) ^ σ *
         (((3 / 4 : ℝ) * (T ^ (-d) / 2)) / Nat.clog 2 A) := by
   have hClogNat : 0 < Nat.clog 2 A := Nat.clog_pos Nat.one_lt_two hA
-  have hClog : (0 : ℝ) < Nat.clog 2 A := by exact_mod_cast hClogNat
+  have hClog : zeroR < Nat.clog 2 A := by exact_mod_cast hClogNat
   have hTd : 0 < T ^ d := Real.rpow_pos_of_pos hT _
   let R : ℝ := (8 / 3 : ℝ) * Nat.clog 2 A * T ^ d
   have hR : 0 < R := by dsimp only [R]; positivity
@@ -2184,8 +2185,8 @@ theorem typeIDirectThresholdLoss_le_classicalTypeIIPowerLoss
       _ = (N : ℝ) ^ (2 * d) := by
         rw [← Real.rpow_two, ← Real.rpow_mul (by positivity)]
   have hScale : (N : ℝ) ^ (2 * d) ≤
-      ((2 : ℝ) * N) ^ (2 * d) := by
-    exact Real.rpow_le_rpow (by positivity) (by nlinarith [show (0 : ℝ) ≤ N by positivity])
+      (twoR * N) ^ (2 * d) := by
+    exact Real.rpow_le_rpow (by positivity) (by nlinarith [show zeroR ≤ N by positivity])
       (by positivity)
   have hConst : (8 / 3 : ℝ) * (1 + 2 / Real.log 2) ≤
       typeIDirectPowerLossConstant * 4 := by
@@ -2194,12 +2195,12 @@ theorem typeIDirectThresholdLoss_le_classicalTypeIIPowerLoss
     nlinarith
   have hCore : (8 / 3 : ℝ) * (Nat.clog 2 A : ℝ) * T ^ d ≤
       typeIDirectPowerLossConstant *
-        (((2 : ℝ) * N) ^ (2 * d)) * (4 * Real.log T) := by
+        ((twoR * N) ^ (2 * d)) * (4 * Real.log T) := by
     have hLogNonneg : 0 ≤ Real.log T := Real.log_nonneg (by linarith)
     have hTdNonneg : 0 ≤ T ^ d := Real.rpow_nonneg hTPos.le _
     have hConstNonneg : 0 ≤ typeIDirectPowerLossConstant * 4 := by
       positivity [typeIDirectPowerLossConstant_pos]
-    have hTdScale : T ^ d ≤ ((2 : ℝ) * N) ^ (2 * d) := hTd.trans hScale
+    have hTdScale : T ^ d ≤ (twoR * N) ^ (2 * d) := hTd.trans hScale
     calc
       (8 / 3 : ℝ) * (Nat.clog 2 A : ℝ) * T ^ d ≤
           (8 / 3 : ℝ) *
@@ -2212,11 +2213,11 @@ theorem typeIDirectThresholdLoss_le_classicalTypeIIPowerLoss
             (Real.log T * T ^ d) :=
           mul_le_mul_of_nonneg_right hConst (mul_nonneg hLogNonneg hTdNonneg)
       _ ≤ (typeIDirectPowerLossConstant * 4) *
-            (Real.log T * ((2 : ℝ) * N) ^ (2 * d)) := by
+            (Real.log T * (twoR * N) ^ (2 * d)) := by
           exact mul_le_mul_of_nonneg_left
             (mul_le_mul_of_nonneg_left hTdScale hLogNonneg) hConstNonneg
       _ = typeIDirectPowerLossConstant *
-          (((2 : ℝ) * N) ^ (2 * d)) * (4 * Real.log T) := by ring
+          ((twoR * N) ^ (2 * d)) * (4 * Real.log T) := by ring
   unfold typeIDirectThresholdLoss classicalTypeIIPowerLoss
   norm_num
   linarith
@@ -2267,7 +2268,7 @@ theorem tendsto_typeI_medium_detector_ratio
       atTop (𝓝 0) := by
     have hDiv := (isLittleO_log_rpow_atTop ha).tendsto_div_nhds_zero
     apply hDiv.congr'
-    filter_upwards [eventually_gt_atTop (0 : ℝ)] with T hT
+    filter_upwards [eventually_gt_atTop zeroR] with T hT
     rw [Real.rpow_neg hT.le, div_eq_mul_inv]
   let c : ℝ := (800 / 3 : ℝ) * Real.sqrt 3
   have hExpanded : Tendsto
@@ -2279,11 +2280,11 @@ theorem tendsto_typeI_medium_detector_ratio
       (hLogPow.const_mul (c / Real.log 2)) using 1
     norm_num
   apply Tendsto.congr' _ hExpanded
-  filter_upwards [eventually_gt_atTop (0 : ℝ)] with T hT
+  filter_upwards [eventually_gt_atTop zeroR] with T hT
   have hExp : u - 50 * d = -a := by dsimp only [a]; ring
   rw [hExp]
   dsimp only [c]
-  have hlogTwo : Real.log (2 : ℝ) ≠ 0 :=
+  have hlogTwo : Real.log twoR ≠ 0 :=
     (Real.log_pos (by norm_num)).ne'
   field_simp [hlogTwo]
   ring
@@ -2296,7 +2297,7 @@ theorem eventually_typeI_medium_detector_ratio_lt_one
         (1 + (Real.log 6 + Real.log T) / Real.log 2) *
           T ^ (u - 50 * d) < 1 := by
   have hTendsto := tendsto_typeI_medium_detector_ratio d u hd hu
-  have hEventually := (tendsto_order.1 hTendsto).2 (1 : ℝ) (by norm_num)
+  have hEventually := (tendsto_order.1 hTendsto).2 oneR (by norm_num)
   rw [eventually_atTop] at hEventually
   obtain ⟨Tscale, hTscale⟩ := hEventually
   let T₀ := max 8 Tscale
@@ -2336,7 +2337,7 @@ theorem eventually_medium_typeI_majorant_lt_detector
     have hTau0Two := endpointScaleCertificate_tau0_lt_two hσLower hσUpper hcert
     dsimp only [τ]
     nlinarith [hcert.tau0_pos]
-  have hNReal : (1 : ℝ) < N := by exact_mod_cast hN
+  have hNReal : oneR < N := by exact_mod_cast hN
   have hScale : (N : ℝ) ^ τ = T := by
     simpa only [τ] using rpow_typeILogarithmicScale_eq hTPos hN
   have hTNsq : T ≤ (N : ℝ) ^ (2 : ℕ) := by
@@ -2393,7 +2394,7 @@ theorem eventually_medium_typeI_majorant_lt_detector
     dsimp only [A]
     apply lt_of_lt_of_le (by omega : 1 < (2 : ℕ))
     apply Nat.le_floor
-    exact (show (2 : ℝ) ≤ 4 * T by nlinarith).trans
+    exact (show twoR ≤ 4 * T by nlinarith).trans
       (four_mul_lt_sharpZetaCutoff T).le
   have hClogPos : 0 < (Nat.clog 2 A : ℝ) := by
     exact_mod_cast Nat.clog_pos Nat.one_lt_two hAOne
@@ -2451,7 +2452,7 @@ theorem three_height_le_typeI_square_of_low_scale
     (hTau : typeILogarithmicScale T N < 2 * τ₀ / 3) :
     3 * T ≤ (N : ℝ) ^ (2 : ℕ) := by
   have hTPos : 0 < T := by linarith
-  have hNReal : (1 : ℝ) < N := by exact_mod_cast hN
+  have hNReal : oneR < N := by exact_mod_cast hN
   let τ := typeILogarithmicScale T N
   have hTauThreeHalf : τ < 3 / 2 := by
     have hTau0Two := endpointScaleCertificate_tau0_lt_two hσLower hσUpper hcert
@@ -2468,8 +2469,8 @@ theorem three_height_le_typeI_square_of_low_scale
     have hN2 : (N : ℝ) ^ (2 : ℕ) ≤ 64 := by
       norm_num only [pow_two]
       have hNRealUpper : (N : ℝ) ≤ 8 := by exact_mod_cast hNEight
-      nlinarith [show (0 : ℝ) ≤ N by positivity]
-    have hPow : (N : ℝ) ^ (3 / 2 : ℝ) ≤ (N : ℝ) ^ (2 : ℝ) :=
+      nlinarith [show zeroR ≤ N by positivity]
+    have hPow : (N : ℝ) ^ (3 / 2 : ℝ) ≤ (N : ℝ) ^ twoR :=
       Real.rpow_le_rpow_of_exponent_le hNReal.le (by norm_num)
     rw [Real.rpow_two] at hPow
     nlinarith
@@ -2481,7 +2482,7 @@ theorem three_height_le_typeI_square_of_low_scale
       (N : ℝ) * Real.sqrt (N : ℝ) := by
     rw [show (3 / 2 : ℝ) = 1 + 1 / 2 by ring, Real.rpow_add (by positivity),
       Real.rpow_one, Real.sqrt_eq_rpow]
-  have hSqrtSq := Real.sq_sqrt (show (0 : ℝ) ≤ N by positivity)
+  have hSqrtSq := Real.sq_sqrt (show zeroR ≤ N by positivity)
   calc
     3 * T ≤ 3 * ((N : ℝ) ^ (3 / 2 : ℝ)) := by gcongr
     _ = 3 * (N : ℝ) * Real.sqrt N := by rw [hPowThreeHalf]; ring
@@ -2501,7 +2502,7 @@ theorem rpow_classicalMHHExponent_le_endpoint_target
     (Q : ℝ) ^ classicalMHHExponent σ (typeILogarithmicScale T Q) ≤
       T ^ (3 * (1 - σ) / τ₀) := by
   let τ := typeILogarithmicScale T Q
-  have hQOne : (1 : ℝ) ≤ Q := by exact_mod_cast hQ.le
+  have hQOne : oneR ≤ Q := by exact_mod_cast hQ.le
   have hEnvelope := classicalMHHExponent_le_corollary1110Envelope_of_certificate
     hσUpper hcert (τ := τ)
   have hTargetExp := hcert.subdivision_window τ hτLower hτUpper
@@ -2565,7 +2566,7 @@ theorem rpow_classicalMHHExponent_le_endpoint_target_of_augmented_scale
         dsimp only [E, τ] at hLoss ⊢
         linarith
       _ = (E + η) * τ := by ring
-  have hQOne : (1 : ℝ) ≤ Q := by exact_mod_cast hQ.le
+  have hQOne : oneR ≤ Q := by exact_mod_cast hQ.le
   have hPower := Real.rpow_le_rpow_of_exponent_le hQOne hExponent
   calc
     (Q : ℝ) ^ classicalMHHExponent σ τ ≤
@@ -2773,9 +2774,9 @@ theorem eventually_dichotomy_multiplicity_factor_bound
   let cMult : ℝ :=
     (Real.log (500 / 3 : ℝ) + 3 / η) / Real.log (35 / 32 : ℝ) + 1
   let C : ℝ := 20 * cLog * cMult
-  have hlogTwo : 0 < Real.log (2 : ℝ) := Real.log_pos (by norm_num)
+  have hlogTwo : 0 < Real.log twoR := Real.log_pos (by norm_num)
   have hlogRatio : 0 < Real.log (35 / 32 : ℝ) := Real.log_pos (by norm_num)
-  have hlogSix : 0 ≤ Real.log (6 : ℝ) := Real.log_nonneg (by norm_num)
+  have hlogSix : 0 ≤ Real.log sixR := Real.log_nonneg (by norm_num)
   have hlogConst : 0 ≤ Real.log (500 / 3 : ℝ) := Real.log_nonneg (by norm_num)
   have hcLog : 0 < cLog := by dsimp [cLog]; positivity
   have hcMult : 0 < cMult := by dsimp [cMult]; positivity
@@ -3088,7 +3089,7 @@ theorem eventually_typeII_physical_scale_bounds_two
   have hTOne : 1 ≤ T := hTfloor.trans hT
   have hTPos : 0 < T := zero_lt_one.trans_le hTOne
   have hFloorData := hFloor T hT
-  have hXRealPos : (0 : ℝ) < X := by
+  have hXRealPos : zeroR < X := by
     dsimp only [X]
     exact lt_of_lt_of_le (by positivity : 0 < T ^ (dX / 2) / 2) hFloorData.1
   have hX : 0 < X := by exact_mod_cast hXRealPos
@@ -3129,33 +3130,33 @@ theorem eventually_typeII_logarithmic_scale_bounds_two
         typeILogarithmicScale T N ≤ 4 / dX := by
   obtain ⟨Tscale, hTscale, hScale⟩ :=
     eventually_typeII_physical_scale_bounds_two dX dY hdX
-  let T₀ := max Tscale (max 2 ((2 : ℝ) ^ (4 / dX)))
+  let T₀ := max Tscale (max 2 (twoR ^ (4 / dX)))
   refine ⟨T₀, (le_max_left _ _).trans (le_max_right _ _), ?_⟩
   intro T r hT hr
   have hTscale' : Tscale ≤ T := (le_max_left _ _).trans hT
-  have hTRest : max 2 ((2 : ℝ) ^ (4 / dX)) ≤ T :=
+  have hTRest : max 2 (twoR ^ (4 / dX)) ≤ T :=
     (le_max_right _ _).trans hT
   have hTTwo : 2 ≤ T := (le_max_left _ _).trans hTRest
-  have hTConst : (2 : ℝ) ^ (4 / dX) ≤ T :=
+  have hTConst : twoR ^ (4 / dX) ≤ T :=
     (le_max_right _ _).trans hTRest
   have hTPos : 0 < T := by linarith
   let X := ⌊T ^ (dX / 2)⌋₊
   let N := 2 ^ r * X
   have hs := hScale T r hTscale' hr
   dsimp only at hs
-  have hNPos : (0 : ℝ) < N := by exact_mod_cast hs.1
+  have hNPos : zeroR < N := by exact_mod_cast hs.1
   have hNOne : 1 < N := by
     have hRaised := Real.rpow_le_rpow (Real.rpow_nonneg (by norm_num) _)
       hTConst (by positivity : 0 ≤ dX / 2)
-    have hConstPower : ((2 : ℝ) ^ (4 / dX)) ^ (dX / 2) = 4 := by
-      rw [← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2)]
+    have hConstPower : (twoR ^ (4 / dX)) ^ (dX / 2) = 4 := by
+      rw [← Real.rpow_mul (by norm_num : zeroR ≤ 2)]
       have hExp : 4 / dX * (dX / 2) = 2 := by field_simp [hdX.ne']; ring
       rw [hExp]
       norm_num
     rw [hConstPower] at hRaised
-    have hNRealTwo : (2 : ℝ) ≤ N := by nlinarith [hs.2.1]
+    have hNRealTwo : twoR ≤ N := by nlinarith [hs.2.1]
     exact_mod_cast hNRealTwo
-  have hBaseOne : (1 : ℝ) < N := by exact_mod_cast hNOne
+  have hBaseOne : oneR < N := by exact_mod_cast hNOne
   have hSumLe : dY + dX / 2 ≤ 2 * dY := by linarith
   have hLowerExp : (N : ℝ) ^ (1 / (2 * dY)) ≤ T := by
     calc
@@ -3168,8 +3169,8 @@ theorem eventually_typeII_logarithmic_scale_bounds_two
         field_simp [hdY.ne']
       _ ≤ T := by
         calc
-          T ^ ((dY + dX / 2) / (2 * dY)) ≤ T ^ (1 : ℝ) :=
-            Real.rpow_le_rpow_of_exponent_le (by linarith : (1 : ℝ) ≤ T)
+          T ^ ((dY + dX / 2) / (2 * dY)) ≤ T ^ oneR :=
+            Real.rpow_le_rpow_of_exponent_le (by linarith : oneR ≤ T)
               ((div_le_one (by positivity : 0 < 2 * dY)).2 hSumLe)
           _ = T := Real.rpow_one T
   have hLowerTau : 1 / (2 * dY) ≤ typeILogarithmicScale T N :=
@@ -3178,14 +3179,14 @@ theorem eventually_typeII_logarithmic_scale_bounds_two
     have hRaised := Real.rpow_le_rpow (by positivity) hs.2.1
       (by positivity : 0 ≤ 4 / dX)
     have hFloorPower : (T ^ (dX / 2) / 2) ^ (4 / dX) =
-        T ^ 2 / (2 : ℝ) ^ (4 / dX) := by
+        T ^ 2 / twoR ^ (4 / dX) := by
       have hExp : dX / 2 * (4 / dX) = 2 := by field_simp [hdX.ne']; ring
       rw [Real.div_rpow (Real.rpow_nonneg hTPos.le _)
-          (by norm_num : (0 : ℝ) ≤ 2), ← Real.rpow_mul hTPos.le, hExp]
+          (by norm_num : zeroR ≤ 2), ← Real.rpow_mul hTPos.le, hExp]
       simp only [Real.rpow_two]
     rw [hFloorPower] at hRaised
-    have hConstPos : 0 < (2 : ℝ) ^ (4 / dX) := by positivity
-    have hTDiv : T ≤ T ^ 2 / (2 : ℝ) ^ (4 / dX) := by
+    have hConstPos : 0 < twoR ^ (4 / dX) := by positivity
+    have hTDiv : T ≤ T ^ 2 / twoR ^ (4 / dX) := by
       rw [le_div_iff₀ hConstPos]
       nlinarith
     exact hTDiv.trans hRaised
@@ -3204,27 +3205,27 @@ theorem eventually_typeI_logarithmic_scale_upper
       let N := 2 ^ r * Y
       1 < N ∧ typeILogarithmicScale T N ≤ 2 / d := by
   obtain ⟨Tfloor, hTfloor, hFloor⟩ := eventually_half_rpow_le_natFloor d hd
-  let T₀ := max Tfloor (max 2 ((2 : ℝ) ^ (2 / d)))
+  let T₀ := max Tfloor (max 2 (twoR ^ (2 / d)))
   refine ⟨T₀, (le_max_left _ _).trans (le_max_right _ _), ?_⟩
   intro T r hT
   dsimp only
   have hTFloor : Tfloor ≤ T := (le_max_left _ _).trans hT
-  have hTRest : max 2 ((2 : ℝ) ^ (2 / d)) ≤ T :=
+  have hTRest : max 2 (twoR ^ (2 / d)) ≤ T :=
     (le_max_right _ _).trans hT
   have hTTwo : 2 ≤ T := (le_max_left _ _).trans hTRest
-  have hTConst : (2 : ℝ) ^ (2 / d) ≤ T :=
+  have hTConst : twoR ^ (2 / d) ≤ T :=
     (le_max_right _ _).trans hTRest
   have hTPos : 0 < T := by linarith
   let Y := ⌊T ^ d⌋₊
   let N := 2 ^ r * Y
   have hYLower : T ^ d / 2 ≤ (Y : ℝ) := by
     simpa only [Y] using (hFloor T hTFloor).1
-  have hYTwo : (2 : ℝ) ≤ Y := by
+  have hYTwo : twoR ≤ Y := by
     have hExpNonneg : 0 ≤ d := hd.le
     have hRaised := Real.rpow_le_rpow (Real.rpow_nonneg (by norm_num) _)
       hTConst hExpNonneg
-    have hConstPower : ((2 : ℝ) ^ (2 / d)) ^ d = 4 := by
-      rw [← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 2)]
+    have hConstPower : (twoR ^ (2 / d)) ^ d = 4 := by
+      rw [← Real.rpow_mul (by norm_num : zeroR ≤ 2)]
       have hExp : 2 / d * d = 2 := by field_simp [hd.ne']
       rw [hExp]
       norm_num
@@ -3244,14 +3245,14 @@ theorem eventually_typeI_logarithmic_scale_upper
     have hExpPos : 0 < 2 / d := by positivity
     have hRaised := Real.rpow_le_rpow (by positivity) hNLower hExpPos.le
     have hFloorPower : (T ^ d / 2) ^ (2 / d) =
-        T ^ 2 / (2 : ℝ) ^ (2 / d) := by
+        T ^ 2 / twoR ^ (2 / d) := by
       have hExp : d * (2 / d) = 2 := by field_simp [hd.ne']
-      rw [Real.div_rpow (Real.rpow_nonneg hTPos.le _) (by norm_num : (0 : ℝ) ≤ 2),
+      rw [Real.div_rpow (Real.rpow_nonneg hTPos.le _) (by norm_num : zeroR ≤ 2),
         ← Real.rpow_mul hTPos.le, hExp]
       simp only [Real.rpow_two]
     rw [hFloorPower] at hRaised
-    have hConstPos : 0 < (2 : ℝ) ^ (2 / d) := by positivity
-    have hTDiv : T ≤ T ^ 2 / (2 : ℝ) ^ (2 / d) := by
+    have hConstPos : 0 < twoR ^ (2 / d) := by positivity
+    have hTDiv : T ≤ T ^ 2 / twoR ^ (2 / d) := by
       rw [le_div_iff₀ hConstPos]
       nlinarith
     exact hTDiv.trans hRaised
@@ -3269,7 +3270,7 @@ theorem exists_bounded_positive_power_scale_reduction
       2 * τ₀ / 3 ≤ τ / k ∧ τ / k ≤ τ₀ := by
   obtain ⟨k, hk, hkLower, hkUpper⟩ :=
     exists_positive_power_scale_reduction hτ₀ hτLower
-  have hkRealPos : (0 : ℝ) < k := by exact_mod_cast hk
+  have hkRealPos : zeroR < k := by exact_mod_cast hk
   have hBoundReal : (k : ℝ) ≤ 3 * U / (2 * τ₀) := by
     have hScaled := (le_div_iff₀ hkRealPos).mp hkLower
     apply (le_div_iff₀ (by positivity : 0 < 2 * τ₀)).2
@@ -3343,7 +3344,7 @@ theorem dyadic_power_mhh_le_endpoint_with_factor
     (hτUpper : typeILogarithmicScale T N / k ≤ τ₀) :
     let Q := 2 ^ r * N ^ k
     (Q : ℝ) ^ classicalMHHExponent σ (typeILogarithmicScale T Q) ≤
-      ((2 : ℝ) ^ B) ^ (2 : ℕ) * T ^ (3 * (1 - σ) / τ₀) := by
+      (twoR ^ B) ^ (2 : ℕ) * T ^ (3 * (1 - σ) / τ₀) := by
   dsimp only
   let M : ℕ := N ^ k
   let Q : ℕ := 2 ^ r * M
@@ -3377,34 +3378,34 @@ theorem dyadic_power_mhh_le_endpoint_with_factor
     (by simpa only [hScaleM] using hτLower)
     (by simpa only [hScaleM] using hτUpper)
   have hrB : r ≤ B := le_trans (Nat.le_of_lt hr) hkB
-  have hQFactor : (Q : ℝ) ≤ (2 : ℝ) ^ B * M := by
+  have hQFactor : (Q : ℝ) ≤ twoR ^ B * M := by
     dsimp only [Q]
     have hPow : 2 ^ r ≤ 2 ^ B :=
       pow_le_pow_right₀ (by omega : (1 : ℕ) ≤ 2) hrB
     exact_mod_cast Nat.mul_le_mul_right M hPow
-  have hFOne : (1 : ℝ) ≤ (2 : ℝ) ^ B := by
-    exact one_le_pow₀ (by norm_num : (1 : ℝ) ≤ 2)
+  have hFOne : oneR ≤ twoR ^ B := by
+    exact one_le_pow₀ (by norm_num : oneR ≤ 2)
   calc
     (Q : ℝ) ^ classicalMHHExponent σ (typeILogarithmicScale T Q) ≤
         (Q : ℝ) ^ classicalMHHExponent σ (typeILogarithmicScale T M) :=
       Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast hQ.le) hExpMono
-    _ ≤ ((2 : ℝ) ^ B * M) ^
+    _ ≤ (twoR ^ B * M) ^
         classicalMHHExponent σ (typeILogarithmicScale T M) := by
       exact Real.rpow_le_rpow (by positivity) hQFactor hExpM.1
-    _ = ((2 : ℝ) ^ B) ^
+    _ = (twoR ^ B) ^
           classicalMHHExponent σ (typeILogarithmicScale T M) *
         (M : ℝ) ^ classicalMHHExponent σ (typeILogarithmicScale T M) := by
       rw [Real.mul_rpow (by positivity) (by positivity)]
-    _ ≤ ((2 : ℝ) ^ B) ^ (2 : ℕ) *
+    _ ≤ (twoR ^ B) ^ (2 : ℕ) *
         (M : ℝ) ^ classicalMHHExponent σ (typeILogarithmicScale T M) := by
       gcongr
       calc
-        ((2 : ℝ) ^ B) ^
+        (twoR ^ B) ^
             classicalMHHExponent σ (typeILogarithmicScale T M) ≤
-            ((2 : ℝ) ^ B) ^ (2 : ℝ) :=
+            (twoR ^ B) ^ twoR :=
           Real.rpow_le_rpow_of_exponent_le hFOne hExpM.2
-        _ = ((2 : ℝ) ^ B) ^ (2 : ℕ) := Real.rpow_natCast _ 2
-    _ ≤ ((2 : ℝ) ^ B) ^ (2 : ℕ) *
+        _ = (twoR ^ B) ^ (2 : ℕ) := Real.rpow_natCast _ 2
+    _ ≤ (twoR ^ B) ^ (2 : ℕ) *
         T ^ (3 * (1 - σ) / τ₀) := by gcongr
 
 /-- Dyadic powered extraction with a nearby augmented endpoint scale.  This
@@ -3425,7 +3426,7 @@ theorem dyadic_power_mhh_le_endpoint_with_factor_of_augmented_scale
       η * (typeILogarithmicScale T N / k)) :
     let Q := 2 ^ r * N ^ k
     (Q : ℝ) ^ classicalMHHExponent σ (typeILogarithmicScale T Q) ≤
-      ((2 : ℝ) ^ B) ^ (2 : ℕ) *
+      (twoR ^ B) ^ (2 : ℕ) *
         T ^ (3 * (1 - σ) / τ₀ + η) := by
   dsimp only
   let M : ℕ := N ^ k
@@ -3462,34 +3463,34 @@ theorem dyadic_power_mhh_le_endpoint_with_factor_of_augmented_scale
       (by simpa only [hScaleM] using hScaleLe) hτ'Lower hτ'Upper
       (by simpa only [hScaleM] using hLoss)
   have hrB : r ≤ B := le_trans (Nat.le_of_lt hr) hkB
-  have hQFactor : (Q : ℝ) ≤ (2 : ℝ) ^ B * M := by
+  have hQFactor : (Q : ℝ) ≤ twoR ^ B * M := by
     dsimp only [Q]
     have hPow : 2 ^ r ≤ 2 ^ B :=
       pow_le_pow_right₀ (by omega : (1 : ℕ) ≤ 2) hrB
     exact_mod_cast Nat.mul_le_mul_right M hPow
-  have hFOne : (1 : ℝ) ≤ (2 : ℝ) ^ B := by
-    exact one_le_pow₀ (by norm_num : (1 : ℝ) ≤ 2)
+  have hFOne : oneR ≤ twoR ^ B := by
+    exact one_le_pow₀ (by norm_num : oneR ≤ 2)
   calc
     (Q : ℝ) ^ classicalMHHExponent σ (typeILogarithmicScale T Q) ≤
         (Q : ℝ) ^ classicalMHHExponent σ (typeILogarithmicScale T M) :=
       Real.rpow_le_rpow_of_exponent_le (by exact_mod_cast hQ.le) hExpMono
-    _ ≤ ((2 : ℝ) ^ B * M) ^
+    _ ≤ (twoR ^ B * M) ^
         classicalMHHExponent σ (typeILogarithmicScale T M) := by
       exact Real.rpow_le_rpow (by positivity) hQFactor hExpM.1
-    _ = ((2 : ℝ) ^ B) ^
+    _ = (twoR ^ B) ^
           classicalMHHExponent σ (typeILogarithmicScale T M) *
         (M : ℝ) ^ classicalMHHExponent σ (typeILogarithmicScale T M) := by
       rw [Real.mul_rpow (by positivity) (by positivity)]
-    _ ≤ ((2 : ℝ) ^ B) ^ (2 : ℕ) *
+    _ ≤ (twoR ^ B) ^ (2 : ℕ) *
         (M : ℝ) ^ classicalMHHExponent σ (typeILogarithmicScale T M) := by
       gcongr
       calc
-        ((2 : ℝ) ^ B) ^
+        (twoR ^ B) ^
             classicalMHHExponent σ (typeILogarithmicScale T M) ≤
-            ((2 : ℝ) ^ B) ^ (2 : ℝ) :=
+            (twoR ^ B) ^ twoR :=
           Real.rpow_le_rpow_of_exponent_le hFOne hExpM.2
-        _ = ((2 : ℝ) ^ B) ^ (2 : ℕ) := Real.rpow_natCast _ 2
-    _ ≤ ((2 : ℝ) ^ B) ^ (2 : ℕ) *
+        _ = (twoR ^ B) ^ (2 : ℕ) := Real.rpow_natCast _ 2
+    _ ≤ (twoR ^ B) ^ (2 : ℕ) *
         T ^ (3 * (1 - σ) / τ₀ + η) := by gcongr
 
 /-- At sufficiently large height, the bounded dyadic factor in powered
@@ -3512,7 +3513,7 @@ theorem eventually_dyadic_power_scale_lower_half
   let Q : ℕ := 2 ^ r * N ^ k
   have hTTwo : 2 ≤ T := (le_max_left _ _).trans hT
   have hTPos : 0 < T := by linarith
-  have hNReal : (1 : ℝ) < N := by exact_mod_cast hN
+  have hNReal : oneR < N := by exact_mod_cast hN
   have hNPos : 0 < N := by omega
   have hQ : 1 < Q := by
     dsimp only [Q]
@@ -3520,14 +3521,14 @@ theorem eventually_dyadic_power_scale_lower_half
     exact hNk.trans_le (Nat.le_mul_of_pos_left _ (pow_pos (by omega) r))
   have hNτ : (N : ℝ) ^ τ = T := by
     simpa only [τ] using rpow_typeILogarithmicScale_eq hTPos hN
-  have hTConst : (8 : ℝ) ^ U ≤ T := (le_max_right (2 : ℝ) _).trans hT
+  have hTConst : (8 : ℝ) ^ U ≤ T := (le_max_right twoR _).trans hT
   have hTUpperN : T ≤ (N : ℝ) ^ U := by
     rw [← hNτ]
     exact Real.rpow_le_rpow_of_exponent_le hNReal.le hτU
   have hLargeN : (8 : ℝ) ≤ N := by
     by_contra hnot
     have hNlt : (N : ℝ) < 8 := lt_of_not_ge hnot
-    have hStrict := Real.rpow_lt_rpow (by positivity : (0 : ℝ) ≤ N)
+    have hStrict := Real.rpow_lt_rpow (by positivity : zeroR ≤ N)
       hNlt hU
     linarith
   have hPowBase : (2 ^ (3 * r) : ℕ) ≤ N ^ k := by
@@ -3538,7 +3539,7 @@ theorem eventually_dyadic_power_scale_lower_half
     exact (Nat.pow_le_pow_left hLargeNat r).trans
       (Nat.pow_le_pow_right (by omega) hr.le)
   have hSlack : (N : ℝ) ^ ((k : ℝ) * τ₀ / 6) ≥
-      (2 : ℝ) ^ ((r : ℝ) * (τ₀ / 2)) := by
+      twoR ^ ((r : ℝ) * (τ₀ / 2)) := by
     have hExp : 0 ≤ τ₀ / 6 := by positivity
     have hRaised :
         (((2 ^ (3 * r) : ℕ) : ℝ) ^ (τ₀ / 6)) ≤
@@ -3546,8 +3547,8 @@ theorem eventually_dyadic_power_scale_lower_half
       Real.rpow_le_rpow (by positivity)
         (by exact_mod_cast hPowBase) hExp
     calc
-      (2 : ℝ) ^ ((r : ℝ) * (τ₀ / 2)) =
-          (2 : ℝ) ^ (((3 * r : ℕ) : ℝ) * (τ₀ / 6)) := by
+      twoR ^ ((r : ℝ) * (τ₀ / 2)) =
+          twoR ^ (((3 * r : ℕ) : ℝ) * (τ₀ / 6)) := by
             congr 1
             push_cast
             ring
@@ -3570,14 +3571,14 @@ theorem eventually_dyadic_power_scale_lower_half
       rw [le_div_iff₀ (Real.rpow_pos_of_pos (by positivity) _), ← hNτ]
       rw [← Real.rpow_add (by positivity)]
       apply Real.rpow_le_rpow_of_exponent_le hNReal.le
-      have hkReal : (0 : ℝ) < k := by exact_mod_cast hk
+      have hkReal : zeroR < k := by exact_mod_cast hk
       have := (le_div_iff₀ hkReal).mp hτLower
       nlinarith
     have hTwo : ((2 ^ r : ℕ) : ℝ) ^ (τ₀ / 2) ≤
         (N : ℝ) ^ ((k : ℝ) * τ₀ / 6) := by
       calc
         ((2 ^ r : ℕ) : ℝ) ^ (τ₀ / 2) =
-            (2 : ℝ) ^ ((r : ℝ) * (τ₀ / 2)) := by
+            twoR ^ ((r : ℝ) * (τ₀ / 2)) := by
           rw [Nat.cast_pow, ← Real.rpow_natCast,
             ← Real.rpow_mul (by positivity)]
           norm_num
@@ -3595,7 +3596,7 @@ theorem eventually_dyadic_power_scale_lower_half
               ← Real.rpow_mul (by positivity)]
           _ ≤ T / (N : ℝ) ^ ((k : ℝ) * τ₀ / 6) := hNTarget
       _ = T := by
-        field_simp [(Real.rpow_pos_of_pos (by positivity : (0 : ℝ) < N)
+        field_simp [(Real.rpow_pos_of_pos (by positivity : zeroR < N)
           ((k : ℝ) * τ₀ / 6)).ne']
   exact (Real.le_logb_iff_rpow_le (by exact_mod_cast hQ) hTPos).mpr
     (by simpa only [Q] using hLowerPhysical)
@@ -3622,11 +3623,11 @@ theorem exists_bounded_power_scale_reduction_with_margin
     dsimp only [k]
     exact Nat.ceil_lt_add_one (by positivity : 0 ≤ τ / τ₀)
   have hUpper : τ / k ≤ τ₀ := by
-    rw [div_le_iff₀ (by exact_mod_cast hk : (0 : ℝ) < k)]
+    rw [div_le_iff₀ (by exact_mod_cast hk : zeroR < k)]
     have := (div_le_iff₀ hτ₀).mp hkLower
     nlinarith
   have hLower : 4 * τ₀ / 5 ≤ τ / k := by
-    rw [le_div_iff₀ (by exact_mod_cast hk : (0 : ℝ) < k)]
+    rw [le_div_iff₀ (by exact_mod_cast hk : zeroR < k)]
     have hCeilCost : (k : ℝ) ≤ 5 * τ / (4 * τ₀) := by
       have hOne : 1 ≤ τ / (4 * τ₀) := by
         rw [le_div_iff₀ (by positivity : 0 < 4 * τ₀)]
@@ -3663,7 +3664,7 @@ theorem eventually_dyadic_power_scale_in_endpoint_window
   let Q := 2 ^ r * N ^ k
   have hTTwo : 2 ≤ T := (le_max_left _ _).trans hT
   have hTPos : 0 < T := by linarith
-  have hNReal : (1 : ℝ) < N := by exact_mod_cast hN
+  have hNReal : oneR < N := by exact_mod_cast hN
   have hNPos : 0 < N := by omega
   have hQ : 1 < Q := by
     dsimp only [Q]
@@ -3674,7 +3675,7 @@ theorem eventually_dyadic_power_scale_in_endpoint_window
   have hNτ : (N : ℝ) ^ τ = T := by
     simpa only [τ] using rpow_typeILogarithmicScale_eq hTPos hN
   have hUpperPhysical : T ≤ (Q : ℝ) ^ τ₀ := by
-    have hkReal : (0 : ℝ) < k := by exact_mod_cast hk
+    have hkReal : zeroR < k := by exact_mod_cast hk
     have hPowN : T ≤ (N : ℝ) ^ ((k : ℝ) * τ₀) := by
       rw [← hNτ]
       apply Real.rpow_le_rpow_of_exponent_le hNReal.le
@@ -3691,15 +3692,15 @@ theorem eventually_dyadic_power_scale_in_endpoint_window
         · exact_mod_cast Nat.le_mul_of_pos_left (N ^ k) (pow_pos (by omega) r)
         · exact hτ₀.le
   have hTConst : (128 : ℝ) ^ U ≤ T :=
-    (le_max_right (2 : ℝ) _).trans hT
-  have hkReal : (0 : ℝ) < k := by exact_mod_cast hk
+    (le_max_right twoR _).trans hT
+  have hkReal : zeroR < k := by exact_mod_cast hk
   have hTUpperN : T ≤ (N : ℝ) ^ U := by
     rw [← hNτ]
     exact Real.rpow_le_rpow_of_exponent_le hNReal.le hτU
   have hLargeN : (128 : ℝ) ≤ N := by
     by_contra hnot
     have hNlt : (N : ℝ) < 128 := lt_of_not_ge hnot
-    have hStrict := Real.rpow_lt_rpow (by positivity : (0 : ℝ) ≤ N)
+    have hStrict := Real.rpow_lt_rpow (by positivity : zeroR ≤ N)
       hNlt hU
     linarith
   have hPowBase : (2 ^ (7 * r) : ℕ) ≤ N ^ k := by
@@ -3710,25 +3711,25 @@ theorem eventually_dyadic_power_scale_in_endpoint_window
     exact (Nat.pow_le_pow_left hLargeNat r).trans
       (Nat.pow_le_pow_right (by omega) hr.le)
   have hSlack : (N : ℝ) ^ ((k : ℝ) * τ₀ / 10) ≥
-      (2 : ℝ) ^ ((r : ℝ) * (2 * τ₀ / 3)) := by
+      twoR ^ ((r : ℝ) * (2 * τ₀ / 3)) := by
     have hExp : 0 ≤ τ₀ / 10 := by positivity
     have hRaised :
         (((2 ^ (7 * r) : ℕ) : ℝ) ^ (τ₀ / 10)) ≤
           (((N ^ k : ℕ) : ℝ) ^ (τ₀ / 10)) :=
       Real.rpow_le_rpow
-        (by positivity : (0 : ℝ) ≤ ((2 ^ (7 * r) : ℕ) : ℝ))
+        (by positivity : zeroR ≤ ((2 ^ (7 * r) : ℕ) : ℝ))
         (by exact_mod_cast hPowBase :
           ((2 ^ (7 * r) : ℕ) : ℝ) ≤ ((N ^ k : ℕ) : ℝ))
       hExp
     have hExponent : (r : ℝ) * (2 * τ₀ / 3) ≤
         (7 * r : ℕ) * (τ₀ / 10) := by
-      have hrNonneg : (0 : ℝ) ≤ r := by positivity
+      have hrNonneg : zeroR ≤ r := by positivity
       push_cast
       nlinarith
     calc
-      (2 : ℝ) ^ ((r : ℝ) * (2 * τ₀ / 3)) =
-          (2 : ℝ) ^ ((r : ℝ) * (2 * τ₀ / 3)) := rfl
-      _ ≤ (2 : ℝ) ^ (((7 * r : ℕ) : ℝ) * (τ₀ / 10)) :=
+      twoR ^ ((r : ℝ) * (2 * τ₀ / 3)) =
+          twoR ^ ((r : ℝ) * (2 * τ₀ / 3)) := rfl
+      _ ≤ twoR ^ (((7 * r : ℕ) : ℝ) * (τ₀ / 10)) :=
         Real.rpow_le_rpow_of_exponent_le (by norm_num) hExponent
       _ = ((2 ^ (7 * r) : ℕ) : ℝ) ^ (τ₀ / 10) := by
         rw [Nat.cast_pow, ← Real.rpow_natCast,
@@ -3741,7 +3742,7 @@ theorem eventually_dyadic_power_scale_in_endpoint_window
         congr 1
         ring
   have hLowerPhysical : (Q : ℝ) ^ (2 * τ₀ / 3) ≤ T := by
-    have hBase : (0 : ℝ) ≤ (2 ^ r : ℕ) := by positivity
+    have hBase : zeroR ≤ (2 ^ r : ℕ) := by positivity
     rw [Nat.cast_mul, Real.mul_rpow (by positivity) (by positivity)]
     have hNTarget : (N : ℝ) ^ ((k : ℝ) * (2 * τ₀ / 3)) ≤
         T / (N : ℝ) ^ ((k : ℝ) * τ₀ / 10) := by
@@ -3754,7 +3755,7 @@ theorem eventually_dyadic_power_scale_in_endpoint_window
         (N : ℝ) ^ ((k : ℝ) * τ₀ / 10) := by
       calc
         ((2 ^ r : ℕ) : ℝ) ^ (2 * τ₀ / 3) =
-            (2 : ℝ) ^ ((r : ℝ) * (2 * τ₀ / 3)) := by
+            twoR ^ ((r : ℝ) * (2 * τ₀ / 3)) := by
           norm_num only [Nat.cast_pow, Nat.cast_ofNat]
           rw [← Real.rpow_natCast,
             ← Real.rpow_mul (by positivity)]
@@ -3772,7 +3773,7 @@ theorem eventually_dyadic_power_scale_in_endpoint_window
               ← Real.rpow_mul (by positivity)]
           _ ≤ T / (N : ℝ) ^ ((k : ℝ) * τ₀ / 10) := hNTarget
       _ = T := by
-        field_simp [(Real.rpow_pos_of_pos (by positivity : (0 : ℝ) < N)
+        field_simp [(Real.rpow_pos_of_pos (by positivity : zeroR < N)
           ((k : ℝ) * τ₀ / 10)).ne']
   have hTau := (typeILogarithmicScale_mem_iff hTPos hQ
     (2 * τ₀ / 3) τ₀).2 ⟨hLowerPhysical, hUpperPhysical⟩
@@ -3824,7 +3825,7 @@ theorem typeII_powered_threshold_lower
       hR (le_max_right _ _)
   refine ⟨hP, hRatio.trans ((div_le_div_iff_of_pos_right hR).2 hQUpper |>.trans ?_)⟩
   dsimp only [R, U]
-  have hkReal : (0 : ℝ) < k := by exact_mod_cast hk
+  have hkReal : zeroR < k := by exact_mod_cast hk
   have hUpperPow : 0 < ((2 ^ k * N ^ k : ℕ) : ℝ) ^ σ := by positivity
   have hEtaPow : 0 < ((2 ^ k * N ^ k : ℕ) : ℝ) ^ η := by positivity
   rw [show (L / D) ^ k = L ^ k / D ^ k by rw [div_pow]]
@@ -3839,27 +3840,27 @@ theorem typeII_powered_scale_normalization_identity
         (C₀ * (2 * N : ℝ) ^ d * (N : ℝ) ^ (-σ)) ^ k =
       ((2 ^ k : ℕ) : ℝ) ^ σ * C₀ ^ k *
         (2 * N : ℝ) ^ (d * k) := by
-  have hNReal : (0 : ℝ) < N := by exact_mod_cast hN
-  have hTwoN : (0 : ℝ) < 2 * N := by positivity
+  have hNReal : zeroR < N := by exact_mod_cast hN
+  have hTwoN : zeroR < 2 * N := by positivity
   push_cast
-  rw [Real.mul_rpow (by positivity : (0 : ℝ) ≤ (2 : ℝ) ^ k)
+  rw [Real.mul_rpow (by positivity : zeroR ≤ twoR ^ k)
       (pow_nonneg hNReal.le k),
     mul_pow, mul_pow]
-  have hTwoNat : (2 : ℝ) ^ k = (2 : ℝ) ^ (k : ℝ) :=
-    (Real.rpow_natCast (2 : ℝ) k).symm
+  have hTwoNat : twoR ^ k = twoR ^ (k : ℝ) :=
+    (Real.rpow_natCast twoR k).symm
   have hNNat : (N : ℝ) ^ k = (N : ℝ) ^ (k : ℝ) :=
     (Real.rpow_natCast (N : ℝ) k).symm
   rw [hTwoNat, hNNat]
-  change ((2 : ℝ) ^ (k : ℝ)) ^ σ *
+  change (twoR ^ (k : ℝ)) ^ σ *
       ((N : ℝ) ^ (k : ℝ)) ^ σ *
-        (C₀ ^ k * (((2 : ℝ) * N) ^ d) ^ k *
+        (C₀ ^ k * ((twoR * N) ^ d) ^ k *
           (((N : ℝ) ^ (-σ)) ^ k)) =
-    ((2 : ℝ) ^ (k : ℝ)) ^ σ * C₀ ^ k *
-      ((2 : ℝ) * N) ^ (d * (k : ℝ))
-  rw [← Real.rpow_mul (by positivity : (0 : ℝ) ≤ 2),
+    (twoR ^ (k : ℝ)) ^ σ * C₀ ^ k *
+      (twoR * N) ^ (d * (k : ℝ))
+  rw [← Real.rpow_mul (by positivity : zeroR ≤ 2),
     ← Real.rpow_mul hNReal.le]
-  have hTwoNpow : (((2 : ℝ) * N) ^ d) ^ k =
-      ((2 : ℝ) * N) ^ (d * (k : ℝ)) := by
+  have hTwoNpow : ((twoR * N) ^ d) ^ k =
+      (twoR * N) ^ (d * (k : ℝ)) := by
     rw [← Real.rpow_natCast, ← Real.rpow_mul hTwoN.le]
   have hNnegpow : ((N : ℝ) ^ (-σ)) ^ k =
       (N : ℝ) ^ ((-σ) * (k : ℝ)) := by
@@ -3871,15 +3872,15 @@ theorem typeII_powered_scale_normalization_identity
     convert Real.rpow_zero (N : ℝ) using 1
     ring_nf
   calc
-    (2 : ℝ) ^ ((k : ℝ) * σ) * (N : ℝ) ^ ((k : ℝ) * σ) *
-          (C₀ ^ k * ((2 : ℝ) * N) ^ (d * k) *
+    twoR ^ ((k : ℝ) * σ) * (N : ℝ) ^ ((k : ℝ) * σ) *
+          (C₀ ^ k * (twoR * N) ^ (d * k) *
             (N : ℝ) ^ ((-σ) * (k : ℝ))) =
-        ((2 : ℝ) ^ ((k : ℝ) * σ) * C₀ ^ k *
-          ((2 : ℝ) * N) ^ (d * k)) *
+        (twoR ^ ((k : ℝ) * σ) * C₀ ^ k *
+          (twoR * N) ^ (d * k)) *
             ((N : ℝ) ^ ((k : ℝ) * σ) *
               (N : ℝ) ^ ((-σ) * (k : ℝ))) := by ring
-    _ = (2 : ℝ) ^ ((k : ℝ) * σ) * C₀ ^ k *
-        ((2 : ℝ) * N) ^ (d * k) := by
+    _ = twoR ^ ((k : ℝ) * σ) * C₀ ^ k *
+        (twoR * N) ^ (d * k) := by
       rw [hCancel, mul_one]
 
 theorem classicalTypeIIPowerLoss_mono_length
@@ -3889,8 +3890,8 @@ theorem classicalTypeIIPowerLoss_mono_length
     classicalTypeIIPowerLoss A d T k R ≤
       classicalTypeIIPowerLoss A d T k Q := by
   dsimp only [classicalTypeIIPowerLoss]
-  have hScale : (((2 : ℝ) ^ k) * R) ^ (2 * d) ≤
-      (((2 : ℝ) ^ k) * Q) ^ (2 * d) := by
+  have hScale : ((twoR ^ k) * R) ^ (2 * d) ≤
+      ((twoR ^ k) * Q) ^ (2 * d) := by
     apply Real.rpow_le_rpow
     · positivity
     · gcongr
@@ -3910,7 +3911,7 @@ theorem typeII_powered_threshold_loss_le_envelope
     let D := C₀ * (2 * N : ℝ) ^ e * (N : ℝ) ^ (-σ)
     let aLog := max 1
       (((16 / 9 : ℝ) * (1 + (Real.log 2)⁻¹)) / 4)
-    let A := (2 : ℝ) ^ B * C₀ ^ B * C * aLog ^ B
+    let A := twoR ^ B * C₀ ^ B * C * aLog ^ B
     typeIIPoweredThresholdLoss C L D e σ N k ≤
       1 + classicalTypeIIPowerLoss A e T k (N ^ k) := by
   dsimp only
@@ -3918,7 +3919,7 @@ theorem typeII_powered_threshold_loss_le_envelope
   let D : ℝ := C₀ * (2 * N : ℝ) ^ e * (N : ℝ) ^ (-σ)
   let aLog : ℝ := max 1
     (((16 / 9 : ℝ) * (1 + (Real.log 2)⁻¹)) / 4)
-  let A : ℝ := (2 : ℝ) ^ B * C₀ ^ B * C * aLog ^ B
+  let A : ℝ := twoR ^ B * C₀ ^ B * C * aLog ^ B
   have hTOne : 1 ≤ T := by
     calc
       1 = Real.exp 0 := by rw [Real.exp_zero]
@@ -3936,7 +3937,7 @@ theorem typeII_powered_threshold_loss_le_envelope
     dsimp only [D]
     positivity
   have hLogY : Real.log Y ≤ dY * Real.log T := by
-    have hYPos : (0 : ℝ) < Y := by exact_mod_cast (Nat.zero_lt_of_lt hY)
+    have hYPos : zeroR < Y := by exact_mod_cast (Nat.zero_lt_of_lt hY)
     have hMonotone := Real.log_le_log hYPos hYUpper
     rw [Real.log_rpow hTPos] at hMonotone
     exact hMonotone
@@ -3956,7 +3957,7 @@ theorem typeII_powered_threshold_loss_le_envelope
       _ = (1 + (Real.log 2)⁻¹) * Real.log T := by ring
   have haLog : 1 ≤ aLog := by exact le_max_left _ _
   have hInvL : L⁻¹ ≤ aLog * (4 * Real.log T) := by
-    have hClogReal : (0 : ℝ) < Nat.clog 2 Y := by exact_mod_cast hClogPos
+    have hClogReal : zeroR < Nat.clog 2 Y := by exact_mod_cast hClogPos
     have hFactor : ((16 / 9 : ℝ) * (1 + (Real.log 2)⁻¹)) / 4 ≤ aLog :=
       le_max_right _ _
     dsimp only [L]
@@ -3971,14 +3972,14 @@ theorem typeII_powered_threshold_loss_le_envelope
       _ = (((16 / 9 : ℝ) * (1 + (Real.log 2)⁻¹)) / 4) *
           (4 * Real.log T) := by ring
       _ ≤ aLog * (4 * Real.log T) := by gcongr
-  have hTwoPowSigma : (((2 ^ k : ℕ) : ℝ) ^ σ) ≤ (2 : ℝ) ^ B := by
-    have hBase : (1 : ℝ) ≤ ((2 ^ k : ℕ) : ℝ) := by
+  have hTwoPowSigma : (((2 ^ k : ℕ) : ℝ) ^ σ) ≤ twoR ^ B := by
+    have hBase : oneR ≤ ((2 ^ k : ℕ) : ℝ) := by
       exact_mod_cast (Nat.one_le_iff_ne_zero.mpr (pow_ne_zero k (by norm_num : 2 ≠ 0)))
     calc
-      (((2 ^ k : ℕ) : ℝ) ^ σ) ≤ (((2 ^ k : ℕ) : ℝ) ^ (1 : ℝ)) :=
+      (((2 ^ k : ℕ) : ℝ) ^ σ) ≤ (((2 ^ k : ℕ) : ℝ) ^ oneR) :=
         Real.rpow_le_rpow_of_exponent_le hBase hσOne
-      _ = (2 : ℝ) ^ k := by norm_num
-      _ ≤ (2 : ℝ) ^ B := pow_le_pow_right₀ (by norm_num) hkB
+      _ = twoR ^ k := by norm_num
+      _ ≤ twoR ^ B := pow_le_pow_right₀ (by norm_num) hkB
   have hC₀Pow : C₀ ^ k ≤ C₀ ^ B := pow_le_pow_right₀ hC₀ hkB
   have hInvLPow : L⁻¹ ^ k ≤ aLog ^ B * (4 * Real.log T) ^ k := by
     calc
@@ -3990,9 +3991,9 @@ theorem typeII_powered_threshold_loss_le_envelope
   have hScaleIdentity :
       (2 * N : ℝ) ^ (e * k) *
           (((2 ^ k * N ^ k : ℕ) : ℝ) ^ e) =
-        (((2 : ℝ) ^ k) * ((N ^ k : ℕ) : ℝ)) ^ (2 * e) := by
-    have hTwoN : (0 : ℝ) < 2 * N := by positivity
-    have hU : (0 : ℝ) < ((2 ^ k * N ^ k : ℕ) : ℝ) := by positivity
+        ((twoR ^ k) * ((N ^ k : ℕ) : ℝ)) ^ (2 * e) := by
+    have hTwoN : zeroR < 2 * N := by positivity
+    have hU : zeroR < ((2 ^ k * N ^ k : ℕ) : ℝ) := by positivity
     have hEq : (2 * N : ℝ) ^ (e * (k : ℝ)) =
         (((2 ^ k * N ^ k : ℕ) : ℝ) ^ e) := by
       rw [mul_comm e, Real.rpow_mul hTwoN.le]
@@ -4000,7 +4001,7 @@ theorem typeII_powered_threshold_loss_le_envelope
       norm_num [mul_pow]
     rw [hEq, ← Real.rpow_add hU]
     have hCast : ((2 ^ k * N ^ k : ℕ) : ℝ) =
-        (2 : ℝ) ^ k * ((N ^ k : ℕ) : ℝ) := by norm_num
+        twoR ^ k * ((N ^ k : ℕ) : ℝ) := by norm_num
     rw [hCast]
     congr 1
     ring
@@ -4015,13 +4016,13 @@ theorem typeII_powered_threshold_loss_le_envelope
     calc
       ((2 ^ k : ℕ) : ℝ) ^ σ * C₀ ^ k * (2 * N : ℝ) ^ (e * k) *
             (C * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ e) * (k : ℝ) * L⁻¹ ^ k ≤
-          (2 : ℝ) ^ B * C₀ ^ B *
+          twoR ^ B * C₀ ^ B *
             (2 * N : ℝ) ^ (e * k) *
               (C * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ e) *
                 (k : ℝ) * (aLog ^ B * (4 * Real.log T) ^ k) := by
         gcongr
-      _ = (2 : ℝ) ^ B * C₀ ^ B * C * aLog ^ B *
-          (((2 : ℝ) ^ k) * ((N ^ k : ℕ) : ℝ)) ^ (2 * e) *
+      _ = twoR ^ B * C₀ ^ B * C * aLog ^ B *
+          ((twoR ^ k) * ((N ^ k : ℕ) : ℝ)) ^ (2 * e) *
             (k : ℝ) * (4 * Real.log T) ^ k := by
         rw [← hScaleIdentity]
         push_cast
@@ -4045,14 +4046,14 @@ theorem typeI_powered_threshold_loss_le_envelope
     let A := ⌊sharpZetaCutoff T⌋₊
     let V := ((3 / 4 : ℝ) * (T ^ (-u) / 2)) / Nat.clog 2 A
     let aLog := max 1 (((8 / 3 : ℝ) * (1 + 2 / Real.log 2)) / 4)
-    let E := (2 : ℝ) ^ B * C * aLog ^ B
+    let E := twoR ^ B * C * aLog ^ B
     typeIIPoweredThresholdLoss C ((N : ℝ) ^ σ * V) 1 e σ N k ≤
       1 + T ^ (u * k) * classicalTypeIIPowerLoss E e T k (N ^ k) := by
   dsimp only
   let A := ⌊sharpZetaCutoff T⌋₊
   let V : ℝ := ((3 / 4 : ℝ) * (T ^ (-u) / 2)) / Nat.clog 2 A
   let aLog : ℝ := max 1 (((8 / 3 : ℝ) * (1 + 2 / Real.log 2)) / 4)
-  let E : ℝ := (2 : ℝ) ^ B * C * aLog ^ B
+  let E : ℝ := twoR ^ B * C * aLog ^ B
   have hTPos : 0 < T := by linarith
   have hTOne : 1 ≤ T := by linarith
   have hExpT : Real.exp 1 ≤ T := by
@@ -4070,7 +4071,7 @@ theorem typeI_powered_threshold_loss_le_envelope
     dsimp only [A]
     apply lt_of_lt_of_le (by omega : 1 < (2 : ℕ))
     apply Nat.le_floor
-    exact (show (2 : ℝ) ≤ 4 * T by nlinarith).trans
+    exact (show twoR ≤ 4 * T by nlinarith).trans
       (four_mul_lt_sharpZetaCutoff T).le
   have hClogPos : 0 < Nat.clog 2 A := Nat.clog_pos Nat.one_lt_two hAOne
   have hClog := sharp_cutoff_clog_le_log_majorant T hT
@@ -4127,12 +4128,12 @@ theorem typeI_powered_threshold_loss_le_envelope
         gcongr
       _ = aLog ^ B * (4 * Real.log T) ^ k * T ^ (u * k) := by
         rw [hTPow]
-  have hNReal : (0 : ℝ) < N := by exact_mod_cast hN
+  have hNReal : zeroR < N := by exact_mod_cast hN
   have hCancel :
       (((2 ^ k * N ^ k : ℕ) : ℝ) ^ σ) /
-          (((N : ℝ) ^ σ) ^ k) = (((2 : ℝ) ^ k) ^ σ) := by
+          (((N : ℝ) ^ σ) ^ k) = ((twoR ^ k) ^ σ) := by
     push_cast
-    rw [Real.mul_rpow (by positivity : (0 : ℝ) ≤ (2 : ℝ) ^ k)
+    rw [Real.mul_rpow (by positivity : zeroR ≤ twoR ^ k)
       (pow_nonneg hNReal.le k)]
     have hNPow : (((N : ℝ) ^ k) ^ σ) = ((N : ℝ) ^ σ) ^ k := by
       calc
@@ -4144,41 +4145,41 @@ theorem typeI_powered_threshold_loss_le_envelope
         _ = ((N : ℝ) ^ σ) ^ k := Real.rpow_natCast _ _
     rw [hNPow]
     field_simp [(Real.rpow_pos_of_pos hNReal σ).ne']
-  have hTwoPowSigma : (((2 : ℝ) ^ k) ^ σ) ≤ (2 : ℝ) ^ B := by
-    have hBase : (1 : ℝ) ≤ (2 : ℝ) ^ k := one_le_pow₀ (by norm_num)
+  have hTwoPowSigma : ((twoR ^ k) ^ σ) ≤ twoR ^ B := by
+    have hBase : oneR ≤ twoR ^ k := one_le_pow₀ (by norm_num)
     calc
-      (((2 : ℝ) ^ k) ^ σ) ≤ (((2 : ℝ) ^ k) ^ (1 : ℝ)) :=
+      ((twoR ^ k) ^ σ) ≤ ((twoR ^ k) ^ oneR) :=
         Real.rpow_le_rpow_of_exponent_le hBase hσOne
-      _ = (2 : ℝ) ^ k := by norm_num
-      _ ≤ (2 : ℝ) ^ B := pow_le_pow_right₀ (by norm_num) hkB
+      _ = twoR ^ k := by norm_num
+      _ ≤ twoR ^ B := pow_le_pow_right₀ (by norm_num) hkB
   have hScale :
       (((2 ^ k * N ^ k : ℕ) : ℝ) ^ e) ≤
-        ((((2 : ℝ) ^ k) * ((N ^ k : ℕ) : ℝ)) ^ (2 * e)) := by
+        (((twoR ^ k) * ((N ^ k : ℕ) : ℝ)) ^ (2 * e)) := by
     have hCast : ((2 ^ k * N ^ k : ℕ) : ℝ) =
-        ((2 : ℝ) ^ k) * ((N ^ k : ℕ) : ℝ) := by norm_num
+        (twoR ^ k) * ((N ^ k : ℕ) : ℝ) := by norm_num
     rw [hCast]
     have hBaseNat : 1 ≤ 2 ^ k * N ^ k := by
       exact Nat.one_le_iff_ne_zero.mpr
         (mul_ne_zero (pow_ne_zero _ (by omega)) (pow_ne_zero _ (Nat.ne_of_gt hN)))
-    have hBaseReal : (1 : ℝ) ≤ ((2 : ℝ) ^ k) * ((N ^ k : ℕ) : ℝ) := by
+    have hBaseReal : oneR ≤ (twoR ^ k) * ((N ^ k : ℕ) : ℝ) := by
       exact_mod_cast hBaseNat
     apply Real.rpow_le_rpow_of_exponent_le
       hBaseReal
     linarith
   have hRaw :
-      (((((2 ^ k * N ^ k : ℕ) : ℝ) ^ σ) * (1 : ℝ) ^ k *
+      (((((2 ^ k * N ^ k : ℕ) : ℝ) ^ σ) * oneR ^ k *
           (C * (((2 ^ k * N ^ k : ℕ) : ℝ) ^ e)) * k) /
             (((N : ℝ) ^ σ * V) ^ k)) ≤
         T ^ (u * k) * classicalTypeIIPowerLoss E e T k (N ^ k) := by
     rw [mul_pow, div_eq_mul_inv, mul_inv, ← inv_pow]
     have hIdentity :
         (((2 ^ k * N ^ k : ℕ) : ℝ) ^ σ) *
-            (((N : ℝ) ^ σ) ^ k)⁻¹ = (((2 : ℝ) ^ k) ^ σ) := by
+            (((N : ℝ) ^ σ) ^ k)⁻¹ = ((twoR ^ k) ^ σ) := by
       rw [← div_eq_mul_inv]
       exact hCancel
     have hIdentity' :
         (((2 ^ k * N ^ k : ℕ) : ℝ) ^ σ) *
-            ((N : ℝ) ^ σ)⁻¹ ^ k = (((2 : ℝ) ^ k) ^ σ) := by
+            ((N : ℝ) ^ σ)⁻¹ ^ k = ((twoR ^ k) ^ σ) := by
       rw [inv_pow]
       exact hIdentity
     dsimp only [classicalTypeIIPowerLoss, E]
@@ -4189,19 +4190,19 @@ theorem typeI_powered_threshold_loss_le_envelope
           ((((2 ^ k * N ^ k : ℕ) : ℝ) ^ σ * ((N : ℝ) ^ σ)⁻¹ ^ k) *
             1 ^ k * (C * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ e) *
               (k : ℝ) * V⁻¹ ^ k) := by rw [inv_pow]; ring_nf
-      _ = (((2 : ℝ) ^ k) ^ σ * 1 ^ k *
+      _ = ((twoR ^ k) ^ σ * 1 ^ k *
             (C * ((2 ^ k * N ^ k : ℕ) : ℝ) ^ e) * (k : ℝ) * V⁻¹ ^ k) := by
           rw [hIdentity']
       _ ≤
-          (2 : ℝ) ^ B * (C *
-            ((((2 : ℝ) ^ k) * ((N ^ k : ℕ) : ℝ)) ^ (2 * e))) *
+          twoR ^ B * (C *
+            (((twoR ^ k) * ((N ^ k : ℕ) : ℝ)) ^ (2 * e))) *
               (k : ℝ) *
                 (aLog ^ B * (4 * Real.log T) ^ k * T ^ (u * k)) := by
           gcongr
           simpa using hTwoPowSigma
       _ = T ^ (u * k) *
-          (((2 : ℝ) ^ B * C * aLog ^ B) *
-            ((((2 : ℝ) ^ k) * ((N ^ k : ℕ) : ℝ)) ^ (2 * e)) *
+          ((twoR ^ B * C * aLog ^ B) *
+            (((twoR ^ k) * ((N ^ k : ℕ) : ℝ)) ^ (2 * e)) *
               (k : ℝ) * (4 * Real.log T) ^ k) := by ring
   have hFinal :
       typeIIPoweredThresholdLoss C ((N : ℝ) ^ σ * V) 1 e σ N k ≤
@@ -4251,7 +4252,7 @@ theorem endpoint_powered_witness_count_le
   have hEndpointThree := hThree.trans (mul_le_mul_of_nonneg_left hEndpoint (by norm_num))
   have hCountReal : (count : ℝ) ≤ (multiplicity : ℝ) * (W.card : ℝ) := by
     exact_mod_cast hCount
-  have hHarmonic : (0 : ℝ) ≤ ((harmonic Q : ℚ) : ℝ) := by
+  have hHarmonic : zeroR ≤ ((harmonic Q : ℚ) : ℝ) := by
     exact_mod_cast (harmonic_pos (by omega : Q ≠ 0)).le
   calc
     (count : ℝ) ≤ (multiplicity : ℝ) * (W.card : ℝ) := hCountReal
@@ -4326,7 +4327,7 @@ theorem endpoint_witness_count_le_of_mhh_power_factor
     (mul_le_mul_of_nonneg_left hEndpoint (by norm_num))
   have hCountReal : (count : ℝ) ≤ (multiplicity : ℝ) * (W.card : ℝ) := by
     exact_mod_cast hCount
-  have hHarmonic : (0 : ℝ) ≤ ((harmonic Q : ℚ) : ℝ) := by
+  have hHarmonic : zeroR ≤ ((harmonic Q : ℚ) : ℝ) := by
     exact_mod_cast (harmonic_pos (by omega : Q ≠ 0)).le
   calc
     (count : ℝ) ≤ (multiplicity : ℝ) * (W.card : ℝ) := hCountReal
@@ -4351,7 +4352,7 @@ theorem endpoint_scale_length_le
     {τ₀ T : ℝ} {Q : ℕ} (hτ₀ : 0 < τ₀) (hT : 0 < T) (hQ : 1 < Q)
     (hτ : 2 * τ₀ / 3 ≤ typeILogarithmicScale T Q) :
     (Q : ℝ) ≤ T ^ (3 / (2 * τ₀)) := by
-  have hBase : (1 : ℝ) < Q := by exact_mod_cast hQ
+  have hBase : oneR < Q := by exact_mod_cast hQ
   have ha : 0 < 2 * τ₀ / 3 := by positivity
   have hQa : (Q : ℝ) ^ (2 * τ₀ / 3) ≤ T :=
     (Real.le_logb_iff_rpow_le hBase hT).mp hτ
@@ -4372,7 +4373,7 @@ theorem eventually_log_nat_power_le_rpow
     (B : ℕ) (η : ℝ) (hη : 0 < η) :
     ∀ᶠ T : ℝ in atTop, (Real.log T) ^ B ≤ T ^ η := by
   have hLittle := isLittleO_log_rpow_rpow_atTop (B : ℝ) hη
-  filter_upwards [hLittle.eventuallyLE, eventually_ge_atTop (1 : ℝ)] with T hBound hT
+  filter_upwards [hLittle.eventuallyLE, eventually_ge_atTop oneR] with T hBound hT
   have hLogNonneg : 0 ≤ Real.log T := Real.log_nonneg hT
   have hTNonneg : 0 ≤ T := by linarith
   rw [Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg hLogNonneg _),
@@ -4387,7 +4388,7 @@ theorem eventually_rpow_le_half_self
     tendsto_rpow_neg_atTop (by linarith)
   have hEventually : ∀ᶠ T : ℝ in atTop, T ^ (-(1 - d)) ≤ 1 / 2 := by
     filter_upwards [(tendsto_order.1 hDecay).2 (1 / 2)
-      (by norm_num : (0 : ℝ) < 1 / 2)] with T hT
+      (by norm_num : zeroR < 1 / 2)] with T hT
     exact hT.le
   rw [eventually_atTop] at hEventually
   obtain ⟨Tscale, hTscale⟩ := hEventually
@@ -4401,7 +4402,7 @@ theorem eventually_rpow_le_half_self
   have hIdentity : T ^ d = T * T ^ (-(1 - d)) := by
     calc
       T ^ d = T ^ (1 + (-(1 - d))) := by congr 1; ring
-      _ = T ^ (1 : ℝ) * T ^ (-(1 - d)) := Real.rpow_add hTPos _ _
+      _ = T ^ oneR * T ^ (-(1 - d)) := Real.rpow_add hTPos _ _
       _ = T * T ^ (-(1 - d)) := by rw [Real.rpow_one]
   rw [hIdentity]
   nlinarith
@@ -4423,8 +4424,8 @@ theorem eventually_classicalTypeIIPowerLoss_sixth_le
   rw [eventually_atTop] at hLogEventually
   obtain ⟨Tlog, hTlog⟩ := hLogEventually
   let T₀ : ℝ := max (Real.exp 1) Tlog
-  let cScale : ℝ := ((2 : ℝ) ^ B) ^ (2 * d)
-  let cLog : ℝ := (4 : ℝ) ^ B
+  let cScale : ℝ := (twoR ^ B) ^ (2 * d)
+  let cLog : ℝ := fourR ^ B
   let cBase : ℝ := 1 + A * cScale * B * cLog
   let C : ℝ := cBase ^ (6 : ℕ)
   have hcScale : 0 < cScale := by dsimp only [cScale]; positivity
@@ -4443,19 +4444,19 @@ theorem eventually_classicalTypeIIPowerLoss_sixth_le
   have hLogOne : 1 ≤ Real.log T := by
     simpa using Real.log_le_log (Real.exp_pos 1) hTExp
   have hLogBound : (Real.log T) ^ B ≤ T ^ η := hTlog T hTLog
-  have hkReal : (0 : ℝ) < k := by exact_mod_cast hk
+  have hkReal : zeroR < k := by exact_mod_cast hk
   have hkBReal : (k : ℝ) ≤ B := by exact_mod_cast hkB
-  have hTwoPow : ((2 : ℝ) ^ k) ≤ (2 : ℝ) ^ B :=
+  have hTwoPow : (twoR ^ k) ≤ twoR ^ B :=
     pow_le_pow_right₀ (by norm_num) hkB
   have hQScale : (Q : ℝ) ≤ T ^ (3 / (2 * τ₀)) :=
     endpoint_scale_length_le hτ₀ hTPos hQ hτ
-  have hProduct : ((2 : ℝ) ^ k) * Q ≤
-      (2 : ℝ) ^ B * T ^ (3 / (2 * τ₀)) := by gcongr
-  have hScale : (((2 : ℝ) ^ k) * Q) ^ (2 * d) ≤
+  have hProduct : (twoR ^ k) * Q ≤
+      twoR ^ B * T ^ (3 / (2 * τ₀)) := by gcongr
+  have hScale : ((twoR ^ k) * Q) ^ (2 * d) ≤
       cScale * T ^ (3 * d / τ₀) := by
     calc
-      (((2 : ℝ) ^ k) * Q) ^ (2 * d) ≤
-          ((2 : ℝ) ^ B * T ^ (3 / (2 * τ₀))) ^ (2 * d) :=
+      ((twoR ^ k) * Q) ^ (2 * d) ≤
+          (twoR ^ B * T ^ (3 / (2 * τ₀))) ^ (2 * d) :=
         Real.rpow_le_rpow (by positivity) hProduct (by positivity)
       _ = cScale * T ^ (3 * d / τ₀) := by
         rw [Real.mul_rpow (by positivity) (Real.rpow_nonneg hTPos.le _)]
@@ -4463,12 +4464,12 @@ theorem eventually_classicalTypeIIPowerLoss_sixth_le
         rw [← Real.rpow_mul hTPos.le]
         congr 1
         field_simp [hτ₀.ne']
-  have hFourLogOne : (1 : ℝ) ≤ 4 * Real.log T := by nlinarith
+  have hFourLogOne : oneR ≤ 4 * Real.log T := by nlinarith
   have hLogK : (4 * Real.log T) ^ k ≤ cLog * T ^ η := by
     calc
       (4 * Real.log T) ^ k ≤ (4 * Real.log T) ^ B :=
         pow_le_pow_right₀ hFourLogOne hkB
-      _ = (4 : ℝ) ^ B * (Real.log T) ^ B := by rw [mul_pow]
+      _ = fourR ^ B * (Real.log T) ^ B := by rw [mul_pow]
       _ ≤ cLog * T ^ η := by
         dsimp only [cLog]
         gcongr
@@ -4476,7 +4477,7 @@ theorem eventually_classicalTypeIIPowerLoss_sixth_le
       (A * cScale * B * cLog) * T ^ (3 * d / τ₀ + η) := by
     dsimp only [classicalTypeIIPowerLoss]
     calc
-      A * (((2 : ℝ) ^ k) * Q) ^ (2 * d) * (k : ℝ) *
+      A * ((twoR ^ k) * Q) ^ (2 * d) * (k : ℝ) *
             (4 * Real.log T) ^ k ≤
           A * (cScale * T ^ (3 * d / τ₀)) * B *
             (cLog * T ^ η) := by gcongr
@@ -4543,13 +4544,13 @@ theorem eventually_endpoint_loss_bundle_le
   have hTm' : Tm ≤ T := (le_max_right _ _).trans hRest
   have hTOne : 1 ≤ T := by linarith
   have hTPos : 0 < T := by linarith
-  have hQOne : (1 : ℝ) ≤ Q := by exact_mod_cast hQ.le
+  have hQOne : oneR ≤ Q := by exact_mod_cast hQ.le
   have hP := hPower T Q k hTp' hQ hk hkB hτ
   have hM := hMult T hTm'
   have hQScale : (Q : ℝ) ≤ T ^ (3 / (2 * τ₀)) :=
     endpoint_scale_length_le hτ₀ hTPos hQ hτ
   have hHarmRaw := harmonic_le_epsilon_rpow he Q
-  have hQPowOne : (1 : ℝ) ≤ (Q : ℝ) ^ e := Real.one_le_rpow hQOne he.le
+  have hQPowOne : oneR ≤ (Q : ℝ) ^ e := Real.one_le_rpow hQOne he.le
   have hMax : max 1 ((Q : ℝ) ^ e) = (Q : ℝ) ^ e := max_eq_right hQPowOne
   rw [hMax] at hHarmRaw
   have hHarm : 1 + (((harmonic Q : ℚ) : ℝ)) ≤ Ch * (Q : ℝ) ^ e := by
@@ -4583,7 +4584,7 @@ theorem eventually_endpoint_loss_bundle_le
         T ^ ε := Real.rpow_le_rpow_of_exponent_le hTOne hExponent
   have hCnonneg : 0 ≤ C := by dsimp only [C]; positivity
   have hHarmNonneg : 0 ≤ 1 + (((harmonic Q : ℚ) : ℝ)) := by
-    have : (0 : ℝ) ≤ ((harmonic Q : ℚ) : ℝ) := by
+    have : zeroR ≤ ((harmonic Q : ℚ) : ℝ) := by
       exact_mod_cast (harmonic_pos (by omega : Q ≠ 0)).le
     linarith
   have hHarmT : 1 + (((harmonic Q : ℚ) : ℝ)) ≤
@@ -4660,7 +4661,7 @@ theorem typeI_power_detector_exponent_budget
       _ = ε / 100000 := one_mul _
   have hdFourth : d ^ 4 ≤ d := by
     calc
-      d ^ 4 = d ^ (4 : ℝ) := (Real.rpow_natCast d 4).symm
+      d ^ 4 = d ^ fourR := (Real.rpow_natCast d 4).symm
       _ ≤ d := Real.rpow_le_self_of_le_one hd.le hdOne (by norm_num)
   have hPowered : d ^ 4 * (B : ℝ) < 3 * (d ^ 2 / τ₀) + d ^ 4 := by
     have hMul := mul_lt_mul_of_pos_left hCeil (by positivity : 0 < d ^ 4)
@@ -4758,7 +4759,7 @@ theorem actual_typeI_basic_window_dichotomy_witness_consumer
       dsimp only [A]
       apply lt_of_lt_of_le (by omega : 1 < (2 : ℕ))
       apply Nat.le_floor
-      exact (show (2 : ℝ) ≤ 4 * T by nlinarith).trans
+      exact (show twoR ≤ 4 * T by nlinarith).trans
         (four_mul_lt_sharpZetaCutoff T).le
     have hNC : N < A := by
       have hLPos : 0 < L := by
@@ -4779,7 +4780,7 @@ theorem actual_typeI_basic_window_dichotomy_witness_consumer
         (mul_nonneg
           (mul_nonneg typeIDirectPowerLossConstant_pos.le
             (Real.rpow_nonneg (by positivity) _)) (by norm_num))
-        (by simpa using mul_nonneg (by norm_num : (0 : ℝ) ≤ 4) hLog)
+        (by simpa using mul_nonneg (by norm_num : zeroR ≤ 4) hLog)
     have hPDirect := typeIDirectThresholdLoss_le_classicalTypeIIPowerLoss
       (A := A) (N := N) (d := u) hTEight hu.le hNOne
         (by dsimp only [A]; exact le_rfl) hTN
@@ -4889,7 +4890,7 @@ theorem actual_typeI_powered_window_dichotomy_witness_consumer
   let e : ℝ := d ^ 3
   let U : ℝ := 2 / s
   let B : ℕ := ⌈3 * U / (2 * τ₀)⌉₊
-  let R : ℝ := ((2 : ℝ) ^ B) ^ (2 : ℕ)
+  let R : ℝ := (twoR ^ B) ^ (2 : ℕ)
   have hs : 0 < s := by dsimp only [s]; positivity
   have hu : 0 < u := by dsimp only [u]; positivity
   have he : 0 < e := by dsimp only [e]; positivity
@@ -4901,7 +4902,7 @@ theorem actual_typeI_powered_window_dichotomy_witness_consumer
   have heLeD : e ≤ d := by
     dsimp only [e]
     calc
-      d ^ 3 = d ^ (3 : ℝ) := (Real.rpow_natCast d 3).symm
+      d ^ 3 = d ^ threeR := (Real.rpow_natCast d 3).symm
       _ ≤ d := Real.rpow_le_self_of_le_one hd.le hdOne (by norm_num)
   have hdEps : d ≤ ε / 100000 := by
     dsimp only [εs] at hdEpsSmall
@@ -4924,7 +4925,7 @@ theorem actual_typeI_powered_window_dichotomy_witness_consumer
   obtain ⟨D, hD, K, hK, hPowered⟩ :=
     powered_actual_typeI_block_large_values_bound_bounded_uniform B e he
   let aLog : ℝ := max 1 (((8 / 3 : ℝ) * (1 + 2 / Real.log 2)) / 4)
-  let E : ℝ := (2 : ℝ) ^ B * D * aLog ^ B
+  let E : ℝ := twoR ^ B * D * aLog ^ B
   have hE : 0 ≤ E := by dsimp only [E, aLog]; positivity
   obtain ⟨Closs, hCloss, Tloss, hTloss, hLoss⟩ :=
     eventually_endpoint_loss_bundle_le E K d e τh (ε / 4) B hE hK.le
@@ -4974,7 +4975,7 @@ theorem actual_typeI_powered_window_dichotomy_witness_consumer
     have htRange := hRange t ht
     constructor
     · calc
-        (0 : ℝ) ≤ T / 2 := by linarith
+        zeroR ≤ T / 2 := by linarith
         _ ≤ T - T ^ d := by linarith
         _ ≤ t := htRange.1
     · calc
@@ -4985,7 +4986,7 @@ theorem actual_typeI_powered_window_dichotomy_witness_consumer
     dsimp only [A]
     apply lt_of_lt_of_le (by omega : 1 < (2 : ℕ))
     apply Nat.le_floor
-    exact (show (2 : ℝ) ≤ 4 * T by nlinarith).trans
+    exact (show twoR ≤ 4 * T by nlinarith).trans
       (four_mul_lt_sharpZetaCutoff T).le
   have hL : 0 < L := by
     dsimp only [L]
@@ -5087,7 +5088,7 @@ theorem actual_typeI_powered_window_dichotomy_witness_consumer
     have hTPow : (T ^ (u * (k : ℝ))) ^ (6 : ℕ) = T ^ (6 * u * k) := by
       calc
         (T ^ (u * (k : ℝ))) ^ (6 : ℕ) =
-            (T ^ (u * (k : ℝ))) ^ (6 : ℝ) :=
+            (T ^ (u * (k : ℝ))) ^ sixR :=
           (Real.rpow_natCast _ 6).symm
         _ = T ^ ((u * (k : ℝ)) * 6) :=
           (Real.rpow_mul hTPos.le _ _).symm
@@ -5177,7 +5178,7 @@ theorem actual_typeI_low_window_dichotomy_witness_consumer
   have huD : u ≤ d := by
     dsimp only [u]
     calc
-      d ^ 4 = d ^ (4 : ℝ) := (Real.rpow_natCast d 4).symm
+      d ^ 4 = d ^ fourR := (Real.rpow_natCast d 4).symm
       _ ≤ d := Real.rpow_le_self_of_le_one hd.le hdOne (by norm_num)
   have huSigma : u < σ := huD.trans_lt hdSigmaStrict
   obtain ⟨Tscale, hTscale, hScale⟩ := eventually_typeI_logarithmic_scale_upper s hs
@@ -5228,7 +5229,7 @@ theorem actual_typeI_low_window_dichotomy_witness_consumer
         dsimp only [A]
         apply lt_of_lt_of_le (by omega : 1 < (2 : ℕ))
         apply Nat.le_floor
-        exact (show (2 : ℝ) ≤ 4 * T by nlinarith).trans
+        exact (show twoR ≤ 4 * T by nlinarith).trans
           (four_mul_lt_sharpZetaCutoff T).le
       have hClog : 0 < Nat.clog 2 A := Nat.clog_pos Nat.one_lt_two hAOne
       positivity
@@ -5319,7 +5320,7 @@ theorem actual_typeII_dichotomy_witness_consumer
     actual_typeII_powered_mhh_bounded_uniform_native B e e he he
   let aLog : ℝ := max 1
     (((16 / 9 : ℝ) * (1 + (Real.log 2)⁻¹)) / 4)
-  let Aenv : ℝ := (2 : ℝ) ^ B * C₀ ^ B * Cpow * aLog ^ B
+  let Aenv : ℝ := twoR ^ B * C₀ ^ B * Cpow * aLog ^ B
   have hAenv : 0 ≤ Aenv := by dsimp only [Aenv, aLog]; positivity
   obtain ⟨Closs, hCloss, Tloss, hTloss, hLoss⟩ :=
     eventually_endpoint_loss_bundle_le Aenv K d e τ₀ ε B hAenv hK.le
@@ -5389,7 +5390,7 @@ theorem actual_typeII_dichotomy_witness_consumer
         mul_le_mul_of_nonneg_right hTauSmallProduct hd.le
       _ ≤ 1 / 1000 := by
         simpa only [mul_one] using
-          mul_le_mul_of_nonneg_left hdOne (by norm_num : (0 : ℝ) ≤ 1 / 1000)
+          mul_le_mul_of_nonneg_left hdOne (by norm_num : zeroR ≤ 1 / 1000)
   have hTauMargin : 4 * τ₀ ≤ τ := by
     have hCore : 4 * τ₀ ≤ 1 / (2 * s) := by
       apply (le_div_iff₀ (by positivity : 0 < 2 * s)).2
@@ -5407,7 +5408,7 @@ theorem actual_typeII_dichotomy_witness_consumer
     have htRange := hRange t ht
     constructor
     · calc
-        (0 : ℝ) ≤ T / 2 := by linarith
+        zeroR ≤ T / 2 := by linarith
         _ ≤ T - T ^ d := by linarith
         _ ≤ t := htRange.1
     · calc
@@ -5430,12 +5431,12 @@ theorem actual_typeII_dichotomy_witness_consumer
     hTauUpper hTauPowLower hTauPowUpper
   dsimp only at hQWindow
   rcases hQWindow with ⟨hQOne, hQScaleLower, hQScaleUpper⟩
-  have hNReal : (0 : ℝ) < N := by exact_mod_cast hN
+  have hNReal : zeroR < N := by exact_mod_cast hN
   have hD : 0 < D := by
     dsimp only [D]
     exact mul_pos
       (mul_pos (zero_lt_one.trans_le hC₀)
-        (Real.rpow_pos_of_pos (by positivity : (0 : ℝ) < 2 * N) e))
+        (Real.rpow_pos_of_pos (by positivity : zeroR < 2 * N) e))
       (Real.rpow_pos_of_pos hNReal (-σ))
   let P := typeIIPoweredThresholdLoss Cpow L D e σ N k
   have hThreshold := typeII_powered_threshold_lower (N := N) (k := k) (r := r₁)
@@ -5495,7 +5496,7 @@ theorem actual_typeII_dichotomy_witness_consumer
           ((2 * ⌈T ^ d⌉₊ + 1) * classicalLocalMultiplicityCap T) : ℕ) : ℝ) := by
     exact_mod_cast hMultiplicityMono
   have hHarmonicNonneg : 0 ≤ 1 + (((harmonic Q : ℚ) : ℝ)) := by
-    have hq : (0 : ℝ) ≤ ((harmonic Q : ℚ) : ℝ) := by
+    have hq : zeroR ≤ ((harmonic Q : ℚ) : ℝ) := by
       exact_mod_cast (harmonic_pos (by omega : Q ≠ 0)).le
     linarith
   have hLossAt := hLoss T Q k hTLoss hQOne hk hkB hQScaleLower

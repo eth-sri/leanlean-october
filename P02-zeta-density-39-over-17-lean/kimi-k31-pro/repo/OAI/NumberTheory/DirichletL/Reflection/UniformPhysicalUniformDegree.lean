@@ -1,5 +1,8 @@
 module
-public import OAI.NumberTheory.DirichletL.Reflection.UniformPhysical
+public import OAI.NumberTheory.DirichletL.Reflection.UniformFiltered
+public import OAI.NumberTheory.DirichletL.Reflection.UniformMeasure
+public import OAI.NumberTheory.DirichletL.Reflection.PhysicalEnergy
+public import OAI.NumberTheory.DirichletL.Reflection.SurvivingEnergy
 public import OAI.NumberTheory.DirichletL.Inversion.ReflectedArithmeticHeight
 
 @[expose] public section

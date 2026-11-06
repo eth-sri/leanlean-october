@@ -283,16 +283,6 @@ open CanonicalQuadraticSieve hiding O
 open SecondPassArithmetic hiding O
 open FirstPassCubeLabels hiding O
 
-def outsideCanonicalRow (S : Finset (Ideal ActualEisensteinCubic.O)) (D : ℕ) (hbad : fixedBadPrimes ⊆ S)
-    (Ψ : ActualEisensteinCubic.O →* ℂ) (m f z : ActualEisensteinCubic.O) (W : ℝ → ℂ) (X : ℝ) : ℂ :=
-  let F := InitialMeanSquare.outsideSquarefreeIdeals S D
-  let hF := InitialMeanSquare.outsideSquarefree_admissible S D hbad
-  letI : ∀i:primePool F,(Ideal.span {poolPrimary F i}).IsMaximal :=
-    fun i=>by rw [poolPrimary_span F hF i]; infer_instance
-  fixedChildRow (poolPrimary F) (poolPrimary_ne_zero F hF) (poolPrimary_coprime F hF)
-    (poolPrimary_good F hF) Finset.univ Ψ m
-    (fun T=>W (primeProductNorm (poolPrimary F) T/X)) f z
-
 end
 
 open ActualEisensteinCubic

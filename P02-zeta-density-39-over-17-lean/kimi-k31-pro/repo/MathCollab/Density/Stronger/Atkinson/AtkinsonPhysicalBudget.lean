@@ -20,6 +20,7 @@ open TaoTrudgianYang2025 (eventually_const_log_pow_le_rpow)
 set_option autoImplicit false
 noncomputable section
 namespace MathCollab.Density.Stronger.Atkinson
+
 theorem atkinsonSourceCutoff_le_natural {T G L : ℝ}
     (hT : 1 ≤ T) (hG : 0 < G) (hupper : G ≤ Real.sqrt T) (hL : 1 ≤ L) :
     (atkinsonSourceCutoff T G L : ℝ) ≤ 37*T*L^2/G^2 := by
@@ -35,8 +36,6 @@ theorem atkinsonSourceCutoff_le_natural {T G L : ℝ}
   have he' : 37*T*L^2/G^2 = 37*(T*L^2/G^2) := by ring
   rw [he']
   linarith
-
-
 
 theorem atkinson_clog_le_height_log {H : ℝ} {N : ℕ}
     (hH : 1 ≤ H) (hlog : 1 ≤ Real.log (2*H)) (hN : (N:ℝ) ≤ H) :

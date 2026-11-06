@@ -6,120 +6,7 @@ public import OAI.NumberTheory.DirichletL.Eisenstein.ReflectionFibers
 namespace OAI
 
 noncomputable section
-
-open scoped BigOperators
-open MulChar AddChar
-open scoped BigOperators
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped FourierTransform SchwartzMap
-open Finset Complex
-open scoped Classical
-open scoped Classical
-open Filter Real Asymptotics
-open ActualEisensteinCubic
-open Filter
-open ActualEisensteinCubic RationalPrimeExtraction ShortDraftLatticeCount
-open ActualEisensteinCubic ShortDraftLatticeCount
-open Filter
-open scoped Topology
-open EisensteinEmbedding ConcreteTraceCRT ActualEisensteinCubic
-open MulChar AddChar
-open Filter Asymptotics
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter
-open MulChar AddChar
-open MulChar AddChar
-open scoped LSeries.notation ArithmeticFunction.Moebius
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Ideal NumberField RingOfIntegers UniqueFactorizationMonoid
-open Filter Asymptotics
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics Ideal NumberField
-open Filter
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open Filter Asymptotics MeasureTheory
-open scoped Topology
-open MeasureTheory Real
-open scoped ContDiff FourierTransform SchwartzMap
 open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical SchwartzMap ContDiff
-open scoped BigOperators Classical
-open scoped BigOperators Classical SchwartzMap ContDiff
-open MeasureTheory Set
-open scoped BigOperators
-open scoped BigOperators Classical
-open scoped BigOperators Classical
-open ActualEisensteinCubic UniqueFactorizationMonoid
-open scoped BigOperators
-open scoped BigOperators
-open scoped BigOperators Classical SchwartzMap
-open scoped BigOperators Classical
-
-open scoped BigOperators Classical
-
-namespace CanonicalRowCompletion
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve UniqueFactorizationMonoid
-local notation "Eis" => ActualEisensteinCubic.O
-
-def freePrimaryPrime (I Q:Ideal Eis) (P:FreePrimeIndex I Q) : Eis := primaryPrime P.val.val
-
-lemma freePrimaryPrime_ne_zero (I Q:Ideal Eis) (hI:Supported I) (P:FreePrimeIndex I Q) :
-    freePrimaryPrime I Q P≠0 :=
-  primaryPrime_ne_zero P.val.val
-    (supported_factors_good I hI P.val.val (Multiset.mem_toFinset.mp P.val.property)).2.1
-
-lemma freePrimaryPrime_span (I Q:Ideal Eis) (hI:Supported I) (P:FreePrimeIndex I Q) :
-    Ideal.span {freePrimaryPrime I Q P}=P.val.val :=
-  (primaryPrime_spec P.val.val (freePrimaryPrime_ne_zero I Q hI P)).2.2.1
-
-lemma freePrimaryPrime_primary (I Q:Ideal Eis) (hI:Supported I) (P:FreePrimeIndex I Q) :
-    lambda^2∣freePrimaryPrime I Q P-1 :=
-  (primaryPrime_spec P.val.val (freePrimaryPrime_ne_zero I Q hI P)).2.2.2
-
-lemma freePrimaryPrime_maximal (I Q:Ideal Eis) (hI:Supported I) (P:FreePrimeIndex I Q) :
-    (Ideal.span {freePrimaryPrime I Q P}:Ideal Eis).IsMaximal := by
-  rw [freePrimaryPrime_span I Q hI P]
-  infer_instance
-
-lemma freePrimaryPrime_good (I Q:Ideal Eis) (hI:Supported I) (P:FreePrimeIndex I Q) :
-    lambda∉(Ideal.span {freePrimaryPrime I Q P}:Ideal Eis) := by
-  rw [freePrimaryPrime_span I Q hI P]
-  exact (supported_factors_good I hI P.val.val (Multiset.mem_toFinset.mp P.val.property)).2.1
-
-lemma freePrimaryPrime_coprime (I Q:Ideal Eis) (hI:Supported I) :
-    Pairwise (fun P R:FreePrimeIndex I Q =>
-      IsCoprime (Ideal.span {freePrimaryPrime I Q P}:Ideal Eis) (Ideal.span {freePrimaryPrime I Q R})) := by
-  intro P R hPR
-  rw [freePrimaryPrime_span I Q hI P,freePrimaryPrime_span I Q hI R]
-  exact freePrimeIndex_pairwise_coprime I Q hPR
-
-lemma freePrimaryPrime_coprime_fixed (I Q:Ideal Eis) (hI:Supported I) (P:FreePrimeIndex I Q) :
-    IsCoprime Q (Ideal.span {freePrimaryPrime I Q P}:Ideal Eis) := by
-  rw [freePrimaryPrime_span I Q hI P]
-  exact freePrimeIndex_coprime I Q P
-
-end CanonicalRowCompletion
 
 namespace FixedRayActiveSet
 
@@ -164,17 +51,7 @@ theorem fourier_inversion_by_active_set {ι:Type*} [Fintype ι]
 
 end FixedRayActiveSet
 
-open scoped BigOperators Classical ContDiff
-
 namespace CubicEisenstein
-
-section
-open ActualEisensteinCubic CompletedGauss ConcreteTraceCRT
-local notation "Eis" => ActualEisensteinCubic.O
-
-end
-
-open scoped BigOperators Classical MatrixGroups
 
 open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CubicKubota
 local notation "Eis" => ActualEisensteinCubic.O
@@ -226,85 +103,6 @@ lemma ControlledStratumArithmetic.datum_fourier_phase {ι:Type*} [Fintype ι]
   rw [theta_lifted_phase,D.lift_residue]
 
 end CubicEisenstein
-
-open scoped BigOperators Classical ContDiff
-
-namespace CompletedGauss
-open ActualEisensteinCubic CubicEisenstein CompletedDyadic
-local notation "Eis" => ActualEisensteinCubic.O
-
-end CompletedGauss
-
-namespace CubicEisenstein
-
-section
-open ActualEisensteinCubic CompletedGauss CompletedDyadic
-local notation "Eis" => ActualEisensteinCubic.O
-namespace FixedFourierGeometry
-variable {c:Eis} {h:Eis⧸Ideal.span {c}} (G:FixedFourierGeometry c h)
-variable {ι:Type*} [Fintype ι] {p:ι→Eis} {N:Eis}
-
-end FixedFourierGeometry
-end
-
-open ActualEisensteinCubic CompletedGauss CompletedDyadic
-local notation "Eis" => ActualEisensteinCubic.O
-namespace FixedFourierGeometry
-variable {c:Eis} {h:Eis⧸Ideal.span {c}} (G:FixedFourierGeometry c h)
-variable {ι:Type*} [Fintype ι] {p:ι→Eis} {N:Eis}
-
-end FixedFourierGeometry
-end CubicEisenstein
-
-open scoped BigOperators Classical
-
-namespace CanonicalRowCompletion
-open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CubicEisenstein
-local notation "Eis" => ActualEisensteinCubic.O
-
-lemma freePrimaryPrime_coprime_completion (I Q:Ideal Eis) (hI:Supported I)
-    (c:Eis) (hcQ:(Ideal.span {c}:Ideal Eis)=Ideal.span {(9:Eis)}*Q)
-    (P:FreePrimeIndex I Q) : IsCoprime ((9:Eis)*c) (freePrimaryPrime I Q P) := by
-  have h9:IsCoprime (9:Eis) (freePrimaryPrime I Q P):=
-    (ShortDraftCRT.primary_coprime_nine _ (freePrimaryPrime_primary I Q hI P)).symm
-  have h9ideal:IsCoprime (Ideal.span {(9:Eis)}:Ideal Eis)
-      (Ideal.span {freePrimaryPrime I Q P}):=
-    (Ideal.isCoprime_span_singleton_iff _ _).mpr h9
-  have hcideal:IsCoprime (Ideal.span {c}:Ideal Eis)
-      (Ideal.span {freePrimaryPrime I Q P}):=by
-    rw [hcQ]
-    exact h9ideal.mul_left (freePrimaryPrime_coprime_fixed I Q hI P)
-  exact h9.mul_left ((Ideal.isCoprime_span_singleton_iff _ _).mp hcideal)
-
-theorem exists_freePrimary_controlled_stratum (I Q:Ideal Eis) (hI:Supported I)
-    (c:Eis) (hcQ:(Ideal.span {c}:Ideal Eis)=Ideal.span {(9:Eis)}*Q)
-    (h:Eis⧸Ideal.span {c}) (G:FixedFourierGeometry c h)
-    (A:Finset (FreePrimeIndex I Q)) :
-    Nonempty (ControlledStratumArithmetic
-      (fun i:A=>freePrimaryPrime I Q i.val) ((9:Eis)*c) G.a0 G.c0 G.mode) := by
-  let : ∀i:A,(Ideal.span {freePrimaryPrime I Q i.val}:Ideal Eis).IsMaximal:=
-    fun i=>freePrimaryPrime_maximal I Q hI i.val
-  apply exists_controlledStratumArithmetic
-    (fun i:A=>freePrimaryPrime I Q i.val)
-    (fun i=>freePrimaryPrime_ne_zero I Q hI i.val)
-  · intro i j hij
-    exact freePrimaryPrime_coprime I Q hI (fun he=>hij (Subtype.ext he))
-  · exact fun i=>freePrimaryPrime_primary I Q hI i.val
-  · exact G.denominator_ne_zero
-  · exact mul_dvd_mul_left 9 G.denominator_dvd
-  · exact G.primary
-  · exact G.coprime
-  · exact fun i=>freePrimaryPrime_coprime_completion I Q hI c hcQ i.val
-
-noncomputable def freePrimaryControlledStratum (I Q:Ideal Eis) (hI:Supported I)
-    (c:Eis) (hcQ:(Ideal.span {c}:Ideal Eis)=Ideal.span {(9:Eis)}*Q)
-    (h:Eis⧸Ideal.span {c}) (G:FixedFourierGeometry c h)
-    (A:Finset (FreePrimeIndex I Q)) :
-    ControlledStratumArithmetic
-      (fun i:A=>freePrimaryPrime I Q i.val) ((9:Eis)*c) G.a0 G.c0 G.mode :=
-  Classical.choice (exists_freePrimary_controlled_stratum I Q hI c hcQ h G A)
-
-end CanonicalRowCompletion
 
 end
 

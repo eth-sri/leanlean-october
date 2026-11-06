@@ -207,47 +207,47 @@ theorem full_uniform_canonicalPairMode_remainder (A : ℕ) :
       (C₁ C₂ : Finset ι→ℂ) (W : 𝓢(ℝ,ℂ)) (V₁ V₂ : ℝ→ℂ)
       (X₁ X₂ K H : ℝ),0<K → 0≤H → ∀(d : O),d≠0 → ∀T:Finset O,
       let S := (N∪P)∪cubeActiveSupport B v ε₁ ε₂
-      let scale := K/(‖eisEmbedding d‖^2*primeProductNorm p S)
-      (∀h:O,h∉T → H≤scale*‖eisEmbedding h‖^2) →
+      let sc := K/(‖eisEmbedding d‖^2*primeProductNorm p S)
+      (∀h:O,h∉T → H ≤ sc*‖eisEmbedding h‖^2) →
       ‖∑'h:{h:O // h∉T},canonicalPairMode p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K d h.val‖≤
       (‖V₁ (columnLog p X₁ N)‖*‖V₂ (columnLog p X₂ P)‖*
         (K/‖eisEmbedding (∏i∈S,p i)‖)*(‖C₁ N‖*‖C₂ P‖))*
-      ((C*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)/((min 1 scale)^2*(1+H)^A)) := by
+      ((C*s.sup (schwartzSeminormFamily ℝ ℝ ℂ) W)/((min 1 sc)^2*(1+H)^A)) := by
   obtain ⟨s,C,hC,hb⟩ := EisensteinSchwartzPoisson.paperRadialFourier_lattice_tail A
   refine ⟨s,C,hC,?_⟩
   intro ι _ p hp _ hcop hg hc N P B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K H hK hH d hd T
   dsimp only
   intro hT
   let S := (N∪P)∪cubeActiveSupport B v ε₁ ε₂
-  let scale := K/(‖eisEmbedding d‖^2*primeProductNorm p S)
+  let sc := K/(‖eisEmbedding d‖^2*primeProductNorm p S)
   let c := ‖V₁ (columnLog p X₁ N)‖*‖V₂ (columnLog p X₂ P)‖*
         (K/‖eisEmbedding (∏i∈S,p i)‖)*(‖C₁ N‖*‖C₂ P‖)
-  have hscale : 0<scale := div_pos hK (mul_pos
+  have hsc : 0<sc := div_pos hK (mul_pos
     (sq_pos_of_pos (norm_pos_iff.mpr (eisEmbedding_ne_zero hd))) (primeProductNorm_pos p hp S))
   have hc0 : 0≤c := by dsimp [c]; positivity
   let small : Set O := {h|h∉T}
-  let large : Set O := {h|H≤scale*‖eisEmbedding h‖^2}
+  let large : Set O := {h|H ≤ sc*‖eisEmbedding h‖^2}
   let f : small→large := fun h=>⟨h.val,hT h.val h.property⟩
   have hfi : Function.Injective f := by
     intro a b hab
     exact Subtype.ext (congrArg (fun x:large=>x.val) hab)
-  have hrad := EisensteinSchwartzPoisson.paperRadialFourier_lattice_summable_norm W scale hscale
+  have hrad := EisensteinSchwartzPoisson.paperRadialFourier_lattice_summable_norm W sc hsc
   have hmajor := (hrad.subtype small).mul_left c
   have hpnt (h:small) :
       ‖canonicalPairMode p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K d h.val‖≤
-      c*‖paperRadialFourier W (scale*‖eisEmbedding h.val‖^2)‖ :=
+      c*‖paperRadialFourier W (sc*‖eisEmbedding h.val‖^2)‖ :=
     canonicalPairMode_norm_le p hp hcop hg hc N P B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K hK d h.val
   have hsmall := Summable.of_nonneg_of_le (fun _=>norm_nonneg _) hpnt hmajor
   calc
     _ ≤ ∑'h:small,‖canonicalPairMode p hp hcop hg N P B v ε₁ ε₂ C₁ C₂ W V₁ V₂ X₁ X₂ K d h.val‖ :=
       norm_tsum_le_tsum_norm hsmall
-    _ ≤ ∑'h:small,c*‖paperRadialFourier W (scale*‖eisEmbedding h.val‖^2)‖ :=
+    _ ≤ ∑'h:small,c*‖paperRadialFourier W (sc*‖eisEmbedding h.val‖^2)‖ :=
       hsmall.tsum_le_tsum hpnt hmajor
-    _ = c*∑'h:small,‖paperRadialFourier W (scale*‖eisEmbedding h.val‖^2)‖ := tsum_mul_left
-    _ ≤ c*∑'h:large,‖paperRadialFourier W (scale*‖eisEmbedding h.val‖^2)‖ :=
+    _ = c*∑'h:small,‖paperRadialFourier W (sc*‖eisEmbedding h.val‖^2)‖ := tsum_mul_left
+    _ ≤ c*∑'h:large,‖paperRadialFourier W (sc*‖eisEmbedding h.val‖^2)‖ :=
       mul_le_mul_of_nonneg_left ((hrad.subtype small).tsum_le_tsum_of_inj f hfi
         (fun _ _=>norm_nonneg _) (fun _=>le_rfl) (hrad.subtype large)) hc0
-    _ ≤ _ := mul_le_mul_of_nonneg_left (hb W scale H hscale hH) hc0
+    _ ≤ _ := mul_le_mul_of_nonneg_left (hb W sc H hsc hH) hc0
 
 end
 

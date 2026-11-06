@@ -104,16 +104,6 @@ section
 open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CubicKubota CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
 
-noncomputable local instance primeQuotientFintype (P:Ideal Eis) [P.IsMaximal] : Fintype (Eis⧸P) :=
-  Fintype.ofFinite _
-
-def primeInactiveFourierWeight {ι:Type*} [Fintype ι]
-    (p:ι→Eis) [∀i,(Ideal.span {p i}).IsMaximal]
-    (hp:∀i,p i≠0) (hg:∀i,lambda∉Ideal.span {p i}) (j:ι→ℕ) (A:Finset ι) : ℂ :=
-  ∏i∈(Finset.univ:Finset ι)\A,
-    finiteAdditiveFourierCoeff (quotientTrace (p i) (hp i))
-      (fun x=>(actualSextic (Ideal.span {p i}) (hg i)^j i) x) 0
-
 def activeStratumDatum {ι:Type*} [Fintype ι]
     (p:ι→Eis) (hp:∀i,p i≠0) (hprimary:∀i,lambda^2∣p i-1)
     {N a0 c0:Eis} {mode:Bool}
@@ -130,9 +120,6 @@ end
 open ActualEisensteinCubic ConcreteTraceCRT CompletedGauss CubicKubota CubicJacobiGlobal
 open CanonicalRowCompletion
 local notation "Eis" => ActualEisensteinCubic.O
-
-noncomputable local instance fixedActiveQuotientFintype (P:Ideal Eis) [P.IsMaximal] : Fintype (Eis⧸P) :=
-  Fintype.ofFinite _
 
 abbrev FixedActiveCuspIndex {ι:Type*} (c:Eis) (p:ι→Eis) :=
   Σ_h:Eis⧸Ideal.span {c},ΣA:Finset ι,∀i:A,(Eis⧸Ideal.span {p i.val})ˣ
@@ -159,27 +146,6 @@ namespace CanonicalRowCompletion
 section
 open ActualEisensteinCubic CompletedGauss CanonicalQuadraticSieve CubicEisenstein CubicJacobiGlobal
 local notation "Eis" => ActualEisensteinCubic.O
-
-def actualControlledSource (I Q:Ideal Eis) (hI:Supported I)
-    (c:Eis) (hc:c≠0) [Fintype (Eis⧸Ideal.span {c})]
-    (hcQ:(Ideal.span {c}:Ideal Eis)=Ideal.span {(9:Eis)}*Q)
-    (G:∀h:Eis⧸Ideal.span {c},FixedFourierGeometry c h)
-    (φ:Eis→*ℂ) (W:ℝ→ℂ) (X:ℝ) : ℂ := by
-  letI : ∀P:FreePrimeIndex I Q,(Ideal.span {freePrimaryPrime I Q P}:Ideal Eis).IsMaximal:=
-    freePrimaryPrime_maximal I Q hI
-  exact thetaDerivativeScalar⁻¹*
-    ∑h:Eis⧸Ideal.span {c},fixedThetaRowCoeff c hc φ h*
-      ∑A:Finset (FreePrimeIndex I Q),
-        primeInactiveFourierWeight (freePrimaryPrime I Q) (freePrimaryPrime_ne_zero I Q hI)
-          (freePrimaryPrime_good I Q hI)
-          (fun P=>(UniqueFactorizationMonoid.normalizedFactors I).count P.val.val%6) A*
-        (freePrimaryControlledStratum I Q hI c hcQ h (G h) A).smoothedValue
-          (mul_dvd_mul_left 9 (G h).denominator_dvd)
-          (primary_finset_product Finset.univ (fun P:A=>freePrimaryPrime I Q P.val)
-            (fun P _=>freePrimaryPrime_primary I Q hI P.val))
-          (G h).primary (G h).shape (fun P=>freePrimaryPrime_ne_zero I Q hI P.val)
-          (G h).denominator_ne_zero (fun P=>freePrimaryPrime_good I Q hI P.val)
-          (fun P=>(UniqueFactorizationMonoid.normalizedFactors I).count P.val.val.val%6) W X
 
 end
 section

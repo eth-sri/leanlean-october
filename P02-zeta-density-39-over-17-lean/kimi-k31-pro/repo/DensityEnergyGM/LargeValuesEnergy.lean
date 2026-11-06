@@ -95,7 +95,7 @@ theorem fourierDeweightFiniteBlock_logShift_coeffs_native
               (n : ℂ) ^ (-(((t - 2 * Real.pi * ξ : ℝ) : ℂ)) * I) := by
         rw [Complex.cpow_def_of_ne_zero hnNe,
           Complex.cpow_def_of_ne_zero hnNe]
-        have hnReal : (0 : ℝ) < n := by exact_mod_cast hn
+        have hnReal : zeroR < n := by exact_mod_cast hn
         have hlog : Complex.log (n : ℂ) =
             (Real.log (n : ℝ) : ℂ) := (Complex.ofReal_log hnReal.le).symm
         rw [hlog, ← Complex.exp_add, ← Complex.exp_add]
@@ -146,8 +146,8 @@ theorem gmAffineLocalBumpSchwartz_one_on_dyadicLog
     {M n : ℕ} (hM : 0 < M) (hn : n ∈ dyadicInterval M) :
     gmAffineLocalBumpSchwartz (Real.log n - Real.log M) = 1 := by
   have hnBounds := Finset.mem_Ioc.mp hn
-  have hMr : (0 : ℝ) < M := by exact_mod_cast hM
-  have hnr : (0 : ℝ) < n := by exact_mod_cast (hM.trans hnBounds.1)
+  have hMr : zeroR < M := by exact_mod_cast hM
+  have hnr : zeroR < n := by exact_mod_cast (hM.trans hnBounds.1)
   have hLowerCast : (M : ℝ) ≤ n := by exact_mod_cast hnBounds.1.le
   have hUpperCast : (n : ℝ) ≤ 2 * M := by
     exact_mod_cast hnBounds.2
@@ -155,7 +155,7 @@ theorem gmAffineLocalBumpSchwartz_one_on_dyadicLog
     Real.log_le_log hMr hLowerCast
   have hlogUpperRaw : Real.log (n : ℝ) ≤ Real.log (2 * (M : ℝ)) :=
     Real.log_le_log hnr hUpperCast
-  rw [Real.log_mul (by norm_num : (2 : ℝ) ≠ 0) hMr.ne'] at hlogUpperRaw
+  rw [Real.log_mul (by norm_num : twoR ≠ 0) hMr.ne'] at hlogUpperRaw
   have habs : |Real.log (n : ℝ) - Real.log (M : ℝ)| ≤ 1 := by
     rw [abs_of_nonneg (sub_nonneg.mpr hlogLower)]
     linarith [Real.log_two_lt_d9]
@@ -262,7 +262,7 @@ theorem exists_gmAffineLocalBumpFourier_tail_bound (q : ℕ) (hq : 2 ≤ q) :
   intro H hH
   have hHPos : 0 < H := zero_lt_one.trans_le hH
   let F : SchwartzMap ℝ ℂ := 𝓕 gmAffineLocalBumpSchwartz
-  have hqReal : (1 : ℝ) < q := by exact_mod_cast hq
+  have hqReal : oneR < q := by exact_mod_cast hq
   have hExp : -(q : ℝ) < -1 := by linarith
   have hFInt : Integrable (fun ξ : ℝ => ‖F ξ‖) := F.integrable.norm
   have hDomInt : IntegrableOn (fun ξ : ℝ => C₀ * |ξ| ^ (-(q : ℝ)))
@@ -333,7 +333,7 @@ theorem norm_sourceDirichletPoly_le_scale
         b n * (n : ℂ) ^ (((t : ℂ)) * I)‖ ≤
       ∑ n ∈ dyadicInterval M,
         ‖b n * (n : ℂ) ^ (((t : ℂ)) * I)‖ := norm_sum_le _ _
-    _ ≤ ∑ _n ∈ dyadicInterval M, (1 : ℝ) := by
+    _ ≤ ∑ _n ∈ dyadicInterval M, oneR := by
       apply Finset.sum_le_sum
       intro n hn
       rw [norm_mul, Complex.norm_natCast_cpow_of_pos
@@ -503,7 +503,7 @@ theorem gmLemma11ThreeFourierError_le
       rw [hHeight]
       calc
         T * C * T ^ (η * (1 - (q : ℝ))) =
-            C * (T ^ (1 : ℝ) * T ^ (η * (1 - (q : ℝ)))) := by
+            C * (T ^ oneR * T ^ (η * (1 - (q : ℝ)))) := by
           rw [Real.rpow_one]
           ring
         _ = C * T ^ (1 + η * (1 - (q : ℝ))) := by
@@ -1301,7 +1301,7 @@ theorem gmHalfDifferenceTranslatedClass_separated
   have hInt : (1 : ℤ) ≤ |u - v| := by
     have hpos : (0 : ℤ) < |u - v| := abs_pos.mpr (sub_ne_zero.mpr huv)
     omega
-  have hCast : (1 : ℝ) ≤ |(u : ℝ) - (v : ℝ)| := by
+  have hCast : oneR ≤ |(u : ℝ) - (v : ℝ)| := by
     exact_mod_cast hInt
   simpa only [add_sub_add_right_eq_sub] using hCast
 
@@ -2109,7 +2109,7 @@ theorem twoPowSucc_sq_mul_dyadicClass_card_five_four_le
     Real.rpow_le_rpow (mul_nonneg (pow_nonneg hB 2) hU) hB2U (by norm_num)
   have hSecond : (B * U) ^ (1 / 2 : ℝ) ≤ R := by
     have hRaw := Real.rpow_le_rpow (mul_nonneg hB hU) hBU
-      (by norm_num : (0 : ℝ) ≤ 1 / 2)
+      (by norm_num : zeroR ≤ 1 / 2)
     calc
       (B * U) ^ (1 / 2 : ℝ) ≤ (R ^ 2) ^ (1 / 2 : ℝ) := hRaw
       _ = R := by
@@ -2390,7 +2390,7 @@ theorem gmHalfDifferenceDyadicCount_le_six_log
   have hWone : 1 ≤ W.card := Nat.one_le_iff_ne_zero.mpr hWzero
   have hCard := gmSeparated_card_le_two_height hTone hSep hBase
   have hLogCard := natCast_log_two_le_log W.card hWone
-  have hCardPos : (0 : ℝ) < W.card := by exact_mod_cast (Nat.pos_of_ne_zero hWzero)
+  have hCardPos : zeroR < W.card := by exact_mod_cast (Nat.pos_of_ne_zero hWzero)
   have hTwoTPos : 0 < 2 * T := by positivity
   have hLogMono : Real.log (W.card : ℝ) ≤ Real.log (2 * T) :=
     Real.strictMonoOn_log.monotoneOn
@@ -2453,11 +2453,11 @@ theorem gmSection11RawCore_le_sqrtSix
           (ApproxAddEnergy 1 W : ℝ) * M ^ 2 +
           (ApproxAddEnergy 1 W : ℝ) ^ (3 / 4 : ℝ) *
             (W.card : ℝ) * T ^ (1 / 2 : ℝ) * M) := by
-  have hSix : (0 : ℝ) ≤ 6 := by norm_num
+  have hSix : zeroR ≤ 6 := by norm_num
   have hSqrtSixOne : 1 ≤ Real.sqrt 6 :=
     (Real.one_le_sqrt).2 (by norm_num)
   have hRoot := four_mul_add_two_rpow_le_six_mul hT
-    (by norm_num : (0 : ℝ) ≤ 1 / 2)
+    (by norm_num : zeroR ≤ 1 / 2)
   have hSqrtSix : 6 ^ (1 / 2 : ℝ) = Real.sqrt 6 := by
     rw [Real.sqrt_eq_rpow]
   rw [hSqrtSix] at hRoot
@@ -2584,7 +2584,7 @@ theorem gmDiscreteFourthMoment_native :
         rw [mul_pow]
         congr 1
         calc
-          (T ^ (ε / 16)) ^ 2 = (T ^ (ε / 16)) ^ (2 : ℝ) := by
+          (T ^ (ε / 16)) ^ 2 = (T ^ (ε / 16)) ^ twoR := by
             rw [Real.rpow_two]
           _ = T ^ ((ε / 16) * 2) := by
             rw [Real.rpow_mul hTpos.le]
@@ -2639,7 +2639,7 @@ theorem gmDiscreteFourthMoment_native :
             (Real.sqrt 6 * Core) := by gcongr
       _ = Cmain * T ^ ε * Core := by
         have hsqrt : Real.sqrt 6 ≠ 0 :=
-          Real.sqrt_ne_zero'.mpr (by norm_num : (0 : ℝ) < 6)
+          Real.sqrt_ne_zero'.mpr (by norm_num : zeroR < 6)
         field_simp [hsqrt]
   have hTailFrac : E₀ / T ^ (100 : ℝ) ≤ E₀ := by
     apply div_le_self hE₀.le
@@ -2647,7 +2647,7 @@ theorem gmDiscreteFourthMoment_native :
   have hTailFrac0 : 0 ≤ E₀ / T ^ (100 : ℝ) := by positivity
   have hTailSq : (E₀ / T ^ (100 : ℝ)) ^ 2 ≤ E₀ ^ 2 :=
     pow_le_pow_left₀ hTailFrac0 hTailFrac 2
-  have hMone : (1 : ℝ) ≤ M := by exact_mod_cast hM
+  have hMone : oneR ≤ M := by exact_mod_cast hM
   have hRfourM : (W.card : ℝ) ^ 4 ≤ Core := by
     dsimp only [Core]
     have : (W.card : ℝ) ^ 4 ≤ (W.card : ℝ) ^ 4 * M := by
@@ -3291,7 +3291,7 @@ theorem card_cubed_le_gmDiscreteRatioMoment_three
   rw [gmDiscreteRatioMoment_eq_iterated]
   have hdiag :
       ‖gmR W ((n₀ : ℝ) / n₀)‖ ^ 3 = (W.card : ℝ) ^ 3 := by
-    have hn₀pos : (0 : ℝ) < n₀ := by exact_mod_cast (Nat.zero_lt_succ M)
+    have hn₀pos : zeroR < n₀ := by exact_mod_cast (Nat.zero_lt_succ M)
     rw [div_self hn₀pos.ne', gmR_one]
     norm_num
   calc
@@ -3356,7 +3356,7 @@ theorem gmApproxAddEnergy_largeValues_native :
       _ = (2 * D) ^ 2 * T ^ (ε / 8) := by
         congr 1
         calc
-          (T ^ (ε / 16)) ^ 2 = (T ^ (ε / 16)) ^ (2 : ℝ) := by
+          (T ^ (ε / 16)) ^ 2 = (T ^ (ε / 16)) ^ twoR := by
             rw [Real.rpow_two]
           _ = T ^ ((ε / 16) * 2) := by rw [Real.rpow_mul hTpos.le]
           _ = T ^ (ε / 8) := by congr 1; ring
@@ -3793,7 +3793,7 @@ theorem norm_gmRPhase_sq_le_localIntegral_add_tail
           H ^ (1 - (q : ℝ)) := by
   have hRaw := norm_gmFiniteExpSum_le_localIntegral_add_tail
     (W ×ˢ W) (fun _ => (1 : ℂ)) (fun p : ℝ × ℝ => p.1 - p.2)
-      (B := (1 : ℝ)) (T := T) (by simpa using hT)
+      (B := oneR) (T := T) (by simpa using hT)
       (by intro p hp; simpa using gmRPhase_pair_frequency_le hBase p hp)
       x H hH q hq
   have hpoint (y : ℝ) :
@@ -3825,7 +3825,7 @@ theorem norm_gmRPhase_fourth_le_localIntegral_add_tail
     ((W ×ˢ W) ×ˢ (W ×ˢ W)) (fun _ => (1 : ℂ))
       (fun q : (ℝ × ℝ) × (ℝ × ℝ) =>
         q.1.1 + q.1.2 - q.2.1 - q.2.2)
-      (B := (2 : ℝ)) (T := T) (by positivity)
+      (B := twoR) (T := T) (by positivity)
       (by intro z hz; simpa using gmRPhase_quad_frequency_le hBase z hz)
       x H hH q hq
   have hpoint (y : ℝ) :
@@ -4023,10 +4023,10 @@ theorem gmReducedLogRatios_image_injective
         Real.log_div (by exact_mod_cast hq₁.ne')
           (by exact_mod_cast hq₂.ne')]
       exact heq
-    have hp₁R : (0 : ℝ) < p.1 := by exact_mod_cast hp₁
-    have hp₂R : (0 : ℝ) < p.2 := by exact_mod_cast hp₂
-    have hq₁R : (0 : ℝ) < q.1 := by exact_mod_cast hq₁
-    have hq₂R : (0 : ℝ) < q.2 := by exact_mod_cast hq₂
+    have hp₁R : zeroR < p.1 := by exact_mod_cast hp₁
+    have hp₂R : zeroR < p.2 := by exact_mod_cast hp₂
+    have hq₁R : zeroR < q.1 := by exact_mod_cast hq₁
+    have hq₂R : zeroR < q.2 := by exact_mod_cast hq₂
     exact Real.strictMonoOn_log.injOn
       (div_pos hp₁R hp₂R) (div_pos hq₁R hq₂R) hlog
   exact reduced_nat_ratio_injective hp₁ hp₂ hq₁ hq₂
@@ -4073,18 +4073,18 @@ theorem gmReducedRatioPairs_ratio_bounds
   have hcond := (Finset.mem_filter.mp hp).2
   have hp₁ := gmReducedRatioPairs_fst_pos hp
   have hp₂ := gmReducedRatioPairs_snd_pos hp
-  have hdR : (0 : ℝ) < d := by exact_mod_cast hd
+  have hdR : zeroR < d := by exact_mod_cast hd
   have haLower : (N : ℝ) < d * p.1 := by exact_mod_cast hcond.1
   have haUpper : (d : ℝ) * p.1 ≤ 2 * N := by exact_mod_cast hcond.2.1
   have hbLower : (N : ℝ) < d * p.2 := by exact_mod_cast hcond.2.2.1
   have hbUpper : (d : ℝ) * p.2 ≤ 2 * N := by exact_mod_cast hcond.2.2.2.1
-  have hp₂R : (0 : ℝ) < p.2 := by exact_mod_cast hp₂
+  have hp₂R : zeroR < p.2 := by exact_mod_cast hp₂
   constructor
   · apply (lt_div_iff₀ hp₂R).2
     have hmul : (d : ℝ) * p.2 < (d : ℝ) * (2 * p.1) := by
       nlinarith
     by_contra hnot
-    have hle : (2 : ℝ) * p.1 ≤ p.2 := by
+    have hle : twoR * p.1 ≤ p.2 := by
       have := le_of_not_gt hnot
       nlinarith
     have := mul_le_mul_of_nonneg_left hle hdR.le
@@ -4093,7 +4093,7 @@ theorem gmReducedRatioPairs_ratio_bounds
     have hmul : (d : ℝ) * p.1 < (d : ℝ) * (2 * p.2) := by
       nlinarith
     by_contra hnot
-    have hle : (2 : ℝ) * p.2 ≤ p.1 := le_of_not_gt hnot
+    have hle : twoR * p.2 ≤ p.1 := le_of_not_gt hnot
     have := mul_le_mul_of_nonneg_left hle hdR.le
     linarith
 
@@ -4119,11 +4119,11 @@ theorem gmReducedRatioPairs_ratio_separated
     have hcrossR : (p.1 : ℝ) * q.2 = (q.1 : ℝ) * p.2 := by
       exact_mod_cast hcross
     simpa [mul_comm] using hcrossR
-  have hnum : (1 : ℝ) ≤
+  have hnum : oneR ≤
       |(p.1 : ℝ) * q.2 - (q.1 : ℝ) * p.2| := by
     by_cases hle : p.1 * q.2 ≤ q.1 * p.2
     · have hdiff : 1 ≤ q.1 * p.2 - p.1 * q.2 := by omega
-      have hdiffR : (1 : ℝ) ≤
+      have hdiffR : oneR ≤
           (q.1 * p.2 - p.1 * q.2 : ℕ) := by exact_mod_cast hdiff
       rw [Nat.cast_sub hle, Nat.cast_mul, Nat.cast_mul] at hdiffR
       rw [abs_of_nonpos]
@@ -4131,7 +4131,7 @@ theorem gmReducedRatioPairs_ratio_separated
       · exact sub_nonpos.mpr (by exact_mod_cast hle)
     · have hlt : q.1 * p.2 < p.1 * q.2 := lt_of_not_ge hle
       have hdiff : 1 ≤ p.1 * q.2 - q.1 * p.2 := by omega
-      have hdiffR : (1 : ℝ) ≤
+      have hdiffR : oneR ≤
           (p.1 * q.2 - q.1 * p.2 : ℕ) := by exact_mod_cast hdiff
       rw [Nat.cast_sub hlt.le, Nat.cast_mul, Nat.cast_mul] at hdiffR
       rw [abs_of_nonneg]
@@ -4141,8 +4141,8 @@ theorem gmReducedRatioPairs_ratio_separated
   have hqDen := gmReducedRatioPairs_dilate_snd_le hq
   have hpDenR : (d : ℝ) * p.2 ≤ 2 * N := by exact_mod_cast hpDen
   have hqDenR : (d : ℝ) * q.2 ≤ 2 * N := by exact_mod_cast hqDen
-  have hdenPos : (0 : ℝ) < (p.2 : ℝ) * q.2 := mul_pos (by exact_mod_cast hp₂) (by exact_mod_cast hq₂)
-  have hNpos : (0 : ℝ) < N := by exact_mod_cast hN
+  have hdenPos : zeroR < (p.2 : ℝ) * q.2 := mul_pos (by exact_mod_cast hp₂) (by exact_mod_cast hq₂)
+  have hNpos : zeroR < N := by exact_mod_cast hN
   have hscale : (d : ℝ) ^ 2 / (4 * (N : ℝ) ^ 2) ≤
       1 / ((p.2 : ℝ) * q.2) := by
     apply (div_le_div_iff₀ (by positivity) hdenPos).2
@@ -4299,7 +4299,7 @@ theorem norm_gmR_reducedRatio_eq_phase
       ‖gmRPhase W (Real.log (p.1 : ℝ) - Real.log (p.2 : ℝ))‖ := by
   have hp₁ := gmReducedRatioPairs_fst_pos hp
   have hp₂ := gmReducedRatioPairs_snd_pos hp
-  have hratio : (0 : ℝ) < (p.1 : ℝ) / p.2 := by positivity
+  have hratio : zeroR < (p.1 : ℝ) / p.2 := by positivity
   rw [gmR_eq_gmRPhase_log hratio.ne', abs_of_pos hratio,
     Real.log_div (by positivity) (by positivity)]
 
@@ -4342,13 +4342,13 @@ theorem gmReducedLogRatios_bounds
   have hp₁ := gmReducedRatioPairs_fst_pos hp
   have hp₂ := gmReducedRatioPairs_snd_pos hp
   have hb := gmReducedRatioPairs_ratio_bounds hN hd hp
-  have hratioPos : (0 : ℝ) < (p.1 : ℝ) / p.2 := by positivity
+  have hratioPos : zeroR < (p.1 : ℝ) / p.2 := by positivity
   have hlog : Real.log (p.1 : ℝ) - Real.log (p.2 : ℝ) =
       Real.log ((p.1 : ℝ) / p.2) := by
     rw [Real.log_div (by positivity) (by positivity)]
   rw [hlog]
-  have hhalfPos : (0 : ℝ) < 1 / 2 := by norm_num
-  have htwoPos : (0 : ℝ) < 2 := by norm_num
+  have hhalfPos : zeroR < 1 / 2 := by norm_num
+  have htwoPos : zeroR < 2 := by norm_num
   constructor
   · exact Real.strictMonoOn_log.monotoneOn hhalfPos hratioPos hb.1.le
   · exact Real.strictMonoOn_log.monotoneOn hratioPos htwoPos hb.2.le
@@ -4705,17 +4705,17 @@ theorem gmDiscreteRatioMoment_eq_sum_gcdSlices
 /-! ### Elementary summation used in the small-gcd range -/
 
 theorem sum_range_one_div_succ_sq_le (D : ℕ) :
-    (∑ n ∈ Finset.range D, (1 : ℝ) / ((n + 1 : ℕ) : ℝ) ^ 2) ≤
+    (∑ n ∈ Finset.range D, oneR / ((n + 1 : ℕ) : ℝ) ^ 2) ≤
       2 - 2 / ((D + 1 : ℕ) : ℝ) := by
   induction D with
   | zero => norm_num
   | succ D ih =>
-      have hD : (0 : ℝ) < ((D + 1 : ℕ) : ℝ) := by positivity
-      have hDs : (0 : ℝ) < ((D + 2 : ℕ) : ℝ) := by positivity
+      have hD : zeroR < ((D + 1 : ℕ) : ℝ) := by positivity
+      have hDs : zeroR < ((D + 2 : ℕ) : ℝ) := by positivity
       have hterm :
-          (1 : ℝ) / ((D + 1 : ℕ) : ℝ) ^ 2 ≤
+          oneR / ((D + 1 : ℕ) : ℝ) ^ 2 ≤
             2 / ((D + 1 : ℕ) : ℝ) - 2 / ((D + 2 : ℕ) : ℝ) := by
-        have hDone : (1 : ℝ) ≤ (D + 1 : ℕ) := by exact_mod_cast Nat.succ_le_succ (Nat.zero_le D)
+        have hDone : oneR ≤ (D + 1 : ℕ) := by exact_mod_cast Nat.succ_le_succ (Nat.zero_le D)
         have hDsEq : ((D + 2 : ℕ) : ℝ) = ((D + 1 : ℕ) : ℝ) + 1 := by
           push_cast
           ring
@@ -4724,7 +4724,7 @@ theorem sum_range_one_div_succ_sq_le (D : ℕ) :
         nlinarith
       rw [Finset.sum_range_succ]
       calc
-        (∑ n ∈ Finset.range D, (1 : ℝ) / ((n + 1 : ℕ) : ℝ) ^ 2) +
+        (∑ n ∈ Finset.range D, oneR / ((n + 1 : ℕ) : ℝ) ^ 2) +
               1 / ((D + 1 : ℕ) : ℝ) ^ 2 ≤
             (2 - 2 / ((D + 1 : ℕ) : ℝ)) +
               1 / ((D + 1 : ℕ) : ℝ) ^ 2 := by gcongr
@@ -4736,17 +4736,17 @@ theorem sum_range_one_div_succ_sq_le (D : ℕ) :
           ring
 
 theorem sum_Icc_one_div_sq_le_two (D : ℕ) :
-    (∑ d ∈ Finset.Icc 1 D, (1 : ℝ) / (d : ℝ) ^ 2) ≤ 2 := by
+    (∑ d ∈ Finset.Icc 1 D, oneR / (d : ℝ) ^ 2) ≤ 2 := by
   have hsub : Finset.Icc 1 D ⊆ Finset.range (D + 1) := by
     intro d hd
     exact Finset.mem_range.mpr (Nat.lt_succ_of_le (Finset.mem_Icc.mp hd).2)
   have hle :
-      (∑ d ∈ Finset.Icc 1 D, (1 : ℝ) / (d : ℝ) ^ 2) ≤
-        ∑ d ∈ Finset.range (D + 1), if d = 0 then 0 else (1 : ℝ) / (d : ℝ) ^ 2 := by
+      (∑ d ∈ Finset.Icc 1 D, oneR / (d : ℝ) ^ 2) ≤
+        ∑ d ∈ Finset.range (D + 1), if d = 0 then 0 else oneR / (d : ℝ) ^ 2 := by
     calc
-      (∑ d ∈ Finset.Icc 1 D, (1 : ℝ) / (d : ℝ) ^ 2) =
+      (∑ d ∈ Finset.Icc 1 D, oneR / (d : ℝ) ^ 2) =
           ∑ d ∈ Finset.Icc 1 D,
-            if d = 0 then 0 else (1 : ℝ) / (d : ℝ) ^ 2 := by
+            if d = 0 then 0 else oneR / (d : ℝ) ^ 2 := by
         apply Finset.sum_congr rfl
         intro d hd
         have hdPos : 0 < d := (Finset.mem_Icc.mp hd).1
@@ -4756,13 +4756,13 @@ theorem sum_Icc_one_div_sq_le_two (D : ℕ) :
         intro d hdRange hdNot
         positivity
   have hshift :
-      (∑ d ∈ Finset.range (D + 1), if d = 0 then 0 else (1 : ℝ) / (d : ℝ) ^ 2) =
-        ∑ n ∈ Finset.range D, (1 : ℝ) / ((n + 1 : ℕ) : ℝ) ^ 2 := by
+      (∑ d ∈ Finset.range (D + 1), if d = 0 then 0 else oneR / (d : ℝ) ^ 2) =
+        ∑ n ∈ Finset.range D, oneR / ((n + 1 : ℕ) : ℝ) ^ 2 := by
     rw [Finset.sum_range_succ']
     simp
   rw [hshift] at hle
   exact hle.trans ((sum_range_one_div_succ_sq_le D).trans (by
-    have : (0 : ℝ) ≤ 2 / ((D + 1 : ℕ) : ℝ) := by positivity
+    have : zeroR ≤ 2 / ((D + 1 : ℕ) : ℝ) := by positivity
     linarith))
 
 theorem card_gmReducedRatioPairs_le_four_mul_sq (N d : ℕ) :
@@ -4800,7 +4800,7 @@ theorem gmSecondLocalPackingPrefactor_le
   by_cases hNz : N = 0
   · subst N
     norm_num
-    have hpiHalf : (1 : ℝ) / (2 * Real.pi) ≤ 1 := by
+    have hpiHalf : oneR / (2 * Real.pi) ≤ 1 := by
       apply (div_le_one (by positivity)).2
       nlinarith [Real.pi_gt_three]
     calc
@@ -4826,7 +4826,7 @@ theorem gmSecondLocalPackingPrefactor_le
       field_simp
       ring
     rw [heq]
-    have hpiHalf : (1 : ℝ) / (2 * Real.pi) ≤ 1 := by
+    have hpiHalf : oneR / (2 * Real.pi) ≤ 1 := by
       apply (div_le_one (by positivity)).2
       nlinarith [Real.pi_gt_three]
     have hcore0 : 0 ≤ H * N ^ 2 / d ^ 2 := by positivity
@@ -4863,7 +4863,7 @@ theorem gmFourthLocalPackingPrefactor_le
   by_cases hNz : N = 0
   · subst N
     norm_num
-    have hpiInv : (1 : ℝ) / Real.pi ≤ 1 := by
+    have hpiInv : oneR / Real.pi ≤ 1 := by
       apply (div_le_one Real.pi_pos).2
       nlinarith [Real.pi_gt_three]
     calc
@@ -4887,7 +4887,7 @@ theorem gmFourthLocalPackingPrefactor_le
       field_simp
       ring
     rw [heq]
-    have hpiInv : (1 : ℝ) / Real.pi ≤ 1 := by
+    have hpiInv : oneR / Real.pi ≤ 1 := by
       apply (div_le_one Real.pi_pos).2
       nlinarith [Real.pi_gt_three]
     have hcore0 : 0 ≤ H * N ^ 2 / d ^ 2 := by positivity
@@ -4947,8 +4947,8 @@ theorem gmReducedRatioMoment_two_le_main_add_tail
             H ^ (1 - (q : ℝ)) := by
   have hTpos : 0 < T := zero_lt_one.trans_le hT
   have hH0 : 0 ≤ H := zero_le_one.trans hHOne
-  have hN0 : (0 : ℝ) ≤ N := by positivity
-  have hdR : (0 : ℝ) < d := by exact_mod_cast hd
+  have hN0 : zeroR ≤ N := by positivity
+  have hdR : zeroR < d := by exact_mod_cast hd
   have hrLe : 2 * Real.pi * H / T ≤ 2 * Real.pi := by
     rw [div_le_iff₀ hTpos]
     nlinarith [Real.pi_pos]
@@ -5025,10 +5025,10 @@ theorem gmReducedRatioMoment_four_le_main_add_tail
             H ^ (1 - (q : ℝ)) := by
   have hTpos : 0 < T := zero_lt_one.trans_le hT
   have hH0 : 0 ≤ H := zero_le_one.trans hHOne
-  have hN0 : (0 : ℝ) ≤ N := by positivity
-  have hdR : (0 : ℝ) < d := by exact_mod_cast hd
+  have hN0 : zeroR ≤ N := by positivity
+  have hdR : zeroR < d := by exact_mod_cast hd
   have hrLe : 2 * Real.pi * H / (2 * T) ≤ Real.pi := by
-    rw [div_le_iff₀ (by positivity : (0 : ℝ) < 2 * T)]
+    rw [div_le_iff₀ (by positivity : zeroR < 2 * T)]
     nlinarith [Real.pi_pos]
   have hlen :
       |((Real.log 2 + 2 * Real.pi * H / (2 * T)) -
@@ -5151,7 +5151,7 @@ theorem gmReducedRatioMoment_two_le_epsilon
     subst W
     simp [gmReducedRatioMoment, gmR]
   have hWposNat : 0 < W.card := Nat.pos_of_ne_zero hWzero
-  have hWone : (1 : ℝ) ≤ W.card := by exact_mod_cast hWposNat
+  have hWone : oneR ≤ W.card := by exact_mod_cast hWposNat
   have hCard := gmSeparated_card_le_two_height hT hSep hBase
   have hTailBase :
       Ctail * H ^ (1 - (q : ℝ)) ≤ Ctail / T ^ (8 : ℝ) := by
@@ -5181,7 +5181,7 @@ theorem gmReducedRatioMoment_two_le_epsilon
       have hTpow : 1 ≤ T ^ μ := Real.one_le_rpow hT hμ.le
       have hterm0 : 0 ≤ H * (N : ℝ) ^ 2 / (d : ℝ) ^ 2 := by positivity
       have hsum : 1 ≤ T + H * (N : ℝ) ^ 2 / (d : ℝ) ^ 2 := by linarith
-      nlinarith [mul_le_mul hTpow hsum (by norm_num : (0 : ℝ) ≤ 1)
+      nlinarith [mul_le_mul hTpow hsum (by norm_num : zeroR ≤ 1)
         (Real.rpow_nonneg hTpos.le μ)]
     have hpoly : 4 * (N : ℝ) ^ 2 * (W.card : ℝ) ^ 2 ≤
         16 * T ^ (4 : ℕ) := by
@@ -5272,10 +5272,10 @@ theorem gmReducedRatioMoment_four_le_epsilon
       T ^ (6 : ℕ) * (Ctail / T ^ (8 : ℝ)) ≤
           T ^ (8 : ℝ) * (Ctail / T ^ (8 : ℝ)) := by gcongr
       _ = Ctail := by field_simp
-  have henergyOne : (1 : ℝ) ≤ ApproxAddEnergy 1 W := by
-    have hdiag := card_sq_le_approxAddEnergy (by norm_num : (0 : ℝ) ≤ 1) W
+  have henergyOne : oneR ≤ ApproxAddEnergy 1 W := by
+    have hdiag := card_sq_le_approxAddEnergy (by norm_num : zeroR ≤ 1) W
     have honeNat : 1 ≤ W.card ^ 2 := Nat.one_le_pow 2 W.card hWposNat
-    have honeR : (1 : ℝ) ≤ (W.card ^ 2 : ℕ) := by exact_mod_cast honeNat
+    have honeR : oneR ≤ (W.card ^ 2 : ℕ) := by exact_mod_cast honeNat
     have hdiagR : ((W.card ^ 2 : ℕ) : ℝ) ≤ ApproxAddEnergy 1 W := by
       exact_mod_cast hdiag
     exact honeR.trans hdiagR
@@ -5291,7 +5291,7 @@ theorem gmReducedRatioMoment_four_le_epsilon
     have hcore : 1 ≤ T ^ μ *
         (T + H * (N : ℝ) ^ 2 / (d : ℝ) ^ 2) *
           (ApproxAddEnergy 1 W : ℝ) := by
-      have hmul := mul_le_mul hTpow hsum (by norm_num : (0 : ℝ) ≤ 1)
+      have hmul := mul_le_mul hTpow hsum (by norm_num : zeroR ≤ 1)
         (Real.rpow_nonneg hTpos.le μ)
       nlinarith
     have hpoly : 4 * (N : ℝ) ^ 2 * (W.card : ℝ) ^ 4 ≤
@@ -5450,7 +5450,7 @@ theorem sum_smallGcd_local_scales_le
         (T + H * (N : ℝ) ^ 2 / (d : ℝ) ^ 2)) =
         ((Finset.Icc 1 D).card : ℝ) * T +
           H * (N : ℝ) ^ 2 *
-            (∑ d ∈ Finset.Icc 1 D, (1 : ℝ) / (d : ℝ) ^ 2) := by
+            (∑ d ∈ Finset.Icc 1 D, oneR / (d : ℝ) ^ 2) := by
       simp only [Finset.sum_add_distrib, Finset.sum_const, nsmul_eq_mul]
       rw [Finset.mul_sum]
       apply congrArg₂ (· + ·) rfl

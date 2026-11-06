@@ -113,35 +113,6 @@ instance hyperbolicVolume_fullSupport : Measure.IsOpenPosMeasure hyperbolicVolum
     have htotal : hyperbolicVolume Set.univ=0 := measure_mono_null hseq hz
     exact hyperbolicVolume_ne_zero (Measure.measure_univ_eq_zero.mp htotal)
 
-instance kernelQuotientVolume_fullSupport :
-    Measure.IsOpenPosMeasure (integralQuotientVolume globalKubotaKernel) where
-  open_pos U hU hne := by
-    let quotientProjection := integralOrbitProjection globalKubotaKernel
-    have hp : Measurable quotientProjection := measurable_integralOrbitProjection _
-    have hpre : IsOpen (quotientProjection ⁻¹' U) := hU.preimage (continuous_integralOrbitProjection _)
-    have hpren : (quotientProjection ⁻¹' U).Nonempty := by
-      obtain ⟨q,hq⟩ := hne
-      obtain ⟨w,rfl⟩ := Quotient.mk_surjective q
-      exact ⟨w,hq⟩
-    intro hzero
-    have hd : hyperbolicVolume ((quotientProjection ⁻¹' U)∩hyperbolicFundamentalSet globalKubotaKernel)=0 := by
-      simpa only [integralQuotientVolume,quotientProjection,Measure.map_apply (measurable_integralOrbitProjection _) hU.measurableSet,
-        Measure.restrict_apply ((measurable_integralOrbitProjection _) hU.measurableSet)] using hzero
-    have hinv : ∀M:globalKubotaKernel,M • (quotientProjection ⁻¹' U)=quotientProjection ⁻¹' U := by
-      intro M
-      ext w
-      constructor
-      · rintro ⟨u,hu,rfl⟩
-        change quotientProjection (M • u)∈U
-        change quotientProjection u∈U at hu
-        rwa [show quotientProjection (M • u)=quotientProjection u from integralOrbitProjection_eq _ M u]
-      · intro hw
-        refine ⟨M⁻¹ • w,?_,smul_inv_smul M w⟩
-        change quotientProjection (M⁻¹ • w)∈U
-        rwa [show quotientProjection (M⁻¹ • w)=quotientProjection w from integralOrbitProjection_eq _ M⁻¹ w]
-    have hz := globalKubotaKernel_isFundamentalDomain.measure_zero_of_invariant (quotientProjection ⁻¹' U) hinv hd
-    exact hpre.measure_ne_zero _ hpren hz
-
 end
 
 open Filter MeasureTheory

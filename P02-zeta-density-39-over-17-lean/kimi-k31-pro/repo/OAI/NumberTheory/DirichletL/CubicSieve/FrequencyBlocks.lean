@@ -251,65 +251,11 @@ theorem cubeRadical_dvd_jLabel_b0 (B : Finset ι) (v : ι → ℕ) (ε₁ ε₂ 
   simpa only [cubeRadical, jLabel, b0Label, primeProduct, pow_one, pow_add,
     Finset.prod_mul_distrib] using hd
 
-def actualSecondTuple (B C D E V : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (k : O) : SecondPassFiber.OldTuple where
-  core := ![Ideal.span {jLabel p B (fun i => v₁ i + v₂ i) ε₁ ε₂},
-    ∏ i ∈ C, Ideal.span {p i}, ∏ i ∈ E, Ideal.span {p i},
-    Ideal.span {squarefreeLabel p B (fun i => v₁ i + v₂ i)},
-    Ideal.span {primeProduct p B v₁}, Ideal.span {aLabel p B ε₁},
-    Ideal.span {aLabel p B ε₂}, ∏ i ∈ D, Ideal.span {p i}]
-  v := ∏ i ∈ V, Ideal.span {p i}
-  j2 := Ideal.span {j2Label p B (fun i => v₁ i + v₂ i) ε₁ ε₂}
-  b2 := Ideal.span {primeProduct p B v₂}
-  row := k
-
-def actualSecondLabel (B C E V : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool) : Ideal O :=
-  Ideal.span {jLabel p B (fun i => v₁ i + v₂ i) ε₁ ε₂} *
-    (∏ i ∈ C, Ideal.span {p i}) * (∏ i ∈ E, Ideal.span {p i}) * (∏ i ∈ V, Ideal.span {p i})
-
 def actualSecondRow (D E : Finset ι) (k : O) : O :=
   primeSubsetGenerator (fun i => Ideal.span {p i}) D *
     primeSubsetGenerator (fun i => Ideal.span {p i}) E * k
 
 end
-
-open ActualEisensteinCubic
-open FirstPassCubeLabels (jLabel b0Label primeProductNorm)
-
-@[ext] structure SecondSupportData (ι : Type*) where
-  common : Finset ι
-  firstDivisor : Finset ι
-  secondDivisor : Finset ι
-  overlap : Finset ι
-  frequency : O
-  deriving DecidableEq
-
-instance {ι : Type*} : Inhabited (SecondSupportData ι) := ⟨⟨∅, ∅, ∅, ∅, 0⟩⟩
-
-variable {ι : Type*} [DecidableEq ι]
-  (p : ι → O) [∀ i, (Ideal.span {p i}).IsMaximal]
-
-def secondSupportTuple (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (x : SecondSupportData ι) : SecondPassFiber.OldTuple :=
-  actualSecondTuple p B x.common x.firstDivisor x.secondDivisor x.overlap v₁ v₂ ε₁ ε₂ x.frequency
-
-def secondSupportNewLabel (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool)
-    (x : SecondSupportData ι) : Ideal O :=
-  actualSecondLabel p B x.common x.secondDivisor x.overlap v₁ v₂ ε₁ ε₂
-
-def secondSupportRow (x : SecondSupportData ι) : O :=
-  actualSecondRow p x.firstDivisor x.secondDivisor x.frequency
-
-omit [DecidableEq ι] [∀ (i : ι), (span {p i}).IsMaximal] in
-@[simp] theorem secondSupportTuple_newLabel
-    (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool) (x : SecondSupportData ι) :
-    SecondPassFiber.newLabel (secondSupportTuple p B v₁ v₂ ε₁ ε₂ x) =
-      secondSupportNewLabel p B v₁ v₂ ε₁ ε₂ x := rfl
-
-omit [DecidableEq ι] [∀ (i : ι), (span {p i}).IsMaximal] in
-@[simp] theorem secondSupportTuple_newRow
-    (B : Finset ι) (v₁ v₂ : ι → ℕ) (ε₁ ε₂ : ι → Bool) (x : SecondSupportData ι) :
-    SecondPassFiber.newRow (secondSupportTuple p B v₁ v₂ ε₁ ε₂ x) = secondSupportRow p x := rfl
 
 end
 

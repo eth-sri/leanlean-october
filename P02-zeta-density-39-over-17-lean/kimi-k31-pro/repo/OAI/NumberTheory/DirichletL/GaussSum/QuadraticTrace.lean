@@ -71,59 +71,6 @@ end
 
 section
 
-theorem prime_sixth_row_approx_ideal_norm
-    {ι : Type*} (P : ι → Ideal O) [∀ i, (P i).IsMaximal]
-    (hgood : ∀ i, lambda ∉ P i)
-    (columns : Finset O) (support : O → Finset ι)
-    (weight : O → ℂ) (p : O) (hp : p ≠ 0)
-    (hprime : (Ideal.span {p} : Ideal O).IsMaximal)
-    (D : ℕ)
-    (hsupport : ∀ n ∈ columns, ∀ i ∈ support n, n ∈ P i)
-    (hcolnorm : ∀ n ∈ columns,
-      Ideal.absNorm (Ideal.span {n}) ≤ D)
-    (hweight : ∀ n ∈ columns, ‖weight n‖ ≤ 1) :
-    ‖(∑ n ∈ columns, weight n) -
-      (∑ n ∈ columns,
-        weight n * finiteSquarefreeRow P hgood (support n) (p ^ 6))‖ ≤
-      (64 * (D / Ideal.absNorm (Ideal.span {p}) + 1) : ℕ) := by
-  have hcol : ∀ n ∈ columns, ShortDraftLatticeCount.qNat n ≤ D := by
-    intro n hn
-    rw [qNat_eq_absNorm_span]
-    exact hcolnorm n hn
-  simpa only [qNat_eq_absNorm_span] using
-    (prime_sixth_row_approx_maximal P hgood columns support weight p hp
-      hprime D hsupport hcol hweight)
-
-theorem sixth_power_eq_implies_same_prime_ideal
-    (p q : O)
-    (hp : (Ideal.span {p} : Ideal O).IsMaximal)
-    (hq : (Ideal.span {q} : Ideal O).IsMaximal)
-    (h : p ^ 6 = q ^ 6) :
-    (Ideal.span {p} : Ideal O) = Ideal.span {q} := by
-  have hq6 : q ^ 6 ∈ Ideal.span {q} :=
-    Ideal.mem_span_singleton.mpr (dvd_pow_self q (by decide))
-  have hp6 : p ^ 6 ∈ Ideal.span {q} := by rw [h]; exact hq6
-  have hpmem : p ∈ Ideal.span {q} :=
-    hq.isPrime.mem_of_pow_mem 6 hp6
-  have hle : (Ideal.span {p} : Ideal O) ≤ Ideal.span {q} :=
-    (Ideal.span_singleton_le_iff_mem _).mpr hpmem
-  exact hp.eq_of_le hq.ne_top hle
-
-theorem sixth_power_rows_injective
-    {ι : Type*} (S : Finset ι) (P : ι → Ideal O) (p : ι → O)
-    (hprime : ∀ i ∈ S, (P i).IsMaximal)
-    (hgen : ∀ i ∈ S, P i = Ideal.span {p i})
-    (hinj : Set.InjOn P (S : Set ι)) :
-    Set.InjOn (fun i => p i ^ 6) (S : Set ι) := by
-  intro i hi j hj heq
-  have hsame : Ideal.span {p i} = (Ideal.span {p j} : Ideal O) :=
-    sixth_power_eq_implies_same_prime_ideal (p i) (p j)
-      (hgen i hi ▸ hprime i hi)
-      (hgen j hj ▸ hprime j hj) heq
-  apply hinj hi hj
-  rw [hgen i hi, hgen j hj]
-  exact hsame
-
 open EisensteinEmbedding ConcreteTraceCRT ConcreteBreveE
 
 theorem rational_modulus_card (m : ℕ) (_hm : m ≠ 0) :

@@ -1,6 +1,7 @@
 module
 public import OAI.NumberTheory.DirichletL.Reflection.SectorNormalized
 public import OAI.NumberTheory.DirichletL.Reflection.ShellRows
+public import OAI.NumberTheory.DirichletL.Reflection.LiteralNormalizedUniformDegree
 
 @[expose] public section
 
@@ -57,43 +58,9 @@ theorem sector_normalized_literal_energy
           ε*(Real.logb Z QK+Real.logb Z (((2:ℝ)^i.2.2)/Ideal.absNorm (frozenExtracted F jF e 1))+
             Real.logb Z (((2:ℝ)^i.2.1)/Ideal.absNorm (frozenExtracted F jF e 2))+Real.logb Z (QP/2))+η/2))*
         (C₀*(1+‖θ‖)^degree)^2 := by
-  obtain ⟨degree,C₀,C,Z₀,hC₀,hC,hZ₀,henergy⟩ := sector_normalized_physical_energy
-    (N:=N) (a:=a) (c:=c) (mode:=mode) ε hε lo hi hlo
-    (fun _ => completedShellWindow) (fun _ => Real.log 2)
-    (fun _ => Real.log_nonneg (by norm_num)) (fun _ => completedShellWindow_norm)
-    (fun _ => completedShellWindow_support) W hWs hW s hc 1 (1/2) 1 1 η
-    (by norm_num) (by norm_num) (by norm_num) (by norm_num) hη
-  refine ⟨degree,C₀,C,Z₀,hC₀,hC,hZ₀,?_⟩
-  intro φ σ _ _ Z hZ F jF hN hbase hac hF hNF hcharF hj rows Pset S hrows E
-    hrowcop hprod hScop hSN hSchar u i T θ QK QP r aw hT hQK hQP hKr hPr hr haw
-  have hkp : 0<QK := lt_of_lt_of_le zero_lt_one hQK
-  have hpp : 0<QP := lt_of_lt_of_le (by norm_num : (0:ℝ)<2) hQP
-  have hp : ∀ P∈Pset,CubicSieve.Admissible P ∧ QP/2≤(Ideal.absNorm P:ℝ) ∧ (Ideal.absNorm P:ℝ)≤2*(QP/2) := by
-    intro P hP
-    simpa only [mul_div_cancel₀ _ (by norm_num : (2:ℝ)≠0)] using hPr P hP
-  have hh := henergy Z hZ QK ((2:ℝ)^i.2.2) ((2:ℝ)^i.2.1) (QP/2)
-    hQK (one_le_pow₀ (by norm_num)) (one_le_pow₀ (by norm_num)) (by linarith)
-    F jF hN hbase hac hF hNF hcharF hj u i.1 T θ QK QP ((2:ℝ)^i.2.2) ((2:ℝ)^i.2.1)
-    hT hkp hpp (by positivity) (by positivity) (by ring) (by ring) (by ring) (by ring)
-    rows (reflectedNDyad i.2.2) (reflectedBDyad i.2.1) Pset S
-    (fun K hK => ⟨hrows K hK,(hKr K hK).2⟩) E r aw (fun _ _ => 1)
-    hrowcop hprod hScop hSN hSchar
-    (fun n hn => ⟨(reflectedNDyad_bounds _ n hn).1,(reflectedNDyad_bounds _ n hn).2.2⟩)
-    (fun b hb => ⟨(reflectedBDyad_bounds _ b hb).1,(reflectedBDyad_bounds _ b hb).2.2⟩)
-    hp hr haw (fun _ _ => by simp)
-  dsimp only at hh ⊢
-  have he : (∑ K : rows,‖literalDyadicRow F K.val (hrows K.val K.property) S jF Pset
-      (E.completion K) s hc u i W θ T r aw‖^2)=
-      ∑ K : rows,‖weightedFinitePhysicalKernelRow F K.val (hrows K.val K.property) S jF Pset
-        (reflectedNDyad i.2.2) (reflectedBDyad i.2.1) (E.completion K) s hc u i.1
-        (fun _ => completedShellWindow) QK QP ((2:ℝ)^i.2.2) ((2:ℝ)^i.2.1) W θ T r aw (fun _ _ => 1)‖^2 := by
-    apply Finset.sum_congr rfl
-    intro K hK
-    rw [literalDyadicRow_eq_physical F K.val (hrows K.val K.property) S jF Pset
-      (E.completion K) s hc u i QK QP hkp hpp (hKr K.val K.property) hprod
-      (fun P hP => (hPr P hP).2) W θ T r aw]
-  rw [he]
-  simpa only [Real.sqrt_one,mul_one] using hh
+  obtain ⟨degree,h⟩ := sector_normalized_literal_energy_uniform_degree
+    ε hε lo hi hlo W hWs hW η hη
+  exact ⟨degree, h s hc⟩
 end
 end SevenEighths.InverseReflectedPhase
 

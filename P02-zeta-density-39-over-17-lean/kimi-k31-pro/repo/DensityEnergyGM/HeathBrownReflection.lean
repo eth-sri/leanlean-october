@@ -1,4 +1,5 @@
 module
+public import TaoTrudgianYang2025.BProcessBaseline
 public import DensityEnergyGM.HeathBrown
 public import DensityEnergyGM.QuantitativeSmoothReflection
 public import GuthMaynard.NativeSource.GuthMaynard.ClassicalLargeValues
@@ -36,7 +37,7 @@ theorem GMSmoothCutoff.exists_traceWeight_variation_bound
   obtain ⟨K₀, hLip⟩ := cutoff.exists_lipschitzWith
   refine ⟨2 * ((K₀ : ℝ) + 1), by positivity, ?_⟩
   intro Q hQ
-  have hQReal : (0 : ℝ) < Q := by exact_mod_cast hQ
+  have hQReal : zeroR < Q := by exact_mod_cast hQ
   have hstep (m : ℕ) :
       |cutoff (((Q + 1 + (m + 1) : ℕ) : ℝ) / Q) ^ 2 -
           cutoff (((Q + 1 + m : ℕ) : ℝ) / Q) ^ 2| ≤
@@ -244,7 +245,7 @@ theorem norm_logarithmicPhase_prefix_neg_eq_abs
 theorem gmSmoothCutoff_terminal_traceWeight_zero
     (cutoff : GMSmoothCutoff) (Q : ℕ) (hQ : 0 < Q) :
     cutoff (((Q + 1 + Q : ℕ) : ℝ) / Q) ^ 2 = 0 := by
-  have hQReal : (0 : ℝ) < Q := by exact_mod_cast hQ
+  have hQReal : zeroR < Q := by exact_mod_cast hQ
   have hx : 2 < (((Q + 1 + Q : ℕ) : ℝ) / Q) := by
     rw [lt_div_iff₀ hQReal]
     push_cast
@@ -765,21 +766,21 @@ theorem sq_intervalIntegral_le_length_mul_intervalIntegral_sq
     change IntegrableOn (fun u => f u ^ 2) s
     exact (hf.pow 2).continuousOn.integrableOn_Icc.mono_set
       Set.Ioc_subset_Icc_self
-  have hOneInt : Integrable (fun _ : ℝ => (1 : ℝ) ^ 2) μ := by
-    change IntegrableOn (fun _ : ℝ => (1 : ℝ) ^ 2) s
+  have hOneInt : Integrable (fun _ : ℝ => oneR ^ 2) μ := by
+    change IntegrableOn (fun _ : ℝ => oneR ^ 2) s
     exact (continuous_const.pow 2).continuousOn.integrableOn_Icc.mono_set
       Set.Ioc_subset_Icc_self
   have hfMem : MemLp f 2 μ :=
     (memLp_two_iff_integrable_sq hf.aestronglyMeasurable).2 hf2Int
-  have hOneMem : MemLp (fun _ : ℝ => (1 : ℝ)) 2 μ :=
+  have hOneMem : MemLp (fun _ : ℝ => oneR) 2 μ :=
     (memLp_two_iff_integrable_sq continuous_const.aestronglyMeasurable).2
       hOneInt
-  have hfMem' : MemLp f (ENNReal.ofReal (2 : ℝ)) μ := by
+  have hfMem' : MemLp f (ENNReal.ofReal twoR) μ := by
     simpa using hfMem
-  have hOneMem' : MemLp (fun _ : ℝ => (1 : ℝ))
-      (ENNReal.ofReal (2 : ℝ)) μ := by
+  have hOneMem' : MemLp (fun _ : ℝ => oneR)
+      (ENNReal.ofReal twoR) μ := by
     simpa using hOneMem
-  have hpq : (2 : ℝ).HolderConjugate 2 := by
+  have hpq : (twoR).HolderConjugate 2 := by
     rw [Real.holderConjugate_iff]
     norm_num
   have hHolder := integral_mul_le_Lp_mul_Lq_of_nonneg hpq
@@ -789,7 +790,7 @@ theorem sq_intervalIntegral_le_length_mul_intervalIntegral_sq
     intervalIntegral.integral_nonneg horder (fun u hu => hf0 u)
   have hSqIntNonneg : 0 ≤ ∫ u in -H..H, f u ^ 2 :=
     intervalIntegral.integral_nonneg horder (fun u hu => sq_nonneg _)
-  have hMeasure : ∫ _u : ℝ in -H..H, (1 : ℝ) = 2 * H := by
+  have hMeasure : ∫ _u : ℝ in -H..H, oneR = 2 * H := by
     simp
     ring
   have hHolder' :
@@ -1080,7 +1081,7 @@ theorem norm_heathBrownTracePolynomial_le
       ∑ n ∈ dyadicInterval Q,
         ‖(((cutoff ((n : ℝ) / Q) ^ 2 : ℝ) : ℂ)) *
           (n : ℂ) ^ ((t : ℂ) * I)‖ := norm_sum_le _ _
-    _ ≤ ∑ _n ∈ dyadicInterval Q, (1 : ℝ) := by
+    _ ≤ ∑ _n ∈ dyadicInterval Q, oneR := by
       apply Finset.sum_le_sum
       intro n hn
       have hnPos : 0 < n := by
@@ -1423,7 +1424,7 @@ theorem heathBrownTraceBinMoment_le_reflection
           (A * (∫ u in -H..H,
             ‖gmReflectionDirichletPoly (p.1 - p.2) M u‖) - E)]
   have hIntegral := sum_bin_sq_integral_norm_gmReflectionDirichletPoly_le
-    W j hM H ((by norm_num : (0 : ℝ) ≤ 1).trans hH)
+    W j hM H ((by norm_num : zeroR ≤ 1).trans hH)
   unfold heathBrownTraceBinMoment
   calc
     (∑ p ∈ heathBrownDifferenceBin W j,
@@ -1504,12 +1505,12 @@ theorem exists_heathBrownTraceBinMoment_near_bound
       have hupper : |p.1 - p.2| ≤ (Q : ℝ) := by
         have hcast : ((2 ^ (j + 1) : ℕ) : ℝ) ≤ Q := by exact_mod_cast hjQ
         exact hbounds.2.le.trans hcast
-      have honePow : (1 : ℝ) ≤ ((2 ^ j : ℕ) : ℝ) := by
+      have honePow : oneR ≤ ((2 ^ j : ℕ) : ℝ) := by
         exact_mod_cast (Nat.one_le_pow j 2 (by omega))
       have hpoint := hTrace Q (p.1 - p.2) hQ
         (honePow.trans hbounds.1)
         hupper
-      have hpowPos : (0 : ℝ) < (2 ^ j : ℕ) := by positivity
+      have hpowPos : zeroR < (2 ^ j : ℕ) := by positivity
       have habsPos : 0 < |p.1 - p.2| :=
         lt_of_lt_of_le hpowPos hbounds.1
       have hdenom :
@@ -1543,7 +1544,7 @@ theorem exists_heathBrownTraceBinMoment_near_card_bound
   have hcard : ((heathBrownDifferenceBin W j).card : ℝ) ≤
       (W.card : ℝ) * (2 * 2 ^ (j + 1) : ℕ) := by
     exact_mod_cast hcardNat
-  have hpowPos : (0 : ℝ) < ((2 ^ j : ℕ) : ℝ) := by positivity
+  have hpowPos : zeroR < ((2 ^ j : ℕ) : ℝ) := by positivity
   calc
     heathBrownTraceBinMoment cutoff Q W j ≤
         ((heathBrownDifferenceBin W j).card : ℝ) *
@@ -1715,9 +1716,9 @@ theorem heathBrownTraceMoment_le_source_bound
     · rw [ite_eq_right hNearScale]
       by_cases hStationary : 2 ≤ j ∧ 2 * H ≤ 2 ^ j
       · rw [ite_eq_left hStationary]
-        have hHeightLower : (1 : ℝ) ≤ H := by exact_mod_cast hH
+        have hHeightLower : oneR ≤ H := by exact_mod_cast hH
         have hHeightUpper : (H : ℝ) ≤ ((2 ^ j : ℕ) : ℝ) / 2 := by
-          have hCast : (2 : ℝ) * H ≤ ((2 ^ j : ℕ) : ℝ) := by
+          have hCast : twoR * H ≤ ((2 ^ j : ℕ) : ℝ) := by
             exact_mod_cast hStationary.2
           linarith
         exact hReflect hSep hStationary.1 hHeightLower hHeightUpper hQ
@@ -1936,7 +1937,7 @@ theorem heathBrownFixedReflectionLength_cast_le
     (Q H j : ℕ) (hQ : 0 < Q) (hH : 0 < H) :
     (heathBrownFixedReflectionLength Q H j : ℝ) ≤
       (((2 ^ j : ℕ) : ℝ) * H) / Q + 1 := by
-  have hQReal : (0 : ℝ) < Q := by exact_mod_cast hQ
+  have hQReal : zeroR < Q := by exact_mod_cast hQ
   have hUpper := (heathBrownFixedReflectionLength_bounds_real Q H j hQ hH).2
   calc
     (heathBrownFixedReflectionLength Q H j : ℝ) =
@@ -2001,13 +2002,13 @@ theorem heathBrownReflectionBinError_fixed_le
         (Q : ℝ) * D / (((2 ^ j : ℕ) : ℝ) ^ q) := by
   let X : ℝ := ((2 ^ j : ℕ) : ℝ)
   let M : ℕ := heathBrownFixedReflectionLength Q H j
-  have hQReal : (0 : ℝ) < Q := by exact_mod_cast hQ
-  have hHReal : (0 : ℝ) < H := by exact_mod_cast hH
+  have hQReal : zeroR < Q := by exact_mod_cast hQ
+  have hHReal : zeroR < H := by exact_mod_cast hH
   have hX : 0 < X := by dsimp only [X]; positivity
   have hM : 0 < M := by
     dsimp only [M]
     exact heathBrownFixedReflectionLength_pos Q H j
-  have hMReal : (0 : ℝ) < M := by exact_mod_cast hM
+  have hMReal : zeroR < M := by exact_mod_cast hM
   have hBounds := heathBrownFixedReflectionLength_bounds_real Q H j hQ hH
   have hQMNonneg : 0 ≤ (Q : ℝ) * M := by positivity
   have hXHNonneg : 0 ≤ X * H := by positivity
@@ -2140,8 +2141,8 @@ theorem heathBrownReflectionTargetScale_bounds_real
         heathBrownReflectionTargetScale Q H T ∧
       (heathBrownReflectionTargetScale Q H T : ℝ) ≤
         2 * (T * H / Q + 1) := by
-  have hQReal : (0 : ℝ) < Q := by exact_mod_cast hQ
-  have hFloorNonneg : (0 : ℝ) ≤ Nat.floor T := by positivity
+  have hQReal : zeroR < Q := by exact_mod_cast hQ
+  have hFloorNonneg : zeroR ≤ Nat.floor T := by positivity
   have hFloorLe : (Nat.floor T : ℝ) ≤ T :=
     Nat.floor_le (zero_le_one.trans hT)
   have hLowerNat := heathBrownCommonReflectionLength_lower Q H T hQ
@@ -2314,7 +2315,7 @@ theorem sqrt_mul_heathBrownHalfWeight_le_one
     Real.sqrt N * heathBrownHalfWeight n ≤ 1 := by
   have hnBounds := Finset.mem_Ioc.mp hn
   have hnPosNat : 0 < n := by omega
-  have hnPos : (0 : ℝ) < n := by exact_mod_cast hnPosNat
+  have hnPos : zeroR < n := by exact_mod_cast hnPosNat
   have hNle : (N : ℝ) ≤ n := by exact_mod_cast (Nat.le_of_lt hnBounds.1)
   have hSqrtLe : Real.sqrt N ≤ Real.sqrt n := Real.sqrt_le_sqrt hNle
   have hSqrtPos : 0 < Real.sqrt n := Real.sqrt_pos.2 hnPos
@@ -2856,7 +2857,7 @@ Consequently only `T^2`, rather than `T^(q+2)`, remains. -/
 noncomputable def heathBrownSharpUniformReflectionError
     (K L D : ℝ) (q Q H : ℕ) (T : ℝ) : ℝ :=
   K / Q * T ^ 2 * (H + 2 : ℝ) ^ 2 * (H : ℝ) ^ (1 - (q : ℝ)) +
-    L / Q * (3 : ℝ) ^ (q + 2) * T ^ 2 / (H : ℝ) ^ q +
+    L / Q * threeR ^ (q + 2) * T ^ 2 / (H : ℝ) ^ q +
     (Q : ℝ) * D / (H : ℝ) ^ q
 
 theorem heathBrownReflectionBinError_fixed_le_sharp_uniform
@@ -2872,8 +2873,8 @@ theorem heathBrownReflectionBinError_fixed_le_sharp_uniform
       heathBrownSharpUniformReflectionError K L D q Q H T := by
   let X : ℝ := ((2 ^ j : ℕ) : ℝ)
   have hX : 0 < X := by dsimp only [X]; positivity
-  have hHReal : (0 : ℝ) < H := by exact_mod_cast hH
-  have hQReal : (0 : ℝ) < Q := by exact_mod_cast hQ
+  have hHReal : zeroR < H := by exact_mod_cast hH
+  have hQReal : zeroR < Q := by exact_mod_cast hQ
   have hXLeFloor := two_pow_le_floor_of_mem_difference_range hj hStationary.1
   have hFloorPos : 0 < Nat.floor T := lt_of_lt_of_le (by positivity) hXLeFloor
   have hTOne : 1 ≤ T := Nat.floor_pos.mp hFloorPos
@@ -2909,7 +2910,7 @@ theorem heathBrownReflectionBinError_fixed_le_sharp_uniform
     pow_le_pow_left₀ (by positivity) hNumerBase (q + 2)
   have hSecondExact :
       L / (Q : ℝ) * (3 * X) ^ (q + 2) / ((X * H) ^ q) =
-        L / (Q : ℝ) * (3 : ℝ) ^ (q + 2) * X ^ 2 / (H : ℝ) ^ q := by
+        L / (Q : ℝ) * threeR ^ (q + 2) * X ^ 2 / (H : ℝ) ^ q := by
     rw [mul_pow, mul_pow, pow_add]
     field_simp
     ring
@@ -2930,15 +2931,15 @@ theorem heathBrownReflectionBinError_fixed_le_sharp_uniform
             (H : ℝ) ^ (1 - (q : ℝ)) := by gcongr
   have hSecond :
       L / (Q : ℝ) * (1 + 2 * X) ^ (q + 2) / ((X * H) ^ q) ≤
-        L / (Q : ℝ) * (3 : ℝ) ^ (q + 2) * T ^ 2 / (H : ℝ) ^ q := by
+        L / (Q : ℝ) * threeR ^ (q + 2) * T ^ 2 / (H : ℝ) ^ q := by
     calc
       L / (Q : ℝ) * (1 + 2 * X) ^ (q + 2) / ((X * H) ^ q) ≤
           L / (Q : ℝ) * (3 * X) ^ (q + 2) / ((X * H) ^ q) := by
         apply div_le_div_of_nonneg_right _ (by positivity)
         gcongr
-      _ = L / (Q : ℝ) * (3 : ℝ) ^ (q + 2) * X ^ 2 / (H : ℝ) ^ q :=
+      _ = L / (Q : ℝ) * threeR ^ (q + 2) * X ^ 2 / (H : ℝ) ^ q :=
         hSecondExact
-      _ ≤ L / (Q : ℝ) * (3 : ℝ) ^ (q + 2) * T ^ 2 / (H : ℝ) ^ q := by
+      _ ≤ L / (Q : ℝ) * threeR ^ (q + 2) * T ^ 2 / (H : ℝ) ^ q := by
         apply div_le_div_of_nonneg_right _ (by positivity)
         gcongr
   have hThird :
@@ -3217,13 +3218,13 @@ theorem heathBrownCorrectedCommonScale_le_twelve_mul_sq
     (heathBrownCorrectedCommonScale Q H T : ℝ) ≤ 12 * T ^ 2 := by
   have hTOne : 1 ≤ T := by linarith
   have hTPos : 0 < T := by linarith
-  have hQOne : (1 : ℝ) ≤ Q := by exact_mod_cast hQ
+  have hQOne : oneR ≤ Q := by exact_mod_cast hQ
   have hHeightBound : (H : ℝ) ≤ 2 * T ^ η := by
     rw [hHeight]
     exact heathBrownSmoothingHeight_le_two_rpow hTOne hη
   have hPowLe : T ^ η ≤ T := by
     calc
-      T ^ η ≤ T ^ (1 : ℝ) :=
+      T ^ η ≤ T ^ oneR :=
         Real.rpow_le_rpow_of_exponent_le hTOne hηOne
       _ = T := Real.rpow_one T
   have hDiv : T * (H : ℝ) / Q ≤ T * (H : ℝ) := by
@@ -3284,12 +3285,12 @@ theorem heathBrownSmoothingHeight_rpow_one_sub_order_le
       T ^ (-(A + 4)) := by
   let q : ℕ := heathBrownReflectionDerivativeOrder A η
   have hq : 2 ≤ q := heathBrownReflectionDerivativeOrder_two_le A η
-  have hHeightPos : (0 : ℝ) < heathBrownSmoothingHeight T η := by
+  have hHeightPos : zeroR < heathBrownSmoothingHeight T η := by
     exact_mod_cast heathBrownSmoothingHeight_pos T η
   have hPowPos : 0 < T ^ η :=
     Real.rpow_pos_of_pos (by linarith) _
   have hLower := rpow_le_heathBrownSmoothingHeight T η
-  have hqReal : (1 : ℝ) ≤ q := by exact_mod_cast (show 1 ≤ q by omega)
+  have hqReal : oneR ≤ q := by exact_mod_cast (show 1 ≤ q by omega)
   have hNonpos : 1 - (q : ℝ) ≤ 0 := by linarith
   have hReverse :
       (heathBrownSmoothingHeight T η : ℝ) ^ (1 - (q : ℝ)) ≤
@@ -3337,13 +3338,13 @@ theorem heathBrownSharpUniformReflectionError_smoothing_le
     heathBrownSharpUniformReflectionError K L D
         (heathBrownReflectionDerivativeOrder A η) Q
         (heathBrownSmoothingHeight T η) T ≤
-      (16 * K + L * (3 : ℝ) ^
+      (16 * K + L * threeR ^
           (heathBrownReflectionDerivativeOrder A η + 2) + 2 * D) *
         T ^ (-A) := by
   let q : ℕ := heathBrownReflectionDerivativeOrder A η
   let H : ℕ := heathBrownSmoothingHeight T η
   have hTPos : 0 < T := by linarith
-  have hQReal : (0 : ℝ) < Q := by exact_mod_cast hQ
+  have hQReal : zeroR < Q := by exact_mod_cast hQ
   have hPowOne : 1 ≤ T ^ η := Real.one_le_rpow hT hη.le
   have hHeight : (H : ℝ) ≤ 2 * T ^ η := by
     simpa only [H] using heathBrownSmoothingHeight_le_two_rpow hT hη.le
@@ -3382,23 +3383,23 @@ theorem heathBrownSharpUniformReflectionError_smoothing_le
             16 * K * (T ^ (4 : ℕ) * T ^ (-(A + 4))) by ring,
           hAbsorb]
   have hSecond :
-      L / (Q : ℝ) * (3 : ℝ) ^ (q + 2) * T ^ 2 / (H : ℝ) ^ q ≤
-        L * (3 : ℝ) ^ (q + 2) * T ^ (-A) := by
+      L / (Q : ℝ) * threeR ^ (q + 2) * T ^ 2 / (H : ℝ) ^ q ≤
+        L * threeR ^ (q + 2) * T ^ (-A) := by
     have hTtwoFour : T ^ 2 ≤ T ^ (4 : ℕ) := by
       have hTtwoOne : 1 ≤ T ^ 2 := by nlinarith [sq_nonneg T]
       nlinarith [sq_nonneg (T ^ 2 - 1)]
     rw [div_eq_mul_inv]
     calc
-      L / (Q : ℝ) * (3 : ℝ) ^ (q + 2) * T ^ 2 *
+      L / (Q : ℝ) * threeR ^ (q + 2) * T ^ 2 *
           ((H : ℝ) ^ q)⁻¹ ≤
-        L * (3 : ℝ) ^ (q + 2) * T ^ (4 : ℕ) * T ^ (-(A + 4)) := by
+        L * threeR ^ (q + 2) * T ^ (4 : ℕ) * T ^ (-(A + 4)) := by
           have hInv : ((H : ℝ) ^ q)⁻¹ ≤ T ^ (-(A + 4)) := by
             simpa only [one_div] using hDecayInv
           gcongr
           exact div_le_self hL (by exact_mod_cast hQ)
-      _ = L * (3 : ℝ) ^ (q + 2) * T ^ (-A) := by
-        rw [show L * (3 : ℝ) ^ (q + 2) * T ^ (4 : ℕ) * T ^ (-(A + 4)) =
-            L * (3 : ℝ) ^ (q + 2) *
+      _ = L * threeR ^ (q + 2) * T ^ (-A) := by
+        rw [show L * threeR ^ (q + 2) * T ^ (4 : ℕ) * T ^ (-(A + 4)) =
+            L * threeR ^ (q + 2) *
               (T ^ (4 : ℕ) * T ^ (-(A + 4))) by ring,
           hAbsorb]
   have hThird :
@@ -3587,10 +3588,10 @@ theorem heathBrown_source_scales_comparable
 displacement bins. -/
 theorem natCast_log_two_le_log (n : ℕ) (hn : 1 ≤ n) :
     (Nat.log 2 n : ℝ) ≤ Real.log n / Real.log 2 := by
-  have hnPos : (0 : ℝ) < n := by exact_mod_cast (show 0 < n by omega)
+  have hnPos : zeroR < n := by exact_mod_cast (show 0 < n by omega)
   have hpowNat : 2 ^ Nat.log 2 n ≤ n :=
     Nat.pow_log_le_self 2 (by omega)
-  have hpowPos : (0 : ℝ) < (2 ^ Nat.log 2 n : ℕ) := by positivity
+  have hpowPos : zeroR < (2 ^ Nat.log 2 n : ℕ) := by positivity
   have hlog := Real.strictMonoOn_log.monotoneOn
     (Set.mem_Ioi.mpr hpowPos) (Set.mem_Ioi.mpr hnPos)
     (by exact_mod_cast hpowNat)
@@ -3607,7 +3608,7 @@ theorem heathBrown_displacement_bin_count_le_log
     rw [Nat.le_floor_iff (by linarith : 0 ≤ T)]
     norm_num
     linarith
-  have hFloorPos : (0 : ℝ) < Nat.floor T := by exact_mod_cast hFloorOne
+  have hFloorPos : zeroR < Nat.floor T := by exact_mod_cast hFloorOne
   have hFloorLe : (Nat.floor T : ℝ) ≤ T :=
     Nat.floor_le (by linarith)
   have hLogFloor := natCast_log_two_le_log (Nat.floor T) hFloorOne
@@ -3633,8 +3634,8 @@ theorem heathBrown_natCast_clog_two_le_one_add_log
       Nat.clog_pos Nat.one_lt_two hnTwo
     have hpowNat : 2 ^ (Nat.clog 2 n - 1) < n :=
       Nat.pow_pred_clog_lt_self Nat.one_lt_two hnTwo
-    have hpow : (0 : ℝ) < (2 ^ (Nat.clog 2 n - 1) : ℕ) := by positivity
-    have hnPos : (0 : ℝ) < n := by exact_mod_cast (Nat.zero_lt_of_lt hnTwo)
+    have hpow : zeroR < (2 ^ (Nat.clog 2 n - 1) : ℕ) := by positivity
+    have hnPos : zeroR < n := by exact_mod_cast (Nat.zero_lt_of_lt hnTwo)
     have hlog := Real.strictMonoOn_log (Set.mem_Ioi.mpr hpow)
       (Set.mem_Ioi.mpr hnPos) (by exact_mod_cast hpowNat)
     rw [Nat.cast_pow, Real.log_pow] at hlog
@@ -3662,9 +3663,9 @@ theorem heathBrown_corrected_common_exponent_le_log
   have hClog := heathBrown_natCast_clog_two_le_one_add_log
     (heathBrownCommonReflectionLength Q H T) hCommonPos
   have hCommonLe := heathBrownCommonReflectionLength_le_target Q H T
-  have hCommonRealPos : (0 : ℝ) < heathBrownCommonReflectionLength Q H T := by
+  have hCommonRealPos : zeroR < heathBrownCommonReflectionLength Q H T := by
     exact_mod_cast hCommonPos
-  have hTargetPos : (0 : ℝ) < heathBrownReflectionTargetScale Q H T := by
+  have hTargetPos : zeroR < heathBrownReflectionTargetScale Q H T := by
     exact_mod_cast (pow_pos (by omega : 0 < (2 : ℕ)) _)
   have hLogMono :
       Real.log (heathBrownCommonReflectionLength Q H T : ℝ) ≤
@@ -3678,7 +3679,7 @@ theorem heathBrown_corrected_common_exponent_le_log
         heathBrownCorrectedCommonScale Q H T := by
     rw [heathBrownCorrectedCommonScale_eq_two_mul_target]
     omega
-  have hCorrectedPos : (0 : ℝ) < heathBrownCorrectedCommonScale Q H T := by
+  have hCorrectedPos : zeroR < heathBrownCorrectedCommonScale Q H T := by
     exact_mod_cast (lt_of_lt_of_le
       (show 0 < heathBrownReflectionTargetScale Q H T by
         unfold heathBrownReflectionTargetScale
@@ -3766,7 +3767,7 @@ theorem heathBrownLocalRecurrenceProfile_le_explicit
     exact Nat.mul_pos (by omega) (by
       unfold heathBrownReflectionTargetScale
       exact pow_pos (by omega) _)
-  have hPPos : (0 : ℝ) < P := by exact_mod_cast hPPosNat
+  have hPPos : zeroR < P := by exact_mod_cast hPPosNat
   have hUpperPos : 0 < 12 * T ^ 2 := mul_pos (by norm_num) (sq_pos_of_pos hTPos)
   have hLogP : Real.log (P : ℝ) ≤ Real.log 12 + 2 * Real.log T := by
     have hmono := Real.strictMonoOn_log.monotoneOn
@@ -3798,8 +3799,8 @@ assembly, where the same asymptotic fact is used independently. -/
 theorem heathBrown_eventually_log_le_rpow
     (η : ℝ) (hη : 0 < η) :
     ∀ᶠ T : ℝ in atTop, Real.log T ≤ T ^ η := by
-  have hLittle := isLittleO_log_rpow_rpow_atTop (1 : ℝ) hη
-  filter_upwards [hLittle.eventuallyLE, eventually_ge_atTop (1 : ℝ)] with T hBound hT
+  have hLittle := isLittleO_log_rpow_rpow_atTop oneR hη
+  filter_upwards [hLittle.eventuallyLE, eventually_ge_atTop oneR] with T hBound hT
   have hLogNonneg : 0 ≤ Real.log T := Real.log_nonneg hT
   have hTNonneg : 0 ≤ T := by linarith
   rw [Real.norm_eq_abs, abs_of_nonneg (Real.rpow_nonneg hLogNonneg _),
@@ -3846,7 +3847,7 @@ theorem eventually_heathBrownLocalRecurrenceProfile_pow_ten_le_rpow
   have hLastIdentity : (48 * T ^ 2) ^ η = 48 ^ η * T ^ (2 * η) := by
     calc
       (48 * T ^ 2) ^ η = 48 ^ η * (T ^ 2) ^ η :=
-        Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 48) (sq_nonneg T)
+        Real.mul_rpow (by norm_num : zeroR ≤ 48) (sq_nonneg T)
       _ = 48 ^ η * T ^ (2 * η) := by
         congr 1
         rw [← Real.rpow_natCast]
@@ -3921,7 +3922,7 @@ theorem heathBrownSourceSharpTraceRecurrenceBound_le_profile
     heathBrownSourceSharpTraceRecurrenceBound Cnear C Ctr K L D η
         (heathBrownReflectionDerivativeOrder 2 η) T W Q H ≤
       (100000 * (1 + Cnear ^ 2 + C ^ 2 + C ^ 2 * Ctr ^ 4 +
-          (16 * K + L * (3 : ℝ) ^
+          (16 * K + L * threeR ^
             (heathBrownReflectionDerivativeOrder 2 η + 2) + 2 * D) ^ 2)) *
         heathBrownLocalRecurrenceProfile η T Q H ^ 10 * (N : ℝ) *
           ((W.card : ℝ) * N + (W.card : ℝ) ^ 2 +
@@ -3934,7 +3935,7 @@ theorem heathBrownSourceSharpTraceRecurrenceBound_le_profile
   let c : ℝ := heathBrownCorrectedCommonExponent Q H T
   let P : ℕ := heathBrownCorrectedCommonScale Q H T
   let B : ℝ := heathBrownLocalRecurrenceProfile η T Q H
-  let E : ℝ := 16 * K + L * (3 : ℝ) ^
+  let E : ℝ := 16 * K + L * threeR ^
     (heathBrownReflectionDerivativeOrder 2 η + 2) + 2 * D
   let X : ℝ := R * N + R ^ 2 + heathBrownWeightedMoment P W +
     heathBrownWeightedMoment (2 * P) W + 1
@@ -3948,7 +3949,7 @@ theorem heathBrownSourceSharpTraceRecurrenceBound_le_profile
     simpa only [P, B] using hcomp.2.2.2.2
   have hB0 : 0 ≤ B := hBOne.trans' zero_le_one
   have hℓ0 : 0 ≤ ℓ := by dsimp only [ℓ]; positivity
-  have hH0 : (0 : ℝ) ≤ H := by positivity
+  have hH0 : zeroR ≤ H := by positivity
   have hc0 : 0 ≤ c := by dsimp only [c]; positivity
   have hp0 : 0 ≤ (4 * (P : ℕ) : ℝ) ^ η :=
     Real.rpow_nonneg (by positivity) _
@@ -3985,8 +3986,8 @@ theorem heathBrownSourceSharpTraceRecurrenceBound_le_profile
       R * (N : ℝ) + R ^ 2 + heathBrownWeightedMoment P W +
       heathBrownWeightedMoment (2 * P) W + 1
     linarith only [hRN0, hR20]
-  have hNReal : (0 : ℝ) < N := by exact_mod_cast hN
-  have hQReal : (0 : ℝ) < Q := by exact_mod_cast hQ
+  have hNReal : zeroR < N := by exact_mod_cast hN
+  have hQReal : zeroR < Q := by exact_mod_cast hQ
   have hQN : (Q : ℝ) ≤ 2 * (N : ℝ) := by exact_mod_cast hQUpper
   have hQsq : (Q : ℝ) ^ 2 ≤ 4 * (N : ℝ) ^ 2 := by nlinarith
   have hPowMono : ∀ k : ℕ, k ≤ 10 → B ^ k ≤ B ^ 10 := by
@@ -3997,7 +3998,7 @@ theorem heathBrownSourceSharpTraceRecurrenceBound_le_profile
   have hQT : (Q : ℝ) ≤ 2 * T := by
     exact hQN.trans (by gcongr)
   have hErr := heathBrownSharpUniformReflectionError_smoothing_le
-    (A := (2 : ℝ)) (η := η) (T := T) (K := K) (L := L) (D := D)
+    (A := twoR) (η := η) (T := T) (K := K) (L := L) (D := D)
     (Q := Q) hη hηOne (by linarith) hQ hQT hK hL hD
   rw [← hHeight] at hErr
   have hErr0 : 0 ≤ heathBrownSharpUniformReflectionError K L D
@@ -4005,8 +4006,8 @@ theorem heathBrownSourceSharpTraceRecurrenceBound_le_profile
     unfold heathBrownSharpUniformReflectionError
     positivity
   have hTPos : 0 < T := by linarith
-  have hTDecay : T * (T ^ (-(2 : ℝ))) ^ 2 ≤ 1 := by
-    have heq : T * (T ^ (-(2 : ℝ))) ^ 2 = (T ^ 3)⁻¹ := by
+  have hTDecay : T * (T ^ (-twoR)) ^ 2 ≤ 1 := by
+    have heq : T * (T ^ (-twoR)) ^ 2 = (T ^ 3)⁻¹ := by
       rw [Real.rpow_neg hTPos.le, Real.rpow_two]
       field_simp [hTPos.ne']
     rw [heq]
@@ -4018,8 +4019,8 @@ theorem heathBrownSourceSharpTraceRecurrenceBound_le_profile
     calc
       T * (heathBrownSharpUniformReflectionError K L D
           (heathBrownReflectionDerivativeOrder 2 η) Q H T) ^ 2 ≤
-          T * (E * T ^ (-(2 : ℝ))) ^ 2 := by gcongr
-      _ = E ^ 2 * (T * (T ^ (-(2 : ℝ))) ^ 2) := by ring
+          T * (E * T ^ (-twoR)) ^ 2 := by gcongr
+      _ = E ^ 2 * (T * (T ^ (-twoR)) ^ 2) := by ring
       _ ≤ E ^ 2 * 1 := by gcongr
       _ = E ^ 2 := by ring
   have hPsucc : 2 ^ (heathBrownCorrectedCommonExponent Q H T + 1) = 2 * P := by
@@ -4154,7 +4155,7 @@ theorem heathBrownSourceSharpTraceRecurrenceBound_le_profile
             (heathBrownReflectionDerivativeOrder 2 η) Q H T) ^ 2) := by ring
       _ ≤ 8 * B * R * E ^ 2 := by gcongr
       _ ≤ 8 * E ^ 2 * B ^ 10 * (N : ℝ) * X := by
-        have hNOne : (1 : ℝ) ≤ N := by exact_mod_cast (show 1 ≤ N by omega)
+        have hNOne : oneR ≤ N := by exact_mod_cast (show 1 ≤ N by omega)
         have hRle : R ≤ X := by
           calc R = R * 1 := by ring
           _ ≤ R * (N : ℝ) := mul_le_mul_of_nonneg_left hNOne hR0
@@ -4301,7 +4302,7 @@ theorem exists_heathBrownWeightedMoment_source_recurrence
     eventually_heathBrownLocalRecurrenceProfile_pow_ten_le_rpow η hη hηOne
   let A : ℝ := 100000 * (1 + Cnear ^ 2 + Cmain ^ 2 +
     Cmain ^ 2 * Ctr ^ 4 +
-    (16 * K + L * (3 : ℝ) ^ (q + 2) + 2 * D) ^ 2)
+    (16 * K + L * threeR ^ (q + 2) + 2 * D) ^ 2)
   let Cfinal : ℝ := 9 * A * Cprofile
   refine ⟨Cfinal, by
     dsimp only [Cfinal, A]
@@ -4714,17 +4715,17 @@ theorem heathBrownSourceTerminalScale_le_twenty_four_mul_sq
     hη hηOne hT (by omega : 0 < N) hHeight
   have h₃ := heathBrownCorrectedCommonScale_le_twelve_mul_sq
     hη hηOne hT (by omega : 0 < gmSourceRightScale N) hHeight
-  have h₁' : (2 : ℝ) * (2 ^ e₁ : ℕ) ≤ 24 * T ^ 2 := by
+  have h₁' : twoR * (2 ^ e₁ : ℕ) ≤ 24 * T ^ 2 := by
     change ((2 ^ e₁ : ℕ) : ℝ) ≤ 12 * T ^ 2 at h₁
-    have := mul_le_mul_of_nonneg_left h₁ (by norm_num : (0 : ℝ) ≤ 2)
+    have := mul_le_mul_of_nonneg_left h₁ (by norm_num : zeroR ≤ 2)
     nlinarith
-  have h₂' : (2 : ℝ) * (2 ^ e₂ : ℕ) ≤ 24 * T ^ 2 := by
+  have h₂' : twoR * (2 ^ e₂ : ℕ) ≤ 24 * T ^ 2 := by
     change ((2 ^ e₂ : ℕ) : ℝ) ≤ 12 * T ^ 2 at h₂
-    have := mul_le_mul_of_nonneg_left h₂ (by norm_num : (0 : ℝ) ≤ 2)
+    have := mul_le_mul_of_nonneg_left h₂ (by norm_num : zeroR ≤ 2)
     nlinarith
-  have h₃' : (2 : ℝ) * (2 ^ e₃ : ℕ) ≤ 24 * T ^ 2 := by
+  have h₃' : twoR * (2 ^ e₃ : ℕ) ≤ 24 * T ^ 2 := by
     change ((2 ^ e₃ : ℕ) : ℝ) ≤ 12 * T ^ 2 at h₃
-    have := mul_le_mul_of_nonneg_left h₃ (by norm_num : (0 : ℝ) ≤ 2)
+    have := mul_le_mul_of_nonneg_left h₃ (by norm_num : zeroR ≤ 2)
     nlinarith
   change (2 ^ (max e₁ (max e₂ e₃) + 1) : ℕ) ≤ (24 * T ^ 2 : ℝ)
   rw [pow_succ]
@@ -4756,12 +4757,12 @@ theorem heathBrownSourceTerminalScale_le_physical
   have hData₃ := heathBrown_source_scales_comparable hN
     (Q := gmSourceRightScale N) (by right; right; rfl)
   have hTH : 0 ≤ T * (H : ℝ) := mul_nonneg (by linarith) (Nat.cast_nonneg H)
-  have hNReal : (0 : ℝ) < N := by exact_mod_cast (show 0 < N by omega)
+  have hNReal : zeroR < N := by exact_mod_cast (show 0 < N by omega)
   have physical (Q : ℕ) (hQ : 0 < Q) (hNQ : N ≤ 2 * Q) :
       (heathBrownCorrectedCommonScale Q H T : ℝ) ≤
         8 * (T * H / N + 1) := by
-    have hQReal : (0 : ℝ) < Q := by exact_mod_cast hQ
-    have hHalfNPos : (0 : ℝ) < (N : ℝ) / 2 := by positivity
+    have hQReal : zeroR < Q := by exact_mod_cast hQ
+    have hHalfNPos : zeroR < (N : ℝ) / 2 := by positivity
     have hNQReal : (N : ℝ) ≤ 2 * Q := by exact_mod_cast hNQ
     have hHalfNQ : (N : ℝ) / 2 ≤ Q := by linarith
     have hDiv₁ : T * H / Q ≤ T * H / ((N : ℝ) / 2) :=
@@ -4779,13 +4780,13 @@ theorem heathBrownSourceTerminalScale_le_physical
   have h₁ := physical (gmSourceLeftScale N) (by omega) hData₁.2.1
   have h₂ := physical N (by omega) hData₂.2.1
   have h₃ := physical (gmSourceRightScale N) (by omega) hData₃.2.1
-  have h₁' : (2 : ℝ) * (2 ^ e₁ : ℕ) ≤ 16 * (T * H / N + 1) := by
+  have h₁' : twoR * (2 ^ e₁ : ℕ) ≤ 16 * (T * H / N + 1) := by
     change ((2 ^ e₁ : ℕ) : ℝ) ≤ 8 * (T * H / N + 1) at h₁
     nlinarith
-  have h₂' : (2 : ℝ) * (2 ^ e₂ : ℕ) ≤ 16 * (T * H / N + 1) := by
+  have h₂' : twoR * (2 ^ e₂ : ℕ) ≤ 16 * (T * H / N + 1) := by
     change ((2 ^ e₂ : ℕ) : ℝ) ≤ 8 * (T * H / N + 1) at h₂
     nlinarith
-  have h₃' : (2 : ℝ) * (2 ^ e₃ : ℕ) ≤ 16 * (T * H / N + 1) := by
+  have h₃' : twoR * (2 ^ e₃ : ℕ) ≤ 16 * (T * H / N + 1) := by
     change ((2 ^ e₃ : ℕ) : ℝ) ≤ 8 * (T * H / N + 1) at h₃
     nlinarith
   change (2 ^ (max e₁ (max e₂ e₃) + 1) : ℕ) ≤
@@ -4829,7 +4830,7 @@ theorem exists_heathBrownWeightedMoment_terminal_recurrence
   refine ⟨C, D, hC, hD, T₀, hT₀, ?_⟩
   intro N T W hN hT hTwoNT hSep hInterval
   have hNPosNat : 0 < N := by omega
-  have hNPos : (0 : ℝ) < N := by exact_mod_cast hNPosNat
+  have hNPos : zeroR < N := by exact_mod_cast hNPosNat
   have hRaw := hSource N T W hN hT hTwoNT hSep hInterval
   have hPack := hPackage T N (heathBrownSmoothingHeight T η) W
   have hOuter : 0 ≤ C * T ^ (20 * η) * (N : ℝ) := by
@@ -4954,7 +4955,7 @@ theorem heathBrownTerminalRecurrenceLoss_le_rpow
   have hIdentity : (96 * T ^ 2) ^ η = 96 ^ η * T ^ (2 * η) := by
     calc
       (96 * T ^ 2) ^ η = 96 ^ η * (T ^ 2) ^ η :=
-        Real.mul_rpow (by norm_num : (0 : ℝ) ≤ 96) (sq_nonneg T)
+        Real.mul_rpow (by norm_num : zeroR ≤ 96) (sq_nonneg T)
       _ = 96 ^ η * T ^ (2 * η) := by
         congr 1
         rw [← Real.rpow_natCast]
@@ -4965,7 +4966,7 @@ theorem heathBrownTerminalRecurrenceLoss_le_rpow
     have hnonneg : 0 ≤ (4 * P : ℝ) ^ η := Real.rpow_nonneg (by positivity) _
     have hsq := pow_le_pow_left₀ hnonneg (hRpow.trans_eq hIdentity) 2
     have h96 : ((96 : ℝ) ^ η) ^ 2 = (96 : ℝ) ^ (2 * η) := by
-      rw [← Real.rpow_natCast, ← Real.rpow_mul (by norm_num : (0 : ℝ) ≤ 96)]
+      rw [← Real.rpow_natCast, ← Real.rpow_mul (by norm_num : zeroR ≤ 96)]
       congr 1
       ring
     have hTpow : (T ^ (2 * η)) ^ 2 = T ^ (4 * η) := by
@@ -5294,24 +5295,24 @@ theorem exists_heathBrownWeightedMoment_sq_le_dyadic_parent_uniform
           ((4 * (2 ^ q : ℕ) : ℝ) ^ η) ^ 2 := by gcongr
       _ = _ := by ring
   have hFactor' :
-      (((4 : ℝ) * (2 : ℝ) ^ (p * 2)) ^ η) ^ 2 *
-          (((4 : ℝ) * (2 : ℝ) ^ q) ^ η) ^ 2 ≤
-        (((4 : ℝ) * (2 : ℝ) ^ q) ^ η) ^ 4 := by
+      ((fourR * twoR ^ (p * 2)) ^ η) ^ 2 *
+          ((fourR * twoR ^ q) ^ η) ^ 2 ≤
+        ((fourR * twoR ^ q) ^ η) ^ 4 := by
     norm_num [Nat.cast_pow, Nat.cast_mul] at hFactor
     simpa only [pow_mul] using hFactor
   norm_num [Nat.cast_pow, Nat.cast_mul, heathBrownDyadicPairMoment] at hRaw ⊢
   calc
     heathBrownWeightedMoment (2 ^ p) W ^ 2 ≤
         16 * C ^ 2 * D ^ 2 *
-          (((4 : ℝ) * (2 : ℝ) ^ (p * 2)) ^ η) ^ 2 *
-          (((4 : ℝ) * (2 : ℝ) ^ q) ^ η) ^ 2 *
+          ((fourR * twoR ^ (p * 2)) ^ η) ^ 2 *
+          ((fourR * twoR ^ q) ^ η) ^ 2 *
           (W.card : ℝ) ^ 2 *
           (heathBrownWeightedMoment (2 ^ q) W +
             heathBrownWeightedMoment (2 ^ (q + 1)) W) := by
       ring_nf at hRaw ⊢
       exact hRaw
     _ ≤ 16 * C ^ 2 * D ^ 2 *
-          (((4 : ℝ) * (2 : ℝ) ^ q) ^ η) ^ 4 *
+          ((fourR * twoR ^ q) ^ η) ^ 4 *
           (W.card : ℝ) ^ 2 *
           (heathBrownWeightedMoment (2 ^ q) W +
             heathBrownWeightedMoment (2 ^ (q + 1)) W) := by
@@ -5324,12 +5325,12 @@ theorem exists_heathBrownWeightedMoment_sq_le_dyadic_parent_uniform
         _ = (16 * C ^ 2 * D ^ 2 * (W.card : ℝ) ^ 2 *
               (heathBrownWeightedMoment (2 ^ q) W +
                 heathBrownWeightedMoment (2 ^ (q + 1)) W)) *
-              ((((4 : ℝ) * (2 : ℝ) ^ (p * 2)) ^ η) ^ 2 *
-                (((4 : ℝ) * (2 : ℝ) ^ q) ^ η) ^ 2) := by ring
+              (((fourR * twoR ^ (p * 2)) ^ η) ^ 2 *
+                ((fourR * twoR ^ q) ^ η) ^ 2) := by ring
         _ ≤ (16 * C ^ 2 * D ^ 2 * (W.card : ℝ) ^ 2 *
               (heathBrownWeightedMoment (2 ^ q) W +
                 heathBrownWeightedMoment (2 ^ (q + 1)) W)) *
-              (((4 : ℝ) * (2 : ℝ) ^ q) ^ η) ^ 4 :=
+              ((fourR * twoR ^ q) ^ η) ^ 4 :=
           mul_le_mul_of_nonneg_left hFactor' hNonneg
         _ = _ := by ring
     _ = _ := by ring
@@ -5688,7 +5689,7 @@ theorem exists_heathBrownDyadicPairMoment_high_bound
   have hA : A ≤ 3 * G := by
     dsimp only [A, G]
     nlinarith [sq_nonneg (W.card : ℝ)]
-  have hFourReal : (4 : ℝ) * (2 ^ q : ℕ) ≤ T := by
+  have hFourReal : fourR * (2 ^ q : ℕ) ≤ T := by
     have h := hFourQ
     norm_num [Nat.cast_pow, Nat.cast_mul] at h ⊢
     exact h
@@ -5788,7 +5789,7 @@ theorem heathBrownSourceTerminal_sixteen_sq_le_of_physical
   have hY₀ : 0 ≤ Y := by
     dsimp only [Y]
     positivity
-  have hP₀ : (0 : ℝ) ≤ P := by positivity
+  have hP₀ : zeroR ≤ P := by positivity
   have hSquare : (P : ℝ) ^ 2 ≤ (16 * Y) ^ 2 :=
     (sq_le_sq₀ hP₀ (mul_nonneg (by norm_num) hY₀)).2 hP
   have hReal : ((16 * P ^ 2 : ℕ) : ℝ) ≤ (R : ℝ) := by
@@ -5822,7 +5823,7 @@ theorem exists_heathBrownDyadicPairMoment_high_bound_physical
   let H : ℕ := heathBrownSmoothingHeight T η
   have hTOne : 1 ≤ T := by linarith [hT₀.trans hT]
   have hQ30 : 30 ≤ Q := by simpa only [Q] using hQ
-  have hQ₀ : (0 : ℝ) < Q := by exact_mod_cast (show 0 < Q by omega)
+  have hQ₀ : zeroR < Q := by exact_mod_cast (show 0 < Q by omega)
   have hH : 0 < H := by
     dsimp only [H]
     exact heathBrownSmoothingHeight_pos T η
@@ -5865,8 +5866,8 @@ theorem heathBrown_high_physical_of_cube
         (T * heathBrownSmoothingHeight T η / Q + 1) ^ 2 ≤ (Q : ℝ) := by
   let H : ℕ := heathBrownSmoothingHeight T η
   let X : ℝ := T * H / Q
-  have hQ₀ : (0 : ℝ) < Q := by exact_mod_cast hQ
-  have hHOne : (1 : ℝ) ≤ H := by
+  have hQ₀ : zeroR < Q := by exact_mod_cast hQ
+  have hHOne : oneR ≤ H := by
     have hHNat : 1 ≤ H := by
       dsimp only [H]
       exact heathBrownSmoothingHeight_pos T η
@@ -6181,7 +6182,7 @@ private lemma pow_two_succ_eq_two_mul (q : ℕ) : 2 ^ (q + 1) = 2 * 2 ^ q := by
   rw [pow_succ]
   omega
 
-private lemma zero_le_sixty_four : (0 : ℝ) ≤ 64 := by
+private lemma zero_le_sixty_four : zeroR ≤ 64 := by
   norm_num
 
 /-- Medium-range estimate for one dyadic reflected child.  This is the
@@ -6247,7 +6248,7 @@ theorem exists_heathBrownWeightedMoment_medium_child_bound
     unfold heathBrownDyadicPairMoment
     rw [hQIdentity, hTwoQ, hEight]
   rw [hPairIdentity] at hPowered
-  have hM₀ : (0 : ℝ) ≤ M := by positivity
+  have hM₀ : zeroR ≤ M := by positivity
   have hMUpper' : (M : ℝ) ≤ 48 * T ^ 2 := by simpa only [M] using hMUpper
   have hMSquare : (M : ℝ) ^ 2 ≤ (48 * T ^ 2) ^ 2 :=
     (sq_le_sq₀ hM₀ (by positivity)).2 hMUpper'
@@ -6532,8 +6533,8 @@ theorem heathBrownDyadicTerminals_enter_medium_window
     have hFloorSucc : T < (Nat.floor T : ℝ) + 1 := Nat.lt_floor_add_one T
     linarith
   have hX₀ : 0 ≤ T * (H : ℝ) := by positivity
-  have hQReal : (0 : ℝ) < Q := by exact_mod_cast hQPos
-  have hTwoQReal : (0 : ℝ) < 2 * Q := by positivity
+  have hQReal : zeroR < Q := by exact_mod_cast hQPos
+  have hTwoQReal : zeroR < 2 * Q := by positivity
   have hTerminalLower₀ : T * (H : ℝ) / Q ≤ (P₀ : ℝ) := by
     have hScaled : T * (H : ℝ) ≤ 2 * ((Nat.floor T : ℝ) * H) := by
       have := mul_le_mul_of_nonneg_right hFloorHalf (show 0 ≤ (H : ℝ) by positivity)
@@ -6569,36 +6570,36 @@ theorem heathBrownDyadicTerminals_enter_medium_window
     exact hFourQ'
   have hRatio₀ : 4 ≤ T * (H : ℝ) / Q := by
     apply (le_div_iff₀ hQReal).2
-    have hHOne : (1 : ℝ) ≤ H := by exact_mod_cast hHPos
+    have hHOne : oneR ≤ H := by exact_mod_cast hHPos
     calc
-      (4 : ℝ) * Q ≤ T := hFourQReal
+      fourR * Q ≤ T := hFourQReal
       _ ≤ T * H := by
         nlinarith [mul_nonneg (show 0 ≤ T by linarith) (sub_nonneg.2 hHOne)]
   have hRatio₁ : 2 ≤ T * (H : ℝ) / (2 * Q) := by
     calc
-      (2 : ℝ) = 4 / 2 := by norm_num
+      twoR = 4 / 2 := by norm_num
       _ ≤ (T * (H : ℝ) / Q) / 2 := by gcongr
       _ = T * (H : ℝ) / (2 * Q) := by field_simp
-  have hP₁Four : (4 : ℝ) ≤ P₁ := by
+  have hP₁Four : fourR ≤ P₁ := by
     have hExact := two_mul_floor_mul_height_div_le_heathBrownSourceTerminalScale
       hTOne hTwoQ30 hHPos
-    have hHOne : (1 : ℝ) ≤ H := by exact_mod_cast hHPos
-    have hFourRatio : (4 : ℝ) ≤
+    have hHOne : oneR ≤ H := by exact_mod_cast hHPos
+    have hFourRatio : fourR ≤
         2 * ((Nat.floor T : ℝ) * H / (2 * Q)) := by
       have hIdentity :
           2 * ((Nat.floor T : ℝ) * H / (2 * Q)) =
             (Nat.floor T : ℝ) * H / Q := by field_simp
       rw [hIdentity, le_div_iff₀ hQReal]
       calc
-        (4 : ℝ) * Q ≤ (Nat.floor T : ℝ) := hFloorFourQ
+        fourR * Q ≤ (Nat.floor T : ℝ) := hFloorFourQ
         _ ≤ (Nat.floor T : ℝ) * H := by
           nlinarith [mul_nonneg (show 0 ≤ (Nat.floor T : ℝ) by positivity)
             (sub_nonneg.2 hHOne)]
     norm_num [Nat.cast_mul] at hExact
     change 2 * ((Nat.floor T : ℝ) * H / (2 * (Q : ℝ))) ≤ (P₁ : ℝ) at hExact
     exact hFourRatio.trans hExact
-  have hP₀ThreeReal : (3 : ℝ) ≤ P₀ := by linarith
-  have hP₁ThreeReal : (3 : ℝ) ≤ P₁ := by linarith
+  have hP₀ThreeReal : threeR ≤ P₀ := by linarith
+  have hP₁ThreeReal : threeR ≤ P₁ := by linarith
   have hP₀Three : 3 ≤ P₀ := by exact_mod_cast hP₀ThreeReal
   have hP₁Three : 3 ≤ P₁ := by exact_mod_cast hP₁ThreeReal
   have hP₀Upper : (P₀ : ℝ) ≤ 24 * T ^ 2 := by
@@ -6733,7 +6734,7 @@ theorem exists_heathBrownDyadicPairMoment_medium_bound
       16 * (X / (2 * Q) + 1)
     rw [hTwoQ]
     simpa only [X, Nat.cast_mul, Nat.cast_ofNat] using h
-  have hQReal : (0 : ℝ) < Q := by exact_mod_cast hQPos
+  have hQReal : zeroR < Q := by exact_mod_cast hQPos
   have hHalfRatio : X / (2 * Q) = (X / Q) / 2 := by field_simp
   have hXNonneg : 0 ≤ X := by dsimp only [X]; positivity
   have hRatioNonneg : 0 ≤ X / Q := div_nonneg hXNonneg hQReal.le
@@ -6885,37 +6886,37 @@ theorem exists_heathBrownDyadicPairMoment_nonmedium_bound
     ring
   have hTransferRaw := hTransfer q (q + 7) W (by omega)
   have hTransferBound : heathBrownDyadicPairMoment q W ≤
-      8 * (A * ((4 : ℝ) * (2 ^ (q + 7) : ℕ)) ^ η) ^ 2 *
+      8 * (A * (fourR * (2 ^ (q + 7) : ℕ)) ^ η) ^ 2 *
         heathBrownDyadicPairMoment (q + 7) W := by
     simpa only [heathBrownDyadicPairMoment] using hTransferRaw
   have hFourReal : ((4 * Q : ℕ) : ℝ) ≤ T := by simpa only [Q] using hFourQ
   have hTSeven : (128 : ℝ) ≤ T ^ 7 := by
     calc
-      (128 : ℝ) = (2 : ℝ) ^ 7 := by norm_num
+      (128 : ℝ) = twoR ^ 7 := by norm_num
       _ ≤ T ^ 7 := pow_le_pow_left₀ (by norm_num) hTTwo 7
   have h128T : 128 * T ≤ T ^ 8 := by
     calc
       128 * T ≤ T ^ 7 * T := mul_le_mul_of_nonneg_right hTSeven (by positivity)
       _ = T ^ 8 := by ring
-  have hScaleBase : (4 : ℝ) * (2 ^ (q + 7) : ℕ) ≤ T ^ 8 := by
+  have hScaleBase : fourR * (2 ^ (q + 7) : ℕ) ≤ T ^ 8 := by
     calc
-      (4 : ℝ) * (2 ^ (q + 7) : ℕ) = 128 * ((4 * Q : ℕ) : ℝ) := by
+      fourR * (2 ^ (q + 7) : ℕ) = 128 * ((4 * Q : ℕ) : ℝ) := by
         rw [hShift]
         push_cast
         ring
       _ ≤ 128 * T := mul_le_mul_of_nonneg_left hFourReal (by norm_num)
       _ ≤ T ^ 8 := h128T
-  have hScale : ((4 : ℝ) * (2 ^ (q + 7) : ℕ)) ^ η ≤ T ^ (8 * η) := by
+  have hScale : (fourR * (2 ^ (q + 7) : ℕ)) ^ η ≤ T ^ (8 * η) := by
     calc
       _ ≤ (T ^ 8) ^ η := Real.rpow_le_rpow (by positivity) hScaleBase hη.le
       _ = T ^ (8 * η) := by
         rw [← Real.rpow_natCast, ← Real.rpow_mul hTPos.le]
         norm_num
-  have hScaleSq : (A * ((4 : ℝ) * (2 ^ (q + 7) : ℕ)) ^ η) ^ 2 ≤
+  have hScaleSq : (A * (fourR * (2 ^ (q + 7) : ℕ)) ^ η) ^ 2 ≤
       A ^ 2 * T ^ (16 * η) := by
-    have hMul : A * ((4 : ℝ) * (2 ^ (q + 7) : ℕ)) ^ η ≤
+    have hMul : A * (fourR * (2 ^ (q + 7) : ℕ)) ^ η ≤
         A * T ^ (8 * η) := mul_le_mul_of_nonneg_left hScale hA.le
-    have hLeftNonneg : 0 ≤ A * ((4 : ℝ) * (2 ^ (q + 7) : ℕ)) ^ η := by positivity
+    have hLeftNonneg : 0 ≤ A * (fourR * (2 ^ (q + 7) : ℕ)) ^ η := by positivity
     have hSq := pow_le_pow_left₀ hLeftNonneg hMul 2
     have hTpow : (T ^ (8 * η)) ^ 2 = T ^ (16 * η) := by
       rw [← Real.rpow_natCast, ← Real.rpow_mul hTPos.le]
@@ -6943,7 +6944,7 @@ theorem exists_heathBrownDyadicPairMoment_nonmedium_bound
       (heathBrownWeightedMoment_nonneg (2 ^ (q + 7 + 1)) W)
   calc
     heathBrownDyadicPairMoment q W ≤
-        8 * (A * ((4 : ℝ) * (2 ^ (q + 7) : ℕ)) ^ η) ^ 2 *
+        8 * (A * (fourR * (2 ^ (q + 7) : ℕ)) ^ η) ^ 2 *
           heathBrownDyadicPairMoment (q + 7) W := hTransferBound
     _ ≤ 8 * (A ^ 2 * T ^ (16 * η)) *
         (B * T ^ (52 * η) *
@@ -6967,7 +6968,7 @@ private lemma rpow_five_four_mul_rpow_one_four (x : ℝ) (hx : 0 < x) :
       rw [← Real.rpow_add hx]
       congr 1
       norm_num
-    _ = x ^ (1 : ℝ) * x ^ (1 / 2 : ℝ) := by
+    _ = x ^ oneR * x ^ (1 / 2 : ℝ) := by
       rw [← Real.rpow_add hx]
       congr 1
       norm_num
@@ -6976,7 +6977,7 @@ private lemma rpow_five_four_mul_rpow_one_four (x : ℝ) (hx : 0 < x) :
 private lemma rpow_half_mul_rpow_half (x : ℝ) (hx : 0 < x) :
     x ^ (1 / 2 : ℝ) * x ^ (1 / 2 : ℝ) = x := by
   calc
-    _ = x ^ (1 : ℝ) := by
+    _ = x ^ oneR := by
       rw [← Real.rpow_add hx]
       congr 1
       norm_num
@@ -7034,7 +7035,7 @@ theorem exists_heathBrownDyadicPairMoment_large_scale_bound
   have hTOne : 1 ≤ T := by linarith [hTM.trans hTM']
   have hTPos : 0 < T := by linarith
   have hQPos : 0 < Q := by dsimp only [Q]; positivity
-  have hQReal : (0 : ℝ) < Q := by exact_mod_cast hQPos
+  have hQReal : zeroR < Q := by exact_mod_cast hQPos
   have hRPos : 0 < R := by dsimp only [R]; exact_mod_cast hWPos
   have hRNonneg : 0 ≤ R := hRPos.le
   have hROne : 1 ≤ R := by dsimp only [R]; exact_mod_cast hWPos
@@ -7336,7 +7337,7 @@ theorem heathBrown_large_scale_target_package
       _ ≤ 4 * T := by linarith
   have hTFour : (16 : ℝ) ≤ T ^ 4 := by
     calc
-      (16 : ℝ) = (2 : ℝ) ^ 4 := by norm_num
+      (16 : ℝ) = twoR ^ 4 := by norm_num
       _ ≤ T ^ 4 := pow_le_pow_left₀ (by norm_num) hTTwo 4
   have hFourTarget : ((4 * 2 ^ c : ℕ) : ℝ) ≤ T ^ 5 := by
     calc
@@ -7354,9 +7355,9 @@ theorem heathBrown_large_scale_target_package
 private lemma rpow_one_mul_rpow_one_four (x : ℝ) (hx : 0 < x) :
     x * x ^ (1 / 4 : ℝ) = x ^ (5 / 4 : ℝ) := by
   calc
-    x * x ^ (1 / 4 : ℝ) = x ^ (1 : ℝ) * x ^ (1 / 4 : ℝ) := by
+    x * x ^ (1 / 4 : ℝ) = x ^ oneR * x ^ (1 / 4 : ℝ) := by
       rw [Real.rpow_one]
-    _ = x ^ ((1 : ℝ) + 1 / 4) := by rw [Real.rpow_add hx]
+    _ = x ^ (oneR + 1 / 4) := by rw [Real.rpow_add hx]
     _ = x ^ (5 / 4 : ℝ) := by norm_num
 
 set_option maxHeartbeats 800000 in
@@ -7405,7 +7406,7 @@ theorem exists_heathBrownDyadicPairMoment_small_scale_bound
     omega
   have hTransferRaw := hTransfer q c W hqc
   have hTransferBound : heathBrownDyadicPairMoment q W ≤
-      8 * (A * ((4 : ℝ) * (2 ^ c : ℕ)) ^ η) ^ 2 *
+      8 * (A * (fourR * (2 ^ c : ℕ)) ^ η) ^ 2 *
         heathBrownDyadicPairMoment c W := by
     simpa only [heathBrownDyadicPairMoment] using hTransferRaw
   have hLargeRaw := hLarge c T W hTargetThirty hT hSep hBase hWPos
@@ -7415,7 +7416,7 @@ theorem exists_heathBrownDyadicPairMoment_small_scale_bound
         (R * (2 ^ c : ℕ) + R ^ 2 +
           R ^ (5 / 4 : ℝ) * T ^ (1 / 2 : ℝ) + 1) := by
     simpa only [R] using hLargeRaw
-  have hScale : ((4 : ℝ) * (2 ^ c : ℕ)) ^ η ≤ T ^ (5 * η) := by
+  have hScale : (fourR * (2 ^ c : ℕ)) ^ η ≤ T ^ (5 * η) := by
     calc
       _ ≤ (T ^ 5) ^ η :=
         Real.rpow_le_rpow (by positivity) (by simpa only [Nat.cast_mul,
@@ -7423,11 +7424,11 @@ theorem exists_heathBrownDyadicPairMoment_small_scale_bound
       _ = T ^ (5 * η) := by
         rw [← Real.rpow_natCast, ← Real.rpow_mul hTPos.le]
         norm_num
-  have hScaleSq : (A * ((4 : ℝ) * (2 ^ c : ℕ)) ^ η) ^ 2 ≤
+  have hScaleSq : (A * (fourR * (2 ^ c : ℕ)) ^ η) ^ 2 ≤
       A ^ 2 * T ^ (10 * η) := by
     have hMul := mul_le_mul_of_nonneg_left hScale hA.le
     have hSq := pow_le_pow_left₀
-      (show 0 ≤ A * ((4 : ℝ) * (2 ^ c : ℕ)) ^ η by positivity) hMul 2
+      (show 0 ≤ A * (fourR * (2 ^ c : ℕ)) ^ η by positivity) hMul 2
     have hTpow : (T ^ (5 * η)) ^ 2 = T ^ (10 * η) := by
       rw [← Real.rpow_natCast, ← Real.rpow_mul hTPos.le]
       congr 1
@@ -7464,7 +7465,7 @@ theorem exists_heathBrownDyadicPairMoment_small_scale_bound
     congr 1
     ring
   calc
-    _ ≤ 8 * (A * ((4 : ℝ) * (2 ^ c : ℕ)) ^ η) ^ 2 *
+    _ ≤ 8 * (A * (fourR * (2 ^ c : ℕ)) ^ η) ^ 2 *
         heathBrownDyadicPairMoment c W := hTransferBound
     _ ≤ 8 * (A ^ 2 * T ^ (10 * η)) *
         (B * T ^ (68 * η) *
@@ -7619,28 +7620,28 @@ theorem exists_heathBrownDyadicPairMoment_all_scales_bound
       omega
     have hTransferRaw := hTransfer q (q + 5) W (by omega)
     have hTransferBound : heathBrownDyadicPairMoment q W ≤
-        8 * (A * ((4 : ℝ) * (2 ^ (q + 5) : ℕ)) ^ η) ^ 2 *
+        8 * (A * (fourR * (2 ^ (q + 5) : ℕ)) ^ η) ^ 2 *
           heathBrownDyadicPairMoment (q + 5) W := by
       simpa only [heathBrownDyadicPairMoment] using hTransferRaw
     have hTargetRaw := hThirty (q + 5) T W hShiftThirty hT hSep hBase
     have hScaleNat : 4 * 2 ^ (q + 5) ≤ 3840 := by
       rw [hShift]
       omega
-    have hScaleReal : (4 : ℝ) * (2 ^ (q + 5) : ℕ) ≤ T := by
+    have hScaleReal : fourR * (2 ^ (q + 5) : ℕ) ≤ T := by
       calc
-        (4 : ℝ) * (2 ^ (q + 5) : ℕ) = ((4 * 2 ^ (q + 5) : ℕ) : ℝ) := by
+        fourR * (2 ^ (q + 5) : ℕ) = ((4 * 2 ^ (q + 5) : ℕ) : ℝ) := by
           push_cast
           ring
         _ ≤ 3840 := by exact_mod_cast hScaleNat
         _ ≤ T := by linarith
-    have hScale : ((4 : ℝ) * (2 ^ (q + 5) : ℕ)) ^ η ≤ T ^ η :=
+    have hScale : (fourR * (2 ^ (q + 5) : ℕ)) ^ η ≤ T ^ η :=
       Real.rpow_le_rpow (by positivity) hScaleReal hη.le
     have hScaleSq :
-        (A * ((4 : ℝ) * (2 ^ (q + 5) : ℕ)) ^ η) ^ 2 ≤
+        (A * (fourR * (2 ^ (q + 5) : ℕ)) ^ η) ^ 2 ≤
           A ^ 2 * T ^ (2 * η) := by
       have hMul := mul_le_mul_of_nonneg_left hScale hA.le
       have hSq := pow_le_pow_left₀
-        (show 0 ≤ A * ((4 : ℝ) * (2 ^ (q + 5) : ℕ)) ^ η by positivity)
+        (show 0 ≤ A * (fourR * (2 ^ (q + 5) : ℕ)) ^ η by positivity)
         hMul 2
       calc
         _ ≤ (A * T ^ η) ^ 2 := hSq
@@ -7671,7 +7672,7 @@ theorem exists_heathBrownDyadicPairMoment_all_scales_bound
       congr 1
       ring
     calc
-      _ ≤ 8 * (A * ((4 : ℝ) * (2 ^ (q + 5) : ℕ)) ^ η) ^ 2 *
+      _ ≤ 8 * (A * (fourR * (2 ^ (q + 5) : ℕ)) ^ η) ^ 2 *
           heathBrownDyadicPairMoment (q + 5) W := hTransferBound
       _ ≤ 8 * (A ^ 2 * T ^ (2 * η)) *
           (B * T ^ (78 * η) *

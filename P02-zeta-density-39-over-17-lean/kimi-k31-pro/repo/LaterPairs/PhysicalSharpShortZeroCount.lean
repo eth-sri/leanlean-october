@@ -13,25 +13,31 @@ noncomputable section
 namespace Montgomery.RationalMoment.RightDetector.Physical
 open MathCollab.Density.Stronger MathCollab.Density GuthMaynard.Improvement
 
-/-- All actual short-detected zeros with analytic multiplicity, using the
-proved sharp trace and full energy. The exact perturbation loss is73eta. -/
-theorem smoothShortZeroCount_sharp_bound {σ a η : ℝ}
-    (hw : PhysicalDetectorWindow σ a) (hc : SharpCountWindow σ a) (hη : 0 < η)
-    (hηa : η ≤ (1-3*a/2)/2) (δ : ℝ) :
+/-- Shared short-zero estimate from any compatible polynomial-count loss. -/
+theorem smoothShortZeroCount_of_window_loss {σ a η r : ℝ}
+    (hw : PhysicalDetectorWindow σ a) (hη : 0 < η) (δ : ℝ)
+    (hloss : ∃ C T₀ : ℝ, 0 < C ∧ 2 ≤ T₀ ∧ ∀ T t₀ N : ℝ,
+      T₀ ≤ T → T^a ≤ N → N ≤ T^(3*a/2+η) →
+      ∀ b : ℕ → ℂ, (∀ n ∈ sourceRatioIndices N, ‖b n‖ ≤ 1) → ∀ W : Finset ℝ,
+      (∀ t ∈ W, t ∈ Set.Icc t₀ (t₀+T)) →
+      (∀ t ∈ W, ∀ u ∈ W, t ≠ u → 1 ≤ |t-u|) →
+      (∀ t ∈ W, N^σ*T^(-2*η) ≤ ‖boundedPolynomial N b t‖) →
+      (W.card:ℝ) ≤ C*T^(3*a*(1-σ)+r*η)) :
     ∃ C : ℝ, 0 < C ∧ ∀ᶠ T : ℝ in atTop,
-      (smoothShortZeroCount η σ a δ T:ℝ) ≤ C*T^(3*a*(1-σ)+73*η) := by
+      (smoothShortZeroCount η σ a δ T:ℝ) ≤ C*T^(3*a*(1-σ)+(r+1)*η) := by
   classical
-  obtain ⟨C,hC,hquad⟩ := sharp_polynomial_count_window_loss hc hη hηa
+  obtain ⟨C,T₀,hC,hT₀,hquad⟩ := hloss
   obtain ⟨Cb,hCb,hlocal⟩ := zeta_local_multiplicity_bound
   let K := smoothPowerBound a δ
   let D : ℝ := 144*(K:ℝ)^2
   have hD : 0 ≤ D := by dsimp [D]; positivity
   refine ⟨1+4*Cb*D*C,by positivity,?_⟩
-  filter_upwards [eventually_ge_atTop (2:ℝ),
+  filter_upwards [eventually_ge_atTop T₀,
     smoothPoweredFamily_admissible hw hη δ,
     smoothPoweredIndices_card_eventually hw δ,
     (tendsto_rpow_atTop hη).eventually_ge_atTop ((2:ℝ)^K),
-    log_pow_eventually_le_rpow 3 hη] with T hT hadm hJ hconst hlogloss
+    log_pow_eventually_le_rpow 3 hη] with T hTall hadm hJ hconst hlogloss
+  have hT : 2 ≤ T := hT₀.trans hTall
   have hTp : 0 < T := by linarith
   have hT1 : 1 ≤ T := by linarith
   have hlog : 0 ≤ Real.log T := Real.log_nonneg hT1
@@ -61,7 +67,7 @@ theorem smoothShortZeroCount_sharp_bound {σ a η : ℝ}
     obtain ⟨ρ,hρ,rfl⟩ := mem_image.mp ht
     obtain ⟨_,_,hlo,hhi⟩ := mem_zetaZeroFinset.mp (smoothShortZeroFinset_subset η σ a δ T (hR hρ))
     exact ⟨hlo,by linarith⟩
-  have hper : ∀ q ∈ J, ((Wj q).card:ℝ) ≤ C*T^(3*a*(1-σ)+72*η) := by
+  have hper : ∀ q ∈ J, ((Wj q).card:ℝ) ≤ C*T^(3*a*(1-σ)+r*η) := by
     intro q hmem
     obtain ⟨hlo,hhi,_,hcoeff⟩ := hadm q hmem
     have hu : (smoothPoweredFamilyScale q:ℝ) ≤ T^(3*a/2+η) := by
@@ -69,7 +75,7 @@ theorem smoothShortZeroCount_sharp_bound {σ a η : ℝ}
         _ ≤ (2:ℝ)^K*T^(smoothingExponent a) := hhi
         _ ≤ T^η*T^(smoothingExponent a) := mul_le_mul_of_nonneg_right hconst (by positivity)
         _ = _ := by rw [← Real.rpow_add hTp]; unfold smoothingExponent; congr 1; ring
-    apply hquad T T (smoothPoweredFamilyScale q:ℝ) hT hlo hu (smoothPoweredFamilyCoefficient η a δ T q)
+    apply hquad T T (smoothPoweredFamilyScale q:ℝ) hTall hlo hu (smoothPoweredFamilyCoefficient η a δ T q)
       (fun n _ => hcoeff n) (Wj q)
     · intro t ht
       exact hWloc t (mem_filter.mp ht).1
@@ -82,25 +88,36 @@ theorem smoothShortZeroCount_sharp_bound {σ a η : ℝ}
     obtain ⟨ρ,hρ,rfl⟩ := mem_image.mp ht
     obtain ⟨q,hq,hl⟩ := (mem_filter.mp (hR hρ)).2
     exact mem_biUnion.mpr ⟨q,hq,mem_filter.mpr ⟨mem_image.mpr ⟨ρ,hρ,rfl⟩,hl⟩⟩
-  have hWcard : (W.card:ℝ) ≤ (J.card:ℝ)*(C*T^(3*a*(1-σ)+72*η)) := by
+  have hWcard : (W.card:ℝ) ≤ (J.card:ℝ)*(C*T^(3*a*(1-σ)+r*η)) := by
     calc
       _ ≤ ∑ q ∈ J, ((Wj q).card:ℝ) := by exact_mod_cast (Finset.card_le_card hcover).trans card_biUnion_le
-      _ ≤ ∑ _q ∈ J, C*T^(3*a*(1-σ)+72*η) := sum_le_sum hper
+      _ ≤ ∑ _q ∈ J, C*T^(3*a*(1-σ)+r*η) := sum_le_sum hper
       _ = _ := by simp
   have hrestore' : (smoothShortZeroCount η σ a δ T:ℝ) ≤ 2*(Cb*Real.log (2*T))*(W.card:ℝ) := by
     rw [← hcard] at hrestore
     simpa only [smoothShortZeroCount,Nat.cast_sum,S,W] using hrestore
   have hJ' : (J.card:ℝ) ≤ D*(Real.log T)^2 := hJ
-  have hWcard' : (W.card:ℝ) ≤ (D*(Real.log T)^2)*(C*T^(3*a*(1-σ)+72*η)) :=
+  have hWcard' : (W.card:ℝ) ≤ (D*(Real.log T)^2)*(C*T^(3*a*(1-σ)+r*η)) :=
     hWcard.trans (mul_le_mul_of_nonneg_right hJ' (by positivity))
   calc
-    _ ≤ 2*(Cb*Real.log (2*T))*(W.card:ℝ) := hrestore' 
-    _ ≤ 2*(Cb*(2*Real.log T))*((D*(Real.log T)^2)*(C*T^(3*a*(1-σ)+72*η))) := by
+    _ ≤ 2*(Cb*Real.log (2*T))*(W.card:ℝ) := hrestore'
+    _ ≤ 2*(Cb*(2*Real.log T))*((D*(Real.log T)^2)*(C*T^(3*a*(1-σ)+r*η))) := by
       gcongr
-    _ = (4*Cb*D*C)*((Real.log T)^3*T^(3*a*(1-σ)+72*η)) := by ring
-    _ ≤ (4*Cb*D*C)*(T^η*T^(3*a*(1-σ)+72*η)) := by
+    _ = (4*Cb*D*C)*((Real.log T)^3*T^(3*a*(1-σ)+r*η)) := by ring
+    _ ≤ (4*Cb*D*C)*(T^η*T^(3*a*(1-σ)+r*η)) := by
       gcongr
-    _ = (4*Cb*D*C)*T^(3*a*(1-σ)+73*η) := by rw [← Real.rpow_add hTp]; congr 2; ring
+    _ = (4*Cb*D*C)*T^(3*a*(1-σ)+(r+1)*η) := by rw [← Real.rpow_add hTp]; congr 2; ring
     _ ≤ _ := mul_le_mul_of_nonneg_right (by linarith) (by positivity)
+
+/-- All actual short-detected zeros with analytic multiplicity, using the
+proved sharp trace and full energy. -/
+theorem smoothShortZeroCount_sharp_bound {σ a η : ℝ}
+    (hw : PhysicalDetectorWindow σ a) (hc : SharpCountWindow σ a) (hη : 0 < η)
+    (hηa : η ≤ (1-3*a/2)/2) (δ : ℝ) :
+    ∃ C : ℝ, 0 < C ∧ ∀ᶠ T : ℝ in atTop,
+      (smoothShortZeroCount η σ a δ T:ℝ) ≤ C*T^(3*a*(1-σ)+73*η) := by
+  obtain ⟨C,hC,hquad⟩ := sharp_polynomial_count_window_loss hc hη hηa
+  simpa only [show (73:ℝ)=72+1 by norm_num] using
+    smoothShortZeroCount_of_window_loss (r := 72) hw hη δ ⟨C,2,hC,le_rfl,hquad⟩
 
 end Montgomery.RationalMoment.RightDetector.Physical

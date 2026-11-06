@@ -28,7 +28,7 @@ open Real Complex MeasureTheory Finset Filter Topology Set Summable
 
 -- may want to move this to a more globally accessible location
 
-private noncomputable def e (α : ℝ) : ℂ := exp (2 * π * I * α)
+noncomputable def e (α : ℝ) : ℂ := exp (2 * π * I * α)
 
 private theorem h2piI_ne_zero : 2 * π * I ≠ 0 := by norm_num
 
@@ -831,7 +831,7 @@ private theorem lemma_IBP_bound_abs_antitone {a b : ℝ} (hab : a < b) (g : ℝ 
 
 set_option backward.isDefEq.respectTransparency false in
 
-private theorem lemma_aachmonophase {a b : ℝ} (ha : a < b) (φ : ℝ → ℝ) (hφ_C1 : ContDiffOn ℝ 1 φ (Set.Icc a b))
+theorem lemma_aachmonophase {a b : ℝ} (ha : a < b) (φ : ℝ → ℝ) (hφ_C1 : ContDiffOn ℝ 1 φ (Set.Icc a b))
     (hφ'_ne0 : ∀ t ∈ Set.Icc a b, deriv φ t ≠ 0) (h g : ℝ → ℝ) (hg : ∀ t, g t = h t / deriv φ t)
     (hg_cont : ContinuousOn g (Set.Icc a b)) (hg_mon : AntitoneOn (fun t ↦ |g t|) (Set.Icc a b)) :
     ‖∫ t in Set.Icc a b, h t * e (φ t)‖ ≤ |g a| / π := by

@@ -182,7 +182,7 @@ theorem gmDyadicPlusSecondMoment_native
   intro M T W hM hT hSep hBase
   have hTOne : 1 ≤ T := hT₀.trans hT
   have hPowOne : 1 ≤ T ^ ε := Real.one_le_rpow hTOne hε.le
-  have hMOne : (1 : ℝ) ≤ M := by exact_mod_cast hM
+  have hMOne : oneR ≤ M := by exact_mod_cast hM
   have hEnd :
       (2 * (M : ℝ) + 1) * (W.card : ℝ) ^ 2 ≤
         3 * gmSecondMomentShape M T W := by
@@ -230,7 +230,7 @@ theorem gmDyadicPlusFourthMoment_native
   intro M T W hM hT hMT hSep hBase
   have hTOne : 1 ≤ T := hT₀.trans hT
   have hPowOne : 1 ≤ T ^ ε := Real.one_le_rpow hTOne hε.le
-  have hMOne : (1 : ℝ) ≤ M := by exact_mod_cast hM
+  have hMOne : oneR ≤ M := by exact_mod_cast hM
   have hEnd :
       (2 * (M : ℝ) + 1) * (W.card : ℝ) ^ 4 ≤
         3 * gmFourthMomentShape M T W := by
@@ -269,15 +269,15 @@ theorem gmDyadicPlusFourthMoment_native
 theorem sum_Icc_inv_sub_inv_succ
     {D U : ℕ} (hDU : D ≤ U) :
     (∑ d ∈ Finset.Icc D U,
-        ((1 : ℝ) / (d : ℝ) - 1 / ((d + 1 : ℕ) : ℝ))) =
+        (oneR / (d : ℝ) - 1 / ((d + 1 : ℕ) : ℝ))) =
       1 / (D : ℝ) - 1 / ((U + 1 : ℕ) : ℝ) := by
   rw [← Finset.Ico_succ_right_eq_Icc, Finset.sum_Ico_eq_sum_range]
   have hLen : D + (U + 1 - D) = U + 1 := by omega
   have htel := Finset.sum_range_sub'
-    (fun i : ℕ => (1 : ℝ) / ((D + i : ℕ) : ℝ)) (U + 1 - D)
+    (fun i : ℕ => oneR / ((D + i : ℕ) : ℝ)) (U + 1 - D)
   change
     (∑ i ∈ Finset.range (U + 1 - D),
-        ((1 : ℝ) / ((D + i : ℕ) : ℝ) -
+        (oneR / ((D + i : ℕ) : ℝ) -
           1 / ((D + i + 1 : ℕ) : ℝ))) =
       1 / (D : ℝ) - 1 / ((U + 1 : ℕ) : ℝ)
   simpa only [Nat.add_zero, Nat.add_assoc, hLen] using htel
@@ -287,26 +287,26 @@ first reciprocal.  This is the finite form of the integral test used in
 the `d ≥ D` summation in Guth--Maynard Lemma 11.9. -/
 theorem sum_Icc_one_div_sq_tail_le
     {D U : ℕ} (hD : 0 < D) :
-    (∑ d ∈ Finset.Icc D U, (1 : ℝ) / (d : ℝ) ^ 2) ≤
+    (∑ d ∈ Finset.Icc D U, oneR / (d : ℝ) ^ 2) ≤
       2 / (D : ℝ) := by
   by_cases hDU : D ≤ U
   · have hpoint : ∀ d ∈ Finset.Icc D U,
-        (1 : ℝ) / (d : ℝ) ^ 2 ≤
-          2 * ((1 : ℝ) / (d : ℝ) - 1 / ((d + 1 : ℕ) : ℝ)) := by
+        oneR / (d : ℝ) ^ 2 ≤
+          2 * (oneR / (d : ℝ) - 1 / ((d + 1 : ℕ) : ℝ)) := by
       intro d hd
-      have hdPos : (0 : ℝ) < d := by
+      have hdPos : zeroR < d := by
         exact_mod_cast hD.trans_le (Finset.mem_Icc.mp hd).1
-      have hdOne : (1 : ℝ) ≤ d := by
+      have hdOne : oneR ≤ d := by
         exact_mod_cast Nat.one_le_iff_ne_zero.mpr
           (Nat.ne_of_gt (hD.trans_le (Finset.mem_Icc.mp hd).1))
-      have hdsPos : (0 : ℝ) < d + 1 := by positivity
+      have hdsPos : zeroR < d + 1 := by positivity
       push_cast
       field_simp [hdPos.ne', hdsPos.ne']
       nlinarith
     calc
-      (∑ d ∈ Finset.Icc D U, (1 : ℝ) / (d : ℝ) ^ 2) ≤
+      (∑ d ∈ Finset.Icc D U, oneR / (d : ℝ) ^ 2) ≤
           ∑ d ∈ Finset.Icc D U,
-            2 * ((1 : ℝ) / (d : ℝ) -
+            2 * (oneR / (d : ℝ) -
               1 / ((d + 1 : ℕ) : ℝ)) :=
         Finset.sum_le_sum hpoint
       _ = 2 * (1 / (D : ℝ) - 1 / ((U + 1 : ℕ) : ℝ)) := by
@@ -314,7 +314,7 @@ theorem sum_Icc_one_div_sq_tail_le
         congr 1
         exact sum_Icc_inv_sub_inv_succ hDU
       _ ≤ 2 / (D : ℝ) := by
-        have : 0 ≤ (1 : ℝ) / ((U + 1 : ℕ) : ℝ) := by positivity
+        have : 0 ≤ oneR / ((U + 1 : ℕ) : ℝ) := by positivity
         calc
           2 * (1 / (D : ℝ) - 1 / ((U + 1 : ℕ) : ℝ)) ≤
               2 * (1 / (D : ℝ)) := by nlinarith
@@ -332,11 +332,11 @@ theorem sum_Icc_natDiv_le_harmonic
     exact Finset.mem_Icc.mpr
       ⟨hD.trans_le (Finset.mem_Icc.mp hd).1, (Finset.mem_Icc.mp hd).2⟩
   have hrecip :
-      (∑ d ∈ Finset.Icc D N, (1 : ℝ) / (d : ℝ)) ≤
+      (∑ d ∈ Finset.Icc D N, oneR / (d : ℝ)) ≤
         (((harmonic N : ℚ) : ℝ)) := by
     calc
-      (∑ d ∈ Finset.Icc D N, (1 : ℝ) / (d : ℝ)) ≤
-          ∑ d ∈ Finset.Icc 1 N, (1 : ℝ) / (d : ℝ) := by
+      (∑ d ∈ Finset.Icc D N, oneR / (d : ℝ)) ≤
+          ∑ d ∈ Finset.Icc 1 N, oneR / (d : ℝ) := by
         apply Finset.sum_le_sum_of_subset_of_nonneg hsub
         intro d hd hdnot
         positivity
@@ -349,7 +349,7 @@ theorem sum_Icc_natDiv_le_harmonic
         ∑ d ∈ Finset.Icc D N, (N : ℝ) / (d : ℝ) := by
       exact Finset.sum_le_sum fun d hd => Nat.cast_div_le
     _ = (N : ℝ) *
-        (∑ d ∈ Finset.Icc D N, (1 : ℝ) / (d : ℝ)) := by
+        (∑ d ∈ Finset.Icc D N, oneR / (d : ℝ)) := by
       rw [Finset.mul_sum]
       apply Finset.sum_congr rfl
       intro d hd
@@ -371,7 +371,7 @@ theorem sum_Icc_natDiv_sq_le
       exact Finset.sum_le_sum fun d hd =>
         pow_le_pow_left₀ (Nat.cast_nonneg (N / d)) Nat.cast_div_le 2
     _ = (N : ℝ) ^ 2 *
-        (∑ d ∈ Finset.Icc D N, (1 : ℝ) / (d : ℝ) ^ 2) := by
+        (∑ d ∈ Finset.Icc D N, oneR / (d : ℝ) ^ 2) := by
       rw [Finset.mul_sum]
       apply Finset.sum_congr rfl
       intro d hd
@@ -787,8 +787,8 @@ theorem gmGcdCutoff_bounds
   have hLower : x / 2 ≤ ((⌊x⌋₊ : ℕ) : ℝ) := by
     dsimp only [x] at hStrict ⊢
     nlinarith
-  have hPosCast : (0 : ℝ) < ((⌊x⌋₊ : ℕ) : ℝ) := by
-    have : (1 : ℝ) ≤ x / 2 := by
+  have hPosCast : zeroR < ((⌊x⌋₊ : ℕ) : ℝ) := by
+    have : oneR ≤ x / 2 := by
       dsimp only [x] at hTwo ⊢
       linarith
     exact lt_of_lt_of_le zero_lt_one (this.trans hLower)
@@ -801,7 +801,7 @@ theorem gmGcdCutoff_le_N
     gmGcdCutoff N T ≤ N := by
   have hUpper : (gmGcdCutoff N T : ℝ) ≤ (N : ℝ) ^ 2 / T := by
     exact Nat.floor_le (div_nonneg (sq_nonneg _) hT.le)
-  have hN0 : (0 : ℝ) < N := by exact_mod_cast hN
+  have hN0 : zeroR < N := by exact_mod_cast hN
   have hxN : (N : ℝ) ^ 2 / T ≤ N := by
     rw [div_le_iff₀ hT]
     nlinarith
@@ -825,8 +825,8 @@ theorem two_le_sq_div_of_three_quarters_le
           T ^ (3 / 4 : ℝ) * T ^ (3 / 4 : ℝ) := by ring
       _ = T ^ ((3 / 4 : ℝ) + 3 / 4) := by
         rw [Real.rpow_add hTpos]
-      _ = T ^ ((1 : ℝ) + 1 / 2) := by congr 1; ring
-      _ = T ^ (1 : ℝ) * T ^ (1 / 2 : ℝ) := Real.rpow_add hTpos 1 (1 / 2)
+      _ = T ^ (oneR + 1 / 2) := by congr 1; ring
+      _ = T ^ oneR * T ^ (1 / 2 : ℝ) := Real.rpow_add hTpos 1 (1 / 2)
       _ = T * T ^ (1 / 2 : ℝ) := by rw [Real.rpow_one]
   have htwoT : 2 * T ≤ (N : ℝ) ^ 2 := by
     calc
@@ -855,7 +855,7 @@ theorem harmonic_le_scale_rpow
     {η T : ℝ} {N : ℕ} (hη : 0 < η) (hT : 1 ≤ T)
     (hNT : (N : ℝ) ≤ T) :
     (((harmonic N : ℚ) : ℝ)) ≤ (1 + η⁻¹) * T ^ η := by
-  have hN0 : (0 : ℝ) ≤ N := Nat.cast_nonneg N
+  have hN0 : zeroR ≤ N := Nat.cast_nonneg N
   have hpowNT : (N : ℝ) ^ η ≤ T ^ η :=
     Real.rpow_le_rpow hN0 hNT hη.le
   have hpowOne : 1 ≤ T ^ η := Real.one_le_rpow hT hη.le
@@ -869,9 +869,9 @@ theorem gmCutoff_reciprocal_term_le
     (hTwo : 2 ≤ (N : ℝ) ^ 2 / T) :
     2 * (N : ℝ) ^ 2 / (gmGcdCutoff N T : ℝ) ≤ 4 * T := by
   obtain ⟨hD, hLower, hUpper⟩ := gmGcdCutoff_bounds hTwo
-  have hDcast : (0 : ℝ) < gmGcdCutoff N T := by exact_mod_cast hD
+  have hDcast : zeroR < gmGcdCutoff N T := by exact_mod_cast hD
   have hxLe : (N : ℝ) ^ 2 / T ≤ (gmGcdCutoff N T : ℝ) * 2 := by
-    exact (div_le_iff₀ (by norm_num : (0 : ℝ) < 2)).mp hLower
+    exact (div_le_iff₀ (by norm_num : zeroR < 2)).mp hLower
   have hsq : (N : ℝ) ^ 2 ≤ (gmGcdCutoff N T : ℝ) * 2 * T :=
     (div_le_iff₀ hT).mp hxLe
   rw [div_le_iff₀ hDcast]
@@ -1003,7 +1003,7 @@ theorem approxAddEnergy_le_three_card_cubed
     (W : Finset ℝ) (hSep : IsSeparated 1 W) :
     ApproxAddEnergy 1 W ≤ 3 * W.card ^ 3 := by
   have h := sum_approximateAdditiveQuadruples_le_three_mul_sum_triples
-    W hSep (fun _ _ _ => (1 : ℝ)) (by intros; norm_num)
+    W hSep (fun _ _ _ => oneR) (by intros; norm_num)
   have h' : (ApproxAddEnergy 1 W : ℝ) ≤ 3 * (W.card : ℝ) ^ 3 := by
     have h'' : (ApproxAddEnergy 1 W : ℝ) ≤
         3 * ((W.card : ℝ) * ((W.card : ℝ) * (W.card : ℝ))) := by
@@ -1039,7 +1039,7 @@ theorem gmLargePaperShapes_large_card
     exact_mod_cast approxAddEnergy_le_three_card_cubed W hSep
   have hsqrtW : T ^ (1 / 2 : ℝ) ≤ w ^ (3 / 4 : ℝ) := by
     have hm := Real.rpow_le_rpow (Real.rpow_nonneg hT0 _) hW
-      (by norm_num : (0 : ℝ) ≤ 3 / 4)
+      (by norm_num : zeroR ≤ 3 / 4)
     calc
       T ^ (1 / 2 : ℝ) = (T ^ (2 / 3 : ℝ)) ^ (3 / 4 : ℝ) := by
         rw [← Real.rpow_mul hT0]
@@ -1059,8 +1059,8 @@ theorem gmLargePaperShapes_large_card
       _ ≤ w * n := mul_le_mul hW hthirdN
         (Real.rpow_nonneg hT0 _) hw0
   have hEpow : E ^ (3 / 4 : ℝ) ≤ 3 * w ^ (9 / 4 : ℝ) := by
-    have hm := Real.rpow_le_rpow hE0 hE (by norm_num : (0 : ℝ) ≤ 3 / 4)
-    have hthree : (3 : ℝ) ^ (3 / 4 : ℝ) ≤ 3 :=
+    have hm := Real.rpow_le_rpow hE0 hE (by norm_num : zeroR ≤ 3 / 4)
+    have hthree : threeR ^ (3 / 4 : ℝ) ≤ 3 :=
       Real.rpow_le_self_of_one_le (by norm_num) (by norm_num)
     calc
       E ^ (3 / 4 : ℝ) ≤ (3 * w ^ 3) ^ (3 / 4 : ℝ) := hm
@@ -1103,7 +1103,7 @@ theorem gmLargePaperShapes_large_card
         lt_of_lt_of_le (Real.rpow_pos_of_pos (lt_of_lt_of_le zero_lt_one hTOne) _) hW
       have hpow : w ^ (9 / 4 : ℝ) * w * w ^ (3 / 4 : ℝ) = w ^ 4 := by
         calc
-          _ = w ^ (9 / 4 : ℝ) * w ^ (1 : ℝ) * w ^ (3 / 4 : ℝ) := by
+          _ = w ^ (9 / 4 : ℝ) * w ^ oneR * w ^ (3 / 4 : ℝ) := by
             rw [Real.rpow_one]
           _ = w ^ ((9 / 4 : ℝ) + 1) * w ^ (3 / 4 : ℝ) := by
             rw [← Real.rpow_add hwpos]
@@ -1161,11 +1161,11 @@ theorem gmLargePaperShapes_small_card
   have hE0 : 0 ≤ E := by dsimp only [E]; positivity
   have hElower : w ^ 2 ≤ E := by
     dsimp only [w, E]
-    exact_mod_cast card_sq_le_approxAddEnergy (by norm_num : (0 : ℝ) ≤ 1) W
+    exact_mod_cast card_sq_le_approxAddEnergy (by norm_num : zeroR ≤ 1) W
   have hEpos : 0 < E := lt_of_lt_of_le (by positivity : 0 < w ^ 2) hElower
   have hwsqrt : w ^ (3 / 4 : ℝ) ≤ T ^ (1 / 2 : ℝ) := by
     have hm := Real.rpow_le_rpow (le_of_lt hwpos) hW
-      (by norm_num : (0 : ℝ) ≤ 3 / 4)
+      (by norm_num : zeroR ≤ 3 / 4)
     calc
       w ^ (3 / 4 : ℝ) ≤ (T ^ (2 / 3 : ℝ)) ^ (3 / 4 : ℝ) := hm
       _ = T ^ (1 / 2 : ℝ) := by
@@ -1179,7 +1179,7 @@ theorem gmLargePaperShapes_small_card
     norm_num
   have hTrootN : T ≤ T ^ (1 / 2 : ℝ) * n := by
     calc
-      T = T ^ (1 : ℝ) := by rw [Real.rpow_one]
+      T = T ^ oneR := by rw [Real.rpow_one]
       _ ≤ T ^ (5 / 4 : ℝ) :=
         Real.rpow_le_rpow_of_exponent_le hTOne (by norm_num)
       _ = T ^ (1 / 2 : ℝ) * T ^ (3 / 4 : ℝ) := hpowT.symm
@@ -1207,7 +1207,7 @@ theorem gmLargePaperShapes_small_card
       gcongr
     have hw54 : w ≤ w ^ (5 / 4 : ℝ) := by
       calc
-        w = w ^ (1 : ℝ) := by rw [Real.rpow_one]
+        w = w ^ oneR := by rw [Real.rpow_one]
         _ ≤ w ^ (5 / 4 : ℝ) :=
           Real.rpow_le_rpow_of_exponent_le hwone (by norm_num)
     have h₂ : w * T ≤ a := by
@@ -1221,8 +1221,8 @@ theorem gmLargePaperShapes_small_card
     have hEupper : E ≤ 3 * w ^ 3 := by
       dsimp only [E, w]
       exact_mod_cast approxAddEnergy_le_three_card_cubed W hSep
-    have hm := Real.rpow_le_rpow hE0 hEupper (by norm_num : (0 : ℝ) ≤ 1 / 4)
-    have hthree : (3 : ℝ) ^ (1 / 4 : ℝ) ≤ 3 :=
+    have hm := Real.rpow_le_rpow hE0 hEupper (by norm_num : zeroR ≤ 1 / 4)
+    have hthree : threeR ^ (1 / 4 : ℝ) ≤ 3 :=
       Real.rpow_le_self_of_one_le (by norm_num) (by norm_num)
     calc
       E ^ (1 / 4 : ℝ) ≤ (3 * w ^ 3) ^ (1 / 4 : ℝ) := hm
@@ -1235,7 +1235,7 @@ theorem gmLargePaperShapes_small_card
       _ ≤ 3 * w := by
         gcongr
         calc
-          w ^ (3 / 4 : ℝ) ≤ w ^ (1 : ℝ) :=
+          w ^ (3 / 4 : ℝ) ≤ w ^ oneR :=
             Real.rpow_le_rpow_of_exponent_le hwone (by norm_num)
           _ = w := by rw [Real.rpow_one]
   have hET : E * T ≤ 3 * c := by
@@ -1285,7 +1285,7 @@ theorem gmLargePaperShapes_small_card
           (n * T ^ (1 / 4 : ℝ) * w ^ (21 / 8 : ℝ)) := by ring
   have hEroot : w ^ (1 / 2 : ℝ) ≤ E ^ (1 / 4 : ℝ) := by
     have hm := Real.rpow_le_rpow (by positivity : 0 ≤ w ^ 2) hElower
-      (by norm_num : (0 : ℝ) ≤ 1 / 4)
+      (by norm_num : zeroR ≤ 1 / 4)
     calc
       w ^ (1 / 2 : ℝ) = (w ^ 2) ^ (1 / 4 : ℝ) := by
         rw [← Real.rpow_natCast, ← Real.rpow_mul (le_of_lt hwpos)]
@@ -1303,7 +1303,7 @@ theorem gmLargePaperShapes_small_card
   have hwT : w ^ (3 / 4 : ℝ) * T ≤ n ^ 2 := by
     have hpow : T ^ (1 / 2 : ℝ) * T = T ^ (3 / 2 : ℝ) := by
       calc
-        T ^ (1 / 2 : ℝ) * T = T ^ (1 / 2 : ℝ) * T ^ (1 : ℝ) := by
+        T ^ (1 / 2 : ℝ) * T = T ^ (1 / 2 : ℝ) * T ^ oneR := by
           rw [Real.rpow_one]
         _ = T ^ ((1 / 2 : ℝ) + 1) := by rw [← Real.rpow_add hTpos]
         _ = T ^ (3 / 2 : ℝ) := by norm_num
@@ -1572,7 +1572,7 @@ theorem gmLargeGcdThirdMoment_native
   have hFour : 4 ≤ T := hT₀.trans hT
   have hTOne : 1 ≤ T := by linarith
   have hTpos : 0 < T := lt_of_lt_of_le zero_lt_one hTOne
-  have hNposCast : (0 : ℝ) < N :=
+  have hNposCast : zeroR < N :=
     lt_of_lt_of_le (Real.rpow_pos_of_pos hTpos _) hN
   have hNpos : 0 < N := by exact_mod_cast hNposCast
   have hDN := gmGcdCutoff_le_N hTpos hNpos hNT
@@ -1657,7 +1657,7 @@ theorem gmDiscreteRatioThirdMoment_physical_native
   have hTl : Tₗ ≤ T := (le_max_right Tₛ Tₗ).trans hT
   have hFour : 4 ≤ T := hTₗ.trans hTl
   have hTpos : 0 < T := by linarith
-  have hNposCast : (0 : ℝ) < N :=
+  have hNposCast : zeroR < N :=
     lt_of_lt_of_le (Real.rpow_pos_of_pos hTpos _) hN
   have hNpos : 0 < N := by exact_mod_cast hNposCast
   have hTwo := two_le_sq_div_of_three_quarters_le hFour hN
@@ -1728,7 +1728,7 @@ theorem energy_sqrt_term_rearrangement
   have hyoung : 2 * (L * B / V ^ 2) * Real.sqrt E ≤
       (L * B / V ^ 2) ^ 2 + E := by
     nlinarith [sq_nonneg (Real.sqrt E - L * B / V ^ 2)]
-  have htwo := mul_le_mul_of_nonneg_left hdiv (by norm_num : (0 : ℝ) ≤ 2)
+  have htwo := mul_le_mul_of_nonneg_left hdiv (by norm_num : zeroR ≤ 2)
   calc
     E ≤ 2 * (L * A / V ^ 2) + (L * B / V ^ 2) ^ 2 := by
       linarith
@@ -1768,7 +1768,7 @@ theorem gmEnergy_prop11_1_native
   have hFour : 4 ≤ T := hTₘ.trans hTm
   have hTOne : 1 ≤ T := by linarith
   have hTpos : 0 < T := lt_of_lt_of_le zero_lt_one hTOne
-  have hnpos : (0 : ℝ) < N := by exact_mod_cast hN
+  have hnpos : zeroR < N := by exact_mod_cast hN
   let n : ℝ := N
   let w : ℝ := W.card
   let E : ℝ := ApproxAddEnergy 1 W
@@ -1930,12 +1930,12 @@ theorem gmCubicSelectedScale_first_le
         (gmCubicAffineTerminalScale p.2 : ℝ) ^ 3 ≤
       4 * 128 ^ 3 * T ^ (2 * (1 + η)) := by
   have hM := twoPow_second_dyadicIndex_le_two_ratio hT hη hN hNT hp
-  have hNpos : (0 : ℝ) < N := by exact_mod_cast hN
-  have hMpos : (0 : ℝ) < ((2 ^ p.2 : ℕ) : ℝ) := by positivity
+  have hNpos : zeroR < N := by exact_mod_cast hN
+  have hMpos : zeroR < ((2 ^ p.2 : ℕ) : ℝ) := by positivity
   have hNM : (N : ℝ) * ((2 ^ p.2 : ℕ) : ℝ) ≤ 2 * T ^ (1 + η) := by
     rw [le_div_iff₀ hNpos] at hM
     nlinarith
-  have hsq := mul_self_le_mul_self (by positivity : (0 : ℝ) ≤ (N : ℝ) * ((2 ^ p.2 : ℕ) : ℝ)) hNM
+  have hsq := mul_self_le_mul_self (by positivity : zeroR ≤ (N : ℝ) * ((2 ^ p.2 : ℕ) : ℝ)) hNM
   calc
     (N : ℝ) ^ 2 / ((2 ^ p.2 : ℕ) : ℝ) *
           (gmCubicAffineTerminalScale p.2 : ℝ) ^ 3 =
@@ -1961,8 +1961,8 @@ theorem gmCubicSelectedScale_second_le
         (gmCubicAffineTerminalScale p.2 : ℝ) ^ 2 ≤
       2 * 128 ^ 2 * T ^ (1 + η) * (N : ℝ) := by
   have hM := twoPow_second_dyadicIndex_le_two_ratio hT hη hN hNT hp
-  have hNpos : (0 : ℝ) < N := by exact_mod_cast hN
-  have hMpos : (0 : ℝ) < ((2 ^ p.2 : ℕ) : ℝ) := by positivity
+  have hNpos : zeroR < N := by exact_mod_cast hN
+  have hMpos : zeroR < ((2 ^ p.2 : ℕ) : ℝ) := by positivity
   have hNM : (N : ℝ) * ((2 ^ p.2 : ℕ) : ℝ) ≤ 2 * T ^ (1 + η) := by
     rw [le_div_iff₀ hNpos] at hM
     nlinarith
@@ -2014,7 +2014,7 @@ theorem gmCubicS3_prop10_1_physical_explicit
   refine ⟨C, K, T₀, hC, hK, hT₀, ?_⟩
   intro T N W hT hN hNT hNlower hSep hBase
   obtain ⟨p, hp, hraw⟩ := hselected hT hN hNT hNlower hSep hBase
-  have hTone : (1 : ℝ) ≤ T := (by norm_num : (1 : ℝ) ≤ 4096).trans (hT₀.trans hT)
+  have hTone : oneR ≤ T := (by norm_num : oneR ≤ 4096).trans (hT₀.trans hT)
   have hTpos : 0 < T := zero_lt_one.trans_le hTone
   have hη0 : 0 ≤ η := hηpos.le
   have hn0 : 0 ≤ (N : ℝ) := by positivity
@@ -2241,7 +2241,7 @@ theorem gmCubicS3_prop10_1_native
     ((le_max_right (Real.exp 1) _).trans ((le_max_right T₁ _).trans hT))
   have hTt : Ttail ≤ T := (le_max_right Tmain Ttail).trans
     ((le_max_right (Real.exp 1) _).trans ((le_max_right T₁ _).trans hT))
-  have hTone : (1 : ℝ) ≤ T := (by norm_num : (1 : ℝ) ≤ Real.exp 1).trans hExp
+  have hTone : oneR ≤ T := (by norm_num : oneR ≤ Real.exp 1).trans hExp
   have hTpos : 0 < T := zero_lt_one.trans_le hTone
   have hlogNat := gmCubicDyadicLogFactor_sq_le_realLog_sq
     (η := η) (T := T) (N := N) hExp hηpos.le (hη.trans (by norm_num)) hN hNT
@@ -2255,7 +2255,7 @@ theorem gmCubicS3_prop10_1_native
         36 * T := by
     calc
       _ ≤ 36 * (Real.log T) ^ 2 := hlogNat
-      _ ≤ 36 * T ^ (1 : ℝ) := by gcongr
+      _ ≤ 36 * T ^ oneR := by gcongr
       _ = 36 * T := by rw [Real.rpow_one]
   have hloss₁ : ε / 2 + (2 + 3 * η + 3 * μ) ≤ 2 + ε := by
     dsimp only [μ]
@@ -2390,17 +2390,17 @@ theorem gmCubicS3_prop11_2_native
   intro N T σ W b hN hT hNT hNscale hSep hBase hb hLarge
   have hT₁' : T₁ ≤ T := (le_max_left T₁ T₂).trans hT
   have hT₂' : T₂ ≤ T := (le_max_right T₁ T₂).trans hT
-  have hTone : (1 : ℝ) ≤ T := (by norm_num : (1 : ℝ) ≤ 4096).trans (hT₁.trans hT₁')
+  have hTone : oneR ≤ T := (by norm_num : oneR ≤ 4096).trans (hT₁.trans hT₁')
   have hTpos : 0 < T := zero_lt_one.trans_le hTone
-  have hnpos : (0 : ℝ) < N := by exact_mod_cast hN
-  have hn0 : (0 : ℝ) ≤ N := hnpos.le
+  have hnpos : zeroR < N := by exact_mod_cast hN
+  have hn0 : zeroR ≤ N := hnpos.le
   by_cases hWempty : W = ∅
   · subst W
     simp [gmCubicS3]
     positivity
   have hWcard : 0 < W.card := Finset.card_pos.mpr (Finset.nonempty_iff_ne_empty.mpr hWempty)
-  have hwpos : (0 : ℝ) < W.card := by exact_mod_cast hWcard
-  have hw0 : (0 : ℝ) ≤ W.card := hwpos.le
+  have hwpos : zeroR < W.card := by exact_mod_cast hWcard
+  have hw0 : zeroR ≤ W.card := hwpos.le
   let w : ℝ := W.card
   let n : ℝ := N
   let E : ℝ := ApproxAddEnergy 1 W
@@ -2439,19 +2439,19 @@ theorem gmCubicS3_prop11_2_native
       w * n ^ (3 - 2 * σ) := by
     have hr : Real.sqrt X₁ = w ^ (1 / 2 : ℝ) * n ^ (2 - 2 * σ) := by
       dsimp only [X₁]
-      rw [show w = w ^ (1 : ℝ) by rw [Real.rpow_one],
+      rw [show w = w ^ oneR by rw [Real.rpow_one],
         sqrt_rpow_mul_rpow hw0 hn0]
       simp only [Real.rpow_one]
       dsimp only [n]
       rw [show (4 - 4 * σ) / 2 = 2 - 2 * σ by ring]
     calc
       n * Real.sqrt w * Real.sqrt X₁ =
-          n ^ (1 : ℝ) * w ^ (1 / 2 : ℝ) *
+          n ^ oneR * w ^ (1 / 2 : ℝ) *
             (w ^ (1 / 2 : ℝ) * n ^ (2 - 2 * σ)) := by
         rw [Real.rpow_one, Real.sqrt_eq_rpow, hr]
       _ = (w ^ (1 / 2 : ℝ) * w ^ (1 / 2 : ℝ)) *
-          (n ^ (1 : ℝ) * n ^ (2 - 2 * σ)) := by ring
-      _ = w ^ ((1 / 2 : ℝ) + 1 / 2) * n ^ ((1 : ℝ) + (2 - 2 * σ)) := by
+          (n ^ oneR * n ^ (2 - 2 * σ)) := by ring
+      _ = w ^ ((1 / 2 : ℝ) + 1 / 2) * n ^ (oneR + (2 - 2 * σ)) := by
         rw [← Real.rpow_add hwpos, ← Real.rpow_add hnpos]
       _ = w * n ^ (3 - 2 * σ) := by
         rw [show (1 / 2 : ℝ) + 1 / 2 = 1 by norm_num, Real.rpow_one]
@@ -2468,40 +2468,40 @@ theorem gmCubicS3_prop11_2_native
         show (1 - 2 * σ) / 2 = 1 / 2 - σ by ring]
     calc
       n * Real.sqrt w * Real.sqrt X₂ =
-          n ^ (1 : ℝ) * w ^ (1 / 2 : ℝ) *
+          n ^ oneR * w ^ (1 / 2 : ℝ) *
             (w ^ (21 / 16 : ℝ) * T ^ (1 / 8 : ℝ) * n ^ (1 / 2 - σ)) := by
         rw [Real.rpow_one, Real.sqrt_eq_rpow, hr]
       _ = T ^ (1 / 8 : ℝ) *
           (w ^ (1 / 2 : ℝ) * w ^ (21 / 16 : ℝ)) *
-          (n ^ (1 : ℝ) * n ^ (1 / 2 - σ)) := by ring
+          (n ^ oneR * n ^ (1 / 2 - σ)) := by ring
       _ = T ^ (1 / 8 : ℝ) * w ^ ((1 / 2 : ℝ) + 21 / 16) *
-          n ^ ((1 : ℝ) + (1 / 2 - σ)) := by
+          n ^ (oneR + (1 / 2 - σ)) := by
         rw [← Real.rpow_add hwpos, ← Real.rpow_add hnpos]
       _ = _ := by congr 2 <;> ring_nf
   have hroot₃ : n * Real.sqrt w * Real.sqrt X₃ =
       w ^ 2 * n ^ (3 / 2 - σ) := by
     have hr : Real.sqrt X₃ = w ^ (3 / 2 : ℝ) * n ^ (1 / 2 - σ) := by
       dsimp only [X₃]
-      rw [show w ^ (3 : ℕ) = w ^ (3 : ℝ) by norm_num [Real.rpow_natCast]]
+      rw [show w ^ (3 : ℕ) = w ^ threeR by norm_num [Real.rpow_natCast]]
       rw [sqrt_rpow_mul_rpow hw0 hn0]
-      rw [show (3 : ℝ) / 2 = 3 / 2 by rfl,
+      rw [show threeR / 2 = 3 / 2 by rfl,
         show (1 - 2 * σ) / 2 = 1 / 2 - σ by ring]
     calc
       n * Real.sqrt w * Real.sqrt X₃ =
-          n ^ (1 : ℝ) * w ^ (1 / 2 : ℝ) *
+          n ^ oneR * w ^ (1 / 2 : ℝ) *
             (w ^ (3 / 2 : ℝ) * n ^ (1 / 2 - σ)) := by
         rw [Real.rpow_one, Real.sqrt_eq_rpow, hr]
       _ = (w ^ (1 / 2 : ℝ) * w ^ (3 / 2 : ℝ)) *
-          (n ^ (1 : ℝ) * n ^ (1 / 2 - σ)) := by ring
-      _ = w ^ ((1 / 2 : ℝ) + 3 / 2) * n ^ ((1 : ℝ) + (1 / 2 - σ)) := by
+          (n ^ oneR * n ^ (1 / 2 - σ)) := by ring
+      _ = w ^ ((1 / 2 : ℝ) + 3 / 2) * n ^ (oneR + (1 / 2 - σ)) := by
         rw [← Real.rpow_add hwpos, ← Real.rpow_add hnpos]
       _ = _ := by
         rw [show (1 / 2 : ℝ) + 3 / 2 = 2 by norm_num,
-          show (1 : ℝ) + (1 / 2 - σ) = 3 / 2 - σ by ring]
+          show oneR + (1 / 2 - σ) = 3 / 2 - σ by ring]
         norm_num [Real.rpow_natCast]
   have htw : Real.sqrt w * w = w ^ (3 / 2 : ℝ) := by
     calc
-      Real.sqrt w * w = w ^ (1 / 2 : ℝ) * w ^ (1 : ℝ) := by
+      Real.sqrt w * w = w ^ (1 / 2 : ℝ) * w ^ oneR := by
         rw [Real.sqrt_eq_rpow, Real.rpow_one]
       _ = w ^ ((1 / 2 : ℝ) + 1) := (Real.rpow_add hwpos _ _).symm
       _ = _ := by norm_num
@@ -2538,7 +2538,7 @@ theorem gmCubicS3_prop11_2_native
             T * (n * Real.sqrt w * Real.sqrt X₂)) := by
         rw [show T ^ (1 + μ) = T * T ^ μ by
           calc
-            T ^ (1 + μ) = T ^ (1 : ℝ) * T ^ μ := Real.rpow_add hTpos _ _
+            T ^ (1 + μ) = T ^ oneR * T ^ μ := Real.rpow_add hTpos _ _
             _ = T * T ^ μ := by rw [Real.rpow_one]]
         ring
       _ = C₁ * D * (T ^ μ * T ^ μ) *
@@ -2552,8 +2552,8 @@ theorem gmCubicS3_prop11_2_native
             T ^ (9 / 8 : ℝ) * w ^ (29 / 16 : ℝ) * n ^ (3 / 2 - σ)) := by
         have hTnine : T * T ^ (1 / 8 : ℝ) = T ^ (9 / 8 : ℝ) := by
           calc
-            T * T ^ (1 / 8 : ℝ) = T ^ (1 : ℝ) * T ^ (1 / 8 : ℝ) := by rw [Real.rpow_one]
-            _ = T ^ ((1 : ℝ) + 1 / 8) := (Real.rpow_add hTpos _ _).symm
+            T * T ^ (1 / 8 : ℝ) = T ^ oneR * T ^ (1 / 8 : ℝ) := by rw [Real.rpow_one]
+            _ = T ^ (oneR + 1 / 8) := (Real.rpow_add hTpos _ _).symm
             _ = _ := by norm_num
         have hinside :
             T * (w * n ^ (3 - 2 * σ)) +
@@ -2579,7 +2579,7 @@ theorem gmCubicS3_prop11_2_native
         C₁ / T ^ 90 := by
       have hTtwo : T ^ (2 + μ) = T ^ μ * T ^ 2 := by
         calc
-          T ^ (2 + μ) = T ^ μ * T ^ (2 : ℝ) := by
+          T ^ (2 + μ) = T ^ μ * T ^ twoR := by
             rw [← Real.rpow_add hTpos]
             congr 1
             ring

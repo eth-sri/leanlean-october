@@ -90,9 +90,6 @@ variable (Q:Ideal Eis) (c:Eis) (hc:c≠0) [Fintype (Eis⧸Ideal.span {c})]
     (h:Eis⧸Ideal.span {c}) (G:FixedFourierGeometry c h)
     (A:Finset (FreePrimeIndex D.movingIdeal (Q*Ideal.span {(72:Eis)})))
 
-abbrev activeStratum :=
-  freePrimaryControlledStratum D.movingIdeal (Q*Ideal.span {(72:Eis)}) D.movingSupported c hcQ h G A
-
 end GoodMaskRowData
 end
 section

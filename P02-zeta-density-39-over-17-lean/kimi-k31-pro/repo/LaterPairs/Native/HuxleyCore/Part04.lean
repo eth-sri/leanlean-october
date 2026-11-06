@@ -51,27 +51,27 @@ private theorem middleOriginal_approximateModelPhase_general_original_one_hundre
   classical
   obtain ⟨δ,η₀,B,C₀,hδ,hη₀,hηcap,hB,hC₀,hsource⟩ :=
     middleOriginal_approximateModelPhase_enlarged_general_correlation_moment hσ hε
-  let A₀ := (18:ℝ)^12*(2:ℝ)^11
+  let A₀ := (18:ℝ)^12*twoR^11
   have hA₀ : 0≤A₀ := by dsimp only [A₀]; norm_num
-  let D := (2:ℝ)^154*A₀^6*C₀^6
+  let D := twoR^154*A₀^6*C₀^6
   have hD : 0≤D := mul_nonneg
     (mul_nonneg (by norm_num) (pow_nonneg hA₀ 6)) (pow_nonneg (zero_le_one.trans hC₀) 6)
-  let C := max C₀ ((2:ℝ)^143*(D+6^144))
+  let C := max C₀ (twoR^143*(D+6^144))
   have hCC₀ : C₀≤C := le_max_left _ _
-  have hCoeff : (2:ℝ)^143*(D+6^144)≤C := le_max_right _ _
+  have hCoeff : twoR^143*(D+6^144)≤C := le_max_right _ _
   have hC : 1≤C := hC₀.trans hCC₀
   refine ⟨δ,η₀,B,C,hδ,hη₀,hηcap,hB,hC,?_⟩
   intro X M F n N H a L hX hM hF hN8 hN2 hH2 hHeta hThreshold
     hBN hRN hNR hNM hFour hTen ha hb
   have hXp := zero_lt_one.trans_le hX
   have hMp := zero_lt_one.trans_le hM
-  have hNp : (0:ℝ)<N := by exact_mod_cast (show 0<N by omega)
-  have hHp : (0:ℝ)<H := by exact_mod_cast (show 0<H by omega)
+  have hNp : zeroR<N := by exact_mod_cast (show 0<N by omega)
+  have hHp : zeroR<H := by exact_mod_cast (show 0<H by omega)
   have hHM : (H:ℝ)≤M := by
     calc
       _ ≤ η₀*M := hHeta
-      _ ≤ (1:ℝ)*M := mul_le_mul_of_nonneg_right
-        (hηcap.trans (by norm_num : (1:ℝ)/8≤1)) hMp.le
+      _ ≤ oneR*M := mul_le_mul_of_nonneg_right
+        (hηcap.trans (by norm_num : oneR/8≤1)) hMp.le
       _ = M := one_mul M
   have hLM : (L:ℝ)+1≤2*M := by
     have hb' : (a:ℝ)+(L:ℝ)≤2*M := by simpa only [Nat.cast_add] using hb
@@ -79,8 +79,8 @@ private theorem middleOriginal_approximateModelPhase_general_original_one_hundre
   obtain ⟨Fext,hsharp,hcorr⟩ := hsource M F hM hF
   obtain ⟨k,hk,hkH,hweyl⟩ := upperOriginal_exists_source_dyadic_twenty_fourth_power
     Fext X M a L H hMp hH2 hHM hLM
-  have hKp : (0:ℝ)<k := by exact_mod_cast hk
-  have hK1 : (1:ℝ)≤k := by exact_mod_cast (show 1≤k by omega)
+  have hKp : zeroR<k := by exact_mod_cast hk
+  have hK1 : oneR≤k := by exact_mod_cast (show 1≤k by omega)
   have hKH : (k:ℝ)≤H := by exact_mod_cast (show k≤H by omega)
   have hKM : (k:ℝ)≤M := hKH.trans hHM
   let R := Real.sqrt (M^4/(X*(k:ℝ)*(N:ℝ)))
@@ -104,11 +104,11 @@ private theorem middleOriginal_approximateModelPhase_general_original_one_hundre
     (div_le_iff₀ hMp).mpr (mul_le_mul_of_nonneg_left hKM hXp.le)
   have hEtaK : (k:ℝ)/M≤η₀ := (div_le_iff₀ hMp).mpr (hKH.trans hHeta)
   let E := (k:ℝ)*M/Real.sqrt (N:ℝ)+(k:ℝ)*M*R^2/(N:ℝ)^2+
-    (k:ℝ)*(N:ℝ)*((N:ℝ)/R)^((2:ℝ)/3)
+    (k:ℝ)*(N:ℝ)*((N:ℝ)/R)^(twoR/3)
   let Main := (k:ℝ)^11*M^11*(N:ℝ)^2/R^7+(k:ℝ)^11*(k:ℝ)*M^11/R^5+
-    (k:ℝ)^12*M^12/((N:ℝ)*R^7)*(R/(N:ℝ))^((2:ℝ)/3)+
-    (k:ℝ)^12*M^10*(N:ℝ)/R^3*(R/(N:ℝ))^((2:ℝ)/3)+
-    (k:ℝ)^12*M^12/((N:ℝ)^4*R^2)*(R/(N:ℝ))^((2:ℝ)/3)
+    (k:ℝ)^12*M^12/((N:ℝ)*R^7)*(R/(N:ℝ))^(twoR/3)+
+    (k:ℝ)^12*M^10*(N:ℝ)/R^3*(R/(N:ℝ))^(twoR/3)+
+    (k:ℝ)^12*M^12/((N:ℝ)^4*R^2)*(R/(N:ℝ))^(twoR/3)
   let Z := ∑ j∈Finset.range k,‖sourceShiftCorrelation Fext X M a L (k+j)‖
   have hZ0 : 0≤Z := Finset.sum_nonneg (fun _ _ => norm_nonneg _)
   have hZbase : Z^12≤C₀*(X*k/M)^ε*(E^12+Main) :=
@@ -128,8 +128,8 @@ private theorem middleOriginal_approximateModelPhase_general_original_one_hundre
         X^19*(H:ℝ)^19*M^68*(N:ℝ)^9+X^7*(H:ℝ)^7*M^104*(N:ℝ)^9+
         X^4*(H:ℝ)^4*M^128/(N:ℝ)^24))
   have hPoly : 0≤Poly := by dsimp only [Poly]; positivity
-  have hClog : (0:ℝ)≤Nat.clog 2 H := Nat.cast_nonneg _
-  have hClogPlus : (1:ℝ)≤1+(Nat.clog 2 H:ℝ) := le_add_of_nonneg_right hClog
+  have hClog : zeroR≤Nat.clog 2 H := Nat.cast_nonneg _
+  have hClogPlus : oneR≤1+(Nat.clog 2 H:ℝ) := le_add_of_nonneg_right hClog
   have hClogPlus0 := zero_le_one.trans hClogPlus
   have hXpow0 : 0≤X^(6*ε) := Real.rpow_nonneg hXp.le _
   have hSext : ‖Expdb.exponentialSumAt Fext X M a (a+L)‖^144≤
@@ -151,10 +151,10 @@ private theorem middleOriginal_approximateModelPhase_general_original_one_hundre
         mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hLog hD) hXpow0) hPoly
       _ = _ := by dsimp only [W]; simp only [mul_assoc]
-  have hOriginal := middleOriginal_sharp_extension_power_bound_144 hD hW hPoly (by norm_num : (0:ℝ)≤6)
+  have hOriginal := middleOriginal_sharp_extension_power_bound_144 hD hW hPoly (by norm_num : zeroR≤6)
     (hsharp X a (a+L) ha hb) hSext'
   calc
-    _ ≤ (2:ℝ)^143*(D+6^144)*W*(1+Poly) := hOriginal
+    _ ≤ twoR^143*(D+6^144)*W*(1+Poly) := hOriginal
     _ ≤ C*W*(1+Poly) := mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_right hCoeff (zero_le_one.trans hW))
         (add_nonneg zero_le_one hPoly)
@@ -177,53 +177,53 @@ private theorem middleOriginal_general_nine_monomials_power_window
     (hPair : 4+4*h+128*u-24*ν≤ξ) :
     1+(M^144/H^72+((M^144/N^36+M^432/(H^72*X^72*N^216)+X^24*H^24*N^144/M^24)+
       (X^21*H^15*M^54*N^33+X^15*H^15*M^78*N^15+
-        X^19*H^19*M^68*N^9+X^7*H^7*M^104*N^9+X^4*H^4*M^128/N^24))) ≤ (10*(2:ℝ)^288)*X^ξ := by
+        X^19*H^19*M^68*N^9+X^7*H^7*M^104*N^9+X^4*H^4*M^128/N^24))) ≤ (10*twoR^288)*X^ξ := by
   have hXp := zero_lt_one.trans_le hX
   have hMp : 0<M := (Real.rpow_pos_of_pos hXp ℓ).trans_le hMl
   have hNp : 0<N := (div_pos (Real.rpow_pos_of_pos hXp ν) (by norm_num)).trans_le hNl
   have hHp : 0<H := (div_pos (Real.rpow_pos_of_pos hXp h) (by norm_num)).trans_le hHl
   have hconst {b : ℝ} {j : ℕ} (hj : j≤288) (hb : b≤ξ) :
-      (2:ℝ)^j*X^b≤(2:ℝ)^288*X^ξ :=
+      twoR^j*X^b≤twoR^288*X^ξ :=
     mul_le_mul (pow_le_pow_right₀ (by norm_num) hj)
       (Real.rpow_le_rpow_of_exponent_le hX hb) (Real.rpow_nonneg hXp.le _) (by positivity)
-  have h₀ : 1≤(2:ℝ)^288*X^ξ :=
+  have h₀ : 1≤twoR^288*X^ξ :=
     (Real.one_le_rpow hX hξ).trans
       (le_mul_of_one_le_left (Real.rpow_nonneg hXp.le _) (one_le_pow₀ (by norm_num)))
-  have h₁ : M^144/H^72≤(2:ℝ)^288*X^ξ := by
+  have h₁ : M^144/H^72≤twoR^288*X^ξ := by
     calc
       _ ≤ (X^u)^144/(X^h/2)^72 := by gcongr
-      _ = (2:ℝ)^72*((X^u)^144/(X^h)^72) := by field_simp
-      _ = (2:ℝ)^72*X^(144*u-72*h) := by
+      _ = twoR^72*((X^u)^144/(X^h)^72) := by field_simp
+      _ = twoR^72*X^(144*u-72*h) := by
         simp only [←Real.rpow_mul_natCast hXp.le]
         simp only [←Real.rpow_sub hXp]
-        apply congrArg (fun y : ℝ => (2:ℝ)^72*X^y)
+        apply congrArg (fun y : ℝ => twoR^72*X^y)
         push_cast
         ring
       _ ≤ _ := hconst (by norm_num) hDiag
-  have h₂ : M^144/N^36≤(2:ℝ)^288*X^ξ := by
+  have h₂ : M^144/N^36≤twoR^288*X^ξ := by
     calc
       _ ≤ (X^u)^144/(X^ν/2)^36 := by gcongr
-      _ = (2:ℝ)^36*((X^u)^144/(X^ν)^36) := by field_simp
-      _ = (2:ℝ)^36*X^(144*u-36*ν) := by
+      _ = twoR^36*((X^u)^144/(X^ν)^36) := by field_simp
+      _ = twoR^36*X^(144*u-36*ν) := by
         simp only [←Real.rpow_mul_natCast hXp.le]
         simp only [←Real.rpow_sub hXp]
-        apply congrArg (fun y : ℝ => (2:ℝ)^36*X^y)
+        apply congrArg (fun y : ℝ => twoR^36*X^y)
         push_cast
         ring
       _ ≤ _ := hconst (by norm_num) hSqrt
-  have h₃ : M^432/(H^72*X^72*N^216)≤(2:ℝ)^288*X^ξ := by
+  have h₃ : M^432/(H^72*X^72*N^216)≤twoR^288*X^ξ := by
     calc
       _ ≤ (X^u)^432/((X^h/2)^72*X^72*(X^ν/2)^216) := by gcongr
-      _ = (2:ℝ)^288*((X^u)^432/((X^h)^72*X^72*(X^ν)^216)) := by field_simp
-      _ = (2:ℝ)^288*X^(432*u-72*h-72-216*ν) := by
+      _ = twoR^288*((X^u)^432/((X^h)^72*X^72*(X^ν)^216)) := by field_simp
+      _ = twoR^288*X^(432*u-72*h-72-216*ν) := by
         simp only [←Real.rpow_mul_natCast hXp.le]
         rw [←Real.rpow_natCast X 72]
         simp only [←Real.rpow_add hXp,←Real.rpow_sub hXp]
-        apply congrArg (fun y : ℝ => (2:ℝ)^288*X^y)
+        apply congrArg (fun y : ℝ => twoR^288*X^y)
         push_cast
         ring
       _ ≤ _ := hconst (by norm_num) hCubic
-  have h₄ : X^24*H^24*N^144/M^24≤(2:ℝ)^288*X^ξ := by
+  have h₄ : X^24*H^24*N^144/M^24≤twoR^288*X^ξ := by
     calc
       _ ≤ X^24*(X^h)^24*(X^ν)^144/(X^ℓ)^24 := by gcongr
       _ = X^(24+24*h+144*ν-24*ℓ) := by
@@ -234,7 +234,7 @@ private theorem middleOriginal_general_nine_monomials_power_window
         push_cast
         ring
       _ ≤ _ := by simpa only [pow_zero,one_mul] using hconst (j:=0) (by omega) hEndpoint
-  have h₅ : X^21*H^15*M^54*N^33≤(2:ℝ)^288*X^ξ := by
+  have h₅ : X^21*H^15*M^54*N^33≤twoR^288*X^ξ := by
     calc
       _ ≤ X^21*(X^h)^15*(X^u)^54*(X^ν)^33 := by gcongr
       _ = X^(21+15*h+54*u+33*ν) := by
@@ -245,7 +245,7 @@ private theorem middleOriginal_general_nine_monomials_power_window
         push_cast
         ring
       _ ≤ _ := by simpa only [pow_zero,one_mul] using hconst (j:=0) (by omega) hType1
-  have h₆ : X^15*H^15*M^78*N^15≤(2:ℝ)^288*X^ξ := by
+  have h₆ : X^15*H^15*M^78*N^15≤twoR^288*X^ξ := by
     calc
       _ ≤ X^15*(X^h)^15*(X^u)^78*(X^ν)^15 := by gcongr
       _ = X^(15+15*h+78*u+15*ν) := by
@@ -256,7 +256,7 @@ private theorem middleOriginal_general_nine_monomials_power_window
         push_cast
         ring
       _ ≤ _ := by simpa only [pow_zero,one_mul] using hconst (j:=0) (by omega) hType2
-  have h₇ : X^19*H^19*M^68*N^9≤(2:ℝ)^288*X^ξ := by
+  have h₇ : X^19*H^19*M^68*N^9≤twoR^288*X^ξ := by
     calc
       _ ≤ X^19*(X^h)^19*(X^u)^68*(X^ν)^9 := by gcongr
       _ = X^(19+19*h+68*u+9*ν) := by
@@ -267,7 +267,7 @@ private theorem middleOriginal_general_nine_monomials_power_window
         push_cast
         ring
       _ ≤ _ := by simpa only [pow_zero,one_mul] using hconst (j:=0) (by omega) hType3
-  have h₈ : X^7*H^7*M^104*N^9≤(2:ℝ)^288*X^ξ := by
+  have h₈ : X^7*H^7*M^104*N^9≤twoR^288*X^ξ := by
     calc
       _ ≤ X^7*(X^h)^7*(X^u)^104*(X^ν)^9 := by gcongr
       _ = X^(7+7*h+104*u+9*ν) := by
@@ -278,28 +278,28 @@ private theorem middleOriginal_general_nine_monomials_power_window
         push_cast
         ring
       _ ≤ _ := by simpa only [pow_zero,one_mul] using hconst (j:=0) (by omega) hType4
-  have h₉ : X^4*H^4*M^128/N^24≤(2:ℝ)^288*X^ξ := by
+  have h₉ : X^4*H^4*M^128/N^24≤twoR^288*X^ξ := by
     calc
       _ ≤ X^4*(X^h)^4*(X^u)^128/(X^ν/2)^24 := by gcongr
-      _ = (2:ℝ)^24*(X^4*(X^h)^4*(X^u)^128/(X^ν)^24) := by field_simp
-      _ = (2:ℝ)^24*X^(4+4*h+128*u-24*ν) := by
+      _ = twoR^24*(X^4*(X^h)^4*(X^u)^128/(X^ν)^24) := by field_simp
+      _ = twoR^24*X^(4+4*h+128*u-24*ν) := by
         simp only [←Real.rpow_mul_natCast hXp.le]
         rw [←Real.rpow_natCast X 4]
         simp only [←Real.rpow_add hXp,←Real.rpow_sub hXp]
-        apply congrArg (fun y : ℝ => (2:ℝ)^24*X^y)
+        apply congrArg (fun y : ℝ => twoR^24*X^y)
         push_cast
         ring
       _ ≤ _ := hconst (by norm_num) hPair
   have hTen (d : ℝ) : d+(d+((d+d+d)+(d+d+d+d+d)))=10*d := by ring
   calc
-    _ ≤ (2:ℝ)^288*X^ξ+((2:ℝ)^288*X^ξ+
-        (((2:ℝ)^288*X^ξ+(2:ℝ)^288*X^ξ+(2:ℝ)^288*X^ξ)+
-          ((2:ℝ)^288*X^ξ+(2:ℝ)^288*X^ξ+(2:ℝ)^288*X^ξ+
-            (2:ℝ)^288*X^ξ+(2:ℝ)^288*X^ξ))) :=
+    _ ≤ twoR^288*X^ξ+(twoR^288*X^ξ+
+        ((twoR^288*X^ξ+twoR^288*X^ξ+twoR^288*X^ξ)+
+          (twoR^288*X^ξ+twoR^288*X^ξ+twoR^288*X^ξ+
+            twoR^288*X^ξ+twoR^288*X^ξ))) :=
       add_le_add h₀ (add_le_add h₁
         (add_le_add (add_le_add (add_le_add h₂ h₃) h₄)
           (add_le_add (add_le_add (add_le_add (add_le_add h₅ h₆) h₇) h₈) h₉)))
-    _ = 10*((2:ℝ)^288*X^ξ) := hTen _
+    _ = 10*(twoR^288*X^ξ) := hTen _
     _ = _ := (mul_assoc _ _ _).symm
 
 public  theorem middleOriginal_eventually_uniform_clog_power_loss_72
@@ -312,9 +312,9 @@ public  theorem middleOriginal_eventually_uniform_clog_power_loss_72
   have hLoss := eventually_const_log_pow_le_rpow
     (C*D^72) (mul_nonneg hC (pow_nonneg hD 72)) 72 hζ
   filter_upwards [hLoss,Real.tendsto_log_atTop.eventually_ge_atTop 1,
-    Filter.eventually_ge_atTop (1:ℝ)] with X hLossX hlogX hX
+    Filter.eventually_ge_atTop oneR] with X hLossX hlogX hX
   intro H hH hHX
-  have hHp : (0:ℝ)<H := by exact_mod_cast (show 0<H by omega)
+  have hHp : zeroR<H := by exact_mod_cast (show 0<H by omega)
   have hlogHX := Real.log_le_log hHp hHX
   have hc : (Nat.clog 2 H:ℝ)≤(2/Real.log 2)*Real.log X := by
     calc
@@ -356,7 +356,7 @@ private theorem middleOriginal_general_beta_of_power_window
   have hPhys := upperOriginal_eventually_upper_polynomial_power_window
     hB hCsrc hη hℓ hν hh hu hhℓ hRN hNR hNM hFour hTen
   have hLog := middleOriginal_eventually_uniform_clog_power_loss_72
-    (C:=Csrc*(10*(2:ℝ)^288))
+    (C:=Csrc*(10*twoR^288))
     (mul_nonneg (zero_le_one.trans hCsrc) (by norm_num)) hζ
   obtain ⟨T₀,hT₀⟩ := Filter.eventually_atTop.mp (hPhys.and hLog)
   let δ := min δsrc δw
@@ -419,9 +419,9 @@ private theorem middleOriginal_general_beta_of_power_window
               (T^21*(H:ℝ)^15*M^54*(N:ℝ)^33+T^15*(H:ℝ)^15*M^78*(N:ℝ)^15+
                 T^19*(H:ℝ)^19*M^68*(N:ℝ)^9+T^7*(H:ℝ)^7*M^104*(N:ℝ)^9+
                 T^4*(H:ℝ)^4*M^128/(N:ℝ)^24)))) := hActual
-      _ ≤ Csrc*(1+(Nat.clog 2 H:ℝ))^72*T^(6*εs)*((10*(2:ℝ)^288)*T^ξ) :=
+      _ ≤ Csrc*(1+(Nat.clog 2 H:ℝ))^72*T^(6*εs)*((10*twoR^288)*T^ξ) :=
         mul_le_mul_of_nonneg_left hPoly (mul_nonneg (mul_nonneg hCsrc0 hLog0) hXpow0)
-      _ = (Csrc*(10*(2:ℝ)^288)*(1+(Nat.clog 2 H:ℝ))^72)*T^(6*εs)*T^ξ := by ac_rfl
+      _ = (Csrc*(10*twoR^288)*(1+(Nat.clog 2 H:ℝ))^72)*T^(6*εs)*T^ξ := by ac_rfl
       _ ≤ T^ζ*T^(6*εs)*T^ξ := mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_right hLoss hXpow0) (Real.rpow_nonneg hTp.le _)
       _ = T^(144*β) := by
@@ -468,13 +468,13 @@ private theorem middleOriginal_lower_selected_grid_family_bound
     (hmesh : K ≤ Cmesh*Q*N/R^2)
     (hcard : P ≤ Ccard*Y*M*R^2/(N*Q^2)*L)
     (hVlower : V ≤ Cv*M^2/N^4) (hdelta : delta ≤ Cdelta*R^2/N^2)
-    (hUlower : (N/Q)^((2:ℝ)/3)/(2*B) ≤ U) :
+    (hUlower : (N/Q)^(twoR/3)/(2*B) ≤ U) :
     (R^2/Q)^6*K^((12:ℝ)+ε)*(2*P)^10*
       (V*D*Z*(M/N)*(1+delta*Jsep)+Z^2*V*(Clower*R^4/(N^2*U))*T^ε) ≤
       (Cmesh^12*Cmesh^ε*(2*Ccard)^10)*T^(2*ε)*L^10*Cv*
         (D*(Y^11*M^13/(N^3*R^6))+
           D*Cdelta*(Y^11*Jsep*M^13/(N^5*R^4))+
-          2*B*Clower*(Y^12*M^12/(N^4*R^2)*(R/N)^((2:ℝ)/3))) := by
+          2*B*Clower*(Y^12*M^12/(N^4*R^2)*(R/N)^(twoR/3))) := by
   have hQ : 0 < Q := hR.trans_le hRQ
   have hU := (physical_reference_reciprocal_bound hN hQ hB hUlower).1
   have hTp : 0 < T := zero_lt_one.trans_le hT
@@ -512,7 +512,7 @@ private theorem middleOriginal_lower_selected_grid_family_bound
     _ ≤ Cpref*T^(2*ε)*L^10*
         (Cv*(D*(Y^11*M^13/(N^3*R^6))+
           D*Cdelta*(Y^11*Jsep*M^13/(N^5*R^4))+
-          2*B*Clower*(Y^12*M^12/(N^4*R^2)*(R/N)^((2:ℝ)/3)))) :=
+          2*B*Clower*(Y^12*M^12/(N^4*R^2)*(R/N)^(twoR/3)))) :=
       mul_le_mul_of_nonneg_left hmonomial (by positivity)
     _ = _ := by dsimp only [Cpref]; ring
 
@@ -527,16 +527,16 @@ private theorem middleOriginal_lower_selected_grid_family_total_bound
     (hmesh : K ≤ Cmesh*Q*N/R^2)
     (hcard : P ≤ Ccard*Y*M*R^2/(N*Q^2)*L)
     (hVlower : V ≤ Cv*M^2/N^4) (hdelta : delta ≤ Cdelta*R^2/N^2)
-    (hUlower : (N/Q)^((2:ℝ)/3)/(2*B) ≤ U) :
+    (hUlower : (N/Q)^(twoR/3)/(2*B) ≤ U) :
     Couter*(R^2/Q)^6*K^((12:ℝ)+ε)*(2*P)^10*
       (V*D*Z*(M/N)*(1+delta*Jsep)+Z^2*V*(Clower*R^4/(N^2*U))*T^ε) ≤
       ((Couter*Cv)*(Cmesh^12*Cmesh^ε*(2*Ccard)^10)*(7/6:ℝ)*(D+D*Cdelta+2*B*Clower))*
         T^(2*ε)*L^10*
         (Y^11*M^13/(N^3*R^6)+Y^11*Jsep*M^13/(N^5*R^4)+
-          Y^12*M^12/(N^4*R^2)*(R/N)^((2:ℝ)/3)) := by
+          Y^12*M^12/(N^4*R^2)*(R/N)^(twoR/3)) := by
   let m₁ := Y^11*M^13/(N^3*R^6)
   let m₂ := Y^11*Jsep*M^13/(N^5*R^4)
-  let m₃ := Y^12*M^12/(N^4*R^2)*(R/N)^((2:ℝ)/3)
+  let m₃ := Y^12*M^12/(N^4*R^2)*(R/N)^(twoR/3)
   let Cmass := D+D*Cdelta+2*B*Clower
   let Cpref := Cmesh^12*Cmesh^ε*(2*Ccard)^10
   have hm₁ : 0 ≤ m₁ := by dsimp only [m₁]; positivity
@@ -584,9 +584,9 @@ private theorem middleOriginal_lower_selected_grid_family_total_bound
 private theorem middleOriginal_lower_expressions_nonnegative
     {Y M N R J : ℝ} (hY : 0 ≤ Y) (hM : 0 ≤ M) (hN : 0 ≤ N)
     (hR : 0 < R) (hJ : 0 ≤ J) :
-    0 ≤ Y*M/Real.sqrt N+Y*M*R^2/N^2+Y*N*(N/R)^((2:ℝ)/3) ∧
+    0 ≤ Y*M/Real.sqrt N+Y*M*R^2/N^2+Y*N*(N/R)^(twoR/3) ∧
     0 ≤ Y^11*M^13/(N^3*R^6)+Y^11*J*M^13/(N^5*R^4)+
-      Y^12*M^12/(N^4*R^2)*(R/N)^((2:ℝ)/3) := by
+      Y^12*M^12/(N^4*R^2)*(R/N)^(twoR/3) := by
   constructor <;> positivity
 
 private theorem middleOriginal_lower_radius_main_bound
@@ -595,9 +595,9 @@ private theorem middleOriginal_lower_radius_main_bound
     (hR : 0 < R) (hS : 0 < S) (hD : 1 ≤ D) (hJ : 0 ≤ J)
     (hSR : S ≤ D*R) (hRS : R ≤ D*S) :
     Ysmall^11*M^13/(N^3*S^6)+Ysmall^11*J*M^13/(N^5*S^4)+
-      Ysmall^12*M^12/(N^4*S^2)*(S/N)^((2:ℝ)/3) ≤
+      Ysmall^12*M^12/(N^4*S^2)*(S/N)^(twoR/3) ≤
     D^6*(Y^11*M^13/(N^3*R^6)+Y^11*J*M^13/(N^5*R^4)+
-      Y^12*M^12/(N^4*R^2)*(R/N)^((2:ℝ)/3)) := by
+      Y^12*M^12/(N^4*R^2)*(R/N)^(twoR/3)) := by
   have hY0 := hYsmall.trans hY
   have hD0 := zero_le_one.trans hD
   have hInv (j : ℕ) : 1/S^j ≤ D^j/R^j := by
@@ -620,16 +620,16 @@ private theorem middleOriginal_lower_radius_main_bound
       _ ≤ (Y^11*J*M^13/N^5)*(D^4/R^4) := by gcongr
       _ = D^4*(Y^11*J*M^13/(N^5*R^4)) := by ring
       _ ≤ _ := mul_le_mul_of_nonneg_right hD46 (by positivity)
-  have h₃ : Ysmall^12*M^12/(N^4*S^2)*(S/N)^((2:ℝ)/3) ≤
-      D^6*(Y^12*M^12/(N^4*R^2)*(R/N)^((2:ℝ)/3)) := by
+  have h₃ : Ysmall^12*M^12/(N^4*S^2)*(S/N)^(twoR/3) ≤
+      D^6*(Y^12*M^12/(N^4*R^2)*(R/N)^(twoR/3)) := by
     calc
-      _ = (Ysmall^12*M^12/N^4)*((1/S^2)*(S/N)^((2:ℝ)/3)) := by ring
-      _ ≤ (Y^12*M^12/N^4)*((D^2/R^2)*(D*(R/N)^((2:ℝ)/3))) := by gcongr
-      _ = D^3*(Y^12*M^12/(N^4*R^2)*(R/N)^((2:ℝ)/3)) := by ring
+      _ = (Ysmall^12*M^12/N^4)*((1/S^2)*(S/N)^(twoR/3)) := by ring
+      _ ≤ (Y^12*M^12/N^4)*((D^2/R^2)*(D*(R/N)^(twoR/3))) := by gcongr
+      _ = D^3*(Y^12*M^12/(N^4*R^2)*(R/N)^(twoR/3)) := by ring
       _ ≤ _ := mul_le_mul_of_nonneg_right hD36 (by positivity)
   calc
     _ ≤ D^6*(Y^11*M^13/(N^3*R^6))+D^6*(Y^11*J*M^13/(N^5*R^4))+
-        D^6*(Y^12*M^12/(N^4*R^2)*(R/N)^((2:ℝ)/3)) :=
+        D^6*(Y^12*M^12/(N^4*R^2)*(R/N)^(twoR/3)) :=
       add_le_add (add_le_add h₁ h₂) h₃
     _ = _ := by rw [mul_add,mul_add]
 
@@ -658,8 +658,8 @@ private theorem middleOriginal_eventually_lower_finite_numerical_consequence
         R ≤ (Q k:ℝ) ∧ Q k ≤ N ∧
         (Q k:ℝ)*(N:ℝ) ≤ (Kmesh k:ℝ)*R^2 ∧
         (Kmesh k:ℝ) ≤ Cmesh*(Q k:ℝ)*(N:ℝ)/R^2 ∧
-        (Usel k:ℝ) ≤ ((N:ℝ)/(Q k:ℝ))^((2:ℝ)/3)/Bselect ∧
-        ((N:ℝ)/(Q k:ℝ))^((2:ℝ)/3)/(2*Bselect) ≤ (Usel k:ℝ)) →
+        (Usel k:ℝ) ≤ ((N:ℝ)/(Q k:ℝ))^(twoR/3)/Bselect ∧
+        ((N:ℝ)/(Q k:ℝ))^(twoR/3)/(2*Bselect) ≤ (Usel k:ℝ)) →
       let Yc := (Y.card:ℝ)
       let μ₀ := csrc*T/(12*σsrc*M^3)
       let U₀ := Usrc*T/(2*σsrc*M^3)
@@ -689,13 +689,13 @@ private theorem middleOriginal_eventually_lower_finite_numerical_consequence
       (∀ k ≤ kmax, ∀ r : ℤ, (Grid k r).image Prod.fst ⊆ Y) →
       S ≤ 2^11*(((kmax:ℝ)+2)^11*
         (((n:ℝ)*Yc*Density kmax)^12+
-          (4:ℝ)^12*(8:ℝ)^11*∑ k∈Finset.range (kmax+1),∑ r∈Finset.Ico (0:ℤ) 8,
+          fourR^12*(8:ℝ)^11*∑ k∈Finset.range (kmax+1),∑ r∈Finset.Ico (0:ℤ) 8,
             (2^11*((Csrc*Error)^12+
               (Csrc*(1+Real.log (Kmesh k)))^12*FamilyBound k (Grid k r))))+Endpoint^12) →
       let ErrorTotal := Yc*M/Real.sqrt (N:ℝ)+Yc*M*R^2/(N:ℝ)^2+
-        Yc*(N:ℝ)*((N:ℝ)/R)^((2:ℝ)/3)
+        Yc*(N:ℝ)*((N:ℝ)/R)^(twoR/3)
       let Main := Yc^11*M^13/((N:ℝ)^3*R^6)+Yc^11*Jsep*M^13/((N:ℝ)^5*R^4)+
-        Yc^12*M^12/((N:ℝ)^4*R^2)*(R/(N:ℝ))^((2:ℝ)/3)
+        Yc^12*M^12/((N:ℝ)^4*R^2)*(R/(N:ℝ))^(twoR/3)
       S ≤ T^ε*(ErrorTotal^12+Main) := by
 
   classical
@@ -717,9 +717,9 @@ private theorem middleOriginal_eventually_lower_finite_numerical_consequence
   let Cterminal := Cdensity*Csep^2/8
   let Cendpoint := 112/κ+28*σsrc/csrc+2/(Cphys+2)+41/4
   let Cerror := 1+Csrc*CE₀+Cterminal+Cendpoint
-  let Cgrid := (2:ℝ)^11*(Cerror^12+(Csrc*CKlog)^12*Cfamily)
-  let Ctotal := (2:ℝ)^11*(Cband^11*Cerror^12+
-    (4:ℝ)^12*(8:ℝ)^12*Cband^12*Cgrid+Cerror^12)
+  let Cgrid := twoR^11*(Cerror^12+(Csrc*CKlog)^12*Cfamily)
+  let Ctotal := twoR^11*(Cband^11*Cerror^12+
+    fourR^12*(8:ℝ)^12*Cband^12*Cgrid+Cerror^12)
   have hConstants :
       0 ≤ CtailBand ∧ 0 ≤ ClowBand ∧ 0 ≤ CerrorBand ∧ 1 ≤ Cmesh ∧
       0 ≤ Carg ∧ 0 ≤ DensityLog ∧ 0 ≤ Cdensity ∧ 0 ≤ Ccard ∧
@@ -733,17 +733,17 @@ private theorem middleOriginal_eventually_lower_finite_numerical_consequence
     hConstants
   have hCmesh : 0 < Cmesh := zero_lt_one.trans_le hCmeshOne
   filter_upwards [eventually_selected_band_logarithmic_absorption hCtotal hε,
-    Filter.eventually_ge_atTop (1:ℝ)] with T hAbs hTone
+    Filter.eventually_ge_atTop oneR] with T hAbs hTone
   intro Y n N Qbase kmax Kmesh Usel R M Jsep Chunks band Dcover S
     hNlink hNtwo hR hNR' hNsqM hMT hJsep hscale hQbase hBaseHi hEndLo hkmax hKpos
     Q hvalid Yc μ₀ U₀ Uband Vscale Error Δtype Buffer Width FamilyBound Density Endpoint Selected Grid
     hChunks hBands hGridCount hGridImage hNorm ErrorTotal Main
   have hT : 0 < T := hAbs.1
   have hLogOne : 1 ≤ Real.log T := hAbs.2.1
-  have hNreal : (2:ℝ) ≤ N := by exact_mod_cast hNtwo
-  have hNp : (0:ℝ) < N := by linarith only [hNreal]
+  have hNreal : twoR ≤ N := by exact_mod_cast hNtwo
+  have hNp : zeroR < N := by linarith only [hNreal]
   have hRp : 0 < R := zero_lt_one.trans_le hR
-  have hNOne : (1:ℝ) ≤ N := by linarith only [hNreal]
+  have hNOne : oneR ≤ N := by linarith only [hNreal]
   have hM : 0 < M := (sq_pos_of_pos hNp).trans_le hNsqM
   have hNM : (N:ℝ) ≤ M :=
     (by nlinarith only [hNreal] : (N:ℝ) ≤ (N:ℝ)^2).trans hNsqM
@@ -761,9 +761,9 @@ private theorem middleOriginal_eventually_lower_finite_numerical_consequence
           (sq_nonneg (N:ℝ))))
       (mul_nonneg (mul_nonneg hYc hNp.le)
         (Real.rpow_pos_of_pos (div_pos hNp hRp) _).le)
-  have hQpos (k : ℕ) : (0:ℝ) < Q k := by
+  have hQpos (k : ℕ) : zeroR < Q k := by
     exact_mod_cast Nat.mul_pos hQbase (by positivity : 0 < 2^k)
-  have hKreal (k : ℕ) : (0:ℝ) < Kmesh k := by exact_mod_cast hKpos k
+  have hKreal (k : ℕ) : zeroR < Kmesh k := by exact_mod_cast hKpos k
   have hlogs (k : ℕ) (hk : k ≤ kmax) :
       2+Real.log (Carg*R^2/(Q k:ℝ)+1) ≤ DensityLog*L ∧
       1+Real.log (Kmesh k) ≤ CKlog*L ∧
@@ -822,7 +822,7 @@ private theorem middleOriginal_eventually_lower_finite_numerical_consequence
       hQNreal hNR' hNT hKU (hGridCard k hk r) hVbound (hDeltaType k hk) hUlower
   let E₁ := Yc*M/Real.sqrt (N:ℝ)
   let E₂ := Yc*M*R^2/(N:ℝ)^2
-  let E₃ := Yc*(N:ℝ)*((N:ℝ)/R)^((2:ℝ)/3)
+  let E₃ := Yc*(N:ℝ)*((N:ℝ)/R)^(twoR/3)
   have hE₁ : 0 ≤ E₁ := div_nonneg (mul_nonneg hYc hM.le) (Real.sqrt_nonneg _)
   have hE₂ : 0 ≤ E₂ := div_nonneg (mul_nonneg (mul_nonneg hYc hM.le) (sq_nonneg R))
     (sq_nonneg (N:ℝ))
@@ -912,7 +912,7 @@ private theorem middleOriginal_eventually_lower_finite_numerical_consequence
     (Csrc*(1+Real.log (Kmesh k)))^12*FamilyBound k (Grid k r))
   have hG (k : ℕ) (hk : k ≤ kmax) (r : ℤ) :
       G k r ≤ Cgrid*T^(2*εloss)*L^22*(ErrorTotal^12+Main) := by
-    have hKone : (1:ℝ) ≤ Kmesh k := by
+    have hKone : oneR ≤ Kmesh k := by
       have hh : 1 ≤ Kmesh k := Nat.succ_le_iff.mpr (hKpos k)
       exact_mod_cast hh
     have hlogK := Real.log_nonneg hKone
@@ -945,13 +945,13 @@ private theorem middleOriginal_eventually_lower_quantitative_phase_subinterval_b
       (n N : ℕ) (R Jsep : ℝ) {η M : ℝ},
       N=8*n → 2 ≤ N → 1 ≤ R → 0 < η → η ≤ η₀ →
       0 < Jsep → Jsep ≤ M →
-      (∀ y∈Y, y∈Icc (1:ℝ) 2) →
+      (∀ y∈Y, y∈Icc oneR 2) →
       (∀ y∈Y, ∀ z∈Y, y≠z → 1 ≤ Jsep*|y-z|) →
       (∀ w, 0 < w → ContDiffAt ℝ ∞ Fsrc w) →
-      (∀ w∈Icc (1/2:ℝ) 3, ∀ j ≤ 6, |iteratedDeriv (j+1) Fsrc w| ≤ Usrc) →
-      (∀ w∈Icc (1/2:ℝ) 3, ∀ j,
+      (∀ w∈Icc halfR 3, ∀ j ≤ 6, |iteratedDeriv (j+1) Fsrc w| ≤ Usrc) →
+      (∀ w∈Icc halfR 3, ∀ j,
         csrc ≤ |HuxleyModel.tests (fun i : Fin 4 => iteratedDeriv (i.val+3) Fsrc w) j|) →
-      (∀ w∈Icc (1/2:ℝ) 3, iteratedDeriv 4 Fsrc w ≤ -csrc) →
+      (∀ w∈Icc halfR 3, iteratedDeriv 4 Fsrc w ≤ -csrc) →
       (∀ y∈Y, Expdb.IsApproximateModelPhaseFunction
         (fun u => (Fsrc u-Fsrc (u+η*y))/(σsrc*η)) σ 4 δ) →
       T*(N:ℝ)*R^2=M^3 →
@@ -961,10 +961,10 @@ private theorem middleOriginal_eventually_lower_quantitative_phase_subinterval_b
       (∀ y∈Y, A y ≤ Bint y) → (∀ y∈Y, Bint y ≤ ⌊2*M⌋) →
       let Yc := (Y.card:ℝ)
       let ErrorTotal := Yc*M/Real.sqrt (N:ℝ)+Yc*M*R^2/(N:ℝ)^2+
-        Yc*(N:ℝ)*((N:ℝ)/R)^((2:ℝ)/3)
+        Yc*(N:ℝ)*((N:ℝ)/R)^(twoR/3)
       let Main := Yc^11*M^13/((N:ℝ)^3*R^6)+
         Yc^11*Jsep*M^13/((N:ℝ)^5*R^4)+
-        Yc^12*M^12/((N:ℝ)^4*R^2)*(R/(N:ℝ))^((2:ℝ)/3)
+        Yc^12*M^12/((N:ℝ)^4*R^2)*(R/(N:ℝ))^(twoR/3)
       (∑ y∈Y, ‖∑ j∈Finset.Ioc (A y) (Bint y),
         (𝐞 (T*(Fsrc ((j:ℝ)/M)-Fsrc ((j:ℝ)/M+η*y))/(σsrc*η)):ℂ)‖)^12 ≤
         T^ε*(ErrorTotal^12+Main) := by
@@ -978,7 +978,7 @@ private theorem middleOriginal_eventually_lower_quantitative_phase_subinterval_b
   let Lsource := max (8*Ratio^2)
     (32*(modelPhaseJetCoefficient σ 3+1)*(3*Usrc/σsrc)/κ^2)
   have hLsource : 0 ≤ Lsource :=
-    (by positivity : (0:ℝ) ≤ 8*Ratio^2).trans (le_max_left _ _)
+    (by positivity : zeroR ≤ 8*Ratio^2).trans (le_max_left _ _)
   let θ := min (1/48:ℝ) (1/(16*(Lsource+3)))
   have hθ : 0 < θ := lt_min (by norm_num) (by positivity)
   have hθmax : θ ≤ 1/24 := (min_le_left _ _).trans (by norm_num)
@@ -1016,7 +1016,7 @@ private theorem middleOriginal_eventually_lower_quantitative_phase_subinterval_b
   let Cpack := 64*Cphys*(Gamma^2*Cthird+Gamma*C₃/κ)/κ
   let Cfirst := 128*Cphys*(Gamma^2*Cthird+Gamma*C₃/κ)/κ^2
   let Cgap := 64*Cphys*(Gamma^2*B+Gamma*C₃/κ)/κ
-  let Cmain := 4*(2*Cfirst/Lunit^3)^((3:ℝ)⁻¹)+2
+  let Cmain := 4*(2*Cfirst/Lunit^3)^(threeR⁻¹)+2
   let Ctail := 4*Cpack/Lunit^2+Cgap
   obtain ⟨hCphys,hc,hJ,hB,hBzero,hC₂,hC₃,hC₄,hCR,hCN,hCt,hCc,hCcurv,hKres,hEsize,hDbase,hTbase,hLunit,hGamma,hCthird,hAupper,hBupper,hDupper,hAlower,hBlower,hDlower,hCpack,hCfirst,hCgap,hCmain,hCtail⟩ :=
     middleOriginal_general_source_constants_nonnegative hσ hδzero hκ hUsrc hσsrc hcsrc hθ hCU hCL hDU hDL
@@ -1047,7 +1047,7 @@ private theorem middleOriginal_eventually_lower_quantitative_phase_subinterval_b
   have hChartCap : 0 ≤ ChartCap := by dsimp only [ChartCap]; positivity
   have hNarrowCap : 0 ≤ NarrowCap := by dsimp only [NarrowCap]; positivity
   have hCap : 0 ≤ Cap := by dsimp only [Cap]; positivity
-  let CLOW := 240*(9*(AlowerConst*DlowerConst^2)^((3:ℝ)⁻¹)+
+  let CLOW := 240*(9*(AlowerConst*DlowerConst^2)^(threeR⁻¹)+
     2*BlowerConst+(3/2:ℝ)*DlowerConst)
   have hCLOW : 0 ≤ CLOW :=
     mul_nonneg (by norm_num)
@@ -1068,16 +1068,16 @@ private theorem middleOriginal_eventually_lower_quantitative_phase_subinterval_b
     Real.tendsto_log_atTop.eventually (Filter.eventually_ge_atTop 1)
   refine ⟨Cbudget,η₀,hCbudget,hη₀,hηcap,?_⟩
   filter_upwards [hfinite hθ hθmax hθaction,hNumeric,
-    Filter.eventually_ge_atTop (1:ℝ),hLog] with T hfiniteT hNumericT hTone hLogOne
+    Filter.eventually_ge_atTop oneR,hLog] with T hfiniteT hNumericT hTone hLogOne
   intro Fsrc Y n N R Jsep η M hNlink hNtwo hR hη hηsmall hJsep hJM
     hy hsepY hreg hjets htests hnegative hmodels hscale
     hSepBudget hRadiusBudget hSquareBudget hCurveBudget hNfour hNten A Bint hA hAB hBint
     Yc ErrorTotal Main
   have hT : 0 < T := zero_lt_one.trans_le hTone
-  have hNreal : (2:ℝ) ≤ N := by exact_mod_cast hNtwo
-  have hNp : (0:ℝ) < N := by linarith only [hNreal]
+  have hNreal : twoR ≤ N := by exact_mod_cast hNtwo
+  have hNp : zeroR < N := by linarith only [hNreal]
   have hRp : 0 < R := zero_lt_one.trans_le hR
-  have hNOne : (1:ℝ) ≤ N := by linarith only [hNreal]
+  have hNOne : oneR ≤ N := by linarith only [hNreal]
   have hNR : (N:ℝ) ≤ R^2 :=
     (by simpa only [one_mul] using mul_le_mul_of_nonneg_right hCbudget hNp.le :
       (N:ℝ) ≤ Cbudget*N).trans hRadiusBudget
@@ -1088,12 +1088,12 @@ private theorem middleOriginal_eventually_lower_quantitative_phase_subinterval_b
   let Q := fun k : ℕ => Qbase*2^k
   have hUzero : (Usel 0:ℝ) ≤ N := by
     obtain ⟨_,_,_,_,_,_,hUupper,_,_,_,hQstrong,_,_,_⟩ := hvalid 0 (Nat.zero_le _)
-    have hQone : (1:ℝ) ≤ Q 0 := by nlinarith only [hQstrong,hR]
-    have hQzero : (0:ℝ) < Q 0 := zero_lt_one.trans_le hQone
+    have hQone : oneR ≤ Q 0 := by nlinarith only [hQstrong,hR]
+    have hQzero : zeroR < Q 0 := zero_lt_one.trans_le hQone
     calc
-      _ ≤ ((N:ℝ)/(Q 0:ℝ))^((2:ℝ)/3)/Bselect := hUupper
-      _ ≤ ((N:ℝ)/(Q 0:ℝ))^((2:ℝ)/3) := div_le_self (by positivity) hBsOne
-      _ ≤ (N:ℝ)^((2:ℝ)/3) := Real.rpow_le_rpow (by positivity)
+      _ ≤ ((N:ℝ)/(Q 0:ℝ))^(twoR/3)/Bselect := hUupper
+      _ ≤ ((N:ℝ)/(Q 0:ℝ))^(twoR/3) := div_le_self (by positivity) hBsOne
+      _ ≤ (N:ℝ)^(twoR/3) := Real.rpow_le_rpow (by positivity)
         (div_le_self hNp.le hQone) (by norm_num)
       _ ≤ N := Real.rpow_le_self_of_one_le hNOne (by norm_num)
   have hSepPhys : Bphys*R ≤ N :=
@@ -1108,7 +1108,7 @@ private theorem middleOriginal_eventually_lower_quantitative_phase_subinterval_b
   have hNM : (N:ℝ) ≤ M :=
     (by nlinarith only [hNreal] : (N:ℝ) ≤ (N:ℝ)^2).trans hNsqM
   have hNT : (N:ℝ) ≤ T := hNM.trans hMT
-  have hRegimeLog : (N:ℝ)^4 ≤ M*R^3*(Real.log T)^((3:ℝ)/2) :=
+  have hRegimeLog : (N:ℝ)^4 ≤ M*R^3*(Real.log T)^(threeR/2) :=
     hNfour.trans (le_mul_of_one_le_right (by positivity)
       (Real.one_le_rpow hLogOne (by norm_num)))
   let Uband := (3*Usrc/σsrc)*T/(2*M^2)
@@ -1136,7 +1136,7 @@ private theorem middleOriginal_eventually_lower_quantitative_phase_subinterval_b
     Δ k+quarticNonlinearResidualConstant σ δ*(2*(Q k:ℝ))/(N:ℝ)
   let Klower := fun k : ℕ =>
     240*(R^4/((N:ℝ)^2*(Usel k:ℝ)))*
-      (9*(AlowerConst*DlowerConst^2)^((3:ℝ)⁻¹)+2*BlowerConst+(3/2:ℝ)*DlowerConst)
+      (9*(AlowerConst*DlowerConst^2)^(threeR⁻¹)+2*BlowerConst+(3/2:ℝ)*DlowerConst)
   let Buffer := fun k : ℕ =>
     (56*(Usel k:ℝ)/κ)*(N:ℝ)+(N:ℝ)/(Cphys+2)+2
   let Width := fun k : ℕ => (14*σsrc/csrc)*(Usel k:ℝ)*(N:ℝ)
@@ -1153,7 +1153,7 @@ private theorem middleOriginal_eventually_lower_quantitative_phase_subinterval_b
       63*(Usrc/(2*σsrc*(N:ℝ)*R^2))*(Q k:ℝ)*(N:ℝ)^2 ≤ Kmesh k ∧
       (Q k:ℝ)*(N:ℝ) ≤ (Kmesh k:ℝ)*R^2 ∧
       1 ≤ Usel k ∧ Bselect^2*(Usel k:ℝ)^3*R^2 ≤ (N:ℝ)^2 ∧
-      (Usel k:ℝ) ≤ ((N:ℝ)/(Q k:ℝ))^((2:ℝ)/3)/Bselect ∧
+      (Usel k:ℝ) ≤ ((N:ℝ)/(Q k:ℝ))^(twoR/3)/Bselect ∧
       Q k ≤ N ∧ (Usel k:ℝ) ≤ R^2 ∧
       768*R ≤ (Q k:ℝ) ∧ 2*R^2 ≤ (Q k:ℝ)*(N:ℝ) ∧
       D k ≤ 1/2 ∧ Δ k < 1/2 := by
@@ -1181,14 +1181,14 @@ private theorem middleOriginal_eventually_lower_quantitative_phase_subinterval_b
       (Vscale*Dtype*((P.image Prod.fst).card:ℝ)*(M/(N:ℝ))*(1+(Δtype k)*Jsep)+
         ((P.image Prod.fst).card:ℝ)^2*Vscale*
           (CLOW*R^4/((N:ℝ)^2*(Usel k:ℝ)))*T^εloss)
-  have hQbaseReal : (0:ℝ) < Qbase := by nlinarith only [hBaseLo,hRp]
+  have hQbaseReal : zeroR < Qbase := by nlinarith only [hBaseLo,hRp]
   have hQbase : 0 < Qbase := by exact_mod_cast hQbaseReal
   have hvalidNumeric : ∀ k ≤ kmax,
       R ≤ (Q k:ℝ) ∧ Q k ≤ N ∧
       (Q k:ℝ)*(N:ℝ) ≤ (Kmesh k:ℝ)*R^2 ∧
       (Kmesh k:ℝ) ≤ (2*max 1 (63*Usrc/(2*σsrc)))*(Q k:ℝ)*(N:ℝ)/R^2 ∧
-      (Usel k:ℝ) ≤ ((N:ℝ)/(Q k:ℝ))^((2:ℝ)/3)/Bselect ∧
-      ((N:ℝ)/(Q k:ℝ))^((2:ℝ)/3)/(2*Bselect) ≤ (Usel k:ℝ) := by
+      (Usel k:ℝ) ≤ ((N:ℝ)/(Q k:ℝ))^(twoR/3)/Bselect ∧
+      ((N:ℝ)/(Q k:ℝ))^(twoR/3)/(2*Bselect) ≤ (Usel k:ℝ) := by
     intro k hk
     obtain ⟨_,_,hMesh,hKU,_,_,hUpper,hLower,hQN,_,hStrong,_,_,_⟩ := hvalid k hk
     exact ⟨by nlinarith only [hStrong,hRp],hQN,hMesh,hKU,hUpper,hLower⟩
@@ -1205,7 +1205,7 @@ private theorem middleOriginal_eventually_lower_quantitative_phase_subinterval_b
   let S := (∑ y∈Y, ‖∑ j∈Finset.Ioc (A y) (Bint y), (𝐞 (f y j):ℂ)‖)^12
   change S ≤ 2^11*(((kmax:ℝ)+2)^11*
     (((n:ℝ)*Yc*Density kmax)^12+
-      (4:ℝ)^12*(8:ℝ)^11*∑ k∈Finset.range (kmax+1),∑ r∈Finset.Ico (0:ℤ) 8,
+      fourR^12*(8:ℝ)^11*∑ k∈Finset.range (kmax+1),∑ r∈Finset.Ico (0:ℤ) 8,
         (2^11*((Csrc*Error)^12+
           (Csrc*(1+Real.log (Kmesh k)))^12*FamilyBound k (Grid k r))))+Endpoint^12) at hNorm
   simp only [hFamilyEq] at hNorm
@@ -1227,7 +1227,7 @@ private theorem middleOriginal_approximateModelPhase_enlarged_quantitative_lower
           ∀ (T : ℝ) (Y : Finset ℝ) (n N : ℕ) (R Jsep η : ℝ),
             C ≤ T → N=8*n → 2 ≤ N → B ≤ R →
             0 < η → η ≤ η₀ → 0 < Jsep → Jsep ≤ M →
-            (∀ y∈Y, y∈Icc (1:ℝ) 2) →
+            (∀ y∈Y, y∈Icc oneR 2) →
             (∀ y∈Y, ∀ z∈Y, y≠z → 1 ≤ Jsep*|y-z|) →
             T*(N:ℝ)*R^2=M^3 →
             B*R ≤ N → B*(N:ℝ) ≤ R^2 → B*(N:ℝ)^2 ≤ M → B*T ≤ M^2 →
@@ -1236,9 +1236,9 @@ private theorem middleOriginal_approximateModelPhase_enlarged_quantitative_lower
               (∀ y∈Y, A y ≤ Bint y) → (∀ y∈Y, Bint y ≤ ⌊2*M⌋) →
               let Yc := (Y.card:ℝ)
               let ErrorTotal := Yc*M/Real.sqrt (N:ℝ)+Yc*M*R^2/(N:ℝ)^2+
-                Yc*(N:ℝ)*((N:ℝ)/R)^((2:ℝ)/3)
+                Yc*(N:ℝ)*((N:ℝ)/R)^(twoR/3)
               let Main := Yc^11*M^13/((N:ℝ)^3*R^6)+Yc^11*Jsep*M^13/((N:ℝ)^5*R^4)+
-                Yc^12*M^12/((N:ℝ)^4*R^2)*(R/(N:ℝ))^((2:ℝ)/3)
+                Yc^12*M^12/((N:ℝ)^4*R^2)*(R/(N:ℝ))^(twoR/3)
               (∑ y∈Y, ‖∑ j∈Finset.Ioc (A y) (Bint y),
                 (𝐞 (T*(Fext ((j:ℝ)/M)-Fext ((j:ℝ)/M+η*y))/η):ℂ)‖)^12 ≤
                   C*T^ε*(ErrorTotal^12+Main) := by
@@ -1253,12 +1253,12 @@ private theorem middleOriginal_approximateModelPhase_enlarged_quantitative_lower
     linarith only [hmin]
   obtain ⟨δ,ηsrc,a,c,J,hδ,hηsrc,hηsrcCap,ha,hc,hJ,hanchor,hsource⟩ :=
     HuxleyRationalPhase.approximateModelPhase_enlarged_colored_common_scale_source
-      hσ hδmodel (by norm_num : (0:ℝ)<1) 5 le_rfl
+      hσ hδmodel (by norm_num : zeroR<1) 5 le_rfl
   have hanchor' : c≤4*modelPhaseThirdLower (σ+1)*1/((σ+1)*((σ+1)+1)+3) := by
-    simpa only [add_assoc,show (1:ℝ)+1=2 by norm_num] using hanchor
+    simpa only [add_assoc,show oneR+1=2 by norm_num] using hanchor
   obtain ⟨Cbudget,ηquant,hCbudget,hηquant,_,hquant⟩ :=
     middleOriginal_eventually_lower_quantitative_phase_subinterval_bound
-      (by norm_num : (0:ℝ)<1) hc hJ hσone hδmodel.le hδmodelCap hε hanchor'
+      (by norm_num : zeroR<1) hc hJ hσone hδmodel.le hδmodelCap hε hanchor'
   obtain ⟨Tcut,hTcut⟩ := Filter.eventually_atTop.mp hquant
   let D := 2+2*σ+1/σ
   have hD : 1≤D := by
@@ -1277,7 +1277,7 @@ private theorem middleOriginal_approximateModelPhase_enlarged_quantitative_lower
   let B := Cbudget*D^7
   have hB : 1≤B := by
     calc
-      _ = (1:ℝ)*1 := by norm_num
+      _ = oneR*1 := by norm_num
       _ ≤ Cbudget*D^7 := mul_le_mul hCbudget (one_le_pow₀ hD)
         zero_le_one (zero_le_one.trans hCbudget)
   let Cap := 4/a+3
@@ -1300,7 +1300,7 @@ private theorem middleOriginal_approximateModelPhase_enlarged_quantitative_lower
   intro T Y n N R Jsep η hT hN8 hN2 hRlow hη hηcap hJsep hJsepM
     hY hsep hphase hRN hNR hNM hCurve hFour hTen A Bint hA hAB hBint Yc ErrorTotal Main
   have hMp : 0<M := zero_lt_one.trans_le hM
-  have hNp : (0:ℝ)<N := by exact_mod_cast (show 0<N by omega)
+  have hNp : zeroR<N := by exact_mod_cast (show 0<N by omega)
   have hRp : 0<R := zero_lt_one.trans_le (hB.trans hRlow)
   have hTp : 0<T := zero_lt_one.trans_le (hC.trans hT)
   have hYc : 0≤Yc := Nat.cast_nonneg _
@@ -1378,16 +1378,16 @@ private theorem middleOriginal_approximateModelPhase_enlarged_quantitative_lower
       hreg hjets htests hnegative hmod hnewphase hnewRN hnewNR hnewNM hnewCurve
       hnewFour hnewTen A Bint (fun y hy => hA y (hYj y hy))
       (fun y hy => hAB y (hYj y hy)) (fun y hy => hBint y (hYj y hy))
-    have hYj0 : (0:ℝ)≤Yj.card := Nat.cast_nonneg _
+    have hYj0 : zeroR≤Yj.card := Nat.cast_nonneg _
     have hYjCard : (Yj.card:ℝ)≤Yc := by
       change ((Y.filter (fun y => color y=j)).card:ℝ)≤(Y.card:ℝ)
       exact_mod_cast (Finset.card_filter_le Y (fun y => color y=j))
     let Enew := (Yj.card:ℝ)*M/Real.sqrt (N:ℝ)+
       (Yj.card:ℝ)*M*Rnew^2/(N:ℝ)^2+
-      (Yj.card:ℝ)*(N:ℝ)*((N:ℝ)/Rnew)^((2:ℝ)/3)
+      (Yj.card:ℝ)*(N:ℝ)*((N:ℝ)/Rnew)^(twoR/3)
     let MainNew := (Yj.card:ℝ)^11*M^13/((N:ℝ)^3*Rnew^6)+
       (Yj.card:ℝ)^11*Jsep*M^13/((N:ℝ)^5*Rnew^4)+
-      (Yj.card:ℝ)^12*M^12/((N:ℝ)^4*Rnew^2)*(Rnew/(N:ℝ))^((2:ℝ)/3)
+      (Yj.card:ℝ)^12*M^12/((N:ℝ)^4*Rnew^2)*(Rnew/(N:ℝ))^(twoR/3)
     have hEnew : Enew≤D^2*ErrorTotal :=
       upperOriginal_upper_radius_error_bound hYj0 hYjCard hMp hNp hRp hRnew hD hSle hRle
     have hMainNew : MainNew≤D^6*Main :=
@@ -1473,15 +1473,15 @@ private theorem middleOriginal_approximateModelPhase_enlarged_lower_correlation_
             B*(N:ℝ)^4≤M*R^3 → B*(N:ℝ)^10≤M^3*R^7 →
             let K := (k:ℝ)
             let E := K*M/Real.sqrt (N:ℝ)+K*M*R^2/(N:ℝ)^2+
-              K*(N:ℝ)*((N:ℝ)/R)^((2:ℝ)/3)
+              K*(N:ℝ)*((N:ℝ)/R)^(twoR/3)
             let Main := K^11*M^13/((N:ℝ)^3*R^6)+K^11*K*M^13/((N:ℝ)^5*R^4)+
-              K^12*M^12/((N:ℝ)^4*R^2)*(R/(N:ℝ))^((2:ℝ)/3)
+              K^12*M^12/((N:ℝ)^4*R^2)*(R/(N:ℝ))^(twoR/3)
             (∑ j∈Finset.range k,‖sourceShiftCorrelation Fext X M a L (k+j)‖)^12 ≤
               C*(X*k/M)^ε*(E^12+Main) := by
   classical
   obtain ⟨δ,η₀,B,C₀,hδ,hη₀,hηcap,hB,hC₀,hsource⟩ :=
     middleOriginal_approximateModelPhase_enlarged_quantitative_lower hσ hε
-  let C := (2:ℝ)^12*C₀
+  let C := twoR^12*C₀
   have hCC₀ : C₀≤C := le_mul_of_one_le_left (zero_le_one.trans hC₀) (by norm_num)
   have hC : 1≤C := hC₀.trans hCC₀
   refine ⟨δ,η₀,B,C,hδ,hη₀,hηcap,hB,hC,?_⟩
@@ -1491,11 +1491,11 @@ private theorem middleOriginal_approximateModelPhase_enlarged_lower_correlation_
   intro X n N a L k R hT hN8 hN2 hR hk hη hKM ha hb hphase hRN hNR hNM
     hCurve hFour hTen K E Main
   have hMp := zero_lt_one.trans_le hM
-  have hNp : (0:ℝ)<N := by exact_mod_cast (show 0<N by omega)
-  have hN1 : (1:ℝ)≤N := by exact_mod_cast (show 1≤N by omega)
+  have hNp : zeroR<N := by exact_mod_cast (show 0<N by omega)
+  have hN1 : oneR≤N := by exact_mod_cast (show 1≤N by omega)
   have hRp := zero_lt_one.trans_le (hB.trans hR)
   have hKp : 0<K := by
-    change (0:ℝ)<k
+    change zeroR<k
     exact_mod_cast hk
   have hT1 : 1≤X*k/M := hC.trans hT
   have hTp := zero_lt_one.trans_le hT1
@@ -1504,22 +1504,22 @@ private theorem middleOriginal_approximateModelPhase_enlarged_lower_correlation_
   let Bint := fun y : ℝ => ((a+(L-⌊(k:ℝ)*y⌋₊):ℕ):ℤ)
   obtain ⟨hcard,hY,hsep,hA,hAB,hBint,hcorr⟩ :=
     upperOriginal_dyadic_shift_actual_family Fext X hMp a L k hk ha hb
-  have hY0 : (0:ℝ)≤Y.card := Nat.cast_nonneg _
+  have hY0 : zeroR≤Y.card := Nat.cast_nonneg _
   have hYK : (Y.card:ℝ)≤K := by
     change (Y.card:ℝ)≤(k:ℝ)
     exact_mod_cast hcard
   let EY := (Y.card:ℝ)*M/Real.sqrt (N:ℝ)+(Y.card:ℝ)*M*R^2/(N:ℝ)^2+
-    (Y.card:ℝ)*(N:ℝ)*((N:ℝ)/R)^((2:ℝ)/3)
+    (Y.card:ℝ)*(N:ℝ)*((N:ℝ)/R)^(twoR/3)
   let MainY := (Y.card:ℝ)^11*M^13/((N:ℝ)^3*R^6)+
     (Y.card:ℝ)^11*(k:ℝ)*M^13/((N:ℝ)^5*R^4)+
-    (Y.card:ℝ)^12*M^12/((N:ℝ)^4*R^2)*(R/(N:ℝ))^((2:ℝ)/3)
+    (Y.card:ℝ)^12*M^12/((N:ℝ)^4*R^2)*(R/(N:ℝ))^(twoR/3)
   have hEY : EY≤E := by
     have hh := upperOriginal_upper_radius_error_bound hY0 hYK hMp hNp hRp hRp
-      (show (1:ℝ)≤1 from le_rfl) (by rw [one_mul]) (by rw [one_mul])
+      (show oneR≤1 from le_rfl) (by rw [one_mul]) (by rw [one_mul])
     simpa only [one_pow,one_mul] using hh
   have hMY : MainY≤Main := by
     have hh := middleOriginal_lower_radius_main_bound hY0 hYK hMp hNp hRp hRp
-      (show (1:ℝ)≤1 from le_rfl) hKp.le (by rw [one_mul]) (by rw [one_mul])
+      (show oneR≤1 from le_rfl) hKp.le (by rw [one_mul]) (by rw [one_mul])
     simpa only [one_pow,one_mul] using hh
   have hYSigns := middleOriginal_lower_expressions_nonnegative hY0 hMp.le hNp.le hRp hKp.le
   have hSigns := middleOriginal_lower_expressions_nonnegative hKp.le hMp.le hNp.le hRp hKp.le
@@ -1541,7 +1541,7 @@ private theorem middleOriginal_approximateModelPhase_enlarged_lower_correlation_
       (mul_nonneg (zero_le_one.trans hC₀) (Real.rpow_nonneg hTp.le ε)))
   have hQ : 1≤C₀*(X*k/M)^ε := by
     calc
-      _ = (1:ℝ)*1 := by norm_num
+      _ = oneR*1 := by norm_num
       _ ≤ _ := mul_le_mul hC₀ (Real.one_le_rpow hT1 hε.le)
         zero_le_one (zero_le_one.trans hC₀)
   have hRleN : R≤(N:ℝ) :=
@@ -1555,13 +1555,13 @@ private theorem middleOriginal_approximateModelPhase_enlarged_lower_correlation_
   calc
     _ ≤ (K+Z)^12 :=
       pow_le_pow_left₀ (Finset.sum_nonneg (fun _ _ => norm_nonneg _)) hCorr 12
-    _ ≤ (2:ℝ)^11*(K^12+Z^12) := add_pow_le hKp.le hZ0 12
-    _ ≤ (2:ℝ)^11*(C₀*(X*k/M)^ε*(E^12+Main)+C₀*(X*k/M)^ε*(E^12+Main)) :=
+    _ ≤ twoR^11*(K^12+Z^12) := add_pow_le hKp.le hZ0 12
+    _ ≤ twoR^11*(C₀*(X*k/M)^ε*(E^12+Main)+C₀*(X*k/M)^ε*(E^12+Main)) :=
       mul_le_mul_of_nonneg_left (add_le_add hKpow hZ) (by norm_num)
     _ = _ := by
       rw [←two_mul]
       dsimp only [C]
-      rw [show (2:ℝ)^12=2^11*2 from pow_succ 2 11]
+      rw [show twoR^12=2^11*2 from pow_succ 2 11]
       ac_rfl
 
 private theorem middleOriginal_lower_correlation_integer_moments
@@ -1590,10 +1590,10 @@ private theorem middleOriginal_lower_integer_moments_all_shifts
     (hKH : K≤H) (hscale : (X*K/M)*N*R^2=M^3) :
     (M/H)^36*(K*M/Real.sqrt N)^36≤M^72/N^18 ∧
     (M/H)^36*(K*M*R^2/N^2)^36≤M^216/(H^36*X^36*N^108) ∧
-    (M/H)^36*(K*N*(N/R)^((2:ℝ)/3))^36≤X^12*H^12*N^72/M^12 ∧
+    (M/H)^36*(K*N*(N/R)^(twoR/3))^36≤X^12*H^12*N^72/M^12 ∧
     (M/H)^36*(K^11*M^13/(N^3*R^6))^3≤X^9*H^6*M^39 ∧
     (M/H)^36*(K^11*K*M^13/(N^5*R^4))^3≤X^6*H^6*M^51/N^9 ∧
-    (M/H)^36*(K^12*M^12/(N^4*R^2)*(R/N)^((2:ℝ)/3))^3≤
+    (M/H)^36*(K^12*M^12/(N^4*R^2)*(R/N)^(twoR/3))^3≤
       X^2*H^2*M^64/N^12 := by
   obtain ⟨he₁,he₂,he₃,_,_,he₆⟩ :=
     upperOriginal_upper_integer_moments_all_shifts hX hM hN hK hH hR hKH hscale
@@ -1612,28 +1612,28 @@ private theorem middleOriginal_weighted_lower_integer_moment_bound
     {X M N K H R : ℝ}
     (hX : 0<X) (hM : 0<M) (hN : 0<N) (hK : 0<K) (hH : 0<H) (hR : 0<R)
     (hKH : K≤H) (hscale : (X*K/M)*N*R^2=M^3) :
-    let E := K*M/Real.sqrt N+K*M*R^2/N^2+K*N*(N/R)^((2:ℝ)/3)
+    let E := K*M/Real.sqrt N+K*M*R^2/N^2+K*N*(N/R)^(twoR/3)
     let Main := K^11*M^13/(N^3*R^6)+K^11*K*M^13/(N^5*R^4)+
-      K^12*M^12/(N^4*R^2)*(R/N)^((2:ℝ)/3)
-    (M/H)^36*(E^36+Main^3)≤(2:ℝ)^72*
+      K^12*M^12/(N^4*R^2)*(R/N)^(twoR/3)
+    (M/H)^36*(E^36+Main^3)≤twoR^72*
       ((M^72/N^18+M^216/(H^36*X^36*N^108)+X^12*H^12*N^72/M^12)+
         (X^9*H^6*M^39+X^6*H^6*M^51/N^9+X^2*H^2*M^64/N^12)) := by
   intro E Main
   let e₁ := K*M/Real.sqrt N
   let e₂ := K*M*R^2/N^2
-  let e₃ := K*N*(N/R)^((2:ℝ)/3)
+  let e₃ := K*N*(N/R)^(twoR/3)
   let a₁ := K^11*M^13/(N^3*R^6)
   let a₂ := K^11*K*M^13/(N^5*R^4)
-  let a₃ := K^12*M^12/(N^4*R^2)*(R/N)^((2:ℝ)/3)
+  let a₃ := K^12*M^12/(N^4*R^2)*(R/N)^(twoR/3)
   have he₁ : 0≤e₁ := by dsimp only [e₁]; positivity
   have he₂ : 0≤e₂ := by dsimp only [e₂]; positivity
   have he₃ : 0≤e₃ := by dsimp only [e₃]; positivity
   have ha₁ : 0≤a₁ := by dsimp only [a₁]; positivity
   have ha₂ : 0≤a₂ := by dsimp only [a₂]; positivity
   have ha₃ : 0≤a₃ := by dsimp only [a₃]; positivity
-  have hE : E^36≤(2:ℝ)^72*(e₁^36+e₂^36+e₃^36) :=
+  have hE : E^36≤twoR^72*(e₁^36+e₂^36+e₃^36) :=
     upperOriginal_three_term_power_bound he₁ he₂ he₃ 36
-  have hMain : Main^3≤(2:ℝ)^72*(a₁^3+a₂^3+a₃^3) :=
+  have hMain : Main^3≤twoR^72*(a₁^3+a₂^3+a₃^3) :=
     (upperOriginal_three_term_power_bound ha₁ ha₂ ha₃ 3).trans
       (mul_le_mul_of_nonneg_right (by norm_num)
         (add_nonneg (add_nonneg (pow_nonneg ha₁ 3) (pow_nonneg ha₂ 3)) (pow_nonneg ha₃ 3)))
@@ -1641,10 +1641,10 @@ private theorem middleOriginal_weighted_lower_integer_moment_bound
     middleOriginal_lower_integer_moments_all_shifts hX hM hN hK hH hR hKH hscale
   have hW : 0≤(M/H)^36 := pow_nonneg (div_nonneg hM.le hH.le) 36
   calc
-    _ ≤ (M/H)^36*((2:ℝ)^72*(e₁^36+e₂^36+e₃^36)+
-        (2:ℝ)^72*(a₁^3+a₂^3+a₃^3)) :=
+    _ ≤ (M/H)^36*(twoR^72*(e₁^36+e₂^36+e₃^36)+
+        twoR^72*(a₁^3+a₂^3+a₃^3)) :=
       mul_le_mul_of_nonneg_left (add_le_add hE hMain) hW
-    _ = (2:ℝ)^72*(((M/H)^36*e₁^36+(M/H)^36*e₂^36+(M/H)^36*e₃^36)+
+    _ = twoR^72*(((M/H)^36*e₁^36+(M/H)^36*e₂^36+(M/H)^36*e₃^36)+
         ((M/H)^36*a₁^3+(M/H)^36*a₂^3+(M/H)^36*a₃^3)) := by ring
     _ ≤ _ := mul_le_mul_of_nonneg_left
       (add_le_add (add_le_add (add_le_add h₁ h₂) h₃)
@@ -1655,12 +1655,12 @@ private theorem middleOriginal_lower_weyl_seventy_second_bound
     (hS : 0≤S) (hZ : 0≤Z) (hA : 0≤A) (hC : 1≤C) (hL : 0≤L)
     (hX : 1≤X) (hM : 0<M) (hN : 0<N) (hK : 0<K) (hH : 0<H) (hR : 0<R)
     (hε : 0≤ε) (hKH : K≤H) (hscale : (X*K/M)*N*R^2=M^3) :
-    let E := K*M/Real.sqrt N+K*M*R^2/N^2+K*N*(N/R)^((2:ℝ)/3)
+    let E := K*M/Real.sqrt N+K*M*R^2/N^2+K*N*(N/R)^(twoR/3)
     let Main := K^11*M^13/(N^3*R^6)+K^11*K*M^13/(N^5*R^4)+
-      K^12*M^12/(N^4*R^2)*(R/N)^((2:ℝ)/3)
+      K^12*M^12/(N^4*R^2)*(R/N)^(twoR/3)
     Z^12≤C*X^ε*(E^12+Main) →
     S^24≤A*L^12*((M^2/H)^12+(M/H)^12*Z^12) →
-    S^72≤(2:ℝ)^76*A^3*C^3*L^36*X^(3*ε)*
+    S^72≤twoR^76*A^3*C^3*L^36*X^(3*ε)*
       (M^72/H^36+
         ((M^72/N^18+M^216/(H^36*X^36*N^108)+X^12*H^12*N^72/M^12)+
           (X^9*H^6*M^39+X^6*H^6*M^51/N^9+X^2*H^2*M^64/N^12))) := by
@@ -1685,7 +1685,7 @@ private theorem middleOriginal_lower_weyl_seventy_second_bound
       pow_le_pow_left₀ (pow_nonneg hS 24) hWeyl 3
   have hAdd : ((M^2/H)^12+(M/H)^12*Z^12)^3≤
       4*(M^72/H^36+(M/H)^36*Z^36) := by
-    simpa only [div_pow,mul_pow,←pow_mul,show (2:ℝ)^(3-1)=4 by norm_num] using
+    simpa only [div_pow,mul_pow,←pow_mul,show twoR^(3-1)=4 by norm_num] using
       add_pow_le (by positivity : 0≤(M^2/H)^12)
         (by positivity : 0≤(M/H)^12*Z^12) 3
   have hSmain : S^72≤4*A^3*L^36*(M^72/H^36+(M/H)^36*Z^36) := by
@@ -1698,7 +1698,7 @@ private theorem middleOriginal_lower_weyl_seventy_second_bound
     have hh := pow_le_pow_left₀ (pow_nonneg hZ 12) hCorr 3
     simpa only [mul_pow,←pow_mul,hXpCube] using hh
   have hEM : (E^12+Main)^3≤4*(E^36+Main^3) := by
-    simpa only [←pow_mul,show (2:ℝ)^(3-1)=4 by norm_num] using
+    simpa only [←pow_mul,show twoR^(3-1)=4 by norm_num] using
       add_pow_le (pow_nonneg hE0 12) hMain0 3
   have hZMoment : Z^36≤4*C^3*X^(3*ε)*(E^36+Main^3) := by
     calc
@@ -1706,14 +1706,14 @@ private theorem middleOriginal_lower_weyl_seventy_second_bound
       _ ≤ C^3*X^(3*ε)*(4*(E^36+Main^3)) :=
         mul_le_mul_of_nonneg_left hEM (mul_nonneg (pow_nonneg hC0 3) hTpow)
       _ = _ := by ac_rfl
-  have hWeighted : (M/H)^36*(E^36+Main^3)≤(2:ℝ)^72*V :=
+  have hWeighted : (M/H)^36*(E^36+Main^3)≤twoR^72*V :=
     middleOriginal_weighted_lower_integer_moment_bound hXp hM hN hK hH hR hKH hscale
-  let Q := (2:ℝ)^74*C^3*X^(3*ε)
+  let Q := twoR^74*C^3*X^(3*ε)
   have hQ : 1≤Q := by
     calc
       _ ≤ C^3 := one_le_pow₀ hC
       _ ≤ C^3*X^(3*ε) := le_mul_of_one_le_right (pow_nonneg hC0 3) hTpowOne
-      _ ≤ (2:ℝ)^74*(C^3*X^(3*ε)) :=
+      _ ≤ twoR^74*(C^3*X^(3*ε)) :=
         le_mul_of_one_le_left (mul_nonneg (pow_nonneg hC0 3) hTpow) (by norm_num)
       _ = Q := (mul_assoc _ _ _).symm
   have hScaledZ : (M/H)^36*Z^36≤Q*V := by
@@ -1721,12 +1721,12 @@ private theorem middleOriginal_lower_weyl_seventy_second_bound
       _ ≤ (M/H)^36*(4*C^3*X^(3*ε)*(E^36+Main^3)) :=
         mul_le_mul_of_nonneg_left hZMoment hW0
       _ = (4*C^3*X^(3*ε))*((M/H)^36*(E^36+Main^3)) := by ac_rfl
-      _ ≤ (4*C^3*X^(3*ε))*((2:ℝ)^72*V) :=
+      _ ≤ (4*C^3*X^(3*ε))*(twoR^72*V) :=
         mul_le_mul_of_nonneg_left hWeighted
           (mul_nonneg (mul_nonneg (by norm_num) (pow_nonneg hC0 3)) hTpow)
       _ = Q*V := by
         dsimp only [Q]
-        rw [show (2:ℝ)^74=4*2^72 by norm_num]
+        rw [show twoR^74=4*2^72 by norm_num]
         ac_rfl
   have hDiag : M^72/H^36≤Q*(M^72/H^36) :=
     le_mul_of_one_le_left (by positivity) hQ
@@ -1738,7 +1738,7 @@ private theorem middleOriginal_lower_weyl_seventy_second_bound
     _ = _ := by
       rw [←mul_add]
       dsimp only [Q,V]
-      rw [show (2:ℝ)^76=4*2^74 by norm_num]
+      rw [show twoR^76=4*2^74 by norm_num]
       ring
 
 private theorem middleOriginal_approximateModelPhase_lower_original_seventy_second
@@ -1760,27 +1760,27 @@ private theorem middleOriginal_approximateModelPhase_lower_original_seventy_seco
   classical
   obtain ⟨δ,η₀,B,C₀,hδ,hη₀,hηcap,hB,hC₀,hsource⟩ :=
     middleOriginal_approximateModelPhase_enlarged_lower_correlation_moment hσ hε
-  let A₀ := (18:ℝ)^12*(2:ℝ)^11
+  let A₀ := (18:ℝ)^12*twoR^11
   have hA₀ : 0≤A₀ := by dsimp only [A₀]; norm_num
-  let D := (2:ℝ)^76*A₀^3*C₀^3
+  let D := twoR^76*A₀^3*C₀^3
   have hD : 0≤D := mul_nonneg
     (mul_nonneg (by norm_num) (pow_nonneg hA₀ 3)) (pow_nonneg (zero_le_one.trans hC₀) 3)
-  let C := max C₀ ((2:ℝ)^71*(D+6^72))
+  let C := max C₀ (twoR^71*(D+6^72))
   have hCC₀ : C₀≤C := le_max_left _ _
-  have hCoeff : (2:ℝ)^71*(D+6^72)≤C := le_max_right _ _
+  have hCoeff : twoR^71*(D+6^72)≤C := le_max_right _ _
   have hC : 1≤C := hC₀.trans hCC₀
   refine ⟨δ,η₀,B,C,hδ,hη₀,hηcap,hB,hC,?_⟩
   intro X M F n N H a L hX hM hF hN8 hN2 hH2 hHeta hThreshold
     hBN hRN hNR hNM hCurve hFour hTen ha hb
   have hXp := zero_lt_one.trans_le hX
   have hMp := zero_lt_one.trans_le hM
-  have hNp : (0:ℝ)<N := by exact_mod_cast (show 0<N by omega)
-  have hHp : (0:ℝ)<H := by exact_mod_cast (show 0<H by omega)
+  have hNp : zeroR<N := by exact_mod_cast (show 0<N by omega)
+  have hHp : zeroR<H := by exact_mod_cast (show 0<H by omega)
   have hHM : (H:ℝ)≤M := by
     calc
       _ ≤ η₀*M := hHeta
-      _ ≤ (1:ℝ)*M := mul_le_mul_of_nonneg_right
-        (hηcap.trans (by norm_num : (1:ℝ)/8≤1)) hMp.le
+      _ ≤ oneR*M := mul_le_mul_of_nonneg_right
+        (hηcap.trans (by norm_num : oneR/8≤1)) hMp.le
       _ = M := one_mul M
   have hLM : (L:ℝ)+1≤2*M := by
     have hb' : (a:ℝ)+(L:ℝ)≤2*M := by simpa only [Nat.cast_add] using hb
@@ -1788,8 +1788,8 @@ private theorem middleOriginal_approximateModelPhase_lower_original_seventy_seco
   obtain ⟨Fext,hsharp,hcorr⟩ := hsource M F hM hF
   obtain ⟨k,hk,hkH,hweyl⟩ := upperOriginal_exists_source_dyadic_twenty_fourth_power
     Fext X M a L H hMp hH2 hHM hLM
-  have hKp : (0:ℝ)<k := by exact_mod_cast hk
-  have hK1 : (1:ℝ)≤k := by exact_mod_cast (show 1≤k by omega)
+  have hKp : zeroR<k := by exact_mod_cast hk
+  have hK1 : oneR≤k := by exact_mod_cast (show 1≤k by omega)
   have hKH : (k:ℝ)≤H := by exact_mod_cast (show k≤H by omega)
   have hKM : (k:ℝ)≤M := hKH.trans hHM
   let R := Real.sqrt (M^4/(X*(k:ℝ)*(N:ℝ)))
@@ -1813,9 +1813,9 @@ private theorem middleOriginal_approximateModelPhase_lower_original_seventy_seco
     (div_le_iff₀ hMp).mpr (mul_le_mul_of_nonneg_left hKM hXp.le)
   have hEtaK : (k:ℝ)/M≤η₀ := (div_le_iff₀ hMp).mpr (hKH.trans hHeta)
   let E := (k:ℝ)*M/Real.sqrt (N:ℝ)+(k:ℝ)*M*R^2/(N:ℝ)^2+
-    (k:ℝ)*(N:ℝ)*((N:ℝ)/R)^((2:ℝ)/3)
+    (k:ℝ)*(N:ℝ)*((N:ℝ)/R)^(twoR/3)
   let Main := (k:ℝ)^11*M^13/((N:ℝ)^3*R^6)+(k:ℝ)^11*(k:ℝ)*M^13/((N:ℝ)^5*R^4)+
-    (k:ℝ)^12*M^12/((N:ℝ)^4*R^2)*(R/(N:ℝ))^((2:ℝ)/3)
+    (k:ℝ)^12*M^12/((N:ℝ)^4*R^2)*(R/(N:ℝ))^(twoR/3)
   let Z := ∑ j∈Finset.range k,‖sourceShiftCorrelation Fext X M a L (k+j)‖
   have hZ0 : 0≤Z := Finset.sum_nonneg (fun _ _ => norm_nonneg _)
   have hCurveK : B*(X*k/M) ≤ M^2 := by
@@ -1842,8 +1842,8 @@ private theorem middleOriginal_approximateModelPhase_lower_original_seventy_seco
         X^12*(H:ℝ)^12*(N:ℝ)^72/M^12)+
       (X^9*(H:ℝ)^6*M^39+X^6*(H:ℝ)^6*M^51/(N:ℝ)^9+X^2*(H:ℝ)^2*M^64/(N:ℝ)^12))
   have hPoly : 0≤Poly := by dsimp only [Poly]; positivity
-  have hClog : (0:ℝ)≤Nat.clog 2 H := Nat.cast_nonneg _
-  have hClogPlus : (1:ℝ)≤1+(Nat.clog 2 H:ℝ) := le_add_of_nonneg_right hClog
+  have hClog : zeroR≤Nat.clog 2 H := Nat.cast_nonneg _
+  have hClogPlus : oneR≤1+(Nat.clog 2 H:ℝ) := le_add_of_nonneg_right hClog
   have hClogPlus0 := zero_le_one.trans hClogPlus
   have hXpow0 : 0≤X^(3*ε) := Real.rpow_nonneg hXp.le _
   have hSext : ‖Expdb.exponentialSumAt Fext X M a (a+L)‖^72≤
@@ -1865,10 +1865,10 @@ private theorem middleOriginal_approximateModelPhase_lower_original_seventy_seco
         mul_le_mul_of_nonneg_right
           (mul_le_mul_of_nonneg_right (mul_le_mul_of_nonneg_left hLog hD) hXpow0) hPoly
       _ = _ := by dsimp only [W]; simp only [mul_assoc]
-  have hOriginal := upperOriginal_sharp_extension_power_bound hD hW hPoly (by norm_num : (0:ℝ)≤6)
+  have hOriginal := upperOriginal_sharp_extension_power_bound hD hW hPoly (by norm_num : zeroR≤6)
     (hsharp X a (a+L) ha hb) hSext'
   calc
-    _ ≤ (2:ℝ)^71*(D+6^72)*W*(1+Poly) := hOriginal
+    _ ≤ twoR^71*(D+6^72)*W*(1+Poly) := hOriginal
     _ ≤ C*W*(1+Poly) := mul_le_mul_of_nonneg_right
       (mul_le_mul_of_nonneg_right hCoeff (zero_le_one.trans hW))
         (add_nonneg zero_le_one hPoly)
@@ -1926,53 +1926,53 @@ private theorem middleOriginal_lower_seven_monomials_power_window
     1+(M^72/H^36+
       ((M^72/N^18+M^216/(H^36*X^36*N^108)+X^12*H^12*N^72/M^12)+
         (X^9*H^6*M^39+X^6*H^6*M^51/N^9+X^2*H^2*M^64/N^12))) ≤
-      (8*(2:ℝ)^144)*X^ξ := by
+      (8*twoR^144)*X^ξ := by
   have hXp := zero_lt_one.trans_le hX
   have hMp : 0<M := (Real.rpow_pos_of_pos hXp ℓ).trans_le hMl
   have hNp : 0<N := (div_pos (Real.rpow_pos_of_pos hXp ν) (by norm_num)).trans_le hNl
   have hHp : 0<H := (div_pos (Real.rpow_pos_of_pos hXp h) (by norm_num)).trans_le hHl
   have hconst {b : ℝ} {j : ℕ} (hj : j≤144) (hb : b≤ξ) :
-      (2:ℝ)^j*X^b≤(2:ℝ)^144*X^ξ :=
+      twoR^j*X^b≤twoR^144*X^ξ :=
     mul_le_mul (pow_le_pow_right₀ (by norm_num) hj)
       (Real.rpow_le_rpow_of_exponent_le hX hb) (Real.rpow_nonneg hXp.le _) (by positivity)
-  have h₀ : 1≤(2:ℝ)^144*X^ξ :=
+  have h₀ : 1≤twoR^144*X^ξ :=
     (Real.one_le_rpow hX hξ).trans
       (le_mul_of_one_le_left (Real.rpow_nonneg hXp.le _) (by norm_num))
-  have h₁ : M^72/H^36≤(2:ℝ)^144*X^ξ := by
+  have h₁ : M^72/H^36≤twoR^144*X^ξ := by
     calc
       _ ≤ (X^u)^72/(X^h/2)^36 := by gcongr
-      _ = (2:ℝ)^36*((X^u)^72/(X^h)^36) := by field_simp
-      _ = (2:ℝ)^36*X^(72*u-36*h) := by
+      _ = twoR^36*((X^u)^72/(X^h)^36) := by field_simp
+      _ = twoR^36*X^(72*u-36*h) := by
         rw [←Real.rpow_mul_natCast hXp.le,←Real.rpow_mul_natCast hXp.le,
           ←Real.rpow_sub hXp]
-        apply congrArg (fun y : ℝ => (2:ℝ)^36*X^y)
+        apply congrArg (fun y : ℝ => twoR^36*X^y)
         push_cast
         ring
       _ ≤ _ := hconst (by norm_num) hDiag
-  have h₂ : M^72/N^18≤(2:ℝ)^144*X^ξ := by
+  have h₂ : M^72/N^18≤twoR^144*X^ξ := by
     calc
       _ ≤ (X^u)^72/(X^ν/2)^18 := by gcongr
-      _ = (2:ℝ)^18*((X^u)^72/(X^ν)^18) := by field_simp
-      _ = (2:ℝ)^18*X^(72*u-18*ν) := by
+      _ = twoR^18*((X^u)^72/(X^ν)^18) := by field_simp
+      _ = twoR^18*X^(72*u-18*ν) := by
         rw [←Real.rpow_mul_natCast hXp.le,←Real.rpow_mul_natCast hXp.le,
           ←Real.rpow_sub hXp]
-        apply congrArg (fun y : ℝ => (2:ℝ)^18*X^y)
+        apply congrArg (fun y : ℝ => twoR^18*X^y)
         push_cast
         ring
       _ ≤ _ := hconst (by norm_num) hSqrt
-  have h₃ : M^216/(H^36*X^36*N^108)≤(2:ℝ)^144*X^ξ := by
+  have h₃ : M^216/(H^36*X^36*N^108)≤twoR^144*X^ξ := by
     calc
       _ ≤ (X^u)^216/((X^h/2)^36*X^36*(X^ν/2)^108) := by gcongr
-      _ = (2:ℝ)^144*((X^u)^216/((X^h)^36*X^36*(X^ν)^108)) := by field_simp
-      _ = (2:ℝ)^144*X^(216*u-36*h-36-108*ν) := by
+      _ = twoR^144*((X^u)^216/((X^h)^36*X^36*(X^ν)^108)) := by field_simp
+      _ = twoR^144*X^(216*u-36*h-36-108*ν) := by
         simp only [←Real.rpow_mul_natCast hXp.le]
         rw [←Real.rpow_natCast X 36]
         simp only [←Real.rpow_add hXp,←Real.rpow_sub hXp]
-        apply congrArg (fun y : ℝ => (2:ℝ)^144*X^y)
+        apply congrArg (fun y : ℝ => twoR^144*X^y)
         push_cast
         ring
       _ ≤ _ := hconst le_rfl hCubic
-  have h₄ : X^12*H^12*N^72/M^12≤(2:ℝ)^144*X^ξ := by
+  have h₄ : X^12*H^12*N^72/M^12≤twoR^144*X^ξ := by
     calc
       _ ≤ X^12*(X^h)^12*(X^ν)^72/(X^ℓ)^12 := by gcongr
       _ = X^(12+12*h+72*ν-12*ℓ) := by
@@ -1983,7 +1983,7 @@ private theorem middleOriginal_lower_seven_monomials_power_window
         push_cast
         ring
       _ ≤ _ := by simpa only [pow_zero,one_mul] using hconst (j:=0) (by omega) hEndpoint
-  have h₅ : X^9*H^6*M^39≤(2:ℝ)^144*X^ξ := by
+  have h₅ : X^9*H^6*M^39≤twoR^144*X^ξ := by
     calc
       _ ≤ X^9*(X^h)^6*(X^u)^39 := by gcongr
       _ = X^(9+6*h+39*u) := by
@@ -1994,27 +1994,27 @@ private theorem middleOriginal_lower_seven_monomials_power_window
         push_cast
         ring
       _ ≤ _ := by simpa only [pow_zero,one_mul] using hconst (j:=0) (by omega) hType1
-  have h₆ : X^6*H^6*M^51/N^9≤(2:ℝ)^144*X^ξ := by
+  have h₆ : X^6*H^6*M^51/N^9≤twoR^144*X^ξ := by
     calc
       _ ≤ X^6*(X^h)^6*(X^u)^51/(X^ν/2)^9 := by gcongr
-      _ = (2:ℝ)^9*(X^6*(X^h)^6*(X^u)^51/(X^ν)^9) := by field_simp
-      _ = (2:ℝ)^9*X^(6+6*h+51*u-9*ν) := by
+      _ = twoR^9*(X^6*(X^h)^6*(X^u)^51/(X^ν)^9) := by field_simp
+      _ = twoR^9*X^(6+6*h+51*u-9*ν) := by
         simp only [←Real.rpow_mul_natCast hXp.le]
         rw [←Real.rpow_natCast X 6]
         simp only [←Real.rpow_add hXp,←Real.rpow_sub hXp]
-        apply congrArg (fun y : ℝ => (2:ℝ)^9*X^y)
+        apply congrArg (fun y : ℝ => twoR^9*X^y)
         push_cast
         ring
       _ ≤ _ := hconst (by norm_num) hType2
-  have h₇ : X^2*H^2*M^64/N^12≤(2:ℝ)^144*X^ξ := by
+  have h₇ : X^2*H^2*M^64/N^12≤twoR^144*X^ξ := by
     calc
       _ ≤ X^2*(X^h)^2*(X^u)^64/(X^ν/2)^12 := by gcongr
-      _ = (2:ℝ)^12*(X^2*(X^h)^2*(X^u)^64/(X^ν)^12) := by field_simp
-      _ = (2:ℝ)^12*X^(2+2*h+64*u-12*ν) := by
+      _ = twoR^12*(X^2*(X^h)^2*(X^u)^64/(X^ν)^12) := by field_simp
+      _ = twoR^12*X^(2+2*h+64*u-12*ν) := by
         simp only [←Real.rpow_mul_natCast hXp.le]
         rw [←Real.rpow_natCast X 2]
         simp only [←Real.rpow_add hXp,←Real.rpow_sub hXp]
-        apply congrArg (fun y : ℝ => (2:ℝ)^12*X^y)
+        apply congrArg (fun y : ℝ => twoR^12*X^y)
         push_cast
         ring
       _ ≤ _ := hconst (by norm_num) hPair
@@ -2044,7 +2044,7 @@ private theorem middleOriginal_lower_beta_of_power_window
   have hPhys := middleOriginal_eventually_lower_polynomial_power_window
     hB hCsrc hη hℓ hν hh hu hhℓ hRN hNR hNM hCurve hFour hTen
   have hLog := upperOriginal_eventually_uniform_clog_power_loss
-    (C:=Csrc*(8*(2:ℝ)^144))
+    (C:=Csrc*(8*twoR^144))
     (mul_nonneg (zero_le_one.trans hCsrc) (by norm_num)) hζ
   obtain ⟨T₀,hT₀⟩ := Filter.eventually_atTop.mp (hPhys.and hLog)
   let δ := min δsrc δw
@@ -2103,9 +2103,9 @@ private theorem middleOriginal_lower_beta_of_power_window
             ((M^72/(N:ℝ)^18+M^216/((H:ℝ)^36*T^36*(N:ℝ)^108)+
                 T^12*(H:ℝ)^12*(N:ℝ)^72/M^12)+
               (T^9*(H:ℝ)^6*M^39+T^6*(H:ℝ)^6*M^51/(N:ℝ)^9+T^2*(H:ℝ)^2*M^64/(N:ℝ)^12)))) := hActual
-      _ ≤ Csrc*(1+(Nat.clog 2 H:ℝ))^36*T^(3*εs)*((8*(2:ℝ)^144)*T^ξ) :=
+      _ ≤ Csrc*(1+(Nat.clog 2 H:ℝ))^36*T^(3*εs)*((8*twoR^144)*T^ξ) :=
         mul_le_mul_of_nonneg_left hPoly (mul_nonneg (mul_nonneg hCsrc0 hLog0) hXpow0)
-      _ = (Csrc*(8*(2:ℝ)^144)*(1+(Nat.clog 2 H:ℝ))^36)*T^(3*εs)*T^ξ := by ac_rfl
+      _ = (Csrc*(8*twoR^144)*(1+(Nat.clog 2 H:ℝ))^36)*T^(3*εs)*T^ξ := by ac_rfl
       _ ≤ T^ζ*T^(3*εs)*T^ξ := mul_le_mul_of_nonneg_right
         (mul_le_mul_of_nonneg_right hLoss hXpow0) (Real.rpow_nonneg hTp.le _)
       _ = T^(72*β) := by
@@ -2274,7 +2274,7 @@ private theorem source_weyl_length_cap (F : ℝ → ℝ) (T N : ℝ)
     (H:ℝ)*‖exponentialSumAt F T N a (a+L)‖^2 ≤
       2*M*(M+2*∑ r∈Finset.Icc 1 (H-1), ‖sourceShiftCorrelation F T N a L r‖) := by
   have h := source_exponentialSum_weyl F T N a L H
-  have hHp : (0:ℝ) < H := by exact_mod_cast hH
+  have hHp : zeroR < H := by exact_mod_cast hH
   have hM : 0 ≤ M := hHp.le.trans hHM
   have hC : 0 ≤ ∑ r∈Finset.Icc 1 (H-1), ‖sourceShiftCorrelation F T N a L r‖ :=
     Finset.sum_nonneg (fun _ _ => norm_nonneg _)
@@ -2317,8 +2317,8 @@ private theorem source_twice_weyl_fourth
   let A := ∑ r∈Finset.Icc 1 (H-1), C r
   let B := ∑ r∈Finset.Icc 1 (H-1), (C r)^2
   have hn : 0 ≤ n := by dsimp [n]; positivity
-  have hHp : (0:ℝ) < H := by exact_mod_cast hH
-  have hKp : (0:ℝ) < K := by exact_mod_cast hK
+  have hHp : zeroR < H := by exact_mod_cast hH
+  have hKp : zeroR < K := by exact_mod_cast hK
   have hHLr : (H:ℝ) ≤ n := by dsimp only [n]; exact_mod_cast hHL
   have hKLr : (K:ℝ) ≤ n := by dsimp only [n]; exact_mod_cast hKL
   have hMp : 0 < M := hHp.trans hHM
@@ -2361,7 +2361,7 @@ private theorem source_twice_weyl_fourth
         rw [← Finset.mul_sum]
       _ ≤ _ := by gcongr
   have hcs : A^2 ≤ (H:ℝ)*B := by
-    have hh := Finset.sum_mul_sq_le_sq_mul_sq (Finset.Icc 1 (H-1)) C (fun _ => (1:ℝ))
+    have hh := Finset.sum_mul_sq_le_sq_mul_sq (Finset.Icc 1 (H-1)) C (fun _ => oneR)
     simp only [mul_one,one_pow,Finset.sum_const,nsmul_eq_mul,mul_one] at hh
     calc
       _ ≤ B*((Finset.Icc 1 (H-1)).card:ℝ) := hh
@@ -2398,8 +2398,8 @@ private theorem twice_shift_actual_sum {F : ℝ → ℝ} {σ X M : ℝ}
     ‖∑ j∈Finset.range (L+1-r-s),
       (𝐞 (X*(F (((a:ℝ)+j)/M)-F (((a:ℝ)+j+r)/M)-
         F (((a:ℝ)+j+s)/M)+F (((a:ℝ)+j+r+s)/M))) : ℂ)‖ := by
-  have hrp : (0:ℝ) < r := by exact_mod_cast hr
-  have hsp : (0:ℝ) < s := by exact_mod_cast hs
+  have hrp : zeroR < r := by exact_mod_cast hr
+  have hsp : zeroR < s := by exact_mod_cast hs
   have hM : M ≠ 0 := by linarith
   have hMr : M-(r:ℝ) ≠ 0 := by linarith
   have hMrs : M-(r:ℝ)-s ≠ 0 := by linarith
@@ -2528,8 +2528,8 @@ public  theorem source_product_twice_weyl {ε : ℝ} (hε : 0 < ε) :
       have hh := hbound p hp
       exact_mod_cast Nat.mul_le_mul hh.2.1.le hh.2.2.2.le)
   refine ⟨pick,hpick,?_⟩
-  have hHp : (0:ℝ) < H := by exact_mod_cast hH
-  have hKp : (0:ℝ) < K := by exact_mod_cast hK
+  have hHp : zeroR < H := by exact_mod_cast hH
+  have hKp : zeroR < K := by exact_mod_cast hK
   have hweyl := source_twice_weyl_fourth F σ X M a L H K
     hσ hH hK (by omega) hHL hKL (by linarith)
   dsimp only at hweyl
@@ -2667,7 +2667,7 @@ private theorem reference_curvature_profile_transfer
 
 private theorem linear_reference_curvature_data
     (f : ℝ → ℝ) {x y c U : ℝ}
-    (hx : 0 < x) (hy : y∈Icc (1/2:ℝ) 3)
+    (hx : 0 < x) (hy : y∈Icc halfR 3)
     (hc : 0 < c)
     (hf : ∀ u, 0 < u → ContDiffAt ℝ ∞ f u)
     (hlower : c ≤ deriv f x) (hupper : |deriv f x| ≤ U)
@@ -2734,16 +2734,16 @@ private theorem linear_reference_local_parameter_count
     {c U : ℝ} (hc : 0 < c) (hU : 0 < U) :
     ∃ a C : ℝ, 0 < a ∧ a ≤ 1/4 ∧ 0 < C ∧
       ∀ (f : ℝ → ℝ) (x₀ y₀ ε E J q g : ℝ) (S : Finset ℝ) (x : ℝ → ℝ),
-        x₀∈Icc (1:ℝ) 2 → y₀∈Icc (1:ℝ) 2 →
+        x₀∈Icc oneR 2 → y₀∈Icc oneR 2 →
         (∀ u, 0 < u → ContDiffAt ℝ ∞ f u) →
-        (∀ u∈Icc (1/2:ℝ) 3, c ≤ deriv f u) →
-        (∀ u∈Icc (1/2:ℝ) 3,
+        (∀ u∈Icc halfR 3, c ≤ deriv f u) →
+        (∀ u∈Icc halfR 3,
           |f u| ≤ U ∧ |deriv f u| ≤ U ∧ |iteratedDeriv 2 f u| ≤ U) →
-        (∀ u∈Icc (1/2:ℝ) 3,
+        (∀ u∈Icc halfR 3,
           c ≤ |(deriv f u)^2-f u*iteratedDeriv 2 f u|) →
         0 ≤ ε → ε ≤ c/64 → 0 ≤ E → 0 < J →
         |y₀*f x₀-q| ≤ ε →
-        (∀ y∈S, y∈Icc (1:ℝ) 2 ∧ |y-y₀| < a ∧ x y∈Icc (1:ℝ) 2) →
+        (∀ y∈S, y∈Icc oneR 2 ∧ |y-y₀| < a ∧ x y∈Icc oneR 2) →
         (∀ y∈S, ∀ z∈S, y ≠ z → 1 ≤ J*|y-z|) →
         (∀ y∈S, |y*f (x y)-q| ≤ ε) →
         (∀ y∈S, |y*deriv f (x y)-g| ≤ E) →
@@ -2765,22 +2765,22 @@ private theorem linear_reference_local_parameter_count
     hanchor hpoints hsep hlevels hprofiles
   let H := fun p : ℝ × ℝ => p.1*f p.2
   let ρ := fun y => Function.invFunOn (fun u => H (y,u)) (Ioo (3/4:ℝ) (9/4)) q
-  have hsub : Icc (3/4:ℝ) (9/4) ⊆ Icc (1/2:ℝ) 3 := by
+  have hsub : Icc (3/4:ℝ) (9/4) ⊆ Icc halfR 3 := by
     intro u hu
     constructor <;> linarith only [hu.1,hu.2]
   have hpos (u : ℝ) (hu : u∈Icc (3/4:ℝ) (9/4)) : 0 < u := by
     linarith only [hu.1]
-  have hinside (u : ℝ) (hu : u∈Icc (1:ℝ) 2) :
+  have hinside (u : ℝ) (hu : u∈Icc oneR 2) :
       u∈Ioo (3/4:ℝ) (9/4) ∧ (1/4:ℝ) ≤ min (u-3/4) (9/4-u) := by
     refine ⟨⟨by linarith only [hu.1],by linarith only [hu.2]⟩,?_⟩
     exact le_min (by linarith only [hu.1]) (by linarith only [hu.2])
   have hywide (y : ℝ) (hy : y∈Ioo (y₀-a) (y₀+a)) :
-      y∈Icc (1/2:ℝ) 3 := by
+      y∈Icc halfR 3 := by
     constructor <;> linarith only [hy.1,hy.2,hy₀.1,hy₀.2,hacap]
   have hder (y u : ℝ) (hu : u∈Icc (3/4:ℝ) (9/4)) :
       HasDerivAt (fun z => y*f z) (y*deriv f u) u :=
     (((hf u (hpos u hu)).differentiableAt (by simp)).hasDerivAt).const_mul y
-  have hlow (y : ℝ) (hy : y∈Icc (1/2:ℝ) 3)
+  have hlow (y : ℝ) (hy : y∈Icc halfR 3)
       (u : ℝ) (hu : u∈Icc (3/4:ℝ) (9/4)) : L ≤ y*deriv f u := by
     dsimp only [L]
     have hh := mul_le_mul hy.1 (hlower u (hsub hu)) hc.le (by linarith only [hy.1])
@@ -2867,13 +2867,13 @@ private theorem linear_reference_parameter_count
     ∃ K C : ℝ, 0 < K ∧ 0 < C ∧
       ∀ (f : ℝ → ℝ) (ε E J q g : ℝ) (S : Finset ℝ) (x : ℝ → ℝ),
         (∀ u, 0 < u → ContDiffAt ℝ ∞ f u) →
-        (∀ u∈Icc (1/2:ℝ) 3, c ≤ deriv f u) →
-        (∀ u∈Icc (1/2:ℝ) 3,
+        (∀ u∈Icc halfR 3, c ≤ deriv f u) →
+        (∀ u∈Icc halfR 3,
           |f u| ≤ U ∧ |deriv f u| ≤ U ∧ |iteratedDeriv 2 f u| ≤ U) →
-        (∀ u∈Icc (1/2:ℝ) 3,
+        (∀ u∈Icc halfR 3,
           c ≤ |(deriv f u)^2-f u*iteratedDeriv 2 f u|) →
         0 ≤ ε → ε ≤ c/64 → 0 ≤ E → 0 < J →
-        (∀ y∈S, y∈Icc (1:ℝ) 2 ∧ x y∈Icc (1:ℝ) 2) →
+        (∀ y∈S, y∈Icc oneR 2 ∧ x y∈Icc oneR 2) →
         (∀ y∈S, ∀ z∈S, y ≠ z → 1 ≤ J*|y-z|) →
         (∀ y∈S, |y*f (x y)-q| ≤ ε) →
         (∀ y∈S, |y*deriv f (x y)-g| ≤ E) →
@@ -2898,7 +2898,7 @@ private theorem linear_reference_parameter_count
       constructor <;> linarith only [hlo,hhi,hyl,hyu]
     have hh := integer_card_le_interval_length_add_one I
       (show 1/a-1 ≤ 2/a from (sub_le_self _ zero_le_one).trans
-        (div_le_div_of_nonneg_right (by norm_num : (1:ℝ) ≤ 2) ha.le)) hrange
+        (div_le_div_of_nonneg_right (by norm_num : oneR ≤ 2) ha.le)) hrange
     calc
       _ ≤ 2/a-(1/a-1)+1 := hh
       _ = _ := by ring
@@ -2946,7 +2946,7 @@ private theorem linear_reference_parameter_count
 
 private theorem normalized_double_difference_common_jet
     (F : ℝ → ℝ) {x r s δ y U w : ℝ} (j : ℕ)
-    (hr : 0 ≤ r) (hs : 0 ≤ s) (hδ : 0 < δ) (hy : y∈Icc (1:ℝ) 2)
+    (hr : 0 ≤ r) (hs : 0 ≤ s) (hδ : 0 < δ) (hy : y∈Icc oneR 2)
     (hU : 0 ≤ U) (hprod : r*s=δ*y) (hshift : r+s ≤ w)
     (hreg : ∀ u∈Icc x (x+r+s), ContDiffAt ℝ ∞ F u)
     (hjet : ∀ u∈Icc x (x+r+s), |iteratedDeriv (j+3) F u| ≤ U) :
@@ -2977,14 +2977,14 @@ private theorem double_difference_parameter_count
     ∃ K C : ℝ, 0 < K ∧ 0 < C ∧
       ∀ (F : ℝ → ℝ) (δ w E J q g : ℝ) (S : Finset ℝ) (x r s : ℝ → ℝ),
         (∀ u, 0 < u → ContDiffAt ℝ ∞ F u) →
-        (∀ u∈Icc (1/2:ℝ) 3, c ≤ iteratedDeriv 5 F u) →
-        (∀ u∈Icc (1/2:ℝ) 3,
+        (∀ u∈Icc halfR 3, c ≤ iteratedDeriv 5 F u) →
+        (∀ u∈Icc halfR 3,
           |iteratedDeriv 4 F u| ≤ U ∧ |iteratedDeriv 5 F u| ≤ U ∧
             |iteratedDeriv 6 F u| ≤ U) →
-        (∀ u∈Icc (1/2:ℝ) 3,
+        (∀ u∈Icc halfR 3,
           c ≤ |(iteratedDeriv 5 F u)^2-iteratedDeriv 4 F u*iteratedDeriv 6 F u|) →
         0 < δ → 0 ≤ w → w ≤ 1/4 → 2*U*w ≤ c/64 → 0 ≤ E → 0 < J →
-        (∀ y∈S, y∈Icc (1:ℝ) 2 ∧ x y∈Icc (1:ℝ) 2) →
+        (∀ y∈S, y∈Icc oneR 2 ∧ x y∈Icc oneR 2) →
         (∀ y∈S, ∀ z∈S, y ≠ z → 1 ≤ J*|y-z|) →
         (∀ y∈S, 0 ≤ r y ∧ 0 ≤ s y ∧ r y*s y=δ*y ∧ r y+s y ≤ w) →
         let Q := fun y u =>
@@ -3001,7 +3001,7 @@ private theorem double_difference_parameter_count
   have hfd₂ : iteratedDeriv 2 (iteratedDeriv 4 F)=iteratedDeriv 6 F := by
     rw [iteratedDeriv_real_comp_order]
   have hsub (y : ℝ) (hy : y∈S) :
-      Icc (x y) (x y+r y+s y) ⊆ Icc (1/2:ℝ) 3 := by
+      Icc (x y) (x y+r y+s y) ⊆ Icc halfR 3 := by
     intro u hu
     have hp := (hpoints y hy).2
     have hs' := (hshifts y hy).2.2.2
@@ -3044,21 +3044,21 @@ private theorem double_difference_parameter_count
 
 public  theorem double_difference_cubic_jet_bounds
     (F : ℝ → ℝ) {x r s δ y U c w : ℝ}
-    (hx : x∈Icc (3/4:ℝ) (9/4)) (hy : y∈Icc (1:ℝ) 2)
+    (hx : x∈Icc (3/4:ℝ) (9/4)) (hy : y∈Icc oneR 2)
     (hr : 0 ≤ r) (hs : 0 ≤ s) (hδ : 0 < δ) (hU : 0 < U) (hc : 0 < c)
     (hprod : r*s=δ*y) (hshift : r+s ≤ w) (hw : w ≤ 1/4)
     (hsmall : 2*U*w ≤ c/64)
     (hf : ∀ u, 0 < u → ContDiffAt ℝ ∞ F u)
-    (hlower : ∀ u∈Icc (1/2:ℝ) 3, c ≤ iteratedDeriv 5 F u)
-    (hbound : ∀ u∈Icc (1/2:ℝ) 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n F u| ≤ U) :
+    (hlower : ∀ u∈Icc halfR 3, c ≤ iteratedDeriv 5 F u)
+    (hbound : ∀ u∈Icc halfR 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n F u| ≤ U) :
     let Q := fun u => (F u-F (u+r)-F (u+s)+F (u+r+s))/δ
     (∀ u, 0 < u → ContDiffAt ℝ ∞ Q u) ∧
       c/2 ≤ iteratedDeriv 3 Q x ∧
       |iteratedDeriv 3 Q x| ≤ 3*U ∧ |iteratedDeriv 4 Q x| ≤ 3*U := by
   intro Q
-  have hx' : x∈Icc (1/2:ℝ) 3 :=
+  have hx' : x∈Icc halfR 3 :=
     ⟨by linarith only [hx.1],by linarith only [hx.2]⟩
-  have hsub : Icc x (x+r+s) ⊆ Icc (1/2:ℝ) 3 := by
+  have hsub : Icc x (x+r+s) ⊆ Icc halfR 3 := by
     intro u hu
     constructor <;> linarith only [hu.1,hu.2,hx.1,hx.2,hshift,hw]
   have hj (j : ℕ) (hj : j≤4) :
@@ -3092,7 +3092,7 @@ public  theorem double_difference_cubic_jet_bounds
 
 private theorem rounded_weighted_profile_bound
     (Ga Gb Da Db : ℝ → ℝ) {xa xb M B Δ q : ℝ}
-    (hxa : xa∈Icc (1:ℝ) 2) (hxb : xb∈Icc (1:ℝ) 2)
+    (hxa : xa∈Icc oneR 2) (hxb : xb∈Icc oneR 2)
     (hM : 2 ≤ M) (hB : 0 ≤ B) (hΔ : 0 ≤ Δ)
     (hda : ∀ u∈Icc (3/4:ℝ) (9/4), HasDerivAt Ga (Da u) u)
     (hdb : ∀ u∈Icc (3/4:ℝ) (9/4), HasDerivAt Gb (Db u) u)
@@ -3116,15 +3116,15 @@ private theorem rounded_weighted_profile_bound
   have hquarter : 1/(2*M) ≤ (1/4:ℝ) := by
     apply (div_le_iff₀ (by positivity : 0 < 2*M)).mpr
     linarith only [hM]
-  have hxext x (hx : x∈Icc (1:ℝ) 2) : x∈Icc (3/4:ℝ) (9/4) :=
+  have hxext x (hx : x∈Icc oneR 2) : x∈Icc (3/4:ℝ) (9/4) :=
     ⟨by linarith only [hx.1],by linarith only [hx.2]⟩
-  have hrange x (hx : x∈Icc (1:ℝ) 2) : rd x∈Icc (3/4:ℝ) (9/4) := by
+  have hrange x (hx : x∈Icc oneR 2) : rd x∈Icc (3/4:ℝ) (9/4) := by
     have hb := abs_le.mp ((hr x).trans hquarter)
     constructor <;> linarith only [hb.1,hb.2,hx.1,hx.2]
   have herr (G D : ℝ → ℝ)
       (hd : ∀ u∈Icc (3/4:ℝ) (9/4), HasDerivAt G (D u) u)
       (hup : ∀ u∈Icc (3/4:ℝ) (9/4), |D u| ≤ B)
-      (x : ℝ) (hx : x∈Icc (1:ℝ) 2) : |G x-G (rd x)| ≤ B/(2*M) := by
+      (x : ℝ) (hx : x∈Icc oneR 2) : |G x-G (rd x)| ≤ B/(2*M) := by
     have hh : |G x-G (rd x)| ≤ B*|x-rd x| := by
       apply (convex_Icc (3/4:ℝ) (9/4)).norm_image_sub_le_of_norm_deriv_le
         (fun z hz => (hd z hz).differentiableAt) (fun z hz => ?_)
@@ -3165,14 +3165,14 @@ private theorem double_difference_physical_parameter_count
       ∀ (F : ℝ → ℝ) (δ w ya xa Δ J q t T M : ℝ)
         (S : Finset ℝ) (x r s : ℝ → ℝ),
         (∀ u, 0 < u → ContDiffAt ℝ ∞ F u) →
-        (∀ u∈Icc (1/2:ℝ) 3, c ≤ iteratedDeriv 5 F u) →
-        (∀ u∈Icc (1/2:ℝ) 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n F u| ≤ U) →
-        (∀ u∈Icc (1/2:ℝ) 3,
+        (∀ u∈Icc halfR 3, c ≤ iteratedDeriv 5 F u) →
+        (∀ u∈Icc halfR 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n F u| ≤ U) →
+        (∀ u∈Icc halfR 3,
           c ≤ |(iteratedDeriv 5 F u)^2-iteratedDeriv 4 F u*iteratedDeriv 6 F u|) →
         0 < δ → 0 ≤ w → w ≤ 1/4 → 2*U*w ≤ c/64 →
-        ya∈Icc (1:ℝ) 2 → 0 < T → 2 ≤ M → 0 ≤ Δ → 0 < J →
-        t∈Icc (1/2:ℝ) 2 → xa∈Icc M (2*M) →
-        (∀ y∈S, y∈Icc (1:ℝ) 2 ∧ x y∈Icc M (2*M)) →
+        ya∈Icc oneR 2 → 0 < T → 2 ≤ M → 0 ≤ Δ → 0 < J →
+        t∈Icc halfR 2 → xa∈Icc M (2*M) →
+        (∀ y∈S, y∈Icc oneR 2 ∧ x y∈Icc M (2*M)) →
         (∀ y∈S, ∀ z∈S, y ≠ z → 1 ≤ J*|y-z|) →
         (∀ y, y=ya ∨ y∈S →
           0 ≤ r y ∧ 0 ≤ s y ∧ r y*s y=δ*y ∧ r y+s y ≤ w) →
@@ -3189,7 +3189,7 @@ private theorem double_difference_physical_parameter_count
     hya hT hM hΔ hJ ht hxa hpoints hsep hshifts Q f μ hmap hthird
   have hMpos : 0 < M := by linarith only [hM]
   have htpos : 0 < t := by linarith only [ht.1]
-  have hpar (y : ℝ) (hy : y=ya ∨ y∈S) : y∈Icc (1:ℝ) 2 := by
+  have hpar (y : ℝ) (hy : y=ya ∨ y∈S) : y∈Icc oneR 2 := by
     rcases hy with rfl | hy
     · exact hya
     · exact (hpoints y hy).1
@@ -3206,7 +3206,7 @@ private theorem double_difference_physical_parameter_count
       (l:=0) (r:=z+1) (c:=M⁻¹) (d:=0)
       (fun u hu => hreg y hy _ (by
         simpa only [add_zero] using mul_pos (inv_pos.mpr hMpos) hu.1))
-      (show z∈Ioo (0:ℝ) (z+1) from ⟨hz,by linarith⟩) n
+      (show z∈Ioo zeroR (z+1) from ⟨hz,by linarith⟩) n
     change iteratedDeriv n (fun u => T*Q y (u/M)) z=_
     rw [iteratedDeriv_const_mul_field]
     have he : (fun u => Q y (u/M))=(fun u => Q y (M⁻¹*u+0)) := by
@@ -3217,7 +3217,7 @@ private theorem double_difference_physical_parameter_count
     simp only [add_zero,inv_pow]
     rw [show M⁻¹*z=z/M by ring]
     ring
-  have hnorm (z : ℝ) (hz : z∈Icc M (2*M)) : z/M∈Icc (1:ℝ) 2 :=
+  have hnorm (z : ℝ) (hz : z∈Icc M (2*M)) : z/M∈Icc oneR 2 :=
     ⟨(le_div_iff₀ hMpos).mpr (by simpa using hz.1),(div_le_iff₀ hMpos).mpr hz.2⟩
   let G := fun y u => iteratedDeriv 3 (Q y) u
   let g := G ya (xa/M)/t^3
@@ -3228,7 +3228,7 @@ private theorem double_difference_physical_parameter_count
         field_simp
       _ = _ := by rw [hmap y hy]; ring
   have hnear (y : ℝ) (hy : y∈S) : |G y (x y/M)-g| ≤ 24*U*(Δ+5/M) := by
-    have hroundpos (z : ℝ) (hz : z∈Icc M (2*M)) : (0:ℝ) < round z := by
+    have hroundpos (z : ℝ) (hz : z∈Icc M (2*M)) : zeroR < round z := by
       have hh := abs_le.mp (abs_sub_round z)
       linarith only [hh.2,hz.1,hM]
     have hμ (y z : ℝ) (hy : y=ya ∨ y∈S) (hz : z∈Icc M (2*M)) :
@@ -3270,7 +3270,7 @@ private theorem double_difference_physical_parameter_count
     have hb : |G y (x y/M)*t^3-G ya (xa/M)| ≤ 3*U*(Δ+5/M) :=
       hh.trans (mul_le_mul_of_nonneg_left (add_le_add le_rfl hround) (by positivity))
     have htl : (1/8:ℝ) ≤ t^3 := by
-      convert pow_le_pow_left₀ (by norm_num : (0:ℝ) ≤ 1/2) ht.1 3 using 1
+      convert pow_le_pow_left₀ (by norm_num : zeroR ≤ 1/2) ht.1 3 using 1
       norm_num
     calc
       _ = |G y (x y/M)*t^3-G ya (xa/M)|/t^3 := by
@@ -3293,18 +3293,18 @@ private theorem double_difference_physical_parameter_count
 private theorem modelPhase_positive_fifth_test {σ : ℝ} (hσ : 0 < σ) :
     ∃ ε c : ℝ, 0 < ε ∧ 0 < c ∧
       ∀ F : ℝ → ℝ,
-        (∀ x∈Icc (1/2:ℝ) 3,
+        (∀ x∈Icc halfR 3,
           |iteratedDeriv 5 F x-iteratedDeriv 4 (Expdb.modelPhase σ) x| ≤ ε) →
-        ∀ x∈Icc (1/2:ℝ) 3, c ≤ iteratedDeriv 5 F x := by
-  have hcont : ContinuousOn (iteratedDeriv 4 (Expdb.modelPhase σ)) (Icc (1/2:ℝ) 3) := by
+        ∀ x∈Icc halfR 3, c ≤ iteratedDeriv 5 F x := by
+  have hcont : ContinuousOn (iteratedDeriv 4 (Expdb.modelPhase σ)) (Icc halfR 3) := by
     intro x hx
     exact (contDiffAt_iteratedDeriv_infty
       (Real.contDiffAt_rpow_const_of_ne (by linarith only [hx.1] : x ≠ 0)) 4).continuousAt.continuousWithinAt
-  have hpos (x : ℝ) (hx : x∈Icc (1/2:ℝ) 3) :
+  have hpos (x : ℝ) (hx : x∈Icc halfR 3) :
       0 < iteratedDeriv 4 (Expdb.modelPhase σ) x := by
     have hxpos : 0 < x := by linarith only [hx.1]
     have hj : iteratedDeriv 4 (Expdb.modelPhase σ) x =
-        (descPochhammer ℝ 4).eval (-σ)*x^(-σ-(4:ℝ)) := by
+        (descPochhammer ℝ 4).eval (-σ)*x^(-σ-fourR) := by
       rw [iteratedDeriv_eq_iterate]
       exact Real.iter_deriv_rpow_const (-σ) x 4
     have he : (descPochhammer ℝ 4).eval (-σ)=σ*(σ+1)*(σ+2)*(σ+3) := by
@@ -3313,7 +3313,7 @@ private theorem modelPhase_positive_fifth_test {σ : ℝ} (hσ : 0 < σ) :
     rw [hj,he]
     positivity
   obtain ⟨x₀,hx₀,hmin⟩ := isCompact_Icc.exists_isMinOn
-    (show (Icc (1/2:ℝ) 3).Nonempty from ⟨1,by norm_num⟩) hcont
+    (show (Icc halfR 3).Nonempty from ⟨1,by norm_num⟩) hcont
   let c := iteratedDeriv 4 (Expdb.modelPhase σ) x₀/2
   have hc : 0 < c := by dsimp only [c]; exact half_pos (hpos x₀ hx₀)
   refine ⟨c,c,hc,hc,?_⟩
@@ -3332,20 +3332,20 @@ public  theorem approximateModelPhase_enlarged_double_difference_count
         IsApproximateModelPhaseFunction F σ 7 δ₀ →
       ∃ Fext : ℝ → ℝ,
         (∀ u, 0 < u → ContDiffAt ℝ ∞ Fext u) ∧
-        (∀ u∈Icc (1/2:ℝ) 3, ∀ n≤6,
+        (∀ u∈Icc halfR 3, ∀ n≤6,
           |iteratedDeriv (n+1) Fext u-iteratedDeriv n (Expdb.modelPhase σ) u| ≤ ε) ∧
-        (∀ u∈Icc (1/2:ℝ) 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n Fext u| ≤ U) ∧
-        (∀ u∈Icc (1/2:ℝ) 3, c ≤ iteratedDeriv 5 Fext u) ∧
-        (∀ u∈Icc (1/2:ℝ) 3, ∀ j,
+        (∀ u∈Icc halfR 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n Fext u| ≤ U) ∧
+        (∀ u∈Icc halfR 3, c ≤ iteratedDeriv 5 Fext u) ∧
+        (∀ u∈Icc halfR 3, ∀ j,
           c ≤ |HuxleyModel.tests (fun i : Fin 4 => iteratedDeriv (i.val+3) Fext u) j|) ∧
-        (∀ u∈Icc (1/2:ℝ) 3, iteratedDeriv 4 Fext u ≤ -c) ∧
+        (∀ u∈Icc halfR 3, iteratedDeriv 4 Fext u ≤ -c) ∧
         (∀ (T : ℝ) (a b : ℕ), M ≤ (a:ℝ) → (b:ℝ) ≤ 2*M →
           ‖exponentialSumAt F T M a b-exponentialSumAt Fext T M a b‖ ≤ 6) ∧
         ∀ (δ w ya xa Δ J q t T : ℝ) (S : Finset ℝ) (x r s : ℝ → ℝ),
           0 < δ → 0 ≤ w → w ≤ 1/4 → 2*U*w ≤ c/64 →
-          ya∈Icc (1:ℝ) 2 → 0 < T → 2 ≤ M → 0 ≤ Δ → 0 < J →
-          t∈Icc (1/2:ℝ) 2 → xa∈Icc M (2*M) →
-          (∀ y∈S, y∈Icc (1:ℝ) 2 ∧ x y∈Icc M (2*M)) →
+          ya∈Icc oneR 2 → 0 < T → 2 ≤ M → 0 ≤ Δ → 0 < J →
+          t∈Icc halfR 2 → xa∈Icc M (2*M) →
+          (∀ y∈S, y∈Icc oneR 2 ∧ x y∈Icc M (2*M)) →
           (∀ y∈S, ∀ z∈S, y ≠ z → 1 ≤ J*|y-z|) →
           (∀ y, y=ya ∨ y∈S →
             0 ≤ r y ∧ 0 ≤ s y ∧ r y*s y=δ*y ∧ r y+s y ≤ w) →
@@ -3375,22 +3375,22 @@ public  theorem approximateModelPhase_enlarged_double_difference_count
   refine ⟨δ₀,c,U,K,C,hδ₀,hc,hU,hK,hC,?_⟩
   intro M F hM hF
   obtain ⟨Fext,hreg,hjets,hsharp⟩ := hbuild σ δ₀ M F hδ₀.le hM hF
-  have hj (u : ℝ) (hu : u∈Icc (1/2:ℝ) 3) (n : ℕ) (hn : n≤6) :
+  have hj (u : ℝ) (hu : u∈Icc halfR 3) (n : ℕ) (hn : n≤6) :
       |iteratedDeriv (n+1) Fext u-iteratedDeriv n (Expdb.modelPhase σ) u| ≤ e := by
     simpa only [heq] using hjets u hu n hn
   obtain ⟨hbound,htest,hnegative⟩ := htests Fext
     (fun u hu n hn => (hj u hu n hn).trans he₀')
-  have hfive : ∀ u∈Icc (1/2:ℝ) 3, c ≤ iteratedDeriv 5 Fext u := by
+  have hfive : ∀ u∈Icc halfR 3, c ≤ iteratedDeriv 5 Fext u := by
     have hh := hfifth Fext (fun u hu => (hj u hu 4 (by norm_num)).trans he₅')
     exact fun u hu => (min_le_right c₀ c₅).trans (hh u hu)
-  have hbound' : ∀ u∈Icc (1/2:ℝ) 3, ∀ n, 1 ≤ n → n ≤ 7 →
+  have hbound' : ∀ u∈Icc halfR 3, ∀ n, 1 ≤ n → n ≤ 7 →
       |iteratedDeriv n Fext u| ≤ U := by
     intro u hu n hn hn'
     simpa only [Nat.sub_add_cancel hn] using hbound u hu (n-1) (by omega)
-  have htest' : ∀ u∈Icc (1/2:ℝ) 3, ∀ j,
+  have htest' : ∀ u∈Icc halfR 3, ∀ j,
       c ≤ |HuxleyModel.tests (fun i : Fin 4 => iteratedDeriv (i.val+3) Fext u) j| :=
     fun u hu j => (min_le_left c₀ c₅).trans (htest u hu j)
-  have hdet : ∀ u∈Icc (1/2:ℝ) 3,
+  have hdet : ∀ u∈Icc halfR 3,
       c ≤ |(iteratedDeriv 5 Fext u)^2-iteratedDeriv 4 Fext u*iteratedDeriv 6 Fext u| := by
     intro u hu
     have hh := htest' u hu (4:Fin 7)
@@ -3406,11 +3406,11 @@ public  theorem approximateModelPhase_enlarged_double_difference_count
 private theorem physical_curvature_strictMono_of_cubic
     (Q : ℝ → ℝ) {c T M : ℝ} (hc : 0 < c) (hT : 0 < T) (hM : 0 < M)
     (hreg : ∀ u, 0 < u → ContDiffAt ℝ ∞ Q u)
-    (hlower : ∀ u∈Icc (1:ℝ) 2, c ≤ iteratedDeriv 3 Q u) :
+    (hlower : ∀ u∈Icc oneR 2, c ≤ iteratedDeriv 3 Q u) :
     StrictMonoOn (fun z => iteratedDeriv 2 (fun u => T*Q (u/M)) z/2)
       (Icc M (2*M)) := by
   let f := fun u => T*Q (u/M)
-  have hnorm (z : ℝ) (hz : z∈Icc M (2*M)) : z/M∈Icc (1:ℝ) 2 :=
+  have hnorm (z : ℝ) (hz : z∈Icc M (2*M)) : z/M∈Icc oneR 2 :=
     ⟨(le_div_iff₀ hM).mpr (by simpa using hz.1),(div_le_iff₀ hM).mpr hz.2⟩
   have hd (z : ℝ) (hz : z∈Icc M (2*M)) :
       HasDerivAt (fun u => iteratedDeriv 2 f u/2) (iteratedDeriv 3 f z/2) z := by
@@ -3431,7 +3431,7 @@ private theorem physical_curvature_strictMono_of_cubic
     (l:=0) (r:=z+1) (c:=M⁻¹) (d:=0)
     (fun u hu => hreg _ (by
       simpa only [add_zero] using mul_pos (inv_pos.mpr hM) hu.1))
-    (show z∈Ioo (0:ℝ) (z+1) from ⟨hzpos,by linarith⟩) 3
+    (show z∈Ioo zeroR (z+1) from ⟨hzpos,by linarith⟩) 3
   have hid : iteratedDeriv 3 f z=T/M^3*iteratedDeriv 3 Q (z/M) := by
     change iteratedDeriv 3 (fun u => T*Q (u/M)) z=_
     rw [iteratedDeriv_const_mul_field]
@@ -3454,14 +3454,14 @@ private theorem double_difference_physical_family_fiber_count
         (z : ℝ → ℤ → ℝ) (Alen : ℝ → ℤ → ℕ) (N : ℕ) (Z : ℝ → ℤ)
         (δ w ya xa Δ J q t T M : ℝ),
         (∀ u, 0 < u → ContDiffAt ℝ ∞ F u) →
-        (∀ u∈Icc (1/2:ℝ) 3, c ≤ iteratedDeriv 5 F u) →
-        (∀ u∈Icc (1/2:ℝ) 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n F u| ≤ U) →
-        (∀ u∈Icc (1/2:ℝ) 3,
+        (∀ u∈Icc halfR 3, c ≤ iteratedDeriv 5 F u) →
+        (∀ u∈Icc halfR 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n F u| ≤ U) →
+        (∀ u∈Icc halfR 3,
           c ≤ |(iteratedDeriv 5 F u)^2-iteratedDeriv 4 F u*iteratedDeriv 6 F u|) →
         0 < δ → 0 ≤ w → w ≤ 1/4 → 2*U*w ≤ c/64 →
-        ya∈Icc (1:ℝ) 2 → 0 < T → 2 ≤ M → 0 < N → 0 ≤ Δ → 0 < J →
-        t∈Icc (1/2:ℝ) 2 → xa∈Icc M (2*M) →
-        (∀ ip∈S, ip.1.1∈Icc (1:ℝ) 2 ∧ z ip.1.1 ip.1.2∈Icc M (2*M)) →
+        ya∈Icc oneR 2 → 0 < T → 2 ≤ M → 0 < N → 0 ≤ Δ → 0 < J →
+        t∈Icc halfR 2 → xa∈Icc M (2*M) →
+        (∀ ip∈S, ip.1.1∈Icc oneR 2 ∧ z ip.1.1 ip.1.2∈Icc M (2*M)) →
         (∀ ip∈S, N ≤ Alen ip.1.1 ip.1.2 ∧ Alen ip.1.1 ip.1.2 ≤ 3*N ∧
           round (z ip.1.1 ip.1.2)+(Alen ip.1.1 ip.1.2:ℤ)=
             Z ip.1.1+(N:ℤ)*ip.1.2+2*(N:ℤ)) →
@@ -3481,7 +3481,7 @@ private theorem double_difference_physical_family_fiber_count
     hδ hw hwcap hsmall hya hT hM hN hΔ hJ ht hxa hpoints hgeometry hsep hshifts
     Q f h μ hlevel hthird
   classical
-  have hNp : (0:ℝ) < N := by exact_mod_cast hN
+  have hNp : zeroR < N := by exact_mod_cast hN
   have hMp : 0 < M := by linarith only [hM]
   let Y := S.image (fun ip => ip.1.1)
   have hex y (hy : y∈Y) : ∃ ip, ip∈S ∧ ip.1.1=y := Finset.mem_image.mp hy
@@ -3491,7 +3491,7 @@ private theorem double_difference_physical_family_fiber_count
     rw [dite_eq_left hy]
     exact Classical.choose_spec (hex y hy)
   let root := fun y => z y (pick y).1.2
-  have hparams y (hy : y∈Y) : y∈Icc (1:ℝ) 2 ∧ root y∈Icc M (2*M) := by
+  have hparams y (hy : y∈Y) : y∈Icc oneR 2 ∧ root y∈Icc M (2*M) := by
     have hh := hpoints _ (hpick y hy).1
     rw [(hpick y hy).2] at hh
     exact hh
@@ -3565,7 +3565,7 @@ private theorem double_difference_physical_family_fiber_count
     change E.card ≤ 6
     omega
   have hcardR : (S.card:ℝ) ≤ 6*(Y.card:ℝ) := by exact_mod_cast hcard
-  have hh := hcardR.trans (mul_le_mul_of_nonneg_left hY (by norm_num : (0:ℝ) ≤ 6))
+  have hh := hcardR.trans (mul_le_mul_of_nonneg_left hY (by norm_num : zeroR ≤ 6))
   convert hh using 1
   ring
 
@@ -3618,9 +3618,9 @@ private theorem double_difference_common_model
     ∃ C : ℝ, 1 ≤ C ∧
       ∀ (F : ℝ → ℝ) (e d r s y y₀ : ℝ),
         0 ≤ e → 0 < d → 0 < r → 0 < s → r+s ≤ 1/4 →
-        y∈Icc (1:ℝ) 2 → y₀∈Icc (1:ℝ) 2 → r*s=d*y →
+        y∈Icc oneR 2 → y₀∈Icc oneR 2 → r*s=d*y →
         (∀ u, 0 < u → ContDiffAt ℝ ∞ F u) →
-        (∀ u∈Icc (1/2:ℝ) 3, ∀ p≤P+2,
+        (∀ u∈Icc halfR 3, ∀ p≤P+2,
           |iteratedDeriv (p+1) F u-iteratedDeriv p (Expdb.modelPhase σ) u| ≤ e) →
         IsApproximateModelPhaseFunction
           (fun u => (F u-F (u+r)-F (u+s)+F (u+r+s))/(σ*(σ+1)*d*y₀))
@@ -3628,7 +3628,7 @@ private theorem double_difference_common_model
   classical
   choose B hB hLip using fun j : Fin (P+1) =>
     iteratedDeriv_modelPhase_positive_compact_lipschitz
-      (r:=3) (show (0:ℝ)<1/2 by norm_num) (σ+2) j.val
+      (r:=3) (show zeroR<1/2 by norm_num) (σ+2) j.val
   let V := ∑ j : Fin (P+1), B j
   let J := ∑ j : Fin (P+1), modelPhaseJetCoefficient (σ+2) j.val
   let A := σ*(σ+1)
@@ -3657,9 +3657,9 @@ private theorem double_difference_common_model
   · intro u hu p hp
     let R := iteratedDeriv p (Expdb.modelPhase (σ+2)) u
     have hupos : 0 < u := zero_lt_one.trans hu.1
-    have hwide (v : ℝ) (hv : v∈Icc u (u+r+s)) : v∈Icc (1/2:ℝ) 3 := by
+    have hwide (v : ℝ) (hv : v∈Icc u (u+r+s)) : v∈Icc halfR 3 := by
       constructor <;> linarith only [hv.1,hv.2,hu.1,hu.2,hw]
-    have huwide : u∈Icc (1/2:ℝ) 3 :=
+    have huwide : u∈Icc halfR 3 :=
       ⟨by linarith only [hu.1],by linarith only [hu.2]⟩
     obtain ⟨v,hv,hmean⟩ := double_difference_mean_value_jet F (p+1) hr hs
       (fun v hv => hf v (hupos.trans_le hv.1))
@@ -3746,14 +3746,14 @@ private theorem double_difference_physical_family_fiber_source_scale
         (z : ℝ → ℤ → ℝ) (Alen : ℝ → ℤ → ℕ) (N : ℕ) (Z : ℝ → ℤ)
         (δ w ya xa Δ J q t T M : ℝ),
         (∀ u, 0 < u → ContDiffAt ℝ ∞ F u) →
-        (∀ u∈Icc (1/2:ℝ) 3, c ≤ iteratedDeriv 5 F u) →
-        (∀ u∈Icc (1/2:ℝ) 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n F u| ≤ U) →
-        (∀ u∈Icc (1/2:ℝ) 3,
+        (∀ u∈Icc halfR 3, c ≤ iteratedDeriv 5 F u) →
+        (∀ u∈Icc halfR 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n F u| ≤ U) →
+        (∀ u∈Icc halfR 3,
           c ≤ |(iteratedDeriv 5 F u)^2-iteratedDeriv 4 F u*iteratedDeriv 6 F u|) →
         0 < δ → 0 ≤ w → w ≤ 1/4 → 2*U*w ≤ c/64 →
-        ya∈Icc (1:ℝ) 2 → 0 < T → 2 ≤ M → 0 < N → 0 ≤ Δ → 0 < J → J ≤ M → w*J ≤ 1 →
-        t∈Icc (1/2:ℝ) 2 → xa∈Icc M (2*M) →
-        (∀ ip∈S, ip.1.1∈Icc (1:ℝ) 2 ∧ z ip.1.1 ip.1.2∈Icc M (2*M)) →
+        ya∈Icc oneR 2 → 0 < T → 2 ≤ M → 0 < N → 0 ≤ Δ → 0 < J → J ≤ M → w*J ≤ 1 →
+        t∈Icc halfR 2 → xa∈Icc M (2*M) →
+        (∀ ip∈S, ip.1.1∈Icc oneR 2 ∧ z ip.1.1 ip.1.2∈Icc M (2*M)) →
         (∀ ip∈S, N ≤ Alen ip.1.1 ip.1.2 ∧ Alen ip.1.1 ip.1.2 ≤ 3*N ∧
           round (z ip.1.1 ip.1.2)+(Alen ip.1.1 ip.1.2:ℤ)=
             Z ip.1.1+(N:ℤ)*ip.1.2+2*(N:ℤ)) →
@@ -3815,11 +3815,11 @@ public  theorem double_difference_colored_common_models
     ∃ e w₀ a : ℝ, 0 < e ∧ 0 < w₀ ∧ w₀ ≤ 1/4 ∧ 0 < a ∧
       ∀ (F : ℝ → ℝ),
         (∀ u, 0 < u → ContDiffAt ℝ ∞ F u) →
-        (∀ u∈Icc (1/2:ℝ) 3, ∀ p≤P+2,
+        (∀ u∈Icc halfR 3, ∀ p≤P+2,
           |iteratedDeriv (p+1) F u-iteratedDeriv p (Expdb.modelPhase σ) u| ≤ e) →
         ∀ {ι : Type*} (S : Finset ι) (y r s : ι → ℝ) (d : ℝ),
           0 < d →
-          (∀ i∈S, y i∈Icc (1:ℝ) 2) →
+          (∀ i∈S, y i∈Icc oneR 2) →
           (∀ i∈S, 0 < r i ∧ 0 < s i ∧ r i+s i ≤ w₀ ∧ r i*s i=d*y i) →
           let color := fun i => ⌊y i/a⌋
           let Cap := 4/a+3
@@ -3849,7 +3849,7 @@ public  theorem double_difference_colored_common_models
         intro i hi
         rw [abs_of_pos (zero_lt_one.trans_le (hy i hi).1)]
         simpa only [mul_one] using (hy i hi).2)
-    simpa only [mul_one,show (2:ℝ)*2=4 by norm_num] using hh
+    simpa only [mul_one,show twoR*2=4 by norm_num] using hh
   refine ⟨hcard,?_,?_⟩
   · intro z
     let J := S.image color
@@ -3866,7 +3866,7 @@ public  theorem double_difference_colored_common_models
     have hh : (∑ j∈J,‖g j‖)^12 ≤ (J.card:ℝ)^11*∑ j∈J,‖g j‖^12 := by
       simpa only [show (12:ℝ)-1=11 by norm_num,Real.rpow_ofNat] using hholder
     exact (hp.trans hh).trans (mul_le_mul_of_nonneg_right
-      (pow_le_pow_left₀ (by positivity : (0:ℝ) ≤ J.card) hcard 11)
+      (pow_le_pow_left₀ (by positivity : zeroR ≤ J.card) hcard 11)
       (Finset.sum_nonneg (fun _ _ => pow_nonneg (norm_nonneg _) _)))
   · intro j hj
     obtain ⟨i₀,hi₀,hcol₀⟩ := Finset.mem_image.mp hj
@@ -3896,19 +3896,19 @@ public  theorem double_difference_colored_common_models
 
 private theorem double_difference_exact_curvature_band
     (F : ℝ → ℝ) {x r s d y c U : ℝ}
-    (hx : x∈Icc (3/4:ℝ) (9/4)) (hy : y∈Icc (1:ℝ) 2)
+    (hx : x∈Icc (3/4:ℝ) (9/4)) (hy : y∈Icc oneR 2)
     (hr : 0 < r) (hs : 0 < s) (hd : 0 < d) (hc : 0 < c) (hU : 0 < U)
     (hprod : r*s=d*y) (hshift : r+s ≤ 1/4)
     (hf : ∀ u, 0 < u → ContDiffAt ℝ ∞ F u)
-    (hneg : ∀ u∈Icc (1/2:ℝ) 3, iteratedDeriv 4 F u ≤ -c)
-    (hbound : ∀ u∈Icc (1/2:ℝ) 3, |iteratedDeriv 4 F u| ≤ U) :
+    (hneg : ∀ u∈Icc halfR 3, iteratedDeriv 4 F u ≤ -c)
+    (hbound : ∀ u∈Icc halfR 3, |iteratedDeriv 4 F u| ≤ U) :
     let Q := fun u => (F u-F (u+r)-F (u+s)+F (u+r+s))/d;
     -2*U ≤ iteratedDeriv 2 Q x ∧ iteratedDeriv 2 Q x ≤ -c := by
   intro Q
   have hxpos : 0 < x := by linarith only [hx.1]
   obtain ⟨v,hv,hmean⟩ := double_difference_mean_value_jet F 2 hr hs
     (fun u hu => hf u (hxpos.trans_le hu.1))
-  have hvwide : v∈Icc (1/2:ℝ) 3 := by
+  have hvwide : v∈Icc halfR 3 := by
     constructor <;> linarith only [hv.1,hv.2,hx.1,hx.2,hshift]
   have heq : iteratedDeriv 2 Q x=y*iteratedDeriv 4 F v := by
     dsimp only [Q]
@@ -3933,15 +3933,15 @@ private theorem double_difference_family_pair_card_le_matrix_points
         (F : ℝ → ℝ) (r s : ℝ → ℝ) (z : ℝ → ℤ → ℝ) (Alen : ℝ → ℤ → ℕ)
         (N : ℕ) (Z : ℝ → ℤ) (d w Δ J T M : ℝ),
       (∀ w, 0 < w → ContDiffAt ℝ ∞ F w) →
-      (∀ u∈Icc (1/2:ℝ) 3, c ≤ iteratedDeriv 5 F u) →
-      (∀ u∈Icc (1/2:ℝ) 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n F u| ≤ U) →
-      (∀ u∈Icc (1/2:ℝ) 3,
+      (∀ u∈Icc halfR 3, c ≤ iteratedDeriv 5 F u) →
+      (∀ u∈Icc halfR 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n F u| ≤ U) →
+      (∀ u∈Icc halfR 3,
         c ≤ |(iteratedDeriv 5 F u)^2-iteratedDeriv 4 F u*iteratedDeriv 6 F u|) →
       0 < d → 0 ≤ w → w ≤ 1/4 → 2*U*w ≤ c/64 →
       0 < T → 2 ≤ M → 0 < N → 0 ≤ Δ → 0 < J → J ≤ M → w*J ≤ 1 →
       (∀ ij∈P,
-        (ij.1.1.1∈Icc (1:ℝ) 2 ∧ z ij.1.1.1 ij.1.1.2∈Icc M (2*M)) ∧
-        (ij.2.1.1∈Icc (1:ℝ) 2 ∧ z ij.2.1.1 ij.2.1.2∈Icc M (2*M))) →
+        (ij.1.1.1∈Icc oneR 2 ∧ z ij.1.1.1 ij.1.1.2∈Icc M (2*M)) ∧
+        (ij.2.1.1∈Icc oneR 2 ∧ z ij.2.1.1 ij.2.1.2∈Icc M (2*M))) →
       (∀ ij∈P, N ≤ Alen ij.2.1.1 ij.2.1.2 ∧ Alen ij.2.1.1 ij.2.1.2 ≤ 3*N ∧
         round (z ij.2.1.1 ij.2.1.2)+(Alen ij.2.1.1 ij.2.1.2:ℤ)=
           Z ij.2.1.1+(N:ℤ)*ij.2.1.2+2*(N:ℤ)) →
@@ -3953,7 +3953,7 @@ private theorem double_difference_family_pair_card_le_matrix_points
       let h := fun y w => iteratedDeriv 2 (f y) w/2
       let μ := fun y w => iteratedDeriv 3 (f y) (round w)/6
       let t := fun ij => (Mat ij 2:ℝ)*h ij.1.1.1 (z ij.1.1.1 ij.1.1.2)+Mat ij 3
-      (∀ ij∈P, t ij∈Icc (1/2:ℝ) 2) →
+      (∀ ij∈P, t ij∈Icc halfR 2) →
       (∀ ij∈P, ((Mat ij 0:ℝ)*h ij.1.1.1 (z ij.1.1.1 ij.1.1.2)+Mat ij 1)/t ij=
         h ij.2.1.1 (z ij.2.1.1 ij.2.1.2)) →
       (∀ ij∈P, |μ ij.2.1.1 (z ij.2.1.1 ij.2.1.2)/
@@ -4039,16 +4039,16 @@ private theorem double_difference_type_one_matrix_source_scale
         (F : ℝ → ℝ) (r s : ℝ → ℝ) (z : ℝ → ℤ → ℝ) (Alen : ℝ → ℤ → ℕ)
         (N : ℕ) (Z : ℝ → ℤ) (d w Δ J T M : ℝ),
       (∀ w, 0 < w → ContDiffAt ℝ ∞ F w) →
-      (∀ u∈Icc (1/2:ℝ) 3, c ≤ iteratedDeriv 5 F u) →
-      (∀ u∈Icc (1/2:ℝ) 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n F u| ≤ U) →
-      (∀ u∈Icc (1/2:ℝ) 3,
+      (∀ u∈Icc halfR 3, c ≤ iteratedDeriv 5 F u) →
+      (∀ u∈Icc halfR 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n F u| ≤ U) →
+      (∀ u∈Icc halfR 3,
         c ≤ |(iteratedDeriv 5 F u)^2-iteratedDeriv 4 F u*iteratedDeriv 6 F u|) →
-      (∀ u∈Icc (1/2:ℝ) 3, iteratedDeriv 4 F u ≤ -c) →
+      (∀ u∈Icc halfR 3, iteratedDeriv 4 F u ≤ -c) →
       0 < d → 0 ≤ w → w ≤ 1/4 → 2*U*w ≤ c/64 →
       0 < T → 2 ≤ M → 0 < N → 0 ≤ Δ → 0 < J → (N:ℝ) ≤ M → J ≤ M → w*J ≤ 1 →
       (∀ ij∈P,
-        (ij.1.1.1∈Icc (1:ℝ) 2 ∧ z ij.1.1.1 ij.1.1.2∈Icc M (2*M)) ∧
-        (ij.2.1.1∈Icc (1:ℝ) 2 ∧ z ij.2.1.1 ij.2.1.2∈Icc M (2*M))) →
+        (ij.1.1.1∈Icc oneR 2 ∧ z ij.1.1.1 ij.1.1.2∈Icc M (2*M)) ∧
+        (ij.2.1.1∈Icc oneR 2 ∧ z ij.2.1.1 ij.2.1.2∈Icc M (2*M))) →
       (∀ ij∈P, N ≤ Alen ij.1.1.1 ij.1.1.2 ∧ Alen ij.1.1.1 ij.1.1.2 ≤ 3*N ∧
         round (z ij.1.1.1 ij.1.1.2)+(Alen ij.1.1.1 ij.1.1.2:ℤ)=
           Z ij.1.1.1+(N:ℤ)*ij.1.1.2+2*(N:ℤ)) →
@@ -4083,7 +4083,7 @@ private theorem double_difference_type_one_matrix_source_scale
     hsep hshifts hmatdet hbranch Q f h μ t hmap hden hnum hthird
   classical
   have hMp : 0 < M := by linarith only [hM]
-  have hNp : (0:ℝ) < N := by exact_mod_cast hN
+  have hNp : zeroR < N := by exact_mod_cast hN
   let Hcurv := U*T/M^2
   let Smat := P.image Mat
   let Snon := Smat.filter (fun A => A 1 ≠ 0)
@@ -4105,7 +4105,7 @@ private theorem double_difference_type_one_matrix_source_scale
     · exact hb
   have hcurv y v
       (hy : y∈(P.image (fun ij => ij.1.1.1)) ∪ (P.image (fun ij => ij.2.1.1)))
-      (hyI : y∈Icc (1:ℝ) 2) (hv : v∈Icc M (2*M)) :
+      (hyI : y∈Icc oneR 2) (hv : v∈Icc M (2*M)) :
       h y v ≠ 0 ∧ |h y v| ≤ Hcurv := by
     have hx : v/M∈Icc (3/4:ℝ) (9/4) := by
       constructor
@@ -4128,7 +4128,7 @@ private theorem double_difference_type_one_matrix_source_scale
       (l:=0) (r:=v+1) (c:=M⁻¹) (d:=0)
       (fun u hu => hreg _ (by
         simpa only [add_zero] using mul_pos (inv_pos.mpr hMp) hu.1))
-      (show v∈Ioo (0:ℝ) (v+1) from ⟨hMp.trans_le hv.1,by linarith⟩) 2
+      (show v∈Ioo zeroR (v+1) from ⟨hMp.trans_le hv.1,by linarith⟩) 2
     have heq : h y v=(T/M^2)*iteratedDeriv 2 (Q y) (v/M)/2 := by
       dsimp only [h,f]
       rw [iteratedDeriv_const_mul_field]
@@ -4151,7 +4151,7 @@ private theorem double_difference_type_one_matrix_source_scale
     have hlo := mul_le_mul_of_nonneg_left hband.1 hscale.le
     change T/M^2*(-2*U) ≤ T/M^2*iteratedDeriv 2 (Q y) (v/M) at hlo
     dsimp only [Hcurv]
-    convert neg_le_neg (div_le_div_of_nonneg_right hlo (by norm_num : (0:ℝ) ≤ 2)) using 1
+    convert neg_le_neg (div_le_div_of_nonneg_right hlo (by norm_num : zeroR ≤ 2)) using 1
     ring
   let x := fun A => h (pick A).1.1.1 (z (pick A).1.1.1 (pick A).1.1.2)
   let y := fun A => h (pick A).2.1.1 (z (pick A).2.1.1 (pick A).2.1.2)
@@ -4201,8 +4201,8 @@ private theorem double_difference_type_one_matrix_source_scale
     have hh : (Smat.card:ℝ) ≤ (Snon.card:ℝ)+1 := by
       exact_mod_cast (Finset.card_le_card hsubmat).trans (Finset.card_insert_le _ _)
     linarith only [hh,hmat]
-  have ht ij (hij : ij∈P) : t ij∈Icc (1/2:ℝ) 2 := by
-    have hε : 1/(8*(L+3)) ≤ (1:ℝ)/24 :=
+  have ht ij (hij : ij∈P) : t ij∈Icc halfR 2 := by
+    have hε : 1/(8*(L+3)) ≤ oneR/24 :=
       one_div_le_one_div_of_le (by norm_num) (by linarith only [hL])
     have hh := abs_le.mp ((hden ij hij).trans hε)
     constructor <;> linarith only [hh.1,hh.2]
@@ -4249,15 +4249,15 @@ private theorem double_difference_triangular_pair_source_scale
         (F : ℝ → ℝ) (r s : ℝ → ℝ) (z : ℝ → ℤ → ℝ) (Alen : ℝ → ℤ → ℕ)
         (N : ℕ) (Z : ℝ → ℤ) (d w Δ J T M B : ℝ),
       (∀ w, 0 < w → ContDiffAt ℝ ∞ F w) →
-      (∀ u∈Icc (1/2:ℝ) 3, c ≤ iteratedDeriv 5 F u) →
-      (∀ u∈Icc (1/2:ℝ) 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n F u| ≤ U) →
-      (∀ u∈Icc (1/2:ℝ) 3,
+      (∀ u∈Icc halfR 3, c ≤ iteratedDeriv 5 F u) →
+      (∀ u∈Icc halfR 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n F u| ≤ U) →
+      (∀ u∈Icc halfR 3,
         c ≤ |(iteratedDeriv 5 F u)^2-iteratedDeriv 4 F u*iteratedDeriv 6 F u|) →
       0 < d → 0 ≤ w → w ≤ 1/4 → 2*U*w ≤ c/64 →
       0 < T → 2 ≤ M → 0 < N → 0 ≤ Δ → 0 < J → (N:ℝ) ≤ M → J ≤ M → w*J ≤ 1 → 0 ≤ B →
       (∀ ij∈P,
-        (ij.1.1.1∈Icc (1:ℝ) 2 ∧ z ij.1.1.1 ij.1.1.2∈Icc M (2*M)) ∧
-        (ij.2.1.1∈Icc (1:ℝ) 2 ∧ z ij.2.1.1 ij.2.1.2∈Icc M (2*M))) →
+        (ij.1.1.1∈Icc oneR 2 ∧ z ij.1.1.1 ij.1.1.2∈Icc M (2*M)) ∧
+        (ij.2.1.1∈Icc oneR 2 ∧ z ij.2.1.1 ij.2.1.2∈Icc M (2*M))) →
       (∀ ij∈P, N ≤ Alen ij.1.1.1 ij.1.1.2 ∧ Alen ij.1.1.1 ij.1.1.2 ≤ 3*N ∧
         round (z ij.1.1.1 ij.1.1.2)+(Alen ij.1.1.1 ij.1.1.2:ℤ)=
           Z ij.1.1.1+(N:ℤ)*ij.1.1.2+2*(N:ℤ)) →
@@ -4274,7 +4274,7 @@ private theorem double_difference_triangular_pair_source_scale
       let h := fun y w => iteratedDeriv 2 (f y) w/2
       let μ := fun y w => iteratedDeriv 3 (f y) (round w)/6
       let t := fun ij => (Mat ij 2:ℝ)*h ij.1.1.1 (z ij.1.1.1 ij.1.1.2)+Mat ij 3
-      (∀ ij∈P, t ij∈Icc (1/2:ℝ) 2) →
+      (∀ ij∈P, t ij∈Icc halfR 2) →
       (∀ ij∈P, ((Mat ij 0:ℝ)*h ij.1.1.1 (z ij.1.1.1 ij.1.1.2)+Mat ij 1)/t ij=
         h ij.2.1.1 (z ij.2.1.1 ij.2.1.2)) →
       (∀ ij∈P, |μ ij.2.1.1 (z ij.2.1.1 ij.2.1.2)/
@@ -4287,7 +4287,7 @@ private theorem double_difference_triangular_pair_source_scale
     hsep hshifts hbranch Q f h μ t ht hmap hthird
   classical
   have hMp : 0 < M := by linarith only [hM]
-  have hNp : (0:ℝ) < N := by exact_mod_cast hN
+  have hNp : zeroR < N := by exact_mod_cast hN
   let Smat := P.image Mat
   let Entries := Smat.image (fun A => A 1+A 2)
   have hdata A (hA : A∈Smat) : A 0=1 ∧ A 3=1 ∧
@@ -4365,15 +4365,15 @@ private theorem double_difference_colored_fourier_cloud_type_one
       (Alen : (ℝ × ℤ) → ℕ) (Z : ℝ → ℤ)
       (Q K₀ N : ℕ) [NeZero K₀] (d Wmax T M Jsep : ℝ),
     (∀ u, 0 < u → ContDiffAt ℝ ∞ F u) →
-    (∀ u∈Icc (1/2:ℝ) 3, c ≤ iteratedDeriv 5 F u) →
-    (∀ u∈Icc (1/2:ℝ) 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n F u| ≤ U) →
-    (∀ u∈Icc (1/2:ℝ) 3,
+    (∀ u∈Icc halfR 3, c ≤ iteratedDeriv 5 F u) →
+    (∀ u∈Icc halfR 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n F u| ≤ U) →
+    (∀ u∈Icc halfR 3,
       c ≤ |(iteratedDeriv 5 F u)^2-iteratedDeriv 4 F u*iteratedDeriv 6 F u|) →
-    (∀ u∈Icc (1/2:ℝ) 3, iteratedDeriv 4 F u ≤ -c) →
+    (∀ u∈Icc halfR 3, iteratedDeriv 4 F u ≤ -c) →
     0 < d → 0 ≤ Wmax → Wmax ≤ 1/4 → 2*U*Wmax ≤ c/64 →
     0 < T → 2 ≤ M → 0 < N → 0 < Q →
     0 < Jsep → (N:ℝ) ≤ M → Jsep ≤ M → Wmax*Jsep ≤ 1 →
-    (∀ i∈S, i.1∈Icc (1:ℝ) 2) →
+    (∀ i∈S, i.1∈Icc oneR 2) →
     (∀ i∈S, z i∈Icc M (2*M)) →
     (∀ i∈S, N ≤ Alen i ∧ Alen i ≤ 3*N ∧
       round (z i)+(Alen i:ℤ)=Z i.1+(N:ℤ)*i.2+2*(N:ℤ)) →
@@ -4420,7 +4420,7 @@ private theorem double_difference_colored_fourier_cloud_type_one
       (∀ ij∈P,
         A ij 0*A ij 3-A ij 1*A ij 2=1 ∧
         let t := (A ij 2:ℝ)*h ij.1.1+A ij 3
-        t=(q ij.2.1:ℝ)/q ij.1.1 ∧ (1:ℝ)/2 ≤ t ∧ t ≤ 2 ∧
+        t=(q ij.2.1:ℝ)/q ij.1.1 ∧ oneR/2 ≤ t ∧ t ≤ 2 ∧
         ((A ij 0:ℝ)*h ij.1.1+A ij 1)/t=h ij.2.1 ∧
         |(A ij 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2) ∧
         |μ ij.2.1/μ ij.1.1*t^3-1| ≤
@@ -4482,7 +4482,7 @@ private theorem double_difference_colored_fourier_cloud_type_one
       (l:=0) (r:=u+1) (c:=M⁻¹) (d:=0)
       (fun v hv => hreg _ (by
         simpa only [add_zero] using mul_pos (inv_pos.mpr hMp) hv.1))
-      (show u∈Ioo (0:ℝ) (u+1) from ⟨hu,by linarith⟩) n
+      (show u∈Ioo zeroR (u+1) from ⟨hu,by linarith⟩) n
     change iteratedDeriv n (fun v => T*Φ i.1 (v/M)) u=_
     rw [iteratedDeriv_const_mul_field]
     have he : (fun v => Φ i.1 (v/M))=(fun v => Φ i.1 (M⁻¹*v+0)) := by
@@ -4518,7 +4518,7 @@ private theorem double_difference_colored_fourier_cloud_type_one
     have he : |h i|=(T/M^2)*(-iteratedDeriv 2 (Φ i.1) (z i/M))/2 := by
       dsimp only [h]
       rw [hphysical 2 i hi _ (hMp.trans_le hzi.1),abs_div,abs_mul,
-        abs_of_pos (div_pos hT (pow_pos hMp 2)),abs_of_neg hsign,abs_of_pos (by norm_num : (0:ℝ) < 2)]
+        abs_of_pos (div_pos hT (pow_pos hMp 2)),abs_of_neg hsign,abs_of_pos (by norm_num : zeroR < 2)]
     rw [he]
     constructor
     · calc
@@ -4532,7 +4532,7 @@ private theorem double_difference_colored_fourier_cloud_type_one
   have hμbounds i (hi : i∈S) : μ₀ ≤ μ i ∧ μ i ≤ U₀ := by
     have hr := abs_le.mp (abs_sub_round (z i))
     have hzi := hz i hi
-    have hrpos : (0:ℝ) < round (z i) := by linarith only [hr.2,hzi.1,hM]
+    have hrpos : zeroR < round (z i) := by linarith only [hr.2,hzi.1,hM]
     have hx : (round (z i):ℝ)/M∈Icc (3/4:ℝ) (9/4) := by
       constructor
       · apply (le_div_iff₀ hMp).mpr
@@ -4587,7 +4587,7 @@ private theorem double_difference_colored_fourier_cloud_type_one
     have hp := hA ij hij
     have ht : t=(q ij.2.1:ℝ)/q ij.1.1 := hp.2.1
     have htpos : 0 < t := by
-      have hh : (1:ℝ)/2 ≤ t := hp.2.2.1
+      have hh : oneR/2 ≤ t := hp.2.2.1
       linarith only [hh]
     have hmap : ((A ij 0:ℝ)*h ij.1.1+A ij 1)/t=h ij.2.1 := hp.2.2.2.2.1
     have hcurvi := hcurv _ hi
@@ -4669,15 +4669,15 @@ private theorem double_difference_colored_fourier_cloud_type_one_and_triangular
       (Alen : (ℝ × ℤ) → ℕ) (Z : ℝ → ℤ)
       (Q K₀ N : ℕ) [NeZero K₀] (d Wmax T M Jsep : ℝ),
     (∀ u, 0 < u → ContDiffAt ℝ ∞ F u) →
-    (∀ u∈Icc (1/2:ℝ) 3, c ≤ iteratedDeriv 5 F u) →
-    (∀ u∈Icc (1/2:ℝ) 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n F u| ≤ U) →
-    (∀ u∈Icc (1/2:ℝ) 3,
+    (∀ u∈Icc halfR 3, c ≤ iteratedDeriv 5 F u) →
+    (∀ u∈Icc halfR 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n F u| ≤ U) →
+    (∀ u∈Icc halfR 3,
       c ≤ |(iteratedDeriv 5 F u)^2-iteratedDeriv 4 F u*iteratedDeriv 6 F u|) →
-    (∀ u∈Icc (1/2:ℝ) 3, iteratedDeriv 4 F u ≤ -c) →
+    (∀ u∈Icc halfR 3, iteratedDeriv 4 F u ≤ -c) →
     0 < d → 0 ≤ Wmax → Wmax ≤ 1/4 → 2*U*Wmax ≤ c/64 →
     0 < T → 2 ≤ M → 0 < N → 0 < Q →
     0 < Jsep → (N:ℝ) ≤ M → Jsep ≤ M → Wmax*Jsep ≤ 1 →
-    (∀ i∈S, i.1∈Icc (1:ℝ) 2) →
+    (∀ i∈S, i.1∈Icc oneR 2) →
     (∀ i∈S, z i∈Icc M (2*M)) →
     (∀ i∈S, N ≤ Alen i ∧ Alen i ≤ 3*N ∧
       round (z i)+(Alen i:ℤ)=Z i.1+(N:ℤ)*i.2+2*(N:ℤ)) →
@@ -4724,7 +4724,7 @@ private theorem double_difference_colored_fourier_cloud_type_one_and_triangular
       (∀ ij∈P,
         A ij 0*A ij 3-A ij 1*A ij 2=1 ∧
         let t := (A ij 2:ℝ)*h ij.1.1+A ij 3
-        t=(q ij.2.1:ℝ)/q ij.1.1 ∧ (1:ℝ)/2 ≤ t ∧ t ≤ 2 ∧
+        t=(q ij.2.1:ℝ)/q ij.1.1 ∧ oneR/2 ≤ t ∧ t ≤ 2 ∧
         ((A ij 0:ℝ)*h ij.1.1+A ij 1)/t=h ij.2.1 ∧
         |(A ij 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2) ∧
         |μ ij.2.1/μ ij.1.1*t^3-1| ≤
@@ -4785,7 +4785,7 @@ private theorem double_difference_colored_fourier_cloud_type_one_and_triangular
     have hh := Finset.mem_product.mp (Finset.mem_filter.mp hij).1
     exact ⟨(Finset.mem_product.mp hh.1).1,(Finset.mem_product.mp hh.2).1⟩
   constructor
-  · have hsize : (0:ℝ) ≤ (S.image Prod.fst).card := Nat.cast_nonneg _
+  · have hsize : zeroR ≤ (S.image Prod.fst).card := Nat.cast_nonneg _
     have hscale : 0 ≤ M/(N:ℝ) := div_nonneg hMp.le (Nat.cast_nonneg _)
     have hlast : 0 ≤ 1+Δ*Jsep := by positivity
     have hb := mul_le_mul_of_nonneg_right
@@ -4862,7 +4862,7 @@ private theorem clamped_narrowing_source_costs
     1 ≤ V ∧
       V*(1+C*(H+1/H)) ≤ (1+2*C)*(1/H+N/Q) ∧
       V*(a/V^((5:ℝ)/3)+b/(Uref*V)) ≤
-        a*(Q/(H*N))^((2:ℝ)/3)+b/Uref := by
+        a*(Q/(H*N))^(twoR/3)+b/Uref := by
   intro V
   have hprod : 0 < H*N/Q := by positivity
   have hVone : 1 ≤ V := le_max_left _ _
@@ -4882,17 +4882,17 @@ private theorem clamped_narrowing_source_costs
       _ ≤ (1+H*N/Q)*((1+2*C)/H) :=
         mul_le_mul hVupper hFactor (by positivity) (by positivity)
       _ = _ := by field_simp
-  · have he : V^((5:ℝ)/3)=V*V^((2:ℝ)/3) := by
+  · have he : V^((5:ℝ)/3)=V*V^(twoR/3) := by
       rw [show (5:ℝ)/3=1+2/3 by norm_num,Real.rpow_add hVp,Real.rpow_one]
-    have hc : a/V^((2:ℝ)/3) ≤ a*(Q/(H*N))^((2:ℝ)/3) := by
+    have hc : a/V^(twoR/3) ≤ a*(Q/(H*N))^(twoR/3) := by
       calc
-        _ ≤ a/(H*N/Q)^((2:ℝ)/3) :=
+        _ ≤ a/(H*N/Q)^(twoR/3) :=
           div_le_div_of_nonneg_left ha (Real.rpow_pos_of_pos hprod _)
             (Real.rpow_le_rpow hprod.le hVprod (by norm_num))
         _ = _ := by
           rw [div_eq_mul_inv,←Real.inv_rpow hprod.le,inv_div]
     calc
-      _ = a/V^((2:ℝ)/3)+b/Uref := by rw [he]; field_simp
+      _ = a/V^(twoR/3)+b/Uref := by rw [he]; field_simp
       _ ≤ _ := add_le_add hc le_rfl
 
 private theorem source_reference_seed_height_polynomial_window
@@ -4992,14 +4992,14 @@ private theorem eventually_physical_reference_chart_budgets_window
   have hCh : 1 ≤ Ch := by dsimp only [Ch]; exact le_add_of_nonneg_right (by positivity)
   have hCc : 1 ≤ Cc := by dsimp only [Cc]; exact le_add_of_nonneg_right (by positivity)
   filter_upwards [nativeHuxleyReference_eventually_reference_chart_majorants hCh hCc hεloss,
-    Filter.eventually_ge_atTop (1:ℝ)] with T hmajor hT1
+    Filter.eventually_ge_atTop oneR] with T hmajor hT1
   intro Gaps e r v s Q Uref δ M R hδ₀ hδmax hM1 hR hQT hRT
     hU hUR hr hs he hv hgap Vheight P₁ P₂ εchart
   have hT : 0 < T := zero_lt_one.trans_le hT1
   let Bmajor := 6+216*(⌊Real.logb 2 ((Ch*T^3)^2)⌋₊+1)
   let Cmajor := ⌊Real.logb (5/4) (Cc*T)⌋₊+1
   have hRp : 0 < R := zero_lt_one.trans_le hR
-  have hUr : (1:ℝ) ≤ Uref := by exact_mod_cast hU
+  have hUr : oneR ≤ Uref := by exact_mod_cast hU
   have hV₀ : 0 ≤ Vheight := div_nonneg
     (mul_nonneg hT.le (add_nonneg (modelPhaseJetCoefficient_nonneg σ 1) hδ₀)) (by positivity)
   have hVmax : Vheight ≤ Jv*T/(2*M^2) := by
@@ -5021,7 +5021,7 @@ private theorem eventually_physical_reference_chart_budgets_window
     apply Nat.mul_le_mul_left
     apply Nat.add_le_add_right
     apply Nat.floor_mono
-    apply Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<2)
+    apply Real.logb_le_logb_of_le (by norm_num : oneR<2)
       (mul_pos (zero_lt_one.trans_le (hP₁ ab)) (zero_lt_one.trans_le (hP₂ ab)))
     calc
       P₁ ab*P₂ ab ≤ (Ch*T^3)*(Ch*T^3) :=
@@ -5040,7 +5040,7 @@ private theorem eventually_physical_reference_chart_budgets_window
           (le_add_of_nonneg_left zero_le_one) hT.le
     apply Nat.add_le_add_right
     apply Nat.floor_mono
-    exact Real.logb_le_logb_of_le (by norm_num : (1:ℝ)<5/4)
+    exact Real.logb_le_logb_of_le (by norm_num : oneR<5/4)
       (div_pos (sub_pos.mpr (hgap ab hab).1) (by positivity)) hratio'
 
 private theorem eventually_physicalModelPhase_actual_fourier_original_pair_mass_raw
@@ -5079,7 +5079,7 @@ private theorem eventually_physicalModelPhase_actual_fourier_original_pair_mass_
     ((Q:ℝ)*(N:ℝ) ≤ (K₀:ℝ)*R^2) →
     (∀ i, M ≤ A i) →
     (∀ i, A i+W i ≤ 2*M) →
-    (∀ ij∈P, ∀ i, x ij i∈Ioo (1/2:ℝ) (W i-1/2)) →
+    (∀ ij∈P, ∀ i, x ij i∈Ioo halfR (W i-1/2)) →
     (∀ ij∈P, ∀ i, (rat ij i).den ≤ Q ∧ Q ≤ 2*(rat ij i).den) →
     (0 < lambda) →
     (0 ≤ Uband) →
@@ -5088,15 +5088,15 @@ private theorem eventually_physicalModelPhase_actual_fourier_original_pair_mass_
     (∀ ij∈P, ∀ i, lambda ≤ |(rat ij i:ℝ)| ∧ |(rat ij i:ℝ)| ≤ Uband) →
     (∀ ij∈P, ∀ i, ((rat ij i).den:ℤ) ∣ (rat ij i).num*vinv ij i-1) →
     (∀ ab∈Gaps, (v ab)*(r ab)-(e ab)*(s ab)=1) →
-    (∀ ab∈Gaps, ((0:ℝ) < (r ab) ∧ ((e ab):ℝ)/(r ab)=ab.1) ∨
+    (∀ ab∈Gaps, (zeroR < (r ab) ∧ ((e ab):ℝ)/(r ab)=ab.1) ∨
       (((r ab):ℝ) < 0 ∧ ((e ab):ℝ)/(r ab)=ab.2)) →
     (0 < Bcut) →
     (∀ ab∈Gaps, (s ab) ≠ 0) →
     (∀ ab∈Gaps, ((e ab):ℝ)/(r ab)∈Refs) →
     (∀ ab∈Gaps, ((v ab):ℝ)/(s ab)∈Refs) →
     (∀ a∈Refs, ∀ b∈Refs, a ≠ b → ((Uref:ℝ)/R^2)/4 < |a-b|) →
-    (∀ ij∈P, ∀ i, x ij i-(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ij∈P, ∀ i, x ij i+(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo (1/2:ℝ) (W i-1/2)) →
+    (∀ ij∈P, ∀ i, x ij i-(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo halfR (W i-1/2)) →
+    (∀ ij∈P, ∀ i, x ij i+(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo halfR (W i-1/2)) →
     (1 ≤ Uref) →
     (2+168/modelPhaseThirdLower σ ≤ Bselect) →
     (7*Bcut ≤ modelPhaseThirdLower σ*Bselect) →
@@ -5104,7 +5104,7 @@ private theorem eventually_physicalModelPhase_actual_fourier_original_pair_mass_
     (∀ ab∈Gaps, R^2 ≤ ((r ab):ℝ)^2*(Uref:ℝ)) →
     (∀ ab∈Gaps, ab.2-ab.1 ≤ 7*(Uref:ℝ)/(2*R^2)) →
     (R ≤ (Q:ℝ)) →
-    ((Uref:ℝ) ≤ ((N:ℝ)/(Q:ℝ))^((2:ℝ)/3)/Bselect) →
+    ((Uref:ℝ) ≤ ((N:ℝ)/(Q:ℝ))^(twoR/3)/Bselect) →
     ((N:ℝ)^10 ≤ M^3*R^7) →
     (∀ ij∈P, (rat ij 0:ℝ)∈Icc (gap ij).1 (gap ij).2) →
     (∀ ij∈P, Mat ij 2 ≠ 0) →
@@ -5160,8 +5160,8 @@ private theorem eventually_physicalModelPhase_actual_fourier_original_pair_mass_
     (∀ ij∈P, |(Mat ij 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2)) →
     let H := (N:ℝ)/(Cphys+2)
     2 ≤ (N:ℝ) →
-    (∀ ij∈P, ∀ i, x ij i-H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ij∈P, ∀ i, x ij i+H∈Ioo (1/2:ℝ) (W i-1/2)) →
+    (∀ ij∈P, ∀ i, x ij i-H∈Ioo halfR (W i-1/2)) →
+    (∀ ij∈P, ∀ i, x ij i+H∈Ioo halfR (W i-1/2)) →
     (∀ ij∈P, |(anchor ij:ℝ)-(rat ij 0:ℝ)| ≤ ε) →
     (∀ ij∈P, 256*((anchor ij).den:ℝ) ≤ (Q:ℝ)/3) →
     (∀ ij∈P, 256 ≤ (2*ε)*((Q:ℝ)/3)*(anchor ij).den) →
@@ -5185,7 +5185,7 @@ private theorem eventually_physicalModelPhase_actual_fourier_original_pair_mass_
     let Cpack := 64*Cphys*(Gamma^2*Cthird+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ
     let Cfirst := 128*Cphys*(Gamma^2*Cthird+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ^2
     let Cgap := 64*Cphys*(Gamma^2*B+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ
-    let Cmain := 4*(2*Cfirst/Lunit^3)^((3:ℝ)⁻¹)+2
+    let Cmain := 4*(2*Cfirst/Lunit^3)^(threeR⁻¹)+2
     let Ctail := 4*Cpack/Lunit^2+Cgap
     (P.card:ℝ) ≤
       (60*588*(Uband/lambda)^2*Uband^2*(R^8/(N:ℝ)^4)*
@@ -5224,7 +5224,7 @@ private theorem eventually_physicalModelPhase_actual_fourier_original_pair_mass_
     convert hmass using 1
     dsimp only [m0,Kbase]
     ring
-  have hmpos : (0:ℝ) < m0 := by dsimp only [m0]; positivity
+  have hmpos : zeroR < m0 := by dsimp only [m0]; positivity
   have hknon : 0 ≤ Kbase := by
     have hnon : 0 ≤ (m0:ℝ)*Kbase :=
       (Nat.cast_nonneg P.card).trans hmass'
@@ -5269,7 +5269,7 @@ private theorem eventually_model_global_large_entry_source_mass_raw
     ((Q:ℝ)*(N:ℝ) ≤ (K₀:ℝ)*R^2) →
     (∀ i, M ≤ (A i:ℝ)) →
     (∀ i, (A i:ℝ)+W i ≤ 2*M) →
-    (∀ ij∈P, ∀ i, xlocal ij i∈Ioo (1/2:ℝ) (W i-1/2)) →
+    (∀ ij∈P, ∀ i, xlocal ij i∈Ioo halfR (W i-1/2)) →
     (∀ ij∈P, ∀ i, (rat ij i).den ≤ Q ∧ Q ≤ 2*(rat ij i).den) →
     (0 < lambda) →
     (0 ≤ Uband) →
@@ -5278,15 +5278,15 @@ private theorem eventually_model_global_large_entry_source_mass_raw
     (∀ ij∈P, ∀ i, lambda ≤ |(rat ij i:ℝ)| ∧ |(rat ij i:ℝ)| ≤ Uband) →
     (∀ ij∈P, ∀ i, ((rat ij i).den:ℤ) ∣ (rat ij i).num*vinv ij i-1) →
     (∀ ab∈Gaps, (v ab)*(r ab)-(e ab)*(s ab)=1) →
-    (∀ ab∈Gaps, ((0:ℝ) < (r ab) ∧ ((e ab):ℝ)/(r ab)=ab.1) ∨
+    (∀ ab∈Gaps, (zeroR < (r ab) ∧ ((e ab):ℝ)/(r ab)=ab.1) ∨
       (((r ab):ℝ) < 0 ∧ ((e ab):ℝ)/(r ab)=ab.2)) →
     (0 < Bcut) →
     (∀ ab∈Gaps, (s ab) ≠ 0) →
     (∀ ab∈Gaps, ((e ab):ℝ)/(r ab)∈Refs) →
     (∀ ab∈Gaps, ((v ab):ℝ)/(s ab)∈Refs) →
     (∀ a∈Refs, ∀ b∈Refs, a ≠ b → ((Uref:ℝ)/R^2)/4 < |a-b|) →
-    (∀ ij∈P, ∀ i, xlocal ij i-(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ij∈P, ∀ i, xlocal ij i+(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo (1/2:ℝ) (W i-1/2)) →
+    (∀ ij∈P, ∀ i, xlocal ij i-(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo halfR (W i-1/2)) →
+    (∀ ij∈P, ∀ i, xlocal ij i+(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo halfR (W i-1/2)) →
     (1 ≤ Uref) →
     (2+168/modelPhaseThirdLower σ ≤ Bselect) →
     (7*Bcut ≤ modelPhaseThirdLower σ*Bselect) →
@@ -5294,7 +5294,7 @@ private theorem eventually_model_global_large_entry_source_mass_raw
     (∀ ab∈Gaps, R^2 ≤ ((r ab):ℝ)^2*(Uref:ℝ)) →
     (∀ ab∈Gaps, ab.2-ab.1 ≤ 7*(Uref:ℝ)/(2*R^2)) →
     (R ≤ (Q:ℝ)) →
-    ((Uref:ℝ) ≤ ((N:ℝ)/(Q:ℝ))^((2:ℝ)/3)/Bselect) →
+    ((Uref:ℝ) ≤ ((N:ℝ)/(Q:ℝ))^(twoR/3)/Bselect) →
     ((N:ℝ)^10 ≤ M^3*R^7) →
     (∀ ij∈P, (rat ij 0:ℝ)∈Icc (gap ij).1 (gap ij).2) →
     (∀ ij∈P, Mat ij 2 ≠ 0) →
@@ -5350,8 +5350,8 @@ private theorem eventually_model_global_large_entry_source_mass_raw
     (∀ ij∈P, |(Mat ij 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2)) →
     let H := (N:ℝ)/(Cphys+2)
     2 ≤ (N:ℝ) →
-    (∀ ij∈P, ∀ i, xlocal ij i-H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ij∈P, ∀ i, xlocal ij i+H∈Ioo (1/2:ℝ) (W i-1/2)) →
+    (∀ ij∈P, ∀ i, xlocal ij i-H∈Ioo halfR (W i-1/2)) →
+    (∀ ij∈P, ∀ i, xlocal ij i+H∈Ioo halfR (W i-1/2)) →
     (∀ ij∈P, |(anchor ij:ℝ)-(rat ij 0:ℝ)| ≤ ε) →
     (∀ ij∈P, 256*((anchor ij).den:ℝ) ≤ (Q:ℝ)/3) →
     (∀ ij∈P, 256 ≤ (2*ε)*((Q:ℝ)/3)*(anchor ij).den) →
@@ -5375,7 +5375,7 @@ private theorem eventually_model_global_large_entry_source_mass_raw
     let Cpack := 64*Cphys*(Gamma^2*Cthird+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ
     let Cfirst := 128*Cphys*(Gamma^2*Cthird+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ^2
     let Cgap := 64*Cphys*(Gamma^2*B+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ
-    let Cmain := 4*(2*Cfirst/Lunit^3)^((3:ℝ)⁻¹)+2
+    let Cmain := 4*(2*Cfirst/Lunit^3)^(threeR⁻¹)+2
     let Ctail := 4*Cpack/Lunit^2+Cgap
     (P.card:ℝ) ≤
       (60*588*(Uband/lambda)^2*Uband^2*(R^8/(N:ℝ)^4)*
@@ -5478,15 +5478,15 @@ private theorem double_difference_actual_joint_narrowed_sieve
       (Q K₀ N : ℕ) [NeZero K₀] (d Wmax T M Jsep : ℝ)
       (Nlen : (ℝ × ℤ) → ℕ) (Vscale Rphys : ℝ),
     (∀ u, 0 < u → ContDiffAt ℝ ∞ F u) →
-    (∀ u∈Icc (1/2:ℝ) 3, c ≤ iteratedDeriv 5 F u) →
-    (∀ u∈Icc (1/2:ℝ) 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n F u| ≤ U) →
-    (∀ u∈Icc (1/2:ℝ) 3,
+    (∀ u∈Icc halfR 3, c ≤ iteratedDeriv 5 F u) →
+    (∀ u∈Icc halfR 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n F u| ≤ U) →
+    (∀ u∈Icc halfR 3,
       c ≤ |(iteratedDeriv 5 F u)^2-iteratedDeriv 4 F u*iteratedDeriv 6 F u|) →
-    (∀ u∈Icc (1/2:ℝ) 3, iteratedDeriv 4 F u ≤ -c) →
+    (∀ u∈Icc halfR 3, iteratedDeriv 4 F u ≤ -c) →
     0 < d → 0 ≤ Wmax → Wmax ≤ 1/4 → 2*U*Wmax ≤ c/64 →
     0 < T → 2 ≤ M → 0 < N → 0 < Q →
     0 < Jsep → (N:ℝ) ≤ M → Jsep ≤ M → Wmax*Jsep ≤ 1 →
-    (∀ i∈S, i.1∈Icc (1:ℝ) 2) →
+    (∀ i∈S, i.1∈Icc oneR 2) →
     (∀ i∈S, z i∈Icc M (2*M)) →
     (∀ i∈S, N ≤ Alen i ∧ Alen i ≤ 3*N ∧
       round (z i)+(Alen i:ℤ)=Z i.1+(N:ℤ)*i.2+2*(N:ℤ)) →
@@ -5545,7 +5545,7 @@ private theorem double_difference_actual_joint_narrowed_sieve
       (∀ ij∈P,
         A ij 0*A ij 3-A ij 1*A ij 2=1 ∧
         let t := (A ij 2:ℝ)*h ij.1.1+A ij 3
-        t=(q ij.2.1:ℝ)/q ij.1.1 ∧ (1:ℝ)/2 ≤ t ∧ t ≤ 2 ∧
+        t=(q ij.2.1:ℝ)/q ij.1.1 ∧ oneR/2 ≤ t ∧ t ≤ 2 ∧
         ((A ij 0:ℝ)*h ij.1.1+A ij 1)/t=h ij.2.1 ∧
         |(A ij 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2) ∧
         |μ ij.2.1/μ ij.1.1*t^3-1| ≤
@@ -5585,7 +5585,7 @@ private theorem double_difference_actual_joint_narrowed_sieve
       (∀ k : ZMod K₀,
         (∑ ip∈V, ‖∑ j : ZMod K₀,ZMod.stdAddChar (-(j*k))*
           GafniTao.fordAdditiveCharacter (∑ a,x ip.1 ip.2 a*
-            (![(j.val+1:ℝ),(j.val+1:ℝ)^2,(j.val+1:ℝ)^((3:ℝ)/2),
+            (![(j.val+1:ℝ),(j.val+1:ℝ)^2,(j.val+1:ℝ)^(threeR/2),
               Real.sqrt (j.val+1:ℝ)] : Fin 4 → ℝ) a)‖)^12 ≤
           C*Vscale*(K₀:ℝ)^((12:ℝ)+εloss)*(3*Cap)^11*
             ∑ key∈V.image joint,((Fiber key).card:ℝ)^10*((Pairs key).card:ℝ)) ∧
@@ -5623,16 +5623,16 @@ private theorem double_difference_actual_joint_narrowed_sieve
   have hbox ip (hip : ip∈V) :
       |x ip.1 ip.2 2| ≤ Real.sqrt K₀ ∧ |x ip.1 ip.2 3| ≤ Real.sqrt K₀ := by
     have hi := (Finset.mem_product.mp hip).1
-    have hqr : (0:ℝ) < q ip.1 := Nat.cast_pos.mpr (r ip.1).pos
-    have hnr : (0:ℝ) < Nlen ip.1 := by exact_mod_cast (hminor ip.1 hi).1
+    have hqr : zeroR < q ip.1 := Nat.cast_pos.mpr (r ip.1).pos
+    have hnr : zeroR < Nlen ip.1 := by exact_mod_cast (hminor ip.1 hi).1
     have hμ : 0 < μ ip.1 :=
       (mul_pos_iff_of_pos_right (sq_pos_of_pos hqr)).mp
         ((mul_pos_iff_of_pos_right hnr).mp (zero_lt_one.trans_le (hminor ip.1 hi).2.2))
     exact nativeHuxleyReference_huxley_actual_dual_source_box (r ip.1).pos
       (hminor ip.1 hi).1 (hminor ip.1 hi).2.1 hμ (hminor ip.1 hi).2.2
       (hcomplete ip.1 hi) (v ip.1) ip.2
-  have hKone : (1:ℝ) ≤ K₀ := by exact_mod_cast Nat.pos_of_ne_zero (NeZero.ne K₀)
-  have hNphys : (0:ℝ) < N := Nat.cast_pos.mpr hN
+  have hKone : oneR ≤ K₀ := by exact_mod_cast Nat.pos_of_ne_zero (NeZero.ne K₀)
+  have hNphys : zeroR < N := Nat.cast_pos.mpr hN
   have hrad : ∀ a, narrowRadius a ≤ radius a := by
     intro a
     fin_cases a
@@ -5723,7 +5723,7 @@ public  theorem model_source_large_entry_main_coefficient_nonneg {σ δ : ℝ} (
     let Gamma := Cphys/κ
     let Cthird := Gamma*(32*Kres+9*quarticReciprocalConstant σ δ)
     let Cfirst := 128*Cphys*(Gamma^2*Cthird+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ^2
-    let Cmain := 4*(2*Cfirst/Lunit^3)^((3:ℝ)⁻¹)+2
+    let Cmain := 4*(2*Cfirst/Lunit^3)^(threeR⁻¹)+2
     0 ≤ Cmain := by
   intro κ Cphys c J B C₂ C₃ Ct Cc Kres Lunit Gamma Cthird Cfirst Cmain
   have hκ : 0 < κ := modelPhaseThirdLower_pos hσ
@@ -5785,7 +5785,7 @@ private theorem eventually_model_global_large_entry_source_mass_clamped
     ((Q:ℝ)*(N:ℝ) ≤ (K₀:ℝ)*R^2) →
     (∀ i, M ≤ (A i:ℝ)) →
     (∀ i, (A i:ℝ)+W i ≤ 2*M) →
-    (∀ ij∈P, ∀ i, xlocal ij i∈Ioo (1/2:ℝ) (W i-1/2)) →
+    (∀ ij∈P, ∀ i, xlocal ij i∈Ioo halfR (W i-1/2)) →
     (∀ ij∈P, ∀ i, (rat ij i).den ≤ Q ∧ Q ≤ 2*(rat ij i).den) →
     (0 < lambda) →
     (0 < Uband) → (Uband ≤ 1) →
@@ -5794,15 +5794,15 @@ private theorem eventually_model_global_large_entry_source_mass_clamped
     (∀ ij∈P, ∀ i, lambda ≤ |(rat ij i:ℝ)| ∧ |(rat ij i:ℝ)| ≤ Uband) →
     (∀ ij∈P, ∀ i, ((rat ij i).den:ℤ) ∣ (rat ij i).num*vinv ij i-1) →
     (∀ ab∈Gaps, (v ab)*(r ab)-(e ab)*(s ab)=1) →
-    (∀ ab∈Gaps, ((0:ℝ) < (r ab) ∧ ((e ab):ℝ)/(r ab)=ab.1) ∨
+    (∀ ab∈Gaps, (zeroR < (r ab) ∧ ((e ab):ℝ)/(r ab)=ab.1) ∨
       (((r ab):ℝ) < 0 ∧ ((e ab):ℝ)/(r ab)=ab.2)) →
     (0 < Bcut) →
     (∀ ab∈Gaps, (s ab) ≠ 0) →
     (∀ ab∈Gaps, ((e ab):ℝ)/(r ab)∈Refs) →
     (∀ ab∈Gaps, ((v ab):ℝ)/(s ab)∈Refs) →
     (∀ a∈Refs, ∀ b∈Refs, a ≠ b → ((Uref:ℝ)/R^2)/4 < |a-b|) →
-    (∀ ij∈P, ∀ i, xlocal ij i-(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ij∈P, ∀ i, xlocal ij i+(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo (1/2:ℝ) (W i-1/2)) →
+    (∀ ij∈P, ∀ i, xlocal ij i-(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo halfR (W i-1/2)) →
+    (∀ ij∈P, ∀ i, xlocal ij i+(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo halfR (W i-1/2)) →
     (1 ≤ Uref) →
     (2+168/modelPhaseThirdLower σ ≤ Bselect) →
     (7*Bcut ≤ modelPhaseThirdLower σ*Bselect) →
@@ -5810,7 +5810,7 @@ private theorem eventually_model_global_large_entry_source_mass_clamped
     (∀ ab∈Gaps, R^2 ≤ ((r ab):ℝ)^2*(Uref:ℝ)) →
     (∀ ab∈Gaps, ab.2-ab.1 ≤ 7*(Uref:ℝ)/(2*R^2)) →
     (R ≤ (Q:ℝ)) →
-    ((Uref:ℝ) ≤ ((N:ℝ)/(Q:ℝ))^((2:ℝ)/3)/Bselect) →
+    ((Uref:ℝ) ≤ ((N:ℝ)/(Q:ℝ))^(twoR/3)/Bselect) →
     ((N:ℝ)^10 ≤ M^3*R^7) →
     (∀ ij∈P, (rat ij 0:ℝ)∈Icc (gap ij).1 (gap ij).2) →
     (∀ ij∈P, Mat ij 2 ≠ 0) →
@@ -5865,8 +5865,8 @@ private theorem eventually_model_global_large_entry_source_mass_clamped
     (∀ ij∈P, |(Mat ij 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2)) →
     let H := (N:ℝ)/(Cphys+2)
     2 ≤ (N:ℝ) →
-    (∀ ij∈P, ∀ i, xlocal ij i-H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ij∈P, ∀ i, xlocal ij i+H∈Ioo (1/2:ℝ) (W i-1/2)) →
+    (∀ ij∈P, ∀ i, xlocal ij i-H∈Ioo halfR (W i-1/2)) →
+    (∀ ij∈P, ∀ i, xlocal ij i+H∈Ioo halfR (W i-1/2)) →
     (∀ ij∈P, |(anchor ij:ℝ)-(rat ij 0:ℝ)| ≤ ε) →
     (∀ ij∈P, 256*((anchor ij).den:ℝ) ≤ (Q:ℝ)/3) →
     (∀ ij∈P, 256 ≤ (2*ε)*((Q:ℝ)/3)*(anchor ij).den) →
@@ -5890,11 +5890,11 @@ private theorem eventually_model_global_large_entry_source_mass_clamped
     let Cpack := 64*Cphys*(Gamma^2*Cthird+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ
     let Cfirst := 128*Cphys*(Gamma^2*Cthird+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ^2
     let Cgap := 64*Cphys*(Gamma^2*B+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ
-    let Cmain := 4*(2*Cfirst/Lunit^3)^((3:ℝ)⁻¹)+2
+    let Cmain := 4*(2*Cfirst/Lunit^3)^(threeR⁻¹)+2
     let Ctail := 4*Cpack/Lunit^2+Cgap
     V*(P.card:ℝ) ≤
       (60*588*(Uband/lambda)^2*Uband^2*(R^8/(N:ℝ)^4)*
-        (Cmain*((Q:ℝ)/(Uband*(N:ℝ)))^((2:ℝ)/3)+Ctail/(Uref:ℝ)))*T^εloss := by
+        (Cmain*((Q:ℝ)/(Uband*(N:ℝ)))^(twoR/3)+Ctail/(Uref:ℝ)))*T^εloss := by
   filter_upwards [eventually_model_global_large_entry_source_mass_raw hσ hJref hεloss]
     with T hraw
   intro F Uref Refs Gaps Bselect P Mat gap Q K₀ inst N za zb AlenA AlenB Za Zb
@@ -5920,7 +5920,7 @@ private theorem eventually_model_global_large_entry_source_mass_clamped
     hNtwo hL hU hanchor hcut hcount hsize hD hΔ hBsize
   have hδ₀ := approximateModelPhase_tolerance_nonneg (hF 0)
   have hCmain : 0 ≤ Cmain := model_source_large_entry_main_coefficient_nonneg hσ hδ₀
-  have hUp : (0:ℝ) < Uref := Nat.cast_pos.mpr (by omega)
+  have hUp : zeroR < Uref := Nat.cast_pos.mpr (by omega)
   have hclamp := (clamped_narrowing_source_costs
     (H:=Uband) (N:=(N:ℝ)) (Q:=(Q:ℝ)) (C:=0) (a:=Cmain) (b:=Ctail) (Uref:=(Uref:ℝ))
     hUband hUbandCap hN (Nat.cast_pos.mpr hQ) (by norm_num) hCmain hUp).2.2
@@ -5972,7 +5972,7 @@ private theorem eventually_model_tagged_large_entry_source_mass_clamped
     ((Q:ℝ)*(N:ℝ) ≤ (K₀:ℝ)*R^2) →
     (∀ i, M ≤ (A i:ℝ)) →
     (∀ i, (A i:ℝ)+W i ≤ 2*M) →
-    (∀ ij∈P, ∀ i, xlocal ij i∈Ioo (1/2:ℝ) (W i-1/2)) →
+    (∀ ij∈P, ∀ i, xlocal ij i∈Ioo halfR (W i-1/2)) →
     (∀ ij∈P, ∀ i, (rat ij i).den ≤ Q ∧ Q ≤ 2*(rat ij i).den) →
     (0 < lambda) →
     (0 < Uband) → (Uband ≤ 1) →
@@ -5981,15 +5981,15 @@ private theorem eventually_model_tagged_large_entry_source_mass_clamped
     (∀ ij∈P, ∀ i, lambda ≤ |(rat ij i:ℝ)| ∧ |(rat ij i:ℝ)| ≤ Uband) →
     (∀ ij∈P, ∀ i, ((rat ij i).den:ℤ) ∣ (rat ij i).num*vinv ij i-1) →
     (∀ ab∈Gaps, (v ab)*(r ab)-(e ab)*(s ab)=1) →
-    (∀ ab∈Gaps, ((0:ℝ) < (r ab) ∧ ((e ab):ℝ)/(r ab)=ab.1) ∨
+    (∀ ab∈Gaps, (zeroR < (r ab) ∧ ((e ab):ℝ)/(r ab)=ab.1) ∨
       (((r ab):ℝ) < 0 ∧ ((e ab):ℝ)/(r ab)=ab.2)) →
     (0 < Bcut) →
     (∀ ab∈Gaps, (s ab) ≠ 0) →
     (∀ ab∈Gaps, ((e ab):ℝ)/(r ab)∈Refs) →
     (∀ ab∈Gaps, ((v ab):ℝ)/(s ab)∈Refs) →
     (∀ a∈Refs, ∀ b∈Refs, a ≠ b → ((Uref:ℝ)/R^2)/4 < |a-b|) →
-    (∀ ij∈P, ∀ i, xlocal ij i-(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ij∈P, ∀ i, xlocal ij i+(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo (1/2:ℝ) (W i-1/2)) →
+    (∀ ij∈P, ∀ i, xlocal ij i-(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo halfR (W i-1/2)) →
+    (∀ ij∈P, ∀ i, xlocal ij i+(56*(Uref:ℝ)/modelPhaseThirdLower σ)*(N:ℝ)∈Ioo halfR (W i-1/2)) →
     (1 ≤ Uref) →
     (2+168/modelPhaseThirdLower σ ≤ Bselect) →
     (7*Bcut ≤ modelPhaseThirdLower σ*Bselect) →
@@ -5997,7 +5997,7 @@ private theorem eventually_model_tagged_large_entry_source_mass_clamped
     (∀ ab∈Gaps, R^2 ≤ ((r ab):ℝ)^2*(Uref:ℝ)) →
     (∀ ab∈Gaps, ab.2-ab.1 ≤ 7*(Uref:ℝ)/(2*R^2)) →
     (R ≤ (Q:ℝ)) →
-    ((Uref:ℝ) ≤ ((N:ℝ)/(Q:ℝ))^((2:ℝ)/3)/Bselect) →
+    ((Uref:ℝ) ≤ ((N:ℝ)/(Q:ℝ))^(twoR/3)/Bselect) →
     ((N:ℝ)^10 ≤ M^3*R^7) →
     (∀ ij∈P, (rat ij 0:ℝ)∈Icc (gap ij).1 (gap ij).2) →
     (∀ ij∈P, Mat ij 2 ≠ 0) →
@@ -6052,8 +6052,8 @@ private theorem eventually_model_tagged_large_entry_source_mass_clamped
     (∀ ij∈P, |(Mat ij 2:ℝ)| ≤ (Q:ℝ)^2/(6*(K₀:ℝ)^2)) →
     let H := (N:ℝ)/(Cphys+2)
     2 ≤ (N:ℝ) →
-    (∀ ij∈P, ∀ i, xlocal ij i-H∈Ioo (1/2:ℝ) (W i-1/2)) →
-    (∀ ij∈P, ∀ i, xlocal ij i+H∈Ioo (1/2:ℝ) (W i-1/2)) →
+    (∀ ij∈P, ∀ i, xlocal ij i-H∈Ioo halfR (W i-1/2)) →
+    (∀ ij∈P, ∀ i, xlocal ij i+H∈Ioo halfR (W i-1/2)) →
     (∀ ij∈P, |(anchor ij:ℝ)-(rat ij 0:ℝ)| ≤ ε) →
     (∀ ij∈P, 256*((anchor ij).den:ℝ) ≤ (Q:ℝ)/3) →
     (∀ ij∈P, 256 ≤ (2*ε)*((Q:ℝ)/3)*(anchor ij).den) →
@@ -6077,11 +6077,11 @@ private theorem eventually_model_tagged_large_entry_source_mass_clamped
     let Cpack := 64*Cphys*(Gamma^2*Cthird+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ
     let Cfirst := 128*Cphys*(Gamma^2*Cthird+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ^2
     let Cgap := 64*Cphys*(Gamma^2*B+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ
-    let Cmain := 4*(2*Cfirst/Lunit^3)^((3:ℝ)⁻¹)+2
+    let Cmain := 4*(2*Cfirst/Lunit^3)^(threeR⁻¹)+2
     let Ctail := 4*Cpack/Lunit^2+Cgap
     V*(P.card:ℝ) ≤
       (60*588*(Uband/lambda)^2*Uband^2*(R^8/(N:ℝ)^4)*
-        (Cmain*((Q:ℝ)/(Uband*(N:ℝ)))^((2:ℝ)/3)+Ctail/(Uref:ℝ)))*T^εloss := by
+        (Cmain*((Q:ℝ)/(Uband*(N:ℝ)))^(twoR/3)+Ctail/(Uref:ℝ)))*T^εloss := by
   classical
   filter_upwards [eventually_model_global_large_entry_source_mass_clamped hσ hJref hεloss]
     with T hraw
@@ -6172,7 +6172,7 @@ private theorem double_difference_source_large_action_threshold
           64*(modelPhaseJetCoefficient σ 3+δ)*M^2 ≤ |γ| *κ^2*T := by
   intro κ L
   have hκ : 0 < κ := modelPhaseThirdLower_pos hσ
-  have hL : 0 ≤ L := (by positivity : (0:ℝ) ≤ 32*U^2/c^2).trans (le_max_left _ _)
+  have hL : 0 ≤ L := (by positivity : zeroR ≤ 32*U^2/c^2).trans (le_max_left _ _)
   refine ⟨hL,?_⟩
   intro Tsrc T M δ γ hTsrc _hT hM hsource hδ lambda Hcurv hlarge
   have hH : 0 < Hcurv := by dsimp only [Hcurv]; positivity
@@ -6209,18 +6209,18 @@ private theorem double_difference_source_large_action_threshold
     nlinarith only [hbudget,hh]
   refine ⟨hγ,haction,?_⟩
   exact (mul_le_mul_of_nonneg_right
-    (mul_le_mul_of_nonneg_left (add_le_add le_rfl hδ) (by norm_num : (0:ℝ) ≤ 64))
+    (mul_le_mul_of_nonneg_left (add_le_add le_rfl hδ) (by norm_num : zeroR ≤ 64))
     (sq_nonneg M)).trans hnormalized
 
 public  theorem double_difference_physical_curvature_band
     (F : ℝ → ℝ) {z r s d y c U T M : ℝ}
-    (hz : z∈Icc M (2*M)) (hy : y∈Icc (1:ℝ) 2)
+    (hz : z∈Icc M (2*M)) (hy : y∈Icc oneR 2)
     (hr : 0 < r) (hs : 0 < s) (hd : 0 < d)
     (hc : 0 < c) (hU : 0 < U) (hT : 0 < T) (hM : 0 < M)
     (hprod : r*s=d*y) (hshift : r+s ≤ 1/4)
     (hf : ∀ u, 0 < u → ContDiffAt ℝ ∞ F u)
-    (hneg : ∀ u∈Icc (1/2:ℝ) 3, iteratedDeriv 4 F u ≤ -c)
-    (hbound : ∀ u∈Icc (1/2:ℝ) 3, |iteratedDeriv 4 F u| ≤ U) :
+    (hneg : ∀ u∈Icc halfR 3, iteratedDeriv 4 F u ≤ -c)
+    (hbound : ∀ u∈Icc halfR 3, |iteratedDeriv 4 F u| ≤ U) :
     let Q := fun u => (F u-F (u+r)-F (u+s)+F (u+r+s))/d
     let f := fun w => T*Q (w/M)
     c*T/(2*M^2) ≤ |iteratedDeriv 2 f z/2| ∧
@@ -6244,7 +6244,7 @@ public  theorem double_difference_physical_curvature_band
       (l:=0) (r:=z+1) (c:=M⁻¹) (d:=0)
       (fun v hv => hreg _ (by
         simpa only [add_zero] using mul_pos (inv_pos.mpr hM) hv.1))
-      (show z∈Ioo (0:ℝ) (z+1) from ⟨hzpos,by linarith⟩) 2
+      (show z∈Ioo zeroR (z+1) from ⟨hzpos,by linarith⟩) 2
     change iteratedDeriv 2 (fun w => T*Q (w/M)) z=_
     rw [iteratedDeriv_const_mul_field]
     have he : (fun w => Q (w/M))=(fun w => Q (M⁻¹*w+0)) := by
@@ -6262,7 +6262,7 @@ public  theorem double_difference_physical_curvature_band
     linarith only [hband.2,hc]
   rw [hphysical,abs_div,abs_mul,
     abs_of_pos (div_pos hT (pow_pos hM 2)),abs_of_neg hsign,
-    abs_of_pos (by norm_num : (0:ℝ) < 2)]
+    abs_of_pos (by norm_num : zeroR < 2)]
   constructor
   · calc
       c*T/(2*M^2) = (T/M^2)*c/2 := by ring
@@ -6300,16 +6300,16 @@ public  theorem eventually_double_difference_actual_family_source_sieve
     (δ ≤ min (modelPhaseThirdLower σ) 1) →
     (Tsrc ≤ E*T) →
     (0 < Q) → (Uband ≤ 1) →
-    (∀ i∈S, i.1∈Icc (1:ℝ) 2) →
+    (∀ i∈S, i.1∈Icc oneR 2) →
     (∀ i∈S, z i∈Icc M (2*M)) →
     (∀ w, 0 < w → ContDiffAt ℝ ∞ Fsrc w) →
-    (∀ w∈Icc (1/2:ℝ) 3, csrc ≤ iteratedDeriv 5 Fsrc w) →
-    (∀ w∈Icc (1/2:ℝ) 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n Fsrc w| ≤ Usrc) →
-    (∀ w∈Icc (1/2:ℝ) 3,
+    (∀ w∈Icc halfR 3, csrc ≤ iteratedDeriv 5 Fsrc w) →
+    (∀ w∈Icc halfR 3, ∀ n, 1 ≤ n → n ≤ 7 → |iteratedDeriv n Fsrc w| ≤ Usrc) →
+    (∀ w∈Icc halfR 3,
       csrc ≤ |(iteratedDeriv 5 Fsrc w)^2-iteratedDeriv 4 Fsrc w*iteratedDeriv 6 Fsrc w|) →
     (∀ i∈S, (rat i).den ≤ Q ∧ Q ≤ 2*(rat i).den) →
     (∀ i∈S, ((rat i).den:ℤ) ∣ (rat i).num*v i-1) →
-    (∀ w∈Icc (1/2:ℝ) 3, iteratedDeriv 4 Fsrc w ≤ -csrc) →
+    (∀ w∈Icc halfR 3, iteratedDeriv 4 Fsrc w ≤ -csrc) →
     (2 ≤ M) →
     (0 < N) →
     (0 < Jsep) → (Jsep ≤ M) → ((N:ℝ) ≤ M) → (Wmax*Jsep ≤ 1) →
@@ -6333,24 +6333,24 @@ public  theorem eventually_double_difference_actual_family_source_sieve
     (1 ≤ R) → (R ≤ M) → (T*(N:ℝ)*R^2=M^3) →
     (∀ i∈S, M ≤ A i.1) → (∀ i∈S, A i.1+W i.1 ≤ 2*M) →
     let xlocal := fun i : ℝ × ℤ => z i-(A i.1:ℝ)
-    (∀ i∈S, xlocal i∈Ioo (1/2:ℝ) (W i.1-1/2)) →
+    (∀ i∈S, xlocal i∈Ioo halfR (W i.1-1/2)) →
     (∀ i∈S, gap i∈Gaps) →
     (∀ ab∈Gaps, (vRef ab)*(r ab)-(e ab)*(s ab)=1) →
-    (∀ ab∈Gaps, ((0:ℝ) < (r ab) ∧ ((e ab):ℝ)/(r ab)=ab.1) ∨
+    (∀ ab∈Gaps, (zeroR < (r ab) ∧ ((e ab):ℝ)/(r ab)=ab.1) ∨
       (((r ab):ℝ) < 0 ∧ ((e ab):ℝ)/(r ab)=ab.2)) →
     (0 < Bcut) → (∀ ab∈Gaps, (s ab) ≠ 0) →
     (∀ ab∈Gaps, ((e ab):ℝ)/(r ab)∈Refs) →
     (∀ ab∈Gaps, ((vRef ab):ℝ)/(s ab)∈Refs) →
     (∀ a∈Refs, ∀ b∈Refs, a ≠ b → ((Uref:ℝ)/R^2)/4 < |a-b|) →
-    (∀ i∈S, xlocal i-(56*(Uref:ℝ)/κ)*(N:ℝ)∈Ioo (1/2:ℝ) (W i.1-1/2)) →
-    (∀ i∈S, xlocal i+(56*(Uref:ℝ)/κ)*(N:ℝ)∈Ioo (1/2:ℝ) (W i.1-1/2)) →
+    (∀ i∈S, xlocal i-(56*(Uref:ℝ)/κ)*(N:ℝ)∈Ioo halfR (W i.1-1/2)) →
+    (∀ i∈S, xlocal i+(56*(Uref:ℝ)/κ)*(N:ℝ)∈Ioo halfR (W i.1-1/2)) →
     (1 ≤ Uref) →
     (2+168/κ ≤ Bselect) → (7*Bcut ≤ κ*Bselect) →
     (Bselect^2*(Uref:ℝ)^3*R^2 ≤ (N:ℝ)^2) →
     (∀ ab∈Gaps, R^2 ≤ ((r ab):ℝ)^2*(Uref:ℝ)) →
     (∀ ab∈Gaps, ab.2-ab.1 ≤ 7*(Uref:ℝ)/(2*R^2)) →
     (R ≤ (Q:ℝ)) →
-    ((Uref:ℝ) ≤ ((N:ℝ)/(Q:ℝ))^((2:ℝ)/3)/Bselect) →
+    ((Uref:ℝ) ≤ ((N:ℝ)/(Q:ℝ))^(twoR/3)/Bselect) →
     ((N:ℝ)^10 ≤ M^3*R^7) →
     (∀ i∈S, (rat i:ℝ)∈Icc (gap i).1 (gap i).2) →
     (∀ ab∈Gaps, ab.1∈Refs ∧ ab.2∈Refs ∧ ab.1 < ab.2 ∧
@@ -6372,8 +6372,8 @@ public  theorem eventually_double_difference_actual_family_source_sieve
     2*R^2 ≤ (Q:ℝ)*(N:ℝ) →
     let H := (N:ℝ)/(Cphys+2)
     2 ≤ (N:ℝ) →
-    (∀ i∈S, xlocal i-H∈Ioo (1/2:ℝ) (W i.1-1/2)) →
-    (∀ i∈S, xlocal i+H∈Ioo (1/2:ℝ) (W i.1-1/2)) →
+    (∀ i∈S, xlocal i-H∈Ioo halfR (W i.1-1/2)) →
+    (∀ i∈S, xlocal i+H∈Ioo halfR (W i.1-1/2)) →
     let ε := κ/(16*(Cphys+2)*R^2)
     (∀ i∈S, |(anchor i:ℝ)-(rat i:ℝ)| ≤ ε) →
     (∀ i∈S, 256*((anchor i).den:ℝ) ≤ (Q:ℝ)/3) →
@@ -6420,16 +6420,16 @@ public  theorem eventually_double_difference_actual_family_source_sieve
     let Cpack := 64*Cphys*(Gamma^2*Cthird+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ
     let Cfirst := 128*Cphys*(Gamma^2*Cthird+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ^2
     let Cgap := 64*Cphys*(Gamma^2*B+Gamma*(modelPhaseJetCoefficient σ 3+δ)/κ)/κ
-    let Cmain := 4*(2*Cfirst/Lunit^3)^((3:ℝ)⁻¹)+2
+    let Cmain := 4*(2*Cfirst/Lunit^3)^(threeR⁻¹)+2
     let Ctail := 4*Cpack/Lunit^2+Cgap
     let Klarge := 60*588*(Uband/lambda)^2*Uband^2*(R^8/(N:ℝ)^4)*
-      (Cmain*((Q:ℝ)/(Uband*(N:ℝ)))^((2:ℝ)/3)+Ctail/(Uref:ℝ))
+      (Cmain*((Q:ℝ)/(Uband*(N:ℝ)))^(twoR/3)+Ctail/(Uref:ℝ))
     let Y := S.image Prod.fst
     ((V.image color).card:ℝ) ≤ Cap ∧
     ∀ k : ZMod K₀,
       (∑ ip∈V, ‖∑ j : ZMod K₀, ZMod.stdAddChar (-(j*k))*
         GafniTao.fordAdditiveCharacter (∑ d,x ip d*
-          (![(j.val+1:ℝ),(j.val+1:ℝ)^2,(j.val+1:ℝ)^((3:ℝ)/2),
+          (![(j.val+1:ℝ),(j.val+1:ℝ)^2,(j.val+1:ℝ)^(threeR/2),
             Real.sqrt (j.val+1:ℝ)] : Fin 4 → ℝ) d)‖)^12 ≤
         C*(K₀:ℝ)^((12:ℝ)+εloss)*Cap^11*
           ∑ key∈V.image color, ((Fiber key).card:ℝ)^10*
@@ -6504,7 +6504,7 @@ public  theorem eventually_double_difference_actual_family_source_sieve
   let phaseFiber := fun key (ab : ℝ × ℝ) =>
     (Large key).filter (fun ij => ij.1.1.1=ab.1 ∧ ij.2.1.1=ab.2)
   have hRadius a : radius a ≤ wideRadius a := by
-    have hKpos : (0:ℝ) < K₀ := by exact_mod_cast NeZero.pos K₀
+    have hKpos : zeroR < K₀ := by exact_mod_cast NeZero.pos K₀
     fin_cases a
     · exact le_rfl
     · change 1/(12*(K₀:ℝ)^2*Vscale) ≤ 1/(12*(K₀:ℝ)^2)
@@ -6544,7 +6544,7 @@ public  theorem eventually_double_difference_actual_family_source_sieve
     rw [hl1,hl2] at hm
     exact ⟨hg.1,ht,hm,hg.2.2.2.2.2.1⟩
   have hY y (hym : y∈Y) :
-      y∈Icc (1:ℝ) 2 ∧ M ≤ A y ∧ A y+W y ≤ 2*M ∧
+      y∈Icc oneR 2 ∧ M ≤ A y ∧ A y+W y ≤ 2*M ∧
       Expdb.IsApproximateModelPhaseFunction (fun u => (Tsrc/T)*Φ y u) σ 4 δ := by
     obtain ⟨i,hi,rfl⟩ := Finset.mem_image.mp hym
     exact ⟨hy i hi,hA i hi,hW i hi,hmodel i hi⟩
@@ -6678,7 +6678,7 @@ public  theorem eventually_double_difference_actual_family_source_sieve
       hGeoA hGeoB hδ hFp hT hM
       (Nat.cast_pos.mpr hN) hR hRM hQ hscale hmesh hAp hWpair
       (fun p hp i => by
-        change xp p i-(Ap i:ℝ)∈Ioo (1/2:ℝ) (Wp i-1/2)
+        change xp p i-(Ap i:ℝ)∈Ioo halfR (Wp i-1/2)
         rw [hLoc p hp i,hWp p hp i]
         exact hx _ (hS p hp i))
       (fun p hp i => hden _ (hS p hp i))
@@ -6687,11 +6687,11 @@ public  theorem eventually_double_difference_actual_family_source_sieve
       (fun p hp i => hinv _ (hS p hp i))
       hchart horientation hBcut hs hrefSet hparentSet hsep
       (fun p hp i => by
-        change xp p i-(Ap i:ℝ)-(56*(Uref:ℝ)/κ)*(N:ℝ)∈Ioo (1/2:ℝ) (Wp i-1/2)
+        change xp p i-(Ap i:ℝ)-(56*(Uref:ℝ)/κ)*(N:ℝ)∈Ioo halfR (Wp i-1/2)
         rw [hLoc p hp i,hWp p hp i]
         exact hwideL _ (hS p hp i))
       (fun p hp i => by
-        change xp p i-(Ap i:ℝ)+(56*(Uref:ℝ)/κ)*(N:ℝ)∈Ioo (1/2:ℝ) (Wp i-1/2)
+        change xp p i-(Ap i:ℝ)+(56*(Uref:ℝ)/κ)*(N:ℝ)∈Ioo halfR (Wp i-1/2)
         rw [hLoc p hp i,hWp p hp i]
         exact hwideU _ (hS p hp i))
       hUref hBselectSize hcutMargin hselectedWrap hreferenceDen hgapWidth hRQ
@@ -6726,11 +6726,11 @@ public  theorem eventually_double_difference_actual_family_source_sieve
       (fun p hp => (hMatData p (hPairData key p (hPairs p hp)).2.2.2.2).2.2.2)
       hNtwo
       (fun p hp i => by
-        change xp p i-(Ap i:ℝ)-H∈Ioo (1/2:ℝ) (Wp i-1/2)
+        change xp p i-(Ap i:ℝ)-H∈Ioo halfR (Wp i-1/2)
         rw [hLoc p hp i,hWp p hp i]
         exact hLeft _ (hS p hp i))
       (fun p hp i => by
-        change xp p i-(Ap i:ℝ)+H∈Ioo (1/2:ℝ) (Wp i-1/2)
+        change xp p i-(Ap i:ℝ)+H∈Ioo halfR (Wp i-1/2)
         rw [hLoc p hp i,hWp p hp i]
         exact hRight _ (hS p hp i))
       (fun p hp => hanchor _ (hS p hp 0))
@@ -6824,7 +6824,7 @@ public  theorem eventually_double_difference_actual_family_source_sieve
 public  theorem double_difference_source_completion_weight
     (Fsrc : ℝ → ℝ) {r s d y w c U σ δ Tsrc T M N R Q q A z : ℝ}
     (hr : 0 ≤ r) (hs : 0 ≤ s) (hd : 0 < d)
-    (hy : y∈Icc (1:ℝ) 2) (hprod : r*s=d*y)
+    (hy : y∈Icc oneR 2) (hprod : r*s=d*y)
     (hshift : r+s ≤ w) (hw : w ≤ 1/4) (hsmall : 2*U*w ≤ c/64)
     (hc : 0 < c) (hU : 0 < U) (hσ : 0 < σ)
     (hTsrc : 0 < Tsrc) (hT : 0 < T) (hMtwo : 2 ≤ M)
@@ -6833,8 +6833,8 @@ public  theorem double_difference_source_completion_weight
     (hscale : T*N*R^2=M^3)
     (hδ : δ ≤ min (modelPhaseThirdLower σ) 1)
     (hf : ∀ u, 0 < u → ContDiffAt ℝ ∞ Fsrc u)
-    (hlower : ∀ u∈Icc (1/2:ℝ) 3, c ≤ iteratedDeriv 5 Fsrc u)
-    (hjets : ∀ u∈Icc (1/2:ℝ) 3, ∀ n, 1 ≤ n → n ≤ 7 →
+    (hlower : ∀ u∈Icc halfR 3, c ≤ iteratedDeriv 5 Fsrc u)
+    (hjets : ∀ u∈Icc halfR 3, ∀ n, 1 ≤ n → n ≤ 7 →
       |iteratedDeriv n Fsrc u| ≤ U) :
     let Φ := fun u => (Fsrc u-Fsrc (u+r)-Fsrc (u+s)+Fsrc (u+r+s))/d
     Expdb.IsApproximateModelPhaseFunction (fun u => (Tsrc/T)*Φ u) σ 2 δ →
@@ -6857,7 +6857,7 @@ public  theorem double_difference_source_completion_weight
         iteratedDeriv 3 (fun u => (Tsrc/T)*Φ u) (3/2) := by
       simpa only [iteratedDeriv_succ,iteratedDeriv_zero] using
         (approximateModelPhase_thirdDeriv_bounds hσ hδ hmodel
-          (by norm_num : (3/2:ℝ)∈Ioo (1:ℝ) 2)).1
+          (by norm_num : (3/2:ℝ)∈Ioo oneR 2)).1
     have hu : |iteratedDeriv 3 Φ (3/2)| ≤ 3*U :=
       (hjet (3/2) (by norm_num)).2.2.1
     rw [iteratedDeriv_const_mul_field] at hlow
@@ -6867,9 +6867,9 @@ public  theorem double_difference_source_completion_weight
       have he : (Tsrc/T)*(3*U)=Tsrc*(3*U)/T := by ring
       rw [he] at hb
       exact (le_div_iff₀ hT).mp hb
-    exact (div_le_iff₀ (mul_pos (by norm_num : (0:ℝ) < 3) hU)).mpr hh
+    exact (div_le_iff₀ (mul_pos (by norm_num : zeroR < 3) hU)).mpr hh
   have hround := abs_le.mp (abs_sub_round z)
-  have hzround : (0:ℝ) < round z := by linarith only [hround.2,hz.1,hMtwo]
+  have hzround : zeroR < round z := by linarith only [hround.2,hz.1,hMtwo]
   have hnorm : (round z:ℝ)/M∈Icc (3/4:ℝ) (9/4) := by
     constructor
     · apply (le_div_iff₀ hM).mpr
@@ -6882,7 +6882,7 @@ public  theorem double_difference_source_completion_weight
       (l:=0) (r:=(round z:ℝ)+1) (c:=M⁻¹) (d:=0)
       (fun v hv => hreg _ (by
         simpa only [add_zero] using mul_pos (inv_pos.mpr hM) hv.1))
-      (show (round z:ℝ)∈Ioo (0:ℝ) ((round z:ℝ)+1) from ⟨hzround,by linarith⟩) 3
+      (show (round z:ℝ)∈Ioo zeroR ((round z:ℝ)+1) from ⟨hzround,by linarith⟩) 3
     change iteratedDeriv 3 (fun v => Tsrc*Φ (v/M)) (round z)=_
     rw [iteratedDeriv_const_mul_field]
     have he : (fun v => Φ (v/M))=(fun v => Φ (M⁻¹*v+0)) := by

@@ -1,5 +1,5 @@
 module
-public import OAI.NumberTheory.DirichletL.Reflection.WholeTail
+public import OAI.NumberTheory.DirichletL.Reflection.ShapeWeights
 public import OAI.NumberTheory.DirichletL.Reflection.RowTailUniformDegree
 
 @[expose] public section

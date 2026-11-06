@@ -85,23 +85,6 @@ open CanonicalQuadraticSieve hiding O
 open SecondPassArithmetic hiding O
 open CanonicalCoefficientClass (IsBaseRayTwist)
 
-def HasCanonicalThetaModels (S : Finset (Ideal ActualEisensteinCubic.O)) (base : ActualEisensteinCubic.O→*ℂ)
-    (ρ q levelBound : ℝ) : Prop :=
-  ∀(A : ℝ),0≤A → ∀(W : ℝ→ℂ),
-    Function.support W⊆Set.Icc (Real.exp (-A)) (Real.exp A) → ContDiff ℝ ∞ W →
-    ∀κ : ℝ,0<κ → ∃C : ℝ,0≤C ∧
-    ∀(Z K X F θ : ℝ),1≤Z → 1≤K → 0<X → 1≤F → F≤Z^((1:ℝ)/1000) →
-    ∀(Ψ : ActualEisensteinCubic.O→*ℂ),IsBaseRayTwist base Ψ → ∀m : ActualEisensteinCubic.O,m≠0 →
-    let G : Ideal ActualEisensteinCubic.O:=Ideal.span {m*excludedGenerator S}
-    (2*K)*(Ideal.absNorm G:ℝ)≤X*F*Z^(-((1:ℝ)/40)) →
-    ∃(rays : ℕ) (lengthScale : ℂ),(rays:ℝ)^2*‖lengthScale‖^2≤C*Z^κ ∧
-      ∀u : ActualEisensteinCubic.Oˣ,∀f : idealRange F,∀H∈shortCubeRange (Z^((1:ℝ)/1000)),
-        HasExactCompletedDyadicModels rays
-          (((firstFrequencyDisk (2*K)).erase 0).image (fun z=>Ideal.span {z})) (2*K)
-          (X/(Ideal.absNorm H:ℝ)^3) ρ q levelBound f.val (G*f.val)
-          (CompletedHeight.normTwistedSource W θ)
-          (CompletedUnitRows.unitRowFamily Ψ (m*excludedGenerator S) u f) lengthScale
-
 end CanonicalRowCompletion
 
 open scoped BigOperators Classical
@@ -168,14 +151,6 @@ open ConcreteTraceCRT (eisEmbedding)
 end CanonicalRowCompletion
 
 namespace CanonicalCubeSeparation
-
-def radiusIter (A : ℝ) : ℕ→ℝ
-  | 0=>A
-  | n+1=>radiusIter (2*A+11) n
-
-@[simp] theorem radiusIter_zero (A : ℝ) : radiusIter A 0=A:=rfl
-@[simp] theorem radiusIter_succ (A : ℝ) (n : ℕ) :
-    radiusIter A (n+1)=radiusIter (2*A+11) n:=rfl
 
 end CanonicalCubeSeparation
 

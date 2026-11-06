@@ -114,27 +114,6 @@ theorem slot_controls (ν : α→Ideal O→ℂ) (W : α→ℝ→ℂ) (P b M : α
   · intro i I hn
     exact (div_le_iff₀ (hP i)).mp (hs i (right_ne_zero_of_mul hn))
 
-def SharedBound (F : Finset α) (b M : α→ℝ) (C ε : ℝ) : Prop :=
-    ∀{ι : Type*} [Fintype ι],
-      ∀(R : Finset (Ideal O))(hR : ∀I∈R,Prime I)(χ : ι→Character)
-        (W₁ W₂ : ι→𝓢(ℝ,ℂ))(X₁ X₂ : ι→ℝ)
-        (pool : ι→α→Finset (Ideal O))(β : ι→α→Ideal O→ℂ)(P : ι→α→ℝ),
-      (∀i,0<X₁ i) → (∀i,0<X₂ i) →
-      (∀i j,j∈F → ∀I∈pool i j,Prime I) → (∀i j,j∈F → 0<P i j) →
-      (∀i j,j∈F → ∀I∈pool i j,‖β i j I‖≤M j) →
-      (∀i j,j∈F → ∀I∈pool i j,β i j I≠0 → (I.absNorm:ℝ)≤b j*P i j) →
-      ∀E : ℝ,0≤E →
-      (∀D₁∈R.powerset,∀D₂∈R.powerset,∀J∈F.powerset,
-        (∑i,‖HeckeDyadic.polynomial (χ i) false (W₁ i)
-          (X₁ i/(Ideal.absNorm (∏I∈D₁,I):ℝ)) 0 0 *
-          HeckeDyadic.polynomial (χ i) false (W₂ i)
-          (X₂ i/(Ideal.absNorm (∏I∈D₂,I):ℝ)) 0 0 *
-          ∏j∈F\J,naturalSlot (χ i) (pool i j) (β i j) (P i j)‖^2)≤E) →
-      (∑i,‖HeckeDyadic.polynomial ((χ i).excludePrimes R hR) false (W₁ i) (X₁ i) 0 0 *
-        HeckeDyadic.polynomial ((χ i).excludePrimes R hR) false (W₂ i) (X₂ i) 0 0 *
-        ∏j∈F,naturalSlot ((χ i).excludePrimes R hR) (pool i j) (β i j) (P i j)‖^2)≤
-        C*(Ideal.absNorm (∏I∈R,I):ℝ)^ε*E
-
 lemma primeSupport_product_radical (R : Ideal O) (hR : R≠0) :
     (∏I∈CompletedGauss.primeSupport R,I)=R.radical := by
   ext x
@@ -170,24 +149,6 @@ lemma Slots.controls {b M : α→ℝ} (s : Slots α b M) :
     (∀i I,‖s.coefficient i I‖≤M i) ∧
     (∀i I,s.coefficient i I≠0 → (I.absNorm:ℝ)≤b i*s.P i) :=
   slot_controls s.ν s.W s.P b M s.P_pos s.ν_bound s.W_bound s.support
-
-structure Row (α : Type*) (b M : α→ℝ) where
-  η : Character
-  z : O
-  z_ne : z≠0
-  plain₁ : Plain
-  plain₂ : Plain
-  slots : Slots α b M
-  t : ℝ
-  X₁ : ℝ
-  X₂ : ℝ
-  Y₁ : ℝ
-  Y₂ : ℝ
-  X₁_pos : 0<X₁
-  X₂_pos : 0<X₂
-  Y₁_pos : 0<Y₁
-  Y₂_pos : 0<Y₂
-  same_product : X₁*X₂=Y₁*Y₂
 
 def commonSlots (s : CenteredMomentCommonRadialData.Input α) (C : Ideal O)
     (B : CenteredMomentCommonAllocationSum.actualAllocations s.pools C) :

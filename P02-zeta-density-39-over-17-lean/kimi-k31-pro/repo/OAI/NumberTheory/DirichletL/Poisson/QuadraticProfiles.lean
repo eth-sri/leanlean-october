@@ -78,45 +78,6 @@ namespace EisensteinSchwartzPoisson
 
 open ActualEisensteinCubic ConcreteTraceCRT
 
-def quadraticSquareProfileCLM : 𝓢(ℝ, ℂ) →L[ℝ] 𝓢(ℝ, ℂ) :=
-  SchwartzMap.compCLM ℝ
-    (show (fun x : ℝ => x ^ 2).HasTemperateGrowth by fun_prop)
-    ⟨1, 1, fun x => by
-      simp only [pow_one, one_mul, norm_pow]
-      nlinarith [sq_nonneg (‖x‖ - 1)]⟩
-
-@[simp] theorem quadraticSquareProfileCLM_apply (W : 𝓢(ℝ, ℂ)) :
-    quadraticSquareProfileCLM W = quadraticSquareProfile W := by
-  ext x
-  rw [quadraticSquareProfile_apply]
-  rfl
-
-def realAxisProfileCLM : 𝓢(ℂ, ℂ) →L[ℝ] 𝓢(ℝ, ℂ) :=
-  SchwartzMap.compCLM ℝ
-    (show (fun x : ℝ => (x : ℂ)).HasTemperateGrowth by fun_prop)
-    ⟨1, 1, fun x => by simp only [pow_one, one_mul, Complex.norm_real]; linarith⟩
-
-@[simp] theorem realAxisProfileCLM_apply (f : 𝓢(ℂ, ℂ)) :
-    realAxisProfileCLM f = horizontalSlice f 0 := by
-  ext x
-  simp only [realAxisProfileCLM, SchwartzMap.compCLM_apply, Function.comp_apply,
-    horizontalSlice_apply, complexPoint_eq, Complex.ofReal_zero, mul_zero, add_zero]
-
-def squareFrequencyScaleCLM : 𝓢(ℝ, ℂ) →L[ℝ] 𝓢(ℝ, ℂ) :=
-  (SchwartzMap.compCLMOfContinuousLinearEquiv ℂ
-    (ContinuousLinearEquiv.unitsEquivAut ℝ (Units.mk0 (2 / Real.sqrt 3) (by positivity)))).restrictScalars ℝ
-
-def quadraticTransformedSquareProfileCLM : 𝓢(ℝ, ℂ) →L[ℝ] 𝓢(ℝ, ℂ) :=
-  (2 / Real.sqrt 3 : ℝ) •
-    squareFrequencyScaleCLM.comp (realAxisProfileCLM.comp radialFourierCLM)
-
-@[simp] theorem quadraticTransformedSquareProfileCLM_apply (W : 𝓢(ℝ, ℂ)) :
-    quadraticTransformedSquareProfileCLM W = quadraticTransformedSquareProfile W := by
-  simp only [quadraticTransformedSquareProfileCLM, _root_.smul_apply,
-    ContinuousLinearMap.comp_apply, radialFourierCLM_apply, realAxisProfileCLM_apply,
-    squareFrequencyScaleCLM, quadraticTransformedSquareProfile]
-  rfl
-
 open ActualEisensteinCubic ConcreteTraceCRT QuadraticInitialBound
 
 end EisensteinSchwartzPoisson
@@ -219,11 +180,6 @@ def coreRayTwist (negative : Bool) (χ ξ : RayCharacter) : ActualEisensteinCubi
     (S : Finset ι) (negative : Bool) (χ ξ : RayCharacter) :
     coreRayTwist negative χ ξ (∏ i ∈ S, p i) =
       supportRay p (coreRayCharacter negative χ ξ) S := rfl
-
-@[simp] theorem twisted_core_product {ι : Type*} (p : ι → ActualEisensteinCubic.O)
-    (S : Finset ι) (Ψ : ActualEisensteinCubic.O →* ℂ) (negative : Bool) (χ ξ : RayCharacter) :
-    (Ψ * coreRayTwist negative χ ξ) (∏ i ∈ S, p i) =
-      Ψ (∏ i ∈ S, p i) * supportRay p (coreRayCharacter negative χ ξ) S := rfl
 
 end FirstPassCubeLabels
 
