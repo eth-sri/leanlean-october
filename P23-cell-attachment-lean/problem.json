@@ -1,0 +1,72 @@
+{
+  "problem_idx": 23,
+  "id": "PALOMAR-2026-10-04-000011-v1",
+  "title": "Fundamental Groups of Arbitrary Two-Cell Attachments",
+  "abstract": "The full arbitrary-family two-cell attachment theorem for ordinary topological fundamental groups. For any path-connected topological space X, any basepoint, and any indexed family of continuous circle attaching maps, a genuine adjunction quotient is constructed from X and the coproduct of closed complex unit disks. The actual inclusion-induced fundamental-group homomorphism is surjective and its kernel is precisely the normal closure of the once-around attaching loops, transported along the specified basepoint paths. A quotient group isomorphism is proved compatible with the actual inclusion map. No finiteness, CW, separation, local-connectivity or semilocal-simple-connectivity hypotheses are added.",
+  "authors": [
+    "Arthur Freitas Ramos",
+    "David Barros Hulak",
+    "Ruy Jose Guerra Barretto de Queiroz"
+  ],
+  "repository": "Arthur742Ramos/cell-attachment-lean",
+  "repository_url": "https://github.com/Arthur742Ramos/cell-attachment-lean",
+  "commit": "1c671038e320cecc58ca1d81dca11bbe2e2a507c",
+  "license": "Apache-2.0",
+  "lean_toolchain": "leanprover/lean4:v4.35.0-rc2",
+  "lake_root": "",
+  "mathlib": true,
+  "size_category": "M",
+  "baseline_tokens": 80254,
+  "lean_files": 2,
+  "protected_theorem_names": [
+    "CellAttachment.two_cell_attachment"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "challenge_module": "Challenge",
+  "challenge_path": "Challenge.lean",
+  "solution_module": "Solution",
+  "solution_path": "Solution.lean",
+  "comparator_path": "comparator.json",
+  "arxiv_tags": [
+    "math.AT",
+    "math.CT"
+  ],
+  "msc2020": [
+    "55Q05",
+    "18B40"
+  ],
+  "mathematical_sources": [
+    {
+      "title": "Algebraic Topology",
+      "authors": [
+        "Allen Hatcher"
+      ],
+      "type": "book",
+      "identifier": "https://pi.math.cornell.edu/~hatcher/AT/AT..pdf",
+      "location": "Proposition 1.26, printed pages 50–51; Appendix Proposition A.17, printed page 532",
+      "relationship": "formalizes"
+    },
+    {
+      "title": "The Directed Van Kampen Theorem in Lean",
+      "authors": [
+        "Henning Basold",
+        "Peter Bruin",
+        "Dominique Lawson"
+      ],
+      "type": "conference paper and formalization",
+      "identifier": "10.4230/LIPIcs.ITP.2024.8",
+      "location": "Constructive path-subdivision and homotopy-grid infrastructure, via the credited ordinary groupoid bridge",
+      "relationship": "other"
+    }
+  ],
+  "dependency_graph_nodes": 1050,
+  "dependency_graph_edges": 9089,
+  "project_path": "repos/PALOMAR-2026-10-04-000011-v1/project",
+  "dependency_graph_path": "repos/PALOMAR-2026-10-04-000011-v1/dependency-graph.json",
+  "license_path": "repos/PALOMAR-2026-10-04-000011-v1/LICENSE"
+}
