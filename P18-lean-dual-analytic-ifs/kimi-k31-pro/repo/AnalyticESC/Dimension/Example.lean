@@ -31,8 +31,7 @@ private theorem exdim_entropy_lt (hN : 0 < N) (hc : N * Φ.cmax < 1) {p : Fin N 
     have hpi := hp.1 i
     have hl := Real.log_le_sub_one_of_pos (div_pos hc0 hpi)
     rw [Real.log_div hc0.ne' hpi.ne'] at hl
-    calc p i * Real.log Φ.cmax - p i * Real.log (p i)
-        = p i * (Real.log Φ.cmax - Real.log (p i)) := by ring
+    calc _ = p i * (Real.log Φ.cmax - Real.log (p i)) := by ring
       _ ≤ p i * (Φ.cmax / p i - 1) := mul_le_mul_of_nonneg_left hl hpi.le
       _ = Φ.cmax - p i := by field_simp
   have hsum := Finset.sum_le_sum fun i (_ : i ∈ Finset.univ) => h i
@@ -52,13 +51,13 @@ private theorem exdim_lt_one (hN : 0 < N) (hc : N * Φ.cmax < 1) {s : ℝ}
     (pow_pos hcmin _).trans_le (Φ.cmin_pow_le_supDeriv w)
   have hle : ∀ n, Φ.pressureSum s n ≤ (N * Φ.cmax) ^ n := by
     intro n
-    calc Φ.pressureSum s n ≤ ∑ _w : Fin n → Fin N, Φ.cmax ^ n := by
+    calc _ ≤ ∑ _w : Fin n → Fin N, Φ.cmax ^ n := by
           refine Finset.sum_le_sum fun w _ => ?_
           have h := Φ.supDeriv_le (List.ofFn w)
           rw [List.length_ofFn] at h
           have h1' : Φ.supDeriv (List.ofFn w) ≤ 1 :=
             h.trans (pow_le_one₀ hc0.le Φ.cmax_lt_one.le)
-          calc Φ.supDeriv (List.ofFn w) ^ s ≤ Φ.supDeriv (List.ofFn w) ^ (1 : ℝ) :=
+          calc _ ≤ Φ.supDeriv (List.ofFn w) ^ (1 : ℝ) :=
                 Real.rpow_le_rpow_of_exponent_ge (hpos _) h1' h1
             _ ≤ Φ.cmax ^ n := by rwa [Real.rpow_one]
       _ = (N * Φ.cmax) ^ n := by simp [mul_pow]
@@ -69,8 +68,7 @@ private theorem exdim_lt_one (hN : 0 < N) (hc : N * Φ.cmax < 1) {s : ℝ}
     intro n hn
     have hn' : (0 : ℝ) < n := by exact_mod_cast hn
     rw [div_le_iff₀ hn']
-    calc Real.log (Φ.pressureSum s n) ≤ Real.log ((N * Φ.cmax) ^ n) :=
-          Real.log_le_log (hP n) (hle n)
+    calc _ ≤ Real.log ((N * Φ.cmax) ^ n) := Real.log_le_log (hP n) (hle n)
       _ = Real.log (N * Φ.cmax) * n := by rw [Real.log_pow]; ring
   have h0 : (0 : ℝ) ≤ Real.log (N * Φ.cmax) :=
     le_of_tendsto hs (eventually_atTop.2 ⟨1, hb⟩)

@@ -45,24 +45,6 @@ private theorem periodic_eqOn_zero_of_infinite {u : ℝ → ℝ} (hu : AnalyticO
   exact hu.eqOn_zero_of_preconnected_of_frequently_eq_zero isPreconnected_Icc hx₀
     ((accPt_iff_frequently_nhdsNE.1 hacc).mono fun z hz => hz.2)
 
-/-- Maps that agree on `[0,1]` and have derivatives at a point of `[0,1]` have the same
-derivative there. -/
-private theorem periodic_hasDerivAt_unique {u v : ℝ → ℝ} {a b x : ℝ} (hx : x ∈ I)
-    (hu : HasDerivAt u a x) (hv : HasDerivAt v b x) (huv : ∀ y ∈ I, u y = v y) : a = b :=
-  (uniqueDiffOn_Icc zero_lt_one x hx).eq_deriv _ hu.hasDerivWithinAt
-    (hv.hasDerivWithinAt.congr huv (huv x hx))
-
-/-- At points of `[0,1]`, the derivative of a map of the class is real, nonzero and of modulus
-less than one. -/
-private theorem periodic_re_deriv_ne_zero_abs_lt_one {ε : ℝ} {f : ℂ → ℂ} (hε : 0 < ε)
-    (hf : InClass ε f) {x : ℝ} (hx : x ∈ I) :
-    (deriv f x).re ≠ 0 ∧ |(deriv f x).re| < 1 := by
-  have hcl : (x : ℂ) ∈ closure (nbhd ε) := subset_closure (ofReal_mem_nbhd hε hx)
-  have him : (deriv f x).im = 0 := im_deriv_eq_zero (isOpen_nbhd _) hf.differentiableOn
-    hf.im_eq_zero (ofReal_mem_nbhd (by linarith) hx)
-  exact ⟨fun h => hf.deriv_ne_zero _ hcl (Complex.ext h him),
-    (Complex.abs_re_le_norm _).trans_lt (hf.norm_deriv_lt_one _ hcl)⟩
-
 namespace IFS
 
 variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
@@ -75,14 +57,6 @@ private theorem periodic_re_comp_cons (k : Fin N) (w : List (Fin N)) {x : ℝ} (
   show (Φ.f k (Φ.comp w x)).re = (Φ.f k ((Φ.comp w x).re : ℂ)).re
   rw [← Φ.comp_ofReal w hx]
 
-/-- `|f_w(x) - f_w(y)| ≤ c_max^{|w|} |x - y|` on `[0,1]`. -/
-private theorem periodic_abs_re_comp_sub_le (w : List (Fin N)) {x y : ℝ} (hx : x ∈ I)
-    (hy : y ∈ I) : |(Φ.comp w x).re - (Φ.comp w y).re| ≤ Φ.cmax ^ w.length * |x - y| := by
-  have h := Φ.norm_comp_sub_le w (ofReal_mem_nbhd Φ.ε_pos hx) (ofReal_mem_nbhd Φ.ε_pos hy)
-  rw [← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs] at h
-  rw [← Complex.sub_re]
-  exact (Complex.abs_re_le_norm _).trans h
-
 /-- `π(i) = lim f_{i₁ ⋯ i_{mₙ}}(zₙ)` for points `zₙ ∈ [0,1]` and lengths `mₙ → ∞`. -/
 theorem tendsto_re_comp_natProj (i : ℕ → Fin N) {m : ℕ → ℕ} (hm : Tendsto m atTop atTop)
     {z : ℕ → ℝ} (hz : ∀ n, z n ∈ I) :
@@ -91,7 +65,7 @@ theorem tendsto_re_comp_natProj (i : ℕ → Fin N) {m : ℕ → ℕ} (hm : Tend
   have h0 : (0 : ℝ) ∈ I := left_mem_Icc.2 zero_le_one
   refine ((Φ.tendsto_natProj i).comp hm).congr_dist (squeeze_zero (fun n => dist_nonneg)
     (fun n => ?_) ((tendsto_pow_atTop_nhds_zero_of_lt_one Φ.cmax_nonneg Φ.cmax_lt_one).comp hm))
-  have h := Φ.periodic_abs_re_comp_sub_le (List.ofFn fun k : Fin (m n) => i k) h0 (hz n)
+  have h := Φ.exact_abs_re_comp_sub_le (List.ofFn fun k : Fin (m n) => i k) h0 (hz n)
   rw [List.length_ofFn, Complex.ofReal_zero] at h
   have h1 : |0 - z n| ≤ 1 := by
     rw [zero_sub, abs_neg, abs_le]
@@ -134,13 +108,13 @@ theorem deriv_ne_zero_of_conj_of_nonsingleton (hN : 0 < N) (hnd : ¬ ∃ x, Φ.a
     have hFx : Φ.realMaps k x ∈ I := (Φ.inClass k).re_mem_I x hx
     have hd : HasDerivAt (Φ.realMaps k) (deriv (Φ.f k) x).re x :=
       hasDerivAt_re_ofReal (Φ.differentiableAt_f k (subset_closure (ofReal_mem_nbhd Φ.ε_pos hx)))
-    have hid := periodic_hasDerivAt_unique hx ((hga _ hFx).differentiableAt.hasDerivAt.comp x hd)
+    have hid := hasDerivAt_unique_of_eqOn_I hx ((hga _ hFx).differentiableAt.hasDerivAt.comp x hd)
       (((hga x hx).differentiableAt.hasDerivAt.const_mul (lam k)).add_const (t k)) (hconj k)
     refine ⟨hFx, ?_⟩
     simp only [mem_preimage, mem_singleton_iff] at hx0 ⊢
     rw [hx0, mul_zero] at hid
     exact (mul_eq_zero.1 hid).resolve_right
-      (periodic_re_deriv_ne_zero_abs_lt_one Φ.ε_pos (Φ.inClass k) hx).1
+      (char_re_deriv_ne_zero_abs_lt_one Φ.ε_pos (Φ.inClass k) hx).1
   -- hence so does every composition `f_w`
   have hinvw : ∀ w : List (Fin N), MapsTo (fun x : ℝ => (Φ.comp w x).re) Z Z := by
     intro w
@@ -199,12 +173,12 @@ theorem deriv_deriv_div_deriv_eq_of_fixedPoint {g : ℝ → ℝ} (hg : AnalyticO
     (hg y hy).deriv.differentiableAt.hasDerivAt
   -- `g'(f_w(x)) f_w'(x) = λ g'(x)` on `[0,1]`
   have hA : ∀ x ∈ I, deriv g (F x) * F₁ x = a * deriv g x := fun x hx =>
-    periodic_hasDerivAt_unique hx ((hgd _ (hFI x hx)).comp x (hFd x hx))
+    hasDerivAt_unique_of_eqOn_I hx ((hgd _ (hFI x hx)).comp x (hFd x hx))
       (((hgd x hx).const_mul a).add_const b) hconj
   -- `g''(f_w(p)) f_w'(p)² + g'(f_w(p)) f_w''(p) = λ g''(p)`
   have hB : deriv (deriv g) (F p) * F₁ p * F₁ p + deriv g (F p) * F₂ p =
       a * deriv (deriv g) p :=
-    periodic_hasDerivAt_unique hp (((hg₁d _ (hFI p hp)).comp p (hFd p hp)).mul (hF₁d p hp))
+    hasDerivAt_unique_of_eqOn_I hp (((hg₁d _ (hFI p hp)).comp p (hFd p hp)).mul (hF₁d p hp))
       ((hg₁d p hp).const_mul a) hA
   have hFp : F p = p := by
     show (Φ.comp w p).re = p
@@ -227,7 +201,7 @@ theorem deriv_deriv_div_deriv_eq_of_fixedPoint {g : ℝ → ℝ} (hg : AnalyticO
   have hne : F₁ p ≠ 0 := fun h0 =>
     Φ.deriv_comp_ne_zero w hcl (by rw [h₁, h0, Complex.ofReal_zero])
   have hlt : |F₁ p| < 1 :=
-    calc |F₁ p| ≤ ‖deriv (Φ.comp w) p‖ := Complex.abs_re_le_norm _
+    calc _ ≤ ‖deriv (Φ.comp w) p‖ := Complex.abs_re_le_norm _
       _ ≤ Φ.cmax ^ w.length := Φ.norm_deriv_comp_le w hcl
       _ < 1 := pow_lt_one₀ Φ.cmax_nonneg Φ.cmax_lt_one (List.length_pos_iff.2 hw).ne'
   have hne' : 1 - F₁ p ≠ 0 := fun h0 => by
@@ -406,8 +380,8 @@ theorem conjSelfSimilar_of_dualProj_eq
   -- the second part of Lemma 5.1 for each `f_k`
   refine ⟨φ, ⟨analyticOnNhd_re_ofReal hε hGd, hinj⟩, fun k => (deriv (Φ.f k) (p k)).re,
     fun k => φ (p k) * (1 - (deriv (Φ.f k) (p k)).re), fun k =>
-      ⟨(periodic_re_deriv_ne_zero_abs_lt_one hε (Φ.inClass k) (hp k)).1,
-        (periodic_re_deriv_ne_zero_abs_lt_one hε (Φ.inClass k) (hp k)).2, ?_⟩⟩
+      ⟨(char_re_deriv_ne_zero_abs_lt_one hε (Φ.inClass k) (hp k)).1,
+        (char_re_deriv_ne_zero_abs_lt_one hε (Φ.inClass k) (hp k)).2, ?_⟩⟩
   exact (lemma_5_1 hε (Φ.inClass k) (hp k) (hfp k)).2 φ
     (fun x hx => (hφd x hx).differentiableAt.differentiableWithinAt) hφwd (hodek k)
 

@@ -323,8 +323,7 @@ private theorem exists_delta {a b C r : ℝ} (ha : 0 < a) (hb : 0 < b) (hC : 0 �
   refine ⟨min (min 1 a) (min b (r / (2 * (C + 3)))), by positivity,
     (min_le_left _ _).trans (min_le_left _ _), (min_le_left _ _).trans (min_le_right _ _),
     (min_le_right _ _).trans (min_le_left _ _), ?_⟩
-  calc (C + 3) * min (min 1 a) (min b (r / (2 * (C + 3))))
-      ≤ (C + 3) * (r / (2 * (C + 3))) :=
+  calc _ ≤ (C + 3) * (r / (2 * (C + 3))) :=
         mul_le_mul_of_nonneg_left ((min_le_right _ _).trans (min_le_right _ _)) (by linarith)
     _ = r / 2 := by field_simp
     _ < r := by linarith

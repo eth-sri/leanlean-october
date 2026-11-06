@@ -46,8 +46,7 @@ theorem tendsto_natProj (w : ℕ → Fin N) :
     have hz1 : Φ.comp [w n] 0 ∈ nbhd ε := Φ.mapsTo_comp [w n] hz0'
     have h1 : ‖Φ.comp [w n] 0‖ ≤ 1 := by
       simpa using Φ.norm_comp_ofReal_le_one [w n] zero_mem_I
-    calc |(Φ.comp v 0).re - (Φ.comp v (Φ.comp [w n] 0)).re|
-        = |(Φ.comp v 0 - Φ.comp v (Φ.comp [w n] 0)).re| := by rw [Complex.sub_re]
+    calc _ = |(Φ.comp v 0 - Φ.comp v (Φ.comp [w n] 0)).re| := by rw [Complex.sub_re]
       _ ≤ ‖Φ.comp v 0 - Φ.comp v (Φ.comp [w n] 0)‖ := Complex.abs_re_le_norm _
       _ ≤ Φ.cmax ^ v.length * ‖0 - Φ.comp [w n] 0‖ := Φ.norm_comp_sub_le v hz0' hz1
       _ ≤ Φ.cmax ^ n * 1 := by
@@ -71,7 +70,7 @@ private theorem bddAbove_supDist (i j : List (Fin N)) :
     _ ≤ 1 + 1 := add_le_add (Φ.norm_comp_ofReal_le_one i x.2) (Φ.norm_comp_ofReal_le_one j x.2)
     _ = 2 := by norm_num
 
-private theorem norm_le_supDist (i j : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
+theorem norm_le_supDist (i j : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
     ‖Φ.comp i x - Φ.comp j x‖ ≤ Φ.supDist i j :=
   le_ciSup (f := fun x : I => ‖Φ.comp i ((x : ℝ) : ℂ) - Φ.comp j ((x : ℝ) : ℂ)‖)
     (Φ.bddAbove_supDist i j) ⟨x, hx⟩
@@ -110,7 +109,7 @@ theorem exists_close_pair_ge (h : ¬ Φ.SESC) {c : ℝ} (hc : 0 < c) (B : ℕ) :
     exact List.ofFn_injective (List.append_cancel_right this)
   have h1 := hcon (n + B) (Nat.le_add_left B n) _ _ hne
   rw [List.ofFn_fin_append, List.ofFn_fin_append] at h1
-  calc (c₀ ^ (B + 1)) ^ n = c₀ ^ ((B + 1) * n) := (pow_mul _ _ _).symm
+  calc _ = c₀ ^ ((B + 1) * n) := (pow_mul _ _ _).symm
     _ ≤ c₀ ^ (n + B) := pow_le_pow_of_le_one hc₀.le hc₀1 (by nlinarith)
     _ ≤ c ^ (n + B) := pow_le_pow_left₀ hc₀.le (min_le_left _ _) _
     _ ≤ _ := h1

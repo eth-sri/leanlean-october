@@ -42,7 +42,7 @@ theorem comp (h : SupExpSmall n η) {φ : ℕ → ℕ} (hφ : Tendsto φ atTop a
 theorem eventually_le (hn : ∀ k, 1 ≤ n k) (h : SupExpSmall n η) {δ : ℝ} (hδ : 0 < δ) :
     ∀ᶠ k in atTop, η k ≤ δ := by
   filter_upwards [h (min δ 1) (lt_min hδ one_pos)] with k hk
-  calc η k ≤ min δ 1 ^ n k := hk
+  calc _ ≤ min δ 1 ^ n k := hk
     _ ≤ min δ 1 :=
       pow_le_of_le_one (le_min hδ.le zero_le_one) (min_le_right _ _) (by have := hn k; omega)
     _ ≤ δ := min_le_left _ _
@@ -64,13 +64,13 @@ theorem mul_pow_rpow (hn : ∀ k, 1 ≤ n k) (h : SupExpSmall n η) (hη : ∀ k
   filter_upwards [h _ hθ'] with k hk
   have hnk : n k ≠ 0 := by have := hn k; omega
   have h1 : η k ^ s ≤ (θ / L) ^ n k := by
-    calc η k ^ s ≤ (((θ / L) ^ s⁻¹) ^ n k) ^ s := Real.rpow_le_rpow (hη k) hk hs.le
+    calc _ ≤ (((θ / L) ^ s⁻¹) ^ n k) ^ s := Real.rpow_le_rpow (hη k) hk hs.le
       _ = (θ / L) ^ n k := by
         rw [← Real.rpow_natCast, ← Real.rpow_mul hθL.le, ← Real.rpow_mul hθL.le,
           show s⁻¹ * (n k : ℝ) * s = n k by field_simp, Real.rpow_natCast]
   have h2 : K ≤ max K 1 ^ n k := (le_max_left _ _).trans (le_self_pow₀ (le_max_right _ _) hnk)
   have h3 : A ^ n k ≤ (A + 1) ^ n k := pow_le_pow_left₀ hA (by linarith) _
-  calc K * A ^ n k * η k ^ s ≤ max K 1 ^ n k * (A + 1) ^ n k * (θ / L) ^ n k :=
+  calc _ ≤ max K 1 ^ n k * (A + 1) ^ n k * (θ / L) ^ n k :=
         mul_le_mul (mul_le_mul h2 h3 (by positivity) (by positivity)) h1
           (Real.rpow_nonneg (hη k) _) (by positivity)
     _ = (L * (θ / L)) ^ n k := by rw [hL_def, mul_pow, mul_pow]
@@ -117,16 +117,8 @@ namespace IFS
 variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
 
 private theorem norm_comp_sub_le_supDist (w v : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
-    ‖Φ.comp w x - Φ.comp v x‖ ≤ Φ.supDist w v := by
-  obtain ⟨R, -, hR⟩ := Φ.exists_comp_bound
-  have hmem : ∀ y : I, ((y : ℝ) : ℂ) ∈ closure (nbhd ε) := fun y =>
-    subset_closure (ofReal_mem_nbhd Φ.ε_pos y.2)
-  refine le_ciSup (f := fun y : I => ‖Φ.comp w ((y : ℝ) : ℂ) - Φ.comp v ((y : ℝ) : ℂ)‖)
-    ⟨2 * R, ?_⟩ ⟨x, hx⟩
-  rintro _ ⟨y, rfl⟩
-  calc _ ≤ ‖Φ.comp w ((y : ℝ) : ℂ)‖ + ‖Φ.comp v ((y : ℝ) : ℂ)‖ := norm_sub_le _ _
-    _ ≤ R + R := add_le_add (hR _ _ (hmem y)) (hR _ _ (hmem y))
-    _ = 2 * R := by ring
+    ‖Φ.comp w x - Φ.comp v x‖ ≤ Φ.supDist w v :=
+  Φ.norm_le_supDist w v hx
 
 /-! ## Condensing sequences -/
 
@@ -423,7 +415,7 @@ theorem dualProj_eq_of_fixed_suffix (S : Φ.CondSeq) {u : List (Fin N)}
     set B := Φ.dualProj (.fin (S.b k).reverse) y
     set Hi := Φ.dualProj (.inf i) y
     set Hj := Φ.dualProj (.inf j) y
-    calc ‖Hi - Hj‖ = ‖-(A - Hi) + (A - B) + (B - Hj)‖ := by congr 1; ring
+    calc _ = ‖-(A - Hi) + (A - B) + (B - Hj)‖ := by congr 1; ring
       _ ≤ ‖-(A - Hi)‖ + ‖A - B‖ + ‖B - Hj‖ := norm_add₃_le
       _ = ‖A - Hi‖ + ‖A - B‖ + ‖B - Hj‖ := by rw [norm_neg]
       _ ≤ 0 + δ := by linarith
@@ -484,7 +476,7 @@ theorem dualProj_eq (S : Φ.CondSeq) {i j : ℕ → Fin N}
     set B := iteratedDeriv r (Φ.dualProj (.fin (S.b k).reverse)) (S.p k)
     set Hi := iteratedDeriv r (Φ.dualProj (.inf i)) (S.p k)
     set Hj := iteratedDeriv r (Φ.dualProj (.inf j)) (S.p k)
-    calc ‖Hi - Hj‖ = ‖-(A - Hi) + (A - B) + (B - Hj)‖ := by congr 1; ring
+    calc _ = ‖-(A - Hi) + (A - B) + (B - Hj)‖ := by congr 1; ring
       _ ≤ ‖-(A - Hi)‖ + ‖A - B‖ + ‖B - Hj‖ := norm_add₃_le
       _ = ‖A - Hi‖ + ‖A - B‖ + ‖B - Hj‖ := by rw [norm_neg]
       _ ≤ δ / 3 + δ / 3 + δ / 3 := by gcongr <;> linarith

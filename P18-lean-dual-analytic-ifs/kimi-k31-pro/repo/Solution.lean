@@ -89,8 +89,6 @@ noncomputable def cmax (ε : ℝ) (f : Fin N → ℂ → ℂ) : ℝ :=
 noncomputable def beta (f : Fin N → ℂ → ℂ) (hd : NonzeroDerivatives f) : ℝ :=
   ⨆ (x : I) (i : Fin N), ‖nonlin (f i) x (hd i [] x)‖
 
-/-- The maps `f₁(x) = x/8`, `f₂(x) = x/8 + x²/32`, `f₃(x) = x/16 + x²/32 + 29/32` of the example in
-Section 1.2.2. -/
 noncomputable def exampleMaps : Fin 3 → ℂ → ℂ :=
   ![fun z => z / 8, fun z => z / 8 + z ^ 2 / 32, fun z => z / 16 + z ^ 2 / 32 + 29 / 32]
 
@@ -101,23 +99,15 @@ noncomputable def natProj (f : Fin N → ℂ → ℂ) (w : ℕ → Fin N) : ℝ 
 /-- The attractor `Λ = π(Σ)`. -/
 def attractor (f : Fin N → ℂ → ℂ) : Set ℝ := range (natProj f)
 
-/-- `g` is an analytic, invertible map on `[0,1]` (Definition 1.9): analytic on a neighbourhood
-of each point of `[0,1]` and injective on `[0,1]`. -/
 def IsAnalyticCoord (g : ℝ → ℝ) : Prop := AnalyticOnNhd ℝ g I ∧ InjOn g I
 
-/-- The maps `F_j` of `[0,1]` are conjugated to a self-similar IFS (Definition 1.9): for an
-analytic invertible `g`, `g ∘ F_j ∘ g⁻¹` is the similarity `y ↦ λ_j y + t_j` with
-`λ_j ∈ (-1,1) \ {0}`, that is, `g(F_j(x)) = λ_j g(x) + t_j` on `[0,1]`. -/
 def ConjSelfSimilar {M : ℕ} (F : Fin M → ℝ → ℝ) : Prop :=
   ∃ g, IsAnalyticCoord g ∧ ∃ lam t : Fin M → ℝ, ∀ j,
     lam j ≠ 0 ∧ |lam j| < 1 ∧ ∀ x ∈ I, g (F j x) = lam j * g x + t j
 
-/-- The infinite word `w w w ⋯` for a nonempty finite word `w`. -/
 def periodic {m : ℕ} (hm : 0 < m) (w : Fin m → Fin N) : ℕ → Fin N :=
   fun n => w ⟨n % m, Nat.mod_lt n hm⟩
 
-/-- The `𝒞²` distance: the maximum over maps of the sum of the uniform distances
-between their values, first derivatives and second derivatives on `[0,1]` (Section 1.1). -/
 noncomputable def d2 (f g : Fin N → ℂ → ℂ) : ℝ :=
   ⨆ i, (⨆ x : I, ‖f i x - g i x‖) +
     (⨆ x : I, ‖deriv (f i) x - deriv (g i) x‖) +
@@ -131,16 +121,9 @@ section Dimension
 
 open MeasureTheory Filter Topology
 
-/-- Division with a proof that the denominator is nonzero. -/
 noncomputable def divide (a b : ℝ) (_hb : b ≠ 0) : ℝ := a / b
-
-/-- The scales `0 < r < 1`, on which `log r` is nonzero. -/
 abbrev Scale := {r : ℝ // 0 < r ∧ r < 1}
-
-/-- Scales tending to zero from above. -/
 def scaleZero : Filter Scale := comap Subtype.val (𝓝[>] (0 : ℝ))
-
-/-- The logarithmic ratio at a scale in `(0,1)`. -/
 noncomputable def logRatio (a : ℝ) (r : Scale) : ℝ :=
   divide (Real.log a) (Real.log r) (Real.log_neg r.2.1 r.2.2).ne
 
@@ -163,10 +146,7 @@ noncomputable def pressureRatio (f : Fin N → ℂ → ℂ) (t : ℝ) (n : ℕ) 
   divide (Real.log (pressureSum f t (n + 1))) ((n + 1 : ℕ) : ℝ)
     (Nat.cast_ne_zero.mpr (Nat.succ_ne_zero n))
 
-/-- The entropy `H(p) = -∑_i p_i log p_i` of a probability vector. -/
 noncomputable def entropy (p : Fin N → ℝ) : ℝ := -∑ i, p i * Real.log (p i)
-
-/-- `p` is a positive probability vector. -/
 def IsProbVec (p : Fin N → ℝ) : Prop := (∀ i, 0 < p i) ∧ ∑ i, p i = 1
 
 /-- The Lyapunov exponent `χ(Φ, p) = -∑_i p_i ∫ log|f_i'| dμ` of Section 1.2.1, for the measure
@@ -196,9 +176,6 @@ shift. -/
 noncomputable def potential (f : Fin N → ℂ → ℂ) (s : ℝ) (ω : ℕ → Fin N) : ℝ :=
   s * Real.log ‖deriv (f (ω 0)) (natProj f fun i => ω (i + 1))‖
 
-/-- `ν` is a Gibbs measure for the potential `φ` on `Σ = (Fin N)^ℕ` in Bowen's sense: there are
-`c₁, c₂ > 0` and `P` with `c₁ ≤ ν[x₀ ⋯ x_{m-1}] / exp(-P m + ∑_{k<m} φ(σ^k x)) ≤ c₂` for every
-`x ∈ Σ` and `m ≥ 0`, where `σ` is the left shift. -/
 def IsGibbsMeasure (φ : (ℕ → Fin N) → ℝ) (ν : Measure (ℕ → Fin N)) : Prop :=
   ∃ c₁ > 0, ∃ c₂ > 0, ∃ P : ℝ, ∀ (x : ℕ → Fin N) (m : ℕ),
     c₁ * Real.exp (-P * m + ∑ k ∈ Finset.range m, φ (fun i => x (i + k))) ≤
@@ -219,14 +196,8 @@ The results that the paper cites are stated as in their sources and are explicit
 the theorems that use them. Rapaport's results are stated, as in his paper, for real maps `φ_i`
 of `I = [0,1]`. -/
 
-/-- `φ_u = φ_{u₁} ∘ ⋯ ∘ φ_{uₙ}` for real maps and a finite word `u`, with `φ_∅ = id`. -/
 def realComp (φ : Fin N → ℝ → ℝ) (u : List (Fin N)) : ℝ → ℝ := u.foldr (fun i g => φ i ∘ g) id
 
-/-- The hypotheses of Rapaport's Theorem 1.2 and Corollary 1.3: `φ_i(I) ⊆ I`, each `φ_i` is real
-analytic on a neighbourhood of each point of `I`, `0 < |φ_i'(x)| < 1` for `x ∈ I`, the maps have no
-common fixed point in `I`, and the system is exponentially separated: there is `c > 0` such that
-for infinitely many `n`, `sup_{x ∈ I} |φ_u(x) - φ_v(x)| ≥ c^n` for all distinct `u, v` of length
-`n`. -/
 structure RapaportHyp (φ : Fin N → ℝ → ℝ) : Prop where
   mapsTo : ∀ i, MapsTo (φ i) I I
   analytic : ∀ i, AnalyticOnNhd ℝ (φ i) I
@@ -236,25 +207,11 @@ structure RapaportHyp (φ : Fin N → ℝ → ℝ) : Prop where
   exp_separated : ∃ c > 0, ∃ᶠ n in atTop, ∀ u v : Fin n → Fin N, u ≠ v →
     c ^ n ≤ ⨆ x : I, |realComp φ (List.ofFn u) x - realComp φ (List.ofFn v) x|
 
-/-- **Cited result.** R. Bowen, *Equilibrium states and the ergodic theory of Anosov
-diffeomorphisms*, Lecture Notes in Mathematics 470, Springer, 1975, Theorem 1.4, for the one-sided
-full shift on `N ≥ 1` symbols: a potential `φ` with
-`sup{|φ(x) - φ(y)| : x_i = y_i for i < k} ≤ b α^k` for all `k`, where `b > 0` and `0 < α < 1`, has a
-Gibbs measure. Bowen states the theorem for two-sided mixing subshifts of finite type; a potential
-of the coordinates `i ≥ 0` has the same variations, and the image of the two-sided Gibbs measure
-under `x ↦ (x_i)_{i ≥ 0}` has the same cylinder measures. -/
 def BowenGibbsStatement : Prop :=
   ∀ {N : ℕ}, 0 < N → ∀ (φ : (ℕ → Fin N) → ℝ) {b α : ℝ}, 0 < b → 0 < α → α < 1 →
     (∀ (k : ℕ) (x y : ℕ → Fin N), (∀ i < k, x i = y i) → |φ x - φ y| ≤ b * α ^ k) →
     ∃ ν : Measure (ℕ → Fin N), IsProbabilityMeasure ν ∧ IsGibbsMeasure φ ν
 
-/-- **Cited result.** A. Rapaport, *Dimension of self-conformal measures associated to an
-exponentially separated analytic IFS on ℝ*, arXiv:2412.16753v2, Theorem 1.2, together with the exact
-dimensionality of self-conformal measures, D.-J. Feng and H. Hu, *Dimension theory of iterated
-function systems*, Comm. Pure Appl. Math. 62 (2009): under `RapaportHyp`, for a positive
-probability vector `p`, the self-conformal measure `μ = ∑_i p_i φ_i μ` on `I` satisfies
-`lim_{δ → 0} log μ(B(x,δ)) / log δ = min{1, H(p)/χ}` for `μ`-almost every `x`, where
-`H(p) = -∑ p_i log p_i` and `χ = -∑ p_i ∫ log|φ_i'| dμ`. -/
 def RapaportMeasureStatement : Prop :=
   ∀ {N : ℕ} (φ : Fin N → ℝ → ℝ), RapaportHyp φ →
     ∀ p : Fin N → ℝ, (∀ i, 0 < p i) → ∑ i, p i = 1 →
@@ -265,11 +222,6 @@ def RapaportMeasureStatement : Prop :=
         (𝓝 (min 1 (divide (-∑ i, p i * Real.log (p i))
           (-∑ i, p i * ∫ y, Real.log |deriv (φ i) y| ∂μ) hχ)))
 
-/-- **Cited result.** A. Rapaport, *Dimension of self-conformal measures associated to an
-exponentially separated analytic IFS on ℝ*, arXiv:2412.16753v2, Corollary 1.3: under `RapaportHyp`,
-the attractor `K`, the nonempty compact set `K ⊆ I` with `K = ⋃_i φ_i(K)`, has Hausdorff dimension
-`min{1, s(Φ)}`, where `s(Φ)` is the zero of the pressure
-`P(t) = lim_n (1/n) log ∑_{u ∈ Σ_n} (sup_{x ∈ I} |φ_u'(x)|)^t`. -/
 def RapaportSetStatement : Prop :=
   ∀ {N : ℕ} (φ : Fin N → ℝ → ℝ), RapaportHyp φ →
     ∀ K : Set ℝ, K.Nonempty → IsCompact K → K ⊆ I → K = ⋃ i, φ i '' K →
@@ -400,10 +352,7 @@ theorem audit_example_criterion {ε : ℝ} (hε : 0 < ε) (f : Fin N → ℂ →
 /-- The polynomial example of Section 1.2.2: the system `x/8`, `x/8 + x²/32`, `x/16 + x²/32 + 29/32` lies in
 `𝔖_3` for some `ε > 0` and satisfies the strong exponential separation condition. -/
 theorem audit_example_sesc : ∃ ε > 0, (∀ i, InClass ε (exampleMaps i)) ∧ SESC exampleMaps := by
-  obtain ⟨ε, hε, Φ, hΦ, hS⟩ := AnalyticESC.example_sesc
-  obtain ⟨g, gpos, hg⟩ := Φ
-  change g = _ at hΦ
-  subst hΦ
+  obtain ⟨ε, hε, ⟨g, gpos, hg⟩, rfl, hS⟩ := AnalyticESC.example_sesc
   exact ⟨ε, hε, fun i => inClass_iff_lib.mpr (hg i), hS⟩
 
 /-- Individual-map linearisation for Theorem 1.12: an analytic coordinate with nonvanishing
@@ -411,8 +360,8 @@ derivative conjugates the chosen map `f_i` to a contracting similarity. -/
 theorem audit_conj_similarity {ε : ℝ} (hε : 0 < ε) (f : Fin N → ℂ → ℂ)
     (hf : ∀ i, InClass ε (f i)) (i : Fin N) :
     ∃ g, IsAnalyticCoord g ∧ (∀ x ∈ I, deriv g x ≠ 0) ∧
-      ∃ lam t : ℝ, lam ≠ 0 ∧ |lam| < 1 ∧ ∀ x ∈ I, g (f i x).re = lam * g x + t := by
-  exact (toIFS hε f hf).theorem_1_12_similarity i
+      ∃ lam t : ℝ, lam ≠ 0 ∧ |lam| < 1 ∧ ∀ x ∈ I, g (f i x).re = lam * g x + t :=
+  (toIFS hε f hf).theorem_1_12_similarity i
 
 /-- Theorem 1.12 (a). If the attractor of `Φ` is not a singleton, then `Φ` is conjugated to a
 self-similar IFS if and only if `H_i ≡ H_j` on `[0,1]` for all `i, j ∈ Σ`. -/
@@ -474,18 +423,13 @@ theorem dimEquality_of_lib {ε : ℝ} (Φ : AnalyticESC.IFS N ε)
   filter_upwards [hm p hp μ hμ] with x hx
   exact (logRatio_tendsto_iff _ _).mpr hx
 
-/-- `BowenGibbsStatement` in the form used by the library. -/
-theorem bowenGibbs_lib (hB : BowenGibbsStatement) : AnalyticESC.BowenGibbsStatement := by
-  intro N hN φ b α hb hα₀ hα₁ hφ
-  exact hB hN φ hb hα₀ hα₁ hφ
+theorem bowenGibbs_lib (hB : BowenGibbsStatement) : AnalyticESC.BowenGibbsStatement := hB
 
-/-- `RapaportMeasureStatement` in the form used by the library. -/
 theorem rapaportMeasure_lib (hM : RapaportMeasureStatement) :
     AnalyticESC.RapaportMeasureStatement := by
   intro N φ hφ p hp hp1 μ hμ hμI hμφ
   exact hM φ ⟨hφ.1, hφ.2, hφ.3, hφ.4, hφ.5, hφ.6⟩ p hp hp1 μ hμ hμI hμφ
 
-/-- `RapaportSetStatement` in the form used by the library. -/
 theorem rapaportSet_lib (hS : RapaportSetStatement) : AnalyticESC.RapaportSetStatement := by
   intro N φ hφ K hK hKc hKI hKφ s hs
   exact hS φ ⟨hφ.1, hφ.2, hφ.3, hφ.4, hφ.5, hφ.6⟩ K hK hKc hKI hKφ s hs
@@ -495,8 +439,8 @@ theorem rapaportSet_lib (hS : RapaportSetStatement) : AnalyticESC.RapaportSetSta
 If `Φ` satisfies the ESC, then there is equality in (1.6). -/
 theorem audit_dim_of_esc (hM : RapaportMeasureStatement) (hS : RapaportSetStatement) {ε : ℝ}
     (hε : 0 < ε) (f : Fin N → ℂ → ℂ) (hf : ∀ i, InClass ε (f i))
-    (hN : 0 < N) (hnd : ¬ ∃ x, attractor f = {x}) (hesc : ESC f) : DimEquality f := by
-  exact dimEquality_of_lib (toIFS hε f hf)
+    (hN : 0 < N) (hnd : ¬ ∃ x, attractor f = {x}) (hesc : ESC f) : DimEquality f :=
+  dimEquality_of_lib (toIFS hε f hf)
     ((toIFS hε f hf).theorem_1_6 (rapaportMeasure_lib hM) (rapaportSet_lib hS) hN hnd hesc)
 
 /-- Corollary 1.7, from Rapaport's Theorem 1.2 and Corollary 1.3. For `N ≥ 2`, the IFSs in `𝔖_N`

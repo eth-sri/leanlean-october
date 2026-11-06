@@ -45,7 +45,7 @@ def IsGibbs (s : ℝ) (ν : Measure (ℕ → Fin N)) : Prop :=
       ν.real (wordCylinder w) ≤ C * Φ.supDeriv w ^ s
 
 /-- The prefix map `ω ↦ ω₁ ⋯ ωₙ` is measurable. -/
-private theorem measurable_prefix (n : ℕ) : Measurable fun (ω : ℕ → Fin N) (k : Fin n) => ω k :=
+theorem measurable_prefix (n : ℕ) : Measurable fun (ω : ℕ → Fin N) (k : Fin n) => ω k :=
   Measurable.of_eval fun k => measurable_pi_apply (k : ℕ)
 
 /-- The natural projection is measurable, so `ν ∘ π⁻¹` is the image measure of `ν`. -/
@@ -57,7 +57,7 @@ theorem measurable_natProj : Measurable Φ.natProj :=
     (tendsto_pi_nhds.2 Φ.tendsto_natProj)
 
 /-- The cylinder of a word of length `n` is the preimage of the word under the prefix map. -/
-private theorem wordCylinder_ofFn {n : ℕ} (v : Fin n → Fin N) :
+theorem wordCylinder_ofFn {n : ℕ} (v : Fin n → Fin N) :
     wordCylinder (List.ofFn v) = (fun (ω : ℕ → Fin N) (k : Fin n) => ω k) ⁻¹' {v} := by
   ext ω
   simp only [wordCylinder, mem_ofPred_eq, mem_preimage, mem_singleton_iff, funext_iff]
@@ -79,7 +79,7 @@ private theorem sum_measureReal_wordCylinder (ν : Measure (ℕ → Fin N)) [IsF
   rw [wordCylinder_ofFn, map_measureReal_apply (measurable_prefix n) (MeasurableSet.of_discrete)]
 
 /-- The cylinders of the words of length `n` have total measure `1`. -/
-private theorem sum_measureReal_wordCylinder_univ (ν : Measure (ℕ → Fin N))
+theorem sum_measureReal_wordCylinder_univ (ν : Measure (ℕ → Fin N))
     [IsProbabilityMeasure ν] (n : ℕ) :
     ∑ v : Fin n → Fin N, ν.real (wordCylinder (List.ofFn v)) = 1 := by
   rw [sum_measureReal_wordCylinder, Finset.coe_univ, preimage_univ, probReal_univ]
@@ -148,8 +148,7 @@ theorem tendsto_pressure_iff_of_isGibbs (hN : 0 < N) {s : ℝ} {ν : Measure (�
   have hup : s ≤ t → ∀ n, Real.log (Φ.pressureSum t n) ≤ Real.log C + n * ((t - s) * L) := by
     intro hst n
     have h : Φ.pressureSum t n ≤ C * Real.exp (n * ((t - s) * L)) := by
-      calc Φ.pressureSum t n
-          ≤ Φ.pressureSum s n * Real.exp (n * ((t - s) * L)) := by
+      calc _ ≤ Φ.pressureSum s n * Real.exp (n * ((t - s) * L)) := by
             rw [pressureSum, pressureSum, Finset.sum_mul]
             refine Finset.sum_le_sum fun v _ => ?_
             rw [hterm]
@@ -159,15 +158,14 @@ theorem tendsto_pressure_iff_of_isGibbs (hN : 0 < N) {s : ℝ} {ν : Measure (�
             linarith
         _ ≤ C * Real.exp (n * ((t - s) * L)) :=
             mul_le_mul_of_nonneg_right (hPs n).1 (Real.exp_pos _).le
-    calc Real.log (Φ.pressureSum t n) ≤ Real.log (C * Real.exp (n * ((t - s) * L))) :=
+    calc _ ≤ Real.log (C * Real.exp (n * ((t - s) * L))) :=
           Real.log_le_log (hP t n) h
       _ = Real.log C + n * ((t - s) * L) := by
           rw [Real.log_mul hC.ne' (Real.exp_pos _).ne', Real.log_exp]
   have hlow : t ≤ s → ∀ n, -Real.log C + n * ((t - s) * L) ≤ Real.log (Φ.pressureSum t n) := by
     intro hst n
     have h : C⁻¹ * Real.exp (n * ((t - s) * L)) ≤ Φ.pressureSum t n := by
-      calc C⁻¹ * Real.exp (n * ((t - s) * L))
-          ≤ Φ.pressureSum s n * Real.exp (n * ((t - s) * L)) :=
+      calc _ ≤ Φ.pressureSum s n * Real.exp (n * ((t - s) * L)) :=
             mul_le_mul_of_nonneg_right (hPs n).2 (Real.exp_pos _).le
         _ ≤ Φ.pressureSum t n := by
             rw [pressureSum, pressureSum, Finset.sum_mul]
@@ -177,7 +175,7 @@ theorem tendsto_pressure_iff_of_isGibbs (hN : 0 < N) {s : ℝ} {ν : Measure (�
               (Real.rpow_nonneg (hpos _).le _)
             have := mul_le_mul_of_nonpos_right (hlog n v) (sub_nonpos.2 hst)
             linarith
-    calc -Real.log C + n * ((t - s) * L) = Real.log (C⁻¹ * Real.exp (n * ((t - s) * L))) := by
+    calc _ = Real.log (C⁻¹ * Real.exp (n * ((t - s) * L))) := by
           rw [Real.log_mul (inv_ne_zero hC.ne') (Real.exp_pos _).ne', Real.log_exp,
             Real.log_inv]
       _ ≤ Real.log (Φ.pressureSum t n) :=
@@ -435,7 +433,7 @@ private theorem ld_re_comp_le {w : List (Fin 3)} (hw : ∀ i ∈ w, i ≠ 2) {x 
       have h5 : x ^ 3 ≤ x ^ 2 := by nlinarith
       have h6 : x ^ 4 ≤ x ^ 3 := by nlinarith
       nlinarith
-    calc (exampleIFS.comp u y).re ≤ (1 / 8) ^ u.length * (y * (1 + y)) := ih hu hyI
+    calc _ ≤ (1 / 8) ^ u.length * (y * (1 + y)) := ih hu hyI
       _ ≤ (1 / 8) ^ u.length * (1 / 8 * (x * (1 + x))) := by gcongr
       _ = (1 / 8) ^ u.length * (1 / 8) * (x * (1 + x)) := by ring
 
@@ -461,15 +459,13 @@ private theorem ld_norm_deriv_comp_le {w : List (Fin 3)} (hw : ∀ i ∈ w, i �
     have h3 := ih hu hyI
     have h4 := ld_norm_deriv_f_le i hi hx0
     have hpow : (0 : ℝ) ≤ (1 / 8) ^ u.length := by positivity
-    calc ‖deriv (exampleIFS.comp u) y‖ * ‖deriv (exampleIFS.f i) x‖
-        ≤ ((1 / 8) ^ u.length * (1 + y)) * (1 / 8 + x / 16) :=
+    calc _ ≤ ((1 / 8) ^ u.length * (1 + y)) * (1 / 8 + x / 16) :=
           mul_le_mul h3 h4 (norm_nonneg _) (by positivity)
       _ ≤ ((1 / 8) ^ u.length * (1 + (x / 8 + x ^ 2 / 32))) * (1 / 8 + x / 16) := by gcongr
       _ ≤ (1 / 8) ^ u.length * (1 / 8) * (1 + x) := by
           have h5 : (1 + (x / 8 + x ^ 2 / 32)) * (1 / 8 + x / 16) ≤ 1 / 8 * (1 + x) := by
             nlinarith
-          calc ((1 / 8) ^ u.length * (1 + (x / 8 + x ^ 2 / 32))) * (1 / 8 + x / 16)
-              = (1 / 8) ^ u.length * ((1 + (x / 8 + x ^ 2 / 32)) * (1 / 8 + x / 16)) := by ring
+          calc _ = (1 / 8) ^ u.length * ((1 + (x / 8 + x ^ 2 / 32)) * (1 / 8 + x / 16)) := by ring
             _ ≤ (1 / 8) ^ u.length * (1 / 8 * (1 + x)) := by gcongr
             _ = _ := by ring
 
@@ -497,7 +493,7 @@ private theorem ld_rpow_bounds {x y : ℝ} (s : ℝ) (hy : 0 < y) (h1 : y ≤ x)
     have hb := Real.rpow_le_rpow hx.le h2 hs
     rw [h2y] at hb
     constructor
-    · calc min 1 (2 ^ s) * y ^ s ≤ 1 * y ^ s := mul_le_mul_of_nonneg_right (min_le_left _ _) hys
+    · calc _ ≤ 1 * y ^ s := mul_le_mul_of_nonneg_right (min_le_left _ _) hys
         _ ≤ x ^ s := by rw [one_mul]; exact ha
     · exact hb.trans (mul_le_mul_of_nonneg_right (le_max_right _ _) hys)
   · have ha := Real.rpow_le_rpow_of_nonpos hy h1 hs
@@ -505,7 +501,7 @@ private theorem ld_rpow_bounds {x y : ℝ} (s : ℝ) (hy : 0 < y) (h1 : y ≤ x)
     rw [h2y] at hb
     constructor
     · exact (mul_le_mul_of_nonneg_right (min_le_right _ _) hys).trans hb
-    · calc x ^ s ≤ 1 * y ^ s := by rw [one_mul]; exact ha
+    · calc _ ≤ 1 * y ^ s := by rw [one_mul]; exact ha
         _ ≤ max 1 (2 ^ s) * y ^ s := mul_le_mul_of_nonneg_right (le_max_left _ _) hys
 
 /-! ### The local dimension: cylinders of words over the letters `0, 1` -/
@@ -548,12 +544,11 @@ private theorem ld_sum_bounds {s C : ℝ} {ν : Measure (ℕ → Fin 3)} (hC : 0
     rw [← Real.rpow_pow_comm (by norm_num)] at h3 h4
     obtain ⟨h5, h6⟩ := hG (List.ofFn v)
     constructor
-    · calc C⁻¹ * min 1 (2 ^ s) * ((1 / 8 : ℝ) ^ s) ^ n
-          = C⁻¹ * (min 1 (2 ^ s) * ((1 / 8 : ℝ) ^ s) ^ n) := by ring
+    · calc _ = C⁻¹ * (min 1 (2 ^ s) * ((1 / 8 : ℝ) ^ s) ^ n) := by ring
         _ ≤ C⁻¹ * exampleIFS.supDeriv (List.ofFn v) ^ s :=
             mul_le_mul_of_nonneg_left h3 (inv_pos.2 hC).le
         _ ≤ _ := h5
-    · calc ν.real (wordCylinder (List.ofFn v)) ≤ C * exampleIFS.supDeriv (List.ofFn v) ^ s := h6
+    · calc _ ≤ C * exampleIFS.supDeriv (List.ofFn v) ^ s := h6
         _ ≤ C * (max 1 (2 ^ s) * ((1 / 8 : ℝ) ^ s) ^ n) := mul_le_mul_of_nonneg_left h4 hC.le
         _ = _ := by ring
   have hs1 := Finset.sum_le_sum fun v hv => (hterm v hv).1
@@ -561,8 +556,7 @@ private theorem ld_sum_bounds {s C : ℝ} {ν : Measure (ℕ → Fin 3)} (hC : 0
   rw [Finset.sum_const, ld_card_words, nsmul_eq_mul] at hs1 hs2
   push_cast at hs1 hs2
   constructor
-  · calc C⁻¹ * min 1 (2 ^ s) * (2 * (1 / 8 : ℝ) ^ s) ^ n
-        = (2 : ℝ) ^ n * (C⁻¹ * min 1 (2 ^ s) * ((1 / 8 : ℝ) ^ s) ^ n) := by rw [mul_pow]; ring
+  · calc _ = (2 : ℝ) ^ n * (C⁻¹ * min 1 (2 ^ s) * ((1 / 8 : ℝ) ^ s) ^ n) := by rw [mul_pow]; ring
       _ ≤ _ := hs1
   · calc _ ≤ (2 : ℝ) ^ n * (C * max 1 (2 ^ s) * ((1 / 8 : ℝ) ^ s) ^ n) := hs2
       _ = C * max 1 (2 ^ s) * (2 * (1 / 8 : ℝ) ^ s) ^ n := by rw [mul_pow]; ring
@@ -679,7 +673,7 @@ theorem example_localDim {s : ℝ} {ν : Measure (ℕ → Fin 3)} [IsProbability
       rw [hpow3]
       rw [hpow2] at hr1
       nlinarith
-    calc C⁻¹ * min 1 (2 ^ s) * ρ ^ 3 * ρ ^ n = C⁻¹ * min 1 (2 ^ s) * ρ ^ (n + 3) := by ring
+    calc _ = C⁻¹ * min 1 (2 ^ s) * ρ ^ (n + 3) := by ring
       _ ≤ _ := hlow (n + 3)
       _ ≤ _ := measureReal_mono (preimage_mono (closedBall_subset_closedBall hr))
   · have hr : r < 29 / 32 * (1 / 8 : ℝ) ^ n := by

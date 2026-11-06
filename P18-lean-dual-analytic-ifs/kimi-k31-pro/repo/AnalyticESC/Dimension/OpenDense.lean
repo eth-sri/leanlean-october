@@ -2,6 +2,7 @@ module
 
 public import AnalyticESC.Dimension.Rapaport
 public import AnalyticESC.Generic.OpenDense
+public import AnalyticESC.Conjugation.Linearisation
 
 @[expose] public section
 
@@ -38,20 +39,12 @@ theorem d2Sys_le_add {N : ℕ} {f g h : Fin N → ℂ → ℂ} (hf : InUnionClas
 /-- A map of `S^ω_ε(I)` has at most one fixed point in `I`. -/
 theorem eq_of_re_eq_self {ε : ℝ} (hε : 0 < ε) {h : ℂ → ℂ} (hh : InClass ε h) {x y : ℝ}
     (hx : x ∈ I) (hy : y ∈ I) (hhx : (h x).re = x) (hhy : (h y).re = y) : x = y := by
-  -- `F(x) = h(x) - x` is strictly decreasing on `I`, since `|h'| < 1`
-  set F : ℝ → ℝ := fun x => (h x).re - x with hF
-  have hderiv : ∀ x ∈ I, HasDerivAt F ((deriv h x).re - 1) x := fun x hx =>
-    (hasDerivAt_re_ofReal (hh.differentiableOn.differentiableAt
-      ((isOpen_nbhd _).mem_nhds (ofReal_mem_nbhd (by linarith) hx)))).sub (hasDerivAt_id x)
-  have hcont : ContinuousOn F I := fun x hx => (hderiv x hx).continuousAt.continuousWithinAt
-  have hanti : StrictAntiOn F I := by
-    refine strictAntiOn_of_deriv_neg (convex_Icc 0 1) hcont fun x hx => ?_
-    have hxI : x ∈ I := interior_subset hx
-    rw [(hderiv x hxI).deriv, sub_neg]
-    exact (Complex.re_le_norm _).trans_lt
-      (hh.norm_deriv_lt_one x (subset_closure (ofReal_mem_nbhd hε hxI)))
-  refine hanti.injOn hx hy ?_
-  simp only [hF, hhx, hhy, sub_self]
+  have hf : ∀ z ∈ I, (h z).re = z → h z = z := by
+    intro z hz hfix
+    apply Complex.ext
+    · simpa using hfix
+    · simp [hh.im_eq_zero z (ofReal_mem_nbhd (by linarith) hz)]
+  exact (existsUnique_fixedPoint hε hh).unique ⟨hx, hf x hx hhx⟩ ⟨hy, hf y hy hhy⟩
 
 /-- Having no common fixed point in `I` is a `d₂`-open condition in `𝔖_N`: the continuous
 function `∑_i |f_i(x) - x|` has a positive minimum `m` on `I`, and `d₂(f, g) < m/(N+1)` keeps
@@ -83,11 +76,11 @@ theorem exists_forall_d2Sys_lt_not_fixed {N : ℕ} {f : Fin N → ℂ → ℂ} (
   let Ψ : IFS N ε' := ⟨g, hε', hgε⟩
   have hle : ∀ i, |(f i x).re - x| ≤ d2Sys f g := by
     intro i
-    calc |(f i x).re - x| = |(f i x - g i x).re| := by rw [Complex.sub_re, hgx i]
+    calc _ = |(f i x - g i x).re| := by rw [Complex.sub_re, hgx i]
       _ ≤ ‖f i x - g i x‖ := Complex.abs_re_le_norm _
       _ ≤ d2Sys f g := (IFS.Continuity.norm_sub_le_d2 Φ Ψ i hx).1
   have hsum : F x ≤ N * d2Sys f g := by
-    calc F x ≤ ∑ _i : Fin N, d2Sys f g := Finset.sum_le_sum fun i _ => hle i
+    calc _ ≤ ∑ _i : Fin N, d2Sys f g := Finset.sum_le_sum fun i _ => hle i
       _ = N * d2Sys f g := by simp
   have hmx : m ≤ F x := isMinOn_iff.1 hmin x hx
   have h1 : (N : ℝ) * d2Sys f g ≤ N * (m / (N + 1)) := mul_le_mul_of_nonneg_left hd.le hN

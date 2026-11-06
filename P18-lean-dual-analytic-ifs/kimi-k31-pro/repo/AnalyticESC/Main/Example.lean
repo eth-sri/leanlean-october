@@ -1,6 +1,7 @@
 module
 
 public import AnalyticESC.Main.Criterion
+public import AnalyticESC.Generic.Class
 
 @[expose] public section
 
@@ -24,12 +25,8 @@ noncomputable def exampleMaps : Fin 3 → ℂ → ℂ :=
 
 /-- A point of `cl B_{1/100}` lies within `1/100` of a point of `I`. -/
 private lemma example_exists_near {z : ℂ} (hz : z ∈ closure (nbhd (1 / 100))) :
-    ∃ x ∈ I, ‖z - x‖ ≤ 1 / 100 := by
-  have h := closure_thickening_subset_cthickening (1 / 100 : ℝ) (((↑) : ℝ → ℂ) '' I) hz
-  rw [isCompact_image_I.cthickening_eq_biUnion_closedBall (by norm_num)] at h
-  simp only [mem_iUnion, mem_closedBall, exists_prop] at h
-  obtain ⟨_, ⟨x, hx, rfl⟩, hzx⟩ := h
-  exact ⟨x, hx, by rwa [← dist_eq_norm]⟩
+    ∃ x ∈ I, ‖z - x‖ ≤ 1 / 100 :=
+  exists_mem_I_norm_sub_le (by norm_num) hz
 
 /-- A point within `1/100` of `I` has norm at most `101/100` and real part at least `-1/100`. -/
 private lemma example_bounds_of_near {z : ℂ} {x : ℝ} (hx : x ∈ I) (hzx : ‖z - x‖ ≤ 1 / 100) :
@@ -58,7 +55,7 @@ private lemma example_mapsTo {f : ℂ → ℂ} (hI : ∀ x ∈ I, ∃ y ∈ I, f
   rw [nbhd, mem_thickening_iff]
   refine ⟨y, mem_image_of_mem _ hy, ?_⟩
   rw [dist_eq_norm, ← hfy]
-  calc ‖f z - f x‖ ≤ 1 / 5 * ‖z - x‖ := hf z x hx hzx
+  calc _ ≤ 1 / 5 * ‖z - x‖ := hf z x hx hzx
     _ ≤ 1 / 5 * (1 / 100) := by gcongr
     _ < 1 / 100 := by norm_num
 
@@ -140,7 +137,7 @@ private lemma example_norm_factor_le (c : ℂ) {z : ℂ} {x : ℝ} (hx : x ∈ I
     (hzx : ‖z - x‖ ≤ 1 / 100) : ‖c + (z + x) / 32‖ ≤ ‖c‖ + 201 / 100 / 32 := by
   have hz := (example_bounds_of_near hx hzx).1
   have hx' : ‖(x : ℂ)‖ ≤ 1 := by rw [Complex.norm_real, Real.norm_of_nonneg hx.1]; exact hx.2
-  calc ‖c + (z + x) / 32‖ ≤ ‖c‖ + ‖(z + x) / 32‖ := norm_add_le _ _
+  calc _ ≤ ‖c‖ + ‖(z + x) / 32‖ := norm_add_le _ _
     _ = ‖c‖ + ‖z + x‖ / 32 := by rw [norm_div]; norm_num
     _ ≤ ‖c‖ + (‖z‖ + ‖(x : ℂ)‖) / 32 := by gcongr; exact norm_add_le _ _
     _ ≤ ‖c‖ + 201 / 100 / 32 := by linarith
@@ -148,7 +145,7 @@ private lemma example_norm_factor_le (c : ℂ) {z : ℂ} {x : ℝ} (hx : x ∈ I
 private lemma example_norm_deriv_le (c : ℂ) {z : ℂ} (hz : z ∈ closure (nbhd (1 / 100))) :
     ‖c + z / 16‖ ≤ ‖c‖ + 101 / 100 / 16 := by
   have hz' := (example_bounds hz).1
-  calc ‖c + z / 16‖ ≤ ‖c‖ + ‖z / 16‖ := norm_add_le _ _
+  calc _ ≤ ‖c‖ + ‖z / 16‖ := norm_add_le _ _
     _ = ‖c‖ + ‖z‖ / 16 := by rw [norm_div]; norm_num
     _ ≤ ‖c‖ + 101 / 100 / 16 := by linarith
 

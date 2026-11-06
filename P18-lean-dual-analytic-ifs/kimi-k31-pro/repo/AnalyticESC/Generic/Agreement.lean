@@ -97,44 +97,6 @@ theorem dualCylAt_cons_eq_of_agreeAt (Φ : IFS N ε) (Ψ : IFS N ε') (k K : ℝ
   rw [dualCylAt, dualCylAt, image_add_const_uIcc, dualComp_cons_eq_of_agreeAt Φ Ψ h0 h1 hag,
     dualComp_cons_eq_of_agreeAt Φ Ψ h0 h1 hag, Complex.add_re, Complex.add_re]
 
-/-- `G_i` maps `cl (-K,K)` into `(-K,K)` when `|g_i'| ≤ c` and `|g_i''/g_i'| ≤ M` on `[0,1]` and
-`c K + M < K`. -/
-theorem mapsTo_dualOp_dualCylClosed_of_le (Ψ : IFS N ε') {c M K : ℝ}
-    (hc : ∀ i, ∀ x ∈ I, ‖deriv (Ψ.f i) x‖ ≤ c) (hM : ∀ i, ∀ x ∈ I, ‖Ψ.nonlin i x‖ ≤ M)
-    (hK : c * K + M < K) (i : Fin N) :
-    MapsTo (Ψ.dualOp i) (dualCylClosed ε' (-K) K) (dualCyl ε' (-K) K) := by
-  rintro h ⟨hd, _, hre, hb⟩
-  have hfx : ∀ x ∈ I, Ψ.f i x = (((Ψ.f i x).re : ℝ) : ℂ) ∧ (Ψ.f i x).re ∈ I := fun x hx =>
-    ⟨Complex.ext (by simp)
-      (by simp [Ψ.im_f_ofReal i (nbhd_subset_two (ofReal_mem_nbhd Ψ.ε_pos hx))]),
-      (Ψ.inClass i).re_mem_I x hx⟩
-  have him : ∀ x ∈ I, (Ψ.dualOp i h x).im = 0 := by
-    intro x hx
-    have hxn := ofReal_mem_nbhd Ψ.ε_pos hx
-    simp only [dualOp]
-    rw [(hfx x hx).1]
-    simp [Complex.mul_im, Ψ.im_deriv_f_ofReal i (nbhd_subset_two hxn), hre _ (hfx x hx).2,
-      Ψ.im_nonlin_ofReal i hxn]
-  refine ⟨?_, Ψ.continuousOn_dualOp_closure i hd, him, fun x hx => ?_⟩
-  · obtain ⟨U, -, hU, -, hnl⟩ := Ψ.exists_differentiableOn_nonlin i
-    have h1 : DifferentiableOn ℂ (deriv (Ψ.f i)) (nbhd ε') :=
-      ((Ψ.differentiableOn_f i).deriv (isOpen_nbhd _)).mono nbhd_subset_two
-    have h2 : DifferentiableOn ℂ (fun z => h (Ψ.f i z)) (nbhd ε') :=
-      hd.comp ((Ψ.differentiableOn_f i).mono nbhd_subset_two) (Ψ.mapsTo_f i)
-    exact (h1.mul h2).add (hnl.mono (subset_closure.trans hU))
-  · have hy := hfx x hx
-    have hhy : ‖h (Ψ.f i x)‖ ≤ K := by
-      rw [hy.1, ← Complex.abs_re_eq_norm.2 (hre _ hy.2)]
-      exact abs_le.2 (hb _ hy.2)
-    -- `0 ≤ c`, from the bound at `x`
-    have hc0 : 0 ≤ c := (norm_nonneg _).trans (hc i x hx)
-    have hnorm : ‖Ψ.dualOp i h x‖ ≤ c * K + M := by
-      simp only [dualOp]
-      refine (norm_add_le _ _).trans (add_le_add ?_ (hM i x hx))
-      rw [norm_mul]
-      exact mul_le_mul (hc i x hx) hhy (norm_nonneg _) hc0
-    exact abs_lt.1 ((Complex.abs_re_le_norm _).trans_lt (hnorm.trans_lt hK))
-
 end IFS
 
 /-- Two intersecting sets of diameter less than `δ/3`, one of them shifted by `τ` with

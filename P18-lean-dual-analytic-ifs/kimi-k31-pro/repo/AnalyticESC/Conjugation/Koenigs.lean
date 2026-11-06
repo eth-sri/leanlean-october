@@ -34,7 +34,7 @@ noncomputable def koenigs (f : ℂ → ℂ) (p : ℂ) (z : ℂ) : ℂ :=
 /-! ## Auxiliary definitions -/
 
 /-- The system consisting of the single map `f`. -/
-private def koenigsIFS {ε : ℝ} {f : ℂ → ℂ} (hε : 0 < ε) (hf : InClass ε f) : IFS 1 ε :=
+def koenigsIFS {ε : ℝ} {f : ℂ → ℂ} (hε : 0 < ε) (hf : InClass ε f) : IFS 1 ε :=
   ⟨fun _ => f, hε, fun _ => hf⟩
 
 /-- The term `(f''/f')(f^k(z)) · (f^k)'(z)` of (5.1). -/
@@ -64,25 +64,24 @@ include hε hf
 
 private theorem koenigsIFS_f (i : Fin 1) : (koenigsIFS hε hf).f i = f := rfl
 
-private theorem koenigsIFS_comp (n : ℕ) : (koenigsIFS hε hf).comp (List.replicate n 0) = f^[n] := by
+theorem koenigsIFS_comp (n : ℕ) : (koenigsIFS hε hf).comp (List.replicate n 0) = f^[n] := by
   induction n with
   | zero => rfl
   | succ n ih =>
     rw [List.replicate_succ, IFS.comp_cons, ih, Function.iterate_succ', koenigsIFS_f]
 
 private theorem mapsTo_iterate (n : ℕ) : MapsTo (f^[n]) (nbhd ε) (nbhd ε) := by
-  rw [← koenigsIFS_comp hε hf]
-  exact (koenigsIFS hε hf).mapsTo_comp _
+  simpa only [← koenigsIFS_comp hε hf] using (koenigsIFS hε hf).mapsTo_comp (List.replicate n 0)
 
 private theorem mapsTo_iterate_closure (n : ℕ) :
     MapsTo (f^[n]) (closure (nbhd ε)) (closure (nbhd ε)) := by
-  rw [← koenigsIFS_comp hε hf]
-  exact (koenigsIFS hε hf).mapsTo_comp_closure _
+  simpa only [← koenigsIFS_comp hε hf] using
+    (koenigsIFS hε hf).mapsTo_comp_closure (List.replicate n 0)
 
 private theorem differentiableAt_iterate (n : ℕ) {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
     DifferentiableAt ℂ (f^[n]) z := by
-  rw [← koenigsIFS_comp hε hf]
-  exact (koenigsIFS hε hf).differentiableAt_comp _ hz
+  simpa only [← koenigsIFS_comp hε hf] using
+    (koenigsIFS hε hf).differentiableAt_comp (List.replicate n 0) hz
 
 private theorem differentiableOn_deriv_iterate (n : ℕ) :
     DifferentiableOn ℂ (deriv (f^[n])) (nbhd ε) := by
@@ -128,7 +127,7 @@ private theorem dualTerm_koenigsIFS (k : ℕ) (z : ℂ) :
   simp only [Word.take_inf, List.ofFn_const, List.reverse_replicate, koenigsIFS_comp hε hf,
     IFS.nonlin, koenigsIFS_f, hatHTerm]
 
-private theorem hatH_eq_dualProj : hatH f = (koenigsIFS hε hf).dualProj (.inf fun _ => 0) := by
+theorem hatH_eq_dualProj : hatH f = (koenigsIFS hε hf).dualProj (.inf fun _ => 0) := by
   funext z
   simp only [hatH, IFS.dualProj, dualTerm_koenigsIFS hε hf, hatHTerm]
 
@@ -151,12 +150,10 @@ private theorem deriv_deriv_iterate (n : ℕ) {z : ℂ} (hz : z ∈ closure (nbh
     ring
 
 theorem differentiableOn_hatH : DifferentiableOn ℂ (hatH f) (nbhd ε) := by
-  rw [hatH_eq_dualProj hε hf]
-  exact (koenigsIFS hε hf).differentiableOn_dualProj _
+  simpa only [hatH_eq_dualProj hε hf] using (koenigsIFS hε hf).differentiableOn_dualProj _
 
 theorem im_hatH_ofReal {t : ℝ} (ht : (t : ℂ) ∈ nbhd ε) : (hatH f t).im = 0 := by
-  rw [hatH_eq_dualProj hε hf]
-  exact (koenigsIFS hε hf).im_dualProj_ofReal _ ht
+  simpa only [hatH_eq_dualProj hε hf] using (koenigsIFS hε hf).im_dualProj_ofReal _ ht
 
 /-! ## The approximants `ĝ_n` and their derivatives `P_n` -/
 
@@ -220,8 +217,7 @@ private theorem exists_norm_ratio_sub_one_le : ∃ A, 0 ≤ A ∧ ∀ k, ∀ z �
     refine h.trans (mul_le_mul_of_nonneg_left ?_ (pow_nonneg hc0 _))
     exact (norm_sub_le _ _).trans (add_le_add (hR z hz) (hR q hq))
   rw [div_sub_one hne, norm_div, div_le_iff₀ hlam]
-  calc ‖deriv f (f^[k] z) - deriv f q‖ ≤ L * (c ^ k * (R + R)) :=
-        h1.trans (mul_le_mul_of_nonneg_left h2 hL0)
+  calc _ ≤ L * (c ^ k * (R + R)) := h1.trans (mul_le_mul_of_nonneg_left h2 hL0)
     _ = L * (R + R) / ‖deriv f q‖ * c ^ k * ‖deriv f q‖ := by field_simp
 
 /-- The `P_n` are uniformly bounded on `B_ε`. -/
@@ -237,15 +233,13 @@ private theorem exists_norm_PSeq_le : ∃ B, 0 ≤ B ∧ ∀ n, ∀ z ∈ nbhd �
       ∏ k ∈ Finset.range n, (1 + b k) :=
     Finset.prod_congr rfl fun k _ => by simp [hb]
   have hsum : ∑ k ∈ Finset.range n, ‖b k‖ ≤ A / (1 - c) := by
-    calc ∑ k ∈ Finset.range n, ‖b k‖ ≤ ∑ k ∈ Finset.range n, A * c ^ k :=
-          Finset.sum_le_sum fun k _ => hA k z hz
+    calc _ ≤ ∑ k ∈ Finset.range n, A * c ^ k := Finset.sum_le_sum fun k _ => hA k z hz
       _ = A * ∑ k ∈ Finset.Ico 0 n, c ^ k := by rw [Finset.mul_sum, Finset.range_eq_Ico]
       _ ≤ A * (c ^ 0 / (1 - c)) :=
           mul_le_mul_of_nonneg_left (geom_sum_Ico_le_of_lt_one hc0 hc1) hA0
       _ = A / (1 - c) := by rw [pow_zero]; ring
   rw [hprod]
-  calc ‖∏ k ∈ Finset.range n, (1 + b k)‖
-      ≤ ‖∏ k ∈ Finset.range n, (1 + b k) - 1‖ + ‖(1 : ℂ)‖ := norm_le_norm_sub_add _ _
+  calc _ ≤ ‖∏ k ∈ Finset.range n, (1 + b k) - 1‖ + ‖(1 : ℂ)‖ := norm_le_norm_sub_add _ _
     _ ≤ (Real.exp (∑ k ∈ Finset.range n, ‖b k‖) - 1) + 1 := by
         rw [norm_one]
         gcongr
@@ -351,7 +345,7 @@ private theorem exists_partialH_bound : ∃ B, ∀ n, ∀ z ∈ nbhd ε, ‖part
   obtain ⟨C, hC0, hC⟩ := (koenigsIFS hε hf).exists_dualTerm_bound
   let c := (koenigsIFS hε hf).cmax
   refine ⟨C / (1 - c), fun n z hz => ?_⟩
-  calc ‖partialH f n z‖ ≤ ∑ k ∈ Finset.range n, ‖hatHTerm f k z‖ := norm_sum_le _ _
+  calc _ ≤ ∑ k ∈ Finset.range n, ‖hatHTerm f k z‖ := norm_sum_le _ _
     _ ≤ ∑ k ∈ Finset.range n, C * c ^ k := Finset.sum_le_sum fun k hk => by
       rw [← dualTerm_koenigsIFS hε hf k z]
       exact hC (.inf fun _ => 0) k z (subset_closure hz)

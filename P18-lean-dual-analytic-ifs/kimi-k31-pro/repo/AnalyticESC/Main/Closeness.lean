@@ -156,7 +156,7 @@ theorem exists_dualProj_closeness :
   -- Conditions on `η`.
   have hη1 : η ≤ 1 := hη0.trans (pow_le_one₀ hc0.le hc1)
   have h14 : η ^ ((1 : ℝ) / 4) ≤ c := by
-    calc η ^ ((1 : ℝ) / 4) ≤ (c ^ 4) ^ ((1 : ℝ) / 4) := Real.rpow_le_rpow hη.le hη0 (by norm_num)
+    calc _ ≤ (c ^ 4) ^ ((1 : ℝ) / 4) := Real.rpow_le_rpow hη.le hη0 (by norm_num)
       _ = c := by rw [← Real.rpow_natCast, ← Real.rpow_mul hc0.le]; norm_num
   have h12 : η ^ ((1 : ℝ) / 2) ≤ η ^ ((1 : ℝ) / 4) :=
     Real.rpow_le_rpow_of_exponent_ge hη hη1 (by norm_num)
@@ -164,34 +164,28 @@ theorem exists_dualProj_closeness :
   have hJ1 : 2 * (2 + Q) * η ^ ((2 : ℝ)⁻¹ ^ 1) < 1 - 0 := by
     have : ((2 : ℝ)⁻¹ ^ 1) = 1 / 2 := by norm_num
     rw [this]
-    calc 2 * (2 + Q) * η ^ ((1 : ℝ) / 2) ≤ 2 * (2 + Q) * c := by gcongr; exact h12.trans h14
+    calc _ ≤ 2 * (2 + Q) * c := by gcongr; exact h12.trans h14
       _ < 1 - 0 := by rw [hcQ]; norm_num
   have hJ2 : 2 * (2 + Q) * η ^ ((2 : ℝ)⁻¹ ^ 2) < 1 - 0 := by
     have : ((2 : ℝ)⁻¹ ^ 2) = 1 / 4 := by norm_num
     rw [this]
-    calc 2 * (2 + Q) * η ^ ((1 : ℝ) / 4) ≤ 2 * (2 + Q) * c := by gcongr
+    calc _ ≤ 2 * (2 + Q) * c := by gcongr
       _ < 1 - 0 := by rw [hcQ]; norm_num
   -- Closeness of first and second derivatives of `f_{a u}` and `f_{b u}`.
   set i := a ++ u with hi
   set j := b ++ u with hj
   have hlen : j.length = i.length := by simp [i, j, hab]
-  have hQi : ∀ l ≤ 2 + 1, ∀ y ∈ Icc (0 : ℝ) 1, ‖iteratedDeriv l (Φ.comp i) y‖ ≤ Q :=
-    fun l hl y hy => hQ l hl i y hy
-  have hQj : ∀ l ≤ 2 + 1, ∀ y ∈ Icc (0 : ℝ) 1, ‖iteratedDeriv l (Φ.comp j) y‖ ≤ Q :=
-    fun l hl y hy => hQ l hl j y hy
-  have hri : ∀ t : ℝ, (t : ℂ) ∈ nbhd ε → (Φ.comp i t).im = 0 := fun t ht => Φ.im_comp_ofReal i ht
-  have hrj : ∀ t : ℝ, (t : ℂ) ∈ nbhd ε → (Φ.comp j t).im = 0 := fun t ht => Φ.im_comp_ofReal j ht
   have hd1 := norm_iteratedDeriv_sub_le_of_real Φ.ε_pos (Φ.differentiableOn_comp i)
-    (Φ.differentiableOn_comp j) hri hrj 1 le_rfl le_rfl hη hη1 hQ0
-    (fun l hl => hQi l (by omega)) (fun l hl => hQj l (by omega)) hJ1 hclose x hx
+    (Φ.differentiableOn_comp j) (fun t ht => Φ.im_comp_ofReal i ht)
+    (fun t ht => Φ.im_comp_ofReal j ht) 1 le_rfl le_rfl hη hη1 hQ0
+    (fun l hl => hQ l (by omega) i) (fun l hl => hQ l (by omega) j) hJ1 hclose x hx
   have hd2 := norm_iteratedDeriv_sub_le_of_real Φ.ε_pos (Φ.differentiableOn_comp i)
-    (Φ.differentiableOn_comp j) hri hrj 2 le_rfl le_rfl hη hη1 hQ0 hQi hQj hJ2 hclose x hx
+    (Φ.differentiableOn_comp j) (fun t ht => Φ.im_comp_ofReal i ht)
+    (fun t ht => Φ.im_comp_ofReal j ht) 2 le_rfl le_rfl hη hη1 hQ0
+    (fun l hl => hQ l hl i) (fun l hl => hQ l hl j) hJ2 hclose x hx
   rw [iteratedDeriv_one, iteratedDeriv_one] at hd1
   rw [iteratedDeriv_succ, iteratedDeriv_one, iteratedDeriv_succ, iteratedDeriv_one] at hd2
-  have e1 : ((2 : ℝ)⁻¹ ^ 1) = 1 / 2 := by norm_num
-  have e2 : ((2 : ℝ)⁻¹ ^ 2) = 1 / 4 := by norm_num
-  rw [e1] at hd1
-  rw [e2] at hd2
+  norm_num at hd1 hd2
   -- The distortions `f_{a u}''/f_{a u}'` and `f_{b u}''/f_{b u}'` at `x`.
   have hz : (x : ℂ) ∈ closure (nbhd ε) := subset_closure (ofReal_mem_nbhd Φ.ε_pos hx)
   set A := deriv (Φ.comp i) x with hA_def
@@ -215,7 +209,7 @@ theorem exists_dualProj_closeness :
       field_simp; ring
     rw [hid, norm_div, div_eq_mul_inv]
     have hE0 : 0 ≤ E := by positivity
-    calc ‖A2 / A * (B - A) + (A2 - B2)‖ * ‖B‖⁻¹ ≤ (M * E + E) * Φ.cmin⁻¹ ^ i.length := by
+    calc _ ≤ (M * E + E) * Φ.cmin⁻¹ ^ i.length := by
           refine mul_le_mul ?_ hBinv (by positivity) (by positivity)
           refine (norm_add_le _ _).trans (add_le_add ?_ hd2)
           rw [norm_mul]
@@ -236,7 +230,7 @@ theorem exists_dualProj_closeness :
   have hu : Φ.cmin ^ u.length ≤ ‖deriv (Φ.comp u) x‖ := Φ.cmin_pow_le_norm_deriv_comp u hz
   have hu0 : 0 < ‖deriv (Φ.comp u) x‖ := (pow_pos hcmin _).trans_le hu
   have huinv : ‖deriv (Φ.comp u) x‖⁻¹ ≤ Φ.cmin⁻¹ ^ i.length := by
-    calc ‖deriv (Φ.comp u) x‖⁻¹ ≤ Φ.cmin⁻¹ ^ u.length := by
+    calc _ ≤ Φ.cmin⁻¹ ^ u.length := by
           rw [inv_pow]; exact inv_anti₀ (pow_pos hcmin _) hu
       _ ≤ Φ.cmin⁻¹ ^ i.length := pow_le_pow_right₀ hcinv1 (by simp [i])
   have hilen : i.length = a.length + u.length := by simp [i]
@@ -244,8 +238,7 @@ theorem exists_dualProj_closeness :
   have hD : ‖D‖ = ‖A2 / A - B2 / B‖ * ‖deriv (Φ.comp u) x‖⁻¹ := by
     rw [hdiff, norm_mul]; field_simp
   rw [hD]
-  calc ‖A2 / A - B2 / B‖ * ‖deriv (Φ.comp u) x‖⁻¹
-      ≤ (M + 1) * E * Φ.cmin⁻¹ ^ i.length * Φ.cmin⁻¹ ^ i.length :=
+  calc _ ≤ (M + 1) * E * Φ.cmin⁻¹ ^ i.length * Φ.cmin⁻¹ ^ i.length :=
         mul_le_mul hdist huinv (by positivity) (by positivity)
     _ = (M + 1) * (2 + Q) ^ 2 * Φ.cmin⁻¹ ^ (2 * (a.length + u.length)) * η ^ ((1 : ℝ) / 4) := by
         rw [hE, ← hilen, two_mul, pow_add]; ring
@@ -294,7 +287,7 @@ theorem norm_iteratedDeriv_sub_le_on_image (hN : 0 < N) (k : ℕ) (u : List (Fin
   · have hc := Φ.cmin_pos hN
     have hlow := pow_le_pow_left₀ (pow_nonneg hc.le u.length) (Φ.cmin_pow_le_norm_deriv_comp u hx') k
     apply mul_le_mul_of_nonneg_right _ hη
-    calc K / ‖deriv (Φ.comp u) x‖ ^ k ≤ K / (Φ.cmin ^ u.length) ^ k :=
+    calc _ ≤ K / (Φ.cmin ^ u.length) ^ k :=
         div_le_div_of_nonneg_left hK (by positivity) hlow
       _ = K * (Φ.cmin⁻¹ ^ k) ^ u.length := by
         rw [div_eq_mul_inv, ← inv_pow, ← inv_pow, ← pow_mul, ← pow_mul, Nat.mul_comm]

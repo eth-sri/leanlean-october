@@ -34,7 +34,7 @@ theorem dualTerm_of_get?_eq_some {w : Word N} {n : ℕ} {i : Fin N} (h : w.get? 
   simp [dualTerm, h]
 
 /-- If `w` has a letter in position `n`, then its prefix of length `n` has length `n`. -/
-private theorem length_take_of_get?_eq_some {w : Word N} {n : ℕ} {i : Fin N}
+theorem length_take_of_get?_eq_some {w : Word N} {n : ℕ} {i : Fin N}
     (h : w.get? n = some i) : (w.take n).length = n := by
   cases w with
   | fin w =>
@@ -92,6 +92,17 @@ theorem exists_norm_dualProj_le :
     mul_nonneg hC0 (inv_nonneg.2 (sub_nonneg.2 Φ.cmax_lt_one.le)), fun w z hz => ?_⟩
   exact tsum_of_norm_bounded
     ((hasSum_geometric_of_lt_one Φ.cmax_nonneg Φ.cmax_lt_one).mul_left C) fun n => hC w n z hz
+
+/-- Differences of dual projections are bounded on `I`. -/
+theorem bddAbove_dualProj_sub (i j : Word N) :
+    BddAbove (range fun x : I =>
+      ‖Φ.dualProj i ((x : ℝ) : ℂ) - Φ.dualProj j ((x : ℝ) : ℂ)‖) := by
+  obtain ⟨M, -, hM⟩ := Φ.exists_norm_dualProj_le
+  refine ⟨M + M, ?_⟩
+  rintro _ ⟨x, rfl⟩
+  exact (norm_sub_le _ _).trans (add_le_add
+    (hM i _ (subset_closure (ofReal_mem_nbhd Φ.ε_pos x.2)))
+    (hM j _ (subset_closure (ofReal_mem_nbhd Φ.ε_pos x.2))))
 
 /-! ## Holomorphy and realness -/
 

@@ -94,8 +94,7 @@ theorem exists_dualProj_ne_of_get?_zero {α : ℝ}
   have h2 := Φ.norm_dualProj_sub_nonlin_le hj hx
   have key : ‖Φ.nonlin a x - Φ.nonlin b x‖ ≤
       ‖Φ.dualProj i x - Φ.nonlin a x‖ + ‖Φ.dualProj j x - Φ.nonlin b x‖ := by
-    calc ‖Φ.nonlin a x - Φ.nonlin b x‖ =
-          ‖-(Φ.dualProj i x - Φ.nonlin a x) + (Φ.dualProj j x - Φ.nonlin b x)‖ := by
+    calc _ = ‖-(Φ.dualProj i x - Φ.nonlin a x) + (Φ.dualProj j x - Φ.nonlin b x)‖ := by
           rw [heq]; ring_nf
       _ ≤ _ := by rw [← norm_neg (Φ.dualProj i x - _)]; exact norm_add_le _ _
   have h2β : 2 * Φ.beta * Φ.cmax / (1 - Φ.cmax) = 2 * (Φ.beta * Φ.cmax / (1 - Φ.cmax)) := by
@@ -191,14 +190,7 @@ theorem proposition_1_8 (hN : 2 ≤ N) {α : ℝ} (hα : 0 < α)
       0 < ⨆ x : I, ‖Φ.dualProj i ((x : ℝ) : ℂ) - Φ.dualProj j ((x : ℝ) : ℂ)‖ := by
     intro i j hij hlen
     obtain ⟨x, hx, hne⟩ := Φ.exists_dualProj_ne (by omega) hsep hlt hij hlen
-    obtain ⟨M, -, hM⟩ := Φ.exists_norm_dualProj_le
-    have hbdd : BddAbove
-        (range fun x : I => ‖Φ.dualProj i ((x : ℝ) : ℂ) - Φ.dualProj j ((x : ℝ) : ℂ)‖) := by
-      refine ⟨M + M, ?_⟩
-      rintro _ ⟨x, rfl⟩
-      have hxn : ((x : ℝ) : ℂ) ∈ closure (nbhd ε) :=
-        subset_closure (ofReal_mem_nbhd Φ.ε_pos x.2)
-      exact (norm_sub_le _ _).trans (add_le_add (hM i _ hxn) (hM j _ hxn))
+    have hbdd := Φ.bddAbove_dualProj_sub i j
     exact (norm_pos_iff.2 (sub_ne_zero.2 hne)).trans_le
       (le_ciSup (f := fun x : I => ‖Φ.dualProj i ((x : ℝ) : ℂ) - Φ.dualProj j ((x : ℝ) : ℂ)‖)
         hbdd ⟨x, hx⟩)

@@ -116,21 +116,12 @@ variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
 private theorem comp_singleton_eq_f (i : Fin N) : Φ.comp [i] = Φ.f i := by
   simp
 
-/-- `H_i = f_i''/f_i'` for a single letter `i`. -/
-private theorem dualProj_fin_singleton_eq_nonlin (i : Fin N) (z : ℂ) :
-    Φ.dualProj (.fin [i]) z = Φ.nonlin i z := by
-  rw [dualProj, tsum_eq_single 0]
-  · simp [dualTerm]
-  · intro n hn
-    obtain ⟨n, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hn
-    simp [dualTerm]
-
 /-- The cocycle identity for a single letter. -/
 private theorem dualProj_prepend_singleton (i : Fin N) (w : Word N) {z : ℂ}
     (hz : z ∈ closure (nbhd ε)) :
     Φ.dualProj (w.prepend [i]) z = deriv (Φ.f i) z * Φ.dualProj w (Φ.f i z) + Φ.nonlin i z := by
   rw [Φ.dualProj_prepend [i] w hz, List.reverse_singleton, comp_singleton_eq_f,
-    Φ.dualProj_fin_singleton_eq_nonlin i z, add_comm]
+    Φ.dualProj_singleton i z, add_comm]
 
 /-- `F_w h = f_{w^←}' · (h ∘ f_{w^←}) + H_w` on `B_ε` (Section 2.1). -/
 theorem dualComp_apply (w : List (Fin N)) (h : ℂ → ℂ) {z : ℂ} (hz : z ∈ nbhd ε) :
@@ -347,14 +338,10 @@ private theorem eq_range_of_isDualAttractor {Λ : Set (nbhd ε →ᵤ ℂ)} (hΛ
         fun n z => key w n u hu z)
       (Eventually.of_forall fun n => Φ.dualCompU_mem_of_isDualAttractor hΛ _ hu)
 
-/-- Lemma 2.1: the dual IFS has a unique attractor. -/
-theorem existsUnique_isDualAttractor (hN : 0 < N) : ∃! Λ, Φ.IsDualAttractor Λ :=
-  Φ.existsUnique_isDualAttractor_hutchinson hN
-
 /-- Lemma 2.5, last claim: the Hutchinson attractor is `{H_i : i ∈ Σ}`. -/
 theorem isDualAttractor_range (hN : 0 < N) :
     Φ.IsDualAttractor (range fun w : ℕ → Fin N => toNbhd ε (Φ.dualProj (.inf w))) := by
-  obtain ⟨Λ, hΛ, -⟩ := Φ.existsUnique_isDualAttractor hN
+  obtain ⟨Λ, hΛ, -⟩ := Φ.existsUnique_isDualAttractor_hutchinson hN
   exact Φ.eq_range_of_isDualAttractor hΛ ▸ hΛ
 
 /-! ## Strong separation of the dual IFS -/
@@ -427,12 +414,7 @@ theorem dualProj_ne_iff_exists_delta :
     subset_closure (ofReal_mem_nbhd Φ.ε_pos x.2)
   let D : (ℕ → Fin N) × (ℕ → Fin N) → ℝ := fun p =>
     ⨆ x : I, ‖Φ.dualProj (.inf p.1) ((x : ℝ) : ℂ) - Φ.dualProj (.inf p.2) ((x : ℝ) : ℂ)‖
-  have hbdd : ∀ p : (ℕ → Fin N) × (ℕ → Fin N), BddAbove (range fun x : I =>
-      ‖Φ.dualProj (.inf p.1) ((x : ℝ) : ℂ) - Φ.dualProj (.inf p.2) ((x : ℝ) : ℂ)‖) := by
-    intro p
-    refine ⟨M + M, ?_⟩
-    rintro _ ⟨x, rfl⟩
-    exact (norm_sub_le _ _).trans (add_le_add (hM _ _ (hx x)) (hM _ _ (hx x)))
+  have hbdd := fun p : (ℕ → Fin N) × (ℕ → Fin N) => Φ.bddAbove_dualProj_sub (.inf p.1) (.inf p.2)
   constructor
   · intro h
     let S : Set ((ℕ → Fin N) × (ℕ → Fin N)) := {p | p.1 0 ≠ p.2 0}
@@ -474,7 +456,7 @@ theorem dualProj_ne_iff_exists_delta :
       exact absurd this (notMem_empty _)
     · obtain ⟨p₀, hp₀, hmin⟩ := hS.exists_isMinOn hne hcont.continuousOn
       refine ⟨D p₀ / 2, half_pos (hpos p₀ hp₀), fun i j hij => ?_⟩
-      calc D p₀ / 2 < D p₀ := half_lt_self (hpos p₀ hp₀)
+      calc _ < D p₀ := half_lt_self (hpos p₀ hp₀)
         _ ≤ D (i, j) := isMinOn_iff.1 hmin (i, j) hij
   · rintro ⟨δ, hδ, h⟩ i j hij
     by_contra hcon

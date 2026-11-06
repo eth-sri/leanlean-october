@@ -1,6 +1,7 @@
 module
 
 public import AnalyticESC.Dimension.Pressure
+public import AnalyticESC.Dimension.NaturalMeasure
 
 @[expose] public section
 
@@ -30,23 +31,11 @@ theorem natProj_eq_realMap (ω : ℕ → Fin N) :
   rw [Φ.natProj_eq_comp_prefix ω 1]
   simp [realMap]
 
-/-- `|f_w(y) - f_w(z)| ≤ c_max^{|w|}` for `y, z ∈ I`. -/
-theorem abs_re_comp_sub_le (w : List (Fin N)) {y z : ℝ} (hy : y ∈ I) (hz : z ∈ I) :
-    |(Φ.comp w y).re - (Φ.comp w z).re| ≤ Φ.cmax ^ w.length := by
-  rw [← Complex.sub_re]
-  refine (Complex.abs_re_le_norm _).trans ?_
-  refine (Φ.norm_comp_sub_le w (ofReal_mem_nbhd Φ.ε_pos hy)
-    (ofReal_mem_nbhd Φ.ε_pos hz)).trans ?_
-  rw [← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs]
-  refine mul_le_of_le_one_right (pow_nonneg Φ.cmax_nonneg _) ?_
-  rw [abs_le]
-  constructor <;> linarith [hy.1, hy.2, hz.1, hz.2]
-
 /-- `|π(ω) - f_{ω₁ ⋯ ωₙ}(0)| ≤ c_max^n`. -/
 theorem abs_natProj_sub_le (ω : ℕ → Fin N) (n : ℕ) :
     |Φ.natProj ω - (Φ.comp (List.ofFn fun k : Fin n => ω k) 0).re| ≤ Φ.cmax ^ n := by
   have hπ : Φ.natProj (fun j => ω (j + n)) ∈ I := Φ.attractor_subset_I ⟨_, rfl⟩
-  have h := Φ.abs_re_comp_sub_le (List.ofFn fun k : Fin n => ω k) hπ
+  have h := Φ.nm_abs_re_comp_sub_le (List.ofFn fun k : Fin n => ω k) hπ
     (left_mem_Icc.2 zero_le_one)
   rwa [List.length_ofFn, Complex.ofReal_zero, ← Φ.natProj_eq_comp_prefix] at h
 
@@ -114,7 +103,7 @@ theorem exists_attractor_eq_singleton_iff (hN : 0 < N) :
       have hle : ∀ n, |Φ.natProj ω - p| ≤ Φ.cmax ^ n := by
         intro n
         have hπ : Φ.natProj (fun j => ω (j + n)) ∈ I := Φ.attractor_subset_I ⟨_, rfl⟩
-        have h := Φ.abs_re_comp_sub_le (List.ofFn fun k : Fin n => ω k) hπ hp
+        have h := Φ.nm_abs_re_comp_sub_le (List.ofFn fun k : Fin n => ω k) hπ hp
         rwa [List.length_ofFn, hc, Complex.ofReal_re, ← Φ.natProj_eq_comp_prefix] at h
       have h0 : |Φ.natProj ω - p| ≤ 0 :=
         ge_of_tendsto' (tendsto_pow_atTop_nhds_zero_of_lt_one Φ.cmax_nonneg Φ.cmax_lt_one) hle
@@ -199,16 +188,6 @@ theorem rapaportHyp (hN : 0 < N) (hnd : ¬ ∃ x, Φ.attractor = {x}) (hesc : Φ
     rw [← Φ.supDist_eq_iSup_realComp]
     exact hn u v huv
 
-/-- On `I`, the derivative of the real map `f_i` has absolute value `‖f_i'(x)‖`. -/
-private theorem dim_abs_deriv_realMap (i : Fin N) {x : ℝ} (hx : x ∈ I) :
-    |deriv (Φ.realMap i) x| = ‖deriv (Φ.f i) x‖ := by
-  have hcl : (x : ℂ) ∈ closure (nbhd ε) := subset_closure (ofReal_mem_nbhd Φ.ε_pos hx)
-  have hd : HasDerivAt (Φ.realMap i) (deriv (Φ.f i) x).re x :=
-    hasDerivAt_re_ofReal (Φ.differentiableAt_f i hcl)
-  rw [hd.deriv]
-  exact Complex.abs_re_eq_norm.2
-    (Φ.im_deriv_f_ofReal i (nbhd_subset_two (ofReal_mem_nbhd Φ.ε_pos hx)))
-
 /-- `log c_min ≤ log |f_i'(x)| ≤ log c_max` for `x ∈ I`. -/
 private theorem dim_log_abs_deriv_realMap_mem (hN : 0 < N) (i : Fin N) {x : ℝ} (hx : x ∈ I) :
     Real.log Φ.cmin ≤ Real.log |deriv (Φ.realMap i) x| ∧
@@ -217,7 +196,7 @@ private theorem dim_log_abs_deriv_realMap_mem (hN : 0 < N) (i : Fin N) {x : ℝ}
   have h1 := Φ.cmin_le_norm_deriv i hcl
   have h2 := Φ.norm_deriv_le_cmax i hcl
   have h0 := Φ.cmin_pos hN
-  rw [Φ.dim_abs_deriv_realMap i hx]
+  rw [Φ.abs_deriv_realMap i (ofReal_mem_nbhd Φ.ε_pos hx)]
   exact ⟨Real.log_le_log h0 h1, Real.log_le_log (h0.trans_le h1) h2⟩
 
 /-- For a probability measure `μ` on `I`, `∫ log |f_i'| dμ ≤ log c_max`. -/
@@ -236,7 +215,7 @@ private theorem dim_integral_le (hN : 0 < N) (i : Fin N) {μ : Measure ℝ}
     rw [Real.norm_eq_abs, abs_le]
     constructor <;> linarith [neg_abs_le (Real.log Φ.cmin), le_abs_self (Real.log Φ.cmax),
       abs_nonneg (Real.log Φ.cmin), abs_nonneg (Real.log Φ.cmax)]
-  calc ∫ x, Real.log |deriv (Φ.realMap i) x| ∂μ ≤ ∫ _x, Real.log Φ.cmax ∂μ :=
+  calc _ ≤ ∫ _x, Real.log Φ.cmax ∂μ :=
         integral_mono_ae hint (integrable_const _) (hb.mono fun x hx => hx.2)
     _ = Real.log Φ.cmax := by simp
 
@@ -245,7 +224,7 @@ theorem neg_log_cmax_le_lyapunov (hN : 0 < N) {p : Fin N → ℝ} (hp : IsProbVe
     {μ : Measure ℝ} (hμ : Φ.IsSelfConformal p μ) : -Real.log Φ.cmax ≤ Φ.lyapunov p μ := by
   obtain ⟨hμ1, hμ2, -⟩ := hμ
   rw [lyapunov, neg_le_neg_iff]
-  calc ∑ i, p i * ∫ x, Real.log |deriv (Φ.realMap i) x| ∂μ ≤ ∑ i, p i * Real.log Φ.cmax :=
+  calc _ ≤ ∑ i, p i * Real.log Φ.cmax :=
         Finset.sum_le_sum fun i _ =>
           mul_le_mul_of_nonneg_left (Φ.dim_integral_le hN i hμ2) (hp.1 i).le
     _ = Real.log Φ.cmax := by rw [← Finset.sum_mul, hp.2, one_mul]

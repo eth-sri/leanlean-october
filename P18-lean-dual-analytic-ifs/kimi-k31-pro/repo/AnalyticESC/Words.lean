@@ -39,9 +39,7 @@ theorem length_take (w : Word N) (n : ℕ) : ((w.take n).length : ℕ∞) = min 
   | inf w => simp
 
 theorem isSome_get?_iff (w : Word N) (n : ℕ) : (w.get? n).isSome ↔ (n : ℕ∞) < w.length := by
-  cases w with
-  | fin w => simp [Option.isSome_iff_ne_none]
-  | inf w => simp
+  cases w <;> simp [Option.isSome_iff_ne_none]
 
 /-- The letters of a prefix. -/
 private theorem getElem?_take_word (w : Word N) (n k : ℕ) :
@@ -80,11 +78,7 @@ private theorem ext_get? {v w : Word N} (h : ∀ n, v.get? n = w.get? n) : v = w
 
 private theorem get?_succ_eq_none {w : Word N} {n : ℕ} (h : w.get? n = none) :
     w.get? (n + 1) = none := by
-  cases w with
-  | fin w =>
-    simp only [get?_fin, List.getElem?_eq_none_iff] at h ⊢
-    omega
-  | inf w => simp at h
+  cases w <;> simp_all; omega
 
 private theorem get?_prepend (a : List (Fin N)) (w : Word N) (n : ℕ) :
     (w.prepend a).get? n = if n < a.length then a[n]? else w.get? (n - a.length) := by
@@ -96,22 +90,14 @@ private theorem get?_prepend (a : List (Fin N)) (w : Word N) (n : ℕ) :
 
 private theorem length_take_of_le {w : Word N} {n : ℕ} (h : (n : ℕ∞) ≤ w.length) :
     (w.take n).length = n := by
-  have := length_take w n
-  rw [min_eq_left h] at this
-  exact_mod_cast this
+  exact_mod_cast (min_eq_left h ▸ length_take w n)
 
 theorem take_of_length_le {w : Word N} {n : ℕ} (h : w.length ≤ n) : w = fin (w.take n) := by
-  cases w with
-  | fin w =>
-    simp only [length_fin, Nat.cast_le] at h
-    simp [List.take_of_length_le h]
-  | inf w => simp at h
+  cases w <;> simp_all [List.take_of_length_le]
 
 theorem length_prepend (a : List (Fin N)) (w : Word N) :
     (w.prepend a).length = a.length + w.length := by
-  cases w with
-  | fin w => simp [prepend]
-  | inf w => simp [prepend]
+  cases w <;> simp [prepend]
 
 theorem get?_prepend_of_lt (a : List (Fin N)) (w : Word N) {n : ℕ} (hn : n < a.length) :
     (w.prepend a).get? n = a[n]? := by

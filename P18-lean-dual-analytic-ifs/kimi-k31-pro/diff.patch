@@ -1,0 +1,2560 @@
+diff --git a/AnalyticESC/Analysis.lean b/AnalyticESC/Analysis.lean
+index 56233ae5f..414cd719a 100644
+--- a/AnalyticESC/Analysis.lean
++++ b/AnalyticESC/Analysis.lean
+@@ -223,8 +223,7 @@ private theorem rpow_abs_mul_exp_le {p σ : ℝ} (hp : 0 < p) (hσ : 0 < σ) (x
+     rw [hv_def]
+     field_simp
+     ring
+-  calc |x| ^ p * Real.exp (-x ^ 2 / σ)
+-      = (p / 2 * σ) ^ (p / 2) * (v ^ (p / 2) * Real.exp (-x ^ 2 / σ)) := by rw [h2]; ring
++  calc _ = (p / 2 * σ) ^ (p / 2) * (v ^ (p / 2) * Real.exp (-x ^ 2 / σ)) := by rw [h2]; ring
+     _ ≤ (p / 2 * σ) ^ (p / 2) * (Real.exp ((v - 1) * (p / 2)) * Real.exp (-x ^ 2 / σ)) := by
+       gcongr
+     _ = (p / 2 * σ) ^ (p / 2) * Real.exp (-(p / 2)) := by rw [← Real.exp_add, h4]
+@@ -247,8 +246,7 @@ theorem gaussian_bound {c p ε q σ : ℝ} (hc : 0 < c) (hp : 0 < p) (hε : 0 <
+       show p / (2 * q + p) * (q + p / 2) = p / 2 by field_simp,
+       one_div_mul_cancel hr.ne', Real.rpow_one] at h
+   have he : p / 2 * (2 * Real.exp 1 / p) = Real.exp 1 := by field_simp
+-  calc c * σ ^ q * |x| ^ p * Real.exp (-x ^ 2 / σ)
+-      = c * σ ^ q * (|x| ^ p * Real.exp (-x ^ 2 / σ)) := by ring
++  calc _ = c * σ ^ q * (|x| ^ p * Real.exp (-x ^ 2 / σ)) := by ring
+     _ ≤ c * σ ^ q * ((p / 2 * σ) ^ (p / 2) * Real.exp (-(p / 2))) :=
+       mul_le_mul_of_nonneg_left (rpow_abs_mul_exp_le hp hσ x) (by positivity)
+     _ = c * ((p / 2) ^ (p / 2) * Real.exp (-(p / 2))) * σ ^ (q + p / 2) := by
+diff --git a/AnalyticESC/Basic.lean b/AnalyticESC/Basic.lean
+index 242bf9089..334899559 100644
+--- a/AnalyticESC/Basic.lean
++++ b/AnalyticESC/Basic.lean
+@@ -49,9 +49,7 @@ theorem nbhd_mono {δ δ' : ℝ} (h : δ ≤ δ') : nbhd δ ⊆ nbhd δ' := thic
+ theorem nbhd_of_nonpos {δ : ℝ} (h : δ ≤ 0) : nbhd δ = ∅ := thickening_of_nonpos h _
+ 
+ theorem zero_mem_closure_nbhd {δ : ℝ} (hδ : 0 < δ) : (0 : ℂ) ∈ closure (nbhd δ) := by
+-  have h := ofReal_mem_nbhd hδ (x := 0) ⟨le_rfl, zero_le_one⟩
+-  rw [Complex.ofReal_zero] at h
+-  exact subset_closure h
++  simpa using subset_closure (ofReal_mem_nbhd hδ (x := 0) ⟨le_rfl, zero_le_one⟩)
+ 
+ theorem closure_nbhd_subset {δ δ' : ℝ} (h : δ < δ') : closure (nbhd δ) ⊆ nbhd δ' := by
+   rcases le_or_gt δ' 0 with h' | h'
+@@ -167,8 +165,7 @@ theorem cmax_lt_one : Φ.cmax < 1 := by
+     have : Nonempty (closure (nbhd ε)) := ⟨⟨0, zero_mem_closure_nbhd Φ.ε_pos⟩⟩
+     obtain ⟨z, hz, hmax⟩ := (isCompact_closure_nbhd ε).exists_isMaxOn
+       ⟨0, zero_mem_closure_nbhd Φ.ε_pos⟩ (Φ.continuousOn_norm_deriv_f i)
+-    calc ⨆ z : closure (nbhd ε), ‖deriv (Φ.f i) z‖ ≤ ‖deriv (Φ.f i) z‖ :=
+-          ciSup_le fun w => hmax w.2
++    calc _ ≤ ‖deriv (Φ.f i) z‖ := ciSup_le fun w => hmax w.2
+       _ < 1 := (Φ.inClass i).norm_deriv_lt_one z hz
+   have : Nonempty (Fin N) := ⟨⟨0, hN⟩⟩
+   obtain ⟨i, hi'⟩ := exists_eq_ciSup_of_finite
+@@ -178,7 +175,7 @@ theorem cmax_lt_one : Φ.cmax < 1 := by
+ 
+ theorem norm_deriv_le_cmax (i : Fin N) {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
+     ‖deriv (Φ.f i) z‖ ≤ Φ.cmax :=
+-  calc ‖deriv (Φ.f i) z‖ ≤ ⨆ z : closure (nbhd ε), ‖deriv (Φ.f i) z‖ :=
++  calc _ ≤ ⨆ z : closure (nbhd ε), ‖deriv (Φ.f i) z‖ :=
+         le_ciSup (Φ.bddAbove_norm_deriv i) ⟨z, hz⟩
+     _ ≤ Φ.cmax := le_ciSup (f := fun i => ⨆ z : closure (nbhd ε), ‖deriv (Φ.f i) z‖)
+         (finite_range _).bddAbove i
+@@ -189,7 +186,7 @@ theorem cmin_pos (hN : 0 < N) : 0 < Φ.cmin := by
+     have : Nonempty (closure (nbhd ε)) := ⟨⟨0, zero_mem_closure_nbhd Φ.ε_pos⟩⟩
+     obtain ⟨z, hz, hmin⟩ := (isCompact_closure_nbhd ε).exists_isMinOn
+       ⟨0, zero_mem_closure_nbhd Φ.ε_pos⟩ (Φ.continuousOn_norm_deriv_f i)
+-    calc (0 : ℝ) < ‖deriv (Φ.f i) z‖ := norm_pos_iff.2 ((Φ.inClass i).deriv_ne_zero z hz)
++    calc _ < ‖deriv (Φ.f i) z‖ := norm_pos_iff.2 ((Φ.inClass i).deriv_ne_zero z hz)
+       _ ≤ ⨅ z : closure (nbhd ε), ‖deriv (Φ.f i) z‖ := le_ciInf fun w => hmin w.2
+   have : Nonempty (Fin N) := ⟨⟨0, hN⟩⟩
+   obtain ⟨i, hi'⟩ := (range_nonempty
+@@ -199,7 +196,7 @@ theorem cmin_pos (hN : 0 < N) : 0 < Φ.cmin := by
+ 
+ theorem cmin_le_norm_deriv (i : Fin N) {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
+     Φ.cmin ≤ ‖deriv (Φ.f i) z‖ :=
+-  calc Φ.cmin ≤ ⨅ z : closure (nbhd ε), ‖deriv (Φ.f i) z‖ :=
++  calc _ ≤ ⨅ z : closure (nbhd ε), ‖deriv (Φ.f i) z‖ :=
+         ciInf_le (f := fun i => ⨅ z : closure (nbhd ε), ‖deriv (Φ.f i) z‖)
+           (finite_range _).bddBelow i
+     _ ≤ ‖deriv (Φ.f i) z‖ := ciInf_le (Φ.bddBelow_norm_deriv i) ⟨z, hz⟩
+@@ -228,7 +225,7 @@ theorem exists_nonlin_bound :
+     exact (isCompact_closure_nbhd ε).exists_bound_of_continuousOn (hd.continuousOn.mono hU)
+   choose C hC using h
+   refine ⟨∑ i, |C i|, Finset.sum_nonneg fun i _ => abs_nonneg _, fun i z hz => ?_⟩
+-  calc ‖Φ.nonlin i z‖ ≤ C i := hC i z hz
++  calc _ ≤ C i := hC i z hz
+     _ ≤ |C i| := le_abs_self _
+     _ ≤ ∑ i, |C i| :=
+         Finset.single_le_sum (f := fun i => |C i|) (fun j _ => abs_nonneg _) (Finset.mem_univ i)
+@@ -260,23 +257,19 @@ theorem comp_append (u v : List (Fin N)) : Φ.comp (u ++ v) = Φ.comp u ∘ Φ.c
+ theorem mapsTo_comp (w : List (Fin N)) : MapsTo (Φ.comp w) (nbhd ε) (nbhd ε) := by
+   induction w with
+   | nil => exact mapsTo_id _
+-  | cons i w ih => rw [comp_cons]; exact (Φ.mapsTo_f i).comp ih
++  | cons i w ih => exact (Φ.mapsTo_f i).comp ih
+ 
+ theorem mapsTo_comp_closure (w : List (Fin N)) :
+     MapsTo (Φ.comp w) (closure (nbhd ε)) (closure (nbhd ε)) := by
+   induction w with
+   | nil => exact mapsTo_id _
+-  | cons i w ih =>
+-    rw [comp_cons]
+-    exact ((Φ.inClass i).mapsTo.mono_right subset_closure).comp ih
++  | cons i w ih => exact ((Φ.inClass i).mapsTo.mono_right subset_closure).comp ih
+ 
+ theorem differentiableAt_comp (w : List (Fin N)) {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
+     DifferentiableAt ℂ (Φ.comp w) z := by
+   induction w with
+   | nil => exact differentiableAt_id
+-  | cons i w ih =>
+-    rw [comp_cons]
+-    exact (Φ.differentiableAt_f i (Φ.mapsTo_comp_closure w hz)).comp z ih
++  | cons i w ih => exact (Φ.differentiableAt_f i (Φ.mapsTo_comp_closure w hz)).comp z ih
+ 
+ theorem differentiableOn_comp (w : List (Fin N)) : DifferentiableOn ℂ (Φ.comp w) (nbhd ε) :=
+   fun _ hz => (Φ.differentiableAt_comp w (subset_closure hz)).differentiableWithinAt
+@@ -332,12 +325,6 @@ theorem deriv_comp_ne_zero (w : List (Fin N)) {z : ℂ} (hz : z ∈ closure (nbh
+     rw [Φ.deriv_comp_cons i w hz]
+     exact mul_ne_zero ((Φ.inClass i).deriv_ne_zero _ (Φ.mapsTo_comp_closure w hz)) ih
+ 
+-/-- A uniform bound for all compositions on `cl B_ε`. -/
+-theorem exists_comp_bound : ∃ R, 0 ≤ R ∧ ∀ w, ∀ z ∈ closure (nbhd ε), ‖Φ.comp w z‖ ≤ R := by
+-  obtain ⟨R, hR⟩ := (isCompact_closure_nbhd ε).isBounded.exists_norm_le
+-  exact ⟨max R 0, le_max_right _ _,
+-    fun w z hz => (hR _ (Φ.mapsTo_comp_closure w hz)).trans (le_max_left _ _)⟩
+-
+ theorem norm_comp_sub_le (w : List (Fin N)) {z z' : ℂ} (hz : z ∈ nbhd ε) (hz' : z' ∈ nbhd ε) :
+     ‖Φ.comp w z - Φ.comp w z'‖ ≤ Φ.cmax ^ w.length * ‖z - z'‖ :=
+   (convex_nbhd ε).norm_image_sub_le_of_norm_deriv_le
+@@ -436,13 +423,13 @@ theorem exists_image_comp_eq_Icc (w : List (Fin N)) :
+       Φ.norm_comp_sub_le w (hmem hb) (hmem ha)
+     have hre : q - p ≤ ‖Φ.comp w b - Φ.comp w a‖ := by
+       rw [← hpa, ← hqb]
+-      calc h b - h a ≤ |h b - h a| := le_abs_self _
++      calc _ ≤ |h b - h a| := le_abs_self _
+         _ = |(Φ.comp w b - Φ.comp w a).re| := by simp [h_def]
+         _ ≤ ‖Φ.comp w b - Φ.comp w a‖ := Complex.abs_re_le_norm _
+     have hba : ‖(b : ℂ) - a‖ ≤ 1 := by
+       rw [← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs, abs_sub_le_iff]
+       constructor <;> linarith [ha.1, ha.2, hb.1, hb.2]
+-    calc q - p ≤ ‖Φ.comp w b - Φ.comp w a‖ := hre
++    calc _ ≤ ‖Φ.comp w b - Φ.comp w a‖ := hre
+       _ ≤ Φ.cmax ^ w.length * ‖(b : ℂ) - a‖ := hab
+       _ ≤ Φ.cmax ^ w.length * 1 :=
+           mul_le_mul_of_nonneg_left hba (pow_nonneg Φ.cmax_nonneg _)
+diff --git a/AnalyticESC/Conjugation/Characterisation.lean b/AnalyticESC/Conjugation/Characterisation.lean
+index 0aa312c15..6e9bf3076 100644
+--- a/AnalyticESC/Conjugation/Characterisation.lean
++++ b/AnalyticESC/Conjugation/Characterisation.lean
+@@ -25,7 +25,7 @@ variable {ε : ℝ} {f : ℂ → ℂ}
+ 
+ /-- At points of `[0,1]`, the derivative of a map of the class is real, nonzero and of modulus
+ less than one. -/
+-private theorem char_re_deriv_ne_zero_abs_lt_one (hε : 0 < ε) (hf : InClass ε f) {x : ℝ}
++theorem char_re_deriv_ne_zero_abs_lt_one (hε : 0 < ε) (hf : InClass ε f) {x : ℝ}
+     (hx : x ∈ I) : (deriv f x).re ≠ 0 ∧ |(deriv f x).re| < 1 := by
+   have hcl : (x : ℂ) ∈ closure (nbhd ε) := subset_closure (ofReal_mem_nbhd hε hx)
+   have him : (deriv f x).im = 0 := im_deriv_eq_zero (isOpen_nbhd _) hf.differentiableOn
+diff --git a/AnalyticESC/Conjugation/ExactOverlaps.lean b/AnalyticESC/Conjugation/ExactOverlaps.lean
+index a29580fee..5de06b2a4 100644
+--- a/AnalyticESC/Conjugation/ExactOverlaps.lean
++++ b/AnalyticESC/Conjugation/ExactOverlaps.lean
+@@ -30,7 +30,7 @@ variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
+ /-! ## Compositions on `I` -/
+ 
+ /-- `|f_w(x) - f_w(y)| ≤ c_max^{|w|} |x - y|` on `I`. -/
+-private theorem exact_abs_re_comp_sub_le (w : List (Fin N)) {x y : ℝ} (hx : x ∈ I)
++theorem exact_abs_re_comp_sub_le (w : List (Fin N)) {x y : ℝ} (hx : x ∈ I)
+     (hy : y ∈ I) : |(Φ.comp w x).re - (Φ.comp w y).re| ≤ Φ.cmax ^ w.length * |x - y| := by
+   have h := Φ.norm_comp_sub_le w (ofReal_mem_nbhd Φ.ε_pos hx) (ofReal_mem_nbhd Φ.ε_pos hy)
+   rw [← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs] at h
+diff --git a/AnalyticESC/Conjugation/Koenigs.lean b/AnalyticESC/Conjugation/Koenigs.lean
+index cea0cac6f..0df2a4fee 100644
+--- a/AnalyticESC/Conjugation/Koenigs.lean
++++ b/AnalyticESC/Conjugation/Koenigs.lean
+@@ -34,7 +34,7 @@ noncomputable def koenigs (f : ℂ → ℂ) (p : ℂ) (z : ℂ) : ℂ :=
+ /-! ## Auxiliary definitions -/
+ 
+ /-- The system consisting of the single map `f`. -/
+-private def koenigsIFS {ε : ℝ} {f : ℂ → ℂ} (hε : 0 < ε) (hf : InClass ε f) : IFS 1 ε :=
++def koenigsIFS {ε : ℝ} {f : ℂ → ℂ} (hε : 0 < ε) (hf : InClass ε f) : IFS 1 ε :=
+   ⟨fun _ => f, hε, fun _ => hf⟩
+ 
+ /-- The term `(f''/f')(f^k(z)) · (f^k)'(z)` of (5.1). -/
+@@ -64,25 +64,24 @@ include hε hf
+ 
+ private theorem koenigsIFS_f (i : Fin 1) : (koenigsIFS hε hf).f i = f := rfl
+ 
+-private theorem koenigsIFS_comp (n : ℕ) : (koenigsIFS hε hf).comp (List.replicate n 0) = f^[n] := by
++theorem koenigsIFS_comp (n : ℕ) : (koenigsIFS hε hf).comp (List.replicate n 0) = f^[n] := by
+   induction n with
+   | zero => rfl
+   | succ n ih =>
+     rw [List.replicate_succ, IFS.comp_cons, ih, Function.iterate_succ', koenigsIFS_f]
+ 
+ private theorem mapsTo_iterate (n : ℕ) : MapsTo (f^[n]) (nbhd ε) (nbhd ε) := by
+-  rw [← koenigsIFS_comp hε hf]
+-  exact (koenigsIFS hε hf).mapsTo_comp _
++  simpa only [← koenigsIFS_comp hε hf] using (koenigsIFS hε hf).mapsTo_comp (List.replicate n 0)
+ 
+ private theorem mapsTo_iterate_closure (n : ℕ) :
+     MapsTo (f^[n]) (closure (nbhd ε)) (closure (nbhd ε)) := by
+-  rw [← koenigsIFS_comp hε hf]
+-  exact (koenigsIFS hε hf).mapsTo_comp_closure _
++  simpa only [← koenigsIFS_comp hε hf] using
++    (koenigsIFS hε hf).mapsTo_comp_closure (List.replicate n 0)
+ 
+ private theorem differentiableAt_iterate (n : ℕ) {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
+     DifferentiableAt ℂ (f^[n]) z := by
+-  rw [← koenigsIFS_comp hε hf]
+-  exact (koenigsIFS hε hf).differentiableAt_comp _ hz
++  simpa only [← koenigsIFS_comp hε hf] using
++    (koenigsIFS hε hf).differentiableAt_comp (List.replicate n 0) hz
+ 
+ private theorem differentiableOn_deriv_iterate (n : ℕ) :
+     DifferentiableOn ℂ (deriv (f^[n])) (nbhd ε) := by
+@@ -128,7 +127,7 @@ private theorem dualTerm_koenigsIFS (k : ℕ) (z : ℂ) :
+   simp only [Word.take_inf, List.ofFn_const, List.reverse_replicate, koenigsIFS_comp hε hf,
+     IFS.nonlin, koenigsIFS_f, hatHTerm]
+ 
+-private theorem hatH_eq_dualProj : hatH f = (koenigsIFS hε hf).dualProj (.inf fun _ => 0) := by
++theorem hatH_eq_dualProj : hatH f = (koenigsIFS hε hf).dualProj (.inf fun _ => 0) := by
+   funext z
+   simp only [hatH, IFS.dualProj, dualTerm_koenigsIFS hε hf, hatHTerm]
+ 
+@@ -151,12 +150,10 @@ private theorem deriv_deriv_iterate (n : ℕ) {z : ℂ} (hz : z ∈ closure (nbh
+     ring
+ 
+ theorem differentiableOn_hatH : DifferentiableOn ℂ (hatH f) (nbhd ε) := by
+-  rw [hatH_eq_dualProj hε hf]
+-  exact (koenigsIFS hε hf).differentiableOn_dualProj _
++  simpa only [hatH_eq_dualProj hε hf] using (koenigsIFS hε hf).differentiableOn_dualProj _
+ 
+ theorem im_hatH_ofReal {t : ℝ} (ht : (t : ℂ) ∈ nbhd ε) : (hatH f t).im = 0 := by
+-  rw [hatH_eq_dualProj hε hf]
+-  exact (koenigsIFS hε hf).im_dualProj_ofReal _ ht
++  simpa only [hatH_eq_dualProj hε hf] using (koenigsIFS hε hf).im_dualProj_ofReal _ ht
+ 
+ /-! ## The approximants `ĝ_n` and their derivatives `P_n` -/
+ 
+@@ -220,8 +217,7 @@ private theorem exists_norm_ratio_sub_one_le : ∃ A, 0 ≤ A ∧ ∀ k, ∀ z 
+     refine h.trans (mul_le_mul_of_nonneg_left ?_ (pow_nonneg hc0 _))
+     exact (norm_sub_le _ _).trans (add_le_add (hR z hz) (hR q hq))
+   rw [div_sub_one hne, norm_div, div_le_iff₀ hlam]
+-  calc ‖deriv f (f^[k] z) - deriv f q‖ ≤ L * (c ^ k * (R + R)) :=
+-        h1.trans (mul_le_mul_of_nonneg_left h2 hL0)
++  calc _ ≤ L * (c ^ k * (R + R)) := h1.trans (mul_le_mul_of_nonneg_left h2 hL0)
+     _ = L * (R + R) / ‖deriv f q‖ * c ^ k * ‖deriv f q‖ := by field_simp
+ 
+ /-- The `P_n` are uniformly bounded on `B_ε`. -/
+@@ -237,15 +233,13 @@ private theorem exists_norm_PSeq_le : ∃ B, 0 ≤ B ∧ ∀ n, ∀ z ∈ nbhd 
+       ∏ k ∈ Finset.range n, (1 + b k) :=
+     Finset.prod_congr rfl fun k _ => by simp [hb]
+   have hsum : ∑ k ∈ Finset.range n, ‖b k‖ ≤ A / (1 - c) := by
+-    calc ∑ k ∈ Finset.range n, ‖b k‖ ≤ ∑ k ∈ Finset.range n, A * c ^ k :=
+-          Finset.sum_le_sum fun k _ => hA k z hz
++    calc _ ≤ ∑ k ∈ Finset.range n, A * c ^ k := Finset.sum_le_sum fun k _ => hA k z hz
+       _ = A * ∑ k ∈ Finset.Ico 0 n, c ^ k := by rw [Finset.mul_sum, Finset.range_eq_Ico]
+       _ ≤ A * (c ^ 0 / (1 - c)) :=
+           mul_le_mul_of_nonneg_left (geom_sum_Ico_le_of_lt_one hc0 hc1) hA0
+       _ = A / (1 - c) := by rw [pow_zero]; ring
+   rw [hprod]
+-  calc ‖∏ k ∈ Finset.range n, (1 + b k)‖
+-      ≤ ‖∏ k ∈ Finset.range n, (1 + b k) - 1‖ + ‖(1 : ℂ)‖ := norm_le_norm_sub_add _ _
++  calc _ ≤ ‖∏ k ∈ Finset.range n, (1 + b k) - 1‖ + ‖(1 : ℂ)‖ := norm_le_norm_sub_add _ _
+     _ ≤ (Real.exp (∑ k ∈ Finset.range n, ‖b k‖) - 1) + 1 := by
+         rw [norm_one]
+         gcongr
+@@ -351,7 +345,7 @@ private theorem exists_partialH_bound : ∃ B, ∀ n, ∀ z ∈ nbhd ε, ‖part
+   obtain ⟨C, hC0, hC⟩ := (koenigsIFS hε hf).exists_dualTerm_bound
+   let c := (koenigsIFS hε hf).cmax
+   refine ⟨C / (1 - c), fun n z hz => ?_⟩
+-  calc ‖partialH f n z‖ ≤ ∑ k ∈ Finset.range n, ‖hatHTerm f k z‖ := norm_sum_le _ _
++  calc _ ≤ ∑ k ∈ Finset.range n, ‖hatHTerm f k z‖ := norm_sum_le _ _
+     _ ≤ ∑ k ∈ Finset.range n, C * c ^ k := Finset.sum_le_sum fun k hk => by
+       rw [← dualTerm_koenigsIFS hε hf k z]
+       exact hC (.inf fun _ => 0) k z (subset_closure hz)
+diff --git a/AnalyticESC/Conjugation/Linearisation.lean b/AnalyticESC/Conjugation/Linearisation.lean
+index b83e5dc68..52c2bf703 100644
+--- a/AnalyticESC/Conjugation/Linearisation.lean
++++ b/AnalyticESC/Conjugation/Linearisation.lean
+@@ -28,6 +28,48 @@ private theorem eq_of_hasDerivWithinAt_zero_I {u : ℝ → ℝ}
+       (uniqueDiffOn_Icc zero_lt_one z (Ico_subset_Icc_self hz))
+   rw [h x hx, h y hy]
+ 
++/-- A solution of the linearisation ODE is an affine function of Koenigs' map. -/
++theorem eq_add_mul_koenigs_of (hε : 0 < ε) (hf : InClass ε f) {p : ℝ} (hp : p ∈ I)
++    (hfp : f p = p) {g g' : ℝ → ℝ} (hg : ∀ x ∈ I, HasDerivWithinAt g (g' x) I x)
++    (hg' : DifferentiableOn ℝ g' I)
++    (hODE : ∀ x ∈ I, derivWithin g' I x = (hatH f x).re * g' x) :
++    ∀ x ∈ I, g x = g p + g' p * (koenigs f p x).re := by
++  have hmem : ∀ {x : ℝ}, x ∈ I → (x : ℂ) ∈ nbhd ε := fun hx => ofReal_mem_nbhd hε hx
++  have hkd : DifferentiableOn ℂ (koenigs f p) (nbhd ε) := differentiableOn_koenigs hε hf hp hfp
++  have hkre : ∀ x ∈ I, HasDerivAt (fun t : ℝ => (koenigs f p t).re)
++      (deriv (koenigs f p) x).re x := fun x hx => hasDerivAt_re_ofReal
++    (hkd.differentiableAt ((isOpen_nbhd ε).mem_nhds (hmem hx)))
++  set G : ℝ → ℝ := fun t => (deriv (koenigs f p) t).re with hG
++  set c := g' p
++  have hGpos : ∀ x ∈ I, 0 < G x := fun x hx => (deriv_koenigs_ofReal hε hf hp hfp hx).2
++  have hGp : G p = 1 := by simp [hG, deriv_koenigs_self hε hf hp hfp]
++  have hGderiv : ∀ x ∈ I, HasDerivAt G ((hatH f x).re * G x) x := by
++    intro x hx
++    have h := hasDerivAt_re_ofReal ((hkd.deriv (isOpen_nbhd ε)).differentiableAt
++      ((isOpen_nbhd ε).mem_nhds (hmem hx)))
++    rwa [deriv_deriv_koenigs hε hf hp hfp (hmem hx), Complex.mul_re,
++      (deriv_koenigs_ofReal hε hf hp hfp hx).1, mul_zero, sub_zero] at h
++  have hu : ∀ x ∈ I, HasDerivWithinAt (fun t => g' t / G t) 0 I x := by
++    intro x hx
++    have h1 : HasDerivWithinAt g' ((hatH f x).re * g' x) I x := by
++      rw [← hODE x hx]
++      exact (hg' x hx).hasDerivWithinAt
++    convert h1.div (hGderiv x hx).hasDerivWithinAt (hGpos x hx).ne' using 1
++    ring
++  have hg'eq : ∀ x ∈ I, g' x = c * G x := by
++    intro x hx
++    have h := eq_of_hasDerivWithinAt_zero_I hu hx hp
++    rw [hGp, div_one, div_eq_iff (hGpos x hx).ne'] at h
++    exact h
++  have hv : ∀ x ∈ I, HasDerivWithinAt (fun t => g t - c * (koenigs f p t).re) 0 I x := by
++    intro x hx
++    have h := (hg x hx).sub ((hkre x hx).hasDerivWithinAt.const_mul c)
++    rwa [hg'eq x hx, sub_self] at h
++  intro x hx
++  have h := eq_of_hasDerivWithinAt_zero_I hv hx hp
++  rw [koenigs_self hε hf hp hfp, Complex.zero_re, mul_zero, sub_zero] at h
++  linarith
++
+ /-- A map of the class has a unique fixed point in `[0,1]`. -/
+ theorem existsUnique_fixedPoint (hε : 0 < ε) (hf : InClass ε f) :
+     ∃! p : ℝ, p ∈ I ∧ f p = p := by
+@@ -103,40 +145,8 @@ theorem lemma_5_1 (hε : 0 < ε) (hf : InClass ε f) {p : ℝ} (hp : p ∈ I) (h
+     · simp [koenigs_self hε hf hp hfp]
+     · rw [hderiv]
+       simp [deriv_koenigs_self hε hf hp hfp]
+-  · -- `G = Re ĝ'` is positive on `I` with `G' = Re Ĥ · G`
+-    set G : ℝ → ℝ := fun t => (deriv (koenigs f p) t).re with hG
+-    set c := derivWithin g I p
+-    have hGpos : ∀ x ∈ I, 0 < G x := fun x hx => (deriv_koenigs_ofReal hε hf hp hfp hx).2
+-    have hGp : G p = 1 := by simp [hG, deriv_koenigs_self hε hf hp hfp]
+-    have hGderiv : ∀ x ∈ I, HasDerivAt G ((hatH f x).re * G x) x := by
+-      intro x hx
+-      have h := hasDerivAt_re_ofReal ((hkd.deriv (isOpen_nbhd ε)).differentiableAt
+-        ((isOpen_nbhd ε).mem_nhds (hmem hx)))
+-      rwa [deriv_deriv_koenigs hε hf hp hfp (hmem hx), Complex.mul_re,
+-        (deriv_koenigs_ofReal hε hf hp hfp hx).1, mul_zero, sub_zero] at h
+-    -- `g' / G` has zero derivative, so `g' = c G` on `I`
+-    have hu : ∀ x ∈ I, HasDerivWithinAt (fun t => derivWithin g I t / G t) 0 I x := by
+-      intro x hx
+-      have h1 : HasDerivWithinAt (derivWithin g I) ((hatH f x).re * derivWithin g I x) I x := by
+-        rw [← hODE x hx]
+-        exact (hg' x hx).hasDerivWithinAt
+-      convert h1.div (hGderiv x hx).hasDerivWithinAt (hGpos x hx).ne' using 1
+-      ring
+-    have hg'eq : ∀ x ∈ I, derivWithin g I x = c * G x := by
+-      intro x hx
+-      have h := eq_of_hasDerivWithinAt_zero_I hu hx hp
+-      rw [hGp, div_one, div_eq_iff (hGpos x hx).ne'] at h
+-      exact h
+-    -- `g - c Re ĝ` has zero derivative, so `g = g(p) + c Re ĝ` on `I`
+-    have hv : ∀ x ∈ I, HasDerivWithinAt (fun t => g t - c * (koenigs f p t).re) 0 I x := by
+-      intro x hx
+-      have h := (hg x hx).hasDerivWithinAt.sub ((hkre x hx).hasDerivWithinAt.const_mul c)
+-      rwa [hg'eq x hx, sub_self] at h
+-    have hgeq : ∀ x ∈ I, g x = g p + c * (koenigs f p x).re := by
+-      intro x hx
+-      have h := eq_of_hasDerivWithinAt_zero_I hv hx hp
+-      rw [koenigs_self hε hf hp hfp, Complex.zero_re, mul_zero, sub_zero] at h
+-      linarith
++  · have hgeq := eq_add_mul_koenigs_of hε hf hp hfp (g' := derivWithin g I)
++      (fun x hx => (hg x hx).hasDerivWithinAt) hg' hODE
+     -- `ĝ ∘ f = f'(p) ĝ`
+     have hy : (f x).re ∈ I := hf.re_mem_I x hx
+     have hfx : (((f x).re : ℝ) : ℂ) = f x := Complex.ext (by simp)
+diff --git a/AnalyticESC/Conjugation/PeriodicPoints.lean b/AnalyticESC/Conjugation/PeriodicPoints.lean
+index 8d3743462..501e0930a 100644
+--- a/AnalyticESC/Conjugation/PeriodicPoints.lean
++++ b/AnalyticESC/Conjugation/PeriodicPoints.lean
+@@ -45,24 +45,6 @@ private theorem periodic_eqOn_zero_of_infinite {u : ℝ → ℝ} (hu : AnalyticO
+   exact hu.eqOn_zero_of_preconnected_of_frequently_eq_zero isPreconnected_Icc hx₀
+     ((accPt_iff_frequently_nhdsNE.1 hacc).mono fun z hz => hz.2)
+ 
+-/-- Maps that agree on `[0,1]` and have derivatives at a point of `[0,1]` have the same
+-derivative there. -/
+-private theorem periodic_hasDerivAt_unique {u v : ℝ → ℝ} {a b x : ℝ} (hx : x ∈ I)
+-    (hu : HasDerivAt u a x) (hv : HasDerivAt v b x) (huv : ∀ y ∈ I, u y = v y) : a = b :=
+-  (uniqueDiffOn_Icc zero_lt_one x hx).eq_deriv _ hu.hasDerivWithinAt
+-    (hv.hasDerivWithinAt.congr huv (huv x hx))
+-
+-/-- At points of `[0,1]`, the derivative of a map of the class is real, nonzero and of modulus
+-less than one. -/
+-private theorem periodic_re_deriv_ne_zero_abs_lt_one {ε : ℝ} {f : ℂ → ℂ} (hε : 0 < ε)
+-    (hf : InClass ε f) {x : ℝ} (hx : x ∈ I) :
+-    (deriv f x).re ≠ 0 ∧ |(deriv f x).re| < 1 := by
+-  have hcl : (x : ℂ) ∈ closure (nbhd ε) := subset_closure (ofReal_mem_nbhd hε hx)
+-  have him : (deriv f x).im = 0 := im_deriv_eq_zero (isOpen_nbhd _) hf.differentiableOn
+-    hf.im_eq_zero (ofReal_mem_nbhd (by linarith) hx)
+-  exact ⟨fun h => hf.deriv_ne_zero _ hcl (Complex.ext h him),
+-    (Complex.abs_re_le_norm _).trans_lt (hf.norm_deriv_lt_one _ hcl)⟩
+-
+ namespace IFS
+ 
+ variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
+@@ -75,14 +57,6 @@ private theorem periodic_re_comp_cons (k : Fin N) (w : List (Fin N)) {x : ℝ} (
+   show (Φ.f k (Φ.comp w x)).re = (Φ.f k ((Φ.comp w x).re : ℂ)).re
+   rw [← Φ.comp_ofReal w hx]
+ 
+-/-- `|f_w(x) - f_w(y)| ≤ c_max^{|w|} |x - y|` on `[0,1]`. -/
+-private theorem periodic_abs_re_comp_sub_le (w : List (Fin N)) {x y : ℝ} (hx : x ∈ I)
+-    (hy : y ∈ I) : |(Φ.comp w x).re - (Φ.comp w y).re| ≤ Φ.cmax ^ w.length * |x - y| := by
+-  have h := Φ.norm_comp_sub_le w (ofReal_mem_nbhd Φ.ε_pos hx) (ofReal_mem_nbhd Φ.ε_pos hy)
+-  rw [← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs] at h
+-  rw [← Complex.sub_re]
+-  exact (Complex.abs_re_le_norm _).trans h
+-
+ /-- `π(i) = lim f_{i₁ ⋯ i_{mₙ}}(zₙ)` for points `zₙ ∈ [0,1]` and lengths `mₙ → ∞`. -/
+ theorem tendsto_re_comp_natProj (i : ℕ → Fin N) {m : ℕ → ℕ} (hm : Tendsto m atTop atTop)
+     {z : ℕ → ℝ} (hz : ∀ n, z n ∈ I) :
+@@ -91,7 +65,7 @@ theorem tendsto_re_comp_natProj (i : ℕ → Fin N) {m : ℕ → ℕ} (hm : Tend
+   have h0 : (0 : ℝ) ∈ I := left_mem_Icc.2 zero_le_one
+   refine ((Φ.tendsto_natProj i).comp hm).congr_dist (squeeze_zero (fun n => dist_nonneg)
+     (fun n => ?_) ((tendsto_pow_atTop_nhds_zero_of_lt_one Φ.cmax_nonneg Φ.cmax_lt_one).comp hm))
+-  have h := Φ.periodic_abs_re_comp_sub_le (List.ofFn fun k : Fin (m n) => i k) h0 (hz n)
++  have h := Φ.exact_abs_re_comp_sub_le (List.ofFn fun k : Fin (m n) => i k) h0 (hz n)
+   rw [List.length_ofFn, Complex.ofReal_zero] at h
+   have h1 : |0 - z n| ≤ 1 := by
+     rw [zero_sub, abs_neg, abs_le]
+@@ -134,13 +108,13 @@ theorem deriv_ne_zero_of_conj_of_nonsingleton (hN : 0 < N) (hnd : ¬ ∃ x, Φ.a
+     have hFx : Φ.realMaps k x ∈ I := (Φ.inClass k).re_mem_I x hx
+     have hd : HasDerivAt (Φ.realMaps k) (deriv (Φ.f k) x).re x :=
+       hasDerivAt_re_ofReal (Φ.differentiableAt_f k (subset_closure (ofReal_mem_nbhd Φ.ε_pos hx)))
+-    have hid := periodic_hasDerivAt_unique hx ((hga _ hFx).differentiableAt.hasDerivAt.comp x hd)
++    have hid := hasDerivAt_unique_of_eqOn_I hx ((hga _ hFx).differentiableAt.hasDerivAt.comp x hd)
+       (((hga x hx).differentiableAt.hasDerivAt.const_mul (lam k)).add_const (t k)) (hconj k)
+     refine ⟨hFx, ?_⟩
+     simp only [mem_preimage, mem_singleton_iff] at hx0 ⊢
+     rw [hx0, mul_zero] at hid
+     exact (mul_eq_zero.1 hid).resolve_right
+-      (periodic_re_deriv_ne_zero_abs_lt_one Φ.ε_pos (Φ.inClass k) hx).1
++      (char_re_deriv_ne_zero_abs_lt_one Φ.ε_pos (Φ.inClass k) hx).1
+   -- hence so does every composition `f_w`
+   have hinvw : ∀ w : List (Fin N), MapsTo (fun x : ℝ => (Φ.comp w x).re) Z Z := by
+     intro w
+@@ -199,12 +173,12 @@ theorem deriv_deriv_div_deriv_eq_of_fixedPoint {g : ℝ → ℝ} (hg : AnalyticO
+     (hg y hy).deriv.differentiableAt.hasDerivAt
+   -- `g'(f_w(x)) f_w'(x) = λ g'(x)` on `[0,1]`
+   have hA : ∀ x ∈ I, deriv g (F x) * F₁ x = a * deriv g x := fun x hx =>
+-    periodic_hasDerivAt_unique hx ((hgd _ (hFI x hx)).comp x (hFd x hx))
++    hasDerivAt_unique_of_eqOn_I hx ((hgd _ (hFI x hx)).comp x (hFd x hx))
+       (((hgd x hx).const_mul a).add_const b) hconj
+   -- `g''(f_w(p)) f_w'(p)² + g'(f_w(p)) f_w''(p) = λ g''(p)`
+   have hB : deriv (deriv g) (F p) * F₁ p * F₁ p + deriv g (F p) * F₂ p =
+       a * deriv (deriv g) p :=
+-    periodic_hasDerivAt_unique hp (((hg₁d _ (hFI p hp)).comp p (hFd p hp)).mul (hF₁d p hp))
++    hasDerivAt_unique_of_eqOn_I hp (((hg₁d _ (hFI p hp)).comp p (hFd p hp)).mul (hF₁d p hp))
+       ((hg₁d p hp).const_mul a) hA
+   have hFp : F p = p := by
+     show (Φ.comp w p).re = p
+@@ -227,7 +201,7 @@ theorem deriv_deriv_div_deriv_eq_of_fixedPoint {g : ℝ → ℝ} (hg : AnalyticO
+   have hne : F₁ p ≠ 0 := fun h0 =>
+     Φ.deriv_comp_ne_zero w hcl (by rw [h₁, h0, Complex.ofReal_zero])
+   have hlt : |F₁ p| < 1 :=
+-    calc |F₁ p| ≤ ‖deriv (Φ.comp w) p‖ := Complex.abs_re_le_norm _
++    calc _ ≤ ‖deriv (Φ.comp w) p‖ := Complex.abs_re_le_norm _
+       _ ≤ Φ.cmax ^ w.length := Φ.norm_deriv_comp_le w hcl
+       _ < 1 := pow_lt_one₀ Φ.cmax_nonneg Φ.cmax_lt_one (List.length_pos_iff.2 hw).ne'
+   have hne' : 1 - F₁ p ≠ 0 := fun h0 => by
+@@ -406,8 +380,8 @@ theorem conjSelfSimilar_of_dualProj_eq
+   -- the second part of Lemma 5.1 for each `f_k`
+   refine ⟨φ, ⟨analyticOnNhd_re_ofReal hε hGd, hinj⟩, fun k => (deriv (Φ.f k) (p k)).re,
+     fun k => φ (p k) * (1 - (deriv (Φ.f k) (p k)).re), fun k =>
+-      ⟨(periodic_re_deriv_ne_zero_abs_lt_one hε (Φ.inClass k) (hp k)).1,
+-        (periodic_re_deriv_ne_zero_abs_lt_one hε (Φ.inClass k) (hp k)).2, ?_⟩⟩
++      ⟨(char_re_deriv_ne_zero_abs_lt_one hε (Φ.inClass k) (hp k)).1,
++        (char_re_deriv_ne_zero_abs_lt_one hε (Φ.inClass k) (hp k)).2, ?_⟩⟩
+   exact (lemma_5_1 hε (Φ.inClass k) (hp k) (hfp k)).2 φ
+     (fun x hx => (hφd x hx).differentiableAt.differentiableWithinAt) hφwd (hodek k)
+ 
+diff --git a/AnalyticESC/Conjugation/Uniqueness.lean b/AnalyticESC/Conjugation/Uniqueness.lean
+index c26e0cf4d..482509b14 100644
+--- a/AnalyticESC/Conjugation/Uniqueness.lean
++++ b/AnalyticESC/Conjugation/Uniqueness.lean
+@@ -21,46 +21,13 @@ variable {ε : ℝ} {f : ℂ → ℂ}
+ 
+ /-! ## Auxiliary lemmas -/
+ 
+-/-- The system consisting of the single map `f`. -/
+-private def uniqIFS {ε : ℝ} {f : ℂ → ℂ} (hε : 0 < ε) (hf : InClass ε f) : IFS 1 ε :=
+-  ⟨fun _ => f, hε, fun _ => hf⟩
+-
+-private theorem uniqIFS_comp (hε : 0 < ε) (hf : InClass ε f) (n : ℕ) :
+-    (uniqIFS hε hf).comp (List.replicate n 0) = f^[n] := by
+-  induction n with
+-  | zero => rfl
+-  | succ n ih =>
+-    rw [List.replicate_succ, IFS.comp_cons, ih, Function.iterate_succ']
+-    rfl
+-
+-/-- `Ĥ_f` is the dual natural projection of the constant word for the system `{f}`. -/
+-private theorem hatH_eq_dualProj_uniq (hε : 0 < ε) (hf : InClass ε f) :
+-    hatH f = (uniqIFS hε hf).dualProj (.inf fun _ => 0) := by
+-  funext z
+-  simp only [hatH, IFS.dualProj]
+-  refine tsum_congr fun k => ?_
+-  rw [(uniqIFS hε hf).dualTerm_of_get?_eq_some (Word.get?_inf _ k)]
+-  simp only [Word.take_inf, List.ofFn_const, List.reverse_replicate, uniqIFS_comp hε hf,
+-    IFS.nonlin]
+-  rfl
+-
+ /-- Maps that agree on `[0,1]` and are differentiable at `x ∈ [0,1]` have the same derivative
+ at `x`. -/
+-private theorem hasDerivAt_unique_of_eqOn_I {u v : ℝ → ℝ} {a b x : ℝ} (hx : x ∈ I)
++theorem hasDerivAt_unique_of_eqOn_I {u v : ℝ → ℝ} {a b x : ℝ} (hx : x ∈ I)
+     (hu : HasDerivAt u a x) (hv : HasDerivAt v b x) (huv : ∀ y ∈ I, u y = v y) : a = b :=
+   (uniqueDiffOn_Icc zero_lt_one x hx).eq_deriv _ hu.hasDerivWithinAt
+     (hv.hasDerivWithinAt.congr huv (huv x hx))
+ 
+-/-- A function with zero derivative within `[0,1]` at every point of `[0,1]` is constant there. -/
+-private theorem eq_of_hasDerivWithinAt_zero_I_uniq {u : ℝ → ℝ}
+-    (hu : ∀ x ∈ I, HasDerivWithinAt u 0 I x) {x y : ℝ} (hx : x ∈ I) (hy : y ∈ I) :
+-    u x = u y := by
+-  have hdiff : DifferentiableOn ℝ u I := fun z hz => (hu z hz).differentiableWithinAt
+-  have h := constant_of_derivWithin_zero hdiff fun z hz =>
+-    (hu z (Ico_subset_Icc_self hz)).derivWithin
+-      (uniqueDiffOn_Icc zero_lt_one z (Ico_subset_Icc_self hz))
+-  rw [h x hx, h y hy]
+-
+ /-- A complex number with zero imaginary part is real. -/
+ private theorem eq_ofReal_re_uniq {w : ℂ} (h : w.im = 0) : w = (w.re : ℂ) :=
+   Complex.ext (by simp) (by simp [h])
+@@ -84,9 +51,9 @@ theorem hatH_eq_add (hε : 0 < ε) (hf : InClass ε f) {z : ℂ} (hz : z ∈ nbh
+     congr 1
+     funext n
+     exact Subsingleton.elim _ _
+-  have h := (uniqIFS hε hf).dualProj_prepend [0] (.inf fun _ => 0) (subset_closure hz)
++  have h := (koenigsIFS hε hf).dualProj_prepend [0] (.inf fun _ => 0) (subset_closure hz)
+   rw [hw, IFS.dualProj_singleton] at h
+-  rw [hatH_eq_dualProj_uniq hε hf, h]
++  rw [hatH_eq_dualProj hε hf, h]
+   rfl
+ 
+ /-- Uniqueness of linearisations: if `φ` is analytic near `[0,1]` with `φ' ≠ 0` there and
+@@ -183,46 +150,12 @@ theorem eq_add_mul_koenigs (hε : 0 < ε) (hf : InClass ε f) {p : ℝ} (hp : p
+     {φ : ℝ → ℝ} (hφ : AnalyticOnNhd ℝ φ I)
+     (hode : ∀ x ∈ I, deriv (deriv φ) x = (hatH f x).re * deriv φ x) :
+     ∀ x ∈ I, φ x = φ p + deriv φ p * (koenigs f p x).re := by
+-  have hmem : ∀ {x : ℝ}, x ∈ I → (x : ℂ) ∈ nbhd ε := fun hx => ofReal_mem_nbhd hε hx
+-  have hkd : DifferentiableOn ℂ (koenigs f p) (nbhd ε) := differentiableOn_koenigs hε hf hp hfp
+-  have hkat : ∀ {x : ℝ}, x ∈ I → DifferentiableAt ℂ (koenigs f p) x := fun hx =>
+-    hkd.differentiableAt ((isOpen_nbhd ε).mem_nhds (hmem hx))
+-  have hkre : ∀ x ∈ I, HasDerivAt (fun t : ℝ => (koenigs f p t).re)
+-      (deriv (koenigs f p) x).re x := fun x hx => hasDerivAt_re_ofReal (hkat hx)
+-  -- `G = Re ĝ'` is positive on `I` with `G' = Re Ĥ · G`
+-  set G : ℝ → ℝ := fun t => (deriv (koenigs f p) t).re with hG
+-  set c := deriv φ p
+-  have hGpos : ∀ x ∈ I, 0 < G x := fun x hx => (deriv_koenigs_ofReal hε hf hp hfp hx).2
+-  have hGp : G p = 1 := by simp [hG, deriv_koenigs_self hε hf hp hfp]
+-  have hGderiv : ∀ x ∈ I, HasDerivAt G ((hatH f x).re * G x) x := by
+-    intro x hx
+-    have h := hasDerivAt_re_ofReal ((hkd.deriv (isOpen_nbhd ε)).differentiableAt
+-      ((isOpen_nbhd ε).mem_nhds (hmem hx)))
+-    rwa [deriv_deriv_koenigs hε hf hp hfp (hmem hx), Complex.mul_re,
+-      (deriv_koenigs_ofReal hε hf hp hfp hx).1, mul_zero, sub_zero] at h
+-  -- `φ' / G` has zero derivative, so `φ' = c G` on `I`
+-  have hu : ∀ x ∈ I, HasDerivWithinAt (fun t => deriv φ t / G t) 0 I x := by
+-    intro x hx
+-    have h1 : HasDerivAt (deriv φ) ((hatH f x).re * deriv φ x) x := by
+-      rw [← hode x hx]
+-      exact (hφ x hx).deriv.differentiableAt.hasDerivAt
+-    convert (h1.div (hGderiv x hx) (hGpos x hx).ne').hasDerivWithinAt using 1
+-    ring
+-  have hφ'eq : ∀ x ∈ I, deriv φ x = c * G x := by
+-    intro x hx
+-    have h := eq_of_hasDerivWithinAt_zero_I_uniq hu hx hp
+-    rw [hGp, div_one, div_eq_iff (hGpos x hx).ne'] at h
+-    exact h
+-  -- `φ - c Re ĝ` has zero derivative, so `φ = φ(p) + c Re ĝ` on `I`
+-  have hv : ∀ x ∈ I, HasDerivWithinAt (fun t => φ t - c * (koenigs f p t).re) 0 I x := by
+-    intro x hx
+-    have h := ((hφ x hx).differentiableAt.hasDerivAt.sub
+-      ((hkre x hx).const_mul c)).hasDerivWithinAt (s := I)
+-    rwa [hφ'eq x hx, sub_self] at h
++  apply eq_add_mul_koenigs_of hε hf hp hfp (g' := deriv φ)
++    (fun x hx => (hφ x hx).differentiableAt.hasDerivAt.hasDerivWithinAt)
++    (fun x hx => (hφ x hx).deriv.differentiableAt.differentiableWithinAt)
+   intro x hx
+-  have h := eq_of_hasDerivWithinAt_zero_I_uniq hv hx hp
+-  rw [koenigs_self hε hf hp hfp, Complex.zero_re, mul_zero, sub_zero] at h
+-  linarith
++  rw [(hφ x hx).deriv.differentiableAt.derivWithin (uniqueDiffOn_Icc zero_lt_one x hx)]
++  exact hode x hx
+ 
+ /-- `Ĥ_f` depends only on `f` on `[0,1]`. -/
+ theorem hatH_eq_of_eqOn_I {ε' : ℝ} {g : ℂ → ℂ} (hε : 0 < ε) (hf : InClass ε f) (hε' : 0 < ε')
+diff --git a/AnalyticESC/Dimension/Example.lean b/AnalyticESC/Dimension/Example.lean
+index a7515701a..38b77ee22 100644
+--- a/AnalyticESC/Dimension/Example.lean
++++ b/AnalyticESC/Dimension/Example.lean
+@@ -31,8 +31,7 @@ private theorem exdim_entropy_lt (hN : 0 < N) (hc : N * Φ.cmax < 1) {p : Fin N
+     have hpi := hp.1 i
+     have hl := Real.log_le_sub_one_of_pos (div_pos hc0 hpi)
+     rw [Real.log_div hc0.ne' hpi.ne'] at hl
+-    calc p i * Real.log Φ.cmax - p i * Real.log (p i)
+-        = p i * (Real.log Φ.cmax - Real.log (p i)) := by ring
++    calc _ = p i * (Real.log Φ.cmax - Real.log (p i)) := by ring
+       _ ≤ p i * (Φ.cmax / p i - 1) := mul_le_mul_of_nonneg_left hl hpi.le
+       _ = Φ.cmax - p i := by field_simp
+   have hsum := Finset.sum_le_sum fun i (_ : i ∈ Finset.univ) => h i
+@@ -52,13 +51,13 @@ private theorem exdim_lt_one (hN : 0 < N) (hc : N * Φ.cmax < 1) {s : ℝ}
+     (pow_pos hcmin _).trans_le (Φ.cmin_pow_le_supDeriv w)
+   have hle : ∀ n, Φ.pressureSum s n ≤ (N * Φ.cmax) ^ n := by
+     intro n
+-    calc Φ.pressureSum s n ≤ ∑ _w : Fin n → Fin N, Φ.cmax ^ n := by
++    calc _ ≤ ∑ _w : Fin n → Fin N, Φ.cmax ^ n := by
+           refine Finset.sum_le_sum fun w _ => ?_
+           have h := Φ.supDeriv_le (List.ofFn w)
+           rw [List.length_ofFn] at h
+           have h1' : Φ.supDeriv (List.ofFn w) ≤ 1 :=
+             h.trans (pow_le_one₀ hc0.le Φ.cmax_lt_one.le)
+-          calc Φ.supDeriv (List.ofFn w) ^ s ≤ Φ.supDeriv (List.ofFn w) ^ (1 : ℝ) :=
++          calc _ ≤ Φ.supDeriv (List.ofFn w) ^ (1 : ℝ) :=
+                 Real.rpow_le_rpow_of_exponent_ge (hpos _) h1' h1
+             _ ≤ Φ.cmax ^ n := by rwa [Real.rpow_one]
+       _ = (N * Φ.cmax) ^ n := by simp [mul_pow]
+@@ -69,8 +68,7 @@ private theorem exdim_lt_one (hN : 0 < N) (hc : N * Φ.cmax < 1) {s : ℝ}
+     intro n hn
+     have hn' : (0 : ℝ) < n := by exact_mod_cast hn
+     rw [div_le_iff₀ hn']
+-    calc Real.log (Φ.pressureSum s n) ≤ Real.log ((N * Φ.cmax) ^ n) :=
+-          Real.log_le_log (hP n) (hle n)
++    calc _ ≤ Real.log ((N * Φ.cmax) ^ n) := Real.log_le_log (hP n) (hle n)
+       _ = Real.log (N * Φ.cmax) * n := by rw [Real.log_pow]; ring
+   have h0 : (0 : ℝ) ≤ Real.log (N * Φ.cmax) :=
+     le_of_tendsto hs (eventually_atTop.2 ⟨1, hb⟩)
+diff --git a/AnalyticESC/Dimension/Lq.lean b/AnalyticESC/Dimension/Lq.lean
+index 9909ccbdd..fcf8e3bc7 100644
+--- a/AnalyticESC/Dimension/Lq.lean
++++ b/AnalyticESC/Dimension/Lq.lean
+@@ -62,7 +62,7 @@ private theorem lq_summable_and_bounds (μ : Measure ℝ) [IsProbabilityMeasure
+   have hsum : Summable fun k : ℤ => μ.real (Ico (k * r) ((k + 1) * r)) ^ q :=
+     Summable.of_nonneg_of_le (fun _ => by positivity) hle hS.summable
+   refine ⟨hsum, tsum_nonneg fun _ => by positivity, ?_⟩
+-  calc lqSum μ q r ≤ ∑' k : ℤ, μ.real (Ico (k * r) ((k + 1) * r)) :=
++  calc _ ≤ ∑' k : ℤ, μ.real (Ico (k * r) ((k + 1) * r)) :=
+         hsum.tsum_le_tsum hle hS.summable
+     _ = 1 := hS.tsum_eq
+ 
+@@ -88,7 +88,7 @@ private theorem lqRatio_le (μ : Measure ℝ) [IsProbabilityMeasure μ] (h0 : μ
+     · exact Or.inl hx0
+     · exact Or.inr ⟨not_lt.1 hx0, by linarith⟩
+   have hmI : m ≤ μ.real (Ico 0 r) :=
+-    calc m ≤ μ.real (Iio 0 ∪ Ico 0 r) := measureReal_mono hsub
++    calc _ ≤ μ.real (Iio 0 ∪ Ico 0 r) := measureReal_mono hsub
+       _ ≤ μ.real (Iio 0) + μ.real (Ico 0 r) := measureReal_union_le _ _
+       _ = μ.real (Ico 0 r) := by rw [measureReal_def, h0, ENNReal.toReal_zero, zero_add]
+   have hterm : μ.real (Ico 0 r) ^ q ≤ lqSum μ q r := by
+@@ -102,6 +102,20 @@ private theorem lqRatio_le (μ : Measure ℝ) [IsProbabilityMeasure μ] (h0 : μ
+     exact Real.log_le_log hpos hmq
+   exact div_le_div_of_nonpos_of_le (Real.log_neg hr0 hr1).le hlog
+ 
++private theorem tendsto_half_nhdsGT : Tendsto (fun r : ℝ => r / 2) (𝓝[>] 0) (𝓝[>] 0) := by
++  refine tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _ ?_ ?_
++  · exact ((continuous_id.div_const 2).tendsto' 0 0 (by simp)).mono_left nhdsWithin_le_nhds
++  · exact eventually_mem_nhdsWithin.mono fun r hr => half_pos hr
++
++private theorem tendsto_log_half_div_log :
++    Tendsto (fun r => Real.log (r / 2) / Real.log r) (𝓝[>] 0) (𝓝 1) := by
++  have h := (tendsto_const_nhds (x := (1 : ℝ))).sub
++    ((tendsto_const_nhds (x := Real.log 2)).div_atBot Real.tendsto_log_nhdsGT_zero)
++  rw [sub_zero] at h
++  refine h.congr' ?_
++  filter_upwards [Ioo_mem_nhdsGT one_pos] with r hr
++  rw [Real.log_div hr.1.ne' two_ne_zero, sub_div, div_self (Real.log_neg hr.1 hr.2).ne]
++
+ /-- A probability measure on `ℝ` vanishing on `(-∞, 0)`, charging every ball `B(0,r)` and with
+ local dimension `d` at `0` has `L^q` spectrum at most `q d` for `q > 1`; the quotient whose limit
+ inferior is the `L^q` spectrum is bounded below and does not tend to `∞`. -/
+@@ -115,21 +129,7 @@ private theorem lq_liminf_le (μ : Measure ℝ) [IsProbabilityMeasure μ] (h0 :
+   have hev : ∀ᶠ r in 𝓝[>] (0 : ℝ), r ∈ Ioo 0 1 := Ioo_mem_nhdsGT one_pos
+   set g : ℝ → ℝ := fun r => q * Real.log (μ.real (closedBall 0 (r / 2))) / Real.log r with hg_def
+   have hg : Tendsto g (𝓝[>] 0) (𝓝 (q * d)) := by
+-    have h2 : Tendsto (fun r : ℝ => r / 2) (𝓝[>] 0) (𝓝[>] 0) := by
+-      refine tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _ ?_ ?_
+-      · exact ((continuous_id.div_const 2).tendsto' 0 0 (by simp)).mono_left
+-          nhdsWithin_le_nhds
+-      · exact eventually_mem_nhdsWithin.mono fun r hr => half_pos hr
+-    have hA := hlim.comp h2
+-    have hB : Tendsto (fun r => Real.log (r / 2) / Real.log r) (𝓝[>] 0) (𝓝 1) := by
+-      have h := (tendsto_const_nhds (x := (1 : ℝ))).sub
+-        ((tendsto_const_nhds (x := Real.log 2)).div_atBot Real.tendsto_log_nhdsGT_zero)
+-      rw [sub_zero] at h
+-      refine h.congr' (hev.mono fun r hr => ?_)
+-      have hl : Real.log r ≠ 0 := (Real.log_neg hr.1 hr.2).ne
+-      show 1 - Real.log 2 / Real.log r = Real.log (r / 2) / Real.log r
+-      rw [Real.log_div hr.1.ne' two_ne_zero, sub_div, div_self hl]
+-    have h := (hA.mul hB).const_mul q
++    have h := ((hlim.comp tendsto_half_nhdsGT).mul tendsto_log_half_div_log).const_mul q
+     rw [mul_one] at h
+     refine h.congr' (hev.mono fun r hr => ?_)
+     have hl : Real.log (r / 2) ≠ 0 := (Real.log_neg (half_pos hr.1) (by linarith [hr.2])).ne
+@@ -178,20 +178,9 @@ private theorem localDim_ge_of_ball_bound (μ : Measure ℝ)
+     (hlim : Tendsto (fun r => Real.log (μ.real (closedBall 0 r)) / Real.log r) (𝓝[>] 0) (𝓝 d))
+     (hball : ∀ᶠ r in 𝓝[>] (0 : ℝ), μ.real (closedBall 0 (r / 2)) ≤ r ^ a) : a ≤ d := by
+   have hev : ∀ᶠ r in 𝓝[>] (0 : ℝ), r ∈ Ioo 0 1 := Ioo_mem_nhdsGT one_pos
+-  have h2 : Tendsto (fun r : ℝ => r / 2) (𝓝[>] 0) (𝓝[>] 0) := by
+-    refine tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _ ?_ ?_
+-    · exact ((continuous_id.div_const 2).tendsto' 0 0 (by simp)).mono_left nhdsWithin_le_nhds
+-    · exact eventually_mem_nhdsWithin.mono fun r hr => half_pos hr
+-  have hlog : Tendsto (fun r => Real.log (r / 2) / Real.log r) (𝓝[>] 0) (𝓝 1) := by
+-    have h := (tendsto_const_nhds (x := (1 : ℝ))).sub
+-      ((tendsto_const_nhds (x := Real.log 2)).div_atBot Real.tendsto_log_nhdsGT_zero)
+-    rw [sub_zero] at h
+-    refine h.congr' (hev.mono fun r hr => ?_)
+-    change 1 - Real.log 2 / Real.log r = Real.log (r / 2) / Real.log r
+-    rw [Real.log_div hr.1.ne' two_ne_zero, sub_div, div_self (Real.log_neg hr.1 hr.2).ne]
+   have ht : Tendsto (fun r => Real.log (μ.real (closedBall 0 (r / 2))) / Real.log r)
+       (𝓝[>] 0) (𝓝 d) := by
+-    have h := (hlim.comp h2).mul hlog
++    have h := (hlim.comp tendsto_half_nhdsGT).mul tendsto_log_half_div_log
+     rw [mul_one] at h
+     refine h.congr' (hev.mono fun r hr => ?_)
+     have hl : Real.log (r / 2) ≠ 0 := (Real.log_neg (half_pos hr.1) (by linarith [hr.2])).ne
+diff --git a/AnalyticESC/Dimension/NaturalMeasure.lean b/AnalyticESC/Dimension/NaturalMeasure.lean
+index e459f98ef..c7e3826f9 100644
+--- a/AnalyticESC/Dimension/NaturalMeasure.lean
++++ b/AnalyticESC/Dimension/NaturalMeasure.lean
+@@ -22,35 +22,6 @@ variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
+ 
+ /-! ### Cylinders -/
+ 
+-/-- The prefix map `ω ↦ ω₁ ⋯ ωₙ` is measurable (as in `Main.LocalDimension`). -/
+-private theorem nm_measurable_prefix (n : ℕ) :
+-    Measurable fun (ω : ℕ → Fin N) (k : Fin n) => ω k :=
+-  Measurable.of_eval fun k => measurable_pi_apply (k : ℕ)
+-
+-/-- The cylinder of a word of length `n` is the preimage of the word under the prefix map. -/
+-private theorem nm_wordCylinder_ofFn {n : ℕ} (v : Fin n → Fin N) :
+-    wordCylinder (List.ofFn v) = (fun (ω : ℕ → Fin N) (k : Fin n) => ω k) ⁻¹' {v} := by
+-  ext ω
+-  simp only [wordCylinder, mem_ofPred_eq, mem_preimage, mem_singleton_iff, funext_iff]
+-  constructor
+-  · intro h k
+-    simpa using h ⟨k, by simp⟩
+-  · intro h k
+-    simpa using h ⟨k, by simpa using k.2⟩
+-
+-/-- The cylinders of the words of length `n` have total measure `1`. -/
+-private theorem nm_sum_measureReal_wordCylinder (ν : Measure (ℕ → Fin N))
+-    [IsProbabilityMeasure ν] (n : ℕ) :
+-    ∑ v : Fin n → Fin N, ν.real (wordCylinder (List.ofFn v)) = 1 := by
+-  have h := sum_measureReal_singleton (μ := ν.map fun (ω : ℕ → Fin N) (k : Fin n) => ω k)
+-    (Finset.univ : Finset (Fin n → Fin N))
+-  rw [Finset.coe_univ, map_measureReal_apply (nm_measurable_prefix n) MeasurableSet.univ,
+-    preimage_univ, probReal_univ] at h
+-  rw [← h]
+-  refine Finset.sum_congr rfl fun v _ => ?_
+-  rw [nm_wordCylinder_ofFn, map_measureReal_apply (nm_measurable_prefix n)
+-    (MeasurableSet.of_discrete)]
+-
+ /-- The cylinder `[w]` is the set of sequences that agree with `w` in the first `|w|` places. -/
+ private theorem nm_wordCylinder_eq (hN : 0 < N) (w : List (Fin N)) :
+     wordCylinder w = {y | ∀ i < w.length, y i = w.getD i ⟨0, hN⟩} := by
+@@ -72,9 +43,6 @@ private theorem nm_ofFn_getD (hN : 0 < N) (w : List (Fin N)) :
+ 
+ /-! ### Distortion -/
+ 
+-private theorem nm_supDeriv_pos (hN : 0 < N) (w : List (Fin N)) : 0 < Φ.supDeriv w :=
+-  (pow_pos (Φ.cmin_pos hN) _).trans_le (Φ.cmin_pow_le_supDeriv w)
+-
+ include Φ in
+ private theorem nm_mem_closure {x : ℝ} (hx : x ∈ I) : (x : ℂ) ∈ closure (nbhd ε) :=
+   subset_closure (ofReal_mem_nbhd Φ.ε_pos hx)
+@@ -87,7 +55,7 @@ private theorem nm_abs_log_sub_log_le {A B c : ℝ} (hc : 0 < c) (hA : c ≤ A)
+     have hX0 := hc.trans_le hX
+     have hY0 := hc.trans_le hY
+     rw [← Real.log_div hX0.ne' hY0.ne']
+-    calc Real.log (X / Y) ≤ X / Y - 1 := Real.log_le_sub_one_of_pos (div_pos hX0 hY0)
++    calc _ ≤ X / Y - 1 := Real.log_le_sub_one_of_pos (div_pos hX0 hY0)
+       _ = (X - Y) / Y := by field_simp
+       _ ≤ |X - Y| / Y := div_le_div_of_nonneg_right (le_abs_self _) hY0.le
+       _ ≤ |X - Y| / c := div_le_div_of_nonneg_left (abs_nonneg _) hc hY
+@@ -112,7 +80,7 @@ private theorem nm_exists_lip (hN : 0 < N) :
+     have h1 : deriv (deriv (Φ.f i)) z = Φ.nonlin i z * deriv (Φ.f i) z := by
+       rw [nonlin, div_mul_cancel₀ _ ((Φ.inClass i).deriv_ne_zero z hz')]
+     rw [h1, norm_mul]
+-    calc ‖Φ.nonlin i z‖ * ‖deriv (Φ.f i) z‖ ≤ M * 1 :=
++    calc _ ≤ M * 1 :=
+           mul_le_mul (hM i z hz') ((Φ.inClass i).norm_deriv_lt_one z hz').le (norm_nonneg _)
+             hM0
+       _ = M := mul_one M
+@@ -124,19 +92,19 @@ private theorem nm_exists_lip (hN : 0 < N) :
+   rw [← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs] at hmvt
+   refine (nm_abs_log_sub_log_le hcmin (Φ.cmin_le_norm_deriv i (Φ.nm_mem_closure ha))
+     (Φ.cmin_le_norm_deriv i (Φ.nm_mem_closure hb))).trans ?_
+-  calc |‖deriv (Φ.f i) a‖ - ‖deriv (Φ.f i) b‖| / Φ.cmin ≤ M * |a - b| / Φ.cmin :=
++  calc _ ≤ M * |a - b| / Φ.cmin :=
+         div_le_div_of_nonneg_right ((abs_norm_sub_norm_le _ _).trans hmvt) hcmin.le
+     _ = M / Φ.cmin * |a - b| := by ring
+ 
+ /-- The two points `f_v(y), f_v(y')` for `y, y' ∈ I` are at distance at most `c_max^{|v|}`. -/
+-private theorem nm_abs_re_comp_sub_le (v : List (Fin N)) {y y' : ℝ} (hy : y ∈ I) (hy' : y' ∈ I) :
++theorem nm_abs_re_comp_sub_le (v : List (Fin N)) {y y' : ℝ} (hy : y ∈ I) (hy' : y' ∈ I) :
+     |(Φ.comp v y).re - (Φ.comp v y').re| ≤ Φ.cmax ^ v.length := by
+   have h := Φ.norm_comp_sub_le v (ofReal_mem_nbhd Φ.ε_pos hy) (ofReal_mem_nbhd Φ.ε_pos hy')
+   rw [← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs] at h
+   have hyy : |y - y'| ≤ 1 := by
+     rw [abs_le]
+     constructor <;> linarith [hy.1, hy.2, hy'.1, hy'.2]
+-  calc |(Φ.comp v y).re - (Φ.comp v y').re| = |(Φ.comp v y - Φ.comp v y').re| := by
++  calc _ = |(Φ.comp v y - Φ.comp v y').re| := by
+         rw [Complex.sub_re]
+     _ ≤ ‖Φ.comp v y - Φ.comp v y'‖ := Complex.abs_re_le_norm _
+     _ ≤ Φ.cmax ^ v.length * |y - y'| := h
+@@ -166,10 +134,7 @@ private theorem nm_log_deriv_comp_sub_le {L : ℝ}
+       Real.log_mul (hne' hy') (hne hy'), List.length_cons, Finset.sum_range_succ]
+     have h1 := hL i _ (Φ.re_comp_mem_I v hy) _ (Φ.re_comp_mem_I v hy')
+     have h2 := Φ.nm_abs_re_comp_sub_le v hy hy'
+-    calc |Real.log ‖deriv (Φ.f i) ((Φ.comp v y).re : ℂ)‖ + Real.log ‖deriv (Φ.comp v) y‖ -
+-          (Real.log ‖deriv (Φ.f i) ((Φ.comp v y').re : ℂ)‖ +
+-            Real.log ‖deriv (Φ.comp v) y'‖)|
+-        ≤ |Real.log ‖deriv (Φ.f i) ((Φ.comp v y).re : ℂ)‖ -
++    calc _ ≤ |Real.log ‖deriv (Φ.f i) ((Φ.comp v y).re : ℂ)‖ -
+             Real.log ‖deriv (Φ.f i) ((Φ.comp v y').re : ℂ)‖| +
+           |Real.log ‖deriv (Φ.comp v) y‖ - Real.log ‖deriv (Φ.comp v) y'‖| := by
+           rw [add_sub_add_comm]
+@@ -196,14 +161,13 @@ private theorem nm_exists_distortion (hN : 0 < N) :
+     intro x hx
+     have h := (le_abs_self _).trans (Φ.nm_log_deriv_comp_sub_le hL hL0 w hx hy)
+     have h' : L * ∑ k ∈ Finset.range w.length, Φ.cmax ^ k ≤ L / (1 - Φ.cmax) := by
+-      calc L * ∑ k ∈ Finset.range w.length, Φ.cmax ^ k ≤ L * (1 / (1 - Φ.cmax)) :=
+-            mul_le_mul_of_nonneg_left hgeom hL0
++      calc _ ≤ L * (1 / (1 - Φ.cmax)) := mul_le_mul_of_nonneg_left hgeom hL0
+         _ = L / (1 - Φ.cmax) := by ring
+     linarith
+   have hle : Φ.supDeriv w ≤ Real.exp (L / (1 - Φ.cmax)) * ‖deriv (Φ.comp w) y‖ := by
+     have : Nonempty I := ⟨⟨0, le_rfl, zero_le_one⟩⟩
+     refine ciSup_le fun x => ?_
+-    calc ‖deriv (Φ.comp w) ((x : ℝ) : ℂ)‖ = Real.exp (Real.log ‖deriv (Φ.comp w) ((x : ℝ) : ℂ)‖) :=
++    calc _ = Real.exp (Real.log ‖deriv (Φ.comp w) ((x : ℝ) : ℂ)‖) :=
+           (Real.exp_log (hpos x.2)).symm
+       _ ≤ Real.exp (Real.log ‖deriv (Φ.comp w) y‖ + L / (1 - Φ.cmax)) :=
+           Real.exp_le_exp.2 (hdist x.2)
+@@ -212,7 +176,7 @@ private theorem nm_exists_distortion (hN : 0 < N) :
+   have h1 : Real.log ‖deriv (Φ.comp w) y‖ ≤ Real.log (Φ.supDeriv w) :=
+     Real.log_le_log (hpos hy) (Φ.norm_deriv_le_supDeriv w hy)
+   have h2 : Real.log (Φ.supDeriv w) ≤ L / (1 - Φ.cmax) + Real.log ‖deriv (Φ.comp w) y‖ := by
+-    have := Real.log_le_log (Φ.nm_supDeriv_pos hN w) hle
++    have := Real.log_le_log (Φ.pr_supDeriv_pos hN w) hle
+     rwa [Real.log_mul (Real.exp_pos _).ne' (hpos hy).ne', Real.log_exp] at this
+   rw [abs_le]
+   constructor <;> linarith
+@@ -320,9 +284,7 @@ theorem exists_isGibbsMeasure (hB : BowenGibbsStatement) (hN : 0 < N) (s : ℝ)
+         mul_nonneg (abs_nonneg s) (sub_nonneg.2 hlog)
+       rw [hb_def]
+       nlinarith [abs_nonneg s]
+-    calc |s| * |Real.log ‖deriv (Φ.f (x 0)) (Φ.natProj fun i => x (i + 1))‖ -
+-          Real.log ‖deriv (Φ.f (x 0)) (Φ.natProj fun i => y (i + 1))‖|
+-        ≤ |s| * (L * Φ.cmax ^ k) := mul_le_mul_of_nonneg_left hd (abs_nonneg s)
++    calc _ ≤ |s| * (L * Φ.cmax ^ k) := mul_le_mul_of_nonneg_left hd (abs_nonneg s)
+       _ = |s| * (L / Φ.cmax) * Φ.cmax ^ (k + 1) := by
+           rw [pow_succ]
+           field_simp
+@@ -356,7 +318,7 @@ theorem isGibbs_of_isGibbsMeasure (hN : 0 < N) {s : ℝ}
+       exact mul_le_mul_of_nonneg_left (hΔ w hπ) (abs_nonneg s)
+     rw [abs_le] at hd
+     have hrpow : Φ.supDeriv w ^ s = Real.exp (s * Real.log (Φ.supDeriv w)) := by
+-      rw [Real.rpow_def_of_pos (Φ.nm_supDeriv_pos hN w), mul_comm]
++      rw [Real.rpow_def_of_pos (Φ.pr_supDeriv_pos hN w), mul_comm]
+     have e : ∀ c B : ℝ, c * Real.exp B * Real.exp (-P * w.length) * Φ.supDeriv w ^ s =
+         c * Real.exp (-P * w.length + (s * Real.log (Φ.supDeriv w) + B)) := by
+       intro c B
+@@ -372,12 +334,12 @@ theorem isGibbs_of_isGibbsMeasure (hN : 0 < N) {s : ℝ}
+       exact mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 (by linarith)) hc₂.le
+   -- summing over the words of length `m`: `exp(-Pm) ∑_{|w| = m} ‖f_w'‖^s ≍ 1`
+   have hps : ∀ m, 0 < Φ.pressureSum s m := fun m =>
+-    Finset.sum_pos (fun _ _ => Real.rpow_pos_of_pos (Φ.nm_supDeriv_pos hN _) s)
++    Finset.sum_pos (fun _ _ => Real.rpow_pos_of_pos (Φ.pr_supDeriv_pos hN _) s)
+       ⟨fun _ => ⟨0, hN⟩, Finset.mem_univ _⟩
+   have hsum : ∀ m : ℕ, K₁ * Real.exp (-P * m) * Φ.pressureSum s m ≤ 1 ∧
+       1 ≤ K₂ * Real.exp (-P * m) * Φ.pressureSum s m := by
+     intro m
+-    have h1 := nm_sum_measureReal_wordCylinder ν m
++    have h1 := sum_measureReal_wordCylinder_univ ν m
+     constructor
+     · rw [← h1, pressureSum, Finset.mul_sum]
+       refine Finset.sum_le_sum fun v _ => ?_
+@@ -421,7 +383,7 @@ theorem isGibbs_of_isGibbsMeasure (hN : 0 < N) {s : ℝ}
+   refine ⟨max K₂ K₁⁻¹, lt_max_of_lt_left hK₂, fun w => ?_⟩
+   obtain ⟨h1, h2⟩ := key w
+   rw [hP, neg_zero, zero_mul, Real.exp_zero, mul_one] at h1 h2
+-  have hw := Real.rpow_nonneg (Φ.nm_supDeriv_pos hN w).le s
++  have hw := Real.rpow_nonneg (Φ.pr_supDeriv_pos hN w).le s
+   constructor
+   · refine le_trans (mul_le_mul_of_nonneg_right ?_ hw) h1
+     exact inv_le_of_inv_le₀ hK₁ (le_max_right _ _)
+diff --git a/AnalyticESC/Dimension/OpenDense.lean b/AnalyticESC/Dimension/OpenDense.lean
+index d36f983f6..b4cea7ec3 100644
+--- a/AnalyticESC/Dimension/OpenDense.lean
++++ b/AnalyticESC/Dimension/OpenDense.lean
+@@ -2,6 +2,7 @@ module
+ 
+ public import AnalyticESC.Dimension.Rapaport
+ public import AnalyticESC.Generic.OpenDense
++public import AnalyticESC.Conjugation.Linearisation
+ 
+ @[expose] public section
+ 
+@@ -38,20 +39,12 @@ theorem d2Sys_le_add {N : ℕ} {f g h : Fin N → ℂ → ℂ} (hf : InUnionClas
+ /-- A map of `S^ω_ε(I)` has at most one fixed point in `I`. -/
+ theorem eq_of_re_eq_self {ε : ℝ} (hε : 0 < ε) {h : ℂ → ℂ} (hh : InClass ε h) {x y : ℝ}
+     (hx : x ∈ I) (hy : y ∈ I) (hhx : (h x).re = x) (hhy : (h y).re = y) : x = y := by
+-  -- `F(x) = h(x) - x` is strictly decreasing on `I`, since `|h'| < 1`
+-  set F : ℝ → ℝ := fun x => (h x).re - x with hF
+-  have hderiv : ∀ x ∈ I, HasDerivAt F ((deriv h x).re - 1) x := fun x hx =>
+-    (hasDerivAt_re_ofReal (hh.differentiableOn.differentiableAt
+-      ((isOpen_nbhd _).mem_nhds (ofReal_mem_nbhd (by linarith) hx)))).sub (hasDerivAt_id x)
+-  have hcont : ContinuousOn F I := fun x hx => (hderiv x hx).continuousAt.continuousWithinAt
+-  have hanti : StrictAntiOn F I := by
+-    refine strictAntiOn_of_deriv_neg (convex_Icc 0 1) hcont fun x hx => ?_
+-    have hxI : x ∈ I := interior_subset hx
+-    rw [(hderiv x hxI).deriv, sub_neg]
+-    exact (Complex.re_le_norm _).trans_lt
+-      (hh.norm_deriv_lt_one x (subset_closure (ofReal_mem_nbhd hε hxI)))
+-  refine hanti.injOn hx hy ?_
+-  simp only [hF, hhx, hhy, sub_self]
++  have hf : ∀ z ∈ I, (h z).re = z → h z = z := by
++    intro z hz hfix
++    apply Complex.ext
++    · simpa using hfix
++    · simp [hh.im_eq_zero z (ofReal_mem_nbhd (by linarith) hz)]
++  exact (existsUnique_fixedPoint hε hh).unique ⟨hx, hf x hx hhx⟩ ⟨hy, hf y hy hhy⟩
+ 
+ /-- Having no common fixed point in `I` is a `d₂`-open condition in `𝔖_N`: the continuous
+ function `∑_i |f_i(x) - x|` has a positive minimum `m` on `I`, and `d₂(f, g) < m/(N+1)` keeps
+@@ -83,11 +76,11 @@ theorem exists_forall_d2Sys_lt_not_fixed {N : ℕ} {f : Fin N → ℂ → ℂ} (
+   let Ψ : IFS N ε' := ⟨g, hε', hgε⟩
+   have hle : ∀ i, |(f i x).re - x| ≤ d2Sys f g := by
+     intro i
+-    calc |(f i x).re - x| = |(f i x - g i x).re| := by rw [Complex.sub_re, hgx i]
++    calc _ = |(f i x - g i x).re| := by rw [Complex.sub_re, hgx i]
+       _ ≤ ‖f i x - g i x‖ := Complex.abs_re_le_norm _
+       _ ≤ d2Sys f g := (IFS.Continuity.norm_sub_le_d2 Φ Ψ i hx).1
+   have hsum : F x ≤ N * d2Sys f g := by
+-    calc F x ≤ ∑ _i : Fin N, d2Sys f g := Finset.sum_le_sum fun i _ => hle i
++    calc _ ≤ ∑ _i : Fin N, d2Sys f g := Finset.sum_le_sum fun i _ => hle i
+       _ = N * d2Sys f g := by simp
+   have hmx : m ≤ F x := isMinOn_iff.1 hmin x hx
+   have h1 : (N : ℝ) * d2Sys f g ≤ N * (m / (N + 1)) := mul_le_mul_of_nonneg_left hd.le hN
+diff --git a/AnalyticESC/Dimension/Pressure.lean b/AnalyticESC/Dimension/Pressure.lean
+index 300b56426..01a8b793a 100644
+--- a/AnalyticESC/Dimension/Pressure.lean
++++ b/AnalyticESC/Dimension/Pressure.lean
+@@ -20,7 +20,7 @@ namespace IFS
+ variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
+ 
+ /-- `‖f_w'‖ > 0` for a nonempty alphabet. -/
+-private theorem pr_supDeriv_pos (hN : 0 < N) (w : List (Fin N)) : 0 < Φ.supDeriv w :=
++theorem pr_supDeriv_pos (hN : 0 < N) (w : List (Fin N)) : 0 < Φ.supDeriv w :=
+   (pow_pos (Φ.cmin_pos hN) _).trans_le (Φ.cmin_pow_le_supDeriv w)
+ 
+ /-- Sub-multiplicativity `‖f_{uv}'‖ ≤ ‖f_u'‖ ‖f_v'‖`, from the chain rule and `f_v(I) ⊆ I`. -/
+diff --git a/AnalyticESC/Dimension/Rapaport.lean b/AnalyticESC/Dimension/Rapaport.lean
+index adfc426c3..0c02f527e 100644
+--- a/AnalyticESC/Dimension/Rapaport.lean
++++ b/AnalyticESC/Dimension/Rapaport.lean
+@@ -1,6 +1,7 @@
+ module
+ 
+ public import AnalyticESC.Dimension.Pressure
++public import AnalyticESC.Dimension.NaturalMeasure
+ 
+ @[expose] public section
+ 
+@@ -30,23 +31,11 @@ theorem natProj_eq_realMap (ω : ℕ → Fin N) :
+   rw [Φ.natProj_eq_comp_prefix ω 1]
+   simp [realMap]
+ 
+-/-- `|f_w(y) - f_w(z)| ≤ c_max^{|w|}` for `y, z ∈ I`. -/
+-theorem abs_re_comp_sub_le (w : List (Fin N)) {y z : ℝ} (hy : y ∈ I) (hz : z ∈ I) :
+-    |(Φ.comp w y).re - (Φ.comp w z).re| ≤ Φ.cmax ^ w.length := by
+-  rw [← Complex.sub_re]
+-  refine (Complex.abs_re_le_norm _).trans ?_
+-  refine (Φ.norm_comp_sub_le w (ofReal_mem_nbhd Φ.ε_pos hy)
+-    (ofReal_mem_nbhd Φ.ε_pos hz)).trans ?_
+-  rw [← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs]
+-  refine mul_le_of_le_one_right (pow_nonneg Φ.cmax_nonneg _) ?_
+-  rw [abs_le]
+-  constructor <;> linarith [hy.1, hy.2, hz.1, hz.2]
+-
+ /-- `|π(ω) - f_{ω₁ ⋯ ωₙ}(0)| ≤ c_max^n`. -/
+ theorem abs_natProj_sub_le (ω : ℕ → Fin N) (n : ℕ) :
+     |Φ.natProj ω - (Φ.comp (List.ofFn fun k : Fin n => ω k) 0).re| ≤ Φ.cmax ^ n := by
+   have hπ : Φ.natProj (fun j => ω (j + n)) ∈ I := Φ.attractor_subset_I ⟨_, rfl⟩
+-  have h := Φ.abs_re_comp_sub_le (List.ofFn fun k : Fin n => ω k) hπ
++  have h := Φ.nm_abs_re_comp_sub_le (List.ofFn fun k : Fin n => ω k) hπ
+     (left_mem_Icc.2 zero_le_one)
+   rwa [List.length_ofFn, Complex.ofReal_zero, ← Φ.natProj_eq_comp_prefix] at h
+ 
+@@ -114,7 +103,7 @@ theorem exists_attractor_eq_singleton_iff (hN : 0 < N) :
+       have hle : ∀ n, |Φ.natProj ω - p| ≤ Φ.cmax ^ n := by
+         intro n
+         have hπ : Φ.natProj (fun j => ω (j + n)) ∈ I := Φ.attractor_subset_I ⟨_, rfl⟩
+-        have h := Φ.abs_re_comp_sub_le (List.ofFn fun k : Fin n => ω k) hπ hp
++        have h := Φ.nm_abs_re_comp_sub_le (List.ofFn fun k : Fin n => ω k) hπ hp
+         rwa [List.length_ofFn, hc, Complex.ofReal_re, ← Φ.natProj_eq_comp_prefix] at h
+       have h0 : |Φ.natProj ω - p| ≤ 0 :=
+         ge_of_tendsto' (tendsto_pow_atTop_nhds_zero_of_lt_one Φ.cmax_nonneg Φ.cmax_lt_one) hle
+@@ -199,16 +188,6 @@ theorem rapaportHyp (hN : 0 < N) (hnd : ¬ ∃ x, Φ.attractor = {x}) (hesc : Φ
+     rw [← Φ.supDist_eq_iSup_realComp]
+     exact hn u v huv
+ 
+-/-- On `I`, the derivative of the real map `f_i` has absolute value `‖f_i'(x)‖`. -/
+-private theorem dim_abs_deriv_realMap (i : Fin N) {x : ℝ} (hx : x ∈ I) :
+-    |deriv (Φ.realMap i) x| = ‖deriv (Φ.f i) x‖ := by
+-  have hcl : (x : ℂ) ∈ closure (nbhd ε) := subset_closure (ofReal_mem_nbhd Φ.ε_pos hx)
+-  have hd : HasDerivAt (Φ.realMap i) (deriv (Φ.f i) x).re x :=
+-    hasDerivAt_re_ofReal (Φ.differentiableAt_f i hcl)
+-  rw [hd.deriv]
+-  exact Complex.abs_re_eq_norm.2
+-    (Φ.im_deriv_f_ofReal i (nbhd_subset_two (ofReal_mem_nbhd Φ.ε_pos hx)))
+-
+ /-- `log c_min ≤ log |f_i'(x)| ≤ log c_max` for `x ∈ I`. -/
+ private theorem dim_log_abs_deriv_realMap_mem (hN : 0 < N) (i : Fin N) {x : ℝ} (hx : x ∈ I) :
+     Real.log Φ.cmin ≤ Real.log |deriv (Φ.realMap i) x| ∧
+@@ -217,7 +196,7 @@ private theorem dim_log_abs_deriv_realMap_mem (hN : 0 < N) (i : Fin N) {x : ℝ}
+   have h1 := Φ.cmin_le_norm_deriv i hcl
+   have h2 := Φ.norm_deriv_le_cmax i hcl
+   have h0 := Φ.cmin_pos hN
+-  rw [Φ.dim_abs_deriv_realMap i hx]
++  rw [Φ.abs_deriv_realMap i (ofReal_mem_nbhd Φ.ε_pos hx)]
+   exact ⟨Real.log_le_log h0 h1, Real.log_le_log (h0.trans_le h1) h2⟩
+ 
+ /-- For a probability measure `μ` on `I`, `∫ log |f_i'| dμ ≤ log c_max`. -/
+@@ -236,7 +215,7 @@ private theorem dim_integral_le (hN : 0 < N) (i : Fin N) {μ : Measure ℝ}
+     rw [Real.norm_eq_abs, abs_le]
+     constructor <;> linarith [neg_abs_le (Real.log Φ.cmin), le_abs_self (Real.log Φ.cmax),
+       abs_nonneg (Real.log Φ.cmin), abs_nonneg (Real.log Φ.cmax)]
+-  calc ∫ x, Real.log |deriv (Φ.realMap i) x| ∂μ ≤ ∫ _x, Real.log Φ.cmax ∂μ :=
++  calc _ ≤ ∫ _x, Real.log Φ.cmax ∂μ :=
+         integral_mono_ae hint (integrable_const _) (hb.mono fun x hx => hx.2)
+     _ = Real.log Φ.cmax := by simp
+ 
+@@ -245,7 +224,7 @@ theorem neg_log_cmax_le_lyapunov (hN : 0 < N) {p : Fin N → ℝ} (hp : IsProbVe
+     {μ : Measure ℝ} (hμ : Φ.IsSelfConformal p μ) : -Real.log Φ.cmax ≤ Φ.lyapunov p μ := by
+   obtain ⟨hμ1, hμ2, -⟩ := hμ
+   rw [lyapunov, neg_le_neg_iff]
+-  calc ∑ i, p i * ∫ x, Real.log |deriv (Φ.realMap i) x| ∂μ ≤ ∑ i, p i * Real.log Φ.cmax :=
++  calc _ ≤ ∑ i, p i * Real.log Φ.cmax :=
+         Finset.sum_le_sum fun i _ =>
+           mul_le_mul_of_nonneg_left (Φ.dim_integral_le hN i hμ2) (hp.1 i).le
+     _ = Real.log Φ.cmax := by rw [← Finset.sum_mul, hp.2, one_mul]
+diff --git a/AnalyticESC/Dual/Attractor.lean b/AnalyticESC/Dual/Attractor.lean
+index bcc6e6feb..f7ac2640b 100644
+--- a/AnalyticESC/Dual/Attractor.lean
++++ b/AnalyticESC/Dual/Attractor.lean
+@@ -116,21 +116,12 @@ variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
+ private theorem comp_singleton_eq_f (i : Fin N) : Φ.comp [i] = Φ.f i := by
+   simp
+ 
+-/-- `H_i = f_i''/f_i'` for a single letter `i`. -/
+-private theorem dualProj_fin_singleton_eq_nonlin (i : Fin N) (z : ℂ) :
+-    Φ.dualProj (.fin [i]) z = Φ.nonlin i z := by
+-  rw [dualProj, tsum_eq_single 0]
+-  · simp [dualTerm]
+-  · intro n hn
+-    obtain ⟨n, rfl⟩ := Nat.exists_eq_succ_of_ne_zero hn
+-    simp [dualTerm]
+-
+ /-- The cocycle identity for a single letter. -/
+ private theorem dualProj_prepend_singleton (i : Fin N) (w : Word N) {z : ℂ}
+     (hz : z ∈ closure (nbhd ε)) :
+     Φ.dualProj (w.prepend [i]) z = deriv (Φ.f i) z * Φ.dualProj w (Φ.f i z) + Φ.nonlin i z := by
+   rw [Φ.dualProj_prepend [i] w hz, List.reverse_singleton, comp_singleton_eq_f,
+-    Φ.dualProj_fin_singleton_eq_nonlin i z, add_comm]
++    Φ.dualProj_singleton i z, add_comm]
+ 
+ /-- `F_w h = f_{w^←}' · (h ∘ f_{w^←}) + H_w` on `B_ε` (Section 2.1). -/
+ theorem dualComp_apply (w : List (Fin N)) (h : ℂ → ℂ) {z : ℂ} (hz : z ∈ nbhd ε) :
+@@ -347,14 +338,10 @@ private theorem eq_range_of_isDualAttractor {Λ : Set (nbhd ε →ᵤ ℂ)} (hΛ
+         fun n z => key w n u hu z)
+       (Eventually.of_forall fun n => Φ.dualCompU_mem_of_isDualAttractor hΛ _ hu)
+ 
+-/-- Lemma 2.1: the dual IFS has a unique attractor. -/
+-theorem existsUnique_isDualAttractor (hN : 0 < N) : ∃! Λ, Φ.IsDualAttractor Λ :=
+-  Φ.existsUnique_isDualAttractor_hutchinson hN
+-
+ /-- Lemma 2.5, last claim: the Hutchinson attractor is `{H_i : i ∈ Σ}`. -/
+ theorem isDualAttractor_range (hN : 0 < N) :
+     Φ.IsDualAttractor (range fun w : ℕ → Fin N => toNbhd ε (Φ.dualProj (.inf w))) := by
+-  obtain ⟨Λ, hΛ, -⟩ := Φ.existsUnique_isDualAttractor hN
++  obtain ⟨Λ, hΛ, -⟩ := Φ.existsUnique_isDualAttractor_hutchinson hN
+   exact Φ.eq_range_of_isDualAttractor hΛ ▸ hΛ
+ 
+ /-! ## Strong separation of the dual IFS -/
+@@ -427,12 +414,7 @@ theorem dualProj_ne_iff_exists_delta :
+     subset_closure (ofReal_mem_nbhd Φ.ε_pos x.2)
+   let D : (ℕ → Fin N) × (ℕ → Fin N) → ℝ := fun p =>
+     ⨆ x : I, ‖Φ.dualProj (.inf p.1) ((x : ℝ) : ℂ) - Φ.dualProj (.inf p.2) ((x : ℝ) : ℂ)‖
+-  have hbdd : ∀ p : (ℕ → Fin N) × (ℕ → Fin N), BddAbove (range fun x : I =>
+-      ‖Φ.dualProj (.inf p.1) ((x : ℝ) : ℂ) - Φ.dualProj (.inf p.2) ((x : ℝ) : ℂ)‖) := by
+-    intro p
+-    refine ⟨M + M, ?_⟩
+-    rintro _ ⟨x, rfl⟩
+-    exact (norm_sub_le _ _).trans (add_le_add (hM _ _ (hx x)) (hM _ _ (hx x)))
++  have hbdd := fun p : (ℕ → Fin N) × (ℕ → Fin N) => Φ.bddAbove_dualProj_sub (.inf p.1) (.inf p.2)
+   constructor
+   · intro h
+     let S : Set ((ℕ → Fin N) × (ℕ → Fin N)) := {p | p.1 0 ≠ p.2 0}
+@@ -474,7 +456,7 @@ theorem dualProj_ne_iff_exists_delta :
+       exact absurd this (notMem_empty _)
+     · obtain ⟨p₀, hp₀, hmin⟩ := hS.exists_isMinOn hne hcont.continuousOn
+       refine ⟨D p₀ / 2, half_pos (hpos p₀ hp₀), fun i j hij => ?_⟩
+-      calc D p₀ / 2 < D p₀ := half_lt_self (hpos p₀ hp₀)
++      calc _ < D p₀ := half_lt_self (hpos p₀ hp₀)
+         _ ≤ D (i, j) := isMinOn_iff.1 hmin (i, j) hij
+   · rintro ⟨δ, hδ, h⟩ i j hij
+     by_contra hcon
+diff --git a/AnalyticESC/Dual/Cylinders.lean b/AnalyticESC/Dual/Cylinders.lean
+index 4a0dfa2e2..885ec2a59 100644
+--- a/AnalyticESC/Dual/Cylinders.lean
++++ b/AnalyticESC/Dual/Cylinders.lean
+@@ -169,16 +169,14 @@ theorem abs_sub_le_cmax_pow_of_mem_dualCylAt {k K : ℝ} (hkK : k ≤ K) (w : Li
+     _ ≤ Φ.cmax ^ w.length * (K - k) :=
+         mul_le_mul_of_nonneg_right (Φ.abs_re_deriv_comp_reverse_le w hx) (sub_nonneg.2 hkK)
+ 
+-/-- `F_i` maps `cl (-K,K)` into `(-K,K)` as soon as `c_max K + M < K`, where `M` bounds
+-`f_i''/f_i'`. -/
+-private theorem mapsTo_dualOp_dualCylClosed {M K : ℝ}
+-    (hM : ∀ i, ∀ z ∈ closure (nbhd ε), ‖Φ.nonlin i z‖ ≤ M) (hK : Φ.cmax * K + M < K)
+-    (i : Fin N) : MapsTo (Φ.dualOp i) (dualCylClosed ε (-K) K) (dualCyl ε (-K) K) := by
++/-- `F_i` maps `cl (-K,K)` into `(-K,K)` under bounds on `[0,1]` alone. -/
++theorem mapsTo_dualOp_dualCylClosed_of_le {c M K : ℝ}
++    (hc : ∀ i, ∀ x ∈ I, ‖deriv (Φ.f i) x‖ ≤ c) (hM : ∀ i, ∀ x ∈ I, ‖Φ.nonlin i x‖ ≤ M)
++    (hK : c * K + M < K) (i : Fin N) :
++    MapsTo (Φ.dualOp i) (dualCylClosed ε (-K) K) (dualCyl ε (-K) K) := by
+   rintro h ⟨hd, _, hre, hb⟩
+   have hfx : ∀ x ∈ I, Φ.f i x = (((Φ.f i x).re : ℝ) : ℂ) ∧ (Φ.f i x).re ∈ I := fun x hx =>
+-    ⟨Complex.ext (by simp)
+-      (by simp [Φ.im_f_ofReal i (nbhd_subset_two (ofReal_mem_nbhd Φ.ε_pos hx))]),
+-      (Φ.inClass i).re_mem_I x hx⟩
++    ⟨Φ.comp_ofReal [i] hx, (Φ.inClass i).re_mem_I x hx⟩
+   have him : ∀ x ∈ I, (Φ.dualOp i h x).im = 0 := by
+     intro x hx
+     have hxn := ofReal_mem_nbhd Φ.ε_pos hx
+@@ -193,17 +191,16 @@ private theorem mapsTo_dualOp_dualCylClosed {M K : ℝ}
+     have h2 : DifferentiableOn ℂ (fun z => h (Φ.f i z)) (nbhd ε) :=
+       hd.comp ((Φ.differentiableOn_f i).mono nbhd_subset_two) (Φ.mapsTo_f i)
+     exact (h1.mul h2).add (hnl.mono (subset_closure.trans hU))
+-  · have hxn := ofReal_mem_nbhd Φ.ε_pos hx
+-    have hy := hfx x hx
++  · have hy := hfx x hx
+     have hhy : ‖h (Φ.f i x)‖ ≤ K := by
+       rw [hy.1, ← Complex.abs_re_eq_norm.2 (hre _ hy.2)]
+       exact abs_le.2 (hb _ hy.2)
+-    have hnorm : ‖Φ.dualOp i h x‖ ≤ Φ.cmax * K + M := by
++    have hc0 : 0 ≤ c := (norm_nonneg _).trans (hc i x hx)
++    have hnorm : ‖Φ.dualOp i h x‖ ≤ c * K + M := by
+       simp only [dualOp]
+-      refine (norm_add_le _ _).trans (add_le_add ?_ (hM i _ (subset_closure hxn)))
++      refine (norm_add_le _ _).trans (add_le_add ?_ (hM i x hx))
+       rw [norm_mul]
+-      exact mul_le_mul (Φ.norm_deriv_le_cmax i (subset_closure hxn)) hhy (norm_nonneg _)
+-        Φ.cmax_nonneg
++      exact mul_le_mul (hc i x hx) hhy (norm_nonneg _) hc0
+     exact abs_lt.1 ((Complex.abs_re_le_norm _).trans_lt (hnorm.trans_lt hK))
+ 
+ /-- Lemma 2.6: (a) the dual IFS satisfies the SSC if and only if (b) there are `k < K` and
+@@ -228,7 +225,9 @@ theorem lemma_2_6 (hN : 0 < N) :
+     have hK : Φ.cmax * K + M < K := by
+       have h1 : (1 - Φ.cmax) * (M / (1 - Φ.cmax)) = M := mul_div_cancel₀ _ (by linarith)
+       nlinarith
+-    have hmaps := Φ.mapsTo_dualOp_dualCylClosed hM hK
++    have hmaps := Φ.mapsTo_dualOp_dualCylClosed_of_le
++      (fun i x hx => Φ.norm_deriv_le_cmax i (subset_closure (ofReal_mem_nbhd Φ.ε_pos hx)))
++      (fun i x hx => hM i x (subset_closure (ofReal_mem_nbhd Φ.ε_pos hx))) hK
+     have hH := Φ.re_dualProj_mem_Icc (by linarith) hmaps
+     refine ⟨-K, K, by linarith, ?_⟩
+     by_contra hnone
+@@ -250,21 +249,15 @@ theorem lemma_2_6 (hN : 0 < N) :
+       (fun n => (extend n (i n), extend n (j n)))
+     have hi : Tendsto (fun n => extend (φ n) (i (φ n))) atTop (𝓝 w.1) := by simpa only [Function.comp_def] using (continuous_fst.tendsto w).comp hlim
+     have hj : Tendsto (fun n => extend (φ n) (j (φ n))) atTop (𝓝 w.2) := by simpa only [Function.comp_def] using (continuous_snd.tendsto w).comp hlim
++    have hext (n : ℕ) (v : Fin (n + 1) → Fin N) : extend n v 0 = v 0 := by
++      simp only [extend, dite_eq_left (Nat.zero_lt_succ _)]
++      exact congrArg v (Fin.ext rfl)
+     have hfirst : w.1 0 ≠ w.2 0 := by
+       have he1 := (tendsto_pi_nhds.1 hi 0).eventually (isOpen_discrete {w.1 0} |>.mem_nhds rfl)
+       have he2 := (tendsto_pi_nhds.1 hj 0).eventually (isOpen_discrete {w.2 0} |>.mem_nhds rfl)
+       obtain ⟨n, h1, h2⟩ := (he1.and he2).exists
+-      have h1' : i (φ n) 0 = w.1 0 := by
+-        change extend (φ n) (i (φ n)) 0 = w.1 0 at h1
+-        simp only [extend, dite_eq_left (Nat.zero_lt_succ _)] at h1
+-        have hz : (⟨0, Nat.zero_lt_succ (φ n)⟩ : Fin (φ n + 1)) = 0 := Fin.ext rfl
+-        exact (congrArg (i (φ n)) hz).symm.trans h1
+-      have h2' : j (φ n) 0 = w.2 0 := by
+-        change extend (φ n) (j (φ n)) 0 = w.2 0 at h2
+-        simp only [extend, dite_eq_left (Nat.zero_lt_succ _)] at h2
+-        have hz : (⟨0, Nat.zero_lt_succ (φ n)⟩ : Fin (φ n + 1)) = 0 := Fin.ext rfl
+-        exact (congrArg (j (φ n)) hz).symm.trans h2
+-      exact fun he => hij (φ n) (h1'.trans (he.trans h2'.symm))
++      exact fun he => hij (φ n) (((hext _ _).symm.trans h1).trans
++        (he.trans ((hext _ _).symm.trans h2).symm))
+     obtain ⟨x, hx, hne⟩ := (Φ.dualSSC_iff_ne hN).1 hssc w.1 w.2 hfirst
+     apply hne
+     have hbound : ∀ n,
+@@ -284,9 +277,8 @@ theorem lemma_2_6 (hN : 0 < N) :
+       have hnorm : ‖Φ.dualProj (.inf (extend n (i n))) (x : ℂ) -
+           Φ.dualProj (.inf (extend n (j n))) (x : ℂ)‖ ≤
+           |(Φ.dualProj (.inf (extend n (i n))) (x : ℂ)).re -
+-            (Φ.dualProj (.inf (extend n (j n))) (x : ℂ)).re| := by
+-        refine (Complex.norm_le_abs_re_add_abs_im _).trans_eq ?_
+-        simp [Φ.im_dualProj_ofReal _ hxn]
++            (Φ.dualProj (.inf (extend n (j n))) (x : ℂ)).re| :=
++        (Complex.abs_re_eq_norm.2 (by simp [Φ.im_dualProj_ofReal _ hxn])).ge
+       have e3 := abs_sub_le (Φ.dualProj (.inf (extend n (i n))) (x : ℂ)).re p
+         (Φ.dualProj (.inf (extend n (j n))) (x : ℂ)).re
+       linarith
+diff --git a/AnalyticESC/Dual/Hutchinson.lean b/AnalyticESC/Dual/Hutchinson.lean
+index 75645b45a..37cd171c7 100644
+--- a/AnalyticESC/Dual/Hutchinson.lean
++++ b/AnalyticESC/Dual/Hutchinson.lean
+@@ -34,7 +34,7 @@ theorem existsUnique_compact_invariant {X A : Type*} [MetricSpace X] [CompleteSp
+     obtain ⟨i, a, ha, rfl⟩ := mem_iUnion.1 hx
+     obtain ⟨b, hb, hab⟩ := L.isCompact.exists_infDist_eq_dist L.nonempty a
+     refine ⟨F i b, mem_iUnion.2 ⟨i, mem_image_of_mem _ hb⟩, ?_⟩
+-    calc dist (F i a) (F i b) ≤ c * dist a b := (hF i).dist_le_mul _ _
++    calc _ ≤ c * dist a b := (hF i).dist_le_mul _ _
+       _ ≤ c * dist K L := by
+         rw [← hab, TopologicalSpace.NonemptyCompacts.dist_eq]
+         exact mul_le_mul_of_nonneg_left
+diff --git a/AnalyticESC/Dual/Projection.lean b/AnalyticESC/Dual/Projection.lean
+index a2cb8069e..1836d10fd 100644
+--- a/AnalyticESC/Dual/Projection.lean
++++ b/AnalyticESC/Dual/Projection.lean
+@@ -34,7 +34,7 @@ theorem dualTerm_of_get?_eq_some {w : Word N} {n : ℕ} {i : Fin N} (h : w.get?
+   simp [dualTerm, h]
+ 
+ /-- If `w` has a letter in position `n`, then its prefix of length `n` has length `n`. -/
+-private theorem length_take_of_get?_eq_some {w : Word N} {n : ℕ} {i : Fin N}
++theorem length_take_of_get?_eq_some {w : Word N} {n : ℕ} {i : Fin N}
+     (h : w.get? n = some i) : (w.take n).length = n := by
+   cases w with
+   | fin w =>
+@@ -93,6 +93,17 @@ theorem exists_norm_dualProj_le :
+   exact tsum_of_norm_bounded
+     ((hasSum_geometric_of_lt_one Φ.cmax_nonneg Φ.cmax_lt_one).mul_left C) fun n => hC w n z hz
+ 
++/-- Differences of dual projections are bounded on `I`. -/
++theorem bddAbove_dualProj_sub (i j : Word N) :
++    BddAbove (range fun x : I =>
++      ‖Φ.dualProj i ((x : ℝ) : ℂ) - Φ.dualProj j ((x : ℝ) : ℂ)‖) := by
++  obtain ⟨M, -, hM⟩ := Φ.exists_norm_dualProj_le
++  refine ⟨M + M, ?_⟩
++  rintro _ ⟨x, rfl⟩
++  exact (norm_sub_le _ _).trans (add_le_add
++    (hM i _ (subset_closure (ofReal_mem_nbhd Φ.ε_pos x.2)))
++    (hM j _ (subset_closure (ofReal_mem_nbhd Φ.ε_pos x.2))))
++
+ /-! ## Holomorphy and realness -/
+ 
+ theorem differentiableOn_dualTerm (w : Word N) (n : ℕ) :
+diff --git a/AnalyticESC/Generic/Agreement.lean b/AnalyticESC/Generic/Agreement.lean
+index e2321af5a..ef6595cb9 100644
+--- a/AnalyticESC/Generic/Agreement.lean
++++ b/AnalyticESC/Generic/Agreement.lean
+@@ -97,44 +97,6 @@ theorem dualCylAt_cons_eq_of_agreeAt (Φ : IFS N ε) (Ψ : IFS N ε') (k K : ℝ
+   rw [dualCylAt, dualCylAt, image_add_const_uIcc, dualComp_cons_eq_of_agreeAt Φ Ψ h0 h1 hag,
+     dualComp_cons_eq_of_agreeAt Φ Ψ h0 h1 hag, Complex.add_re, Complex.add_re]
+ 
+-/-- `G_i` maps `cl (-K,K)` into `(-K,K)` when `|g_i'| ≤ c` and `|g_i''/g_i'| ≤ M` on `[0,1]` and
+-`c K + M < K`. -/
+-theorem mapsTo_dualOp_dualCylClosed_of_le (Ψ : IFS N ε') {c M K : ℝ}
+-    (hc : ∀ i, ∀ x ∈ I, ‖deriv (Ψ.f i) x‖ ≤ c) (hM : ∀ i, ∀ x ∈ I, ‖Ψ.nonlin i x‖ ≤ M)
+-    (hK : c * K + M < K) (i : Fin N) :
+-    MapsTo (Ψ.dualOp i) (dualCylClosed ε' (-K) K) (dualCyl ε' (-K) K) := by
+-  rintro h ⟨hd, _, hre, hb⟩
+-  have hfx : ∀ x ∈ I, Ψ.f i x = (((Ψ.f i x).re : ℝ) : ℂ) ∧ (Ψ.f i x).re ∈ I := fun x hx =>
+-    ⟨Complex.ext (by simp)
+-      (by simp [Ψ.im_f_ofReal i (nbhd_subset_two (ofReal_mem_nbhd Ψ.ε_pos hx))]),
+-      (Ψ.inClass i).re_mem_I x hx⟩
+-  have him : ∀ x ∈ I, (Ψ.dualOp i h x).im = 0 := by
+-    intro x hx
+-    have hxn := ofReal_mem_nbhd Ψ.ε_pos hx
+-    simp only [dualOp]
+-    rw [(hfx x hx).1]
+-    simp [Complex.mul_im, Ψ.im_deriv_f_ofReal i (nbhd_subset_two hxn), hre _ (hfx x hx).2,
+-      Ψ.im_nonlin_ofReal i hxn]
+-  refine ⟨?_, Ψ.continuousOn_dualOp_closure i hd, him, fun x hx => ?_⟩
+-  · obtain ⟨U, -, hU, -, hnl⟩ := Ψ.exists_differentiableOn_nonlin i
+-    have h1 : DifferentiableOn ℂ (deriv (Ψ.f i)) (nbhd ε') :=
+-      ((Ψ.differentiableOn_f i).deriv (isOpen_nbhd _)).mono nbhd_subset_two
+-    have h2 : DifferentiableOn ℂ (fun z => h (Ψ.f i z)) (nbhd ε') :=
+-      hd.comp ((Ψ.differentiableOn_f i).mono nbhd_subset_two) (Ψ.mapsTo_f i)
+-    exact (h1.mul h2).add (hnl.mono (subset_closure.trans hU))
+-  · have hy := hfx x hx
+-    have hhy : ‖h (Ψ.f i x)‖ ≤ K := by
+-      rw [hy.1, ← Complex.abs_re_eq_norm.2 (hre _ hy.2)]
+-      exact abs_le.2 (hb _ hy.2)
+-    -- `0 ≤ c`, from the bound at `x`
+-    have hc0 : 0 ≤ c := (norm_nonneg _).trans (hc i x hx)
+-    have hnorm : ‖Ψ.dualOp i h x‖ ≤ c * K + M := by
+-      simp only [dualOp]
+-      refine (norm_add_le _ _).trans (add_le_add ?_ (hM i x hx))
+-      rw [norm_mul]
+-      exact mul_le_mul (hc i x hx) hhy (norm_nonneg _) hc0
+-    exact abs_lt.1 ((Complex.abs_re_le_norm _).trans_lt (hnorm.trans_lt hK))
+-
+ end IFS
+ 
+ /-- Two intersecting sets of diameter less than `δ/3`, one of them shifted by `τ` with
+diff --git a/AnalyticESC/Generic/Class.lean b/AnalyticESC/Generic/Class.lean
+index 538a90858..792866b2b 100644
+--- a/AnalyticESC/Generic/Class.lean
++++ b/AnalyticESC/Generic/Class.lean
+@@ -17,7 +17,7 @@ namespace AnalyticESC
+ open Set Metric Filter Topology
+ 
+ /-- Every point of `cl B_ε` lies within distance `ε` of a point of `I`. -/
+-private theorem exists_mem_I_norm_sub_le {ε : ℝ} (hε : 0 ≤ ε) {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
++theorem exists_mem_I_norm_sub_le {ε : ℝ} (hε : 0 ≤ ε) {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
+     ∃ x ∈ I, ‖z - x‖ ≤ ε := by
+   have hz' := closure_thickening_subset_cthickening ε _ hz
+   rw [isCompact_image_I.cthickening_eq_biUnion_closedBall hε] at hz'
+@@ -53,7 +53,7 @@ theorem InClass.of_deriv {ε : ℝ} (hε : 0 < ε) {f : ℂ → ℂ}
+     Complex.ext rfl (by simp [him x (ofReal_mem_nbhd (by linarith) hx)])
+   refine ball_subset_nbhd (hI x hx) (mem_ball_iff_norm.2 ?_)
+   rw [← hfx]
+-  calc ‖f z - f x‖ ≤ ‖deriv f w‖ * ‖z - x‖ := hmv
++  calc _ ≤ ‖deriv f w‖ * ‖z - x‖ := hmv
+     _ ≤ ‖deriv f w‖ * ε := mul_le_mul_of_nonneg_left hzx (norm_nonneg _)
+     _ < 1 * ε := mul_lt_mul_of_pos_right hc hε
+     _ = ε := one_mul ε
+diff --git a/AnalyticESC/Generic/Coincidences.lean b/AnalyticESC/Generic/Coincidences.lean
+index 99d436251..02cbf4cc3 100644
+--- a/AnalyticESC/Generic/Coincidences.lean
++++ b/AnalyticESC/Generic/Coincidences.lean
+@@ -107,9 +107,9 @@ theorem re_homotopy_ofReal (t : ℝ) (i : Fin N) (x : ℝ) :
+     (homotopy Φ t i x).re = (1 - t) * (Φ.f i x).re + t * (slope N * x + offset i) := by
+   simp [homotopy, target, Complex.mul_re]
+ 
+-/-- For `t ∈ [0,1]`, the map `f_i^t` sends `I` into `I`. -/
+-theorem re_homotopy_mem_I {t : ℝ} (ht : t ∈ I) (i : Fin N) {x : ℝ} (hx : x ∈ I) :
+-    (homotopy Φ t i x).re ∈ I := by
++/-- For `t ∈ (0,1)`, the map `f_i^t` sends `I` into `(0,1)`. -/
++theorem re_homotopy_mem_Ioo {t : ℝ} (ht : t ∈ Ioo 0 1) (i : Fin N) {x : ℝ} (hx : x ∈ I) :
++    (homotopy Φ t i x).re ∈ Ioo 0 1 := by
+   rw [re_homotopy_ofReal]
+   have hf := (Φ.inClass i).re_mem_I x hx
+   have h1 := offset_pos i
+@@ -118,12 +118,12 @@ theorem re_homotopy_mem_I {t : ℝ} (ht : t ∈ I) (i : Fin N) {x : ℝ} (hx : x
+   have h4 : slope N * x ≤ slope N := mul_le_of_le_one_right slope_pos.le hx.2
+   obtain ⟨ht0, ht1⟩ := ht
+   constructor
+-  · nlinarith [mul_nonneg (sub_nonneg.2 ht1) hf.1]
+-  · nlinarith [mul_nonneg (sub_nonneg.2 ht1) (sub_nonneg.2 hf.2)]
++  · nlinarith [mul_nonneg (sub_nonneg.2 ht1.le) hf.1]
++  · nlinarith [mul_nonneg (sub_nonneg.2 ht1.le) (sub_nonneg.2 hf.2)]
+ 
+-/-- For `t ∈ (0,1)`, the map `f_i^t` sends `I` into `(0,1)`. -/
+-theorem re_homotopy_mem_Ioo {t : ℝ} (ht : t ∈ Ioo 0 1) (i : Fin N) {x : ℝ} (hx : x ∈ I) :
+-    (homotopy Φ t i x).re ∈ Ioo 0 1 := by
++/-- For `t ∈ [0,1]`, the map `f_i^t` sends `I` into `I`. -/
++theorem re_homotopy_mem_I {t : ℝ} (ht : t ∈ I) (i : Fin N) {x : ℝ} (hx : x ∈ I) :
++    (homotopy Φ t i x).re ∈ I := by
+   rw [re_homotopy_ofReal]
+   have hf := (Φ.inClass i).re_mem_I x hx
+   have h1 := offset_pos i
+@@ -132,8 +132,8 @@ theorem re_homotopy_mem_Ioo {t : ℝ} (ht : t ∈ Ioo 0 1) (i : Fin N) {x : ℝ}
+   have h4 : slope N * x ≤ slope N := mul_le_of_le_one_right slope_pos.le hx.2
+   obtain ⟨ht0, ht1⟩ := ht
+   constructor
+-  · nlinarith [mul_nonneg (sub_nonneg.2 ht1.le) hf.1]
+-  · nlinarith [mul_nonneg (sub_nonneg.2 ht1.le) (sub_nonneg.2 hf.2)]
++  · nlinarith [mul_nonneg (sub_nonneg.2 ht1) hf.1]
++  · nlinarith [mul_nonneg (sub_nonneg.2 ht1) (sub_nonneg.2 hf.2)]
+ 
+ /-- For `t ∈ [0,1]`, the compositions `f^t_w` send real points of `I` to real points of `I`. -/
+ theorem exists_compT_ofReal {t : ℝ} (ht : t ∈ I) (w : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
+@@ -273,7 +273,7 @@ theorem exists_deriv_deriv_bound :
+       ((((Φ.differentiableOn_f i).deriv hO).deriv hO).continuousOn.mono hIU)
+   choose C hC using h
+   refine ⟨∑ i, |C i|, Finset.sum_nonneg fun i _ => abs_nonneg _, fun i x hx => ?_⟩
+-  calc ‖deriv (deriv (Φ.f i)) x‖ ≤ C i := hC i x (mem_image_of_mem _ hx)
++  calc _ ≤ C i := hC i x (mem_image_of_mem _ hx)
+     _ ≤ |C i| := le_abs_self _
+     _ ≤ ∑ i, |C i| :=
+         Finset.single_le_sum (f := fun i => |C i|) (fun j _ => abs_nonneg _) (Finset.mem_univ i)
+diff --git a/AnalyticESC/Generic/Continuity.lean b/AnalyticESC/Generic/Continuity.lean
+index 34af6d14b..a74f4ad93 100644
+--- a/AnalyticESC/Generic/Continuity.lean
++++ b/AnalyticESC/Generic/Continuity.lean
+@@ -25,13 +25,6 @@ namespace IFS.Continuity
+ 
+ /-! ## The real points of `I` in `ℂ` -/
+ 
+-theorem isCompact_realI : IsCompact (((↑) : ℝ → ℂ) '' I) :=
+-  isCompact_Icc.image Complex.continuous_ofReal
+-
+-theorem convex_realI : Convex ℝ (((↑) : ℝ → ℂ) '' I) := by
+-  have := (convex_Icc (0 : ℝ) 1).linear_image Complex.ofRealCLM.toLinearMap
+-  simpa using this
+-
+ theorem image_I_subset_nbhd {δ : ℝ} (hδ : 0 < δ) : ((↑) : ℝ → ℂ) '' I ⊆ nbhd δ := by
+   rintro _ ⟨y, hy, rfl⟩
+   exact ofReal_mem_nbhd hδ hy
+@@ -48,12 +41,12 @@ theorem ofReal_mem_closure {δ : ℝ} (hδ : 0 < δ) {x : ℝ} (hx : x ∈ I) :
+ theorem exists_lipschitz_I {h : ℂ → ℂ} {U : Set ℂ} (hU : IsOpen U)
+     (hIU : ((↑) : ℝ → ℂ) '' I ⊆ U) (hh : DifferentiableOn ℂ h U) :
+     ∃ L, 0 ≤ L ∧ ∀ a ∈ I, ∀ b ∈ I, ‖h (a : ℂ) - h (b : ℂ)‖ ≤ L * ‖(a : ℂ) - b‖ := by
+-  obtain ⟨L, hL⟩ := isCompact_realI.exists_bound_of_continuousOn
++  obtain ⟨L, hL⟩ := isCompact_image_I.exists_bound_of_continuousOn
+     ((hh.deriv hU).continuousOn.mono hIU)
+   refine ⟨max L 0, le_max_right _ _, fun a ha b hb => ?_⟩
+   exact Convex.norm_image_sub_le_of_norm_deriv_le
+     (fun z hz => hh.differentiableAt (hU.mem_nhds (hIU hz)))
+-    (fun z hz => (hL z hz).trans (le_max_left _ _)) convex_realI
++    (fun z hz => (hL z hz).trans (le_max_left _ _)) convex_image_I
+     (mem_image_of_mem _ hb) (mem_image_of_mem _ ha)
+ 
+ /-- A finite family of maps holomorphic on open sets containing `I` is uniformly Lipschitz
+@@ -75,6 +68,11 @@ theorem bddAbove_range_norm_sub {F G : ℂ → ℂ} {U : Set ℂ} (hIU : ((↑)
+     Complex.continuous_ofReal.comp continuous_subtype_val
+   exact (isCompact_range ((hF.comp_continuous h1 hU).sub (hG.comp_continuous h1 hU)).norm).bddAbove
+ 
++theorem norm_sub_le_ciSup {F G : ℂ → ℂ} {U : Set ℂ} (hIU : ((↑) : ℝ → ℂ) '' I ⊆ U)
++    (hF : ContinuousOn F U) (hG : ContinuousOn G U) {x : ℝ} (hx : x ∈ I) :
++    ‖F x - G x‖ ≤ ⨆ y : I, ‖F ((y : ℝ) : ℂ) - G ((y : ℝ) : ℂ)‖ :=
++  le_ciSup (bddAbove_range_norm_sub hIU hF hG) ⟨x, hx⟩
++
+ variable {N : ℕ} {ε ε' : ℝ}
+ 
+ /-! ## Pointwise bounds from `d₂` -/
+@@ -102,20 +100,11 @@ theorem norm_sub_le_d2 (Φ : IFS N ε) (Ψ : IFS N ε') (i : Fin N) {x : ℝ} (h
+   have hg := (Ψ.inClass i).differentiableOn
+   have hl := inter_subset_left (s := nbhd (2 * ε)) (t := nbhd (2 * ε'))
+   have hr := inter_subset_right (s := nbhd (2 * ε)) (t := nbhd (2 * ε'))
+-  have e0 : ‖Φ.f i x - Ψ.f i x‖ ≤ ⨆ y : I, ‖Φ.f i ((y : ℝ) : ℂ) - Ψ.f i ((y : ℝ) : ℂ)‖ :=
+-    le_ciSup (f := fun y : I => ‖Φ.f i ((y : ℝ) : ℂ) - Ψ.f i ((y : ℝ) : ℂ)‖)
+-      (bddAbove_range_norm_sub hU (hf.continuousOn.mono hl) (hg.continuousOn.mono hr)) ⟨x, hx⟩
+-  have e1 : ‖deriv (Φ.f i) x - deriv (Ψ.f i) x‖ ≤
+-      ⨆ y : I, ‖deriv (Φ.f i) ((y : ℝ) : ℂ) - deriv (Ψ.f i) ((y : ℝ) : ℂ)‖ :=
+-    le_ciSup (f := fun y : I => ‖deriv (Φ.f i) ((y : ℝ) : ℂ) - deriv (Ψ.f i) ((y : ℝ) : ℂ)‖)
+-      (bddAbove_range_norm_sub hU ((hf.deriv hO).continuousOn.mono hl)
+-        ((hg.deriv hO').continuousOn.mono hr)) ⟨x, hx⟩
+-  have e2 : ‖deriv (deriv (Φ.f i)) x - deriv (deriv (Ψ.f i)) x‖ ≤
+-      ⨆ y : I, ‖deriv (deriv (Φ.f i)) ((y : ℝ) : ℂ) - deriv (deriv (Ψ.f i)) ((y : ℝ) : ℂ)‖ :=
+-    le_ciSup (f := fun y : I =>
+-        ‖deriv (deriv (Φ.f i)) ((y : ℝ) : ℂ) - deriv (deriv (Ψ.f i)) ((y : ℝ) : ℂ)‖)
+-      (bddAbove_range_norm_sub hU (((hf.deriv hO).deriv hO).continuousOn.mono hl)
+-        (((hg.deriv hO').deriv hO').continuousOn.mono hr)) ⟨x, hx⟩
++  have e0 := norm_sub_le_ciSup hU (hf.continuousOn.mono hl) (hg.continuousOn.mono hr) hx
++  have e1 := norm_sub_le_ciSup hU ((hf.deriv hO).continuousOn.mono hl)
++    ((hg.deriv hO').continuousOn.mono hr) hx
++  have e2 := norm_sub_le_ciSup hU (((hf.deriv hO).deriv hO).continuousOn.mono hl)
++    (((hg.deriv hO').deriv hO').continuousOn.mono hr) hx
+   have n0 := (norm_nonneg _).trans e0
+   have n1 := (norm_nonneg _).trans e1
+   have n2 := (norm_nonneg _).trans e2
+@@ -146,7 +135,7 @@ theorem norm_comp_sub_comp_le (Φ : IFS N ε) (Ψ : IFS N ε') (v : List (Fin N)
+       have := Φ.norm_comp_sub_le [i] (ofReal_mem_nbhd Φ.ε_pos ha) (ofReal_mem_nbhd Φ.ε_pos hb)
+       simpa [comp_cons, comp_nil] using this
+     have h2 := (norm_sub_le_d2 Φ Ψ i hb).1
+-    calc ‖Φ.f i a - Ψ.f i b‖ ≤ ‖Φ.f i a - Φ.f i b‖ + ‖Φ.f i b - Ψ.f i b‖ :=
++    calc _ ≤ ‖Φ.f i a - Φ.f i b‖ + ‖Φ.f i b - Ψ.f i b‖ :=
+           norm_sub_le_norm_sub_add_norm_sub _ _ _
+       _ ≤ Φ.cmax * (d2 Φ Ψ / (1 - Φ.cmax)) + d2 Φ Ψ :=
+           add_le_add (h1.trans (mul_le_mul_of_nonneg_left ih hc0)) h2
+@@ -203,8 +192,7 @@ theorem norm_deriv_comp_sub_le (Φ : IFS N ε) (Ψ : IFS N ε') {c' L : ℝ} (hc
+               (norm_sub_le_d2 Φ Ψ i hb).2.1
+         _ = K * c' * d2 Φ Ψ := by rw [hK]; field_simp
+     have hDg : ‖Dg‖ ≤ c' ^ u.length := norm_deriv_comp_le_pow Ψ hc'0.le hc' u hx
+-    calc ‖deriv (Φ.f i) a * Df - deriv (Ψ.f i) b * Dg‖
+-        = ‖deriv (Φ.f i) a * (Df - Dg) + (deriv (Φ.f i) a - deriv (Ψ.f i) b) * Dg‖ := by
++    calc _ = ‖deriv (Φ.f i) a * (Df - Dg) + (deriv (Φ.f i) a - deriv (Ψ.f i) b) * Dg‖ := by
+           congr 1; ring
+       _ ≤ ‖deriv (Φ.f i) a‖ * ‖Df - Dg‖ + ‖deriv (Φ.f i) a - deriv (Ψ.f i) b‖ * ‖Dg‖ := by
+           rw [← norm_mul, ← norm_mul]; exact norm_add_le _ _
+@@ -283,8 +271,7 @@ theorem norm_term_sub_le (Φ : IFS N ε) (Ψ : IFS N ε') {c' L₁ L₂ m M : 
+           add_le_add ((hL₂ i a ha b hb).trans (mul_le_mul_of_nonneg_left hab hL₂0))
+             (norm_nonlin_sub_le Φ Ψ hm hM0 hgm hM i hb)
+       _ = (L₂ / (1 - Φ.cmax) + (1 + M) / m) * d2 Φ Ψ := by ring
+-  calc ‖Φ.nonlin i a * Df - Ψ.nonlin i b * Dg‖
+-      = ‖Φ.nonlin i a * (Df - Dg) + (Φ.nonlin i a - Ψ.nonlin i b) * Dg‖ := by
++  calc _ = ‖Φ.nonlin i a * (Df - Dg) + (Φ.nonlin i a - Ψ.nonlin i b) * Dg‖ := by
+         congr 1; ring
+     _ ≤ ‖Φ.nonlin i a‖ * ‖Df - Dg‖ + ‖Φ.nonlin i a - Ψ.nonlin i b‖ * ‖Dg‖ := by
+         rw [← norm_mul, ← norm_mul]; exact norm_add_le _ _
+@@ -294,16 +281,6 @@ theorem norm_term_sub_le (Φ : IFS N ε) (Ψ : IFS N ε') {c' L₁ L₂ m M : 
+           (mul_le_mul hB hDg (norm_nonneg _) (by positivity))
+     _ = _ := by ring
+ 
+-theorem length_take_of_get?_eq_some {w : Word N} {n : ℕ} {i : Fin N}
+-    (h : w.get? n = some i) : (w.take n).length = n := by
+-  cases w with
+-  | fin l =>
+-    simp only [Word.get?, Word.take] at h ⊢
+-    rw [List.length_take]
+-    have := (List.getElem?_eq_some_iff.1 h).1
+-    omega
+-  | inf l => simp [Word.take]
+-
+ /-- The termwise bound for the series (1.4). -/
+ theorem norm_dualTerm_sub_le (Φ : IFS N ε) (Ψ : IFS N ε') {c' L₁ L₂ m M : ℝ}
+     (hc'0 : 0 < c') (hcc' : Φ.cmax ≤ c') (hc' : ∀ i, ∀ y ∈ I, ‖deriv (Ψ.f i) (y : ℂ)‖ ≤ c')
+@@ -325,7 +302,7 @@ theorem norm_dualTerm_sub_le (Φ : IFS N ε) (Ψ : IFS N ε') {c' L₁ L₂ m M
+   | none => simp only [sub_self, norm_zero]; positivity
+   | some i =>
+     have hlen : (w.take n).reverse.length = n := by
+-      rw [List.length_reverse, length_take_of_get?_eq_some h]
++      rw [List.length_reverse, IFS.length_take_of_get?_eq_some h]
+     have := norm_term_sub_le Φ Ψ hc'0 hcc' hc' hm hgm hM0 hM hL₁0 hL₁ hL₂0 hL₂ i
+       (w.take n).reverse hx
+     rw [hlen] at this
+@@ -425,18 +402,9 @@ theorem lemma_2_7_union (Φ : IFS N ε) (h : Φ.DualSSC) :
+     have h2 : C' * d2 Φ Ψ ≤ |C'| * d2 Φ Ψ := mul_le_mul_of_nonneg_right (le_abs_self _) hd
+     rw [lt_div_iff₀ (by positivity)] at h1
+     nlinarith [abs_nonneg C']
+-  obtain ⟨MΨ, -, hMΨ, -⟩ := Ψ.exists_dualProj_bounds
+   refine (Ψ.dualSSC_iff_exists_delta hN).2 ⟨δ / 3, by positivity, fun i j hij => ?_⟩
+   obtain ⟨⟨x, hx⟩, hxδ⟩ := exists_lt_of_lt_ciSup (hsep i j hij)
+-  have hbdd : BddAbove (range fun y : I =>
+-      ‖Ψ.dualProj (.inf i) ((y : ℝ) : ℂ) - Ψ.dualProj (.inf j) ((y : ℝ) : ℂ)‖) := by
+-    refine ⟨2 * MΨ, ?_⟩
+-    rintro _ ⟨y, rfl⟩
+-    have hyc := Continuity.ofReal_mem_closure Ψ.ε_pos y.2
+-    calc _ ≤ ‖Ψ.dualProj (.inf i) ((y : ℝ) : ℂ)‖ + ‖Ψ.dualProj (.inf j) ((y : ℝ) : ℂ)‖ :=
+-          norm_sub_le _ _
+-      _ ≤ MΨ + MΨ := add_le_add (hMΨ _ _ hyc) (hMΨ _ _ hyc)
+-      _ = 2 * MΨ := by ring
++  have hbdd := Ψ.bddAbove_dualProj_sub (.inf i) (.inf j)
+   refine lt_of_lt_of_le ?_ (le_ciSup hbdd ⟨x, hx⟩)
+   have hi := hC' Ψ hΨδ₀ (.inf i) x hx
+   have hj := hC' Ψ hΨδ₀ (.inf j) x hx
+diff --git a/AnalyticESC/Generic/Density.lean b/AnalyticESC/Generic/Density.lean
+index 80046d190..e83cb0cd9 100644
+--- a/AnalyticESC/Generic/Density.lean
++++ b/AnalyticESC/Generic/Density.lean
+@@ -323,8 +323,7 @@ private theorem exists_delta {a b C r : ℝ} (ha : 0 < a) (hb : 0 < b) (hC : 0 
+   refine ⟨min (min 1 a) (min b (r / (2 * (C + 3)))), by positivity,
+     (min_le_left _ _).trans (min_le_left _ _), (min_le_left _ _).trans (min_le_right _ _),
+     (min_le_right _ _).trans (min_le_left _ _), ?_⟩
+-  calc (C + 3) * min (min 1 a) (min b (r / (2 * (C + 3))))
+-      ≤ (C + 3) * (r / (2 * (C + 3))) :=
++  calc _ ≤ (C + 3) * (r / (2 * (C + 3))) :=
+         mul_le_mul_of_nonneg_left ((min_le_right _ _).trans (min_le_right _ _)) (by linarith)
+     _ = r / 2 := by field_simp
+     _ < r := by linarith
+diff --git a/AnalyticESC/Generic/MultiplicativeBump.lean b/AnalyticESC/Generic/MultiplicativeBump.lean
+index b8705b6e9..ff12fcad0 100644
+--- a/AnalyticESC/Generic/MultiplicativeBump.lean
++++ b/AnalyticESC/Generic/MultiplicativeBump.lean
+@@ -204,8 +204,7 @@ theorem norm_P1_le (hW : ∀ w ∈ W, ‖z - w‖ ≤ 1) : ‖P1 m W z‖ ≤ (m
+         have h1 : ‖z - i‖ ^ (m + 1) ≤ 1 := pow_le_one₀ (norm_nonneg _) (hW i hi)
+         have h2 := norm_P_le_one (m := m) (W := W.erase i)
+           fun w hw => hW w (Finset.mem_of_mem_erase hw)
+-        calc ((m : ℝ) + 2) * ‖z - i‖ ^ (m + 1) * ‖P m (W.erase i) z‖ ≤ ((m : ℝ) + 2) * 1 * 1 := by
+-              gcongr
++        calc _ ≤ ((m : ℝ) + 2) * 1 * 1 := by gcongr
+           _ = (m : ℝ) + 2 := by ring
+     _ = (m + 2) * W.card := by rw [Finset.sum_const, nsmul_eq_mul]; ring
+ 
+@@ -215,23 +214,20 @@ theorem norm_P1_le_of_mem (hW : ∀ w ∈ W, ‖z - w‖ ≤ 1) {l : ℝ} (hl :
+   rw [P1]
+   refine (norm_sum_le _ _).trans ?_
+   have hl1 : ‖z - l‖ ≤ 1 := hW l hl
+-  calc ∑ i ∈ W, ‖((m + 2 : ℕ) : ℂ) * (z - i) ^ (m + 1) * P m (W.erase i) z‖
+-      ≤ ∑ _i ∈ W, ((m : ℝ) + 2) * ‖z - l‖ ^ (m + 1) := Finset.sum_le_sum fun i hi => by
++  calc _ ≤ ∑ _i ∈ W, ((m : ℝ) + 2) * ‖z - l‖ ^ (m + 1) := Finset.sum_le_sum fun i hi => by
+         rw [norm_mul, norm_mul, norm_pow, Complex.norm_natCast]
+         push_cast
+         have hWi : ∀ w ∈ W.erase i, ‖z - w‖ ≤ 1 := fun w hw => hW w (Finset.mem_of_mem_erase hw)
+         by_cases hil : i = l
+         · subst hil
+           have h2 := norm_P_le_one (m := m) hWi
+-          calc ((m : ℝ) + 2) * ‖z - i‖ ^ (m + 1) * ‖P m (W.erase i) z‖
+-              ≤ ((m : ℝ) + 2) * ‖z - i‖ ^ (m + 1) * 1 := by gcongr
++          calc _ ≤ ((m : ℝ) + 2) * ‖z - i‖ ^ (m + 1) * 1 := by gcongr
+             _ = _ := by ring
+         · have h1 : ‖z - i‖ ^ (m + 1) ≤ 1 := pow_le_one₀ (norm_nonneg _) (hW i hi)
+           have h2 := norm_P_le (m := m) hWi (Finset.mem_erase.2 ⟨Ne.symm hil, hl⟩)
+           have h3 : ‖z - l‖ ^ (m + 2) ≤ ‖z - l‖ ^ (m + 1) :=
+             pow_le_pow_of_le_one (norm_nonneg _) hl1 (by omega)
+-          calc ((m : ℝ) + 2) * ‖z - i‖ ^ (m + 1) * ‖P m (W.erase i) z‖
+-              ≤ ((m : ℝ) + 2) * 1 * ‖z - l‖ ^ (m + 1) := by gcongr; exact h2.trans h3
++          calc _ ≤ ((m : ℝ) + 2) * 1 * ‖z - l‖ ^ (m + 1) := by gcongr; exact h2.trans h3
+             _ = _ := by ring
+     _ = (m + 2) * W.card * ‖z - l‖ ^ (m + 1) := by
+         rw [Finset.sum_const, nsmul_eq_mul]; ring
+@@ -258,9 +254,7 @@ theorem norm_P2_le (hW : ∀ w ∈ W, ‖z - w‖ ≤ 1) :
+           have h4 : ((W.erase i).card : ℝ) ≤ W.card := by
+             exact_mod_cast Finset.card_erase_le
+           have h5 : ((m : ℝ) + 2) * (W.erase i).card ≤ (m + 2) * W.card := by gcongr
+-          calc ((m : ℝ) + 2) * (m + 1) * ‖z - i‖ ^ m * ‖P m (W.erase i) z‖ +
+-                ((m : ℝ) + 2) * ‖z - i‖ ^ (m + 1) * ‖P1 m (W.erase i) z‖
+-              ≤ ((m : ℝ) + 2) * (m + 1) * 1 * 1 + ((m : ℝ) + 2) * 1 * ((m + 2) * W.card) := by
++          calc _ ≤ ((m : ℝ) + 2) * (m + 1) * 1 * 1 + ((m : ℝ) + 2) * 1 * ((m + 2) * W.card) := by
+                 gcongr
+                 exact h3.trans h5
+             _ = _ := by ring
+@@ -276,8 +270,7 @@ theorem norm_P2_sub_le (hW : ∀ w ∈ W, ‖z - w‖ ≤ 1) {l : ℝ} (hl : l 
+   simp only [add_sub_cancel_left]
+   refine (norm_sum_le _ _).trans ?_
+   have hl1 : ‖z - l‖ ≤ 1 := hW l hl
+-  calc ∑ i ∈ W, ‖((m + 2 : ℕ) : ℂ) * (z - i) ^ (m + 1) * P1 m (W.erase i) z‖
+-      ≤ ∑ _i ∈ W, ((m : ℝ) + 2) ^ 2 * W.card * ‖z - l‖ ^ (m + 1) :=
++  calc _ ≤ ∑ _i ∈ W, ((m : ℝ) + 2) ^ 2 * W.card * ‖z - l‖ ^ (m + 1) :=
+         Finset.sum_le_sum fun i hi => by
+           rw [norm_mul, norm_mul, norm_pow, Complex.norm_natCast]
+           push_cast
+@@ -288,15 +281,13 @@ theorem norm_P2_sub_le (hW : ∀ w ∈ W, ‖z - w‖ ≤ 1) {l : ℝ} (hl : l 
+           by_cases hil : i = l
+           · subst hil
+             have h3 := norm_P1_le (m := m) hWi
+-            calc ((m : ℝ) + 2) * ‖z - i‖ ^ (m + 1) * ‖P1 m (W.erase i) z‖
+-                ≤ ((m : ℝ) + 2) * ‖z - i‖ ^ (m + 1) * ((m + 2) * W.card) := by
++            calc _ ≤ ((m : ℝ) + 2) * ‖z - i‖ ^ (m + 1) * ((m + 2) * W.card) := by
+                   gcongr
+                   exact h3.trans (by gcongr)
+               _ = _ := by ring
+           · have h1 : ‖z - i‖ ^ (m + 1) ≤ 1 := pow_le_one₀ (norm_nonneg _) (hW i hi)
+             have h3 := norm_P1_le_of_mem (m := m) hWi (Finset.mem_erase.2 ⟨Ne.symm hil, hl⟩)
+-            calc ((m : ℝ) + 2) * ‖z - i‖ ^ (m + 1) * ‖P1 m (W.erase i) z‖
+-                ≤ ((m : ℝ) + 2) * 1 * ((m + 2) * W.card * ‖z - l‖ ^ (m + 1)) := by
++            calc _ ≤ ((m : ℝ) + 2) * 1 * ((m + 2) * W.card * ‖z - l‖ ^ (m + 1)) := by
+                   gcongr
+                   exact h3.trans (by gcongr)
+               _ = _ := by ring
+@@ -473,7 +464,7 @@ end Map
+ theorem mul_exp_neg_le_one (t : ℝ) : t * Real.exp (-t) ≤ 1 := by
+   have h := Real.add_one_le_exp t
+   have h2 : Real.exp t * Real.exp (-t) = 1 := by rw [← Real.exp_add, add_neg_cancel, Real.exp_zero]
+-  calc t * Real.exp (-t) ≤ Real.exp t * Real.exp (-t) :=
++  calc _ ≤ Real.exp t * Real.exp (-t) :=
+         mul_le_mul_of_nonneg_right (by linarith) (Real.exp_pos _).le
+     _ = 1 := h2
+ 
+@@ -481,7 +472,7 @@ theorem mul_exp_neg_le_one (t : ℝ) : t * Real.exp (-t) ≤ 1 := by
+ theorem sq_mul_exp_neg_le_two {t : ℝ} (ht : 0 ≤ t) : t ^ 2 * Real.exp (-t) ≤ 2 := by
+   have h := Real.quadratic_le_exp_of_nonneg ht
+   have h2 : Real.exp t * Real.exp (-t) = 1 := by rw [← Real.exp_add, add_neg_cancel, Real.exp_zero]
+-  calc t ^ 2 * Real.exp (-t) ≤ (2 * Real.exp t) * Real.exp (-t) :=
++  calc _ ≤ (2 * Real.exp t) * Real.exp (-t) :=
+         mul_le_mul_of_nonneg_right (by linarith) (Real.exp_pos _).le
+     _ = 2 := by rw [mul_assoc, h2, mul_one]
+ 
+@@ -494,7 +485,7 @@ theorem exp_neg_eq_sq_half (t : ℝ) : Real.exp (-t) = Real.exp (-(t / 2)) * Rea
+ theorem mul_exp_neg_le_half (t : ℝ) :
+     t * Real.exp (-t) ≤ 2 * Real.exp (-(t / 2)) := by
+   have h := mul_exp_neg_le_one (t / 2)
+-  calc t * Real.exp (-t) = 2 * (t / 2 * Real.exp (-(t / 2))) * Real.exp (-(t / 2)) := by
++  calc _ = 2 * (t / 2 * Real.exp (-(t / 2))) * Real.exp (-(t / 2)) := by
+         rw [exp_neg_eq_sq_half]; ring
+     _ ≤ 2 * 1 * Real.exp (-(t / 2)) := by gcongr
+     _ = 2 * Real.exp (-(t / 2)) := by ring
+@@ -503,7 +494,7 @@ theorem mul_exp_neg_le_half (t : ℝ) :
+ theorem sq_mul_exp_neg_le_half {t : ℝ} (ht : 0 ≤ t) :
+     t ^ 2 * Real.exp (-t) ≤ 8 * Real.exp (-(t / 2)) := by
+   have h := sq_mul_exp_neg_le_two (t := t / 2) (by positivity)
+-  calc t ^ 2 * Real.exp (-t) = 4 * ((t / 2) ^ 2 * Real.exp (-(t / 2))) * Real.exp (-(t / 2)) := by
++  calc _ = 4 * ((t / 2) ^ 2 * Real.exp (-(t / 2))) * Real.exp (-(t / 2)) := by
+         rw [exp_neg_eq_sq_half]; ring
+     _ ≤ 4 * 2 * Real.exp (-(t / 2)) := by gcongr
+     _ = 8 * Real.exp (-(t / 2)) := by ring
+@@ -514,17 +505,13 @@ theorem abs_mul_exp_neg_le {t : ℝ} (ht : 0 ≤ t) :
+       |4 * t ^ 2 - 2 * t| * Real.exp (-t) ≤ 36 * Real.exp (-(t / 2)) := by
+   have habs : |4 * t ^ 2 - 2 * t| ≤ 4 * t ^ 2 + 2 * t := by
+     rw [abs_le]; constructor <;> nlinarith
+-  have he := (Real.exp_pos (-t)).le
+-  have h1 := mul_exp_neg_le_one t
+-  have h2 := sq_mul_exp_neg_le_two ht
+-  have h3 := mul_exp_neg_le_half t
+-  have h4 := sq_mul_exp_neg_le_half ht
+   have hb : |4 * t ^ 2 - 2 * t| * Real.exp (-t) ≤
+       4 * (t ^ 2 * Real.exp (-t)) + 2 * (t * Real.exp (-t)) := by
+-    calc |4 * t ^ 2 - 2 * t| * Real.exp (-t) ≤ (4 * t ^ 2 + 2 * t) * Real.exp (-t) :=
+-          mul_le_mul_of_nonneg_right habs he
++    calc _ ≤ (4 * t ^ 2 + 2 * t) * Real.exp (-t) :=
++          mul_le_mul_of_nonneg_right habs (Real.exp_pos _).le
+       _ = _ := by ring
+-  constructor <;> linarith
++  constructor <;> nlinarith [mul_exp_neg_le_one t, sq_mul_exp_neg_le_two ht,
++    mul_exp_neg_le_half t, sq_mul_exp_neg_le_half ht]
+ 
+ /-! ## Splitting a sum near and far from the points of `𝒴` -/
+ 
+@@ -548,25 +535,22 @@ theorem sum_le_near_far {Y : Finset ℝ} {x ρ B K b : ℝ} {w a F : ℝ → ℝ
+     linarith
+   have hnear : ∀ k ∈ Y.filter fun k => |x - k| < ρ, w k * F k ≤ K * B := fun k hk => by
+     obtain ⟨hkY, hxk⟩ := Finset.mem_filter.1 hk
+-    calc w k * F k ≤ B * K := mul_le_mul (hwB k hkY hxk) (hFK k hkY) (hF0 k hkY) hB
++    calc _ ≤ B * K := mul_le_mul (hwB k hkY hxk) (hFK k hkY) (hF0 k hkY) hB
+       _ = K * B := mul_comm _ _
+   have hfar : ∀ k ∈ Y.filter fun k => ¬ |x - k| < ρ, w k * F k ≤ a k * b := fun k hk => by
+     obtain ⟨hkY, hxk⟩ := Finset.mem_filter.1 hk
+     exact mul_le_mul (hwa k hkY) (hFb k hkY (not_lt.1 hxk)) (hF0 k hkY) (ha k hkY)
+-  calc ∑ k ∈ Y, w k * F k
+-      = ∑ k ∈ Y with |x - k| < ρ, w k * F k + ∑ k ∈ Y with ¬ |x - k| < ρ, w k * F k :=
++  calc _ = ∑ k ∈ Y with |x - k| < ρ, w k * F k + ∑ k ∈ Y with ¬ |x - k| < ρ, w k * F k :=
+         (Finset.sum_filter_add_sum_filter_not _ _ _).symm
+     _ ≤ K * B + ∑ k ∈ Y, a k * b := by
+         gcongr
+-        · calc ∑ k ∈ Y with |x - k| < ρ, w k * F k
+-              ≤ (Y.filter fun k => |x - k| < ρ).card • (K * B) :=
++        · calc _ ≤ (Y.filter fun k => |x - k| < ρ).card • (K * B) :=
+                 Finset.sum_le_card_nsmul _ _ _ hnear
+             _ ≤ 1 • (K * B) := by
+                 rw [nsmul_eq_mul, nsmul_eq_mul]
+                 exact mul_le_mul_of_nonneg_right (by exact_mod_cast hcard) (mul_nonneg hK hB)
+             _ = K * B := one_nsmul _
+-        · calc ∑ k ∈ Y with ¬ |x - k| < ρ, w k * F k
+-              ≤ ∑ k ∈ Y with ¬ |x - k| < ρ, a k * b := Finset.sum_le_sum hfar
++        · calc _ ≤ ∑ k ∈ Y with ¬ |x - k| < ρ, a k * b := Finset.sum_le_sum hfar
+             _ ≤ ∑ k ∈ Y, a k * b :=
+                 Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
+                   fun k hk _ => mul_nonneg (ha k hk) hb
+@@ -612,8 +596,7 @@ theorem eventually_gauss_three {c ν : ℝ} (hc : 0 < c) (hν : 0 < ν) :
+   rw [Real.rpow_neg_one] at h
+   have h3 : |u| ^ (3 : ℝ) = |u| ^ 3 := by exact_mod_cast Real.rpow_natCast |u| 3
+   rw [h3] at h
+-  calc c * |u| ^ 3 / ρ ^ 3 * Real.exp (-u ^ 2 / ρ ^ 3) =
+-      c * (ρ ^ 3)⁻¹ * |u| ^ 3 * Real.exp (-u ^ 2 / ρ ^ 3) := by ring
++  calc _ = c * (ρ ^ 3)⁻¹ * |u| ^ 3 * Real.exp (-u ^ 2 / ρ ^ 3) := by ring
+     _ ≤ ν := h
+ 
+ /-- The far terms: `K e^{-c/ρ} ≤ ν` for small `ρ`. -/
+@@ -687,7 +670,7 @@ theorem norm_P2_zero_sub_le {W : Finset ℝ} {z : ℂ} (hW : ∀ w ∈ W, ‖z -
+ /-- The products `∏_{y' ≠ y} (z - y')²` with `y ≠ k` contain the factor `(z - k)²`. -/
+ theorem sum_norm_P_erase_le {W : Finset ℝ} {z : ℂ} (hW : ∀ w ∈ W, ‖z - w‖ ≤ 1) {k : ℝ}
+     (hk : k ∈ W) : ∑ i ∈ W.erase k, ‖P 0 (W.erase i) z‖ ≤ W.card * ‖z - k‖ ^ 2 := by
+-  calc ∑ i ∈ W.erase k, ‖P 0 (W.erase i) z‖ ≤ ∑ _i ∈ W.erase k, ‖z - k‖ ^ 2 :=
++  calc _ ≤ ∑ _i ∈ W.erase k, ‖z - k‖ ^ 2 :=
+         Finset.sum_le_sum fun i hi => by
+           have hki : k ∈ W.erase i := Finset.mem_erase.2 ⟨(Finset.ne_of_mem_erase hi).symm, hk⟩
+           simpa using norm_P_le (m := 0) (fun w hw => hW w (Finset.mem_of_mem_erase hw)) hki
+@@ -703,7 +686,7 @@ theorem norm_mul_A_le {u : ℂ} {v : ℝ → ℝ} (ha : ∀ k ∈ Y, 0 ≤ a k)
+   refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun k hk => ?_)
+   rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg (ha k hk), norm_gaussian]
+   have := ha k hk
+-  calc ‖u‖ * (a k * Real.exp (-(x - k) ^ 2 / η)) ≤ v k * (a k * Real.exp (-(x - k) ^ 2 / η)) :=
++  calc _ ≤ v k * (a k * Real.exp (-(x - k) ^ 2 / η)) :=
+         mul_le_mul_of_nonneg_right (hu k hk) (by positivity)
+     _ = _ := by ring
+ 
+@@ -724,8 +707,7 @@ theorem norm_mul_A1_le {u : ℂ} {v : ℝ → ℝ} (hη : 0 < η) (ha : ∀ k 
+   rw [norm_mul, norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg (ha k hk),
+     norm_gaussian, norm_A1_coeff hη]
+   have := ha k hk
+-  calc ‖u‖ * (a k * (2 * |x - k| / η) * Real.exp (-(x - k) ^ 2 / η))
+-      ≤ v k * (a k * (2 * |x - k| / η) * Real.exp (-(x - k) ^ 2 / η)) :=
++  calc _ ≤ v k * (a k * (2 * |x - k| / η) * Real.exp (-(x - k) ^ 2 / η)) :=
+         mul_le_mul_of_nonneg_right (hu k hk) (by positivity)
+     _ = _ := by ring
+ 
+@@ -736,8 +718,7 @@ theorem norm_mul_A_le_of {u : ℂ} {c ν : ℝ} {p : ℕ} (hc : 0 ≤ c) (ha : 
+     (hν : ∀ k ∈ Y, a k * |x - k| ^ p * Real.exp (-(x - k) ^ 2 / η) ≤ ν) :
+     ‖u * A a Y η x‖ ≤ c * (Y.card * ν) := by
+   refine (norm_mul_A_le ha hu).trans ?_
+-  calc ∑ k ∈ Y, a k * Real.exp (-(x - k) ^ 2 / η) * (c * |x - k| ^ p)
+-      = ∑ k ∈ Y, c * (a k * |x - k| ^ p * Real.exp (-(x - k) ^ 2 / η)) :=
++  calc _ = ∑ k ∈ Y, c * (a k * |x - k| ^ p * Real.exp (-(x - k) ^ 2 / η)) :=
+         Finset.sum_congr rfl fun k _ => by ring
+     _ ≤ ∑ _k ∈ Y, c * ν := Finset.sum_le_sum fun k hk => mul_le_mul_of_nonneg_left (hν k hk) hc
+     _ = c * (Y.card * ν) := by rw [Finset.sum_const, nsmul_eq_mul]; ring
+@@ -749,8 +730,7 @@ theorem norm_mul_A1_le_of {u : ℂ} {c ν : ℝ} (hη : 0 < η) (hc : 0 ≤ c) (
+     (hν : ∀ k ∈ Y, a k * |x - k| ^ 3 / η * Real.exp (-(x - k) ^ 2 / η) ≤ ν) :
+     ‖u * A1 a Y η x‖ ≤ 2 * c * (Y.card * ν) := by
+   refine (norm_mul_A1_le hη ha hu).trans ?_
+-  calc ∑ k ∈ Y, a k * (2 * |x - k| / η) * Real.exp (-(x - k) ^ 2 / η) * (c * |x - k| ^ 2)
+-      = ∑ k ∈ Y, 2 * c * (a k * |x - k| ^ 3 / η * Real.exp (-(x - k) ^ 2 / η)) :=
++  calc _ = ∑ k ∈ Y, 2 * c * (a k * |x - k| ^ 3 / η * Real.exp (-(x - k) ^ 2 / η)) :=
+         Finset.sum_congr rfl fun k _ => by ring
+     _ ≤ ∑ _k ∈ Y, 2 * c * ν :=
+         Finset.sum_le_sum fun k hk => mul_le_mul_of_nonneg_left (hν k hk) (by positivity)
+@@ -789,8 +769,7 @@ theorem norm_P2_mul_A_le (hY : ∀ y ∈ Y, y ∈ I) (hZ : ∀ w ∈ Z, w ∈ I)
+         norm_mul, Complex.norm_two]
+     · have h3 := sum_norm_P_erase_le hYx hk
+       rw [norm_ofReal_sub, sq_abs] at h3
+-      calc ‖P 2 Z x * (2 * ∑ i ∈ Y.erase k, P 0 (Y.erase i) x)‖
+-          ≤ 1 * (2 * ∑ i ∈ Y.erase k, ‖P 0 (Y.erase i) x‖) := by
++      calc _ ≤ 1 * (2 * ∑ i ∈ Y.erase k, ‖P 0 (Y.erase i) x‖) := by
+             rw [norm_mul, norm_mul, Complex.norm_two]
+             gcongr
+             exact norm_sum_le _ _
+@@ -888,9 +867,7 @@ theorem norm_P1_mul_A1_le (hY : ∀ y ∈ Y, y ∈ I) (hZ : ∀ w ∈ Z, w ∈ I
+       rw [norm_mul, norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg (ha k hk),
+         norm_gaussian, norm_A1_coeff hη]
+       have hak := ha k hk
+-      calc a k * (2 * |x - k| / η) * Real.exp (-(x - k) ^ 2 / η) *
+-            ‖P 2 Z x * ∑ i ∈ Y.erase k, 2 * ((x : ℂ) - i) * P 0 (Y.erase i) x‖
+-          ≤ a k * (2 * |x - k| / η) * Real.exp (-(x - k) ^ 2 / η) * (2 * Y.card * |x - k| ^ 2) := by
++      calc _ ≤ a k * (2 * |x - k| / η) * Real.exp (-(x - k) ^ 2 / η) * (2 * Y.card * |x - k| ^ 2) := by
+             gcongr
+         _ = 4 * Y.card * (a k * |x - k| ^ 3 / η * Real.exp (-(x - k) ^ 2 / η)) := by ring
+         _ ≤ 4 * Y.card * ν := by gcongr; exact h3 k hk
+@@ -929,7 +906,7 @@ theorem sum_near_far_le (hY : ∀ y ∈ Y, y ∈ I) (hx : x ∈ I) {ρ B : ℝ}
+       fun w hw => hYx w (Finset.mem_of_mem_erase hw)
+     have := ha k hk
+     rw [norm_mul]
+-    calc a k * (‖P 2 Z x‖ * ‖P 0 (Y.erase k) x‖) ≤ a k * (1 * 1) := by gcongr
++    calc _ ≤ a k * (1 * 1) := by gcongr
+       _ = a k := by ring
+   have ht0 : ∀ k : ℝ, 0 ≤ (x - k) ^ 2 / ρ ^ 3 := fun k => by positivity
+   have n1 : ∑ k ∈ Y, a k * ‖P 2 Z x * P 0 (Y.erase k) x‖ *
+@@ -1037,7 +1014,7 @@ theorem norm_H_le (hY : ∀ y ∈ Y, y ∈ I) (hZ : ∀ w ∈ Z, w ∈ I) (hZne
+   set L₀ := 2 * M * Pc with hL₀
+   have hφ0' : ∀ k ∈ Y, ‖P 0 Y x‖ ≤ 2 * M * |x - k| := fun k hk => by
+     have h0 := abs_nonneg (x - k)
+-    calc ‖P 0 Y x‖ ≤ |x - k| ^ 2 := hφ0 k hk
++    calc _ ≤ |x - k| ^ 2 := hφ0 k hk
+       _ = |x - k| * |x - k| := sq _
+       _ ≤ 1 * |x - k| := mul_le_mul_of_nonneg_right (hxk k hk) h0
+       _ ≤ 2 * M * |x - k| := mul_le_mul_of_nonneg_right (by linarith [hM1 k hk]) h0
+@@ -1047,35 +1024,32 @@ theorem norm_H_le (hY : ∀ y ∈ Y, y ∈ I) (hZ : ∀ w ∈ Z, w ∈ I) (hZne
+   have hprod : ∀ Φ Ψ : ℂ, (∀ k ∈ Y, ‖Φ‖ ≤ 2 * M * |x - k|) → ‖Ψ‖ ≤ Pc →
+       ∀ k ∈ Y, ‖Φ * Ψ‖ ≤ L₀ * |x - k| ^ 1 := fun Φ Ψ hΦ hΨ k hk => by
+     rw [norm_mul, pow_one, hL₀]
+-    calc ‖Φ‖ * ‖Ψ‖ ≤ (2 * M * |x - k|) * Pc :=
++    calc _ ≤ (2 * M * |x - k|) * Pc :=
+           mul_le_mul (hΦ k hk) hΨ (norm_nonneg _) (by positivity)
+       _ = 2 * M * Pc * |x - k| := by ring
+   have hprod2 : ∀ Ψ : ℂ, ‖Ψ‖ ≤ 4 * Q →
+       ∀ k ∈ Y, ‖P 0 Y x * Ψ‖ ≤ (4 * Q) * |x - k| ^ 2 := fun Ψ hΨ k hk => by
+     rw [norm_mul]
+-    calc ‖P 0 Y x‖ * ‖Ψ‖ ≤ |x - k| ^ 2 * (4 * Q) :=
++    calc _ ≤ |x - k| ^ 2 * (4 * Q) :=
+           mul_le_mul (hφ0 k hk) hΨ (norm_nonneg _) (by positivity)
+       _ = _ := by ring
+   have h1' : ∀ k ∈ Y, a k * |x - k| ^ 1 * Real.exp (-(x - k) ^ 2 / ρ ^ 3) ≤ ν := fun k hk => by
+     rw [pow_one]
+     exact h1 k hk
+   have hL₀0 : 0 ≤ L₀ := by positivity
+-  -- the norms handled by `(C1)`
+-  have g1 : ‖P 0 Y x * P 2 Z x * A a Y (ρ ^ 3) x‖ ≤ L₀ * (M * ν) :=
+-    norm_mul_A_le_of hL₀0 ha (hprod _ _ hφ0' hψ0') h1'
+-  have g2 : ‖P1 0 Y x * P 2 Z x * A a Y (ρ ^ 3) x‖ ≤ L₀ * (M * ν) :=
+-    norm_mul_A_le_of hL₀0 ha (hprod _ _ hφ1 hψ0') h1'
+-  have g3 : ‖P 0 Y x * P1 2 Z x * A a Y (ρ ^ 3) x‖ ≤ L₀ * (M * ν) :=
+-    norm_mul_A_le_of hL₀0 ha (hprod _ _ hφ0' hψ1') h1'
+-  have g4 : ‖P 0 Y x * P2 2 Z x * A a Y (ρ ^ 3) x‖ ≤ L₀ * (M * ν) :=
+-    norm_mul_A_le_of hL₀0 ha (hprod _ _ hφ0' hψ2') h1'
+-  have g5 : ‖P1 0 Y x * P1 2 Z x * A a Y (ρ ^ 3) x‖ ≤ L₀ * (M * ν) :=
+-    norm_mul_A_le_of hL₀0 ha (hprod _ _ hφ1 hψ1') h1'
+-  -- the norms handled by `(C2)`
+-  have g6 : ‖P 0 Y x * P 2 Z x * A1 a Y (ρ ^ 3) x‖ ≤ 2 * (4 * Q) * (M * ν) :=
+-    norm_mul_A1_le_of hη (by positivity) ha (hprod2 _ (by linarith)) h3
+-  have g7 : ‖P 0 Y x * P1 2 Z x * A1 a Y (ρ ^ 3) x‖ ≤ 2 * (4 * Q) * (M * ν) :=
+-    norm_mul_A1_le_of hη (by positivity) ha (hprod2 _ (by linarith)) h3
++  have g (F G : ℂ) (hF : ∀ k ∈ Y, ‖F‖ ≤ 2 * M * |x - k|) (hG : ‖G‖ ≤ Pc) :
++      ‖F * G * A a Y (ρ ^ 3) x‖ ≤ L₀ * (M * ν) :=
++    norm_mul_A_le_of hL₀0 ha (hprod F G hF hG) h1'
++  have g1 := g _ _ hφ0' hψ0'
++  have g2 := g _ _ hφ1 hψ0'
++  have g3 := g _ _ hφ0' hψ1'
++  have g4 := g _ _ hφ0' hψ2'
++  have g5 := g _ _ hφ1 hψ1'
++  have gA (G : ℂ) (hG : ‖G‖ ≤ 4 * Q) :
++      ‖P 0 Y x * G * A1 a Y (ρ ^ 3) x‖ ≤ 2 * (4 * Q) * (M * ν) :=
++    norm_mul_A1_le_of hη (by positivity) ha (hprod2 G hG) h3
++  have g6 := gA (P 2 Z x) (by linarith)
++  have g7 := gA (P1 2 Z x) (by linarith)
+   -- the three remaining norms, and the near/far split
+   have d1 := norm_P2_mul_A_le hY hZ hx ha h1' h2
+   have d2 := norm_P_mul_A2_le (Y := Y) (Z := Z) (η := ρ ^ 3) (x := x) ha
+@@ -1138,13 +1112,10 @@ theorem norm_sub_le_of_norm_H_le {f0 f1 f2 h h1 h2 : ℂ} {s B2 D : ℝ} (hs : s
+     rw [norm_one] at this
+     linarith
+   have hB2 : 0 ≤ B2 := (norm_nonneg _).trans hf2
+-  have hn1 := norm_nonneg f0
+-  have hn2 := norm_nonneg f1
+   have hn3 := norm_nonneg h1
+   refine ⟨?_, ?_, ?_⟩
+   · rw [show f0 * Complex.exp h - f0 = f0 * (Complex.exp h - 1) by ring, norm_mul]
+-    calc ‖f0‖ * ‖Complex.exp h - 1‖ ≤ 1 * (2 * s) :=
+-          mul_le_mul hf0 he1 (norm_nonneg _) zero_le_one
++    calc _ ≤ 1 * (2 * s) := mul_le_mul hf0 he1 (norm_nonneg _) zero_le_one
+       _ = 2 * s := one_mul _
+   · rw [show (f1 + f0 * h1) * Complex.exp h - f1 =
+         f1 * (Complex.exp h - 1) + f0 * h1 * Complex.exp h by ring]
+@@ -1175,8 +1146,7 @@ theorem norm_sub_le_of_norm_H_le {f0 f1 f2 h h1 h2 : ℂ} {s B2 D : ℝ} (hs : s
+       have := mul_le_mul hf0 hh2 (norm_nonneg _) zero_le_one
+       linarith
+     have t5 : ‖2 * f1 * h1 + f0 * h1 ^ 2 + f0 * h2‖ ≤ 2 * s + s / 2 + (D + s) := by
+-      have a1 := norm_add_le (2 * f1 * h1 + f0 * h1 ^ 2) (f0 * h2)
+-      have a2 := norm_add_le (2 * f1 * h1) (f0 * h1 ^ 2)
++      have a := norm_add₃_le (a := 2 * f1 * h1) (b := f0 * h1 ^ 2) (c := f0 * h2)
+       linarith
+     have t6 : ‖2 * f1 * h1 + f0 * h1 ^ 2 + f0 * h2‖ * ‖Complex.exp h‖ ≤
+         (2 * s + s / 2 + (D + s)) * 2 := mul_le_mul t5 he (norm_nonneg _) (by positivity)
+@@ -1303,7 +1273,7 @@ private theorem proposition_4_2_nonempty {ε : ℝ} (hε : 0 < ε) {f : ℂ →
+       have h3 := (hf1 k (hY k hk)).2
+       have h4 := (hf0 k (hY k hk)).1
+       have hak := (ha k hk).le
+-      calc a k * ‖P 2 Z x * P 0 (Y.erase k) x‖ ≤ a k * (2 * N k) := by gcongr
++      calc _ ≤ a k * (2 * N k) := by gcongr
+         _ = δ * ‖deriv f k‖ / ‖f k‖ := by
+             rw [eq_div_iff (hfk k hk).ne']
+             linarith
+@@ -1385,7 +1355,7 @@ private theorem proposition_4_2_nonempty {ε : ℝ} (hε : 0 < ε) {f : ℂ →
+     have h3 := le_norm_A (η := ρ ^ 3) (fun k hk => (ha k hk).le) hy
+     have h4 := (hfk y hy).le
+     have h5 := (hN y hy).le
+-    calc δ * ‖deriv f y‖ = ‖f y‖ * (2 * N y) * a y := by linarith
++    calc _ = ‖f y‖ * (2 * N y) * a y := by linarith
+       _ ≤ ‖f y‖ * (2 * N y) * ‖A a Y (ρ ^ 3) y‖ := by gcongr
+   · have := mul_nonneg hB₂0 hs.le
+     exact (hest x hx).1.trans_lt (by linarith)
+diff --git a/AnalyticESC/Main/Closeness.lean b/AnalyticESC/Main/Closeness.lean
+index 5deb59612..b7e701f5c 100644
+--- a/AnalyticESC/Main/Closeness.lean
++++ b/AnalyticESC/Main/Closeness.lean
+@@ -156,7 +156,7 @@ theorem exists_dualProj_closeness :
+   -- Conditions on `η`.
+   have hη1 : η ≤ 1 := hη0.trans (pow_le_one₀ hc0.le hc1)
+   have h14 : η ^ ((1 : ℝ) / 4) ≤ c := by
+-    calc η ^ ((1 : ℝ) / 4) ≤ (c ^ 4) ^ ((1 : ℝ) / 4) := Real.rpow_le_rpow hη.le hη0 (by norm_num)
++    calc _ ≤ (c ^ 4) ^ ((1 : ℝ) / 4) := Real.rpow_le_rpow hη.le hη0 (by norm_num)
+       _ = c := by rw [← Real.rpow_natCast, ← Real.rpow_mul hc0.le]; norm_num
+   have h12 : η ^ ((1 : ℝ) / 2) ≤ η ^ ((1 : ℝ) / 4) :=
+     Real.rpow_le_rpow_of_exponent_ge hη hη1 (by norm_num)
+@@ -164,34 +164,28 @@ theorem exists_dualProj_closeness :
+   have hJ1 : 2 * (2 + Q) * η ^ ((2 : ℝ)⁻¹ ^ 1) < 1 - 0 := by
+     have : ((2 : ℝ)⁻¹ ^ 1) = 1 / 2 := by norm_num
+     rw [this]
+-    calc 2 * (2 + Q) * η ^ ((1 : ℝ) / 2) ≤ 2 * (2 + Q) * c := by gcongr; exact h12.trans h14
++    calc _ ≤ 2 * (2 + Q) * c := by gcongr; exact h12.trans h14
+       _ < 1 - 0 := by rw [hcQ]; norm_num
+   have hJ2 : 2 * (2 + Q) * η ^ ((2 : ℝ)⁻¹ ^ 2) < 1 - 0 := by
+     have : ((2 : ℝ)⁻¹ ^ 2) = 1 / 4 := by norm_num
+     rw [this]
+-    calc 2 * (2 + Q) * η ^ ((1 : ℝ) / 4) ≤ 2 * (2 + Q) * c := by gcongr
++    calc _ ≤ 2 * (2 + Q) * c := by gcongr
+       _ < 1 - 0 := by rw [hcQ]; norm_num
+   -- Closeness of first and second derivatives of `f_{a u}` and `f_{b u}`.
+   set i := a ++ u with hi
+   set j := b ++ u with hj
+   have hlen : j.length = i.length := by simp [i, j, hab]
+-  have hQi : ∀ l ≤ 2 + 1, ∀ y ∈ Icc (0 : ℝ) 1, ‖iteratedDeriv l (Φ.comp i) y‖ ≤ Q :=
+-    fun l hl y hy => hQ l hl i y hy
+-  have hQj : ∀ l ≤ 2 + 1, ∀ y ∈ Icc (0 : ℝ) 1, ‖iteratedDeriv l (Φ.comp j) y‖ ≤ Q :=
+-    fun l hl y hy => hQ l hl j y hy
+-  have hri : ∀ t : ℝ, (t : ℂ) ∈ nbhd ε → (Φ.comp i t).im = 0 := fun t ht => Φ.im_comp_ofReal i ht
+-  have hrj : ∀ t : ℝ, (t : ℂ) ∈ nbhd ε → (Φ.comp j t).im = 0 := fun t ht => Φ.im_comp_ofReal j ht
+   have hd1 := norm_iteratedDeriv_sub_le_of_real Φ.ε_pos (Φ.differentiableOn_comp i)
+-    (Φ.differentiableOn_comp j) hri hrj 1 le_rfl le_rfl hη hη1 hQ0
+-    (fun l hl => hQi l (by omega)) (fun l hl => hQj l (by omega)) hJ1 hclose x hx
++    (Φ.differentiableOn_comp j) (fun t ht => Φ.im_comp_ofReal i ht)
++    (fun t ht => Φ.im_comp_ofReal j ht) 1 le_rfl le_rfl hη hη1 hQ0
++    (fun l hl => hQ l (by omega) i) (fun l hl => hQ l (by omega) j) hJ1 hclose x hx
+   have hd2 := norm_iteratedDeriv_sub_le_of_real Φ.ε_pos (Φ.differentiableOn_comp i)
+-    (Φ.differentiableOn_comp j) hri hrj 2 le_rfl le_rfl hη hη1 hQ0 hQi hQj hJ2 hclose x hx
++    (Φ.differentiableOn_comp j) (fun t ht => Φ.im_comp_ofReal i ht)
++    (fun t ht => Φ.im_comp_ofReal j ht) 2 le_rfl le_rfl hη hη1 hQ0
++    (fun l hl => hQ l hl i) (fun l hl => hQ l hl j) hJ2 hclose x hx
+   rw [iteratedDeriv_one, iteratedDeriv_one] at hd1
+   rw [iteratedDeriv_succ, iteratedDeriv_one, iteratedDeriv_succ, iteratedDeriv_one] at hd2
+-  have e1 : ((2 : ℝ)⁻¹ ^ 1) = 1 / 2 := by norm_num
+-  have e2 : ((2 : ℝ)⁻¹ ^ 2) = 1 / 4 := by norm_num
+-  rw [e1] at hd1
+-  rw [e2] at hd2
++  norm_num at hd1 hd2
+   -- The distortions `f_{a u}''/f_{a u}'` and `f_{b u}''/f_{b u}'` at `x`.
+   have hz : (x : ℂ) ∈ closure (nbhd ε) := subset_closure (ofReal_mem_nbhd Φ.ε_pos hx)
+   set A := deriv (Φ.comp i) x with hA_def
+@@ -215,7 +209,7 @@ theorem exists_dualProj_closeness :
+       field_simp; ring
+     rw [hid, norm_div, div_eq_mul_inv]
+     have hE0 : 0 ≤ E := by positivity
+-    calc ‖A2 / A * (B - A) + (A2 - B2)‖ * ‖B‖⁻¹ ≤ (M * E + E) * Φ.cmin⁻¹ ^ i.length := by
++    calc _ ≤ (M * E + E) * Φ.cmin⁻¹ ^ i.length := by
+           refine mul_le_mul ?_ hBinv (by positivity) (by positivity)
+           refine (norm_add_le _ _).trans (add_le_add ?_ hd2)
+           rw [norm_mul]
+@@ -236,7 +230,7 @@ theorem exists_dualProj_closeness :
+   have hu : Φ.cmin ^ u.length ≤ ‖deriv (Φ.comp u) x‖ := Φ.cmin_pow_le_norm_deriv_comp u hz
+   have hu0 : 0 < ‖deriv (Φ.comp u) x‖ := (pow_pos hcmin _).trans_le hu
+   have huinv : ‖deriv (Φ.comp u) x‖⁻¹ ≤ Φ.cmin⁻¹ ^ i.length := by
+-    calc ‖deriv (Φ.comp u) x‖⁻¹ ≤ Φ.cmin⁻¹ ^ u.length := by
++    calc _ ≤ Φ.cmin⁻¹ ^ u.length := by
+           rw [inv_pow]; exact inv_anti₀ (pow_pos hcmin _) hu
+       _ ≤ Φ.cmin⁻¹ ^ i.length := pow_le_pow_right₀ hcinv1 (by simp [i])
+   have hilen : i.length = a.length + u.length := by simp [i]
+@@ -244,8 +238,7 @@ theorem exists_dualProj_closeness :
+   have hD : ‖D‖ = ‖A2 / A - B2 / B‖ * ‖deriv (Φ.comp u) x‖⁻¹ := by
+     rw [hdiff, norm_mul]; field_simp
+   rw [hD]
+-  calc ‖A2 / A - B2 / B‖ * ‖deriv (Φ.comp u) x‖⁻¹
+-      ≤ (M + 1) * E * Φ.cmin⁻¹ ^ i.length * Φ.cmin⁻¹ ^ i.length :=
++  calc _ ≤ (M + 1) * E * Φ.cmin⁻¹ ^ i.length * Φ.cmin⁻¹ ^ i.length :=
+         mul_le_mul hdist huinv (by positivity) (by positivity)
+     _ = (M + 1) * (2 + Q) ^ 2 * Φ.cmin⁻¹ ^ (2 * (a.length + u.length)) * η ^ ((1 : ℝ) / 4) := by
+         rw [hE, ← hilen, two_mul, pow_add]; ring
+@@ -294,7 +287,7 @@ theorem norm_iteratedDeriv_sub_le_on_image (hN : 0 < N) (k : ℕ) (u : List (Fin
+   · have hc := Φ.cmin_pos hN
+     have hlow := pow_le_pow_left₀ (pow_nonneg hc.le u.length) (Φ.cmin_pow_le_norm_deriv_comp u hx') k
+     apply mul_le_mul_of_nonneg_right _ hη
+-    calc K / ‖deriv (Φ.comp u) x‖ ^ k ≤ K / (Φ.cmin ^ u.length) ^ k :=
++    calc _ ≤ K / (Φ.cmin ^ u.length) ^ k :=
+         div_le_div_of_nonneg_left hK (by positivity) hlow
+       _ = K * (Φ.cmin⁻¹ ^ k) ^ u.length := by
+         rw [div_eq_mul_inv, ← inv_pow, ← inv_pow, ← pow_mul, ← pow_mul, Nat.mul_comm]
+diff --git a/AnalyticESC/Main/Criterion.lean b/AnalyticESC/Main/Criterion.lean
+index 6891d92a1..e269d4227 100644
+--- a/AnalyticESC/Main/Criterion.lean
++++ b/AnalyticESC/Main/Criterion.lean
+@@ -94,8 +94,7 @@ theorem exists_dualProj_ne_of_get?_zero {α : ℝ}
+   have h2 := Φ.norm_dualProj_sub_nonlin_le hj hx
+   have key : ‖Φ.nonlin a x - Φ.nonlin b x‖ ≤
+       ‖Φ.dualProj i x - Φ.nonlin a x‖ + ‖Φ.dualProj j x - Φ.nonlin b x‖ := by
+-    calc ‖Φ.nonlin a x - Φ.nonlin b x‖ =
+-          ‖-(Φ.dualProj i x - Φ.nonlin a x) + (Φ.dualProj j x - Φ.nonlin b x)‖ := by
++    calc _ = ‖-(Φ.dualProj i x - Φ.nonlin a x) + (Φ.dualProj j x - Φ.nonlin b x)‖ := by
+           rw [heq]; ring_nf
+       _ ≤ _ := by rw [← norm_neg (Φ.dualProj i x - _)]; exact norm_add_le _ _
+   have h2β : 2 * Φ.beta * Φ.cmax / (1 - Φ.cmax) = 2 * (Φ.beta * Φ.cmax / (1 - Φ.cmax)) := by
+@@ -191,14 +190,7 @@ theorem proposition_1_8 (hN : 2 ≤ N) {α : ℝ} (hα : 0 < α)
+       0 < ⨆ x : I, ‖Φ.dualProj i ((x : ℝ) : ℂ) - Φ.dualProj j ((x : ℝ) : ℂ)‖ := by
+     intro i j hij hlen
+     obtain ⟨x, hx, hne⟩ := Φ.exists_dualProj_ne (by omega) hsep hlt hij hlen
+-    obtain ⟨M, -, hM⟩ := Φ.exists_norm_dualProj_le
+-    have hbdd : BddAbove
+-        (range fun x : I => ‖Φ.dualProj i ((x : ℝ) : ℂ) - Φ.dualProj j ((x : ℝ) : ℂ)‖) := by
+-      refine ⟨M + M, ?_⟩
+-      rintro _ ⟨x, rfl⟩
+-      have hxn : ((x : ℝ) : ℂ) ∈ closure (nbhd ε) :=
+-        subset_closure (ofReal_mem_nbhd Φ.ε_pos x.2)
+-      exact (norm_sub_le _ _).trans (add_le_add (hM i _ hxn) (hM j _ hxn))
++    have hbdd := Φ.bddAbove_dualProj_sub i j
+     exact (norm_pos_iff.2 (sub_ne_zero.2 hne)).trans_le
+       (le_ciSup (f := fun x : I => ‖Φ.dualProj i ((x : ℝ) : ℂ) - Φ.dualProj j ((x : ℝ) : ℂ)‖)
+         hbdd ⟨x, hx⟩)
+diff --git a/AnalyticESC/Main/Dichotomy.lean b/AnalyticESC/Main/Dichotomy.lean
+index d905c59ca..4a2cdb7ee 100644
+--- a/AnalyticESC/Main/Dichotomy.lean
++++ b/AnalyticESC/Main/Dichotomy.lean
+@@ -42,7 +42,7 @@ theorem comp (h : SupExpSmall n η) {φ : ℕ → ℕ} (hφ : Tendsto φ atTop a
+ theorem eventually_le (hn : ∀ k, 1 ≤ n k) (h : SupExpSmall n η) {δ : ℝ} (hδ : 0 < δ) :
+     ∀ᶠ k in atTop, η k ≤ δ := by
+   filter_upwards [h (min δ 1) (lt_min hδ one_pos)] with k hk
+-  calc η k ≤ min δ 1 ^ n k := hk
++  calc _ ≤ min δ 1 ^ n k := hk
+     _ ≤ min δ 1 :=
+       pow_le_of_le_one (le_min hδ.le zero_le_one) (min_le_right _ _) (by have := hn k; omega)
+     _ ≤ δ := min_le_left _ _
+@@ -64,13 +64,13 @@ theorem mul_pow_rpow (hn : ∀ k, 1 ≤ n k) (h : SupExpSmall n η) (hη : ∀ k
+   filter_upwards [h _ hθ'] with k hk
+   have hnk : n k ≠ 0 := by have := hn k; omega
+   have h1 : η k ^ s ≤ (θ / L) ^ n k := by
+-    calc η k ^ s ≤ (((θ / L) ^ s⁻¹) ^ n k) ^ s := Real.rpow_le_rpow (hη k) hk hs.le
++    calc _ ≤ (((θ / L) ^ s⁻¹) ^ n k) ^ s := Real.rpow_le_rpow (hη k) hk hs.le
+       _ = (θ / L) ^ n k := by
+         rw [← Real.rpow_natCast, ← Real.rpow_mul hθL.le, ← Real.rpow_mul hθL.le,
+           show s⁻¹ * (n k : ℝ) * s = n k by field_simp, Real.rpow_natCast]
+   have h2 : K ≤ max K 1 ^ n k := (le_max_left _ _).trans (le_self_pow₀ (le_max_right _ _) hnk)
+   have h3 : A ^ n k ≤ (A + 1) ^ n k := pow_le_pow_left₀ hA (by linarith) _
+-  calc K * A ^ n k * η k ^ s ≤ max K 1 ^ n k * (A + 1) ^ n k * (θ / L) ^ n k :=
++  calc _ ≤ max K 1 ^ n k * (A + 1) ^ n k * (θ / L) ^ n k :=
+         mul_le_mul (mul_le_mul h2 h3 (by positivity) (by positivity)) h1
+           (Real.rpow_nonneg (hη k) _) (by positivity)
+     _ = (L * (θ / L)) ^ n k := by rw [hL_def, mul_pow, mul_pow]
+@@ -117,16 +117,8 @@ namespace IFS
+ variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
+ 
+ private theorem norm_comp_sub_le_supDist (w v : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
+-    ‖Φ.comp w x - Φ.comp v x‖ ≤ Φ.supDist w v := by
+-  obtain ⟨R, -, hR⟩ := Φ.exists_comp_bound
+-  have hmem : ∀ y : I, ((y : ℝ) : ℂ) ∈ closure (nbhd ε) := fun y =>
+-    subset_closure (ofReal_mem_nbhd Φ.ε_pos y.2)
+-  refine le_ciSup (f := fun y : I => ‖Φ.comp w ((y : ℝ) : ℂ) - Φ.comp v ((y : ℝ) : ℂ)‖)
+-    ⟨2 * R, ?_⟩ ⟨x, hx⟩
+-  rintro _ ⟨y, rfl⟩
+-  calc _ ≤ ‖Φ.comp w ((y : ℝ) : ℂ)‖ + ‖Φ.comp v ((y : ℝ) : ℂ)‖ := norm_sub_le _ _
+-    _ ≤ R + R := add_le_add (hR _ _ (hmem y)) (hR _ _ (hmem y))
+-    _ = 2 * R := by ring
++    ‖Φ.comp w x - Φ.comp v x‖ ≤ Φ.supDist w v :=
++  Φ.norm_le_supDist w v hx
+ 
+ /-! ## Condensing sequences -/
+ 
+@@ -423,7 +415,7 @@ theorem dualProj_eq_of_fixed_suffix (S : Φ.CondSeq) {u : List (Fin N)}
+     set B := Φ.dualProj (.fin (S.b k).reverse) y
+     set Hi := Φ.dualProj (.inf i) y
+     set Hj := Φ.dualProj (.inf j) y
+-    calc ‖Hi - Hj‖ = ‖-(A - Hi) + (A - B) + (B - Hj)‖ := by congr 1; ring
++    calc _ = ‖-(A - Hi) + (A - B) + (B - Hj)‖ := by congr 1; ring
+       _ ≤ ‖-(A - Hi)‖ + ‖A - B‖ + ‖B - Hj‖ := norm_add₃_le
+       _ = ‖A - Hi‖ + ‖A - B‖ + ‖B - Hj‖ := by rw [norm_neg]
+       _ ≤ 0 + δ := by linarith
+@@ -484,7 +476,7 @@ theorem dualProj_eq (S : Φ.CondSeq) {i j : ℕ → Fin N}
+     set B := iteratedDeriv r (Φ.dualProj (.fin (S.b k).reverse)) (S.p k)
+     set Hi := iteratedDeriv r (Φ.dualProj (.inf i)) (S.p k)
+     set Hj := iteratedDeriv r (Φ.dualProj (.inf j)) (S.p k)
+-    calc ‖Hi - Hj‖ = ‖-(A - Hi) + (A - B) + (B - Hj)‖ := by congr 1; ring
++    calc _ = ‖-(A - Hi) + (A - B) + (B - Hj)‖ := by congr 1; ring
+       _ ≤ ‖-(A - Hi)‖ + ‖A - B‖ + ‖B - Hj‖ := norm_add₃_le
+       _ = ‖A - Hi‖ + ‖A - B‖ + ‖B - Hj‖ := by rw [norm_neg]
+       _ ≤ δ / 3 + δ / 3 + δ / 3 := by gcongr <;> linarith
+diff --git a/AnalyticESC/Main/Example.lean b/AnalyticESC/Main/Example.lean
+index 118b755b0..c0e657bee 100644
+--- a/AnalyticESC/Main/Example.lean
++++ b/AnalyticESC/Main/Example.lean
+@@ -1,6 +1,7 @@
+ module
+ 
+ public import AnalyticESC.Main.Criterion
++public import AnalyticESC.Generic.Class
+ 
+ @[expose] public section
+ 
+@@ -24,12 +25,8 @@ noncomputable def exampleMaps : Fin 3 → ℂ → ℂ :=
+ 
+ /-- A point of `cl B_{1/100}` lies within `1/100` of a point of `I`. -/
+ private lemma example_exists_near {z : ℂ} (hz : z ∈ closure (nbhd (1 / 100))) :
+-    ∃ x ∈ I, ‖z - x‖ ≤ 1 / 100 := by
+-  have h := closure_thickening_subset_cthickening (1 / 100 : ℝ) (((↑) : ℝ → ℂ) '' I) hz
+-  rw [isCompact_image_I.cthickening_eq_biUnion_closedBall (by norm_num)] at h
+-  simp only [mem_iUnion, mem_closedBall, exists_prop] at h
+-  obtain ⟨_, ⟨x, hx, rfl⟩, hzx⟩ := h
+-  exact ⟨x, hx, by rwa [← dist_eq_norm]⟩
++    ∃ x ∈ I, ‖z - x‖ ≤ 1 / 100 :=
++  exists_mem_I_norm_sub_le (by norm_num) hz
+ 
+ /-- A point within `1/100` of `I` has norm at most `101/100` and real part at least `-1/100`. -/
+ private lemma example_bounds_of_near {z : ℂ} {x : ℝ} (hx : x ∈ I) (hzx : ‖z - x‖ ≤ 1 / 100) :
+@@ -58,7 +55,7 @@ private lemma example_mapsTo {f : ℂ → ℂ} (hI : ∀ x ∈ I, ∃ y ∈ I, f
+   rw [nbhd, mem_thickening_iff]
+   refine ⟨y, mem_image_of_mem _ hy, ?_⟩
+   rw [dist_eq_norm, ← hfy]
+-  calc ‖f z - f x‖ ≤ 1 / 5 * ‖z - x‖ := hf z x hx hzx
++  calc _ ≤ 1 / 5 * ‖z - x‖ := hf z x hx hzx
+     _ ≤ 1 / 5 * (1 / 100) := by gcongr
+     _ < 1 / 100 := by norm_num
+ 
+@@ -140,7 +137,7 @@ private lemma example_norm_factor_le (c : ℂ) {z : ℂ} {x : ℝ} (hx : x ∈ I
+     (hzx : ‖z - x‖ ≤ 1 / 100) : ‖c + (z + x) / 32‖ ≤ ‖c‖ + 201 / 100 / 32 := by
+   have hz := (example_bounds_of_near hx hzx).1
+   have hx' : ‖(x : ℂ)‖ ≤ 1 := by rw [Complex.norm_real, Real.norm_of_nonneg hx.1]; exact hx.2
+-  calc ‖c + (z + x) / 32‖ ≤ ‖c‖ + ‖(z + x) / 32‖ := norm_add_le _ _
++  calc _ ≤ ‖c‖ + ‖(z + x) / 32‖ := norm_add_le _ _
+     _ = ‖c‖ + ‖z + x‖ / 32 := by rw [norm_div]; norm_num
+     _ ≤ ‖c‖ + (‖z‖ + ‖(x : ℂ)‖) / 32 := by gcongr; exact norm_add_le _ _
+     _ ≤ ‖c‖ + 201 / 100 / 32 := by linarith
+@@ -148,7 +145,7 @@ private lemma example_norm_factor_le (c : ℂ) {z : ℂ} {x : ℝ} (hx : x ∈ I
+ private lemma example_norm_deriv_le (c : ℂ) {z : ℂ} (hz : z ∈ closure (nbhd (1 / 100))) :
+     ‖c + z / 16‖ ≤ ‖c‖ + 101 / 100 / 16 := by
+   have hz' := (example_bounds hz).1
+-  calc ‖c + z / 16‖ ≤ ‖c‖ + ‖z / 16‖ := norm_add_le _ _
++  calc _ ≤ ‖c‖ + ‖z / 16‖ := norm_add_le _ _
+     _ = ‖c‖ + ‖z‖ / 16 := by rw [norm_div]; norm_num
+     _ ≤ ‖c‖ + 101 / 100 / 16 := by linarith
+ 
+diff --git a/AnalyticESC/Main/LocalDimension.lean b/AnalyticESC/Main/LocalDimension.lean
+index d15dbcb46..87a37ed51 100644
+--- a/AnalyticESC/Main/LocalDimension.lean
++++ b/AnalyticESC/Main/LocalDimension.lean
+@@ -45,7 +45,7 @@ def IsGibbs (s : ℝ) (ν : Measure (ℕ → Fin N)) : Prop :=
+       ν.real (wordCylinder w) ≤ C * Φ.supDeriv w ^ s
+ 
+ /-- The prefix map `ω ↦ ω₁ ⋯ ωₙ` is measurable. -/
+-private theorem measurable_prefix (n : ℕ) : Measurable fun (ω : ℕ → Fin N) (k : Fin n) => ω k :=
++theorem measurable_prefix (n : ℕ) : Measurable fun (ω : ℕ → Fin N) (k : Fin n) => ω k :=
+   Measurable.of_eval fun k => measurable_pi_apply (k : ℕ)
+ 
+ /-- The natural projection is measurable, so `ν ∘ π⁻¹` is the image measure of `ν`. -/
+@@ -57,7 +57,7 @@ theorem measurable_natProj : Measurable Φ.natProj :=
+     (tendsto_pi_nhds.2 Φ.tendsto_natProj)
+ 
+ /-- The cylinder of a word of length `n` is the preimage of the word under the prefix map. -/
+-private theorem wordCylinder_ofFn {n : ℕ} (v : Fin n → Fin N) :
++theorem wordCylinder_ofFn {n : ℕ} (v : Fin n → Fin N) :
+     wordCylinder (List.ofFn v) = (fun (ω : ℕ → Fin N) (k : Fin n) => ω k) ⁻¹' {v} := by
+   ext ω
+   simp only [wordCylinder, mem_ofPred_eq, mem_preimage, mem_singleton_iff, funext_iff]
+@@ -79,7 +79,7 @@ private theorem sum_measureReal_wordCylinder (ν : Measure (ℕ → Fin N)) [IsF
+   rw [wordCylinder_ofFn, map_measureReal_apply (measurable_prefix n) (MeasurableSet.of_discrete)]
+ 
+ /-- The cylinders of the words of length `n` have total measure `1`. -/
+-private theorem sum_measureReal_wordCylinder_univ (ν : Measure (ℕ → Fin N))
++theorem sum_measureReal_wordCylinder_univ (ν : Measure (ℕ → Fin N))
+     [IsProbabilityMeasure ν] (n : ℕ) :
+     ∑ v : Fin n → Fin N, ν.real (wordCylinder (List.ofFn v)) = 1 := by
+   rw [sum_measureReal_wordCylinder, Finset.coe_univ, preimage_univ, probReal_univ]
+@@ -148,8 +148,7 @@ theorem tendsto_pressure_iff_of_isGibbs (hN : 0 < N) {s : ℝ} {ν : Measure (
+   have hup : s ≤ t → ∀ n, Real.log (Φ.pressureSum t n) ≤ Real.log C + n * ((t - s) * L) := by
+     intro hst n
+     have h : Φ.pressureSum t n ≤ C * Real.exp (n * ((t - s) * L)) := by
+-      calc Φ.pressureSum t n
+-          ≤ Φ.pressureSum s n * Real.exp (n * ((t - s) * L)) := by
++      calc _ ≤ Φ.pressureSum s n * Real.exp (n * ((t - s) * L)) := by
+             rw [pressureSum, pressureSum, Finset.sum_mul]
+             refine Finset.sum_le_sum fun v _ => ?_
+             rw [hterm]
+@@ -159,15 +158,14 @@ theorem tendsto_pressure_iff_of_isGibbs (hN : 0 < N) {s : ℝ} {ν : Measure (
+             linarith
+         _ ≤ C * Real.exp (n * ((t - s) * L)) :=
+             mul_le_mul_of_nonneg_right (hPs n).1 (Real.exp_pos _).le
+-    calc Real.log (Φ.pressureSum t n) ≤ Real.log (C * Real.exp (n * ((t - s) * L))) :=
++    calc _ ≤ Real.log (C * Real.exp (n * ((t - s) * L))) :=
+           Real.log_le_log (hP t n) h
+       _ = Real.log C + n * ((t - s) * L) := by
+           rw [Real.log_mul hC.ne' (Real.exp_pos _).ne', Real.log_exp]
+   have hlow : t ≤ s → ∀ n, -Real.log C + n * ((t - s) * L) ≤ Real.log (Φ.pressureSum t n) := by
+     intro hst n
+     have h : C⁻¹ * Real.exp (n * ((t - s) * L)) ≤ Φ.pressureSum t n := by
+-      calc C⁻¹ * Real.exp (n * ((t - s) * L))
+-          ≤ Φ.pressureSum s n * Real.exp (n * ((t - s) * L)) :=
++      calc _ ≤ Φ.pressureSum s n * Real.exp (n * ((t - s) * L)) :=
+             mul_le_mul_of_nonneg_right (hPs n).2 (Real.exp_pos _).le
+         _ ≤ Φ.pressureSum t n := by
+             rw [pressureSum, pressureSum, Finset.sum_mul]
+@@ -177,7 +175,7 @@ theorem tendsto_pressure_iff_of_isGibbs (hN : 0 < N) {s : ℝ} {ν : Measure (
+               (Real.rpow_nonneg (hpos _).le _)
+             have := mul_le_mul_of_nonpos_right (hlog n v) (sub_nonpos.2 hst)
+             linarith
+-    calc -Real.log C + n * ((t - s) * L) = Real.log (C⁻¹ * Real.exp (n * ((t - s) * L))) := by
++    calc _ = Real.log (C⁻¹ * Real.exp (n * ((t - s) * L))) := by
+           rw [Real.log_mul (inv_ne_zero hC.ne') (Real.exp_pos _).ne', Real.log_exp,
+             Real.log_inv]
+       _ ≤ Real.log (Φ.pressureSum t n) :=
+@@ -435,7 +433,7 @@ private theorem ld_re_comp_le {w : List (Fin 3)} (hw : ∀ i ∈ w, i ≠ 2) {x
+       have h5 : x ^ 3 ≤ x ^ 2 := by nlinarith
+       have h6 : x ^ 4 ≤ x ^ 3 := by nlinarith
+       nlinarith
+-    calc (exampleIFS.comp u y).re ≤ (1 / 8) ^ u.length * (y * (1 + y)) := ih hu hyI
++    calc _ ≤ (1 / 8) ^ u.length * (y * (1 + y)) := ih hu hyI
+       _ ≤ (1 / 8) ^ u.length * (1 / 8 * (x * (1 + x))) := by gcongr
+       _ = (1 / 8) ^ u.length * (1 / 8) * (x * (1 + x)) := by ring
+ 
+@@ -461,15 +459,13 @@ private theorem ld_norm_deriv_comp_le {w : List (Fin 3)} (hw : ∀ i ∈ w, i 
+     have h3 := ih hu hyI
+     have h4 := ld_norm_deriv_f_le i hi hx0
+     have hpow : (0 : ℝ) ≤ (1 / 8) ^ u.length := by positivity
+-    calc ‖deriv (exampleIFS.comp u) y‖ * ‖deriv (exampleIFS.f i) x‖
+-        ≤ ((1 / 8) ^ u.length * (1 + y)) * (1 / 8 + x / 16) :=
++    calc _ ≤ ((1 / 8) ^ u.length * (1 + y)) * (1 / 8 + x / 16) :=
+           mul_le_mul h3 h4 (norm_nonneg _) (by positivity)
+       _ ≤ ((1 / 8) ^ u.length * (1 + (x / 8 + x ^ 2 / 32))) * (1 / 8 + x / 16) := by gcongr
+       _ ≤ (1 / 8) ^ u.length * (1 / 8) * (1 + x) := by
+           have h5 : (1 + (x / 8 + x ^ 2 / 32)) * (1 / 8 + x / 16) ≤ 1 / 8 * (1 + x) := by
+             nlinarith
+-          calc ((1 / 8) ^ u.length * (1 + (x / 8 + x ^ 2 / 32))) * (1 / 8 + x / 16)
+-              = (1 / 8) ^ u.length * ((1 + (x / 8 + x ^ 2 / 32)) * (1 / 8 + x / 16)) := by ring
++          calc _ = (1 / 8) ^ u.length * ((1 + (x / 8 + x ^ 2 / 32)) * (1 / 8 + x / 16)) := by ring
+             _ ≤ (1 / 8) ^ u.length * (1 / 8 * (1 + x)) := by gcongr
+             _ = _ := by ring
+ 
+@@ -497,7 +493,7 @@ private theorem ld_rpow_bounds {x y : ℝ} (s : ℝ) (hy : 0 < y) (h1 : y ≤ x)
+     have hb := Real.rpow_le_rpow hx.le h2 hs
+     rw [h2y] at hb
+     constructor
+-    · calc min 1 (2 ^ s) * y ^ s ≤ 1 * y ^ s := mul_le_mul_of_nonneg_right (min_le_left _ _) hys
++    · calc _ ≤ 1 * y ^ s := mul_le_mul_of_nonneg_right (min_le_left _ _) hys
+         _ ≤ x ^ s := by rw [one_mul]; exact ha
+     · exact hb.trans (mul_le_mul_of_nonneg_right (le_max_right _ _) hys)
+   · have ha := Real.rpow_le_rpow_of_nonpos hy h1 hs
+@@ -505,7 +501,7 @@ private theorem ld_rpow_bounds {x y : ℝ} (s : ℝ) (hy : 0 < y) (h1 : y ≤ x)
+     rw [h2y] at hb
+     constructor
+     · exact (mul_le_mul_of_nonneg_right (min_le_right _ _) hys).trans hb
+-    · calc x ^ s ≤ 1 * y ^ s := by rw [one_mul]; exact ha
++    · calc _ ≤ 1 * y ^ s := by rw [one_mul]; exact ha
+         _ ≤ max 1 (2 ^ s) * y ^ s := mul_le_mul_of_nonneg_right (le_max_left _ _) hys
+ 
+ /-! ### The local dimension: cylinders of words over the letters `0, 1` -/
+@@ -548,12 +544,11 @@ private theorem ld_sum_bounds {s C : ℝ} {ν : Measure (ℕ → Fin 3)} (hC : 0
+     rw [← Real.rpow_pow_comm (by norm_num)] at h3 h4
+     obtain ⟨h5, h6⟩ := hG (List.ofFn v)
+     constructor
+-    · calc C⁻¹ * min 1 (2 ^ s) * ((1 / 8 : ℝ) ^ s) ^ n
+-          = C⁻¹ * (min 1 (2 ^ s) * ((1 / 8 : ℝ) ^ s) ^ n) := by ring
++    · calc _ = C⁻¹ * (min 1 (2 ^ s) * ((1 / 8 : ℝ) ^ s) ^ n) := by ring
+         _ ≤ C⁻¹ * exampleIFS.supDeriv (List.ofFn v) ^ s :=
+             mul_le_mul_of_nonneg_left h3 (inv_pos.2 hC).le
+         _ ≤ _ := h5
+-    · calc ν.real (wordCylinder (List.ofFn v)) ≤ C * exampleIFS.supDeriv (List.ofFn v) ^ s := h6
++    · calc _ ≤ C * exampleIFS.supDeriv (List.ofFn v) ^ s := h6
+         _ ≤ C * (max 1 (2 ^ s) * ((1 / 8 : ℝ) ^ s) ^ n) := mul_le_mul_of_nonneg_left h4 hC.le
+         _ = _ := by ring
+   have hs1 := Finset.sum_le_sum fun v hv => (hterm v hv).1
+@@ -561,8 +556,7 @@ private theorem ld_sum_bounds {s C : ℝ} {ν : Measure (ℕ → Fin 3)} (hC : 0
+   rw [Finset.sum_const, ld_card_words, nsmul_eq_mul] at hs1 hs2
+   push_cast at hs1 hs2
+   constructor
+-  · calc C⁻¹ * min 1 (2 ^ s) * (2 * (1 / 8 : ℝ) ^ s) ^ n
+-        = (2 : ℝ) ^ n * (C⁻¹ * min 1 (2 ^ s) * ((1 / 8 : ℝ) ^ s) ^ n) := by rw [mul_pow]; ring
++  · calc _ = (2 : ℝ) ^ n * (C⁻¹ * min 1 (2 ^ s) * ((1 / 8 : ℝ) ^ s) ^ n) := by rw [mul_pow]; ring
+       _ ≤ _ := hs1
+   · calc _ ≤ (2 : ℝ) ^ n * (C * max 1 (2 ^ s) * ((1 / 8 : ℝ) ^ s) ^ n) := hs2
+       _ = C * max 1 (2 ^ s) * (2 * (1 / 8 : ℝ) ^ s) ^ n := by rw [mul_pow]; ring
+@@ -679,7 +673,7 @@ theorem example_localDim {s : ℝ} {ν : Measure (ℕ → Fin 3)} [IsProbability
+       rw [hpow3]
+       rw [hpow2] at hr1
+       nlinarith
+-    calc C⁻¹ * min 1 (2 ^ s) * ρ ^ 3 * ρ ^ n = C⁻¹ * min 1 (2 ^ s) * ρ ^ (n + 3) := by ring
++    calc _ = C⁻¹ * min 1 (2 ^ s) * ρ ^ (n + 3) := by ring
+       _ ≤ _ := hlow (n + 3)
+       _ ≤ _ := measureReal_mono (preimage_mono (closedBall_subset_closedBall hr))
+   · have hr : r < 29 / 32 * (1 / 8 : ℝ) ^ n := by
+diff --git a/AnalyticESC/Separation.lean b/AnalyticESC/Separation.lean
+index ec8d6b21c..5cd4e301f 100644
+--- a/AnalyticESC/Separation.lean
++++ b/AnalyticESC/Separation.lean
+@@ -46,8 +46,7 @@ theorem tendsto_natProj (w : ℕ → Fin N) :
+     have hz1 : Φ.comp [w n] 0 ∈ nbhd ε := Φ.mapsTo_comp [w n] hz0'
+     have h1 : ‖Φ.comp [w n] 0‖ ≤ 1 := by
+       simpa using Φ.norm_comp_ofReal_le_one [w n] zero_mem_I
+-    calc |(Φ.comp v 0).re - (Φ.comp v (Φ.comp [w n] 0)).re|
+-        = |(Φ.comp v 0 - Φ.comp v (Φ.comp [w n] 0)).re| := by rw [Complex.sub_re]
++    calc _ = |(Φ.comp v 0 - Φ.comp v (Φ.comp [w n] 0)).re| := by rw [Complex.sub_re]
+       _ ≤ ‖Φ.comp v 0 - Φ.comp v (Φ.comp [w n] 0)‖ := Complex.abs_re_le_norm _
+       _ ≤ Φ.cmax ^ v.length * ‖0 - Φ.comp [w n] 0‖ := Φ.norm_comp_sub_le v hz0' hz1
+       _ ≤ Φ.cmax ^ n * 1 := by
+@@ -71,7 +70,7 @@ private theorem bddAbove_supDist (i j : List (Fin N)) :
+     _ ≤ 1 + 1 := add_le_add (Φ.norm_comp_ofReal_le_one i x.2) (Φ.norm_comp_ofReal_le_one j x.2)
+     _ = 2 := by norm_num
+ 
+-private theorem norm_le_supDist (i j : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
++theorem norm_le_supDist (i j : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
+     ‖Φ.comp i x - Φ.comp j x‖ ≤ Φ.supDist i j :=
+   le_ciSup (f := fun x : I => ‖Φ.comp i ((x : ℝ) : ℂ) - Φ.comp j ((x : ℝ) : ℂ)‖)
+     (Φ.bddAbove_supDist i j) ⟨x, hx⟩
+@@ -110,7 +109,7 @@ theorem exists_close_pair_ge (h : ¬ Φ.SESC) {c : ℝ} (hc : 0 < c) (B : ℕ) :
+     exact List.ofFn_injective (List.append_cancel_right this)
+   have h1 := hcon (n + B) (Nat.le_add_left B n) _ _ hne
+   rw [List.ofFn_fin_append, List.ofFn_fin_append] at h1
+-  calc (c₀ ^ (B + 1)) ^ n = c₀ ^ ((B + 1) * n) := (pow_mul _ _ _).symm
++  calc _ = c₀ ^ ((B + 1) * n) := (pow_mul _ _ _).symm
+     _ ≤ c₀ ^ (n + B) := pow_le_pow_of_le_one hc₀.le hc₀1 (by nlinarith)
+     _ ≤ c ^ (n + B) := pow_le_pow_left₀ hc₀.le (min_le_left _ _) _
+     _ ≤ _ := h1
+diff --git a/AnalyticESC/Words.lean b/AnalyticESC/Words.lean
+index d56ff8b16..7ee2af5c3 100644
+--- a/AnalyticESC/Words.lean
++++ b/AnalyticESC/Words.lean
+@@ -39,9 +39,7 @@ theorem length_take (w : Word N) (n : ℕ) : ((w.take n).length : ℕ∞) = min
+   | inf w => simp
+ 
+ theorem isSome_get?_iff (w : Word N) (n : ℕ) : (w.get? n).isSome ↔ (n : ℕ∞) < w.length := by
+-  cases w with
+-  | fin w => simp [Option.isSome_iff_ne_none]
+-  | inf w => simp
++  cases w <;> simp [Option.isSome_iff_ne_none]
+ 
+ /-- The letters of a prefix. -/
+ private theorem getElem?_take_word (w : Word N) (n k : ℕ) :
+@@ -80,11 +78,7 @@ private theorem ext_get? {v w : Word N} (h : ∀ n, v.get? n = w.get? n) : v = w
+ 
+ private theorem get?_succ_eq_none {w : Word N} {n : ℕ} (h : w.get? n = none) :
+     w.get? (n + 1) = none := by
+-  cases w with
+-  | fin w =>
+-    simp only [get?_fin, List.getElem?_eq_none_iff] at h ⊢
+-    omega
+-  | inf w => simp at h
++  cases w <;> simp_all; omega
+ 
+ private theorem get?_prepend (a : List (Fin N)) (w : Word N) (n : ℕ) :
+     (w.prepend a).get? n = if n < a.length then a[n]? else w.get? (n - a.length) := by
+@@ -96,22 +90,14 @@ private theorem get?_prepend (a : List (Fin N)) (w : Word N) (n : ℕ) :
+ 
+ private theorem length_take_of_le {w : Word N} {n : ℕ} (h : (n : ℕ∞) ≤ w.length) :
+     (w.take n).length = n := by
+-  have := length_take w n
+-  rw [min_eq_left h] at this
+-  exact_mod_cast this
++  exact_mod_cast (min_eq_left h ▸ length_take w n)
+ 
+ theorem take_of_length_le {w : Word N} {n : ℕ} (h : w.length ≤ n) : w = fin (w.take n) := by
+-  cases w with
+-  | fin w =>
+-    simp only [length_fin, Nat.cast_le] at h
+-    simp [List.take_of_length_le h]
+-  | inf w => simp at h
++  cases w <;> simp_all [List.take_of_length_le]
+ 
+ theorem length_prepend (a : List (Fin N)) (w : Word N) :
+     (w.prepend a).length = a.length + w.length := by
+-  cases w with
+-  | fin w => simp [prepend]
+-  | inf w => simp [prepend]
++  cases w <;> simp [prepend]
+ 
+ theorem get?_prepend_of_lt (a : List (Fin N)) (w : Word N) {n : ℕ} (hn : n < a.length) :
+     (w.prepend a).get? n = a[n]? := by
+diff --git a/Solution.lean b/Solution.lean
+index 73b6c4b18..d932c7e37 100644
+--- a/Solution.lean
++++ b/Solution.lean
+@@ -89,8 +89,6 @@ noncomputable def cmax (ε : ℝ) (f : Fin N → ℂ → ℂ) : ℝ :=
+ noncomputable def beta (f : Fin N → ℂ → ℂ) (hd : NonzeroDerivatives f) : ℝ :=
+   ⨆ (x : I) (i : Fin N), ‖nonlin (f i) x (hd i [] x)‖
+ 
+-/-- The maps `f₁(x) = x/8`, `f₂(x) = x/8 + x²/32`, `f₃(x) = x/16 + x²/32 + 29/32` of the example in
+-Section 1.2.2. -/
+ noncomputable def exampleMaps : Fin 3 → ℂ → ℂ :=
+   ![fun z => z / 8, fun z => z / 8 + z ^ 2 / 32, fun z => z / 16 + z ^ 2 / 32 + 29 / 32]
+ 
+@@ -101,23 +99,15 @@ noncomputable def natProj (f : Fin N → ℂ → ℂ) (w : ℕ → Fin N) : ℝ
+ /-- The attractor `Λ = π(Σ)`. -/
+ def attractor (f : Fin N → ℂ → ℂ) : Set ℝ := range (natProj f)
+ 
+-/-- `g` is an analytic, invertible map on `[0,1]` (Definition 1.9): analytic on a neighbourhood
+-of each point of `[0,1]` and injective on `[0,1]`. -/
+ def IsAnalyticCoord (g : ℝ → ℝ) : Prop := AnalyticOnNhd ℝ g I ∧ InjOn g I
+ 
+-/-- The maps `F_j` of `[0,1]` are conjugated to a self-similar IFS (Definition 1.9): for an
+-analytic invertible `g`, `g ∘ F_j ∘ g⁻¹` is the similarity `y ↦ λ_j y + t_j` with
+-`λ_j ∈ (-1,1) \ {0}`, that is, `g(F_j(x)) = λ_j g(x) + t_j` on `[0,1]`. -/
+ def ConjSelfSimilar {M : ℕ} (F : Fin M → ℝ → ℝ) : Prop :=
+   ∃ g, IsAnalyticCoord g ∧ ∃ lam t : Fin M → ℝ, ∀ j,
+     lam j ≠ 0 ∧ |lam j| < 1 ∧ ∀ x ∈ I, g (F j x) = lam j * g x + t j
+ 
+-/-- The infinite word `w w w ⋯` for a nonempty finite word `w`. -/
+ def periodic {m : ℕ} (hm : 0 < m) (w : Fin m → Fin N) : ℕ → Fin N :=
+   fun n => w ⟨n % m, Nat.mod_lt n hm⟩
+ 
+-/-- The `𝒞²` distance: the maximum over maps of the sum of the uniform distances
+-between their values, first derivatives and second derivatives on `[0,1]` (Section 1.1). -/
+ noncomputable def d2 (f g : Fin N → ℂ → ℂ) : ℝ :=
+   ⨆ i, (⨆ x : I, ‖f i x - g i x‖) +
+     (⨆ x : I, ‖deriv (f i) x - deriv (g i) x‖) +
+@@ -131,16 +121,9 @@ section Dimension
+ 
+ open MeasureTheory Filter Topology
+ 
+-/-- Division with a proof that the denominator is nonzero. -/
+ noncomputable def divide (a b : ℝ) (_hb : b ≠ 0) : ℝ := a / b
+-
+-/-- The scales `0 < r < 1`, on which `log r` is nonzero. -/
+ abbrev Scale := {r : ℝ // 0 < r ∧ r < 1}
+-
+-/-- Scales tending to zero from above. -/
+ def scaleZero : Filter Scale := comap Subtype.val (𝓝[>] (0 : ℝ))
+-
+-/-- The logarithmic ratio at a scale in `(0,1)`. -/
+ noncomputable def logRatio (a : ℝ) (r : Scale) : ℝ :=
+   divide (Real.log a) (Real.log r) (Real.log_neg r.2.1 r.2.2).ne
+ 
+@@ -163,10 +146,7 @@ noncomputable def pressureRatio (f : Fin N → ℂ → ℂ) (t : ℝ) (n : ℕ)
+   divide (Real.log (pressureSum f t (n + 1))) ((n + 1 : ℕ) : ℝ)
+     (Nat.cast_ne_zero.mpr (Nat.succ_ne_zero n))
+ 
+-/-- The entropy `H(p) = -∑_i p_i log p_i` of a probability vector. -/
+ noncomputable def entropy (p : Fin N → ℝ) : ℝ := -∑ i, p i * Real.log (p i)
+-
+-/-- `p` is a positive probability vector. -/
+ def IsProbVec (p : Fin N → ℝ) : Prop := (∀ i, 0 < p i) ∧ ∑ i, p i = 1
+ 
+ /-- The Lyapunov exponent `χ(Φ, p) = -∑_i p_i ∫ log|f_i'| dμ` of Section 1.2.1, for the measure
+@@ -196,9 +176,6 @@ shift. -/
+ noncomputable def potential (f : Fin N → ℂ → ℂ) (s : ℝ) (ω : ℕ → Fin N) : ℝ :=
+   s * Real.log ‖deriv (f (ω 0)) (natProj f fun i => ω (i + 1))‖
+ 
+-/-- `ν` is a Gibbs measure for the potential `φ` on `Σ = (Fin N)^ℕ` in Bowen's sense: there are
+-`c₁, c₂ > 0` and `P` with `c₁ ≤ ν[x₀ ⋯ x_{m-1}] / exp(-P m + ∑_{k<m} φ(σ^k x)) ≤ c₂` for every
+-`x ∈ Σ` and `m ≥ 0`, where `σ` is the left shift. -/
+ def IsGibbsMeasure (φ : (ℕ → Fin N) → ℝ) (ν : Measure (ℕ → Fin N)) : Prop :=
+   ∃ c₁ > 0, ∃ c₂ > 0, ∃ P : ℝ, ∀ (x : ℕ → Fin N) (m : ℕ),
+     c₁ * Real.exp (-P * m + ∑ k ∈ Finset.range m, φ (fun i => x (i + k))) ≤
+@@ -219,14 +196,8 @@ The results that the paper cites are stated as in their sources and are explicit
+ the theorems that use them. Rapaport's results are stated, as in his paper, for real maps `φ_i`
+ of `I = [0,1]`. -/
+ 
+-/-- `φ_u = φ_{u₁} ∘ ⋯ ∘ φ_{uₙ}` for real maps and a finite word `u`, with `φ_∅ = id`. -/
+ def realComp (φ : Fin N → ℝ → ℝ) (u : List (Fin N)) : ℝ → ℝ := u.foldr (fun i g => φ i ∘ g) id
+ 
+-/-- The hypotheses of Rapaport's Theorem 1.2 and Corollary 1.3: `φ_i(I) ⊆ I`, each `φ_i` is real
+-analytic on a neighbourhood of each point of `I`, `0 < |φ_i'(x)| < 1` for `x ∈ I`, the maps have no
+-common fixed point in `I`, and the system is exponentially separated: there is `c > 0` such that
+-for infinitely many `n`, `sup_{x ∈ I} |φ_u(x) - φ_v(x)| ≥ c^n` for all distinct `u, v` of length
+-`n`. -/
+ structure RapaportHyp (φ : Fin N → ℝ → ℝ) : Prop where
+   mapsTo : ∀ i, MapsTo (φ i) I I
+   analytic : ∀ i, AnalyticOnNhd ℝ (φ i) I
+@@ -236,25 +207,11 @@ structure RapaportHyp (φ : Fin N → ℝ → ℝ) : Prop where
+   exp_separated : ∃ c > 0, ∃ᶠ n in atTop, ∀ u v : Fin n → Fin N, u ≠ v →
+     c ^ n ≤ ⨆ x : I, |realComp φ (List.ofFn u) x - realComp φ (List.ofFn v) x|
+ 
+-/-- **Cited result.** R. Bowen, *Equilibrium states and the ergodic theory of Anosov
+-diffeomorphisms*, Lecture Notes in Mathematics 470, Springer, 1975, Theorem 1.4, for the one-sided
+-full shift on `N ≥ 1` symbols: a potential `φ` with
+-`sup{|φ(x) - φ(y)| : x_i = y_i for i < k} ≤ b α^k` for all `k`, where `b > 0` and `0 < α < 1`, has a
+-Gibbs measure. Bowen states the theorem for two-sided mixing subshifts of finite type; a potential
+-of the coordinates `i ≥ 0` has the same variations, and the image of the two-sided Gibbs measure
+-under `x ↦ (x_i)_{i ≥ 0}` has the same cylinder measures. -/
+ def BowenGibbsStatement : Prop :=
+   ∀ {N : ℕ}, 0 < N → ∀ (φ : (ℕ → Fin N) → ℝ) {b α : ℝ}, 0 < b → 0 < α → α < 1 →
+     (∀ (k : ℕ) (x y : ℕ → Fin N), (∀ i < k, x i = y i) → |φ x - φ y| ≤ b * α ^ k) →
+     ∃ ν : Measure (ℕ → Fin N), IsProbabilityMeasure ν ∧ IsGibbsMeasure φ ν
+ 
+-/-- **Cited result.** A. Rapaport, *Dimension of self-conformal measures associated to an
+-exponentially separated analytic IFS on ℝ*, arXiv:2412.16753v2, Theorem 1.2, together with the exact
+-dimensionality of self-conformal measures, D.-J. Feng and H. Hu, *Dimension theory of iterated
+-function systems*, Comm. Pure Appl. Math. 62 (2009): under `RapaportHyp`, for a positive
+-probability vector `p`, the self-conformal measure `μ = ∑_i p_i φ_i μ` on `I` satisfies
+-`lim_{δ → 0} log μ(B(x,δ)) / log δ = min{1, H(p)/χ}` for `μ`-almost every `x`, where
+-`H(p) = -∑ p_i log p_i` and `χ = -∑ p_i ∫ log|φ_i'| dμ`. -/
+ def RapaportMeasureStatement : Prop :=
+   ∀ {N : ℕ} (φ : Fin N → ℝ → ℝ), RapaportHyp φ →
+     ∀ p : Fin N → ℝ, (∀ i, 0 < p i) → ∑ i, p i = 1 →
+@@ -265,11 +222,6 @@ def RapaportMeasureStatement : Prop :=
+         (𝓝 (min 1 (divide (-∑ i, p i * Real.log (p i))
+           (-∑ i, p i * ∫ y, Real.log |deriv (φ i) y| ∂μ) hχ)))
+ 
+-/-- **Cited result.** A. Rapaport, *Dimension of self-conformal measures associated to an
+-exponentially separated analytic IFS on ℝ*, arXiv:2412.16753v2, Corollary 1.3: under `RapaportHyp`,
+-the attractor `K`, the nonempty compact set `K ⊆ I` with `K = ⋃_i φ_i(K)`, has Hausdorff dimension
+-`min{1, s(Φ)}`, where `s(Φ)` is the zero of the pressure
+-`P(t) = lim_n (1/n) log ∑_{u ∈ Σ_n} (sup_{x ∈ I} |φ_u'(x)|)^t`. -/
+ def RapaportSetStatement : Prop :=
+   ∀ {N : ℕ} (φ : Fin N → ℝ → ℝ), RapaportHyp φ →
+     ∀ K : Set ℝ, K.Nonempty → IsCompact K → K ⊆ I → K = ⋃ i, φ i '' K →
+@@ -400,10 +352,7 @@ theorem audit_example_criterion {ε : ℝ} (hε : 0 < ε) (f : Fin N → ℂ →
+ /-- The polynomial example of Section 1.2.2: the system `x/8`, `x/8 + x²/32`, `x/16 + x²/32 + 29/32` lies in
+ `𝔖_3` for some `ε > 0` and satisfies the strong exponential separation condition. -/
+ theorem audit_example_sesc : ∃ ε > 0, (∀ i, InClass ε (exampleMaps i)) ∧ SESC exampleMaps := by
+-  obtain ⟨ε, hε, Φ, hΦ, hS⟩ := AnalyticESC.example_sesc
+-  obtain ⟨g, gpos, hg⟩ := Φ
+-  change g = _ at hΦ
+-  subst hΦ
++  obtain ⟨ε, hε, ⟨g, gpos, hg⟩, rfl, hS⟩ := AnalyticESC.example_sesc
+   exact ⟨ε, hε, fun i => inClass_iff_lib.mpr (hg i), hS⟩
+ 
+ /-- Individual-map linearisation for Theorem 1.12: an analytic coordinate with nonvanishing
+@@ -411,8 +360,8 @@ derivative conjugates the chosen map `f_i` to a contracting similarity. -/
+ theorem audit_conj_similarity {ε : ℝ} (hε : 0 < ε) (f : Fin N → ℂ → ℂ)
+     (hf : ∀ i, InClass ε (f i)) (i : Fin N) :
+     ∃ g, IsAnalyticCoord g ∧ (∀ x ∈ I, deriv g x ≠ 0) ∧
+-      ∃ lam t : ℝ, lam ≠ 0 ∧ |lam| < 1 ∧ ∀ x ∈ I, g (f i x).re = lam * g x + t := by
+-  exact (toIFS hε f hf).theorem_1_12_similarity i
++      ∃ lam t : ℝ, lam ≠ 0 ∧ |lam| < 1 ∧ ∀ x ∈ I, g (f i x).re = lam * g x + t :=
++  (toIFS hε f hf).theorem_1_12_similarity i
+ 
+ /-- Theorem 1.12 (a). If the attractor of `Φ` is not a singleton, then `Φ` is conjugated to a
+ self-similar IFS if and only if `H_i ≡ H_j` on `[0,1]` for all `i, j ∈ Σ`. -/
+@@ -474,18 +423,13 @@ theorem dimEquality_of_lib {ε : ℝ} (Φ : AnalyticESC.IFS N ε)
+   filter_upwards [hm p hp μ hμ] with x hx
+   exact (logRatio_tendsto_iff _ _).mpr hx
+ 
+-/-- `BowenGibbsStatement` in the form used by the library. -/
+-theorem bowenGibbs_lib (hB : BowenGibbsStatement) : AnalyticESC.BowenGibbsStatement := by
+-  intro N hN φ b α hb hα₀ hα₁ hφ
+-  exact hB hN φ hb hα₀ hα₁ hφ
++theorem bowenGibbs_lib (hB : BowenGibbsStatement) : AnalyticESC.BowenGibbsStatement := hB
+ 
+-/-- `RapaportMeasureStatement` in the form used by the library. -/
+ theorem rapaportMeasure_lib (hM : RapaportMeasureStatement) :
+     AnalyticESC.RapaportMeasureStatement := by
+   intro N φ hφ p hp hp1 μ hμ hμI hμφ
+   exact hM φ ⟨hφ.1, hφ.2, hφ.3, hφ.4, hφ.5, hφ.6⟩ p hp hp1 μ hμ hμI hμφ
+ 
+-/-- `RapaportSetStatement` in the form used by the library. -/
+ theorem rapaportSet_lib (hS : RapaportSetStatement) : AnalyticESC.RapaportSetStatement := by
+   intro N φ hφ K hK hKc hKI hKφ s hs
+   exact hS φ ⟨hφ.1, hφ.2, hφ.3, hφ.4, hφ.5, hφ.6⟩ K hK hKc hKI hKφ s hs
+@@ -495,8 +439,8 @@ theorem rapaportSet_lib (hS : RapaportSetStatement) : AnalyticESC.RapaportSetSta
+ If `Φ` satisfies the ESC, then there is equality in (1.6). -/
+ theorem audit_dim_of_esc (hM : RapaportMeasureStatement) (hS : RapaportSetStatement) {ε : ℝ}
+     (hε : 0 < ε) (f : Fin N → ℂ → ℂ) (hf : ∀ i, InClass ε (f i))
+-    (hN : 0 < N) (hnd : ¬ ∃ x, attractor f = {x}) (hesc : ESC f) : DimEquality f := by
+-  exact dimEquality_of_lib (toIFS hε f hf)
++    (hN : 0 < N) (hnd : ¬ ∃ x, attractor f = {x}) (hesc : ESC f) : DimEquality f :=
++  dimEquality_of_lib (toIFS hε f hf)
+     ((toIFS hε f hf).theorem_1_6 (rapaportMeasure_lib hM) (rapaportSet_lib hS) hN hnd hesc)
+ 
+ /-- Corollary 1.7, from Rapaport's Theorem 1.2 and Corollary 1.3. For `N ≥ 2`, the IFSs in `𝔖_N`

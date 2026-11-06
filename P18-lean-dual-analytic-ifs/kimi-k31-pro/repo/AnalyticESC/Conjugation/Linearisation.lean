@@ -28,6 +28,48 @@ private theorem eq_of_hasDerivWithinAt_zero_I {u : ℝ → ℝ}
       (uniqueDiffOn_Icc zero_lt_one z (Ico_subset_Icc_self hz))
   rw [h x hx, h y hy]
 
+/-- A solution of the linearisation ODE is an affine function of Koenigs' map. -/
+theorem eq_add_mul_koenigs_of (hε : 0 < ε) (hf : InClass ε f) {p : ℝ} (hp : p ∈ I)
+    (hfp : f p = p) {g g' : ℝ → ℝ} (hg : ∀ x ∈ I, HasDerivWithinAt g (g' x) I x)
+    (hg' : DifferentiableOn ℝ g' I)
+    (hODE : ∀ x ∈ I, derivWithin g' I x = (hatH f x).re * g' x) :
+    ∀ x ∈ I, g x = g p + g' p * (koenigs f p x).re := by
+  have hmem : ∀ {x : ℝ}, x ∈ I → (x : ℂ) ∈ nbhd ε := fun hx => ofReal_mem_nbhd hε hx
+  have hkd : DifferentiableOn ℂ (koenigs f p) (nbhd ε) := differentiableOn_koenigs hε hf hp hfp
+  have hkre : ∀ x ∈ I, HasDerivAt (fun t : ℝ => (koenigs f p t).re)
+      (deriv (koenigs f p) x).re x := fun x hx => hasDerivAt_re_ofReal
+    (hkd.differentiableAt ((isOpen_nbhd ε).mem_nhds (hmem hx)))
+  set G : ℝ → ℝ := fun t => (deriv (koenigs f p) t).re with hG
+  set c := g' p
+  have hGpos : ∀ x ∈ I, 0 < G x := fun x hx => (deriv_koenigs_ofReal hε hf hp hfp hx).2
+  have hGp : G p = 1 := by simp [hG, deriv_koenigs_self hε hf hp hfp]
+  have hGderiv : ∀ x ∈ I, HasDerivAt G ((hatH f x).re * G x) x := by
+    intro x hx
+    have h := hasDerivAt_re_ofReal ((hkd.deriv (isOpen_nbhd ε)).differentiableAt
+      ((isOpen_nbhd ε).mem_nhds (hmem hx)))
+    rwa [deriv_deriv_koenigs hε hf hp hfp (hmem hx), Complex.mul_re,
+      (deriv_koenigs_ofReal hε hf hp hfp hx).1, mul_zero, sub_zero] at h
+  have hu : ∀ x ∈ I, HasDerivWithinAt (fun t => g' t / G t) 0 I x := by
+    intro x hx
+    have h1 : HasDerivWithinAt g' ((hatH f x).re * g' x) I x := by
+      rw [← hODE x hx]
+      exact (hg' x hx).hasDerivWithinAt
+    convert h1.div (hGderiv x hx).hasDerivWithinAt (hGpos x hx).ne' using 1
+    ring
+  have hg'eq : ∀ x ∈ I, g' x = c * G x := by
+    intro x hx
+    have h := eq_of_hasDerivWithinAt_zero_I hu hx hp
+    rw [hGp, div_one, div_eq_iff (hGpos x hx).ne'] at h
+    exact h
+  have hv : ∀ x ∈ I, HasDerivWithinAt (fun t => g t - c * (koenigs f p t).re) 0 I x := by
+    intro x hx
+    have h := (hg x hx).sub ((hkre x hx).hasDerivWithinAt.const_mul c)
+    rwa [hg'eq x hx, sub_self] at h
+  intro x hx
+  have h := eq_of_hasDerivWithinAt_zero_I hv hx hp
+  rw [koenigs_self hε hf hp hfp, Complex.zero_re, mul_zero, sub_zero] at h
+  linarith
+
 /-- A map of the class has a unique fixed point in `[0,1]`. -/
 theorem existsUnique_fixedPoint (hε : 0 < ε) (hf : InClass ε f) :
     ∃! p : ℝ, p ∈ I ∧ f p = p := by
@@ -103,40 +145,8 @@ theorem lemma_5_1 (hε : 0 < ε) (hf : InClass ε f) {p : ℝ} (hp : p ∈ I) (h
     · simp [koenigs_self hε hf hp hfp]
     · rw [hderiv]
       simp [deriv_koenigs_self hε hf hp hfp]
-  · -- `G = Re ĝ'` is positive on `I` with `G' = Re Ĥ · G`
-    set G : ℝ → ℝ := fun t => (deriv (koenigs f p) t).re with hG
-    set c := derivWithin g I p
-    have hGpos : ∀ x ∈ I, 0 < G x := fun x hx => (deriv_koenigs_ofReal hε hf hp hfp hx).2
-    have hGp : G p = 1 := by simp [hG, deriv_koenigs_self hε hf hp hfp]
-    have hGderiv : ∀ x ∈ I, HasDerivAt G ((hatH f x).re * G x) x := by
-      intro x hx
-      have h := hasDerivAt_re_ofReal ((hkd.deriv (isOpen_nbhd ε)).differentiableAt
-        ((isOpen_nbhd ε).mem_nhds (hmem hx)))
-      rwa [deriv_deriv_koenigs hε hf hp hfp (hmem hx), Complex.mul_re,
-        (deriv_koenigs_ofReal hε hf hp hfp hx).1, mul_zero, sub_zero] at h
-    -- `g' / G` has zero derivative, so `g' = c G` on `I`
-    have hu : ∀ x ∈ I, HasDerivWithinAt (fun t => derivWithin g I t / G t) 0 I x := by
-      intro x hx
-      have h1 : HasDerivWithinAt (derivWithin g I) ((hatH f x).re * derivWithin g I x) I x := by
-        rw [← hODE x hx]
-        exact (hg' x hx).hasDerivWithinAt
-      convert h1.div (hGderiv x hx).hasDerivWithinAt (hGpos x hx).ne' using 1
-      ring
-    have hg'eq : ∀ x ∈ I, derivWithin g I x = c * G x := by
-      intro x hx
-      have h := eq_of_hasDerivWithinAt_zero_I hu hx hp
-      rw [hGp, div_one, div_eq_iff (hGpos x hx).ne'] at h
-      exact h
-    -- `g - c Re ĝ` has zero derivative, so `g = g(p) + c Re ĝ` on `I`
-    have hv : ∀ x ∈ I, HasDerivWithinAt (fun t => g t - c * (koenigs f p t).re) 0 I x := by
-      intro x hx
-      have h := (hg x hx).hasDerivWithinAt.sub ((hkre x hx).hasDerivWithinAt.const_mul c)
-      rwa [hg'eq x hx, sub_self] at h
-    have hgeq : ∀ x ∈ I, g x = g p + c * (koenigs f p x).re := by
-      intro x hx
-      have h := eq_of_hasDerivWithinAt_zero_I hv hx hp
-      rw [koenigs_self hε hf hp hfp, Complex.zero_re, mul_zero, sub_zero] at h
-      linarith
+  · have hgeq := eq_add_mul_koenigs_of hε hf hp hfp (g' := derivWithin g I)
+      (fun x hx => (hg x hx).hasDerivWithinAt) hg' hODE
     -- `ĝ ∘ f = f'(p) ĝ`
     have hy : (f x).re ∈ I := hf.re_mem_I x hx
     have hfx : (((f x).re : ℝ) : ℂ) = f x := Complex.ext (by simp)

@@ -20,7 +20,7 @@ namespace IFS
 variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
 
 /-- `‖f_w'‖ > 0` for a nonempty alphabet. -/
-private theorem pr_supDeriv_pos (hN : 0 < N) (w : List (Fin N)) : 0 < Φ.supDeriv w :=
+theorem pr_supDeriv_pos (hN : 0 < N) (w : List (Fin N)) : 0 < Φ.supDeriv w :=
   (pow_pos (Φ.cmin_pos hN) _).trans_le (Φ.cmin_pow_le_supDeriv w)
 
 /-- Sub-multiplicativity `‖f_{uv}'‖ ≤ ‖f_u'‖ ‖f_v'‖`, from the chain rule and `f_v(I) ⊆ I`. -/

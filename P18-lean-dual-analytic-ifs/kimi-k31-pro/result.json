@@ -1,0 +1,17 @@
+{
+  "problem_idx": 18,
+  "key": "PALOMAR-2026-10-11-000004-v2",
+  "model_name": "Kimi K3.1 Pro",
+  "model_id": "kimi-k31-pro",
+  "harness": "Kimi Code 2.3.1",
+  "status": "verified",
+  "verified": true,
+  "failure_label": null,
+  "verification_note": "Fresh verification passed.",
+  "baseline_tokens": 146557,
+  "final_tokens": 141453,
+  "compression_percent": 3.4826040380193373,
+  "credited_compression_percent": 3.4826040380193373,
+  "cost": 57.7937336,
+  "elapsed_seconds": 9876.954658193
+}

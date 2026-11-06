@@ -62,7 +62,7 @@ private theorem lq_summable_and_bounds (μ : Measure ℝ) [IsProbabilityMeasure 
   have hsum : Summable fun k : ℤ => μ.real (Ico (k * r) ((k + 1) * r)) ^ q :=
     Summable.of_nonneg_of_le (fun _ => by positivity) hle hS.summable
   refine ⟨hsum, tsum_nonneg fun _ => by positivity, ?_⟩
-  calc lqSum μ q r ≤ ∑' k : ℤ, μ.real (Ico (k * r) ((k + 1) * r)) :=
+  calc _ ≤ ∑' k : ℤ, μ.real (Ico (k * r) ((k + 1) * r)) :=
         hsum.tsum_le_tsum hle hS.summable
     _ = 1 := hS.tsum_eq
 
@@ -88,7 +88,7 @@ private theorem lqRatio_le (μ : Measure ℝ) [IsProbabilityMeasure μ] (h0 : μ
     · exact Or.inl hx0
     · exact Or.inr ⟨not_lt.1 hx0, by linarith⟩
   have hmI : m ≤ μ.real (Ico 0 r) :=
-    calc m ≤ μ.real (Iio 0 ∪ Ico 0 r) := measureReal_mono hsub
+    calc _ ≤ μ.real (Iio 0 ∪ Ico 0 r) := measureReal_mono hsub
       _ ≤ μ.real (Iio 0) + μ.real (Ico 0 r) := measureReal_union_le _ _
       _ = μ.real (Ico 0 r) := by rw [measureReal_def, h0, ENNReal.toReal_zero, zero_add]
   have hterm : μ.real (Ico 0 r) ^ q ≤ lqSum μ q r := by
@@ -101,6 +101,20 @@ private theorem lqRatio_le (μ : Measure ℝ) [IsProbabilityMeasure μ] (h0 : μ
     rw [← Real.log_rpow hm]
     exact Real.log_le_log hpos hmq
   exact div_le_div_of_nonpos_of_le (Real.log_neg hr0 hr1).le hlog
+
+private theorem tendsto_half_nhdsGT : Tendsto (fun r : ℝ => r / 2) (𝓝[>] 0) (𝓝[>] 0) := by
+  refine tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _ ?_ ?_
+  · exact ((continuous_id.div_const 2).tendsto' 0 0 (by simp)).mono_left nhdsWithin_le_nhds
+  · exact eventually_mem_nhdsWithin.mono fun r hr => half_pos hr
+
+private theorem tendsto_log_half_div_log :
+    Tendsto (fun r => Real.log (r / 2) / Real.log r) (𝓝[>] 0) (𝓝 1) := by
+  have h := (tendsto_const_nhds (x := (1 : ℝ))).sub
+    ((tendsto_const_nhds (x := Real.log 2)).div_atBot Real.tendsto_log_nhdsGT_zero)
+  rw [sub_zero] at h
+  refine h.congr' ?_
+  filter_upwards [Ioo_mem_nhdsGT one_pos] with r hr
+  rw [Real.log_div hr.1.ne' two_ne_zero, sub_div, div_self (Real.log_neg hr.1 hr.2).ne]
 
 /-- A probability measure on `ℝ` vanishing on `(-∞, 0)`, charging every ball `B(0,r)` and with
 local dimension `d` at `0` has `L^q` spectrum at most `q d` for `q > 1`; the quotient whose limit
@@ -115,21 +129,7 @@ private theorem lq_liminf_le (μ : Measure ℝ) [IsProbabilityMeasure μ] (h0 : 
   have hev : ∀ᶠ r in 𝓝[>] (0 : ℝ), r ∈ Ioo 0 1 := Ioo_mem_nhdsGT one_pos
   set g : ℝ → ℝ := fun r => q * Real.log (μ.real (closedBall 0 (r / 2))) / Real.log r with hg_def
   have hg : Tendsto g (𝓝[>] 0) (𝓝 (q * d)) := by
-    have h2 : Tendsto (fun r : ℝ => r / 2) (𝓝[>] 0) (𝓝[>] 0) := by
-      refine tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _ ?_ ?_
-      · exact ((continuous_id.div_const 2).tendsto' 0 0 (by simp)).mono_left
-          nhdsWithin_le_nhds
-      · exact eventually_mem_nhdsWithin.mono fun r hr => half_pos hr
-    have hA := hlim.comp h2
-    have hB : Tendsto (fun r => Real.log (r / 2) / Real.log r) (𝓝[>] 0) (𝓝 1) := by
-      have h := (tendsto_const_nhds (x := (1 : ℝ))).sub
-        ((tendsto_const_nhds (x := Real.log 2)).div_atBot Real.tendsto_log_nhdsGT_zero)
-      rw [sub_zero] at h
-      refine h.congr' (hev.mono fun r hr => ?_)
-      have hl : Real.log r ≠ 0 := (Real.log_neg hr.1 hr.2).ne
-      show 1 - Real.log 2 / Real.log r = Real.log (r / 2) / Real.log r
-      rw [Real.log_div hr.1.ne' two_ne_zero, sub_div, div_self hl]
-    have h := (hA.mul hB).const_mul q
+    have h := ((hlim.comp tendsto_half_nhdsGT).mul tendsto_log_half_div_log).const_mul q
     rw [mul_one] at h
     refine h.congr' (hev.mono fun r hr => ?_)
     have hl : Real.log (r / 2) ≠ 0 := (Real.log_neg (half_pos hr.1) (by linarith [hr.2])).ne
@@ -178,20 +178,9 @@ private theorem localDim_ge_of_ball_bound (μ : Measure ℝ)
     (hlim : Tendsto (fun r => Real.log (μ.real (closedBall 0 r)) / Real.log r) (𝓝[>] 0) (𝓝 d))
     (hball : ∀ᶠ r in 𝓝[>] (0 : ℝ), μ.real (closedBall 0 (r / 2)) ≤ r ^ a) : a ≤ d := by
   have hev : ∀ᶠ r in 𝓝[>] (0 : ℝ), r ∈ Ioo 0 1 := Ioo_mem_nhdsGT one_pos
-  have h2 : Tendsto (fun r : ℝ => r / 2) (𝓝[>] 0) (𝓝[>] 0) := by
-    refine tendsto_nhdsWithin_of_tendsto_nhds_of_eventually_within _ ?_ ?_
-    · exact ((continuous_id.div_const 2).tendsto' 0 0 (by simp)).mono_left nhdsWithin_le_nhds
-    · exact eventually_mem_nhdsWithin.mono fun r hr => half_pos hr
-  have hlog : Tendsto (fun r => Real.log (r / 2) / Real.log r) (𝓝[>] 0) (𝓝 1) := by
-    have h := (tendsto_const_nhds (x := (1 : ℝ))).sub
-      ((tendsto_const_nhds (x := Real.log 2)).div_atBot Real.tendsto_log_nhdsGT_zero)
-    rw [sub_zero] at h
-    refine h.congr' (hev.mono fun r hr => ?_)
-    change 1 - Real.log 2 / Real.log r = Real.log (r / 2) / Real.log r
-    rw [Real.log_div hr.1.ne' two_ne_zero, sub_div, div_self (Real.log_neg hr.1 hr.2).ne]
   have ht : Tendsto (fun r => Real.log (μ.real (closedBall 0 (r / 2))) / Real.log r)
       (𝓝[>] 0) (𝓝 d) := by
-    have h := (hlim.comp h2).mul hlog
+    have h := (hlim.comp tendsto_half_nhdsGT).mul tendsto_log_half_div_log
     rw [mul_one] at h
     refine h.congr' (hev.mono fun r hr => ?_)
     have hl : Real.log (r / 2) ≠ 0 := (Real.log_neg (half_pos hr.1) (by linarith [hr.2])).ne

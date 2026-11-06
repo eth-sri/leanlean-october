@@ -30,7 +30,7 @@ variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
 /-! ## Compositions on `I` -/
 
 /-- `|f_w(x) - f_w(y)| ≤ c_max^{|w|} |x - y|` on `I`. -/
-private theorem exact_abs_re_comp_sub_le (w : List (Fin N)) {x y : ℝ} (hx : x ∈ I)
+theorem exact_abs_re_comp_sub_le (w : List (Fin N)) {x y : ℝ} (hx : x ∈ I)
     (hy : y ∈ I) : |(Φ.comp w x).re - (Φ.comp w y).re| ≤ Φ.cmax ^ w.length * |x - y| := by
   have h := Φ.norm_comp_sub_le w (ofReal_mem_nbhd Φ.ε_pos hx) (ofReal_mem_nbhd Φ.ε_pos hy)
   rw [← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs] at h

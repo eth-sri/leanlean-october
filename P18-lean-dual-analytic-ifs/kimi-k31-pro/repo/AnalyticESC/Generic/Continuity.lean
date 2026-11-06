@@ -25,13 +25,6 @@ namespace IFS.Continuity
 
 /-! ## The real points of `I` in `ℂ` -/
 
-theorem isCompact_realI : IsCompact (((↑) : ℝ → ℂ) '' I) :=
-  isCompact_Icc.image Complex.continuous_ofReal
-
-theorem convex_realI : Convex ℝ (((↑) : ℝ → ℂ) '' I) := by
-  have := (convex_Icc (0 : ℝ) 1).linear_image Complex.ofRealCLM.toLinearMap
-  simpa using this
-
 theorem image_I_subset_nbhd {δ : ℝ} (hδ : 0 < δ) : ((↑) : ℝ → ℂ) '' I ⊆ nbhd δ := by
   rintro _ ⟨y, hy, rfl⟩
   exact ofReal_mem_nbhd hδ hy
@@ -48,12 +41,12 @@ theorem ofReal_mem_closure {δ : ℝ} (hδ : 0 < δ) {x : ℝ} (hx : x ∈ I) :
 theorem exists_lipschitz_I {h : ℂ → ℂ} {U : Set ℂ} (hU : IsOpen U)
     (hIU : ((↑) : ℝ → ℂ) '' I ⊆ U) (hh : DifferentiableOn ℂ h U) :
     ∃ L, 0 ≤ L ∧ ∀ a ∈ I, ∀ b ∈ I, ‖h (a : ℂ) - h (b : ℂ)‖ ≤ L * ‖(a : ℂ) - b‖ := by
-  obtain ⟨L, hL⟩ := isCompact_realI.exists_bound_of_continuousOn
+  obtain ⟨L, hL⟩ := isCompact_image_I.exists_bound_of_continuousOn
     ((hh.deriv hU).continuousOn.mono hIU)
   refine ⟨max L 0, le_max_right _ _, fun a ha b hb => ?_⟩
   exact Convex.norm_image_sub_le_of_norm_deriv_le
     (fun z hz => hh.differentiableAt (hU.mem_nhds (hIU hz)))
-    (fun z hz => (hL z hz).trans (le_max_left _ _)) convex_realI
+    (fun z hz => (hL z hz).trans (le_max_left _ _)) convex_image_I
     (mem_image_of_mem _ hb) (mem_image_of_mem _ ha)
 
 /-- A finite family of maps holomorphic on open sets containing `I` is uniformly Lipschitz
@@ -74,6 +67,11 @@ theorem bddAbove_range_norm_sub {F G : ℂ → ℂ} {U : Set ℂ} (hIU : ((↑) 
   have h1 : Continuous fun x : I => ((x : ℝ) : ℂ) :=
     Complex.continuous_ofReal.comp continuous_subtype_val
   exact (isCompact_range ((hF.comp_continuous h1 hU).sub (hG.comp_continuous h1 hU)).norm).bddAbove
+
+theorem norm_sub_le_ciSup {F G : ℂ → ℂ} {U : Set ℂ} (hIU : ((↑) : ℝ → ℂ) '' I ⊆ U)
+    (hF : ContinuousOn F U) (hG : ContinuousOn G U) {x : ℝ} (hx : x ∈ I) :
+    ‖F x - G x‖ ≤ ⨆ y : I, ‖F ((y : ℝ) : ℂ) - G ((y : ℝ) : ℂ)‖ :=
+  le_ciSup (bddAbove_range_norm_sub hIU hF hG) ⟨x, hx⟩
 
 variable {N : ℕ} {ε ε' : ℝ}
 
@@ -102,20 +100,11 @@ theorem norm_sub_le_d2 (Φ : IFS N ε) (Ψ : IFS N ε') (i : Fin N) {x : ℝ} (h
   have hg := (Ψ.inClass i).differentiableOn
   have hl := inter_subset_left (s := nbhd (2 * ε)) (t := nbhd (2 * ε'))
   have hr := inter_subset_right (s := nbhd (2 * ε)) (t := nbhd (2 * ε'))
-  have e0 : ‖Φ.f i x - Ψ.f i x‖ ≤ ⨆ y : I, ‖Φ.f i ((y : ℝ) : ℂ) - Ψ.f i ((y : ℝ) : ℂ)‖ :=
-    le_ciSup (f := fun y : I => ‖Φ.f i ((y : ℝ) : ℂ) - Ψ.f i ((y : ℝ) : ℂ)‖)
-      (bddAbove_range_norm_sub hU (hf.continuousOn.mono hl) (hg.continuousOn.mono hr)) ⟨x, hx⟩
-  have e1 : ‖deriv (Φ.f i) x - deriv (Ψ.f i) x‖ ≤
-      ⨆ y : I, ‖deriv (Φ.f i) ((y : ℝ) : ℂ) - deriv (Ψ.f i) ((y : ℝ) : ℂ)‖ :=
-    le_ciSup (f := fun y : I => ‖deriv (Φ.f i) ((y : ℝ) : ℂ) - deriv (Ψ.f i) ((y : ℝ) : ℂ)‖)
-      (bddAbove_range_norm_sub hU ((hf.deriv hO).continuousOn.mono hl)
-        ((hg.deriv hO').continuousOn.mono hr)) ⟨x, hx⟩
-  have e2 : ‖deriv (deriv (Φ.f i)) x - deriv (deriv (Ψ.f i)) x‖ ≤
-      ⨆ y : I, ‖deriv (deriv (Φ.f i)) ((y : ℝ) : ℂ) - deriv (deriv (Ψ.f i)) ((y : ℝ) : ℂ)‖ :=
-    le_ciSup (f := fun y : I =>
-        ‖deriv (deriv (Φ.f i)) ((y : ℝ) : ℂ) - deriv (deriv (Ψ.f i)) ((y : ℝ) : ℂ)‖)
-      (bddAbove_range_norm_sub hU (((hf.deriv hO).deriv hO).continuousOn.mono hl)
-        (((hg.deriv hO').deriv hO').continuousOn.mono hr)) ⟨x, hx⟩
+  have e0 := norm_sub_le_ciSup hU (hf.continuousOn.mono hl) (hg.continuousOn.mono hr) hx
+  have e1 := norm_sub_le_ciSup hU ((hf.deriv hO).continuousOn.mono hl)
+    ((hg.deriv hO').continuousOn.mono hr) hx
+  have e2 := norm_sub_le_ciSup hU (((hf.deriv hO).deriv hO).continuousOn.mono hl)
+    (((hg.deriv hO').deriv hO').continuousOn.mono hr) hx
   have n0 := (norm_nonneg _).trans e0
   have n1 := (norm_nonneg _).trans e1
   have n2 := (norm_nonneg _).trans e2
@@ -146,7 +135,7 @@ theorem norm_comp_sub_comp_le (Φ : IFS N ε) (Ψ : IFS N ε') (v : List (Fin N)
       have := Φ.norm_comp_sub_le [i] (ofReal_mem_nbhd Φ.ε_pos ha) (ofReal_mem_nbhd Φ.ε_pos hb)
       simpa [comp_cons, comp_nil] using this
     have h2 := (norm_sub_le_d2 Φ Ψ i hb).1
-    calc ‖Φ.f i a - Ψ.f i b‖ ≤ ‖Φ.f i a - Φ.f i b‖ + ‖Φ.f i b - Ψ.f i b‖ :=
+    calc _ ≤ ‖Φ.f i a - Φ.f i b‖ + ‖Φ.f i b - Ψ.f i b‖ :=
           norm_sub_le_norm_sub_add_norm_sub _ _ _
       _ ≤ Φ.cmax * (d2 Φ Ψ / (1 - Φ.cmax)) + d2 Φ Ψ :=
           add_le_add (h1.trans (mul_le_mul_of_nonneg_left ih hc0)) h2
@@ -203,8 +192,7 @@ theorem norm_deriv_comp_sub_le (Φ : IFS N ε) (Ψ : IFS N ε') {c' L : ℝ} (hc
               (norm_sub_le_d2 Φ Ψ i hb).2.1
         _ = K * c' * d2 Φ Ψ := by rw [hK]; field_simp
     have hDg : ‖Dg‖ ≤ c' ^ u.length := norm_deriv_comp_le_pow Ψ hc'0.le hc' u hx
-    calc ‖deriv (Φ.f i) a * Df - deriv (Ψ.f i) b * Dg‖
-        = ‖deriv (Φ.f i) a * (Df - Dg) + (deriv (Φ.f i) a - deriv (Ψ.f i) b) * Dg‖ := by
+    calc _ = ‖deriv (Φ.f i) a * (Df - Dg) + (deriv (Φ.f i) a - deriv (Ψ.f i) b) * Dg‖ := by
           congr 1; ring
       _ ≤ ‖deriv (Φ.f i) a‖ * ‖Df - Dg‖ + ‖deriv (Φ.f i) a - deriv (Ψ.f i) b‖ * ‖Dg‖ := by
           rw [← norm_mul, ← norm_mul]; exact norm_add_le _ _
@@ -283,8 +271,7 @@ theorem norm_term_sub_le (Φ : IFS N ε) (Ψ : IFS N ε') {c' L₁ L₂ m M : �
           add_le_add ((hL₂ i a ha b hb).trans (mul_le_mul_of_nonneg_left hab hL₂0))
             (norm_nonlin_sub_le Φ Ψ hm hM0 hgm hM i hb)
       _ = (L₂ / (1 - Φ.cmax) + (1 + M) / m) * d2 Φ Ψ := by ring
-  calc ‖Φ.nonlin i a * Df - Ψ.nonlin i b * Dg‖
-      = ‖Φ.nonlin i a * (Df - Dg) + (Φ.nonlin i a - Ψ.nonlin i b) * Dg‖ := by
+  calc _ = ‖Φ.nonlin i a * (Df - Dg) + (Φ.nonlin i a - Ψ.nonlin i b) * Dg‖ := by
         congr 1; ring
     _ ≤ ‖Φ.nonlin i a‖ * ‖Df - Dg‖ + ‖Φ.nonlin i a - Ψ.nonlin i b‖ * ‖Dg‖ := by
         rw [← norm_mul, ← norm_mul]; exact norm_add_le _ _
@@ -293,16 +280,6 @@ theorem norm_term_sub_le (Φ : IFS N ε) (Ψ : IFS N ε') {c' L₁ L₂ m M : �
         add_le_add (mul_le_mul hA hDfg (norm_nonneg _) hM0)
           (mul_le_mul hB hDg (norm_nonneg _) (by positivity))
     _ = _ := by ring
-
-theorem length_take_of_get?_eq_some {w : Word N} {n : ℕ} {i : Fin N}
-    (h : w.get? n = some i) : (w.take n).length = n := by
-  cases w with
-  | fin l =>
-    simp only [Word.get?, Word.take] at h ⊢
-    rw [List.length_take]
-    have := (List.getElem?_eq_some_iff.1 h).1
-    omega
-  | inf l => simp [Word.take]
 
 /-- The termwise bound for the series (1.4). -/
 theorem norm_dualTerm_sub_le (Φ : IFS N ε) (Ψ : IFS N ε') {c' L₁ L₂ m M : ℝ}
@@ -325,7 +302,7 @@ theorem norm_dualTerm_sub_le (Φ : IFS N ε) (Ψ : IFS N ε') {c' L₁ L₂ m M 
   | none => simp only [sub_self, norm_zero]; positivity
   | some i =>
     have hlen : (w.take n).reverse.length = n := by
-      rw [List.length_reverse, length_take_of_get?_eq_some h]
+      rw [List.length_reverse, IFS.length_take_of_get?_eq_some h]
     have := norm_term_sub_le Φ Ψ hc'0 hcc' hc' hm hgm hM0 hM hL₁0 hL₁ hL₂0 hL₂ i
       (w.take n).reverse hx
     rw [hlen] at this
@@ -425,18 +402,9 @@ theorem lemma_2_7_union (Φ : IFS N ε) (h : Φ.DualSSC) :
     have h2 : C' * d2 Φ Ψ ≤ |C'| * d2 Φ Ψ := mul_le_mul_of_nonneg_right (le_abs_self _) hd
     rw [lt_div_iff₀ (by positivity)] at h1
     nlinarith [abs_nonneg C']
-  obtain ⟨MΨ, -, hMΨ, -⟩ := Ψ.exists_dualProj_bounds
   refine (Ψ.dualSSC_iff_exists_delta hN).2 ⟨δ / 3, by positivity, fun i j hij => ?_⟩
   obtain ⟨⟨x, hx⟩, hxδ⟩ := exists_lt_of_lt_ciSup (hsep i j hij)
-  have hbdd : BddAbove (range fun y : I =>
-      ‖Ψ.dualProj (.inf i) ((y : ℝ) : ℂ) - Ψ.dualProj (.inf j) ((y : ℝ) : ℂ)‖) := by
-    refine ⟨2 * MΨ, ?_⟩
-    rintro _ ⟨y, rfl⟩
-    have hyc := Continuity.ofReal_mem_closure Ψ.ε_pos y.2
-    calc _ ≤ ‖Ψ.dualProj (.inf i) ((y : ℝ) : ℂ)‖ + ‖Ψ.dualProj (.inf j) ((y : ℝ) : ℂ)‖ :=
-          norm_sub_le _ _
-      _ ≤ MΨ + MΨ := add_le_add (hMΨ _ _ hyc) (hMΨ _ _ hyc)
-      _ = 2 * MΨ := by ring
+  have hbdd := Ψ.bddAbove_dualProj_sub (.inf i) (.inf j)
   refine lt_of_lt_of_le ?_ (le_ciSup hbdd ⟨x, hx⟩)
   have hi := hC' Ψ hΨδ₀ (.inf i) x hx
   have hj := hC' Ψ hΨδ₀ (.inf j) x hx

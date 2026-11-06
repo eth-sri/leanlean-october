@@ -169,16 +169,14 @@ theorem abs_sub_le_cmax_pow_of_mem_dualCylAt {k K : ℝ} (hkK : k ≤ K) (w : Li
     _ ≤ Φ.cmax ^ w.length * (K - k) :=
         mul_le_mul_of_nonneg_right (Φ.abs_re_deriv_comp_reverse_le w hx) (sub_nonneg.2 hkK)
 
-/-- `F_i` maps `cl (-K,K)` into `(-K,K)` as soon as `c_max K + M < K`, where `M` bounds
-`f_i''/f_i'`. -/
-private theorem mapsTo_dualOp_dualCylClosed {M K : ℝ}
-    (hM : ∀ i, ∀ z ∈ closure (nbhd ε), ‖Φ.nonlin i z‖ ≤ M) (hK : Φ.cmax * K + M < K)
-    (i : Fin N) : MapsTo (Φ.dualOp i) (dualCylClosed ε (-K) K) (dualCyl ε (-K) K) := by
+/-- `F_i` maps `cl (-K,K)` into `(-K,K)` under bounds on `[0,1]` alone. -/
+theorem mapsTo_dualOp_dualCylClosed_of_le {c M K : ℝ}
+    (hc : ∀ i, ∀ x ∈ I, ‖deriv (Φ.f i) x‖ ≤ c) (hM : ∀ i, ∀ x ∈ I, ‖Φ.nonlin i x‖ ≤ M)
+    (hK : c * K + M < K) (i : Fin N) :
+    MapsTo (Φ.dualOp i) (dualCylClosed ε (-K) K) (dualCyl ε (-K) K) := by
   rintro h ⟨hd, _, hre, hb⟩
   have hfx : ∀ x ∈ I, Φ.f i x = (((Φ.f i x).re : ℝ) : ℂ) ∧ (Φ.f i x).re ∈ I := fun x hx =>
-    ⟨Complex.ext (by simp)
-      (by simp [Φ.im_f_ofReal i (nbhd_subset_two (ofReal_mem_nbhd Φ.ε_pos hx))]),
-      (Φ.inClass i).re_mem_I x hx⟩
+    ⟨Φ.comp_ofReal [i] hx, (Φ.inClass i).re_mem_I x hx⟩
   have him : ∀ x ∈ I, (Φ.dualOp i h x).im = 0 := by
     intro x hx
     have hxn := ofReal_mem_nbhd Φ.ε_pos hx
@@ -193,17 +191,16 @@ private theorem mapsTo_dualOp_dualCylClosed {M K : ℝ}
     have h2 : DifferentiableOn ℂ (fun z => h (Φ.f i z)) (nbhd ε) :=
       hd.comp ((Φ.differentiableOn_f i).mono nbhd_subset_two) (Φ.mapsTo_f i)
     exact (h1.mul h2).add (hnl.mono (subset_closure.trans hU))
-  · have hxn := ofReal_mem_nbhd Φ.ε_pos hx
-    have hy := hfx x hx
+  · have hy := hfx x hx
     have hhy : ‖h (Φ.f i x)‖ ≤ K := by
       rw [hy.1, ← Complex.abs_re_eq_norm.2 (hre _ hy.2)]
       exact abs_le.2 (hb _ hy.2)
-    have hnorm : ‖Φ.dualOp i h x‖ ≤ Φ.cmax * K + M := by
+    have hc0 : 0 ≤ c := (norm_nonneg _).trans (hc i x hx)
+    have hnorm : ‖Φ.dualOp i h x‖ ≤ c * K + M := by
       simp only [dualOp]
-      refine (norm_add_le _ _).trans (add_le_add ?_ (hM i _ (subset_closure hxn)))
+      refine (norm_add_le _ _).trans (add_le_add ?_ (hM i x hx))
       rw [norm_mul]
-      exact mul_le_mul (Φ.norm_deriv_le_cmax i (subset_closure hxn)) hhy (norm_nonneg _)
-        Φ.cmax_nonneg
+      exact mul_le_mul (hc i x hx) hhy (norm_nonneg _) hc0
     exact abs_lt.1 ((Complex.abs_re_le_norm _).trans_lt (hnorm.trans_lt hK))
 
 /-- Lemma 2.6: (a) the dual IFS satisfies the SSC if and only if (b) there are `k < K` and
@@ -228,7 +225,9 @@ theorem lemma_2_6 (hN : 0 < N) :
     have hK : Φ.cmax * K + M < K := by
       have h1 : (1 - Φ.cmax) * (M / (1 - Φ.cmax)) = M := mul_div_cancel₀ _ (by linarith)
       nlinarith
-    have hmaps := Φ.mapsTo_dualOp_dualCylClosed hM hK
+    have hmaps := Φ.mapsTo_dualOp_dualCylClosed_of_le
+      (fun i x hx => Φ.norm_deriv_le_cmax i (subset_closure (ofReal_mem_nbhd Φ.ε_pos hx)))
+      (fun i x hx => hM i x (subset_closure (ofReal_mem_nbhd Φ.ε_pos hx))) hK
     have hH := Φ.re_dualProj_mem_Icc (by linarith) hmaps
     refine ⟨-K, K, by linarith, ?_⟩
     by_contra hnone
@@ -250,21 +249,15 @@ theorem lemma_2_6 (hN : 0 < N) :
       (fun n => (extend n (i n), extend n (j n)))
     have hi : Tendsto (fun n => extend (φ n) (i (φ n))) atTop (𝓝 w.1) := by simpa only [Function.comp_def] using (continuous_fst.tendsto w).comp hlim
     have hj : Tendsto (fun n => extend (φ n) (j (φ n))) atTop (𝓝 w.2) := by simpa only [Function.comp_def] using (continuous_snd.tendsto w).comp hlim
+    have hext (n : ℕ) (v : Fin (n + 1) → Fin N) : extend n v 0 = v 0 := by
+      simp only [extend, dite_eq_left (Nat.zero_lt_succ _)]
+      exact congrArg v (Fin.ext rfl)
     have hfirst : w.1 0 ≠ w.2 0 := by
       have he1 := (tendsto_pi_nhds.1 hi 0).eventually (isOpen_discrete {w.1 0} |>.mem_nhds rfl)
       have he2 := (tendsto_pi_nhds.1 hj 0).eventually (isOpen_discrete {w.2 0} |>.mem_nhds rfl)
       obtain ⟨n, h1, h2⟩ := (he1.and he2).exists
-      have h1' : i (φ n) 0 = w.1 0 := by
-        change extend (φ n) (i (φ n)) 0 = w.1 0 at h1
-        simp only [extend, dite_eq_left (Nat.zero_lt_succ _)] at h1
-        have hz : (⟨0, Nat.zero_lt_succ (φ n)⟩ : Fin (φ n + 1)) = 0 := Fin.ext rfl
-        exact (congrArg (i (φ n)) hz).symm.trans h1
-      have h2' : j (φ n) 0 = w.2 0 := by
-        change extend (φ n) (j (φ n)) 0 = w.2 0 at h2
-        simp only [extend, dite_eq_left (Nat.zero_lt_succ _)] at h2
-        have hz : (⟨0, Nat.zero_lt_succ (φ n)⟩ : Fin (φ n + 1)) = 0 := Fin.ext rfl
-        exact (congrArg (j (φ n)) hz).symm.trans h2
-      exact fun he => hij (φ n) (h1'.trans (he.trans h2'.symm))
+      exact fun he => hij (φ n) (((hext _ _).symm.trans h1).trans
+        (he.trans ((hext _ _).symm.trans h2).symm))
     obtain ⟨x, hx, hne⟩ := (Φ.dualSSC_iff_ne hN).1 hssc w.1 w.2 hfirst
     apply hne
     have hbound : ∀ n,
@@ -284,9 +277,8 @@ theorem lemma_2_6 (hN : 0 < N) :
       have hnorm : ‖Φ.dualProj (.inf (extend n (i n))) (x : ℂ) -
           Φ.dualProj (.inf (extend n (j n))) (x : ℂ)‖ ≤
           |(Φ.dualProj (.inf (extend n (i n))) (x : ℂ)).re -
-            (Φ.dualProj (.inf (extend n (j n))) (x : ℂ)).re| := by
-        refine (Complex.norm_le_abs_re_add_abs_im _).trans_eq ?_
-        simp [Φ.im_dualProj_ofReal _ hxn]
+            (Φ.dualProj (.inf (extend n (j n))) (x : ℂ)).re| :=
+        (Complex.abs_re_eq_norm.2 (by simp [Φ.im_dualProj_ofReal _ hxn])).ge
       have e3 := abs_sub_le (Φ.dualProj (.inf (extend n (i n))) (x : ℂ)).re p
         (Φ.dualProj (.inf (extend n (j n))) (x : ℂ)).re
       linarith

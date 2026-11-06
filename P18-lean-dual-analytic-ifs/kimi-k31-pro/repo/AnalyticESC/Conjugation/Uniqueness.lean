@@ -21,45 +21,12 @@ variable {ε : ℝ} {f : ℂ → ℂ}
 
 /-! ## Auxiliary lemmas -/
 
-/-- The system consisting of the single map `f`. -/
-private def uniqIFS {ε : ℝ} {f : ℂ → ℂ} (hε : 0 < ε) (hf : InClass ε f) : IFS 1 ε :=
-  ⟨fun _ => f, hε, fun _ => hf⟩
-
-private theorem uniqIFS_comp (hε : 0 < ε) (hf : InClass ε f) (n : ℕ) :
-    (uniqIFS hε hf).comp (List.replicate n 0) = f^[n] := by
-  induction n with
-  | zero => rfl
-  | succ n ih =>
-    rw [List.replicate_succ, IFS.comp_cons, ih, Function.iterate_succ']
-    rfl
-
-/-- `Ĥ_f` is the dual natural projection of the constant word for the system `{f}`. -/
-private theorem hatH_eq_dualProj_uniq (hε : 0 < ε) (hf : InClass ε f) :
-    hatH f = (uniqIFS hε hf).dualProj (.inf fun _ => 0) := by
-  funext z
-  simp only [hatH, IFS.dualProj]
-  refine tsum_congr fun k => ?_
-  rw [(uniqIFS hε hf).dualTerm_of_get?_eq_some (Word.get?_inf _ k)]
-  simp only [Word.take_inf, List.ofFn_const, List.reverse_replicate, uniqIFS_comp hε hf,
-    IFS.nonlin]
-  rfl
-
 /-- Maps that agree on `[0,1]` and are differentiable at `x ∈ [0,1]` have the same derivative
 at `x`. -/
-private theorem hasDerivAt_unique_of_eqOn_I {u v : ℝ → ℝ} {a b x : ℝ} (hx : x ∈ I)
+theorem hasDerivAt_unique_of_eqOn_I {u v : ℝ → ℝ} {a b x : ℝ} (hx : x ∈ I)
     (hu : HasDerivAt u a x) (hv : HasDerivAt v b x) (huv : ∀ y ∈ I, u y = v y) : a = b :=
   (uniqueDiffOn_Icc zero_lt_one x hx).eq_deriv _ hu.hasDerivWithinAt
     (hv.hasDerivWithinAt.congr huv (huv x hx))
-
-/-- A function with zero derivative within `[0,1]` at every point of `[0,1]` is constant there. -/
-private theorem eq_of_hasDerivWithinAt_zero_I_uniq {u : ℝ → ℝ}
-    (hu : ∀ x ∈ I, HasDerivWithinAt u 0 I x) {x y : ℝ} (hx : x ∈ I) (hy : y ∈ I) :
-    u x = u y := by
-  have hdiff : DifferentiableOn ℝ u I := fun z hz => (hu z hz).differentiableWithinAt
-  have h := constant_of_derivWithin_zero hdiff fun z hz =>
-    (hu z (Ico_subset_Icc_self hz)).derivWithin
-      (uniqueDiffOn_Icc zero_lt_one z (Ico_subset_Icc_self hz))
-  rw [h x hx, h y hy]
 
 /-- A complex number with zero imaginary part is real. -/
 private theorem eq_ofReal_re_uniq {w : ℂ} (h : w.im = 0) : w = (w.re : ℂ) :=
@@ -84,9 +51,9 @@ theorem hatH_eq_add (hε : 0 < ε) (hf : InClass ε f) {z : ℂ} (hz : z ∈ nbh
     congr 1
     funext n
     exact Subsingleton.elim _ _
-  have h := (uniqIFS hε hf).dualProj_prepend [0] (.inf fun _ => 0) (subset_closure hz)
+  have h := (koenigsIFS hε hf).dualProj_prepend [0] (.inf fun _ => 0) (subset_closure hz)
   rw [hw, IFS.dualProj_singleton] at h
-  rw [hatH_eq_dualProj_uniq hε hf, h]
+  rw [hatH_eq_dualProj hε hf, h]
   rfl
 
 /-- Uniqueness of linearisations: if `φ` is analytic near `[0,1]` with `φ' ≠ 0` there and
@@ -183,46 +150,12 @@ theorem eq_add_mul_koenigs (hε : 0 < ε) (hf : InClass ε f) {p : ℝ} (hp : p 
     {φ : ℝ → ℝ} (hφ : AnalyticOnNhd ℝ φ I)
     (hode : ∀ x ∈ I, deriv (deriv φ) x = (hatH f x).re * deriv φ x) :
     ∀ x ∈ I, φ x = φ p + deriv φ p * (koenigs f p x).re := by
-  have hmem : ∀ {x : ℝ}, x ∈ I → (x : ℂ) ∈ nbhd ε := fun hx => ofReal_mem_nbhd hε hx
-  have hkd : DifferentiableOn ℂ (koenigs f p) (nbhd ε) := differentiableOn_koenigs hε hf hp hfp
-  have hkat : ∀ {x : ℝ}, x ∈ I → DifferentiableAt ℂ (koenigs f p) x := fun hx =>
-    hkd.differentiableAt ((isOpen_nbhd ε).mem_nhds (hmem hx))
-  have hkre : ∀ x ∈ I, HasDerivAt (fun t : ℝ => (koenigs f p t).re)
-      (deriv (koenigs f p) x).re x := fun x hx => hasDerivAt_re_ofReal (hkat hx)
-  -- `G = Re ĝ'` is positive on `I` with `G' = Re Ĥ · G`
-  set G : ℝ → ℝ := fun t => (deriv (koenigs f p) t).re with hG
-  set c := deriv φ p
-  have hGpos : ∀ x ∈ I, 0 < G x := fun x hx => (deriv_koenigs_ofReal hε hf hp hfp hx).2
-  have hGp : G p = 1 := by simp [hG, deriv_koenigs_self hε hf hp hfp]
-  have hGderiv : ∀ x ∈ I, HasDerivAt G ((hatH f x).re * G x) x := by
-    intro x hx
-    have h := hasDerivAt_re_ofReal ((hkd.deriv (isOpen_nbhd ε)).differentiableAt
-      ((isOpen_nbhd ε).mem_nhds (hmem hx)))
-    rwa [deriv_deriv_koenigs hε hf hp hfp (hmem hx), Complex.mul_re,
-      (deriv_koenigs_ofReal hε hf hp hfp hx).1, mul_zero, sub_zero] at h
-  -- `φ' / G` has zero derivative, so `φ' = c G` on `I`
-  have hu : ∀ x ∈ I, HasDerivWithinAt (fun t => deriv φ t / G t) 0 I x := by
-    intro x hx
-    have h1 : HasDerivAt (deriv φ) ((hatH f x).re * deriv φ x) x := by
-      rw [← hode x hx]
-      exact (hφ x hx).deriv.differentiableAt.hasDerivAt
-    convert (h1.div (hGderiv x hx) (hGpos x hx).ne').hasDerivWithinAt using 1
-    ring
-  have hφ'eq : ∀ x ∈ I, deriv φ x = c * G x := by
-    intro x hx
-    have h := eq_of_hasDerivWithinAt_zero_I_uniq hu hx hp
-    rw [hGp, div_one, div_eq_iff (hGpos x hx).ne'] at h
-    exact h
-  -- `φ - c Re ĝ` has zero derivative, so `φ = φ(p) + c Re ĝ` on `I`
-  have hv : ∀ x ∈ I, HasDerivWithinAt (fun t => φ t - c * (koenigs f p t).re) 0 I x := by
-    intro x hx
-    have h := ((hφ x hx).differentiableAt.hasDerivAt.sub
-      ((hkre x hx).const_mul c)).hasDerivWithinAt (s := I)
-    rwa [hφ'eq x hx, sub_self] at h
+  apply eq_add_mul_koenigs_of hε hf hp hfp (g' := deriv φ)
+    (fun x hx => (hφ x hx).differentiableAt.hasDerivAt.hasDerivWithinAt)
+    (fun x hx => (hφ x hx).deriv.differentiableAt.differentiableWithinAt)
   intro x hx
-  have h := eq_of_hasDerivWithinAt_zero_I_uniq hv hx hp
-  rw [koenigs_self hε hf hp hfp, Complex.zero_re, mul_zero, sub_zero] at h
-  linarith
+  rw [(hφ x hx).deriv.differentiableAt.derivWithin (uniqueDiffOn_Icc zero_lt_one x hx)]
+  exact hode x hx
 
 /-- `Ĥ_f` depends only on `f` on `[0,1]`. -/
 theorem hatH_eq_of_eqOn_I {ε' : ℝ} {g : ℂ → ℂ} (hε : 0 < ε) (hf : InClass ε f) (hε' : 0 < ε')

@@ -17,7 +17,7 @@ namespace AnalyticESC
 open Set Metric Filter Topology
 
 /-- Every point of `cl B_ε` lies within distance `ε` of a point of `I`. -/
-private theorem exists_mem_I_norm_sub_le {ε : ℝ} (hε : 0 ≤ ε) {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
+theorem exists_mem_I_norm_sub_le {ε : ℝ} (hε : 0 ≤ ε) {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
     ∃ x ∈ I, ‖z - x‖ ≤ ε := by
   have hz' := closure_thickening_subset_cthickening ε _ hz
   rw [isCompact_image_I.cthickening_eq_biUnion_closedBall hε] at hz'
@@ -53,7 +53,7 @@ theorem InClass.of_deriv {ε : ℝ} (hε : 0 < ε) {f : ℂ → ℂ}
     Complex.ext rfl (by simp [him x (ofReal_mem_nbhd (by linarith) hx)])
   refine ball_subset_nbhd (hI x hx) (mem_ball_iff_norm.2 ?_)
   rw [← hfx]
-  calc ‖f z - f x‖ ≤ ‖deriv f w‖ * ‖z - x‖ := hmv
+  calc _ ≤ ‖deriv f w‖ * ‖z - x‖ := hmv
     _ ≤ ‖deriv f w‖ * ε := mul_le_mul_of_nonneg_left hzx (norm_nonneg _)
     _ < 1 * ε := mul_lt_mul_of_pos_right hc hε
     _ = ε := one_mul ε

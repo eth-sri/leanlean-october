@@ -34,7 +34,7 @@ theorem existsUnique_compact_invariant {X A : Type*} [MetricSpace X] [CompleteSp
     obtain ⟨i, a, ha, rfl⟩ := mem_iUnion.1 hx
     obtain ⟨b, hb, hab⟩ := L.isCompact.exists_infDist_eq_dist L.nonempty a
     refine ⟨F i b, mem_iUnion.2 ⟨i, mem_image_of_mem _ hb⟩, ?_⟩
-    calc dist (F i a) (F i b) ≤ c * dist a b := (hF i).dist_le_mul _ _
+    calc _ ≤ c * dist a b := (hF i).dist_le_mul _ _
       _ ≤ c * dist K L := by
         rw [← hab, TopologicalSpace.NonemptyCompacts.dist_eq]
         exact mul_le_mul_of_nonneg_left

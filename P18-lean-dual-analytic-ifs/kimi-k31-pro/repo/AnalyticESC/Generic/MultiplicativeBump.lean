@@ -204,8 +204,7 @@ theorem norm_P1_le (hW : ∀ w ∈ W, ‖z - w‖ ≤ 1) : ‖P1 m W z‖ ≤ (m
         have h1 : ‖z - i‖ ^ (m + 1) ≤ 1 := pow_le_one₀ (norm_nonneg _) (hW i hi)
         have h2 := norm_P_le_one (m := m) (W := W.erase i)
           fun w hw => hW w (Finset.mem_of_mem_erase hw)
-        calc ((m : ℝ) + 2) * ‖z - i‖ ^ (m + 1) * ‖P m (W.erase i) z‖ ≤ ((m : ℝ) + 2) * 1 * 1 := by
-              gcongr
+        calc _ ≤ ((m : ℝ) + 2) * 1 * 1 := by gcongr
           _ = (m : ℝ) + 2 := by ring
     _ = (m + 2) * W.card := by rw [Finset.sum_const, nsmul_eq_mul]; ring
 
@@ -215,23 +214,20 @@ theorem norm_P1_le_of_mem (hW : ∀ w ∈ W, ‖z - w‖ ≤ 1) {l : ℝ} (hl : 
   rw [P1]
   refine (norm_sum_le _ _).trans ?_
   have hl1 : ‖z - l‖ ≤ 1 := hW l hl
-  calc ∑ i ∈ W, ‖((m + 2 : ℕ) : ℂ) * (z - i) ^ (m + 1) * P m (W.erase i) z‖
-      ≤ ∑ _i ∈ W, ((m : ℝ) + 2) * ‖z - l‖ ^ (m + 1) := Finset.sum_le_sum fun i hi => by
+  calc _ ≤ ∑ _i ∈ W, ((m : ℝ) + 2) * ‖z - l‖ ^ (m + 1) := Finset.sum_le_sum fun i hi => by
         rw [norm_mul, norm_mul, norm_pow, Complex.norm_natCast]
         push_cast
         have hWi : ∀ w ∈ W.erase i, ‖z - w‖ ≤ 1 := fun w hw => hW w (Finset.mem_of_mem_erase hw)
         by_cases hil : i = l
         · subst hil
           have h2 := norm_P_le_one (m := m) hWi
-          calc ((m : ℝ) + 2) * ‖z - i‖ ^ (m + 1) * ‖P m (W.erase i) z‖
-              ≤ ((m : ℝ) + 2) * ‖z - i‖ ^ (m + 1) * 1 := by gcongr
+          calc _ ≤ ((m : ℝ) + 2) * ‖z - i‖ ^ (m + 1) * 1 := by gcongr
             _ = _ := by ring
         · have h1 : ‖z - i‖ ^ (m + 1) ≤ 1 := pow_le_one₀ (norm_nonneg _) (hW i hi)
           have h2 := norm_P_le (m := m) hWi (Finset.mem_erase.2 ⟨Ne.symm hil, hl⟩)
           have h3 : ‖z - l‖ ^ (m + 2) ≤ ‖z - l‖ ^ (m + 1) :=
             pow_le_pow_of_le_one (norm_nonneg _) hl1 (by omega)
-          calc ((m : ℝ) + 2) * ‖z - i‖ ^ (m + 1) * ‖P m (W.erase i) z‖
-              ≤ ((m : ℝ) + 2) * 1 * ‖z - l‖ ^ (m + 1) := by gcongr; exact h2.trans h3
+          calc _ ≤ ((m : ℝ) + 2) * 1 * ‖z - l‖ ^ (m + 1) := by gcongr; exact h2.trans h3
             _ = _ := by ring
     _ = (m + 2) * W.card * ‖z - l‖ ^ (m + 1) := by
         rw [Finset.sum_const, nsmul_eq_mul]; ring
@@ -258,9 +254,7 @@ theorem norm_P2_le (hW : ∀ w ∈ W, ‖z - w‖ ≤ 1) :
           have h4 : ((W.erase i).card : ℝ) ≤ W.card := by
             exact_mod_cast Finset.card_erase_le
           have h5 : ((m : ℝ) + 2) * (W.erase i).card ≤ (m + 2) * W.card := by gcongr
-          calc ((m : ℝ) + 2) * (m + 1) * ‖z - i‖ ^ m * ‖P m (W.erase i) z‖ +
-                ((m : ℝ) + 2) * ‖z - i‖ ^ (m + 1) * ‖P1 m (W.erase i) z‖
-              ≤ ((m : ℝ) + 2) * (m + 1) * 1 * 1 + ((m : ℝ) + 2) * 1 * ((m + 2) * W.card) := by
+          calc _ ≤ ((m : ℝ) + 2) * (m + 1) * 1 * 1 + ((m : ℝ) + 2) * 1 * ((m + 2) * W.card) := by
                 gcongr
                 exact h3.trans h5
             _ = _ := by ring
@@ -276,8 +270,7 @@ theorem norm_P2_sub_le (hW : ∀ w ∈ W, ‖z - w‖ ≤ 1) {l : ℝ} (hl : l �
   simp only [add_sub_cancel_left]
   refine (norm_sum_le _ _).trans ?_
   have hl1 : ‖z - l‖ ≤ 1 := hW l hl
-  calc ∑ i ∈ W, ‖((m + 2 : ℕ) : ℂ) * (z - i) ^ (m + 1) * P1 m (W.erase i) z‖
-      ≤ ∑ _i ∈ W, ((m : ℝ) + 2) ^ 2 * W.card * ‖z - l‖ ^ (m + 1) :=
+  calc _ ≤ ∑ _i ∈ W, ((m : ℝ) + 2) ^ 2 * W.card * ‖z - l‖ ^ (m + 1) :=
         Finset.sum_le_sum fun i hi => by
           rw [norm_mul, norm_mul, norm_pow, Complex.norm_natCast]
           push_cast
@@ -288,15 +281,13 @@ theorem norm_P2_sub_le (hW : ∀ w ∈ W, ‖z - w‖ ≤ 1) {l : ℝ} (hl : l �
           by_cases hil : i = l
           · subst hil
             have h3 := norm_P1_le (m := m) hWi
-            calc ((m : ℝ) + 2) * ‖z - i‖ ^ (m + 1) * ‖P1 m (W.erase i) z‖
-                ≤ ((m : ℝ) + 2) * ‖z - i‖ ^ (m + 1) * ((m + 2) * W.card) := by
+            calc _ ≤ ((m : ℝ) + 2) * ‖z - i‖ ^ (m + 1) * ((m + 2) * W.card) := by
                   gcongr
                   exact h3.trans (by gcongr)
               _ = _ := by ring
           · have h1 : ‖z - i‖ ^ (m + 1) ≤ 1 := pow_le_one₀ (norm_nonneg _) (hW i hi)
             have h3 := norm_P1_le_of_mem (m := m) hWi (Finset.mem_erase.2 ⟨Ne.symm hil, hl⟩)
-            calc ((m : ℝ) + 2) * ‖z - i‖ ^ (m + 1) * ‖P1 m (W.erase i) z‖
-                ≤ ((m : ℝ) + 2) * 1 * ((m + 2) * W.card * ‖z - l‖ ^ (m + 1)) := by
+            calc _ ≤ ((m : ℝ) + 2) * 1 * ((m + 2) * W.card * ‖z - l‖ ^ (m + 1)) := by
                   gcongr
                   exact h3.trans (by gcongr)
               _ = _ := by ring
@@ -473,7 +464,7 @@ end Map
 theorem mul_exp_neg_le_one (t : ℝ) : t * Real.exp (-t) ≤ 1 := by
   have h := Real.add_one_le_exp t
   have h2 : Real.exp t * Real.exp (-t) = 1 := by rw [← Real.exp_add, add_neg_cancel, Real.exp_zero]
-  calc t * Real.exp (-t) ≤ Real.exp t * Real.exp (-t) :=
+  calc _ ≤ Real.exp t * Real.exp (-t) :=
         mul_le_mul_of_nonneg_right (by linarith) (Real.exp_pos _).le
     _ = 1 := h2
 
@@ -481,7 +472,7 @@ theorem mul_exp_neg_le_one (t : ℝ) : t * Real.exp (-t) ≤ 1 := by
 theorem sq_mul_exp_neg_le_two {t : ℝ} (ht : 0 ≤ t) : t ^ 2 * Real.exp (-t) ≤ 2 := by
   have h := Real.quadratic_le_exp_of_nonneg ht
   have h2 : Real.exp t * Real.exp (-t) = 1 := by rw [← Real.exp_add, add_neg_cancel, Real.exp_zero]
-  calc t ^ 2 * Real.exp (-t) ≤ (2 * Real.exp t) * Real.exp (-t) :=
+  calc _ ≤ (2 * Real.exp t) * Real.exp (-t) :=
         mul_le_mul_of_nonneg_right (by linarith) (Real.exp_pos _).le
     _ = 2 := by rw [mul_assoc, h2, mul_one]
 
@@ -494,7 +485,7 @@ theorem exp_neg_eq_sq_half (t : ℝ) : Real.exp (-t) = Real.exp (-(t / 2)) * Rea
 theorem mul_exp_neg_le_half (t : ℝ) :
     t * Real.exp (-t) ≤ 2 * Real.exp (-(t / 2)) := by
   have h := mul_exp_neg_le_one (t / 2)
-  calc t * Real.exp (-t) = 2 * (t / 2 * Real.exp (-(t / 2))) * Real.exp (-(t / 2)) := by
+  calc _ = 2 * (t / 2 * Real.exp (-(t / 2))) * Real.exp (-(t / 2)) := by
         rw [exp_neg_eq_sq_half]; ring
     _ ≤ 2 * 1 * Real.exp (-(t / 2)) := by gcongr
     _ = 2 * Real.exp (-(t / 2)) := by ring
@@ -503,7 +494,7 @@ theorem mul_exp_neg_le_half (t : ℝ) :
 theorem sq_mul_exp_neg_le_half {t : ℝ} (ht : 0 ≤ t) :
     t ^ 2 * Real.exp (-t) ≤ 8 * Real.exp (-(t / 2)) := by
   have h := sq_mul_exp_neg_le_two (t := t / 2) (by positivity)
-  calc t ^ 2 * Real.exp (-t) = 4 * ((t / 2) ^ 2 * Real.exp (-(t / 2))) * Real.exp (-(t / 2)) := by
+  calc _ = 4 * ((t / 2) ^ 2 * Real.exp (-(t / 2))) * Real.exp (-(t / 2)) := by
         rw [exp_neg_eq_sq_half]; ring
     _ ≤ 4 * 2 * Real.exp (-(t / 2)) := by gcongr
     _ = 8 * Real.exp (-(t / 2)) := by ring
@@ -514,17 +505,13 @@ theorem abs_mul_exp_neg_le {t : ℝ} (ht : 0 ≤ t) :
       |4 * t ^ 2 - 2 * t| * Real.exp (-t) ≤ 36 * Real.exp (-(t / 2)) := by
   have habs : |4 * t ^ 2 - 2 * t| ≤ 4 * t ^ 2 + 2 * t := by
     rw [abs_le]; constructor <;> nlinarith
-  have he := (Real.exp_pos (-t)).le
-  have h1 := mul_exp_neg_le_one t
-  have h2 := sq_mul_exp_neg_le_two ht
-  have h3 := mul_exp_neg_le_half t
-  have h4 := sq_mul_exp_neg_le_half ht
   have hb : |4 * t ^ 2 - 2 * t| * Real.exp (-t) ≤
       4 * (t ^ 2 * Real.exp (-t)) + 2 * (t * Real.exp (-t)) := by
-    calc |4 * t ^ 2 - 2 * t| * Real.exp (-t) ≤ (4 * t ^ 2 + 2 * t) * Real.exp (-t) :=
-          mul_le_mul_of_nonneg_right habs he
+    calc _ ≤ (4 * t ^ 2 + 2 * t) * Real.exp (-t) :=
+          mul_le_mul_of_nonneg_right habs (Real.exp_pos _).le
       _ = _ := by ring
-  constructor <;> linarith
+  constructor <;> nlinarith [mul_exp_neg_le_one t, sq_mul_exp_neg_le_two ht,
+    mul_exp_neg_le_half t, sq_mul_exp_neg_le_half ht]
 
 /-! ## Splitting a sum near and far from the points of `𝒴` -/
 
@@ -548,25 +535,22 @@ theorem sum_le_near_far {Y : Finset ℝ} {x ρ B K b : ℝ} {w a F : ℝ → ℝ
     linarith
   have hnear : ∀ k ∈ Y.filter fun k => |x - k| < ρ, w k * F k ≤ K * B := fun k hk => by
     obtain ⟨hkY, hxk⟩ := Finset.mem_filter.1 hk
-    calc w k * F k ≤ B * K := mul_le_mul (hwB k hkY hxk) (hFK k hkY) (hF0 k hkY) hB
+    calc _ ≤ B * K := mul_le_mul (hwB k hkY hxk) (hFK k hkY) (hF0 k hkY) hB
       _ = K * B := mul_comm _ _
   have hfar : ∀ k ∈ Y.filter fun k => ¬ |x - k| < ρ, w k * F k ≤ a k * b := fun k hk => by
     obtain ⟨hkY, hxk⟩ := Finset.mem_filter.1 hk
     exact mul_le_mul (hwa k hkY) (hFb k hkY (not_lt.1 hxk)) (hF0 k hkY) (ha k hkY)
-  calc ∑ k ∈ Y, w k * F k
-      = ∑ k ∈ Y with |x - k| < ρ, w k * F k + ∑ k ∈ Y with ¬ |x - k| < ρ, w k * F k :=
+  calc _ = ∑ k ∈ Y with |x - k| < ρ, w k * F k + ∑ k ∈ Y with ¬ |x - k| < ρ, w k * F k :=
         (Finset.sum_filter_add_sum_filter_not _ _ _).symm
     _ ≤ K * B + ∑ k ∈ Y, a k * b := by
         gcongr
-        · calc ∑ k ∈ Y with |x - k| < ρ, w k * F k
-              ≤ (Y.filter fun k => |x - k| < ρ).card • (K * B) :=
+        · calc _ ≤ (Y.filter fun k => |x - k| < ρ).card • (K * B) :=
                 Finset.sum_le_card_nsmul _ _ _ hnear
             _ ≤ 1 • (K * B) := by
                 rw [nsmul_eq_mul, nsmul_eq_mul]
                 exact mul_le_mul_of_nonneg_right (by exact_mod_cast hcard) (mul_nonneg hK hB)
             _ = K * B := one_nsmul _
-        · calc ∑ k ∈ Y with ¬ |x - k| < ρ, w k * F k
-              ≤ ∑ k ∈ Y with ¬ |x - k| < ρ, a k * b := Finset.sum_le_sum hfar
+        · calc _ ≤ ∑ k ∈ Y with ¬ |x - k| < ρ, a k * b := Finset.sum_le_sum hfar
             _ ≤ ∑ k ∈ Y, a k * b :=
                 Finset.sum_le_sum_of_subset_of_nonneg (Finset.filter_subset _ _)
                   fun k hk _ => mul_nonneg (ha k hk) hb
@@ -612,8 +596,7 @@ theorem eventually_gauss_three {c ν : ℝ} (hc : 0 < c) (hν : 0 < ν) :
   rw [Real.rpow_neg_one] at h
   have h3 : |u| ^ (3 : ℝ) = |u| ^ 3 := by exact_mod_cast Real.rpow_natCast |u| 3
   rw [h3] at h
-  calc c * |u| ^ 3 / ρ ^ 3 * Real.exp (-u ^ 2 / ρ ^ 3) =
-      c * (ρ ^ 3)⁻¹ * |u| ^ 3 * Real.exp (-u ^ 2 / ρ ^ 3) := by ring
+  calc _ = c * (ρ ^ 3)⁻¹ * |u| ^ 3 * Real.exp (-u ^ 2 / ρ ^ 3) := by ring
     _ ≤ ν := h
 
 /-- The far terms: `K e^{-c/ρ} ≤ ν` for small `ρ`. -/
@@ -687,7 +670,7 @@ theorem norm_P2_zero_sub_le {W : Finset ℝ} {z : ℂ} (hW : ∀ w ∈ W, ‖z -
 /-- The products `∏_{y' ≠ y} (z - y')²` with `y ≠ k` contain the factor `(z - k)²`. -/
 theorem sum_norm_P_erase_le {W : Finset ℝ} {z : ℂ} (hW : ∀ w ∈ W, ‖z - w‖ ≤ 1) {k : ℝ}
     (hk : k ∈ W) : ∑ i ∈ W.erase k, ‖P 0 (W.erase i) z‖ ≤ W.card * ‖z - k‖ ^ 2 := by
-  calc ∑ i ∈ W.erase k, ‖P 0 (W.erase i) z‖ ≤ ∑ _i ∈ W.erase k, ‖z - k‖ ^ 2 :=
+  calc _ ≤ ∑ _i ∈ W.erase k, ‖z - k‖ ^ 2 :=
         Finset.sum_le_sum fun i hi => by
           have hki : k ∈ W.erase i := Finset.mem_erase.2 ⟨(Finset.ne_of_mem_erase hi).symm, hk⟩
           simpa using norm_P_le (m := 0) (fun w hw => hW w (Finset.mem_of_mem_erase hw)) hki
@@ -703,7 +686,7 @@ theorem norm_mul_A_le {u : ℂ} {v : ℝ → ℝ} (ha : ∀ k ∈ Y, 0 ≤ a k) 
   refine (norm_sum_le _ _).trans (Finset.sum_le_sum fun k hk => ?_)
   rw [norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg (ha k hk), norm_gaussian]
   have := ha k hk
-  calc ‖u‖ * (a k * Real.exp (-(x - k) ^ 2 / η)) ≤ v k * (a k * Real.exp (-(x - k) ^ 2 / η)) :=
+  calc _ ≤ v k * (a k * Real.exp (-(x - k) ^ 2 / η)) :=
         mul_le_mul_of_nonneg_right (hu k hk) (by positivity)
     _ = _ := by ring
 
@@ -724,8 +707,7 @@ theorem norm_mul_A1_le {u : ℂ} {v : ℝ → ℝ} (hη : 0 < η) (ha : ∀ k �
   rw [norm_mul, norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg (ha k hk),
     norm_gaussian, norm_A1_coeff hη]
   have := ha k hk
-  calc ‖u‖ * (a k * (2 * |x - k| / η) * Real.exp (-(x - k) ^ 2 / η))
-      ≤ v k * (a k * (2 * |x - k| / η) * Real.exp (-(x - k) ^ 2 / η)) :=
+  calc _ ≤ v k * (a k * (2 * |x - k| / η) * Real.exp (-(x - k) ^ 2 / η)) :=
         mul_le_mul_of_nonneg_right (hu k hk) (by positivity)
     _ = _ := by ring
 
@@ -736,8 +718,7 @@ theorem norm_mul_A_le_of {u : ℂ} {c ν : ℝ} {p : ℕ} (hc : 0 ≤ c) (ha : �
     (hν : ∀ k ∈ Y, a k * |x - k| ^ p * Real.exp (-(x - k) ^ 2 / η) ≤ ν) :
     ‖u * A a Y η x‖ ≤ c * (Y.card * ν) := by
   refine (norm_mul_A_le ha hu).trans ?_
-  calc ∑ k ∈ Y, a k * Real.exp (-(x - k) ^ 2 / η) * (c * |x - k| ^ p)
-      = ∑ k ∈ Y, c * (a k * |x - k| ^ p * Real.exp (-(x - k) ^ 2 / η)) :=
+  calc _ = ∑ k ∈ Y, c * (a k * |x - k| ^ p * Real.exp (-(x - k) ^ 2 / η)) :=
         Finset.sum_congr rfl fun k _ => by ring
     _ ≤ ∑ _k ∈ Y, c * ν := Finset.sum_le_sum fun k hk => mul_le_mul_of_nonneg_left (hν k hk) hc
     _ = c * (Y.card * ν) := by rw [Finset.sum_const, nsmul_eq_mul]; ring
@@ -749,8 +730,7 @@ theorem norm_mul_A1_le_of {u : ℂ} {c ν : ℝ} (hη : 0 < η) (hc : 0 ≤ c) (
     (hν : ∀ k ∈ Y, a k * |x - k| ^ 3 / η * Real.exp (-(x - k) ^ 2 / η) ≤ ν) :
     ‖u * A1 a Y η x‖ ≤ 2 * c * (Y.card * ν) := by
   refine (norm_mul_A1_le hη ha hu).trans ?_
-  calc ∑ k ∈ Y, a k * (2 * |x - k| / η) * Real.exp (-(x - k) ^ 2 / η) * (c * |x - k| ^ 2)
-      = ∑ k ∈ Y, 2 * c * (a k * |x - k| ^ 3 / η * Real.exp (-(x - k) ^ 2 / η)) :=
+  calc _ = ∑ k ∈ Y, 2 * c * (a k * |x - k| ^ 3 / η * Real.exp (-(x - k) ^ 2 / η)) :=
         Finset.sum_congr rfl fun k _ => by ring
     _ ≤ ∑ _k ∈ Y, 2 * c * ν :=
         Finset.sum_le_sum fun k hk => mul_le_mul_of_nonneg_left (hν k hk) (by positivity)
@@ -789,8 +769,7 @@ theorem norm_P2_mul_A_le (hY : ∀ y ∈ Y, y ∈ I) (hZ : ∀ w ∈ Z, w ∈ I)
         norm_mul, Complex.norm_two]
     · have h3 := sum_norm_P_erase_le hYx hk
       rw [norm_ofReal_sub, sq_abs] at h3
-      calc ‖P 2 Z x * (2 * ∑ i ∈ Y.erase k, P 0 (Y.erase i) x)‖
-          ≤ 1 * (2 * ∑ i ∈ Y.erase k, ‖P 0 (Y.erase i) x‖) := by
+      calc _ ≤ 1 * (2 * ∑ i ∈ Y.erase k, ‖P 0 (Y.erase i) x‖) := by
             rw [norm_mul, norm_mul, Complex.norm_two]
             gcongr
             exact norm_sum_le _ _
@@ -888,9 +867,7 @@ theorem norm_P1_mul_A1_le (hY : ∀ y ∈ Y, y ∈ I) (hZ : ∀ w ∈ Z, w ∈ I
       rw [norm_mul, norm_mul, norm_mul, Complex.norm_real, Real.norm_of_nonneg (ha k hk),
         norm_gaussian, norm_A1_coeff hη]
       have hak := ha k hk
-      calc a k * (2 * |x - k| / η) * Real.exp (-(x - k) ^ 2 / η) *
-            ‖P 2 Z x * ∑ i ∈ Y.erase k, 2 * ((x : ℂ) - i) * P 0 (Y.erase i) x‖
-          ≤ a k * (2 * |x - k| / η) * Real.exp (-(x - k) ^ 2 / η) * (2 * Y.card * |x - k| ^ 2) := by
+      calc _ ≤ a k * (2 * |x - k| / η) * Real.exp (-(x - k) ^ 2 / η) * (2 * Y.card * |x - k| ^ 2) := by
             gcongr
         _ = 4 * Y.card * (a k * |x - k| ^ 3 / η * Real.exp (-(x - k) ^ 2 / η)) := by ring
         _ ≤ 4 * Y.card * ν := by gcongr; exact h3 k hk
@@ -929,7 +906,7 @@ theorem sum_near_far_le (hY : ∀ y ∈ Y, y ∈ I) (hx : x ∈ I) {ρ B : ℝ} 
       fun w hw => hYx w (Finset.mem_of_mem_erase hw)
     have := ha k hk
     rw [norm_mul]
-    calc a k * (‖P 2 Z x‖ * ‖P 0 (Y.erase k) x‖) ≤ a k * (1 * 1) := by gcongr
+    calc _ ≤ a k * (1 * 1) := by gcongr
       _ = a k := by ring
   have ht0 : ∀ k : ℝ, 0 ≤ (x - k) ^ 2 / ρ ^ 3 := fun k => by positivity
   have n1 : ∑ k ∈ Y, a k * ‖P 2 Z x * P 0 (Y.erase k) x‖ *
@@ -1037,7 +1014,7 @@ theorem norm_H_le (hY : ∀ y ∈ Y, y ∈ I) (hZ : ∀ w ∈ Z, w ∈ I) (hZne 
   set L₀ := 2 * M * Pc with hL₀
   have hφ0' : ∀ k ∈ Y, ‖P 0 Y x‖ ≤ 2 * M * |x - k| := fun k hk => by
     have h0 := abs_nonneg (x - k)
-    calc ‖P 0 Y x‖ ≤ |x - k| ^ 2 := hφ0 k hk
+    calc _ ≤ |x - k| ^ 2 := hφ0 k hk
       _ = |x - k| * |x - k| := sq _
       _ ≤ 1 * |x - k| := mul_le_mul_of_nonneg_right (hxk k hk) h0
       _ ≤ 2 * M * |x - k| := mul_le_mul_of_nonneg_right (by linarith [hM1 k hk]) h0
@@ -1047,35 +1024,32 @@ theorem norm_H_le (hY : ∀ y ∈ Y, y ∈ I) (hZ : ∀ w ∈ Z, w ∈ I) (hZne 
   have hprod : ∀ Φ Ψ : ℂ, (∀ k ∈ Y, ‖Φ‖ ≤ 2 * M * |x - k|) → ‖Ψ‖ ≤ Pc →
       ∀ k ∈ Y, ‖Φ * Ψ‖ ≤ L₀ * |x - k| ^ 1 := fun Φ Ψ hΦ hΨ k hk => by
     rw [norm_mul, pow_one, hL₀]
-    calc ‖Φ‖ * ‖Ψ‖ ≤ (2 * M * |x - k|) * Pc :=
+    calc _ ≤ (2 * M * |x - k|) * Pc :=
           mul_le_mul (hΦ k hk) hΨ (norm_nonneg _) (by positivity)
       _ = 2 * M * Pc * |x - k| := by ring
   have hprod2 : ∀ Ψ : ℂ, ‖Ψ‖ ≤ 4 * Q →
       ∀ k ∈ Y, ‖P 0 Y x * Ψ‖ ≤ (4 * Q) * |x - k| ^ 2 := fun Ψ hΨ k hk => by
     rw [norm_mul]
-    calc ‖P 0 Y x‖ * ‖Ψ‖ ≤ |x - k| ^ 2 * (4 * Q) :=
+    calc _ ≤ |x - k| ^ 2 * (4 * Q) :=
           mul_le_mul (hφ0 k hk) hΨ (norm_nonneg _) (by positivity)
       _ = _ := by ring
   have h1' : ∀ k ∈ Y, a k * |x - k| ^ 1 * Real.exp (-(x - k) ^ 2 / ρ ^ 3) ≤ ν := fun k hk => by
     rw [pow_one]
     exact h1 k hk
   have hL₀0 : 0 ≤ L₀ := by positivity
-  -- the norms handled by `(C1)`
-  have g1 : ‖P 0 Y x * P 2 Z x * A a Y (ρ ^ 3) x‖ ≤ L₀ * (M * ν) :=
-    norm_mul_A_le_of hL₀0 ha (hprod _ _ hφ0' hψ0') h1'
-  have g2 : ‖P1 0 Y x * P 2 Z x * A a Y (ρ ^ 3) x‖ ≤ L₀ * (M * ν) :=
-    norm_mul_A_le_of hL₀0 ha (hprod _ _ hφ1 hψ0') h1'
-  have g3 : ‖P 0 Y x * P1 2 Z x * A a Y (ρ ^ 3) x‖ ≤ L₀ * (M * ν) :=
-    norm_mul_A_le_of hL₀0 ha (hprod _ _ hφ0' hψ1') h1'
-  have g4 : ‖P 0 Y x * P2 2 Z x * A a Y (ρ ^ 3) x‖ ≤ L₀ * (M * ν) :=
-    norm_mul_A_le_of hL₀0 ha (hprod _ _ hφ0' hψ2') h1'
-  have g5 : ‖P1 0 Y x * P1 2 Z x * A a Y (ρ ^ 3) x‖ ≤ L₀ * (M * ν) :=
-    norm_mul_A_le_of hL₀0 ha (hprod _ _ hφ1 hψ1') h1'
-  -- the norms handled by `(C2)`
-  have g6 : ‖P 0 Y x * P 2 Z x * A1 a Y (ρ ^ 3) x‖ ≤ 2 * (4 * Q) * (M * ν) :=
-    norm_mul_A1_le_of hη (by positivity) ha (hprod2 _ (by linarith)) h3
-  have g7 : ‖P 0 Y x * P1 2 Z x * A1 a Y (ρ ^ 3) x‖ ≤ 2 * (4 * Q) * (M * ν) :=
-    norm_mul_A1_le_of hη (by positivity) ha (hprod2 _ (by linarith)) h3
+  have g (F G : ℂ) (hF : ∀ k ∈ Y, ‖F‖ ≤ 2 * M * |x - k|) (hG : ‖G‖ ≤ Pc) :
+      ‖F * G * A a Y (ρ ^ 3) x‖ ≤ L₀ * (M * ν) :=
+    norm_mul_A_le_of hL₀0 ha (hprod F G hF hG) h1'
+  have g1 := g _ _ hφ0' hψ0'
+  have g2 := g _ _ hφ1 hψ0'
+  have g3 := g _ _ hφ0' hψ1'
+  have g4 := g _ _ hφ0' hψ2'
+  have g5 := g _ _ hφ1 hψ1'
+  have gA (G : ℂ) (hG : ‖G‖ ≤ 4 * Q) :
+      ‖P 0 Y x * G * A1 a Y (ρ ^ 3) x‖ ≤ 2 * (4 * Q) * (M * ν) :=
+    norm_mul_A1_le_of hη (by positivity) ha (hprod2 G hG) h3
+  have g6 := gA (P 2 Z x) (by linarith)
+  have g7 := gA (P1 2 Z x) (by linarith)
   -- the three remaining norms, and the near/far split
   have d1 := norm_P2_mul_A_le hY hZ hx ha h1' h2
   have d2 := norm_P_mul_A2_le (Y := Y) (Z := Z) (η := ρ ^ 3) (x := x) ha
@@ -1138,13 +1112,10 @@ theorem norm_sub_le_of_norm_H_le {f0 f1 f2 h h1 h2 : ℂ} {s B2 D : ℝ} (hs : s
     rw [norm_one] at this
     linarith
   have hB2 : 0 ≤ B2 := (norm_nonneg _).trans hf2
-  have hn1 := norm_nonneg f0
-  have hn2 := norm_nonneg f1
   have hn3 := norm_nonneg h1
   refine ⟨?_, ?_, ?_⟩
   · rw [show f0 * Complex.exp h - f0 = f0 * (Complex.exp h - 1) by ring, norm_mul]
-    calc ‖f0‖ * ‖Complex.exp h - 1‖ ≤ 1 * (2 * s) :=
-          mul_le_mul hf0 he1 (norm_nonneg _) zero_le_one
+    calc _ ≤ 1 * (2 * s) := mul_le_mul hf0 he1 (norm_nonneg _) zero_le_one
       _ = 2 * s := one_mul _
   · rw [show (f1 + f0 * h1) * Complex.exp h - f1 =
         f1 * (Complex.exp h - 1) + f0 * h1 * Complex.exp h by ring]
@@ -1175,8 +1146,7 @@ theorem norm_sub_le_of_norm_H_le {f0 f1 f2 h h1 h2 : ℂ} {s B2 D : ℝ} (hs : s
       have := mul_le_mul hf0 hh2 (norm_nonneg _) zero_le_one
       linarith
     have t5 : ‖2 * f1 * h1 + f0 * h1 ^ 2 + f0 * h2‖ ≤ 2 * s + s / 2 + (D + s) := by
-      have a1 := norm_add_le (2 * f1 * h1 + f0 * h1 ^ 2) (f0 * h2)
-      have a2 := norm_add_le (2 * f1 * h1) (f0 * h1 ^ 2)
+      have a := norm_add₃_le (a := 2 * f1 * h1) (b := f0 * h1 ^ 2) (c := f0 * h2)
       linarith
     have t6 : ‖2 * f1 * h1 + f0 * h1 ^ 2 + f0 * h2‖ * ‖Complex.exp h‖ ≤
         (2 * s + s / 2 + (D + s)) * 2 := mul_le_mul t5 he (norm_nonneg _) (by positivity)
@@ -1303,7 +1273,7 @@ private theorem proposition_4_2_nonempty {ε : ℝ} (hε : 0 < ε) {f : ℂ → 
       have h3 := (hf1 k (hY k hk)).2
       have h4 := (hf0 k (hY k hk)).1
       have hak := (ha k hk).le
-      calc a k * ‖P 2 Z x * P 0 (Y.erase k) x‖ ≤ a k * (2 * N k) := by gcongr
+      calc _ ≤ a k * (2 * N k) := by gcongr
         _ = δ * ‖deriv f k‖ / ‖f k‖ := by
             rw [eq_div_iff (hfk k hk).ne']
             linarith
@@ -1385,7 +1355,7 @@ private theorem proposition_4_2_nonempty {ε : ℝ} (hε : 0 < ε) {f : ℂ → 
     have h3 := le_norm_A (η := ρ ^ 3) (fun k hk => (ha k hk).le) hy
     have h4 := (hfk y hy).le
     have h5 := (hN y hy).le
-    calc δ * ‖deriv f y‖ = ‖f y‖ * (2 * N y) * a y := by linarith
+    calc _ = ‖f y‖ * (2 * N y) * a y := by linarith
       _ ≤ ‖f y‖ * (2 * N y) * ‖A a Y (ρ ^ 3) y‖ := by gcongr
   · have := mul_nonneg hB₂0 hs.le
     exact (hest x hx).1.trans_lt (by linarith)

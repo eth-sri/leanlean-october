@@ -223,8 +223,7 @@ private theorem rpow_abs_mul_exp_le {p σ : ℝ} (hp : 0 < p) (hσ : 0 < σ) (x 
     rw [hv_def]
     field_simp
     ring
-  calc |x| ^ p * Real.exp (-x ^ 2 / σ)
-      = (p / 2 * σ) ^ (p / 2) * (v ^ (p / 2) * Real.exp (-x ^ 2 / σ)) := by rw [h2]; ring
+  calc _ = (p / 2 * σ) ^ (p / 2) * (v ^ (p / 2) * Real.exp (-x ^ 2 / σ)) := by rw [h2]; ring
     _ ≤ (p / 2 * σ) ^ (p / 2) * (Real.exp ((v - 1) * (p / 2)) * Real.exp (-x ^ 2 / σ)) := by
       gcongr
     _ = (p / 2 * σ) ^ (p / 2) * Real.exp (-(p / 2)) := by rw [← Real.exp_add, h4]
@@ -247,8 +246,7 @@ theorem gaussian_bound {c p ε q σ : ℝ} (hc : 0 < c) (hp : 0 < p) (hε : 0 < 
       show p / (2 * q + p) * (q + p / 2) = p / 2 by field_simp,
       one_div_mul_cancel hr.ne', Real.rpow_one] at h
   have he : p / 2 * (2 * Real.exp 1 / p) = Real.exp 1 := by field_simp
-  calc c * σ ^ q * |x| ^ p * Real.exp (-x ^ 2 / σ)
-      = c * σ ^ q * (|x| ^ p * Real.exp (-x ^ 2 / σ)) := by ring
+  calc _ = c * σ ^ q * (|x| ^ p * Real.exp (-x ^ 2 / σ)) := by ring
     _ ≤ c * σ ^ q * ((p / 2 * σ) ^ (p / 2) * Real.exp (-(p / 2))) :=
       mul_le_mul_of_nonneg_left (rpow_abs_mul_exp_le hp hσ x) (by positivity)
     _ = c * ((p / 2) ^ (p / 2) * Real.exp (-(p / 2))) * σ ^ (q + p / 2) := by

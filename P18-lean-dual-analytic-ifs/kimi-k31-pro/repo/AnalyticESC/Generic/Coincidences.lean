@@ -107,20 +107,6 @@ theorem re_homotopy_ofReal (t : ℝ) (i : Fin N) (x : ℝ) :
     (homotopy Φ t i x).re = (1 - t) * (Φ.f i x).re + t * (slope N * x + offset i) := by
   simp [homotopy, target, Complex.mul_re]
 
-/-- For `t ∈ [0,1]`, the map `f_i^t` sends `I` into `I`. -/
-theorem re_homotopy_mem_I {t : ℝ} (ht : t ∈ I) (i : Fin N) {x : ℝ} (hx : x ∈ I) :
-    (homotopy Φ t i x).re ∈ I := by
-  rw [re_homotopy_ofReal]
-  have hf := (Φ.inClass i).re_mem_I x hx
-  have h1 := offset_pos i
-  have h2 := offset_add_slope_lt_one i
-  have h3 : 0 ≤ slope N * x := mul_nonneg slope_pos.le hx.1
-  have h4 : slope N * x ≤ slope N := mul_le_of_le_one_right slope_pos.le hx.2
-  obtain ⟨ht0, ht1⟩ := ht
-  constructor
-  · nlinarith [mul_nonneg (sub_nonneg.2 ht1) hf.1]
-  · nlinarith [mul_nonneg (sub_nonneg.2 ht1) (sub_nonneg.2 hf.2)]
-
 /-- For `t ∈ (0,1)`, the map `f_i^t` sends `I` into `(0,1)`. -/
 theorem re_homotopy_mem_Ioo {t : ℝ} (ht : t ∈ Ioo 0 1) (i : Fin N) {x : ℝ} (hx : x ∈ I) :
     (homotopy Φ t i x).re ∈ Ioo 0 1 := by
@@ -134,6 +120,20 @@ theorem re_homotopy_mem_Ioo {t : ℝ} (ht : t ∈ Ioo 0 1) (i : Fin N) {x : ℝ}
   constructor
   · nlinarith [mul_nonneg (sub_nonneg.2 ht1.le) hf.1]
   · nlinarith [mul_nonneg (sub_nonneg.2 ht1.le) (sub_nonneg.2 hf.2)]
+
+/-- For `t ∈ [0,1]`, the map `f_i^t` sends `I` into `I`. -/
+theorem re_homotopy_mem_I {t : ℝ} (ht : t ∈ I) (i : Fin N) {x : ℝ} (hx : x ∈ I) :
+    (homotopy Φ t i x).re ∈ I := by
+  rw [re_homotopy_ofReal]
+  have hf := (Φ.inClass i).re_mem_I x hx
+  have h1 := offset_pos i
+  have h2 := offset_add_slope_lt_one i
+  have h3 : 0 ≤ slope N * x := mul_nonneg slope_pos.le hx.1
+  have h4 : slope N * x ≤ slope N := mul_le_of_le_one_right slope_pos.le hx.2
+  obtain ⟨ht0, ht1⟩ := ht
+  constructor
+  · nlinarith [mul_nonneg (sub_nonneg.2 ht1) hf.1]
+  · nlinarith [mul_nonneg (sub_nonneg.2 ht1) (sub_nonneg.2 hf.2)]
 
 /-- For `t ∈ [0,1]`, the compositions `f^t_w` send real points of `I` to real points of `I`. -/
 theorem exists_compT_ofReal {t : ℝ} (ht : t ∈ I) (w : List (Fin N)) {x : ℝ} (hx : x ∈ I) :
@@ -273,7 +273,7 @@ theorem exists_deriv_deriv_bound :
       ((((Φ.differentiableOn_f i).deriv hO).deriv hO).continuousOn.mono hIU)
   choose C hC using h
   refine ⟨∑ i, |C i|, Finset.sum_nonneg fun i _ => abs_nonneg _, fun i x hx => ?_⟩
-  calc ‖deriv (deriv (Φ.f i)) x‖ ≤ C i := hC i x (mem_image_of_mem _ hx)
+  calc _ ≤ C i := hC i x (mem_image_of_mem _ hx)
     _ ≤ |C i| := le_abs_self _
     _ ≤ ∑ i, |C i| :=
         Finset.single_le_sum (f := fun i => |C i|) (fun j _ => abs_nonneg _) (Finset.mem_univ i)

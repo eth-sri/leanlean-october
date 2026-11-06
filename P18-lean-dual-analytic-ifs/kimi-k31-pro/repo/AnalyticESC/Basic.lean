@@ -49,9 +49,7 @@ theorem nbhd_mono {δ δ' : ℝ} (h : δ ≤ δ') : nbhd δ ⊆ nbhd δ' := thic
 theorem nbhd_of_nonpos {δ : ℝ} (h : δ ≤ 0) : nbhd δ = ∅ := thickening_of_nonpos h _
 
 theorem zero_mem_closure_nbhd {δ : ℝ} (hδ : 0 < δ) : (0 : ℂ) ∈ closure (nbhd δ) := by
-  have h := ofReal_mem_nbhd hδ (x := 0) ⟨le_rfl, zero_le_one⟩
-  rw [Complex.ofReal_zero] at h
-  exact subset_closure h
+  simpa using subset_closure (ofReal_mem_nbhd hδ (x := 0) ⟨le_rfl, zero_le_one⟩)
 
 theorem closure_nbhd_subset {δ δ' : ℝ} (h : δ < δ') : closure (nbhd δ) ⊆ nbhd δ' := by
   rcases le_or_gt δ' 0 with h' | h'
@@ -167,8 +165,7 @@ theorem cmax_lt_one : Φ.cmax < 1 := by
     have : Nonempty (closure (nbhd ε)) := ⟨⟨0, zero_mem_closure_nbhd Φ.ε_pos⟩⟩
     obtain ⟨z, hz, hmax⟩ := (isCompact_closure_nbhd ε).exists_isMaxOn
       ⟨0, zero_mem_closure_nbhd Φ.ε_pos⟩ (Φ.continuousOn_norm_deriv_f i)
-    calc ⨆ z : closure (nbhd ε), ‖deriv (Φ.f i) z‖ ≤ ‖deriv (Φ.f i) z‖ :=
-          ciSup_le fun w => hmax w.2
+    calc _ ≤ ‖deriv (Φ.f i) z‖ := ciSup_le fun w => hmax w.2
       _ < 1 := (Φ.inClass i).norm_deriv_lt_one z hz
   have : Nonempty (Fin N) := ⟨⟨0, hN⟩⟩
   obtain ⟨i, hi'⟩ := exists_eq_ciSup_of_finite
@@ -178,7 +175,7 @@ theorem cmax_lt_one : Φ.cmax < 1 := by
 
 theorem norm_deriv_le_cmax (i : Fin N) {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
     ‖deriv (Φ.f i) z‖ ≤ Φ.cmax :=
-  calc ‖deriv (Φ.f i) z‖ ≤ ⨆ z : closure (nbhd ε), ‖deriv (Φ.f i) z‖ :=
+  calc _ ≤ ⨆ z : closure (nbhd ε), ‖deriv (Φ.f i) z‖ :=
         le_ciSup (Φ.bddAbove_norm_deriv i) ⟨z, hz⟩
     _ ≤ Φ.cmax := le_ciSup (f := fun i => ⨆ z : closure (nbhd ε), ‖deriv (Φ.f i) z‖)
         (finite_range _).bddAbove i
@@ -189,7 +186,7 @@ theorem cmin_pos (hN : 0 < N) : 0 < Φ.cmin := by
     have : Nonempty (closure (nbhd ε)) := ⟨⟨0, zero_mem_closure_nbhd Φ.ε_pos⟩⟩
     obtain ⟨z, hz, hmin⟩ := (isCompact_closure_nbhd ε).exists_isMinOn
       ⟨0, zero_mem_closure_nbhd Φ.ε_pos⟩ (Φ.continuousOn_norm_deriv_f i)
-    calc (0 : ℝ) < ‖deriv (Φ.f i) z‖ := norm_pos_iff.2 ((Φ.inClass i).deriv_ne_zero z hz)
+    calc _ < ‖deriv (Φ.f i) z‖ := norm_pos_iff.2 ((Φ.inClass i).deriv_ne_zero z hz)
       _ ≤ ⨅ z : closure (nbhd ε), ‖deriv (Φ.f i) z‖ := le_ciInf fun w => hmin w.2
   have : Nonempty (Fin N) := ⟨⟨0, hN⟩⟩
   obtain ⟨i, hi'⟩ := (range_nonempty
@@ -199,7 +196,7 @@ theorem cmin_pos (hN : 0 < N) : 0 < Φ.cmin := by
 
 theorem cmin_le_norm_deriv (i : Fin N) {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
     Φ.cmin ≤ ‖deriv (Φ.f i) z‖ :=
-  calc Φ.cmin ≤ ⨅ z : closure (nbhd ε), ‖deriv (Φ.f i) z‖ :=
+  calc _ ≤ ⨅ z : closure (nbhd ε), ‖deriv (Φ.f i) z‖ :=
         ciInf_le (f := fun i => ⨅ z : closure (nbhd ε), ‖deriv (Φ.f i) z‖)
           (finite_range _).bddBelow i
     _ ≤ ‖deriv (Φ.f i) z‖ := ciInf_le (Φ.bddBelow_norm_deriv i) ⟨z, hz⟩
@@ -228,7 +225,7 @@ theorem exists_nonlin_bound :
     exact (isCompact_closure_nbhd ε).exists_bound_of_continuousOn (hd.continuousOn.mono hU)
   choose C hC using h
   refine ⟨∑ i, |C i|, Finset.sum_nonneg fun i _ => abs_nonneg _, fun i z hz => ?_⟩
-  calc ‖Φ.nonlin i z‖ ≤ C i := hC i z hz
+  calc _ ≤ C i := hC i z hz
     _ ≤ |C i| := le_abs_self _
     _ ≤ ∑ i, |C i| :=
         Finset.single_le_sum (f := fun i => |C i|) (fun j _ => abs_nonneg _) (Finset.mem_univ i)
@@ -260,23 +257,19 @@ theorem comp_append (u v : List (Fin N)) : Φ.comp (u ++ v) = Φ.comp u ∘ Φ.c
 theorem mapsTo_comp (w : List (Fin N)) : MapsTo (Φ.comp w) (nbhd ε) (nbhd ε) := by
   induction w with
   | nil => exact mapsTo_id _
-  | cons i w ih => rw [comp_cons]; exact (Φ.mapsTo_f i).comp ih
+  | cons i w ih => exact (Φ.mapsTo_f i).comp ih
 
 theorem mapsTo_comp_closure (w : List (Fin N)) :
     MapsTo (Φ.comp w) (closure (nbhd ε)) (closure (nbhd ε)) := by
   induction w with
   | nil => exact mapsTo_id _
-  | cons i w ih =>
-    rw [comp_cons]
-    exact ((Φ.inClass i).mapsTo.mono_right subset_closure).comp ih
+  | cons i w ih => exact ((Φ.inClass i).mapsTo.mono_right subset_closure).comp ih
 
 theorem differentiableAt_comp (w : List (Fin N)) {z : ℂ} (hz : z ∈ closure (nbhd ε)) :
     DifferentiableAt ℂ (Φ.comp w) z := by
   induction w with
   | nil => exact differentiableAt_id
-  | cons i w ih =>
-    rw [comp_cons]
-    exact (Φ.differentiableAt_f i (Φ.mapsTo_comp_closure w hz)).comp z ih
+  | cons i w ih => exact (Φ.differentiableAt_f i (Φ.mapsTo_comp_closure w hz)).comp z ih
 
 theorem differentiableOn_comp (w : List (Fin N)) : DifferentiableOn ℂ (Φ.comp w) (nbhd ε) :=
   fun _ hz => (Φ.differentiableAt_comp w (subset_closure hz)).differentiableWithinAt
@@ -331,12 +324,6 @@ theorem deriv_comp_ne_zero (w : List (Fin N)) {z : ℂ} (hz : z ∈ closure (nbh
   | cons i w ih =>
     rw [Φ.deriv_comp_cons i w hz]
     exact mul_ne_zero ((Φ.inClass i).deriv_ne_zero _ (Φ.mapsTo_comp_closure w hz)) ih
-
-/-- A uniform bound for all compositions on `cl B_ε`. -/
-theorem exists_comp_bound : ∃ R, 0 ≤ R ∧ ∀ w, ∀ z ∈ closure (nbhd ε), ‖Φ.comp w z‖ ≤ R := by
-  obtain ⟨R, hR⟩ := (isCompact_closure_nbhd ε).isBounded.exists_norm_le
-  exact ⟨max R 0, le_max_right _ _,
-    fun w z hz => (hR _ (Φ.mapsTo_comp_closure w hz)).trans (le_max_left _ _)⟩
 
 theorem norm_comp_sub_le (w : List (Fin N)) {z z' : ℂ} (hz : z ∈ nbhd ε) (hz' : z' ∈ nbhd ε) :
     ‖Φ.comp w z - Φ.comp w z'‖ ≤ Φ.cmax ^ w.length * ‖z - z'‖ :=
@@ -436,13 +423,13 @@ theorem exists_image_comp_eq_Icc (w : List (Fin N)) :
       Φ.norm_comp_sub_le w (hmem hb) (hmem ha)
     have hre : q - p ≤ ‖Φ.comp w b - Φ.comp w a‖ := by
       rw [← hpa, ← hqb]
-      calc h b - h a ≤ |h b - h a| := le_abs_self _
+      calc _ ≤ |h b - h a| := le_abs_self _
         _ = |(Φ.comp w b - Φ.comp w a).re| := by simp [h_def]
         _ ≤ ‖Φ.comp w b - Φ.comp w a‖ := Complex.abs_re_le_norm _
     have hba : ‖(b : ℂ) - a‖ ≤ 1 := by
       rw [← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs, abs_sub_le_iff]
       constructor <;> linarith [ha.1, ha.2, hb.1, hb.2]
-    calc q - p ≤ ‖Φ.comp w b - Φ.comp w a‖ := hre
+    calc _ ≤ ‖Φ.comp w b - Φ.comp w a‖ := hre
       _ ≤ Φ.cmax ^ w.length * ‖(b : ℂ) - a‖ := hab
       _ ≤ Φ.cmax ^ w.length * 1 :=
           mul_le_mul_of_nonneg_left hba (pow_nonneg Φ.cmax_nonneg _)

@@ -22,35 +22,6 @@ variable {N : ℕ} {ε : ℝ} (Φ : IFS N ε)
 
 /-! ### Cylinders -/
 
-/-- The prefix map `ω ↦ ω₁ ⋯ ωₙ` is measurable (as in `Main.LocalDimension`). -/
-private theorem nm_measurable_prefix (n : ℕ) :
-    Measurable fun (ω : ℕ → Fin N) (k : Fin n) => ω k :=
-  Measurable.of_eval fun k => measurable_pi_apply (k : ℕ)
-
-/-- The cylinder of a word of length `n` is the preimage of the word under the prefix map. -/
-private theorem nm_wordCylinder_ofFn {n : ℕ} (v : Fin n → Fin N) :
-    wordCylinder (List.ofFn v) = (fun (ω : ℕ → Fin N) (k : Fin n) => ω k) ⁻¹' {v} := by
-  ext ω
-  simp only [wordCylinder, mem_ofPred_eq, mem_preimage, mem_singleton_iff, funext_iff]
-  constructor
-  · intro h k
-    simpa using h ⟨k, by simp⟩
-  · intro h k
-    simpa using h ⟨k, by simpa using k.2⟩
-
-/-- The cylinders of the words of length `n` have total measure `1`. -/
-private theorem nm_sum_measureReal_wordCylinder (ν : Measure (ℕ → Fin N))
-    [IsProbabilityMeasure ν] (n : ℕ) :
-    ∑ v : Fin n → Fin N, ν.real (wordCylinder (List.ofFn v)) = 1 := by
-  have h := sum_measureReal_singleton (μ := ν.map fun (ω : ℕ → Fin N) (k : Fin n) => ω k)
-    (Finset.univ : Finset (Fin n → Fin N))
-  rw [Finset.coe_univ, map_measureReal_apply (nm_measurable_prefix n) MeasurableSet.univ,
-    preimage_univ, probReal_univ] at h
-  rw [← h]
-  refine Finset.sum_congr rfl fun v _ => ?_
-  rw [nm_wordCylinder_ofFn, map_measureReal_apply (nm_measurable_prefix n)
-    (MeasurableSet.of_discrete)]
-
 /-- The cylinder `[w]` is the set of sequences that agree with `w` in the first `|w|` places. -/
 private theorem nm_wordCylinder_eq (hN : 0 < N) (w : List (Fin N)) :
     wordCylinder w = {y | ∀ i < w.length, y i = w.getD i ⟨0, hN⟩} := by
@@ -72,9 +43,6 @@ private theorem nm_ofFn_getD (hN : 0 < N) (w : List (Fin N)) :
 
 /-! ### Distortion -/
 
-private theorem nm_supDeriv_pos (hN : 0 < N) (w : List (Fin N)) : 0 < Φ.supDeriv w :=
-  (pow_pos (Φ.cmin_pos hN) _).trans_le (Φ.cmin_pow_le_supDeriv w)
-
 include Φ in
 private theorem nm_mem_closure {x : ℝ} (hx : x ∈ I) : (x : ℂ) ∈ closure (nbhd ε) :=
   subset_closure (ofReal_mem_nbhd Φ.ε_pos hx)
@@ -87,7 +55,7 @@ private theorem nm_abs_log_sub_log_le {A B c : ℝ} (hc : 0 < c) (hA : c ≤ A) 
     have hX0 := hc.trans_le hX
     have hY0 := hc.trans_le hY
     rw [← Real.log_div hX0.ne' hY0.ne']
-    calc Real.log (X / Y) ≤ X / Y - 1 := Real.log_le_sub_one_of_pos (div_pos hX0 hY0)
+    calc _ ≤ X / Y - 1 := Real.log_le_sub_one_of_pos (div_pos hX0 hY0)
       _ = (X - Y) / Y := by field_simp
       _ ≤ |X - Y| / Y := div_le_div_of_nonneg_right (le_abs_self _) hY0.le
       _ ≤ |X - Y| / c := div_le_div_of_nonneg_left (abs_nonneg _) hc hY
@@ -112,7 +80,7 @@ private theorem nm_exists_lip (hN : 0 < N) :
     have h1 : deriv (deriv (Φ.f i)) z = Φ.nonlin i z * deriv (Φ.f i) z := by
       rw [nonlin, div_mul_cancel₀ _ ((Φ.inClass i).deriv_ne_zero z hz')]
     rw [h1, norm_mul]
-    calc ‖Φ.nonlin i z‖ * ‖deriv (Φ.f i) z‖ ≤ M * 1 :=
+    calc _ ≤ M * 1 :=
           mul_le_mul (hM i z hz') ((Φ.inClass i).norm_deriv_lt_one z hz').le (norm_nonneg _)
             hM0
       _ = M := mul_one M
@@ -124,19 +92,19 @@ private theorem nm_exists_lip (hN : 0 < N) :
   rw [← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs] at hmvt
   refine (nm_abs_log_sub_log_le hcmin (Φ.cmin_le_norm_deriv i (Φ.nm_mem_closure ha))
     (Φ.cmin_le_norm_deriv i (Φ.nm_mem_closure hb))).trans ?_
-  calc |‖deriv (Φ.f i) a‖ - ‖deriv (Φ.f i) b‖| / Φ.cmin ≤ M * |a - b| / Φ.cmin :=
+  calc _ ≤ M * |a - b| / Φ.cmin :=
         div_le_div_of_nonneg_right ((abs_norm_sub_norm_le _ _).trans hmvt) hcmin.le
     _ = M / Φ.cmin * |a - b| := by ring
 
 /-- The two points `f_v(y), f_v(y')` for `y, y' ∈ I` are at distance at most `c_max^{|v|}`. -/
-private theorem nm_abs_re_comp_sub_le (v : List (Fin N)) {y y' : ℝ} (hy : y ∈ I) (hy' : y' ∈ I) :
+theorem nm_abs_re_comp_sub_le (v : List (Fin N)) {y y' : ℝ} (hy : y ∈ I) (hy' : y' ∈ I) :
     |(Φ.comp v y).re - (Φ.comp v y').re| ≤ Φ.cmax ^ v.length := by
   have h := Φ.norm_comp_sub_le v (ofReal_mem_nbhd Φ.ε_pos hy) (ofReal_mem_nbhd Φ.ε_pos hy')
   rw [← Complex.ofReal_sub, Complex.norm_real, Real.norm_eq_abs] at h
   have hyy : |y - y'| ≤ 1 := by
     rw [abs_le]
     constructor <;> linarith [hy.1, hy.2, hy'.1, hy'.2]
-  calc |(Φ.comp v y).re - (Φ.comp v y').re| = |(Φ.comp v y - Φ.comp v y').re| := by
+  calc _ = |(Φ.comp v y - Φ.comp v y').re| := by
         rw [Complex.sub_re]
     _ ≤ ‖Φ.comp v y - Φ.comp v y'‖ := Complex.abs_re_le_norm _
     _ ≤ Φ.cmax ^ v.length * |y - y'| := h
@@ -166,10 +134,7 @@ private theorem nm_log_deriv_comp_sub_le {L : ℝ}
       Real.log_mul (hne' hy') (hne hy'), List.length_cons, Finset.sum_range_succ]
     have h1 := hL i _ (Φ.re_comp_mem_I v hy) _ (Φ.re_comp_mem_I v hy')
     have h2 := Φ.nm_abs_re_comp_sub_le v hy hy'
-    calc |Real.log ‖deriv (Φ.f i) ((Φ.comp v y).re : ℂ)‖ + Real.log ‖deriv (Φ.comp v) y‖ -
-          (Real.log ‖deriv (Φ.f i) ((Φ.comp v y').re : ℂ)‖ +
-            Real.log ‖deriv (Φ.comp v) y'‖)|
-        ≤ |Real.log ‖deriv (Φ.f i) ((Φ.comp v y).re : ℂ)‖ -
+    calc _ ≤ |Real.log ‖deriv (Φ.f i) ((Φ.comp v y).re : ℂ)‖ -
             Real.log ‖deriv (Φ.f i) ((Φ.comp v y').re : ℂ)‖| +
           |Real.log ‖deriv (Φ.comp v) y‖ - Real.log ‖deriv (Φ.comp v) y'‖| := by
           rw [add_sub_add_comm]
@@ -196,14 +161,13 @@ private theorem nm_exists_distortion (hN : 0 < N) :
     intro x hx
     have h := (le_abs_self _).trans (Φ.nm_log_deriv_comp_sub_le hL hL0 w hx hy)
     have h' : L * ∑ k ∈ Finset.range w.length, Φ.cmax ^ k ≤ L / (1 - Φ.cmax) := by
-      calc L * ∑ k ∈ Finset.range w.length, Φ.cmax ^ k ≤ L * (1 / (1 - Φ.cmax)) :=
-            mul_le_mul_of_nonneg_left hgeom hL0
+      calc _ ≤ L * (1 / (1 - Φ.cmax)) := mul_le_mul_of_nonneg_left hgeom hL0
         _ = L / (1 - Φ.cmax) := by ring
     linarith
   have hle : Φ.supDeriv w ≤ Real.exp (L / (1 - Φ.cmax)) * ‖deriv (Φ.comp w) y‖ := by
     have : Nonempty I := ⟨⟨0, le_rfl, zero_le_one⟩⟩
     refine ciSup_le fun x => ?_
-    calc ‖deriv (Φ.comp w) ((x : ℝ) : ℂ)‖ = Real.exp (Real.log ‖deriv (Φ.comp w) ((x : ℝ) : ℂ)‖) :=
+    calc _ = Real.exp (Real.log ‖deriv (Φ.comp w) ((x : ℝ) : ℂ)‖) :=
           (Real.exp_log (hpos x.2)).symm
       _ ≤ Real.exp (Real.log ‖deriv (Φ.comp w) y‖ + L / (1 - Φ.cmax)) :=
           Real.exp_le_exp.2 (hdist x.2)
@@ -212,7 +176,7 @@ private theorem nm_exists_distortion (hN : 0 < N) :
   have h1 : Real.log ‖deriv (Φ.comp w) y‖ ≤ Real.log (Φ.supDeriv w) :=
     Real.log_le_log (hpos hy) (Φ.norm_deriv_le_supDeriv w hy)
   have h2 : Real.log (Φ.supDeriv w) ≤ L / (1 - Φ.cmax) + Real.log ‖deriv (Φ.comp w) y‖ := by
-    have := Real.log_le_log (Φ.nm_supDeriv_pos hN w) hle
+    have := Real.log_le_log (Φ.pr_supDeriv_pos hN w) hle
     rwa [Real.log_mul (Real.exp_pos _).ne' (hpos hy).ne', Real.log_exp] at this
   rw [abs_le]
   constructor <;> linarith
@@ -320,9 +284,7 @@ theorem exists_isGibbsMeasure (hB : BowenGibbsStatement) (hN : 0 < N) (s : ℝ) 
         mul_nonneg (abs_nonneg s) (sub_nonneg.2 hlog)
       rw [hb_def]
       nlinarith [abs_nonneg s]
-    calc |s| * |Real.log ‖deriv (Φ.f (x 0)) (Φ.natProj fun i => x (i + 1))‖ -
-          Real.log ‖deriv (Φ.f (x 0)) (Φ.natProj fun i => y (i + 1))‖|
-        ≤ |s| * (L * Φ.cmax ^ k) := mul_le_mul_of_nonneg_left hd (abs_nonneg s)
+    calc _ ≤ |s| * (L * Φ.cmax ^ k) := mul_le_mul_of_nonneg_left hd (abs_nonneg s)
       _ = |s| * (L / Φ.cmax) * Φ.cmax ^ (k + 1) := by
           rw [pow_succ]
           field_simp
@@ -356,7 +318,7 @@ theorem isGibbs_of_isGibbsMeasure (hN : 0 < N) {s : ℝ}
       exact mul_le_mul_of_nonneg_left (hΔ w hπ) (abs_nonneg s)
     rw [abs_le] at hd
     have hrpow : Φ.supDeriv w ^ s = Real.exp (s * Real.log (Φ.supDeriv w)) := by
-      rw [Real.rpow_def_of_pos (Φ.nm_supDeriv_pos hN w), mul_comm]
+      rw [Real.rpow_def_of_pos (Φ.pr_supDeriv_pos hN w), mul_comm]
     have e : ∀ c B : ℝ, c * Real.exp B * Real.exp (-P * w.length) * Φ.supDeriv w ^ s =
         c * Real.exp (-P * w.length + (s * Real.log (Φ.supDeriv w) + B)) := by
       intro c B
@@ -372,12 +334,12 @@ theorem isGibbs_of_isGibbsMeasure (hN : 0 < N) {s : ℝ}
       exact mul_le_mul_of_nonneg_left (Real.exp_le_exp.2 (by linarith)) hc₂.le
   -- summing over the words of length `m`: `exp(-Pm) ∑_{|w| = m} ‖f_w'‖^s ≍ 1`
   have hps : ∀ m, 0 < Φ.pressureSum s m := fun m =>
-    Finset.sum_pos (fun _ _ => Real.rpow_pos_of_pos (Φ.nm_supDeriv_pos hN _) s)
+    Finset.sum_pos (fun _ _ => Real.rpow_pos_of_pos (Φ.pr_supDeriv_pos hN _) s)
       ⟨fun _ => ⟨0, hN⟩, Finset.mem_univ _⟩
   have hsum : ∀ m : ℕ, K₁ * Real.exp (-P * m) * Φ.pressureSum s m ≤ 1 ∧
       1 ≤ K₂ * Real.exp (-P * m) * Φ.pressureSum s m := by
     intro m
-    have h1 := nm_sum_measureReal_wordCylinder ν m
+    have h1 := sum_measureReal_wordCylinder_univ ν m
     constructor
     · rw [← h1, pressureSum, Finset.mul_sum]
       refine Finset.sum_le_sum fun v _ => ?_
@@ -421,7 +383,7 @@ theorem isGibbs_of_isGibbsMeasure (hN : 0 < N) {s : ℝ}
   refine ⟨max K₂ K₁⁻¹, lt_max_of_lt_left hK₂, fun w => ?_⟩
   obtain ⟨h1, h2⟩ := key w
   rw [hP, neg_zero, zero_mul, Real.exp_zero, mul_one] at h1 h2
-  have hw := Real.rpow_nonneg (Φ.nm_supDeriv_pos hN w).le s
+  have hw := Real.rpow_nonneg (Φ.pr_supDeriv_pos hN w).le s
   constructor
   · refine le_trans (mul_le_mul_of_nonneg_right ?_ hw) h1
     exact inv_le_of_inv_le₀ hK₁ (le_max_right _ _)
