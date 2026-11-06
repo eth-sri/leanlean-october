@@ -1,0 +1,66 @@
+{
+  "problem_idx": 11,
+  "id": "PALOMAR-2026-10-10-000002-v1",
+  "title": "Nearly minimax variance estimation under rough random design",
+  "abstract": "Minimax root-mean-square bounds for estimating a constant conditional variance from independent random-design regression observations. The design density has fixed positive lower and upper bounds but no smoothness; covariate-dependent errors have uniformly bounded conditional fourth moments. For 1 < s < d/4, the proved bracket identifies the polynomial exponent 2(s+1)/(d+4) and the common explicit stretched-exponential factor, with a remaining logarithmic gap. It also proves the exponent corollary, the exact low-smoothness rate, and the parametric regime.",
+  "authors": [
+    "P. M. Aronow",
+    "Patrick Lopatto"
+  ],
+  "repository": "pmaronow/ccv-palomar",
+  "repository_url": "https://github.com/pmaronow/ccv-palomar",
+  "commit": "f3ef2ef312d44bbc693c1d5bea9cee654a29b598",
+  "license": "MIT",
+  "lean_toolchain": "leanprover/lean4:v4.35.0-rc2",
+  "lake_root": "",
+  "mathlib": true,
+  "size_category": "L",
+  "baseline_tokens": 854028,
+  "lean_files": 556,
+  "protected_theorem_names": [
+    "NearlyMinimax.Submission.paper_main",
+    "NearlyMinimax.Submission.exponent_limit",
+    "NearlyMinimax.Submission.polynomial_bounds",
+    "NearlyMinimax.Submission.low_smoothness",
+    "NearlyMinimax.Submission.parametric"
+  ],
+  "definition_names": [],
+  "permitted_axioms": [
+    "propext",
+    "Quot.sound",
+    "Classical.choice"
+  ],
+  "challenge_module": "Challenge",
+  "challenge_path": "Challenge.lean",
+  "solution_module": "Solution",
+  "solution_path": "Solution.lean",
+  "comparator_path": "comparator.json",
+  "arxiv_tags": [
+    "math.ST",
+    "stat.TH"
+  ],
+  "msc2020": [
+    "62G05",
+    "62G08",
+    "62G20",
+    "62C20"
+  ],
+  "mathematical_sources": [
+    {
+      "title": "Nearly Minimax Variance Estimation Under Rough Random Design",
+      "authors": [
+        "P. M. Aronow",
+        "Patrick Lopatto"
+      ],
+      "type": "paper",
+      "identifier": "hexagon:2610.00162v1",
+      "location": "paper/main.tex",
+      "relationship": "formalizes"
+    }
+  ],
+  "dependency_graph_nodes": 5366,
+  "dependency_graph_edges": 39242,
+  "project_path": "repos/PALOMAR-2026-10-10-000002-v1/project",
+  "dependency_graph_path": "repos/PALOMAR-2026-10-10-000002-v1/dependency-graph.json",
+  "license_path": "repos/PALOMAR-2026-10-10-000002-v1/LICENSE"
+}
