@@ -11,15 +11,10 @@ public import GalvinLib.Galvin
 /-!
 # Proofs of the statements in `Challenge.lean`
 
-The theorems are proved in `GalvinLib/` (namespace `Galvin`). `GaleShapley.lean` proves the
-existence of stable matchings by strong induction on the number of acceptable pairs (if two
-men share a favourite woman, delete the pair she likes less). `Kernel.lean` proves the kernel
-lemma: if every set of vertices of a digraph has a kernel and every list is longer than the
-out-degree, there is a proper list colouring. `Orientation.lean` orients the line graph of a
-bipartite graph using a proper `Δ`-edge-colouring from Kőnig's theorem (`Konig/Basic.lean`, from
-the registered entry PALOMAR-2026-10-15-000019, included unchanged): every out-degree is below
-`Δ`, and every set of edges has a kernel, given by a stable matching. The Dinitz problem is the
-case of `K_{n,n}`.
+The theorems are proved in `GalvinLib/`: `GaleShapley.lean` proves the existence of stable
+matchings by strong induction on the number of acceptable pairs, `Konig.lean` gives the proper
+`Δ`-edge-colouring of a bipartite graph, and `Galvin.lean` proves the kernel lemma, Galvin's
+theorem and the Dinitz problem.
 -/
 
 @[expose] public section
@@ -36,7 +31,7 @@ theorem gale_shapley {M W : Type*} [Finite M] [Finite W] (E : M → W → Prop)
       (∀ m w w', μ m w → μ m w' → w = w') ∧ (∀ m m' w, μ m w → μ m' w → m = m') ∧
       ∀ m w, E m w → ¬ μ m w →
         (∃ w', μ m w' ∧ rm m w' < rm m w) ∨ (∃ m', μ m' w ∧ rw w m' < rw w m) :=
-  Galvin.gale_shapley E rm rw hrm hrw
+  Galvin.exists_isStable E rm rw ⟨fun m _ _ _ _ h => hrm m h, fun w _ _ _ _ h => hrw w h⟩
 
 /-- **Galvin's theorem (1995).** If every edge of a finite bipartite graph `G` has a list of at
 least `Δ(G)` colours, then `G` has a proper edge colouring choosing every colour from the list of
