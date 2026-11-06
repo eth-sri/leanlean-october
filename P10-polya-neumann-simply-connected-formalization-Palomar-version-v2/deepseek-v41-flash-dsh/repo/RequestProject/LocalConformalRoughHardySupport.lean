@@ -211,7 +211,7 @@ theorem physicalMomentPrimitive_moments_of_memLp (γ H : ℝ → ℂ)
     intro hc
     have hre := congrArg Complex.re hc
     norm_num at hre
-    have hpos : (0 : ℝ) < (m : ℝ) + 1 := by positivity
+
     linarith
   exact (mul_eq_zero.mp hFTC.symm).resolve_left hc
 

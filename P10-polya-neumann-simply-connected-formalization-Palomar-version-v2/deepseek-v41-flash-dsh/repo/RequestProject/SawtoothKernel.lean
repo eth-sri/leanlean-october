@@ -69,8 +69,8 @@ theorem integral_sawtoothKernel_mul_exp {θ : ℝ} (hθ : θ ∈ Set.Icc 0 (2 * 
       2 / n * Complex.exp (n * Complex.I * θ) := by
   set c : ℂ := n * Complex.I with hc
   have hc0 : c ≠ 0 := mul_ne_zero (by exact_mod_cast hn) Complex.I_ne_zero
-  have hpi : (π : ℂ) ≠ 0 := by exact_mod_cast pi_ne_zero
-  have hn' : (n : ℂ) ≠ 0 := by exact_mod_cast hn
+
+
   have hexp2π : Complex.exp (c * (2 * π : ℝ)) = 1 := by
     rw [hc, show (n : ℂ) * Complex.I * ((2 * π : ℝ) : ℂ) = n * (2 * π * Complex.I) by
       push_cast; ring]
@@ -136,7 +136,7 @@ theorem integral_sawtoothKernel_mul_exp {θ : ℝ} (hθ : θ ∈ Set.Icc 0 (2 * 
 /-- `∫₀^{2π} σ(θ, s) ds = 0` for `θ ∈ [0, 2π]`: `2D^{-1}` kills the constant mode. -/
 theorem integral_sawtoothKernel {θ : ℝ} (hθ : θ ∈ Set.Icc 0 (2 * π)) :
     ∫ s in (0 : ℝ)..(2 * π), sawtoothKernel θ s = 0 := by
-  have hpi : (π : ℂ) ≠ 0 := by exact_mod_cast pi_ne_zero
+
   have h1 := intervalIntegral_sign_mul (f := fun _ => (1 : ℂ)) continuous_const hθ
   simp only [mul_one] at h1
   have e : (fun s => sawtoothKernel θ s) = fun s =>

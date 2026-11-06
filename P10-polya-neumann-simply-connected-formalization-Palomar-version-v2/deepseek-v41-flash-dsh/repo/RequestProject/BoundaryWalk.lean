@@ -181,7 +181,7 @@ lemma WalkData.lipschitzWith_walk (hw : WalkData Ω ρ H K ch ℓ p₀) :
   · -- negative pieces: the first chart graph
     have hsub : Icc ((n : ℝ) * ℓ) ((n + 1) * ℓ) ⊆ Iic ℓ := fun t ht => by
       have h1 : (n : ℝ) + 1 ≤ 0 := by exact_mod_cast hn
-      have h2 := mul_le_mul_of_nonneg_right h1 hw.ℓ_pos.le
+
       have := ht.2; simp only [mem_Iic]; nlinarith [hw.ℓ_pos]
     refine LipschitzOnWith.of_dist_le_mul fun x hx y hy => ?_
     rw [hw.walk_eq_of_le (hsub hx), hw.walk_eq_of_le (hsub hy)]
@@ -260,7 +260,7 @@ theorem WalkData.walk_local_strictMono (hw : WalkData Ω ρ H K ch ℓ p₀) {t 
   rw [div_lt_iff₀ hℓ] at h2
   set u := t - n * ℓ with hu
   have hu0 : 0 ≤ u := by linarith
-  have huℓ : u < ℓ := by linarith
+
   have hwt : walk ch ℓ p₀ t = stepCurve ch (walkPt ch ℓ p₀ n) u :=
     hw.walk_eq_step' n t ⟨h1, by linarith⟩
   -- the right part (and the middle of a step)

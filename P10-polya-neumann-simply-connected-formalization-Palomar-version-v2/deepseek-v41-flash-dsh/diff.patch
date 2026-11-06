@@ -1,0 +1,72 @@
+diff --git a/RequestProject/BoundaryWalk.lean b/RequestProject/BoundaryWalk.lean
+index 7c6c73a3c..914b1d75e 100644
+--- a/RequestProject/BoundaryWalk.lean
++++ b/RequestProject/BoundaryWalk.lean
+@@ -181,7 +181,7 @@ lemma WalkData.lipschitzWith_walk (hw : WalkData Ω ρ H K ch ℓ p₀) :
+   · -- negative pieces: the first chart graph
+     have hsub : Icc ((n : ℝ) * ℓ) ((n + 1) * ℓ) ⊆ Iic ℓ := fun t ht => by
+       have h1 : (n : ℝ) + 1 ≤ 0 := by exact_mod_cast hn
+-      have h2 := mul_le_mul_of_nonneg_right h1 hw.ℓ_pos.le
++
+       have := ht.2; simp only [mem_Iic]; nlinarith [hw.ℓ_pos]
+     refine LipschitzOnWith.of_dist_le_mul fun x hx y hy => ?_
+     rw [hw.walk_eq_of_le (hsub hx), hw.walk_eq_of_le (hsub hy)]
+@@ -260,7 +260,7 @@ theorem WalkData.walk_local_strictMono (hw : WalkData Ω ρ H K ch ℓ p₀) {t
+   rw [div_lt_iff₀ hℓ] at h2
+   set u := t - n * ℓ with hu
+   have hu0 : 0 ≤ u := by linarith
+-  have huℓ : u < ℓ := by linarith
++
+   have hwt : walk ch ℓ p₀ t = stepCurve ch (walkPt ch ℓ p₀ n) u :=
+     hw.walk_eq_step' n t ⟨h1, by linarith⟩
+   -- the right part (and the middle of a step)
+diff --git a/RequestProject/LocalConformalRoughHardySupport.lean b/RequestProject/LocalConformalRoughHardySupport.lean
+index 1ee449a7f..bdae769c1 100644
+--- a/RequestProject/LocalConformalRoughHardySupport.lean
++++ b/RequestProject/LocalConformalRoughHardySupport.lean
+@@ -211,7 +211,7 @@ theorem physicalMomentPrimitive_moments_of_memLp (γ H : ℝ → ℂ)
+     intro hc
+     have hre := congrArg Complex.re hc
+     norm_num at hre
+-    have hpos : (0 : ℝ) < (m : ℝ) + 1 := by positivity
++
+     linarith
+   exact (mul_eq_zero.mp hFTC.symm).resolve_left hc
+ 
+diff --git a/RequestProject/Picard.lean b/RequestProject/Picard.lean
+index 80eb4077e..b8aae7fc0 100644
+--- a/RequestProject/Picard.lean
++++ b/RequestProject/Picard.lean
+@@ -150,7 +150,7 @@ theorem volterra_unique (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖C s
+   set D : ℝ → A := fun θ => W θ - W' θ
+   have hD : ContinuousOn D (Set.Icc 0 L) := hW.sub hW'
+   obtain ⟨S, hS⟩ := isCompact_Icc.exists_bound_of_continuousOn hD
+-  have hS0 : ∀ θ ∈ Set.Icc 0 L, 0 ≤ S := fun θ hθ => (norm_nonneg _).trans (hS θ hθ)
++
+   have hDeq : ∀ θ ∈ Set.Icc 0 L, D θ = ∫ s in (0 : ℝ)..θ, C s * D s := by
+     intro θ hθ
+     simp only [D, mul_sub]
+diff --git a/RequestProject/SawtoothKernel.lean b/RequestProject/SawtoothKernel.lean
+index cbbd47d12..88d8d00a4 100644
+--- a/RequestProject/SawtoothKernel.lean
++++ b/RequestProject/SawtoothKernel.lean
+@@ -69,8 +69,8 @@ theorem integral_sawtoothKernel_mul_exp {θ : ℝ} (hθ : θ ∈ Set.Icc 0 (2 *
+       2 / n * Complex.exp (n * Complex.I * θ) := by
+   set c : ℂ := n * Complex.I with hc
+   have hc0 : c ≠ 0 := mul_ne_zero (by exact_mod_cast hn) Complex.I_ne_zero
+-  have hpi : (π : ℂ) ≠ 0 := by exact_mod_cast pi_ne_zero
+-  have hn' : (n : ℂ) ≠ 0 := by exact_mod_cast hn
++
++
+   have hexp2π : Complex.exp (c * (2 * π : ℝ)) = 1 := by
+     rw [hc, show (n : ℂ) * Complex.I * ((2 * π : ℝ) : ℂ) = n * (2 * π * Complex.I) by
+       push_cast; ring]
+@@ -136,7 +136,7 @@ theorem integral_sawtoothKernel_mul_exp {θ : ℝ} (hθ : θ ∈ Set.Icc 0 (2 *
+ /-- `∫₀^{2π} σ(θ, s) ds = 0` for `θ ∈ [0, 2π]`: `2D^{-1}` kills the constant mode. -/
+ theorem integral_sawtoothKernel {θ : ℝ} (hθ : θ ∈ Set.Icc 0 (2 * π)) :
+     ∫ s in (0 : ℝ)..(2 * π), sawtoothKernel θ s = 0 := by
+-  have hpi : (π : ℂ) ≠ 0 := by exact_mod_cast pi_ne_zero
++
+   have h1 := intervalIntegral_sign_mul (f := fun _ => (1 : ℂ)) continuous_const hθ
+   simp only [mul_one] at h1
+   have e : (fun s => sawtoothKernel θ s) = fun s =>

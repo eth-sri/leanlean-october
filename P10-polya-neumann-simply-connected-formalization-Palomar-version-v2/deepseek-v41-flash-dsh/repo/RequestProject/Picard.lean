@@ -150,7 +150,7 @@ theorem volterra_unique (hC : AEStronglyMeasurable C volume) (hM : ∀ s, ‖C s
   set D : ℝ → A := fun θ => W θ - W' θ
   have hD : ContinuousOn D (Set.Icc 0 L) := hW.sub hW'
   obtain ⟨S, hS⟩ := isCompact_Icc.exists_bound_of_continuousOn hD
-  have hS0 : ∀ θ ∈ Set.Icc 0 L, 0 ≤ S := fun θ hθ => (norm_nonneg _).trans (hS θ hθ)
+
   have hDeq : ∀ θ ∈ Set.Icc 0 L, D θ = ∫ s in (0 : ℝ)..θ, C s * D s := by
     intro θ hθ
     simp only [D, mul_sub]
